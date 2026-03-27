@@ -4,6 +4,7 @@
  * Legacy conversation_threads are only used as fallback for business contexts.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 
 function normalizeParticipant(participant: any) {
   return {
@@ -82,7 +83,6 @@ export async function getOrCreateDirectThread(opts: {
 
   // ── 2. Create V2 conversation (canonical path only) ──
   try {
-    // Get orbit profiles for both users
     const { data: orbitProfiles } = await (supabase as any)
       .from("orbit_profiles_v2")
       .select("id, orbit_id, display_name, email, avatar_url")
@@ -92,36 +92,18 @@ export async function getOrCreateDirectThread(opts: {
     const currentProfile: any = profileMap.get(opts.currentUserId);
     const targetProfile: any = profileMap.get(opts.targetUserId);
 
-    const participants = [
-      {
-        userId: opts.currentUserId,
-        orbitId: currentProfile?.orbit_id || null,
-        displayName: currentProfile?.display_name || "You",
-        email: currentProfile?.email || null,
-        avatarUrl: currentProfile?.avatar_url || null,
-      },
-      {
-        userId: opts.targetUserId,
-        orbitId: targetProfile?.orbit_id || null,
-        displayName: targetProfile?.display_name || opts.targetName,
-        email: targetProfile?.email || null,
-        avatarUrl: targetProfile?.avatar_url || null,
-      },
-    ];
+    const v2Conv = await createOrGetDirectConversation({
+      myUserId: opts.currentUserId,
+      myOrbitId: currentProfile?.orbit_id || null,
+      myEmail: currentProfile?.email || null,
+      myDisplayName: currentProfile?.display_name || null,
+      peerUserId: opts.targetUserId,
+      peerOrbitId: targetProfile?.orbit_id || null,
+      peerEmail: targetProfile?.email || null,
+      peerDisplayName: targetProfile?.display_name || opts.targetName,
+    });
 
-    const { data: v2Conv, error: v2Err } = await (supabase as any)
-      .from("conversations_v2")
-      .insert({
-        type: "direct",
-        participants,
-        title: opts.targetName || null,
-        created_by_orbit_id: currentProfile?.orbit_id || null,
-        last_message_at: new Date().toISOString(),
-      })
-      .select("id")
-      .maybeSingle();
-
-    if (v2Conv && !v2Err) {
+    if (v2Conv?.id) {
       return {
         contextId: v2Conv.id,
         orgId: "",
@@ -130,7 +112,6 @@ export async function getOrCreateDirectThread(opts: {
         isV2: true,
       };
     }
-    console.warn("[direct-thread] V2 create failed:", v2Err);
   } catch (e) {
     console.warn("[direct-thread] V2 creation error:", e);
   }
