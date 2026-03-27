@@ -53,7 +53,7 @@ const SignatureDialog = ({ open, onOpenChange, documentId, documentTitle, signer
         if (signerRole === "tenant") {
           const { data: org } = await supabase.from("orgs").select("owner_user_id").eq("id", orgId).single();
           if (org?.owner_user_id) {
-            await supabase.from("notifications").insert({
+            await supabase.from("app_notifications").insert({
               user_id: org.owner_user_id, org_id: orgId, type: "document",
               title: notifTitle, message: `${documentTitle} a été signé.`, link: "/dashboard/documents",
             });

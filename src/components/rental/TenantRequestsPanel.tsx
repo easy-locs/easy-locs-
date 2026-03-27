@@ -60,7 +60,7 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
       toast({ title: t("comp.requests.resolved") });
       const { data: tenant } = await supabase.from("tenants").select("tenant_user_id").eq("id", tenantId).single();
       if (tenant?.tenant_user_id) {
-        await supabase.from("notifications").insert({
+        await supabase.from("app_notifications").insert({
           user_id: tenant.tenant_user_id,
           org_id: orgId,
           type: "document",
