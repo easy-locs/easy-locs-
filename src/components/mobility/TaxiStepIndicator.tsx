@@ -40,7 +40,7 @@ export function TaxiStepIndicator({ step }: { step: TaxiFlowStep }) {
           const isActive = idx === currentIdx;
           const isDone = idx < currentIdx;
           return (
-            <div key={s.key} className="flex flex-col items-center gap-0.5">
+            <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
               <motion.div
                 initial={false}
                 animate={{
@@ -49,7 +49,7 @@ export function TaxiStepIndicator({ step }: { step: TaxiFlowStep }) {
                 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 className={cn(
-                  "w-5 h-5 rounded-full flex items-center justify-center text-[10px]",
+                  "w-5 h-5 rounded-full flex items-center justify-center text-[10px] leading-none",
                   isActive && "ring-2 ring-primary/30",
                   isDone && "bg-primary/10",
                 )}
@@ -57,7 +57,7 @@ export function TaxiStepIndicator({ step }: { step: TaxiFlowStep }) {
                 {s.emoji}
               </motion.div>
               <span className={cn(
-                "text-[8px] font-medium transition-colors",
+                "text-[9px] font-medium transition-colors leading-tight",
                 isActive ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground/50"
               )}>
                 {s.label}

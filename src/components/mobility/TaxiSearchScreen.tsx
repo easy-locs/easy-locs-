@@ -45,15 +45,15 @@ export function TaxiSearchScreen() {
             type="button"
             onClick={() => setServiceLevel(sl.value)}
             className={cn(
-              "flex flex-col items-center gap-0.5 p-2 rounded-xl border-2 transition-all text-center min-w-0",
+              "flex flex-col items-center gap-0.5 p-2 rounded-xl border-2 transition-all text-center min-w-0 overflow-hidden",
               serviceLevel === sl.value
                 ? "border-primary bg-primary/5 text-primary"
                 : "border-border/40 bg-card text-muted-foreground"
             )}
           >
-            <span className="text-base">{sl.emoji}</span>
-            <span className="text-[10px] font-bold leading-tight truncate w-full">{sl.label}</span>
-            <span className="text-[8px] text-muted-foreground leading-tight truncate w-full">{sl.desc}</span>
+            <span className="text-base leading-none">{sl.emoji}</span>
+            <span className="text-[10px] font-bold leading-tight w-full text-center break-words">{sl.label}</span>
+            <span className="text-[8px] text-muted-foreground leading-tight w-full text-center break-words">{sl.desc}</span>
           </button>
         ))}
       </div>
@@ -66,15 +66,15 @@ export function TaxiSearchScreen() {
             type="button"
             onClick={() => setBookingMode(m)}
             className={cn(
-              "flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all flex items-center justify-center gap-1.5",
+              "flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all flex items-center justify-center gap-1.5 min-w-0",
               bookingMode === m
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border/40 bg-card text-muted-foreground"
             )}
           >
             {m === "now"
-              ? <><Car className="h-3.5 w-3.5" /> {tc("mobility.now") || "Now"}</>
-              : <><Calendar className="h-3.5 w-3.5" /> {tc("mobility.schedule") || "Schedule"}</>}
+              ? <><Car className="h-3.5 w-3.5 shrink-0" /> <span>{tc("mobility.now") || "Now"}</span></>
+              : <><Calendar className="h-3.5 w-3.5 shrink-0" /> <span>{tc("mobility.schedule") || "Schedule"}</span></>}
           </button>
         ))}
       </div>
