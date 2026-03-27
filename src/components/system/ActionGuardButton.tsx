@@ -1,6 +1,6 @@
 import React, { ButtonHTMLAttributes } from "react";
 import { runGuardedAction } from "@/lib/runtime/action-guard";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "react-router-dom";
 
 interface Props extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick"> {
