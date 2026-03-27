@@ -15,7 +15,7 @@ import { useLocationStore } from "@/stores/locationStore";
 import { useHomeSections } from "@/hooks/useHomeSections";
 import { getSmartCategories, getSmartHero, getTimeGreeting, type SmartCategory } from "@/lib/smart-home-engine";
 import { eventBus } from "@/lib/core/event-bus";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLivingPage } from "@/hooks/useLivingPage";
 import { useGlobalContext } from "@/hooks/useGlobalContext";
 import { staggerContainer, staggerItem, fadeSlideUp, TRANSITIONS } from "@/lib/motion/motion-system";
