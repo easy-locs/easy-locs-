@@ -1,11 +1,13 @@
 /**
  * useMessageSender — V2-ONLY canonical message sender.
  * Writes to chat_messages_v2 exclusively. No legacy path.
+ * Auto-creates V2 conversation if missing.
  */
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 
 const db = supabase as any;
 
@@ -92,10 +94,35 @@ export function useMessageSender(params: Params) {
 
     if (!thread || !newMessage.trim()) return;
 
-    const conversationId = thread.v2ConversationId;
+    let conversationId = thread.v2ConversationId;
+
+    // Auto-create V2 conversation if missing
     if (!conversationId) {
-      toast.error("No V2 conversation found for this thread.");
-      return;
+      const earlyAuthUserId = await resolveAuthUserId();
+      if (!earlyAuthUserId) {
+        toast.error("Authentication required.");
+        return;
+      }
+
+      if (thread.peerUserId) {
+        try {
+          const conv = await createOrGetDirectConversation({
+            myUserId: earlyAuthUserId,
+            myOrbitId: myOrbitId,
+            peerUserId: thread.peerUserId,
+            peerOrbitId: thread.peerOrbitId,
+          });
+          conversationId = conv.id;
+          onThreadUpdate(thread.id, { v2ConversationId: conv.id });
+        } catch (err: any) {
+          console.error("[useMessageSender] auto-create conversation failed:", err);
+          toast.error("Failed to create conversation");
+          return;
+        }
+      } else {
+        toast.error("No V2 conversation found for this thread.");
+        return;
+      }
     }
 
     const authUserId = await resolveAuthUserId();
