@@ -486,43 +486,44 @@ export function useConversationThreads() {
         console.warn("[comm-threads] deal_rooms query failed:", e);
       }
 
-      // ── Load unread counts & last messages ──
-      // Fetch org messages + direct messages where current user is sender/receiver
-      const directContextIds = Array.from(threadMap.values())
-        .filter(t => t.conversationType === "direct" && t.contextId)
-        .map(t => t.contextId!);
+      // ── Load last messages & unread counts (SCOPED — no global scan) ──
+      // Collect ALL conversation IDs that need message data
+      const allConvIds = Array.from(threadMap.values())
+        .filter(t => t.v2ConversationId || t.contextId)
+        .map(t => t.v2ConversationId || t.contextId!)
+        .filter(Boolean);
 
-      const msgQueries = [
-        (supabase as any)
-          .from("chat_messages_v2")
-          .select("conversation_id, body, created_at, sender_user_id, type, metadata")
-          .order("created_at", { ascending: false })
-          .limit(1000),
-      ];
+      const uniqueConvIds = [...new Set(allConvIds)];
+      const allMsgs: any[] = [];
 
-      // Also fetch direct messages that may be in a different org
-      if (directContextIds.length > 0) {
-        msgQueries.push(
-          (supabase as any)
-            .from("chat_messages_v2")
-            .select("conversation_id, body, created_at, sender_user_id, type, metadata")
-            .in("conversation_id", directContextIds)
-            .order("created_at", { ascending: false })
-            .limit(500)
+      if (uniqueConvIds.length > 0) {
+        // Batch in chunks of 50 to avoid URL length limits
+        const CHUNK = 50;
+        const chunks: string[][] = [];
+        for (let i = 0; i < uniqueConvIds.length; i += CHUNK) {
+          chunks.push(uniqueConvIds.slice(i, i + CHUNK));
+        }
+
+        const results = await Promise.all(
+          chunks.map(ids =>
+            (supabase as any)
+              .from("chat_messages_v2")
+              .select("conversation_id, body, created_at, sender_user_id, type, metadata, read_at")
+              .in("conversation_id", ids)
+              .order("created_at", { ascending: false })
+              .limit(500)
+          )
         );
-      }
 
-      const msgResults = await Promise.all(msgQueries);
-      // Merge and deduplicate by combining both result sets
-      const seenMsgIds = new Set<string>();
-      const allMsgs: typeof msgResults[0]["data"] = [];
-      for (const res of msgResults) {
-        if (res.data) {
-          for (const m of res.data) {
-            const key = `${m.context_id}-${m.created_at}-${m.sender_id}`;
-            if (!seenMsgIds.has(key)) {
-              seenMsgIds.add(key);
-              allMsgs.push(m);
+        const seenKeys = new Set<string>();
+        for (const res of results) {
+          if (res.data) {
+            for (const m of res.data) {
+              const key = `${m.conversation_id}-${m.created_at}`;
+              if (!seenKeys.has(key)) {
+                seenKeys.add(key);
+                allMsgs.push(m);
+              }
             }
           }
         }
