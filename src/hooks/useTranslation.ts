@@ -28,7 +28,7 @@ export function useTranslation(
           body: { text: msg.content, from_locale: msg.language_detected || "auto", to_locale: locale },
         });
         if (data?.translated) {
-          await supabase.from("messages").update({
+          await supabase.from("chat_messages_v2").update({
             translated_content: data.translated,
             translated_locale: locale,
           } as any).eq("id", msg.id);

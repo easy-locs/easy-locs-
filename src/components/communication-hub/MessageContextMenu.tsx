@@ -99,14 +99,14 @@ export default function MessageContextMenu({
           audio_duration_seconds: null,
           translated_content: null,
         };
-        const { error } = await supabase.from("messages").update(updatePayload as any).eq("id", message.msgId);
+        const { error } = await supabase.from("chat_messages_v2").update(updatePayload as any).eq("id", message.msgId);
         if (error) { toast.error("Failed to delete message"); setDeleting(false); return; }
         toast.success(type === "moderation"
           ? (t("orbit.message_deleted_mod") || "Message removed by moderation")
           : (t("orbit.message_deleted_all") || "Message deleted for everyone"));
       } else {
         if (message.isMe) {
-          const { error } = await supabase.from("messages").update({
+          const { error } = await supabase.from("chat_messages_v2").update({
             deleted_for_sender: true, deleted_at: new Date().toISOString(),
             deleted_by: currentUserId, deletion_reason: "self_hide",
           } as any).eq("id", message.msgId);
@@ -119,7 +119,7 @@ export default function MessageContextMenu({
             .single();
           const currentIds: string[] = (existing?.deleted_for_user_ids as string[] | null) || [];
           if (currentUserId && !currentIds.includes(currentUserId)) {
-            const { error } = await supabase.from("messages").update({
+            const { error } = await supabase.from("chat_messages_v2").update({
               deleted_for_user_ids: [...currentIds, currentUserId],
             } as any).eq("id", message.msgId);
             if (error) { toast.error("Failed to hide message"); setDeleting(false); return; }
@@ -159,7 +159,7 @@ export default function MessageContextMenu({
   const handleStar = async () => {
     haptic("light");
     const newStarred = !message.isStarred;
-    await supabase.from("messages").update({ starred: newStarred } as any).eq("id", message.msgId);
+    await supabase.from("chat_messages_v2").update({ starred: newStarred } as any).eq("id", message.msgId);
     onStarToggle?.(message.msgId, newStarred);
     toast.success(newStarred
       ? (t("orbit.message_starred") || "Message starred")
@@ -182,7 +182,7 @@ export default function MessageContextMenu({
     if (!editText.trim() || editText === message.content) { setEditMode(false); return; }
     setSaving(true);
     haptic("medium");
-    const { error } = await supabase.from("messages").update({
+    const { error } = await supabase.from("chat_messages_v2").update({
       content: editText.trim(),
       edited_at: new Date().toISOString(),
       edit_history: [{ content: message.content, edited_at: new Date().toISOString() }],

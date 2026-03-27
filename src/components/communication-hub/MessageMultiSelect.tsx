@@ -56,7 +56,7 @@ export default function MessageMultiSelectToolbar({
       for (const id of ids) {
         const msg = messages.find(m => m.id === id);
         if (msg && msg.sender_id === currentUserId) {
-          await supabase.from("messages").update({
+          await supabase.from("chat_messages_v2").update({
             deleted_for_sender: true,
             deleted_at: new Date().toISOString(),
             deleted_by: currentUserId,
@@ -70,7 +70,7 @@ export default function MessageMultiSelectToolbar({
             .single();
           const currentIds: string[] = (existing?.deleted_for_user_ids as string[] | null) || [];
           if (currentUserId && !currentIds.includes(currentUserId)) {
-            await supabase.from("messages").update({
+            await supabase.from("chat_messages_v2").update({
               deleted_for_user_ids: [...currentIds, currentUserId],
             } as any).eq("id", id);
           }
@@ -94,7 +94,7 @@ export default function MessageMultiSelectToolbar({
     const ids = Array.from(selectedIds);
     try {
       for (const id of ids) {
-        await supabase.from("messages").update({
+        await supabase.from("chat_messages_v2").update({
           deleted_for_all: true,
           deleted_at: new Date().toISOString(),
           deleted_by: currentUserId,
