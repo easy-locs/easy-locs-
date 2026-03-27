@@ -1,4 +1,11 @@
 /**
+ * LEGACY ISOLATED MODULE
+ * --------------------------------------------
+ * This file is intentionally isolated from Orbit V2+ core.
+ * Do not import Orbit core messaging services here.
+ * Do not mix with canonical V2+ Orbit chain.
+ * Migrate later as its own domain-specific module.
+ *
  * LiveDeliveryChat — Real-time delivery chat using conversation_threads + messages.
  * Replaces mock data with actual DB-backed messaging via Supabase Realtime.
  * PASS100: MOCK → REAL

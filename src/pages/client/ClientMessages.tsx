@@ -1,3 +1,11 @@
+/**
+ * LEGACY ISOLATED MODULE
+ * --------------------------------------------
+ * This file is intentionally isolated from Orbit V2+ core.
+ * Do not import Orbit core messaging services here.
+ * Do not mix with canonical V2+ Orbit chain.
+ * Migrate later as its own domain-specific module.
+ */
 import { useState, useEffect, useRef, useMemo } from "react";
 import DealRoomPanel from "@/components/communication/DealRoomPanel";
 import { useSearchParams } from "react-router-dom";
