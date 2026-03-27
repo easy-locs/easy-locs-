@@ -15,7 +15,7 @@ import { useLocationStore } from "@/stores/locationStore";
 import { useHomeSections } from "@/hooks/useHomeSections";
 import { getSmartCategories, getSmartHero, getTimeGreeting, type SmartCategory } from "@/lib/smart-home-engine";
 import { eventBus } from "@/lib/core/event-bus";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLivingPage } from "@/hooks/useLivingPage";
 import { useGlobalContext } from "@/hooks/useGlobalContext";
 import { staggerContainer, staggerItem, fadeSlideUp, TRANSITIONS } from "@/lib/motion/motion-system";
@@ -58,6 +58,24 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
 
   return (
     <div className="relative mb-4 overflow-hidden rounded-[1.75rem] px-4 pb-3 pt-3" style={{ background: hero.gradient }}>
+      {/* Animated shimmer overlay */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "linear-gradient(105deg, transparent 35%, hsla(0,0%,100%,0.06) 50%, transparent 65%)",
+        }}
+        animate={{ x: ["-120%", "200%"] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", repeatDelay: 3 }}
+      />
+      
+      {/* Ambient glow */}
+      <motion.div
+        className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, hsla(0,0%,100%,0.1) 0%, transparent 70%)" }}
+        animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      />
+
       {/* Location + Notification row */}
       <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
         <button onClick={onLocationTap} className="flex min-w-0 max-w-[78%] items-center gap-2 active:scale-95 transition-transform">
@@ -72,19 +90,45 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
       {/* Title + emoji */}
       <div className="relative z-10 mb-2 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 pr-1">
-          <h2 className="line-clamp-2 text-base font-black leading-snug text-white text-balance">{hero.title}</h2>
-          <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-white/70">{hero.subtitle}</p>
+          <motion.h2
+            className="line-clamp-2 text-base font-black leading-snug text-white text-balance"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {hero.title}
+          </motion.h2>
+          <motion.p
+            className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-white/70"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 }}
+          >
+            {hero.subtitle}
+          </motion.p>
         </div>
-        <span className="text-2xl select-none shrink-0 opacity-60">{hero.emoji}</span>
+        <motion.span
+          className="text-2xl select-none shrink-0"
+          animate={{ scale: [1, 1.15, 1], rotate: [0, 5, -5, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          {hero.emoji}
+        </motion.span>
       </div>
 
       {/* CTA */}
-      <Link
-        to={hero.route}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-[11px] font-bold active:bg-white/30 transition-colors relative z-10 mb-2"
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
       >
-        {hero.cta} <ChevronRight className="h-3 w-3" />
-      </Link>
+        <Link
+          to={hero.route}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold active:bg-white/30 transition-colors relative z-10 mb-2 border border-white/10"
+        >
+          {hero.cta} <ChevronRight className="h-3 w-3" />
+        </Link>
+      </motion.div>
 
       {/* Search bar inside banner */}
       <div className="relative z-10">
@@ -267,9 +311,15 @@ export default function SmartHome() {
   const _living = useLivingPage({ country: countryCode, city: city || undefined, maxSections: 6 });
   const globalCtx = useGlobalContext({ country: countryCode, city: city || undefined });
   const contextBanners = useMemo(
-    () => getTopBanners({ country: countryCode, city, hour: globalCtx.localHour }, 1),
+    () => getTopBanners({ country: countryCode, city, hour: globalCtx.localHour }, 3),
     [countryCode, city, globalCtx.localHour],
   );
+  const [activeBannerIdx, setActiveBannerIdx] = useState(0);
+  useEffect(() => {
+    if (contextBanners.length <= 1) return;
+    const iv = setInterval(() => setActiveBannerIdx(i => (i + 1) % contextBanners.length), 5000);
+    return () => clearInterval(iv);
+  }, [contextBanners.length]);
 
   return (
     <div className="w-full min-w-0 pb-6">
@@ -295,30 +345,80 @@ export default function SmartHome() {
           </motion.div>
         </div>
 
-        {/* ═══ Context Banner ═══ */}
+        {/* ═══ Context Banners — Animated carousel ═══ */}
         {contextBanners.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={TRANSITIONS.smooth}
-            className="mb-4"
-          >
-            <Link
-              to={contextBanners[0].route || "/radar"}
-              className="block rounded-2xl border border-border/15 p-4 active:scale-[0.98] transition-transform"
-              style={{ background: contextBanners[0].gradient }}
-            >
-              <p className="text-sm font-bold leading-snug text-foreground">
-                {contextBanners[0].emoji} {contextBanners[0].title}
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">{contextBanners[0].subtitle}</p>
-              {contextBanners[0].cta && (
-                <span className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                  {contextBanners[0].cta} <ChevronRight className="h-3.5 w-3.5" />
-                </span>
-              )}
-            </Link>
-          </motion.div>
+          <div className="mb-4 space-y-2">
+            <AnimatePresence mode="wait">
+              {contextBanners.slice(activeBannerIdx, activeBannerIdx + 1).map((banner) => (
+                <motion.div
+                  key={banner.id}
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+                >
+                  <Link
+                    to={banner.route || "/radar"}
+                    className="relative block overflow-hidden rounded-2xl border border-border/15 p-4 active:scale-[0.98] transition-transform"
+                    style={{ background: banner.gradient }}
+                  >
+                    {/* Animated glow overlay */}
+                    {banner.glowColor && (
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `radial-gradient(ellipse at 80% 20%, ${banner.glowColor}, transparent 65%)`,
+                        }}
+                        animate={{ opacity: [0.4, 0.8, 0.4] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      />
+                    )}
+
+                    {/* Shimmer line */}
+                    {banner.animation === "shimmer" && (
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: "linear-gradient(105deg, transparent 40%, hsla(0,0%,100%,0.08) 50%, transparent 60%)",
+                        }}
+                        animate={{ x: ["-100%", "200%"] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
+                      />
+                    )}
+
+                    <div className="relative z-10">
+                      <p className="text-sm font-extrabold leading-snug text-white drop-shadow-sm">
+                        {banner.emoji} {banner.title}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-white/75 line-clamp-2 font-medium">{banner.subtitle}</p>
+                      {banner.cta && (
+                        <span className="mt-2.5 inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
+                          {banner.cta} <ChevronRight className="h-3 w-3" />
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Dots indicator */}
+            {contextBanners.length > 1 && (
+              <div className="flex items-center justify-center gap-1.5">
+                {contextBanners.map((b, i) => (
+                  <button
+                    key={b.id}
+                    onClick={() => setActiveBannerIdx(i)}
+                    className="h-1.5 rounded-full transition-all duration-300"
+                    style={{
+                      width: i === activeBannerIdx ? 16 : 6,
+                      background: i === activeBannerIdx ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.25)",
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {/* ═══ BOOST SLOT ═══ */}
