@@ -34,7 +34,7 @@ const DOMAIN_EMOJI: Record<string, string> = {
   system: "⚡",
 };
 
-const NotificationBell = () => {
+const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t, locale } = useI18n();
