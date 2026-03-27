@@ -52,6 +52,15 @@ import { OrbitJumpToBottomButton } from "@/components/orbit/OrbitJumpToBottomBut
 import { OrbitComposerTopState } from "@/components/orbit/OrbitComposerTopState";
 import { OrbitCallMiniBar } from "@/components/orbit/OrbitCallMiniBar";
 import { OrbitMediaBar } from "@/components/orbit/OrbitMediaBar";
+import { useOrbitDevicePermissions } from "@/hooks/useOrbitDevicePermissions";
+import { useOrbitCallState } from "@/hooks/useOrbitCallState";
+import { useOrbitCallActions } from "@/hooks/useOrbitCallActions";
+import { useOrbitCallHistory } from "@/hooks/useOrbitCallHistory";
+import { useOrbitCallRealtime } from "@/hooks/useOrbitCallRealtime";
+import { OrbitIncomingCallBar } from "@/components/orbit/OrbitIncomingCallBar";
+import { OrbitCallControls } from "@/components/orbit/OrbitCallControls";
+import { OrbitCallMiniPlayer } from "@/components/orbit/OrbitCallMiniPlayer";
+import { OrbitCallPermissionBanner } from "@/components/orbit/OrbitCallPermissionBanner";
 
 // V2 only — no legacy SYSTEM_SENDER_ID needed
 
