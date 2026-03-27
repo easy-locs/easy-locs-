@@ -1,21 +1,21 @@
 /**
- * Notification handler — listens to REAL platform events and writes to notifications_v2.
- * CANONICAL WRITE PATH — replaces legacy app_notifications writer.
+ * Notification handler — listens to canonical platform events (colon notation)
+ * and writes to app_notifications via insertNotification.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
 import { supabase } from "@/integrations/supabase/client";
 import { insertNotification } from "@/lib/notifications-v2/notification-service";
 
 // ── Message sent → notify receiver ──
-platformBus.on("message.sent", (event) => {
+platformBus.on("orbit:message_sent", (event) => {
   const msg = event.payload as any;
   const message = msg?.message;
   if (!message) return;
-  console.log("[notification-v2] message.sent event captured", message.conversationId);
+  console.log("[notification-handler] orbit:message_sent captured", message.conversationId);
 });
 
 // ── Wallet transaction created → notify user ──
-platformBus.on("wallet.transaction.created", (event) => {
+platformBus.on("wallet:transaction_created", (event) => {
   const { transaction } = event.payload as any;
   if (!transaction) return;
   supabase.auth.getUser().then(({ data }) => {
@@ -34,7 +34,7 @@ platformBus.on("wallet.transaction.created", (event) => {
 });
 
 // ── Payment success → notify ──
-platformBus.on("wallet.payment.success", (event) => {
+platformBus.on("wallet:payment_success", (event) => {
   const p = event.payload as any;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
@@ -53,7 +53,7 @@ platformBus.on("wallet.payment.success", (event) => {
 });
 
 // ── Payment failed → notify ──
-platformBus.on("wallet.payment.failed", (event) => {
+platformBus.on("wallet:payment_failed", (event) => {
   const p = event.payload as any;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
@@ -72,7 +72,7 @@ platformBus.on("wallet.payment.failed", (event) => {
 });
 
 // ── Booking events ──
-platformBus.on("booking.requested", (event) => {
+platformBus.on("booking:requested", (event) => {
   const { booking } = event.payload as any;
   if (!booking) return;
   supabase.auth.getUser().then(({ data }) => {
@@ -90,7 +90,7 @@ platformBus.on("booking.requested", (event) => {
   });
 });
 
-platformBus.on("booking.confirmed", (event) => {
+platformBus.on("booking:confirmed", (event) => {
   const p = event.payload as any;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
@@ -107,7 +107,7 @@ platformBus.on("booking.confirmed", (event) => {
   });
 });
 
-platformBus.on("booking.cancelled", (event) => {
+platformBus.on("booking:cancelled", (event) => {
   const p = event.payload as any;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
@@ -158,7 +158,7 @@ platformBus.on("ORDER_COMPLETED", (event) => {
 });
 
 // ── QR payment completed ──
-platformBus.on("qr.payment.completed", (event) => {
+platformBus.on("qr:payment_completed", (event) => {
   const p = event.payload as any;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
@@ -175,4 +175,4 @@ platformBus.on("qr.payment.completed", (event) => {
   });
 });
 
-console.log("[notification-v2.handler] Registered on platformBus — writing to notifications_v2");
+console.log("[notification-handler] Registered on platformBus — colon notation");
