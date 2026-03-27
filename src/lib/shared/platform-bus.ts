@@ -422,7 +422,7 @@ export function installPlatformReactions(): () => void {
     "radar.location.shared": "radar:location_shared",
     "radar.pin.selected": "radar:pin_selected",
     "marketplace.merchant.live": "marketplace:provider_went_live",
-    "marketplace.contact.opened": "marketplace:listing_published",
+    "marketplace.contact.opened": "marketplace:booking_created",
   };
 
   unsubs.push(
