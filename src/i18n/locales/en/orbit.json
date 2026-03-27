@@ -1,0 +1,21 @@
+{
+  "message": "Message",
+  "send": "Send",
+  "search": "Search",
+  "searching": "Searching...",
+  "chat": "Chat",
+  "audio": "Audio",
+  "video": "Video",
+  "voice": "Voice",
+  "stop": "Stop",
+  "close": "Close",
+  "forward_message": "Forward message",
+  "attachment_sent": "Attachment sent.",
+  "voice_sent": "Voice message sent.",
+  "location_shared": "Location shared.",
+  "message_deleted": "Message deleted.",
+  "message_edited": "Message edited.",
+  "message_forwarded": "Message forwarded.",
+  "queued": "Queued — will send when connection returns.",
+  "typing": "typing..."
+}
