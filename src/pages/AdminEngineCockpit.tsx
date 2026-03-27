@@ -1,5 +1,5 @@
 /**
- * Admin Engine Cockpit — Real-time engine health, logs, kill switches, blocked runs.
+ * Admin Engine Cockpit — Real-time engine health, logs, kill switches, blocked runs, browser repair.
  */
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,10 +10,38 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Activity, AlertTriangle, CheckCircle2, Clock, Power, RefreshCw,
-  Shield, Zap, XCircle, Timer, Database, ShieldAlert
+  Shield, Zap, XCircle, Timer, Database, ShieldAlert, Bug, Wrench
 } from "lucide-react";
 
 const db = supabase as any;
+
+interface BrowserRepairRun {
+  id: string;
+  started_at: string;
+  finished_at: string | null;
+  status: string;
+  scenario_count: number;
+  pass_count: number;
+  fail_count: number;
+  fixed_count: number;
+  warning_count: number;
+  duration_ms: number | null;
+  report_json: any;
+}
+
+interface BrowserRepairIssue {
+  id: string;
+  run_id: string;
+  page_key: string;
+  flow_key: string;
+  severity: string;
+  issue_type: string;
+  summary: string;
+  auto_fix_applied: boolean;
+  fix_summary: string | null;
+  verification_status: string;
+  created_at: string;
+}
 
 interface EngineRow {
   engine_name: string;
@@ -74,18 +102,24 @@ export default function AdminEngineCockpit() {
   const [logs, setLogs] = useState<RunLog[]>([]);
   const [scrapeRuns, setScrapeRuns] = useState<ScrapeRun[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "real" | "noop" | "error" | "blocked">("all");
+  const [filter, setFilter] = useState<"all" | "real" | "noop" | "error" | "blocked" | "browser_repair">("all");
   const [selectedEngine, setSelectedEngine] = useState<string | null>(null);
+  const [repairRuns, setRepairRuns] = useState<BrowserRepairRun[]>([]);
+  const [repairIssues, setRepairIssues] = useState<BrowserRepairIssue[]>([]);
 
   const fetchData = useCallback(async () => {
-    const [{ data: eng }, { data: runLogs }, { data: scrRuns }] = await Promise.all([
+    const [{ data: eng }, { data: runLogs }, { data: scrRuns }, { data: brRuns }, { data: brIssues }] = await Promise.all([
       db.from("engine_supervisor").select("*").order("engine_name"),
       db.from("engine_run_logs").select("*").order("started_at", { ascending: false }).limit(300),
       db.from("merchant_scrape_runs").select("*").order("started_at", { ascending: false }).limit(20),
+      db.from("browser_repair_runs").select("*").order("started_at", { ascending: false }).limit(20),
+      db.from("browser_repair_issues").select("*").order("created_at", { ascending: false }).limit(100),
     ]);
     if (eng) setEngines(eng);
     if (runLogs) setLogs(runLogs);
     if (scrRuns) setScrapeRuns(scrRuns);
+    if (brRuns) setRepairRuns(brRuns);
+    if (brIssues) setRepairIssues(brIssues);
     setLoading(false);
   }, []);
 
@@ -126,9 +160,8 @@ export default function AdminEngineCockpit() {
     if (filter === "real") return (e.total_rows_affected ?? 0) > 0 || (e.last_duration_ms ?? 0) > 100;
     if (filter === "noop") return (e.last_duration_ms ?? 0) === 0;
     if (filter === "error") return e.status === "error" || e.consecutive_failures > 0;
-    if (filter === "blocked") {
-      return blockedLogs.some(l => l.engine_name === e.engine_name);
-    }
+    if (filter === "blocked") return blockedLogs.some(l => l.engine_name === e.engine_name);
+    if (filter === "browser_repair") return e.engine_name === "browser-user-repair-engine";
     return true;
   });
 
@@ -256,9 +289,87 @@ export default function AdminEngineCockpit() {
         </Card>
       )}
 
+      {/* Browser Repair Panel */}
+      {repairRuns.length > 0 && (
+        <Card className="border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Bug className="h-4 w-4 text-primary" />
+              Browser User Repair Engine
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-xs mb-3">
+              {(() => {
+                const latest = repairRuns[0];
+                return <>
+                  <div className="bg-muted/30 rounded p-2">
+                    <p className="text-[10px] text-muted-foreground">Last Run</p>
+                    <p className="font-medium">{timeAgo(latest.started_at)}</p>
+                  </div>
+                  <div className="bg-muted/30 rounded p-2">
+                    <p className="text-[10px] text-muted-foreground">Scenarios</p>
+                    <p className="font-medium">{latest.scenario_count}</p>
+                  </div>
+                  <div className="bg-muted/30 rounded p-2">
+                    <p className="text-[10px] text-muted-foreground">Pass</p>
+                    <p className="font-medium text-green-500">{latest.pass_count}</p>
+                  </div>
+                  <div className="bg-muted/30 rounded p-2">
+                    <p className="text-[10px] text-muted-foreground">Fail</p>
+                    <p className="font-medium text-red-500">{latest.fail_count}</p>
+                  </div>
+                  <div className="bg-muted/30 rounded p-2">
+                    <p className="text-[10px] text-muted-foreground">Fixed</p>
+                    <p className="font-medium text-blue-500">{latest.fixed_count}</p>
+                  </div>
+                  <div className="bg-muted/30 rounded p-2">
+                    <p className="text-[10px] text-muted-foreground">Duration</p>
+                    <p className="font-medium">{latest.duration_ms ?? 0}ms</p>
+                  </div>
+                </>;
+              })()}
+            </div>
+
+            {/* Recent issues */}
+            {repairIssues.length > 0 && (
+              <div>
+                <p className="text-xs font-medium mb-1 flex items-center gap-1"><Wrench className="h-3 w-3" /> Recent Issues ({repairIssues.length})</p>
+                <ScrollArea className="h-[160px]">
+                  <div className="space-y-1">
+                    {repairIssues.slice(0, 20).map(issue => (
+                      <div key={issue.id} className={`rounded p-2 text-[10px] space-y-0.5 border ${
+                        issue.severity === "critical" ? "bg-red-500/5 border-red-500/20" :
+                        issue.severity === "warning" ? "bg-orange-500/5 border-orange-500/20" :
+                        "bg-muted/20 border-border/30"
+                      }`}>
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium flex items-center gap-1">
+                            {issue.severity === "critical" ? <XCircle className="h-2.5 w-2.5 text-red-500" /> :
+                             issue.severity === "warning" ? <AlertTriangle className="h-2.5 w-2.5 text-orange-500" /> :
+                             <CheckCircle2 className="h-2.5 w-2.5 text-muted-foreground" />}
+                            {issue.page_key} / {issue.flow_key}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {issue.auto_fix_applied && <Badge className="text-[8px] px-1 py-0 bg-blue-500/20 text-blue-500">AUTO-FIX</Badge>}
+                            <Badge variant="outline" className="text-[8px] px-1 py-0">{issue.issue_type}</Badge>
+                          </div>
+                        </div>
+                        <p className="text-muted-foreground">{issue.summary}</p>
+                        {issue.fix_summary && <p className="text-blue-400">Fix: {issue.fix_summary}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Filter */}
       <div className="flex gap-2 flex-wrap">
-        {(["all", "real", "noop", "error", "blocked"] as const).map(f => (
+        {(["all", "real", "noop", "error", "blocked", "browser_repair"] as const).map(f => (
           <Button
             key={f}
             variant={filter === f ? "default" : "outline"}
@@ -270,6 +381,7 @@ export default function AdminEngineCockpit() {
               : f === "real" ? `Real (${realCount})`
               : f === "error" ? `Errors (${errored})`
               : f === "blocked" ? `Blocked (${blockedCount})`
+              : f === "browser_repair" ? `Browser Repair`
               : `All (${total})`}
           </Button>
         ))}
