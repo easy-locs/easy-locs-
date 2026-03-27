@@ -76,5 +76,11 @@
   "read_receipts": "Read receipts",
   "typing_indicators": "Typing indicators",
   "ghost_mode": "Ghost mode",
-  "disappearing_messages": "Disappearing messages"
+  "disappearing_messages": "Disappearing messages",
+  "contacts_directory": "Contacts Directory",
+  "search_contacts": "Search contacts",
+  "delete_contact": "Delete",
+  "no_contacts_yet": "No contacts yet",
+  "new_orbit_invite": "New Orbit invite",
+  "invite_sent": "Invite sent"
 }
