@@ -53,5 +53,11 @@
   "device_permissions_required": "Device permissions required",
   "retry_mic": "Retry mic",
   "retry_camera": "Retry camera",
-  "missed_call": "Missed call"
+  "missed_call": "Missed call",
+  "view_once_on": "View once on",
+  "view_once_off": "View once off",
+  "send_attachments": "Send attachments",
+  "attachment_send_failed": "Attachment send failed",
+  "remove": "Remove",
+  "download": "Download"
 }
