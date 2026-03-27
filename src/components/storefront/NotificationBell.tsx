@@ -1,6 +1,7 @@
 /**
  * NotificationBell — Connected to canonical notification_v2 store.
  * Shows real unread count from Orbit/payment/system notifications.
+ * Listens to platformBus NOTIFICATIONS_REFRESH for cross-module sync.
  */
 import { Bell, BellDot } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { haptic } from "@/lib/haptics";
 import { useNavigate } from "react-router-dom";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { APP_EVENTS } from "@/lib/platform/events";
 
 interface Props {
   onOpen?: () => void;
@@ -22,13 +25,21 @@ export default function NotificationBell({ onOpen }: Props) {
   const hydrate = useNotificationV2Store((s) => s.hydrate);
   const startRealtime = useNotificationV2Store((s) => s.startRealtime);
   const stopRealtime = useNotificationV2Store((s) => s.stopRealtime);
-  const markAllAsRead = useNotificationV2Store((s) => s.markAllAsRead);
 
   useEffect(() => {
     if (!user?.id) return;
     if (!hydrated) hydrate(user.id);
     startRealtime(user.id);
-    return () => stopRealtime();
+
+    // Cross-module sync: wallet/orbit/marketplace events trigger notification rehydrate
+    const unsub = platformBus.on(APP_EVENTS.NOTIFICATIONS_REFRESH, () => {
+      hydrate(user.id);
+    });
+
+    return () => {
+      stopRealtime();
+      unsub();
+    };
   }, [user?.id]);
 
   const handleClick = () => {
