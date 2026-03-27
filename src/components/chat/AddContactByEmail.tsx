@@ -113,15 +113,17 @@ export function AddContactByEmail(props: {
   };
 
   const handleOpenChat = async () => {
-    if (!myOrbit || !result) return;
+    if (!myOrbit || !result || !user) return;
     setOpening(true);
 
     try {
       const conversation = await createOrGetDirectConversation({
         myOrbitId: myOrbit.orbitId,
+        myUserId: user.id,
         myEmail: myOrbit.email ?? null,
         myDisplayName: myOrbit.displayName ?? null,
         peerOrbitId: result.orbit_id,
+        peerUserId: result.id,
         peerEmail: result.email,
         peerDisplayName: result.display_name,
       });
