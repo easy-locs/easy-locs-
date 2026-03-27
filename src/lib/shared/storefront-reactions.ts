@@ -200,7 +200,5 @@ export function installStorefrontReactions(): () => void {
       ]);
     })
   );
-  // Duplicate storefront:order_completed and storefront:order_placed listeners removed — already registered above (lines 29-90)
-
   return () => unsubs.forEach(fn => fn());
 }
