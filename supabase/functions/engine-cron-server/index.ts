@@ -1607,6 +1607,15 @@ Deno.serve(async (req) => {
     }, "standard");
 
     // ══════════════════════════════════════════════════
+    // PHASE 15: BROWSER USER REPAIR ENGINE
+    // ══════════════════════════════════════════════════
+    await runEngine("browser-user-repair-engine", async () => {
+      const result = await callFunction("browser-user-repair-engine");
+      if (result?.error) throw new Error(result.error);
+      return { scenarios: result?.scenarios ?? 0, pass: result?.pass ?? 0, fail: result?.fail ?? 0, fixed: result?.fixed ?? 0 };
+    }, "critical");
+
+    // ══════════════════════════════════════════════════
     // MODULE HEALTH UPDATE
     // ══════════════════════════════════════════════════
     const moduleMapping: Record<string, string[]> = {
@@ -1623,6 +1632,8 @@ Deno.serve(async (req) => {
       chat: ["staff-sync", "call-log-cleanup"],
       payments: ["coupon-expiration", "qr-session-cleanup", "finance-reconciliation"],
       food_pipeline: ["deliveroo-food-intake-engine", "food-normalizer-engine", "food-menu-builder-engine", "food-visual-clean-engine", "food-visibility-gate-engine", "food-publish-engine", "food-rescrape-monitor-engine", "food-audit-engine"],
+      hotel_pipeline: ["hotel-inventory-normalizer", "publish-gate-hotel"],
+      browser_repair: ["browser-user-repair-engine"],
     };
 
     for (const [mod, engines] of Object.entries(moduleMapping)) {
