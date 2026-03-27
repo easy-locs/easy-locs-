@@ -1,4 +1,11 @@
 /**
+ * LEGACY ISOLATED MODULE
+ * --------------------------------------------
+ * This file is intentionally isolated from Orbit V2+ core.
+ * Do not import Orbit core messaging services here.
+ * Do not mix with canonical V2+ Orbit chain.
+ * Migrate later as its own domain-specific module.
+ *
  * InMissionChat — Real-time chat between seller and driver during active delivery.
  * PASS82-U: In-Mission Chat
  */
