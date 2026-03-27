@@ -27,6 +27,9 @@ import { GeoBoot } from "@/lib/geo/GeoBoot";
 import { PermissionBootstrap } from "@/components/boot/PermissionBootstrap";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { AppCrashBoundary } from "@/components/system/AppCrashBoundary";
+import { SystemHealthBanner } from "@/components/system/SystemHealthBanner";
+import { useAppHealthCheck } from "@/hooks/useAppHealthCheck";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 import BrowserTelemetryProvider from "@/components/system/BrowserTelemetryProvider";
 import CountryGuard from "@/components/dashboard/CountryGuard";
@@ -654,7 +657,13 @@ function MarketplaceHomeRouter() {
   return <Suspense fallback={<PageLoader />}><OrbitAppShell><OrbitHome /></OrbitAppShell></Suspense>;
 }
 
+const AppHealthGuard = () => {
+  const health = useAppHealthCheck();
+  return <SystemHealthBanner db={health.db} auth={health.auth} realtime={health.realtime} />;
+};
+
 const App = () => (
+  <AppCrashBoundary>
   <ChunkRecoveryBoundary>
   <ErrorBoundary>
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
@@ -674,6 +683,7 @@ const App = () => (
            <BrandSuccessFlash />
              
              
+            <AppHealthGuard />
             <OrbitSessionGuard />
            <RealtimeHubGuard />
            <NotificationsRealtimeGuard />
@@ -1269,6 +1279,7 @@ const App = () => (
   </ThemeProvider>
   </ErrorBoundary>
   </ChunkRecoveryBoundary>
+  </AppCrashBoundary>
 );
 
 export default App;
