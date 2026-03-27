@@ -84,7 +84,7 @@ export const useCloseFlowStore = create<CloseFlowState>((set, get) => ({
     const { active } = get();
     if (!active) return;
     if (import.meta.env.DEV) console.log(`[close-flow] Completed: ${active.domain}/${active.entityId}`);
-    platformBus.emit(`${active.domain}:flow_closed`, { entityId: active.entityId });
+    platformBus.emit(`${active.domain}:flow_closed` as any, { entityId: active.entityId }, "system");
     set({ active: null });
   },
 
