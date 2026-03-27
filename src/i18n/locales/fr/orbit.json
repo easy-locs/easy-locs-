@@ -76,5 +76,11 @@
   "read_receipts": "Accusés de lecture",
   "typing_indicators": "Indicateurs de saisie",
   "ghost_mode": "Mode fantôme",
-  "disappearing_messages": "Messages éphémères"
+  "disappearing_messages": "Messages éphémères",
+  "contacts_directory": "Répertoire des contacts",
+  "search_contacts": "Rechercher des contacts",
+  "delete_contact": "Supprimer",
+  "no_contacts_yet": "Aucun contact",
+  "new_orbit_invite": "Nouvelle invitation Orbit",
+  "invite_sent": "Invitation envoyée"
 }
