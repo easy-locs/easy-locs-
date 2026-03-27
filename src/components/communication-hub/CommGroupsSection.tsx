@@ -462,7 +462,7 @@ export default function CommGroupsSection() {
                   )}
                   {!isMine && (
                     <span className="text-[10px] font-semibold block mb-0.5" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
-                      {msg.sender_id.slice(0, 8)}
+                      {msg.sender_name || "Member"}
                     </span>
                   )}
                   <p>{msg.content}</p>
