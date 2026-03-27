@@ -10,9 +10,11 @@ const db = supabase as any;
  */
 export async function createOrGetDirectConversation(input: {
   myOrbitId: string;
+  myUserId?: string | null;
   myEmail?: string | null;
   myDisplayName?: string | null;
   peerOrbitId: string;
+  peerUserId?: string | null;
   peerEmail?: string | null;
   peerDisplayName?: string | null;
 }): Promise<ConversationRow> {
@@ -23,12 +25,14 @@ export async function createOrGetDirectConversation(input: {
 
   const p1: ConversationParticipant = {
     orbitId: input.myOrbitId,
+    userId: input.myUserId ?? null,
     email: input.myEmail ?? null,
     displayName: input.myDisplayName ?? null,
   };
 
   const p2: ConversationParticipant = {
     orbitId: input.peerOrbitId,
+    userId: input.peerUserId ?? null,
     email: input.peerEmail ?? null,
     displayName: input.peerDisplayName ?? null,
   };
