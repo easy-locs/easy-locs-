@@ -234,6 +234,7 @@ Deno.serve(async (req) => {
       let menusSynced = 0;
 
       let storefrontsCreated = 0;
+      let firewallBlocked = 0;
 
       for (const seed of (seeds as any[]) ?? []) {
         if (seed.is_flagged) continue;
