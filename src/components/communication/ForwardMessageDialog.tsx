@@ -1,7 +1,6 @@
 /**
- * ForwardMessageDialog — Pick a thread to forward a message to.
- * Two-step flow: select conversation → confirm & send.
- * Queries conversation_threads for reliable thread list.
+ * ForwardMessageDialog — V2+ canonical forward dialog.
+ * Backward-compatible with both old (messageContent/messageId) and new (message/threads) APIs.
  */
 import { useState, useEffect } from "react";
 import {
@@ -14,6 +13,16 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { platformBus } from "@/lib/shared/platform-bus";
 
+const db = supabase as any;
+
+interface TargetThread {
+  id: string;
+  context_id: string;
+  context_type: string;
+  org_id: string;
+  display_name: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -23,14 +32,6 @@ interface Props {
   userEmail: string;
   userName: string;
   currentContextId: string;
-}
-
-interface TargetThread {
-  id: string;
-  context_id: string;
-  context_type: string;
-  org_id: string;
-  display_name: string;
 }
 
 export default function ForwardMessageDialog({
@@ -50,9 +51,7 @@ export default function ForwardMessageDialog({
 
     (async () => {
       try {
-        // Query conversation_threads where this user is a participant
-        // Load V2 conversations for forward targets
-        const { data: convRows, error: convErr } = await (supabase as any)
+        const { data: convRows, error: convErr } = await db
           .from("conversations_v2")
           .select("id, type, title, participants, metadata, last_message_at")
           .order("last_message_at", { ascending: false })
@@ -84,15 +83,14 @@ export default function ForwardMessageDialog({
       }
       setLoading(false);
     })();
-  }, [open, userEmail, userId, currentContextId, t]);
+  }, [open, userId, currentContextId, t]);
 
   const handleForward = async () => {
     if (!selectedThread) return;
     setForwarding(true);
     setError(null);
     try {
-      // V2 canonical forward
-      const { error: insertErr } = await (supabase as any).from("chat_messages_v2").insert({
+      const { error: insertErr } = await db.from("chat_messages_v2").insert({
         conversation_id: selectedThread.context_id,
         sender_user_id: userId,
         sender_orbit_id: `orbit_${userId.slice(0, 12)}`,
@@ -102,8 +100,7 @@ export default function ForwardMessageDialog({
       });
       if (insertErr) throw insertErr;
 
-      // Update conversation last_message_at
-      await (supabase as any)
+      await db
         .from("conversations_v2")
         .update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() })
         .eq("id", selectedThread.context_id);
@@ -111,7 +108,6 @@ export default function ForwardMessageDialog({
       toast.success(
         (t("chat.forwarded_to") || "Forwarded to") + " " + (selectedThread.display_name || t("chat.conversation") || "conversation")
       );
-      // Platform bus: forwarded message sent
       platformBus.emit("orbit:message_sent", {
         threadId: selectedThread.id,
         contextId: selectedThread.context_id,
@@ -140,7 +136,7 @@ export default function ForwardMessageDialog({
               : (t("chat.select_conversation") || "Select a conversation to forward to")}
           </DialogDescription>
         </DialogHeader>
-        
+
         {/* Message preview */}
         <div className="px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
           <p className="text-xs text-muted-foreground mb-0.5">
@@ -149,11 +145,6 @@ export default function ForwardMessageDialog({
               : (t("chat.message_label") || "Message:")}
           </p>
           <p className="text-sm line-clamp-4 whitespace-pre-line">{messageContent}</p>
-          {messageContent.startsWith("📨") && (
-            <p className="text-[10px] text-muted-foreground/70 mt-1.5 italic">
-              {t("chat.bulk_forward_note") || "Multiple messages will be sent as a single combined message"}
-            </p>
-          )}
         </div>
 
         {/* Error banner */}
