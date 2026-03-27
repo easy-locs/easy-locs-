@@ -2,7 +2,7 @@
  * useRealtimeHub — Centralized React hook for RealtimeManager.
  * Mount ONCE at the app root. Replaces useOrbitCallSync, usePresence, RealtimeMessageToast.
  * 
- * v2: Targeted refresh — only invalidates affected modules, not blanket orbit refresh.
+ * v3: All tables migrated to V2 canonical (chat_messages_v2, app_notifications, conversations_v2).
  */
 import { useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,11 +13,11 @@ import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
 import React from "react";
 
-// V2: Map tables to specific orbit modules for targeted refresh
+// V3: Map V2 canonical tables to orbit modules
 const TABLE_TO_MODULE: Record<string, OrbitModule> = {
   call_logs: "communication",
-  messages: "communication",
-  notifications: "notifications",
+  chat_messages_v2: "communication",
+  app_notifications: "notifications",
   booking_requests: "business",
   concierge_orders: "business",
   deal_rooms: "business",
@@ -42,7 +42,7 @@ export function useRealtimeHub() {
   const handleSignal = useCallback((signal: RealtimeSignal) => {
     const { table, eventType, new: row } = signal;
 
-    // ─── V2: Targeted module refresh ───
+    // ─── Targeted module refresh ───
     const targetModule = TABLE_TO_MODULE[table];
     if (targetModule) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -65,49 +65,40 @@ export function useRealtimeHub() {
         break;
       }
 
-      case "messages": {
-        // Only invalidate thread list, not all messages (thread-specific refresh via openThread)
+      case "chat_messages_v2": {
         queryClient.invalidateQueries({ queryKey: ["threads"] });
+        queryClient.invalidateQueries({ queryKey: ["conversations-v2"] });
 
         if (eventType === "INSERT" && row) {
-          if (row.sender_id === user?.id) break;
-          if (row.sender_id === "00000000-0000-0000-0000-000000000000") break;
+          if (row.sender_user_id === user?.id) break;
           if (row.id === lastMsgToast.current) break;
           lastMsgToast.current = row.id;
 
-          let isRelevant = false;
-          if (activeRole === "landlord" && orgId && row.org_id === orgId) isRelevant = true;
-          else if (activeRole === "tenant" && row.tenant_id) isRelevant = true;
-          else if (activeRole === "client" && user?.email && row.contact_email?.toLowerCase() === user.email.toLowerCase()) isRelevant = true;
-
-          if (isRelevant) {
-            const senderName = row.contact_name || row.contact_email || "Someone";
-            const preview = (row.content || "").slice(0, 80);
-            toast(senderName, {
-              description: preview || "New message",
-              icon: React.createElement(MessageSquare, { className: "h-4 w-4" }),
-              duration: 5000,
-              action: {
-                label: "View",
-                onClick: () => {
-                  const base = activeRole === "landlord" ? "/dashboard/communication" : activeRole === "tenant" ? "/tenant/messages" : "/client/messages";
-                  window.location.href = base;
-                },
+          const senderName = row.metadata?.sender_name || "Someone";
+          const preview = (row.body || "").slice(0, 80);
+          toast(senderName, {
+            description: preview || "New message",
+            icon: React.createElement(MessageSquare, { className: "h-4 w-4" }),
+            duration: 5000,
+            action: {
+              label: "View",
+              onClick: () => {
+                window.location.href = `/orbit?conversation=${row.conversation_id}`;
               },
-            });
-          }
+            },
+          });
         }
         break;
       }
 
-      case "notifications": {
+      case "app_notifications": {
         queryClient.invalidateQueries({ queryKey: ["notifications"] });
-        if (eventType === "INSERT" && row && !row.read) {
+        if (eventType === "INSERT" && row && !row.read_at) {
           addAlertRef.current({
             type: "info", priority: 4, icon: "🔔",
             title: row.title || "Notification",
-            message: (row.message || "").slice(0, 100),
-            link: row.link || "/dashboard/settings",
+            message: (row.body || "").slice(0, 100),
+            link: row.route || "/dashboard/settings",
           });
         }
         break;
@@ -135,9 +126,9 @@ export function useRealtimeHub() {
         queryClient.invalidateQueries({ queryKey: ["deal-rooms"] });
         break;
 
-      case "conversation_threads":
+      case "conversations_v2":
         queryClient.invalidateQueries({ queryKey: ["threads"] });
-        queryClient.invalidateQueries({ queryKey: ["conversation-threads"] });
+        queryClient.invalidateQueries({ queryKey: ["conversations-v2"] });
         break;
     }
   }, [user?.id, user?.email, orgId, activeRole, queryClient]);
