@@ -1,9 +1,9 @@
-import { lazy, Suspense } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import SmartHome from "@/components/storefront/SmartHome";
+import { lazy, Suspense } from "react";
 
 const OnboardingChecklist = lazy(() => import("@/components/onboarding/OnboardingChecklist"));
 const WelcomeTour = lazy(() => import("@/components/onboarding/WelcomeTour"));
-const SmartHome = lazy(() => import("@/components/storefront/SmartHome"));
 
 const Dashboard = () => {
   return (
@@ -15,11 +15,9 @@ const Dashboard = () => {
             <OnboardingChecklist />
           </div>
         </Suspense>
-        <Suspense fallback={<div className="h-32 rounded-xl bg-muted/20 animate-pulse mb-4" />}>
-          <div className="w-full min-w-0">
-            <SmartHome />
-          </div>
-        </Suspense>
+        <div className="w-full min-w-0">
+          <SmartHome />
+        </div>
       </div>
     </DashboardLayout>
   );

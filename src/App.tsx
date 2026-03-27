@@ -589,15 +589,7 @@ import { setActionQueryClient } from "@/lib/run-action";
 setActionQueryClient(queryClient);
 
 const PageLoader = () => (
-  <div className="px-4 py-6 space-y-4 max-w-md mx-auto animate-pulse">
-    <div className="h-8 w-40 rounded-xl bg-muted/40" />
-    <div className="h-4 w-64 rounded-lg bg-muted/30" />
-    <div className="space-y-3 pt-2">
-      <div className="h-24 w-full rounded-2xl bg-muted/30" />
-      <div className="h-24 w-full rounded-2xl bg-muted/25" />
-      <div className="h-24 w-full rounded-2xl bg-muted/20" />
-    </div>
-  </div>
+  <div className="app-mobile-page bg-background" />
 );
 
 const seoPublicPrefixes = [
