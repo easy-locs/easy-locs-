@@ -750,13 +750,41 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         />
 
         <OrbitMediaBar
-          attachmentCount={0}
+          attachmentCount={attachmentQueue.queue.length}
           recording={voiceRecorder.recording}
-          onOpenGallery={() => attachments.fileInputRef.current?.click()}
-          onOpenCamera={() => attachments.fileInputRef.current?.click()}
-          onOpenFiles={() => attachments.fileInputRef.current?.click()}
+          onOpenGallery={handlePickGallery}
+          onOpenCamera={handlePickCamera}
+          onOpenFiles={handlePickFiles}
           onStartVoice={() => composer.setIsRecording(!composer.isRecording)}
         />
+
+        <OrbitAttachmentPickerBar
+          onPickFiles={handlePickFiles}
+          onPickCamera={handlePickCamera}
+          onPickGallery={handlePickGallery}
+          onToggleViewOnce={() => setViewOnceEnabled((prev) => !prev)}
+          viewOnce={viewOnceEnabled}
+        />
+
+        <OrbitUploadQueuePreview
+          queue={attachmentQueue.queue}
+          onRemove={attachmentQueue.removeQueueItem}
+        />
+
+        {attachmentQueue.queue.length > 0 && (
+          <div className="px-3 py-2 flex justify-end" style={{ borderTop: "1px solid hsl(var(--border) / 0.08)" }}>
+            <button
+              onClick={() => { void handleUploadAndSendAttachments(); }}
+              className="rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs font-medium"
+              disabled={attachmentSend.sendingAttachments}
+            >
+              {attachmentSend.sendingAttachments ? "Sending..." : "Send attachments"}
+            </button>
+          </div>
+        )}
+
+        <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => handleFilesSelected(e.target.files)} />
+        <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFilesSelected(e.target.files)} />
       </div>
 
       <Sheet open={payment.paymentLinkDialog} onOpenChange={payment.setPaymentLinkDialog}>
