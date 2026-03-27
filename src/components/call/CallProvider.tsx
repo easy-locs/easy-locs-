@@ -16,9 +16,9 @@ import IncomingCallDialog from "./IncomingCallDialog";
 import { debugLog } from "@/lib/debug/runtime-debug-bus";
 
 interface CallContextType {
-  /** Start a call to an org (provider) */
+  /** Start a call — targetId is the peer userId OR an orgId (resolved internally) */
   startCall: (opts: {
-    orgId: string;
+    targetId: string;
     threadId?: string;
     contextType?: string;
     contextId?: string;
@@ -229,7 +229,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
   const startCall = useCallback(
     async (opts: {
-      orgId: string;
+      targetId: string;
       threadId?: string;
       contextType?: string;
       contextId?: string;
