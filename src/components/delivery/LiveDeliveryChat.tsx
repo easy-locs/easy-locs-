@@ -37,10 +37,10 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
     queryFn: async () => {
       if (!jobId) return null;
       const { data } = await (supabase as any)
-        .from("conversation_threads")
+        .from("conversations_v2")
         .select("*")
-        .eq("context_type", "delivery")
-        .eq("context_id", jobId)
+        .eq("type", "delivery")
+        .contains("metadata", { context_id: jobId })
         .maybeSingle();
       return data;
     },
@@ -53,9 +53,9 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
     queryFn: async () => {
       if (!thread?.id) return [];
       const { data } = await (supabase as any)
-        .from("messages")
+        .from("chat_messages_v2")
         .select("*")
-        .eq("thread_id", thread.id)
+        .eq("conversation_id", thread.id)
         .order("created_at", { ascending: true })
         .limit(100);
       return data || [];
@@ -86,8 +86,8 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
-        table: "messages",
-        filter: `thread_id=eq.${thread.id}`,
+        table: "chat_messages_v2",
+        filter: `conversation_id=eq.${thread.id}`,
       }, () => {
         qc.invalidateQueries({ queryKey: ["delivery-chat-messages", thread.id] });
       })
@@ -105,16 +105,17 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
     const text = input.trim();
     setInput("");
 
-    await (supabase as any).from("messages").insert({
-      thread_id: thread.id,
-      sender_id: user.id,
-      content: text,
-      message_type: "text",
+    await (supabase as any).from("chat_messages_v2").insert({
+      conversation_id: thread.id,
+      sender_user_id: user.id,
+      sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
+      type: "text",
+      body: text,
     });
 
-    // Update thread last_message_at
-    await (supabase as any).from("conversation_threads")
-      .update({ last_message_at: new Date().toISOString() })
+    // Update conversation last_message_at
+    await (supabase as any).from("conversations_v2")
+      .update({ last_message_at: new Date().toISOString(), last_message_preview: text.slice(0, 120) })
       .eq("id", thread.id);
   }, [input, thread?.id, user?.id]);
 
@@ -123,12 +124,13 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
     const { requestLocation } = await import("@/lib/location/requestLocation");
     const pos = await requestLocation();
     if (!pos) return;
-    await (supabase as any).from("messages").insert({
-      thread_id: thread.id,
-      sender_id: user.id,
-      content: `📍 ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`,
-      message_type: "location",
-      metadata_json: { lat: pos.lat, lng: pos.lng },
+    await (supabase as any).from("chat_messages_v2").insert({
+      conversation_id: thread.id,
+      sender_user_id: user.id,
+      sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
+      type: "location",
+      body: `📍 ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`,
+      metadata: { lat: pos.lat, lng: pos.lng },
     });
     setShowLocation(false);
   }, [thread?.id, user?.id]);

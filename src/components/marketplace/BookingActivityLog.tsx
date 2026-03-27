@@ -41,14 +41,14 @@ export default function BookingActivityLog({ bookingId, orgId }: Props) {
   const { data: notifications = [] } = useQuery({
     queryKey: ["booking_notifications", bookingId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("notifications")
+      const { data } = await (supabase as any)
+        .from("app_notifications")
         .select("*")
-        .eq("org_id", orgId)
+        .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
         .order("created_at", { ascending: false })
         .limit(50);
       return (data || []).filter((n: any) => {
-        const meta = n.metadata_json as any;
+        const meta = n.metadata as any;
         return meta?.booking_id === bookingId;
       });
     },

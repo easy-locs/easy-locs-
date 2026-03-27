@@ -234,9 +234,9 @@ const TenantMessages = () => {
           try {
             const { data: org } = await supabase.from("orgs").select("email, owner_user_id").eq("id", orgId).single();
             if (org?.owner_user_id) {
-              await supabase.from("notifications").insert({
-                user_id: org.owner_user_id, org_id: orgId, type: "message",
-                title: L.notifNewMsgTenant, message: L.notifTenantSentMsg, link: "/dashboard/communication",
+              await (supabase as any).from("app_notifications").insert({
+                user_id: org.owner_user_id, scope: "global", category: "message",
+                title: L.notifNewMsgTenant, body: L.notifTenantSentMsg, severity: "info", route: "/dashboard/communication",
               });
             }
             let landlordEmail = normalizeEmail(org?.email);
