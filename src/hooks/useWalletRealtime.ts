@@ -21,7 +21,9 @@ export function useWalletRealtime() {
     const { data } = await supabase
       .from("wallet_accounts")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("owner_user_id", user.id)
+      .eq("status", "active")
+      .limit(1)
       .maybeSingle();
 
     setWallet(data ?? null);
