@@ -15,6 +15,7 @@ import SwipeableThreadItem from "./SwipeableThreadItem";
 import ThreadContextMenu from "./ThreadContextMenu";
 import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 import { useI18n } from "@/lib/i18n";
+import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 
 interface Props {
   threads: ConversationThread[];

@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import SwipeableCallItem from "./SwipeableCallItem";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCallStatus, safeDisplayName, isUUID } from "@/lib/orbit/message-formatter";
+import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 
 type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
