@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import AuthBrand from "@/components/auth/AuthBrand";
+import AppLogo from "@/components/AppLogo";
 import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
