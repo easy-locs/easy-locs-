@@ -1492,6 +1492,7 @@ Deno.serve(async (req) => {
       realtime: ["backend-connectivity", "backend-reconnect"],
       chat: ["staff-sync", "call-log-cleanup"],
       payments: ["coupon-expiration", "qr-session-cleanup", "finance-reconciliation"],
+      food_pipeline: ["deliveroo-food-intake-engine", "food-normalizer-engine", "food-menu-builder-engine", "food-visual-clean-engine", "food-visibility-gate-engine", "food-publish-engine", "food-rescrape-monitor-engine", "food-audit-engine"],
     };
 
     for (const [mod, engines] of Object.entries(moduleMapping)) {
