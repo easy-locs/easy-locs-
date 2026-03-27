@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { firewallCheck, guardedUpdate } from "../_shared/brain-firewall.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -462,49 +463,98 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
 
     case "validate": {
       const { data: entity } = await db.from("seed_merchants")
-        .select("overall_quality_score, visibility_mode, cover_image, vertical, menu_items_json, name")
+        .select("overall_quality_score, visibility_mode, cover_image, vertical, menu_items_json, name, category")
         .eq("id", entityId).single();
       if (entity) {
         const score = entity.overall_quality_score ?? 0;
         let visibility = "hidden";
         const gateFailures: string[] = [];
 
-        // Check required fields
         if (!entity.name || entity.name.length < 2) gateFailures.push("missing_name");
         if (isPlaceholder(entity.cover_image)) gateFailures.push("placeholder_image");
 
-        // Food needs menu
         if (entity.vertical === "food") {
           const items = flattenMenuItems(entity.menu_items_json);
           if (items.length < 3) gateFailures.push("insufficient_menu");
         }
 
-        // Score-based visibility
         if (gateFailures.length === 0) {
           if (score >= 70) visibility = "live";
           else if (score >= 50) visibility = "search_only";
         }
 
-        await db.from("seed_merchants").update({
+        // ── BRAIN FIREWALL: validate visibility write ──
+        const updateFields: Record<string, any> = {
           visibility_mode: visibility,
           pipeline_stage: "validated",
           publish_gate_status: gateFailures.length === 0 ? "passed" : "failed",
           gate_failures: gateFailures,
-        }).eq("id", entityId);
+          overall_quality_score: score,
+        };
+        const fwResult = firewallCheck("pipeline-validate", "seed_merchants", updateFields, entity);
+        if (fwResult.blocked) {
+          updateFields.visibility_mode = "hidden";
+          updateFields.publish_gate_status = "firewall_blocked";
+          updateFields.gate_failures = [...gateFailures, ...fwResult.reasons];
+          try {
+            await db.from("engine_run_logs").insert({
+              engine_name: "pipeline-validate",
+              trigger_source: "firewall",
+              status: "blocked",
+              effect_summary: `FIREWALL BLOCKED: ${fwResult.reasons.join("; ")}`,
+              side_effect_count: 0,
+              started_at: now,
+              finished_at: now,
+              duration_ms: 0,
+              metadata_json: { entity_id: entityId, reasons: fwResult.reasons },
+            });
+          } catch (_) {}
+        }
+        await db.from("seed_merchants").update(updateFields).eq("id", entityId);
       }
       break;
     }
 
     case "publish": {
       const { data: entity } = await db.from("seed_merchants")
-        .select("visibility_mode, pipeline_stage")
+        .select("visibility_mode, pipeline_stage, overall_quality_score, category")
         .eq("id", entityId).single();
       if (entity && entity.visibility_mode !== "hidden") {
-        await db.from("seed_merchants").update({
+        // ── BRAIN FIREWALL: guard publish write ──
+        const publishFields: Record<string, any> = {
           pipeline_stage: "published",
           is_published: true,
           published_at: now,
-        }).eq("id", entityId);
+          visibility_mode: entity.visibility_mode,
+          category: entity.category,
+          overall_quality_score: entity.overall_quality_score,
+        };
+        const fwResult = firewallCheck("pipeline-publish", "seed_merchants", publishFields, entity);
+        if (fwResult.blocked) {
+          await db.from("seed_merchants").update({
+            pipeline_stage: "published",
+            is_published: false,
+            publish_gate_status: "firewall_blocked",
+            gate_failures: fwResult.reasons,
+          }).eq("id", entityId);
+          try {
+            await db.from("engine_run_logs").insert({
+              engine_name: "pipeline-publish",
+              trigger_source: "firewall",
+              status: "blocked",
+              effect_summary: `FIREWALL BLOCKED: ${fwResult.reasons.join("; ")}`,
+              side_effect_count: 0,
+              started_at: now, finished_at: now, duration_ms: 0,
+              metadata_json: { entity_id: entityId, reasons: fwResult.reasons },
+            });
+          } catch (_) {}
+        } else {
+          await db.from("seed_merchants").update({
+            pipeline_stage: "published",
+            is_published: true,
+            published_at: now,
+          }).eq("id", entityId);
+        }
       } else {
         await db.from("seed_merchants").update({
           pipeline_stage: "published",
