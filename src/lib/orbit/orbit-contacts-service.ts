@@ -43,9 +43,6 @@ export async function upsertOrbitContact(input: {
   if (error) throw error;
 }
 
-/** @deprecated Use upsertOrbitContact instead */
-export const addOrbitContact = upsertOrbitContact;
-
 export async function toggleFavoriteContact(contactId: string, nextValue: boolean) {
   const { error } = await (supabase as any)
     .from("orbit_contacts_v2")
@@ -69,9 +66,6 @@ export async function toggleBlockedContact(contactId: string, nextValue: boolean
 
   if (error) throw error;
 }
-
-/** @deprecated Use toggleBlockedContact instead */
-export const blockContact = toggleBlockedContact;
 
 export async function deleteOrbitContact(contactId: string) {
   const { error } = await (supabase as any)
