@@ -267,9 +267,15 @@ export default function SmartHome() {
   const _living = useLivingPage({ country: countryCode, city: city || undefined, maxSections: 6 });
   const globalCtx = useGlobalContext({ country: countryCode, city: city || undefined });
   const contextBanners = useMemo(
-    () => getTopBanners({ country: countryCode, city, hour: globalCtx.localHour }, 1),
+    () => getTopBanners({ country: countryCode, city, hour: globalCtx.localHour }, 3),
     [countryCode, city, globalCtx.localHour],
   );
+  const [activeBannerIdx, setActiveBannerIdx] = useState(0);
+  useEffect(() => {
+    if (contextBanners.length <= 1) return;
+    const iv = setInterval(() => setActiveBannerIdx(i => (i + 1) % contextBanners.length), 5000);
+    return () => clearInterval(iv);
+  }, [contextBanners.length]);
 
   return (
     <div className="w-full min-w-0 pb-6">
