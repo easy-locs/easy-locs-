@@ -82,13 +82,14 @@ export default function MessageActionsMenu({
       const { data: { user } } = await supabase.auth.getUser();
       const uid = user?.id;
       if (uid) {
-        const { data: existing } = await supabase
-          .from("messages").select("deleted_for_user_ids").eq("id", messageId).single();
-        const currentIds: string[] = (existing?.deleted_for_user_ids as string[] | null) || [];
+        const { data: existing } = await (supabase as any)
+          .from("chat_messages_v2").select("metadata").eq("id", messageId).single();
+        const meta = (existing?.metadata as Record<string, any>) || {};
+        const currentIds: string[] = Array.isArray(meta.deleted_for_user_ids) ? meta.deleted_for_user_ids : [];
         if (!currentIds.includes(uid)) {
-          const { error } = await supabase.from("chat_messages_v2").update({
-            deleted_for_user_ids: [...currentIds, uid],
-          } as any).eq("id", messageId);
+          const { error } = await (supabase as any).from("chat_messages_v2").update({
+            metadata: { ...meta, deleted_for_user_ids: [...currentIds, uid] },
+          }).eq("id", messageId);
           if (error) { toast.error(t("chat.delete_failed") || "Delete failed"); close(); return; }
         }
       }
