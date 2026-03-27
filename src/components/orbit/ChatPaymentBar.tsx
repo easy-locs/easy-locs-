@@ -56,6 +56,7 @@ export default function ChatPaymentBar({
       } else {
         await requestPaymentInChat({
           conversationId,
+          senderUserId: user.id,
           senderOrbitId,
           recipientUserId,
           amount: numAmount,
