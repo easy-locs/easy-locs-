@@ -10,7 +10,13 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "audit:v2-only": "node scripts/audit-v2-only.mjs",
+    "check:isolation": "node scripts/check-isolated-legacy.mjs",
+    "cleanup:legacy:safe": "node scripts/safe-delete-legacy.mjs",
+    "dead:files": "node scripts/find-dead-files.mjs",
+    "check:strict-core": "npm run audit:v2-only && npx tsc --noEmit",
+    "strict:recovery": "npm run audit:v2-only && npm run check:isolation && npx tsc --noEmit"
   },
   "dependencies": {
     "@capacitor/cli": "^8.1.0",
