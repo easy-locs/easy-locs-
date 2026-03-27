@@ -2257,6 +2257,47 @@ export type Database = {
           },
         ]
       }
+      browser_repair_actions: {
+        Row: {
+          created_at: string
+          details_json: Json
+          elapsed_ms: number | null
+          id: string
+          run_id: string
+          scenario_key: string
+          status: string
+          step_key: string
+        }
+        Insert: {
+          created_at?: string
+          details_json?: Json
+          elapsed_ms?: number | null
+          id?: string
+          run_id: string
+          scenario_key: string
+          status: string
+          step_key: string
+        }
+        Update: {
+          created_at?: string
+          details_json?: Json
+          elapsed_ms?: number | null
+          id?: string
+          run_id?: string
+          scenario_key?: string
+          status?: string
+          step_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "browser_repair_actions_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "browser_repair_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       browser_repair_issues: {
         Row: {
           auto_fix_applied: boolean
@@ -2319,6 +2360,9 @@ export type Database = {
       browser_repair_runs: {
         Row: {
           created_at: string
+          duration_ms: number | null
+          engine_name: string
+          environment: string | null
           fail_count: number
           finished_at: string | null
           fixed_count: number
@@ -2328,9 +2372,13 @@ export type Database = {
           scenario_count: number
           started_at: string
           status: string
+          warning_count: number
         }
         Insert: {
           created_at?: string
+          duration_ms?: number | null
+          engine_name?: string
+          environment?: string | null
           fail_count?: number
           finished_at?: string | null
           fixed_count?: number
@@ -2340,9 +2388,13 @@ export type Database = {
           scenario_count?: number
           started_at?: string
           status?: string
+          warning_count?: number
         }
         Update: {
           created_at?: string
+          duration_ms?: number | null
+          engine_name?: string
+          environment?: string | null
           fail_count?: number
           finished_at?: string | null
           fixed_count?: number
@@ -2352,6 +2404,7 @@ export type Database = {
           scenario_count?: number
           started_at?: string
           status?: string
+          warning_count?: number
         }
         Relationships: []
       }
