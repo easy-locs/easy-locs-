@@ -24,97 +24,19 @@ Deno.serve(async (req) => {
     const startTime = Date.now();
     const report: Record<string, any> = { started_at: new Date().toISOString(), engines_triggered: 0, errors: 0, retried: 0 };
 
-    // ── BRAIN FIREWALL (embedded — non-bypassable) ──────────────────────
-    const BLOCKED_CATEGORIES = ["general", "other", "unknown", "null", "undefined", ""];
-    const MIN_QUALITY_FOR_LIVE = 40;
-    const firewallLog: Array<{ engine: string; rule: string; blocked: boolean; detail: string; ts: string }> = [];
+    // ── BRAIN FIREWALL — imported from _shared/brain-firewall.ts (canonical) ──
+    resetFirewallLog();
 
-    function firewallCheck(
-      engineName: string,
-      tableName: string,
-      fields: Record<string, any>,
-      previousValues?: Record<string, any>
-    ): { blocked: boolean; reasons: string[] } {
-      const reasons: string[] = [];
-      const ts = new Date().toISOString();
-
-      // Rule 1: Quality gate — no live publish with low quality
-      if (fields.visibility_mode === "live") {
-        const quality = fields.visibility_score ?? fields.ranking_score ?? previousValues?.ranking_score ?? 0;
-        if (quality < MIN_QUALITY_FOR_LIVE) {
-          reasons.push(`quality_gate: score ${quality} < ${MIN_QUALITY_FOR_LIVE}`);
-          firewallLog.push({ engine: engineName, rule: "quality_gate", blocked: true, detail: `score=${quality}`, ts });
-        }
-      }
-
-      // Rule 2: Junk category block
-      if (fields.category !== undefined) {
-        const cat = String(fields.category).toLowerCase().trim();
-        if (BLOCKED_CATEGORIES.includes(cat)) {
-          reasons.push(`category_integrity: "${fields.category}" is blocked`);
-          firewallLog.push({ engine: engineName, rule: "category_integrity", blocked: true, detail: `cat=${fields.category}`, ts });
-        }
-      }
-
-      // Rule 3: Human-verified protection
-      if (previousValues) {
-        for (const field of Object.keys(fields)) {
-          if (previousValues[`${field}_human_verified`] === true) {
-            reasons.push(`human_lock: "${field}" is human-verified`);
-            firewallLog.push({ engine: engineName, rule: "human_lock", blocked: true, detail: `field=${field}`, ts });
-          }
-        }
-      }
-
-      // Rule 4: Visibility change requires reason
-      if (fields.visibility_mode !== undefined && !fields.visibility_decision_reason) {
-        // Auto-add reason from engine context
-        fields.visibility_decision_reason = `engine:${engineName}`;
-      }
-
-      // Rule 5: Financial write requires reference
-      if (tableName === "wallet_transactions" || tableName === "accounting_entries") {
-        if (!fields.external_reference && !fields.reference_code) {
-          reasons.push(`finance_ref: financial write without reference`);
-          firewallLog.push({ engine: engineName, rule: "finance_ref", blocked: true, detail: `table=${tableName}`, ts });
-        }
-      }
-
-      if (reasons.length === 0) {
-        firewallLog.push({ engine: engineName, rule: "all_passed", blocked: false, detail: `table=${tableName}`, ts });
-      }
-
-      return { blocked: reasons.length > 0, reasons };
-    }
-
-    /** Guarded update — runs firewall before writing */
-    async function guardedUpdate(
+    /** Local wrapper for guardedUpdate that passes supabase client */
+    async function guardedUpdateLocal(
       engineName: string,
       table: string,
       id: string,
       fields: Record<string, any>,
       previousValues?: Record<string, any>
     ): Promise<{ written: boolean; blocked: boolean; reasons: string[] }> {
-      const result = firewallCheck(engineName, table, fields, previousValues);
-      if (result.blocked) {
-        // Log the block
-        try {
-          await supabase.from("engine_run_logs" as any).insert({
-            engine_name: engineName,
-            trigger_source: "cron",
-            status: "blocked",
-            effect_summary: `FIREWALL BLOCKED: ${result.reasons.join("; ")}`,
-            side_effect_count: 0,
-            started_at: new Date().toISOString(),
-            finished_at: new Date().toISOString(),
-            duration_ms: 0,
-            mode: "live",
-          });
-        } catch (_) {}
-        return { written: false, blocked: true, reasons: result.reasons };
-      }
-      await supabase.from(table as any).update(fields).eq("id", id);
-      return { written: true, blocked: false, reasons: [] };
+      return guardedUpdate(supabase, engineName, table, id, fields, previousValues);
+    }
     }
 
     const placeholderPatterns = ["placeholder", "default", "generic", "via.placeholder", "dummyimage", "placehold.co", "unsplash.com", "images.unsplash.com"];
