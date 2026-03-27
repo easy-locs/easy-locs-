@@ -157,6 +157,19 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
   const payment = usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId });
 
+  // Orbit Attachments Pro — Bloc 11
+  const attachmentQueue = useOrbitAttachmentQueue();
+  const uploadTransport = useOrbitUploadTransport();
+
+  const attachmentSend = useOrbitAttachmentSend({
+    conversationId: thread?.v2ConversationId ?? null,
+    currentUserId: user?.id ?? null,
+    currentOrbitId: myOrbitId ?? null,
+    onAfterSend: () => loader.loadMessages(),
+  });
+
+  const viewOnceHook = useOrbitViewOnce({ currentUserId: user?.id ?? null });
+
   // Orbit UX Bloc 8 — scroll, composer, actions, thread UI
   const composer = useOrbitComposerState();
 
