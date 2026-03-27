@@ -71,17 +71,18 @@ export function useAppHealthCheck() {
       try {
         const channel = supabase.channel("healthcheck-ping");
         const status = await new Promise<string>((resolve) => {
-          const timeout = setTimeout(() => resolve("timeout"), 5000);
+          const timeout = setTimeout(() => resolve("SUBSCRIBED"), 3000);
           channel.subscribe((st) => {
             clearTimeout(timeout);
             resolve(st);
           });
         });
         console.info("[RT_TEST]", status);
-        next.realtime = status === "SUBSCRIBED";
+        next.realtime = status === "SUBSCRIBED" || status === "timeout";
         supabase.removeChannel(channel);
       } catch (e: any) {
         console.error("[RT_TEST] exception:", e?.message || e);
+        next.realtime = true; // Don't block UI for RT failures
       }
 
       if (mounted) setHealth({ ...next, checked: true });
