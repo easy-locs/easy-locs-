@@ -52,6 +52,8 @@ export default function UniversePageShell({
   heroBannerUrl,
   heroEmoji,
   tagline,
+  backTo,
+  heroSlot,
 }: UniversePageShellProps) {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -118,7 +120,7 @@ export default function UniversePageShell({
           {/* Back + title row */}
           <div className="flex items-center gap-3 mb-1">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => backTo ? navigate(backTo) : navigate(-1)}
               className="w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-xl transition-transform active:scale-90 shrink-0"
               style={{ background: "hsl(0 0% 100% / 0.15)" }}
               aria-label="Go back"
