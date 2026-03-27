@@ -365,6 +365,27 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
         <DealContextHeader dealId={thread.dealId} contextType={thread.conversationType} contextId={thread.contextId} onToggleContext={onToggleContext} />
 
+        <OrbitCallMiniBar
+          active={callActions.isInCall}
+          label={thread.name || undefined}
+          onHangup={callActions.handleEndCall}
+        />
+
+        <OrbitPinnedBanner
+          pinnedBody={(pinnedMessage as any)?.content || null}
+          onClick={() => {
+            if (threadUi.pinnedMessageId) {
+              const el = document.getElementById(`msg-${threadUi.pinnedMessageId}`);
+              el?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }}
+          onUnpin={() => {
+            if (threadUi.pinnedMessageId) {
+              void messageActions.togglePinMessage(threadUi.pinnedMessageId, false);
+            }
+          }}
+        />
+
         {selection.selectMode && (
           <MessageMultiSelectToolbar
             selectedIds={selection.selectedMsgIds}
