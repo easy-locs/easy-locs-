@@ -11,6 +11,17 @@ import DiscoveryHeatmapLayer from "@/components/map/DiscoveryHeatmapLayer";
 import { CloudRain, CloudSun } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useRainRadar } from "@/hooks/useRainRadar";
+import {
+  animateStationPulse,
+  buildStationGeoJSON,
+  ensureLiveStationLayers,
+  STATION_CLUSTER_LAYER,
+  STATION_CLUSTER_COUNT_LAYER,
+  STATION_LABEL_LAYER,
+  STATION_POINT_LAYER,
+  STATION_PULSE_LAYER,
+  STATION_SOURCE,
+} from "@/lib/map/live-stations-engine";
 
 const RAIN_SOURCE = "discovery-rain-radar";
 const RAIN_LAYER = "discovery-rain-radar-layer";
@@ -142,6 +153,8 @@ export default memo(function UnifiedMap({
     || (userLat != null && userLng != null ? [userLng, userLat] : [55.2708, 25.2048]);
   const weather = useLiveWeatherStation({ lat: userLat ?? center?.[1], lng: userLng ?? center?.[0] });
   const rainRadar = useRainRadar(showWeatherLayer || weather.isRaining);
+  const pulseFrameRef = useRef(0);
+  const pulseRafRef = useRef<number | null>(null);
 
   // Derive heatmap points from entities if not provided
   const effectiveHeatmap = heatmapPoints ?? (showHeatmap ? entities.map(e => ({
@@ -215,6 +228,8 @@ export default memo(function UnifiedMap({
           },
         });
       }
+
+      ensureLiveStationLayers(map, UNCLUSTERED_LAYER);
 
       // ── Cluster source ──
       map.addSource(CLUSTER_SOURCE, {
@@ -386,6 +401,27 @@ export default memo(function UnifiedMap({
       map.on("mouseenter", CLUSTER_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", CLUSTER_LAYER, () => { map.getCanvas().style.cursor = ""; });
 
+      map.on("click", STATION_CLUSTER_LAYER, (e) => {
+        const features = map.queryRenderedFeatures(e.point, { layers: [STATION_CLUSTER_LAYER] });
+        if (!features.length) return;
+        const clusterId = features[0].properties?.cluster_id;
+        const src = map.getSource(STATION_SOURCE) as mapboxgl.GeoJSONSource;
+        src.getClusterExpansionZoom(clusterId, (err, zoomLevel) => {
+          if (err) return;
+          const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
+          map.easeTo({ center: coords, zoom: zoomLevel ?? 14, duration: 350 });
+        });
+      });
+
+      const pulse = () => {
+        if (mapRef.current && document.visibilityState !== "hidden") {
+          pulseFrameRef.current += 1;
+          animateStationPulse(mapRef.current, pulseFrameRef.current);
+        }
+        pulseRafRef.current = requestAnimationFrame(pulse);
+      };
+      pulseRafRef.current = requestAnimationFrame(pulse);
+
       // ── Zone click: click on empty map area → zone intelligence ──
       map.on("click", (e) => {
         // If the click hit a pin or cluster, ignore (those handlers run first)
@@ -399,6 +435,7 @@ export default memo(function UnifiedMap({
     });
 
     return () => {
+      if (pulseRafRef.current != null) cancelAnimationFrame(pulseRafRef.current);
       popupRef.current?.remove();
       userMarkerRef.current?.remove();
       map.remove();
@@ -452,6 +489,22 @@ export default memo(function UnifiedMap({
       map.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 300 });
     }
   }, [entities, selectedId, showHeatmap, mapReady]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    const src = map.getSource(STATION_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    if (!src) return;
+    src.setData(buildStationGeoJSON(entities));
+  }, [entities, mapReady]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    [STATION_CLUSTER_LAYER, STATION_CLUSTER_COUNT_LAYER, STATION_PULSE_LAYER, STATION_POINT_LAYER, STATION_LABEL_LAYER].forEach((layerId) => {
+      if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", "visible");
+    });
+  }, [mapReady]);
 
   // ── User location marker ──
   useEffect(() => {

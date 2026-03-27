@@ -3,7 +3,7 @@
  * Combines: discovery, mobility, zones, heatmap, radius, user location.
  * Multi-mode: explore, mobility, food, retail, stay, property, services, wallet, radar.
  */
-import { useEffect, useRef, useCallback, memo, useState } from "react";
+import { useEffect, useRef, memo, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
@@ -19,9 +19,21 @@ import {
 import { useSuperMapStore } from "@/stores/superMapStore";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import SuperMapModeBar from "@/components/map/SuperMapModeBar";
+import MapControls from "@/components/map/MapControls";
 import { CloudRain, CloudSun } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useRainRadar } from "@/hooks/useRainRadar";
+import {
+  animateStationPulse,
+  buildStationGeoJSON,
+  ensureLiveStationLayers,
+  STATION_CLUSTER_LAYER,
+  STATION_CLUSTER_COUNT_LAYER,
+  STATION_LABEL_LAYER,
+  STATION_POINT_LAYER,
+  STATION_PULSE_LAYER,
+  STATION_SOURCE,
+} from "@/lib/map/live-stations-engine";
 
 const RAIN_SOURCE = "supermap-rain-radar";
 const RAIN_LAYER = "supermap-rain-radar-layer";
@@ -69,6 +81,8 @@ export default memo(function SuperMap({
   const selectedEntityId = useSuperMapStore((s) => s.selectedEntityId);
   const showHeatmap = useSuperMapStore((s) => s.showHeatmap);
   const showWeather = useSuperMapStore((s) => s.showWeather);
+  const showStations = useSuperMapStore((s) => s.showStations);
+  const showMobility = useSuperMapStore((s) => s.showMobility);
   const showRadius = useSuperMapStore((s) => s.showRadius);
   const radiusKm = useSuperMapStore((s) => s.radiusKm);
   const userLat = useSuperMapStore((s) => s.userLat);
@@ -76,8 +90,14 @@ export default memo(function SuperMap({
   const centerLat = useSuperMapStore((s) => s.centerLat);
   const centerLng = useSuperMapStore((s) => s.centerLng);
   const zoom = useSuperMapStore((s) => s.zoom);
+  const toggleHeatmap = useSuperMapStore((s) => s.toggleHeatmap);
+  const toggleWeather = useSuperMapStore((s) => s.toggleWeather);
+  const toggleStations = useSuperMapStore((s) => s.toggleStations);
+  const toggleMobility = useSuperMapStore((s) => s.toggleMobility);
   const weather = useLiveWeatherStation({ lat: userLat ?? centerLat, lng: userLng ?? centerLng });
   const weatherRadar = useRainRadar(showWeather || weather.isRaining);
+  const pulseFrameRef = useRef(0);
+  const pulseRafRef = useRef<number | null>(null);
 
   const onSelectRef = useRef(onSelectEntity);
   onSelectRef.current = onSelectEntity;
@@ -125,6 +145,8 @@ export default memo(function SuperMap({
           },
         }, LAYERS.ZONE_FILL);
       }
+
+      ensureLiveStationLayers(map, LAYERS.MOBILITY_POINT);
 
       // ── Click: cluster expand ──
       map.on("click", LAYERS.PLACES_CLUSTER, (e) => {
@@ -203,10 +225,40 @@ export default memo(function SuperMap({
       map.on("mouseenter", LAYERS.MOBILITY_POINT, () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", LAYERS.MOBILITY_POINT, () => { map.getCanvas().style.cursor = ""; });
 
+      map.on("click", STATION_CLUSTER_LAYER, (e) => {
+        const features = map.queryRenderedFeatures(e.point, { layers: [STATION_CLUSTER_LAYER] });
+        if (!features.length) return;
+        const clusterId = features[0].properties?.cluster_id;
+        const src = map.getSource(STATION_SOURCE) as mapboxgl.GeoJSONSource;
+        src.getClusterExpansionZoom(clusterId, (err, z) => {
+          if (err) return;
+          const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
+          map.easeTo({ center: coords, zoom: z ?? 14, duration: 350 });
+        });
+      });
+
+      map.on("click", STATION_POINT_LAYER, (e) => {
+        const feature = e.features?.[0];
+        if (!feature) return;
+        const entityId = feature.properties?.entityId;
+        const entity = entitiesRef.current.find((candidate) => candidate.id === entityId);
+        if (entity) onSelectRef.current?.(entity);
+      });
+
+      const pulse = () => {
+        if (mapRef.current && document.visibilityState !== "hidden") {
+          pulseFrameRef.current += 1;
+          animateStationPulse(mapRef.current, pulseFrameRef.current);
+        }
+        pulseRafRef.current = requestAnimationFrame(pulse);
+      };
+      pulseRafRef.current = requestAnimationFrame(pulse);
+
       setReady(true);
     });
 
     return () => {
+      if (pulseRafRef.current != null) cancelAnimationFrame(pulseRafRef.current);
       popupRef.current?.remove();
       map.remove();
       mapRef.current = null;
@@ -258,6 +310,14 @@ export default memo(function SuperMap({
     }));
     safeSetData(mapRef.current, SOURCES.MOBILITY, { type: "FeatureCollection", features });
   }, [mobilityPoints, ready]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const src = map.getSource(STATION_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    if (!src) return;
+    src.setData(buildStationGeoJSON(entities));
+  }, [entities, ready]);
 
   // ── Zones data ──
   useEffect(() => {
@@ -374,6 +434,17 @@ export default memo(function SuperMap({
     }
   }, [ready, showWeather, weather.isRaining, weatherRadar.activeTileUrl]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const stationVisible = showStations ? "visible" : "none";
+    [STATION_CLUSTER_LAYER, STATION_CLUSTER_COUNT_LAYER, STATION_PULSE_LAYER, STATION_POINT_LAYER, STATION_LABEL_LAYER].forEach((layerId) => {
+      if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", stationVisible);
+    });
+    if (map.getLayer(LAYERS.MOBILITY_POINT)) map.setLayoutProperty(LAYERS.MOBILITY_POINT, "visibility", showMobility ? "visible" : "none");
+    if (map.getLayer(LAYERS.MOBILITY_LABEL)) map.setLayoutProperty(LAYERS.MOBILITY_LABEL, "visibility", showMobility ? "visible" : "none");
+  }, [ready, showMobility, showStations]);
+
   return (
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
       <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" />
@@ -390,6 +461,23 @@ export default memo(function SuperMap({
           <div className="map-rain-glow pointer-events-none absolute inset-0 rounded-2xl" />
         </>
       )}
+      <div className="absolute bottom-3 right-3 z-30 flex max-w-[calc(100%-1.5rem)] justify-end">
+        <MapControls
+          showWeather={showWeather || weather.isRaining}
+          showStations={showStations}
+          showMobility={showMobility}
+          showHeatmap={showHeatmap}
+          onToggleWeather={toggleWeather}
+          onToggleStations={toggleStations}
+          onToggleMobility={toggleMobility}
+          onToggleHeatmap={toggleHeatmap}
+          onRecenter={() => {
+            if (userLat != null && userLng != null) {
+              mapRef.current?.easeTo({ center: [userLng, userLat], zoom: Math.max(mapRef.current?.getZoom() ?? 13, 13), duration: 450 });
+            }
+          }}
+        />
+      </div>
       {showModeBar && <SuperMapModeBar />}
     </div>
   );

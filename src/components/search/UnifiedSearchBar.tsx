@@ -255,7 +255,7 @@ export default function UnifiedSearchBar({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 right-0 mt-2 bg-card border border-border/20 rounded-2xl shadow-xl overflow-hidden z-50 max-h-[60vh] overflow-y-auto"
+            className="absolute top-full left-0 right-0 mt-2 bg-card border border-border/20 rounded-2xl shadow-xl z-50 max-h-[60vh] overflow-y-auto"
           >
             {/* Suggestions when no query */}
             {!query.trim() && suggestions.length > 0 && (
