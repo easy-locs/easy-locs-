@@ -160,7 +160,9 @@ export default function CommCallsSection() {
     if (filter === "outgoing" && c.direction !== "outgoing") return false;
     if (search) {
       const q = search.toLowerCase();
-      const searchable = [c.caller_orbit_id, c.receiver_orbit_id].join(" ").toLowerCase();
+      const peerId = c.direction === "outgoing" ? c.receiver_orbit_id : c.caller_orbit_id;
+      const resolved = nameCache[peerId] || "";
+      const searchable = [resolved, c.caller_orbit_id, c.receiver_orbit_id].join(" ").toLowerCase();
       return searchable.includes(q);
     }
     return true;
