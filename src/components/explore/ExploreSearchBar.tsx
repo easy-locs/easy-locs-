@@ -7,7 +7,7 @@ import {
   LocateFixed, Radar, Navigation, Layers, Minus, Plus, Crosshair,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
+import { CATEGORY_HIERARCHY } from "@/lib/taxonomy/category-tree";
 
 /* ─── Types ─── */
 export interface LocationSuggestion {

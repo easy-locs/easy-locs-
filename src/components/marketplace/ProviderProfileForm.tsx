@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MARKETPLACE_CATEGORIES } from "./MarketplaceCategories";
+import { MARKETPLACE_CATEGORIES } from "@/lib/taxonomy/category-tree";
 import { Building2, User, ImagePlus, Loader2, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
