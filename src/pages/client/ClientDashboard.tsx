@@ -39,13 +39,13 @@ const ClientDashboard = () => {
       ]);
       const bookingCount = (seasonalRes.count || 0) + (conciergeRes.count || 0) + (marketplaceRes.count || 0);
 
-      // Stats: messages (unread)
-      const { count: unreadCount } = await supabase
-        .from("messages")
+      // Stats: unread messages (V2 via notifications)
+      const { count: unreadCount } = await (supabase as any)
+        .from("app_notifications")
         .select("id", { count: "exact", head: true })
-        .eq("contact_email", email.toLowerCase())
-        .eq("read", false)
-        .neq("sender_id", user.id);
+        .eq("user_id", user.id)
+        .eq("category", "message")
+        .is("read_at", null);
 
       // Stats: payments
       const [{ count: paidConcierge }, { count: paidMarketplace }] = await Promise.all([
@@ -115,11 +115,11 @@ const ClientDashboard = () => {
         }
       }
 
-      // Recent messages
-      const { data: recentMsgs } = await supabase
-        .from("messages")
-        .select("id, content, contact_name, created_at")
-        .eq("contact_email", email.toLowerCase())
+      // Recent messages (V2)
+      const { data: recentMsgs } = await (supabase as any)
+        .from("chat_messages_v2")
+        .select("id, body, sender_user_id, created_at, metadata")
+        .eq("sender_user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(3);
       if (recentMsgs) {
