@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import DOMPurify from "dompurify";
 import type { ChatMessageRow } from "@/lib/types/comms";
+import { sendInAppNotification } from "@/lib/notifications/notification-dispatcher";
 
 /**
  * Resolves the current auth user ID. Required for sender_user_id (NOT NULL).
@@ -26,6 +27,7 @@ async function resolveOrbitId(userId: string): Promise<string> {
 export async function sendTextMessage(input: {
   conversationId: string;
   senderOrbitId?: string;
+  senderDisplayName?: string;
   receiverOrbitId?: string;
   body: string;
 }): Promise<ChatMessageRow> {
@@ -70,6 +72,15 @@ export async function sendTextMessage(input: {
       updated_at: new Date().toISOString(),
     })
     .eq("id", input.conversationId);
+
+  // Notify other participants (non-blocking)
+  void notifyConversationParticipants({
+    conversationId: input.conversationId,
+    messageId: data.id,
+    senderUserId: userId,
+    senderDisplayName: input.senderDisplayName || senderOrbitId,
+    bodyPreview: safeBody.slice(0, 120),
+  });
 
   return data as ChatMessageRow;
 }
