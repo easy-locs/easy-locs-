@@ -50,7 +50,7 @@ export default function EntityActivityLog({ entityType, entityId, orgId, maxItem
 
     try {
       // Messages
-      let msgQuery = supabase.from("messages").select("id, content, created_at, sender_id, category, message_type, contact_name").eq("org_id", orgId);
+      let msgQuery = (supabase as any).from("chat_messages_v2").select("id, body, created_at, sender_user_id, type, metadata");
       if (entityType === "property") msgQuery = msgQuery.eq("property_id", entityId);
       else if (entityType === "tenant") msgQuery = msgQuery.eq("tenant_id", entityId);
       else if (entityType === "booking") msgQuery = msgQuery.eq("booking_id", entityId);

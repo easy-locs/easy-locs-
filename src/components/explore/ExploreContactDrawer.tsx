@@ -80,29 +80,24 @@ function AuthenticatedContact({
     try {
       // 1. Get or create conversation thread
       let threadId: string | null = null;
-      const { data: existing } = await supabase
-        .from("conversation_threads")
+      const { data: existing } = await (supabase as any)
+        .from("conversations_v2")
         .select("id")
-        .eq("org_id", orgId)
-        .eq("initiator_id", user.id)
-        .eq("context_id", serviceId)
-        .eq("status", "active")
+        .contains("participant_ids", [user.id])
+        .eq("type", "direct")
         .limit(1)
         .maybeSingle();
 
       if (existing) {
         threadId = existing.id;
       } else {
-        const { data: thread } = await supabase
-          .from("conversation_threads")
+        const { data: thread } = await (supabase as any)
+          .from("conversations_v2")
           .insert({
-            org_id: orgId,
-            initiator_id: user.id,
             participant_ids: [user.id],
-            context_type: "service",
-            context_id: serviceId,
-            listing_title: serviceTitle,
-            provider_name: providerName,
+            type: "direct",
+            title: serviceTitle,
+            created_by: user.id,
           })
           .select("id")
           .single();
@@ -110,17 +105,12 @@ function AuthenticatedContact({
       }
 
       // 2. Insert message with thread reference
-      const { error } = await supabase.from("messages").insert({
-        org_id: orgId,
-        sender_id: user.id,
-        content: message.trim(),
-        category: "general",
-        contact_name: user.user_metadata?.name || user.email,
-        contact_email: user.email,
-        context_id: serviceId,
-        message_type: "inquiry",
-        read: false,
-        thread_id: threadId,
+      const { error } = await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: threadId,
+        sender_user_id: user.id,
+        type: "text",
+        body: message.trim(),
+        metadata: { source: "explore_contact", service_id: serviceId },
       });
       if (error) throw error;
       toast.success("Message sent!");
