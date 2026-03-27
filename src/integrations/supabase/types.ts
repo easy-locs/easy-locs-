@@ -8492,6 +8492,13 @@ export type Database = {
             foreignKeyName: "hotel_availability_hotel_id_fkey"
             columns: ["hotel_id"]
             isOneToOne: false
+            referencedRelation: "vw_hotel_calendar_coverage"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "hotel_availability_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
             referencedRelation: "vw_hotel_gate_failures"
             referencedColumns: ["id"]
           },
@@ -8501,6 +8508,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_hotel_quality"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_availability_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_rate_plan_coverage"
+            referencedColumns: ["hotel_id"]
           },
           {
             foreignKeyName: "hotel_availability_rate_plan_id_fkey"
@@ -8516,12 +8530,130 @@ export type Database = {
             referencedRelation: "hotel_rooms"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      hotel_inventory_calendar: {
+        Row: {
+          available: boolean
+          available_units: number
+          base_price: number
+          closed_to_arrival: boolean
+          closed_to_departure: boolean
+          created_at: string
+          currency: string
+          fees_amount: number
+          final_price: number
+          hotel_id: string
+          id: string
+          max_stay: number
+          min_stay: number
+          night_date: string
+          rate_plan_id: string | null
+          restriction_notes: string | null
+          room_type_id: string
+          source_entity_id: string | null
+          source_last_seen_at: string | null
+          source_type: string | null
+          taxes_amount: number
+          updated_at: string
+        }
+        Insert: {
+          available?: boolean
+          available_units?: number
+          base_price?: number
+          closed_to_arrival?: boolean
+          closed_to_departure?: boolean
+          created_at?: string
+          currency?: string
+          fees_amount?: number
+          final_price?: number
+          hotel_id: string
+          id?: string
+          max_stay?: number
+          min_stay?: number
+          night_date: string
+          rate_plan_id?: string | null
+          restriction_notes?: string | null
+          room_type_id: string
+          source_entity_id?: string | null
+          source_last_seen_at?: string | null
+          source_type?: string | null
+          taxes_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          available?: boolean
+          available_units?: number
+          base_price?: number
+          closed_to_arrival?: boolean
+          closed_to_departure?: boolean
+          created_at?: string
+          currency?: string
+          fees_amount?: number
+          final_price?: number
+          hotel_id?: string
+          id?: string
+          max_stay?: number
+          min_stay?: number
+          night_date?: string
+          rate_plan_id?: string | null
+          restriction_notes?: string | null
+          room_type_id?: string
+          source_entity_id?: string | null
+          source_last_seen_at?: string | null
+          source_type?: string | null
+          taxes_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "hotel_availability_room_id_fkey"
-            columns: ["room_id"]
+            foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
+            columns: ["hotel_id"]
             isOneToOne: false
             referencedRelation: "vw_hotel_calendar_coverage"
-            referencedColumns: ["room_id"]
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_gate_failures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_quality"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_rate_plan_coverage"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_rate_plan_id_fkey"
+            columns: ["rate_plan_id"]
+            isOneToOne: false
+            referencedRelation: "hotel_rate_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_room_type_id_fkey"
+            columns: ["room_type_id"]
+            isOneToOne: false
+            referencedRelation: "hotel_rooms"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8595,6 +8727,13 @@ export type Database = {
             foreignKeyName: "hotel_rate_plans_hotel_id_fkey"
             columns: ["hotel_id"]
             isOneToOne: false
+            referencedRelation: "vw_hotel_calendar_coverage"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "hotel_rate_plans_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
             referencedRelation: "vw_hotel_gate_failures"
             referencedColumns: ["id"]
           },
@@ -8606,18 +8745,18 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "hotel_rate_plans_room_id_fkey"
-            columns: ["room_id"]
+            foreignKeyName: "hotel_rate_plans_hotel_id_fkey"
+            columns: ["hotel_id"]
             isOneToOne: false
-            referencedRelation: "hotel_rooms"
-            referencedColumns: ["id"]
+            referencedRelation: "vw_hotel_rate_plan_coverage"
+            referencedColumns: ["hotel_id"]
           },
           {
             foreignKeyName: "hotel_rate_plans_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
-            referencedRelation: "vw_hotel_calendar_coverage"
-            referencedColumns: ["room_id"]
+            referencedRelation: "hotel_rooms"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8691,6 +8830,13 @@ export type Database = {
             foreignKeyName: "hotel_rooms_hotel_id_fkey"
             columns: ["hotel_id"]
             isOneToOne: false
+            referencedRelation: "vw_hotel_calendar_coverage"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "hotel_rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
             referencedRelation: "vw_hotel_gate_failures"
             referencedColumns: ["id"]
           },
@@ -8700,6 +8846,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_hotel_quality"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_rate_plan_coverage"
+            referencedColumns: ["hotel_id"]
           },
         ]
       }
@@ -30253,37 +30406,16 @@ export type Database = {
         Row: {
           available_days: number | null
           avg_price: number | null
+          calendar_days: number | null
+          city: string | null
+          earliest_date: string | null
           hotel_id: string | null
           hotel_name: string | null
-          max_price: number | null
-          min_price: number | null
-          room_id: string | null
-          room_name: string | null
-          total_days: number | null
+          latest_date: string | null
+          room_count: number | null
+          visibility_mode: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "hotel_rooms_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "hotels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_rooms_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_hotel_gate_failures"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_rooms_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_hotel_quality"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       vw_hotel_gate_failures: {
         Row: {
@@ -30369,6 +30501,17 @@ export type Database = {
           source_type?: string | null
           stars?: number | null
           visibility_mode?: string | null
+        }
+        Relationships: []
+      }
+      vw_hotel_rate_plan_coverage: {
+        Row: {
+          breakfast_plans: number | null
+          calendar_entries: number | null
+          hotel_id: string | null
+          hotel_name: string | null
+          plan_count: number | null
+          refundable_plans: number | null
         }
         Relationships: []
       }
@@ -30810,6 +30953,16 @@ export type Database = {
       }
       ride_mark_arrived: {
         Args: { p_driver_id: string; p_ride_request_id: string }
+        Returns: Json
+      }
+      search_available_rooms: {
+        Args: {
+          p_adults?: number
+          p_checkin: string
+          p_checkout: string
+          p_children?: number
+          p_hotel_id: string
+        }
         Returns: Json
       }
       search_global_products_v2: {
