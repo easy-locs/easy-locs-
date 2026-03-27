@@ -78,7 +78,7 @@ export function AddContactByEmail(props: {
         .from("contacts")
         .select("id")
         .eq("owner_id", user.id)
-        .eq("contact_user_id", result.orbit_id)
+        .eq("contact_user_id", result.id)
         .maybeSingle();
 
       if (existing) {
@@ -92,7 +92,7 @@ export function AddContactByEmail(props: {
         owner_id: user.id,
         name: result.display_name || result.email || "Contact",
         email: result.email || null,
-        contact_user_id: result.orbit_id,
+        contact_user_id: result.id,
         category: "friend",
       } as any);
 

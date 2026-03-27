@@ -156,13 +156,18 @@ export default function CommGroupsSection() {
           .order("created_at", { ascending: false })
           .limit(1);
         return {
-          ...g,
-          group_type: g.group_type || "group",
-          posting_permission: g.posting_permission || "everyone",
+          id: g.id,
+          name: g.title || "Untitled group",
+          description: null,
+          photo_url: null,
+          created_by: g.created_by_orbit_id,
+          created_at: g.created_at,
+          group_type: (g.type || "group") as GroupType,
+          posting_permission: g.type === "channel" ? "admins_only" : "everyone",
           member_count: count || 0,
           last_message: lastMsg?.[0]?.body || null,
           last_message_at: lastMsg?.[0]?.created_at || g.created_at,
-        };
+        } as Group;
       }));
       setGroups(enriched);
     }
@@ -173,44 +178,12 @@ export default function CommGroupsSection() {
 
   // ── Actions ──
 
-  const handleCreate = async () => {
-    if (!user?.id || !orgId || !newGroup.name.trim()) return;
-    setCreating(true);
+  const refreshMembers = useCallback(async (groupId: string) => {
+    const { data: mems } = await supabase.from("group_members").select("*").eq("group_id", groupId);
+    setMembers((mems as GroupMember[]) || []);
+  }, []);
 
-    const groupId = crypto.randomUUID();
-    const postingPermission: PostingPermission = newGroup.group_type === "channel" ? "admins_only" : "everyone";
-
-    const { error } = await (supabase as any).from("conversations_v2").insert({
-      id: groupId,
-      org_id: orgId,
-      name: newGroup.name.trim(),
-      description: newGroup.description.trim() || null,
-      created_by: user.id,
-      group_type: newGroup.group_type,
-      posting_permission: postingPermission,
-    } as any);
-
-    if (error) { toast.error("Failed to create"); setCreating(false); return; }
-
-    await supabase.from("group_members").insert({
-      group_id: groupId,
-      user_id: user.id,
-      role: "admin",
-    } as any);
-
-    haptic("success");
-    toast.success(
-      newGroup.group_type === "channel" ? "Channel created" :
-        newGroup.group_type === "community" ? "Community created" :
-          (t("orbit.groups.created") || "Group created")
-    );
-    setShowCreate(false);
-    setNewGroup({ name: "", description: "", group_type: "group" });
-    setCreating(false);
-    loadGroups();
-  };
-
-  const openGroupChat = async (group: Group) => {
+  const openGroupChat = useCallback(async (group: Group) => {
     trackOrbitEvent("orbit.group.joined", { screen: "groups", component: "CommGroupsSection", action: "open_group", payload: { groupId: group.id, type: group.group_type }, result: "success" });
     setActiveGroup(group);
     haptic("light");
@@ -226,17 +199,80 @@ export default function CommGroupsSection() {
       content: m.body || m.content,
       created_at: m.created_at,
       sender_name: m.sender_name,
-      is_pinned: m.is_pinned,
-      pinned_at: m.pinned_at,
-      pinned_by: m.pinned_by,
+      is_pinned: false,
+      pinned_at: undefined,
+      pinned_by: undefined,
     }));
     setMessages(mapped as GroupMessage[]);
-    const { data: mems } = await supabase
-      .from("group_members")
-      .select("*")
-      .eq("group_id", group.id);
-    setMembers((mems as GroupMember[]) || []);
+    await refreshMembers(group.id);
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  }, [refreshMembers]);
+
+  const handleCreate = async () => {
+    if (!user?.id || !newGroup.name.trim()) return;
+    setCreating(true);
+
+    const { data: myOrbit } = await (supabase as any)
+      .from("orbit_profiles_v2")
+      .select("orbit_id, display_name, email, avatar_url")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const participants = [{
+      userId: user.id,
+      orbitId: myOrbit?.orbit_id || null,
+      displayName: myOrbit?.display_name || "You",
+      email: myOrbit?.email || null,
+      avatarUrl: myOrbit?.avatar_url || null,
+    }];
+
+    const { data: created, error } = await (supabase as any).from("conversations_v2").insert({
+      type: newGroup.group_type,
+      title: newGroup.name.trim(),
+      participants,
+      created_by_orbit_id: myOrbit?.orbit_id || null,
+      last_message_at: new Date().toISOString(),
+    } as any).select("id, type, title, created_at, created_by_orbit_id").single();
+
+    if (error || !created) { toast.error(error?.message || "Failed to create"); setCreating(false); return; }
+
+    const { error: memberError } = await supabase.from("group_members").insert({
+      group_id: created.id,
+      user_id: user.id,
+      role: "admin",
+    } as any);
+
+    if (memberError) {
+      toast.error(memberError.message || "Failed to add creator to group");
+      setCreating(false);
+      return;
+    }
+
+    const createdGroup: Group = {
+      id: created.id,
+      name: created.title || newGroup.name.trim(),
+      description: null,
+      photo_url: null,
+      created_by: created.created_by_orbit_id || user.id,
+      created_at: created.created_at,
+      group_type: (created.type || newGroup.group_type) as GroupType,
+      posting_permission: created.type === "channel" ? "admins_only" : "everyone",
+      member_count: 1,
+      last_message: null,
+      last_message_at: created.created_at,
+    };
+
+    haptic("success");
+    toast.success(
+      newGroup.group_type === "channel" ? "Channel created" :
+        newGroup.group_type === "community" ? "Community created" :
+          (t("orbit.groups.created") || "Group created")
+    );
+    setShowCreate(false);
+    setNewGroup({ name: "", description: "", group_type: "group" });
+    setCreating(false);
+    await loadGroups();
+    await openGroupChat(createdGroup);
   };
 
   const sendMessage = async () => {
@@ -244,41 +280,92 @@ export default function CommGroupsSection() {
     const content = msgInput.trim();
     setMsgInput("");
     haptic("light");
+
+    const { data: myOrbit } = await (supabase as any)
+      .from("orbit_profiles_v2")
+      .select("orbit_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
     const { data, error } = await (supabase as any).from("chat_messages_v2").insert({
       conversation_id: activeGroup.id,
       sender_user_id: user.id,
+      sender_orbit_id: myOrbit?.orbit_id || null,
+      type: "text",
       body: content,
     } as any).select().single();
     if (!error && data) {
-      setMessages(prev => [...prev, data as GroupMessage]);
-      await (supabase as any).from("conversations_v2").update({ updated_at: new Date().toISOString() }).eq("id", activeGroup.id);
+      setMessages(prev => prev.some(m => m.id === data.id) ? prev : [...prev, {
+        id: data.id,
+        sender_id: data.sender_user_id,
+        content: data.body,
+        created_at: data.created_at,
+        sender_name: "You",
+        is_pinned: false,
+      } as GroupMessage]);
+      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", activeGroup.id);
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+    } else if (error) {
+      toast.error(error.message || "Failed to send message");
+      setMsgInput(content);
     }
   };
 
-  const togglePin = async (msg: GroupMessage) => {
-    if (!isAdmin || !activeGroup) return;
-    const newPinned = !msg.is_pinned;
-    const { error } = await (supabase as any).from("chat_messages_v2").update({
-      is_pinned: newPinned,
-      pinned_at: newPinned ? new Date().toISOString() : null,
-      pinned_by: newPinned ? user?.id : null,
-    } as any).eq("id", msg.id);
-    if (!error) {
-      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, is_pinned: newPinned, pinned_at: newPinned ? new Date().toISOString() : undefined, pinned_by: newPinned ? user?.id : undefined } : m));
-      haptic("light");
-      toast.success(newPinned ? "Message pinned" : "Message unpinned");
-    }
+  const togglePin = async () => {
+    toast.info("Pinning is disabled on Orbit groups until pin metadata is fully connected.");
   };
 
   const handleAddMember = async () => {
     if (!addMemberEmail.trim() || !activeGroup) return;
+
+    const normalizedEmail = addMemberEmail.trim().toLowerCase();
     const { data: profile } = await supabase
       .from("profiles")
       .select("id")
-      .eq("email", addMemberEmail.trim().toLowerCase())
+      .eq("email", normalizedEmail)
       .single();
     if (!profile) { toast.error(t("orbit.groups.user_not_found") || "User not found"); return; }
+
+    const { data: orbitProfile } = await (supabase as any)
+      .from("orbit_profiles_v2")
+      .select("orbit_id, display_name, email, avatar_url")
+      .eq("id", profile.id)
+      .maybeSingle();
+
+    const { data: currentConv, error: convErr } = await (supabase as any)
+      .from("conversations_v2")
+      .select("participants")
+      .eq("id", activeGroup.id)
+      .single();
+    if (convErr || !currentConv) {
+      toast.error(convErr?.message || "Failed to resolve group participants");
+      return;
+    }
+
+    const participants = Array.isArray(currentConv.participants) ? [...currentConv.participants] : [];
+    const alreadyParticipant = participants.some((p: any) => p?.userId === profile.id || p?.user_id === profile.id);
+    if (alreadyParticipant) {
+      toast.info("Already a member");
+      return;
+    }
+
+    participants.push({
+      userId: profile.id,
+      orbitId: orbitProfile?.orbit_id || null,
+      displayName: orbitProfile?.display_name || normalizedEmail,
+      email: orbitProfile?.email || normalizedEmail,
+      avatarUrl: orbitProfile?.avatar_url || null,
+    });
+
+    const { error: participantsError } = await (supabase as any)
+      .from("conversations_v2")
+      .update({ participants, updated_at: new Date().toISOString() })
+      .eq("id", activeGroup.id);
+    if (participantsError) {
+      toast.error(participantsError.message || "Failed to update group participants");
+      return;
+    }
+
     const { error } = await supabase.from("group_members").insert({
       group_id: activeGroup.id,
       user_id: profile.id,
@@ -292,8 +379,8 @@ export default function CommGroupsSection() {
     toast.success(t("orbit.groups.member_added") || "Member added");
     setAddMemberEmail("");
     setShowAddMember(false);
-    const { data: mems } = await supabase.from("group_members").select("*").eq("group_id", activeGroup.id);
-    setMembers((mems as GroupMember[]) || []);
+    await refreshMembers(activeGroup.id);
+    await loadGroups();
   };
 
   const changeMemberRole = async (memberId: string, newRole: MemberRole) => {
@@ -307,14 +394,7 @@ export default function CommGroupsSection() {
   };
 
   const togglePostingPermission = async () => {
-    if (!isAdmin || !activeGroup) return;
-    const newPerm: PostingPermission = activeGroup.posting_permission === "everyone" ? "admins_only" : "everyone";
-    const { error } = await (supabase as any).from("conversations_v2").update({ posting_permission: newPerm }).eq("id", activeGroup.id);
-    if (!error) {
-      setActiveGroup(prev => prev ? { ...prev, posting_permission: newPerm } : null);
-      haptic("light");
-      toast.success(newPerm === "admins_only" ? "Only admins can post now" : "Everyone can post now");
-    }
+    toast.info("Posting mode is derived from group type: channels are admin-only, groups and communities are open.");
   };
 
   const leaveGroup = async () => {
@@ -328,11 +408,23 @@ export default function CommGroupsSection() {
 
   const removeMember = async (memberId: string) => {
     if (!activeGroup) return;
+    const member = members.find(m => m.id === memberId);
     await supabase.from("group_members").delete().eq("id", memberId);
+
+    if (member?.user_id) {
+      const { data: currentConv } = await (supabase as any)
+        .from("conversations_v2")
+        .select("participants")
+        .eq("id", activeGroup.id)
+        .single();
+      const participants = (Array.isArray(currentConv?.participants) ? currentConv.participants : []).filter((p: any) => p?.userId !== member.user_id && p?.user_id !== member.user_id);
+      await (supabase as any).from("conversations_v2").update({ participants, updated_at: new Date().toISOString() }).eq("id", activeGroup.id);
+    }
+
     haptic("light");
     toast.success(t("orbit.groups.member_removed") || "Member removed");
-    const { data: mems } = await supabase.from("group_members").select("*").eq("group_id", activeGroup.id);
-    setMembers((mems as GroupMember[]) || []);
+    await refreshMembers(activeGroup.id);
+    await loadGroups();
   };
 
   // Realtime
