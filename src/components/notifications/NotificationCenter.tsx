@@ -63,11 +63,7 @@ export default function NotificationCenter() {
 
       <div className="flex-1 overflow-y-auto">
         {loading && (
-          <div className="space-y-3 px-4 pt-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />
-            ))}
-          </div>
+          <div className="min-h-[48px]" />
         )}
 
         {!loading && notifications.length === 0 && (
