@@ -106,16 +106,11 @@ function AuthenticatedContact({
 
       // 2. Insert message with thread reference
       const { error } = await (supabase as any).from("chat_messages_v2").insert({
-        org_id: orgId,
-        sender_id: user.id,
-        content: message.trim(),
-        category: "general",
-        contact_name: user.user_metadata?.name || user.email,
-        contact_email: user.email,
-        context_id: serviceId,
-        message_type: "inquiry",
-        read: false,
-        thread_id: threadId,
+        conversation_id: threadId,
+        sender_user_id: user.id,
+        type: "text",
+        body: message.trim(),
+        metadata: { source: "explore_contact", service_id: serviceId },
       });
       if (error) throw error;
       toast.success("Message sent!");
