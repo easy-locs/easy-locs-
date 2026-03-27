@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 import QRContactCard from "./QRContactCard";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
+import { resolveDirectPeer } from "@/lib/orbit/resolveDirectPeer";
 import { useCall } from "@/components/call/CallProvider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trackOrbitEvent, guardDisplayName } from "@/lib/orbit/orbitTelemetry";
@@ -347,23 +348,32 @@ export default function CommContactsSection() {
     haptic("medium");
     if (!user) return;
 
-    if (!contact.canMessage) {
-      if (contact.appState === "external") {
-        toast("Ce contact n'a pas de compte dans l'application. Invitez-le !", {
-          action: { label: "Inviter", onClick: () => handleInvite(contact) },
-        });
-      } else {
-        toast.error("Ajoutez un email à ce contact pour le synchroniser.");
-      }
-      return;
-    }
-
+    // ── Canonical resolution via resolveDirectPeer ──
     setActionLoading(`msg-${contact.id}`);
     try {
+      const peer = await resolveDirectPeer({
+        userId: contact.contact_user_id,
+        email: contact.email,
+        phone: contact.phone,
+        contact: { id: contact.id, name: contact.name, email: contact.email ?? undefined, phone: contact.phone ?? undefined, avatar_url: contact.avatar_url ?? undefined },
+      });
+
+      if (!peer.resolvable || !peer.peerUserId) {
+        if (contact.email || contact.phone) {
+          toast("Ce contact n'a pas de compte dans l'application. Invitez-le !", {
+            action: { label: "Inviter", onClick: () => handleInvite(contact) },
+          });
+        } else {
+          toast.error("Ajoutez un email à ce contact pour le synchroniser.");
+        }
+        setActionLoading(null);
+        return;
+      }
+
       const thread = await getOrCreateDirectThread({
         currentUserId: user.id,
-        targetUserId: contact.contact_user_id!,
-        targetName: contact.name,
+        targetUserId: peer.peerUserId,
+        targetName: peer.displayName,
       });
       if (thread) {
         navigate(`/orbit?thread=${thread.contextId}`);
@@ -381,35 +391,35 @@ export default function CommContactsSection() {
     haptic("medium");
     if (!user) return;
 
-    if (!contact.canCall) {
-      if (!contact.contact_user_id) {
-        toast("Ce contact n'est pas joignable pour les appels. Ajoutez son email.", { icon: "📞" });
-      } else {
-        toast("Ce contact n'est pas encore associé à une organisation.", { icon: "📞" });
-      }
-      return;
-    }
-
+    // ── Canonical resolution via resolveDirectPeer ──
     setActionLoading(`${isVideo ? "video" : "call"}-${contact.id}`);
     try {
-      // Resolve thread to ensure call events are logged in the correct conversation
-      const thread = await getOrCreateDirectThread({
-        currentUserId: user.id,
-        targetUserId: contact.contact_user_id!,
-        targetName: contact.name,
+      const peer = await resolveDirectPeer({
+        userId: contact.contact_user_id,
+        email: contact.email,
+        phone: contact.phone,
+        contact: { id: contact.id, name: contact.name, email: contact.email ?? undefined, phone: contact.phone ?? undefined, avatar_url: contact.avatar_url ?? undefined },
       });
 
-      const directContextId = `direct:${[user.id, contact.contact_user_id!].sort().join(":")}`;
+      if (!peer.resolvable || !peer.peerUserId) {
+        toast("Ce contact n'est pas joignable. Ajoutez son email pour le synchroniser.", { icon: "📞" });
+        setActionLoading(null);
+        return;
+      }
 
-      // Pass contact_user_id directly — NOT the org_id.
-      // The RPC will see it's not an org and use it as-is for receiver_orbit_id.
+      const thread = await getOrCreateDirectThread({
+        currentUserId: user.id,
+        targetUserId: peer.peerUserId,
+        targetName: peer.displayName,
+      });
+
       await initiateCall({
-        orgId: contact.contact_user_id!,
-        threadId: thread?.threadId,
+        orgId: peer.peerUserId,
+        threadId: thread?.v2ConversationId || thread?.threadId,
         contextType: "direct",
-        contextId: directContextId,
-        contextLabel: `Appel avec ${contact.name}`,
-        peerName: contact.name,
+        contextId: thread?.v2ConversationId || thread?.contextId || "",
+        contextLabel: `Appel avec ${peer.displayName}`,
+        peerName: peer.displayName,
         isVideo,
       });
     } catch {
