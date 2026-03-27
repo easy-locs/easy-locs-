@@ -170,6 +170,118 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     return messages.find((m: any) => m.id === threadUi.pinnedMessageId) || null;
   }, [messages, threadUi.pinnedMessageId]);
 
+  // Orbit Calls Pro — Bloc 10
+  const devicePermissions = useOrbitDevicePermissions();
+  const callStateV2 = useOrbitCallState();
+
+  const callActionsV2 = useOrbitCallActions({
+    currentUserId: user?.id ?? null,
+    currentOrbitId: myOrbitId ?? null,
+    activeCall: callStateV2.activeCall,
+    patchCall: callStateV2.patchCall,
+    setUiState: callStateV2.setUiState,
+    endCall: callStateV2.endCall,
+  });
+
+  const callHistory = useOrbitCallHistory(myOrbitId ?? null);
+
+  useOrbitCallRealtime({
+    currentOrbitId: myOrbitId ?? null,
+    onIncomingCall: (row: any) => {
+      callStateV2.startIncoming({
+        sessionId: row.id,
+        conversationId: row.conversation_id || null,
+        peerOrbitId: row.caller_orbit_id || null,
+        peerName: thread?.name || "Incoming call",
+        mode: row.call_type === "video" ? "video" : "audio",
+      });
+    },
+    onCallEnded: (row: any) => {
+      if (callStateV2.activeCall?.sessionId === row.id) {
+        callStateV2.endCall(row.status === "missed" ? "missed" : "ended");
+      }
+    },
+    onCallUpdated: (row: any) => {
+      if (callStateV2.activeCall?.sessionId === row.id) {
+        callStateV2.patchCall({
+          uiState: row.status === "active" ? "active" : callStateV2.activeCall?.uiState,
+          qualityState: row.quality_state || null,
+          reconnectCount: row.reconnect_count || 0,
+          answeredAt: row.answered_at || null,
+        });
+      }
+    },
+  });
+
+  // Missed call timeout
+  useEffect(() => {
+    if (!callStateV2.activeCall?.sessionId) return;
+    if (callStateV2.activeCall.uiState !== "incoming") return;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        await (supabase as any).rpc("mark_call_as_missed_v2", {
+          p_session_id: callStateV2.activeCall?.sessionId,
+          p_reason: "timeout",
+        });
+        callStateV2.endCall("missed");
+      })();
+    }, 30000);
+    return () => window.clearTimeout(timer);
+  }, [callStateV2.activeCall?.sessionId, callStateV2.activeCall?.uiState]);
+
+  // Reconnect recovery
+  useEffect(() => {
+    if (!callStateV2.activeCall) return;
+    if (callStateV2.activeCall.uiState !== "reconnecting") return;
+    const timer = window.setTimeout(() => {
+      callStateV2.patchCall({ uiState: "active", qualityState: "stable" });
+    }, 2500);
+    return () => window.clearTimeout(timer);
+  }, [callStateV2.activeCall?.uiState]);
+
+  const handleStartAudioCall = async () => {
+    if (!thread?.peerOrbitId) return;
+    const micOk = devicePermissions.permissions.microphone === "granted" || await devicePermissions.requestMicrophone();
+    if (!micOk) return;
+    const session = await callActionsV2.createOutgoingCall({
+      conversationId: thread.v2ConversationId || null,
+      peerOrbitId: thread.peerOrbitId,
+      peerName: thread.name || "Contact",
+      mode: "audio",
+    });
+    if (!session) return;
+    callStateV2.startOutgoing({
+      sessionId: session.id,
+      conversationId: thread.v2ConversationId || null,
+      peerOrbitId: thread.peerOrbitId,
+      peerUserId: thread.peerUserId || null,
+      peerName: thread.name || "Contact",
+      mode: "audio",
+    });
+  };
+
+  const handleStartVideoCall = async () => {
+    if (!thread?.peerOrbitId) return;
+    const micOk = devicePermissions.permissions.microphone === "granted" || await devicePermissions.requestMicrophone();
+    const camOk = devicePermissions.permissions.camera === "granted" || await devicePermissions.requestCamera();
+    if (!micOk || !camOk) return;
+    const session = await callActionsV2.createOutgoingCall({
+      conversationId: thread.v2ConversationId || null,
+      peerOrbitId: thread.peerOrbitId,
+      peerName: thread.name || "Contact",
+      mode: "video",
+    });
+    if (!session) return;
+    callStateV2.startOutgoing({
+      sessionId: session.id,
+      conversationId: thread.v2ConversationId || null,
+      peerOrbitId: thread.peerOrbitId,
+      peerUserId: thread.peerUserId || null,
+      peerName: thread.name || "Contact",
+      mode: "video",
+    });
+  };
+
   // Edit mode: inject original body into composer
   useEffect(() => {
     if (composer.editState) {
