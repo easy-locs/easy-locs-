@@ -83,7 +83,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       units: [unit, ...state.units],
     }));
 
-    platformBus.emit("property.unit.created", { unit }, "pm");
+    platformBus.emit("property:unit_created", { unit }, "pm");
 
     return unit;
   },
@@ -142,7 +142,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       },
     });
 
-    platformBus.emit("lease.created", { lease }, "pm");
+    platformBus.emit("lease:created", { lease }, "pm");
 
     return lease;
   },
@@ -173,8 +173,8 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       rentPayments: [payment, ...state.rentPayments],
     }));
 
-    platformBus.emit("rent.payment.created", { payment }, "pm");
-    platformBus.emit("rent.payment.required", {
+    platformBus.emit("rent:payment_created", { payment }, "pm");
+    platformBus.emit("rent:payment_required", {
       paymentId: payment.id,
       amount: payment.amount,
       currency: payment.currency,
@@ -214,7 +214,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       ),
     }));
 
-    platformBus.emit("rent.payment.paid", {
+    platformBus.emit("rent:payment_paid", {
       paymentId,
       transactionId: tx.id,
     }, "pm");

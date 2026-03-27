@@ -90,7 +90,7 @@ const MODULE_CHECKS: ModuleLinkCheck[] = [
   {
     from: "Notifications", to: "Actions", via: "action_trigger",
     check: async () => {
-      const { count } = await db.from("notifications").select("id", { count: "exact", head: true }).eq("read", false);
+      const { count } = await db.from("app_notifications").select("id", { count: "exact", head: true }).is("read_at", null);
       return { ok: true, detail: `${count ?? 0} unread notifications` };
     },
   },

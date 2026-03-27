@@ -93,7 +93,7 @@ export const useOrbitStore = create<OrbitStore>((set, get) => ({
 
     set({ profile, loading: false });
 
-    platformBus.emit("orbit.profile.loaded", { orbitId: profile.orbitId, userId: profile.id }, "orbit");
+    platformBus.emit("orbit:profile_loaded", { orbitId: profile.orbitId, userId: profile.id }, "orbit");
   },
 
   updateRole: async (role: AppRole) => {
