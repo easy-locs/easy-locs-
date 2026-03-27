@@ -238,7 +238,7 @@ Deno.serve(async (req) => {
         };
 
         // ── FIREWALL GUARD on storefront visibility writes ──
-        const fwResult = await guardedUpdate(
+        const fwResult = await guardedUpdateLocal(
           "concrete-surface-sync",
           "storefront_pages",
           storefront.id,
@@ -1459,12 +1459,7 @@ Deno.serve(async (req) => {
     const elapsed = Date.now() - startTime;
     report.elapsed_ms = elapsed;
     report.completed_at = new Date().toISOString();
-    report.firewall_summary = {
-      total_checks: firewallLog.length,
-      blocked: firewallLog.filter(l => l.blocked).length,
-      passed: firewallLog.filter(l => !l.blocked).length,
-      blocks_by_rule: firewallLog.filter(l => l.blocked).reduce((acc, l) => { acc[l.rule] = (acc[l.rule] || 0) + 1; return acc; }, {} as Record<string, number>),
-    };
+    report.firewall_summary = getFirewallSummary();
 
     try {
       await supabase.from("platform_recovery_runs").insert({ id: crypto.randomUUID(), trigger_type: "engine-cron-server-v3", status: "completed", report_json: report } as any);
