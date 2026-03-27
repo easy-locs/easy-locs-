@@ -713,7 +713,7 @@ export default function OrbitAccountSection() {
 
         <div className="flex items-center gap-1.5 mt-3">
           <ShieldCheck className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
-          <span className="text-[10px] font-medium" style={{ color: "hsl(var(--primary))" }}>{t("orbit.you.e2e_encrypted") || "End-to-End Encrypted"}</span>
+          <span className="text-[10px] font-medium" style={{ color: "hsl(var(--primary))" }}>End-to-End Encrypted</span>
         </div>
       </motion.div>
 
@@ -721,26 +721,26 @@ export default function OrbitAccountSection() {
 
       {/* Menu items */}
       <div className="px-3 py-3 space-y-0.5">
-        <MenuItem icon={Pencil} label={t("orbit.you.edit_profile") || "Edit Profile"} desc={t("orbit.you.name_photo_identity") || "Name, photo, identity"} onClick={() => setSubPage("edit-profile")} color="hsl(var(--primary))" />
-        <MenuItem icon={QrCode} label={t("orbit.you.account_id") || "Account ID"} desc={`EL-${shortId}`} onClick={copyId} color="hsl(var(--accent))" />
+        <MenuItem icon={Pencil} label="Edit Profile" desc="Name, photo, identity" onClick={() => setSubPage("edit-profile")} color="hsl(var(--primary))" />
+        <MenuItem icon={QrCode} label="Account ID" desc={`EL-${shortId}`} onClick={copyId} color="hsl(var(--accent))" />
 
         <Separator className="my-2 mx-3" />
 
-        <MenuItem icon={Store} label={t("orbit.you.business_tools") || "Business Tools"} desc={t("orbit.you.marketplace_services") || "Marketplace, services, catalog"} onClick={() => navigate("/dashboard/my-shop")} color="hsl(var(--primary))" />
-        <MenuItem icon={Star} label={t("orbit.you.starred") || "Starred"} desc={t("orbit.you.starred_messages") || "Starred messages and contacts"} onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
+        <MenuItem icon={Store} label="Business Tools" desc="Marketplace, services, catalog" onClick={() => navigate("/dashboard/my-shop")} color="hsl(var(--primary))" />
+        <MenuItem icon={Star} label="Starred" desc="Starred messages and contacts" onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
 
         <Separator className="my-2 mx-3" />
 
-        <MenuItem icon={Eye} label={t("orbit.you.privacy") || "Privacy"} desc={t("orbit.you.privacy_desc") || "Last seen, read receipts, typing"} onClick={() => setSubPage("privacy")} color="hsl(var(--primary))" />
-        <MenuItem icon={Shield} label={t("orbit.you.security") || "Security"} desc={t("orbit.you.security_desc") || "E2E encryption, 2FA, screen lock"} onClick={() => setSubPage("security")} color="hsl(var(--accent))" />
-        <MenuItem icon={MessageSquare} label={t("orbit.you.chats") || "Chats"} desc={t("orbit.you.chats_desc") || "Theme, animations, export"} onClick={() => setSubPage("chats")} color="hsl(var(--primary))" />
-        <MenuItem icon={Bell} label={t("orbit.you.notifications") || "Notifications"} desc={t("orbit.you.notif_desc") || "Messages, calls, sounds"} onClick={() => setSubPage("notifications")} color="hsl(var(--accent))" />
-        <MenuItem icon={Database} label={t("orbit.you.storage") || "Storage & Data"} desc={t("orbit.you.storage_desc") || "Media, disappearing messages"} onClick={() => setSubPage("storage")} color="hsl(var(--primary))" />
-        <MenuItem icon={Smartphone} label={t("orbit.you.devices") || "Connected Devices"} desc={t("orbit.you.devices_desc") || "Manage active sessions"} onClick={() => setSubPage("devices")} color="hsl(var(--accent))" />
+        <MenuItem icon={Eye} label="Privacy" desc="Last seen, read receipts, typing" onClick={() => setSubPage("privacy")} color="hsl(var(--primary))" />
+        <MenuItem icon={Shield} label="Security" desc="E2E encryption, 2FA, screen lock" onClick={() => setSubPage("security")} color="hsl(var(--accent))" />
+        <MenuItem icon={MessageSquare} label="Chats" desc="Theme, animations, export" onClick={() => setSubPage("chats")} color="hsl(var(--primary))" />
+        <MenuItem icon={Bell} label="Notifications" desc="Messages, calls, sounds" onClick={() => setSubPage("notifications")} color="hsl(var(--accent))" />
+        <MenuItem icon={Database} label="Storage & Data" desc="Media, disappearing messages" onClick={() => setSubPage("storage")} color="hsl(var(--primary))" />
+        <MenuItem icon={Smartphone} label="Connected Devices" desc="Manage active sessions" onClick={() => setSubPage("devices")} color="hsl(var(--accent))" />
 
         <Separator className="my-2 mx-3" />
 
-        <MenuItem icon={HelpCircle} label={t("orbit.you.help") || "Help"} desc={t("orbit.you.help_desc") || "FAQ, contact support"} onClick={() => navigate("/contact")} color="hsl(var(--muted-foreground))" />
+        <MenuItem icon={HelpCircle} label="Help" desc="FAQ, contact support" onClick={() => navigate("/contact")} color="hsl(var(--muted-foreground))" />
       </div>
 
       <Separator className="mx-4" />
