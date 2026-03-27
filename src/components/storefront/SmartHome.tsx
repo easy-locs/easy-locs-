@@ -57,7 +57,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
   const locationLabel = city || "your area";
 
   return (
-    <div className="relative mb-4 overflow-visible rounded-[1.75rem] px-4 pb-4 pt-4" style={{ background: hero.gradient }}>
+    <div className="relative mb-5 overflow-visible rounded-[1.75rem] px-4 pb-4 pt-4" style={{ background: hero.gradient }}>
       {/* Location + Notification row */}
       <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
         <button onClick={onLocationTap} className="flex min-w-0 max-w-[72%] items-center gap-2 active:scale-95 transition-transform">
@@ -96,7 +96,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
 
 /* ═══ Quick Actions Strip ═══ */
 const QuickActions = memo(() => (
-  <div className="mb-4 flex items-center gap-2">
+  <div className="mb-5 flex items-center gap-2">
     {[
       { icon: QrCode, label: "Scan", to: "/pay/scan" },
       { icon: Send, label: "Pay", to: "/wallet/transfer" },
@@ -273,7 +273,7 @@ export default function SmartHome() {
         <QuickActions />
 
         {/* Category grid — horizontal scrollable, 2 rows */}
-        <div className="mb-4 touch-pan-x overflow-x-auto scrollbar-none">
+        <div className="mb-5 touch-pan-x overflow-x-auto scrollbar-none">
           <motion.div
             variants={staggerContainer}
             initial="hidden"
