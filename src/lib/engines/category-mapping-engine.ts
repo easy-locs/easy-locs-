@@ -1,5 +1,2 @@
-/** Stub — engine logic moved to backend functions. */
-export async function runCategoryMapping(..._args: any[]): Promise<any> {
-  console.warn("[category-mapping-engine] Stub — no-op");
-  return { status: "stub", results: [] };
-}
+/** Stub */
+export async function runCategoryMapping(..._args: any[]) { return { status: "stub", results: [] }; }

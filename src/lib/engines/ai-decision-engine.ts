@@ -1,5 +1,5 @@
-/** Stub — engine logic moved to backend functions. */
-export async function runAiDecision(..._args: any[]): Promise<any> {
-  console.warn("[ai-decision-engine] Stub — no-op");
-  return { status: "stub", results: [] };
+/** Stub — engine logic moved to backend. */
+export interface DecisionResult { decisions: any[]; confidence: number; }
+export async function runAIDecisionEngine(..._args: any[]): Promise<DecisionResult> {
+  return { decisions: [], confidence: 0 };
 }

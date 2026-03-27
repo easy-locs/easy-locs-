@@ -1,5 +1,5 @@
-/** Stub — engine logic moved to backend functions. */
-export async function runShopQuality(..._args: any[]): Promise<any> {
-  console.warn("[shop-quality-engine] Stub — no-op");
-  return { status: "stub", results: [] };
+/** Stub — engine logic moved to backend. */
+export interface ShopQualityResult { score: number; issues: any[]; }
+export async function runShopQualityCheck(..._args: any[]): Promise<ShopQualityResult> {
+  return { score: 0, issues: [] };
 }
