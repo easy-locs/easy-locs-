@@ -16,7 +16,7 @@
 // TAXONOMY — Conversation & Message types
 // ═══════════════════════════════════════════════════
 
-export type ConversationType = "direct" | "group" | "support" | "system";
+export type ConversationType = "direct" | "group" | "support" | "system" | "booking" | "property_management";
 
 export type MessageType =
   | "text"
