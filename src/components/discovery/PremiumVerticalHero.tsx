@@ -20,7 +20,7 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
   const navigate = useNavigate();
 
   return (
-    <div className="relative overflow-hidden rounded-b-[2rem]" style={{ minHeight: 200 }}>
+    <div className="relative overflow-hidden rounded-b-[2rem]" style={{ minHeight: 220 }}>
       {/* Background image */}
       <div className="absolute inset-0">
         <motion.img
@@ -81,26 +81,26 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
       </div>
 
       {/* Content */}
-      <div className="relative z-10 px-4 pt-12 pb-8">
-        <div className="flex items-center gap-3 mb-2">
+      <div className="relative z-10 px-4 pt-12 pb-10">
+        <div className="flex items-start gap-3 mb-2 min-w-0">
           <button
             onClick={() => navigate(-1)}
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
+            className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0"
             style={{ background: "hsla(0,0%,100%,0.16)", border: "1px solid hsla(0,0%,100%,0.12)" }}
             aria-label="Go back"
           >
             <ArrowLeft className="h-4 w-4 text-white" />
           </button>
           <motion.span
-            className="text-2xl"
+            className="text-2xl shrink-0 leading-none pt-1"
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
             {emoji}
           </motion.span>
-          <h1 className="text-2xl font-black text-white tracking-tight leading-tight break-words" style={{ textWrap: "balance" }}>{title}</h1>
+          <h1 className="min-w-0 flex-1 text-2xl font-black text-white tracking-tight leading-tight break-words" style={{ textWrap: "balance" }}>{title}</h1>
         </div>
-        <p className="text-sm text-white/70 ml-[3.25rem] font-medium leading-snug break-words">{tagline}</p>
+        <p className="ml-[3.25rem] max-w-[calc(100%-3.25rem)] pr-1 text-sm text-white/70 font-medium leading-snug break-words" style={{ textWrap: "balance" }}>{tagline}</p>
         {children}
       </div>
 
@@ -111,7 +111,7 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
 
       {/* Search bar floating */}
       {search && (
-        <div className="relative z-20 px-4 -mb-5 pb-1">
+        <div className="relative z-20 px-4 -mb-6 pb-2">
           {search}
         </div>
       )}

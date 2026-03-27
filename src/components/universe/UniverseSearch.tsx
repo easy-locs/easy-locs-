@@ -22,13 +22,13 @@ export default function UniverseSearch({
   clearable = true,
 }: UniverseSearchProps) {
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative min-w-0", className)}>
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 shrink-0 text-muted-foreground pointer-events-none" />
       <Input
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
-        className="min-w-0 h-12 pl-11 pr-10 rounded-2xl bg-card border-border/30 text-sm leading-normal shadow-sm"
+        className="search-premium-field min-w-0 h-12 pl-11 pr-10 rounded-2xl bg-card border-border/30 text-sm font-medium shadow-sm"
       />
       {clearable && value && (
         <button

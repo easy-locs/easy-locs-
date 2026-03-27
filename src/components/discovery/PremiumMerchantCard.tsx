@@ -113,16 +113,16 @@ export default function PremiumMerchantCard({
               </span>
             )}
             <div className="absolute bottom-3 left-3 right-3">
-              <h3 className="text-lg font-black text-white line-clamp-2 leading-tight drop-shadow-md">{name}</h3>
-              {category && <p className="text-xs text-white/80 line-clamp-2 leading-snug mt-0.5">{category}</p>}
+              <h3 className="text-lg font-black text-white line-clamp-2 leading-tight break-words drop-shadow-md">{name}</h3>
+              {category && <p className="text-xs text-white/80 line-clamp-3 leading-snug break-words mt-0.5">{category}</p>}
             </div>
           </div>
-          <div className="p-3 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+          <div className="p-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2.5">
               <RatingBadge />
               <StatusDot />
             </div>
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+            <div className="flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
               {eta && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{eta}</span>}
               {distance && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{distance}</span>}
               {priceRange && <span className="font-semibold">{priceRange}</span>}
@@ -157,7 +157,7 @@ export default function PremiumMerchantCard({
           </div>
           <div className="p-2.5 space-y-1">
             <h3 className="text-[13px] font-bold text-foreground line-clamp-2 leading-snug">{name}</h3>
-            {category && <p className="text-[10px] text-muted-foreground line-clamp-1 leading-snug">{category}</p>}
+            {category && <p className="text-[10px] text-muted-foreground line-clamp-2 leading-snug break-words">{category}</p>}
             <div className="flex items-center gap-2 pt-0.5">
               <RatingBadge />
               {distance && (
@@ -203,12 +203,12 @@ export default function PremiumMerchantCard({
               </span>
             )}
           </div>
-          {category && <p className="text-[11px] text-muted-foreground line-clamp-2 leading-snug">{category}</p>}
+          {category && <p className="text-[11px] text-muted-foreground line-clamp-3 leading-snug break-words">{category}</p>}
           <div className="flex items-center gap-2 flex-wrap">
             <RatingBadge />
             <StatusDot />
           </div>
-          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
             {eta && <span className="flex items-center gap-0.5"><Clock className="h-2.5 w-2.5" />{eta}</span>}
             {distance && <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{distance}</span>}
             {priceRange && <span className="font-semibold text-foreground">{priceRange}</span>}
