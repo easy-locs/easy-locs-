@@ -683,6 +683,7 @@ const App = () => (
            <BrandSuccessFlash />
              
              
+            <AppHealthGuard />
             <OrbitSessionGuard />
            <RealtimeHubGuard />
            <NotificationsRealtimeGuard />
