@@ -36,6 +36,7 @@ import { useNotificationV2Store } from "@/stores/notificationV2Store";
 import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 import { AppInit } from "@/components/system/AppInit";
 import { AppRuntimeBridges } from "@/components/app/AppRuntimeBridges";
+import { CanonicalShellRuntime } from "@/components/app/CanonicalShellRuntime";
 import { GlobalExperienceProvider } from "@/providers/GlobalExperienceProvider";
 import { UiQualityProvider } from "@/providers/UiQualityProvider";
 import { FloatingCTAButton } from "@/components/engine/FloatingCTAButton";
