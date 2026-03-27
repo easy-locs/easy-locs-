@@ -57,7 +57,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
   const locationLabel = city || "your area";
 
   return (
-    <div className="relative mb-5 overflow-visible rounded-[1.75rem] px-4 pb-4 pt-4" style={{ background: hero.gradient }}>
+    <div className="relative mb-4 overflow-visible rounded-[1.75rem] px-4 pb-3 pt-3" style={{ background: hero.gradient }}>
       {/* Location + Notification row */}
       <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
         <button onClick={onLocationTap} className="flex min-w-0 max-w-[72%] items-center gap-2 active:scale-95 transition-transform">
@@ -70,20 +70,20 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
       </div>
 
       {/* Title + emoji */}
-      <div className="relative z-10 mb-3 flex items-start justify-between gap-3">
+      <div className="relative z-10 mb-2 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 pr-1">
-          <h2 className="line-clamp-2 text-lg font-black leading-snug text-white">{hero.title}</h2>
-          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-white/70">{hero.subtitle}</p>
+          <h2 className="line-clamp-1 text-base font-black leading-snug text-white">{hero.title}</h2>
+          <p className="mt-0.5 line-clamp-1 text-[11px] leading-relaxed text-white/70">{hero.subtitle}</p>
         </div>
-        <span className="text-3xl select-none shrink-0 opacity-60">{hero.emoji}</span>
+        <span className="text-2xl select-none shrink-0 opacity-60">{hero.emoji}</span>
       </div>
 
       {/* CTA */}
       <Link
         to={hero.route}
-        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 text-white text-xs font-bold active:bg-white/30 transition-colors relative z-10 mb-3"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-[11px] font-bold active:bg-white/30 transition-colors relative z-10 mb-2"
       >
-        {hero.cta} <ChevronRight className="h-3.5 w-3.5" />
+        {hero.cta} <ChevronRight className="h-3 w-3" />
       </Link>
 
       {/* Search bar inside banner */}
@@ -96,7 +96,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
 
 /* ═══ Quick Actions Strip ═══ */
 const QuickActions = memo(() => (
-  <div className="mb-5 flex items-center gap-2">
+  <div className="mb-4 flex items-center gap-2">
     {[
       { icon: QrCode, label: "Scan", to: "/pay/scan" },
       { icon: Send, label: "Pay", to: "/wallet/transfer" },
@@ -105,10 +105,10 @@ const QuickActions = memo(() => (
       <Link
         key={label}
         to={to}
-        className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-border/20 bg-card/60 px-3 active:scale-95 active:bg-primary/5 transition-all"
+        className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl border border-border/20 bg-card/60 px-2 active:scale-95 active:bg-primary/5 transition-all"
       >
-        <Icon className="h-4 w-4 text-primary shrink-0" />
-        <span className="truncate text-xs font-semibold text-foreground">{label}</span>
+        <Icon className="h-3.5 w-3.5 text-primary shrink-0" />
+        <span className="truncate text-[11px] font-semibold text-foreground">{label}</span>
       </Link>
     ))}
   </div>
@@ -126,7 +126,7 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
     >
       <Link
         to={cat.route}
-        className="group relative flex h-[106px] w-[88px] flex-col items-center justify-between overflow-visible rounded-2xl border border-border/10 bg-muted/30 p-2 transition-all duration-150 active:scale-[0.92]"
+        className="group relative flex h-[96px] w-[82px] flex-col items-center justify-between overflow-visible rounded-2xl border border-border/10 bg-muted/30 p-2 transition-all duration-150 active:scale-[0.92]"
       >
         {cat.subtitle && (
           <span className="absolute -top-1 -right-1 text-[7px] font-bold px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground leading-none z-10">
@@ -135,7 +135,7 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
         )}
         <div className="flex w-full flex-1 items-center justify-center">
           {imgSrc ? (
-            <img src={imgSrc} alt={cat.label} className="h-14 w-14 object-contain drop-shadow-md" loading="lazy" />
+            <img src={imgSrc} alt={cat.label} className="h-12 w-12 object-contain drop-shadow-md" loading="lazy" />
           ) : (
             <span className="text-2xl">{cat.icon}</span>
           )}
@@ -273,7 +273,7 @@ export default function SmartHome() {
         <QuickActions />
 
         {/* Category grid — horizontal scrollable, 2 rows */}
-        <div className="mb-5 touch-pan-x overflow-x-auto scrollbar-none">
+        <div className="mb-4 touch-pan-x overflow-x-auto scrollbar-none">
           <motion.div
             variants={staggerContainer}
             initial="hidden"
