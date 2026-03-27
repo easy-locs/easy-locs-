@@ -35,7 +35,7 @@ export async function sendCommunicationEvent(event: CommunicationEvent): Promise
   try {
     // Communication pipeline messages go to chat_messages_v2 if a conversation is available
     // Otherwise, this is a notification-only event
-    const contextConvId = event.meta?.conversation_id;
+    const contextConvId = (event.meta as any)?.conversation_id;
     if (contextConvId) {
       await (supabase as any).from("chat_messages_v2").insert({
         conversation_id: contextConvId,
