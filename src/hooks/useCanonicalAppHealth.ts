@@ -39,7 +39,7 @@ export function useCanonicalAppHealth() {
         setHealth((prev) => reduceHealth(prev, { me: "ok" }));
         touch();
       }),
-      platformBus.on(CANONICAL_APP_EVENTS.WATCHDOG_ALERT, (event) => {
+      platformBus.on(CANONICAL_APP_EVENTS.WATCHDOG_ALERT, (event: any) => {
         const area = event?.payload?.area;
         if (!area) return;
         setHealth((prev) =>
