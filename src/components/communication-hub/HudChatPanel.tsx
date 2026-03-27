@@ -50,7 +50,7 @@ import { useOrbitThreadUiState } from "@/hooks/useOrbitThreadUiState";
 import { OrbitPinnedBanner } from "@/components/orbit/OrbitPinnedBanner";
 import { OrbitJumpToBottomButton } from "@/components/orbit/OrbitJumpToBottomButton";
 import { OrbitComposerTopState } from "@/components/orbit/OrbitComposerTopState";
-import { OrbitCallMiniBar } from "@/components/orbit/OrbitCallMiniBar";
+
 import { OrbitMediaBar } from "@/components/orbit/OrbitMediaBar";
 import { useOrbitDevicePermissions } from "@/hooks/useOrbitDevicePermissions";
 import { useOrbitCallState } from "@/hooks/useOrbitCallState";
@@ -560,11 +560,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
         <DealContextHeader dealId={thread.dealId} contextType={thread.conversationType} contextId={thread.contextId} onToggleContext={onToggleContext} />
 
-        <OrbitCallMiniBar
-          active={callActions.isInCall}
-          label={thread.name || undefined}
-          onHangup={() => { void callActionsV2.hangupCall(); }}
-        />
 
         <OrbitCallPermissionBanner
           mic={devicePermissions.permissions.microphone}
