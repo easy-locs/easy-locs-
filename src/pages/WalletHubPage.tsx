@@ -367,15 +367,8 @@ export default function WalletHubPage() {
           )}
 
           {activeTab === "qr" && (
-            <motion.div key="qr" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="space-y-4">
+            <motion.div key="qr" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
               <ReceiveQrPanel />
-              <button
-                onClick={() => navigate("/pay/scan")}
-                className="w-full flex items-center justify-center gap-2 rounded-2xl p-4 bg-primary text-primary-foreground font-bold text-sm active:scale-[0.97] transition-transform"
-              >
-                <ScanLine className="w-5 h-5" />
-                Scan to Pay
-              </button>
             </motion.div>
           )}
 
