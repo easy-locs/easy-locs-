@@ -1,6 +1,11 @@
 /**
  * chatStore — V2-ONLY canonical chat store.
  * Uses conversations_v2 + chat_messages_v2 exclusively.
+ *
+ * FIXED:
+ * - createConversation: now resolves actual orbit_id for created_by_orbit_id (was using auth UUID)
+ * - sendMessage: emits "orbit:message_sent" (canonical colon event, not dead "message.sent")
+ * - createConversation: emits "orbit:thread_created" (canonical, not dead "conversation.created")
  */
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -88,6 +93,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const userId = authData?.user?.id;
     if (!userId) throw new Error("Not authenticated");
 
+    // Resolve actual orbit_id (not auth UUID)
+    let createdByOrbitId = `orbit_${userId.slice(0, 12)}`;
+    try {
+      const { data: orbitProfile } = await db
+        .from("orbit_profiles_v2")
+        .select("orbit_id")
+        .eq("id", userId)
+        .maybeSingle();
+      if (orbitProfile?.orbit_id) {
+        createdByOrbitId = orbitProfile.orbit_id;
+      }
+    } catch {
+      // fallback to generated orbit_id
+    }
+
     const now = new Date().toISOString();
 
     const { data, error } = await db
@@ -102,7 +122,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         last_message_at: now,
         created_at: now,
         updated_at: now,
-        created_by_orbit_id: userId,
+        created_by_orbit_id: createdByOrbitId,
       })
       .select()
       .single();
@@ -126,7 +146,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       conversations: [saved, ...state.conversations.filter((c) => c.id !== saved.id)],
     }));
 
-    platformBus.emit("conversation.created", { conversation: saved }, "orbit");
+    // Emit canonical event (not dead "conversation.created")
+    platformBus.emit("orbit:thread_created", { conversation: saved }, "orbit");
 
     return saved;
   },
@@ -178,7 +199,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       ),
     }));
 
-    platformBus.emit("message.sent", { message: saved }, "orbit");
+    // Emit canonical event (not dead "message.sent")
+    platformBus.emit("orbit:message_sent", {
+      conversationId: input.conversationId,
+      messageId: saved.id,
+      contentPreview: saved.body.slice(0, 80),
+    }, "orbit");
 
     return saved;
   },
