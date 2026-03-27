@@ -7,6 +7,23 @@ import { User } from "lucide-react";
 import type { ConversationThread } from "./types";
 import { CONV_TYPE_CONFIG, CONV_STATUSES } from "./types";
 import { useI18n } from "@/lib/i18n";
+import { formatEventMessage } from "@/lib/orbit/message-formatter";
+
+/** Clean raw call/event strings from message previews */
+function formatPreview(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  // Detect raw event patterns like "call:ended:0", "Call ended [call:ended:0]"
+  const bracketMatch = raw.match(/\[([^\]]+)\]/);
+  if (bracketMatch) {
+    // Strip the bracket part and format it
+    const clean = raw.replace(/\s*\[[^\]]+\]/, "").trim();
+    return clean || formatEventMessage(bracketMatch[1]);
+  }
+  if (/^(call|message|group|system):/.test(raw)) {
+    return formatEventMessage(raw);
+  }
+  return raw;
+}
 
 interface Props {
   thread: ConversationThread;
@@ -104,7 +121,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
           {thread.lastMessage ? (
             <p
               className="text-[13px] flex-1 min-w-0 truncate"
-              title={thread.lastMessage}
+              title={formatPreview(thread.lastMessage)}
               style={{
                 color: hasUnread
                   ? "hsl(var(--foreground) / 0.7)"
@@ -112,7 +129,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
                 fontWeight: hasUnread ? 500 : 400,
               }}
             >
-              {thread.lastMessage}
+              {formatPreview(thread.lastMessage)}
             </p>
           ) : (
             <p

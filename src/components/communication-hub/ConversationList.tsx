@@ -235,7 +235,7 @@ export default function ConversationList({ threads, loading, selectedThread, onS
                     {/* Last message preview */}
                     {thread.lastMessage && (
                       <p className={`text-[11px] truncate mt-1 ${thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground/60"}`}>
-                        {thread.lastMessage.slice(0, 60)}
+                        {thread.lastMessage.replace(/\s*\[[^\]]+\]/g, "").slice(0, 60)}
                       </p>
                     )}
                   </div>

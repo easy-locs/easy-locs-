@@ -19,9 +19,16 @@ export function getConversationSubtitle(conversation: any, myOrbitId: string) {
 
 export function getMessagePreview(message: any) {
   if (!message) return "";
-  if (message.type === "call") return `📞 ${message.body}`;
+  if (message.type === "call") {
+    // Format call events - strip raw event keys
+    const body = message.body ?? "";
+    const clean = body.replace(/\s*\[[^\]]+\]/g, "").trim();
+    return clean ? `📞 ${clean}` : "📞 Call";
+  }
   if (message.type === "image") return "🖼️ Photo";
   if (message.type === "file") return "📎 Document";
   if (message.type === "location") return "📍 Location";
-  return message.body ?? "";
+  // Strip any raw event brackets from regular messages too
+  const body = message.body ?? "";
+  return body.replace(/\s*\[[^\]]+\]/g, "").trim();
 }
