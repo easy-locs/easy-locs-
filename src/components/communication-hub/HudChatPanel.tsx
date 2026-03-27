@@ -52,6 +52,15 @@ import { OrbitJumpToBottomButton } from "@/components/orbit/OrbitJumpToBottomBut
 import { OrbitComposerTopState } from "@/components/orbit/OrbitComposerTopState";
 import { OrbitCallMiniBar } from "@/components/orbit/OrbitCallMiniBar";
 import { OrbitMediaBar } from "@/components/orbit/OrbitMediaBar";
+import { useOrbitDevicePermissions } from "@/hooks/useOrbitDevicePermissions";
+import { useOrbitCallState } from "@/hooks/useOrbitCallState";
+import { useOrbitCallActions } from "@/hooks/useOrbitCallActions";
+import { useOrbitCallHistory } from "@/hooks/useOrbitCallHistory";
+import { useOrbitCallRealtime } from "@/hooks/useOrbitCallRealtime";
+import { OrbitIncomingCallBar } from "@/components/orbit/OrbitIncomingCallBar";
+import { OrbitCallControls } from "@/components/orbit/OrbitCallControls";
+import { OrbitCallMiniPlayer } from "@/components/orbit/OrbitCallMiniPlayer";
+import { OrbitCallPermissionBanner } from "@/components/orbit/OrbitCallPermissionBanner";
 
 // V2 only — no legacy SYSTEM_SENDER_ID needed
 
@@ -160,6 +169,118 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     if (!threadUi.pinnedMessageId) return null;
     return messages.find((m: any) => m.id === threadUi.pinnedMessageId) || null;
   }, [messages, threadUi.pinnedMessageId]);
+
+  // Orbit Calls Pro — Bloc 10
+  const devicePermissions = useOrbitDevicePermissions();
+  const callStateV2 = useOrbitCallState();
+
+  const callActionsV2 = useOrbitCallActions({
+    currentUserId: user?.id ?? null,
+    currentOrbitId: myOrbitId ?? null,
+    activeCall: callStateV2.activeCall,
+    patchCall: callStateV2.patchCall,
+    setUiState: callStateV2.setUiState,
+    endCall: callStateV2.endCall,
+  });
+
+  const callHistory = useOrbitCallHistory(myOrbitId ?? null);
+
+  useOrbitCallRealtime({
+    currentOrbitId: myOrbitId ?? null,
+    onIncomingCall: (row: any) => {
+      callStateV2.startIncoming({
+        sessionId: row.id,
+        conversationId: row.conversation_id || null,
+        peerOrbitId: row.caller_orbit_id || null,
+        peerName: thread?.name || "Incoming call",
+        mode: row.call_type === "video" ? "video" : "audio",
+      });
+    },
+    onCallEnded: (row: any) => {
+      if (callStateV2.activeCall?.sessionId === row.id) {
+        callStateV2.endCall(row.status === "missed" ? "missed" : "ended");
+      }
+    },
+    onCallUpdated: (row: any) => {
+      if (callStateV2.activeCall?.sessionId === row.id) {
+        callStateV2.patchCall({
+          uiState: row.status === "active" ? "active" : callStateV2.activeCall?.uiState,
+          qualityState: row.quality_state || null,
+          reconnectCount: row.reconnect_count || 0,
+          answeredAt: row.answered_at || null,
+        });
+      }
+    },
+  });
+
+  // Missed call timeout
+  useEffect(() => {
+    if (!callStateV2.activeCall?.sessionId) return;
+    if (callStateV2.activeCall.uiState !== "incoming") return;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        await (supabase as any).rpc("mark_call_as_missed_v2", {
+          p_session_id: callStateV2.activeCall?.sessionId,
+          p_reason: "timeout",
+        });
+        callStateV2.endCall("missed");
+      })();
+    }, 30000);
+    return () => window.clearTimeout(timer);
+  }, [callStateV2.activeCall?.sessionId, callStateV2.activeCall?.uiState]);
+
+  // Reconnect recovery
+  useEffect(() => {
+    if (!callStateV2.activeCall) return;
+    if (callStateV2.activeCall.uiState !== "reconnecting") return;
+    const timer = window.setTimeout(() => {
+      callStateV2.patchCall({ uiState: "active", qualityState: "stable" });
+    }, 2500);
+    return () => window.clearTimeout(timer);
+  }, [callStateV2.activeCall?.uiState]);
+
+  const handleStartAudioCall = async () => {
+    if (!thread?.peerOrbitId) return;
+    const micOk = devicePermissions.permissions.microphone === "granted" || await devicePermissions.requestMicrophone();
+    if (!micOk) return;
+    const session = await callActionsV2.createOutgoingCall({
+      conversationId: thread.v2ConversationId || null,
+      peerOrbitId: thread.peerOrbitId,
+      peerName: thread.name || "Contact",
+      mode: "audio",
+    });
+    if (!session) return;
+    callStateV2.startOutgoing({
+      sessionId: session.id,
+      conversationId: thread.v2ConversationId || null,
+      peerOrbitId: thread.peerOrbitId,
+      peerUserId: thread.peerUserId || null,
+      peerName: thread.name || "Contact",
+      mode: "audio",
+    });
+  };
+
+  const handleStartVideoCall = async () => {
+    if (!thread?.peerOrbitId) return;
+    const micOk = devicePermissions.permissions.microphone === "granted" || await devicePermissions.requestMicrophone();
+    const camOk = devicePermissions.permissions.camera === "granted" || await devicePermissions.requestCamera();
+    if (!micOk || !camOk) return;
+    const session = await callActionsV2.createOutgoingCall({
+      conversationId: thread.v2ConversationId || null,
+      peerOrbitId: thread.peerOrbitId,
+      peerName: thread.name || "Contact",
+      mode: "video",
+    });
+    if (!session) return;
+    callStateV2.startOutgoing({
+      sessionId: session.id,
+      conversationId: thread.v2ConversationId || null,
+      peerOrbitId: thread.peerOrbitId,
+      peerUserId: thread.peerUserId || null,
+      peerName: thread.name || "Contact",
+      mode: "video",
+    });
+  };
 
   // Edit mode: inject original body into composer
   useEffect(() => {
@@ -368,7 +489,47 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         <OrbitCallMiniBar
           active={callActions.isInCall}
           label={thread.name || undefined}
-          onHangup={() => { /* handled by call UI */ }}
+          onHangup={() => { void callActionsV2.hangupCall(); }}
+        />
+
+        <OrbitCallPermissionBanner
+          mic={devicePermissions.permissions.microphone}
+          cam={devicePermissions.permissions.camera}
+          videoMode={callStateV2.activeCall?.mode === "video"}
+          onRequestMic={() => { void devicePermissions.requestMicrophone(); }}
+          onRequestCam={() => { void devicePermissions.requestCamera(); }}
+        />
+
+        <OrbitIncomingCallBar
+          visible={callStateV2.activeCall?.uiState === "incoming"}
+          peerName={callStateV2.activeCall?.peerName}
+          mode={callStateV2.activeCall?.mode}
+          onAccept={() => { void callActionsV2.acceptIncomingCall(); }}
+          onDecline={() => { void callActionsV2.declineIncomingCall(); }}
+        />
+
+        {callStateV2.activeCall &&
+          ["outgoing", "connecting", "active", "reconnecting"].includes(callStateV2.activeCall.uiState) && (
+            <OrbitCallControls
+              muted={callStateV2.activeCall.muted}
+              speakerOn={callStateV2.activeCall.speakerOn}
+              cameraOn={callStateV2.activeCall.cameraOn}
+              isVideo={callStateV2.activeCall.mode === "video"}
+              reconnecting={callStateV2.activeCall.uiState === "reconnecting"}
+              onToggleMute={() => { void callActionsV2.toggleMute(); }}
+              onToggleSpeaker={() => { void callActionsV2.toggleSpeaker(); }}
+              onToggleCamera={() => { void callActionsV2.toggleCamera(); }}
+              onHangup={() => { void callActionsV2.hangupCall(); }}
+            />
+          )}
+
+        <OrbitCallMiniPlayer
+          visible={!!callStateV2.activeCall && callStateV2.activeCall.uiState === "active"}
+          peerName={callStateV2.activeCall?.peerName}
+          state={callStateV2.activeCall?.uiState}
+          mode={callStateV2.activeCall?.mode}
+          muted={callStateV2.activeCall?.muted}
+          onHangup={() => { void callActionsV2.hangupCall(); }}
         />
 
         <OrbitPinnedBanner
