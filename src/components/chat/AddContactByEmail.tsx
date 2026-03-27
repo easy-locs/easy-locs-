@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { findUserByEmail } from "@/lib/orbit/findUserByEmail";
-import { createOrGetDirectConversation } from "@/lib/chat/conversationService";
+import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";

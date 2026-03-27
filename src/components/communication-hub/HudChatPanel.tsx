@@ -11,7 +11,7 @@ import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
 import { useOfflineMessages } from "@/hooks/useOfflineMessages";
 import { usePrivacySettings, computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { useVoiceRecorder, formatVoiceDuration } from "@/hooks/useVoiceRecorder";
-import { buildSecurityPayload, type SecurityLevel } from "@/lib/message-security";
+import { type SecurityLevel } from "@/lib/message-security";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 import type { ConversationThread, ChatMessage } from "./types";
@@ -43,7 +43,7 @@ import { useMessageSender } from "@/hooks/useMessageSender";
 import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
 import { useTranslation } from "@/hooks/useTranslation";
 
-const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
+// V2 only — no legacy SYSTEM_SENDER_ID needed
 
 interface Props {
   thread: ConversationThread | null;
@@ -131,15 +131,17 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   }, []);
 
   const updateConversationStatus = useCallback(async (status: string) => {
-    if (!thread || !orgId) return;
+    if (!thread) return;
     loader.setConvStatus(status);
     onThreadUpdate(thread.id, { conversationStatus: status });
-    const lastMsg = messages[messages.length - 1] as any;
-    if (lastMsg && !thread.isV2) {
-      const { error } = await supabase.from("messages").update({ conversation_status: status }).eq("id", lastMsg.id);
-      if (error) toast.error(t("orbit.status_update_failed") || "Failed to update status");
+    // V2: status is managed at conversation level, not message level
+    if (thread.v2ConversationId) {
+      await (supabase as any).from("conversations_v2").update({
+        metadata: { conversation_status: status },
+        updated_at: new Date().toISOString(),
+      }).eq("id", thread.v2ConversationId);
     }
-  }, [thread, orgId, loader, messages, onThreadUpdate, t]);
+  }, [thread, loader, onThreadUpdate]);
 
   const handleBookingAction = useCallback(async (action: "confirm" | "cancel" | "complete") => {
     if (!orgId || !user || !thread?.bookingId) return;
@@ -155,23 +157,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         await supabase.from("concierge_orders").update(updates).eq("id", thread.bookingId);
       } else if (thread.bookingType === "seasonal") await supabase.from("booking_requests").update({ status: newStatus }).eq("id", thread.bookingId);
 
-      if (!thread.isV2) {
+      // V2: Write system message to chat_messages_v2
+      if (thread.v2ConversationId) {
         const actionLabels = { confirm: "✅ Booking confirmed", cancel: "❌ Booking cancelled", complete: "🏁 Booking completed" };
-        const payload: any = {
-          org_id: orgId,
-          sender_id: SYSTEM_SENDER_ID,
-          tenant_id: thread.tenantId || null,
-          booking_id: thread.bookingId,
-          booking_type: thread.bookingType,
-          content: actionLabels[action],
-          category: "booking",
-          message_type: "system",
-          read: false,
-          context_type: thread.contextType,
-          context_id: thread.contextId,
-        };
-        if (thread.threadId) payload.thread_id = thread.threadId;
-        await supabase.from("messages").insert(payload);
+        await (supabase as any).from("chat_messages_v2").insert({
+          conversation_id: thread.v2ConversationId,
+          sender_user_id: user.id,
+          sender_orbit_id: myOrbitId || `orbit_${user.id.slice(0, 12)}`,
+          type: "system",
+          body: actionLabels[action],
+          metadata: { booking_action: action, booking_id: thread.bookingId },
+        });
+        await (supabase as any).from("conversations_v2").update({
+          last_message_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq("id", thread.v2ConversationId);
       }
 
       onThreadUpdate(thread.id, { bookingStatus: newStatus });
@@ -179,7 +179,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     } catch (e: any) {
       toast.error(e?.message || "Booking action failed");
     }
-  }, [orgId, user, thread, onThreadUpdate, t]);
+  }, [orgId, user, thread, onThreadUpdate, t, myOrbitId]);
 
   const handleViewOnceUpload = useCallback(async (file: File) => {
     if (!thread || !orgId) return;
@@ -196,37 +196,19 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       if (!finalUrl) throw new Error("Upload failed");
       const disappearAt = computeDisappearAt(security.disappearTTL !== "off" ? security.disappearTTL : privacySettings.defaultDisappearTtl);
 
-      if (thread.isV2 && thread.v2ConversationId) {
-        await (supabase as any).from("chat_messages_v2").insert({
-          conversation_id: thread.v2ConversationId,
-          sender_user_id: authUserId,
-          sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-          receiver_orbit_id: thread.peerOrbitId ?? null,
-          type: "media",
-          body: "📷 View-once photo",
-          metadata: { url: finalUrl, view_once: true, disappear_at: disappearAt },
-        });
-        await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", thread.v2ConversationId);
-      } else {
-        const payload: any = {
-          org_id: orgId,
-          sender_id: authUserId,
-          tenant_id: thread.tenantId || null,
-          booking_id: thread.bookingId || null,
-          booking_type: thread.bookingType || null,
-          content: "📷 View-once photo",
-          attachment_url: finalUrl,
-          category: "general",
-          message_type: "user",
-          sender_locale: locale,
-          context_type: thread.contextType,
-          context_id: thread.contextId,
-          view_once: true,
-          disappear_at: disappearAt,
-        };
-        if (thread.threadId) payload.thread_id = thread.threadId;
-        await supabase.from("messages").insert(payload);
-      }
+      // V2 only
+      const conversationId = thread.v2ConversationId;
+      if (!conversationId) throw new Error("No V2 conversation");
+      await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: conversationId,
+        sender_user_id: authUserId,
+        sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        receiver_orbit_id: thread.peerOrbitId ?? null,
+        type: "media",
+        body: "📷 View-once photo",
+        metadata: { url: finalUrl, view_once: true, disappear_at: disappearAt },
+      });
+      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
       toast.success(t("orbit.view_once_sent") || "View-once photo sent");
     } catch (e: any) {
       toast.error(e?.message || "Upload failed");
@@ -249,47 +231,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       const audioUrl = await attachments.uploadToStorage(blob, path);
       if (!audioUrl) throw new Error("Voice upload failed");
 
-      const securityPayload = buildSecurityPayload(security.securityLevel as SecurityLevel);
-      if (thread.isV2 && thread.v2ConversationId) {
-        const { error } = await (supabase as any).from("chat_messages_v2").insert({
-          conversation_id: thread.v2ConversationId,
-          sender_user_id: authUserId,
-          sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-          receiver_orbit_id: thread.peerOrbitId ?? null,
-          type: "voice",
-          body: `🎤 Voice message (${formatVoiceDuration(dur)})`,
-          metadata: { audio_url: audioUrl, audio_duration_seconds: dur, transcript_status: "pending" },
-        });
-        if (error) throw error;
-        await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", thread.v2ConversationId);
-      } else {
-        const payload: any = {
-          org_id: orgId,
-          sender_id: authUserId,
-          tenant_id: thread.tenantId || null,
-          booking_id: thread.bookingId || null,
-          booking_type: thread.bookingType || null,
-          contact_name: thread.conversationType !== "property" ? thread.name : undefined,
-          contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-          content: `🎤 Voice message (${formatVoiceDuration(dur)})`,
-          category: "general",
-          audio_url: audioUrl,
-          audio_duration_seconds: dur,
-          message_type: "user",
-          sender_locale: locale,
-          context_type: thread.contextType,
-          context_id: thread.contextId,
-          transcript_status: "pending",
-          ...securityPayload,
-        };
-        if (thread.threadId) payload.thread_id = thread.threadId;
-        const { data: insertedMsg } = await supabase.from("messages").insert(payload).select("id").single();
-        if (insertedMsg?.id) {
-          supabase.functions.invoke("voice-transcribe", {
-            body: { message_id: insertedMsg.id, audio_url: audioUrl, target_locale: locale },
-          }).catch(() => null);
-        }
-      }
+      // V2 only
+      const conversationId = thread.v2ConversationId;
+      if (!conversationId) throw new Error("No V2 conversation");
+      const { error } = await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: conversationId,
+        sender_user_id: authUserId,
+        sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        receiver_orbit_id: thread.peerOrbitId ?? null,
+        type: "voice",
+        body: `🎤 Voice message (${formatVoiceDuration(dur)})`,
+        metadata: { audio_url: audioUrl, audio_duration_seconds: dur, transcript_status: "pending" },
+      });
+      if (error) throw error;
+      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
       security.setSecurityLevel("normal");
       toast.success(t("orbit.voice_sent") || "Voice message sent");
       platformBus.emit("orbit:message_sent", { threadId: thread.threadId || thread.id, contextId: thread.contextId, type: "voice" }, "orbit", { userId: authUserId, orgId });
@@ -303,7 +258,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   }, [voicePreview, thread, orgId, resolveAuthUserId, attachments, security, myOrbitId, locale, t]);
 
   const handleLocationSend = useCallback(async (loc: any) => {
-    if (!orgId || !thread) return;
+    if (!thread) return;
     const authUserId = await resolveAuthUserId();
     if (!authUserId) return;
     const mapUrl = `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`;
@@ -314,48 +269,33 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       : `📍 My location\n${mapUrl}`;
 
     let storedContent = locationMsg;
-    let encryptedState = false;
-    const peerId = thread.tenantId || thread.contextId || thread.id;
+    const peerId = thread.peerUserId || thread.contextId || thread.id;
     if (e2eReady && peerId) {
       const enc = await encrypt(locationMsg, peerId);
-      if (enc) { storedContent = enc; encryptedState = true; }
+      if (enc) { storedContent = enc; }
     }
 
-    if (thread.isV2 && thread.v2ConversationId) {
-      await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: thread.v2ConversationId,
-        sender_user_id: authUserId,
-        sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: thread.peerOrbitId ?? null,
-        type: "location",
-        body: storedContent,
-        metadata: { lat: loc.lat, lng: loc.lng, mode: loc.type },
-      });
-      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", thread.v2ConversationId);
-    } else {
-      const insertData: any = {
-        org_id: orgId,
-        sender_id: authUserId,
-        content: storedContent,
-        category: "general",
-        message_type: "user",
-        sender_locale: locale,
-        encrypted: encryptedState,
-        contact_name: thread.conversationType !== "property" ? thread.name : undefined,
-        contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-      };
-      if (thread.bookingId) insertData.booking_id = thread.bookingId;
-      if (thread.tenantId) insertData.tenant_id = thread.tenantId;
-      if (thread.contextType) insertData.context_type = thread.contextType;
-      if (thread.contextId) insertData.context_id = thread.contextId;
-      if (thread.threadId) insertData.thread_id = thread.threadId;
-      await supabase.from("messages").insert(insertData);
+    // V2 only
+    const conversationId = thread.v2ConversationId;
+    if (!conversationId) {
+      toast.error("No V2 conversation for location sharing");
+      return;
     }
+    await (supabase as any).from("chat_messages_v2").insert({
+      conversation_id: conversationId,
+      sender_user_id: authUserId,
+      sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+      receiver_orbit_id: thread.peerOrbitId ?? null,
+      type: "location",
+      body: storedContent,
+      metadata: { lat: loc.lat, lng: loc.lng, mode: loc.type },
+    });
+    await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
 
     platformBus.emit("orbit:message_sent", { threadId: thread.threadId || thread.id, contextId: thread.contextId, type: "location" }, "orbit", { userId: user?.id, orgId });
     toast.success(t("orbit.location_shared") || "Location shared");
     security.setShowLocationPicker(false);
-  }, [orgId, thread, resolveAuthUserId, e2eReady, encrypt, myOrbitId, locale, user?.id, t, security]);
+  }, [thread, resolveAuthUserId, e2eReady, encrypt, myOrbitId, user?.id, orgId, t, security]);
 
   const empty = !thread;
   const visibleMessages = useMemo(() => messages, [messages]);
