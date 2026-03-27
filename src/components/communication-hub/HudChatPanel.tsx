@@ -43,6 +43,16 @@ import { useMessageSender } from "@/hooks/useMessageSender";
 import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
 import { useTranslation } from "@/hooks/useTranslation";
 
+import { useOrbitScrollManager } from "@/hooks/useOrbitScrollManager";
+import { useOrbitComposerState } from "@/hooks/useOrbitComposerState";
+import { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
+import { useOrbitThreadUiState } from "@/hooks/useOrbitThreadUiState";
+import { OrbitPinnedBanner } from "@/components/orbit/OrbitPinnedBanner";
+import { OrbitJumpToBottomButton } from "@/components/orbit/OrbitJumpToBottomButton";
+import { OrbitComposerTopState } from "@/components/orbit/OrbitComposerTopState";
+import { OrbitCallMiniBar } from "@/components/orbit/OrbitCallMiniBar";
+import { OrbitMediaBar } from "@/components/orbit/OrbitMediaBar";
+
 // V2 only — no legacy SYSTEM_SENDER_ID needed
 
 interface Props {
