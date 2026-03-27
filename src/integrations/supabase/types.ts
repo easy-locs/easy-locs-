@@ -8413,6 +8413,216 @@ export type Database = {
           },
         ]
       }
+      hotel_availability: {
+        Row: {
+          available: boolean | null
+          created_at: string | null
+          currency: string | null
+          date: string
+          id: string
+          max_stay: number | null
+          min_stay: number | null
+          price: number
+          room_id: string
+        }
+        Insert: {
+          available?: boolean | null
+          created_at?: string | null
+          currency?: string | null
+          date: string
+          id?: string
+          max_stay?: number | null
+          min_stay?: number | null
+          price?: number
+          room_id: string
+        }
+        Update: {
+          available?: boolean | null
+          created_at?: string | null
+          currency?: string | null
+          date?: string
+          id?: string
+          max_stay?: number | null
+          min_stay?: number | null
+          price?: number
+          room_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hotel_availability_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "hotel_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hotel_rate_plans: {
+        Row: {
+          cancellation_policy: string | null
+          created_at: string | null
+          id: string
+          meal_plan: string | null
+          name: string
+          refundable: boolean | null
+          room_id: string
+        }
+        Insert: {
+          cancellation_policy?: string | null
+          created_at?: string | null
+          id?: string
+          meal_plan?: string | null
+          name?: string
+          refundable?: boolean | null
+          room_id: string
+        }
+        Update: {
+          cancellation_policy?: string | null
+          created_at?: string | null
+          id?: string
+          meal_plan?: string | null
+          name?: string
+          refundable?: boolean | null
+          room_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hotel_rate_plans_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "hotel_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hotel_rooms: {
+        Row: {
+          amenities_json: Json | null
+          bed_type: string | null
+          capacity: number | null
+          created_at: string | null
+          description: string | null
+          hotel_id: string
+          id: string
+          images_json: Json | null
+          name: string
+          size_m2: number | null
+        }
+        Insert: {
+          amenities_json?: Json | null
+          bed_type?: string | null
+          capacity?: number | null
+          created_at?: string | null
+          description?: string | null
+          hotel_id: string
+          id?: string
+          images_json?: Json | null
+          name: string
+          size_m2?: number | null
+        }
+        Update: {
+          amenities_json?: Json | null
+          bed_type?: string | null
+          capacity?: number | null
+          created_at?: string | null
+          description?: string | null
+          hotel_id?: string
+          id?: string
+          images_json?: Json | null
+          name?: string
+          size_m2?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hotel_rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hotels: {
+        Row: {
+          address: string | null
+          amenities_json: Json | null
+          checkin_time: string | null
+          checkout_time: string | null
+          city: string | null
+          country: string | null
+          cover_image: string | null
+          created_at: string | null
+          description: string | null
+          gallery_json: Json | null
+          id: string
+          lat: number | null
+          lng: number | null
+          name: string
+          overall_quality_score: number | null
+          policies_json: Json | null
+          rating: number | null
+          reviews_count: number | null
+          seed_merchant_id: string | null
+          source_entity_id: string | null
+          source_type: string | null
+          stars: number | null
+          updated_at: string | null
+          visibility_mode: string | null
+        }
+        Insert: {
+          address?: string | null
+          amenities_json?: Json | null
+          checkin_time?: string | null
+          checkout_time?: string | null
+          city?: string | null
+          country?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          description?: string | null
+          gallery_json?: Json | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name: string
+          overall_quality_score?: number | null
+          policies_json?: Json | null
+          rating?: number | null
+          reviews_count?: number | null
+          seed_merchant_id?: string | null
+          source_entity_id?: string | null
+          source_type?: string | null
+          stars?: number | null
+          updated_at?: string | null
+          visibility_mode?: string | null
+        }
+        Update: {
+          address?: string | null
+          amenities_json?: Json | null
+          checkin_time?: string | null
+          checkout_time?: string | null
+          city?: string | null
+          country?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          description?: string | null
+          gallery_json?: Json | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          overall_quality_score?: number | null
+          policies_json?: Json | null
+          rating?: number | null
+          reviews_count?: number | null
+          seed_merchant_id?: string | null
+          source_entity_id?: string | null
+          source_type?: string | null
+          stars?: number | null
+          updated_at?: string | null
+          visibility_mode?: string | null
+        }
+        Relationships: []
+      }
       import_batches: {
         Row: {
           city: string
