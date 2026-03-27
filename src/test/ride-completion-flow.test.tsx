@@ -136,9 +136,10 @@ describe("Ride Completion Flow", () => {
   });
 
   it("step 4: status machine allows in_progress → completed", async () => {
-    const { TRANSITION_MAP } = await import("@/lib/mobility/status-machine");
-    const allowed = TRANSITION_MAP["in_progress"];
-    expect(allowed).toContain("completed");
+    const { isValidTransition } = await import("@/lib/mobility/status-machine");
+    expect(isValidTransition("in_progress", "completed")).toBe(true);
+    expect(isValidTransition("rider_arriving_dropoff", "completed")).toBe(true);
+    expect(isValidTransition("searching", "completed")).toBe(false);
   });
 
   it("step 5: tracking effect triggers completed step on job status change", () => {
