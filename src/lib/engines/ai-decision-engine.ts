@@ -286,7 +286,9 @@ async function persistDecisions(decisions: AIDecision[], executed: AIDecision[])
   }));
 
   if (rows.length > 0) {
-    await db.from("ai_decision_logs").insert(rows).throwOnError().catch(() => {});
+    try {
+      await db.from("ai_decision_logs").insert(rows);
+    } catch {}
   }
 }
 
