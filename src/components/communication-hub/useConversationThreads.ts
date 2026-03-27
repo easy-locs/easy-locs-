@@ -41,7 +41,12 @@ export function useConversationThreads() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadThreads = useCallback(async () => {
-    if (!orgId || loadingRef.current) { setLoading(false); return; }
+    if (!user?.id || !orgId || loadingRef.current) {
+      setThreads([]);
+      setStats({ unread: 0, pending_docs: 0, overdue: 0, maintenance: 0 });
+      setLoading(false);
+      return;
+    }
     loadingRef.current = true;
     setLoading(true);
     const threadMap = new Map<string, ConversationThread>();
