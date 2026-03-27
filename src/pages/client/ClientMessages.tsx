@@ -269,14 +269,10 @@ const ClientMessages = () => {
   };
 
   const visibleMessages = messages.filter(m => {
-    if ((m as any).deleted_for_sender && m.sender_id === user?.id) return false;
-    if (user?.id && ((m as any).deleted_for_user_ids as string[] | null)?.includes(user.id)) return false;
-    // Hide messages from blocked users (except system messages)
-    if (m.message_type !== "system" && blockedUserIds.has(m.sender_id)) return false;
-    if ((m as any).deleted_for_all) {
-      return true;
-    }
-    if (searchQuery && !m.content?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    const meta = m.metadata || {};
+    if (meta.deleted_by?.includes(user?.id)) return false;
+    if (meta.deleted_for_all) return true;
+    if (searchQuery && !(m.body || "").toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
@@ -420,27 +416,32 @@ const ClientMessages = () => {
               </div>
             ) : (
               visibleMessages.map((m) => {
-                const isMe = m.sender_id === user?.id;
-                const isSystem = m.message_type === "system";
-                const isCallEvent = isSystem && m.context_type === "call";
-                const isDeletedForAll = !!(m as any).deleted_for_all;
-                const isForwarded = !!(m as any).forwarded_from;
+                const isMe = m.sender_user_id === user?.id;
+                const isSystem = m.type === "system";
+                const meta = m.metadata || {};
+                const content = m.body || "";
+                const attachmentUrl = meta.attachment_url;
+                const audioUrl = meta.audio_url;
+                const audioDuration = meta.audio_duration_seconds || 0;
+                const isCallEvent = isSystem && meta.context_type === "call";
+                const isDeletedForAll = !!meta.deleted_for_all;
+                const isForwarded = !!meta.forwarded_from;
 
-                if (isCallEvent) return <CallEventBubble key={m.id} content={m.content} createdAt={m.created_at} />;
+                if (isCallEvent) return <CallEventBubble key={m.id} content={content} createdAt={m.created_at} />;
 
                 if (isSystem) {
                   return (
                     <div key={m.id} className="flex justify-center">
                       <div className="bg-muted/50 text-muted-foreground text-xs px-4 py-2 rounded-full max-w-[80%] text-center">
-                        {m.content}
+                        {content}
                         <span className="ml-2 opacity-60">{format(new Date(m.created_at), "dd/MM HH:mm")}</span>
                       </div>
                     </div>
                   );
                 }
 
-                const repliedMsg = m.reply_to_id ? messages.find(rm => rm.id === m.reply_to_id) : null;
-                const repliedDeleted = repliedMsg && !!(repliedMsg as any).deleted_for_all;
+                const repliedMsg = meta.reply_to_id ? messages.find(rm => rm.id === meta.reply_to_id) : null;
+                const repliedDeleted = repliedMsg && !!(repliedMsg.metadata?.deleted_for_all);
                 const minutesSince = differenceInMinutes(new Date(), new Date(m.created_at));
 
                 const bubble = (
@@ -462,15 +463,15 @@ const ClientMessages = () => {
                       {repliedMsg && !isDeletedForAll && (
                         <div className="mb-1.5">
                           <ReplyPreview
-                            replyContent={repliedDeleted ? "🚫 This message was deleted" : repliedMsg.content}
-                            replyAuthor={repliedMsg.sender_id === user?.id ? "You" : (repliedMsg.contact_name || "Provider")}
+                            replyContent={repliedDeleted ? "🚫 This message was deleted" : (repliedMsg.body || "")}
+                            replyAuthor={repliedMsg.sender_user_id === user?.id ? "You" : (repliedMsg.metadata?.contact_name || "Provider")}
                             compact
                           />
                         </div>
                       )}
 
                       {/* Starred */}
-                      {(m as any).starred && !isDeletedForAll && (
+                      {meta.starred && !isDeletedForAll && (
                         <Star className="h-2.5 w-2.5 text-amber-400 fill-amber-400 inline mr-1" />
                       )}
 
@@ -479,12 +480,12 @@ const ClientMessages = () => {
                         <p className="text-xs italic text-muted-foreground">🚫 This message was deleted</p>
                       ) : (
                         <>
-                          <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
-                          {m.attachment_url && (
-                            <ChatMediaPreview url={m.attachment_url} fileName={m.content?.replace(/^📎 |^📷 /, "")} isMe={isMe} />
+                          <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
+                          {attachmentUrl && (
+                            <ChatMediaPreview url={attachmentUrl} fileName={content?.replace(/^📎 |^📷 /, "")} isMe={isMe} />
                           )}
-                          {(m as any).audio_url && (
-                            <VoiceMessageBubble url={(m as any).audio_url} durationSeconds={(m as any).audio_duration_seconds || 0} isMe={isMe} />
+                          {audioUrl && (
+                            <VoiceMessageBubble url={audioUrl} durationSeconds={audioDuration} isMe={isMe} />
                           )}
                         </>
                       )}
@@ -496,7 +497,7 @@ const ClientMessages = () => {
                         </p>
                         {isMe && !isDeletedForAll && (
                           <span className="text-[10px]">
-                            {m.read ? <CheckCheck className="h-3 w-3 text-accent-foreground/80" /> : <Check className="h-3 w-3 text-accent-foreground/40" />}
+                            {m.read_at ? <CheckCheck className="h-3 w-3 text-accent-foreground/80" /> : <Check className="h-3 w-3 text-accent-foreground/40" />}
                           </span>
                         )}
                       </div>
