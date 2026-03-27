@@ -64,7 +64,7 @@ export default function MessageMultiSelectToolbar({
           } as any).eq("id", id);
         } else {
           const { data: existing } = await supabase
-            .from("messages")
+            .from("chat_messages_v2")
             .select("deleted_for_user_ids")
             .eq("id", id)
             .single();
