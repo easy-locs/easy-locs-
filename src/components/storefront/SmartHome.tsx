@@ -167,7 +167,7 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
           <Link
             key={shop.id}
             to={`/s/${shop.slug}`}
-            className="shrink-0 w-[182px] rounded-2xl border border-border/15 bg-card overflow-visible active:scale-[0.96] transition-transform"
+            className="shrink-0 w-[170px] rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.96] transition-transform"
           >
             <div className="relative flex h-[112px] items-center justify-center overflow-hidden rounded-t-2xl bg-muted/20">
               {(shop.banner_url || shop.logo_url) ? (
