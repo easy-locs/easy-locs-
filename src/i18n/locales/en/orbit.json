@@ -17,5 +17,22 @@
   "message_edited": "Message edited.",
   "message_forwarded": "Message forwarded.",
   "queued": "Queued — will send when connection returns.",
-  "typing": "typing..."
+  "typing": "typing...",
+  "pinned_message": "Pinned message",
+  "unpin": "Unpin",
+  "jump_to_latest": "Jump to latest",
+  "replying_to": "Replying to",
+  "editing_message": "Editing message",
+  "cancel": "Cancel",
+  "gallery": "Gallery",
+  "camera": "Camera",
+  "files": "Files",
+  "recording": "Recording...",
+  "active_call": "Active call",
+  "call_in_progress": "Call in progress",
+  "hang_up": "Hang up",
+  "members": "members",
+  "message_updated": "Message updated",
+  "message_pinned": "Message pinned",
+  "message_unpinned": "Message unpinned"
 }
