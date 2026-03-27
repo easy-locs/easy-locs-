@@ -135,6 +135,39 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
   const payment = usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId });
 
+  // Orbit UX Bloc 8 — scroll, composer, actions, thread UI
+  const composer = useOrbitComposerState();
+
+  const { showJumpToBottom, jumpToBottom } = useOrbitScrollManager(
+    scrollRef,
+    [messages.length, loader.typingIndicator]
+  );
+
+  const messageActions = useOrbitMessageActions({
+    conversationId: thread?.v2ConversationId ?? null,
+    currentUserId: user?.id ?? null,
+    onAfterChange: () => {
+      loader.loadMessages();
+    },
+  });
+
+  const threadUi = useOrbitThreadUiState({
+    conversationType: thread?.conversationType ?? null,
+    metadata: (thread as any)?.metadata ?? null,
+  });
+
+  const pinnedMessage = useMemo(() => {
+    if (!threadUi.pinnedMessageId) return null;
+    return messages.find((m: any) => m.id === threadUi.pinnedMessageId) || null;
+  }, [messages, threadUi.pinnedMessageId]);
+
+  // Edit mode: inject original body into composer
+  useEffect(() => {
+    if (composer.editState) {
+      messageSender.setNewMessage(composer.editState.originalBody);
+    }
+  }, [composer.editState]);
+
   const getCategoryIcon = useCallback((cat: string) => {
     return MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
   }, []);
