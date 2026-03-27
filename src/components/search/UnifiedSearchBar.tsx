@@ -134,7 +134,7 @@ export default function UnifiedSearchBar({
           )}
         >
           <Search className="h-4 w-4 shrink-0" />
-          <span className="min-w-0 flex-1 text-left text-sm font-medium leading-tight line-clamp-1">{defaultPlaceholder}</span>
+          <span className="min-w-0 flex-1 text-left text-sm font-medium leading-snug break-words line-clamp-2">{defaultPlaceholder}</span>
         </button>
 
         <AnimatePresence>
@@ -386,9 +386,9 @@ function AutocompleteSection({
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+            <p className="text-sm font-medium text-foreground break-words line-clamp-2 leading-snug">{item.title}</p>
             {item.subtitle && (
-              <p className="text-[11px] text-muted-foreground truncate">{item.subtitle}</p>
+              <p className="text-[11px] text-muted-foreground break-words line-clamp-2 leading-snug">{item.subtitle}</p>
             )}
           </div>
           {item.price != null && (

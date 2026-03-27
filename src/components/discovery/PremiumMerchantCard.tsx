@@ -113,8 +113,8 @@ export default function PremiumMerchantCard({
               </span>
             )}
             <div className="absolute bottom-3 left-3 right-3">
-              <h3 className="text-lg font-black text-white line-clamp-1 drop-shadow-md">{name}</h3>
-              {category && <p className="text-xs text-white/80 line-clamp-1 mt-0.5">{category}</p>}
+              <h3 className="text-lg font-black text-white line-clamp-2 leading-tight drop-shadow-md">{name}</h3>
+              {category && <p className="text-xs text-white/80 line-clamp-2 leading-snug mt-0.5">{category}</p>}
             </div>
           </div>
           <div className="p-3 flex items-center justify-between">
@@ -195,7 +195,7 @@ export default function PremiumMerchantCard({
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-[13px] font-bold text-foreground line-clamp-1 flex-1">{name}</h3>
+            <h3 className="text-[13px] font-bold text-foreground line-clamp-2 leading-snug flex-1">{name}</h3>
             {isSponsored && (
               <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-md shrink-0"
                 style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}>
@@ -203,7 +203,7 @@ export default function PremiumMerchantCard({
               </span>
             )}
           </div>
-          {category && <p className="text-[11px] text-muted-foreground line-clamp-1">{category}</p>}
+          {category && <p className="text-[11px] text-muted-foreground line-clamp-2 leading-snug">{category}</p>}
           <div className="flex items-center gap-2 flex-wrap">
             <RatingBadge />
             <StatusDot />

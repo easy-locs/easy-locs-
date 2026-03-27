@@ -98,9 +98,9 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
           >
             {emoji}
           </motion.span>
-          <h1 className="text-2xl font-black text-white tracking-tight">{title}</h1>
+          <h1 className="text-2xl font-black text-white tracking-tight leading-tight break-words" style={{ textWrap: "balance" }}>{title}</h1>
         </div>
-        <p className="text-sm text-white/70 ml-[3.25rem] font-medium">{tagline}</p>
+        <p className="text-sm text-white/70 ml-[3.25rem] font-medium leading-snug break-words">{tagline}</p>
         {children}
       </div>
 
