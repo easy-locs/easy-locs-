@@ -1,7 +1,6 @@
 /**
- * Canonical Notification Service — notifications table.
+ * Canonical Notification Service — app_notifications table.
  * SINGLE write + read path for all platform notifications.
- * Rerouted from legacy notifications_v2 → canonical notifications.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -53,34 +52,35 @@ export interface NotificationRow {
 /** Insert a notification — canonical write path */
 export async function insertNotification(n: NotificationInsert): Promise<string | null> {
   const { data, error } = await db
-    .from("notifications")
+    .from("app_notifications")
     .insert({
       user_id: n.user_id,
-      type: n.type,
+      scope: n.domain ?? "global",
+      category: n.type,
       title: n.title,
       body: n.body,
-      priority: n.priority ?? "normal",
-      channel: n.delivery_mode?.[0] ?? "in_app",
-      cta_url: n.action_url ?? null,
-      dedup_key: n.dedupe_key ?? null,
-      metadata_json: {
+      severity: n.priority === "critical" ? "critical" : n.priority === "high" ? "warning" : "info",
+      route: n.action_url ?? null,
+      entity_type: n.type,
+      metadata: {
         actor: n.actor,
         domain: n.domain,
         data: n.data ?? {},
+        delivery_mode: n.delivery_mode ?? ["in_app"],
         orbit_context_id: n.orbit_context_id ?? null,
         related_job_id: n.related_job_id ?? null,
         related_order_id: n.related_order_id ?? null,
         related_payment_intent_id: n.related_payment_intent_id ?? null,
         related_conversation_id: n.related_conversation_id ?? null,
+        dedupe_key: n.dedupe_key ?? null,
       },
     })
     .select("id")
     .single();
 
   if (error) {
-    // Dedupe conflict is expected — not an error
     if (error.code === "23505") return null;
-    console.error("[notif-v2] insert error:", error.message);
+    console.error("[notif-service] insert error:", error.message);
     return null;
   }
   return data?.id ?? null;
@@ -89,8 +89,8 @@ export async function insertNotification(n: NotificationInsert): Promise<string 
 /** Mark a single notification as read */
 export async function markAsRead(id: string): Promise<void> {
   await db
-    .from("notifications")
-    .update({ read_at: new Date().toISOString(), read: true })
+    .from("app_notifications")
+    .update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("id", id)
     .is("read_at", null);
 }
@@ -98,8 +98,8 @@ export async function markAsRead(id: string): Promise<void> {
 /** Mark all notifications as read for a user */
 export async function markAllAsRead(userId: string): Promise<void> {
   await db
-    .from("notifications")
-    .update({ read_at: new Date().toISOString(), read: true })
+    .from("app_notifications")
+    .update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("user_id", userId)
     .is("read_at", null);
 }
@@ -107,53 +107,53 @@ export async function markAllAsRead(userId: string): Promise<void> {
 /** Dismiss a notification */
 export async function dismissNotification(id: string): Promise<void> {
   await db
-    .from("notifications")
-    .update({ is_archived: true })
+    .from("app_notifications")
+    .update({ dismissed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("id", id);
 }
 
 /** Get unread count for a user */
 export async function getUnreadCount(userId: string): Promise<number> {
   const { count } = await db
-    .from("notifications")
+    .from("app_notifications")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
     .is("read_at", null)
-    .or("is_archived.is.null,is_archived.eq.false");
+    .is("dismissed_at", null);
   return count ?? 0;
 }
 
 /** Get notifications for a user */
 export async function getUserNotifications(userId: string, limit = 50): Promise<NotificationRow[]> {
   const { data } = await db
-    .from("notifications")
+    .from("app_notifications")
     .select("*")
     .eq("user_id", userId)
-    .or("is_archived.is.null,is_archived.eq.false")
+    .is("dismissed_at", null)
     .order("created_at", { ascending: false })
     .limit(limit);
-  // Map canonical notifications columns to NotificationRow shape
+
   return (data ?? []).map((n: any) => ({
     id: n.id,
     user_id: n.user_id,
-    actor: n.metadata_json?.actor ?? "system",
-    domain: n.metadata_json?.domain ?? "system",
-    type: n.type,
+    actor: n.metadata?.actor ?? "system",
+    domain: n.metadata?.domain ?? n.scope ?? "system",
+    type: n.category ?? "general",
     title: n.title,
-    body: n.body ?? n.message ?? "",
-    data: n.metadata_json?.data ?? {},
-    priority: n.priority ?? "normal",
-    delivery_mode: [n.channel ?? "in_app"],
+    body: n.body ?? "",
+    data: n.metadata?.data ?? {},
+    priority: n.severity ?? "info",
+    delivery_mode: n.metadata?.delivery_mode ?? ["in_app"],
     read_at: n.read_at,
-    clicked_at: n.is_actioned ? n.read_at : null,
-    dismissed_at: n.is_archived ? n.read_at : null,
-    action_url: n.cta_url ?? n.link ?? null,
-    orbit_context_id: n.metadata_json?.orbit_context_id ?? null,
-    related_job_id: n.metadata_json?.related_job_id ?? null,
-    related_order_id: n.metadata_json?.related_order_id ?? null,
-    related_payment_intent_id: n.metadata_json?.related_payment_intent_id ?? null,
-    related_conversation_id: n.metadata_json?.related_conversation_id ?? null,
-    dedupe_key: n.dedup_key ?? null,
+    clicked_at: n.read_at,
+    dismissed_at: n.dismissed_at,
+    action_url: n.route ?? null,
+    orbit_context_id: n.metadata?.orbit_context_id ?? null,
+    related_job_id: n.metadata?.related_job_id ?? null,
+    related_order_id: n.metadata?.related_order_id ?? null,
+    related_payment_intent_id: n.metadata?.related_payment_intent_id ?? null,
+    related_conversation_id: n.metadata?.related_conversation_id ?? null,
+    dedupe_key: n.metadata?.dedupe_key ?? null,
     created_at: n.created_at,
   }));
 }
@@ -161,7 +161,7 @@ export async function getUserNotifications(userId: string, limit = 50): Promise<
 /** Record a click */
 export async function markClicked(id: string): Promise<void> {
   await db
-    .from("notifications")
-    .update({ is_actioned: true, read_at: new Date().toISOString(), read: true })
+    .from("app_notifications")
+    .update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("id", id);
 }
