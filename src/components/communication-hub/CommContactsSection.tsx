@@ -202,7 +202,12 @@ export default function CommContactsSection() {
   }, []);
 
   const loadContacts = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setContacts([]);
+      setLoadError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setLoadError(null);
     try {

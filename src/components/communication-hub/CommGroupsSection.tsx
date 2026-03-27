@@ -133,7 +133,12 @@ export default function CommGroupsSection() {
   // ── Data Loading ──
 
   const loadGroups = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setGroups([]);
+      setLoadError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setLoadError(null);
     const { data, error } = await (supabase as any)
@@ -311,7 +316,7 @@ export default function CommGroupsSection() {
     }
   };
 
-  const togglePin = async () => {
+  const togglePin = async (_message?: GroupMessage) => {
     toast.info("Pinning is disabled on Orbit groups until pin metadata is fully connected.");
   };
 
