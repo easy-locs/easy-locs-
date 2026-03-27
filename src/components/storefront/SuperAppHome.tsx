@@ -155,10 +155,10 @@ export default function SuperAppHome() {
     queryKey: ["superapp-home-v2", user?.id],
     queryFn: async () => {
       const [threadsRes, ordersRes, shopRes] = await Promise.all([
-        (supabase as any).from("conversation_threads")
-          .select("id, context_type, provider_name, listing_title, last_message_at, status")
+        (supabase as any).from("conversations_v2")
+          .select("id, type, title, updated_at, status")
           .contains("participant_ids", [user!.id])
-          .order("last_message_at", { ascending: false })
+          .order("updated_at", { ascending: false })
           .limit(5),
         (supabase as any).from("storefront_orders")
           .select("id, status, total, currency, created_at")

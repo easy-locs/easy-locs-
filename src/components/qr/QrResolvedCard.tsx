@@ -82,11 +82,11 @@ export function QrResolvedCard({
         if (profile?.name) setUserLoadedName(profile.name);
         setContactAdded(!!existingContact);
 
-        const { data: threadRow } = await supabase
-          .from("conversation_threads")
+        const { data: threadRow } = await (supabase as any)
+          .from("conversations_v2")
           .select("id")
           .contains("participant_ids", [currentUserId, userId])
-          .eq("context_type", "direct")
+          .eq("type", "direct")
           .limit(1)
           .maybeSingle();
         if (!cancelled && threadRow) setHasThread(true);
