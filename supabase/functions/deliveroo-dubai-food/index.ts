@@ -249,6 +249,7 @@ Deno.serve(async (req) => {
         // ── Step 4: Upsert into seed_merchants ──
         const merchantRow = {
           source: SOURCE,
+          source_type: SOURCE,
           source_entity_id: parsed.source_entity_id,
           source_url: parsed.source_url,
           city: REGION,
