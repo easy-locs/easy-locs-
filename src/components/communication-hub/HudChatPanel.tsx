@@ -157,23 +157,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         await supabase.from("concierge_orders").update(updates).eq("id", thread.bookingId);
       } else if (thread.bookingType === "seasonal") await supabase.from("booking_requests").update({ status: newStatus }).eq("id", thread.bookingId);
 
-      if (!thread.isV2) {
+      // V2: Write system message to chat_messages_v2
+      if (thread.v2ConversationId) {
         const actionLabels = { confirm: "✅ Booking confirmed", cancel: "❌ Booking cancelled", complete: "🏁 Booking completed" };
-        const payload: any = {
-          org_id: orgId,
-          sender_id: SYSTEM_SENDER_ID,
-          tenant_id: thread.tenantId || null,
-          booking_id: thread.bookingId,
-          booking_type: thread.bookingType,
-          content: actionLabels[action],
-          category: "booking",
-          message_type: "system",
-          read: false,
-          context_type: thread.contextType,
-          context_id: thread.contextId,
-        };
-        if (thread.threadId) payload.thread_id = thread.threadId;
-        await supabase.from("messages").insert(payload);
+        await (supabase as any).from("chat_messages_v2").insert({
+          conversation_id: thread.v2ConversationId,
+          sender_user_id: user.id,
+          sender_orbit_id: myOrbitId || `orbit_${user.id.slice(0, 12)}`,
+          type: "system",
+          body: actionLabels[action],
+          metadata: { booking_action: action, booking_id: thread.bookingId },
+        });
+        await (supabase as any).from("conversations_v2").update({
+          last_message_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq("id", thread.v2ConversationId);
       }
 
       onThreadUpdate(thread.id, { bookingStatus: newStatus });
@@ -181,7 +179,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     } catch (e: any) {
       toast.error(e?.message || "Booking action failed");
     }
-  }, [orgId, user, thread, onThreadUpdate, t]);
+  }, [orgId, user, thread, onThreadUpdate, t, myOrbitId]);
 
   const handleViewOnceUpload = useCallback(async (file: File) => {
     if (!thread || !orgId) return;
@@ -198,37 +196,19 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       if (!finalUrl) throw new Error("Upload failed");
       const disappearAt = computeDisappearAt(security.disappearTTL !== "off" ? security.disappearTTL : privacySettings.defaultDisappearTtl);
 
-      if (thread.isV2 && thread.v2ConversationId) {
-        await (supabase as any).from("chat_messages_v2").insert({
-          conversation_id: thread.v2ConversationId,
-          sender_user_id: authUserId,
-          sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-          receiver_orbit_id: thread.peerOrbitId ?? null,
-          type: "media",
-          body: "📷 View-once photo",
-          metadata: { url: finalUrl, view_once: true, disappear_at: disappearAt },
-        });
-        await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", thread.v2ConversationId);
-      } else {
-        const payload: any = {
-          org_id: orgId,
-          sender_id: authUserId,
-          tenant_id: thread.tenantId || null,
-          booking_id: thread.bookingId || null,
-          booking_type: thread.bookingType || null,
-          content: "📷 View-once photo",
-          attachment_url: finalUrl,
-          category: "general",
-          message_type: "user",
-          sender_locale: locale,
-          context_type: thread.contextType,
-          context_id: thread.contextId,
-          view_once: true,
-          disappear_at: disappearAt,
-        };
-        if (thread.threadId) payload.thread_id = thread.threadId;
-        await supabase.from("messages").insert(payload);
-      }
+      // V2 only
+      const conversationId = thread.v2ConversationId;
+      if (!conversationId) throw new Error("No V2 conversation");
+      await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: conversationId,
+        sender_user_id: authUserId,
+        sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        receiver_orbit_id: thread.peerOrbitId ?? null,
+        type: "media",
+        body: "📷 View-once photo",
+        metadata: { url: finalUrl, view_once: true, disappear_at: disappearAt },
+      });
+      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
       toast.success(t("orbit.view_once_sent") || "View-once photo sent");
     } catch (e: any) {
       toast.error(e?.message || "Upload failed");
