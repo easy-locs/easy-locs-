@@ -1,0 +1,21 @@
+{
+  "message": "Message",
+  "send": "Envoyer",
+  "search": "Rechercher",
+  "searching": "Recherche...",
+  "chat": "Discussion",
+  "audio": "Audio",
+  "video": "Vidéo",
+  "voice": "Vocal",
+  "stop": "Arrêter",
+  "close": "Fermer",
+  "forward_message": "Transférer le message",
+  "attachment_sent": "Pièce jointe envoyée.",
+  "voice_sent": "Message vocal envoyé.",
+  "location_shared": "Position partagée.",
+  "message_deleted": "Message supprimé.",
+  "message_edited": "Message modifié.",
+  "message_forwarded": "Message transféré.",
+  "queued": "Mis en file — envoi dès le retour de la connexion.",
+  "typing": "écrit..."
+}
