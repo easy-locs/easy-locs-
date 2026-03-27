@@ -1856,10 +1856,11 @@ html {
 .radar-popup-title {
   font-weight: 700;
   font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .radar-popup-meta {
@@ -2169,11 +2170,12 @@ html {
   width: 100%;
   min-width: 0;
   max-width: 100%;
+  min-height: var(--input-height);
   border-radius: 1rem;
   padding-inline-start: 2.75rem !important;
   padding-inline-end: 2.8rem !important;
-  text-overflow: ellipsis;
   line-height: 1.2;
+  box-sizing: border-box;
 }
 
 .search-premium-clear {
@@ -2193,6 +2195,13 @@ html {
 input[type="search"],
 input[placeholder*="Search"],
 input[placeholder*="search"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+input,
+textarea,
+select {
   min-width: 0;
   max-width: 100%;
 }
