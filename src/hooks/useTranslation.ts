@@ -1,13 +1,16 @@
 /**
  * useTranslation — Extracted from HudChatPanel.
- * Handles per-message translation toggle and API call.
+ * Handles per-message translation toggle and updates local message state canonically.
  */
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { ChatMessage } from "@/components/communication-hub/types";
 
-export function useTranslation(locale: string) {
+export function useTranslation(
+  locale: string,
+  setRawMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
+) {
   const [showOriginal, setShowOriginal] = useState<Record<string, boolean>>({});
   const [translatingMsgId, setTranslatingMsgId] = useState<string | null>(null);
 
@@ -17,6 +20,7 @@ export function useTranslation(locale: string) {
       setShowOriginal(prev => ({ ...prev, [msg.id]: false }));
       return;
     }
+
     if (!msg.translated_content) {
       setTranslatingMsgId(msg.id);
       try {
@@ -28,18 +32,24 @@ export function useTranslation(locale: string) {
             translated_content: data.translated,
             translated_locale: locale,
           } as any).eq("id", msg.id);
-          // Mutate local state via returned value — caller must update rawMessages
-          msg.translated_content = data.translated;
-          msg.translated_locale = locale;
+
+          setRawMessages(prev => prev.map(m => m.id === msg.id ? {
+            ...m,
+            translated_content: data.translated,
+            translated_locale: locale,
+          } : m));
         }
       } catch (e) {
         console.error("Translation error:", e);
         toast.error("Translation failed");
+      } finally {
+        setTranslatingMsgId(null);
       }
-      setTranslatingMsgId(null);
     }
+
     setShowOriginal(prev => ({ ...prev, [msg.id]: true }));
-  }, [locale, translatingMsgId, showOriginal]);
+  }, [locale, translatingMsgId, showOriginal, setRawMessages]);
 
   return { showOriginal, translatingMsgId, handleTranslateMessage };
 }
+
