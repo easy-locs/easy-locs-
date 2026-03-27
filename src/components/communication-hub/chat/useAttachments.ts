@@ -8,7 +8,6 @@ type ThreadLike = {
   id: string;
   v2ConversationId?: string | null;
   peerOrbitId?: string | null;
-  [key: string]: unknown;
 };
 
 export function useAttachments(params: {
