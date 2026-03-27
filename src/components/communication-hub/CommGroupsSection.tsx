@@ -22,6 +22,7 @@ import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
+import { trackOrbitEvent, guardDisplayName } from "@/lib/orbit/orbitTelemetry";
 
 // ── Types ──
 
