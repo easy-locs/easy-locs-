@@ -16,33 +16,28 @@
 // TAXONOMY — Conversation & Message types
 // ═══════════════════════════════════════════════════
 
-export type ConversationType =
-  | "direct"
-  | "booking"
-  | "property_management"
-  | "group"
-  | "support";
+export type ConversationType = "direct" | "group" | "support" | "system";
 
 export type MessageType =
   | "text"
   | "image"
+  | "video"
+  | "audio"
   | "file"
-  | "call"
-  | "system"
   | "location"
-  | "payment"
-  | "booking";
+  | "system"
+  | "call_log";
 
 export type CallType = "audio" | "video";
 
 export type CallStatus =
   | "ringing"
-  | "accepted"
-  | "rejected"
+  | "answered"
+  | "missed"
   | "ended"
-  | "missed";
+  | "failed";
 
-export type CallDirection = "outgoing" | "incoming";
+export type CallDirection = "incoming" | "outgoing";
 
 export type CallLogStatus =
   | "missed"
@@ -61,62 +56,74 @@ export type OrbitProfileRow = {
   email: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  phone?: string | null;
 };
 
 // ═══════════════════════════════════════════════════
 // PARTICIPANTS — Canonical JSONB shape stored in conversations_v2.participants
 // ═══════════════════════════════════════════════════
 
-/**
- * Canonical participant object stored in conversations_v2.participants JSONB.
- * This is the ONLY valid shape. All conversation creation must use this format.
- *
- * Required: orbitId
- * Optional: userId, email, displayName
- */
-export type ConversationParticipant = {
-  orbitId: string;
+export interface ConversationParticipant {
+  orbitId?: string | null;
   userId?: string | null;
   email?: string | null;
+  phone?: string | null;
   displayName?: string | null;
-  /** Business role context (optional — for booking/lease threads) */
-  role?: "buyer" | "seller" | "owner" | "tenant" | "guest" | "manager";
-};
+  avatarUrl?: string | null;
+  role?: string | null;
+  joinedAt?: string | null;
+  isAdmin?: boolean;
+}
 
 // ═══════════════════════════════════════════════════
 // CONVERSATIONS — DB row shape from conversations_v2
 // ═══════════════════════════════════════════════════
 
-export type ConversationRow = {
+export interface ConversationRow {
   id: string;
-  type: string | null;
+  type: ConversationType;
+  participants: ConversationParticipant[] | null;
   title: string | null;
-  created_by_orbit_id: string | null;
-  participants: ConversationParticipant[];
+  created_by_orbit_id?: string | null;
   listing_id: string | null;
   booking_id: string | null;
   lease_id: string | null;
-  last_message_at: string | null;
+  context_type?: string | null;
+  context_id?: string | null;
+  last_message_at: string;
+  last_message_preview: string | null;
+  unread_count_cache: number | null;
+  archived: boolean | null;
+  muted: boolean | null;
+  ghost_mode: boolean | null;
+  metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
-};
+}
 
 // ═══════════════════════════════════════════════════
 // MESSAGES — DB row shape from chat_messages_v2
 // ═══════════════════════════════════════════════════
 
-export type ChatMessageRow = {
+export interface ChatMessageRow {
   id: string;
   conversation_id: string;
-  sender_orbit_id: string | null;
   sender_user_id: string | null;
-  receiver_orbit_id: string | null;
+  sender_orbit_id: string | null;
+  receiver_orbit_id?: string | null;
   type: MessageType;
   body: string;
-  metadata: Record<string, unknown> | null;
+  attachments: unknown[] | null;
+  reactions: unknown[] | null;
+  reply_to_message_id: string | null;
+  delivered_at: string | null;
   read_at: string | null;
+  failed_at: string | null;
+  deleted_at: string | null;
+  edited_at: string | null;
+  metadata: Record<string, unknown> | null;
   created_at: string;
-};
+}
 
 // ═══════════════════════════════════════════════════
 // CALLS — DB row shapes
@@ -156,33 +163,42 @@ export type CallLogRow = {
 // DOMAIN RECORDS — Camel-case mapped types for stores/services
 // ═══════════════════════════════════════════════════
 
-/**
- * Domain-level conversation record (camelCase).
- * Used by chatStore, chatRepoExtended, and service layers.
- */
 export interface ConversationRecord {
   id: string;
   type: ConversationType;
   participants: ConversationParticipant[];
-  title?: string;
-  listingId?: string;
-  bookingId?: string;
-  leaseId?: string;
+  title?: string | null;
+  listingId?: string | null;
+  bookingId?: string | null;
+  leaseId?: string | null;
+  contextType?: string | null;
+  contextId?: string | null;
   lastMessageAt: string;
+  lastMessagePreview?: string | null;
+  unreadCountCache?: number;
+  archived?: boolean;
+  muted?: boolean;
+  ghostMode?: boolean;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
 
-/**
- * Domain-level chat message record (camelCase).
- * Used by chatStore and service layers.
- */
 export interface ChatMessageRecord {
   id: string;
   conversationId: string;
-  senderOrbitId: string;
+  senderUserId?: string | null;
+  senderOrbitId?: string | null;
   type: MessageType;
   body: string;
+  attachments?: unknown[];
+  reactions?: unknown[];
+  replyToMessageId?: string | null;
+  deliveredAt?: string | null;
+  readAt?: string | null;
+  failedAt?: string | null;
+  deletedAt?: string | null;
+  editedAt?: string | null;
   metadata?: Record<string, unknown>;
   createdAt: string;
 }
