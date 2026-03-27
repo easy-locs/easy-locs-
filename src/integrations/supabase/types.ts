@@ -11275,6 +11275,69 @@ export type Database = {
           },
         ]
       }
+      merchant_menu_snapshots: {
+        Row: {
+          created_at: string | null
+          id: string
+          merchant_id: string
+          normalized_json: Json | null
+          snapshot_json: Json | null
+          source: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          merchant_id: string
+          normalized_json?: Json | null
+          snapshot_json?: Json | null
+          source?: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          merchant_id?: string
+          normalized_json?: Json | null
+          snapshot_json?: Json | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_menu_snapshots_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_menu_snapshots_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "seed_merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_menu_snapshots_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_deliveroo_dubai_quality"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "merchant_menu_snapshots_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_deliveroo_dubai_visibility"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "merchant_menu_snapshots_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_gate_failures"
+            referencedColumns: ["merchant_id"]
+          },
+        ]
+      }
       merchant_onboarding_profiles: {
         Row: {
           activation_band: string | null
@@ -11739,6 +11802,78 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      merchant_visual_audit: {
+        Row: {
+          cover_ok: boolean | null
+          created_at: string | null
+          duplicate_cover: boolean | null
+          id: string
+          logo_ok: boolean | null
+          merchant_id: string
+          notes: Json | null
+          placeholder_cover: boolean | null
+          placeholder_logo: boolean | null
+        }
+        Insert: {
+          cover_ok?: boolean | null
+          created_at?: string | null
+          duplicate_cover?: boolean | null
+          id?: string
+          logo_ok?: boolean | null
+          merchant_id: string
+          notes?: Json | null
+          placeholder_cover?: boolean | null
+          placeholder_logo?: boolean | null
+        }
+        Update: {
+          cover_ok?: boolean | null
+          created_at?: string | null
+          duplicate_cover?: boolean | null
+          id?: string
+          logo_ok?: boolean | null
+          merchant_id?: string
+          notes?: Json | null
+          placeholder_cover?: boolean | null
+          placeholder_logo?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_visual_audit_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_visual_audit_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "seed_merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_visual_audit_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_deliveroo_dubai_quality"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "merchant_visual_audit_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_deliveroo_dubai_visibility"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "merchant_visual_audit_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_gate_failures"
+            referencedColumns: ["merchant_id"]
+          },
+        ]
       }
       message_translations: {
         Row: {
@@ -18892,6 +19027,27 @@ export type Database = {
             referencedRelation: "seed_merchants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "seed_merchant_promos_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_deliveroo_dubai_quality"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "seed_merchant_promos_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_deliveroo_dubai_visibility"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "seed_merchant_promos_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_gate_failures"
+            referencedColumns: ["merchant_id"]
+          },
         ]
       }
       seed_merchants: {
@@ -18911,6 +19067,7 @@ export type Database = {
           city: string
           coherence_score: number | null
           coherence_status: string | null
+          content_status: string | null
           country: string | null
           cover_image: string | null
           created_at: string
@@ -18942,9 +19099,12 @@ export type Database = {
           ingestion_warnings: string[] | null
           integrity_score: number | null
           is_active: boolean
+          is_coming_soon: boolean | null
           is_featured: boolean
           is_flagged: boolean | null
+          is_food: boolean | null
           is_open: boolean
+          is_published: boolean | null
           last_publish_check_at: string | null
           last_seen_at: string | null
           last_sync_at: string | null
@@ -18953,6 +19113,7 @@ export type Database = {
           logo_image: string | null
           longitude: number | null
           manual_lock: boolean | null
+          menu_categories_json: Json | null
           menu_items_json: Json | null
           menu_normalized_at: string | null
           menu_quality_flag: string | null
@@ -18983,6 +19144,7 @@ export type Database = {
           publish_source: string | null
           publish_status: string | null
           published_at: string | null
+          quality_scored_at: string | null
           radar_status: string | null
           rating: number
           raw_hotel_inventory_json: Json | null
@@ -18995,8 +19157,12 @@ export type Database = {
           seo_status: string | null
           service_catalog_at: string | null
           service_catalog_json: Json | null
+          slug: string | null
           source_confidence: number | null
+          source_entity_id: string | null
           source_key: string | null
+          source_last_scraped_at: string | null
+          source_payload: Json | null
           source_proofs_json: Json | null
           source_snapshot_at: string | null
           source_snapshot_json: Json | null
@@ -19019,6 +19185,7 @@ export type Database = {
           visibility_decision_reason: string | null
           visibility_mode: string | null
           visibility_score: number
+          visual_cleaned_at: string | null
           website: string | null
         }
         Insert: {
@@ -19037,6 +19204,7 @@ export type Database = {
           city?: string
           coherence_score?: number | null
           coherence_status?: string | null
+          content_status?: string | null
           country?: string | null
           cover_image?: string | null
           created_at?: string
@@ -19068,9 +19236,12 @@ export type Database = {
           ingestion_warnings?: string[] | null
           integrity_score?: number | null
           is_active?: boolean
+          is_coming_soon?: boolean | null
           is_featured?: boolean
           is_flagged?: boolean | null
+          is_food?: boolean | null
           is_open?: boolean
+          is_published?: boolean | null
           last_publish_check_at?: string | null
           last_seen_at?: string | null
           last_sync_at?: string | null
@@ -19079,6 +19250,7 @@ export type Database = {
           logo_image?: string | null
           longitude?: number | null
           manual_lock?: boolean | null
+          menu_categories_json?: Json | null
           menu_items_json?: Json | null
           menu_normalized_at?: string | null
           menu_quality_flag?: string | null
@@ -19109,6 +19281,7 @@ export type Database = {
           publish_source?: string | null
           publish_status?: string | null
           published_at?: string | null
+          quality_scored_at?: string | null
           radar_status?: string | null
           rating?: number
           raw_hotel_inventory_json?: Json | null
@@ -19121,8 +19294,12 @@ export type Database = {
           seo_status?: string | null
           service_catalog_at?: string | null
           service_catalog_json?: Json | null
+          slug?: string | null
           source_confidence?: number | null
+          source_entity_id?: string | null
           source_key?: string | null
+          source_last_scraped_at?: string | null
+          source_payload?: Json | null
           source_proofs_json?: Json | null
           source_snapshot_at?: string | null
           source_snapshot_json?: Json | null
@@ -19145,6 +19322,7 @@ export type Database = {
           visibility_decision_reason?: string | null
           visibility_mode?: string | null
           visibility_score?: number
+          visual_cleaned_at?: string | null
           website?: string | null
         }
         Update: {
@@ -19163,6 +19341,7 @@ export type Database = {
           city?: string
           coherence_score?: number | null
           coherence_status?: string | null
+          content_status?: string | null
           country?: string | null
           cover_image?: string | null
           created_at?: string
@@ -19194,9 +19373,12 @@ export type Database = {
           ingestion_warnings?: string[] | null
           integrity_score?: number | null
           is_active?: boolean
+          is_coming_soon?: boolean | null
           is_featured?: boolean
           is_flagged?: boolean | null
+          is_food?: boolean | null
           is_open?: boolean
+          is_published?: boolean | null
           last_publish_check_at?: string | null
           last_seen_at?: string | null
           last_sync_at?: string | null
@@ -19205,6 +19387,7 @@ export type Database = {
           logo_image?: string | null
           longitude?: number | null
           manual_lock?: boolean | null
+          menu_categories_json?: Json | null
           menu_items_json?: Json | null
           menu_normalized_at?: string | null
           menu_quality_flag?: string | null
@@ -19235,6 +19418,7 @@ export type Database = {
           publish_source?: string | null
           publish_status?: string | null
           published_at?: string | null
+          quality_scored_at?: string | null
           radar_status?: string | null
           rating?: number
           raw_hotel_inventory_json?: Json | null
@@ -19247,8 +19431,12 @@ export type Database = {
           seo_status?: string | null
           service_catalog_at?: string | null
           service_catalog_json?: Json | null
+          slug?: string | null
           source_confidence?: number | null
+          source_entity_id?: string | null
           source_key?: string | null
+          source_last_scraped_at?: string | null
+          source_payload?: Json | null
           source_proofs_json?: Json | null
           source_snapshot_at?: string | null
           source_snapshot_json?: Json | null
@@ -19271,6 +19459,7 @@ export type Database = {
           visibility_decision_reason?: string | null
           visibility_mode?: string | null
           visibility_score?: number
+          visual_cleaned_at?: string | null
           website?: string | null
         }
         Relationships: []
@@ -19326,6 +19515,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "seed_merchants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seed_products_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_deliveroo_dubai_quality"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "seed_products_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_deliveroo_dubai_visibility"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "seed_products_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_food_gate_failures"
+            referencedColumns: ["merchant_id"]
           },
         ]
       }
@@ -19855,6 +20065,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      source_ingestion_queue: {
+        Row: {
+          city: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          payload: Json | null
+          picked_at: string | null
+          priority: number | null
+          processed_at: string | null
+          source: string
+          status: string | null
+          vertical: string
+        }
+        Insert: {
+          city?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          payload?: Json | null
+          picked_at?: string | null
+          priority?: number | null
+          processed_at?: string | null
+          source?: string
+          status?: string | null
+          vertical?: string
+        }
+        Update: {
+          city?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          payload?: Json | null
+          picked_at?: string | null
+          priority?: number | null
+          processed_at?: string | null
+          source?: string
+          status?: string | null
+          vertical?: string
+        }
+        Relationships: []
       }
       stay_availability: {
         Row: {
@@ -29367,6 +29619,108 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vw_food_deliveroo_dubai_quality: {
+        Row: {
+          content_status: string | null
+          identity_score: number | null
+          location_score: number | null
+          menu_score: number | null
+          merchant_id: string | null
+          name: string | null
+          overall_quality_score: number | null
+          pipeline_stage: string | null
+          visibility_score: number | null
+        }
+        Insert: {
+          content_status?: string | null
+          identity_score?: number | null
+          location_score?: number | null
+          menu_score?: number | null
+          merchant_id?: string | null
+          name?: string | null
+          overall_quality_score?: number | null
+          pipeline_stage?: string | null
+          visibility_score?: number | null
+        }
+        Update: {
+          content_status?: string | null
+          identity_score?: number | null
+          location_score?: number | null
+          menu_score?: number | null
+          merchant_id?: string | null
+          name?: string | null
+          overall_quality_score?: number | null
+          pipeline_stage?: string | null
+          visibility_score?: number | null
+        }
+        Relationships: []
+      }
+      vw_food_deliveroo_dubai_visibility: {
+        Row: {
+          blocking_reason: string | null
+          is_coming_soon: boolean | null
+          is_published: boolean | null
+          merchant_id: string | null
+          name: string | null
+          publish_gate_status: string | null
+          published_at: string | null
+          visibility_decision_reason: string | null
+          visibility_mode: string | null
+        }
+        Insert: {
+          blocking_reason?: string | null
+          is_coming_soon?: boolean | null
+          is_published?: boolean | null
+          merchant_id?: string | null
+          name?: string | null
+          publish_gate_status?: string | null
+          published_at?: string | null
+          visibility_decision_reason?: string | null
+          visibility_mode?: string | null
+        }
+        Update: {
+          blocking_reason?: string | null
+          is_coming_soon?: boolean | null
+          is_published?: boolean | null
+          merchant_id?: string | null
+          name?: string | null
+          publish_gate_status?: string | null
+          published_at?: string | null
+          visibility_decision_reason?: string | null
+          visibility_mode?: string | null
+        }
+        Relationships: []
+      }
+      vw_food_gate_failures: {
+        Row: {
+          blocking_reason: string | null
+          gate_failures: Json | null
+          merchant_id: string | null
+          name: string | null
+          overall_quality_score: number | null
+          publish_gate_status: string | null
+          source_last_scraped_at: string | null
+        }
+        Insert: {
+          blocking_reason?: string | null
+          gate_failures?: Json | null
+          merchant_id?: string | null
+          name?: string | null
+          overall_quality_score?: number | null
+          publish_gate_status?: string | null
+          source_last_scraped_at?: string | null
+        }
+        Update: {
+          blocking_reason?: string | null
+          gate_failures?: Json | null
+          merchant_id?: string | null
+          name?: string | null
+          overall_quality_score?: number | null
+          publish_gate_status?: string | null
+          source_last_scraped_at?: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
