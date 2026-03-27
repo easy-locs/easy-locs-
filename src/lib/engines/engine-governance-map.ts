@@ -44,7 +44,7 @@ export interface GovernedEngine {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// FINAL GOVERNED ENGINE MAP — 54 active engines
+// FINAL GOVERNED ENGINE MAP — 66 active engines
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export const GOVERNED_ENGINES: Record<string, GovernedEngine> = {
 
