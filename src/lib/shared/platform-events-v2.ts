@@ -1,3 +1,8 @@
+/**
+ * Platform Events V2 — Canonical event constants.
+ * These use dot-notation; the notation bridge in platform-bus
+ * automatically mirrors them to colon-notation listeners.
+ */
 export const PLATFORM_EVENTS_V2 = {
   // Orbit
   ORBIT_MESSAGE_SENT: "orbit.message.sent",
@@ -24,6 +29,9 @@ export const PLATFORM_EVENTS_V2 = {
   // Dashboard
   DASHBOARD_REFRESH: "dashboard.refresh",
   DASHBOARD_COUNTERS_REFRESH: "dashboard.counters.refresh",
+
+  // Notifications
+  NOTIFICATIONS_REFRESH: "notifications:refresh",
 } as const;
 
 export type PlatformEventV2Key = keyof typeof PLATFORM_EVENTS_V2;
