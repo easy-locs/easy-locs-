@@ -86,24 +86,47 @@ export default function CommCallsSection() {
 
       setCalls(callData as unknown as CallLog[]);
 
-      // Resolve orbit IDs → display names
+      // Resolve orbit IDs → display names from profiles AND orbit_profiles_v2
       const orbitIds = new Set<string>();
       callData.forEach((c: any) => {
-        if (c.caller_orbit_id && isUUID(c.caller_orbit_id)) orbitIds.add(c.caller_orbit_id);
-        if (c.receiver_orbit_id && isUUID(c.receiver_orbit_id)) orbitIds.add(c.receiver_orbit_id);
+        if (c.caller_orbit_id) orbitIds.add(c.caller_orbit_id);
+        if (c.receiver_orbit_id) orbitIds.add(c.receiver_orbit_id);
       });
       if (orbitIds.size > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, full_name, email, phone")
-          .in("id", Array.from(orbitIds));
-        if (profiles) {
-          const cache: Record<string, string> = {};
-          profiles.forEach((p: any) => {
-            cache[p.id] = p.full_name || p.email || p.phone || "Contact";
-          });
-          setNameCache(cache);
+        const ids = Array.from(orbitIds);
+        const cache: Record<string, string> = {};
+
+        // Try profiles table first (by user id)
+        const uuidIds = ids.filter(id => isUUID(id));
+        if (uuidIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, full_name, email, phone")
+            .in("id", uuidIds);
+          if (profiles) {
+            profiles.forEach((p: any) => {
+              cache[p.id] = p.full_name || p.email || p.phone || "Contact";
+            });
+          }
         }
+
+        // Also try orbit_profiles_v2 for orbit IDs
+        const { data: orbitProfiles } = await (supabase as any)
+          .from("orbit_profiles_v2")
+          .select("orbit_id, display_name, email, user_id")
+          .in("user_id", uuidIds.length > 0 ? uuidIds : ids);
+        if (orbitProfiles) {
+          orbitProfiles.forEach((op: any) => {
+            if (op.user_id && !cache[op.user_id]) {
+              cache[op.user_id] = op.display_name || op.email || "Contact";
+            }
+            if (op.orbit_id) {
+              cache[op.orbit_id] = op.display_name || op.email || "Contact";
+            }
+          });
+        }
+
+        setNameCache(cache);
       }
     } catch (err: any) {
       setLoadError(err?.message || "Failed to load calls");
