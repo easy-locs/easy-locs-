@@ -467,8 +467,8 @@ Deno.serve(async (req) => {
       // Check interval (skip if not forced and not due)
       if (!forceRun) {
         const lastRun = engine.last_run_at ? new Date(engine.last_run_at).getTime() : 0;
-        const interval = engine.interval_ms || 300000;
-        if (now - lastRun < interval) continue;
+        const freqMs = engine.frequency_seconds ? engine.frequency_seconds * 1000 : (engine.interval_ms || 300000);
+        if (now - lastRun < freqMs) continue;
       }
 
       // Check max retries
