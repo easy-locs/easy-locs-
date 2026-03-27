@@ -131,15 +131,17 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   }, []);
 
   const updateConversationStatus = useCallback(async (status: string) => {
-    if (!thread || !orgId) return;
+    if (!thread) return;
     loader.setConvStatus(status);
     onThreadUpdate(thread.id, { conversationStatus: status });
-    const lastMsg = messages[messages.length - 1] as any;
-    if (lastMsg && !thread.isV2) {
-      const { error } = await supabase.from("messages").update({ conversation_status: status }).eq("id", lastMsg.id);
-      if (error) toast.error(t("orbit.status_update_failed") || "Failed to update status");
+    // V2: status is managed at conversation level, not message level
+    if (thread.v2ConversationId) {
+      await (supabase as any).from("conversations_v2").update({
+        metadata: { conversation_status: status },
+        updated_at: new Date().toISOString(),
+      }).eq("id", thread.v2ConversationId);
     }
-  }, [thread, orgId, loader, messages, onThreadUpdate, t]);
+  }, [thread, loader, onThreadUpdate]);
 
   const handleBookingAction = useCallback(async (action: "confirm" | "cancel" | "complete") => {
     if (!orgId || !user || !thread?.bookingId) return;
