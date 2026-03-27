@@ -92,14 +92,28 @@ export function useMessageSender(params: Params) {
       disappearTTL,
     } = params;
 
-    if (!thread || !newMessage.trim()) return;
+    if (!thread || !newMessage.trim()) {
+      console.warn("[useMessageSender] EMPTY_MESSAGE or NO_THREAD", { hasThread: !!thread, msg: newMessage });
+      return;
+    }
 
     let conversationId = thread.v2ConversationId;
 
+    console.log("[useMessageSender] THREAD_DEBUG", {
+      threadId: thread.id,
+      v2ConversationId: conversationId,
+      peerUserId: thread.peerUserId,
+      peerOrbitId: thread.peerOrbitId,
+      contextId: thread.contextId,
+      conversationType: thread.conversationType,
+    });
+
     // Auto-create V2 conversation if missing
     if (!conversationId) {
+      console.warn("[useMessageSender] NO_V2_CONVERSATION_ID — attempting auto-create");
       const earlyAuthUserId = await resolveAuthUserId();
       if (!earlyAuthUserId) {
+        console.error("[useMessageSender] NO_AUTH_USER for auto-create");
         toast.error("Authentication required.");
         return;
       }
@@ -113,13 +127,15 @@ export function useMessageSender(params: Params) {
             peerOrbitId: thread.peerOrbitId,
           });
           conversationId = conv.id;
+          console.log("[useMessageSender] AUTO_CREATED_CONVERSATION", conv.id);
           onThreadUpdate(thread.id, { v2ConversationId: conv.id });
         } catch (err: any) {
-          console.error("[useMessageSender] auto-create conversation failed:", err);
+          console.error("[useMessageSender] AUTO_CREATE_FAILED", err);
           toast.error("Failed to create conversation");
           return;
         }
       } else {
+        console.error("[useMessageSender] NO_PEER_USER_ID — cannot create conversation");
         toast.error("No V2 conversation found for this thread.");
         return;
       }
@@ -127,9 +143,17 @@ export function useMessageSender(params: Params) {
 
     const authUserId = await resolveAuthUserId();
     if (!authUserId) {
+      console.error("[useMessageSender] NO_AUTH_USER");
       toast.error("Authentication required.");
       return;
     }
+
+    console.log("[useMessageSender] SEND_START", {
+      conversationId,
+      authUserId,
+      myOrbitId,
+      body: newMessage.trim().slice(0, 40) + "...",
+    });
 
     const msgText = newMessage.trim();
     const optimisticId = `opt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -257,8 +281,11 @@ export function useMessageSender(params: Params) {
         .single();
 
       if (error) {
+        console.error("[useMessageSender] INSERT_ERROR", error);
         throw error;
       }
+
+      console.log("[useMessageSender] SEND_OK", { id: data.id, created_at: data.created_at });
 
       const preview = msgText.slice(0, 120);
 
