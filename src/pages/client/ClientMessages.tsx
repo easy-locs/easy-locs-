@@ -523,19 +523,19 @@ const ClientMessages = () => {
                     onSwipeRight={() => setReplyTo(m)}
                   >
                     <MessageActionsMenu
-                      messageId={m.id} content={m.content} isMe={isMe}
-                      isStarred={!!(m as any).starred}
+                      messageId={m.id} content={content} isMe={isMe}
+                      isStarred={!!meta.starred}
                       minutesSinceSent={minutesSince}
                       onReply={() => setReplyTo(m)}
                       onForward={() => setForwardMsg(m)}
                       onDeleted={(type) => {
                         if (type === "for_all") {
-                          setMessages(prev => prev.map(x => x.id === m.id ? { ...x, deleted_for_all: true, content: "🚫 This message was deleted" } : x));
+                          setMessages(prev => prev.map(x => x.id === m.id ? { ...x, metadata: { ...(x.metadata || {}), deleted_for_all: true }, body: "🚫 This message was deleted" } : x));
                         } else {
                           setMessages(prev => prev.filter(x => x.id !== m.id));
                         }
                       }}
-                      onStarToggle={(s) => setMessages(prev => prev.map(x => x.id === m.id ? { ...x, starred: s } : x))}
+                      onStarToggle={(s) => setMessages(prev => prev.map(x => x.id === m.id ? { ...x, metadata: { ...(x.metadata || {}), starred: s } } : x))}
                     >
                       {bubble}
                     </MessageActionsMenu>
@@ -550,8 +550,8 @@ const ClientMessages = () => {
           {replyTo && (
             <div className="border-t border-border px-3 pt-2">
               <ReplyPreview
-                replyContent={replyTo.content}
-                replyAuthor={replyTo.sender_id === user?.id ? "You" : (replyTo.contact_name || "Provider")}
+                replyContent={replyTo.body || ""}
+                replyAuthor={replyTo.sender_user_id === user?.id ? "You" : (replyTo.metadata?.contact_name || "Provider")}
                 onClear={() => setReplyTo(null)}
               />
             </div>
