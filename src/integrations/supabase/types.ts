@@ -19158,6 +19158,7 @@ export type Database = {
           service_catalog_at: string | null
           service_catalog_json: Json | null
           slug: string | null
+          source: string | null
           source_confidence: number | null
           source_entity_id: string | null
           source_key: string | null
@@ -19295,6 +19296,7 @@ export type Database = {
           service_catalog_at?: string | null
           service_catalog_json?: Json | null
           slug?: string | null
+          source?: string | null
           source_confidence?: number | null
           source_entity_id?: string | null
           source_key?: string | null
@@ -19432,6 +19434,7 @@ export type Database = {
           service_catalog_at?: string | null
           service_catalog_json?: Json | null
           slug?: string | null
+          source?: string | null
           source_confidence?: number | null
           source_entity_id?: string | null
           source_key?: string | null
