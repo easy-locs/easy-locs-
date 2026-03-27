@@ -163,7 +163,8 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       const hasTenantAccount = !!tenantContact?.tenant_user_id;
       const hasValidEmail = !!normalizedEmail && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizedEmail);
 
-      const { error: msgError } = await supabase.from("messages").insert({ org_id: orgId, tenant_id: tenantId, sender_id: user.id, content: t("comp.docs.doc_requested_msg").replace("{label}", label), read: false });
+      const contextId = `tenant_${orgId}_${tenantId}`;
+      const { error: msgError } = await (supabase as any).from("chat_messages_v2").insert({ conversation_id: contextId, sender_user_id: user.id, sender_orbit_id: `orbit_${user.id.slice(0, 12)}`, type: "text", body: t("comp.docs.doc_requested_msg").replace("{label}", label) });
       if (msgError) throw msgError;
 
       if (hasTenantAccount) {

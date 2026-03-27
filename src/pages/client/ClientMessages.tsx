@@ -70,18 +70,16 @@ const ClientMessages = () => {
     const fetchThreads = async () => {
       // Fetch messages where user is involved (by email or by sender_id for direct threads)
       const [byEmail, bySender] = await Promise.all([
-        user.email ? supabase
-          .from("messages")
-          .select("context_id, org_id, contact_name, content, created_at, read, sender_id")
-          .eq("contact_email", user.email.toLowerCase())
-          .not("context_id", "is", null)
+        user.email ? (supabase as any)
+          .from("chat_messages_v2")
+          .select("conversation_id, sender_user_id, body, created_at, metadata")
+          .eq("metadata->>contact_email", user.email.toLowerCase())
           .order("created_at", { ascending: false })
           .limit(500) : { data: [] },
-        supabase
-          .from("messages")
-          .select("context_id, org_id, contact_name, content, created_at, read, sender_id")
-          .eq("sender_id", user.id)
-          .not("context_id", "is", null)
+        (supabase as any)
+          .from("chat_messages_v2")
+          .select("conversation_id, sender_user_id, body, created_at, metadata")
+          .eq("sender_user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(500),
       ]);
@@ -91,23 +89,23 @@ const ClientMessages = () => {
 
       const threadMap = new Map<string, ThreadSummary>();
       for (const msg of allData) {
-        const key = msg.context_id!;
+        const key = msg.conversation_id!;
+        const meta = msg.metadata || {};
         if (!threadMap.has(key)) {
           threadMap.set(key, {
-            context_id: key, org_id: msg.org_id,
-            contact_name: msg.contact_name, last_message: msg.content,
+            context_id: key, org_id: meta.org_id || "",
+            contact_name: meta.contact_name, last_message: msg.body,
             last_time: msg.created_at,
-            unread_count: (!msg.read && msg.sender_id !== user.id) ? 1 : 0,
-            other_sender_id: msg.sender_id !== user.id ? msg.sender_id : undefined,
+            unread_count: 0,
+            other_sender_id: msg.sender_user_id !== user.id ? msg.sender_user_id : undefined,
           });
         } else {
           const existing = threadMap.get(key)!;
           if (new Date(msg.created_at) > new Date(existing.last_time)) {
-            existing.last_message = msg.content;
+            existing.last_message = msg.body;
             existing.last_time = msg.created_at;
           }
-          if (!msg.read && msg.sender_id !== user.id) existing.unread_count++;
-          if (!existing.other_sender_id && msg.sender_id !== user.id) existing.other_sender_id = msg.sender_id;
+          if (!existing.other_sender_id && msg.sender_user_id !== user.id) existing.other_sender_id = msg.sender_user_id;
         }
       }
 
@@ -177,15 +175,10 @@ const ClientMessages = () => {
     if (!activeThread) return;
     setMsgLoading(true);
     const load = async () => {
-      const { data } = await supabase.from("messages").select("*")
-        .eq("context_id", activeThread.context_id)
+      const { data } = await (supabase as any).from("chat_messages_v2").select("*")
+        .eq("conversation_id", activeThread.context_id)
         .order("created_at", { ascending: true });
       setMessages(data || []);
-      if (user) {
-        await supabase.from("messages").update({ read: true })
-          .eq("context_id", activeThread.context_id)
-          .eq("read", false).neq("sender_id", user.id);
-      }
       setMsgLoading(false);
     };
     load();
@@ -195,20 +188,17 @@ const ClientMessages = () => {
   useEffect(() => {
     if (!activeThread) return;
     const channel = supabase
-      .channel(`client-thread-${activeThread.context_id}`)
+      .channel(`client-thread-v2-${activeThread.context_id}`)
       .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "messages",
-        filter: `context_id=eq.${activeThread.context_id}`,
+        event: "INSERT", schema: "public", table: "chat_messages_v2",
+        filter: `conversation_id=eq.${activeThread.context_id}`,
       }, (payload) => {
         const incoming = payload.new as any;
         setMessages(prev => prev.some(m => m.id === incoming.id) ? prev : [...prev, incoming]);
-        if (incoming.sender_id !== user?.id) {
-          supabase.from("messages").update({ read: true }).eq("id", incoming.id).then(() => {});
-        }
       })
       .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "messages",
-        filter: `context_id=eq.${activeThread.context_id}`,
+        event: "UPDATE", schema: "public", table: "chat_messages_v2",
+        filter: `conversation_id=eq.${activeThread.context_id}`,
       }, (payload) => {
         const updated = payload.new as any;
         setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
@@ -224,14 +214,19 @@ const ClientMessages = () => {
     if (!newMsg.trim() || !user || !activeThread) return;
     setSending(true);
     try {
-      const { data: inserted } = await supabase.from("messages").insert({
-        org_id: activeThread.org_id, sender_id: user.id,
-        content: newMsg.trim(), context_id: activeThread.context_id,
-        context_type: activeThread.context_id.startsWith("direct:") ? "direct" : "booking", contact_email: user.email?.toLowerCase(),
-        contact_name: user.user_metadata?.full_name || user.email,
-        message_type: "user", conversation_status: "waiting_provider",
-        ...(replyTo ? { reply_to_id: replyTo.id } : {}),
-      } as any).select("*").single();
+      const { data: inserted } = await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: activeThread.context_id,
+        sender_user_id: user.id,
+        sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
+        type: "text",
+        body: newMsg.trim(),
+        metadata: {
+          org_id: activeThread.org_id,
+          contact_email: user.email?.toLowerCase(),
+          contact_name: user.user_metadata?.full_name || user.email,
+          ...(replyTo ? { reply_to_id: replyTo.id } : {}),
+        },
+      }).select("*").single();
       if (inserted) setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
       setNewMsg(""); setReplyTo(null);
     } finally { setSending(false); }
@@ -250,15 +245,19 @@ const ClientMessages = () => {
       const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
       const url = signed?.signedUrl || path;
       const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
-      const { data: inserted } = await supabase.from("messages").insert({
-        org_id: activeThread.org_id, sender_id: user.id,
-        content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
-        context_id: activeThread.context_id, context_type: activeThread.context_id.startsWith("direct:") ? "direct" : "booking",
-        contact_email: user.email?.toLowerCase(),
-        contact_name: user.user_metadata?.full_name || user.email,
-        message_type: "user", conversation_status: "waiting_provider",
-        attachment_url: url,
-      } as any).select("*").single();
+      const { data: inserted } = await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: activeThread.context_id,
+        sender_user_id: user.id,
+        sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
+        type: isMedia ? "image" : "file",
+        body: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
+        metadata: {
+          org_id: activeThread.org_id,
+          contact_email: user.email?.toLowerCase(),
+          contact_name: user.user_metadata?.full_name || user.email,
+          attachment_url: url,
+        },
+      }).select("*").single();
       if (inserted) setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
       toast.success("Media sent");
     } catch (e: any) { toast.error(e.message); }
@@ -508,21 +507,10 @@ const ClientMessages = () => {
                 if (isDeletedForAll) return <div key={m.id}>{bubble}</div>;
 
                 const handleDeleteForMe = async () => {
-                  const isMe = m.sender_id === user?.id;
-                  if (isMe) {
-                    await supabase.from("messages").update({ 
-                      deleted_for_sender: true, deleted_at: new Date().toISOString(), deletion_reason: "self_hide" 
-                    } as any).eq("id", m.id);
-                  } else if (user?.id) {
-                    const { data: existing } = await supabase
-                      .from("messages").select("deleted_for_user_ids").eq("id", m.id).single();
-                    const currentIds: string[] = (existing?.deleted_for_user_ids as string[] | null) || [];
-                    if (!currentIds.includes(user.id)) {
-                      await supabase.from("messages").update({
-                        deleted_for_user_ids: [...currentIds, user.id],
-                      } as any).eq("id", m.id);
-                    }
-                  }
+                  // Soft-delete via metadata update on V2
+                  await (supabase as any).from("chat_messages_v2").update({
+                    metadata: { ...(m.metadata || {}), deleted_by: [...((m.metadata as any)?.deleted_by || []), user?.id] },
+                  }).eq("id", m.id);
                   setMessages(prev => prev.filter(x => x.id !== m.id));
                   toast.success(t("chat.deleted_for_you") || "Deleted for you");
                 };
