@@ -36,6 +36,7 @@ export function AppInit() {
       useWalletStore.setState({ wallet: null, transactions: [], loading: false });
       useFavoritesStore.setState({ items: [], loading: false });
       useSavedSearchStore.setState({ items: [], loading: false });
+      useNotificationV2Store.getState().clear();
       return;
     }
 
