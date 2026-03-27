@@ -93,8 +93,12 @@ const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
 
   const handleBellClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    setOpen(prev => !prev);
-  }, []);
+    if (onOpen) {
+      onOpen();
+    } else {
+      setOpen(prev => !prev);
+    }
+  }, [onOpen]);
 
   const FILTERS: { key: FilterType; label: string; count: number }[] = [
     { key: "all", label: t("notif.all") || "All", count: notifications.length },
