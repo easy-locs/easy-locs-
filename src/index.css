@@ -1797,6 +1797,29 @@ html {
   display: none !important;
 }
 
+/* ══════ Canonical Map — Premium Popup ══════ */
+.cm-popup-premium .mapboxgl-popup-content {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+}
+.cm-popup-premium .mapboxgl-popup-tip {
+  display: none;
+}
+.cm-popup-premium .mapboxgl-popup-close-button {
+  color: rgba(255,255,255,0.4);
+  font-size: 14px;
+  padding: 2px 6px;
+  z-index: 2;
+  transition: color 0.15s;
+}
+.cm-popup-premium .mapboxgl-popup-close-button:hover {
+  color: rgba(255,255,255,0.8);
+  background: transparent;
+}
+
 /* ══════ Mapbox Rich Pin Popups — Premium ══════ */
 .radar-pin-popup .mapboxgl-popup-content {
   background: hsl(var(--card));
