@@ -117,9 +117,9 @@ export async function runMasterPipeline(batchSize = 50): Promise<PipelineRunResu
       const { runFoodMenuNormalizer } = await import("@/lib/engines/food-menu-normalizer-engine");
       return runFoodMenuNormalizer(batchSize);
     }),
-    runStage("4_normalize_hotel", "hotel-inventory-normalizer", async () => {
-      const { runHotelInventoryNormalizer } = await import("@/lib/engines/hotel-inventory-normalizer-engine");
-      return runHotelInventoryNormalizer(batchSize);
+    runStage("4_normalize_hotel", "hotel-room-normalizer", async () => {
+      // Hotel normalization handled by canonical engine chain (hotel-room-normalizer in orchestrator)
+      return { processed: 0 };
     }),
     runStage("4_normalize_service", "service-catalog-normalizer", async () => {
       const { runServiceCatalogNormalizer } = await import("@/lib/engines/service-catalog-normalizer-engine");
@@ -190,9 +190,9 @@ export async function runMasterPipeline(batchSize = 50): Promise<PipelineRunResu
       const { runFoodPublishGate } = await import("@/lib/engines/publish-gate-food-engine");
       return runFoodPublishGate(batchSize * 2);
     }),
-    runStage("8_validate_hotel", "publish-gate-hotel", async () => {
-      const { runHotelPublishGate } = await import("@/lib/engines/publish-gate-hotel-engine");
-      return runHotelPublishGate(batchSize);
+    runStage("8_validate_hotel", "hotel-quality-gate", async () => {
+      // Hotel quality gate handled by canonical engine chain (hotel-quality-gate in orchestrator)
+      return { passed: 0, blocked: 0, promoted: 0 };
     }),
     runStage("8_validate_service", "publish-gate-service", async () => {
       const { runServicePublishGate } = await import("@/lib/engines/publish-gate-service-engine");

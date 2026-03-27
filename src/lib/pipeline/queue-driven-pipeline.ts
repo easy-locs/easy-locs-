@@ -123,9 +123,8 @@ async function executeStage(stage: PipelineStage, entityId: string): Promise<{ p
           const r = await runFoodMenuNormalizer(1);
           return { processed: r.normalized ?? 0 };
         } else if (v === "hotel") {
-          const { runHotelInventoryNormalizer } = await import("@/lib/engines/hotel-inventory-normalizer-engine");
-          const r = await runHotelInventoryNormalizer(1);
-          return { processed: r.normalized ?? 0 };
+          // Hotel normalization handled by canonical engine chain
+          return { processed: 0 };
         } else if (v === "services") {
           const { runServiceCatalogNormalizer } = await import("@/lib/engines/service-catalog-normalizer-engine");
           const r = await runServiceCatalogNormalizer(1);
