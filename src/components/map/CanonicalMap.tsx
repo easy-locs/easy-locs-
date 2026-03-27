@@ -118,7 +118,9 @@ export default memo(function CanonicalMap({
   const cLat = userLocation?.lat ?? initialCenter.lat;
   const cLng = userLocation?.lng ?? initialCenter.lng;
   const weather = useLiveWeatherStation({ lat: cLat, lng: cLng });
-  const rainRadar = useRainRadar(layers.rainRadar || layers.weather || weather.isRaining);
+  // Rain radar only enabled when explicitly toggled OR when actually raining
+  const radarEnabled = layers.rainRadar || (layers.weather && weather.isRaining);
+  const rainRadar = useRainRadar(radarEnabled);
 
   const filteredEntities = useMemo(() => {
     return entities.filter((e) => {
@@ -163,6 +165,8 @@ export default memo(function CanonicalMap({
         type: "raster",
         tiles: ["https://tilecache.rainviewer.com/v2/radar/{z}/{x}/{y}/256/2/1_1.png"],
         tileSize: 256,
+        minzoom: 2,
+        maxzoom: 12, // RainViewer only supports up to zoom 12 — prevents "Zoom Level Not Supported"
       });
 
       // ── Layers (bottom → top) ──
@@ -189,11 +193,12 @@ export default memo(function CanonicalMap({
         paint: { "line-color": "hsla(220,70%,60%,0.12)", "line-width": 1, "line-dasharray": [8, 5] },
       });
 
-      // Rain radar — ultra soft
+      // Rain radar — soft, clamped to supported zoom range
       map.addLayer({
         id: L.RAIN, type: "raster", source: S.RAIN,
         paint: { "raster-opacity": 0, "raster-fade-duration": 600 },
         layout: { visibility: "none" },
+        maxzoom: 12, // Prevent "Zoom Level Not Supported" tiles from showing
       });
 
       // Heatmap
@@ -597,20 +602,23 @@ export default memo(function CanonicalMap({
     });
   }, [layers.clusters, ready]);
 
-  // ── Rain radar — ultra soft ──
+  // ── Rain radar — only when actually raining or explicitly enabled ──
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    const visible = layers.rainRadar || layers.weather || weather.isRaining;
+    // Show radar only when: 1) user explicitly enabled, or 2) weather says raining
+    const shouldShow = radarEnabled && rainRadar.activeTileUrl;
     if (map.getLayer(L.RAIN)) {
-      map.setLayoutProperty(L.RAIN, "visibility", visible ? "visible" : "none");
-      map.setPaintProperty(L.RAIN, "raster-opacity", visible ? (weather.isRaining ? 0.25 : 0.12) : 0);
+      map.setLayoutProperty(L.RAIN, "visibility", shouldShow ? "visible" : "none");
+      // Stronger opacity when raining, softer when just browsing
+      const opacity = shouldShow ? (weather.isRaining ? 0.35 : 0.18) : 0;
+      map.setPaintProperty(L.RAIN, "raster-opacity", opacity);
     }
     const src = map.getSource(S.RAIN) as any;
-    if (src?.setTiles && rainRadar.activeTileUrl) {
+    if (src?.setTiles && rainRadar.activeTileUrl && shouldShow) {
       src.setTiles([rainRadar.activeTileUrl]);
     }
-  }, [ready, layers.rainRadar, layers.weather, weather.isRaining, rainRadar.activeTileUrl]);
+  }, [ready, radarEnabled, weather.isRaining, rainRadar.activeTileUrl]);
 
   // ── Weather fog — very subtle atmosphere ──
   useEffect(() => {
@@ -670,8 +678,8 @@ export default memo(function CanonicalMap({
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
       <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" />
 
-      {/* Subtle atmospheric rain overlay */}
-      {weather.isRaining && (
+      {/* Subtle atmospheric rain overlay — only when truly raining */}
+      {weather.isRaining && radarEnabled && (
         <div
           className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-1000"
           style={{ background: "linear-gradient(180deg, rgba(50,90,160,0.03) 0%, rgba(30,60,120,0.04) 100%)" }}
