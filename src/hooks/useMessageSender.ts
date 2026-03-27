@@ -1,11 +1,13 @@
 /**
  * useMessageSender — V2-ONLY canonical message sender.
  * Writes to chat_messages_v2 exclusively. No legacy path.
+ * Auto-creates V2 conversation if missing.
  */
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 
 const db = supabase as any;
 
