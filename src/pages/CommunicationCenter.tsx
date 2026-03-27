@@ -343,6 +343,25 @@ export const CommunicationCenter = () => {
                 onSaved={() => { setShowNewConversation(false); loadThreads(); }}
                 onConversationReady={(conversation, peer) => {
                   setShowNewConversation(false);
+                  // Build a proper ConversationThread and select it immediately
+                  const newThread: ConversationThread = {
+                    id: `v2-direct-${conversation.id}`,
+                    conversationType: "direct",
+                    sourceModule: "direct",
+                    contextType: "direct",
+                    contextId: conversation.id,
+                    name: peer.display_name || peer.email || "Contact",
+                    email: peer.email || null,
+                    avatarUrl: peer.avatar_url || null,
+                    threadId: conversation.id,
+                    v2ConversationId: conversation.id,
+                    isV2: true,
+                    peerUserId: peer.id,
+                    peerOrbitId: peer.orbit_id,
+                    unreadCount: 0,
+                  };
+                  setSelectedThread(newThread);
+                  setActiveSection("chats");
                   loadThreads();
                 }}
               />
