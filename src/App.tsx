@@ -38,7 +38,7 @@ import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 import { useNotificationV2Store } from "@/stores/notificationV2Store";
 import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 import { AppInit } from "@/components/system/AppInit";
-import { AppRuntimeBridges } from "@/components/app/AppRuntimeBridges";
+// AppRuntimeBridges removed — was noop
 import { CanonicalShellRuntime } from "@/components/app/CanonicalShellRuntime";
 import { GlobalExperienceProvider } from "@/providers/GlobalExperienceProvider";
 import { UiQualityProvider } from "@/providers/UiQualityProvider";
@@ -292,7 +292,7 @@ const DeliveryProofPage = safeLazy(() => import("./pages/DeliveryProofPage"), "D
 const GuestCheckoutPage = safeLazy(() => import("./pages/GuestCheckoutPage"), "GuestCheckoutPage");
 const PaymentPage = safeLazy(() => import("./pages/PaymentPage"), "PaymentPage");
 const KpiChartsPage = safeLazy(() => import("./pages/KpiChartsPage"), "KpiChartsPage");
-const PublicStorefrontBySlugPage = safeLazy(() => import("./pages/PublicStorefrontBySlugPage"), "PublicStorefrontBySlugPage");
+// PublicStorefrontBySlugPage removed — route was shadowed by /store/:storeId
 const DriverHeatmapMapPage = safeLazy(() => import("./pages/DriverHeatmapMapPage"), "DriverHeatmapMapPage");
 const AdminRealtimeControlPage = safeLazy(() => import("./pages/AdminRealtimeControlPage"), "AdminRealtimeControlPage");
 const DeploymentChecklistPage = safeLazy(() => import("./pages/DeploymentChecklistPage"), "DeploymentChecklistPage");
@@ -689,7 +689,7 @@ const App = () => (
            <NotificationsRealtimeGuard />
            <UpdateNotification />
                   <AppInit />
-                   <AppRuntimeBridges />
+                   {/* AppRuntimeBridges removed — was noop */}
                    <CanonicalShellRuntime />
                   <UiQualityProvider>
                 <GeoBoot />
@@ -1232,7 +1232,7 @@ const App = () => (
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
               <Route path="/payment/:orderId" element={<PaymentPage />} />
               <Route path="/claim-shop/:merchantId" element={<ClaimShopPage />} />
-              <Route path="/store/:publicSlug" element={<PublicStorefrontBySlugPage />} />
+              {/* /store/:publicSlug removed — shadowed by /store/:storeId (line 869) */}
 
               <Route path="/app/orbit" element={<Navigate to="/orbit" replace />} />
               <Route path="/app/*" element={<Navigate to="/" replace />} />

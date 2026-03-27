@@ -4,6 +4,10 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { useAuth } from "@/contexts/AuthContext";
 
+/**
+ * useNotificationBellSync — Reads from canonical app_notifications table.
+ * FIXED: Was reading from legacy "notifications" table.
+ */
 export function useNotificationBellSync() {
   const { user } = useAuth();
   const [count, setCount] = useState(0);
@@ -14,11 +18,12 @@ export function useNotificationBellSync() {
       return;
     }
 
-    const { count: notifCount } = await supabase
-      .from("notifications")
+    const { count: notifCount } = await (supabase as any)
+      .from("app_notifications")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
-      .is("read_at", null);
+      .is("read_at", null)
+      .is("dismissed_at", null);
 
     setCount(notifCount ?? 0);
   }, [user?.id]);
@@ -29,13 +34,13 @@ export function useNotificationBellSync() {
     if (!user?.id) return;
 
     const channel = supabase
-      .channel(`notifications-bell:${user.id}`)
+      .channel(`notif-bell:${user.id}`)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
-          table: "notifications",
+          table: "app_notifications",
           filter: `user_id=eq.${user.id}`,
         },
         () => void refresh()
@@ -45,24 +50,16 @@ export function useNotificationBellSync() {
         {
           event: "UPDATE",
           schema: "public",
-          table: "notifications",
+          table: "app_notifications",
           filter: `user_id=eq.${user.id}`,
         },
         () => void refresh()
       )
       .subscribe();
 
-    const unsub1 = platformBus.on(APP_EVENTS.NOTIFICATIONS_REFRESH, () => {
-      void refresh();
-    });
-
-    const unsub2 = platformBus.on(APP_EVENTS.ORBIT_MESSAGE_SENT, () => {
-      void refresh();
-    });
-
-    const unsub3 = platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS, () => {
-      void refresh();
-    });
+    const unsub1 = platformBus.on(APP_EVENTS.NOTIFICATIONS_REFRESH, () => void refresh());
+    const unsub2 = platformBus.on(APP_EVENTS.ORBIT_MESSAGE_SENT, () => void refresh());
+    const unsub3 = platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS, () => void refresh());
 
     return () => {
       supabase.removeChannel(channel);

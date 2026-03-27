@@ -6,6 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Send, Loader2, Paperclip } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { createAppNotification } from "@/lib/notifications/app-notification-service";
+
+const db = supabase as any;
 
 interface Props {
   bookingId: string;
@@ -16,87 +19,111 @@ interface Props {
 /**
  * Public-facing reply component for guests to communicate
  * about their booking without needing authentication.
+ *
+ * FIXED: Migrated from legacy "messages" + "notifications" tables
+ * to canonical "chat_messages_v2" + "app_notifications".
  */
 export default function GuestBookingReply({ bookingId, guestName, guestEmail }: Props) {
   const qc = useQueryClient();
   const [newMessage, setNewMessage] = useState("");
 
-  // Load messages for this booking
+  // Load messages for this booking from V2 table
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ["guest_booking_messages", bookingId],
     queryFn: async () => {
-      // Fetch booking to get org_id
-      const { data: booking } = await supabase
-        .from("booking_requests")
-        .select("org_id, guest_name, guest_email")
-        .eq("id", bookingId)
+      // Find conversation linked to this booking
+      const { data: conv } = await db
+        .from("conversations_v2")
+        .select("id")
+        .eq("booking_id", bookingId)
+        .limit(1)
         .maybeSingle();
 
-      if (!booking) return [];
+      if (!conv?.id) return [];
 
-      const { data } = await supabase
-        .from("messages")
-        .select("id, content, created_at, message_type, sender_id, attachment_url")
-        .eq("org_id", booking.org_id)
+      const { data } = await db
+        .from("chat_messages_v2")
+        .select("id, body, created_at, type, sender_user_id, metadata")
+        .eq("conversation_id", conv.id)
         .order("created_at", { ascending: true })
         .limit(200);
 
-      // Filter messages related to this booking
-      return (data || []).filter((m: any) => {
-        const content = m.content || "";
-        return content.includes(bookingId);
-      }).map((m: any) => ({
-        ...m,
-        isInternal: m.content?.includes("[Internal]"),
-        isFromHost: !!m.sender_id,
-      })).filter((m: any) => !m.isInternal); // Hide internal notes from guest
+      return (data || [])
+        .filter((m: any) => m.type !== "system" || !(m.metadata as any)?.internal)
+        .map((m: any) => ({
+          ...m,
+          content: m.body,
+          isFromHost: !!m.sender_user_id,
+        }));
     },
     enabled: !!bookingId,
-    refetchInterval: 15000, // Poll every 15s for new messages
+    refetchInterval: 15000,
   });
 
   const sendReply = useMutation({
     mutationFn: async () => {
-      // Get booking org_id
+      // Find or get conversation for this booking
+      const { data: conv } = await db
+        .from("conversations_v2")
+        .select("id")
+        .eq("booking_id", bookingId)
+        .limit(1)
+        .maybeSingle();
+
+      const conversationId = conv?.id;
+      if (!conversationId) throw new Error("Conversation not found for this booking");
+
+      // Insert guest message into V2 table
+      await db.from("chat_messages_v2").insert({
+        conversation_id: conversationId,
+        sender_user_id: null, // Guest has no auth user
+        sender_orbit_id: `guest_${guestEmail.replace(/[^a-z0-9]/gi, "_").slice(0, 20)}`,
+        type: "text",
+        body: newMessage,
+        metadata: {
+          guest_name: guestName,
+          guest_email: guestEmail,
+          booking_id: bookingId,
+          source: "guest_reply",
+        },
+      });
+
+      // Update conversation preview
+      await db
+        .from("conversations_v2")
+        .update({
+          last_message_at: new Date().toISOString(),
+          last_message_preview: `${guestName}: ${newMessage.slice(0, 100)}`,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", conversationId);
+
+      // Notify host via app_notifications
       const { data: booking } = await supabase
         .from("booking_requests")
         .select("org_id")
         .eq("id", bookingId)
         .maybeSingle();
 
-      if (!booking) throw new Error("Booking not found");
+      if (booking?.org_id) {
+        const { data: org } = await supabase
+          .from("orgs")
+          .select("owner_user_id")
+          .eq("id", booking.org_id)
+          .maybeSingle();
 
-      // Insert guest message
-      await supabase.from("messages").insert({
-        org_id: booking.org_id,
-        sender_id: null, // Guest has no auth user
-        content: `💬 [Guest: ${guestName}] ${newMessage}\n\n[Booking: ${bookingId}]`,
-        category: "booking",
-        message_type: "incoming",
-        read: false,
-      } as any);
-
-      // Notify host via notification
-      const { data: org } = await supabase
-        .from("orgs")
-        .select("owner_user_id")
-        .eq("id", booking.org_id)
-        .maybeSingle();
-
-      if (org?.owner_user_id) {
-        await supabase.from("notifications").insert({
-          user_id: org.owner_user_id,
-          org_id: booking.org_id,
-          type: "info",
-          title: "💬 Guest reply",
-          message: `${guestName} replied to booking conversation`,
-          link: `/dashboard/seasonal?booking=${bookingId}`,
-          metadata_json: {
-            target_type: "booking_request",
-            target_id: bookingId,
-            booking_id: bookingId,
-          },
-        });
+        if (org?.owner_user_id) {
+          await createAppNotification({
+            userId: org.owner_user_id,
+            scope: "booking",
+            title: "💬 Guest reply",
+            body: `${guestName} replied to booking conversation`,
+            route: `/dashboard/seasonal?booking=${bookingId}`,
+            severity: "info",
+            entityType: "booking_request",
+            entityId: bookingId,
+          });
+        }
       }
     },
     onSuccess: () => {
@@ -111,7 +138,6 @@ export default function GuestBookingReply({ bookingId, guestName, guestEmail }: 
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-foreground">Messages</h3>
 
-      {/* Messages list */}
       <div className="max-h-64 overflow-y-auto space-y-2 border border-border rounded-xl p-3">
         {isLoading ? (
           <div className="flex justify-center py-4">
@@ -137,24 +163,12 @@ export default function GuestBookingReply({ bookingId, guestName, guestEmail }: 
                   {format(new Date(m.created_at), "dd/MM HH:mm")}
                 </span>
               </div>
-              <p className="text-foreground whitespace-pre-line">
-                {m.content
-                  ?.replace(/\[Booking: [^\]]+\]/g, "")
-                  .replace(/📌 \[Internal\] |📧 \[Email\] |💬 \[Guest: [^\]]*\] /g, "")
-                  .trim()}
-              </p>
-              {m.attachment_url && (
-                <a href={m.attachment_url} target="_blank" rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center gap-1.5 text-xs underline text-accent">
-                  <Paperclip className="h-3 w-3" /> Attachment
-                </a>
-              )}
+              <p className="text-foreground whitespace-pre-line">{m.content}</p>
             </div>
           ))
         )}
       </div>
 
-      {/* Reply input */}
       <div className="space-y-2">
         <Textarea
           placeholder={`Reply as ${guestName}...`}
