@@ -56,7 +56,7 @@ const OnboardingChecklist = () => {
       supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId),
       supabase.from("owner_profiles").select("id").eq("org_id", orgId).limit(1).maybeSingle(),
       supabase.from("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("messages").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+      (supabase as any).from("chat_messages_v2").select("id", { count: "exact", head: true }),
     ]).then(([props, tenants, docs, owner, payments, messages]) => {
       setCounts({
         properties: props.count ?? 0,
