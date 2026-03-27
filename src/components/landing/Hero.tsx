@@ -121,7 +121,9 @@ const Hero = () => {
           <div className="lg:col-span-7 space-y-3 sm:space-y-5 lg:space-y-7 text-center lg:text-left">
             {/* Brand + Radar Logo */}
             <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }} className="flex flex-col items-center lg:items-start gap-3">
-              <EasyLocsLogo variant="full" size="lg" animate />
+              <Link to="/" aria-label="Easy-Locs Home">
+                <EasyLocsLogo variant="full" size="lg" animate />
+              </Link>
               <span className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[10px] sm:text-[11px] font-semibold border" style={{ background: "linear-gradient(135deg, hsl(var(--accent) / 0.1), hsl(var(--accent) / 0.03))", borderColor: "hsl(var(--accent) / 0.2)", color: "hsl(var(--gold-light))" }}>
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "hsl(var(--success))" }} />
