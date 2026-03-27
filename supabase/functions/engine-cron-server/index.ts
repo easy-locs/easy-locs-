@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { firewallCheck, guardedUpdate, getFirewallLog, getFirewallSummary, resetFirewallLog } from "../_shared/brain-firewall.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
