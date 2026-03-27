@@ -3,6 +3,7 @@ import { installOrchestrationEngine } from "@/lib/orchestration/orchestrator";
 import { installEngineConnectorHub } from "@/lib/system/engineConnectorHub";
 import { installPlatformReactions } from "@/lib/shared/platform-bus";
 import { installStorefrontReactions } from "@/lib/shared/storefront-reactions";
+import { installCrossAppReactions } from "@/lib/shared/cross-app-reactions";
 import { runPlatformRecovery } from "@/lib/platform/platform-recovery-engine";
 
 let booted = false;
@@ -16,19 +17,23 @@ export function useMasterAppBootstrap() {
     const cleanupBus = installPlatformReactions();
     const cleanupStorefront = installStorefrontReactions();
 
-    // 2. Orchestration engine (order lifecycle events)
+    // 2. Cross-app integration (Wallet→Orbit, Booking→Orbit, Radar→Orbit, etc.)
+    const cleanupCrossApp = installCrossAppReactions();
+
+    // 3. Orchestration engine (order lifecycle events)
     installOrchestrationEngine();
 
-    // 3. Engine connector hub (driver matching, escrow, state machine)
+    // 4. Engine connector hub (driver matching, escrow, state machine)
     installEngineConnectorHub();
 
-    // 4. Platform recovery — after initial render
+    // 5. Platform recovery — after initial render
     const t1 = setTimeout(() => void runPlatformRecovery("boot"), 8000);
 
     return () => {
       clearTimeout(t1);
       cleanupBus();
       cleanupStorefront();
+      cleanupCrossApp();
       booted = false;
     };
   }, []);
