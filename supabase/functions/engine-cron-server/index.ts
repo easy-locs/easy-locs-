@@ -37,7 +37,6 @@ Deno.serve(async (req) => {
     ): Promise<{ written: boolean; blocked: boolean; reasons: string[] }> {
       return guardedUpdate(supabase, engineName, table, id, fields, previousValues);
     }
-    }
 
     const placeholderPatterns = ["placeholder", "default", "generic", "via.placeholder", "dummyimage", "placehold.co", "unsplash.com", "images.unsplash.com"];
     function isPlaceholderImage(url?: string | null) {
