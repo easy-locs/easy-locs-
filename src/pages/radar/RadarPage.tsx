@@ -12,7 +12,7 @@ import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pip
 import { getTimeContext } from "@/lib/discovery/timeContext";
 import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/world-class-taxonomy";
 import type { RadarCategory } from "@/lib/radar/types";
-import { Search, MapPin, Navigation, Loader2, Flame } from "lucide-react";
+import { Search, MapPin, Navigation, Loader2, Flame, ArrowLeft } from "lucide-react";
 import "@/styles/radar-pro.css";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 
