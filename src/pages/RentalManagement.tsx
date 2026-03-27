@@ -497,7 +497,7 @@ const RentalManagement = () => {
     await loadMessages(selectedTenant.id);
 
     if (selectedTenant.tenant_user_id) {
-      await supabase.from("notifications").insert({
+      await supabase.from("app_notifications").insert({
         user_id: selectedTenant.tenant_user_id,
         org_id: orgId,
         type: "message",
@@ -660,7 +660,7 @@ const RentalManagement = () => {
       }
 
       if (tenant.tenant_user_id && orgId) {
-        await supabase.from("notifications").insert({
+        await supabase.from("app_notifications").insert({
           user_id: tenant.tenant_user_id,
           org_id: orgId,
           type: "payment",
