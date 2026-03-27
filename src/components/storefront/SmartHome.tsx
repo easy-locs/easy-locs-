@@ -60,7 +60,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
     <div className="relative mb-4 overflow-hidden rounded-[1.75rem] px-4 pb-3 pt-3" style={{ background: hero.gradient }}>
       {/* Location + Notification row */}
       <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
-        <button onClick={onLocationTap} className="flex min-w-0 max-w-[72%] items-center gap-2 active:scale-95 transition-transform">
+        <button onClick={onLocationTap} className="flex min-w-0 max-w-[78%] items-center gap-2 active:scale-95 transition-transform">
           <MapPin className="h-4 w-4 text-white/70 shrink-0" />
           <span className="truncate text-xs font-medium text-white/80">{locationLabel}</span>
         </button>
@@ -72,8 +72,8 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
       {/* Title + emoji */}
       <div className="relative z-10 mb-2 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 pr-1">
-          <h2 className="line-clamp-1 text-base font-black leading-snug text-white">{hero.title}</h2>
-          <p className="mt-0.5 line-clamp-1 text-[11px] leading-relaxed text-white/70">{hero.subtitle}</p>
+          <h2 className="line-clamp-2 text-base font-black leading-snug text-white text-balance">{hero.title}</h2>
+          <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-white/70">{hero.subtitle}</p>
         </div>
         <span className="text-2xl select-none shrink-0 opacity-60">{hero.emoji}</span>
       </div>
