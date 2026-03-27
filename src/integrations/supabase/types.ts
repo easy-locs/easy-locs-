@@ -8525,6 +8525,124 @@ export type Database = {
           },
         ]
       }
+      hotel_inventory_calendar: {
+        Row: {
+          available: boolean
+          available_units: number
+          base_price: number
+          closed_to_arrival: boolean
+          closed_to_departure: boolean
+          created_at: string
+          currency: string
+          fees_amount: number
+          final_price: number
+          hotel_id: string
+          id: string
+          max_stay: number
+          min_stay: number
+          night_date: string
+          rate_plan_id: string | null
+          restriction_notes: string | null
+          room_type_id: string
+          source_entity_id: string | null
+          source_last_seen_at: string | null
+          source_type: string | null
+          taxes_amount: number
+          updated_at: string
+        }
+        Insert: {
+          available?: boolean
+          available_units?: number
+          base_price?: number
+          closed_to_arrival?: boolean
+          closed_to_departure?: boolean
+          created_at?: string
+          currency?: string
+          fees_amount?: number
+          final_price?: number
+          hotel_id: string
+          id?: string
+          max_stay?: number
+          min_stay?: number
+          night_date: string
+          rate_plan_id?: string | null
+          restriction_notes?: string | null
+          room_type_id: string
+          source_entity_id?: string | null
+          source_last_seen_at?: string | null
+          source_type?: string | null
+          taxes_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          available?: boolean
+          available_units?: number
+          base_price?: number
+          closed_to_arrival?: boolean
+          closed_to_departure?: boolean
+          created_at?: string
+          currency?: string
+          fees_amount?: number
+          final_price?: number
+          hotel_id?: string
+          id?: string
+          max_stay?: number
+          min_stay?: number
+          night_date?: string
+          rate_plan_id?: string | null
+          restriction_notes?: string | null
+          room_type_id?: string
+          source_entity_id?: string | null
+          source_last_seen_at?: string | null
+          source_type?: string | null
+          taxes_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_gate_failures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_quality"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_rate_plan_id_fkey"
+            columns: ["rate_plan_id"]
+            isOneToOne: false
+            referencedRelation: "hotel_rate_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_room_type_id_fkey"
+            columns: ["room_type_id"]
+            isOneToOne: false
+            referencedRelation: "hotel_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_inventory_calendar_room_type_id_fkey"
+            columns: ["room_type_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_calendar_coverage"
+            referencedColumns: ["room_id"]
+          },
+        ]
+      }
       hotel_rate_plans: {
         Row: {
           active: boolean | null
