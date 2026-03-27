@@ -598,25 +598,35 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
   },
 
   "hotel-room-normalizer": async (sb) => {
-    const { data: hotels } = await sb.from("hotels").select("id, seed_merchant_id").limit(50);
+    const { data: hotels } = await sb.from("hotels").select("id, seed_merchant_id, stars").limit(50);
     let created = 0, split = 0;
     for (const h of hotels ?? []) {
       const { data: existingRooms } = await sb.from("hotel_rooms").select("id").eq("hotel_id", h.id).limit(1);
       if (existingRooms?.length) continue;
-      if (!h.seed_merchant_id) continue;
-      const { data: seed } = await sb.from("seed_merchants").select("hotel_inventory_json").eq("id", h.seed_merchant_id).single();
-      const roomTypes = seed?.hotel_inventory_json?.roomTypes ?? [];
+
+      let roomTypes: any[] = [];
+      if (h.seed_merchant_id) {
+        const { data: seed } = await sb.from("seed_merchants").select("hotel_inventory_json").eq("id", h.seed_merchant_id).single();
+        roomTypes = seed?.hotel_inventory_json?.roomTypes ?? [];
+      }
+
+      // If no room data, generate defaults based on star rating
+      if (roomTypes.length === 0) {
+        const stars = h.stars ?? 3;
+        roomTypes = [
+          { name: "Standard Room", capacity: "2", adults: "2", bed_type: "double", size_sqm: stars >= 4 ? "28" : "22" },
+          { name: "Deluxe Room", capacity: "2", adults: "2", bed_type: "king", size_sqm: stars >= 4 ? "35" : "28" },
+          { name: "Suite", capacity: "3", adults: "3", bed_type: "king", size_sqm: stars >= 4 ? "50" : "40" },
+        ];
+      }
+
       for (const rt of roomTypes) {
         const rawName = (rt.name || "Standard Room").trim();
-        // Room splitter: separate room name from rate plan hints
         let roomName = rawName;
-        let mealHint = "none";
-        let refundHint = true;
         const lower = rawName.toLowerCase();
-        if (lower.includes("breakfast")) { mealHint = "breakfast"; roomName = rawName.replace(/[\s-]*breakfast[\s]*(included)?/i, "").trim(); split++; }
-        if (lower.includes("non.refundable") || lower.includes("non-refundable")) { refundHint = false; roomName = rawName.replace(/[\s-]*non[\s-]*refundable/i, "").trim(); split++; }
+        if (lower.includes("breakfast")) { roomName = rawName.replace(/[\s-]*breakfast[\s]*(included)?/i, "").trim(); split++; }
+        if (lower.includes("non.refundable") || lower.includes("non-refundable")) { roomName = rawName.replace(/[\s-]*non[\s-]*refundable/i, "").trim(); split++; }
         if (lower.includes("free cancellation")) { roomName = rawName.replace(/[\s-]*free cancellation/i, "").trim(); split++; }
-
         const normalizedName = roomName.replace(/\s+/g, " ").trim() || "Standard Room";
 
         await sb.from("hotel_rooms").insert({
@@ -624,7 +634,7 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
           name: normalizedName,
           normalized_room_name: normalizedName.toLowerCase(),
           source_room_id: rt.id || null,
-          description: rt.description,
+          description: rt.description || null,
           capacity: parseInt(rt.capacity || rt.max_guests || "2") || 2,
           adults: parseInt(rt.adults || rt.capacity || "2") || 2,
           bed_type: rt.bedType || rt.bed_type || "double",
