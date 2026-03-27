@@ -27,14 +27,15 @@ export function useAttachments(params: {
 
   /** Upload a file/blob to storage and return signed URL */
   const uploadToStorage = async (file: File | Blob, path: string): Promise<string | null> => {
-    const buckets = ["chat-attachments", "chat-media", "property-photos"];
-    for (const bucket of buckets) {
-      const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
-      if (error) continue;
-      const { data: signedData } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
-      return signedData?.signedUrl || null;
+    // Use chat-attachments as primary bucket (matches OrbitUploadTransport)
+    const bucket = "chat-attachments";
+    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
+    if (error) {
+      console.error("[useAttachments] upload error:", error.message);
+      return null;
     }
-    return null;
+    const { data: signedData } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
+    return signedData?.signedUrl || null;
   };
 
   /** Handle single file upload — legacy API compat */
