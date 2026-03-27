@@ -248,19 +248,18 @@ export default function NotificationPreferences() {
     if (!user) return;
     setSendingTest(true);
     try {
-      await supabase.from("notifications").insert({
+      await (supabase as any).from("app_notifications").insert({
         user_id: user.id,
-        org_id: null as any,
-        type: "info",
+        scope: "global",
+        category: "test",
         title: "🔔 Test notification",
-        message: t("notif.test_desc") || "This is a test notification to verify your alert settings are working correctly.",
-        link: "/settings",
-        metadata_json: {
+        body: t("notif.test_desc") || "This is a test notification to verify your alert settings are working correctly.",
+        severity: "info",
+        route: "/settings",
+        metadata: {
           target_type: "message",
           target_id: "test-" + Date.now(),
-          target_url: "/settings",
           module: "long_term",
-          country_code: "",
         },
       });
       toast({ title: t("notif.test_sent") || "Test notification sent!" });

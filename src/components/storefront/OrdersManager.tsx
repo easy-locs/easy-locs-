@@ -116,12 +116,16 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
 
       // Notification to buyer
       if (order.buyer_id) {
-        await (supabase as any).from("notifications").insert({
+        await (supabase as any).from("app_notifications").insert({
           user_id: order.buyer_id,
+          scope: "global",
+          category: "order",
           title: "Order completed",
           body: "Your order has been completed.",
-          type: "order",
-          metadata_json: { order_id: orderId, status: "completed" },
+          severity: "info",
+          entity_type: "order",
+          entity_id: orderId,
+          metadata: { order_id: orderId, status: "completed" },
         }).then(({ error }: any) => { if (error) console.error("[notif]", error.message); });
       }
     }

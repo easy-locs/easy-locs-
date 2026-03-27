@@ -296,7 +296,7 @@ export async function runSyncHealthChecks(): Promise<SyncCheckResult[]> {
       return { name: "Concierge Payment Sync", status: (data?.length || 0) > 5 ? "warning" as const : "ok" as const, message: `${data?.length || 0} pending payments`, checkedAt: now };
     }),
     timedCheck("Notification Queue", async () => {
-      const { count } = await supabase.from("notifications").select("id", { count: "exact", head: true }).eq("read", false);
+      const { count } = await supabase.from("app_notifications").select("id", { count: "exact", head: true }).is("read_at", null);
       return { name: "Notification Queue", status: (count || 0) > 100 ? "warning" as const : "ok" as const, message: `${count || 0} unread`, checkedAt: now };
     }),
     timedCheck("Marketplace Booking Sync", async () => {
