@@ -79,6 +79,8 @@ export type ConversationParticipant = {
   userId?: string | null;
   email?: string | null;
   displayName?: string | null;
+  /** Business role context (optional — for booking/lease threads) */
+  role?: "buyer" | "seller" | "owner" | "tenant" | "guest" | "manager";
 };
 
 // ═══════════════════════════════════════════════════
