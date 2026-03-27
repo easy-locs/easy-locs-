@@ -218,7 +218,17 @@ export default function CommGroupsSection() {
       .eq("conversation_id", group.id)
       .order("created_at", { ascending: true })
       .limit(200);
-    setMessages((msgs as GroupMessage[]) || []);
+    const mapped = ((msgs as any[]) || []).map((m: any) => ({
+      id: m.id,
+      sender_id: m.sender_user_id || m.sender_id,
+      content: m.body || m.content,
+      created_at: m.created_at,
+      sender_name: m.sender_name,
+      is_pinned: m.is_pinned,
+      pinned_at: m.pinned_at,
+      pinned_by: m.pinned_by,
+    }));
+    setMessages(mapped as GroupMessage[]);
     const { data: mems } = await supabase
       .from("group_members")
       .select("*")
