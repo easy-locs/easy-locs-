@@ -1,7 +1,11 @@
 import AppLogo from "@/components/AppLogo";
 
+/**
+ * AuthBrand — Centered logo for auth pages.
+ * Rendered in normal flow (not absolute) to avoid overlapping card content.
+ */
 const AuthBrand = () => (
-  <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10">
+  <div className="flex items-center justify-center mb-6">
     <AppLogo variant="auth" linkTo="/" />
   </div>
 );
