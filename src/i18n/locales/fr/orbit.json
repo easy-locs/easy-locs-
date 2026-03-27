@@ -17,5 +17,22 @@
   "message_edited": "Message modifié.",
   "message_forwarded": "Message transféré.",
   "queued": "Mis en file — envoi dès le retour de la connexion.",
-  "typing": "écrit..."
+  "typing": "écrit...",
+  "pinned_message": "Message épinglé",
+  "unpin": "Désépingler",
+  "jump_to_latest": "Aller au dernier",
+  "replying_to": "Réponse à",
+  "editing_message": "Modification du message",
+  "cancel": "Annuler",
+  "gallery": "Galerie",
+  "camera": "Caméra",
+  "files": "Fichiers",
+  "recording": "Enregistrement...",
+  "active_call": "Appel actif",
+  "call_in_progress": "Appel en cours",
+  "hang_up": "Raccrocher",
+  "members": "membres",
+  "message_updated": "Message modifié",
+  "message_pinned": "Message épinglé",
+  "message_unpinned": "Message désépinglé"
 }
