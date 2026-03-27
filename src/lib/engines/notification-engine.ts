@@ -88,10 +88,10 @@ async function checkCooldown(userId: string, eventType: string, cooldownSeconds:
 
   const cutoff = new Date(Date.now() - cooldownSeconds * 1000).toISOString();
   const { data } = await db
-    .from("notifications")
+    .from("app_notifications")
     .select("id")
     .eq("user_id", userId)
-    .eq("event_type", eventType)
+    .eq("category", eventType)
     .gte("created_at", cutoff)
     .limit(1);
 
@@ -101,9 +101,9 @@ async function checkCooldown(userId: string, eventType: string, cooldownSeconds:
 async function checkDedup(dedupKey: string): Promise<boolean> {
   if (!dedupKey) return true;
   const { data } = await db
-    .from("notifications")
+    .from("app_notifications")
     .select("id")
-    .eq("dedup_key", dedupKey)
+    .contains("metadata", { dedupe_key: dedupKey })
     .limit(1);
   return !data?.length;
 }
@@ -136,23 +136,23 @@ export async function sendNotification(payload: NotificationPayload): Promise<{ 
     const fallbackTitle = String(vars.title || payload.event_type.replace(/_/g, " "));
     const fallbackBody = String(vars.body || vars.message || "");
     const { data: fb, error: fbErr } = await db
-      .from("notifications")
+      .from("app_notifications")
       .insert({
         user_id: payload.user_id,
+        scope: "global",
+        category: payload.event_type,
+        title: fallbackTitle,
+        body: fallbackBody,
+        severity: payload.priority_override === "critical" ? "critical" : "info",
         entity_id: payload.entity_id ?? null,
         entity_type: payload.entity_type ?? null,
-        event_type: payload.event_type,
-        type: "system",
-        notification_type: "system",
-        priority: payload.priority_override ?? "normal",
-        channel: payload.channel ?? "in_app",
-        title: fallbackTitle,
-        message: fallbackBody,
-        body: fallbackBody,
-        dedup_key: payload.dedup_key ?? null,
-        metadata_json: payload.metadata ?? null,
-        read: false,
-        is_seen: false,
+        route: null,
+        metadata: {
+          event_type: payload.event_type,
+          channel: payload.channel ?? "in_app",
+          dedupe_key: payload.dedup_key ?? null,
+          ...(payload.metadata ?? {}),
+        },
       })
       .select("id")
       .single();

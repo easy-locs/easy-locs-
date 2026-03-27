@@ -147,14 +147,15 @@ const TenantPay = () => {
 
         // Create notification for landlord
         if (ownerId) {
-          await supabase.from("notifications").insert({
+          await (supabase as any).from("app_notifications").insert({
             user_id: ownerId,
-            org_id: tenantInfo.org_id,
-            type: "payment",
+            scope: "global",
+            category: "payment",
             title: `🏦 ${t("page.tenant_pay.transfer_declared") || "Bank transfer declared"}`,
-            message: `${user?.email} - ${month} - ${fmt(unpaidCalls.find(c => c.id === rentCallId)?.total_amount || 0)}`,
-            metadata_json: { target_type: "rent_call", target_id: rentCallId, module: "rental" },
-          } as any);
+            body: `${user?.email} - ${month} - ${fmt(unpaidCalls.find(c => c.id === rentCallId)?.total_amount || 0)}`,
+            severity: "info",
+            metadata: { target_type: "rent_call", target_id: rentCallId, module: "rental" },
+          });
         }
       }
 

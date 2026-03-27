@@ -54,19 +54,17 @@ export default function MultiChannelDriverComms({ orgId, className }: { orgId: s
     queryFn: async () => {
       if (!orgId) return [];
       const { data } = await (supabase as any)
-        .from("notifications")
+        .from("app_notifications")
         .select("*")
-        .eq("org_id", orgId)
-        .or("type.eq.info,type.eq.payment")
-        .ilike("title", "%mission%,title.ilike.%livr%,title.ilike.%driver%,title.ilike.%delivery%")
+        .eq("scope", "global")
+        .or("category.eq.info,category.eq.payment")
         .order("created_at", { ascending: false })
         .limit(50);
       // Fallback: get any delivery-related notifications
       if (!data || data.length === 0) {
         const { data: fallback } = await (supabase as any)
-          .from("notifications")
+          .from("app_notifications")
           .select("*")
-          .eq("org_id", orgId)
           .order("created_at", { ascending: false })
           .limit(20);
         return (fallback || []).map((n: any) => ({
@@ -74,9 +72,9 @@ export default function MultiChannelDriverComms({ orgId, className }: { orgId: s
           channel: "push",
           recipient: n.user_id?.substring(0, 8) || "Driver",
           subject: n.title || "",
-          status: n.read ? "delivered" : "sent",
+          status: n.read_at ? "delivered" : "sent",
           sentAt: new Date(n.created_at),
-          deliveredAt: n.read ? new Date(n.updated_at || n.created_at) : undefined,
+          deliveredAt: n.read_at ? new Date(n.read_at) : undefined,
         }));
       }
       return (data || []).map((n: any) => ({
@@ -84,9 +82,9 @@ export default function MultiChannelDriverComms({ orgId, className }: { orgId: s
         channel: "push",
         recipient: n.user_id?.substring(0, 8) || "Driver",
         subject: n.title || "",
-        status: n.read ? "delivered" : "sent",
+        status: n.read_at ? "delivered" : "sent",
         sentAt: new Date(n.created_at),
-        deliveredAt: n.read ? new Date(n.updated_at || n.created_at) : undefined,
+        deliveredAt: n.read_at ? new Date(n.read_at) : undefined,
       }));
     },
     enabled: !!orgId,
@@ -106,13 +104,13 @@ export default function MultiChannelDriverComms({ orgId, className }: { orgId: s
     setSending(true);
     try {
       // Send real notification to driver
-      await (supabase as any).from("notifications").insert({
+      await (supabase as any).from("app_notifications").insert({
         user_id: composeData.recipient,
-        org_id: orgId,
-        type: "info",
+        scope: "global",
+        category: "info",
         title: composeData.subject,
-        message: composeData.body || composeData.subject,
-        link: "/driver",
+        body: composeData.body || composeData.subject,
+        severity: "info",
       });
       toast.success("Notification envoyée");
       setView("messages");
