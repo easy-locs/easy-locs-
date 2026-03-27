@@ -1,10 +1,8 @@
-import { eventBus } from "@/lib/core/event-bus";
-
+/**
+ * ride-wallet.handler — DEPRECATED: merged into close-flow-engine.ts
+ * Payment emission is now handled by the unified close flow.
+ */
+// No-op — kept for import compatibility
 export function initRideWalletHandler() {
-  eventBus.on("ride.completed", (payload) => {
-    void eventBus.emit("wallet.payment.required", {
-      context: "ride",
-      jobId: payload.jobId,
-    });
-  });
+  // Handled by close-flow-engine
 }
