@@ -2,7 +2,7 @@
  * ServiceFormCategorySelector — Category → Subcategory hierarchy selector for ServiceForm.
  * Uses the unified CATEGORY_HIERARCHY taxonomy.
  */
-import { CATEGORY_HIERARCHY, type CategoryGroup, type SubCategory } from "@/lib/category-hierarchy";
+import { CATEGORY_HIERARCHY, type CategoryGroupCompat as CategoryGroup, type SubCategoryCompat as SubCategory } from "@/lib/taxonomy/category-tree";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 

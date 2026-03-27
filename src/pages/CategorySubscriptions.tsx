@@ -1,5 +1,5 @@
 import { useCategorySubscriptions } from "@/hooks/useCategorySubscriptions";
-import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
+import { CATEGORY_HIERARCHY } from "@/lib/taxonomy/category-tree";
 import { Bell, BellOff, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";

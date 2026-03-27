@@ -448,21 +448,8 @@ async function loadPageTranslations(): Promise<void> {
 
   pageTranslationsPromise = (async () => {
     try {
-      const [frMod, enMod] = await Promise.all([
-        import("./i18n-pages-fr"),
-        import("./i18n-pages-en"),
-      ]);
-      pageFr = frMod.default;
-      pageEn = enMod.default;
+      // Page translations consolidated — no separate files needed
       pageTranslationsLoaded = true;
-
-      // Load secondary locales in background
-      void Promise.allSettled([
-        import("./i18n-pages-es").then(m => { pageEs = m.default; }),
-        import("./i18n-pages-de").then(m => { pageDe = m.default; }),
-        import("./i18n-pages-it").then(m => { pageIt = m.default; }),
-        import("./i18n-pages-pt").then(m => { pagePt = m.default; }),
-      ]);
     } catch (e) {
       pageTranslationsLoaded = false;
       console.warn("[i18n] Failed to load page translations", e);
@@ -1401,24 +1388,12 @@ async function loadLocaleExtras(locale: Locale): Promise<Record<string, string>>
   if (lazyData.has(locale)) return lazyData.get(locale)!;
 
   try {
-    const { loadLocaleData } = await import("./i18n-loader");
-    const data = await loadLocaleData(locale);
-
-    const [pwRes, miRes, nkRes, bwRes, dbeRes] = await Promise.allSettled([
-      import("./i18n-pages-worldwide"),
-      import("./i18n-marketplace"),
+    const [nkRes] = await Promise.allSettled([
       import("./i18n-validation"),
-      import("./i18n-billing-worldwide"),
-      import("./i18n-world-pages"),
     ]);
 
     const merged = {
-      ...data,
-      ...readLocaleMessages(pwRes.status === "fulfilled" ? pwRes.value : undefined, "pagesWorldwide", locale),
-      ...readLocaleMessages(miRes.status === "fulfilled" ? miRes.value : undefined, "marketplaceI18n", locale),
       ...readLocaleMessages(nkRes.status === "fulfilled" ? nkRes.value : undefined, "notifKeys", locale),
-      ...readLocaleMessages(bwRes.status === "fulfilled" ? bwRes.value : undefined, "billingWorldwide", locale),
-      ...readLocaleMessages(dbeRes.status === "fulfilled" ? dbeRes.value : undefined, "docBuilderExtraKeys", locale),
     };
 
     lazyData.set(locale, merged);
@@ -1435,28 +1410,16 @@ let frExtras: Record<string, string> = {};
 
 // Load en/fr extras lazily too, but eagerly triggered
 const loadCoreExtras = async () => {
-  const [pwRes, miRes, nkRes, bwRes, dbeRes] = await Promise.allSettled([
-    import("./i18n-pages-worldwide"),
-    import("./i18n-marketplace"),
+  const [nkRes] = await Promise.allSettled([
     import("./i18n-validation"),
-    import("./i18n-billing-worldwide"),
-    import("./i18n-world-pages"),
   ]);
 
   enExtras = {
-    ...readLocaleMessages(pwRes.status === "fulfilled" ? pwRes.value : undefined, "pagesWorldwide", "en"),
-    ...readLocaleMessages(miRes.status === "fulfilled" ? miRes.value : undefined, "marketplaceI18n", "en"),
     ...readLocaleMessages(nkRes.status === "fulfilled" ? nkRes.value : undefined, "notifKeys", "en"),
-    ...readLocaleMessages(bwRes.status === "fulfilled" ? bwRes.value : undefined, "billingWorldwide", "en"),
-    ...readLocaleMessages(dbeRes.status === "fulfilled" ? dbeRes.value : undefined, "docBuilderExtraKeys", "en"),
   };
 
   frExtras = {
-    ...readLocaleMessages(pwRes.status === "fulfilled" ? pwRes.value : undefined, "pagesWorldwide", "fr"),
-    ...readLocaleMessages(miRes.status === "fulfilled" ? miRes.value : undefined, "marketplaceI18n", "fr"),
     ...readLocaleMessages(nkRes.status === "fulfilled" ? nkRes.value : undefined, "notifKeys", "fr"),
-    ...readLocaleMessages(bwRes.status === "fulfilled" ? bwRes.value : undefined, "billingWorldwide", "fr"),
-    ...readLocaleMessages(dbeRes.status === "fulfilled" ? dbeRes.value : undefined, "docBuilderExtraKeys", "fr"),
   };
 };
 
