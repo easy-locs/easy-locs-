@@ -237,6 +237,8 @@ export function useConversationThreads() {
           .limit(200);
 
         if (convThreads?.length) {
+          const nonDirectPeerIds = new Set<string>();
+
           for (const ct of convThreads) {
             const ctxType = ct.context_type || ct.type || "business";
             let convType: "direct" | "business" | "listing" | "team" = "business";
@@ -246,6 +248,12 @@ export function useConversationThreads() {
             else if (ctxType === "listing" || ctxType === "marketplace_service") { convType = "listing"; srcModule = "marketplace"; }
             else if (ctxType === "concierge_service") { convType = "listing"; srcModule = "marketplace"; }
             else if (ctxType === "business" || ctxType === "service") { convType = "business"; srcModule = "marketplace"; }
+
+            const participantUserIds = Array.isArray(ct.participant_ids)
+              ? ct.participant_ids.filter((id: unknown): id is string => typeof id === "string" && id.length > 0)
+              : [];
+            const peerUserId = participantUserIds.find((id) => id !== user?.id) ?? null;
+            if (peerUserId) nonDirectPeerIds.add(peerUserId);
 
             const key = `${convType}-${ct.id}`;
             if (!threadMap.has(key)) {
@@ -260,9 +268,35 @@ export function useConversationThreads() {
                 threadId: ct.id,
                 listingTitle: ct.title || undefined,
                 v2ConversationId: ct.id,
+                isV2: true,
+                peerUserId,
+                participantUserIds,
                 unreadCount: 0,
                 lastMessageTime: ct.last_message_at || ct.updated_at,
               });
+            }
+          }
+
+          if (nonDirectPeerIds.size > 0) {
+            const peerIds = Array.from(nonDirectPeerIds);
+            const [{ data: peerProfiles }, { data: peerOrbitProfiles }] = await Promise.all([
+              supabase.from("profiles").select("id, email, first_name, last_name, name").in("id", peerIds),
+              (supabase as any).from("orbit_profiles_v2").select("id, orbit_id, display_name, avatar_url, email").in("id", peerIds),
+            ]);
+
+            const profileMap = new Map<string, any>((peerProfiles || []).map((p: any) => [p.id, p]));
+            const orbitMap = new Map<string, any>((peerOrbitProfiles || []).map((p: any) => [p.id, p]));
+
+            for (const thread of threadMap.values()) {
+              if (!thread.v2ConversationId || !thread.peerUserId) continue;
+              const base: any = profileMap.get(thread.peerUserId);
+              const orbit: any = orbitMap.get(thread.peerUserId);
+              if (!base && !orbit) continue;
+              const fullName = [base?.first_name, base?.last_name].filter(Boolean).join(" ").trim();
+              thread.name = orbit?.display_name || fullName || base?.name || thread.name || "Contact";
+              thread.email = orbit?.email || base?.email || thread.email || null;
+              thread.avatarUrl = orbit?.avatar_url || thread.avatarUrl || null;
+              thread.peerOrbitId = orbit?.orbit_id || thread.peerOrbitId || null;
             }
           }
         }
