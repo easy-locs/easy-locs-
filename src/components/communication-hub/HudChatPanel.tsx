@@ -11,7 +11,7 @@ import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
 import { useOfflineMessages } from "@/hooks/useOfflineMessages";
 import { usePrivacySettings, computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { useVoiceRecorder, formatVoiceDuration } from "@/hooks/useVoiceRecorder";
-import { buildSecurityPayload, type SecurityLevel } from "@/lib/message-security";
+import { type SecurityLevel } from "@/lib/message-security";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 import type { ConversationThread, ChatMessage } from "./types";
@@ -43,7 +43,7 @@ import { useMessageSender } from "@/hooks/useMessageSender";
 import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
 import { useTranslation } from "@/hooks/useTranslation";
 
-const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
+// V2 only — no legacy SYSTEM_SENDER_ID needed
 
 interface Props {
   thread: ConversationThread | null;
