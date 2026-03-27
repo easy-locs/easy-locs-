@@ -22,13 +22,13 @@ interface Props {
 
 interface DeliveryNotif {
   id: string;
-  type: string;
+  category: string;
   title: string;
-  message: string;
-  read: boolean;
-  resolved: boolean;
-  link: string | null;
-  metadata_json: Record<string, any> | null;
+  body: string | null;
+  read_at: string | null;
+  dismissed_at: string | null;
+  route: string | null;
+  metadata: Record<string, any> | null;
   created_at: string;
 }
 
@@ -59,9 +59,10 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
     const fetchNotifs = async () => {
       setLoading(true);
       const { data } = await supabase
-        .from("notifications")
-        .select("id, type, title, message, read, resolved, link, metadata_json, created_at")
+        .from("app_notifications")
+        .select("id, category, title, body, read_at, dismissed_at, route, metadata, created_at")
         .eq("user_id", user.id)
+        .is("dismissed_at", null)
         .order("created_at", { ascending: false })
         .limit(50);
       setNotifs((data || []) as DeliveryNotif[]);
@@ -71,32 +72,32 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
   }, [user]);
 
   const filtered = notifs.filter(n => {
-    if (category === "new") return !n.read;
+    if (category === "new") return !n.read_at;
     if (category === "delivery") return n.title?.toLowerCase().includes("livr") || n.title?.includes("mission");
-    if (category === "payment") return n.type === "payment";
+    if (category === "payment") return n.category === "payment";
     return true;
   });
 
-  const unreadCount = notifs.filter(n => !n.read).length;
+  const unreadCount = notifs.filter(n => !n.read_at).length;
 
   const markRead = async (id: string) => {
     haptic("light");
-    await supabase.from("notifications").update({ read: true }).eq("id", id);
-    setNotifs(p => p.map(n => n.id === id ? { ...n, read: true } : n));
+    await (supabase as any).from("app_notifications").update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", id);
+    setNotifs(p => p.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
   };
 
   const markAllRead = async () => {
     haptic("medium");
-    const ids = notifs.filter(n => !n.read).map(n => n.id);
+    const ids = notifs.filter(n => !n.read_at).map(n => n.id);
     if (ids.length === 0) return;
-    await supabase.from("notifications").update({ read: true }).in("id", ids);
-    setNotifs(p => p.map(n => ({ ...n, read: true })));
+    await (supabase as any).from("app_notifications").update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() }).in("id", ids);
+    setNotifs(p => p.map(n => ({ ...n, read_at: new Date().toISOString() })));
     toast.success(`${ids.length} notifications marquées comme lues`);
   };
 
   const deleteNotif = async (id: string) => {
     haptic("light");
-    await supabase.from("notifications").update({ resolved: true }).eq("id", id);
+    await (supabase as any).from("app_notifications").update({ dismissed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", id);
     setNotifs(p => p.filter(n => n.id !== id));
   };
 
@@ -185,9 +186,9 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
       ) : (
         <div className="space-y-1.5">
           {filtered.map(n => {
-            const cfg = NOTIF_ICONS[n.type] || NOTIF_ICONS.info;
+            const cfg = NOTIF_ICONS[n.category] || NOTIF_ICONS.info;
             const Icon = cfg.icon;
-            const isNew = !n.read;
+            const isNew = !n.read_at;
             return (
               <motion.div key={n.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 className="flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all"
@@ -205,7 +206,7 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
                     <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{n.title}</p>
                     {isNew && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "hsl(var(--hud-cyan))" }} />}
                   </div>
-                  <p className="text-[10px] mt-0.5 line-clamp-2" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{n.message}</p>
+                  <p className="text-[10px] mt-0.5 line-clamp-2" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{n.body}</p>
                   <span className="text-[8px] mt-1 block" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{timeAgo(n.created_at)}</span>
                 </div>
                 <button onClick={e => { e.stopPropagation(); deleteNotif(n.id); }}

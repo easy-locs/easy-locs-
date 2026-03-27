@@ -33,24 +33,26 @@ export async function runReviewTrigger(limit = 50) {
 
     // Check if we already sent a review notification
     const { data: notifExists } = await db
-      .from("notifications")
+      .from("app_notifications")
       .select("id")
       .eq("user_id", order.user_id)
-      .eq("type", "review_request")
+      .eq("category", "review_request")
       .eq("entity_id", order.id)
       .maybeSingle();
 
     if (notifExists) { skipped++; continue; }
 
     // Send review request notification
-    await db.from("notifications").insert({
+    await db.from("app_notifications").insert({
       user_id: order.user_id,
-      type: "review_request",
+      scope: "global",
+      category: "review_request",
       title: "Rate your order",
       body: "How was your experience? Leave a review!",
+      severity: "info",
       entity_id: order.id,
       entity_type: "order",
-      metadata_json: { shop_id: order.shop_id },
+      metadata: { shop_id: order.shop_id },
     });
     triggered++;
   }

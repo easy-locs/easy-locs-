@@ -89,7 +89,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
       });
 
       // Notify driver — canonical: notifications
-      await (supabase as any).from("notifications").insert({
+      await (supabase as any).from("app_notifications").insert({
         user_id: userId,
         type: `moderation.${action}`,
         title: action === "warn" ? "⚠️ Avertissement" : action === "suspend" ? "🚫 Compte suspendu" : action === "ban" ? "❌ Compte banni" : "✅ Compte réactivé",

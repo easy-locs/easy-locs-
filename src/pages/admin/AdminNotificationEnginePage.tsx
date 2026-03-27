@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 async function listNotifications(limit = 100) {
   const { data, error } = await (supabase as any)
-    .from("notifications")
+    .from("app_notifications")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(limit);

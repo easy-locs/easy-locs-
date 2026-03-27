@@ -33,11 +33,10 @@ const GuestPortal = () => {
 
   const loadMessages = useCallback(async (orgId: string, guestEmail: string) => {
     // Load guest messages from booking_requests messages or concierge_orders notes
-    const { data } = await supabase
-      .from("notifications")
+    const { data } = await (supabase as any)
+      .from("app_notifications")
       .select("*")
-      .eq("org_id", orgId)
-      .ilike("message", `%${guestEmail}%`)
+      .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
       .order("created_at", { ascending: true })
       .limit(50);
     setMessages(data || []);
@@ -125,13 +124,12 @@ const GuestPortal = () => {
       if (error) throw error;
 
       // Notify the owner
-      await supabase.from("notifications").insert({
+      await (supabase as any).from("app_notifications").insert({
         user_id: (await supabase.from("orgs").select("owner_user_id").eq("id", booking.org_id).single()).data?.owner_user_id || "",
-        org_id: booking.org_id,
-        type: "info",
+        scope: "global", category: "service_request",
         title: "🛎️ New service request",
-        message: `${booking.guest_name} requested "${service.title}" (${service.price}${service.currency || "€"})`,
-        link: "/dashboard/activities",
+        body: `${booking.guest_name} requested "${service.title}" (${service.price}${service.currency || "€"})`,
+        severity: "info", route: "/dashboard/activities",
       });
 
       setOrderSuccess(service.id);
@@ -167,13 +165,12 @@ const GuestPortal = () => {
       } as any);
       if (error) throw error;
 
-      await supabase.from("notifications").insert({
+      await (supabase as any).from("app_notifications").insert({
         user_id: (await supabase.from("orgs").select("owner_user_id").eq("id", booking.org_id).single()).data?.owner_user_id || "",
-        org_id: booking.org_id,
-        type: "info",
+        scope: "global", category: "activity_booking",
         title: "🎯 New activity booking",
-        message: `${booking.guest_name} wants to book "${activity.title}" (${activity.price}${activity.currency || "€"})`,
-        link: "/dashboard/activities",
+        body: `${booking.guest_name} wants to book "${activity.title}" (${activity.price}${activity.currency || "€"})`,
+        severity: "info", route: "/dashboard/activities",
       });
 
       setOrderSuccess(activity.id);
@@ -210,13 +207,12 @@ const GuestPortal = () => {
       // Create in-app notification for owner
       const { data: orgOwner } = await supabase.from("orgs").select("owner_user_id").eq("id", booking.org_id).single();
       if (orgOwner?.owner_user_id) {
-        await supabase.from("notifications").insert({
+        await (supabase as any).from("app_notifications").insert({
           user_id: orgOwner.owner_user_id,
-          org_id: booking.org_id,
-          type: "info",
+          scope: "global", category: "guest_message",
           title: `💬 ${booking.guest_name}`,
-          message: message.slice(0, 200),
-          link: "/dashboard/communication",
+          body: message.slice(0, 200),
+          severity: "info", route: "/dashboard/communication",
         });
       }
 

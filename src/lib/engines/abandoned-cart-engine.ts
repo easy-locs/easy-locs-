@@ -21,23 +21,25 @@ export async function runAbandonedCartRecovery(limit = 50) {
   for (const cart of carts ?? []) {
     // Check if already notified
     const { data: existing } = await db
-      .from("notifications")
+      .from("app_notifications")
       .select("id")
       .eq("user_id", cart.customer_user_id)
-      .eq("type", "abandoned_cart")
+      .eq("category", "abandoned_cart")
       .eq("entity_id", cart.cart_id)
       .maybeSingle();
 
     if (existing) { skipped++; continue; }
 
-    await db.from("notifications").insert({
+    await db.from("app_notifications").insert({
       user_id: cart.customer_user_id,
-      type: "abandoned_cart",
+      scope: "global",
+      category: "abandoned_cart",
       title: "Forgot something?",
       body: `You left ${cart.item_count ?? 0} items in your cart.`,
+      severity: "info",
       entity_id: cart.cart_id,
       entity_type: "cart",
-      metadata_json: { subtotal: cart.subtotal },
+      metadata: { subtotal: cart.subtotal },
     });
 
     await db.from("abandoned_cart_events").update({ status: "notified" }).eq("id", cart.id);

@@ -88,10 +88,10 @@ async function checkCooldown(userId: string, eventType: string, cooldownSeconds:
 
   const cutoff = new Date(Date.now() - cooldownSeconds * 1000).toISOString();
   const { data } = await db
-    .from("notifications")
+    .from("app_notifications")
     .select("id")
     .eq("user_id", userId)
-    .eq("event_type", eventType)
+    .eq("category", eventType)
     .gte("created_at", cutoff)
     .limit(1);
 
@@ -101,9 +101,9 @@ async function checkCooldown(userId: string, eventType: string, cooldownSeconds:
 async function checkDedup(dedupKey: string): Promise<boolean> {
   if (!dedupKey) return true;
   const { data } = await db
-    .from("notifications")
+    .from("app_notifications")
     .select("id")
-    .eq("dedup_key", dedupKey)
+    .contains("metadata", { dedupe_key: dedupKey })
     .limit(1);
   return !data?.length;
 }
@@ -136,23 +136,23 @@ export async function sendNotification(payload: NotificationPayload): Promise<{ 
     const fallbackTitle = String(vars.title || payload.event_type.replace(/_/g, " "));
     const fallbackBody = String(vars.body || vars.message || "");
     const { data: fb, error: fbErr } = await db
-      .from("notifications")
+      .from("app_notifications")
       .insert({
         user_id: payload.user_id,
+        scope: "global",
+        category: payload.event_type,
+        title: fallbackTitle,
+        body: fallbackBody,
+        severity: payload.priority_override === "critical" ? "critical" : "info",
         entity_id: payload.entity_id ?? null,
         entity_type: payload.entity_type ?? null,
-        event_type: payload.event_type,
-        type: "system",
-        notification_type: "system",
-        priority: payload.priority_override ?? "normal",
-        channel: payload.channel ?? "in_app",
-        title: fallbackTitle,
-        message: fallbackBody,
-        body: fallbackBody,
-        dedup_key: payload.dedup_key ?? null,
-        metadata_json: payload.metadata ?? null,
-        read: false,
-        is_seen: false,
+        route: null,
+        metadata: {
+          event_type: payload.event_type,
+          channel: payload.channel ?? "in_app",
+          dedupe_key: payload.dedup_key ?? null,
+          ...(payload.metadata ?? {}),
+        },
       })
       .select("id")
       .single();
@@ -196,29 +196,27 @@ export async function sendNotification(payload: NotificationPayload): Promise<{ 
 
   // Insert notification
   const { data, error } = await db
-    .from("notifications")
+    .from("app_notifications")
     .insert({
       user_id: payload.user_id,
-      org_id: payload.org_id ?? null,
+      scope: "global",
+      category: template.notification_type,
+      title,
+      body,
+      severity: priority === "critical" ? "critical" : priority === "urgent" ? "warning" : "info",
+      route: ctaUrl,
       entity_id: payload.entity_id ?? null,
       entity_type: payload.entity_type ?? null,
-      event_type: payload.event_type,
-      type: template.notification_type,
-      notification_type: template.notification_type,
-      priority,
-      channel,
-      title,
-      message: body,
-      body,
-      subtitle,
-      cta_label: ctaLabel,
-      cta_url: ctaUrl,
-      icon_key: template.icon_key,
-      dedup_key: payload.dedup_key ?? null,
-      group_key: groupKey,
-      metadata_json: payload.metadata ?? null,
-      read: false,
-      is_seen: false,
+      metadata: {
+        event_type: payload.event_type,
+        channel,
+        subtitle,
+        cta_label: ctaLabel,
+        icon_key: template.icon_key,
+        dedupe_key: payload.dedup_key ?? null,
+        group_key: groupKey,
+        ...(payload.metadata ?? {}),
+      },
     })
     .select("id")
     .single();
@@ -283,10 +281,10 @@ export async function getActiveLiveStatus(entityId: string, entityType: string) 
 
 export async function getUserNotifications(userId: string, limit = 50) {
   const { data } = await db
-    .from("notifications")
+    .from("app_notifications")
     .select("*")
     .eq("user_id", userId)
-    .eq("is_archived", false)
+    .is("dismissed_at", null)
     .order("created_at", { ascending: false })
     .limit(limit);
   return data ?? [];
@@ -294,35 +292,35 @@ export async function getUserNotifications(userId: string, limit = 50) {
 
 export async function getUnreadCount(userId: string): Promise<number> {
   const { count } = await db
-    .from("notifications")
+    .from("app_notifications")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
-    .eq("read", false)
-    .eq("is_archived", false);
+    .is("read_at", null)
+    .is("dismissed_at", null);
   return count ?? 0;
 }
 
 export async function markAsRead(notificationId: string): Promise<boolean> {
   const { error } = await db
-    .from("notifications")
-    .update({ read: true, read_at: new Date().toISOString() })
+    .from("app_notifications")
+    .update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("id", notificationId);
   return !error;
 }
 
 export async function markAllAsRead(userId: string): Promise<boolean> {
   const { error } = await db
-    .from("notifications")
-    .update({ read: true, read_at: new Date().toISOString() })
+    .from("app_notifications")
+    .update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("user_id", userId)
-    .eq("read", false);
+    .is("read_at", null);
   return !error;
 }
 
 export async function archiveNotification(notificationId: string): Promise<boolean> {
   const { error } = await db
-    .from("notifications")
-    .update({ is_archived: true })
+    .from("app_notifications")
+    .update({ dismissed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("id", notificationId);
   return !error;
 }
@@ -359,13 +357,13 @@ export async function getUserPreferences(userId: string) {
 
 export function subscribeToNotifications(userId: string, callback: (notification: any) => void) {
   return supabase
-    .channel(`notifications:${userId}`)
+    .channel(`app_notifications:${userId}`)
     .on(
       "postgres_changes",
       {
         event: "INSERT",
         schema: "public",
-        table: "notifications",
+        table: "app_notifications",
         filter: `user_id=eq.${userId}`,
       },
       (payload) => callback(payload.new)
