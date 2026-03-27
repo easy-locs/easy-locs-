@@ -4362,37 +4362,58 @@ export type Database = {
       }
       chat_messages_v2: {
         Row: {
+          attachments: Json | null
           body: string
           conversation_id: string
           created_at: string | null
+          deleted_at: string | null
+          delivered_at: string | null
+          edited_at: string | null
+          failed_at: string | null
           id: string
           metadata: Json | null
+          reactions: Json | null
           read_at: string | null
           receiver_orbit_id: string | null
+          reply_to_message_id: string | null
           sender_orbit_id: string
           sender_user_id: string
           type: string
         }
         Insert: {
+          attachments?: Json | null
           body: string
           conversation_id: string
           created_at?: string | null
+          deleted_at?: string | null
+          delivered_at?: string | null
+          edited_at?: string | null
+          failed_at?: string | null
           id?: string
           metadata?: Json | null
+          reactions?: Json | null
           read_at?: string | null
           receiver_orbit_id?: string | null
+          reply_to_message_id?: string | null
           sender_orbit_id: string
           sender_user_id: string
           type?: string
         }
         Update: {
+          attachments?: Json | null
           body?: string
           conversation_id?: string
           created_at?: string | null
+          deleted_at?: string | null
+          delivered_at?: string | null
+          edited_at?: string | null
+          failed_at?: string | null
           id?: string
           metadata?: Json | null
+          reactions?: Json | null
           read_at?: string | null
           receiver_orbit_id?: string | null
+          reply_to_message_id?: string | null
           sender_orbit_id?: string
           sender_user_id?: string
           type?: string
@@ -5431,42 +5452,60 @@ export type Database = {
       }
       conversations_v2: {
         Row: {
+          archived: boolean | null
           booking_id: string | null
           created_at: string | null
           created_by_orbit_id: string | null
+          ghost_mode: boolean | null
           id: string
           last_message_at: string | null
+          last_message_preview: string | null
           lease_id: string | null
           listing_id: string | null
+          metadata: Json | null
+          muted: boolean | null
           participants: Json
           title: string | null
           type: string
+          unread_count_cache: number | null
           updated_at: string | null
         }
         Insert: {
+          archived?: boolean | null
           booking_id?: string | null
           created_at?: string | null
           created_by_orbit_id?: string | null
+          ghost_mode?: boolean | null
           id?: string
           last_message_at?: string | null
+          last_message_preview?: string | null
           lease_id?: string | null
           listing_id?: string | null
+          metadata?: Json | null
+          muted?: boolean | null
           participants?: Json
           title?: string | null
           type?: string
+          unread_count_cache?: number | null
           updated_at?: string | null
         }
         Update: {
+          archived?: boolean | null
           booking_id?: string | null
           created_at?: string | null
           created_by_orbit_id?: string | null
+          ghost_mode?: boolean | null
           id?: string
           last_message_at?: string | null
+          last_message_preview?: string | null
           lease_id?: string | null
           listing_id?: string | null
+          metadata?: Json | null
+          muted?: boolean | null
           participants?: Json
           title?: string | null
           type?: string
+          unread_count_cache?: number | null
           updated_at?: string | null
         }
         Relationships: []

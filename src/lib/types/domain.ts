@@ -33,7 +33,18 @@ export type BookingStatus =
 export type BookingFlowMode = "instant_book" | "request_to_book";
 
 // Re-export canonical communication types from comms.ts — SINGLE SOURCE OF TRUTH
-export type { ConversationType, MessageType, ConversationParticipant, ConversationRecord, ChatMessageRecord } from "@/lib/types/comms";
+export type {
+  ConversationType,
+  MessageType,
+  CallType,
+  CallStatus,
+  CallDirection,
+  ConversationParticipant,
+  ConversationRecord,
+  ChatMessageRecord,
+  ConversationRow,
+  ChatMessageRow,
+} from "@/lib/types/comms";
 
 export type LeaseStatus = "draft" | "active" | "late" | "terminated" | "completed";
 
