@@ -63,16 +63,17 @@ export default function MessageMultiSelectToolbar({
             deletion_reason: "self_hide",
           } as any).eq("id", id);
         } else {
-          const { data: existing } = await supabase
+          const { data: existing } = await (supabase as any)
             .from("chat_messages_v2")
-            .select("deleted_for_user_ids")
+            .select("metadata")
             .eq("id", id)
             .single();
-          const currentIds: string[] = (existing?.deleted_for_user_ids as string[] | null) || [];
+          const meta = (existing?.metadata as Record<string, any>) || {};
+          const currentIds: string[] = Array.isArray(meta.deleted_for_user_ids) ? meta.deleted_for_user_ids : [];
           if (currentUserId && !currentIds.includes(currentUserId)) {
-            await supabase.from("chat_messages_v2").update({
-              deleted_for_user_ids: [...currentIds, currentUserId],
-            } as any).eq("id", id);
+            await (supabase as any).from("chat_messages_v2").update({
+              metadata: { ...meta, deleted_for_user_ids: [...currentIds, currentUserId] },
+            }).eq("id", id);
           }
         }
       }
