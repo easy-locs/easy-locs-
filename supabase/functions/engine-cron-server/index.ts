@@ -438,17 +438,113 @@ Deno.serve(async (req) => {
       return { normalized };
     }, "critical");
 
+    // ── HOTEL PIPELINE: real room/rate/calendar sync from hotel_inventory_json ──
     await runEngine("hotel-inventory-normalizer", async () => {
-      const { data: hotels } = await supabase.from("seed_merchants").select("id, hotel_inventory_json").eq("vertical" as any, "hotel").not("hotel_inventory_json", "is", null).is("hotel_normalized" as any, null).limit(30);
-      let normalized = 0;
-      for (const h of (hotels as any[]) ?? []) {
-        const inv = h.hotel_inventory_json;
-        if (inv?.roomTypes?.length > 0) {
-          await supabase.from("seed_merchants").update({ hotel_normalized: true } as any).eq("id", h.id);
-          normalized++;
+      const { data: seeds } = await supabase.from("seed_merchants")
+        .select("id, name, description, city, country, cover_image, logo_image, latitude, longitude, hotel_inventory_json, overall_quality_score, visibility_mode, slug, rating, phone")
+        .eq("vertical" as any, "hotel")
+        .not("hotel_inventory_json", "is", null)
+        .limit(50);
+      let hotelsUpserted = 0, roomsUpserted = 0, ratesUpserted = 0, calendarUpserted = 0;
+
+      for (const seed of (seeds as any[]) ?? []) {
+        const inv = seed.hotel_inventory_json;
+        if (!inv?.roomTypes?.length) continue;
+
+        // 1. Upsert hotel record
+        const { data: hotelRow } = await supabase.from("hotels").upsert({
+          seed_merchant_id: seed.id,
+          name: seed.name,
+          description: seed.description ?? `${seed.name} in ${seed.city ?? "Dubai"}`,
+          city: seed.city ?? "Dubai",
+          country: seed.country ?? "AE",
+          address: seed.city ?? "Dubai",
+          lat: seed.latitude,
+          lng: seed.longitude,
+          cover_image: seed.cover_image,
+          logo_image: seed.logo_image,
+          slug: seed.slug ?? normalizeKey(seed.name),
+          stars: 5,
+          rating: seed.rating ?? 4.5,
+          checkin_time: inv.checkinTime ?? "15:00",
+          checkout_time: inv.checkoutTime ?? "12:00",
+          amenities_json: inv.amenities ?? [],
+          policies_json: inv.policies ?? {},
+          visibility_mode: seed.visibility_mode ?? "hidden",
+          overall_quality_score: seed.overall_quality_score ?? 0,
+          pipeline_stage: "normalized",
+          pipeline_last_run_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any, { onConflict: "seed_merchant_id" }).select("id").single();
+        if (!hotelRow) continue;
+        hotelsUpserted++;
+        const hotelId = hotelRow.id;
+
+        // 2. Upsert rooms from roomTypes
+        for (const rt of inv.roomTypes) {
+          const roomSourceId = rt.externalId ?? normalizeKey(rt.name);
+          const { data: roomRow } = await supabase.from("hotel_rooms").upsert({
+            hotel_id: hotelId,
+            name: rt.name,
+            description: rt.description ?? "",
+            capacity: rt.capacity ?? 2,
+            bed_type: rt.bedType ?? "double",
+            size_m2: rt.sizeM2 ?? null,
+            amenities_json: rt.amenities ?? [],
+            images_json: rt.images ?? [],
+            source_room_id: roomSourceId,
+            active: true,
+          } as any, { onConflict: "hotel_id,source_room_id" }).select("id").single();
+          if (!roomRow) continue;
+          roomsUpserted++;
+          const roomId = roomRow.id;
+
+          // 3. Upsert rate plans
+          for (const rp of (rt.ratePlans ?? [])) {
+            const rateSourceId = rp.externalId ?? normalizeKey(rp.name);
+            await supabase.from("hotel_rate_plans").upsert({
+              room_id: roomId,
+              hotel_id: hotelId,
+              name: rp.name,
+              meal_plan: rp.mealPlan ?? "none",
+              refundable: rp.refundable ?? true,
+              cancellation_policy: rp.cancellationPolicy ?? "",
+              currency: rp.currency ?? "AED",
+              source_rate_id: rateSourceId,
+              active: true,
+            } as any, { onConflict: "room_id,source_rate_id" }).select("id").single();
+            ratesUpserted++;
+          }
+
+          // 4. Upsert calendar entries
+          for (const cal of (rt.calendar ?? [])) {
+            if (!cal.date) continue;
+            // Get the first rate plan for this room for calendar entry
+            const { data: firstRate } = await supabase.from("hotel_rate_plans")
+              .select("id").eq("room_id", roomId).limit(1).single();
+            await supabase.from("hotel_inventory_calendar").upsert({
+              hotel_id: hotelId,
+              room_type_id: roomId,
+              rate_plan_id: firstRate?.id ?? null,
+              night_date: cal.date,
+              available: cal.available ?? true,
+              available_units: 5,
+              base_price: cal.price ?? 0,
+              final_price: cal.price ?? 0,
+              currency: cal.currency ?? "AED",
+              min_stay: cal.minStay ?? 1,
+              max_stay: cal.maxStay ?? 14,
+              source_type: "pipeline",
+              updated_at: new Date().toISOString(),
+            } as any, { onConflict: "hotel_id,room_type_id,rate_plan_id,night_date" });
+            calendarUpserted++;
+          }
         }
+
+        // Mark seed as hotel_normalized
+        await supabase.from("seed_merchants").update({ hotel_normalized: true, pipeline_stage: "normalized" } as any).eq("id", seed.id);
       }
-      return { normalized };
+      return { hotelsUpserted, roomsUpserted, ratesUpserted, calendarUpserted };
     }, "critical");
 
     await runEngine("service-catalog-normalizer", async () => {
@@ -612,18 +708,52 @@ Deno.serve(async (req) => {
     }, "critical");
 
     await runEngine("publish-gate-hotel", async () => {
-      const { data } = await supabase.from("seed_merchants").select("id, hotel_inventory_json, cover_image, category, visibility_mode").eq("vertical" as any, "hotel").eq("visibility_mode" as any, "hidden").limit(50);
-      let checked = 0, promoted = 0, fwBlocked = 0;
+      const { data } = await supabase.from("seed_merchants")
+        .select("id, name, hotel_inventory_json, cover_image, category, visibility_mode, latitude, longitude, overall_quality_score")
+        .eq("vertical" as any, "hotel").in("visibility_mode" as any, ["hidden", "coming_soon"]).limit(50);
+      let checked = 0, promoted = 0, comingSoon = 0, fwBlocked = 0;
       for (const m of (data as any[]) ?? []) {
         checked++;
-        if (m.hotel_inventory_json?.roomTypes?.length > 0 && !isPlaceholderImage(m.cover_image) && !isInvalidCategory(m.category)) {
-          const fw = firewallCheck("publish-gate-hotel", "seed_merchants", { visibility_mode: "search_only", category: m.category, visibility_decision_reason: "publish-gate-hotel" });
-          if (fw.blocked) { fwBlocked++; continue; }
-          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, visibility_decision_reason: "publish-gate-hotel" } as any).eq("id", m.id);
-          promoted++;
-        }
+        const inv = m.hotel_inventory_json;
+        const hasRooms = inv?.roomTypes?.length > 0;
+        const hasRates = hasRooms && inv.roomTypes.some((rt: any) => rt.ratePlans?.length > 0);
+        const hasCalendar = hasRooms && inv.roomTypes.some((rt: any) => rt.calendar?.length > 0);
+        const hasImage = !isPlaceholderImage(m.cover_image);
+        const hasCat = !isInvalidCategory(m.category);
+        const hasLocation = m.latitude != null && m.longitude != null;
+        const score = m.overall_quality_score ?? 0;
+
+        // Calculate hotel quality score
+        let hotelScore = 0;
+        if (m.name?.length > 2) hotelScore += 15;  // identity
+        if (hasLocation) hotelScore += 15;          // location
+        if (hasImage) hotelScore += 15;             // visual
+        if (hasRooms) hotelScore += 20;             // rooms
+        if (hasRates) hotelScore += 15;             // rates
+        if (hasCalendar) hotelScore += 10;          // calendar
+        if (hasCat) hotelScore += 10;               // classification
+
+        let targetMode = "hidden";
+        if (hotelScore >= 70 && hasRooms && hasRates && hasImage && hasLocation) targetMode = "live";
+        else if (hotelScore >= 50 && hasRooms && hasImage) targetMode = "search_only";
+        else if (hotelScore >= 25 && m.name?.length > 2 && hasLocation) targetMode = "coming_soon";
+
+        if (targetMode === "hidden") continue;
+        
+        const fw = firewallCheck("publish-gate-hotel", "seed_merchants", { visibility_mode: targetMode, category: m.category, overall_quality_score: hotelScore, visibility_decision_reason: `publish-gate-hotel:score=${hotelScore}` });
+        if (fw.blocked) { fwBlocked++; continue; }
+        await supabase.from("seed_merchants").update({
+          visibility_mode: targetMode,
+          blocking_reason: null,
+          overall_quality_score: hotelScore,
+          visibility_decision_reason: `publish-gate-hotel:score=${hotelScore}`,
+          quality_scored_at: new Date().toISOString(),
+          is_coming_soon: targetMode === "coming_soon",
+        } as any).eq("id", m.id);
+        if (targetMode === "coming_soon") comingSoon++;
+        else promoted++;
       }
-      return { checked, promoted, fwBlocked };
+      return { checked, promoted, comingSoon, fwBlocked };
     }, "critical");
 
     await runEngine("publish-gate-service", async () => {
