@@ -325,7 +325,8 @@ export function installPlatformReactions(): () => void {
 
   // ── Marketplace events → refresh business module ──
   unsubs.push(
-    platformBus.onPrefix("marketplace:", () => refreshModule("business"))
+    platformBus.onPrefix("marketplace:", () => refreshModule("business")),
+    platformBus.onPrefix("marketplace.", () => refreshModule("business"))
   );
 
   // ── PM events → refresh business module ──
@@ -340,7 +341,23 @@ export function installPlatformReactions(): () => void {
 
   // ── Orbit communication events → refresh communication module ──
   unsubs.push(
-    platformBus.onPrefix("orbit:", () => refreshModule("communication"))
+    platformBus.onPrefix("orbit:", () => refreshModule("communication")),
+    platformBus.onPrefix("orbit.", () => refreshModule("communication"))
+  );
+
+  // ── Booking events → refresh business module ──
+  unsubs.push(
+    platformBus.onPrefix("booking.", () => refreshModule("business"))
+  );
+
+  // ── Radar events → refresh business module ──
+  unsubs.push(
+    platformBus.onPrefix("radar.", () => refreshModule("business"))
+  );
+
+  // ── Dashboard refresh events → refresh all ──
+  unsubs.push(
+    platformBus.onPrefix("dashboard.", () => refreshModule("all"))
   );
 
   // (tracking:completed and tracking:started now handled by tracking: prefix below)
