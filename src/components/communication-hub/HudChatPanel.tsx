@@ -327,8 +327,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   };
 
   const handleUploadAndSendAttachments = async () => {
+    // Collect uploaded attachments directly — don't rely on React state memo (race condition)
+    const uploadedItems: Array<{ localId: string; file: File; kind: string; url: string }> = [];
+
     for (const item of attachmentQueue.queue) {
-      if (item.status === "uploaded") continue;
+      if (item.status === "uploaded" && item.uploadedUrl) {
+        uploadedItems.push({ localId: item.localId, file: item.file, kind: item.kind, url: item.uploadedUrl });
+        continue;
+      }
       try {
         attachmentQueue.setItemProgress(item.localId, 15);
         const uploaded = await uploadTransport.uploadSingleFile({
@@ -337,16 +343,27 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           onProgress: (progress) => attachmentQueue.setItemProgress(item.localId, progress),
         });
         attachmentQueue.markUploaded(item.localId, uploaded.publicUrl);
+        uploadedItems.push({ localId: item.localId, file: item.file, kind: item.kind, url: uploaded.publicUrl });
       } catch (err: any) {
         attachmentQueue.markFailed(item.localId, err?.message || "Upload failed");
       }
     }
 
-    const atts = attachmentQueue.uploadedAttachments.map((x) => ({
-      ...x,
+    if (!uploadedItems.length) {
+      toast.error("No files uploaded successfully");
+      return;
+    }
+
+    const atts = uploadedItems.map((x) => ({
+      id: x.localId,
+      kind: x.kind as any,
+      name: x.file.name,
+      mimeType: x.file.type,
+      sizeBytes: x.file.size,
+      url: x.url,
+      thumbnailUrl: null,
       viewOnce: viewOnceEnabled,
     }));
-    if (!atts.length) return;
 
     await attachmentSend.sendAttachments({ attachments: atts, body: "", viewOnce: viewOnceEnabled });
     attachmentQueue.clearQueue();

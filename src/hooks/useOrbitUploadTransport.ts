@@ -25,15 +25,20 @@ export function useOrbitUploadTransport() {
 
     onProgress?.(85);
 
-    const { data } = (supabase as any).storage
+    // Use signed URL (works for both public and private buckets)
+    const { data: signedData } = await (supabase as any).storage
       .from("chat-attachments")
-      .getPublicUrl(fileName);
+      .createSignedUrl(fileName, 60 * 60 * 24 * 365);
+
+    // Fallback to public URL if signed URL fails
+    const finalUrl = signedData?.signedUrl
+      || (supabase as any).storage.from("chat-attachments").getPublicUrl(fileName)?.data?.publicUrl;
 
     onProgress?.(100);
 
     return {
       path: fileName,
-      publicUrl: data?.publicUrl as string,
+      publicUrl: finalUrl as string,
     };
   };
 
