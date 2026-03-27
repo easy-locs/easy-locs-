@@ -1,7 +1,7 @@
-import { RefObject, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export function useChatAutoScroll(
-  scrollRef: RefObject<HTMLElement | null>,
+  scrollRef: React.RefObject<HTMLElement | null>,
   deps: unknown[]
 ) {
   const wasNearBottomRef = useRef(true);
@@ -12,7 +12,7 @@ export function useChatAutoScroll(
 
     const onScroll = () => {
       const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-      wasNearBottomRef.current = distanceFromBottom < 120;
+      wasNearBottomRef.current = distanceFromBottom < 140;
     };
 
     el.addEventListener("scroll", onScroll, { passive: true });
