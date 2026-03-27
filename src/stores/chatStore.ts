@@ -1,3 +1,7 @@
+/**
+ * chatStore — V2-ONLY canonical chat store.
+ * Uses conversations_v2 + chat_messages_v2 exclusively.
+ */
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type {
@@ -6,9 +10,11 @@ import type {
   ChatMessageRecord,
   ConversationType,
   MessageType,
-} from "@/lib/types/domain";
-import { chatRepo } from "@/lib/supabase/repositories";
+} from "@/lib/types/comms";
 import { chatRepoExtended } from "@/lib/supabase/chat-repo-extended";
+import { supabase } from "@/integrations/supabase/client";
+
+const db = supabase as any;
 
 type CreateConversationInput = {
   type: ConversationType;
@@ -77,23 +83,44 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   createConversation: async (input) => {
+    // Get current user for RLS
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+    if (!userId) throw new Error("Not authenticated");
+
     const now = new Date().toISOString();
 
-    // Let DB generate the UUID — no client-side fake ID
-    const conversation: ConversationRecord = {
-      id: crypto.randomUUID(),
-      type: input.type,
-      participants: input.participants,
-      title: input.title,
-      listingId: input.listingId,
-      bookingId: input.bookingId,
-      leaseId: input.leaseId,
-      lastMessageAt: now,
-      createdAt: now,
-      updatedAt: now,
-    };
+    const { data, error } = await db
+      .from("conversations_v2")
+      .insert({
+        type: input.type,
+        title: input.title || null,
+        participants: input.participants || [],
+        listing_id: input.listingId || null,
+        booking_id: input.bookingId || null,
+        lease_id: input.leaseId || null,
+        last_message_at: now,
+        created_at: now,
+        updated_at: now,
+        created_by_orbit_id: userId,
+      })
+      .select()
+      .single();
 
-    const saved = await chatRepo.createConversation(conversation);
+    if (error) throw error;
+
+    const saved: ConversationRecord = {
+      id: data.id,
+      type: data.type,
+      participants: data.participants || [],
+      title: data.title,
+      listingId: data.listing_id,
+      bookingId: data.booking_id,
+      leaseId: data.lease_id,
+      lastMessageAt: data.last_message_at,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
 
     set((state) => ({
       conversations: [saved, ...state.conversations.filter((c) => c.id !== saved.id)],
@@ -105,25 +132,42 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   sendMessage: async (input) => {
+    // Get current user for sender_user_id
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+    if (!userId) throw new Error("Not authenticated");
+
+    const { data, error } = await db
+      .from("chat_messages_v2")
+      .insert({
+        conversation_id: input.conversationId,
+        sender_orbit_id: input.senderOrbitId,
+        sender_user_id: userId,
+        type: input.type || "text",
+        body: input.body,
+        metadata: input.metadata || null,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
     const now = new Date().toISOString();
-
-    // Let DB generate UUID — no client-side fake ID
-    const message: ChatMessageRecord = {
-      id: crypto.randomUUID(),
-      conversationId: input.conversationId,
-      senderOrbitId: input.senderOrbitId,
-      senderUserId: null,
-      body: input.body,
-      type: input.type ?? "text",
-      metadata: input.metadata,
-      createdAt: now,
-    };
-
-    const saved = await chatRepo.createMessage(message);
     await chatRepoExtended.updateConversation(input.conversationId, {
       lastMessageAt: now,
       updatedAt: now,
     });
+
+    const saved: ChatMessageRecord = {
+      id: data.id,
+      conversationId: data.conversation_id,
+      senderOrbitId: data.sender_orbit_id,
+      senderUserId: data.sender_user_id,
+      body: data.body,
+      type: data.type || "text",
+      metadata: data.metadata,
+      createdAt: data.created_at,
+    };
 
     set((state) => ({
       messages: [...state.messages, saved],
