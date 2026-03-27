@@ -33,7 +33,7 @@ const ForgotPassword = () => {
   const inputClass = "w-full bg-background border border-border rounded-xl pl-10 pr-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
 
   return (
-    <div className="app-mobile-page bg-hero flex items-center justify-center p-4">
+    <div className="app-mobile-page bg-hero flex flex-col items-center justify-center p-4 min-h-[100dvh]">
       <SEOHead title="Reset Password — Easy-Locs" description="Reset your Easy-Locs account password." noindex />
       <AuthBrand />
 
