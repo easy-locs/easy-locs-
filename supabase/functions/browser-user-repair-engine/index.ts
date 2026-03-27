@@ -41,6 +41,7 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  try {
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -56,12 +57,13 @@ Deno.serve(async (req) => {
   const results: ScenarioResult[] = [];
 
   // Create run record
-  const { data: run } = await supabase.from("browser_repair_runs").insert({
+  const { data: run, error: runErr } = await supabase.from("browser_repair_runs").insert({
     engine_name: "browser-user-repair-engine",
     started_at: startedAt,
     status: "running",
     environment: scope,
   }).select("id").single();
+  if (runErr) console.error("[browser-repair] Run insert error:", runErr.message);
   const runId = run?.id;
 
   // ── Scenario runner helper ──
