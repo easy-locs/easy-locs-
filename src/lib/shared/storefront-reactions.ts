@@ -200,30 +200,7 @@ export function installStorefrontReactions(): () => void {
       ]);
     })
   );
-
-  // ── Order completed → also refresh trust + growth + loyalty + invoices + CRM ──
-  unsubs.push(
-    platformBus.on("storefront:order_completed", (event: PlatformEvent) => {
-      const { shopId } = event.payload as any;
-      invalidate([
-        ["trust-score", shopId],
-        ["growth-metrics", shopId],
-        ["my-loyalty-points"],
-        ["risk-flags", shopId],
-        ["shop-invoices", shopId],
-        ["notif-log", shopId],
-        ["crm-customers", shopId],
-      ]);
-    })
-  );
-
-  // ── PASS132: Order placed → refresh CRM ──
-  unsubs.push(
-    platformBus.on("storefront:order_placed", (event: PlatformEvent) => {
-      const { shopId } = event.payload as any;
-      invalidate([["crm-customers", shopId]]);
-    })
-  );
+  // Duplicate storefront:order_completed and storefront:order_placed listeners removed — already registered above (lines 29-90)
 
   return () => unsubs.forEach(fn => fn());
 }
