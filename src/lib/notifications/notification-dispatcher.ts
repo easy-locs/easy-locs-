@@ -44,25 +44,51 @@ export async function sendInAppNotification(input: NotifyInput): Promise<string 
     },
   };
 
-  const { data, error } = input.dedupKey
-    ? await db
-        .from("notifications")
-        .upsert(payload, { onConflict: "user_id,dedup_key", ignoreDuplicates: true })
-        .select("id")
-        .single()
-    : await db
-        .from("notifications")
-        .insert(payload)
-        .select("id")
-        .single();
+  // If dedup_key is set, try upsert; handle conflict gracefully
+  if (input.dedupKey) {
+    const { data, error } = await db
+      .from("notifications")
+      .upsert(payload, { onConflict: "user_id,dedup_key", ignoreDuplicates: true })
+      .select("id")
+      .maybeSingle();
+
+    if (error) {
+      // Unique constraint violation — already exists, read it back
+      if (error.code === "23505") {
+        return await readExistingByDedup(input.userId, input.dedupKey!);
+      }
+      console.error("[notification-dispatcher] upsert error:", error.message);
+      return null;
+    }
+
+    // ignoreDuplicates may return null data when row already existed
+    if (data?.id) return data.id;
+    return await readExistingByDedup(input.userId, input.dedupKey!);
+  }
+
+  // No dedup — simple insert
+  const { data, error } = await db
+    .from("notifications")
+    .insert(payload)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
-    // Dedupe conflict is expected
-    if (error.code === "23505") return null;
     console.error("[notification-dispatcher] insert error:", error.message);
     return null;
   }
 
+  return data?.id ?? null;
+}
+
+/** Fallback read for dedup conflicts — deterministic */
+async function readExistingByDedup(userId: string, dedupKey: string): Promise<string | null> {
+  const { data } = await db
+    .from("notifications")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("dedup_key", dedupKey)
+    .maybeSingle();
   return data?.id ?? null;
 }
 
