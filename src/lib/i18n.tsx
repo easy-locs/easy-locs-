@@ -1520,13 +1520,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
     if (resolved) return interpolate(resolved, vars);
 
-    // Missing key tracking
+    // Missing key — return empty string so `t("key") || "fallback"` patterns work
     if (import.meta.env.DEV && !key.startsWith("pricing.")) {
       console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     }
     trackMissingKey(key, locale);
-    // Return interpolated key as visible fallback (never empty string)
-    return vars ? interpolate(key, vars) : key;
+    return "";
   }, [locale]);
 
   return (
