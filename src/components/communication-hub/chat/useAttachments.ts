@@ -102,19 +102,20 @@ export function useAttachments(opts: AttachmentOptions) {
         });
         if (v2Err) throw v2Err;
         await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", thread.v2ConversationId);
+      } else if (thread.v2ConversationId) {
+        // V2 fallback — same as V2 primary path
+        const { error: v2FallbackErr } = await (supabase as any).from("chat_messages_v2").insert({
+          conversation_id: thread.v2ConversationId,
+          sender_user_id: authUserId,
+          sender_orbit_id: `orbit_${authUserId.slice(0, 12)}`,
+          type: "file",
+          body: content,
+          metadata: fileMetaJson ? { encrypted_file: fileMetaJson, url: finalUrl } : { url: finalUrl },
+        });
+        if (v2FallbackErr) throw v2FallbackErr;
+        await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", thread.v2ConversationId);
       } else {
-        const payload: any = {
-          org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
-          booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
-          contact_name: thread.conversationType !== "property" ? thread.name : undefined,
-          contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-          content, category: "general", attachment_url: fileMetaJson ? undefined : finalUrl,
-          message_type: "user", sender_locale: locale,
-          context_type: thread.contextType, context_id: thread.contextId, encrypted: !!fileMetaJson,
-        };
-        if (thread.threadId) payload.thread_id = thread.threadId;
-        const { error } = await supabase.from("messages").insert(payload);
-        if (error) throw error;
+        throw new Error("No V2 conversation found for file upload");
       }
 
       platformBus.emit("orbit:message_sent", { threadId: thread.threadId || thread.id, contextId: thread.contextId, type: "file" }, "orbit", { userId: opts.userId, orgId });

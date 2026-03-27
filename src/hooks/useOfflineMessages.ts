@@ -92,26 +92,21 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
 
         try {
           const meta = msg.metadata || {};
-          const { error } = await supabase.from("messages").insert({
-            org_id: meta.orgId || orgId,
-            sender_id: meta.userId || authUserId,
-            tenant_id: meta.tenantId || null,
-            booking_id: meta.bookingId || null,
-            booking_type: meta.bookingType || null,
-            contact_name: meta.contactName || null,
-            contact_email: meta.contactEmail || null,
-            content: msg.content,
-            category: meta.category || "general",
-            sender_locale: meta.senderLocale || "en",
-            read: false,
-            message_type: "user",
-            property_id: meta.propertyId || null,
-            conversation_status: "waiting_tenant",
-            context_type: meta.contextType || null,
-            context_id: meta.contextId || null,
-            thread_id: meta.threadDbId || null,
-            encrypted: msg.encrypted,
-          } as any);
+          const conversationId = meta.conversationId || meta.threadDbId;
+          if (!conversationId) {
+            console.warn("[Orbit Offline] No conversationId, skipping:", msg.id);
+            await dequeueMessage(msg.id);
+            failed++;
+            continue;
+          }
+          const { error } = await (supabase as any).from("chat_messages_v2").insert({
+            conversation_id: conversationId,
+            sender_user_id: meta.userId || authUserId,
+            sender_orbit_id: meta.orbitId || `orbit_${(meta.userId || authUserId || "").slice(0, 12)}`,
+            type: "text",
+            body: msg.content,
+            metadata: msg.encrypted ? { encrypted: true } : null,
+          });
 
           if (error) throw error;
 

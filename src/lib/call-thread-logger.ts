@@ -34,18 +34,21 @@ export async function logCallEventToThread(opts: {
   // Embed call metadata in the content tag for parsing
   const taggedContent = `${content} [call:${opts.event}:${opts.durationSeconds ?? 0}]`;
 
-  // Use the thread's context_id (e.g. "direct:uuid:uuid") for proper matching
-  // Also set thread_id FK for direct lookups
-  await supabase.from("messages").insert({
-    org_id: opts.orgId,
-    sender_id: opts.senderId,
-    content: taggedContent,
-    context_id: opts.contextId || opts.threadId,
-    context_type: "call",
-    message_type: "system",
-    thread_id: opts.threadId,
-    read: false,
-  } as any);
+  // V2 CANONICAL — write call event as system message in chat_messages_v2
+  // threadId here maps to a conversations_v2.id
+  await (supabase as any).from("chat_messages_v2").insert({
+    conversation_id: opts.threadId,
+    sender_user_id: opts.senderId,
+    sender_orbit_id: `orbit_${opts.senderId.slice(0, 12)}`,
+    type: "system",
+    body: taggedContent,
+    metadata: {
+      call_id: opts.callId,
+      call_event: opts.event,
+      duration_seconds: opts.durationSeconds ?? 0,
+      context_id: opts.contextId || opts.threadId,
+    },
+  });
 }
 
 /** Parse call metadata from tagged content */

@@ -58,7 +58,7 @@ export default function MessageActionsMenu({
 
   const handleStar = async () => {
     const v = !isStarred;
-    const { error } = await supabase.from("messages").update({ starred: v } as any).eq("id", messageId);
+    const { error } = await supabase.from("chat_messages_v2").update({ starred: v } as any).eq("id", messageId);
     if (error) {
       toast.error(t("common.error") || "Error");
       close();
@@ -71,7 +71,7 @@ export default function MessageActionsMenu({
 
   const handleDeleteForMe = async () => {
     if (isMe) {
-      const { error } = await supabase.from("messages").update({ 
+      const { error } = await supabase.from("chat_messages_v2").update({ 
         deleted_for_sender: true,
         deleted_at: new Date().toISOString(),
         deletion_reason: "self_hide",
@@ -86,7 +86,7 @@ export default function MessageActionsMenu({
           .from("messages").select("deleted_for_user_ids").eq("id", messageId).single();
         const currentIds: string[] = (existing?.deleted_for_user_ids as string[] | null) || [];
         if (!currentIds.includes(uid)) {
-          const { error } = await supabase.from("messages").update({
+          const { error } = await supabase.from("chat_messages_v2").update({
             deleted_for_user_ids: [...currentIds, uid],
           } as any).eq("id", messageId);
           if (error) { toast.error(t("chat.delete_failed") || "Delete failed"); close(); return; }
@@ -101,7 +101,7 @@ export default function MessageActionsMenu({
   const canDeleteForAll = isMe && (minutesSinceSent === undefined || minutesSinceSent <= DELETE_FOR_ALL_LIMIT_MIN);
 
   const handleDeleteForAll = async () => {
-    const { error } = await supabase.from("messages").update({
+    const { error } = await supabase.from("chat_messages_v2").update({
       deleted_for_all: true,
       content: "🚫 This message was deleted",
     } as any).eq("id", messageId);

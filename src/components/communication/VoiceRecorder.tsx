@@ -126,19 +126,14 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
           const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
           const url = signed?.signedUrl || path;
 
-          const { data: inserted } = await supabase.from("messages").insert({
-            org_id: orgId,
-            sender_id: userId,
-            content: `🎤 Voice message (${formatDur(duration)})`,
-            context_id: contextId,
-            context_type: contextId.startsWith("direct:") ? "direct" : "booking",
-            contact_email: userEmail,
-            contact_name: userName,
-            message_type: "user",
-            conversation_status: "waiting_provider",
-            audio_url: url,
-            audio_duration_seconds: duration,
-          } as any).select("*").single();
+          const { data: inserted } = await (supabase as any).from("chat_messages_v2").insert({
+            conversation_id: contextId,
+            sender_user_id: userId,
+            sender_orbit_id: `orbit_${userId.slice(0, 12)}`,
+            type: "audio",
+            body: `🎤 Voice message (${formatDur(duration)})`,
+            metadata: { audio_url: url, audio_duration_seconds: duration },
+          }).select("*").single();
 
           if (inserted) onSent(inserted);
         } catch (e: any) {
