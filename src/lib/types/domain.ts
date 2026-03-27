@@ -199,9 +199,7 @@ export interface BookingRecordV2 {
   updatedAt: string;
 }
 
-// ConversationParticipant, ConversationRecord, ChatMessageRecord are re-exported from comms.ts above.
-// Legacy alias for backward compatibility:
-export { type ConversationParticipant } from "@/lib/types/comms";
+// ConversationParticipant, ConversationRecord, ChatMessageRecord are all re-exported from comms.ts (line 36).
 
 export interface PropertyUnitManagement {
   id: string;
