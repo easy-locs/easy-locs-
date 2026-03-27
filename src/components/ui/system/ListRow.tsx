@@ -56,13 +56,13 @@ export function ListRow({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p className={cn(
-          "text-sm font-medium truncate",
+          "text-sm font-medium break-words line-clamp-2 leading-snug",
           destructive ? "text-destructive" : "text-foreground",
         )}>
           {title}
         </p>
         {subtitle && (
-          <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>
+          <p className="text-xs text-muted-foreground break-words line-clamp-2 leading-snug mt-0.5">{subtitle}</p>
         )}
       </div>
 
