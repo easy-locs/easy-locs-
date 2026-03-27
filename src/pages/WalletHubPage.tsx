@@ -133,7 +133,7 @@ export default function WalletHubPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm">
+          <button onClick={() => navigate("/")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm">
             <ArrowLeft className="w-4.5 h-4.5" />
           </button>
           <div className="flex items-center gap-2">
