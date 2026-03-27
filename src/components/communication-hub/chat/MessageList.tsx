@@ -40,7 +40,7 @@ const MessageList = forwardRef<HTMLDivElement, Props>(({
 }, ref) => {
 
   return (
-    <div ref={ref} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-3" style={{ background: "hsl(var(--hud-bg))" }}>
+    <div ref={ref} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-3 pb-6" style={{ background: "hsl(var(--hud-bg))" }}>
       {isDecrypting && rawCount > 0 && messages.length === 0 ? (
         <div className="space-y-4 py-4">
           {Array.from({ length: 5 }).map((_, i) => (
