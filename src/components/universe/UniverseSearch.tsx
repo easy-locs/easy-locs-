@@ -23,12 +23,12 @@ export default function UniverseSearch({
 }: UniverseSearchProps) {
   return (
     <div className={cn("relative", className)}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 shrink-0 text-muted-foreground pointer-events-none" />
       <Input
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
-        className="pl-9 pr-8 h-11 rounded-2xl bg-card border-border/30 text-sm shadow-sm"
+        className="min-w-0 h-12 pl-11 pr-10 rounded-2xl bg-card border-border/30 text-sm leading-normal shadow-sm"
       />
       {clearable && value && (
         <button
@@ -36,7 +36,7 @@ export default function UniverseSearch({
           className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-muted flex items-center justify-center"
           aria-label="Clear search"
         >
-          <X className="h-3 w-3 text-muted-foreground" />
+          <X className="h-3 w-3 shrink-0 text-muted-foreground" />
         </button>
       )}
     </div>

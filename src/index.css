@@ -1982,8 +1982,9 @@ html {
 /* Generic page shell */
 .app-mobile-page {
   min-height: 100dvh;
-  padding-top: calc(var(--app-safe-top) + 8px);
+  padding-top: max(8px, env(safe-area-inset-top, 0px));
   padding-bottom: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 20px);
+  overflow-x: clip;
 }
 
 .app-mobile-content {
@@ -2031,13 +2032,27 @@ html {
 
 .mobile-hero__title {
   font-size: clamp(30px, 5.5vw, 42px);
-  line-height: 1.08;
+  line-height: 1.05;
   font-weight: 800;
   letter-spacing: -0.03em;
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.mobile-hero__icon {
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
+.mobile-hero__titleText {
+  display: block;
+  min-width: 0;
 }
 
 .mobile-hero__subtitle {
@@ -2046,6 +2061,7 @@ html {
   line-height: 1.35;
   opacity: 0.85;
   white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* ── Global Search Bar Fix ── */
@@ -2361,7 +2377,8 @@ input[type="search"]::-webkit-search-results-decoration {
 
 @media (max-width: 390px) {
   .mobile-hero__title {
-    font-size: 28px;
+    font-size: 26px;
+    gap: 8px;
   }
   .search-shell__input {
     font-size: 16px;

@@ -140,8 +140,8 @@ export function CanonicalAddressInput({
         <p className="text-[10px] font-semibold text-muted-foreground mb-1 px-1">{contextLabel}</p>
       )}
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+      <div className="relative min-w-0">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 shrink-0 text-muted-foreground pointer-events-none" />
         <input
           ref={inputRef}
           type="text"
@@ -152,11 +152,11 @@ export function CanonicalAddressInput({
           }}
           onFocus={() => setFocused(true)}
           placeholder={placeholder}
-          className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-border/30 bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+          className="w-full min-w-0 h-12 pl-11 pr-10 rounded-xl border border-border/30 bg-card text-sm leading-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
         />
         {(value || query) && (
           <button onClick={clear} className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-muted/60">
-            <X className="h-3.5 w-3.5 text-muted-foreground" />
+            <X className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           </button>
         )}
       </div>
