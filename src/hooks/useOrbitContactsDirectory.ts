@@ -7,18 +7,26 @@ export function useOrbitContactsDirectory(ownerUserId?: string | null) {
   const [query, setQuery] = useState("");
 
   const load = useCallback(async () => {
-    if (!ownerUserId) { setContacts([]); setLoading(false); return; }
+    if (!ownerUserId) {
+      setContacts([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     const rows = await listOrbitContacts(ownerUserId);
     setContacts(rows);
     setLoading(false);
   }, [ownerUserId]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return contacts;
+
     return contacts.filter((c) =>
       [c.display_name, c.email, c.phone, c.peer_orbit_id]
         .filter(Boolean)
@@ -26,5 +34,30 @@ export function useOrbitContactsDirectory(ownerUserId?: string | null) {
     );
   }, [contacts, query]);
 
-  return { contacts, filtered, loading, query, setQuery, reload: load };
+  const favorites = useMemo(
+    () => filtered.filter((x) => x.is_favorite && !x.is_blocked),
+    [filtered]
+  );
+
+  const blocked = useMemo(
+    () => filtered.filter((x) => x.is_blocked),
+    [filtered]
+  );
+
+  const active = useMemo(
+    () => filtered.filter((x) => !x.is_blocked),
+    [filtered]
+  );
+
+  return {
+    contacts,
+    filtered,
+    active,
+    favorites,
+    blocked,
+    loading,
+    query,
+    setQuery,
+    reload: load,
+  };
 }
