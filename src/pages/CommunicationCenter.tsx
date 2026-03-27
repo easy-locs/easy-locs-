@@ -31,6 +31,7 @@ const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "groups", "
 
 export const CommunicationCenter = () => {
   const { orgId, user } = useAuth();
+  const navigate = useNavigate();
   const userId = user?.id;
   const { t } = useI18n();
   const isMobile = useIsMobile();
