@@ -18,24 +18,20 @@ interface UniversePageShellProps {
   children: React.ReactNode;
   className?: string;
   search?: React.ReactNode;
-  /** SEO meta */
   seoTitle?: string;
   seoDescription?: string;
-  /** Filter chips below search */
   filters?: React.ReactNode;
-  /** Loading state */
   loading?: boolean;
-  /** Empty state message */
   emptyMessage?: string;
   isEmpty?: boolean;
-  /** Hero video URL (4K looped, muted) */
   heroVideoUrl?: string;
-  /** Fallback banner image if video fails */
   heroBannerUrl?: string;
-  /** Hero emoji or large icon displayed centered */
   heroEmoji?: string;
-  /** Tagline displayed under title in hero */
   tagline?: string;
+  /** Explicit back route (default: navigate(-1)) */
+  backTo?: string;
+  /** Slot rendered above content, below hero (e.g. cuisine slider) */
+  heroSlot?: React.ReactNode;
 }
 
 export default function UniversePageShell({
