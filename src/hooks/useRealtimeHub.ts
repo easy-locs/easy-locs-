@@ -17,6 +17,7 @@ import React from "react";
 const TABLE_TO_MODULE: Record<string, OrbitModule> = {
   call_logs: "communication",
   chat_messages_v2: "communication",
+  conversations_v2: "communication",
   app_notifications: "notifications",
   booking_requests: "business",
   concierge_orders: "business",
