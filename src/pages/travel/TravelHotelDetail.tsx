@@ -2,7 +2,7 @@
  * TravelHotelDetail — Full Booking.com-level hotel detail page.
  * Gallery, rooms, rate plans, amenities, policies, reviews, booking CTA.
  */
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
 import {
   Star, MapPin, Wifi, Car, Coffee, Shield, Clock, ChevronRight, ChevronLeft,
@@ -134,6 +134,7 @@ function RoomCard({
 
 export default function TravelHotelDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: hotel, isLoading } = useHotelDetail(id);
   const [galleryIdx, setGalleryIdx] = useState(0);
   const [checkIn, setCheckIn] = useState<Date | undefined>(undefined);
@@ -151,8 +152,19 @@ export default function TravelHotelDetail() {
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
 
   const handleBook = (room: HotelRoom) => {
-    // MVP: redirect to source or show booking confirmation
-    console.log("Booking room:", room.name, checkInStr, checkOutStr, guests);
+    if (!checkIn || !checkOut) return;
+    const plan = room.rate_plans[0];
+    const planId = plan?.id ?? "";
+    const params = new URLSearchParams({
+      hotel: id ?? "",
+      room: room.id,
+      plan: planId,
+      checkin: checkInStr!,
+      checkout: checkOutStr!,
+      adults: String(guests),
+      children: "0",
+    });
+    navigate(`/travel/hotel-checkout?${params.toString()}`);
   };
 
   if (isLoading) {
