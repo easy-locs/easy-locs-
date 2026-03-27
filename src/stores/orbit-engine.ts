@@ -141,7 +141,7 @@ async function refreshCommunication(userId: string, orgId?: string) {
   const [unreadMessages, missedCalls, activeContacts] = await Promise.all([
     // Canonical: count unread from chat_messages_v2 (Orbit P2P), NOT legacy messages table
     safeCount("chat_messages_v2", (q) => {
-      let query = q.eq("read", false).neq("sender_user_id", userId);
+      let query = q.is("read_at", null).neq("sender_user_id", userId);
       return query;
     }),
     safeCount("call_logs", (q) => {
