@@ -85,6 +85,55 @@ export async function sendTextMessage(input: {
   return data as ChatMessageRow;
 }
 
+/**
+ * Notify all conversation participants (except sender) about a new message.
+ */
+async function notifyConversationParticipants(ctx: {
+  conversationId: string;
+  messageId: string;
+  senderUserId: string;
+  senderDisplayName: string;
+  bodyPreview: string;
+}) {
+  try {
+    const { data: conv } = await (supabase as any)
+      .from("conversations_v2")
+      .select("participants")
+      .eq("id", ctx.conversationId)
+      .single();
+
+    if (!conv?.participants || !Array.isArray(conv.participants)) return;
+
+    const recipients = conv.participants
+      .filter((p: any) => p.userId && p.userId !== ctx.senderUserId)
+      .map((p: any) => p.userId as string);
+
+    await Promise.allSettled(
+      recipients.map((targetUserId: string) =>
+        sendInAppNotification({
+          userId: targetUserId,
+          type: "new_message",
+          eventType: "chat.message.created",
+          domain: "orbit",
+          actor: "client",
+          title: ctx.senderDisplayName || "New message",
+          body: ctx.bodyPreview,
+          deepLink: `/orbit/conversations/${ctx.conversationId}`,
+          dedupKey: `chat.message.created:${ctx.messageId}:${targetUserId}`,
+          data: {
+            conversationId: ctx.conversationId,
+            messageId: ctx.messageId,
+            senderUserId: ctx.senderUserId,
+          },
+          relatedConversationId: ctx.conversationId,
+        })
+      )
+    );
+  } catch (err) {
+    console.error("[notifyConversationParticipants] error:", err);
+  }
+}
+
 export async function createCallSystemMessage(input: {
   conversationId: string;
   senderOrbitId?: string | null;
