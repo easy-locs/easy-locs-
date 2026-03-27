@@ -47,7 +47,7 @@ export default function NotificationBell({ onOpen }: Props) {
     if (onOpen) {
       onOpen();
     } else {
-      navigate("/dashboard/notifications");
+      navigate("/notifications");
     }
   };
 
