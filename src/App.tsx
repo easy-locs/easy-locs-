@@ -679,7 +679,8 @@ const App = () => (
            <NotificationsRealtimeGuard />
            <UpdateNotification />
                   <AppInit />
-                  <AppRuntimeBridges />
+                   <AppRuntimeBridges />
+                   <CanonicalShellRuntime />
                   <UiQualityProvider>
                 <GeoBoot />
                 <PermissionBootstrap />
