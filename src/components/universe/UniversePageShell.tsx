@@ -18,24 +18,20 @@ interface UniversePageShellProps {
   children: React.ReactNode;
   className?: string;
   search?: React.ReactNode;
-  /** SEO meta */
   seoTitle?: string;
   seoDescription?: string;
-  /** Filter chips below search */
   filters?: React.ReactNode;
-  /** Loading state */
   loading?: boolean;
-  /** Empty state message */
   emptyMessage?: string;
   isEmpty?: boolean;
-  /** Hero video URL (4K looped, muted) */
   heroVideoUrl?: string;
-  /** Fallback banner image if video fails */
   heroBannerUrl?: string;
-  /** Hero emoji or large icon displayed centered */
   heroEmoji?: string;
-  /** Tagline displayed under title in hero */
   tagline?: string;
+  /** Explicit back route (default: navigate(-1)) */
+  backTo?: string;
+  /** Slot rendered above content, below hero (e.g. cuisine slider) */
+  heroSlot?: React.ReactNode;
 }
 
 export default function UniversePageShell({
@@ -56,6 +52,8 @@ export default function UniversePageShell({
   heroBannerUrl,
   heroEmoji,
   tagline,
+  backTo,
+  heroSlot,
 }: UniversePageShellProps) {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -122,7 +120,7 @@ export default function UniversePageShell({
           {/* Back + title row */}
           <div className="flex items-center gap-3 mb-1">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => backTo ? navigate(backTo) : navigate(-1)}
               className="w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-xl transition-transform active:scale-90 shrink-0"
               style={{ background: "hsl(0 0% 100% / 0.15)" }}
               aria-label="Go back"
@@ -189,6 +187,9 @@ export default function UniversePageShell({
           )}
         </div>
       </div>
+
+      {/* Hero slot (cuisine slider, etc.) */}
+      {heroSlot && <div className="relative z-20 -mt-3">{heroSlot}</div>}
 
       {/* Search slot */}
       {search && <div className="px-4 -mt-5 relative z-20">{search}</div>}
