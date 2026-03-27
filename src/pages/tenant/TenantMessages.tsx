@@ -103,33 +103,34 @@ const TenantMessages = () => {
   useEffect(() => {
     if (!tenantId) return;
     const fetch = async () => {
-      const { data } = await supabase
-        .from("messages")
+      const contextId = `tenant_${orgId}_${tenantId}`;
+      const { data } = await (supabase as any)
+        .from("chat_messages_v2")
         .select("*")
-        .eq("tenant_id", tenantId)
+        .eq("conversation_id", contextId)
         .order("created_at", { ascending: true });
       setMessages(data || []);
-      await supabase.from("messages").update({ read: true }).eq("tenant_id", tenantId).eq("read", false).neq("sender_id", user!.id);
+      // Mark notifications as read
+      await (supabase as any).from("app_notifications").update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq("user_id", user!.id).eq("category", "message").is("read_at", null);
       setLoading(false);
     };
     fetch();
-  }, [tenantId, user]);
+  }, [tenantId, orgId, user]);
 
-  // Real-time
+  // Real-time (V2)
   useEffect(() => {
-    if (!tenantId) return;
+    if (!tenantId || !orgId) return;
+    const contextId = `tenant_${orgId}_${tenantId}`;
     const channel = supabase
-      .channel(`tenant-messages-${tenantId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `tenant_id=eq.${tenantId}` }, (payload) => {
+      .channel(`tenant-messages-v2-${tenantId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2", filter: `conversation_id=eq.${contextId}` }, (payload) => {
         const incoming = payload.new as any;
-        setMessages((prev) => (prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]));
-        if (incoming.sender_id !== user?.id) {
-          supabase.from("messages").update({ read: true }).eq("id", incoming.id).then(() => {});
-        }
+        setMessages((prev) => (prev.some((m: any) => m.id === incoming.id) ? prev : [...prev, incoming]));
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [tenantId, user?.id]);
+  }, [tenantId, orgId, user?.id]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
@@ -144,11 +145,11 @@ const TenantMessages = () => {
       try {
         const senderLocale = m.sender_locale || "en";
         const { data: transData } = await supabase.functions.invoke("translate-message", {
-          body: { text: m.content, from_locale: senderLocale, to_locale: tenantLocale },
+          body: { text: m.body || m.content, from_locale: senderLocale, to_locale: tenantLocale },
         });
         if (transData?.translated) {
           setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, translated_content: transData.translated } : msg));
-          await supabase.from("messages").update({ translated_content: transData.translated }).eq("id", m.id);
+          await (supabase as any).from("chat_messages_v2").update({ metadata: { ...(m.metadata || {}), translated_content: transData.translated } }).eq("id", m.id);
         }
       } catch (e) { console.error("Translation failed:", e); }
       setTranslatingId(null);
@@ -169,17 +170,19 @@ const TenantMessages = () => {
       const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
       const url = signedData?.signedUrl || path;
 
-      const { data: inserted } = await supabase
-        .from("messages")
+      const contextId = `tenant_${orgId}_${tenantId}`;
+      const { data: inserted } = await (supabase as any)
+        .from("chat_messages_v2")
         .insert({
-          tenant_id: tenantId, org_id: orgId, sender_id: authUserId,
-          content: `📎 ${file.name}`, attachment_url: url,
-          category: "general", sender_locale: tenantLocale, message_type: "user",
-        } as any)
+          conversation_id: contextId, sender_user_id: authUserId,
+          sender_orbit_id: `orbit_${authUserId.slice(0, 12)}`,
+          type: "file", body: `📎 ${file.name}`,
+          metadata: { attachment_url: url, sender_locale: tenantLocale },
+        })
         .select("*")
         .single();
 
-      if (inserted) setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
+      if (inserted) setMessages(prev => prev.some((m: any) => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
       toast({ title: T.sendDocument || "File sent" });
     } catch (e: any) {
       toast({ title: T.error, description: e.message, variant: "destructive" });
@@ -206,14 +209,15 @@ const TenantMessages = () => {
         } catch (e) { console.error("Translation failed:", e); }
       }
 
-      const { data: inserted, error } = await supabase
-        .from("messages")
+      const contextId = `tenant_${orgId}_${tenantId}`;
+      const { data: inserted, error } = await (supabase as any)
+        .from("chat_messages_v2")
         .insert({
-          tenant_id: tenantId, org_id: orgId, sender_id: authUserId,
-          content: messageToSend, translated_content: translatedContent,
-          category: selectedCategory, sender_locale: tenantLocale,
-          message_type: "user", conversation_status: "waiting_landlord",
-        } as any)
+          conversation_id: contextId, sender_user_id: authUserId,
+          sender_orbit_id: `orbit_${authUserId.slice(0, 12)}`,
+          type: "text", body: messageToSend,
+          metadata: { translated_content: translatedContent, category: selectedCategory, sender_locale: tenantLocale },
+        })
         .select("*")
         .single();
 
