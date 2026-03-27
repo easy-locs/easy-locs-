@@ -345,7 +345,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      return { storefrontsSynced, storefrontsCreated, menusSynced };
+      return { storefrontsSynced, storefrontsCreated, menusSynced, firewallBlocked };
     }
 
     async function runEngine(name: string, fn: () => Promise<any>, tier = "standard") {
