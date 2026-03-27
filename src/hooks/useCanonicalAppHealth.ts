@@ -5,7 +5,7 @@ import {
   type AppHealthState,
 } from "@/lib/app-shell/app-health-registry";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { CANONICAL_APP_EVENTS } from "@/lib/app-shell/canonical-app-events";
+import { APP_EVENTS } from "@/lib/platform/events";
 
 export function useCanonicalAppHealth() {
   const [health, setHealth] = useState<AppHealthState>(DEFAULT_APP_HEALTH);
@@ -15,31 +15,31 @@ export function useCanonicalAppHealth() {
     const touch = () => setLastEventAt(new Date().toISOString());
 
     const unsubs = [
-      platformBus.on(CANONICAL_APP_EVENTS.ORBIT_MESSAGE_SENT, () => {
+      platformBus.on(APP_EVENTS.ORBIT_MESSAGE_SENT, () => {
         setHealth((prev) => reduceHealth(prev, { orbit: "ok" }));
         touch();
       }),
-      platformBus.on(CANONICAL_APP_EVENTS.WALLET_PAYMENT_SUCCESS, () => {
+      platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS, () => {
         setHealth((prev) => reduceHealth(prev, { wallet: "ok" }));
         touch();
       }),
-      platformBus.on(CANONICAL_APP_EVENTS.RADAR_GEO_UPDATED, () => {
+      platformBus.on(APP_EVENTS.RADAR_GEO_UPDATED, () => {
         setHealth((prev) => reduceHealth(prev, { radar: "ok" }));
         touch();
       }),
-      platformBus.on(CANONICAL_APP_EVENTS.DASHBOARD_REFRESH, () => {
+      platformBus.on(APP_EVENTS.DASHBOARD_REFRESH, () => {
         setHealth((prev) => reduceHealth(prev, { dashboard: "ok" }));
         touch();
       }),
-      platformBus.on(CANONICAL_APP_EVENTS.NOTIFICATIONS_REFRESH, () => {
+      platformBus.on(APP_EVENTS.NOTIFICATIONS_REFRESH, () => {
         setHealth((prev) => reduceHealth(prev, { notifications: "ok" }));
         touch();
       }),
-      platformBus.on(CANONICAL_APP_EVENTS.ME_REFRESH, () => {
+      platformBus.on(APP_EVENTS.ME_REFRESH, () => {
         setHealth((prev) => reduceHealth(prev, { me: "ok" }));
         touch();
       }),
-      platformBus.on(CANONICAL_APP_EVENTS.WATCHDOG_ALERT, (event: any) => {
+      platformBus.on(APP_EVENTS.WATCHDOG_ALERT, (event: any) => {
         const area = event?.payload?.area;
         if (!area) return;
         setHealth((prev) =>
@@ -48,7 +48,7 @@ export function useCanonicalAppHealth() {
           } as Partial<AppHealthState>)
         );
       }),
-      platformBus.on(CANONICAL_APP_EVENTS.BROWSER_REPAIR_COMPLETED, () => {
+      platformBus.on(APP_EVENTS.BROWSER_REPAIR_COMPLETED, () => {
         touch();
       }),
     ];
