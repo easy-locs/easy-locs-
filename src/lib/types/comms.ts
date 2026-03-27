@@ -29,6 +29,7 @@ export type ConversationType =
   | "booking"
   | "tenant"
   | "property"
+  | "property_management"
   | "system";
 
 export type MessageType =
