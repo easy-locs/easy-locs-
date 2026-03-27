@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +42,16 @@ import { useSecurityDialogs } from "./chat/useSecurityDialogs";
 import { useMessageSender } from "@/hooks/useMessageSender";
 import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
 import { useTranslation } from "@/hooks/useTranslation";
+
+import { useOrbitScrollManager } from "@/hooks/useOrbitScrollManager";
+import { useOrbitComposerState } from "@/hooks/useOrbitComposerState";
+import { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
+import { useOrbitThreadUiState } from "@/hooks/useOrbitThreadUiState";
+import { OrbitPinnedBanner } from "@/components/orbit/OrbitPinnedBanner";
+import { OrbitJumpToBottomButton } from "@/components/orbit/OrbitJumpToBottomButton";
+import { OrbitComposerTopState } from "@/components/orbit/OrbitComposerTopState";
+import { OrbitCallMiniBar } from "@/components/orbit/OrbitCallMiniBar";
+import { OrbitMediaBar } from "@/components/orbit/OrbitMediaBar";
 
 // V2 only — no legacy SYSTEM_SENDER_ID needed
 
@@ -124,6 +134,39 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   });
 
   const payment = usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId });
+
+  // Orbit UX Bloc 8 — scroll, composer, actions, thread UI
+  const composer = useOrbitComposerState();
+
+  const { showJumpToBottom, jumpToBottom } = useOrbitScrollManager(
+    scrollRef,
+    [messages.length, loader.typingIndicator]
+  );
+
+  const messageActions = useOrbitMessageActions({
+    conversationId: thread?.v2ConversationId ?? null,
+    currentUserId: user?.id ?? null,
+    onAfterChange: () => {
+      loader.loadMessages();
+    },
+  });
+
+  const threadUi = useOrbitThreadUiState({
+    conversationType: thread?.conversationType ?? null,
+    metadata: (thread as any)?.metadata ?? null,
+  });
+
+  const pinnedMessage = useMemo(() => {
+    if (!threadUi.pinnedMessageId) return null;
+    return messages.find((m: any) => m.id === threadUi.pinnedMessageId) || null;
+  }, [messages, threadUi.pinnedMessageId]);
+
+  // Edit mode: inject original body into composer
+  useEffect(() => {
+    if (composer.editState) {
+      messageSender.setNewMessage(composer.editState.originalBody);
+    }
+  }, [composer.editState]);
 
   const getCategoryIcon = useCallback((cat: string) => {
     return MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
@@ -322,6 +365,27 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
         <DealContextHeader dealId={thread.dealId} contextType={thread.conversationType} contextId={thread.contextId} onToggleContext={onToggleContext} />
 
+        <OrbitCallMiniBar
+          active={callActions.isInCall}
+          label={thread.name || undefined}
+          onHangup={() => { /* handled by call UI */ }}
+        />
+
+        <OrbitPinnedBanner
+          pinnedBody={(pinnedMessage as any)?.content || null}
+          onClick={() => {
+            if (threadUi.pinnedMessageId) {
+              const el = document.getElementById(`msg-${threadUi.pinnedMessageId}`);
+              el?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }}
+          onUnpin={() => {
+            if (threadUi.pinnedMessageId) {
+              void messageActions.togglePinMessage(threadUi.pinnedMessageId, false);
+            }
+          }}
+        />
+
         {selection.selectMode && (
           <MessageMultiSelectToolbar
             selectedIds={selection.selectedMsgIds}
@@ -336,39 +400,43 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           />
         )}
 
-        <MessageList
-          ref={scrollRef}
-          messages={visibleMessages}
-          rawCount={loader.rawMessages.length}
-          isDecrypting={loader.rawMessages.length > 0 && visibleMessages.length === 0}
-          typingIndicator={loader.typingIndicator}
-          hiddenMsgIds={selection.hiddenMsgIds}
-          selectedMsgIds={selection.selectedMsgIds}
-          selectMode={selection.selectMode}
-          pendingOffline={loader.pendingOffline}
-          userId={user?.id}
-          threadName={thread.name}
-          locale={locale}
-          showOriginal={showOriginal}
-          translatingMsgId={translatingMsgId}
-          onTranslate={handleTranslateMessage}
-          onContextMenu={(_, msg, isMe) => {
-            selection.setContextMessage({
-              msgId: msg.id,
-              content: msg.content,
-              isMe,
-              createdAt: msg.created_at,
-              hasAudio: !!(msg as any).audio_url,
-              hasAttachment: !!msg.attachment_url,
-              senderId: msg.sender_id,
-              canModerate: false,
-              isStarred: !!(msg as any).starred,
-            });
-          }}
-          onToggleSelect={selection.toggleMsgSelect}
-          getCategoryIcon={getCategoryIcon}
-          t={t}
-        />
+        <div className="relative flex-1 min-h-0">
+          <MessageList
+            ref={scrollRef}
+            messages={visibleMessages}
+            rawCount={loader.rawMessages.length}
+            isDecrypting={loader.rawMessages.length > 0 && visibleMessages.length === 0}
+            typingIndicator={loader.typingIndicator}
+            hiddenMsgIds={selection.hiddenMsgIds}
+            selectedMsgIds={selection.selectedMsgIds}
+            selectMode={selection.selectMode}
+            pendingOffline={loader.pendingOffline}
+            userId={user?.id}
+            threadName={thread.name}
+            locale={locale}
+            showOriginal={showOriginal}
+            translatingMsgId={translatingMsgId}
+            onTranslate={handleTranslateMessage}
+            onContextMenu={(_, msg, isMe) => {
+              selection.setContextMessage({
+                msgId: msg.id,
+                content: msg.content,
+                isMe,
+                createdAt: msg.created_at,
+                hasAudio: !!(msg as any).audio_url,
+                hasAttachment: !!msg.attachment_url,
+                senderId: msg.sender_id,
+                canModerate: false,
+                isStarred: !!(msg as any).starred,
+              });
+            }}
+            onToggleSelect={selection.toggleMsgSelect}
+            getCategoryIcon={getCategoryIcon}
+            t={t}
+          />
+
+          <OrbitJumpToBottomButton visible={showJumpToBottom} onClick={jumpToBottom} />
+        </div>
 
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
           <div className="px-3 sm:px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)", background: "hsl(var(--hud-surface) / 0.25)" }}>
@@ -383,6 +451,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           </div>
         )}
 
+        <OrbitComposerTopState
+          replyState={composer.replyState}
+          editState={composer.editState}
+          onClose={() => {
+            composer.setReplyState(null);
+            composer.setEditState(null);
+            messageSender.setNewMessage("");
+          }}
+        />
+
         <ComposerBar
           newMessage={messageSender.newMessage}
           sending={messageSender.sending}
@@ -394,7 +472,18 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           replyTo={selection.replyTo}
           userId={user?.id}
           onMessageChange={messageSender.setNewMessage}
-          onSend={messageSender.handleSend}
+          onSend={async () => {
+            // Handle edit mode
+            if (composer.editState) {
+              await messageActions.editMessage(composer.editState.messageId, messageSender.newMessage.trim());
+              messageSender.setNewMessage("");
+              composer.setEditState(null);
+              return;
+            }
+            // Normal send
+            await messageSender.handleSend();
+            composer.setReplyState(null);
+          }}
           onKeyDown={messageSender.handleKeyDown}
           onSecurityLevelChange={security.setSecurityLevel}
           onFileUpload={attachments.handleFileUpload}
@@ -423,6 +512,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           onClearReply={() => selection.setReplyTo(null)}
           onBroadcastTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
           t={t}
+        />
+
+        <OrbitMediaBar
+          attachmentCount={0}
+          recording={voiceRecorder.recording}
+          onOpenGallery={() => attachments.fileInputRef.current?.click()}
+          onOpenCamera={() => attachments.fileInputRef.current?.click()}
+          onOpenFiles={() => attachments.fileInputRef.current?.click()}
+          onStartVoice={() => composer.setIsRecording(!composer.isRecording)}
         />
       </div>
 
