@@ -62,7 +62,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
       <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
         <button onClick={onLocationTap} className="flex min-w-0 max-w-[78%] items-center gap-2 active:scale-95 transition-transform">
           <MapPin className="h-4 w-4 text-white/70 shrink-0" />
-          <span className="truncate text-xs font-medium text-white/80">{locationLabel}</span>
+          <span className="text-xs font-medium text-white/80 break-words line-clamp-2 leading-snug text-left">{locationLabel}</span>
         </button>
         <div className="shrink-0 rounded-full bg-white/15">
           <NotificationBell />
@@ -108,7 +108,7 @@ const QuickActions = memo(() => (
         className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl border border-border/20 bg-card/60 px-2 active:scale-95 active:bg-primary/5 transition-all"
       >
         <Icon className="h-3.5 w-3.5 text-primary shrink-0" />
-        <span className="truncate text-[11px] font-semibold text-foreground">{label}</span>
+        <span className="text-[11px] font-semibold text-foreground break-words leading-snug">{label}</span>
       </Link>
     ))}
   </div>
@@ -211,7 +211,7 @@ export default function SmartHome() {
     }
   }, [sections]);
 
-  const city = useMemo(() => {
+  const [city, setCity] = useState<string | null>(() => {
     try {
       const raw = localStorage.getItem("orbit:last-geo");
       if (raw) {
@@ -219,7 +219,13 @@ export default function SmartHome() {
         if (parsed.city) return parsed.city;
       }
     } catch {}
+    return null;
+  });
+
+  useEffect(() => {
+    if (city) return;
     if (currentLocation && !isFallback) {
+      setCity("Dubai"); // immediate fallback
       import("@/lib/mapbox/geocoding").then(({ reverseGeocode }) => {
         reverseGeocode(currentLocation.lat, currentLocation.lng).then(res => {
           const place = res?.features?.[0];
@@ -227,15 +233,14 @@ export default function SmartHome() {
             const cityCtx = place.context?.find((c: any) => c.id?.startsWith("place"));
             const cityName = cityCtx?.text || place.text;
             if (cityName) {
+              setCity(cityName);
               try { localStorage.setItem("orbit:last-geo", JSON.stringify({ city: cityName, country: "AE" })); } catch {}
             }
           }
         }).catch(() => {});
       });
-      return "Dubai";
     }
-    return null;
-  }, [currentLocation, isFallback]);
+  }, [currentLocation, isFallback, city]);
 
   const timezone = useMemo(() => {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return undefined; }

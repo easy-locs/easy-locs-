@@ -36,46 +36,57 @@ function MainBottomNav() {
           const Icon = tab.icon;
           const isOrbit = tab.key === "orbit";
           return (
-            <button
+            <motion.button
               key={tab.key}
               role="tab"
               aria-selected={active}
               aria-label={tab.label}
-              onClick={() => navigate(tab.path)}
+              onClick={() => {
+                if (!active) navigate(tab.path);
+              }}
+              whileTap={{ scale: 0.88 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
               className="flex flex-col items-center justify-center flex-1 gap-0.5 relative
                          min-w-[44px] min-h-[44px] max-w-[80px]
-                         active:scale-[0.92] transition-all duration-150 ease-out
+                         transition-colors duration-150 ease-out
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
             >
               {active && !isOrbit && (
                 <motion.div
                   layoutId="main-tab-pill"
-                  className="absolute top-0 left-3 right-3 h-[2px] rounded-full"
+                  className="absolute top-0 left-3 right-3 h-[2.5px] rounded-full"
                   style={{ background: "hsl(var(--primary))" }}
                   transition={{ type: "spring", stiffness: 500, damping: 35 }}
                 />
               )}
               {isOrbit ? (
-                <div
+                <motion.div
                   className="w-10 h-10 rounded-full flex items-center justify-center -mt-3"
-                  style={{
+                  animate={{
                     background: active ? "hsl(var(--primary))" : "hsl(var(--primary) / 0.12)",
+                    scale: active ? 1 : 0.95,
                   }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 >
                   <Icon
                     className="w-5 h-5"
                     strokeWidth={active ? 2.4 : 1.8}
                     style={{ color: active ? "hsl(var(--primary-foreground))" : "hsl(var(--primary))" }}
                   />
-                </div>
+                </motion.div>
               ) : (
-                <Icon
-                  className="w-[21px] h-[21px] transition-colors duration-150"
-                  strokeWidth={active ? 2.4 : 1.8}
-                  style={{
-                    color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.5)",
-                  }}
-                />
+                <motion.div
+                  animate={{ y: active ? -1 : 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                >
+                  <Icon
+                    className="w-[21px] h-[21px] transition-colors duration-150"
+                    strokeWidth={active ? 2.4 : 1.8}
+                    style={{
+                      color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.5)",
+                    }}
+                  />
+                </motion.div>
               )}
               <span
                 className="text-[10px] leading-tight transition-colors duration-150"
@@ -86,7 +97,7 @@ function MainBottomNav() {
               >
                 {tc(`nav.${tab.key === "profile" ? "me" : tab.key}`)}
               </span>
-            </button>
+            </motion.button>
           );
         })}
       </div>
