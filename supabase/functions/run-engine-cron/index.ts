@@ -397,6 +397,165 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     const { data } = await sb.from("team_members").select("id, status").eq("status", "active").limit(50);
     return { summary: `${data?.length ?? 0} active team members`, rows: 0, rowsRead: data?.length ?? 0 };
   },
+
+  // ━━━ DELIVEROO FOOD PIPELINE ENGINES ━━━
+
+  "deliveroo-food-intake-engine": async (sb) => {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    // Create scrape run record
+    const { data: run } = await sb.from("merchant_scrape_runs").insert({
+      engine_name: "deliveroo-food-intake-engine",
+      source: "deliveroo",
+      region: "dubai",
+      vertical: "food",
+      status: "running",
+    }).select("id").single();
+    const runId = run?.id;
+    try {
+      const resp = await fetch(`${supabaseUrl}/functions/v1/deliveroo-dubai-food`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "full_scrape" }),
+      });
+      const result = await resp.json();
+      const discovered = result?.stats?.urls_found ?? result?.discovered ?? 0;
+      const scraped = result?.stats?.scraped ?? result?.scraped ?? 0;
+      const parsed = result?.stats?.parsed ?? result?.parsed ?? 0;
+      const accepted = result?.stats?.accepted ?? result?.accepted ?? 0;
+      const rejected = result?.stats?.rejected ?? result?.rejected ?? 0;
+      if (runId) {
+        await sb.from("merchant_scrape_runs").update({
+          status: result?.error ? "error" : "completed",
+          finished_at: new Date().toISOString(),
+          discovered_count: discovered,
+          scraped_count: scraped,
+          parsed_count: parsed,
+          accepted_count: accepted,
+          rejected_count: rejected,
+          error_message: result?.error ?? null,
+          metadata_json: result,
+        }).eq("id", runId);
+      }
+      return { summary: `Deliveroo intake: ${discovered} found, ${accepted} accepted`, rows: accepted, rowsRead: discovered, sideEffects: accepted };
+    } catch (e: any) {
+      if (runId) await sb.from("merchant_scrape_runs").update({ status: "error", finished_at: new Date().toISOString(), error_message: e?.message }).eq("id", runId);
+      throw e;
+    }
+  },
+
+  "food-normalizer-engine": async (sb) => {
+    const { data } = await sb.from("seed_merchants").select("id, name, category, subcategory, city, country, description, vertical")
+      .eq("source_type", "deliveroo").or("city.is.null,country.is.null,category.eq.general,category.eq.other,category.eq.unknown,category.is.null").limit(50);
+    let normalized = 0;
+    for (const m of data ?? []) {
+      const fixes: Record<string, any> = {};
+      if (!m.city) fixes.city = "Dubai";
+      if (!m.country) fixes.country = "AE";
+      if (!m.vertical) fixes.vertical = "food";
+      if (!m.category || ["general","other","unknown"].includes(m.category?.toLowerCase())) {
+        const text = `${m.name} ${m.description ?? ""}`.toLowerCase();
+        fixes.category = text.includes("cafe") || text.includes("coffee") ? "cafe"
+          : text.includes("bakery") ? "bakery"
+          : text.includes("fast") ? "fast_food" : "restaurant";
+      }
+      if (Object.keys(fixes).length) {
+        await sb.from("seed_merchants").update(fixes).eq("id", m.id);
+        normalized++;
+      }
+    }
+    return { summary: `Normalized ${normalized}/${data?.length ?? 0} Deliveroo merchants`, rows: normalized, rowsRead: data?.length ?? 0 };
+  },
+
+  "food-menu-builder-engine": async (sb) => {
+    const { data } = await sb.from("seed_merchants").select("id, name, menu_items_json")
+      .eq("source_type", "deliveroo").not("menu_items_json", "is", null).limit(30);
+    let built = 0;
+    for (const m of data ?? []) {
+      const items = Array.isArray(m.menu_items_json) ? m.menu_items_json : [];
+      if (items.length >= 1) {
+        const categories = [...new Set(items.map((i: any) => i.category || "Main"))];
+        await sb.from("seed_merchants").update({
+          menu_categories_json: categories.map((c: string) => ({ name: c, items: items.filter((i: any) => (i.category || "Main") === c) })),
+          menu_normalized_at: new Date().toISOString(),
+        } as any).eq("id", m.id);
+        built++;
+      }
+    }
+    return { summary: `Built menus for ${built} merchants`, rows: built, rowsRead: data?.length ?? 0 };
+  },
+
+  "food-visual-clean-engine": async (sb) => {
+    const placeholders = ["via.placeholder", "placehold.co", "dummyimage", "unsplash.com"];
+    const { data } = await sb.from("seed_merchants").select("id, cover_image, logo_image")
+      .eq("source_type", "deliveroo").limit(50);
+    let cleaned = 0;
+    for (const m of data ?? []) {
+      const fixes: Record<string, any> = {};
+      if (m.cover_image && placeholders.some(p => m.cover_image.toLowerCase().includes(p))) {
+        fixes.cover_image = null;
+      }
+      if (m.logo_image && placeholders.some(p => m.logo_image.toLowerCase().includes(p))) {
+        fixes.logo_image = null;
+      }
+      if (Object.keys(fixes).length) {
+        await sb.from("seed_merchants").update(fixes).eq("id", m.id);
+        cleaned++;
+      }
+    }
+    return { summary: `Cleaned ${cleaned} placeholder images`, rows: cleaned, rowsRead: data?.length ?? 0 };
+  },
+
+  "food-visibility-gate-engine": async (sb) => {
+    const { data } = await sb.from("seed_merchants").select("id, name, cover_image, menu_items_json, overall_quality_score, visibility_mode")
+      .eq("source_type", "deliveroo").limit(50);
+    let gated = 0;
+    for (const m of data ?? []) {
+      const score = m.overall_quality_score ?? 0;
+      const hasPhoto = !!m.cover_image;
+      const menuCount = Array.isArray(m.menu_items_json) ? m.menu_items_json.length : 0;
+      let newMode = "hidden";
+      if (hasPhoto && menuCount >= 3 && score >= 60) newMode = "live";
+      else if (hasPhoto || menuCount >= 3 || score >= 35) newMode = "search_only";
+      else newMode = "coming_soon";
+      if (newMode !== m.visibility_mode) {
+        await sb.from("seed_merchants").update({ visibility_mode: newMode, gate_status: score >= 40 ? "passed" : "blocked" }).eq("id", m.id);
+        gated++;
+      }
+    }
+    return { summary: `Gated ${gated} Deliveroo merchants`, rows: gated, rowsRead: data?.length ?? 0, sideEffects: gated };
+  },
+
+  "food-publish-engine": async (sb) => {
+    const { data } = await sb.from("seed_merchants").select("id, name, visibility_mode, gate_status, overall_quality_score, human_verified")
+      .eq("source_type", "deliveroo").eq("gate_status", "passed").in("visibility_mode", ["search_only", "live"]).limit(30);
+    let published = 0;
+    for (const m of data ?? []) {
+      if (m.human_verified) continue; // never overwrite human_verified
+      if ((m.overall_quality_score ?? 0) < 40) continue; // firewall quality gate
+      await sb.from("seed_merchants").update({ is_published: true, published_at: new Date().toISOString() } as any).eq("id", m.id);
+      published++;
+    }
+    return { summary: `Published ${published} Deliveroo merchants`, rows: published, rowsRead: data?.length ?? 0 };
+  },
+
+  "food-rescrape-monitor-engine": async (sb) => {
+    const cutoff = new Date(Date.now() - 7 * 86400000).toISOString();
+    const { data } = await sb.from("seed_merchants").select("id, last_scraped_at")
+      .eq("source_type", "deliveroo").or(`last_scraped_at.is.null,last_scraped_at.lt.${cutoff}`).limit(20);
+    return { summary: `${data?.length ?? 0} Deliveroo merchants need rescrape`, rows: 0, rowsRead: data?.length ?? 0 };
+  },
+
+  "food-audit-engine": async (sb) => {
+    const { data } = await sb.from("seed_merchants").select("id, name, visibility_mode, overall_quality_score, gate_status, is_published")
+      .eq("source_type", "deliveroo").limit(100);
+    const total = data?.length ?? 0;
+    const published = data?.filter((m: any) => m.is_published)?.length ?? 0;
+    const live = data?.filter((m: any) => m.visibility_mode === "live")?.length ?? 0;
+    const blocked = data?.filter((m: any) => m.gate_status === "blocked")?.length ?? 0;
+    const avgScore = total > 0 ? Math.round(data!.reduce((s: number, m: any) => s + (m.overall_quality_score ?? 0), 0) / total) : 0;
+    return { summary: `Deliveroo audit: ${total} total, ${live} live, ${published} published, ${blocked} blocked, avg score ${avgScore}`, rows: 0, rowsRead: total };
+  },
 };
 
 // Generic no-op handler for engines not yet wired
@@ -467,8 +626,8 @@ Deno.serve(async (req) => {
       // Check interval (skip if not forced and not due)
       if (!forceRun) {
         const lastRun = engine.last_run_at ? new Date(engine.last_run_at).getTime() : 0;
-        const interval = engine.interval_ms || 300000;
-        if (now - lastRun < interval) continue;
+        const freqMs = engine.frequency_seconds ? engine.frequency_seconds * 1000 : (engine.interval_ms || 300000);
+        if (now - lastRun < freqMs) continue;
       }
 
       // Check max retries
