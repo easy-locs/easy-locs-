@@ -292,7 +292,7 @@ const DeliveryProofPage = safeLazy(() => import("./pages/DeliveryProofPage"), "D
 const GuestCheckoutPage = safeLazy(() => import("./pages/GuestCheckoutPage"), "GuestCheckoutPage");
 const PaymentPage = safeLazy(() => import("./pages/PaymentPage"), "PaymentPage");
 const KpiChartsPage = safeLazy(() => import("./pages/KpiChartsPage"), "KpiChartsPage");
-const PublicStorefrontBySlugPage = safeLazy(() => import("./pages/PublicStorefrontBySlugPage"), "PublicStorefrontBySlugPage");
+// PublicStorefrontBySlugPage removed — route was shadowed by /store/:storeId
 const DriverHeatmapMapPage = safeLazy(() => import("./pages/DriverHeatmapMapPage"), "DriverHeatmapMapPage");
 const AdminRealtimeControlPage = safeLazy(() => import("./pages/AdminRealtimeControlPage"), "AdminRealtimeControlPage");
 const DeploymentChecklistPage = safeLazy(() => import("./pages/DeploymentChecklistPage"), "DeploymentChecklistPage");
