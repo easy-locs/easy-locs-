@@ -577,4 +577,12 @@ Deno.serve(async (req) => {
     warnings: warningCount,
     durationMs: totalDurationMs,
   }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+  } catch (err) {
+    console.error("[browser-repair] Fatal:", err);
+    return new Response(JSON.stringify({ success: false, error: String(err) }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 });
