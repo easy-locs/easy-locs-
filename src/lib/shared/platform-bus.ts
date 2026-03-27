@@ -402,11 +402,68 @@ export function installPlatformReactions(): () => void {
     })
   );
 
+  // ── CRITICAL: Notation bridge (dot ↔ colon) ──
+  // Cross-app reactions emit dot-notation, legacy listeners expect colon-notation (and vice versa).
+  // This bridge ensures events propagate to ALL listeners regardless of notation style.
+  const NOTATION_BRIDGE: Record<string, string> = {
+    // Dashboard
+    "dashboard.refresh": "dashboard:refresh",
+    "dashboard:refresh": "dashboard.refresh",
+    "dashboard.counters.refresh": "dashboard:counters_refresh",
+    "dashboard:counters_refresh": "dashboard.counters.refresh",
+    // Wallet
+    "wallet.payment.completed": "wallet:payment_completed",
+    "wallet:payment_completed": "wallet.payment.completed",
+    "wallet:balance_updated": "wallet.loaded",
+    "wallet:payment_success": "wallet.payment.success",
+    "wallet.payment.success": "wallet:payment_success",
+    "wallet:payment_failed": "wallet.payment.failed",
+    "wallet.payment.failed": "wallet:payment_failed",
+    // Orbit
+    "orbit.message.sent": "orbit:message_sent",
+    "orbit:message_sent": "orbit.message.sent",
+    "orbit.call.started": "orbit:call_started",
+    "orbit:call_started": "orbit.call.started",
+    "orbit.call.ended": "orbit:call_ended",
+    "orbit:call_ended": "orbit.call.ended",
+    // Booking
+    "booking.created": "marketplace:booking_created",
+    "marketplace:booking_created": "booking.created",
+    "booking.confirmed": "marketplace:booking_confirmed",
+    "marketplace:booking_confirmed": "booking.confirmed",
+    // Radar
+    "radar.location.shared": "radar:location_shared",
+    "radar.pin.selected": "radar:pin_selected",
+    // Marketplace
+    "marketplace.merchant.live": "marketplace:provider_went_live",
+    "marketplace.contact.opened": "marketplace:listing_published",
+    // Notifications
+    "notifications:refresh": "notifications.refresh",
+  };
+
+  unsubs.push(
+    platformBus.onAll((event) => {
+      const mirror = NOTATION_BRIDGE[event.type];
+      if (mirror) {
+        // Emit mirrored event (without re-triggering this bridge via a guard)
+        const guardKey = `__bridge_${event.type}`;
+        if ((event.payload as any)?.[guardKey]) return;
+        platformBus.emit(
+          mirror as PlatformEventType,
+          { ...(typeof event.payload === "object" && event.payload ? event.payload : {}), [guardKey]: true },
+          event.source
+        );
+      }
+    })
+  );
+
   // Debug logging in development
   if (import.meta.env.DEV) {
     unsubs.push(
       platformBus.onAll((event) => {
-        console.debug(`[platform-bus] ${event.type}`, event.payload);
+        if (!(event.payload as any)?.__bridge_) {
+          console.debug(`[platform-bus] ${event.type}`, event.payload);
+        }
       })
     );
   }
