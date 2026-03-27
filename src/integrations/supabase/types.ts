@@ -13946,6 +13946,48 @@ export type Database = {
         }
         Relationships: []
       }
+      orbit_telemetry_events: {
+        Row: {
+          action: string
+          component: string
+          created_at: string
+          error_message: string | null
+          event_name: string
+          id: string
+          payload: Json | null
+          result: string
+          screen: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          component: string
+          created_at?: string
+          error_message?: string | null
+          event_name: string
+          id?: string
+          payload?: Json | null
+          result?: string
+          screen: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          component?: string
+          created_at?: string
+          error_message?: string | null
+          event_name?: string
+          id?: string
+          payload?: Json | null
+          result?: string
+          screen?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null
