@@ -225,24 +225,20 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
         return;
       }
 
-      const { error } = await supabase.from("contacts").insert({
-        owner_id: user.id,
-        org_id: orgId || null,
-        name: parsed.name || "Contact",
+      const { upsertOrbitContact } = await import("@/lib/orbit/orbit-contacts-service");
+      await upsertOrbitContact({
+        ownerUserId: user.id,
+        peerUserId: parsed.userId || null,
+        peerOrbitId: parsed.orbitId || null,
+        displayName: parsed.name || "Contact",
         email: parsed.email || null,
-        contact_user_id: parsed.userId || null,
-        category: "professional",
-      } as any);
+        source: "qr_scan",
+        metadata: { qr: true },
+      });
 
-      if (error) {
-        if (error.code === "23505") {
-          toast.info("Contact already exists!");
-        } else throw error;
-      } else {
-        haptic("success");
-        toast.success(`${parsed.name} added to contacts!`);
-        onContactAdded?.();
-      }
+      haptic("success");
+      toast.success(`${parsed.name} added to contacts!`);
+      onContactAdded?.();
       onOpenChange(false);
     } catch {
       toast.error("Invalid contact QR code or link");

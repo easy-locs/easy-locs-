@@ -22,6 +22,7 @@ import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 import QRContactCard from "./QRContactCard";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { resolveDirectPeer } from "@/lib/orbit/resolveDirectPeer";
+import { listOrbitContacts, toggleFavoriteContact, upsertOrbitContact } from "@/lib/orbit/orbit-contacts-service";
 import { useCall } from "@/components/call/CallProvider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trackOrbitEvent, guardDisplayName } from "@/lib/orbit/orbitTelemetry";
