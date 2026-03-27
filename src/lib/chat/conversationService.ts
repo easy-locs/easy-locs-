@@ -1,120 +1,39 @@
-import { supabase } from "@/integrations/supabase/client";
-import type { ConversationParticipant, ConversationRow, ChatMessageRow } from "@/lib/types/comms";
-
-const db = supabase as any;
-
 /**
- * Creates or retrieves a direct conversation between two orbit participants.
- * Stores participants as JSONB objects: [{orbitId, email, displayName}]
- * AND as a flat orbitId array for RLS containment matching.
+ * conversationService.ts — RE-EXPORTS from canonical orbit services.
+ * This file exists only for backward compatibility with existing imports.
+ * All implementations are in src/lib/orbit/ and src/lib/chat/messageService.ts.
  */
-export async function createOrGetDirectConversation(input: {
-  myOrbitId: string;
-  myUserId?: string | null;
-  myEmail?: string | null;
-  myDisplayName?: string | null;
-  peerOrbitId: string;
-  peerUserId?: string | null;
-  peerEmail?: string | null;
-  peerDisplayName?: string | null;
-}): Promise<ConversationRow> {
-  // GUARD: prevent self-conversations
-  if (input.myOrbitId === input.peerOrbitId) {
-    throw new Error("Cannot create a conversation with yourself");
-  }
 
-  const p1: ConversationParticipant = {
-    orbitId: input.myOrbitId,
-    userId: input.myUserId ?? null,
-    email: input.myEmail ?? null,
-    displayName: input.myDisplayName ?? null,
-  };
+// Re-export canonical conversation creators
+export { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 
-  const p2: ConversationParticipant = {
-    orbitId: input.peerOrbitId,
-    userId: input.peerUserId ?? null,
-    email: input.peerEmail ?? null,
-    displayName: input.peerDisplayName ?? null,
-  };
+// Re-export V2 message operations
+export { loadConversationMessages as getConversationMessages } from "@/lib/chat/messageService";
 
-  const participants = [p1, p2].sort((a, b) => a.orbitId.localeCompare(b.orbitId));
+// Re-export conversation list from chat-repo-extended
+import { chatRepoExtended } from "@/lib/supabase/chat-repo-extended";
+import type { ConversationRow } from "@/lib/types/comms";
 
-  // Find existing direct conversation containing both participants
-  // Use JSONB containment on orbitId field inside array objects
-  const { data: existingRows, error: findErr } = await db
-    .from("conversations_v2")
-    .select("*")
-    .eq("type", "direct")
-    .contains("participants", [{ orbitId: input.myOrbitId }])
-    .contains("participants", [{ orbitId: input.peerOrbitId }])
-    .limit(10);
-
-  if (findErr) {
-    console.error("createOrGetDirectConversation lookup error", findErr);
-    throw findErr;
-  }
-
-  // Find the one that is exactly 2 participants (direct)
-  const existing = (existingRows ?? []).find(
-    (row: any) => Array.isArray(row.participants) && row.participants.length === 2
-  );
-
-  if (existing) return existing as ConversationRow;
-
-  // Create new — let DB generate UUID id
-  const { data, error } = await db
-    .from("conversations_v2")
-    .insert({
-      type: "direct",
-      title: null,
-      created_by_orbit_id: input.myOrbitId,
-      participants,
-      last_message_at: null,
-    })
-    .select("*")
-    .single();
-
-  if (error) {
-    console.error("createOrGetDirectConversation create error", error);
-    throw error;
-  }
-
-  return data as ConversationRow;
-}
-
-/**
- * Lists all conversations the current user participates in, ordered by last message.
- */
 export async function listMyConversations(): Promise<ConversationRow[]> {
-  const { data, error } = await db
-    .from("conversations_v2")
-    .select("*")
-    .order("last_message_at", { ascending: false, nullsFirst: false });
-
-  if (error) {
-    console.error("listMyConversations error", error);
-    throw error;
-  }
-
-  return (data ?? []) as ConversationRow[];
-}
-
-/**
- * Loads all messages for a conversation, ordered chronologically.
- */
-export async function getConversationMessages(
-  conversationId: string
-): Promise<ChatMessageRow[]> {
-  const { data, error } = await db
-    .from("chat_messages_v2")
-    .select("*")
-    .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    console.error("getConversationMessages error", error);
-    throw error;
-  }
-
-  return (data ?? []) as ChatMessageRow[];
+  // This now goes through chatRepoExtended which queries conversations_v2
+  const records = await chatRepoExtended.listConversationsByOrbitId("");
+  // Map back to row shape for any consumer expecting ConversationRow
+  return records.map((r) => ({
+    id: r.id,
+    type: r.type as any,
+    participants: r.participants as any,
+    title: r.title ?? null,
+    listing_id: r.listingId ?? null,
+    booking_id: r.bookingId ?? null,
+    lease_id: r.leaseId ?? null,
+    last_message_at: r.lastMessageAt,
+    last_message_preview: null,
+    unread_count_cache: null,
+    archived: null,
+    muted: null,
+    ghost_mode: null,
+    metadata: null,
+    created_at: r.createdAt,
+    updated_at: r.updatedAt,
+  })) as ConversationRow[];
 }
