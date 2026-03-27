@@ -112,6 +112,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       id: crypto.randomUUID(),
       conversationId: input.conversationId,
       senderOrbitId: input.senderOrbitId,
+      senderUserId: null,
       body: input.body,
       type: input.type ?? "text",
       metadata: input.metadata,
