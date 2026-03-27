@@ -1,11 +1,16 @@
 /**
- * useUnreadMessages — Realtime unread message counter for any role.
- * Subscribes to both Supabase realtime AND platform bus for fast cross-module sync.
+ * useUnreadMessages — Canonical unread message counter.
+ * Counts unread from BOTH:
+ *   1. chat_messages_v2 (canonical V2 stack)
+ *   2. messages (legacy stack — will be phased out)
+ * Subscribes to realtime + platform bus for instant updates.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
+
+const db = supabase as any;
 
 export function useUnreadMessages() {
   const { user, activeRole, orgId } = useAuth();
@@ -15,6 +20,18 @@ export function useUnreadMessages() {
     if (!user) { setCount(0); return; }
 
     try {
+      let legacyCount = 0;
+      let v2Count = 0;
+
+      // ── V2 canonical: count unread in chat_messages_v2 ──
+      const { count: v2c } = await db
+        .from("chat_messages_v2")
+        .select("id", { count: "exact", head: true })
+        .is("read_at", null)
+        .neq("sender_user_id", user.id);
+      v2Count = v2c || 0;
+
+      // ── Legacy: count unread in messages table ──
       if (activeRole === "landlord" && orgId) {
         const { count: c } = await supabase
           .from("messages")
@@ -22,7 +39,7 @@ export function useUnreadMessages() {
           .eq("org_id", orgId)
           .eq("read", false)
           .neq("sender_id", user.id);
-        setCount(c || 0);
+        legacyCount = c || 0;
       } else if (activeRole === "tenant") {
         const { data: tenants } = await supabase
           .from("tenants")
@@ -37,9 +54,7 @@ export function useUnreadMessages() {
             .in("tenant_id", tIds)
             .eq("read", false)
             .neq("sender_id", user.id);
-          setCount(c || 0);
-        } else {
-          setCount(0);
+          legacyCount = c || 0;
         }
       } else if (activeRole === "client" && user.email) {
         const { count: c } = await supabase
@@ -48,8 +63,10 @@ export function useUnreadMessages() {
           .eq("contact_email", user.email.toLowerCase())
           .eq("read", false)
           .neq("sender_id", user.id);
-        setCount(c || 0);
+        legacyCount = c || 0;
       }
+
+      setCount(v2Count + legacyCount);
     } catch {
       // Silently fail
     }
@@ -58,7 +75,7 @@ export function useUnreadMessages() {
   useEffect(() => {
     fetchCount();
 
-    // Subscribe to realtime changes on messages table (scoped by org)
+    // Realtime: legacy messages
     const filter = orgId ? `org_id=eq.${orgId}` : undefined;
     const channel = supabase
       .channel("unread-messages-count")
@@ -68,11 +85,17 @@ export function useUnreadMessages() {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", ...(filter ? { filter } : {}) }, () => {
         fetchCount();
       })
+      // V2 canonical messages
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, () => {
+        fetchCount();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages_v2" }, () => {
+        fetchCount();
+      })
       .subscribe();
 
-    // Also listen to platform bus for immediate cross-module refresh
+    // Platform bus for immediate cross-module refresh
     const unsubBus = platformBus.on("orbit:message_sent", () => {
-      // Debounce slightly to let DB settle
       setTimeout(fetchCount, 500);
     });
 
