@@ -16,12 +16,12 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 
 type TableName =
   | "call_logs"
-  | "messages"
-  | "notifications"
+  | "chat_messages_v2"
+  | "app_notifications"
   | "booking_requests"
   | "concierge_orders"
   | "deal_rooms"
-  | "conversation_threads";
+  | "conversations_v2";
 
 type EventType = "INSERT" | "UPDATE" | "DELETE" | "*";
 
@@ -223,16 +223,16 @@ class RealtimeManager {
     const msgChannel = supabase
       .channel(`rt:thread:${threadId}`)
       .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "messages",
-        filter: `org_id=eq.${orgId}`,
+        event: "INSERT", schema: "public", table: "chat_messages_v2",
+        filter: `conversation_id=eq.${threadId}`,
       }, (p) => opts.onMessage?.(p))
       .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "messages",
-        filter: `org_id=eq.${orgId}`,
+        event: "UPDATE", schema: "public", table: "chat_messages_v2",
+        filter: `conversation_id=eq.${threadId}`,
       }, (p) => opts.onUpdate?.(p))
       .on("postgres_changes", {
-        event: "DELETE", schema: "public", table: "messages",
-        filter: `org_id=eq.${orgId}`,
+        event: "DELETE", schema: "public", table: "chat_messages_v2",
+        filter: `conversation_id=eq.${threadId}`,
       }, (p) => opts.onDelete?.(p))
       .subscribe();
 
@@ -278,15 +278,16 @@ class RealtimeManager {
     const tables: { table: TableName; filter?: string }[] = [
       // call_logs: no org filter needed — user sees calls they participate in
       { table: "call_logs" },
-      // messages: filter by org when available
-      { table: "messages", filter: this.orgId ? `org_id=eq.${this.orgId}` : undefined },
-      // notifications: always filter by user
-      { table: "notifications", filter: `user_id=eq.${this.userId}` },
+      // chat_messages_v2: V2 canonical messages
+      { table: "chat_messages_v2" },
+      // app_notifications: always filter by user
+      { table: "app_notifications", filter: `user_id=eq.${this.userId}` },
       // org-scoped tables: filter when org available
       { table: "booking_requests", filter: this.orgId ? `org_id=eq.${this.orgId}` : undefined },
       { table: "concierge_orders", filter: this.orgId ? `org_id=eq.${this.orgId}` : undefined },
       { table: "deal_rooms", filter: this.orgId ? `org_id=eq.${this.orgId}` : undefined },
-      { table: "conversation_threads", filter: this.orgId ? `org_id=eq.${this.orgId}` : undefined },
+      // conversations_v2: V2 canonical conversations
+      { table: "conversations_v2" },
     ];
 
     let ch = supabase.channel(`rt:user:${this.userId}`);
