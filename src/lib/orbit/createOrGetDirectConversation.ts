@@ -85,6 +85,14 @@ function normalizeParticipants(
   ];
 }
 
+function normalizeParticipantUserIds(participants: unknown): string[] {
+  if (!Array.isArray(participants)) return [];
+  return participants
+    .map((participant: any) => participant?.userId || participant?.user_id || participant?.id || null)
+    .filter((value): value is string => typeof value === "string" && value.length > 0)
+    .sort();
+}
+
 export async function createOrGetDirectConversation(params: Params): Promise<ConversationRow> {
   if (params.myUserId === params.peerUserId) {
     throw new Error("Cannot create a conversation with yourself");
@@ -112,6 +120,40 @@ export async function createOrGetDirectConversation(params: Params): Promise<Con
     // Don't throw — might be RLS issue on empty result, continue to create
   }
   if (existing) return existing as ConversationRow;
+
+  // Backward-compatible lookup for older direct conversations created without metadata.direct_user_ids
+  const { data: legacyCompatibleRows, error: legacyLookupError } = await orbitDb.conversations
+    .list()
+    .eq("type", "direct")
+    .limit(200);
+
+  if (legacyLookupError) {
+    console.warn("[createOrGetDirectConversation] participant fallback lookup error:", legacyLookupError.message);
+  } else if (Array.isArray(legacyCompatibleRows)) {
+    const fallbackExisting = legacyCompatibleRows.find((row: any) => {
+      const userIds = normalizeParticipantUserIds(row?.participants);
+      return userIds.length === 2 && userIds[0] === directUserIds[0] && userIds[1] === directUserIds[1];
+    });
+
+    if (fallbackExisting) {
+      const metadata = typeof fallbackExisting.metadata === "object" && fallbackExisting.metadata !== null
+        ? fallbackExisting.metadata
+        : {};
+      const hasDirectUserIds = Array.isArray((metadata as any).direct_user_ids);
+
+      if (!hasDirectUserIds) {
+        await orbitDb.conversations.update(fallbackExisting.id, {
+          metadata: {
+            ...metadata,
+            direct_user_ids: directUserIds,
+          },
+          updated_at: new Date().toISOString(),
+        });
+      }
+
+      return fallbackExisting as ConversationRow;
+    }
+  }
 
   const participants = normalizeParticipants(params, myOrbitId, peerOrbitId);
 
