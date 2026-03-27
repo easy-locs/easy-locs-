@@ -9,7 +9,7 @@
  */
 import { useLocation, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import { Loader2 } from "lucide-react";
+
 import { getCountryBySlug, getCityBySlug, getServiceCategoryBySlug, SEO_ACTIVITY_TYPES } from "@/lib/seo/seo-data";
 
 const PropertyManagementSEOResolver = lazy(() => import("./PropertyManagementSEOResolver"));
