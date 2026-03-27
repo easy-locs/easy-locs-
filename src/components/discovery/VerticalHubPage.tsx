@@ -173,7 +173,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
       </AnimatePresence>
 
       {heroMediaItems.length > 0 && (
-        <section className="px-4 mt-4">
+        <section className="px-4 mt-8">
           <div
             ref={heroRailRef}
             className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory"
@@ -197,8 +197,8 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
                   {item.badge}
                 </div>
                 <div className="absolute inset-x-0 bottom-0 p-3.5">
-                  <p className="text-sm font-bold text-white line-clamp-1">{item.name}</p>
-                  <p className="text-[11px] text-white/72 line-clamp-1 mt-0.5">{item.meta}</p>
+                  <p className="text-sm font-bold text-white line-clamp-2 leading-tight">{item.name}</p>
+                  <p className="text-[11px] text-white/72 line-clamp-1 mt-0.5 leading-tight">{item.meta}</p>
                 </div>
               </motion.button>
             ))}
@@ -287,7 +287,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
                 >
                   <span className="text-xl">{sub.icon}</span>
                 </div>
-                <span className="text-[10px] font-semibold max-w-[60px] text-center truncate leading-tight" style={{
+                <span className="text-[10px] font-semibold max-w-[72px] text-center line-clamp-2 leading-tight" style={{
                   color: activeSub === sub.value ? `hsl(${ui.accentHsl})` : "hsl(var(--foreground))"
                 }}>{sub.label}</span>
               </button>
