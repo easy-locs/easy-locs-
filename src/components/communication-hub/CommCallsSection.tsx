@@ -1,6 +1,7 @@
 /**
  * CommCallsSection — Call history with single direction icon per entry.
  * Uses HUD tokens. Functional redial. Swipe-to-delete. Fully i18n'd.
+ * Resolves orbit IDs to display names — NEVER shows UUIDs.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +17,7 @@ import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import SwipeableCallItem from "./SwipeableCallItem";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCallStatus, safeDisplayName, isUUID } from "@/lib/orbit/message-formatter";
 
 type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
@@ -59,6 +61,8 @@ export default function CommCallsSection() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [filter, setFilter] = useState<CallFilter>("all");
   const [search, setSearch] = useState("");
+  // Resolved display names cache: orbitId → displayName
+  const [nameCache, setNameCache] = useState<Record<string, string>>({});
 
   const loadCalls = useCallback(async () => {
     if (!user?.id) return;
@@ -81,6 +85,26 @@ export default function CommCallsSection() {
       }
 
       setCalls(callData as unknown as CallLog[]);
+
+      // Resolve orbit IDs → display names
+      const orbitIds = new Set<string>();
+      callData.forEach((c: any) => {
+        if (c.caller_orbit_id && isUUID(c.caller_orbit_id)) orbitIds.add(c.caller_orbit_id);
+        if (c.receiver_orbit_id && isUUID(c.receiver_orbit_id)) orbitIds.add(c.receiver_orbit_id);
+      });
+      if (orbitIds.size > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, full_name, email, phone")
+          .in("id", Array.from(orbitIds));
+        if (profiles) {
+          const cache: Record<string, string> = {};
+          profiles.forEach((p: any) => {
+            cache[p.id] = p.full_name || p.email || p.phone || "Contact";
+          });
+          setNameCache(cache);
+        }
+      }
     } catch (err: any) {
       setLoadError(err?.message || "Failed to load calls");
     } finally {
@@ -167,7 +191,8 @@ export default function CommCallsSection() {
 
   const getDisplayLabel = (call: CallLog) => {
     const peerId = call.direction === "outgoing" ? call.receiver_orbit_id : call.caller_orbit_id;
-    return [peerId || (call.direction === "outgoing" ? (t("orbit.calls.outgoing_call") || "Outgoing call") : (t("orbit.calls.incoming_call") || "Incoming call"))];
+    const resolvedName = nameCache[peerId] || safeDisplayName(peerId, call.direction === "outgoing" ? (t("orbit.calls.outgoing_call") || "Outgoing call") : (t("orbit.calls.incoming_call") || "Incoming call"));
+    return [resolvedName];
   };
 
   return (
@@ -312,7 +337,7 @@ export default function CommCallsSection() {
                         )}
                         {secondaryLabel && <span className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }}>·</span>}
                         <span className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                          {call.status === "ended" ? formatDuration(call.duration_sec) : call.status}
+                          {formatCallStatus(call.status === "ended" ? `${formatDuration(call.duration_sec) || "Call ended"}` : call.status)}
                         </span>
                       </div>
                     </div>
