@@ -22,6 +22,7 @@ import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 import UpdateNotification from "@/components/UpdateNotification";
 import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
+import SmartCloseFlowSheet from "@/components/close-flow/SmartCloseFlowSheet";
 // Geo: GeoBoot is the single GPS lifecycle manager
 import { GeoBoot } from "@/lib/geo/GeoBoot";
 import { PermissionBootstrap } from "@/components/boot/PermissionBootstrap";
@@ -1265,6 +1266,7 @@ const App = () => (
             <SmartInstallBanner />
             <FloatingCTAButton />
             <OrbitPromptOverlay />
+            <SmartCloseFlowSheet />
             </UiQualityProvider>
             </SplashScreen>
            </AppLockGuard>
