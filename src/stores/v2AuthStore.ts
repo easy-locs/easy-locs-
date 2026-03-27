@@ -34,19 +34,8 @@ export const useV2AuthStore = create<V2AuthStore>((set, get) => ({
 
     // If AuthContext (v1) is already managing auth, don't register a second listener.
     // V2 will be synced via syncFromV1() called from AuthContext.
+    // Do not call getSession() here either — it can contend with the primary auth flow.
     if (_v1AuthActive) {
-      // Just read current session without triggering a new lock
-      try {
-        const { data } = await supabase.auth.getSession();
-        set({
-          session: data.session,
-          user: data.session?.user ?? null,
-          loading: false,
-          initialized: true,
-        });
-      } catch {
-        set({ loading: false, initialized: true });
-      }
       return;
     }
 
