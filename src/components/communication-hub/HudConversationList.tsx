@@ -132,7 +132,7 @@ export default function HudConversationList({
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder={t("orbit.search_conversations") || "Search conversations…"}
-            className="pl-10 h-9 text-sm rounded-xl border-none"
+            className="search-premium-field pl-10 h-11 text-sm font-medium rounded-2xl border-none"
             style={{
               background: "hsl(var(--hud-surface))",
               color: "hsl(var(--hud-text))",

@@ -49,7 +49,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
   return (
     <button
       onClick={onClick}
-      className="w-full text-left flex items-center gap-3 px-3 py-[10px] transition-all duration-150 hover:bg-muted/10 active:scale-[0.995]"
+      className="w-full text-left flex items-start gap-3 px-3 py-3 transition-all duration-150 hover:bg-muted/10 active:scale-[0.995]"
       style={{
         background: isActive ? "hsl(var(--primary) / 0.04)" : "transparent",
         borderLeft: isActive ? "2px solid hsl(var(--primary))" : "2px solid transparent",
@@ -74,11 +74,11 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
       )}
 
       {/* Content — constrained to prevent overflow */}
-      <div className="flex-1 min-w-0 overflow-hidden">
+      <div className="flex-1 min-w-0">
         {/* Row 1: Name + timestamp */}
-        <div className="flex items-baseline justify-between gap-2">
+        <div className="flex items-start justify-between gap-2">
           <span
-            className={`text-[15px] truncate flex-1 min-w-0 ${hasUnread ? "font-bold" : "font-medium"}`}
+            className={`text-[15px] leading-snug break-words line-clamp-2 flex-1 min-w-0 ${hasUnread ? "font-bold" : "font-medium"}`}
             style={{ color: "hsl(var(--foreground))" }}
           >
             {thread.name}
@@ -105,7 +105,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
         {/* Row 2: Context tag (if applicable) */}
         {contextLabel && (
           <p
-            className="text-[12px] font-medium truncate"
+            className="mt-0.5 text-[12px] font-medium leading-snug break-words line-clamp-2"
             title={contextLabel}
             style={{
               color: typeConfig?.color ? undefined : "hsl(var(--muted-foreground))",
@@ -120,7 +120,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
         <div className="flex items-center gap-2 mt-px">
           {thread.lastMessage ? (
             <p
-              className="text-[13px] flex-1 min-w-0 truncate"
+              className="text-[13px] flex-1 min-w-0 leading-snug break-words line-clamp-2"
               title={formatPreview(thread.lastMessage)}
               style={{
                 color: hasUnread
@@ -133,7 +133,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
             </p>
           ) : (
             <p
-              className="text-[13px] italic flex-1 min-w-0 truncate"
+              className="text-[13px] italic flex-1 min-w-0 leading-snug break-words line-clamp-2"
               style={{
                 color: "hsl(var(--muted-foreground) / 0.4)",
               }}

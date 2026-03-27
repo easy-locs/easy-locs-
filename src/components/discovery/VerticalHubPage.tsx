@@ -183,7 +183,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
               <motion.button
                 key={item.id}
                 onClick={() => navigate(item.href)}
-                className="relative shrink-0 w-[220px] h-[132px] overflow-hidden rounded-[1.4rem] snap-start text-left active:scale-[0.98]"
+                className="relative shrink-0 h-[132px] min-w-[220px] w-[78vw] max-w-[240px] overflow-hidden rounded-[1.4rem] snap-start text-left active:scale-[0.98]"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -197,8 +197,8 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
                   {item.badge}
                 </div>
                 <div className="absolute inset-x-0 bottom-0 p-3.5">
-                  <p className="text-sm font-bold text-white line-clamp-2 leading-tight">{item.name}</p>
-                  <p className="text-[11px] text-white/72 line-clamp-1 mt-0.5 leading-tight">{item.meta}</p>
+                  <p className="text-sm font-bold text-white line-clamp-2 leading-tight break-words">{item.name}</p>
+                  <p className="text-[11px] text-white/72 line-clamp-2 mt-0.5 leading-snug break-words">{item.meta}</p>
                 </div>
               </motion.button>
             ))}
