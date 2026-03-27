@@ -1,15 +1,18 @@
 /**
  * Orbit-to-Payment Bridge
  * Enables: chat → request payment → create transaction → confirm → system message → history
+ *
+ * FIXED: Uses platformBus (not dead eventBus) + sendSystemMessage (not chatStore)
  */
 
-import { useChatStore } from "@/stores/chatStore";
 import { supabase } from "@/integrations/supabase/client";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { sendSystemMessage } from "@/lib/orbit/sendSystemMessage";
 import { toast } from "sonner";
 
 export interface OrbitPaymentRequest {
   conversationId: string;
+  senderUserId: string;
   senderOrbitId: string;
   recipientUserId: string;
   amount: number;
@@ -30,7 +33,7 @@ export async function requestPaymentInChat(params: OrbitPaymentRequest) {
   const { data: tx, error: txError } = await db
     .from("wallet_transactions")
     .insert({
-      sender_id: null, // Will be filled when recipient pays
+      sender_id: null,
       recipient_id: params.recipientUserId,
       amount: params.amount,
       currency: params.currency,
@@ -48,12 +51,12 @@ export async function requestPaymentInChat(params: OrbitPaymentRequest) {
     throw txError;
   }
 
-  // 2. Send system message in conversation
-  await useChatStore.getState().sendMessage({
+  // 2. Send system message in conversation (canonical path)
+  await sendSystemMessage({
     conversationId: params.conversationId,
+    senderUserId: params.senderUserId,
     senderOrbitId: params.senderOrbitId,
     body: `💰 Payment requested: ${params.amount} ${params.currency}${params.note ? ` — "${params.note}"` : ""}`,
-    type: "system",
     metadata: {
       paymentAction: "request",
       transactionId: tx.id,
@@ -63,13 +66,13 @@ export async function requestPaymentInChat(params: OrbitPaymentRequest) {
     },
   });
 
-  // 3. Emit event for real-time sync
-  eventBus.emit("orbit.payment.requested", {
+  // 3. Emit event on canonical bus
+  platformBus.emit("wallet:payment_requested", {
     conversationId: params.conversationId,
     transactionId: tx.id,
     amount: params.amount,
     currency: params.currency,
-  });
+  }, "wallet");
 
   toast.success(`Payment request sent: ${params.amount} ${params.currency}`);
   return tx;
@@ -77,17 +80,16 @@ export async function requestPaymentInChat(params: OrbitPaymentRequest) {
 
 /**
  * Confirm/complete a payment from chat context.
- * Updates the transaction, sends confirmation message.
  */
 export async function confirmPaymentInChat(params: {
   transactionId: string;
   conversationId: string;
+  senderUserId: string;
   senderOrbitId: string;
   payerUserId: string;
 }) {
   const db = supabase as any;
 
-  // 1. Update transaction to completed
   const { data: tx, error } = await db
     .from("wallet_transactions")
     .update({
@@ -104,12 +106,11 @@ export async function confirmPaymentInChat(params: {
     throw error;
   }
 
-  // 2. Send confirmation message in chat
-  await useChatStore.getState().sendMessage({
+  await sendSystemMessage({
     conversationId: params.conversationId,
+    senderUserId: params.senderUserId,
     senderOrbitId: params.senderOrbitId,
     body: `✅ Payment confirmed: ${tx.amount} ${tx.currency} — Ref: ${tx.reference_code}`,
-    type: "system",
     metadata: {
       paymentAction: "confirmed",
       transactionId: tx.id,
@@ -119,13 +120,12 @@ export async function confirmPaymentInChat(params: {
     },
   });
 
-  // 3. Emit event
-  eventBus.emit("orbit.payment.confirmed", {
+  platformBus.emit("wallet:payment_completed", {
     conversationId: params.conversationId,
     transactionId: tx.id,
     amount: tx.amount,
     currency: tx.currency,
-  });
+  }, "wallet");
 
   toast.success(`Payment confirmed: ${tx.amount} ${tx.currency}`);
   return tx;
@@ -133,7 +133,6 @@ export async function confirmPaymentInChat(params: {
 
 /**
  * Send money directly from chat.
- * Creates + completes transaction in one step.
  */
 export async function sendMoneyInChat(params: {
   conversationId: string;
@@ -147,7 +146,6 @@ export async function sendMoneyInChat(params: {
   const db = supabase as any;
   const refCode = `SND-${Date.now().toString(36).toUpperCase()}`;
 
-  // 1. Create completed transaction
   const { data: tx, error } = await db
     .from("wallet_transactions")
     .insert({
@@ -167,12 +165,11 @@ export async function sendMoneyInChat(params: {
 
   if (error) throw error;
 
-  // 2. Send system message
-  await useChatStore.getState().sendMessage({
+  await sendSystemMessage({
     conversationId: params.conversationId,
+    senderUserId: params.senderUserId,
     senderOrbitId: params.senderOrbitId,
     body: `💸 Sent ${params.amount} ${params.currency}${params.note ? ` — "${params.note}"` : ""} (Ref: ${refCode})`,
-    type: "system",
     metadata: {
       paymentAction: "sent",
       transactionId: tx.id,
@@ -182,12 +179,12 @@ export async function sendMoneyInChat(params: {
     },
   });
 
-  eventBus.emit("orbit.payment.sent", {
+  platformBus.emit("wallet:payment_completed", {
     conversationId: params.conversationId,
     transactionId: tx.id,
     amount: params.amount,
     currency: params.currency,
-  });
+  }, "wallet");
 
   toast.success(`${params.amount} ${params.currency} sent`);
   return tx;
