@@ -144,7 +144,7 @@ export function startRadarAnimation(map: mapboxgl.Map) {
   setInterval(() => {
     if (!radarFrames.length) return;
     frameIndex = (frameIndex + 1) % radarFrames.length;
-    const source = map.getSource("radar") as mapboxgl.RasterSource;
+    const source = map.getSource("radar") as mapboxgl.RasterTileSource;
     if (!source) return;
     (source as any).tiles = [radarFrames[frameIndex]];
     map.triggerRepaint();
