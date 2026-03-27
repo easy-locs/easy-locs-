@@ -6,8 +6,14 @@ export function useOrbitPrivacySettings(userId?: string | null) {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    if (!userId) { setSettings(null); setLoading(false); return; }
+    if (!userId) {
+      setSettings(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+
     const { data } = await (supabase as any)
       .from("orbit_user_settings_v2")
       .select("*")
@@ -15,30 +21,53 @@ export function useOrbitPrivacySettings(userId?: string | null) {
       .maybeSingle();
 
     if (!data) {
-      const { data: created } = await (supabase as any)
+      const { data: created, error: insertError } = await (supabase as any)
         .from("orbit_user_settings_v2")
         .insert({ user_id: userId })
         .select("*")
         .single();
+
+      if (insertError) {
+        console.error("Failed to create orbit privacy settings:", insertError);
+        setLoading(false);
+        return;
+      }
       setSettings(created);
     } else {
       setSettings(data);
     }
+
     setLoading(false);
   }, [userId]);
 
-  const patch = useCallback(async (partial: Record<string, unknown>) => {
-    if (!userId) return;
-    const { data } = await (supabase as any)
-      .from("orbit_user_settings_v2")
-      .update({ ...partial, updated_at: new Date().toISOString() })
-      .eq("user_id", userId)
-      .select("*")
-      .single();
-    setSettings(data);
-  }, [userId]);
+  const patch = useCallback(
+    async (partial: Record<string, unknown>) => {
+      if (!userId) return;
 
-  useEffect(() => { void load(); }, [load]);
+      const { data, error } = await (supabase as any)
+        .from("orbit_user_settings_v2")
+        .update({
+          ...partial,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", userId)
+        .select("*")
+        .single();
 
-  return { settings, loading, reload: load, patch };
+      if (error) throw error;
+      setSettings(data);
+    },
+    [userId]
+  );
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  return {
+    settings,
+    loading,
+    reload: load,
+    patch,
+  };
 }
