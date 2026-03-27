@@ -663,7 +663,7 @@ export function useConversationThreads() {
     if (!orgId || !user?.id) return;
     const channel = supabase
       .channel("hub-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `org_id=eq.${orgId}` }, () => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_messages_v2" }, () => {
         debouncedReload();
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "marketplace_bookings", filter: `org_id=eq.${orgId}` }, () => {
@@ -676,9 +676,6 @@ export function useConversationThreads() {
         debouncedReload();
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, () => {
-        debouncedReload();
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_threads", filter: `org_id=eq.${orgId}` }, () => {
         debouncedReload();
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "conversations_v2" }, () => {
