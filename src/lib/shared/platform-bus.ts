@@ -19,14 +19,19 @@ type PlatformEventType =
   | "wallet.transaction.created"
   | "wallet.payment.success"
   | "wallet.payment.failed"
+  | "wallet.payment.completed"
   // Orbit / Communication
   | "orbit:message_sent"
   | "orbit:call_started"
   | "orbit:call_ended"
   | "orbit:thread_created"
   | "orbit:notification_created"
-  // Orbit (dot-notation — emitted by orbitStore)
+  // Orbit (dot-notation — emitted by orbitStore / V2 cross-app)
   | "orbit.profile.loaded"
+  | "orbit.message.sent"
+  | "orbit.message.received"
+  | "orbit.call.started"
+  | "orbit.call.ended"
   // Marketplace
   | "marketplace:listing_published"
   | "marketplace:listing_paused"
@@ -38,6 +43,8 @@ type PlatformEventType =
   | "marketplace:review_submitted"
   | "marketplace:provider_went_live"
   | "marketplace:provider_went_offline"
+  | "marketplace.merchant.live"
+  | "marketplace.contact.opened"
   // Storefront / Commerce (PASS123)
   | "storefront:order_placed"
   | "storefront:order_paid"
@@ -113,6 +120,7 @@ type PlatformEventType =
   | "booking.confirmed"
   | "booking.cancelled"
   | "booking.completed"
+  | "booking.created"
   // Conversation / Message (dot-notation — emitted by chatStore)
   | "conversation.created"
   | "message.sent"
@@ -145,6 +153,12 @@ type PlatformEventType =
   | "qr.payment.completed"
   | "qr.payment.failed"
   | "qr.navigation"
+  // Radar (dot-notation — V2 cross-app)
+  | "radar.location.shared"
+  | "radar.pin.selected"
+  // Dashboard (dot-notation — V2 cross-app)
+  | "dashboard.refresh"
+  | "dashboard.counters.refresh"
   // Deals
   | "deal:created"
   | "deal:offer_sent"
@@ -305,7 +319,8 @@ export function installPlatformReactions(): () => void {
 
   // ── Wallet events → refresh wallet module only ──
   unsubs.push(
-    platformBus.onPrefix("wallet:", () => refreshModule("wallet"))
+    platformBus.onPrefix("wallet:", () => refreshModule("wallet")),
+    platformBus.onPrefix("wallet.", () => refreshModule("wallet"))
   );
 
   // ── Marketplace events → refresh business module ──
