@@ -652,81 +652,98 @@ Deno.serve(async (req) => {
     // ══════════════════════════════════════════════════
     await runEngine("publish-gate", async () => {
       const { data: candidates } = await supabase.from("seed_merchants").select("id, vertical, category, subcategory, cover_image, menu_items_json, latitude, longitude, phone, support_phone, visibility_score, overall_quality_score, visibility_mode").in("visibility_mode" as any, ["hidden", "search_only", "live"]).limit(100);
-      let published = 0, searchOnly = 0, blocked = 0;
+      let published = 0, searchOnly = 0, blocked = 0, fwBlocked = 0;
       for (const m of (candidates as any[]) ?? []) {
         const score = m.overall_quality_score ?? Math.max(m.visibility_score ?? 0, computeQualityScore(m));
         const mc = extractMenuItems(m.menu_items_json).length;
         const hasMenu = m.vertical === "food" ? mc >= 3 : true;
         const hasImage = !isPlaceholderImage(m.cover_image);
         const hasCat = !isInvalidCategory(m.category) && !isInvalidCategory(m.subcategory);
-        if (score >= 70 && hasMenu && hasImage && hasCat) { await supabase.from("seed_merchants").update({ visibility_mode: "live", blocking_reason: null, overall_quality_score: score } as any).eq("id", m.id); published++; }
-        else if (score >= 50 && hasMenu && hasImage && hasCat) { await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, overall_quality_score: score } as any).eq("id", m.id); searchOnly++; }
-        else { await supabase.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "stabilization_gate_failed", overall_quality_score: score } as any).eq("id", m.id); blocked++; }
+        let targetMode = "hidden";
+        if (score >= 70 && hasMenu && hasImage && hasCat) targetMode = "live";
+        else if (score >= 50 && hasMenu && hasImage && hasCat) targetMode = "search_only";
+
+        const fw = firewallCheck("publish-gate", "seed_merchants", { visibility_mode: targetMode, category: m.category, overall_quality_score: score, visibility_decision_reason: `publish-gate:score=${score}` }, { ranking_score: score });
+        if (fw.blocked) { fwBlocked++; continue; }
+
+        if (targetMode === "live") { await supabase.from("seed_merchants").update({ visibility_mode: "live", blocking_reason: null, overall_quality_score: score, visibility_decision_reason: `publish-gate:score=${score}` } as any).eq("id", m.id); published++; }
+        else if (targetMode === "search_only") { await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, overall_quality_score: score, visibility_decision_reason: `publish-gate:score=${score}` } as any).eq("id", m.id); searchOnly++; }
+        else { await supabase.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "stabilization_gate_failed", overall_quality_score: score, visibility_decision_reason: `publish-gate:score=${score}` } as any).eq("id", m.id); blocked++; }
       }
-      return { published, searchOnly, blocked };
+      return { published, searchOnly, blocked, fwBlocked };
     }, "critical");
 
     await runEngine("publish-gate-food", async () => {
       const { data } = await supabase.from("seed_merchants").select("id, menu_items_json, cover_image, category, visibility_mode").eq("vertical" as any, "food").eq("visibility_mode" as any, "hidden").limit(50);
-      let checked = 0, promoted = 0;
+      let checked = 0, promoted = 0, fwBlocked = 0;
       for (const m of (data as any[]) ?? []) {
         checked++;
         const mc = extractMenuItems(m.menu_items_json).length;
         if (mc >= 3 && !isPlaceholderImage(m.cover_image) && !isInvalidCategory(m.category)) {
-          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null } as any).eq("id", m.id);
+          const fw = firewallCheck("publish-gate-food", "seed_merchants", { visibility_mode: "search_only", category: m.category, visibility_decision_reason: "publish-gate-food" });
+          if (fw.blocked) { fwBlocked++; continue; }
+          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, visibility_decision_reason: "publish-gate-food" } as any).eq("id", m.id);
           promoted++;
         }
       }
-      return { checked, promoted };
+      return { checked, promoted, fwBlocked };
     }, "critical");
 
     await runEngine("publish-gate-hotel", async () => {
       const { data } = await supabase.from("seed_merchants").select("id, hotel_inventory_json, cover_image, category, visibility_mode").eq("vertical" as any, "hotel").eq("visibility_mode" as any, "hidden").limit(50);
-      let checked = 0, promoted = 0;
+      let checked = 0, promoted = 0, fwBlocked = 0;
       for (const m of (data as any[]) ?? []) {
         checked++;
         if (m.hotel_inventory_json?.roomTypes?.length > 0 && !isPlaceholderImage(m.cover_image) && !isInvalidCategory(m.category)) {
-          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null } as any).eq("id", m.id);
+          const fw = firewallCheck("publish-gate-hotel", "seed_merchants", { visibility_mode: "search_only", category: m.category, visibility_decision_reason: "publish-gate-hotel" });
+          if (fw.blocked) { fwBlocked++; continue; }
+          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, visibility_decision_reason: "publish-gate-hotel" } as any).eq("id", m.id);
           promoted++;
         }
       }
-      return { checked, promoted };
+      return { checked, promoted, fwBlocked };
     }, "critical");
 
     await runEngine("publish-gate-service", async () => {
       const { data } = await supabase.from("seed_merchants").select("id, service_catalog_json, cover_image, category, visibility_mode").eq("vertical" as any, "services").eq("visibility_mode" as any, "hidden").limit(50);
-      let checked = 0, promoted = 0;
+      let checked = 0, promoted = 0, fwBlocked = 0;
       for (const m of (data as any[]) ?? []) {
         checked++;
         if (m.service_catalog_json?.services?.length > 0 && !isPlaceholderImage(m.cover_image) && !isInvalidCategory(m.category)) {
-          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null } as any).eq("id", m.id);
+          const fw = firewallCheck("publish-gate-service", "seed_merchants", { visibility_mode: "search_only", category: m.category, visibility_decision_reason: "publish-gate-service" });
+          if (fw.blocked) { fwBlocked++; continue; }
+          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, visibility_decision_reason: "publish-gate-service" } as any).eq("id", m.id);
           promoted++;
         }
       }
-      return { checked, promoted };
+      return { checked, promoted, fwBlocked };
     }, "critical");
 
     await runEngine("publish-gate-grocery", async () => {
       const { data } = await supabase.from("seed_merchants").select("id, grocery_catalog_json, cover_image, category, visibility_mode").eq("vertical" as any, "grocery").eq("visibility_mode" as any, "hidden").limit(50);
-      let checked = 0, promoted = 0;
+      let checked = 0, promoted = 0, fwBlocked = 0;
       for (const m of (data as any[]) ?? []) {
         checked++;
         if (m.grocery_catalog_json?.products?.length > 0 && !isPlaceholderImage(m.cover_image) && !isInvalidCategory(m.category)) {
-          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null } as any).eq("id", m.id);
+          const fw = firewallCheck("publish-gate-grocery", "seed_merchants", { visibility_mode: "search_only", category: m.category, visibility_decision_reason: "publish-gate-grocery" });
+          if (fw.blocked) { fwBlocked++; continue; }
+          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, visibility_decision_reason: "publish-gate-grocery" } as any).eq("id", m.id);
           promoted++;
         }
       }
-      return { checked, promoted };
+      return { checked, promoted, fwBlocked };
     }, "priority");
 
     await runEngine("auto-publish", async () => {
-      const { data: ready } = await supabase.from("seed_merchants").select("id, overall_quality_score, visibility_mode").eq("visibility_mode" as any, "search_only").gte("overall_quality_score" as any, 70).limit(50);
-      let published = 0;
+      const { data: ready } = await supabase.from("seed_merchants").select("id, overall_quality_score, visibility_mode, category").eq("visibility_mode" as any, "search_only").gte("overall_quality_score" as any, 70).limit(50);
+      let published = 0, fwBlocked = 0;
       for (const m of (ready as any[]) ?? []) {
-        await supabase.from("seed_merchants").update({ visibility_mode: "live", blocking_reason: null } as any).eq("id", m.id);
+        const fw = firewallCheck("auto-publish", "seed_merchants", { visibility_mode: "live", category: m.category, ranking_score: m.overall_quality_score, visibility_decision_reason: `auto-publish:score=${m.overall_quality_score}` });
+        if (fw.blocked) { fwBlocked++; continue; }
+        await supabase.from("seed_merchants").update({ visibility_mode: "live", blocking_reason: null, visibility_decision_reason: `auto-publish:score=${m.overall_quality_score}` } as any).eq("id", m.id);
         published++;
       }
-      return { published };
+      return { published, fwBlocked };
     }, "critical");
 
     await runEngine("auto-unpublish", async () => {
@@ -736,25 +753,27 @@ Deno.serve(async (req) => {
         const score = m.overall_quality_score ?? Math.max(m.visibility_score ?? 0, computeQualityScore(m));
         const mc = extractMenuItems(m.menu_items_json).length;
         const shouldHide = score < 50 || isPlaceholderImage(m.cover_image) || isInvalidCategory(m.category) || isInvalidCategory(m.subcategory) || (m.vertical === "food" && mc < 3);
-        if (shouldHide) { await supabase.from("seed_merchants").update({ visibility_mode: "hidden", unpublish_reason: "quality_gate_failed", overall_quality_score: score } as any).eq("id", m.id); unpublished++; }
+        if (shouldHide) { await supabase.from("seed_merchants").update({ visibility_mode: "hidden", unpublish_reason: "quality_gate_failed", overall_quality_score: score, visibility_decision_reason: `auto-unpublish:score=${score}` } as any).eq("id", m.id); unpublished++; }
       }
       return { unpublished };
     }, "priority");
 
     await runEngine("visibility-optimizer", async () => {
       const { data } = await supabase.from("seed_merchants").select("id, visibility_mode, visibility_score, cover_image, category").in("visibility_mode" as any, ["search_only", "live"]).limit(100);
-      let optimized = 0;
+      let optimized = 0, fwBlocked = 0;
       for (const m of (data as any[]) ?? []) {
         const score = m.visibility_score ?? 0;
         if (score >= 70 && m.visibility_mode === "search_only" && !isPlaceholderImage(m.cover_image) && !isInvalidCategory(m.category)) {
-          await supabase.from("seed_merchants").update({ visibility_mode: "live" } as any).eq("id", m.id);
+          const fw = firewallCheck("visibility-optimizer", "seed_merchants", { visibility_mode: "live", category: m.category, ranking_score: score, visibility_decision_reason: `visibility-optimizer:score=${score}` });
+          if (fw.blocked) { fwBlocked++; continue; }
+          await supabase.from("seed_merchants").update({ visibility_mode: "live", visibility_decision_reason: `visibility-optimizer:score=${score}` } as any).eq("id", m.id);
           optimized++;
         } else if (score < 30 && m.visibility_mode === "live") {
-          await supabase.from("seed_merchants").update({ visibility_mode: "hidden" } as any).eq("id", m.id);
+          await supabase.from("seed_merchants").update({ visibility_mode: "hidden", visibility_decision_reason: `visibility-optimizer:score=${score}` } as any).eq("id", m.id);
           optimized++;
         }
       }
-      return { optimized };
+      return { optimized, fwBlocked };
     }, "priority");
 
     await runEngine("entity-recovery", async () => {
