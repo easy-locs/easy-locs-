@@ -4,7 +4,7 @@
  */
 import React, { PropsWithChildren, useEffect } from "react";
 import { useBrowserTelemetry } from "@/hooks/useBrowserTelemetry";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function BrowserTelemetryProvider({ children }: PropsWithChildren) {
   const { user } = useAuth();
