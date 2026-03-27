@@ -2,7 +2,6 @@ import { Suspense, lazy, memo } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import SEOHead from "@/components/SEOHead";
-import { Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Priority sections
@@ -50,9 +49,7 @@ const SmartRecommendationsSection = lazy(() => import("@/components/home/SmartRe
 const HomePromoCarousel = lazy(() => import("@/components/promo/HomePromoCarousel"));
 
 const SectionLoader = memo(() => (
-  <div className="flex items-center justify-center py-16">
-    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-  </div>
+  <div className="min-h-[48px]" />
 ));
 
 const jsonLd = {

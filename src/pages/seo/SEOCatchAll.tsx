@@ -9,16 +9,14 @@
  */
 import { useLocation, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import { Loader2 } from "lucide-react";
+
 import { getCountryBySlug, getCityBySlug, getServiceCategoryBySlug, SEO_ACTIVITY_TYPES } from "@/lib/seo/seo-data";
 
 const PropertyManagementSEOResolver = lazy(() => import("./PropertyManagementSEOResolver"));
 const NotFound = lazy(() => import("../NotFound"));
 
 const PageLoader = () => (
-  <div className="app-mobile-page bg-background flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-  </div>
+  <div className="app-mobile-page bg-background" />
 );
 
 const SEOCatchAll = () => {
