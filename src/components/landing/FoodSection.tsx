@@ -100,10 +100,10 @@ export default function FoodSection() {
                   )}
                 </div>
                 <div className="p-3 space-y-1.5">
-                  <p className="text-sm font-bold text-foreground truncate group-hover:text-accent transition-colors">
+                  <p className="text-sm font-bold text-foreground line-clamp-2 leading-snug break-words group-hover:text-accent transition-colors">
                     {shop.name}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                     {shop.rating > 0 && (
                       <span className="flex items-center gap-0.5 text-amber-500 font-semibold">
                         <Star className="h-3 w-3 fill-amber-500" /> {Number(shop.rating).toFixed(1)}

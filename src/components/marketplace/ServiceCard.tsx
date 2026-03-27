@@ -61,10 +61,10 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
   const responseRate = Number(provider?.response_rate || 0);
 
   return (
-    <Card className="overflow-hidden border-border/60 hover:border-accent/40 hover:shadow-card-hover transition-all duration-300 group h-full flex flex-col min-h-[240px] sm:min-h-[280px]">
+    <Card className="overflow-hidden border-border/60 hover:border-accent/40 hover:shadow-card-hover transition-all duration-300 group h-full flex flex-col">
       {/* Photo gallery */}
       {photos.length > 0 ? (
-        <div className="relative h-36 sm:h-48 shrink-0 bg-muted overflow-hidden">
+        <div className="relative aspect-[16/10] shrink-0 bg-muted overflow-hidden">
           <img
             src={photos[photoIdx]}
             alt={service.title}
@@ -133,13 +133,13 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           </div>
         )}
 
-        <h3 className="font-semibold text-foreground line-clamp-1 text-[15px]">{service.title}</h3>
-        {service.description && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{service.description}</p>}
+        <h3 className="font-semibold text-foreground line-clamp-2 leading-snug text-[15px] break-words">{service.title}</h3>
+        {service.description && <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed break-words">{service.description}</p>}
 
         {/* Location + duration + capacity */}
-        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           {service.city && (
-            <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-accent/70" /> {service.city}, {service.country}</span>
+            <span className="flex items-center gap-1 break-words"><MapPin className="h-3 w-3 text-accent/70 shrink-0" /> {service.city}, {service.country}</span>
           )}
           {service.duration_minutes && (
             <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-accent/70" /> {service.duration_minutes}min</span>
@@ -151,7 +151,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
 
         {/* Trust metrics strip */}
         {(rating > 0 || completedJobs > 0 || responseRate > 0) && (
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground py-1.5 px-2.5 bg-muted/30 rounded-md border border-border/30">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground py-1.5 px-2.5 bg-muted/30 rounded-lg border border-border/30">
             {rating > 0 && (
               <span className="flex items-center gap-1 font-medium text-foreground">
                 <Star className="h-3.5 w-3.5 text-[hsl(var(--chart-4))] fill-[hsl(var(--chart-4))]" />
@@ -174,7 +174,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
 
         {/* Provider mini-card */}
         {provider && (
-          <div className="flex items-center gap-2.5 text-xs text-muted-foreground p-2.5 bg-muted/30 rounded-lg border border-border/40">
+          <div className="flex items-start gap-2.5 text-xs text-muted-foreground p-2.5 bg-muted/30 rounded-lg border border-border/40">
             {provider.avatar_url ? (
               <img src={provider.avatar_url} alt={provider.name || "Provider"} className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-border" />
             ) : (
@@ -183,7 +183,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <span className="font-medium text-foreground text-[12px]">{provider.display_name}</span>
+              <span className="font-medium text-foreground text-[12px] break-words leading-snug">{provider.display_name}</span>
               {provider.verified && (
                 <CheckCircle2 className="inline h-3 w-3 text-accent ml-1" />
               )}
@@ -214,14 +214,14 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
         )}
 
         {/* Price + Actions footer */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-border/50 mt-auto">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-border/50 mt-auto">
           <div className="flex flex-col">
-            <span className="font-bold text-accent text-base">{priceLabel}</span>
+            <span className="font-bold text-accent text-base break-words">{priceLabel}</span>
             {photos.length > 1 && (
               <span className="text-[10px] text-muted-foreground">{photos.length} {t("mp.photos") || "photos"}</span>
             )}
           </div>
-          <div className="flex gap-1.5">
+          <div className="flex gap-1.5 shrink-0">
             {slug && links && (
               <Popover>
                 <PopoverTrigger asChild>

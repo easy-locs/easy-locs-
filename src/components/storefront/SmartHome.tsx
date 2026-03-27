@@ -167,22 +167,22 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
           <Link
             key={shop.id}
             to={`/s/${shop.slug}`}
-            className="shrink-0 w-[170px] rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.96] transition-transform"
+            className="shrink-0 w-[170px] rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.96] transition-transform flex flex-col"
           >
-            <div className="relative flex h-[112px] items-center justify-center overflow-hidden rounded-t-2xl bg-muted/20">
+            <div className="relative aspect-[16/10] flex items-center justify-center overflow-hidden rounded-t-2xl bg-muted/20 shrink-0">
               {(shop.banner_url || shop.logo_url) ? (
                 <img src={shop.banner_url || shop.logo_url!} alt={shop.name} className="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <Star className="h-6 w-6 text-muted-foreground/20" />
               )}
             </div>
-            <div className="min-w-0 space-y-1.5 p-3">
-              <p className="min-h-[2rem] text-xs font-bold leading-snug text-foreground line-clamp-2">{shop.name}</p>
-              <div className="flex items-start gap-1.5">
+            <div className="min-w-0 space-y-1.5 p-3 flex-1 flex flex-col">
+              <p className="text-xs font-bold leading-snug text-foreground line-clamp-2 break-words">{shop.name}</p>
+              <div className="flex items-start gap-1.5 mt-auto">
                 {shop.rating != null && shop.rating > 0 && (
                   <span className="text-[10px] text-amber-500 font-semibold shrink-0">★ {Number(shop.rating).toFixed(1)}</span>
                 )}
-                <p className="line-clamp-2 min-w-0 text-[10px] leading-relaxed text-muted-foreground">{shop.address || shop.vertical || "Dubai"}</p>
+                <p className="line-clamp-2 min-w-0 text-[10px] leading-relaxed text-muted-foreground break-words">{shop.address || shop.vertical || "Dubai"}</p>
               </div>
             </div>
           </Link>
