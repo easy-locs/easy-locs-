@@ -23,6 +23,7 @@ import { initRideRatingHandler } from "./handlers/ride-rating.handler";
 import { initSupportOpenHandler } from "./handlers/support-open.handler";
 import { initUnifiedMobilityRequestHandler } from "./handlers/unified-mobility-request.handler";
 import { initMobilityCompatBridgeHandler } from "./handlers/mobility-compat-bridge.handler";
+import { initCloseFlowEngine } from "@/lib/close-flow/close-flow-engine";
 import "@/lib/radar/signal-ingestor";
 
 /**
@@ -116,5 +117,6 @@ initRideRatingHandler();
 initSupportOpenHandler();
 initUnifiedMobilityRequestHandler();
 initMobilityCompatBridgeHandler();
+initCloseFlowEngine();
 
-console.log("[event-init] All event handlers registered + platformBus bridge active");
+console.log("[event-init] All event handlers registered + platformBus bridge active + close flow engine active");
