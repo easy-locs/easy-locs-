@@ -166,9 +166,9 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
       if (tenantIdFromDoc) {
         const { data: tenantData } = await supabase.from("tenants").select("tenant_user_id").eq("id", tenantIdFromDoc).single();
         if (tenantData?.tenant_user_id) {
-          await supabase.from("notifications").insert({
-            user_id: tenantData.tenant_user_id, org_id: orgId, type: "document",
-            title: "📎 Nouveau document", message: `${doc.title} disponible`, link: "/tenant/documents",
+          await (supabase as any).from("app_notifications").insert({
+            user_id: tenantData.tenant_user_id, scope: "global", category: "document",
+            title: "📎 Nouveau document", body: `${doc.title} disponible`, severity: "info", route: "/tenant/documents",
           });
         }
       }

@@ -56,13 +56,14 @@ const TenantRequests = () => {
       if (orgData) {
         const label = REQUEST_TYPES.find(r => r.value === type)?.label || type;
         const L = getCountryConfig(propertyCountry).labels;
-        await supabase.from("notifications").insert({
+        await (supabase as any).from("app_notifications").insert({
           user_id: orgData.owner_user_id,
-          org_id: orgId,
-          type: "request",
+          scope: "global",
+          category: "request",
           title: `📋 ${T.requestSent}: ${label}`,
-          message: `${tenantName || L.tenant} — ${label}${period ? ` (${period})` : ""}`,
-          link: "/dashboard/rental?tab=tenants",
+          body: `${tenantName || L.tenant} — ${label}${period ? ` (${period})` : ""}`,
+          severity: "info",
+          route: "/dashboard/rental?tab=tenants",
         });
         if (orgData.email) {
           supabase.functions.invoke("send-email", {

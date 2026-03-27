@@ -236,11 +236,11 @@ const ChannelManager = () => {
 
       // Notify owner
       if (org?.id && user) {
-        await supabase.from("notifications").insert({
-          user_id: user.id, org_id: org.id, type: "info",
+        await (supabase as any).from("app_notifications").insert({
+          user_id: user.id, scope: "global", category: "info",
           title: "🚫 Réservation annulée",
-          message: `${res.guest_name} — ${res.check_in} → ${res.check_out}`,
-          link: "/dashboard/channel-manager",
+          body: `${res.guest_name} — ${res.check_in} → ${res.check_out}`,
+          severity: "info", route: "/dashboard/channel-manager",
         });
       }
 

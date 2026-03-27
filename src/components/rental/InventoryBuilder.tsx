@@ -378,7 +378,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       try {
         const { data: tenant } = await supabase.from("tenants").select("tenant_user_id, email, name").eq("id", tenantId).single();
         if (tenant?.tenant_user_id) {
-          await supabase.from("notifications").insert({
+          await supabase.from("app_notifications").insert({
             user_id: tenant.tenant_user_id,
             org_id: orgId,
             type: "info",

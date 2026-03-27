@@ -167,7 +167,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       if (msgError) throw msgError;
 
       if (hasTenantAccount) {
-        await supabase.from("notifications").insert({ user_id: tenantContact!.tenant_user_id, org_id: orgId, type: "request", title: t("comp.docs.doc_requested_notif"), message: t("comp.docs.doc_requested_notif_msg").replace("{label}", label), link: "/tenant/documents" });
+        await (supabase as any).from("app_notifications").insert({ user_id: tenantContact!.tenant_user_id, scope: "global", category: "request", title: t("comp.docs.doc_requested_notif"), body: t("comp.docs.doc_requested_notif_msg").replace("{label}", label), severity: "info", route: "/tenant/documents" });
       }
 
       if (hasValidEmail) {
