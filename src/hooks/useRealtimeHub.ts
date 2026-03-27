@@ -2,13 +2,14 @@
  * useRealtimeHub — Centralized React hook for RealtimeManager.
  * Mount ONCE at the app root. Replaces useOrbitCallSync, usePresence, RealtimeMessageToast.
  * 
- * v3: All tables migrated to V2 canonical (chat_messages_v2, app_notifications, conversations_v2).
+ * v4: Per-module debounce + platformBus emission from realtime signals.
  */
 import { useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine, type OrbitModule } from "@/stores/orbit-engine";
 import { realtimeManager, type RealtimeSignal } from "@/lib/realtime-manager";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
 import React from "react";
@@ -24,14 +25,40 @@ const TABLE_TO_MODULE: Record<string, OrbitModule> = {
   deal_rooms: "business",
 };
 
+// Map table+eventType to platformBus events for canonical bridge propagation
+const TABLE_TO_PLATFORM_EVENT: Record<string, Record<string, string>> = {
+  chat_messages_v2: {
+    INSERT: "orbit:message_received",
+    UPDATE: "orbit:message_read",
+  },
+  conversations_v2: {
+    INSERT: "orbit:thread_created",
+    UPDATE: "orbit:thread_updated",
+  },
+  call_logs: {
+    INSERT: "orbit:call_started",
+    UPDATE: "orbit:call_ended",
+  },
+  app_notifications: {
+    INSERT: "notifications:refresh",
+    UPDATE: "notifications:refresh",
+  },
+  booking_requests: {
+    INSERT: "marketplace:booking_created",
+    UPDATE: "marketplace:booking_confirmed",
+  },
+};
+
 export function useRealtimeHub() {
   const { user, orgId, activeRole } = useAuth();
   const queryClient = useQueryClient();
   const refreshModule = useOrbitEngine((s) => s.refreshModule);
   const refresh = useOrbitEngine((s) => s.refresh);
   const addAlert = useOrbitEngine((s) => s.addAlert);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastMsgToast = useRef("");
+
+  // FIX: Per-module debounce timers instead of single shared timer
+  const moduleTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const refreshModuleRef = useRef(refreshModule);
   refreshModuleRef.current = refreshModule;
@@ -43,11 +70,25 @@ export function useRealtimeHub() {
   const handleSignal = useCallback((signal: RealtimeSignal) => {
     const { table, eventType, new: row } = signal;
 
-    // ─── Targeted module refresh ───
+    // ─── FIX: Emit platformBus event so canonical bridges react ───
+    const eventMap = TABLE_TO_PLATFORM_EVENT[table];
+    if (eventMap) {
+      const platformEvent = eventMap[eventType] || eventMap["*"];
+      if (platformEvent) {
+        platformBus.emit(
+          platformEvent as any,
+          { table, eventType, id: row?.id, userId: user?.id },
+          "system"
+        );
+      }
+    }
+
+    // ─── FIX: Per-module debounce (each module gets its own timer) ───
     const targetModule = TABLE_TO_MODULE[table];
     if (targetModule) {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
+      const timerKey = targetModule;
+      if (moduleTimers.current[timerKey]) clearTimeout(moduleTimers.current[timerKey]);
+      moduleTimers.current[timerKey] = setTimeout(() => {
         if (user?.id) refreshModuleRef.current(targetModule, user.id, orgId || undefined);
       }, 500);
     }
@@ -145,7 +186,9 @@ export function useRealtimeHub() {
 
     return () => {
       unsub();
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      // Clear all per-module timers
+      Object.values(moduleTimers.current).forEach(clearTimeout);
+      moduleTimers.current = {};
     };
   }, [user?.id, orgId, handleSignal]);
 
