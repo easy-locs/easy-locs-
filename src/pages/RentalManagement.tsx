@@ -188,17 +188,17 @@ const RentalManagement = () => {
     const channel = supabase
       .channel(`rental-msg-${selectedTenant.id}`)
       .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "messages",
-        filter: `tenant_id=eq.${selectedTenant.id}`,
+        event: "INSERT", schema: "public", table: "chat_messages_v2",
       }, (payload) => {
         const newMsg = payload.new as any;
-        if (newMsg.org_id === orgId) {
+        const tenantId = selectedTenant.id;
+        // Filter messages relevant to this tenant conversation
+        if (newMsg.metadata?.tenant_id === tenantId || newMsg.conversation_id?.includes(tenantId)) {
           setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
         }
       })
       .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "messages",
-        filter: `tenant_id=eq.${selectedTenant.id}`,
+        event: "UPDATE", schema: "public", table: "chat_messages_v2",
       }, (payload) => {
         const updated = payload.new as any;
         setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
