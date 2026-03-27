@@ -36,7 +36,7 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
       isOpen: true,
     });
 
-    platformBus.emit("camera.opened", { mode }, "system");
+    platformBus.emit("camera:opened", { mode }, "system");
   },
 
   closeCamera: () => {
@@ -49,6 +49,6 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
       isOpen: false,
     });
 
-    platformBus.emit("camera.closed", {}, "system");
+    platformBus.emit("camera:closed", {}, "system");
   },
 }));

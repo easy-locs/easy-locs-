@@ -102,7 +102,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
     const saved = await listingRepo.create(listing);
     set((state) => ({ listings: [saved, ...state.listings] }));
-    platformBus.emit("listing.created", { listing: saved }, "marketplace");
+    platformBus.emit("listing:created", { listing: saved }, "marketplace");
     return saved;
   },
 
@@ -116,13 +116,13 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       }),
     }));
     if (updated) {
-      platformBus.emit("listing.updated", { listing: updated }, "marketplace");
+      platformBus.emit("listing:updated", { listing: updated }, "marketplace");
     }
   },
 
   publishListing: (listingId) => {
     get().updateListing(listingId, { status: "published" });
-    platformBus.emit("listing.published", { listingId }, "marketplace");
+    platformBus.emit("listing:published", { listingId }, "marketplace");
   },
 
   pauseListing: (listingId) => { get().updateListing(listingId, { status: "paused" }); },

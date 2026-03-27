@@ -41,7 +41,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
 
     set({ wallet, loading: false });
 
-    platformBus.emit("wallet.loaded", { walletId: wallet.walletId, ownerOrbitId: wallet.ownerOrbitId }, "wallet");
+    platformBus.emit("wallet:loaded", { walletId: wallet.walletId, ownerOrbitId: wallet.ownerOrbitId }, "wallet");
   },
 
   createTransaction: async ({ type, amount, currency, status = "pending", reference }) => {
@@ -62,7 +62,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       transactions: [saved, ...state.transactions],
     }));
 
-    platformBus.emit("wallet.transaction.created", { transaction: saved }, "wallet");
+    platformBus.emit("wallet:transaction_created", { transaction: saved }, "wallet");
 
     return saved;
   },
@@ -77,7 +77,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       ),
     }));
 
-    platformBus.emit("wallet.payment.success", {
+    platformBus.emit("wallet:payment_success", {
       transactionId,
       amount: tx.amount,
       reference: tx.reference,
@@ -91,6 +91,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       ),
     }));
 
-    platformBus.emit("wallet.payment.failed", { transactionId, reason }, "wallet");
+    platformBus.emit("wallet:payment_failed", { transactionId, reason }, "wallet");
   },
 }));
