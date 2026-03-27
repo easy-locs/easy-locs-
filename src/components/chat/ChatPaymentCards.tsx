@@ -88,7 +88,7 @@ export async function sendPaymentRequestMessageToThread(params: {
     thread_id: threadId,
   };
 
-  const { data, error } = await supabase.from("messages").insert(msgPayload).select("*").single();
+  const { data, error } = await supabase.from("chat_messages_v2").insert(msgPayload).select("*").single();
   if (error) throw error;
   return data;
 }
@@ -158,7 +158,7 @@ export async function sendPaymentReceiptToThread(params: {
     thread_id: threadId,
   };
 
-  const { data, error } = await supabase.from("messages").insert(msgPayload).select("*").single();
+  const { data, error } = await supabase.from("chat_messages_v2").insert(msgPayload).select("*").single();
   if (error) throw error;
   return data;
 }
