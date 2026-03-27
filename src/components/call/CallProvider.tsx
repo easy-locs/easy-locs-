@@ -117,6 +117,20 @@ export function CallProvider({ children }: { children: ReactNode }) {
     return "";
   }, [user?.id]);
 
+  // Resolve orbit ID for realtime filter
+  const [myOrbitId, setMyOrbitId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!user?.id) return;
+    (supabase as any)
+      .from("orbit_profiles_v2")
+      .select("orbit_id")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }: any) => {
+        if (data?.orbit_id) setMyOrbitId(data.orbit_id);
+      });
+  }, [user?.id]);
+
   useEffect(() => {
     if (!user) return;
 
@@ -126,96 +140,84 @@ export function CallProvider({ children }: { children: ReactNode }) {
       channelRef.current = null;
     }
 
+    // Listen on BOTH auth user ID and orbit ID to catch calls from both paths
+    const receiverIds = [user.id, ...(myOrbitId && myOrbitId !== user.id ? [myOrbitId] : [])];
+
     console.log("[CallProvider] incoming listener setup", {
       userId: user.id,
-      receiverIds: [user.id],
+      receiverIds,
     });
     debugLog.info("realtime", "call.subscription.setup", "Creating incoming call subscription", {
       userId: user.id,
-      filter: `receiver_orbit_id=eq.${user.id}`,
+      receiverIds,
     });
 
-    const channel = supabase
-      .channel(`incoming-calls-${user.id}-${Date.now()}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "call_logs",
-          filter: `receiver_orbit_id=eq.${user.id}`,
-        },
-        async (payload) => {
-          try {
-            const call = payload.new as any;
-            console.log("[CallProvider] realtime INSERT received", { callId: call?.id, status: call?.status, receiver: call?.receiver_orbit_id });
-            debugLog.success("call", "call.signal.received", `INSERT ${call?.id || "unknown"}`, call);
-            if (!call || call.status !== "ringing") return;
-            if (call.caller_orbit_id === user.id) return; // skip self
+    const handleInsert = async (payload: any) => {
+      try {
+        const call = payload.new as any;
+        console.log("[CallProvider] realtime INSERT received", { callId: call?.id, status: call?.status, receiver: call?.receiver_orbit_id });
+        debugLog.success("call", "call.signal.received", `INSERT ${call?.id || "unknown"}`, call);
+        if (!call || call.status !== "ringing") return;
+        if (call.caller_orbit_id === user.id || call.caller_orbit_id === myOrbitId) return; // skip self
 
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("name, email")
-              .eq("id", call.caller_orbit_id)
-              .single();
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("name, email")
+          .eq("id", call.caller_orbit_id)
+          .single();
 
-            setIncomingCallId(call.id);
-            setIncomingCallerName(profile?.name || profile?.email || "User");
-            setIncomingContextLabel("");
-            setIncomingIsVideo(call.call_type === "video");
-            setIncomingOrgId(call.receiver_orbit_id || "");
-            setIncomingThreadId(call.conversation_id || null);
-            setShowIncoming(true);
+        setIncomingCallId(call.id);
+        setIncomingCallerName(profile?.name || profile?.email || "User");
+        setIncomingContextLabel("");
+        setIncomingIsVideo(call.call_type === "video");
+        setIncomingOrgId(call.receiver_orbit_id || "");
+        setIncomingThreadId(call.conversation_id || null);
+        setShowIncoming(true);
 
-            console.log("[CallProvider] incoming popup SHOWN", { callId: call.id });
-          } catch (err) {
-            console.error("[CallProvider] incoming handler error:", err);
-          }
+        console.log("[CallProvider] incoming popup SHOWN", { callId: call.id });
+      } catch (err) {
+        console.error("[CallProvider] incoming handler error:", err);
+      }
+    };
+
+    const handleUpdate = (payload: any) => {
+      try {
+        console.log("[CallProvider] realtime UPDATE received", payload.new);
+        const call = payload.new as any;
+        debugLog.info("call", "call.signal.updated", `UPDATE ${call?.id || "unknown"}`, call);
+        if (call && call.status !== "ringing" && call.id === incomingCallIdRef.current) {
+          setShowIncoming(false);
+          setIncomingCallId(null);
         }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "call_logs",
-          filter: `receiver_orbit_id=eq.${user.id}`,
-        },
-        (payload) => {
-          try {
-            console.log("[CallProvider] realtime UPDATE received", payload.new);
-            const call = payload.new as any;
-            debugLog.info("call", "call.signal.updated", `UPDATE ${call?.id || "unknown"}`, call);
-            if (call && call.status !== "ringing" && call.id === incomingCallIdRef.current) {
-              setShowIncoming(false);
-              setIncomingCallId(null);
-            }
-          } catch (err) {
-            console.error("[CallProvider] update handler error:", err);
-          }
-        }
-      )
-      .subscribe((status, err) => {
-        if (status === "SUBSCRIBED") {
-          console.log("[CallProvider] realtime subscription active");
-          debugLog.success("realtime", "call.subscription.subscribed", "CallProvider reached SUBSCRIBED", {
-            userId: user.id,
-          });
-        } else if (status === "CHANNEL_ERROR") {
-          console.warn("[CallProvider] channel error, will auto-retry on next mount");
-          debugLog.error("realtime", "call.subscription.error", err?.message || "CHANNEL_ERROR", {
-            userId: user.id,
-            err,
-          });
-        } else if (status === "TIMED_OUT") {
-          console.warn("[CallProvider] subscription timed out");
-          debugLog.warn("realtime", "call.subscription.timeout", "Subscription timed out", {
-            userId: user.id,
-          });
-        } else {
-          debugLog.info("realtime", "call.subscription.status", status, { userId: user.id, err });
-        }
-      });
+      } catch (err) {
+        console.error("[CallProvider] update handler error:", err);
+      }
+    };
+
+    // Build channel with listeners for each receiver ID
+    let channel = supabase
+      .channel(`incoming-calls-${user.id}-${Date.now()}`);
+
+    for (const rid of receiverIds) {
+      channel = channel
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "call_logs", filter: `receiver_orbit_id=eq.${rid}` }, handleInsert)
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "call_logs", filter: `receiver_orbit_id=eq.${rid}` }, handleUpdate);
+    }
+
+    channel.subscribe((status, err) => {
+      if (status === "SUBSCRIBED") {
+        console.log("[CallProvider] realtime subscription active");
+        debugLog.success("realtime", "call.subscription.subscribed", "CallProvider reached SUBSCRIBED", { userId: user.id });
+      } else if (status === "CHANNEL_ERROR") {
+        console.warn("[CallProvider] channel error, will auto-retry on next mount");
+        debugLog.error("realtime", "call.subscription.error", err?.message || "CHANNEL_ERROR", { userId: user.id, err });
+      } else if (status === "TIMED_OUT") {
+        console.warn("[CallProvider] subscription timed out");
+        debugLog.warn("realtime", "call.subscription.timeout", "Subscription timed out", { userId: user.id });
+      } else {
+        debugLog.info("realtime", "call.subscription.status", status, { userId: user.id, err });
+      }
+    });
 
     channelRef.current = channel;
 
@@ -225,7 +227,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         channelRef.current = null;
       }
     };
-  }, [user?.id]);
+  }, [user?.id, myOrbitId]);
 
   const startCall = useCallback(
     async (opts: {
