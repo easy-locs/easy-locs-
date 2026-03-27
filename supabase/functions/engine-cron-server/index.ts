@@ -1425,6 +1425,58 @@ Deno.serve(async (req) => {
     }, "standard");
 
     // ══════════════════════════════════════════════════
+    // PHASE 14: DELIVEROO DUBAI FOOD PIPELINE (CANONICAL)
+    // ══════════════════════════════════════════════════
+    await runEngine("deliveroo-food-intake-engine", async () => {
+      const result = await callFunction("deliveroo-dubai-food", { action: "full_scrape" });
+      if (result?.error) throw new Error(result.error);
+      const s = result?.stats || {};
+      return { summary: `Deliveroo intake: ${s.discovered ?? 0} found, ${s.accepted ?? 0} accepted`, rows: (s.accepted ?? 0) + (s.blocked ?? 0), rowsRead: s.discovered ?? 0, sideEffects: s.scraped ?? 0 };
+    }, "critical");
+
+    await runEngine("food-normalizer-engine", async () => {
+      const result = await callFunction("food-normalizer");
+      if (result?.error) throw new Error(result.error);
+      return { normalized: result?.normalized ?? 0 };
+    }, "critical");
+
+    await runEngine("food-menu-builder-engine", async () => {
+      const result = await callFunction("food-menu-builder");
+      if (result?.error) throw new Error(result.error);
+      return { menus_built: result?.menus_built ?? 0 };
+    }, "critical");
+
+    await runEngine("food-visual-clean-engine", async () => {
+      const result = await callFunction("food-visual-clean");
+      if (result?.error) throw new Error(result.error);
+      return { cleaned: result?.cleaned ?? 0, duplicates: result?.duplicates ?? 0 };
+    }, "priority");
+
+    await runEngine("food-visibility-gate-engine", async () => {
+      const result = await callFunction("food-visibility-gate");
+      if (result?.error) throw new Error(result.error);
+      return { live: result?.live ?? 0, search_only: result?.search_only ?? 0, coming_soon: result?.coming_soon ?? 0, hidden: result?.hidden ?? 0, blocked: result?.blocked ?? 0 };
+    }, "critical");
+
+    await runEngine("food-publish-engine", async () => {
+      const result = await callFunction("food-publish");
+      if (result?.error) throw new Error(result.error);
+      return { published: result?.published ?? 0, total: result?.total ?? 0 };
+    }, "critical");
+
+    await runEngine("food-rescrape-monitor-engine", async () => {
+      const result = await callFunction("food-rescrape-monitor");
+      if (result?.error) throw new Error(result.error);
+      return { enqueued: result?.enqueued ?? 0 };
+    }, "standard");
+
+    await runEngine("food-audit-engine", async () => {
+      const result = await callFunction("food-audit");
+      if (result?.error) throw new Error(result.error);
+      return result;
+    }, "standard");
+
+    // ══════════════════════════════════════════════════
     // MODULE HEALTH UPDATE
     // ══════════════════════════════════════════════════
     const moduleMapping: Record<string, string[]> = {
@@ -1440,6 +1492,7 @@ Deno.serve(async (req) => {
       realtime: ["backend-connectivity", "backend-reconnect"],
       chat: ["staff-sync", "call-log-cleanup"],
       payments: ["coupon-expiration", "qr-session-cleanup", "finance-reconciliation"],
+      food_pipeline: ["deliveroo-food-intake-engine", "food-normalizer-engine", "food-menu-builder-engine", "food-visual-clean-engine", "food-visibility-gate-engine", "food-publish-engine", "food-rescrape-monitor-engine", "food-audit-engine"],
     };
 
     for (const [mod, engines] of Object.entries(moduleMapping)) {
