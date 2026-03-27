@@ -489,7 +489,47 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         <OrbitCallMiniBar
           active={callActions.isInCall}
           label={thread.name || undefined}
-          onHangup={() => { /* handled by call UI */ }}
+          onHangup={() => { void callActionsV2.hangupCall(); }}
+        />
+
+        <OrbitCallPermissionBanner
+          mic={devicePermissions.permissions.microphone}
+          cam={devicePermissions.permissions.camera}
+          videoMode={callStateV2.activeCall?.mode === "video"}
+          onRequestMic={() => { void devicePermissions.requestMicrophone(); }}
+          onRequestCam={() => { void devicePermissions.requestCamera(); }}
+        />
+
+        <OrbitIncomingCallBar
+          visible={callStateV2.activeCall?.uiState === "incoming"}
+          peerName={callStateV2.activeCall?.peerName}
+          mode={callStateV2.activeCall?.mode}
+          onAccept={() => { void callActionsV2.acceptIncomingCall(); }}
+          onDecline={() => { void callActionsV2.declineIncomingCall(); }}
+        />
+
+        {callStateV2.activeCall &&
+          ["outgoing", "connecting", "active", "reconnecting"].includes(callStateV2.activeCall.uiState) && (
+            <OrbitCallControls
+              muted={callStateV2.activeCall.muted}
+              speakerOn={callStateV2.activeCall.speakerOn}
+              cameraOn={callStateV2.activeCall.cameraOn}
+              isVideo={callStateV2.activeCall.mode === "video"}
+              reconnecting={callStateV2.activeCall.uiState === "reconnecting"}
+              onToggleMute={() => { void callActionsV2.toggleMute(); }}
+              onToggleSpeaker={() => { void callActionsV2.toggleSpeaker(); }}
+              onToggleCamera={() => { void callActionsV2.toggleCamera(); }}
+              onHangup={() => { void callActionsV2.hangupCall(); }}
+            />
+          )}
+
+        <OrbitCallMiniPlayer
+          visible={!!callStateV2.activeCall && callStateV2.activeCall.uiState === "active"}
+          peerName={callStateV2.activeCall?.peerName}
+          state={callStateV2.activeCall?.uiState}
+          mode={callStateV2.activeCall?.mode}
+          muted={callStateV2.activeCall?.muted}
+          onHangup={() => { void callActionsV2.hangupCall(); }}
         />
 
         <OrbitPinnedBanner
