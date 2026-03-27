@@ -3,10 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function useAppHealthCheck() {
   const [health, setHealth] = useState({
-    db: false,
-    auth: false,
-    realtime: false,
+    db: true,
+    auth: true,
+    realtime: true,
     checkedAt: "",
+    checked: false,
   });
 
   useEffect(() => {

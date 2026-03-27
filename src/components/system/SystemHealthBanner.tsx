@@ -2,9 +2,12 @@ type Props = {
   db: boolean;
   auth: boolean;
   realtime: boolean;
+  checked?: boolean;
 };
 
-export function SystemHealthBanner({ db, auth, realtime }: Props) {
+export function SystemHealthBanner({ db, auth, realtime, checked }: Props) {
+  // Don't show banner until first health check completes
+  if (!checked) return null;
   const ok = db && auth && realtime;
   if (ok) return null;
 
