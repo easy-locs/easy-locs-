@@ -68,21 +68,18 @@ export function usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId }: 
         if (error) throw error;
         await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", thread.v2ConversationId);
       } else {
-        const paymentMsgPayload: any = {
-          org_id: orgId,
-          sender_id: authUserId,
-          tenant_id: thread.tenantId || null,
-          booking_id: thread.bookingId || null,
-          booking_type: thread.bookingType || null,
-          content: msgContent,
-          category: "payment",
-          message_type: "user",
-          read: false,
-          context_type: thread.contextType,
-          context_id: thread.contextId,
-        };
-        if (thread.threadId) paymentMsgPayload.thread_id = thread.threadId;
-        await supabase.from("messages").insert(paymentMsgPayload);
+        // V2 canonical path — write payment message to chat_messages_v2
+        const conversationId = thread.v2ConversationId || thread.contextId;
+        if (conversationId) {
+          await (supabase as any).from("chat_messages_v2").insert({
+            conversation_id: conversationId,
+            sender_user_id: authUserId,
+            sender_orbit_id: `orbit_${authUserId.slice(0, 12)}`,
+            type: "text",
+            body: msgContent,
+            metadata: { category: "payment", booking_id: thread.bookingId || null },
+          });
+        }
       }
 
       try {
