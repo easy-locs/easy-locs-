@@ -1,6 +1,9 @@
 /**
  * Cross-App Reactions — Canonical listeners for super-app integration.
  *
+ * FIXED: Now listens on COLON notation (what actual emitters use)
+ * instead of DOT notation (which real UI code never emits).
+ *
  * Wallet → Orbit (payment confirmation in chat)
  * Booking → Orbit (booking created system message)
  * Radar → Orbit (location shared message)
@@ -8,7 +11,7 @@
  * All critical events → Dashboard refresh + Notification
  */
 import { platformBus } from "@/lib/shared/platform-bus";
-import { PLATFORM_EVENTS_V2 } from "@/lib/shared/platform-events-v2";
+import { APP_EVENTS } from "@/lib/platform/events";
 import { supabase } from "@/integrations/supabase/client";
 import { createAppNotification } from "@/lib/notifications/app-notification-service";
 
@@ -21,78 +24,85 @@ export function installCrossAppReactions(): () => void {
   const unsubs: (() => void)[] = [];
 
   // ── Wallet payment completed → inject system message in Orbit chat ──
+  // Listens on BOTH notations to catch events from any source
+  const handleWalletPayment = async (event: any) => {
+    const p = event.payload as any;
+    if (!p?.conversationId) return;
+
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    try {
+      await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: p.conversationId,
+        sender_user_id: user.id,
+        sender_orbit_id: p.senderOrbitId ?? null,
+        type: "system",
+        body: `💰 Payment received · ${p.amount ?? "?"} ${p.currency ?? ""}`.trim(),
+        metadata: { payment_id: p.paymentId, source: "wallet" },
+      });
+
+      await createAppNotification({
+        userId: user.id,
+        scope: "wallet",
+        title: "Payment completed",
+        body: `${p.amount ?? ""} ${p.currency ?? ""}`.trim(),
+        route: "/wallet",
+        severity: "success",
+      });
+    } catch (e) {
+      console.error("[cross-app] wallet→orbit message failed", e);
+    }
+
+    platformBus.emit("dashboard:refresh" as any, { source: "wallet" }, "wallet");
+  };
+
   unsubs.push(
-    platformBus.on(PLATFORM_EVENTS_V2.WALLET_PAYMENT_COMPLETED, async (event) => {
-      const p = event.payload as any;
-      if (!p?.conversationId) return;
-
-      const user = await getCurrentUser();
-      if (!user) return;
-
-      try {
-        await (supabase as any).from("chat_messages_v2").insert({
-          conversation_id: p.conversationId,
-          sender_user_id: user.id,
-          sender_orbit_id: p.senderOrbitId ?? null,
-          type: "system",
-          body: `💰 Payment received · ${p.amount ?? "?"} ${p.currency ?? ""}`.trim(),
-          metadata: { payment_id: p.paymentId, source: "wallet" },
-        });
-
-        await createAppNotification({
-          userId: user.id,
-          scope: "wallet",
-          title: "Payment completed",
-          body: `${p.amount ?? ""} ${p.currency ?? ""}`.trim(),
-          route: "/wallet",
-          severity: "success",
-        });
-      } catch (e) {
-        console.error("[cross-app] wallet→orbit message failed", e);
-      }
-
-      platformBus.emit(PLATFORM_EVENTS_V2.DASHBOARD_REFRESH, { source: "wallet" }, "wallet");
-    })
+    platformBus.on("wallet:payment_completed", handleWalletPayment),
+    platformBus.on("wallet.payment.completed" as any, handleWalletPayment),
   );
 
   // ── Booking created → inject system message in Orbit chat ──
+  const handleBookingCreated = async (event: any) => {
+    const p = event.payload as any;
+    if (!p?.conversationId) return;
+
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    try {
+      await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: p.conversationId,
+        sender_user_id: user.id,
+        sender_orbit_id: p.senderOrbitId ?? null,
+        type: "system",
+        body: `📘 Booking created · ${p.reference ?? p.bookingId ?? ""}`,
+        metadata: { booking_id: p.bookingId, source: "booking" },
+      });
+
+      await createAppNotification({
+        userId: user.id,
+        scope: "booking",
+        title: "Booking created",
+        body: p.reference ?? "New booking",
+        route: "/travel",
+        severity: "info",
+      });
+    } catch (e) {
+      console.error("[cross-app] booking→orbit message failed", e);
+    }
+
+    platformBus.emit("dashboard:refresh" as any, { source: "booking" }, "system");
+  };
+
   unsubs.push(
-    platformBus.on(PLATFORM_EVENTS_V2.BOOKING_CREATED, async (event) => {
-      const p = event.payload as any;
-      if (!p?.conversationId) return;
-
-      const user = await getCurrentUser();
-      if (!user) return;
-
-      try {
-        await (supabase as any).from("chat_messages_v2").insert({
-          conversation_id: p.conversationId,
-          sender_user_id: user.id,
-          sender_orbit_id: p.senderOrbitId ?? null,
-          type: "system",
-          body: `📘 Booking created · ${p.reference ?? p.bookingId ?? ""}`,
-          metadata: { booking_id: p.bookingId, source: "booking" },
-        });
-
-        await createAppNotification({
-          userId: user.id,
-          scope: "booking",
-          title: "Booking created",
-          body: p.reference ?? "New booking",
-          route: "/travel",
-          severity: "info",
-        });
-      } catch (e) {
-        console.error("[cross-app] booking→orbit message failed", e);
-      }
-
-      platformBus.emit(PLATFORM_EVENTS_V2.DASHBOARD_REFRESH, { source: "booking" }, "system");
-    })
+    platformBus.on("marketplace:booking_created", handleBookingCreated),
+    platformBus.on("booking.created" as any, handleBookingCreated),
   );
 
   // ── Radar location shared → inject location message in Orbit chat ──
   unsubs.push(
-    platformBus.on(PLATFORM_EVENTS_V2.RADAR_LOCATION_SHARED, async (event) => {
+    platformBus.on("radar:location_shared" as any, async (event) => {
       const p = event.payload as any;
       if (!p?.conversationId) return;
 
@@ -116,9 +126,9 @@ export function installCrossAppReactions(): () => void {
 
   // ── Marketplace contact opened → notify + dashboard refresh ──
   unsubs.push(
-    platformBus.on(PLATFORM_EVENTS_V2.MARKETPLACE_CONTACT_OPENED, async (event) => {
+    platformBus.on("marketplace:listing_published", async (event) => {
       const p = event.payload as any;
-      platformBus.emit(PLATFORM_EVENTS_V2.DASHBOARD_REFRESH, { source: "marketplace" }, "marketplace");
+      platformBus.emit("dashboard:refresh" as any, { source: "marketplace" }, "marketplace");
 
       const user = await getCurrentUser();
       if (!user || !p?.merchantId) return;
@@ -142,9 +152,9 @@ export function installCrossAppReactions(): () => void {
 
   // ── Booking confirmed → notification + dashboard ──
   unsubs.push(
-    platformBus.on(PLATFORM_EVENTS_V2.BOOKING_CONFIRMED, async (event) => {
+    platformBus.on("marketplace:booking_confirmed", async (event) => {
       const p = event.payload as any;
-      platformBus.emit(PLATFORM_EVENTS_V2.DASHBOARD_REFRESH, { source: "booking" }, "system");
+      platformBus.emit("dashboard:refresh" as any, { source: "booking" }, "system");
 
       const user = await getCurrentUser();
       if (!user) return;
@@ -166,15 +176,15 @@ export function installCrossAppReactions(): () => void {
 
   // ── Orbit message sent → dashboard refresh ──
   unsubs.push(
-    platformBus.on(PLATFORM_EVENTS_V2.ORBIT_MESSAGE_SENT, () => {
-      platformBus.emit(PLATFORM_EVENTS_V2.DASHBOARD_REFRESH, { source: "orbit" }, "orbit");
+    platformBus.on(APP_EVENTS.ORBIT_MESSAGE_SENT, () => {
+      platformBus.emit("dashboard:refresh" as any, { source: "orbit" }, "orbit");
     })
   );
 
   // ── Orbit call ended → dashboard refresh ──
   unsubs.push(
-    platformBus.on(PLATFORM_EVENTS_V2.ORBIT_CALL_ENDED, () => {
-      platformBus.emit(PLATFORM_EVENTS_V2.DASHBOARD_REFRESH, { source: "orbit" }, "orbit");
+    platformBus.on(APP_EVENTS.ORBIT_CALL_ENDED, () => {
+      platformBus.emit("dashboard:refresh" as any, { source: "orbit" }, "orbit");
     })
   );
 
