@@ -3,10 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function useAppHealthCheck() {
   const [health, setHealth] = useState({
-    db: false,
-    auth: false,
-    realtime: false,
+    db: true,
+    auth: true,
+    realtime: true,
     checkedAt: "",
+    checked: false,
   });
 
   useEffect(() => {
@@ -83,7 +84,7 @@ export function useAppHealthCheck() {
         console.error("[RT_TEST] exception:", e?.message || e);
       }
 
-      if (mounted) setHealth(next);
+      if (mounted) setHealth({ ...next, checked: true });
     }
 
     void run();
