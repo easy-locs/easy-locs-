@@ -37,9 +37,9 @@ const SORT_MODES: { key: SortMode; label: string }[] = [
 ];
 
 type SheetSnap = "collapsed" | "half" | "full";
-const SHEET_COLLAPSED = 140;
-const SHEET_HALF_RATIO = 0.48;
-const SHEET_FULL_RATIO = 0.88;
+const SHEET_COLLAPSED = 120;
+const SHEET_HALF_RATIO = 0.75;
+const SHEET_FULL_RATIO = 0.92;
 
 export default function RadarPage() {
   useRadarGeo();
@@ -137,27 +137,12 @@ export default function RadarPage() {
           </div>
         }>
           <UnifiedMap
-            entities={filtered.map((p) => ({
-              id: p.id,
-              type: (p.category === "food" ? "restaurant" : p.category === "shops" ? "shop" : p.category === "grocery" ? "grocery" : p.category === "property" ? "property" : "service") as any,
-              name: p.title,
-              title: p.title,
-              subtitle: p.subtitle || undefined,
-              lat: p.lat,
-              lng: p.lng,
-              imageUrl: p.imageUrl,
-              image_url: p.imageUrl,
-              slug: p.slug || undefined,
-            }))}
-            onSelectEntity={(entity) => {
-              ultraHaptic("light");
-              const slug = (entity as any).slug;
-              navigate(slug ? `/s/${slug}` : `/s/${entity.id}`);
-            }}
+            entities={[]}
+            onSelectEntity={() => {}}
             userLat={userLocation?.lat}
             userLng={userLocation?.lng}
             showUserLocation={!!userLocation}
-            zoom={13}
+            zoom={14}
             showHeatmap={false}
             showWeatherLayer={showWeatherLayer}
           />
@@ -177,11 +162,10 @@ export default function RadarPage() {
           <motion.button
             whileTap={{ scale: 0.88 }}
             onClick={() => navigate("/")}
-            className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-lg"
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
             style={{
-              background: "hsl(var(--card) / 0.85)",
-              backdropFilter: "blur(20px) saturate(1.6)",
-              border: "1px solid hsl(var(--border) / 0.15)",
+              background: "hsl(var(--background) / 0.3)",
+              backdropFilter: "blur(24px) saturate(1.8)",
             }}
           >
             <ArrowLeft className="w-[18px] h-[18px]" style={{ color: "hsl(var(--foreground))" }} />
@@ -190,11 +174,11 @@ export default function RadarPage() {
           {/* Search bar */}
           <motion.div
             layout
-            className="flex-1 flex items-center gap-2 h-10 rounded-2xl px-3 shadow-lg"
+            className="flex-1 flex items-center gap-2 h-11 rounded-full px-4"
             style={{
-              background: "hsl(var(--card) / 0.85)",
-              backdropFilter: "blur(20px) saturate(1.6)",
-              border: searchFocused ? "1px solid hsl(var(--primary) / 0.4)" : "1px solid hsl(var(--border) / 0.15)",
+              background: "hsl(var(--background) / 0.25)",
+              backdropFilter: "blur(24px) saturate(1.8)",
+              border: searchFocused ? "1px solid hsl(var(--primary) / 0.5)" : "1px solid hsl(var(--foreground) / 0.08)",
             }}
           >
             <Search className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }} />
@@ -224,11 +208,10 @@ export default function RadarPage() {
           <motion.button
             whileTap={{ scale: 0.88 }}
             onClick={handleLocate}
-            className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-lg"
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
             style={{
-              background: "hsl(var(--card) / 0.85)",
-              backdropFilter: "blur(20px) saturate(1.6)",
-              border: "1px solid hsl(var(--border) / 0.15)",
+              background: "hsl(var(--background) / 0.3)",
+              backdropFilter: "blur(24px) saturate(1.8)",
             }}
           >
             {geoLoading ? (
