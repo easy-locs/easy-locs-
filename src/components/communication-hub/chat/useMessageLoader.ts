@@ -2,20 +2,49 @@
  * useMessageLoader — V2-ONLY canonical message loader.
  * Reads from chat_messages_v2 exclusively. No legacy path.
  */
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { ConversationThread, ChatMessage } from "../types";
 
 const db = supabase as any;
 
-interface UseMessageLoaderOptions {
-  thread: ConversationThread | null;
-  orgId: string | null;
-  userId: string | undefined;
-  readReceipts: boolean;
-  onThreadUpdate: (threadId: string, updates: Partial<ConversationThread>) => void;
-  offline: { isOnline: boolean; getCachedMessages: () => Promise<any[]>; getThreadPending: () => Promise<any[]>; cacheMessages: (msgs: any[]) => void };
-}
+type ThreadLike = {
+  id: string;
+  v2ConversationId?: string | null;
+};
+
+type ChatMessage = {
+  id: string;
+  sender_id: string | null;
+  content: string;
+  created_at: string;
+  read: boolean;
+  category?: string;
+  tenant_id?: string | null;
+  translated_content?: string | null;
+  translated_locale?: string | null;
+  language_detected?: string | null;
+  message_type: string;
+  context_type?: string | null;
+  context_id?: string | null;
+  pending?: boolean;
+  failed?: boolean;
+  reply_to_message_id?: string | null;
+  metadata?: Record<string, unknown> | null;
+};
+
+type UseMessageLoaderOptions = {
+  thread: ThreadLike | null;
+  orgId?: string | null;
+  userId?: string | null;
+  readReceipts?: boolean;
+  onThreadUpdate: (threadId: string, updates: Record<string, unknown>) => void;
+  offline: {
+    isOnline: boolean;
+    getCachedMessages: () => Promise<any[]>;
+    getThreadPending: () => Promise<any[]>;
+    cacheMessages: (msgs: any[]) => void;
+  };
+};
 
 function mapV2ToChat(m: any, conversationId: string): ChatMessage {
   return {
@@ -24,138 +53,218 @@ function mapV2ToChat(m: any, conversationId: string): ChatMessage {
     content: m.body,
     created_at: m.created_at,
     read: !!m.read_at,
-    category: "general",
+    category: (m.metadata?.category as string) || "general",
     tenant_id: null,
     translated_content: null,
     translated_locale: null,
     language_detected: null,
-    message_type: m.type || "user",
+    message_type: m.type || "text",
     context_type: "direct",
     context_id: conversationId,
-  } as any;
+    pending: false,
+    failed: !!m.failed_at,
+    reply_to_message_id: m.reply_to_message_id ?? null,
+    metadata: m.metadata ?? {},
+  };
 }
 
-export function useMessageLoader({ thread, orgId, userId, readReceipts, onThreadUpdate, offline }: UseMessageLoaderOptions) {
+export function useMessageLoader({
+  thread,
+  userId,
+  readReceipts,
+  onThreadUpdate,
+  offline,
+}: UseMessageLoaderOptions) {
   const [rawMessages, setRawMessages] = useState<ChatMessage[]>([]);
   const [pendingOffline, setPendingOffline] = useState<any[]>([]);
   const [convStatus, setConvStatus] = useState("active");
   const [typingIndicator, setTypingIndicator] = useState(false);
+
   const typingChannelRef = useRef<any>(null);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingTimeoutRef = useRef<any>(null);
 
   const loadMessages = useCallback(async () => {
-    if (!thread) return;
+    if (!thread?.v2ConversationId) {
+      setRawMessages([]);
+      setPendingOffline([]);
+      return;
+    }
 
     const conversationId = thread.v2ConversationId;
-    if (!conversationId) {
-      setRawMessages([]);
-      return;
-    }
 
-    // Offline cache
     if (!offline.isOnline) {
       const cached = await offline.getCachedMessages();
-      if (cached.length > 0) setRawMessages(cached as ChatMessage[]);
       const pending = await offline.getThreadPending();
-      setPendingOffline(pending);
+      setRawMessages((cached ?? []) as ChatMessage[]);
+      setPendingOffline(pending ?? []);
       return;
     }
 
-    const { data } = await db
+    const { data, error } = await db
       .from("chat_messages_v2")
       .select("*")
       .eq("conversation_id", conversationId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: true })
-      .limit(200);
+      .limit(300);
 
-    if (data) {
-      const mapped = data.map((m: any) => mapV2ToChat(m, conversationId));
-      setRawMessages(mapped);
-      offline.cacheMessages(mapped);
-
-      // Mark unread messages as read
-      if (readReceipts) {
-        const unreadIds = data
-          .filter((m: any) => !m.read_at && m.sender_user_id !== userId)
-          .map((m: any) => m.id);
-        if (unreadIds.length > 0) {
-          await db
-            .from("chat_messages_v2")
-            .update({ read_at: new Date().toISOString() })
-            .in("id", unreadIds);
-          onThreadUpdate(thread.id, { unreadCount: 0 });
-        }
-      }
+    if (error) {
+      return;
     }
+
+    const mapped = (data ?? []).map((m: any) => mapV2ToChat(m, conversationId));
+    setRawMessages(mapped);
+    offline.cacheMessages(mapped);
+
+    const unreadIds = (data ?? [])
+      .filter((m: any) => !m.read_at && m.sender_user_id !== userId)
+      .map((m: any) => m.id);
+
+    if (readReceipts && unreadIds.length > 0) {
+      await db
+        .from("chat_messages_v2")
+        .update({ read_at: new Date().toISOString() })
+        .in("id", unreadIds);
+
+      onThreadUpdate(thread.id, { unreadCount: 0 });
+    }
+
     setPendingOffline([]);
-  }, [thread, userId, onThreadUpdate, offline, readReceipts, orgId]);
+  }, [thread, userId, readReceipts, onThreadUpdate, offline]);
 
-  useEffect(() => { loadMessages(); }, [loadMessages]);
-  useEffect(() => { if (offline.isOnline) loadMessages(); }, [offline.isOnline]);
-
-  // Realtime subscription — V2 only
   useEffect(() => {
-    if (!thread) return;
-    const conversationId = thread.v2ConversationId;
-    if (!conversationId) return;
+    void loadMessages();
+  }, [loadMessages]);
 
-    const v2Channel = supabase
+  useEffect(() => {
+    if (offline.isOnline) {
+      void loadMessages();
+    }
+  }, [offline.isOnline, loadMessages]);
+
+  useEffect(() => {
+    if (!thread?.v2ConversationId) return;
+
+    const conversationId = thread.v2ConversationId;
+
+    const channel = supabase
       .channel(`rt:v2:${conversationId}`)
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "chat_messages_v2",
-        filter: `conversation_id=eq.${conversationId}`,
-      }, (payload) => {
-        const msg = payload.new as any;
-        if (!msg?.id) return;
-        const mapped = mapV2ToChat(msg, conversationId);
-        setRawMessages(prev => prev.some(m => m.id === mapped.id) ? prev : [...prev, mapped]);
-        if (msg.sender_user_id !== userId && !msg.read_at && readReceipts) {
-          db.from("chat_messages_v2").update({ read_at: new Date().toISOString() }).eq("id", msg.id);
-          onThreadUpdate(thread.id, { unreadCount: 0 });
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages_v2",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        async (payload) => {
+          const msg = payload.new as any;
+          if (!msg?.id) return;
+
+          const mapped = mapV2ToChat(msg, conversationId);
+
+          setRawMessages((prev) => {
+            if (prev.some((m) => m.id === mapped.id)) return prev;
+            return [...prev, mapped];
+          });
+
+          if (msg.sender_user_id !== userId && !msg.read_at && readReceipts) {
+            await db
+              .from("chat_messages_v2")
+              .update({ read_at: new Date().toISOString() })
+              .eq("id", msg.id);
+
+            onThreadUpdate(thread.id, { unreadCount: 0 });
+          }
+
+          onThreadUpdate(thread.id, {
+            lastMessageTime: msg.created_at,
+            lastMessagePreview: msg.body?.slice?.(0, 120) ?? "",
+          });
         }
-      })
-      .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "chat_messages_v2",
-        filter: `conversation_id=eq.${conversationId}`,
-      }, (payload) => {
-        const msg = payload.new as any;
-        if (!msg?.id) return;
-        setRawMessages(prev => prev.map(m => m.id === msg.id ? { ...m, content: msg.body, read: !!msg.read_at } : m));
-      })
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "chat_messages_v2",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const msg = payload.new as any;
+          if (!msg?.id) return;
+
+          setRawMessages((prev) =>
+            prev
+              .filter((m) => !(msg.deleted_at && m.id === msg.id))
+              .map((m) =>
+                m.id === msg.id
+                  ? {
+                      ...m,
+                      content: msg.body,
+                      read: !!msg.read_at,
+                      failed: !!msg.failed_at,
+                      reply_to_message_id: msg.reply_to_message_id ?? null,
+                      metadata: msg.metadata ?? {},
+                    }
+                  : m
+              )
+          );
+        }
+      )
       .subscribe();
 
-    // Typing presence
-    const typChannel = supabase.channel(`rt:typing:v2:${conversationId}`);
-    typChannel
+    const typingChannel = supabase.channel(`rt:typing:v2:${conversationId}`);
+
+    typingChannel
       .on("presence", { event: "sync" }, () => {
-        const state = typChannel.presenceState();
-        const others = Object.values(state).flat().filter((p: any) => p.user_id !== userId);
+        const state = typingChannel.presenceState();
+        const others = Object.values(state)
+          .flat()
+          .filter((p: any) => p.user_id !== userId);
         setTypingIndicator(others.length > 0);
       })
       .subscribe();
-    typingChannelRef.current = typChannel;
+
+    typingChannelRef.current = typingChannel;
 
     return () => {
-      typingChannelRef.current = null;
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      supabase.removeChannel(v2Channel);
-      supabase.removeChannel(typChannel);
+      typingChannelRef.current = null;
+      supabase.removeChannel(channel);
+      supabase.removeChannel(typingChannel);
     };
   }, [thread, userId, readReceipts, onThreadUpdate]);
 
-  const broadcastTyping = useCallback((typingIndicatorsEnabled: boolean) => {
-    if (!typingIndicatorsEnabled || !typingChannelRef.current) return;
-    typingChannelRef.current.track({ user_id: userId, typing: true, ts: Date.now() }).catch(() => {});
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      typingChannelRef.current?.untrack().catch(() => {});
-    }, 3000);
-  }, [userId]);
+  const broadcastTyping = useCallback(
+    (typingEnabled: boolean) => {
+      if (!typingEnabled || !typingChannelRef.current || !userId) return;
+
+      typingChannelRef.current
+        .track({
+          user_id: userId,
+          typing: true,
+          ts: Date.now(),
+        })
+        .catch(() => {});
+
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+      typingTimeoutRef.current = setTimeout(() => {
+        typingChannelRef.current?.untrack?.().catch?.(() => {});
+      }, 2500);
+    },
+    [userId]
+  );
 
   return {
-    rawMessages, setRawMessages,
-    pendingOffline, setPendingOffline,
-    convStatus, setConvStatus,
+    rawMessages,
+    setRawMessages,
+    pendingOffline,
+    setPendingOffline,
+    convStatus,
+    setConvStatus,
     typingIndicator,
     broadcastTyping,
     loadMessages,
