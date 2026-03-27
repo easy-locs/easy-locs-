@@ -59,5 +59,22 @@
   "send_attachments": "Send attachments",
   "attachment_send_failed": "Attachment send failed",
   "remove": "Remove",
-  "download": "Download"
+  "download": "Download",
+  "notifications": "Notifications",
+  "unread": "unread",
+  "read": "Read",
+  "dismiss": "Dismiss",
+  "no_notifications": "No notifications",
+  "contacts": "Contacts",
+  "search_contacts": "Search contacts",
+  "add_contact": "Add contact",
+  "favorite": "Favorite",
+  "unfavorite": "Unfavorite",
+  "block": "Block",
+  "unblock": "Unblock",
+  "privacy_safety": "Privacy & Safety",
+  "read_receipts": "Read receipts",
+  "typing_indicators": "Typing indicators",
+  "ghost_mode": "Ghost mode",
+  "disappearing_messages": "Disappearing messages"
 }
