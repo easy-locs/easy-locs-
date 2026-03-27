@@ -82,5 +82,11 @@
   "delete_contact": "Supprimer",
   "no_contacts_yet": "Aucun contact",
   "new_orbit_invite": "Nouvelle invitation Orbit",
-  "invite_sent": "Invitation envoyée"
+  "invite_sent": "Invitation envoyée",
+  "calls": "Appels",
+  "camera_uploads": "Envoi caméra",
+  "location_sharing": "Partage de position",
+  "default_disappearing_messages": "Messages éphémères par défaut",
+  "last_seen_visibility": "Visibilité dernière connexion",
+  "profile_photo_visibility": "Visibilité photo de profil"
 }
