@@ -83,14 +83,16 @@ export default function CanonicalMapTestPage() {
         </Link>
 
         <div className="flex items-center gap-2 pointer-events-auto">
-          {/* Compact weather indicator */}
+          {/* Compact weather indicator — dissociated from rain radar */}
           <div className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/[0.06] bg-black/60 backdrop-blur-xl px-2.5 shadow-lg">
             {weather.isRaining ? (
               <CloudRain className="h-3.5 w-3.5 text-blue-400/80" />
             ) : (
               <CloudSun className="h-3.5 w-3.5 text-amber-400/60" />
             )}
-            <span className="text-[10px] font-medium text-white/50">{weather.label}</span>
+            <span className="text-[10px] font-medium text-white/50">
+              {weather.temperatureC != null ? `${Math.round(weather.temperatureC)}°` : ""}
+            </span>
           </div>
 
           <button
