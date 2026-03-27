@@ -1,14 +1,10 @@
 /**
- * useCanonicalNotificationsBridge — Thin wrapper around useNotificationBellSync.
- * useNotificationBellSync already listens to ORBIT_MESSAGE_SENT, WALLET_PAYMENT_SUCCESS,
- * and NOTIFICATIONS_REFRESH via platformBus. No duplicate listeners needed here.
+ * useCanonicalNotificationsBridge — reads from notificationV2Store.
+ * No duplicate realtime channels or platformBus listeners.
  */
-import { useNotificationBellSync } from "@/hooks/useNotificationBellSync";
+import { useNotificationV2Store } from "@/stores/notificationV2Store";
 
 export function useCanonicalNotificationsBridge() {
-  const { refreshNotifications, notificationCount } = useNotificationBellSync();
-
-  return {
-    canonicalNotificationCount: notificationCount,
-  };
+  const unreadCount = useNotificationV2Store((s) => s.unreadCount);
+  return { canonicalNotificationCount: unreadCount };
 }
