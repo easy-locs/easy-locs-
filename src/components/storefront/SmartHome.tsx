@@ -211,7 +211,7 @@ export default function SmartHome() {
     }
   }, [sections]);
 
-  const city = useMemo(() => {
+  const [city, setCity] = useState<string | null>(() => {
     try {
       const raw = localStorage.getItem("orbit:last-geo");
       if (raw) {
@@ -219,7 +219,13 @@ export default function SmartHome() {
         if (parsed.city) return parsed.city;
       }
     } catch {}
+    return null;
+  });
+
+  useEffect(() => {
+    if (city) return;
     if (currentLocation && !isFallback) {
+      setCity("Dubai"); // immediate fallback
       import("@/lib/mapbox/geocoding").then(({ reverseGeocode }) => {
         reverseGeocode(currentLocation.lat, currentLocation.lng).then(res => {
           const place = res?.features?.[0];
@@ -227,15 +233,14 @@ export default function SmartHome() {
             const cityCtx = place.context?.find((c: any) => c.id?.startsWith("place"));
             const cityName = cityCtx?.text || place.text;
             if (cityName) {
+              setCity(cityName);
               try { localStorage.setItem("orbit:last-geo", JSON.stringify({ city: cityName, country: "AE" })); } catch {}
             }
           }
         }).catch(() => {});
       });
-      return "Dubai";
     }
-    return null;
-  }, [currentLocation, isFallback]);
+  }, [currentLocation, isFallback, city]);
 
   const timezone = useMemo(() => {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return undefined; }
