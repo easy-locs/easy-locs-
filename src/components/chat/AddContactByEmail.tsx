@@ -94,11 +94,17 @@ export function AddContactByEmail(props: {
         email: result.email || null,
         contact_user_id: result.id,
         category: "friend",
-      } as any);
+      });
 
       if (insertErr) {
-        console.error("[AddContactByEmail] insert error", insertErr);
-        setError("Impossible d'ajouter le contact");
+        console.error("[AddContactByEmail] insert error", insertErr.message, insertErr.details, insertErr.code);
+        // If it's a duplicate key error, treat as success
+        if (insertErr.code === "23505") {
+          toast.info("Ce contact existe déjà");
+          setSaved(true);
+          return;
+        }
+        setError(`Impossible d'ajouter le contact: ${insertErr.message}`);
         return;
       }
 
