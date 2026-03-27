@@ -851,6 +851,63 @@ export type Database = {
           },
         ]
       }
+      app_notifications: {
+        Row: {
+          body: string | null
+          category: string
+          created_at: string
+          dismissed_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          icon: string | null
+          id: string
+          metadata: Json
+          read_at: string | null
+          route: string | null
+          scope: string
+          severity: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          category?: string
+          created_at?: string
+          dismissed_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          icon?: string | null
+          id?: string
+          metadata?: Json
+          read_at?: string | null
+          route?: string | null
+          scope?: string
+          severity?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          category?: string
+          created_at?: string
+          dismissed_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          icon?: string | null
+          id?: string
+          metadata?: Json
+          read_at?: string | null
+          route?: string | null
+          scope?: string
+          severity?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       approval_actions: {
         Row: {
           action_type: string
@@ -2560,8 +2617,12 @@ export type Database = {
           current_issue: string | null
           current_status: string | null
           id: string
+          last_run_id: string | null
           last_seen_ok_at: string | null
+          metadata: Json
           page_key: string
+          route_group: string | null
+          severity: string | null
           updated_at: string | null
         }
         Insert: {
@@ -2569,8 +2630,12 @@ export type Database = {
           current_issue?: string | null
           current_status?: string | null
           id?: string
+          last_run_id?: string | null
           last_seen_ok_at?: string | null
+          metadata?: Json
           page_key: string
+          route_group?: string | null
+          severity?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -2578,8 +2643,12 @@ export type Database = {
           current_issue?: string | null
           current_status?: string | null
           id?: string
+          last_run_id?: string | null
           last_seen_ok_at?: string | null
+          metadata?: Json
           page_key?: string
+          route_group?: string | null
+          severity?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -15259,6 +15328,57 @@ export type Database = {
           },
         ]
       }
+      orbit_contacts_v2: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          is_blocked: boolean
+          is_favorite: boolean
+          metadata: Json
+          owner_user_id: string
+          peer_orbit_id: string | null
+          peer_user_id: string | null
+          phone: string | null
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          is_blocked?: boolean
+          is_favorite?: boolean
+          metadata?: Json
+          owner_user_id: string
+          peer_orbit_id?: string | null
+          peer_user_id?: string | null
+          phone?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          is_blocked?: boolean
+          is_favorite?: boolean
+          metadata?: Json
+          owner_user_id?: string
+          peer_orbit_id?: string | null
+          peer_user_id?: string | null
+          phone?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orbit_device_keys: {
         Row: {
           created_at: string | null
@@ -15503,6 +15623,54 @@ export type Database = {
           screen?: string
           session_id?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      orbit_user_settings_v2: {
+        Row: {
+          calls_enabled: boolean
+          camera_uploads_enabled: boolean
+          created_at: string
+          disappear_default_seconds: number
+          ghost_mode_enabled: boolean
+          last_seen_visibility: string
+          location_sharing_enabled: boolean
+          metadata: Json
+          profile_photo_visibility: string
+          read_receipts: boolean
+          typing_indicators: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calls_enabled?: boolean
+          camera_uploads_enabled?: boolean
+          created_at?: string
+          disappear_default_seconds?: number
+          ghost_mode_enabled?: boolean
+          last_seen_visibility?: string
+          location_sharing_enabled?: boolean
+          metadata?: Json
+          profile_photo_visibility?: string
+          read_receipts?: boolean
+          typing_indicators?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calls_enabled?: boolean
+          camera_uploads_enabled?: boolean
+          created_at?: string
+          disappear_default_seconds?: number
+          ghost_mode_enabled?: boolean
+          last_seen_visibility?: string
+          location_sharing_enabled?: boolean
+          metadata?: Json
+          profile_photo_visibility?: string
+          read_receipts?: boolean
+          typing_indicators?: boolean
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
