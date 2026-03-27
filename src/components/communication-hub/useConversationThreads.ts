@@ -262,24 +262,24 @@ export function useConversationThreads() {
         console.warn("[comm-threads] guest_sessions query failed:", e);
       }
 
-      // ── 7. Conversation threads table (direct, listing, business, team) ──
+      // ── 7. Conversation threads table (non-direct: listing, business, team) ──
+      // Direct conversations are handled exclusively in section 11 below to avoid duplicates.
       try {
-        // Query threads owned by this org OR where current user is a participant (cross-org direct threads)
         const { data: convThreads } = await (supabase as any)
           .from("conversations_v2")
           .select("*")
+          .neq("type", "direct")
           .or(`org_id.eq.${orgId}${user?.id ? `,participant_ids.cs.{${user.id}}` : ""}`)
           .order("last_message_at", { ascending: false })
           .limit(200);
 
         if (convThreads?.length) {
-        for (const ct of convThreads) {
-            const ctxType = ct.context_type || "direct";
-            let convType: "direct" | "business" | "listing" | "team" = "direct";
-            let srcModule: "direct" | "marketplace" | "team" | "concierge" | "real_estate" = "direct";
+          for (const ct of convThreads) {
+            const ctxType = ct.context_type || ct.type || "business";
+            let convType: "direct" | "business" | "listing" | "team" = "business";
+            let srcModule: "direct" | "marketplace" | "team" | "concierge" | "real_estate" = "marketplace";
 
-            if (ctxType === "direct") { convType = "direct"; srcModule = "direct"; }
-            else if (ctxType === "team") { convType = "team"; srcModule = "team"; }
+            if (ctxType === "team") { convType = "team"; srcModule = "team"; }
             else if (ctxType === "listing" || ctxType === "marketplace_service") { convType = "listing"; srcModule = "marketplace"; }
             else if (ctxType === "concierge_service") { convType = "listing"; srcModule = "marketplace"; }
             else if (ctxType === "business" || ctxType === "service") { convType = "business"; srcModule = "marketplace"; }
@@ -292,10 +292,11 @@ export function useConversationThreads() {
                 sourceModule: srcModule,
                 contextType: ctxType,
                 contextId: ct.context_id || ct.id,
-                name: ct.provider_name || ct.listing_title || "Contact",
+                name: ct.title || ct.last_message_preview || "Contact",
                 email: null,
                 threadId: ct.id,
-                listingTitle: ct.listing_title || undefined,
+                listingTitle: ct.title || undefined,
+                v2ConversationId: ct.id,
                 unreadCount: 0,
                 lastMessageTime: ct.last_message_at || ct.updated_at,
               });
@@ -644,14 +645,13 @@ export function useConversationThreads() {
     }, 800);
   }, [loadThreads, loadStats]);
 
-  // Realtime: refresh threads on messages/threads/deals/bookings/calls (+ caller + callee)
+  // Realtime: refresh threads on conversations/deals/bookings/calls/preferences changes
+  // NOTE: We do NOT listen to chat_messages_v2 INSERT here — that's handled per-thread
+  // in useMessageLoader. Listening globally would trigger a full reload on every message.
   useEffect(() => {
     if (!orgId || !user?.id) return;
     const channel = supabase
       .channel("hub-live")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, () => {
-        debouncedReload();
-      })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "marketplace_bookings", filter: `org_id=eq.${orgId}` }, () => {
         debouncedReload();
       })
