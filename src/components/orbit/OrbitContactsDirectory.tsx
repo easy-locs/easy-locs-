@@ -239,7 +239,7 @@ export default function OrbitContactsDirectory() {
         .maybeSingle();
 
       await startCall({
-        orgId: contactOrg?.org_id || orgId || contact.contact_user_id,
+        targetId: contactOrg?.org_id || orgId || contact.contact_user_id,
         peerName: contact.name,
         contextType: "contact",
         contextId: contact.id,
