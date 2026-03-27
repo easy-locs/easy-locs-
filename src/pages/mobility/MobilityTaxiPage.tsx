@@ -65,7 +65,7 @@ export default function MobilityTaxiPage() {
         onBack={() => inFlow ? reset() : navigate(-1)}
       />
 
-      <div className="px-4 py-4 app-mobile-content">
+      <div className="px-4 py-4 app-mobile-content overflow-x-hidden">
         {/* If in booking flow (preview/requesting/tracking/completed), show only the flow */}
         {inFlow ? (
           <div className="space-y-3">
@@ -97,14 +97,14 @@ export default function MobilityTaxiPage() {
 
             <Tabs defaultValue={activeJobs.length > 0 ? "active" : "book"} className="w-full">
               <TabsList className="w-full grid grid-cols-3 bg-muted/50 rounded-xl h-10">
-                <TabsTrigger value="book" className="rounded-lg text-[11px] font-semibold gap-1 px-1">
-                  <Car className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Book</span>
+                <TabsTrigger value="book" className="rounded-lg text-[11px] font-semibold gap-1 px-1 min-w-0">
+                  <Car className="h-3.5 w-3.5 shrink-0" /> <span>Book</span>
                 </TabsTrigger>
-                <TabsTrigger value="active" className="rounded-lg text-[11px] font-semibold gap-1 px-1">
-                  <Clock className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Active</span>
+                <TabsTrigger value="active" className="rounded-lg text-[11px] font-semibold gap-1 px-1 min-w-0">
+                  <Clock className="h-3.5 w-3.5 shrink-0" /> <span>Active</span>
                 </TabsTrigger>
-                <TabsTrigger value="history" className="rounded-lg text-[11px] font-semibold gap-1 px-1">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">History</span>
+                <TabsTrigger value="history" className="rounded-lg text-[11px] font-semibold gap-1 px-1 min-w-0">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> <span>History</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -130,13 +130,13 @@ export default function MobilityTaxiPage() {
                     description="Your ride history will appear here"
                   />
                 ) : pastJobs.slice(0, 20).map(j => (
-                  <div key={j.id} className="bg-card border border-border/30 rounded-xl p-3 space-y-1.5">
+                  <div key={j.id} className="bg-card border border-border/30 rounded-xl p-3 space-y-1.5 overflow-hidden">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold text-foreground truncate">Taxi</span>
+                      <span className="text-sm font-semibold text-foreground">Taxi</span>
                       <Badge variant={j.status === "completed" ? "default" : "secondary"} className="text-[9px] shrink-0">{j.status}</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate">📍 {j.pickup_label || j.pickup_address}</p>
-                    <p className="text-xs text-muted-foreground truncate">🏁 {j.dropoff_label || j.dropoff_address}</p>
+                    <p className="text-xs text-muted-foreground break-words line-clamp-1">📍 {j.pickup_label || j.pickup_address}</p>
+                    <p className="text-xs text-muted-foreground break-words line-clamp-1">🏁 {j.dropoff_label || j.dropoff_address}</p>
                     {j.current_price != null && <p className="text-xs font-semibold text-foreground">{j.current_price} {j.currency}</p>}
                   </div>
                 ))}
