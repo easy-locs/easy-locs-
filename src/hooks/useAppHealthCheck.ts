@@ -84,7 +84,7 @@ export function useAppHealthCheck() {
         console.error("[RT_TEST] exception:", e?.message || e);
       }
 
-      if (mounted) setHealth(next);
+      if (mounted) setHealth({ ...next, checked: true });
     }
 
     void run();
