@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Activity, AlertTriangle, CheckCircle2, Clock, Power, RefreshCw,
-  Shield, Zap, XCircle, Timer, Database, ShieldAlert, Bug, Wrench
+  Shield, Zap, XCircle, Timer, Database, ShieldAlert, Bug, Wrench,
+  Eye, Radio, MessageSquare, Phone, Users, CreditCard, Hotel, Utensils
 } from "lucide-react";
 
 const db = supabase as any;
@@ -26,7 +28,12 @@ interface BrowserRepairRun {
   fixed_count: number;
   warning_count: number;
   duration_ms: number | null;
+  total_checks: number;
+  repaired_count: number;
+  blocked_count: number;
+  critical_count: number;
   report_json: any;
+  metadata_json: any;
 }
 
 interface BrowserRepairIssue {
@@ -41,6 +48,32 @@ interface BrowserRepairIssue {
   fix_summary: string | null;
   verification_status: string;
   created_at: string;
+}
+
+interface BrowserRepairEvent {
+  id: string;
+  run_id: string;
+  area: string;
+  flow: string;
+  route: string | null;
+  severity: string;
+  issue_code: string | null;
+  issue_label: string | null;
+  detected_value: string | null;
+  attempted_fix: boolean;
+  fix_status: string | null;
+  fix_summary: string | null;
+  created_at: string;
+}
+
+interface WatchdogEntry {
+  id: string;
+  page_key: string;
+  last_seen_ok_at: string | null;
+  consecutive_failures: number;
+  current_status: string;
+  current_issue: string | null;
+  updated_at: string;
 }
 
 interface EngineRow {
@@ -97,6 +130,8 @@ interface ScrapeRun {
   error_message: string | null;
 }
 
+type RepairFilter = "all" | "critical" | "repaired" | "blocked" | "messaging" | "calls" | "contacts" | "groups" | "wallet" | "booking" | "onboarding" | "route_dead";
+
 export default function AdminEngineCockpit() {
   const [engines, setEngines] = useState<EngineRow[]>([]);
   const [logs, setLogs] = useState<RunLog[]>([]);
@@ -106,20 +141,28 @@ export default function AdminEngineCockpit() {
   const [selectedEngine, setSelectedEngine] = useState<string | null>(null);
   const [repairRuns, setRepairRuns] = useState<BrowserRepairRun[]>([]);
   const [repairIssues, setRepairIssues] = useState<BrowserRepairIssue[]>([]);
+  const [repairEvents, setRepairEvents] = useState<BrowserRepairEvent[]>([]);
+  const [watchdog, setWatchdog] = useState<WatchdogEntry[]>([]);
+  const [repairFilter, setRepairFilter] = useState<RepairFilter>("all");
+  const [activeTab, setActiveTab] = useState("engines");
 
   const fetchData = useCallback(async () => {
-    const [{ data: eng }, { data: runLogs }, { data: scrRuns }, { data: brRuns }, { data: brIssues }] = await Promise.all([
+    const [{ data: eng }, { data: runLogs }, { data: scrRuns }, { data: brRuns }, { data: brIssues }, { data: brEvents }, { data: wd }] = await Promise.all([
       db.from("engine_supervisor").select("*").order("engine_name"),
       db.from("engine_run_logs").select("*").order("started_at", { ascending: false }).limit(300),
       db.from("merchant_scrape_runs").select("*").order("started_at", { ascending: false }).limit(20),
-      db.from("browser_repair_runs").select("*").order("started_at", { ascending: false }).limit(20),
-      db.from("browser_repair_issues").select("*").order("created_at", { ascending: false }).limit(100),
+      db.from("browser_repair_runs").select("*").order("started_at", { ascending: false }).limit(30),
+      db.from("browser_repair_issues").select("*").order("created_at", { ascending: false }).limit(200),
+      db.from("browser_repair_events").select("*").order("created_at", { ascending: false }).limit(200),
+      db.from("browser_repair_watchdog").select("*").order("page_key"),
     ]);
     if (eng) setEngines(eng);
     if (runLogs) setLogs(runLogs);
     if (scrRuns) setScrapeRuns(scrRuns);
     if (brRuns) setRepairRuns(brRuns);
     if (brIssues) setRepairIssues(brIssues);
+    if (brEvents) setRepairEvents(brEvents);
+    if (wd) setWatchdog(wd);
     setLoading(false);
   }, []);
 
@@ -133,12 +176,10 @@ export default function AdminEngineCockpit() {
     await db.from("engine_supervisor").update({ kill_switch: !current }).eq("engine_name", name);
     fetchData();
   };
-
   const toggleEnabled = async (name: string, current: boolean) => {
     await db.from("engine_supervisor").update({ enabled: !current }).eq("engine_name", name);
     fetchData();
   };
-
   const toggleDryRun = async (name: string, current: boolean) => {
     await db.from("engine_supervisor").update({ dry_run: !current }).eq("engine_name", name);
     fetchData();
@@ -168,12 +209,37 @@ export default function AdminEngineCockpit() {
   const engineLogs = selectedEngine ? logs.filter(l => l.engine_name === selectedEngine) : [];
   const engineBlockedLogs = selectedEngine ? blockedLogs.filter(l => l.engine_name === selectedEngine) : [];
 
+  // Browser repair stats
+  const latestRepairRun = repairRuns[0];
+  const totalRepairIssues = repairIssues.length;
+  const autoFixedIssues = repairIssues.filter(i => i.auto_fix_applied).length;
+  const criticalIssues = repairIssues.filter(i => i.severity === "critical").length;
+  const failingPages = watchdog.filter(w => w.current_status === "failing").length;
+
+  // Filter repair issues
+  const filteredRepairIssues = repairIssues.filter(i => {
+    if (repairFilter === "all") return true;
+    if (repairFilter === "critical") return i.severity === "critical";
+    if (repairFilter === "repaired") return i.auto_fix_applied;
+    if (repairFilter === "blocked") return i.verification_status === "detected" && !i.auto_fix_applied;
+    if (repairFilter === "messaging") return i.flow_key.includes("messag") || i.page_key.includes("orbit");
+    if (repairFilter === "calls") return i.flow_key.includes("call");
+    if (repairFilter === "contacts") return i.flow_key.includes("contact") || i.flow_key.includes("search");
+    if (repairFilter === "groups") return i.flow_key.includes("group");
+    if (repairFilter === "wallet") return i.page_key.includes("wallet") || i.flow_key.includes("payment");
+    if (repairFilter === "booking") return i.page_key.includes("travel") || i.flow_key.includes("hotel") || i.flow_key.includes("booking");
+    if (repairFilter === "onboarding") return i.page_key.includes("onboarding");
+    if (repairFilter === "route_dead") return i.issue_type === "broken_route";
+    return true;
+  });
+
   const statusIcon = (status: string) => {
     switch (status) {
-      case "ok": return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />;
-      case "error": return <XCircle className="h-3.5 w-3.5 text-red-500" />;
+      case "ok": case "clean": return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />;
+      case "error": case "issues_found": return <XCircle className="h-3.5 w-3.5 text-red-500" />;
       case "blocked": return <ShieldAlert className="h-3.5 w-3.5 text-orange-500" />;
       case "running": return <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" />;
+      case "partial": return <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />;
       default: return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
     }
   };
@@ -186,7 +252,6 @@ export default function AdminEngineCockpit() {
     return `${Math.floor(diff / 3600000)}h ago`;
   };
 
-  // Latest scrape run for deliveroo/dubai
   const latestScrape = scrapeRuns.find(r => r.source === "deliveroo" && r.region === "dubai");
 
   if (loading) {
@@ -207,7 +272,7 @@ export default function AdminEngineCockpit() {
             Engine Cockpit
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Real-time engine health, execution logs, firewall blocks, and kill switches
+            Real-time engine health, browser repair, firewall blocks, and kill switches
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={fetchData}>
@@ -223,7 +288,7 @@ export default function AdminEngineCockpit() {
           { label: "Errors", value: errored, icon: AlertTriangle, color: "text-red-500" },
           { label: "Blocked", value: blockedCount, icon: ShieldAlert, color: "text-orange-500" },
           { label: "Kill Switched", value: killed, icon: Power, color: "text-orange-500" },
-          { label: "Real (with effects)", value: realCount, icon: Database, color: "text-blue-500" },
+          { label: "Real (effects)", value: realCount, icon: Database, color: "text-blue-500" },
           { label: "Run Logs", value: totalRuns, icon: Timer, color: "text-purple-500" },
         ].map(s => (
           <Card key={s.label} className="border-border/50">
@@ -238,116 +303,249 @@ export default function AdminEngineCockpit() {
         ))}
       </div>
 
-      {/* Source Runs Panel */}
-      {latestScrape && (
-        <Card className="border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Database className="h-4 w-4 text-primary" />
-              Source Runs — Deliveroo Dubai
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-3 md:grid-cols-9 gap-2 text-xs">
-            <div className="bg-muted/30 rounded p-2">
-              <p className="text-[10px] text-muted-foreground">Status</p>
-              <p className="font-medium">{latestScrape.status}</p>
-            </div>
-            <div className="bg-muted/30 rounded p-2">
-              <p className="text-[10px] text-muted-foreground">Last Run</p>
-              <p className="font-medium">{timeAgo(latestScrape.started_at)}</p>
-            </div>
-            <div className="bg-muted/30 rounded p-2">
-              <p className="text-[10px] text-muted-foreground">Discovered</p>
-              <p className="font-medium">{latestScrape.discovered_count}</p>
-            </div>
-            <div className="bg-muted/30 rounded p-2">
-              <p className="text-[10px] text-muted-foreground">Scraped</p>
-              <p className="font-medium">{latestScrape.scraped_count}</p>
-            </div>
-            <div className="bg-muted/30 rounded p-2">
-              <p className="text-[10px] text-muted-foreground">Parsed</p>
-              <p className="font-medium text-blue-500">{latestScrape.parsed_count}</p>
-            </div>
-            <div className="bg-muted/30 rounded p-2">
-              <p className="text-[10px] text-muted-foreground">Accepted</p>
-              <p className="font-medium text-green-500">{latestScrape.accepted_count}</p>
-            </div>
-            <div className="bg-muted/30 rounded p-2">
-              <p className="text-[10px] text-muted-foreground">Rejected</p>
-              <p className="font-medium text-orange-500">{latestScrape.rejected_count}</p>
-            </div>
-            <div className="bg-muted/30 rounded p-2">
-              <p className="text-[10px] text-muted-foreground">Published</p>
-              <p className="font-medium text-emerald-500">{latestScrape.published_count}</p>
-            </div>
-            {latestScrape.error_message && (
-              <div className="bg-red-500/10 rounded p-2 col-span-full">
-                <p className="text-[10px] text-red-500">{latestScrape.error_message}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {/* Tabs: Engines | Browser Repair */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="engines" className="gap-1"><Zap className="h-3.5 w-3.5" /> Engines</TabsTrigger>
+          <TabsTrigger value="browser_repair" className="gap-1"><Bug className="h-3.5 w-3.5" /> Browser Repair</TabsTrigger>
+          <TabsTrigger value="watchdog" className="gap-1"><Eye className="h-3.5 w-3.5" /> Watchdog</TabsTrigger>
+        </TabsList>
 
-      {/* Browser Repair Panel */}
-      {repairRuns.length > 0 && (
-        <Card className="border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Bug className="h-4 w-4 text-primary" />
-              Browser User Repair Engine
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-xs mb-3">
-              {(() => {
-                const latest = repairRuns[0];
-                return <>
-                  <div className="bg-muted/30 rounded p-2">
-                    <p className="text-[10px] text-muted-foreground">Last Run</p>
-                    <p className="font-medium">{timeAgo(latest.started_at)}</p>
+        {/* ═══ TAB: ENGINES ═══ */}
+        <TabsContent value="engines" className="space-y-4">
+          {/* Source Runs */}
+          {latestScrape && (
+            <Card className="border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Database className="h-4 w-4 text-primary" /> Source Runs — Deliveroo Dubai
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-3 md:grid-cols-8 gap-2 text-xs">
+                {[
+                  { l: "Status", v: latestScrape.status },
+                  { l: "Last Run", v: timeAgo(latestScrape.started_at) },
+                  { l: "Discovered", v: latestScrape.discovered_count },
+                  { l: "Scraped", v: latestScrape.scraped_count },
+                  { l: "Parsed", v: latestScrape.parsed_count, c: "text-blue-500" },
+                  { l: "Accepted", v: latestScrape.accepted_count, c: "text-green-500" },
+                  { l: "Rejected", v: latestScrape.rejected_count, c: "text-orange-500" },
+                  { l: "Published", v: latestScrape.published_count, c: "text-emerald-500" },
+                ].map(x => (
+                  <div key={x.l} className="bg-muted/30 rounded p-2">
+                    <p className="text-[10px] text-muted-foreground">{x.l}</p>
+                    <p className={`font-medium ${x.c ?? ""}`}>{x.v}</p>
                   </div>
-                  <div className="bg-muted/30 rounded p-2">
-                    <p className="text-[10px] text-muted-foreground">Scenarios</p>
-                    <p className="font-medium">{latest.scenario_count}</p>
-                  </div>
-                  <div className="bg-muted/30 rounded p-2">
-                    <p className="text-[10px] text-muted-foreground">Pass</p>
-                    <p className="font-medium text-green-500">{latest.pass_count}</p>
-                  </div>
-                  <div className="bg-muted/30 rounded p-2">
-                    <p className="text-[10px] text-muted-foreground">Fail</p>
-                    <p className="font-medium text-red-500">{latest.fail_count}</p>
-                  </div>
-                  <div className="bg-muted/30 rounded p-2">
-                    <p className="text-[10px] text-muted-foreground">Fixed</p>
-                    <p className="font-medium text-blue-500">{latest.fixed_count}</p>
-                  </div>
-                  <div className="bg-muted/30 rounded p-2">
-                    <p className="text-[10px] text-muted-foreground">Duration</p>
-                    <p className="font-medium">{latest.duration_ms ?? 0}ms</p>
-                  </div>
-                </>;
-              })()}
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Filter */}
+          <div className="flex gap-2 flex-wrap">
+            {(["all", "real", "noop", "error", "blocked", "browser_repair"] as const).map(f => (
+              <Button key={f} variant={filter === f ? "default" : "outline"} size="sm" onClick={() => setFilter(f)} className="text-xs capitalize">
+                {f === "noop" ? `No-Op (${noopCount})` : f === "real" ? `Real (${realCount})` : f === "error" ? `Errors (${errored})` : f === "blocked" ? `Blocked (${blockedCount})` : f === "browser_repair" ? `Browser Repair` : `All (${total})`}
+              </Button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Engine List */}
+            <div className="lg:col-span-2">
+              <ScrollArea className="h-[600px]">
+                <div className="space-y-1.5">
+                  {filtered.map(e => {
+                    const engBlocked = blockedLogs.filter(l => l.engine_name === e.engine_name).length;
+                    return (
+                      <Card key={e.engine_name} className={`border cursor-pointer transition-colors hover:border-primary/30 ${selectedEngine === e.engine_name ? "border-primary bg-primary/5" : "border-border/40"} ${e.kill_switch ? "opacity-50" : ""}`} onClick={() => setSelectedEngine(e.engine_name)}>
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 min-w-0">
+                              {statusIcon(e.status)}
+                              <span className="font-mono text-sm truncate">{e.engine_name}</span>
+                              {(e.last_duration_ms ?? 0) === 0 && <Badge variant="outline" className="text-[9px] px-1 py-0 text-orange-500 border-orange-500/30">NO-OP</Badge>}
+                              {e.kill_switch && <Badge variant="destructive" className="text-[9px] px-1 py-0">KILLED</Badge>}
+                              {e.dry_run && <Badge variant="secondary" className="text-[9px] px-1 py-0">DRY-RUN</Badge>}
+                              {engBlocked > 0 && <Badge className="text-[9px] px-1 py-0 bg-orange-500/20 text-orange-500 border-orange-500/30">{engBlocked} BLOCKED</Badge>}
+                            </div>
+                            <div className="flex items-center gap-3 text-[10px] text-muted-foreground shrink-0">
+                              <span>{e.last_duration_ms ?? 0}ms</span>
+                              <span>{timeAgo(e.last_run_at)}</span>
+                              <span>{e.total_rows_affected ?? 0} rows</span>
+                            </div>
+                          </div>
+                          {e.consecutive_failures > 0 && <p className="text-[10px] text-red-500 mt-1 truncate">{e.last_error_message}</p>}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
             </div>
 
-            {/* Recent issues */}
-            {repairIssues.length > 0 && (
-              <div>
-                <p className="text-xs font-medium mb-1 flex items-center gap-1"><Wrench className="h-3 w-3" /> Recent Issues ({repairIssues.length})</p>
-                <ScrollArea className="h-[160px]">
+            {/* Detail Panel */}
+            <div>
+              {selectedEngine ? (
+                <Card>
+                  <CardHeader className="pb-3"><CardTitle className="text-base font-mono">{selectedEngine}</CardTitle></CardHeader>
+                  <CardContent className="space-y-4">
+                    {(() => {
+                      const e = engines.find(x => x.engine_name === selectedEngine);
+                      if (!e) return null;
+                      return (
+                        <>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between"><span className="text-sm">Enabled</span><Switch checked={e.enabled} onCheckedChange={() => toggleEnabled(e.engine_name, e.enabled)} /></div>
+                            <div className="flex items-center justify-between"><span className="text-sm text-red-500 flex items-center gap-1"><Shield className="h-3.5 w-3.5" /> Kill Switch</span><Switch checked={e.kill_switch} onCheckedChange={() => toggleKillSwitch(e.engine_name, e.kill_switch)} /></div>
+                            <div className="flex items-center justify-between"><span className="text-sm">Dry Run</span><Switch checked={e.dry_run} onCheckedChange={() => toggleDryRun(e.engine_name, e.dry_run)} /></div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            {[
+                              { l: "Status", v: <span className="flex items-center gap-1">{statusIcon(e.status)} {e.status}</span> },
+                              { l: "Duration", v: `${e.last_duration_ms ?? 0}ms` },
+                              { l: "Total Runs", v: e.total_runs ?? 0 },
+                              { l: "Rows Affected", v: e.total_rows_affected ?? 0 },
+                              { l: "Failures", v: e.consecutive_failures },
+                              { l: "Timeout", v: `${(e.timeout_ms ?? 30000) / 1000}s` },
+                            ].map(x => (
+                              <div key={x.l} className="bg-muted/30 rounded p-2">
+                                <p className="text-[10px] text-muted-foreground">{x.l}</p>
+                                <p className="font-medium">{x.v}</p>
+                              </div>
+                            ))}
+                          </div>
+                          {e.last_error_message && (
+                            <div className="bg-red-500/10 border border-red-500/20 rounded p-2">
+                              <p className="text-[10px] text-red-500">Last Error</p>
+                              <p className="text-xs text-red-400 break-all">{e.last_error_message}</p>
+                            </div>
+                          )}
+                          {engineBlockedLogs.length > 0 && (
+                            <div>
+                              <p className="text-xs font-medium mb-2 flex items-center gap-1 text-orange-500"><ShieldAlert className="h-3.5 w-3.5" /> Blocked ({engineBlockedLogs.length})</p>
+                              <ScrollArea className="h-[150px]">
+                                <div className="space-y-1.5">
+                                  {engineBlockedLogs.map(l => (
+                                    <div key={l.id} className="bg-orange-500/5 border border-orange-500/20 rounded p-2 text-[10px] space-y-0.5">
+                                      <div className="flex justify-between"><span className="text-orange-500 font-medium">BLOCKED</span><span className="text-muted-foreground">{timeAgo(l.started_at)}</span></div>
+                                      {l.effect_summary && <p className="text-orange-400">{l.effect_summary}</p>}
+                                    </div>
+                                  ))}
+                                </div>
+                              </ScrollArea>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs font-medium mb-2">Recent Runs ({engineLogs.length})</p>
+                            <ScrollArea className="h-[200px]">
+                              <div className="space-y-1">
+                                {engineLogs.length === 0 ? <p className="text-xs text-muted-foreground">No run logs yet</p> : engineLogs.map(l => (
+                                  <div key={l.id} className="bg-muted/20 rounded p-2 text-[10px] space-y-0.5">
+                                    <div className="flex justify-between"><span className="flex items-center gap-1">{statusIcon(l.status)} {l.status}</span><span>{l.duration_ms}ms</span></div>
+                                    {l.effect_summary && <p className="text-muted-foreground truncate">{l.effect_summary}</p>}
+                                    {l.error_message && <p className="text-red-400 truncate">{l.error_message}</p>}
+                                    <div className="flex gap-2 text-muted-foreground"><span>R:{l.rows_read}</span><span>W:{l.db_rows_affected}</span><span>FX:{l.side_effect_count}</span></div>
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="border-dashed"><CardContent className="p-8 text-center text-muted-foreground"><Activity className="h-8 w-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Select an engine</p></CardContent></Card>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* ═══ TAB: BROWSER REPAIR ═══ */}
+        <TabsContent value="browser_repair" className="space-y-4">
+          {/* Repair Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+            {[
+              { label: "Last Run", value: latestRepairRun ? timeAgo(latestRepairRun.started_at) : "never", icon: Clock, color: "text-muted-foreground" },
+              { label: "Scenarios", value: latestRepairRun?.scenario_count ?? 0, icon: Activity, color: "text-primary" },
+              { label: "Pass", value: latestRepairRun?.pass_count ?? 0, icon: CheckCircle2, color: "text-green-500" },
+              { label: "Fail", value: latestRepairRun?.fail_count ?? 0, icon: XCircle, color: "text-red-500" },
+              { label: "Auto-Fixed", value: autoFixedIssues, icon: Wrench, color: "text-blue-500" },
+              { label: "Critical", value: criticalIssues, icon: AlertTriangle, color: "text-red-500" },
+            ].map(s => (
+              <Card key={s.label} className="border-border/50">
+                <CardContent className="p-3 flex items-center gap-3">
+                  <s.icon className={`h-5 w-5 ${s.color}`} />
+                  <div>
+                    <p className="text-xl font-bold">{s.value}</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">{s.label}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Filter bar */}
+          <div className="flex gap-1.5 flex-wrap">
+            {([
+              { key: "all", label: "All", icon: Activity },
+              { key: "critical", label: "Critical", icon: AlertTriangle },
+              { key: "repaired", label: "Auto-Fixed", icon: Wrench },
+              { key: "blocked", label: "Needs Review", icon: ShieldAlert },
+              { key: "messaging", label: "Messages", icon: MessageSquare },
+              { key: "calls", label: "Calls", icon: Phone },
+              { key: "contacts", label: "Contacts", icon: Users },
+              { key: "groups", label: "Groups", icon: Users },
+              { key: "wallet", label: "Wallet", icon: CreditCard },
+              { key: "booking", label: "Booking", icon: Hotel },
+              { key: "onboarding", label: "Onboarding", icon: Radio },
+            ] as { key: RepairFilter; label: string; icon: any }[]).map(f => (
+              <Button key={f.key} variant={repairFilter === f.key ? "default" : "outline"} size="sm" onClick={() => setRepairFilter(f.key)} className="text-xs gap-1">
+                <f.icon className="h-3 w-3" /> {f.label}
+              </Button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Recent Runs */}
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Bug className="h-4 w-4 text-primary" /> Recent Runs</CardTitle></CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-1.5">
+                    {repairRuns.map(run => (
+                      <div key={run.id} className={`rounded p-2.5 text-xs border ${run.status === "clean" ? "bg-green-500/5 border-green-500/20" : run.status === "issues_found" ? "bg-red-500/5 border-red-500/20" : "bg-muted/20 border-border/30"}`}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="flex items-center gap-1 font-medium">{statusIcon(run.status)} {run.status}</span>
+                          <span className="text-muted-foreground">{timeAgo(run.started_at)}</span>
+                        </div>
+                        <div className="grid grid-cols-5 gap-1 text-[10px]">
+                          <span className="text-green-500">✓ {run.pass_count}</span>
+                          <span className="text-red-500">✗ {run.fail_count}</span>
+                          <span className="text-blue-500">⚡ {run.fixed_count}</span>
+                          <span className="text-orange-500">⚠ {run.warning_count}</span>
+                          <span>{run.duration_ms ?? 0}ms</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Issues */}
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Wrench className="h-4 w-4 text-primary" /> Issues ({filteredRepairIssues.length})</CardTitle></CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px]">
                   <div className="space-y-1">
-                    {repairIssues.slice(0, 20).map(issue => (
-                      <div key={issue.id} className={`rounded p-2 text-[10px] space-y-0.5 border ${
-                        issue.severity === "critical" ? "bg-red-500/5 border-red-500/20" :
-                        issue.severity === "warning" ? "bg-orange-500/5 border-orange-500/20" :
-                        "bg-muted/20 border-border/30"
-                      }`}>
+                    {filteredRepairIssues.map(issue => (
+                      <div key={issue.id} className={`rounded p-2 text-[10px] space-y-0.5 border ${issue.severity === "critical" ? "bg-red-500/5 border-red-500/20" : issue.severity === "warning" ? "bg-orange-500/5 border-orange-500/20" : "bg-muted/20 border-border/30"}`}>
                         <div className="flex justify-between items-center">
                           <span className="font-medium flex items-center gap-1">
-                            {issue.severity === "critical" ? <XCircle className="h-2.5 w-2.5 text-red-500" /> :
-                             issue.severity === "warning" ? <AlertTriangle className="h-2.5 w-2.5 text-orange-500" /> :
-                             <CheckCircle2 className="h-2.5 w-2.5 text-muted-foreground" />}
+                            {issue.severity === "critical" ? <XCircle className="h-2.5 w-2.5 text-red-500" /> : issue.severity === "warning" ? <AlertTriangle className="h-2.5 w-2.5 text-orange-500" /> : <CheckCircle2 className="h-2.5 w-2.5 text-muted-foreground" />}
                             {issue.page_key} / {issue.flow_key}
                           </span>
                           <div className="flex items-center gap-1">
@@ -357,247 +555,71 @@ export default function AdminEngineCockpit() {
                         </div>
                         <p className="text-muted-foreground">{issue.summary}</p>
                         {issue.fix_summary && <p className="text-blue-400">Fix: {issue.fix_summary}</p>}
+                        <p className="text-muted-foreground">{timeAgo(issue.created_at)}</p>
                       </div>
                     ))}
+                    {filteredRepairIssues.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No issues match filter</p>}
                   </div>
                 </ScrollArea>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Filter */}
-      <div className="flex gap-2 flex-wrap">
-        {(["all", "real", "noop", "error", "blocked", "browser_repair"] as const).map(f => (
-          <Button
-            key={f}
-            variant={filter === f ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter(f)}
-            className="text-xs capitalize"
-          >
-            {f === "noop" ? `No-Op (${noopCount})`
-              : f === "real" ? `Real (${realCount})`
-              : f === "error" ? `Errors (${errored})`
-              : f === "blocked" ? `Blocked (${blockedCount})`
-              : f === "browser_repair" ? `Browser Repair`
-              : `All (${total})`}
-          </Button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Engine List */}
-        <div className="lg:col-span-2">
-          <ScrollArea className="h-[600px]">
-            <div className="space-y-1.5">
-              {filtered.map(e => {
-                const engBlocked = blockedLogs.filter(l => l.engine_name === e.engine_name).length;
-                return (
-                  <Card
-                    key={e.engine_name}
-                    className={`border cursor-pointer transition-colors hover:border-primary/30 ${
-                      selectedEngine === e.engine_name ? "border-primary bg-primary/5" : "border-border/40"
-                    } ${e.kill_switch ? "opacity-50" : ""}`}
-                    onClick={() => setSelectedEngine(e.engine_name)}
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 min-w-0">
-                          {statusIcon(e.status)}
-                          <span className="font-mono text-sm truncate">{e.engine_name}</span>
-                          {(e.last_duration_ms ?? 0) === 0 && (
-                            <Badge variant="outline" className="text-[9px] px-1 py-0 text-orange-500 border-orange-500/30">NO-OP</Badge>
-                          )}
-                          {e.kill_switch && (
-                            <Badge variant="destructive" className="text-[9px] px-1 py-0">KILLED</Badge>
-                          )}
-                          {e.dry_run && (
-                            <Badge variant="secondary" className="text-[9px] px-1 py-0">DRY-RUN</Badge>
-                          )}
-                          {engBlocked > 0 && (
-                            <Badge className="text-[9px] px-1 py-0 bg-orange-500/20 text-orange-500 border-orange-500/30">
-                              {engBlocked} BLOCKED
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground shrink-0">
-                          <span>{e.last_duration_ms ?? 0}ms</span>
-                          <span>{timeAgo(e.last_run_at)}</span>
-                          <span>{e.total_rows_affected ?? 0} rows</span>
-                        </div>
-                      </div>
-                      {e.consecutive_failures > 0 && (
-                        <p className="text-[10px] text-red-500 mt-1 truncate">{e.last_error_message}</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </ScrollArea>
-        </div>
-
-        {/* Detail Panel */}
-        <div>
-          {selectedEngine ? (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-mono">{selectedEngine}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {(() => {
-                  const e = engines.find(x => x.engine_name === selectedEngine);
-                  if (!e) return null;
-                  return (
-                    <>
-                      {/* Controls */}
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm">Enabled</span>
-                          <Switch checked={e.enabled} onCheckedChange={() => toggleEnabled(e.engine_name, e.enabled)} />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-red-500 flex items-center gap-1">
-                            <Shield className="h-3.5 w-3.5" /> Kill Switch
-                          </span>
-                          <Switch checked={e.kill_switch} onCheckedChange={() => toggleKillSwitch(e.engine_name, e.kill_switch)} />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm">Dry Run</span>
-                          <Switch checked={e.dry_run} onCheckedChange={() => toggleDryRun(e.engine_name, e.dry_run)} />
-                        </div>
-                      </div>
-
-                      {/* Stats */}
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="bg-muted/30 rounded p-2">
-                          <p className="text-[10px] text-muted-foreground">Status</p>
-                          <p className="font-medium flex items-center gap-1">{statusIcon(e.status)} {e.status}</p>
-                        </div>
-                        <div className="bg-muted/30 rounded p-2">
-                          <p className="text-[10px] text-muted-foreground">Duration</p>
-                          <p className="font-medium">{e.last_duration_ms ?? 0}ms</p>
-                        </div>
-                        <div className="bg-muted/30 rounded p-2">
-                          <p className="text-[10px] text-muted-foreground">Total Runs</p>
-                          <p className="font-medium">{e.total_runs ?? 0}</p>
-                        </div>
-                        <div className="bg-muted/30 rounded p-2">
-                          <p className="text-[10px] text-muted-foreground">Rows Affected</p>
-                          <p className="font-medium">{e.total_rows_affected ?? 0}</p>
-                        </div>
-                        <div className="bg-muted/30 rounded p-2">
-                          <p className="text-[10px] text-muted-foreground">Failures</p>
-                          <p className="font-medium">{e.consecutive_failures}</p>
-                        </div>
-                        <div className="bg-muted/30 rounded p-2">
-                          <p className="text-[10px] text-muted-foreground">Timeout</p>
-                          <p className="font-medium">{(e.timeout_ms ?? 30000) / 1000}s</p>
-                        </div>
-                      </div>
-
-                      {e.last_error_message && (
-                        <div className="bg-red-500/10 border border-red-500/20 rounded p-2">
-                          <p className="text-[10px] text-red-500">Last Error</p>
-                          <p className="text-xs text-red-400 break-all">{e.last_error_message}</p>
-                        </div>
-                      )}
-
-                      {/* Blocked Runs Section */}
-                      {engineBlockedLogs.length > 0 && (
-                        <div>
-                          <p className="text-xs font-medium mb-2 flex items-center gap-1 text-orange-500">
-                            <ShieldAlert className="h-3.5 w-3.5" />
-                            Blocked Runs ({engineBlockedLogs.length})
-                          </p>
-                          <ScrollArea className="h-[180px]">
-                            <div className="space-y-1.5">
-                              {engineBlockedLogs.map(l => (
-                                <div key={l.id} className="bg-orange-500/5 border border-orange-500/20 rounded p-2 text-[10px] space-y-0.5">
-                                  <div className="flex justify-between">
-                                    <span className="flex items-center gap-1 text-orange-500 font-medium">
-                                      <ShieldAlert className="h-2.5 w-2.5" /> BLOCKED
-                                    </span>
-                                    <span className="text-muted-foreground">{timeAgo(l.started_at)}</span>
-                                  </div>
-                                  {l.effect_summary && (
-                                    <p className="text-orange-400">{l.effect_summary}</p>
-                                  )}
-                                  {l.metadata_json?.firewall_rule && (
-                                    <p className="text-muted-foreground">
-                                      Rule: <span className="text-orange-400 font-mono">{l.metadata_json.firewall_rule}</span>
-                                    </p>
-                                  )}
-                                  {l.metadata_json?.entity_id && (
-                                    <p className="text-muted-foreground">
-                                      Entity: <span className="font-mono">{l.metadata_json.entity_id}</span>
-                                    </p>
-                                  )}
-                                  {l.metadata_json?.table && (
-                                    <p className="text-muted-foreground">
-                                      Table: <span className="font-mono">{l.metadata_json.table}</span>
-                                    </p>
-                                  )}
-                                  {l.metadata_json?.reasons && Array.isArray(l.metadata_json.reasons) && (
-                                    <div className="text-muted-foreground">
-                                      {l.metadata_json.reasons.map((r: string, i: number) => (
-                                        <p key={i} className="text-orange-400">• {r}</p>
-                                      ))}
-                                    </div>
-                                  )}
-                                  <p className="text-muted-foreground">Trigger: {l.trigger_source}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </ScrollArea>
-                        </div>
-                      )}
-
-                      {/* Recent Logs */}
-                      <div>
-                        <p className="text-xs font-medium mb-2">Recent Runs ({engineLogs.length})</p>
-                        <ScrollArea className="h-[200px]">
-                          <div className="space-y-1">
-                            {engineLogs.length === 0 ? (
-                              <p className="text-xs text-muted-foreground">No run logs yet</p>
-                            ) : engineLogs.map(l => (
-                              <div key={l.id} className="bg-muted/20 rounded p-2 text-[10px] space-y-0.5">
-                                <div className="flex justify-between">
-                                  <span className="flex items-center gap-1">
-                                    {statusIcon(l.status)}
-                                    {l.status}
-                                  </span>
-                                  <span>{l.duration_ms}ms</span>
-                                </div>
-                                {l.effect_summary && <p className="text-muted-foreground truncate">{l.effect_summary}</p>}
-                                {l.error_message && <p className="text-red-400 truncate">{l.error_message}</p>}
-                                <div className="flex gap-2 text-muted-foreground">
-                                  <span>R:{l.rows_read}</span>
-                                  <span>W:{l.db_rows_affected}</span>
-                                  <span>FX:{l.side_effect_count}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </ScrollArea>
-                      </div>
-                    </>
-                  );
-                })()}
               </CardContent>
             </Card>
-          ) : (
-            <Card className="border-dashed">
-              <CardContent className="p-8 text-center text-muted-foreground">
-                <Activity className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">Select an engine to view details</p>
+          </div>
+        </TabsContent>
+
+        {/* ═══ TAB: WATCHDOG ═══ */}
+        <TabsContent value="watchdog" className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card className="border-border/50">
+              <CardContent className="p-3 flex items-center gap-3">
+                <Eye className="h-5 w-5 text-primary" />
+                <div><p className="text-xl font-bold">{watchdog.length}</p><p className="text-[10px] text-muted-foreground">Monitored Pages</p></div>
               </CardContent>
             </Card>
-          )}
-        </div>
-      </div>
+            <Card className="border-border/50">
+              <CardContent className="p-3 flex items-center gap-3">
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <div><p className="text-xl font-bold">{watchdog.filter(w => w.current_status === "ok").length}</p><p className="text-[10px] text-muted-foreground">Healthy</p></div>
+              </CardContent>
+            </Card>
+            <Card className="border-border/50">
+              <CardContent className="p-3 flex items-center gap-3">
+                <XCircle className="h-5 w-5 text-red-500" />
+                <div><p className="text-xl font-bold">{failingPages}</p><p className="text-[10px] text-muted-foreground">Failing</p></div>
+              </CardContent>
+            </Card>
+            <Card className="border-border/50">
+              <CardContent className="p-3 flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                <div><p className="text-xl font-bold">{watchdog.filter(w => w.consecutive_failures > 2).length}</p><p className="text-[10px] text-muted-foreground">Consecutive Fails &gt;2</p></div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm">Page Health Watchdog</CardTitle></CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-1.5">
+                  {watchdog.sort((a, b) => (b.consecutive_failures ?? 0) - (a.consecutive_failures ?? 0)).map(w => (
+                    <div key={w.id} className={`rounded p-2.5 text-xs border flex justify-between items-center ${w.current_status === "ok" ? "bg-green-500/5 border-green-500/20" : "bg-red-500/5 border-red-500/20"}`}>
+                      <div className="flex items-center gap-2">
+                        {w.current_status === "ok" ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <XCircle className="h-3.5 w-3.5 text-red-500" />}
+                        <span className="font-mono">{w.page_key}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                        {w.consecutive_failures > 0 && <Badge variant="destructive" className="text-[8px] px-1 py-0">{w.consecutive_failures} fails</Badge>}
+                        {w.current_issue && <span className="text-red-400 max-w-[200px] truncate">{w.current_issue}</span>}
+                        <span>Last OK: {timeAgo(w.last_seen_ok_at)}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {watchdog.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No watchdog data yet — run the engine first</p>}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
