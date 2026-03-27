@@ -659,7 +659,7 @@ function MarketplaceHomeRouter() {
 
 const AppHealthGuard = () => {
   const health = useAppHealthCheck();
-  return <SystemHealthBanner db={health.db} auth={health.auth} realtime={health.realtime} />;
+  return <SystemHealthBanner db={health.db} auth={health.auth} realtime={health.realtime} checked={health.checked} />;
 };
 
 const App = () => (
