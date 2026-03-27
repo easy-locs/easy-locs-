@@ -657,7 +657,13 @@ function MarketplaceHomeRouter() {
   return <Suspense fallback={<PageLoader />}><OrbitAppShell><OrbitHome /></OrbitAppShell></Suspense>;
 }
 
+const AppHealthGuard = () => {
+  const health = useAppHealthCheck();
+  return <SystemHealthBanner db={health.db} auth={health.auth} realtime={health.realtime} />;
+};
+
 const App = () => (
+  <AppCrashBoundary>
   <ChunkRecoveryBoundary>
   <ErrorBoundary>
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
