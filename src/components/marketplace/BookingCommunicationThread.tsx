@@ -27,10 +27,9 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
   const { data: messages = [] } = useQuery({
     queryKey: ["booking_messages", bookingId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("messages")
+      const { data } = await (supabase as any)
+        .from("chat_messages_v2")
         .select("*")
-        .eq("org_id", orgId)
         .order("created_at", { ascending: true })
         .limit(200);
       // Filter messages for this booking by checking content or category
@@ -49,7 +48,7 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
       
       // Internal notes: just save the message directly
       if (messageType === "internal_note") {
-        await supabase.from("messages").insert({
+        await (supabase as any).from("chat_messages_v2").insert({
           org_id: orgId,
           sender_id: user?.id || null,
           content,
