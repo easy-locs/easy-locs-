@@ -42,6 +42,7 @@ try {
       <App />
     </HashRouter>
   );
+  (window as any).__EASYLOCS_BOOTED__ = true;
   console.info("[MAIN_BOOT_DONE]", performance.now().toFixed(1), "ms");
 } catch (err) {
   console.error("[MAIN_BOOT_CRASH]", err);
