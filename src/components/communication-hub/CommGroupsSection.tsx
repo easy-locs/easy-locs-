@@ -211,6 +211,7 @@ export default function CommGroupsSection() {
   };
 
   const openGroupChat = async (group: Group) => {
+    trackOrbitEvent("orbit.group.joined", { screen: "groups", component: "CommGroupsSection", action: "open_group", payload: { groupId: group.id, type: group.group_type }, result: "success" });
     setActiveGroup(group);
     haptic("light");
     const { data: msgs } = await (supabase as any)
