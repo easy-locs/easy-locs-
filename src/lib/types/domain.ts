@@ -32,9 +32,8 @@ export type BookingStatus =
 
 export type BookingFlowMode = "instant_book" | "request_to_book";
 
-export type ConversationType = "direct" | "booking" | "property_management";
-
-export type MessageType = "text" | "system" | "payment" | "booking" | "call";
+// Re-export canonical communication types from comms.ts — SINGLE SOURCE OF TRUTH
+export type { ConversationType, MessageType, ConversationParticipant, ConversationRecord, ChatMessageRecord } from "@/lib/types/comms";
 
 export type LeaseStatus = "draft" | "active" | "late" | "terminated" | "completed";
 
@@ -200,33 +199,7 @@ export interface BookingRecordV2 {
   updatedAt: string;
 }
 
-export interface ConversationParticipant {
-  orbitId: string;
-  role?: "buyer" | "seller" | "owner" | "tenant" | "guest" | "manager";
-}
-
-export interface ConversationRecord {
-  id: string;
-  type: ConversationType;
-  participants: ConversationParticipant[];
-  title?: string;
-  listingId?: string;
-  bookingId?: string;
-  leaseId?: string;
-  lastMessageAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ChatMessageRecord {
-  id: string;
-  conversationId: string;
-  senderOrbitId: string;
-  type: MessageType;
-  body: string;
-  metadata?: Record<string, unknown>;
-  createdAt: string;
-}
+// ConversationParticipant, ConversationRecord, ChatMessageRecord are all re-exported from comms.ts (line 36).
 
 export interface PropertyUnitManagement {
   id: string;
