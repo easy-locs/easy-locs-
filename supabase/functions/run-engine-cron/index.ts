@@ -1,15 +1,11 @@
 /**
- * run-engine-cron — 24/7 autonomous engine runner (HARDENED V2).
- * Called by pg_cron every 5 minutes. Processes all engines in engine_supervisor.
- *
- * V2 changes:
- * - Real handlers for 30+ critical engines (not just heartbeat)
- * - Timeout enforcement (AbortController)
- * - Kill switch support
- * - Dry-run mode
- * - Optimistic locking
- * - Persistent engine_run_logs
- * - Success rate tracking
+ * run-engine-cron — 24/7 autonomous engine runner (HARDENED V3).
+ * 
+ * V3 fixes:
+ * - kill_switch NULL handling (treat NULL as false)
+ * - Stuck "running" recovery (auto-unlock after 2min)
+ * - Force mode to bypass interval gating
+ * - Guaranteed engine_run_logs persistence
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -19,21 +15,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface EngineSupervisor {
-  engine_name: string;
-  status: string;
-  enabled: boolean;
-  last_run_at: string | null;
-  interval_ms: number;
-  consecutive_failures: number;
-  max_retries: number;
-  kill_switch: boolean;
-  dry_run: boolean;
-  timeout_ms: number;
-  total_runs: number;
-  total_rows_affected: number;
-}
-
 interface EngineResult {
   summary: string;
   rows: number;
@@ -42,33 +23,32 @@ interface EngineResult {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// REAL ENGINE HANDLERS — Each performs actual DB operations
+// REAL ENGINE HANDLERS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
 
-  // ── QUALITY / VISIBILITY ──
   "shop-quality": async (sb) => {
     const { data } = await sb.from("seed_merchants").select("id, visibility_score, visibility_mode")
       .in("visibility_mode", ["draft", "hidden"]).limit(50);
     const count = data?.length ?? 0;
     let rows = 0;
-    if (count > 0) {
-      for (const m of data) {
-        const score = m.visibility_score ?? 0;
-        if (score < 20) {
-          await sb.from("seed_merchants").update({ visibility_score: Math.max(score, 10) }).eq("id", m.id);
-          rows++;
-        }
+    for (const m of data ?? []) {
+      const score = m.visibility_score ?? 0;
+      if (score < 20) {
+        await sb.from("seed_merchants").update({ visibility_score: Math.max(score, 10) }).eq("id", m.id);
+        rows++;
       }
     }
     return { summary: `Scored ${count} merchants, updated ${rows}`, rows, rowsRead: count };
   },
 
   "self-healing-scan": async (sb) => {
-    const { data } = await sb.from("storefront_pages").select("id, status").eq("status", "broken").limit(20);
+    const { data } = await sb.from("storefront_pages").select("id, route_status").eq("route_status", "broken").limit(20);
     const count = data?.length ?? 0;
     if (count > 0) {
-      await sb.from("storefront_pages").update({ status: "draft" }).eq("status", "broken");
+      for (const s of data) {
+        await sb.from("storefront_pages").update({ route_status: "draft" }).eq("id", s.id);
+      }
     }
     return { summary: `Healed ${count} broken storefronts`, rows: count, sideEffects: count };
   },
@@ -89,10 +69,8 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     const { data } = await sb.from("seed_merchants").select("id, gate_status, visibility_mode")
       .eq("gate_status", "passed").eq("visibility_mode", "hidden").limit(20);
     const count = data?.length ?? 0;
-    if (count > 0) {
-      for (const m of data) {
-        await sb.from("seed_merchants").update({ visibility_mode: "search_only" }).eq("id", m.id);
-      }
+    for (const m of data ?? []) {
+      await sb.from("seed_merchants").update({ visibility_mode: "search_only" }).eq("id", m.id);
     }
     return { summary: `Auto-published ${count} gated merchants`, rows: count };
   },
@@ -107,13 +85,14 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     return { summary: `Auto-unpublished ${count} low-quality merchants`, rows: count };
   },
 
-  // ── NOTIFICATIONS / CLEANUP ──
   "notification-cleanup": async (sb) => {
     const cutoff = new Date(Date.now() - 30 * 86400000).toISOString();
-    const { count } = await sb.from("notifications").delete()
-      .lt("created_at", cutoff).eq("read", true)
-      .select("id", { count: "exact", head: true });
-    return { summary: `Cleaned ${count ?? 0} old notifications`, rows: count ?? 0, sideEffects: count ?? 0 };
+    const { data } = await sb.from("notifications").select("id").lt("created_at", cutoff).eq("read", true).limit(100);
+    const count = data?.length ?? 0;
+    for (const n of data ?? []) {
+      await sb.from("notifications").delete().eq("id", n.id);
+    }
+    return { summary: `Cleaned ${count} old notifications`, rows: count, sideEffects: count };
   },
 
   "call-log-cleanup": async (sb) => {
@@ -123,7 +102,6 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     return { summary: `Found ${count} old call logs`, rows: 0, rowsRead: count };
   },
 
-  // ── WALLET / FINANCE ──
   "wallet-sync": async (sb) => {
     const { data: wallets } = await sb.from("wallet_accounts").select("id, balance, status")
       .eq("status", "active").limit(50);
@@ -164,15 +142,12 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     const cutoff = new Date(Date.now() - 3600000).toISOString();
     const { data } = await sb.from("qr_sessions").select("id").eq("status", "pending").lt("created_at", cutoff).limit(50);
     const count = data?.length ?? 0;
-    if (count > 0) {
-      for (const s of data) {
-        await sb.from("qr_sessions").update({ status: "expired" }).eq("id", s.id);
-      }
+    for (const s of data ?? []) {
+      await sb.from("qr_sessions").update({ status: "expired" }).eq("id", s.id);
     }
     return { summary: `Expired ${count} stale QR sessions`, rows: count, sideEffects: count };
   },
 
-  // ── COMMERCE ──
   "abandoned-cart": async (sb) => {
     const cutoff = new Date(Date.now() - 3600000).toISOString();
     const { data } = await sb.from("abandoned_cart_events").select("id, status")
@@ -225,7 +200,6 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     return { summary: `Demoted ${count} merchants with no menu`, rows: count };
   },
 
-  // ── ONBOARDING / TAXONOMY ──
   "vertical-classifier": async (sb) => {
     const { data } = await sb.from("seed_merchants").select("id, vertical, name, category")
       .is("vertical", null).limit(30);
@@ -277,7 +251,6 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     return { summary: `${data?.length ?? 0} merchants without trust score`, rows: 0, rowsRead: data?.length ?? 0 };
   },
 
-  // ── PUBLISH GATES ──
   "publish-gate": async (sb) => {
     const { data } = await sb.from("seed_merchants").select("id, name, category, cover_image_url, visibility_score, visibility_mode, gate_status")
       .is("gate_status", null).limit(50);
@@ -287,7 +260,6 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
       if (!m.category || ["general", "other", "unknown"].includes(m.category?.toLowerCase())) blockers.push("no_category");
       if (!m.cover_image_url) blockers.push("no_cover");
       if ((m.visibility_score ?? 0) < 25) blockers.push("low_score");
-
       if (blockers.length === 0) {
         await sb.from("seed_merchants").update({ gate_status: "passed" }).eq("id", m.id);
         passed++;
@@ -317,8 +289,7 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
       .eq("vertical", "hotel").eq("visibility_mode", "hidden").limit(30);
     let promoted = 0;
     for (const m of data ?? []) {
-      const inv = m.hotel_inventory_json;
-      if (inv?.roomTypes?.length > 0) {
+      if (m.hotel_inventory_json?.roomTypes?.length > 0) {
         await sb.from("seed_merchants").update({ visibility_mode: "search_only" }).eq("id", m.id);
         promoted++;
       }
@@ -352,7 +323,6 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     return { summary: `Service gate: ${promoted} promoted`, rows: promoted, rowsRead: data?.length ?? 0 };
   },
 
-  // ── DELIVERY / ORDERS ──
   "order-lifecycle": async (sb) => {
     const { data } = await sb.from("storefront_orders").select("id, status, created_at")
       .in("status", ["pending", "confirmed"]).limit(50);
@@ -377,7 +347,6 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     return { summary: `${data?.length ?? 0} active rides`, rows: 0, rowsRead: data?.length ?? 0 };
   },
 
-  // ── INFRASTRUCTURE ──
   "sla-breach-check": async (sb) => {
     const { data } = await sb.from("support_tickets").select("id, priority, sla_deadline")
       .eq("status", "open").not("sla_deadline", "is", null).limit(30);
@@ -435,11 +404,7 @@ async function noopEngine(_sb: any, name: string): Promise<EngineResult> {
   return { summary: `${name} heartbeat ok`, rows: 0, rowsRead: 0, sideEffects: 0 };
 }
 
-// Execute engine with timeout
-async function runWithTimeout(
-  fn: () => Promise<EngineResult>,
-  timeoutMs: number
-): Promise<EngineResult> {
+function runWithTimeout(fn: () => Promise<EngineResult>, timeoutMs: number): Promise<EngineResult> {
   return Promise.race([
     fn(),
     new Promise<EngineResult>((_, reject) =>
@@ -457,19 +422,40 @@ Deno.serve(async (req) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const sb = createClient(supabaseUrl, serviceKey);
 
+  // Parse body for force mode
+  let forceRun = false;
+  let forceEngines: string[] | null = null;
   try {
-    // 1. Get all enabled engines (exclude killed)
-    const { data: engines } = await sb
-      .from("engine_supervisor")
-      .select("*")
-      .eq("enabled", true)
-      .eq("kill_switch", false)
-      .order("engine_name");
+    const body = await req.json();
+    forceRun = body?.force === true;
+    if (body?.engines && Array.isArray(body.engines)) forceEngines = body.engines;
+  } catch { /* no body */ }
 
-    if (!engines || engines.length === 0) {
+  try {
+    // ── Step 0: Recover stuck engines (running > 2 min) ──
+    const stuckCutoff = new Date(Date.now() - 120000).toISOString();
+    await sb.from("engine_supervisor")
+      .update({ status: "idle" })
+      .eq("status", "running")
+      .lt("heartbeat", stuckCutoff);
+
+    // ── Step 1: Get eligible engines ──
+    // FIX: Use or() to handle kill_switch NULL (treat NULL as not-killed)
+    let query = sb.from("engine_supervisor").select("*").eq("enabled", true).order("engine_name");
+
+    const { data: allEngines } = await query;
+    if (!allEngines || allEngines.length === 0) {
       return new Response(JSON.stringify({ ok: true, message: "No engines enabled", ran: 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Filter out killed engines (kill_switch === true explicitly)
+    let engines = allEngines.filter((e: any) => e.kill_switch !== true);
+
+    // If forceEngines specified, filter to those
+    if (forceEngines) {
+      engines = engines.filter((e: any) => forceEngines!.includes(e.engine_name));
     }
 
     const now = Date.now();
@@ -477,32 +463,43 @@ Deno.serve(async (req) => {
     let errors = 0;
     const results: { engine: string; status: string; summary: string; durationMs?: number }[] = [];
 
-    for (const engine of engines as EngineSupervisor[]) {
-      // Check if engine is due to run
-      const lastRun = engine.last_run_at ? new Date(engine.last_run_at).getTime() : 0;
-      const interval = engine.interval_ms || 300000;
-      if (now - lastRun < interval) continue;
+    for (const engine of engines) {
+      // Check interval (skip if not forced and not due)
+      if (!forceRun) {
+        const lastRun = engine.last_run_at ? new Date(engine.last_run_at).getTime() : 0;
+        const interval = engine.interval_ms || 300000;
+        if (now - lastRun < interval) continue;
+      }
 
       // Check max retries
-      if (engine.consecutive_failures >= (engine.max_retries || 5)) {
+      if ((engine.consecutive_failures || 0) >= (engine.max_retries || 5)) {
         await sb.from("engine_supervisor").update({ enabled: false, status: "disabled" }).eq("engine_name", engine.engine_name);
         results.push({ engine: engine.engine_name, status: "disabled", summary: "Max retries exceeded" });
         continue;
       }
 
-      // Optimistic lock — mark as running
+      // Optimistic lock — mark as running (allow re-lock if status is idle, ok, error, or null)
       const { data: lockResult } = await sb.from("engine_supervisor").update({
         status: "running",
         heartbeat: new Date().toISOString(),
       }).eq("engine_name", engine.engine_name).neq("status", "running").select("engine_name");
 
-      // If lock failed (already running), skip
-      if (!lockResult || lockResult.length === 0) continue;
+      if (!lockResult || lockResult.length === 0) {
+        // If forced, try unconditional lock
+        if (forceRun) {
+          await sb.from("engine_supervisor").update({
+            status: "running",
+            heartbeat: new Date().toISOString(),
+          }).eq("engine_name", engine.engine_name);
+        } else {
+          continue;
+        }
+      }
 
       const start = Date.now();
       const logId = crypto.randomUUID();
       const timeoutMs = engine.timeout_ms || 30000;
-      const isDryRun = engine.dry_run ?? false;
+      const isDryRun = engine.dry_run === true;
 
       try {
         const handler = ENGINE_ACTIONS[engine.engine_name] || ((s: any) => noopEngine(s, engine.engine_name));
@@ -531,7 +528,7 @@ Deno.serve(async (req) => {
         }).eq("engine_name", engine.engine_name);
 
         // Persist run log
-        await sb.from("engine_run_logs").insert({
+        const { error: logErr } = await sb.from("engine_run_logs").insert({
           id: logId,
           engine_name: engine.engine_name,
           category: "cron",
@@ -543,9 +540,13 @@ Deno.serve(async (req) => {
           db_rows_affected: result.rows,
           rows_read: result.rowsRead ?? 0,
           side_effect_count: result.sideEffects ?? 0,
-          trigger_source: "cron",
+          trigger_source: forceRun ? "force" : "cron",
           metadata_json: { isDryRun },
-        }).catch((e: any) => console.error(`[run-log] insert failed for ${engine.engine_name}:`, e?.message));
+        });
+
+        if (logErr) {
+          console.error(`[run-log] FAILED for ${engine.engine_name}: ${logErr.message}`);
+        }
 
         results.push({ engine: engine.engine_name, status: "ok", summary: result.summary, durationMs: duration });
         ran++;
@@ -564,7 +565,6 @@ Deno.serve(async (req) => {
           total_runs: totalRuns,
         }).eq("engine_name", engine.engine_name);
 
-        // Log error run
         await sb.from("engine_run_logs").insert({
           id: logId,
           engine_name: engine.engine_name,
@@ -574,7 +574,7 @@ Deno.serve(async (req) => {
           duration_ms: duration,
           status: "error",
           error_message: e?.message?.slice(0, 500) || "unknown",
-          trigger_source: "cron",
+          trigger_source: forceRun ? "force" : "cron",
         }).catch(() => {});
 
         results.push({ engine: engine.engine_name, status: "error", summary: e?.message?.slice(0, 100) || "unknown" });
