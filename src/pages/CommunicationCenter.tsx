@@ -3,9 +3,9 @@
  * Full-screen messaging experience — NO sidebar, standalone layout.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, Zap, Lock, ShieldCheck } from "lucide-react";
+import { Plus, Zap, Lock, ShieldCheck, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "groups", "
 
 export const CommunicationCenter = () => {
   const { orgId, user } = useAuth();
+  const navigate = useNavigate();
   const userId = user?.id;
   const { t } = useI18n();
   const isMobile = useIsMobile();
@@ -211,11 +212,19 @@ export const CommunicationCenter = () => {
           }}
         >
           {isMobile && selectedThread ? (
-            <h1 className="text-sm font-semibold flex-1 truncate" style={{ color: "hsl(var(--foreground))" }}>
-              {selectedThread.name}
-            </h1>
+            <>
+              <button onClick={handleBack} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm mr-2 shrink-0">
+                <ArrowLeft className="w-4.5 h-4.5" />
+              </button>
+              <h1 className="text-sm font-semibold flex-1 truncate" style={{ color: "hsl(var(--foreground))" }}>
+                {selectedThread.name}
+              </h1>
+            </>
           ) : (
             <div className="flex items-center gap-2 flex-1">
+              <button onClick={() => navigate("/")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm mr-1 shrink-0">
+                <ArrowLeft className="w-4.5 h-4.5" />
+              </button>
               <h1 className="text-lg font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
                 Orbit
               </h1>
