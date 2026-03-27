@@ -2917,6 +2917,66 @@ export type Database = {
         }
         Relationships: []
       }
+      call_sessions: {
+        Row: {
+          answered_at: string | null
+          call_type: string
+          caller_orbit_id: string
+          camera_off_by: Json
+          conversation_id: string | null
+          created_at: string
+          device_info: Json
+          ended_at: string | null
+          id: string
+          metadata: Json
+          muted_by: Json
+          quality_state: string | null
+          receiver_orbit_id: string | null
+          reconnect_count: number
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          answered_at?: string | null
+          call_type?: string
+          caller_orbit_id: string
+          camera_off_by?: Json
+          conversation_id?: string | null
+          created_at?: string
+          device_info?: Json
+          ended_at?: string | null
+          id?: string
+          metadata?: Json
+          muted_by?: Json
+          quality_state?: string | null
+          receiver_orbit_id?: string | null
+          reconnect_count?: number
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          answered_at?: string | null
+          call_type?: string
+          caller_orbit_id?: string
+          camera_off_by?: Json
+          conversation_id?: string | null
+          created_at?: string
+          device_info?: Json
+          ended_at?: string | null
+          id?: string
+          metadata?: Json
+          muted_by?: Json
+          quality_state?: string | null
+          receiver_orbit_id?: string | null
+          reconnect_count?: number
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       call_signals: {
         Row: {
           created_at: string
@@ -31762,6 +31822,10 @@ export type Database = {
       is_workspace_member_direct: {
         Args: { p_workspace_id: string }
         Returns: boolean
+      }
+      mark_call_as_missed_v2: {
+        Args: { p_reason?: string; p_session_id: string }
+        Returns: undefined
       }
       purchase_boost: {
         Args: {
