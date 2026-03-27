@@ -29,7 +29,7 @@ export function useUnreadMessages() {
 
       setCount(unread ?? 0);
     } catch {
-      // Silently fail
+      setCount(0);
     }
   }, [user?.id]);
 
@@ -38,8 +38,8 @@ export function useUnreadMessages() {
 
     const channel = supabase
       .channel("unread-v2-only")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, () => fetchCount())
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages_v2" }, () => fetchCount())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, fetchCount)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages_v2" }, fetchCount)
       .subscribe();
 
     const unsub = platformBus.on("orbit:message_sent", () => {

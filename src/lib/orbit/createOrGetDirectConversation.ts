@@ -1,7 +1,9 @@
-import { supabase } from "@/integrations/supabase/client";
+/**
+ * createOrGetDirectConversation — Canonical V2+ direct conversation creator.
+ * Uses orbitDb for all DB access.
+ */
+import { orbitDb } from "@/lib/db/orbitDb";
 import type { ConversationParticipant, ConversationRow } from "@/lib/types/comms";
-
-const db = supabase as any;
 
 type Params = {
   myUserId: string;
@@ -36,31 +38,27 @@ export async function createOrGetDirectConversation(params: Params): Promise<Con
     throw new Error("Cannot create a conversation with yourself");
   }
 
-  const participants = normalizeParticipants(params);
-  const userIds = [params.myUserId, params.peerUserId].sort();
+  const directUserIds = [params.myUserId, params.peerUserId].sort();
 
-  // Find existing direct conversation with these exact user IDs
-  const { data: existing, error: existingError } = await db
-    .from("conversations_v2")
-    .select("*")
+  const { data: existing, error: existingError } = await orbitDb.conversations
+    .list()
     .eq("type", "direct")
-    .contains("metadata", { direct_user_ids: userIds })
+    .contains("metadata", { direct_user_ids: directUserIds })
     .maybeSingle();
 
   if (existingError) throw existingError;
   if (existing) return existing as ConversationRow;
 
-  const { data, error } = await db
-    .from("conversations_v2")
-    .insert({
-      type: "direct",
-      participants,
-      metadata: { direct_user_ids: userIds },
-      last_message_at: new Date().toISOString(),
-      last_message_preview: null,
-    })
-    .select("*")
-    .single();
+  const participants = normalizeParticipants(params);
+
+  const { data, error } = await orbitDb.conversations.insert({
+    type: "direct",
+    title: null,
+    participants,
+    metadata: { direct_user_ids: directUserIds },
+    last_message_at: new Date().toISOString(),
+    last_message_preview: null,
+  });
 
   if (error) throw error;
   return data as ConversationRow;

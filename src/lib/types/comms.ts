@@ -13,20 +13,36 @@
  */
 
 // ═══════════════════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════════════════
+
+export type JsonRecord = Record<string, unknown>;
+
+// ═══════════════════════════════════════════════════
 // TAXONOMY — Conversation & Message types
 // ═══════════════════════════════════════════════════
 
-export type ConversationType = "direct" | "group" | "support" | "system" | "booking" | "property_management";
+export type ConversationType =
+  | "direct"
+  | "group"
+  | "support"
+  | "booking"
+  | "tenant"
+  | "property"
+  | "property_management"
+  | "system";
 
 export type MessageType =
   | "text"
+  | "system"
   | "image"
   | "video"
   | "audio"
+  | "voice"
   | "file"
   | "location"
-  | "system"
-  | "call_log";
+  | "payment"
+  | "call_event";
 
 export type CallType = "audio" | "video";
 
@@ -35,16 +51,16 @@ export type CallStatus =
   | "answered"
   | "missed"
   | "ended"
-  | "failed";
+  | "failed"
+  | "cancelled";
 
 export type CallDirection = "incoming" | "outgoing";
 
 export type CallLogStatus =
+  | "completed"
   | "missed"
-  | "answered"
-  | "rejected"
-  | "ended"
-  | "cancelled";
+  | "cancelled"
+  | "failed";
 
 // ═══════════════════════════════════════════════════
 // IDENTITY — Orbit profile (DB row shape)
@@ -64,15 +80,13 @@ export type OrbitProfileRow = {
 // ═══════════════════════════════════════════════════
 
 export interface ConversationParticipant {
-  orbitId?: string | null;
   userId?: string | null;
+  orbitId?: string | null;
   email?: string | null;
   phone?: string | null;
   displayName?: string | null;
   avatarUrl?: string | null;
   role?: string | null;
-  joinedAt?: string | null;
-  isAdmin?: boolean;
 }
 
 // ═══════════════════════════════════════════════════
@@ -82,21 +96,19 @@ export interface ConversationParticipant {
 export interface ConversationRow {
   id: string;
   type: ConversationType;
-  participants: ConversationParticipant[] | null;
   title: string | null;
+  participants: ConversationParticipant[] | null;
+  listing_id?: string | null;
+  booking_id?: string | null;
+  lease_id?: string | null;
   created_by_orbit_id?: string | null;
-  listing_id: string | null;
-  booking_id: string | null;
-  lease_id: string | null;
-  context_type?: string | null;
-  context_id?: string | null;
-  last_message_at: string;
-  last_message_preview: string | null;
-  unread_count_cache: number | null;
-  archived: boolean | null;
-  muted: boolean | null;
-  ghost_mode: boolean | null;
-  metadata: Record<string, unknown> | null;
+  last_message_at: string | null;
+  last_message_preview?: string | null;
+  unread_count_cache?: number | null;
+  archived?: boolean | null;
+  muted?: boolean | null;
+  ghost_mode?: boolean | null;
+  metadata?: JsonRecord | null;
   created_at: string;
   updated_at: string;
 }
@@ -121,7 +133,7 @@ export interface ChatMessageRow {
   failed_at: string | null;
   deleted_at: string | null;
   edited_at: string | null;
-  metadata: Record<string, unknown> | null;
+  metadata: JsonRecord | null;
   created_at: string;
 }
 
@@ -179,7 +191,7 @@ export interface ConversationRecord {
   archived?: boolean;
   muted?: boolean;
   ghostMode?: boolean;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonRecord;
   createdAt: string;
   updatedAt: string;
 }
@@ -199,6 +211,6 @@ export interface ChatMessageRecord {
   failedAt?: string | null;
   deletedAt?: string | null;
   editedAt?: string | null;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonRecord;
   createdAt: string;
 }
