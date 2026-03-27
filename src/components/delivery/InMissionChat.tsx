@@ -50,14 +50,13 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
   const loadMessages = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await supabase
-        .from("messages")
-        .select("id, sender_id, content, created_at")
-        .eq("context_id", contextId)
-        .eq("context_type", "delivery_chat")
+      const { data } = await (supabase as any)
+        .from("chat_messages_v2")
+        .select("id, sender_user_id, body, created_at")
+        .eq("conversation_id", contextId)
         .order("created_at", { ascending: true })
         .limit(100);
-      setMessages((data || []) as ChatMessage[]);
+      setMessages((data || []).map((m: any) => ({ id: m.id, sender_id: m.sender_user_id, content: m.body, created_at: m.created_at })) as ChatMessage[]);
     } catch (err) {
       console.error("[mission-chat]", err);
     } finally {
@@ -79,13 +78,13 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
-        table: "messages",
-        filter: `context_id=eq.${contextId}`,
+        table: "chat_messages_v2",
+        filter: `conversation_id=eq.${contextId}`,
       }, (payload) => {
         const msg = payload.new as any;
         setMessages(prev => {
           if (prev.some(m => m.id === msg.id)) return prev;
-          return [...prev, { id: msg.id, sender_id: msg.sender_id, content: msg.content, created_at: msg.created_at }];
+          return [...prev, { id: msg.id, sender_id: msg.sender_user_id, content: msg.body, created_at: msg.created_at }];
         });
       })
       .subscribe();
@@ -105,13 +104,12 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
         .eq("id", jobId)
         .maybeSingle();
 
-      const { error } = await supabase.from("messages").insert({
-        sender_id: user.id,
-        org_id: (jobData as any)?.merchant_id || "",
-        content: input.trim(),
-        context_type: "delivery_chat",
-        context_id: contextId,
-        message_type: "text",
+      const { error } = await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: contextId,
+        sender_user_id: user.id,
+        sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
+        type: "text",
+        body: input.trim(),
       });
       if (error) throw error;
       setInput("");

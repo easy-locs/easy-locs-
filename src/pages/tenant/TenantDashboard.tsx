@@ -68,13 +68,13 @@ const TenantDashboard = () => {
           .eq("receipt_validated", true);
         setReceiptsCount(count || 0);
 
-        // Unread messages
-        const { count: msgCount } = await supabase
-          .from("messages")
+        // Unread messages (V2)
+        const { count: msgCount } = await (supabase as any)
+          .from("app_notifications")
           .select("id", { count: "exact", head: true })
-          .eq("tenant_id", tenant.id)
-          .eq("read", false)
-          .neq("sender_id", user.id);
+          .eq("user_id", user.id)
+          .eq("category", "message")
+          .is("read_at", null);
         setUnreadMessages(msgCount || 0);
 
         // Next unpaid rent (prefer lease_id-linked rent_calls)
