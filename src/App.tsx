@@ -28,6 +28,7 @@ import { PermissionBootstrap } from "@/components/boot/PermissionBootstrap";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
+import BrowserTelemetryProvider from "@/components/system/BrowserTelemetryProvider";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 
