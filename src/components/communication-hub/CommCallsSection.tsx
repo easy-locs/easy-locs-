@@ -66,7 +66,12 @@ export default function CommCallsSection() {
   const [nameCache, setNameCache] = useState<Record<string, string>>({});
 
   const loadCalls = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setCalls([]);
+      setLoadError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setLoadError(null);
 
