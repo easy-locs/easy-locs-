@@ -1,7 +1,7 @@
 /**
- * CanonicalMap — The single canonical Mapbox map component for the entire project.
- * Supports: all entity kinds, clusters, heatmap, routes, zones, radius, weather, rain radar, traffic.
- * Integrates with useMapLayersStore for layer toggle control.
+ * CanonicalMap — Premium visual-first Mapbox map.
+ * Labels hidden by default, glow/pulse/halo for visual hierarchy,
+ * soft weather overlays, clean clusters, smooth animations.
  */
 import { useEffect, useRef, useState, useMemo, memo, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
@@ -14,7 +14,7 @@ import { useMapLayersStore } from "@/stores/useMapLayersStore";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useRainRadar } from "@/hooks/useRainRadar";
 
-/* ═══ Source / Layer IDs — prefixed to avoid collisions ═══ */
+/* ═══ Source / Layer IDs ═══ */
 const S = {
   ENTITIES: "cm-entities",
   ROUTES: "cm-routes",
@@ -26,24 +26,21 @@ const S = {
 } as const;
 
 const L = {
-  // Bottom
   ZONE_FILL: "cm-zone-fill",
   ZONE_LINE: "cm-zone-line",
   RADIUS_FILL: "cm-radius-fill",
   RADIUS_LINE: "cm-radius-line",
-  // Weather
   RAIN: "cm-rain-layer",
-  // Heatmap
   HEATMAP: "cm-heatmap",
-  // Routes
   ROUTE_LINE: "cm-route-line",
-  // Entity layers
   CLUSTER_CIRCLE: "cm-cluster-circle",
+  CLUSTER_GLOW: "cm-cluster-glow",
   CLUSTER_COUNT: "cm-cluster-count",
-  POINT_GLOW: "cm-point-glow",
+  POINT_HALO: "cm-point-halo",
   POINT: "cm-point",
+  POINT_SELECTED_RING: "cm-point-selected-ring",
   LABEL: "cm-label",
-  // User
+  USER_PULSE: "cm-user-pulse",
   USER_GLOW: "cm-user-glow",
   USER_DOT: "cm-user-dot",
 } as const;
@@ -82,13 +79,15 @@ function safeSetData(map: mapboxgl.Map, sourceId: string, data: GeoJSON.FeatureC
 
 function buildPopupHTML(props: Record<string, any>): string {
   const rating = props.rating ? Number(props.rating) : 0;
-  const stars = rating > 0 ? `<span style="color:#eab308;font-weight:700">★ ${rating.toFixed(1)}</span>` : "";
-  const dist = props.distanceKm != null ? `<span style="color:rgba(255,255,255,0.5);font-size:10px;margin-left:4px">${Number(props.distanceKm).toFixed(1)}km</span>` : "";
-  return `<div style="min-width:140px;background:hsl(220,15%,13%);border-radius:10px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
-    <div style="padding:8px 10px">
-      <div style="font-weight:700;font-size:13px;color:#fff;margin-bottom:2px;line-height:1.3">${props.title || ""}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.6)">${stars}${dist}</div>
-    </div>
+  const stars = rating > 0
+    ? `<span style="color:#eab308;font-weight:700;font-size:10px">★ ${rating.toFixed(1)}</span>`
+    : "";
+  const dist = props.distanceKm != null
+    ? `<span style="color:rgba(255,255,255,0.35);font-size:9px;margin-left:4px">${Number(props.distanceKm).toFixed(1)}km</span>`
+    : "";
+  return `<div style="min-width:100px;background:rgba(12,14,20,0.92);border-radius:12px;padding:8px 10px;box-shadow:0 12px 40px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(20px)">
+    <div style="font-weight:700;font-size:12px;color:rgba(255,255,255,0.92);line-height:1.3">${props.title || ""}</div>
+    <div style="margin-top:2px">${stars}${dist}</div>
   </div>`;
 }
 
@@ -107,6 +106,7 @@ export default memo(function CanonicalMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
+  const pulseRef = useRef<number>(0);
   const [ready, setReady] = useState(false);
 
   const layers = useMapLayersStore((s) => s.layers);
@@ -122,7 +122,6 @@ export default memo(function CanonicalMap({
   const weather = useLiveWeatherStation({ lat: cLat, lng: cLng });
   const rainRadar = useRainRadar(layers.rainRadar || layers.weather || weather.isRaining);
 
-  // Filter entities by active layers
   const filteredEntities = useMemo(() => {
     return entities.filter((e) => {
       const flag = KIND_TO_FLAG[e.kind];
@@ -143,6 +142,7 @@ export default memo(function CanonicalMap({
       zoom: initialCenter.zoom ?? 12,
       attributionControl: false,
       maxZoom: 18,
+      fadeDuration: 200,
     });
     mapRef.current = map;
 
@@ -168,101 +168,207 @@ export default memo(function CanonicalMap({
 
       // ── Layers (bottom → top) ──
 
-      // Zones
-      map.addLayer({ id: L.ZONE_FILL, type: "fill", source: S.ZONES, paint: { "fill-color": "hsl(220,60%,50%)", "fill-opacity": 0.1 } });
-      map.addLayer({ id: L.ZONE_LINE, type: "line", source: S.ZONES, paint: { "line-color": "hsl(220,60%,50%)", "line-width": 1.5, "line-opacity": 0.4, "line-dasharray": [4, 3] } });
+      // Zones — subtle
+      map.addLayer({
+        id: L.ZONE_FILL, type: "fill", source: S.ZONES,
+        paint: { "fill-color": "hsla(220,60%,55%,0.06)" },
+        layout: { visibility: "none" },
+      });
+      map.addLayer({
+        id: L.ZONE_LINE, type: "line", source: S.ZONES,
+        paint: { "line-color": "hsla(220,60%,55%,0.2)", "line-width": 1, "line-dasharray": [6, 4] },
+        layout: { visibility: "none" },
+      });
 
-      // Radius
-      map.addLayer({ id: L.RADIUS_FILL, type: "fill", source: S.RADIUS, paint: { "fill-color": "hsl(220,70%,55%)", "fill-opacity": 0.08 } });
-      map.addLayer({ id: L.RADIUS_LINE, type: "line", source: S.RADIUS, paint: { "line-color": "hsl(220,70%,60%)", "line-width": 2, "line-opacity": 0.4, "line-dasharray": [4, 3] } });
+      // Radius — glass-like
+      map.addLayer({
+        id: L.RADIUS_FILL, type: "fill", source: S.RADIUS,
+        paint: { "fill-color": "hsla(220,70%,55%,0.04)" },
+      });
+      map.addLayer({
+        id: L.RADIUS_LINE, type: "line", source: S.RADIUS,
+        paint: { "line-color": "hsla(220,70%,60%,0.15)", "line-width": 1.5, "line-dasharray": [6, 4] },
+      });
 
-      // Rain radar
-      map.addLayer({ id: L.RAIN, type: "raster", source: S.RAIN, paint: { "raster-opacity": 0, "raster-fade-duration": 300 }, layout: { visibility: "none" } });
+      // Rain radar — very soft
+      map.addLayer({
+        id: L.RAIN, type: "raster", source: S.RAIN,
+        paint: { "raster-opacity": 0, "raster-fade-duration": 500 },
+        layout: { visibility: "none" },
+      });
 
-      // Heatmap
+      // Heatmap — ethereal
       map.addLayer({
         id: L.HEATMAP, type: "heatmap", source: S.HEATMAP,
         paint: {
           "heatmap-weight": ["interpolate", ["linear"], ["get", "intensity"], 0, 0, 1, 1],
-          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 1, 13, 3],
-          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 6, 13, 30],
-          "heatmap-opacity": 0.7,
+          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.8, 13, 2.5],
+          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 13, 35],
+          "heatmap-opacity": 0.5,
           "heatmap-color": [
             "interpolate", ["linear"], ["heatmap-density"],
-            0, "rgba(0,0,0,0)", 0.2, "hsla(220,70%,50%,0.4)", 0.4, "hsla(180,70%,50%,0.5)",
-            0.6, "hsla(120,70%,50%,0.6)", 0.8, "hsla(45,90%,55%,0.7)", 1, "hsla(0,80%,55%,0.8)",
+            0, "rgba(0,0,0,0)",
+            0.15, "hsla(220,70%,50%,0.15)",
+            0.35, "hsla(200,70%,50%,0.25)",
+            0.55, "hsla(170,70%,50%,0.35)",
+            0.75, "hsla(45,80%,55%,0.45)",
+            1, "hsla(15,80%,55%,0.55)",
           ],
         },
         layout: { visibility: "none" },
       });
 
-      // Routes
-      map.addLayer({ id: L.ROUTE_LINE, type: "line", source: S.ROUTES, paint: { "line-color": ["coalesce", ["get", "color"], "#3b82f6"], "line-width": 4, "line-opacity": 0.75 }, layout: { "line-cap": "round", "line-join": "round", visibility: "none" } });
-
-      // Entity clusters
+      // Routes — neon line
       map.addLayer({
-        id: L.CLUSTER_CIRCLE, type: "circle", source: S.ENTITIES, filter: ["has", "point_count"],
+        id: L.ROUTE_LINE, type: "line", source: S.ROUTES,
         paint: {
-          "circle-color": ["step", ["get", "point_count"], "hsla(220,60%,50%,0.85)", 10, "hsla(200,65%,45%,0.85)", 30, "hsla(45,80%,50%,0.85)", 100, "hsla(15,75%,50%,0.85)"],
-          "circle-radius": ["step", ["get", "point_count"], 20, 10, 28, 30, 36, 100, 44],
-          "circle-stroke-width": 3,
-          "circle-stroke-color": "rgba(255,255,255,0.25)",
-          "circle-blur": 0.15,
+          "line-color": ["coalesce", ["get", "color"], "#3b82f6"],
+          "line-width": 3,
+          "line-opacity": 0.6,
+          "line-blur": 1,
+        },
+        layout: { "line-cap": "round", "line-join": "round", visibility: "none" },
+      });
+
+      // ── Clusters — premium glass bubbles ──
+      // Outer glow
+      map.addLayer({
+        id: L.CLUSTER_GLOW, type: "circle", source: S.ENTITIES,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": ["step", ["get", "point_count"],
+            "hsla(220,60%,55%,0.2)", 10, "hsla(200,65%,50%,0.2)",
+            30, "hsla(45,70%,55%,0.2)", 100, "hsla(15,70%,55%,0.2)",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 30, 10, 38, 30, 46, 100, 54],
+          "circle-blur": 0.9,
+        },
+      });
+      // Inner circle
+      map.addLayer({
+        id: L.CLUSTER_CIRCLE, type: "circle", source: S.ENTITIES,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": ["step", ["get", "point_count"],
+            "hsla(220,50%,20%,0.75)", 10, "hsla(200,50%,18%,0.75)",
+            30, "hsla(45,40%,20%,0.75)", 100, "hsla(15,40%,20%,0.75)",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 18, 10, 24, 30, 30, 100, 36],
+          "circle-stroke-width": 1.5,
+          "circle-stroke-color": "rgba(255,255,255,0.12)",
         },
       });
       map.addLayer({
-        id: L.CLUSTER_COUNT, type: "symbol", source: S.ENTITIES, filter: ["has", "point_count"],
-        layout: { "text-field": ["get", "point_count_abbreviated"], "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"], "text-size": 14, "text-allow-overlap": true },
-        paint: { "text-color": "#ffffff" },
-      });
-
-      // Glow for selected/sponsored
-      map.addLayer({
-        id: L.POINT_GLOW, type: "circle", source: S.ENTITIES,
-        filter: ["all", ["!", ["has", "point_count"]], ["any", ["get", "isSponsored"], ["==", ["get", "isSelected"], true]]],
-        paint: {
-          "circle-color": ["case", ["==", ["get", "isSelected"], true], "hsla(220,70%,55%,0.4)", "hsla(45,90%,55%,0.3)"],
-          "circle-radius": 20,
-          "circle-blur": 0.8,
+        id: L.CLUSTER_COUNT, type: "symbol", source: S.ENTITIES,
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": ["get", "point_count_abbreviated"],
+          "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
+          "text-size": 13,
+          "text-allow-overlap": true,
         },
+        paint: { "text-color": "rgba(255,255,255,0.8)" },
       });
 
-      // Unclustered points
+      // ── Points ──
+      // Soft halo for all points
       map.addLayer({
-        id: L.POINT, type: "circle", source: S.ENTITIES, filter: ["!", ["has", "point_count"]],
+        id: L.POINT_HALO, type: "circle", source: S.ENTITIES,
+        filter: ["!", ["has", "point_count"]],
         paint: {
           "circle-color": kindColorExpression(),
-          "circle-radius": ["case", ["==", ["get", "isSelected"], true], 13, ["get", "isSponsored"], 11, 8],
-          "circle-stroke-width": ["case", ["==", ["get", "isSelected"], true], 3, 1.5],
-          "circle-stroke-color": ["case", ["==", ["get", "isSelected"], true], "#ffffff", "rgba(255,255,255,0.4)"],
-          "circle-opacity": 0.95,
+          "circle-radius": 16,
+          "circle-blur": 0.85,
+          "circle-opacity": ["case",
+            ["==", ["get", "isSelected"], true], 0.5,
+            0.15,
+          ],
         },
       });
 
-      // Labels
+      // Selected ring (animated via pulse)
       map.addLayer({
-        id: L.LABEL, type: "symbol", source: S.ENTITIES, filter: ["!", ["has", "point_count"]],
+        id: L.POINT_SELECTED_RING, type: "circle", source: S.ENTITIES,
+        filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "isSelected"], true]],
+        paint: {
+          "circle-color": "transparent",
+          "circle-radius": 22,
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "rgba(255,255,255,0.35)",
+          "circle-stroke-opacity": 0.6,
+        },
+      });
+
+      // Core dots
+      map.addLayer({
+        id: L.POINT, type: "circle", source: S.ENTITIES,
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-color": kindColorExpression(),
+          "circle-radius": ["case",
+            ["==", ["get", "isSelected"], true], 10,
+            7,
+          ],
+          "circle-stroke-width": ["case",
+            ["==", ["get", "isSelected"], true], 2.5,
+            1,
+          ],
+          "circle-stroke-color": ["case",
+            ["==", ["get", "isSelected"], true], "#ffffff",
+            "rgba(255,255,255,0.25)",
+          ],
+          "circle-opacity": 0.92,
+        },
+      });
+
+      // Labels — contextual: high zoom only, or selected
+      map.addLayer({
+        id: L.LABEL, type: "symbol", source: S.ENTITIES,
+        filter: ["!", ["has", "point_count"]],
         layout: {
           "text-field": ["get", "title"],
           "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Regular"],
-          "text-size": 11,
-          "text-offset": [0, 1.4],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 14, 10, 17, 12],
+          "text-offset": [0, 1.6],
           "text-anchor": "top",
-          "text-max-width": 9,
-          visibility: "visible",
+          "text-max-width": 8,
+          "text-optional": true,
+          visibility: "none",   // OFF by default — controlled by store
         },
-        paint: { "text-color": "rgba(255,255,255,0.8)", "text-halo-color": "rgba(0,0,0,0.7)", "text-halo-width": 1 },
-        minzoom: 13,
+        paint: {
+          "text-color": "rgba(255,255,255,0.6)",
+          "text-halo-color": "rgba(0,0,0,0.75)",
+          "text-halo-width": 1.2,
+          "text-halo-blur": 0.5,
+        },
+        minzoom: 14.5,
       });
 
-      // User location
+      // ── User location — pulse + glow + dot ──
+      map.addLayer({
+        id: L.USER_PULSE, type: "circle", source: S.USER,
+        paint: {
+          "circle-color": "hsla(220,70%,55%,0.12)",
+          "circle-radius": 28,
+          "circle-blur": 0.6,
+        },
+      });
       map.addLayer({
         id: L.USER_GLOW, type: "circle", source: S.USER,
-        paint: { "circle-color": "hsl(220,70%,55%)", "circle-radius": 20, "circle-blur": 0.8, "circle-opacity": 0.35 },
+        paint: {
+          "circle-color": "hsla(220,70%,55%,0.3)",
+          "circle-radius": 14,
+          "circle-blur": 0.7,
+        },
       });
       map.addLayer({
         id: L.USER_DOT, type: "circle", source: S.USER,
-        paint: { "circle-color": "hsl(220,70%,55%)", "circle-radius": 7, "circle-stroke-width": 3, "circle-stroke-color": "#ffffff" },
+        paint: {
+          "circle-color": "hsl(220,70%,55%)",
+          "circle-radius": 6,
+          "circle-stroke-width": 2.5,
+          "circle-stroke-color": "#ffffff",
+        },
       });
 
       // ── Interactions ──
@@ -275,7 +381,7 @@ export default memo(function CanonicalMap({
         (map.getSource(S.ENTITIES) as mapboxgl.GeoJSONSource).getClusterExpansionZoom(clusterId, (err, z) => {
           if (err) return;
           const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
-          map.easeTo({ center: coords, zoom: z ?? 14, duration: 400 });
+          map.easeTo({ center: coords, zoom: z ?? 14, duration: 500 });
         });
       });
 
@@ -288,14 +394,18 @@ export default memo(function CanonicalMap({
         if (entity) onSelectRef.current?.(entity);
       });
 
-      // Popup on hover
+      // Hover popup (desktop)
       map.on("mouseenter", L.POINT, (e) => {
         map.getCanvas().style.cursor = "pointer";
         const f = e.features?.[0];
         if (!f) return;
         const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
         popupRef.current?.remove();
-        popupRef.current = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: 16, maxWidth: "220px" })
+        popupRef.current = new mapboxgl.Popup({
+          closeButton: false, closeOnClick: false,
+          offset: 14, maxWidth: "180px",
+          className: "cm-popup-premium",
+        })
           .setLngLat(coords)
           .setHTML(buildPopupHTML(f.properties!))
           .addTo(map);
@@ -305,33 +415,56 @@ export default memo(function CanonicalMap({
         popupRef.current?.remove();
       });
 
-      // Touch popup
+      // Touch popup (mobile)
       map.on("touchstart", L.POINT, (e) => {
         const f = e.features?.[0];
         if (!f) return;
         const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
         popupRef.current?.remove();
-        popupRef.current = new mapboxgl.Popup({ closeButton: true, offset: 16, maxWidth: "220px" })
+        popupRef.current = new mapboxgl.Popup({
+          closeButton: true, offset: 14, maxWidth: "180px",
+          className: "cm-popup-premium",
+        })
           .setLngLat(coords)
           .setHTML(buildPopupHTML(f.properties!))
           .addTo(map);
       });
 
-      // Zone click (empty area)
+      // Zone click
       map.on("click", (e) => {
         const pins = map.queryRenderedFeatures(e.point, { layers: [L.POINT, L.CLUSTER_CIRCLE] });
         if (pins.length > 0) return;
         onZoneClickRef.current?.(e.lngLat.lat, e.lngLat.lng);
       });
 
-      // Cursor
       map.on("mouseenter", L.CLUSTER_CIRCLE, () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", L.CLUSTER_CIRCLE, () => { map.getCanvas().style.cursor = ""; });
 
       setReady(true);
+
+      // ── User location pulse animation ──
+      let pulseGrow = true;
+      const animatePulse = () => {
+        if (!mapRef.current) return;
+        const m = mapRef.current;
+        if (m.getLayer(L.USER_PULSE)) {
+          const r = pulseGrow ? 32 : 24;
+          m.setPaintProperty(L.USER_PULSE, "circle-radius", r);
+          m.setPaintProperty(L.USER_PULSE, "circle-opacity", pulseGrow ? 0.08 : 0.15);
+        }
+        // Selected ring pulse
+        if (m.getLayer(L.POINT_SELECTED_RING)) {
+          m.setPaintProperty(L.POINT_SELECTED_RING, "circle-radius", pulseGrow ? 24 : 20);
+          m.setPaintProperty(L.POINT_SELECTED_RING, "circle-stroke-opacity", pulseGrow ? 0.4 : 0.7);
+        }
+        pulseGrow = !pulseGrow;
+        pulseRef.current = window.setTimeout(animatePulse, 1200);
+      };
+      pulseRef.current = window.setTimeout(animatePulse, 600);
     });
 
     return () => {
+      clearTimeout(pulseRef.current);
       popupRef.current?.remove();
       map.remove();
       mapRef.current = null;
@@ -343,16 +476,13 @@ export default memo(function CanonicalMap({
   useEffect(() => {
     if (!mapRef.current || !ready) return;
     const fc = entitiesToFeatureCollection(filteredEntities);
-    // Enrich features with selection state
     fc.features.forEach((f) => {
-      if (f.properties) {
-        f.properties.isSelected = f.properties.id === selectedEntityId;
-      }
+      if (f.properties) f.properties.isSelected = f.properties.id === selectedEntityId;
     });
     safeSetData(mapRef.current, S.ENTITIES, fc);
   }, [filteredEntities, selectedEntityId, ready]);
 
-  // ── Heatmap data ──
+  // ── Heatmap ──
   useEffect(() => {
     if (!mapRef.current || !ready) return;
     const map = mapRef.current;
@@ -374,24 +504,23 @@ export default memo(function CanonicalMap({
     }
   }, [filteredEntities, layers.heatmap, ready]);
 
-  // ── Routes data ──
+  // ── Routes ──
   useEffect(() => {
     if (!mapRef.current || !ready) return;
-    const map = mapRef.current;
-    if (map.getLayer(L.ROUTE_LINE)) {
-      map.setLayoutProperty(L.ROUTE_LINE, "visibility", layers.routes && routes.length > 0 ? "visible" : "none");
+    if (mapRef.current.getLayer(L.ROUTE_LINE)) {
+      mapRef.current.setLayoutProperty(L.ROUTE_LINE, "visibility", layers.routes && routes.length > 0 ? "visible" : "none");
     }
-    safeSetData(map, S.ROUTES, routesToFeatureCollection(layers.routes ? routes : []));
+    safeSetData(mapRef.current, S.ROUTES, routesToFeatureCollection(layers.routes ? routes : []));
   }, [routes, layers.routes, ready]);
 
-  // ── Zones data ──
+  // ── Zones ──
   useEffect(() => {
     if (!mapRef.current || !ready) return;
-    const map = mapRef.current;
+    const vis = layers.zones && zones.length > 0 ? "visible" : "none";
     [L.ZONE_FILL, L.ZONE_LINE].forEach((l) => {
-      if (map.getLayer(l)) map.setLayoutProperty(l, "visibility", layers.zones && zones.length > 0 ? "visible" : "none");
+      if (mapRef.current!.getLayer(l)) mapRef.current!.setLayoutProperty(l, "visibility", vis);
     });
-    safeSetData(map, S.ZONES, zonesToFeatureCollection(layers.zones ? zones : []));
+    safeSetData(mapRef.current, S.ZONES, zonesToFeatureCollection(layers.zones ? zones : []));
   }, [zones, layers.zones, ready]);
 
   // ── Radius ──
@@ -417,7 +546,7 @@ export default memo(function CanonicalMap({
     }
   }, [userLocation, layers.userLocation, ready]);
 
-  // ── Labels visibility ──
+  // ── Labels ──
   useEffect(() => {
     if (!mapRef.current || !ready) return;
     if (mapRef.current.getLayer(L.LABEL)) {
@@ -425,23 +554,24 @@ export default memo(function CanonicalMap({
     }
   }, [layers.labels, ready]);
 
-  // ── Clusters visibility ──
+  // ── Clusters ──
   useEffect(() => {
     if (!mapRef.current || !ready) return;
     const vis = layers.clusters ? "visible" : "none";
-    [L.CLUSTER_CIRCLE, L.CLUSTER_COUNT].forEach((l) => {
+    [L.CLUSTER_GLOW, L.CLUSTER_CIRCLE, L.CLUSTER_COUNT].forEach((l) => {
       if (mapRef.current!.getLayer(l)) mapRef.current!.setLayoutProperty(l, "visibility", vis);
     });
   }, [layers.clusters, ready]);
 
-  // ── Rain radar ──
+  // ── Rain radar — very soft ──
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
     const visible = layers.rainRadar || layers.weather || weather.isRaining;
     if (map.getLayer(L.RAIN)) {
       map.setLayoutProperty(L.RAIN, "visibility", visible ? "visible" : "none");
-      map.setPaintProperty(L.RAIN, "raster-opacity", visible ? (weather.isRaining ? 0.7 : 0.4) : 0);
+      // Keep opacity very low for premium feel
+      map.setPaintProperty(L.RAIN, "raster-opacity", visible ? (weather.isRaining ? 0.35 : 0.18) : 0);
     }
     const src = map.getSource(S.RAIN) as any;
     if (src?.setTiles && rainRadar.activeTileUrl) {
@@ -449,14 +579,28 @@ export default memo(function CanonicalMap({
     }
   }, [ready, layers.rainRadar, layers.weather, weather.isRaining, rainRadar.activeTileUrl]);
 
-  // ── Weather fog ──
+  // ── Weather fog — subtle atmospheric ──
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
     if (weather.isRaining) {
-      map.setFog({ color: "rgba(94,134,190,0.22)", "high-color": "rgba(18,35,58,0.20)", "horizon-blend": 0.18, range: [0.8, 8], "space-color": "rgba(10,16,28,0.82)", "star-intensity": 0.03 });
+      map.setFog({
+        color: "rgba(60,90,140,0.12)",
+        "high-color": "rgba(15,25,45,0.15)",
+        "horizon-blend": 0.12,
+        range: [1, 10],
+        "space-color": "rgba(8,12,22,0.8)",
+        "star-intensity": 0.02,
+      });
     } else {
-      map.setFog({ color: "rgba(255,255,255,0.02)", "high-color": "rgba(255,255,255,0.01)", "horizon-blend": 0.08, range: [1, 10], "space-color": "rgba(10,12,20,0.72)", "star-intensity": 0.08 });
+      map.setFog({
+        color: "rgba(255,255,255,0.01)",
+        "high-color": "rgba(255,255,255,0.005)",
+        "horizon-blend": 0.06,
+        range: [1.5, 12],
+        "space-color": "rgba(8,10,18,0.7)",
+        "star-intensity": 0.06,
+      });
     }
   }, [weather.isRaining, ready]);
 
@@ -465,7 +609,7 @@ export default memo(function CanonicalMap({
     if (!mapRef.current || !ready || !selectedEntityId) return;
     const entity = filteredEntities.find((e) => e.id === selectedEntityId);
     if (entity) {
-      mapRef.current.flyTo({ center: [entity.lng, entity.lat], zoom: 15, duration: 800 });
+      mapRef.current.flyTo({ center: [entity.lng, entity.lat], zoom: 15.5, duration: 900, essential: true });
     }
   }, [selectedEntityId, ready]);
 
@@ -475,20 +619,23 @@ export default memo(function CanonicalMap({
     const bounds = new mapboxgl.LngLatBounds();
     if (userLocation) bounds.extend([userLocation.lng, userLocation.lat]);
     filteredEntities.forEach((e) => bounds.extend([e.lng, e.lat]));
-    mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 400 });
+    mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 500 });
   }, [ready]);
 
-  // Recenter callback
   const recenter = useCallback(() => {
     if (!mapRef.current || !userLocation) return;
-    mapRef.current.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 14, duration: 600 });
+    mapRef.current.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 14, duration: 700 });
   }, [userLocation]);
 
   return (
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
       <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" />
+
+      {/* Soft atmospheric overlay during rain */}
       {weather.isRaining && (
-        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-blue-500/5" />
+        <div className="pointer-events-none absolute inset-0 rounded-2xl"
+          style={{ background: "linear-gradient(180deg, rgba(60,100,180,0.04) 0%, rgba(40,70,140,0.06) 100%)" }}
+        />
       )}
     </div>
   );
