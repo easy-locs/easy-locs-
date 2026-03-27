@@ -1,6 +1,7 @@
 /**
- * useHotelDetail — Canonical hook for hotel data from hotels/hotel_rooms/hotel_rate_plans/hotel_availability.
- * Single source of truth — no legacy stay_availability or seed_merchants reads.
+ * useHotelDetail — Canonical hook for hotel data.
+ * Uses hotel_inventory_calendar (canonical) for availability.
+ * Single source of truth — no legacy hotel_availability or stay_availability reads.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,9 +28,8 @@ export interface HotelAvailDay {
   date: string;
   available: boolean;
   available_units: number;
-  price: number;
-  base_price: number | null;
-  final_price: number | null;
+  base_price: number;
+  final_price: number;
   taxes_amount: number;
   fees_amount: number;
   currency: string;
@@ -106,7 +106,6 @@ export function useHotelDetail(hotelId: string | undefined) {
 
       if (error || !hotel) return null;
 
-      // Fetch rooms (active only)
       const { data: rooms } = await db
         .from("hotel_rooms")
         .select("*")
@@ -119,29 +118,27 @@ export function useHotelDetail(hotelId: string | undefined) {
       const to = format(addDays(new Date(), 90), "yyyy-MM-dd");
 
       for (const room of rooms ?? []) {
-        // Rate plans (active only)
         const { data: plans } = await db
           .from("hotel_rate_plans")
           .select("*")
           .eq("room_id", room.id)
           .eq("active", true);
 
-        // Availability
+        // Canonical: use hotel_inventory_calendar
         const { data: avail } = await db
-          .from("hotel_availability")
+          .from("hotel_inventory_calendar")
           .select("*")
-          .eq("room_id", room.id)
-          .gte("date", from)
-          .lte("date", to)
-          .order("date");
+          .eq("room_type_id", room.id)
+          .gte("night_date", from)
+          .lte("night_date", to)
+          .order("night_date");
 
         const availDays: HotelAvailDay[] = (avail ?? []).map((a: any) => ({
-          date: a.date,
+          date: a.night_date,
           available: a.available,
           available_units: a.available_units ?? 1,
-          price: Number(a.price),
-          base_price: a.base_price ? Number(a.base_price) : null,
-          final_price: a.final_price ? Number(a.final_price) : null,
+          base_price: Number(a.base_price ?? 0),
+          final_price: Number(a.final_price ?? 0),
           taxes_amount: Number(a.taxes_amount ?? 0),
           fees_amount: Number(a.fees_amount ?? 0),
           currency: a.currency || "AED",
@@ -152,8 +149,8 @@ export function useHotelDetail(hotelId: string | undefined) {
           restriction_notes: a.restriction_notes ?? null,
         }));
 
-        const availPrices = availDays.filter(d => d.available).map(d => d.price);
-        const finalPrices = availDays.filter(d => d.available && d.final_price).map(d => d.final_price!);
+        const availPrices = availDays.filter(d => d.available).map(d => d.base_price);
+        const finalPrices = availDays.filter(d => d.available && d.final_price).map(d => d.final_price);
 
         enrichedRooms.push({
           id: room.id,
@@ -245,32 +242,4 @@ export function useHotelsList(city?: string) {
     },
     staleTime: 30_000,
   });
-}
-
-/** Check range availability for a room */
-export function checkRoomAvailability(
-  availability: HotelAvailDay[],
-  checkIn: string,
-  checkOut: string
-): { available: boolean; totalPrice: number; totalFinal: number; totalTaxes: number; totalFees: number; nights: number; restrictions: string[] } {
-  const start = new Date(checkIn);
-  const end = new Date(checkOut);
-  const nights = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000));
-  let totalPrice = 0, totalFinal = 0, totalTaxes = 0, totalFees = 0;
-  const restrictions: string[] = [];
-
-  for (let d = 0; d < nights; d++) {
-    const dateStr = format(addDays(start, d), "yyyy-MM-dd");
-    const day = availability.find(a => a.date === dateStr);
-    if (!day || !day.available) return { available: false, totalPrice: 0, totalFinal: 0, totalTaxes: 0, totalFees: 0, nights, restrictions: ["dates_unavailable"] };
-    if (d === 0 && day.closed_to_arrival) restrictions.push("closed_to_arrival");
-    if (d === nights - 1 && day.closed_to_departure) restrictions.push("closed_to_departure");
-    if (day.min_stay > nights) restrictions.push(`min_stay_${day.min_stay}`);
-    totalPrice += day.price;
-    totalFinal += day.final_price ?? day.price;
-    totalTaxes += day.taxes_amount;
-    totalFees += day.fees_amount;
-  }
-
-  return { available: restrictions.length === 0, totalPrice, totalFinal, totalTaxes, totalFees, nights, restrictions };
 }

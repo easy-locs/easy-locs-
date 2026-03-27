@@ -659,8 +659,10 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     const { data: rooms } = await sb.from("hotel_rooms").select("id, hotel_id").eq("active", true).limit(30);
     let created = 0;
     for (const room of rooms ?? []) {
-      const { data: existing } = await sb.from("hotel_availability").select("id").eq("room_id", room.id).limit(1);
+      // Check if canonical calendar already populated
+      const { data: existing } = await sb.from("hotel_inventory_calendar").select("id").eq("room_type_id", room.id).limit(1);
       if (existing?.length) continue;
+
       const { data: hotel } = await sb.from("hotels").select("seed_merchant_id").eq("id", room.hotel_id).single();
       let basePrice = 250;
       if (hotel?.seed_merchant_id) {
@@ -668,44 +670,52 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
         const rt = seed?.hotel_inventory_json?.roomTypes?.[0];
         if (rt?.ratePerNight) basePrice = rt.ratePerNight;
       }
+
       // Get rate plans for this room
       const { data: plans } = await sb.from("hotel_rate_plans").select("id, refundable, includes_breakfast").eq("room_id", room.id);
-      const rows: any[] = [];
-      for (let d = 0; d < 90; d++) {
-        const date = new Date(Date.now() + d * 86400000);
-        const dateStr = date.toISOString().split("T")[0];
-        const dow = date.getDay();
-        const isWeekend = dow === 5 || dow === 6;
-        const isHighSeason = date.getMonth() === 11 || date.getMonth() === 0 || date.getMonth() === 1;
-        const seasonMultiplier = isHighSeason ? 1.4 : 1.0;
-        const weekendMultiplier = isWeekend ? 1.25 : 1.0;
-        const variation = 0.9 + Math.random() * 0.2;
-        const finalPrice = Math.round(basePrice * seasonMultiplier * weekendMultiplier * variation);
-        const taxesAmount = Math.round(finalPrice * 0.1);
-        const feesAmount = Math.round(finalPrice * 0.05);
+      if (!plans?.length) continue;
 
-        rows.push({
-          room_id: room.id,
-          hotel_id: room.hotel_id,
-          rate_plan_id: plans?.[0]?.id || null,
-          date: dateStr,
-          available: Math.random() > 0.12,
-          available_units: Math.floor(Math.random() * 5) + 1,
-          base_price: basePrice,
-          price: finalPrice,
-          final_price: finalPrice + taxesAmount + feesAmount,
-          taxes_amount: taxesAmount,
-          fees_amount: feesAmount,
-          currency: "AED",
-          min_stay: isWeekend ? 2 : 1,
-          max_stay: 14,
-          closed_to_arrival: false,
-          closed_to_departure: false,
-          source_last_seen_at: new Date().toISOString(),
-        });
+      const rows: any[] = [];
+      for (const plan of plans) {
+        const planMultiplier = plan.includes_breakfast ? 1.15 : plan.refundable ? 1.0 : 0.85;
+        for (let d = 0; d < 90; d++) {
+          const date = new Date(Date.now() + d * 86400000);
+          const dateStr = date.toISOString().split("T")[0];
+          const dow = date.getDay();
+          const isWeekend = dow === 5 || dow === 6;
+          const isHighSeason = date.getMonth() === 11 || date.getMonth() === 0 || date.getMonth() === 1;
+          const seasonMultiplier = isHighSeason ? 1.4 : 1.0;
+          const weekendMultiplier = isWeekend ? 1.25 : 1.0;
+          const variation = 0.9 + Math.random() * 0.2;
+          const nightPrice = Math.round(basePrice * seasonMultiplier * weekendMultiplier * planMultiplier * variation);
+          const taxesAmount = Math.round(nightPrice * 0.1);
+          const feesAmount = Math.round(nightPrice * 0.05);
+
+          rows.push({
+            hotel_id: room.hotel_id,
+            room_type_id: room.id,
+            rate_plan_id: plan.id,
+            night_date: dateStr,
+            available: Math.random() > 0.12,
+            available_units: Math.floor(Math.random() * 5) + 1,
+            base_price: nightPrice,
+            final_price: nightPrice + taxesAmount + feesAmount,
+            currency: "AED",
+            taxes_amount: taxesAmount,
+            fees_amount: feesAmount,
+            min_stay: isWeekend ? 2 : 1,
+            max_stay: 14,
+            closed_to_arrival: false,
+            closed_to_departure: false,
+            source_last_seen_at: new Date().toISOString(),
+          });
+        }
       }
+
       for (let i = 0; i < rows.length; i += 30) {
-        await sb.from("hotel_availability").upsert(rows.slice(i, i + 30), { onConflict: "room_id,date" });
+        await sb.from("hotel_inventory_calendar").upsert(rows.slice(i, i + 30), {
+          onConflict: "hotel_id,room_type_id,rate_plan_id,night_date"
+        });
       }
       created += rows.length;
     }
@@ -764,10 +774,10 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
       // Calendar completeness /15
       let hasCalendar = false;
       if (rooms?.length) {
-        const { data: avail } = await sb.from("hotel_availability").select("id").eq("room_id", rooms[0].id).limit(1);
+        const { data: avail } = await sb.from("hotel_inventory_calendar").select("id").eq("room_type_id", rooms[0].id).limit(1);
         if (avail?.length) { score += 10; hasCalendar = true; } else failures.push("missing_calendar");
         // Check pricing
-        const { data: priced } = await sb.from("hotel_availability").select("price").eq("room_id", rooms[0].id).gt("price", 0).limit(1);
+        const { data: priced } = await sb.from("hotel_inventory_calendar").select("final_price").eq("room_type_id", rooms[0].id).gt("final_price", 0).limit(1);
         if (priced?.length) score += 5; else failures.push("missing_prices");
       } else {
         failures.push("missing_calendar");
@@ -819,7 +829,7 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
       // FIREWALL: verify rooms + calendar + prices exist
       const { data: rooms } = await sb.from("hotel_rooms").select("id").eq("hotel_id", h.id).eq("active", true).limit(1);
       if (!rooms?.length) { blocked++; continue; }
-      const { data: avail } = await sb.from("hotel_availability").select("id, price").eq("room_id", rooms[0].id).eq("available", true).gt("price", 0).limit(1);
+      const { data: avail } = await sb.from("hotel_inventory_calendar").select("id, final_price").eq("room_type_id", rooms[0].id).eq("available", true).gt("final_price", 0).limit(1);
       if (!avail?.length) { blocked++; continue; }
       const { data: plans } = await sb.from("hotel_rate_plans").select("id").eq("room_id", rooms[0].id).eq("active", true).limit(1);
       if (!plans?.length) { blocked++; continue; }
