@@ -1,4 +1,8 @@
-import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
+/**
+ * RadarPage — Immersive full-screen map-first experience.
+ * Clean map canvas with floating glass controls + pull-up bottom sheet.
+ */
+import { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRadarGeo } from "@/hooks/useRadarGeo";
 import { useRadarStore, type SortMode } from "@/stores/radarStore";
@@ -12,9 +16,10 @@ import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pip
 import { getTimeContext } from "@/lib/discovery/timeContext";
 import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/world-class-taxonomy";
 import type { RadarCategory } from "@/lib/radar/types";
-import { Search, MapPin, Navigation, Loader2, Flame, ArrowLeft } from "lucide-react";
+import { Search, MapPin, Navigation, Loader2, Flame, ArrowLeft, ChevronUp, Layers, X } from "lucide-react";
 import "@/styles/radar-pro.css";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
 
@@ -26,11 +31,15 @@ const CATEGORIES = RADAR_CATEGORIES.map((c) => ({
 
 const SORT_MODES: { key: SortMode; label: string }[] = [
   { key: "smart", label: "🧠 Smart" },
-  { key: "nearest", label: "📍 Nearest" },
-  { key: "best", label: "⭐ Best rated" },
-  { key: "trending", label: "🔥 Trending" },
+  { key: "nearest", label: "📍 Near" },
+  { key: "best", label: "⭐ Best" },
+  { key: "trending", label: "🔥 Hot" },
 ];
 
+type SheetSnap = "collapsed" | "half" | "full";
+const SHEET_COLLAPSED = 140;
+const SHEET_HALF_RATIO = 0.48;
+const SHEET_FULL_RATIO = 0.88;
 
 export default function RadarPage() {
   useRadarGeo();
@@ -49,13 +58,13 @@ export default function RadarPage() {
   const geoLoading = useGeoStore((s) => s.loading);
   const geoPermission = useGeoStore((s) => s.permission);
 
-  // Shared discovery state
   const searchQuery = useDiscoveryStore((s) => s.searchQuery);
   const setSearchQuery = useDiscoveryStore((s) => s.setSearchQuery);
 
   const [loadingListings, setLoadingListings] = useState(true);
-  const [mapMode, setLocalMapMode] = useState<"list" | "map" | "heatmap">("list");
   const [showWeatherLayer, setShowWeatherLayer] = useState(true);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [sheetSnap, setSheetSnap] = useState<SheetSnap>("collapsed");
   const timeCtx = useMemo(() => getTimeContext(), []);
   const weather = useLiveWeatherStation({ lat: userLocation?.lat, lng: userLocation?.lng });
 
@@ -63,13 +72,11 @@ export default function RadarPage() {
     return getSubcategoriesForRadarCategory(category as RadarMainCategory);
   }, [category]);
 
-  // Force geo on mount
   useEffect(() => {
     const pt = useGeoStore.getState().point;
     if (!pt) geoService.forceRetry();
   }, []);
 
-  // Fetch via CANONICAL pipeline — with visibility, routing, and radius enforcement
   const fetchListings = useCallback(async () => {
     setLoadingListings(true);
     try {
@@ -79,7 +86,6 @@ export default function RadarPage() {
         userLocation: userLocation ?? undefined,
         category: category !== "all" ? category : undefined,
         subcategory: subcategory ?? undefined,
-        
       });
       setPoints(points);
     } catch (err) {
@@ -96,208 +102,359 @@ export default function RadarPage() {
     geoService.forceRetry();
   };
 
-  const handleSetMapMode = (mode: "list" | "map" | "heatmap") => {
-    setLocalMapMode(mode);
-    if (mode !== "heatmap") setMapMode(mode as "list" | "map");
+  // Sheet drag logic
+  const getSheetHeight = (snap: SheetSnap) => {
+    if (typeof window === "undefined") return SHEET_COLLAPSED;
+    const vh = window.innerHeight;
+    if (snap === "full") return vh * SHEET_FULL_RATIO;
+    if (snap === "half") return vh * SHEET_HALF_RATIO;
+    return SHEET_COLLAPSED;
   };
 
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    const vy = info.velocity.y;
+    const dy = info.offset.y;
+    if (vy > 300 || dy > 80) {
+      // Swipe down
+      setSheetSnap(sheetSnap === "full" ? "half" : "collapsed");
+    } else if (vy < -300 || dy < -80) {
+      // Swipe up
+      setSheetSnap(sheetSnap === "collapsed" ? "half" : "full");
+    }
+  };
+
+  const sheetHeight = getSheetHeight(sheetSnap);
+
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <div className="fixed inset-0 bg-background overflow-hidden" style={{ zIndex: 1 }}>
       <RadarFilterMenu />
 
-      {/* Header */}
-      <div className="px-4 pt-5 pb-2">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm">
-              <ArrowLeft className="w-4.5 h-4.5" />
-            </button>
-            <div>
-              <h1 className="text-lg font-bold text-foreground">Radar</h1>
-              <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                {geoLoading ? (
-                  <><Loader2 className="h-3 w-3 animate-spin" /> Locating…</>
-                ) : userLocation ? (
-                  <><MapPin className="h-3 w-3 text-primary" /> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}</>
-                ) : geoPermission === "denied" ? (
-                  <button onClick={handleLocate} className="text-primary font-semibold">📍 Enable location</button>
-                ) : (
-                  "Searching location…"
-                )}
-                <span className="ml-2 text-[9px] text-primary/70">{timeCtx.emoji} {timeCtx.label}</span>
-              </p>
-            </div>
+      {/* ═══ FULL-SCREEN MAP ═══ */}
+      <div className="absolute inset-0">
+        <Suspense fallback={
+          <div className="w-full h-full flex items-center justify-center" style={{ background: "hsl(var(--background))" }}>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-          <button
-            onClick={handleLocate}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-card/80 shadow-sm active:scale-[0.93] transition-transform duration-75 backdrop-blur-md"
-            aria-label="Locate me"
+        }>
+          <UnifiedMap
+            entities={filtered.map((p) => ({
+              id: p.id,
+              type: (p.category === "food" ? "restaurant" : p.category === "shops" ? "shop" : p.category === "grocery" ? "grocery" : p.category === "property" ? "property" : "service") as any,
+              name: p.title,
+              title: p.title,
+              subtitle: p.subtitle || undefined,
+              lat: p.lat,
+              lng: p.lng,
+              imageUrl: p.imageUrl,
+              image_url: p.imageUrl,
+              slug: p.slug || undefined,
+            }))}
+            onSelectEntity={(entity) => {
+              ultraHaptic("light");
+              const slug = (entity as any).slug;
+              navigate(slug ? `/s/${slug}` : `/s/${entity.id}`);
+            }}
+            userLat={userLocation?.lat}
+            userLng={userLocation?.lng}
+            showUserLocation={!!userLocation}
+            zoom={13}
+            showHeatmap={false}
+            showWeatherLayer={showWeatherLayer}
+          />
+        </Suspense>
+      </div>
+
+      {/* ═══ FLOATING TOP BAR — Glass ═══ */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 400, damping: 30, delay: 0.1 }}
+        className="absolute top-0 left-0 right-0 z-20"
+        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 8px)" }}
+      >
+        <div className="flex items-center gap-2 px-3 pt-2 pb-2">
+          {/* Back */}
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={() => navigate("/")}
+            className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-lg"
+            style={{
+              background: "hsl(var(--card) / 0.85)",
+              backdropFilter: "blur(20px) saturate(1.6)",
+              border: "1px solid hsl(var(--border) / 0.15)",
+            }}
           >
-            <Navigation className="h-4 w-4 text-primary" />
-          </button>
+            <ArrowLeft className="w-[18px] h-[18px]" style={{ color: "hsl(var(--foreground))" }} />
+          </motion.button>
+
+          {/* Search bar */}
+          <motion.div
+            layout
+            className="flex-1 flex items-center gap-2 h-10 rounded-2xl px-3 shadow-lg"
+            style={{
+              background: "hsl(var(--card) / 0.85)",
+              backdropFilter: "blur(20px) saturate(1.6)",
+              border: searchFocused ? "1px solid hsl(var(--primary) / 0.4)" : "1px solid hsl(var(--border) / 0.15)",
+            }}
+          >
+            <Search className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }} />
+            <input
+              type="text"
+              placeholder="Search places…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => { setSearchFocused(true); setSheetSnap("half"); }}
+              onBlur={() => setSearchFocused(false)}
+              className="flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground/50"
+              style={{ color: "hsl(var(--foreground))" }}
+            />
+            {searchQuery && (
+              <motion.button
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                whileTap={{ scale: 0.8 }}
+                onClick={() => setSearchQuery("")}
+              >
+                <X className="w-3.5 h-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
+              </motion.button>
+            )}
+          </motion.div>
+
+          {/* Locate */}
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={handleLocate}
+            className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-lg"
+            style={{
+              background: "hsl(var(--card) / 0.85)",
+              backdropFilter: "blur(20px) saturate(1.6)",
+              border: "1px solid hsl(var(--border) / 0.15)",
+            }}
+          >
+            {geoLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" style={{ color: "hsl(var(--primary))" }} />
+            ) : (
+              <Navigation className="w-4 h-4" style={{ color: "hsl(var(--primary))" }} />
+            )}
+          </motion.button>
         </div>
 
-        {/* Search — shared state */}
-        <div className="search-premium-wrap mb-3">
-          <Search className="search-premium-icon h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search shops, restaurants, services…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-premium-field h-12 bg-card border border-border/30 text-sm text-foreground placeholder:text-muted-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+        {/* Weather + status pill */}
+        <div className="flex items-center gap-2 px-4 pb-1">
+          <AnimatePresence>
+            {weather.isRaining && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-lg"
+                style={{
+                  background: "hsl(var(--card) / 0.8)",
+                  backdropFilter: "blur(16px)",
+                  color: "hsl(200 80% 60%)",
+                }}
+              >
+                🌧 Rain live
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {userLocation && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium"
+              style={{
+                background: "hsl(var(--card) / 0.6)",
+                backdropFilter: "blur(12px)",
+                color: "hsl(var(--muted-foreground))",
+              }}
+            >
+              <MapPin className="w-3 h-3" style={{ color: "hsl(var(--primary))" }} />
+              {timeCtx.emoji} {timeCtx.label}
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* ═══ FLOATING RIGHT CONTROLS ═══ */}
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ type: "spring", stiffness: 400, damping: 30, delay: 0.2 }}
+        className="absolute right-3 z-20 flex flex-col gap-2"
+        style={{ top: "max(calc(env(safe-area-inset-top, 0px) + 110px), 118px)" }}
+      >
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          onClick={() => setShowWeatherLayer(v => !v)}
+          className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg"
+          style={{
+            background: showWeatherLayer ? "hsl(var(--primary) / 0.15)" : "hsl(var(--card) / 0.85)",
+            backdropFilter: "blur(20px)",
+            border: showWeatherLayer ? "1px solid hsl(var(--primary) / 0.3)" : "1px solid hsl(var(--border) / 0.15)",
+          }}
+        >
+          <Layers className="w-4 h-4" style={{ color: showWeatherLayer ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
+        </motion.button>
+      </motion.div>
+
+      {/* ═══ BOTTOM SHEET ═══ */}
+      <motion.div
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={0.15}
+        onDragEnd={handleDragEnd}
+        animate={{ height: sheetHeight }}
+        transition={{ type: "spring", stiffness: 500, damping: 40 }}
+        className="absolute bottom-0 left-0 right-0 z-30 flex flex-col touch-none"
+        style={{
+          background: "hsl(var(--card) / 0.96)",
+          backdropFilter: "blur(32px) saturate(1.8)",
+          borderRadius: "24px 24px 0 0",
+          borderTop: "1px solid hsl(var(--border) / 0.1)",
+          boxShadow: "0 -8px 40px hsl(var(--background) / 0.5)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-2.5 pb-1 cursor-grab active:cursor-grabbing">
+          <motion.div
+            className="w-10 h-1 rounded-full"
+            style={{ background: "hsl(var(--muted-foreground) / 0.2)" }}
+            whileHover={{ scaleX: 1.3, background: "hsl(var(--primary) / 0.5)" }}
           />
         </div>
 
-
-        {/* Category chips */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-          {CATEGORIES.map(({ cat, icon, label }) => (
-            <button
-              key={cat}
-              onClick={() => { ultraHaptic("light"); setCategory(cat); }}
-              className={`flex items-center gap-1.5 rounded-2xl px-3.5 py-1.5 text-xs whitespace-nowrap active:scale-[0.95] transition-transform duration-75 ${
-                category === cat
-                  ? "bg-primary/15 text-primary font-semibold border border-primary/20"
-                  : "bg-muted/30 text-muted-foreground"
-              }`}
-            >
-              <span>{icon}</span> {label}
-            </button>
-          ))}
-        </div>
-
-        {/* Subcategory chips */}
-        {subcategories.length > 0 && (
-          <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-2 mt-1">
-            <button
-              onClick={() => { ultraHaptic("light"); setSubCategory(null); }}
-              className={`rounded-full px-3 py-1 text-[11px] whitespace-nowrap active:scale-[0.95] transition-transform duration-75 ${
-                !subcategory
-                  ? "bg-primary/10 text-primary font-semibold"
-                  : "bg-muted/20 text-muted-foreground"
-              }`}
-            >
-              All
-            </button>
-            {subcategories.map((sub) => (
-              <button
-                key={sub.value}
-                onClick={() => { ultraHaptic("light"); setSubCategory(subcategory === sub.value ? null : sub.value); }}
-                className={`flex items-center gap-1 rounded-full px-3 py-1 text-[11px] whitespace-nowrap active:scale-[0.95] transition-transform duration-75 ${
-                  subcategory === sub.value
-                    ? "bg-primary/10 text-primary font-semibold"
-                    : "bg-muted/20 text-muted-foreground"
-                }`}
+        {/* Sheet header — result count + expand */}
+        <div className="flex items-center justify-between px-4 pb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>
+              {filtered.length} places
+            </span>
+            {category !== "all" && (
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
               >
-                <span>{sub.icon}</span> {sub.label}
-              </button>
-            ))}
+                {CATEGORIES.find(c => c.cat === category)?.icon} {CATEGORIES.find(c => c.cat === category)?.label}
+              </motion.span>
+            )}
           </div>
-        )}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setSheetSnap(sheetSnap === "collapsed" ? "half" : sheetSnap === "half" ? "full" : "collapsed")}
+            className="w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{ background: "hsl(var(--muted) / 0.5)" }}
+          >
+            <motion.div animate={{ rotate: sheetSnap === "full" ? 180 : 0 }} transition={{ type: "spring", stiffness: 400 }}>
+              <ChevronUp className="w-4 h-4" style={{ color: "hsl(var(--foreground))" }} />
+            </motion.div>
+          </motion.button>
+        </div>
 
-        {/* Sort pills */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 mt-1">
-          {SORT_MODES.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => { ultraHaptic("light"); setSortMode(key); }}
-              className={`rounded-2xl px-3 py-1 text-[10px] whitespace-nowrap active:scale-[0.95] transition-transform duration-75 ${
-                sortMode === key
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "bg-muted/20 text-muted-foreground"
-              }`}
+        {/* Category chips — horizontal scroll */}
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar px-4 pb-2">
+          {CATEGORIES.map(({ cat, icon, label }, i) => {
+            const active = category === cat;
+            return (
+              <motion.button
+                key={cat}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03, type: "spring", stiffness: 500, damping: 35 }}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => { ultraHaptic("light"); setCategory(cat); }}
+                className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-[11px] whitespace-nowrap font-medium shrink-0"
+                style={{
+                  background: active ? "hsl(var(--primary) / 0.12)" : "hsl(var(--muted) / 0.4)",
+                  color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                  border: active ? "1px solid hsl(var(--primary) / 0.2)" : "1px solid transparent",
+                  fontWeight: active ? 700 : 500,
+                }}
+              >
+                <span>{icon}</span> {label}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Sort pills — only when sheet is half+ */}
+        <AnimatePresence>
+          {sheetSnap !== "collapsed" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ type: "spring", stiffness: 500, damping: 35 }}
+              className="overflow-hidden"
             >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+              <div className="flex gap-1.5 overflow-x-auto no-scrollbar px-4 pb-2">
+                {SORT_MODES.map(({ key, label }) => {
+                  const active = sortMode === key;
+                  return (
+                    <motion.button
+                      key={key}
+                      whileTap={{ scale: 0.92 }}
+                      onClick={() => { ultraHaptic("light"); setSortMode(key); }}
+                      className="rounded-full px-3 py-1 text-[10px] whitespace-nowrap shrink-0"
+                      style={{
+                        background: active ? "hsl(var(--primary) / 0.1)" : "transparent",
+                        color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.7)",
+                        fontWeight: active ? 600 : 400,
+                      }}
+                    >
+                      {label}
+                    </motion.button>
+                  );
+                })}
 
-      {/* View toggle — now includes heatmap */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 pb-3">
-        <div className="flex rounded-xl bg-muted/30 p-0.5">
-          <button
-            onClick={() => { ultraHaptic("light"); handleSetMapMode("list"); }}
-            className={`rounded-lg px-4 py-1.5 text-xs font-medium active:scale-[0.95] transition-all duration-75 ${
-              mapMode === "list" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-            }`}
-          >
-            ☰ List
-          </button>
-          <button
-            onClick={() => { ultraHaptic("light"); handleSetMapMode("map"); }}
-            className={`rounded-lg px-4 py-1.5 text-xs font-medium active:scale-[0.95] transition-all duration-75 ${
-              mapMode === "map" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-            }`}
-          >
-            🗺 Map
-          </button>
-          <button
-            onClick={() => { ultraHaptic("light"); handleSetMapMode("heatmap"); }}
-            className={`rounded-lg px-4 py-1.5 text-xs font-medium active:scale-[0.95] transition-all duration-75 ${
-              mapMode === "heatmap" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-            }`}
-          >
-            <Flame className="h-3 w-3 inline mr-0.5" /> Heat
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowWeatherLayer((current) => !current)}
-            className="rounded-full border border-border/20 bg-card px-3 py-1 text-[10px] font-semibold text-foreground"
-          >
-            {showWeatherLayer ? "Rain on" : "Rain off"}
-          </button>
-          <p className="text-[10px] text-muted-foreground">
-            {weather.isRaining ? `${filtered.length} results · rain live` : `${filtered.length} results`}
-          </p>
-        </div>
-      </div>
+                {/* Subcategories inline */}
+                {subcategories.length > 0 && (
+                  <>
+                    <div className="w-px h-5 self-center shrink-0" style={{ background: "hsl(var(--border) / 0.2)" }} />
+                    {subcategories.map((sub) => {
+                      const active = subcategory === sub.value;
+                      return (
+                        <motion.button
+                          key={sub.value}
+                          whileTap={{ scale: 0.92 }}
+                          onClick={() => { ultraHaptic("light"); setSubCategory(subcategory === sub.value ? null : sub.value); }}
+                          className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] whitespace-nowrap shrink-0"
+                          style={{
+                            background: active ? "hsl(var(--primary) / 0.1)" : "transparent",
+                            color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.6)",
+                            fontWeight: active ? 600 : 400,
+                          }}
+                        >
+                          <span>{sub.icon}</span> {sub.label}
+                        </motion.button>
+                      );
+                    })}
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Content */}
-      {mapMode === "map" || mapMode === "heatmap" ? (
-        <div className="relative mx-4 h-[calc(100dvh-20rem)] min-h-[400px] rounded-2xl overflow-hidden">
-          <Suspense fallback={<div className="w-full h-full bg-muted/20 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
-            <UnifiedMap
-              entities={filtered.map((p) => ({
-                id: p.id,
-                type: (p.category === "food" ? "restaurant" : p.category === "shops" ? "shop" : p.category === "grocery" ? "grocery" : p.category === "property" ? "property" : "service") as any,
-                name: p.title,
-                title: p.title,
-                subtitle: p.subtitle || undefined,
-                lat: p.lat,
-                lng: p.lng,
-                imageUrl: p.imageUrl,
-                image_url: p.imageUrl,
-                slug: p.slug || undefined,
-              }))}
-              onSelectEntity={(entity) => {
-                ultraHaptic("light");
-                const slug = (entity as any).slug;
-                navigate(slug ? `/s/${slug}` : `/s/${entity.id}`);
-              }}
-              userLat={userLocation?.lat}
-              userLng={userLocation?.lng}
-              showUserLocation={!!userLocation}
-              zoom={13}
-              showHeatmap={mapMode === "heatmap"}
-              showWeatherLayer={showWeatherLayer}
-            />
-          </Suspense>
-        </div>
-      ) : (
-        <div className="px-4">
+        {/* Results list — scrollable when sheet is open */}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4"
+          style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom, 0px))" }}
+        >
           {loadingListings ? (
-            <div className="flex flex-col items-center gap-3 py-16">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-xs text-muted-foreground">Loading listings…</p>
+            <div className="flex flex-col items-center gap-3 py-10">
+              <Loader2 className="h-5 w-5 animate-spin" style={{ color: "hsl(var(--primary))" }} />
+              <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Loading…</p>
             </div>
           ) : (
             <RadarResultsList />
           )}
         </div>
-      )}
+      </motion.div>
     </div>
   );
 }
