@@ -111,7 +111,7 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
 
       {/* Search bar floating */}
       {search && (
-        <div className="relative z-20 px-4 -mb-6">
+        <div className="relative z-20 px-4 -mb-5 pb-1">
           {search}
         </div>
       )}
