@@ -469,10 +469,14 @@ const RentalManagement = () => {
     setSelectedTenant(null);
   };
 
-  /* ─── Messages ─── */
+  /* ─── Messages (V2) ─── */
   const loadMessages = async (tenantId: string) => {
     if (!orgId) return;
-    const { data } = await supabase.from("messages").select("*").eq("org_id", orgId).eq("tenant_id", tenantId).order("created_at", { ascending: true });
+    const contextId = `tenant_${orgId}_${tenantId}`;
+    const { data } = await (supabase as any).from("chat_messages_v2")
+      .select("*")
+      .eq("conversation_id", contextId)
+      .order("created_at", { ascending: true });
     setMessages(data || []);
   };
 
@@ -480,12 +484,13 @@ const RentalManagement = () => {
     if (!newMessage.trim() || !selectedTenant || !orgId || !user) return;
 
     const messageToSend = newMessage.trim();
-    const { error } = await supabase.from("messages").insert({
-      org_id: orgId,
-      sender_id: user.id,
-      tenant_id: selectedTenant.id,
-      content: messageToSend,
-      read: false,
+    const contextId = `tenant_${orgId}_${selectedTenant.id}`;
+    const { error } = await (supabase as any).from("chat_messages_v2").insert({
+      conversation_id: contextId,
+      sender_user_id: user.id,
+      sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
+      type: "text",
+      body: messageToSend,
     });
 
     if (error) {
@@ -497,13 +502,14 @@ const RentalManagement = () => {
     await loadMessages(selectedTenant.id);
 
     if (selectedTenant.tenant_user_id) {
-      await supabase.from("app_notifications").insert({
+      await (supabase as any).from("app_notifications").insert({
         user_id: selectedTenant.tenant_user_id,
-        org_id: orgId,
-        type: "message",
+        scope: "global",
+        category: "message",
         title: t("page.rental.new_message_notif"),
-        message: t("page.rental.landlord_message"),
-        link: "/tenant/messages",
+        body: t("page.rental.landlord_message"),
+        severity: "info",
+        route: "/tenant/messages",
       });
     }
 
