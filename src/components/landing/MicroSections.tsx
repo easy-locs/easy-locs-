@@ -88,8 +88,8 @@ export function NearYouStrip() {
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground truncate">{shop.name}</p>
-                <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
+                <p className="text-xs font-bold text-foreground line-clamp-2 leading-snug break-words">{shop.name}</p>
+                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[9px] text-muted-foreground">
                   {shop.rating > 0 && (
                     <span className="flex items-center gap-0.5 text-amber-500 font-semibold">
                       <Star className="h-2.5 w-2.5 fill-amber-500" />
@@ -115,7 +115,7 @@ export function QuickStatsBar() {
   return (
     <div className="py-4 border-y border-border/10 bg-accent/[0.02]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap">
+        <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
           {[
             { value: "10K+", labelKey: "landing.micro.businesses", icon: Flame },
             { value: "190+", labelKey: "landing.micro.countries", icon: MapPin },

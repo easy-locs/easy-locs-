@@ -23,8 +23,8 @@ export default function ReviewCard({ review }: ReviewCardProps) {
   const stars = Array.from({ length: 5 }, (_, i) => i < Math.round(review.rating));
 
   return (
-    <div className="p-3 sm:p-4 bg-muted/20 rounded-xl border border-border/40 space-y-2.5 sm:space-y-3">
-      <div className="flex items-start gap-3">
+    <div className="p-3 sm:p-4 bg-muted/20 rounded-xl border border-border/40 space-y-2.5 sm:space-y-3 overflow-hidden">
+      <div className="flex items-start gap-3 min-w-0">
         <Avatar className="h-8 w-8 sm:h-9 sm:w-9 shrink-0">
           {review.reviewer_avatar ? (
             <img src={review.reviewer_avatar} alt={review.reviewer_name} className="h-full w-full object-cover" />
@@ -35,9 +35,9 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           )}
         </Avatar>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-semibold text-foreground">{review.reviewer_name}</span>
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+              <span className="text-sm font-semibold text-foreground break-words">{review.reviewer_name}</span>
               {review.verified && (
                 <Badge variant="secondary" className="text-[10px] h-4 gap-0.5 px-1.5 bg-success/10 text-success border-success/20">
                   <ShieldCheck className="h-2.5 w-2.5" />
@@ -63,7 +63,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           </div>
         </div>
       </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">{review.comment}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed break-words">{review.comment}</p>
 
       {/* Provider reply */}
       {review.response && (
@@ -72,7 +72,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             <Reply className="h-3 w-3 text-accent" />
             <span className="text-xs font-semibold text-accent">{t("mp.provider_reply") || "Provider reply"}</span>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">{review.response}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed break-words">{review.response}</p>
         </div>
       )}
 

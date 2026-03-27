@@ -289,15 +289,15 @@ export default function MyListingsPanel() {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-foreground truncate">{listing.title}</p>
+              <p className="text-sm font-bold text-foreground line-clamp-2 leading-snug break-words">{listing.title}</p>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <StatusBadge status={ds} />
                 <ExpiryInfo listing={listing} />
               </div>
-              <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">{listing.price} {listing.currency}</span>
-                {listing.city && <span>· {listing.city}</span>}
-                {listing.category && <span>· {listing.category}</span>}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1.5 text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground shrink-0">{listing.price} {listing.currency}</span>
+                {listing.city && <span className="break-words">· {listing.city}</span>}
+                {listing.category && <span className="break-words">· {listing.category}</span>}
               </div>
             </div>
           </div>
