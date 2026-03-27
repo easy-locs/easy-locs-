@@ -355,9 +355,9 @@ export default function CommContactsSection() {
     haptic("light");
     const newVal = !contact.is_favorite;
     setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, is_favorite: newVal } : c));
-    const { error } = await supabase.from("contacts").update({ is_favorite: newVal } as any).eq("id", contact.id);
-    if (error) {
-      // Rollback on failure
+    try {
+      await toggleFavoriteContact(contact.id, newVal);
+    } catch {
       setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, is_favorite: !newVal } : c));
       toast.error("Failed to update favorite");
     }
@@ -433,7 +433,7 @@ export default function CommContactsSection() {
       });
 
       await initiateCall({
-        targetId: peer.peerUserId,
+        targetId: peer.peerOrbitId || peer.peerUserId,
         threadId: thread?.v2ConversationId || thread?.threadId,
         contextType: "direct",
         contextId: thread?.v2ConversationId || thread?.contextId || "",
@@ -471,7 +471,15 @@ export default function CommContactsSection() {
         toast.success(`Invitation envoyée par email à ${contact.name}`);
 
         // Update last_contacted_at
-        await supabase.from("contacts").update({ last_contacted_at: new Date().toISOString() } as any).eq("id", contact.id);
+        await upsertOrbitContact({
+          ownerUserId: user!.id,
+          peerUserId: contact.contact_user_id,
+          displayName: contact.name,
+          email: contact.email,
+          phone: contact.phone,
+          source: contact.category,
+          metadata: { last_contacted_at: new Date().toISOString() },
+        });
       } catch {
         // Fallback to clipboard
         navigator.clipboard.writeText(inviteUrl).then(() => {
