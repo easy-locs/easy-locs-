@@ -108,8 +108,12 @@ export default function RadarPage() {
       {/* Header */}
       <div className="px-4 pt-5 pb-2">
         <div className="flex items-center justify-between mb-3">
-          <div>
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate("/")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm">
+              <ArrowLeft className="w-4.5 h-4.5" />
+            </button>
             <h1 className="text-lg font-bold text-foreground">Radar</h1>
+          </div>
             <p className="text-[10px] text-muted-foreground flex items-center gap-1">
               {geoLoading ? (
                 <><Loader2 className="h-3 w-3 animate-spin" /> Locating…</>
