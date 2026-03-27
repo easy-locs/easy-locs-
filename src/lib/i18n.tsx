@@ -440,27 +440,38 @@ let pageIt: Record<string, string> = {};
 let pagePt: Record<string, string> = {};
 
 let pageTranslationsLoaded = false;
+let pageTranslationsPromise: Promise<void> | null = null;
 
 async function loadPageTranslations(): Promise<void> {
   if (pageTranslationsLoaded) return;
-  pageTranslationsLoaded = true;
-  try {
-    const [frMod, enMod] = await Promise.all([
-      import("./i18n-pages-fr"),
-      import("./i18n-pages-en"),
-    ]);
-    pageFr = frMod.default;
-    pageEn = enMod.default;
-    // Load secondary locales in background
-    Promise.allSettled([
-      import("./i18n-pages-es").then(m => { pageEs = m.default; }),
-      import("./i18n-pages-de").then(m => { pageDe = m.default; }),
-      import("./i18n-pages-it").then(m => { pageIt = m.default; }),
-      import("./i18n-pages-pt").then(m => { pagePt = m.default; }),
-    ]);
-  } catch (e) {
-    console.warn("[i18n] Failed to load page translations", e);
-  }
+  if (pageTranslationsPromise) return pageTranslationsPromise;
+
+  pageTranslationsPromise = (async () => {
+    try {
+      const [frMod, enMod] = await Promise.all([
+        import("./i18n-pages-fr"),
+        import("./i18n-pages-en"),
+      ]);
+      pageFr = frMod.default;
+      pageEn = enMod.default;
+      pageTranslationsLoaded = true;
+
+      // Load secondary locales in background
+      void Promise.allSettled([
+        import("./i18n-pages-es").then(m => { pageEs = m.default; }),
+        import("./i18n-pages-de").then(m => { pageDe = m.default; }),
+        import("./i18n-pages-it").then(m => { pageIt = m.default; }),
+        import("./i18n-pages-pt").then(m => { pagePt = m.default; }),
+      ]);
+    } catch (e) {
+      pageTranslationsLoaded = false;
+      console.warn("[i18n] Failed to load page translations", e);
+    } finally {
+      pageTranslationsPromise = null;
+    }
+  })();
+
+  return pageTranslationsPromise;
 }
 
 // Trigger load immediately (not idle) to prevent raw keys on first paint
