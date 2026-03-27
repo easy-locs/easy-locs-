@@ -368,7 +368,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         <OrbitCallMiniBar
           active={callActions.isInCall}
           label={thread.name || undefined}
-          onHangup={callActions.handleEndCall}
+          onHangup={() => { /* handled by call UI */ }}
         />
 
         <OrbitPinnedBanner
