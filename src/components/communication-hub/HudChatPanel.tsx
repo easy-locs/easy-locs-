@@ -308,6 +308,54 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     });
   };
 
+  // Attachment file handlers
+  const handlePickFiles = () => fileInputRef.current?.click();
+  const handlePickCamera = () => cameraInputRef.current?.click();
+  const handlePickGallery = () => fileInputRef.current?.click();
+
+  const handleFilesSelected = (files: FileList | null) => {
+    if (!files?.length) return;
+    attachmentQueue.enqueueFiles(files);
+  };
+
+  const handleUploadAndSendAttachments = async () => {
+    for (const item of attachmentQueue.queue) {
+      if (item.status === "uploaded") continue;
+      try {
+        attachmentQueue.setItemProgress(item.localId, 15);
+        const uploaded = await uploadTransport.uploadSingleFile({
+          file: item.file,
+          pathPrefix: "orbit-media",
+          onProgress: (progress) => attachmentQueue.setItemProgress(item.localId, progress),
+        });
+        attachmentQueue.markUploaded(item.localId, uploaded.publicUrl);
+      } catch (err: any) {
+        attachmentQueue.markFailed(item.localId, err?.message || "Upload failed");
+      }
+    }
+
+    const atts = attachmentQueue.uploadedAttachments.map((x) => ({
+      ...x,
+      viewOnce: viewOnceEnabled,
+    }));
+    if (!atts.length) return;
+
+    await attachmentSend.sendAttachments({ attachments: atts, body: "", viewOnce: viewOnceEnabled });
+    attachmentQueue.clearQueue();
+    setViewOnceEnabled(false);
+  };
+
+  const handleOpenAttachment = async (message: any, attachment: any) => {
+    setViewerAttachment(attachment);
+    setViewerOpen(true);
+    if (attachment.viewOnce && thread?.v2ConversationId) {
+      await viewOnceHook.markViewOnceOpened({
+        messageId: message.id,
+        conversationId: thread.v2ConversationId,
+      });
+    }
+  };
+
   // Edit mode: inject original body into composer
   useEffect(() => {
     if (composer.editState) {
