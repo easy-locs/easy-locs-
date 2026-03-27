@@ -266,24 +266,25 @@ export default function SmartHome() {
     return null;
   });
 
+  // Resolve city from live GPS when available
   useEffect(() => {
-    if (city) return;
-    if (currentLocation && !isFallback) {
-      setCity("Dubai"); // immediate fallback
-      import("@/lib/mapbox/geocoding").then(({ reverseGeocode }) => {
-        reverseGeocode(currentLocation.lat, currentLocation.lng).then(res => {
-          const place = res?.features?.[0];
-          if (place) {
-            const cityCtx = place.context?.find((c: any) => c.id?.startsWith("place"));
-            const cityName = cityCtx?.text || place.text;
-            if (cityName) {
-              setCity(cityName);
-              try { localStorage.setItem("orbit:last-geo", JSON.stringify({ city: cityName, country: "AE" })); } catch {}
-            }
+    if (!currentLocation || isFallback) return;
+    // Already resolved for this position? skip
+    if (city && city !== "your area") return;
+    
+    import("@/lib/mapbox/geocoding").then(({ reverseGeocode }) => {
+      reverseGeocode(currentLocation.lat, currentLocation.lng).then(res => {
+        const place = res?.features?.[0];
+        if (place) {
+          const cityCtx = place.context?.find((c: any) => c.id?.startsWith("place"));
+          const cityName = cityCtx?.text || place.text;
+          if (cityName) {
+            setCity(cityName);
+            try { localStorage.setItem("orbit:last-geo", JSON.stringify({ city: cityName, country: "AE" })); } catch {}
           }
-        }).catch(() => {});
-      });
-    }
+        }
+      }).catch(() => {});
+    });
   }, [currentLocation, isFallback, city]);
 
   const timezone = useMemo(() => {
