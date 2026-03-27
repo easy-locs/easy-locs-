@@ -33,7 +33,6 @@ export function auditMerchantVisuals(input: VisualAuditInput): Omit<VisualAuditR
     merchant_id: input.merchant_id,
     logo_ok,
     cover_ok,
-    duplicate_cover: false, // set by batch duplicate detection
     placeholder_logo,
     placeholder_cover,
     notes,
