@@ -887,6 +887,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           currentContextId={thread.contextId || ""}
         />
       )}
+
+      <OrbitAttachmentViewer
+        open={viewerOpen}
+        attachment={viewerAttachment}
+        onClose={() => { setViewerOpen(false); setViewerAttachment(null); }}
+      />
     </>
   );
 }
