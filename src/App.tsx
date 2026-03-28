@@ -431,6 +431,7 @@ const CanonicalMapTestPage = safeLazy(() => import("./pages/CanonicalMapTestPage
 const OnboardingQualityDashboardPage = safeLazy(() => import("./pages/admin/OnboardingQualityDashboardPage"), "OnboardingQualityDashboardPage");
 const UnifiedGlobalEnginePage = safeLazy(() => import("./pages/admin/UnifiedGlobalEnginePage"), "UnifiedGlobalEnginePage");
 const AIDecisionsDashboardPage = safeLazy(() => import("./pages/admin/AIDecisionsDashboardPage"), "AIDecisionsDashboardPage");
+const UrlImportPage = safeLazy(() => import("./pages/admin/UrlImportPage"), "UrlImportPage");
 const MerchantInventoryPage = safeLazy(() => import("./pages/merchant/MerchantInventoryPage"), "MerchantInventoryPage");
 const MerchantLiveControlPage = safeLazy(() => import("./pages/merchant/MerchantLiveControlPage"), "MerchantLiveControlPage");
 const MerchantCouponManagerPage = safeLazy(() => import("./pages/merchant/MerchantCouponManagerPage"), "MerchantCouponManagerPage");
@@ -1029,6 +1030,7 @@ const App = () => (
                 <Route path="/admin/onboarding-quality" element={<ProtectedRoute><OnboardingQualityDashboardPage /></ProtectedRoute>} />
                 <Route path="/admin/unified-engine" element={<ProtectedRoute><UnifiedGlobalEnginePage /></ProtectedRoute>} />
                 <Route path="/admin/ai-decisions" element={<ProtectedRoute><AIDecisionsDashboardPage /></ProtectedRoute>} />
+                <Route path="/admin/url-import" element={<ProtectedRoute><UrlImportPage /></ProtectedRoute>} />
 
               {/* Merchant claim & dashboard */}
               <Route path="/merchant/claim" element={<MerchantClaimPage />} />

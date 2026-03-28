@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRadar } from "@/hooks/useRadar";
 import { useI18n } from "@/lib/i18n";
 import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
+import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 
 const UNIVERSES = [
   { icon: UtensilsCrossed, label: "Food", color: "hsl(15 80% 55%)", bg: "hsl(15 80% 55% / 0.12)", to: "/food" },
@@ -186,6 +187,11 @@ const Hero = () => {
               )}
             </motion.div>
 
+            {/* Global Search Bar — single entry point for all verticals */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }} className="w-full max-w-lg mx-auto lg:mx-0">
+              <UnifiedSearchBar variant="hero" placeholder="Search food, hotels, shops, services, rides..." />
+            </motion.div>
+
             {/* Universe chips — wrap to show full labels, never truncate */}
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-wrap gap-1.5 justify-center lg:justify-start pb-1">
               {UNIVERSES.map((u, i) => (
@@ -281,8 +287,8 @@ const Hero = () => {
                     <div className="flex items-center gap-2.5">
                       <span className="text-xl">{card.emoji}</span>
                       <div className="min-w-0">
-                        <p className="text-xs font-bold truncate" style={{ color: "hsl(40 50% 94%)" }}>{card.title}</p>
-                        <p className="text-[10px] truncate" style={{ color: "hsl(220 15% 50%)" }}>{card.sub}</p>
+                        <p className="text-xs font-bold line-clamp-1 break-words" style={{ color: "hsl(40 50% 94%)" }}>{card.title}</p>
+                        <p className="text-[10px] line-clamp-2 break-words" style={{ color: "hsl(220 15% 50%)" }}>{card.sub}</p>
                       </div>
                     </div>
                     <div className="mt-2 h-0.5 rounded-full" style={{ background: `${card.accent}40`, width: `${60 + i * 8}%` }} />
