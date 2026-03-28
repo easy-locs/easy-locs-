@@ -1,109 +1,121 @@
 /**
- * cross-domain-propagation-handlers — Atomic: wire orchestration events to
+ * cross-domain-propagation-handlers — Wire orchestration events to
  * cache invalidation, counters, dashboard refresh, and notification emit.
- *
- * This is the MISSING LINK that ensures every domain event propagates to
- * all dependent systems (cache, counters, dashboard, notifications).
+ * Uses canonical APP_EVENTS exclusively.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
+import { APP_EVENTS } from "@/lib/platform/events";
 import { invalidateOrderCaches } from "@/lib/orders/order-cache-invalidator";
 import { invalidateDeliveryCaches } from "@/lib/delivery/delivery-cache-invalidator";
 import { invalidateWalletCaches } from "@/lib/wallet/wallet-cache-invalidator";
 import { invalidateDashboardCaches } from "@/lib/dashboard/dashboard-cache-invalidator";
 import { invalidateOrbitCaches } from "@/lib/orbit/orbit-cache-invalidator";
+import { invalidateRentalCaches } from "@/lib/rental/rental-cache-invalidator";
 
-/**
- * Installs cross-domain propagation handlers.
- * Ensures: order events → wallet + dashboard + delivery caches.
- *          delivery events → order + dashboard caches.
- *          wallet events → dashboard caches.
- *          orbit events → dashboard counters.
- */
 export function installCrossDomainPropagationHandlers(): () => void {
   const unsubs: (() => void)[] = [];
 
   // ── ORDER → WALLET + DASHBOARD + DELIVERY ──
   unsubs.push(
-    platformBus.on("ORDER_CREATED", () => {
+    platformBus.on(APP_EVENTS.ORDER_CREATED as any, () => {
       invalidateDashboardCaches();
-      // Emit counter signal for pending orders badge
-      platformBus.emit("dashboard:counters_refresh", {}, "system");
+      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
-    platformBus.on("PAYMENT_SUCCESS", () => {
+    platformBus.on(APP_EVENTS.PAYMENT_SUCCESS as any, () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
-      platformBus.emit("dashboard:counters_refresh", {}, "system");
+      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
-    platformBus.on("ORDER_DELIVERED", () => {
-      invalidateWalletCaches(); // merchant payout
+    platformBus.on(APP_EVENTS.ORDER_COMPLETED as any, () => {
+      invalidateWalletCaches();
       invalidateDashboardCaches();
       invalidateDeliveryCaches();
-      platformBus.emit("dashboard:counters_refresh", {}, "system");
+      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
-    platformBus.on("ORDER_CONFIRMED", () => {
+    platformBus.on(APP_EVENTS.ORDER_CONFIRMED as any, () => {
       invalidateDashboardCaches();
     }),
-    platformBus.on("ORDER_READY", () => {
+    platformBus.on(APP_EVENTS.ORDER_READY as any, () => {
       invalidateDeliveryCaches();
       invalidateDashboardCaches();
+    }),
+    platformBus.on(APP_EVENTS.ORDER_CANCELLED as any, () => {
+      invalidateOrderCaches();
+      invalidateDashboardCaches();
+      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
   );
 
   // ── DELIVERY → ORDER + DASHBOARD ──
   unsubs.push(
-    platformBus.on("MISSION_ACCEPTED", () => {
+    platformBus.on(APP_EVENTS.MISSION_ACCEPTED as any, () => {
       invalidateOrderCaches();
       invalidateDashboardCaches();
       invalidateDeliveryCaches();
-      platformBus.emit("dashboard:counters_refresh", {}, "system");
+      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
-    platformBus.on("MISSION_COMPLETED", () => {
+    platformBus.on(APP_EVENTS.MISSION_COMPLETED as any, () => {
       invalidateOrderCaches();
       invalidateDashboardCaches();
       invalidateDeliveryCaches();
+    }),
+    platformBus.on(APP_EVENTS.DELIVERY_COMPLETED as any, () => {
+      invalidateOrderCaches();
+      invalidateWalletCaches();
+      invalidateDashboardCaches();
     }),
   );
 
   // ── REFUND → WALLET + DASHBOARD ──
   unsubs.push(
-    platformBus.on("REFUND_REQUESTED", () => {
+    platformBus.on(APP_EVENTS.REFUND_REQUESTED as any, () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
-      platformBus.emit("dashboard:counters_refresh", {}, "system");
+      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
   );
 
   // ── WALLET EVENTS → DASHBOARD ──
   unsubs.push(
-    platformBus.on("wallet:payment_success" as any, () => {
+    platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS as any, () => {
       invalidateDashboardCaches();
     }),
-    platformBus.on("wallet:balance_updated" as any, () => {
+    platformBus.on(APP_EVENTS.WALLET_BALANCE_UPDATED as any, () => {
       invalidateDashboardCaches();
     }),
   );
 
   // ── ORBIT EVENTS → DASHBOARD COUNTERS ──
   unsubs.push(
-    platformBus.on("orbit:message_received" as any, () => {
-      platformBus.emit("dashboard:counters_refresh", {}, "system");
+    platformBus.on(APP_EVENTS.ORBIT_MESSAGE_RECEIVED as any, () => {
+      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
   );
 
   // ── STOREFRONT → ORDER + WALLET + DASHBOARD ──
   unsubs.push(
-    platformBus.on("storefront:order_placed" as any, () => {
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED as any, () => {
       invalidateOrderCaches();
       invalidateDashboardCaches();
-      platformBus.emit("dashboard:counters_refresh", {}, "system");
+      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
-    platformBus.on("storefront:order_completed" as any, () => {
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED as any, () => {
       invalidateOrderCaches();
       invalidateWalletCaches();
       invalidateDashboardCaches();
     }),
   );
 
-  console.log("[cross-domain] Propagation handlers installed");
+  // ── RENTAL → DASHBOARD ──
+  unsubs.push(
+    platformBus.on(APP_EVENTS.RENTAL_RENT_CALL_PAID as any, () => {
+      invalidateWalletCaches();
+      invalidateDashboardCaches();
+    }),
+    platformBus.on(APP_EVENTS.RENTAL_TENANT_CREATED as any, () => {
+      invalidateDashboardCaches();
+    }),
+  );
+
   return () => unsubs.forEach(u => u());
 }

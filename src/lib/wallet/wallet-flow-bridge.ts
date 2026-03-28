@@ -1,6 +1,6 @@
 /**
  * wallet-flow-bridge — Wires wallet mutations into the smart flow system.
- * Adds event emission + propagation tracking to wallet transfer and topup.
+ * Uses canonical APP_EVENTS.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackPropagation } from "@/lib/runtime/propagation-validator";
@@ -9,9 +9,6 @@ import { APP_EVENTS } from "@/lib/platform/events";
 import { executeWalletTransfer, type TransferInput, type TransferResult } from "./wallet-transfer";
 import { initiateWalletTopup, type TopupInput, type TopupResult } from "./wallet-topup";
 
-/**
- * Smart wallet transfer — wraps atomic transfer with event propagation.
- */
 export async function smartWalletTransfer(input: TransferInput): Promise<TransferResult> {
   const result = await executeWalletTransfer(input);
 
@@ -21,7 +18,9 @@ export async function smartWalletTransfer(input: TransferInput): Promise<Transfe
       amount: input.amount,
       currency: input.currency,
     }, "wallet");
-
+    platformBus.emit(APP_EVENTS.WALLET_TRANSFER_COMPLETED, {
+      transactionId: result.transactionId,
+    }, "wallet");
     platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "wallet");
     platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, {}, "wallet");
 
@@ -52,14 +51,11 @@ export async function smartWalletTransfer(input: TransferInput): Promise<Transfe
   return result;
 }
 
-/**
- * Smart wallet topup — wraps topup with event propagation.
- */
 export async function smartWalletTopup(input: TopupInput): Promise<TopupResult> {
   const result = await initiateWalletTopup(input);
 
   if (result.success) {
-    platformBus.emit("wallet:topup_initiated", {
+    platformBus.emit(APP_EVENTS.WALLET_TOPUP_INITIATED, {
       intentId: result.intentId,
       amount: input.amount,
       currency: input.currency,
@@ -72,7 +68,7 @@ export async function smartWalletTopup(input: TopupInput): Promise<TopupResult> 
       domain: "wallet",
       action: "topup",
       dbWriteSuccess: true,
-      eventEmitted: "wallet:topup_initiated",
+      eventEmitted: APP_EVENTS.WALLET_TOPUP_INITIATED,
       cacheInvalidated: [],
     });
   } else {

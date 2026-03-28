@@ -1,6 +1,6 @@
 /**
  * wallet-cache-invalidator — Atomic unit: invalidate wallet-related TanStack caches.
- * Single responsibility: cache sync for wallet domain.
+ * Uses canonical APP_EVENTS.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
@@ -8,10 +8,7 @@ import { APP_EVENTS } from "@/lib/platform/events";
 let queryClientRef: any = null;
 
 const WALLET_QUERY_KEYS = [
-  "wallet-balance",
-  "wallet-transactions",
-  "wallet-account",
-  "wallet-ledger",
+  "wallet-balance", "wallet-transactions", "wallet-account", "wallet-ledger",
 ] as const;
 
 export function registerWalletQueryClient(qc: any) {
@@ -27,11 +24,11 @@ export function invalidateWalletCaches() {
 
 export function installWalletCacheListener(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.WALLET_BALANCE_UPDATED, () => invalidateWalletCaches()),
-    platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS, () => invalidateWalletCaches()),
-    platformBus.on(APP_EVENTS.WALLET_PAYMENT_FAILED, () => invalidateWalletCaches()),
-    platformBus.on("wallet:transfer_completed" as any, () => invalidateWalletCaches()),
-    platformBus.on("wallet:topup_initiated" as any, () => invalidateWalletCaches()),
+    platformBus.on(APP_EVENTS.WALLET_BALANCE_UPDATED as any, () => invalidateWalletCaches()),
+    platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS as any, () => invalidateWalletCaches()),
+    platformBus.on(APP_EVENTS.WALLET_PAYMENT_FAILED as any, () => invalidateWalletCaches()),
+    platformBus.on(APP_EVENTS.WALLET_TRANSFER_COMPLETED as any, () => invalidateWalletCaches()),
+    platformBus.on(APP_EVENTS.WALLET_TOPUP_INITIATED as any, () => invalidateWalletCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }
