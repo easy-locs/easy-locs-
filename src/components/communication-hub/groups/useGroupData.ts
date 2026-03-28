@@ -41,10 +41,8 @@ export function useGroupData() {
 
     const filtered = (data || []).filter((g: any) => {
       if (memberGroupIds.includes(g.id)) return true;
-      const pIds = Array.isArray(g.participant_ids) ? g.participant_ids : [];
-      if (pIds.includes(user.id)) return true;
       const participants = Array.isArray(g.participants) ? g.participants : [];
-      return participants.some((p: any) => p?.userId === user.id || p?.user_id === user.id);
+      return participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user.id);
     });
 
     const enriched = await Promise.all(filtered.map(async (g: any) => {

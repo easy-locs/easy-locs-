@@ -156,10 +156,9 @@ export default function SuperAppHome() {
     queryFn: async () => {
       const [threadsRes, ordersRes, shopRes] = await Promise.all([
         (supabase as any).from("conversations_v2")
-          .select("id, type, title, updated_at, status")
-          .contains("participant_ids", [user!.id])
+          .select("id, type, title, updated_at, participants")
           .order("updated_at", { ascending: false })
-          .limit(5),
+          .limit(50),
         (supabase as any).from("storefront_orders")
           .select("id, status, total, currency, created_at")
           .eq("buyer_id", user!.id)

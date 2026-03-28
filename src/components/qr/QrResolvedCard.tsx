@@ -84,13 +84,20 @@ export function QrResolvedCard({
 
         const { data: threadRow } = await (supabase as any)
           .from("conversations_v2")
-          .select("id")
-          .contains("participant_ids", [currentUserId, userId])
+          .select("id, participants")
           .eq("type", "direct")
-          .limit(1)
-          .maybeSingle();
-        if (!cancelled && threadRow) setHasThread(true);
-      } catch { /* no-op */ }
+          .order("updated_at", { ascending: false })
+          .limit(100);
+
+        const match = (threadRow || []).find((t: any) =>
+          Array.isArray(t.participants) &&
+          t.participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === currentUserId) &&
+          t.participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === userId)
+        );
+        if (!cancelled && match) setHasThread(true);
+      } catch (err) {
+        console.error("[QrResolvedCard] thread lookup error:", err);
+      }
     }
     load();
     return () => { cancelled = true; };
