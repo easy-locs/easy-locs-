@@ -2,7 +2,8 @@
  * useOnboardingImport — UI hook for triggering the shop import pipeline.
  */
 import { useCallback, useState } from "react";
-import { runImportPipeline, type CanonicalShop } from "@/lib/onboarding/pipeline";
+import { runImportPipeline } from "@/lib/onboarding/pipeline/run-import-pipeline";
+import type { CanonicalShop } from "@/lib/onboarding/pipeline/canonical-shop.schema";
 
 export function useOnboardingImport() {
   const [importing, setImporting] = useState(false);
