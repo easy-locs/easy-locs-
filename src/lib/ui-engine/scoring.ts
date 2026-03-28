@@ -23,19 +23,29 @@ export function computeUiScore(issues: UiIssue[]): UiScore {
       case "dotted_labels":
       case "untranslated_keys":
       case "duplicate_heading":
+      case "duplicate_content":
         clarity -= p;
         consistency -= p * 0.7;
         break;
       case "broken_card_layout":
       case "broken_settings_grouping":
       case "empty_section":
+      case "inconsistent_height":
         consistency -= p;
         conversion -= p * 0.7;
         break;
       case "overflow_x":
+      case "overflow_y_clip":
+      case "text_clipping":
+      case "wrapper_strangling":
       case "image_shift":
         mobile -= p;
         consistency -= p * 0.7;
+        break;
+      case "element_overlap":
+      case "z_index_collision":
+        mobile -= p;
+        clarity -= p;
         break;
       case "tiny_tap_targets":
         accessibility -= p;

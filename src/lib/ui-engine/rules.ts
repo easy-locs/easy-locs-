@@ -1,4 +1,24 @@
 import type { UiIssue, PageExpectation } from "./types";
+import {
+  findBrokenCards,
+  findDottedLabels,
+  findDuplicateHeadings,
+  findEmptySections,
+  findTinyTapTargets,
+  findUntranslatedKeys,
+  getText,
+  hasHorizontalOverflow,
+  isVisible,
+  uiUid,
+} from "./utils";
+import {
+  findVerticalClipping,
+  findTextClipping,
+  findElementOverlaps,
+  findDuplicateContent,
+  findStranglingWrappers,
+  findInconsistentHeights,
+} from "./detectors";
 
 function getPageExpectation(pathname: string): PageExpectation {
   const registry: PageExpectation[] = [
@@ -13,23 +33,12 @@ function getPageExpectation(pathname: string): PageExpectation {
   ];
   return registry.find((p) => p.routePattern.test(pathname)) ?? { routePattern: /.*/, pageType: "generic" };
 }
-import {
-  findBrokenCards,
-  findDottedLabels,
-  findDuplicateHeadings,
-  findEmptySections,
-  findTinyTapTargets,
-  findUntranslatedKeys,
-  getText,
-  hasHorizontalOverflow,
-  isVisible,
-  uiUid,
-} from "./utils";
 
 export function runUiRules(pathname: string): UiIssue[] {
   const page = getPageExpectation(pathname);
   const issues: UiIssue[] = [];
 
+  // ── Horizontal overflow ──
   if (hasHorizontalOverflow()) {
     issues.push({
       id: uiUid("issue"),
@@ -42,6 +51,91 @@ export function runUiRules(pathname: string): UiIssue[] {
     });
   }
 
+  // ── Vertical clipping ──
+  const clipped = findVerticalClipping();
+  if (clipped.length > 0) {
+    issues.push({
+      id: uiUid("issue"),
+      type: "overflow_y_clip",
+      severity: "high",
+      route: pathname,
+      message: `${clipped.length} elements have clipped vertical overflow.`,
+      patchable: true,
+      meta: { count: clipped.length },
+    });
+  }
+
+  // ── Text clipping ──
+  const textClips = findTextClipping();
+  if (textClips.length > 0) {
+    issues.push({
+      id: uiUid("issue"),
+      type: "text_clipping",
+      severity: "high",
+      route: pathname,
+      message: `${textClips.length} text elements are visually clipped.`,
+      patchable: true,
+      meta: { count: textClips.length, samples: textClips.slice(0, 3).map(e => getText(e).slice(0, 40)) },
+    });
+  }
+
+  // ── Element overlaps ──
+  const overlaps = findElementOverlaps();
+  if (overlaps.length > 0) {
+    issues.push({
+      id: uiUid("issue"),
+      type: "element_overlap",
+      severity: "critical",
+      route: pathname,
+      message: `${overlaps.length} element overlap collisions detected.`,
+      patchable: true,
+      meta: { count: overlaps.length },
+    });
+  }
+
+  // ── Duplicate content (cards rendered twice) ──
+  const dupes = findDuplicateContent();
+  if (dupes.length > 0) {
+    issues.push({
+      id: uiUid("issue"),
+      type: "duplicate_content",
+      severity: "medium",
+      route: pathname,
+      message: `${dupes.length} duplicate card/content blocks detected.`,
+      patchable: false,
+      meta: { count: dupes.length },
+    });
+  }
+
+  // ── Strangling wrappers ──
+  const strangled = findStranglingWrappers();
+  if (strangled.length > 0) {
+    issues.push({
+      id: uiUid("issue"),
+      type: "wrapper_strangling",
+      severity: "high",
+      route: pathname,
+      message: `${strangled.length} containers are strangling their content.`,
+      patchable: true,
+      meta: { count: strangled.length },
+    });
+  }
+
+  // ── Inconsistent heights ──
+  const inconsistent = findInconsistentHeights();
+  if (inconsistent.length > 0) {
+    issues.push({
+      id: uiUid("issue"),
+      type: "inconsistent_height",
+      severity: "low",
+      route: pathname,
+      message: `${inconsistent.length} elements have inconsistent heights in rows.`,
+      patchable: false,
+      meta: { count: inconsistent.length },
+    });
+  }
+
+  // ── Tiny tap targets ──
   const tinyTargets = findTinyTapTargets();
   if (tinyTargets.length > 0) {
     issues.push({
@@ -51,11 +145,11 @@ export function runUiRules(pathname: string): UiIssue[] {
       route: pathname,
       message: `${tinyTargets.length} tap targets are too small.`,
       patchable: true,
-      selector: "button, a, [role='button']",
       meta: { count: tinyTargets.length },
     });
   }
 
+  // ── Dotted labels ──
   const dotted = findDottedLabels();
   if (dotted.length > 0) {
     issues.push({
@@ -65,11 +159,11 @@ export function runUiRules(pathname: string): UiIssue[] {
       route: pathname,
       message: `${dotted.length} dotted labels found.`,
       patchable: true,
-      selector: "*",
-      meta: { samples: dotted.slice(0, 5).map((el) => getText(el)) },
+      meta: { samples: dotted.slice(0, 5).map(getText) },
     });
   }
 
+  // ── Untranslated keys ──
   const untranslated = findUntranslatedKeys();
   if (untranslated.length > 0) {
     issues.push({
@@ -79,11 +173,11 @@ export function runUiRules(pathname: string): UiIssue[] {
       route: pathname,
       message: `${untranslated.length} untranslated keys found.`,
       patchable: true,
-      selector: "*",
-      meta: { samples: untranslated.slice(0, 5).map((el) => getText(el)) },
+      meta: { samples: untranslated.slice(0, 5).map(getText) },
     });
   }
 
+  // ── Duplicate headings ──
   const duplicateHeadings = findDuplicateHeadings();
   if (duplicateHeadings.length > 0) {
     issues.push({
@@ -93,10 +187,10 @@ export function runUiRules(pathname: string): UiIssue[] {
       route: pathname,
       message: `${duplicateHeadings.length} duplicate headings found.`,
       patchable: false,
-      selector: "h1,h2,h3",
     });
   }
 
+  // ── Card layout ──
   if (page.cardSelectors?.length) {
     const brokenCards = findBrokenCards(page.cardSelectors);
     if (brokenCards.length > 0) {
@@ -112,6 +206,7 @@ export function runUiRules(pathname: string): UiIssue[] {
     }
   }
 
+  // ── Empty sections ──
   if (page.emptyStateSelectors?.length) {
     const empties = findEmptySections(page.emptyStateSelectors);
     if (empties.length > 0) {
@@ -122,15 +217,15 @@ export function runUiRules(pathname: string): UiIssue[] {
         route: pathname,
         message: `${empties.length} empty sections found.`,
         patchable: true,
-        selector: page.emptyStateSelectors.join(", "),
       });
     }
   }
 
+  // ── Missing CTA ──
   if (page.primaryCtaSelectors?.length) {
     const hasCta = page.primaryCtaSelectors
       .flatMap((s) => Array.from(document.querySelectorAll(s)))
-      .some((el) => isVisible(el));
+      .some(isVisible);
 
     if (!hasCta) {
       issues.push({
@@ -144,16 +239,15 @@ export function runUiRules(pathname: string): UiIssue[] {
     }
   }
 
+  // ── Settings grouping ──
   if (page.pageType === "settings") {
     const settingRows = Array.from(
       document.querySelectorAll("[data-setting-row], .setting-row, [data-settings-card]")
     );
     const hugeCard = settingRows.some((el) => {
       if (!(el instanceof HTMLElement)) return false;
-      const rect = el.getBoundingClientRect();
-      return rect.height > 420;
+      return el.getBoundingClientRect().height > 420;
     });
-
     if (hugeCard) {
       issues.push({
         id: uiUid("issue"),
