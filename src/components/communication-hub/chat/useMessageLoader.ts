@@ -125,6 +125,7 @@ export function useMessageLoader({
       const pending = await offline.getThreadPending();
       setRawMessages((cached ?? []) as ChatMessage[]);
       setPendingOffline(pending ?? []);
+      setMessagesLoading(false);
       return;
     }
 
@@ -137,27 +138,26 @@ export function useMessageLoader({
       .limit(300);
 
     if (error) {
+      setMessagesLoading(false);
       return;
     }
 
     const mapped = (data ?? []).map((m: any) => mapV2ToChat(m, conversationId));
     setRawMessages(mapped);
+    messageCache.set(conversationId, mapped);
     offline.cacheMessages(mapped);
+    setMessagesLoading(false);
 
     const unreadIds = (data ?? [])
       .filter((m: any) => !m.read_at && m.sender_user_id !== userId)
       .map((m: any) => m.id);
 
     if (readReceipts && unreadIds.length > 0) {
-      await db
-        .from("chat_messages_v2")
+      db.from("chat_messages_v2")
         .update({ read_at: new Date().toISOString() })
-        .in("id", unreadIds);
-
-      onThreadUpdate(thread.id, { unreadCount: 0 });
+        .in("id", unreadIds)
+        .then(() => onThreadUpdate(thread.id, { unreadCount: 0 }));
     }
-
-    setPendingOffline([]);
   }, [thread, userId, readReceipts, onThreadUpdate, offline]);
 
   useEffect(() => {
