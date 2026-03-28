@@ -25,6 +25,7 @@ import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
 import SmartCloseFlowSheet from "@/components/close-flow/SmartCloseFlowSheet";
 // Geo: GeoBoot is the single GPS lifecycle manager
 import { GeoBoot } from "@/lib/geo/GeoBoot";
+import { GeoDebugPanel } from "@/components/debug/GeoDebugPanel";
 import { PermissionBootstrap } from "@/components/boot/PermissionBootstrap";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -687,6 +688,7 @@ const App = () => (
                    <CanonicalShellRuntime />
                   <UiQualityProvider>
                 <GeoBoot />
+                <GeoDebugPanel />
                 <PermissionBootstrap />
              <AppBootstrapGuardDirect />
            
