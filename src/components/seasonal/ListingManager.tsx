@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as seasonalRepo from "@/repositories/seasonal.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -45,12 +45,7 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const { data } = await supabase
-      .from("public_listings")
-      .select("*")
-      .eq("property_id", propertyId)
-      .eq("org_id", orgId)
-      .maybeSingle();
+    const data = await seasonalRepo.fetchListingByProperty(orgId, propertyId);
     if (data) {
       setListing(data);
       const amenities = Array.isArray(data.amenities) ? data.amenities as string[] : [];
@@ -95,17 +90,23 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       ...form.options,
       ...(form.cleaning_fee > 0 ? [{ type: "cleaning_fee", amount: form.cleaning_fee }] : []),
     ];
-    const { data, error } = await supabase.from("public_listings").insert({
-      property_id: propertyId, org_id: orgId, user_id: user.id, slug,
-      title: title, description: form.description,
-      price_per_night: form.price_per_night, min_nights: form.min_nights,
-      max_guests: form.max_guests, amenities: amenities as any,
-      listing_type: "short_term_stay",
-      contact_email: form.contact_email || null,
-      contact_phone: form.contact_phone || null,
-      whatsapp_number: form.whatsapp_number || null,
-      telegram_username: form.telegram_username || null,
-    } as any).select().single();
+    const { data, error } = await (async () => {
+      try {
+        await seasonalRepo.upsertListing({
+          property_id: propertyId, org_id: orgId, user_id: user.id, slug,
+          title: title, description: form.description,
+          price_per_night: form.price_per_night, min_nights: form.min_nights,
+          max_guests: form.max_guests, amenities: amenities as any,
+          listing_type: "short_term_stay",
+          contact_email: form.contact_email || null,
+          contact_phone: form.contact_phone || null,
+          whatsapp_number: form.whatsapp_number || null,
+          telegram_username: form.telegram_username || null,
+        });
+        const inserted = await seasonalRepo.fetchListingByProperty(orgId, propertyId);
+        return { data: inserted, error: null };
+      } catch (err: any) { return { data: null, error: err }; }
+    })();
     if (error) {
       toast({ title: t("common.error") || "Error", description: error.message, variant: "destructive" });
       return;
@@ -126,17 +127,18 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       ...form.options,
       ...(form.cleaning_fee > 0 ? [{ type: "cleaning_fee", amount: form.cleaning_fee }] : []),
     ];
-    const { error } = await supabase.from("public_listings").update({
-      title: form.title, description: form.description,
-      price_per_night: form.price_per_night, min_nights: form.min_nights,
-      max_guests: form.max_guests, amenities: amenities as any,
-      contact_email: form.contact_email || null,
-      contact_phone: form.contact_phone || null,
-      whatsapp_number: form.whatsapp_number || null,
-      telegram_username: form.telegram_username || null,
-    } as any).eq("id", listing.id);
-    if (error) {
-      toast({ title: t("common.error") || "Error", description: error.message, variant: "destructive" });
+    try {
+      await seasonalRepo.upsertListing({
+        title: form.title, description: form.description,
+        price_per_night: form.price_per_night, min_nights: form.min_nights,
+        max_guests: form.max_guests, amenities: amenities as any,
+        contact_email: form.contact_email || null,
+        contact_phone: form.contact_phone || null,
+        whatsapp_number: form.whatsapp_number || null,
+        telegram_username: form.telegram_username || null,
+      }, listing.id);
+    } catch (err: any) {
+      toast({ title: t("common.error") || "Error", description: err.message, variant: "destructive" });
       return;
     }
     toast({ title: t("page.listing_mgr.updated") });
@@ -145,7 +147,7 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
 
   const toggleActive = async () => {
     if (!listing) return;
-    await supabase.from("public_listings").update({ active: !listing.active } as any).eq("id", listing.id);
+    await seasonalRepo.toggleListingActive(listing.id, !listing.active);
     toast({ title: listing.active ? t("page.listing_mgr.deactivated") : t("page.listing_mgr.activated") });
     load();
   };
@@ -163,19 +165,17 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
     if (!shareEmail || !listing) return;
     setSendingEmail(true);
     try {
-      await supabase.functions.invoke("send-email", {
-        body: {
-          to: shareEmail,
-          subject: `🏖️ ${t("page.listing_mgr.email_subject")} — ${form.title || propertyLabel}`,
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-            <h2 style="color:#1a1a1a;text-align:center;">🏖️ ${form.title || propertyLabel}</h2>
-            <p style="color:#555;text-align:center;">${t("page.listing_mgr.email_body")} :</p>
-            <p style="text-align:center;margin:24px 0;">
-              <a href="${getPublicUrl()}" style="display:inline-block;background:#2563eb;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">${t("page.listing_mgr.email_cta")}</a>
-            </p>
-            <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">EASY-LOCS®</p>
-          </div>`,
-        },
+      await seasonalRepo.invokeSendEmail({
+        to: shareEmail,
+        subject: `🏖️ ${t("page.listing_mgr.email_subject")} — ${form.title || propertyLabel}`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+          <h2 style="color:#1a1a1a;text-align:center;">🏖️ ${form.title || propertyLabel}</h2>
+          <p style="color:#555;text-align:center;">${t("page.listing_mgr.email_body")} :</p>
+          <p style="text-align:center;margin:24px 0;">
+            <a href="${getPublicUrl()}" style="display:inline-block;background:#2563eb;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">${t("page.listing_mgr.email_cta")}</a>
+          </p>
+          <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">EASY-LOCS®</p>
+        </div>`,
       });
       toast({ title: t("page.listing_mgr.email_sent") });
       setShareEmail("");
