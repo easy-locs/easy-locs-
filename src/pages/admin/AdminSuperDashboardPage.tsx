@@ -1,68 +1,20 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
+import { fetchSuperDashboardOrders, fetchSuperDashboardMerchants, fetchSuperDashboardDrivers, fetchSuperDashboardTickets, fetchSuperDashboardLedger } from "@/repositories/admin-ops.repository";
 
 export default function AdminSuperDashboardPage() {
   const navigate = useNavigate();
 
-  const { data: orders = [] } = useQuery({
-    queryKey: ["super-dashboard-orders"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("orders").select("id,status,total_amount,payment_status").limit(1000);
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 10000,
-  });
-
-  const { data: merchants = [] } = useQuery({
-    queryKey: ["super-dashboard-merchants"],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any).from("seed_merchants").select("id,is_active,is_open,promo_active").limit(1000);
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 30000,
-  });
-
-  const { data: drivers = [] } = useQuery({
-    queryKey: ["super-dashboard-drivers"],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any).from("driver_profiles").select("id,is_online,is_available").limit(1000);
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 10000,
-  });
-
-  const { data: tickets = [] } = useQuery({
-    queryKey: ["super-dashboard-tickets"],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any).from("support_tickets").select("id,status").limit(1000);
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 10000,
-  });
-
-  const { data: ledger = [] } = useQuery({
-    queryKey: ["super-dashboard-ledger"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("wallet_ledger_entries").select("id,amount,direction,entry_type").limit(1000);
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 10000,
-  });
+  const { data: orders = [] } = useQuery({ queryKey: ["super-dashboard-orders"], queryFn: fetchSuperDashboardOrders, staleTime: 10000 });
+  const { data: merchants = [] } = useQuery({ queryKey: ["super-dashboard-merchants"], queryFn: fetchSuperDashboardMerchants, staleTime: 30000 });
+  const { data: drivers = [] } = useQuery({ queryKey: ["super-dashboard-drivers"], queryFn: fetchSuperDashboardDrivers, staleTime: 10000 });
+  const { data: tickets = [] } = useQuery({ queryKey: ["super-dashboard-tickets"], queryFn: fetchSuperDashboardTickets, staleTime: 10000 });
+  const { data: ledger = [] } = useQuery({ queryKey: ["super-dashboard-ledger"], queryFn: fetchSuperDashboardLedger, staleTime: 10000 });
 
   const gross = orders.reduce((sum: number, o: any) => sum + Number(o.total_amount ?? 0), 0);
-  const activeOrders = orders.filter((o: any) =>
-    ["paid", "confirmed", "preparing", "driver_search", "driver_assigned", "picked_up", "on_the_way"].includes(o.status)
-  ).length;
-  const paidOrders = orders.filter((o: any) =>
-    ["captured", "paid"].includes(String(o.payment_status ?? ""))
-  ).length;
+  const activeOrders = orders.filter((o: any) => ["paid", "confirmed", "preparing", "driver_search", "driver_assigned", "picked_up", "on_the_way"].includes(o.status)).length;
+  const paidOrders = orders.filter((o: any) => ["captured", "paid"].includes(String(o.payment_status ?? ""))).length;
   const onlineDrivers = drivers.filter((d: any) => d.is_online).length;
   const availableDrivers = drivers.filter((d: any) => d.is_online && d.is_available).length;
   const openTickets = tickets.filter((t: any) => t.status === "open").length;
@@ -83,7 +35,6 @@ export default function AdminSuperDashboardPage() {
           <p className="text-xs text-muted-foreground">Central operations view</p>
         </div>
       </header>
-
       <div className="px-4 pb-24 space-y-4">
         <div className="grid grid-cols-3 gap-3">
           {[
@@ -106,7 +57,6 @@ export default function AdminSuperDashboardPage() {
             </div>
           ))}
         </div>
-
         <div className="space-y-2">
           {[
             { label: "Marketplace Ops", path: "/admin/ops-dashboard" },
