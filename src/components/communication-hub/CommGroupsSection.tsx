@@ -667,7 +667,7 @@ export default function CommGroupsSection() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm line-clamp-1 break-words block" style={{ color: "hsl(var(--hud-text))" }}>
-                      {m.user_id === user?.id ? "You" : (m.profile_name || guardDisplayName(m.user_id, "Member", "CommGroupsSection"))}
+                      {m.user_id === user?.id ? "You" : (m.profile_name || guardDisplayName(m.user_id, "Member", { screen: "groups", component: "CommGroupsSection" }))}
                     </span>
                     <div className="flex items-center gap-1">
                       {m.role === "admin" && (
