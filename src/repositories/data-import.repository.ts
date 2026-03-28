@@ -4,12 +4,12 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export async function insertProperty(record: Record<string, any>) {
-  const { error } = await supabase.from("properties").insert(record);
+  const { error } = await (supabase as any).from("properties").insert(record);
   if (error) throw error;
 }
 
 export async function insertTenant(record: Record<string, any>) {
-  const { error } = await supabase.from("tenants").insert(record);
+  const { error } = await (supabase as any).from("tenants").insert(record);
   if (error) throw error;
 }
 
@@ -19,6 +19,6 @@ export async function fetchTenantNames(orgId: string) {
 }
 
 export async function upsertRentCall(record: Record<string, any>) {
-  const { error } = await supabase.from("rent_calls").upsert(record, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true });
+  const { error } = await (supabase as any).from("rent_calls").upsert(record, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true });
   if (error) throw error;
 }
