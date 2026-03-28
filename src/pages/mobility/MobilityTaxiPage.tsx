@@ -118,7 +118,7 @@ export default function MobilityTaxiPage() {
               <TabsContent value="active" className="mt-4 space-y-3">
                 {activeJobs.length === 0 ? (
                   <PageEmptyState
-                    icon={<span className="text-2xl">🚕</span>}
+                    icon={<Car className="h-6 w-6 text-muted-foreground" />}
                     title="No active rides"
                     description="Your current rides will appear here"
                   />
@@ -128,7 +128,7 @@ export default function MobilityTaxiPage() {
               <TabsContent value="history" className="mt-4 space-y-3">
                 {pastJobs.length === 0 ? (
                   <PageEmptyState
-                    icon={<span className="text-2xl">✅</span>}
+                    icon={<CheckCircle2 className="h-6 w-6 text-muted-foreground" />}
                     title="No past rides"
                     description="Your ride history will appear here"
                   />
@@ -143,8 +143,8 @@ export default function MobilityTaxiPage() {
                           : "bg-muted text-muted-foreground"
                       )}>{j.status}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground break-words leading-snug">📍 {j.pickup_label || j.pickup_address}</p>
-                    <p className="text-xs text-muted-foreground break-words leading-snug">🏁 {j.dropoff_label || j.dropoff_address}</p>
+                     <p className="text-xs text-muted-foreground break-words leading-snug flex items-center gap-1.5"><MapPin className="h-3 w-3 text-emerald-500 shrink-0" /> {j.pickup_label || j.pickup_address}</p>
+                     <p className="text-xs text-muted-foreground break-words leading-snug flex items-center gap-1.5"><Navigation className="h-3 w-3 text-primary shrink-0" /> {j.dropoff_label || j.dropoff_address}</p>
                     {j.current_price != null && (
                       <p className="text-sm font-bold text-foreground">{j.current_price} {j.currency}</p>
                     )}
