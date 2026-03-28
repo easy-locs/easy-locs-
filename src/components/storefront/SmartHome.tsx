@@ -405,22 +405,6 @@ export default function SmartHome() {
               ))}
             </AnimatePresence>
 
-            {/* Dots indicator */}
-            {contextBanners.length > 1 && (
-              <div className="flex items-center justify-center gap-1.5">
-                {contextBanners.map((b, i) => (
-                  <button
-                    key={b.id}
-                    onClick={() => setActiveBannerIdx(i)}
-                    className="h-1.5 rounded-full transition-all duration-300"
-                    style={{
-                      width: i === activeBannerIdx ? 16 : 6,
-                      background: i === activeBannerIdx ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.25)",
-                    }}
-                  />
-                ))}
-              </div>
-            )}
           </div>
         )}
 
