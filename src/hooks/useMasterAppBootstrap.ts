@@ -11,6 +11,10 @@ import { installDeadEventConsumers } from "@/lib/shared/dead-event-consumers";
 import { installWalletCacheListener, registerWalletQueryClient } from "@/lib/wallet/wallet-cache-invalidator";
 import { installDashboardCacheListener, registerDashboardQueryClient } from "@/lib/dashboard/dashboard-cache-invalidator";
 import { installDeliveryCacheListener, registerDeliveryQueryClient } from "@/lib/delivery/delivery-cache-invalidator";
+import { installOrderCacheListener, registerOrderQueryClient } from "@/lib/orders/order-cache-invalidator";
+import { installStorefrontCacheListener, registerStorefrontQueryClient } from "@/lib/storefront/storefront-cache-invalidator";
+import { installSupportCacheListener, registerSupportQueryClient } from "@/lib/support/support-cache-invalidator";
+import { installCrossDomainPropagationHandlers } from "@/lib/orchestration/handlers/cross-domain-propagation-handlers";
 import { installCounterBridge } from "@/lib/dashboard/dashboard-counter-bridge";
 import { installNotificationEventBridge } from "@/lib/notifications/notification-event-bridge";
 import { startStaleCacheScanner } from "@/lib/runtime/stale-cache-detector";
@@ -25,11 +29,14 @@ export function useMasterAppBootstrap() {
     if (booted) return;
     booted = true;
 
-    // 0. Register queryClient for all domain cache invalidators
+    // 0. Register queryClient for ALL domain cache invalidators
     registerQueryClient(queryClient);
     registerWalletQueryClient(queryClient);
     registerDashboardQueryClient(queryClient);
     registerDeliveryQueryClient(queryClient);
+    registerOrderQueryClient(queryClient);
+    registerStorefrontQueryClient(queryClient);
+    registerSupportQueryClient(queryClient);
 
     // 1. Platform event bus reactions (wallet ↔ orbit ↔ marketplace)
     const cleanupBus = installPlatformReactions();
@@ -52,20 +59,26 @@ export function useMasterAppBootstrap() {
     const cleanupWalletCache = installWalletCacheListener();
     const cleanupDashboardCache = installDashboardCacheListener();
     const cleanupDeliveryCache = installDeliveryCacheListener();
+    const cleanupOrderCache = installOrderCacheListener();
+    const cleanupStorefrontCache = installStorefrontCacheListener();
+    const cleanupSupportCache = installSupportCacheListener();
 
-    // 7. Dead event consumers — wire previously orphaned events
+    // 7. Cross-domain propagation — wire events across domain boundaries
+    const cleanupCrossDomain = installCrossDomainPropagationHandlers();
+
+    // 8. Dead event consumers — wire previously orphaned events
     const cleanupDeadEvents = installDeadEventConsumers();
 
-    // 8. Counter bridge — badge/counter refresh from events
+    // 9. Counter bridge — badge/counter refresh from events
     const cleanupCounters = installCounterBridge();
 
-    // 9. Notification event bridge — auto-create notifications from domain events
+    // 10. Notification event bridge — auto-create notifications from domain events
     const cleanupNotifications = installNotificationEventBridge();
 
-    // 10. Runtime: stale cache scanner
+    // 11. Runtime: stale cache scanner
     const cleanupStaleScanner = startStaleCacheScanner(60_000);
 
-    // 11. Platform recovery — deferred well after initial render
+    // 12. Platform recovery — deferred well after initial render
     const t1 = setTimeout(() => void runPlatformRecovery("boot"), 30000);
 
     return () => {
@@ -78,6 +91,10 @@ export function useMasterAppBootstrap() {
       cleanupWalletCache();
       cleanupDashboardCache();
       cleanupDeliveryCache();
+      cleanupOrderCache();
+      cleanupStorefrontCache();
+      cleanupSupportCache();
+      cleanupCrossDomain();
       cleanupDeadEvents();
       cleanupCounters();
       cleanupNotifications();
