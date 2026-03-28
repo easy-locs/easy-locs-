@@ -38,3 +38,14 @@ export async function exportUserData(userId: string) {
   }
   return allData;
 }
+
+export async function updateOrgBranding(orgId: string, branding: { brand_name: string | null; brand_primary_color: string | null; brand_accent_color: string | null }) {
+  await supabase.from("orgs").update(branding as any).eq("id", orgId);
+}
+
+export async function requestAccountDeletion(userId: string, email: string) {
+  await supabase.from("audit_logs").insert({
+    user_id: userId, action: "account_deletion_requested",
+    metadata_json: { email, requested_at: new Date().toISOString() },
+  });
+}

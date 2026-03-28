@@ -9,8 +9,7 @@ import {
 import MFASettings from "@/components/settings/MFASettings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { fetchProfile, updateProfile, fetchOrg, updateOrg, uploadLogo, exportUserData } from "@/repositories/settings.repository";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchProfile, updateProfile, fetchOrg, updateOrg, uploadLogo, exportUserData, updateOrgBranding, requestAccountDeletion } from "@/repositories/settings.repository";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useI18n } from "@/lib/i18n";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
@@ -278,7 +277,7 @@ const Settings = () => {
                 <button onClick={async () => {
                   if (!orgId) return;
                   setSavingBrand(true);
-                  await supabase.from("orgs").update({ brand_name: org.brand_name || null, brand_primary_color: org.brand_primary_color || null, brand_accent_color: org.brand_accent_color || null } as any).eq("id", orgId);
+                  await updateOrgBranding(orgId, { brand_name: org.brand_name || null, brand_primary_color: org.brand_primary_color || null, brand_accent_color: org.brand_accent_color || null });
                   toast({ title: t("page.settings.branding_updated") || "Branding updated" });
                   setSavingBrand(false);
                 }} disabled={savingBrand} className="btn-primary w-full">
@@ -322,10 +321,7 @@ const Settings = () => {
                   if (!window.confirm(t("page.settings.delete_confirm2") || "This is irreversible.")) return;
                   try {
                     toast({ title: t("page.settings.delete_requested") || "Deletion requested" });
-                    await supabase.from("audit_logs").insert({
-                      user_id: user.id, action: "account_deletion_requested",
-                      metadata_json: { email: user.email, requested_at: new Date().toISOString() },
-                    });
+                    await requestAccountDeletion(user.id, user.email || "");
                   } catch (err: any) {
                     toast({ title: t("page.settings.delete_error") || "Request failed", description: err.message, variant: "destructive" });
                   }
