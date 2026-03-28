@@ -109,3 +109,73 @@ export async function updateReturnStatus(returnId: string, status: string, notes
   if (notes) updates.admin_notes = notes;
   await (supabase as any).from("storefront_returns").update(updates).eq("id", returnId);
 }
+
+// ── Catalog ──
+export async function fetchCatalogProducts(shopId: string) {
+  const { data } = await (supabase as any).from("storefront_products").select("*").eq("shop_id", shopId).order("sort_order");
+  return data ?? [];
+}
+
+export async function insertProduct(record: Record<string, any>) {
+  const { data, error } = await (supabase as any).from("storefront_products").insert(record).select("*").single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateProduct(id: string, updates: Record<string, any>) {
+  const { error } = await (supabase as any).from("storefront_products").update(updates).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteProduct(id: string) {
+  const { error } = await (supabase as any).from("storefront_products").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ── Shop creation ──
+export async function insertShop(record: Record<string, any>) {
+  const { data, error } = await (supabase as any).from("storefront_pages").insert(record).select("*").single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateShop(id: string, updates: Record<string, any>) {
+  const { error } = await supabase.from("storefront_pages").update(updates as any).eq("id", id);
+  if (error) throw error;
+}
+
+// ── Product media ──
+export async function uploadProductMedia(path: string, file: File) {
+  const { error } = await supabase.storage.from("storefront-media").upload(path, file, { upsert: true });
+  if (error) throw error;
+  const { data } = supabase.storage.from("storefront-media").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// ── AI ──
+export async function invokeAIAssistant(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("ai-assistant", { body });
+  if (error) throw error;
+  return data;
+}
+
+export async function insertCategorySuggestion(record: Record<string, any>) {
+  await (supabase as any).from("ai_category_suggestions").insert(record);
+}
+
+// ── Delivery dispatch ──
+export async function fetchShopOrders(shopId: string) {
+  const { data } = await (supabase as any).from("storefront_orders").select("*").eq("shop_id", shopId).order("created_at", { ascending: false }).limit(100);
+  return data ?? [];
+}
+
+export async function updateOrder(orderId: string, updates: Record<string, any>) {
+  const { error } = await (supabase as any).from("storefront_orders").update(updates).eq("id", orderId);
+  if (error) throw error;
+}
+
+// ── Smart builders ──
+export async function fetchShopsByUser(userId: string) {
+  const { data } = await (supabase as any).from("storefront_pages").select("*").eq("owner_user_id", userId);
+  return data ?? [];
+}

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Palette, FileSpreadsheet, Shield, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as settingsRepo from "@/repositories/settings.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 
@@ -19,7 +19,7 @@ export default function SettingsPreferences() {
 
   useEffect(() => {
     if (!orgId) return;
-    supabase.from("orgs").select("brand_name, brand_primary_color, brand_accent_color").eq("id", orgId).single().then(({ data }) => {
+    settingsRepo.fetchOrg(orgId).then((data) => {
       if (data) setBrand({
         brand_name: (data as any).brand_name || "",
         brand_primary_color: (data as any).brand_primary_color || "",
@@ -31,11 +31,11 @@ export default function SettingsPreferences() {
   const saveBrand = async () => {
     if (!orgId) return;
     setSaving(true);
-    await supabase.from("orgs").update({
+    await settingsRepo.updateOrgBranding(orgId, {
       brand_name: brand.brand_name || null,
       brand_primary_color: brand.brand_primary_color || null,
       brand_accent_color: brand.brand_accent_color || null,
-    } as any).eq("id", orgId);
+    });
     toast({ title: t("page.settings.branding_updated") || "Branding updated" });
     setSaving(false);
   };
@@ -100,12 +100,7 @@ export default function SettingsPreferences() {
               if (!user) return;
               toast({ title: t("page.settings.export_started") || "Export started…" });
               try {
-                const tables = ["profiles", "wallet_transactions", "documents", "leases", "tenants", "properties"];
-                const allData: Record<string, unknown[]> = {};
-                for (const table of tables) {
-                  const { data } = await supabase.from(table as any).select("*").or(`user_id.eq.${user.id},owner_user_id.eq.${user.id}`).limit(1000);
-                  if (data?.length) allData[table] = data;
-                }
+                const allData = await settingsRepo.exportUserData(user.id);
                 const blob = new Blob([JSON.stringify(allData, null, 2)], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
@@ -125,10 +120,7 @@ export default function SettingsPreferences() {
               if (!window.confirm(t("page.settings.delete_confirm2") || "This is irreversible.")) return;
               try {
                 toast({ title: t("page.settings.delete_requested") || "Deletion requested" });
-                await supabase.from("audit_logs").insert({
-                  user_id: user.id, action: "account_deletion_requested",
-                  metadata_json: { email: user.email, requested_at: new Date().toISOString() },
-                });
+                await settingsRepo.requestAccountDeletion(user.id, user.email || "");
               } catch (err: any) {
                 toast({ title: "Request failed", description: err.message, variant: "destructive" });
               }

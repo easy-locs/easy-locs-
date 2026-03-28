@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FileText, Upload, Loader2, CheckCircle, Clock, XCircle, Download, Filter, PenTool } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as tenantRepo from "@/repositories/tenant-portal.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
 import { useLeaseWorkflow } from "@/hooks/useLeaseWorkflow";
@@ -92,18 +92,10 @@ const TenantDocuments = () => {
 
     const fetchAll = async () => {
       // 1. Tenant-uploaded docs
-      const { data: uploaded } = await supabase
-        .from("tenant_documents")
-        .select("id, label, filename, file_url, status")
-        .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false });
+      const uploaded = await tenantRepo.fetchTenantUploadedDocs(tenantId);
 
       // 2. Landlord-generated docs (receipts, leases, notices, etc.)
-      const { data: generated } = await supabase
-        .from("documents")
-        .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false });
+      const generated = await tenantRepo.fetchLandlordDocs(orgId);
 
       // Filter landlord docs linked to this tenant (via data_json.tenant_id or data_json.property_id)
       // Since we can't filter jsonb easily in query, we fetch and filter
@@ -144,14 +136,14 @@ const TenantDocuments = () => {
     setOpeningId(doc.id);
     try {
       let signedUrl: string | null = null;
-      const primary = await supabase.storage.from(fileRef.bucket).createSignedUrl(fileRef.path, 3600);
-      if (primary.data?.signedUrl) {
-        signedUrl = primary.data.signedUrl;
-      } else if (fileRef.bucket !== "rental-docs") {
-        const fallback = await supabase.storage.from("rental-docs").createSignedUrl(fileRef.path, 3600);
-        signedUrl = fallback.data?.signedUrl ?? null;
+      try {
+        signedUrl = await tenantRepo.createSignedUrl(fileRef.bucket, fileRef.path, 3600);
+      } catch {
+        if (fileRef.bucket !== "rental-docs") {
+          signedUrl = await tenantRepo.createSignedUrl("rental-docs", fileRef.path, 3600);
+        }
       }
-      if (!signedUrl) throw primary.error || new Error(T.linkUnavailable);
+      if (!signedUrl) throw new Error(T.linkUnavailable);
       downloadFile(signedUrl, doc.filename || `${doc.label}.pdf`);
     } catch (err: any) {
       toast({ title: T.cannotOpenDoc, description: err.message, variant: "destructive" });
@@ -168,9 +160,9 @@ const TenantDocuments = () => {
     }
     setOpeningId(doc.id);
     try {
-      const { data } = await supabase.storage.from("rental-docs").createSignedUrl(doc.pdf_url, 3600);
-      if (!data?.signedUrl) throw new Error(T.linkUnavailable);
-      downloadFile(data.signedUrl, `${doc.title || "document"}.pdf`);
+      const signedUrl = await tenantRepo.createSignedUrl("rental-docs", doc.pdf_url, 3600);
+      if (!signedUrl) throw new Error(T.linkUnavailable);
+      downloadFile(signedUrl, `${doc.title || "document"}.pdf`);
     } catch (err: any) {
       toast({ title: T.cannotOpenDoc, description: err.message, variant: "destructive" });
     } finally {
@@ -198,26 +190,13 @@ const TenantDocuments = () => {
     if (!file || !user || !tenantId || !orgId) return;
     setUploading(true);
     const path = `${orgId}/${tenantId}/${Date.now()}_${file.name}`;
-    const { error: upErr } = await supabase.storage.from("rental-docs").upload(path, file);
-    if (upErr) {
-      toast({ title: T.error, description: upErr.message, variant: "destructive" });
-      setUploading(false);
-      return;
-    }
-    const label = DOC_TYPES.find(d => d.value === docType)?.label || docType;
-    const { error } = await supabase.from("tenant_documents").insert({
-      tenant_id: tenantId, org_id: orgId, uploaded_by: user.id,
-      doc_type: docType, label, filename: file.name, file_url: path,
-    });
-    if (error) {
-      toast({ title: T.error, description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await tenantRepo.uploadTenantDoc(tenantId, orgId, user.id, file, docType, DOC_TYPES.find(d => d.value === docType)?.label || docType);
       toast({ title: T.docSent, description: T.docSentDesc });
-      // Refresh uploaded docs
-      const { data } = await supabase.from("tenant_documents")
-        .select("id, label, filename, file_url, status")
-        .eq("tenant_id", tenantId).order("created_at", { ascending: false });
+      const data = await tenantRepo.fetchTenantUploadedDocs(tenantId);
       setMyDocs((data as TenantDoc[]) || []);
+    } catch (err: any) {
+      toast({ title: T.error, description: err.message, variant: "destructive" });
     }
     setUploading(false);
     e.target.value = "";
@@ -355,16 +334,12 @@ const TenantDocuments = () => {
                   onSigned={async () => {
                     const doc = landlordDocs.find(d => d.id === signDocId);
                     if (doc) {
-                      const { data: docData } = await supabase.from("documents").select("lease_id").eq("id", signDocId).single();
-                      if ((docData as any)?.lease_id) {
-                        await recordTenantSignature((docData as any).lease_id);
+                      const leaseId = await tenantRepo.getDocLeaseId(signDocId);
+                      if (leaseId) {
+                        await recordTenantSignature(leaseId);
                       }
                     }
-                    const { data: generated } = await supabase
-                      .from("documents")
-                      .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at")
-                      .eq("org_id", orgId!)
-                      .order("created_at", { ascending: false });
+                    const generated = await tenantRepo.fetchLandlordDocs(orgId!);
                     const relevantTypes = ["rent-receipt", "lease", "payment-notice", "inventory", "dunning", "termination", "sworn-statement"];
                     const filtered = (generated || []).filter((d: any) =>
                       relevantTypes.includes(d.doc_type) && (d.status === "generated" || d.status === "signed" || d.status === "pending_signature" || d.emailed_at)

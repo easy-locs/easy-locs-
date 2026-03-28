@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
-import { supabase } from "@/integrations/supabase/client";
+import * as settingsRepo from "@/repositories/settings.repository";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -120,7 +120,7 @@ export default function SettingsHome() {
   const profile = useOrbitIdentity();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await settingsRepo.signOut();
     toast.success("Signed out");
     navigate("/login", { replace: true });
   };
