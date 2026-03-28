@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as rentalRepo from "@/repositories/rental-data.repository";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -87,9 +87,8 @@ export function useRentalData(countryFilter?: string | null) {
     setLoading(true);
 
     // 1. Load properties first (needed for country filtering tenants/rents)
-    let propsQuery = supabase.from("properties").select("*").eq("org_id", orgId);
-    if (countryFilter) propsQuery = propsQuery.eq("country", countryFilter);
-    const { data: propsData } = await propsQuery.order("label");
+    let propsQuery = await rentalRepo.fetchProperties(orgId, countryFilter);
+    const propsData = propsQuery;
 
     const mappedProps = (propsData || []).map(p => ({
       id: p.id, label: p.label, address: p.address, postal_code: p.postal_code,
@@ -107,12 +106,11 @@ export function useRentalData(countryFilter?: string | null) {
     const propIds = countryFilter ? new Set(mappedProps.map(p => p.id)) : null;
 
     // 2. Load tenants + rent calls in parallel (no extra property query needed)
-    const [tenantsRes, rentRes] = await Promise.all([
-      supabase.from("tenants").select("*").eq("org_id", orgId).order("name"),
-      supabase.from("rent_calls").select("*").eq("org_id", orgId).order("month", { ascending: false }),
+    const [tenantsRaw, rentRaw] = await Promise.all([
+      rentalRepo.fetchTenants(orgId),
+      rentalRepo.fetchRentCalls(orgId),
     ]);
-
-    let filteredTenants = tenantsRes.data || [];
+    let filteredTenants = tenantsRaw;
     if (propIds) {
       filteredTenants = filteredTenants.filter(t => t.property_id && propIds.has(t.property_id));
     }
@@ -129,7 +127,7 @@ export function useRentalData(countryFilter?: string | null) {
       caf_apl_amount: Number((t as any).caf_apl_amount) || 0,
     })));
 
-    let rentCallData = rentRes.data || [];
+    let rentCallData = rentRaw;
     if (propIds) {
       rentCallData = rentCallData.filter(r => r.property_id && propIds.has(r.property_id));
     }
@@ -163,22 +161,18 @@ export function useRentalData(countryFilter?: string | null) {
       building_name: form.building_name || null, lot_number: form.lot_number || null,
       country: form.country || "FR",
     };
-    if (editId) {
-      const { error } = await supabase.from("properties").update(record).eq("id", editId);
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
-      toast({ title: t("hook.rental.property_modified") });
-    } else {
-      const { error } = await supabase.from("properties").insert(record);
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
-      toast({ title: t("hook.rental.property_added") });
+    try {
+      await rentalRepo.upsertProperty(orgId, user.id, record, editId);
+      toast({ title: editId ? t("hook.rental.property_modified") : t("hook.rental.property_added") });
+    } catch (error: any) {
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false;
     }
     await loadProperties();
     return true;
   };
 
-  const deleteProperty = async (id: string) => {
-    const { error } = await supabase.from("properties").delete().eq("id", id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+  const deletePropertyFn = async (id: string) => {
+    try { await rentalRepo.deleteProperty(id); } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: t("hook.rental.property_deleted") });
     await loadProperties();
   };
@@ -197,24 +191,18 @@ export function useRentalData(countryFilter?: string | null) {
       guarantor_name: form.guarantor_name || null, guarantor_phone: form.guarantor_phone || null,
       caf_apl_amount: form.caf_apl_amount || 0,
     };
-    if (editId) {
-      const { error } = await supabase.from("tenants").update(record).eq("id", editId);
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
-      toast({ title: t("hook.rental.tenant_modified") });
+    try {
+      const resultId = await rentalRepo.upsertTenant(orgId, user.id, record, editId);
+      toast({ title: editId ? t("hook.rental.tenant_modified") : t("hook.rental.tenant_added") });
       await loadTenants();
-      return editId;
-    } else {
-      const { data, error } = await supabase.from("tenants").insert(record).select("id").single();
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
-      toast({ title: t("hook.rental.tenant_added") });
-      await loadTenants();
-      return data.id;
+      return resultId;
+    } catch (error: any) {
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false;
     }
   };
 
-  const deleteTenant = async (id: string) => {
-    const { error } = await supabase.from("tenants").delete().eq("id", id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+  const deleteTenantFn = async (id: string) => {
+    try { await rentalRepo.deleteTenant(id); } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: t("hook.rental.tenant_deleted") });
     await loadTenants();
   };
@@ -225,31 +213,20 @@ export function useRentalData(countryFilter?: string | null) {
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-    const { data: existingCalls } = await supabase
-      .from("rent_calls")
-      .select("tenant_id")
-      .eq("org_id", orgId)
-      .eq("month", month);
-
-    const existingIds = new Set((existingCalls || []).map(r => r.tenant_id));
+    const existingCalls = await rentalRepo.fetchExistingRentCallsForMonth(orgId, month);
+    const existingIds = new Set(existingCalls.map(r => r.tenant_id));
     const newCalls = tenants
       .filter(tn => tn.rent_amount > 0 && !existingIds.has(tn.id))
       .map(tn => ({
-        org_id: orgId,
-        tenant_id: tn.id,
-        property_id: tn.property_id,
-        month,
-        rent_amount: tn.rent_amount,
-        charges_amount: tn.charges_amount,
+        org_id: orgId, tenant_id: tn.id, property_id: tn.property_id, month,
+        rent_amount: tn.rent_amount, charges_amount: tn.charges_amount,
         total_amount: tn.rent_amount + tn.charges_amount,
       }));
-    if (newCalls.length === 0) {
-      toast({ title: t("hook.rental.all_calls_created") });
-      return;
-    }
-    const { error } = await supabase.from("rent_calls").upsert(newCalls, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true });
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-    toast({ title: `${newCalls.length} ${t("hook.rental.calls_generated")}` });
+    if (newCalls.length === 0) { toast({ title: t("hook.rental.all_calls_created") }); return; }
+    try {
+      await rentalRepo.insertRentCalls(newCalls);
+      toast({ title: `${newCalls.length} ${t("hook.rental.calls_generated")}` });
+    } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     await loadRentCalls();
   };
 
@@ -257,13 +234,12 @@ export function useRentalData(countryFilter?: string | null) {
     const call = rentCalls.find(r => r.id === id);
     if (!call) return;
     const nowPaid = !call.paid;
-    const { error } = await supabase.from("rent_calls").update({
-      paid: nowPaid,
-      paid_date: nowPaid ? new Date().toISOString() : null,
-      payment_method: nowPaid ? (paymentMethod || null) : null,
-      receipt_validated: nowPaid ? true : false,
-    }).eq("id", id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    try {
+      await rentalRepo.updateRentCall(id, {
+        paid: nowPaid, paid_date: nowPaid ? new Date().toISOString() : null,
+        payment_method: nowPaid ? (paymentMethod || null) : null, receipt_validated: nowPaid ? true : false,
+      });
+    } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
 
     if (nowPaid && user && orgId) {
       try {
@@ -291,19 +267,19 @@ export function useRentalData(countryFilter?: string | null) {
           let landlordSignature = "";
           let stampUrl = "";
           try {
-            const { data: profile } = await supabase.from("profiles").select("signature_url, name").eq("id", user.id).single();
+            const profile = await rentalRepo.fetchProfile(user.id);
             if (profile?.signature_url) landlordSignature = profile.signature_url;
             if (profile?.name) landlordName = profile.name;
           } catch { /* ignore */ }
           try {
-            const { data: ownerProfile } = await supabase.from("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).maybeSingle();
+            const ownerProfile = await rentalRepo.fetchOwnerProfile(orgId);
             if (ownerProfile) {
               landlordName = ownerProfile.full_name || landlordName;
               landlordAddress = [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city].filter(Boolean).join(", ");
             }
           } catch { /* ignore */ }
           try {
-            const { data: orgData } = await supabase.from("orgs").select("stamp_url, name, address, postal_code, city").eq("id", orgId).single();
+            const orgData = await rentalRepo.fetchOrgInfo(orgId);
             if ((orgData as any)?.stamp_url) stampUrl = (orgData as any).stamp_url;
             if (!landlordName && orgData?.name) landlordName = orgData.name;
             if (!landlordAddress) landlordAddress = [orgData?.address, orgData?.postal_code, orgData?.city].filter(Boolean).join(", ");
@@ -336,14 +312,10 @@ export function useRentalData(countryFilter?: string | null) {
 
           const receiptTitle = t("hook.rental.receipt_title").replace("{name}", tenant.name).replace("{month}", call.month);
 
-          await supabase.from("documents").insert({
-            org_id: orgId,
-            user_id: user.id,
-            doc_type: "rent-receipt",
-            title: receiptTitle,
-            data_json: receiptData as any,
-            country: propCountryCode,
-            status: "final",
+          await rentalRepo.insertDocument({
+            org_id: orgId, user_id: user.id, doc_type: "rent-receipt",
+            title: receiptTitle, data_json: receiptData as any,
+            country: propCountryCode, status: "final",
           });
 
           // 3. Email receipt to tenant
@@ -351,27 +323,21 @@ export function useRentalData(countryFilter?: string | null) {
           if (tenantEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(tenantEmail)) {
             try {
               const pdfBase64 = pdfDoc.output("datauristring").split(",")[1];
-              await supabase.functions.invoke("send-email", {
-                body: {
-                  to: tenantEmail,
-                  subject: t("hook.rental.receipt_email_subject").replace("{month}", call.month),
-                  from_name: landlordName || "Easy-Locs",
-                  html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-                    <h2 style="color:#1a1a1a;text-align:center;">${t("hook.rental.receipt_email_heading")}</h2>
-                    <p style="color:#555;font-size:15px;">${t("hook.rental.receipt_email_body").replace("{month}", call.month)}</p>
-                    <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                      <p style="margin:4px 0;font-size:14px;color:#333;">${t("hook.rental.receipt_email_rent")} : <strong>${call.rent_amount}</strong></p>
-                      <p style="margin:4px 0;font-size:14px;color:#333;">${t("hook.rental.receipt_email_charges")} : <strong>${call.charges_amount}</strong></p>
-                      <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">${t("hook.rental.receipt_email_total")} : ${call.total_amount}</p>
-                    </div>
-                    <p style="color:#888;font-size:12px;text-align:center;">${t("hook.rental.receipt_email_footer")}</p>
-                  </div>`,
-                  attachments: [{
-                    content: pdfBase64,
-                    filename: `${receiptTitle.replace(/\s/g, "_")}.pdf`,
-                    type: "application/pdf",
-                  }],
-                },
+              await rentalRepo.invokeSendEmail({
+                to: tenantEmail,
+                subject: t("hook.rental.receipt_email_subject").replace("{month}", call.month),
+                from_name: landlordName || "Easy-Locs",
+                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+                  <h2 style="color:#1a1a1a;text-align:center;">${t("hook.rental.receipt_email_heading")}</h2>
+                  <p style="color:#555;font-size:15px;">${t("hook.rental.receipt_email_body").replace("{month}", call.month)}</p>
+                  <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+                    <p style="margin:4px 0;font-size:14px;color:#333;">${t("hook.rental.receipt_email_rent")} : <strong>${call.rent_amount}</strong></p>
+                    <p style="margin:4px 0;font-size:14px;color:#333;">${t("hook.rental.receipt_email_charges")} : <strong>${call.charges_amount}</strong></p>
+                    <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">${t("hook.rental.receipt_email_total")} : ${call.total_amount}</p>
+                  </div>
+                  <p style="color:#888;font-size:12px;text-align:center;">${t("hook.rental.receipt_email_footer")}</p>
+                </div>`,
+                attachments: [{ content: pdfBase64, filename: `${receiptTitle.replace(/\s/g, "_")}.pdf`, type: "application/pdf" }],
               });
               toast({ title: t("hook.rental.payment_registered"), description: t("hook.rental.receipt_generated_emailed") });
             } catch (emailErr) {
@@ -406,8 +372,7 @@ export function useRentalData(countryFilter?: string | null) {
   };
 
   const validateReceipt = async (id: string) => {
-    const { error } = await supabase.from("rent_calls").update({ receipt_validated: true }).eq("id", id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    try { await rentalRepo.updateRentCall(id, { receipt_validated: true }); } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: t("hook.rental.receipt_validated") });
     await loadRentCalls();
   };
@@ -426,14 +391,9 @@ export function useRentalData(countryFilter?: string | null) {
     try {
       const token = `inv_${Date.now()}_${Math.random().toString(36).slice(2)}_${Math.random().toString(36).slice(2)}`;
 
-      const { error: invError } = await supabase.from("tenant_invitations").insert({
-        org_id: orgId,
-        tenant_id: tenant.id,
-        token,
-        email: normalizedEmail,
-        invited_by: user.id,
+      await rentalRepo.insertTenantInvitation({
+        org_id: orgId, tenant_id: tenant.id, token, email: normalizedEmail, invited_by: user.id,
       });
-      if (invError) throw invError;
 
       const publishedOrigin = "https://www.easy-locs.com";
       const inviteUrl = `${publishedOrigin}/tenant-signup?token=${token}`;
@@ -458,31 +418,25 @@ export function useRentalData(countryFilter?: string | null) {
       let emailErrorMessage = "";
       let propCountry = "FR";
       if (tenant.property_id) {
-        const { data: prop } = await supabase.from("properties").select("country").eq("id", tenant.property_id).single();
-        if (prop?.country) propCountry = prop.country;
+        propCountry = await rentalRepo.fetchPropertyCountry(tenant.property_id);
       }
       const L = getCountryConfig(propCountry).labels;
       try {
-        const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
-          body: {
-            to: normalizedEmail,
-            subject: L.inviteSubject,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-              <h2 style="color:#1a1a1a;text-align:center;">${L.inviteTitle}</h2>
-              <p style="color:#555;font-size:15px;">${L.emailHello} ${tenant.name},</p>
-              <p style="color:#555;font-size:15px;">${L.inviteBody}</p>
-              <div style="text-align:center;margin:24px 0;">
-                <a href="${inviteUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;">${L.inviteButton}</a>
-              </div>
-              <p style="color:#777;font-size:13px;">${L.inviteLinkExpiry}</p>
-              <p style="color:#888;font-size:12px;text-align:center;">${L.emailAutoSent}</p>
-            </div>`,
-          },
+        const emailData = await rentalRepo.invokeSendEmail({
+          to: normalizedEmail,
+          subject: L.inviteSubject,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+            <h2 style="color:#1a1a1a;text-align:center;">${L.inviteTitle}</h2>
+            <p style="color:#555;font-size:15px;">${L.emailHello} ${tenant.name},</p>
+            <p style="color:#555;font-size:15px;">${L.inviteBody}</p>
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${inviteUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;">${L.inviteButton}</a>
+            </div>
+            <p style="color:#777;font-size:13px;">${L.inviteLinkExpiry}</p>
+            <p style="color:#888;font-size:12px;text-align:center;">${L.emailAutoSent}</p>
+          </div>`,
         });
-
-        if (emailError || (emailData && emailData.success === false)) {
-          throw emailError || new Error(emailData?.error || "Send failed");
-        }
+        if (emailData && emailData.success === false) throw new Error(emailData?.error || "Send failed");
         emailSent = true;
       } catch (err: any) {
         emailErrorMessage = err?.message || "unknown error";
@@ -510,11 +464,9 @@ export function useRentalData(countryFilter?: string | null) {
   /* ─── Assign tenant to property ─── */
   const assignTenantToProperty = async (tenantId: string, propertyId: string) => {
     const prop = properties.find(p => p.id === propertyId);
-    const { error } = await supabase
-      .from("tenants")
-      .update({ property_id: propertyId })
-      .eq("id", tenantId);
-    if (error) {
+    try {
+      await rentalRepo.updateTenantProperty(tenantId, propertyId);
+    } catch (error: any) {
       toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
       return false;
     }
@@ -528,8 +480,8 @@ export function useRentalData(countryFilter?: string | null) {
 
   return {
     properties, tenants, rentCalls, loading,
-    saveProperty, deleteProperty,
-    saveTenant, deleteTenant, sendTenantInvite,
+    saveProperty, deleteProperty: deletePropertyFn,
+    saveTenant, deleteTenant: deleteTenantFn, sendTenantInvite,
     generateMonthlyRentCalls, togglePayment, validateReceipt,
     loadAll, loadTenants, loadRentCalls, assignTenantToProperty,
   };
