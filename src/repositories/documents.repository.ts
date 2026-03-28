@@ -117,3 +117,27 @@ export async function uploadInventoryPhoto(path: string, file: File) {
   const { data } = supabase.storage.from("rental-docs").getPublicUrl(path);
   return data.publicUrl;
 }
+
+// ── DocumentCenter extras ──
+export async function fetchDocumentsForOrg(orgId: string) {
+  const { data } = await supabase
+    .from("documents")
+    .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at, country")
+    .eq("org_id", orgId)
+    .order("created_at", { ascending: false });
+  return data || [];
+}
+
+export async function fetchDocDataJson(docId: string) {
+  const { data } = await supabase.from("documents").select("data_json").eq("id", docId).single();
+  return data;
+}
+
+export async function fetchTenantById(tenantId: string) {
+  const { data } = await supabase.from("tenants").select("email, name, tenant_user_id").eq("id", tenantId).single();
+  return data;
+}
+
+export async function markDocumentEmailed(docId: string) {
+  await supabase.from("documents").update({ emailed_at: new Date().toISOString() } as any).eq("id", docId);
+}

@@ -3,7 +3,7 @@ import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Building, Plus, X, Home, MapPin, Edit, Trash2, ChevronRight, Globe } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import * as bldgRepo from "@/repositories/buildings.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRentalData } from "@/hooks/useRentalData";
@@ -48,10 +48,10 @@ const Buildings = () => {
   const load = useCallback(async () => {
     if (!orgId) return;
     setLoading(true);
-    const { data } = await supabase.from("buildings").select("*").eq("org_id", orgId).order("name");
-    setBuildings((data || []).map(b => ({
+    const data = await bldgRepo.fetchBuildings(orgId);
+    setBuildings(data.map((b: any) => ({
       id: b.id, name: b.name, address: b.address, postal_code: b.postal_code,
-      city: b.city, building_type: b.building_type, total_units: b.total_units ?? 0, notes: b.notes ?? "",
+      city: b.city, building_type: b.building_type, total_units: b.total_units ?? b.units_count ?? 0, notes: b.notes ?? "",
     })));
     setLoading(false);
   }, [orgId]);
@@ -61,14 +61,16 @@ const Buildings = () => {
   const handleSave = async () => {
     if (!form.name.trim() || !orgId || !user) return;
     const record = { org_id: orgId, user_id: user.id, ...form };
-    if (editId) {
-      const { error } = await supabase.from("buildings").update(record).eq("id", editId);
-      if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
-      toast({ title: t("page.buildings.modified") });
-    } else {
-      const { error } = await supabase.from("buildings").insert(record);
-      if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
-      toast({ title: t("page.buildings.added") });
+    try {
+      if (editId) {
+        await bldgRepo.updateBuilding(editId, record);
+        toast({ title: t("page.buildings.modified") });
+      } else {
+        await bldgRepo.insertBuilding({ org_id: orgId, user_id: user.id, name: form.name, address: form.address, postal_code: form.postal_code, city: form.city, country: form.country, units_count: form.total_units });
+        toast({ title: t("page.buildings.added") });
+      }
+    } catch (error: any) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return;
     }
     setForm(defaultForm); setShowForm(false); setEditId(null);
     await load();
@@ -76,10 +78,13 @@ const Buildings = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm(t("page.buildings.delete_confirm"))) return;
-    const { error } = await supabase.from("buildings").delete().eq("id", id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-    toast({ title: t("page.buildings.deleted") });
-    load();
+    try {
+      await bldgRepo.deleteBuilding(id);
+      toast({ title: t("page.buildings.deleted") });
+      load();
+    } catch (error: any) {
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
+    }
   };
 
   const startEdit = (b: BuildingRecord) => {

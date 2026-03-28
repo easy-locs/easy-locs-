@@ -46,3 +46,8 @@ export async function deleteBuilding(id: string) {
   const { error } = await supabase.from("buildings").delete().eq("id", id);
   if (error) throw error;
 }
+
+export async function updateBuilding(id: string, record: Record<string, any>) {
+  const { error } = await supabase.from("buildings").update(record).eq("id", id);
+  if (error) throw error;
+}
