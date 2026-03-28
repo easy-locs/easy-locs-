@@ -47,6 +47,11 @@ export const CommunicationCenter = () => {
   const [activeSection, setActiveSection] = useState<CommSection>("chats");
   const pendingThreadRetryRef = useRef<string | null>(null);
 
+  const traceThreadOpen = useCallback((step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
+    const logger = phase === "error" ? console.error : console.log;
+    logger(`[THREAD_OPEN][${step}] ${phase}:`, payload ?? {});
+  }, []);
+
   useEffect(() => {
     void import("@/lib/notif-alert-prefs")
       .then((m) => m?.requestNotificationPermission?.())
@@ -105,7 +110,7 @@ export const CommunicationCenter = () => {
   }, [threads, loading, searchParams, setSearchParams]);
 
   const handleSelectThread = useCallback((thread: ConversationThread) => {
-    console.log("%c[TRACE][OPEN_THREAD] STEP 1 — UI click on thread", "color:cyan;font-weight:bold", {
+    traceThreadOpen("onThreadClick", "input", {
       threadId: thread.id,
       name: thread.name,
       v2ConversationId: thread.v2ConversationId,
@@ -114,11 +119,53 @@ export const CommunicationCenter = () => {
       conversationType: thread.conversationType,
       contextId: thread.contextId,
     });
+
+    traceThreadOpen("selectedThread.guard", "input", {
+      threadId: thread?.id,
+      hasName: !!thread?.name,
+      hasConversationId: !!thread?.v2ConversationId,
+    });
+
+    if (!thread?.id) {
+      traceThreadOpen("selectedThread.guard", "error", { reason: "missing_thread_id" });
+      return;
+    }
+
+    traceThreadOpen("selectedThread.guard", "output", {
+      threadId: thread.id,
+      valid: true,
+    });
+
+    traceThreadOpen("selectedThread.store", "input", {
+      threadId: thread.id,
+      previousThreadId: selectedThread?.id ?? null,
+    });
+
     setSelectedThread(thread);
+
+    traceThreadOpen("selectedThread.store", "output", {
+      selectedThreadId: thread.id,
+    });
+
     if (!isMobile && ["booking", "property", "listing", "deal"].includes(thread.conversationType)) {
       setShowContext(true);
     }
-  }, [isMobile]);
+
+    traceThreadOpen("onThreadClick", "output", {
+      selectedThreadId: thread.id,
+      openContext: !isMobile && ["booking", "property", "listing", "deal"].includes(thread.conversationType),
+    });
+  }, [isMobile, selectedThread?.id, traceThreadOpen]);
+
+  useEffect(() => {
+    traceThreadOpen("threadShell.render", "output", {
+      selectedThreadId: selectedThread?.id ?? null,
+      headerVisible: true,
+      composerVisible: !!selectedThread,
+      chatPanelVisible: !!selectedThread,
+      contextVisible: isMobile ? mobileContextOpen : showContext,
+    });
+  }, [selectedThread?.id, isMobile, mobileContextOpen, showContext, traceThreadOpen]);
 
   const handleBack = useCallback(() => {
     setSelectedThread(null);
