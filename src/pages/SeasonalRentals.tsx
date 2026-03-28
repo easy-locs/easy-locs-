@@ -117,11 +117,16 @@ const SeasonalRentals = () => {
   const [viewMode, setViewMode] = useState<"showcase" | "bookings">(() => {
     return searchParams.get("booking") || searchParams.get("focusRequest") ? "bookings" : "showcase";
   });
-  
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+
+  // ── Wired hook: ALL data + CRUD from useSeasonalData ──
+  const {
+    bookings, properties, allRequests, loading, loadError,
+    reload: load, saveBooking, deleteBooking,
+    importICalFromUrl, importICalFromFile,
+  } = useSeasonalData();
+
+  // Realtime already handled by useSeasonalData — no duplicate channel needed
+
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [calMonth, setCalMonth] = useState(() => {
@@ -135,24 +140,13 @@ const SeasonalRentals = () => {
   const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
   const [deepLinkRequestId] = useState(() => searchParams.get("focusRequest") || null);
   const initialPropertyId = searchParams.get("propertyId") || "";
-  
+
   const [form, setForm] = useState<SeasonalForm>({
-    property_id: initialPropertyId,
-    guest_name: "",
-    guest_email: "",
-    guest_phone: "",
-    guest_address: "",
-    guest_postal_code: "",
-    guest_city: "",
-    guest_country: "",
-    identity_type: "none",
-    identity_number: "",
-    check_in: "",
-    check_out: "",
-    total_price: 0 as any,
-    cleaning_fee: 0 as any,
-    deposit_amount: 0 as any,
-    notes: "",
+    property_id: initialPropertyId, guest_name: "", guest_email: "", guest_phone: "",
+    guest_address: "", guest_postal_code: "", guest_city: "", guest_country: "",
+    identity_type: "none", identity_number: "",
+    check_in: "", check_out: "", total_price: 0 as any, cleaning_fee: 0 as any,
+    deposit_amount: 0 as any, notes: "",
   });
   const [payingRequest, setPayingRequest] = useState<string | null>(null);
   const [showIcalPanel, setShowIcalPanel] = useState(false);
@@ -161,62 +155,10 @@ const SeasonalRentals = () => {
   const [copiedExport, setCopiedExport] = useState(false);
   const [selectedPropertyForPhotos, setSelectedPropertyForPhotos] = useState<string | null>(null);
   const [focusedRequest, setFocusedRequest] = useState<any>(null);
-  const [allRequests, setAllRequests] = useState<any[]>([]);
   const [showEditRequestModal, setShowEditRequestModal] = useState(false);
   const [editingRequestDates, setEditingRequestDates] = useState<{ check_in: string; check_out: string }>({ check_in: "", check_out: "" });
 
-  const load = useCallback(async () => {
-    if (!orgId) return;
-    setLoadError(null);
-    try {
-      const [{ data: b, error: bErr }, { data: p }, { data: reqs }] = await Promise.all([
-        supabase.from("seasonal_bookings").select("*").eq("org_id", orgId).order("check_in"),
-        supabase.from("properties").select("id, label, photo_urls").eq("org_id", orgId).order("label"),
-        supabase.from("booking_requests").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50),
-      ]);
-      if (bErr) throw bErr;
-      const seasonalBookings = (b || []) as Booking[];
-      const paidRequests = (reqs || []).filter((r: any) => r.status === "paid" || r.status === "approved");
-      const existingKeys = new Set(seasonalBookings.map(sb => `${sb.property_id}-${sb.check_in}-${sb.check_out}-${sb.guest_name}`));
-      const missingBookings: Booking[] = paidRequests
-        .filter((r: any) => !existingKeys.has(`${r.property_id}-${r.check_in}-${r.check_out}-${r.guest_name}`))
-        .map((r: any) => ({
-          id: r.id,
-          property_id: r.property_id,
-          guest_name: r.guest_name,
-          guest_email: r.guest_email || "",
-          guest_phone: r.guest_phone || "",
-          check_in: r.check_in,
-          check_out: r.check_out,
-          total_price: 0,
-          cleaning_fee: 0,
-          deposit_amount: 0,
-          status: r.status === "paid" ? "confirmed" : "confirmed",
-          notes: `Via booking request (${r.status})`,
-        }));
-      setBookings([...seasonalBookings, ...missingBookings]);
-      if (p) setProperties(p);
-      if (reqs) setAllRequests(reqs);
-    } catch (err: any) {
-      console.error("[SeasonalRentals] load error:", err);
-      setLoadError(t("error.load_failed") || "Failed to load data");
-    } finally {
-      setLoading(false);
-    }
-  }, [orgId, t]);
-
-  useEffect(() => { load(); }, [load]);
-
-  // Realtime: live updates for booking requests
-  useEffect(() => {
-    if (!orgId) return;
-    const channel = supabase
-      .channel("seasonal-rt")
-      .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests", filter: `org_id=eq.${orgId}` }, () => load())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [orgId, load]);
-
+  // Deep link: focus request
   useEffect(() => {
     if (!deepLinkRequestId || !orgId) return;
     const loadRequest = async () => {
@@ -224,18 +166,16 @@ const SeasonalRentals = () => {
       if (data) setFocusedRequest(data);
     };
     loadRequest();
-    // Clean URL
     const next = new URLSearchParams(searchParams);
     next.delete("focusRequest");
     setSearchParams(next, { replace: true });
   }, [deepLinkRequestId, orgId]);
 
-  // Reactive deep-link: scroll to or open booking from ?booking=ID
+  // Deep link: scroll to booking
   useEffect(() => {
     const deepLinkBookingId = searchParams.get("booking");
     if (!deepLinkBookingId || deepLinkBookingId === lastAppliedBookingId) return;
-    if (loading) return; // Wait for data to load
-
+    if (loading) return;
     const el = document.getElementById(`booking-${deepLinkBookingId}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -245,111 +185,31 @@ const SeasonalRentals = () => {
       const found = bookings.find(b => String(b.id) === String(deepLinkBookingId));
       if (found) {
         startEdit(found);
-        console.log("[deep-link] opened seasonal booking for edit:", deepLinkBookingId);
       } else {
-        // Also check booking_requests
         const req = allRequests.find((r: any) => String(r.id) === String(deepLinkBookingId));
-        if (req) {
-          setFocusedRequest(req);
-          console.log("[deep-link] opened seasonal booking request:", deepLinkBookingId);
-        } else {
-          toast({
-            title: "Booking not found",
-            description: "This booking is no longer available.",
-            variant: "destructive",
-          });
-          console.warn("[deep-link] seasonal booking not found:", deepLinkBookingId);
-        }
+        if (req) { setFocusedRequest(req); }
+        else { toast({ title: "Booking not found", description: "This booking is no longer available.", variant: "destructive" }); }
       }
     }
     setLastAppliedBookingId(deepLinkBookingId);
-    // Clean URL
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.delete("booking");
-      return next;
-    }, { replace: true });
+    setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete("booking"); return next; }, { replace: true });
   }, [searchParams, bookings, allRequests, loading, lastAppliedBookingId, setSearchParams]);
 
   const resetForm = () => {
     setForm({
-      property_id: "",
-      guest_name: "",
-      guest_email: "",
-      guest_phone: "",
-      guest_address: "",
-      guest_postal_code: "",
-      guest_city: "",
-      guest_country: "",
-      identity_type: "none",
-      identity_number: "",
-      check_in: "",
-      check_out: "",
-      total_price: 0 as any,
-      cleaning_fee: 0 as any,
-      deposit_amount: 0 as any,
-      notes: "",
+      property_id: "", guest_name: "", guest_email: "", guest_phone: "",
+      guest_address: "", guest_postal_code: "", guest_city: "", guest_country: "",
+      identity_type: "none", identity_number: "",
+      check_in: "", check_out: "", total_price: 0 as any, cleaning_fee: 0 as any,
+      deposit_amount: 0 as any, notes: "",
     });
     setShowForm(false);
     setEditingId(null);
   };
 
-  /** Unified notification for seasonal bookings — uses shared communication pipeline */
-  const notifyReservation = async (title: string, message: string, bookingEmail?: string, bookingId?: string) => {
-    if (!orgId || !user) return;
-
-    const { data: org } = await supabase.from("orgs").select("owner_user_id, email, name").eq("id", orgId).single();
-    const orgEmail = normalizeEmail(org?.email);
-
-    const meta = createDeepLinkMeta({
-      targetType: "booking_request",
-      targetId: bookingId || "",
-      module: "seasonal",
-      countryCode: searchParams.get("country") || "",
-      bookingId,
-      orgId,
-    });
-
-    // Notify org owner via shared pipeline
-    await sendCommunicationEvent({
-      orgId,
-      senderId: user.id,
-      recipientUserId: org?.owner_user_id || user.id,
-      recipientEmail: orgEmail && isValidEmail(orgEmail) ? orgEmail : undefined,
-      subject: title,
-      message,
-      category: "booking",
-      meta,
-    });
-
-    // Also notify the guest if email provided
-    if (bookingEmail && isValidEmail(bookingEmail)) {
-      await sendCommunicationEvent({
-        orgId,
-        senderId: user.id,
-        recipientEmail: bookingEmail,
-        subject: t("page.seasonal.booking_confirmed_subject"),
-        message: t("page.seasonal.booking_confirmed_body"),
-        category: "booking",
-        emailLocale: "fr",
-        meta,
-      });
-    }
-  };
-
+  /** Save booking — delegates to useSeasonalData hook */
   const save = async () => {
     if (!orgId || !user || !form.guest_name || !form.property_id || !form.check_in || !form.check_out) return;
-
-    if (form.check_out <= form.check_in) {
-      toast({ title: t("page.common.error"), description: t("page.seasonal.error_dates"), variant: "destructive" });
-      return;
-    }
-
-    const bookingEmail = normalizeEmail(form.guest_email);
-    if (bookingEmail && !isValidEmail(bookingEmail)) {
-      toast({ title: t("page.common.error"), description: t("page.seasonal.error_email"), variant: "destructive" });
-      return;
-    }
 
     const details = [
       form.guest_address && `${t("page.seasonal.full_address")}: ${form.guest_address}`,
@@ -361,63 +221,32 @@ const SeasonalRentals = () => {
     ].filter(Boolean);
 
     const record = {
-      org_id: orgId,
-      user_id: user.id,
-      property_id: form.property_id,
-      guest_name: form.guest_name,
-      guest_email: bookingEmail,
-      guest_phone: form.guest_phone.trim(),
-      check_in: form.check_in,
-      check_out: form.check_out,
-      total_price: form.total_price,
-      cleaning_fee: form.cleaning_fee,
-      deposit_amount: form.deposit_amount,
+      property_id: form.property_id, guest_name: form.guest_name,
+      guest_email: normalizeEmail(form.guest_email), guest_phone: form.guest_phone.trim(),
+      check_in: form.check_in, check_out: form.check_out,
+      total_price: form.total_price, cleaning_fee: form.cleaning_fee, deposit_amount: form.deposit_amount,
       notes: [form.notes.trim(), details.length ? `---\n${details.join("\n")}` : ""].filter(Boolean).join("\n"),
     };
 
-    if (editingId) {
-      const { error } = await supabase.from("seasonal_bookings").update(record).eq("id", editingId);
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-      await notifyReservation(t("page.seasonal.modified_reservation_notif"), t("page.seasonal.modified_reservation_msg").replace("{name}", form.guest_name), bookingEmail || undefined);
-      toast({ title: t("page.seasonal.booking_modified") });
-    } else {
-      const { error } = await supabase.from("seasonal_bookings").insert({ ...record, status: "confirmed" });
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-      await notifyReservation(t("page.seasonal.new_reservation_notif"), t("page.seasonal.new_reservation_msg").replace("{name}", form.guest_name), bookingEmail || undefined);
-      toast({ title: t("page.seasonal.booking_added") });
-    }
-
-    resetForm();
-    await load();
+    const ok = await saveBooking(record, editingId);
+    if (ok) resetForm();
   };
+
 
   const startEdit = (b: Booking) => {
     setEditingId(b.id);
     setForm({
-      property_id: b.property_id,
-      guest_name: b.guest_name,
-      guest_email: b.guest_email,
-      guest_phone: b.guest_phone,
-      guest_address: "",
-      guest_postal_code: "",
-      guest_city: "",
-      guest_country: "France",
-      identity_type: "none",
-      identity_number: "",
-      check_in: b.check_in,
-      check_out: b.check_out,
-      total_price: b.total_price,
-      cleaning_fee: b.cleaning_fee,
-      deposit_amount: b.deposit_amount,
-      notes: b.notes,
+      property_id: b.property_id, guest_name: b.guest_name, guest_email: b.guest_email,
+      guest_phone: b.guest_phone, guest_address: "", guest_postal_code: "", guest_city: "",
+      guest_country: "France", identity_type: "none", identity_number: "",
+      check_in: b.check_in, check_out: b.check_out, total_price: b.total_price,
+      cleaning_fee: b.cleaning_fee, deposit_amount: b.deposit_amount, notes: b.notes,
     });
     setShowForm(true);
   };
 
   const remove = async (id: string) => {
-    await supabase.from("seasonal_bookings").delete().eq("id", id);
-    toast({ title: t("page.seasonal.booking_deleted") });
-    await load();
+    await deleteBooking(id);
   };
 
   const propName = (id: string) => properties.find(p => p.id === id)?.label || "—";
@@ -868,7 +697,7 @@ const SeasonalRentals = () => {
                                 },
                               });
                               toast({ title: t("page.seasonal.request_approved") });
-                              setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "approved" } : r));
+                              await load();
                               await load();
                             }}
                             className="btn-success btn-sm"
@@ -890,7 +719,7 @@ const SeasonalRentals = () => {
                                 },
                               });
                               toast({ title: t("page.seasonal.request_rejected") });
-                              setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "rejected" } : r));
+                              await load();
                             }}
                             className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
                           >
@@ -967,7 +796,7 @@ const SeasonalRentals = () => {
                                   }).catch(() => {});
 
                                   toast({ title: "✅ Payment link generated and sent!" });
-                                  setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "payment_pending" } : r));
+                                  await load();
                                 } catch (err: any) {
                                   toast({ title: t("page.common.error"), description: err.message || "Payment link generation failed", variant: "destructive" });
                                 } finally {
@@ -1011,7 +840,7 @@ const SeasonalRentals = () => {
                                 },
                               });
                               toast({ title: t("page.seasonal.request_cancelled") });
-                              setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "cancelled" } : r));
+                              await load();
                               await load();
                             }}
                             className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
@@ -1025,7 +854,7 @@ const SeasonalRentals = () => {
                           onClick={async () => {
                             await supabase.from("booking_requests").delete().eq("id", req.id);
                             toast({ title: t("page.seasonal.booking_deleted") });
-                            setAllRequests(prev => prev.filter(r => r.id !== req.id));
+                            await load();
                           }}
                           className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
                         >
@@ -1126,7 +955,7 @@ const SeasonalRentals = () => {
                     orgId={orgId || ""}
                     photos={currentPhotos}
                     onPhotosChange={(urls) => {
-                      setProperties(prev => prev.map(p => p.id === propId ? { ...p, photo_urls: urls } : p));
+                      load();
                     }}
                     allowVideo={subscription.subscribed}
                   />
@@ -1190,7 +1019,7 @@ const SeasonalRentals = () => {
               ))}
             </div>
           ) : loadError ? (
-            <ErrorState message={loadError} onRetry={() => { setLoading(true); load(); }} />
+            <ErrorState message={loadError} onRetry={() => { load(); }} />
           ) :
             bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.no_reservations")}</p> :
               bookings.map(b => (
@@ -1265,7 +1094,7 @@ const SeasonalRentals = () => {
                     },
                   });
                   toast({ title: t("page.seasonal.dates_modified") });
-                  setAllRequests(prev => prev.map(r => r.id === focusedRequest.id ? { ...r, check_in: editingRequestDates.check_in, check_out: editingRequestDates.check_out } : r));
+                  await load();
                   setShowEditRequestModal(false);
                   setFocusedRequest(null);
                   await load();
