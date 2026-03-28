@@ -3,7 +3,7 @@ import { Receipt, Download, Loader2, CheckCircle } from "lucide-react";
 import ReceiptStatusBadge from "@/components/rent/ReceiptStatusBadge";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as tenantRepo from "@/repositories/tenant-portal.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
 
@@ -55,12 +55,12 @@ const TenantReceipts = () => {
       const fileRef = parseStorageFileRef(fileUrl);
       if (!fileRef?.path) throw new Error(L.receiptDownloadError);
       let signedUrl: string | null = null;
-      const primary = await supabase.storage.from(fileRef.bucket).createSignedUrl(fileRef.path, 60 * 60);
-      if (primary.data?.signedUrl) {
-        signedUrl = primary.data.signedUrl;
-      } else if (fileRef.bucket !== "rental-docs") {
-        const fallback = await supabase.storage.from("rental-docs").createSignedUrl(fileRef.path, 60 * 60);
-        signedUrl = fallback.data?.signedUrl ?? null;
+      try {
+        signedUrl = await tenantRepo.createSignedUrl(fileRef.bucket, fileRef.path, 60 * 60);
+      } catch {
+        if (fileRef.bucket !== "rental-docs") {
+          signedUrl = await tenantRepo.createSignedUrl("rental-docs", fileRef.path, 60 * 60);
+        }
       }
       if (!signedUrl) throw new Error(L.receiptDownloadError);
       const response = await fetch(signedUrl);
