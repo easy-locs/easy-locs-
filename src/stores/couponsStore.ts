@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { getOrbitIdentity, requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import type { ListingCoupon } from "@/lib/types/reviews";
 
 const db = supabase as any;
@@ -28,7 +28,7 @@ export const useCouponsStore = create<CouponsStore>((set, get) => ({
   loading: false,
 
   hydrateOwnerCoupons: async () => {
-    const orbit = useOrbitStore.getState().profile;
+    const orbit = getOrbitIdentity();
     if (!orbit) return;
 
     set({ loading: true });
@@ -64,8 +64,7 @@ export const useCouponsStore = create<CouponsStore>((set, get) => ({
   },
 
   createCoupon: async (input) => {
-    const orbit = useOrbitStore.getState().profile;
-    if (!orbit) throw new Error("Missing orbit");
+    const orbit = requireOrbitIdentity();
 
     const row = {
       id: `cpn_${Math.random().toString(36).slice(2, 11)}`,

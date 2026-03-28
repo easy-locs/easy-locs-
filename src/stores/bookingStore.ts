@@ -4,7 +4,7 @@ import { diffNights, isRangeOverlap } from "@/lib/utils/booking";
 import type { BookingRecordV2 } from "@/lib/types/domain";
 import { useListingStore } from "@/stores/listingStore";
 import { useChatStore } from "@/stores/chatStore";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { requireOrbitIdentity, getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
 type CreateBookingInput = {
   listingId: string;
@@ -40,8 +40,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
   loading: false,
 
   createBooking: async (input) => {
-    const buyerOrbit = useOrbitStore.getState().profile;
-    if (!buyerOrbit) throw new Error("No authenticated orbit profile");
+    const buyerOrbit = requireOrbitIdentity();
 
     const listing = useListingStore.getState().getListingById(input.listingId);
     if (!listing || !listing.bookingEnabled || listing.status !== "published" || !listing.walletLinked) return null;
@@ -161,14 +160,14 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
   getBookingsByBuyer: (buyerOrbitId) => get().bookings.filter((b) => b.buyerOrbitId === buyerOrbitId),
   getBookingsByOwner: (ownerOrbitId) => get().bookings.filter((b) => b.ownerOrbitId === ownerOrbitId),
   getMyBuyerBookings: () => {
-    const orbit = useOrbitStore.getState().profile;
-    if (!orbit) return [];
-    return get().bookings.filter((b) => b.buyerOrbitId === orbit.orbitId);
+    const identity = getOrbitIdentity();
+    if (!identity) return [];
+    return get().bookings.filter((b) => b.buyerOrbitId === identity.orbitId);
   },
   getMyOwnerBookings: () => {
-    const orbit = useOrbitStore.getState().profile;
-    if (!orbit) return [];
-    return get().bookings.filter((b) => b.ownerOrbitId === orbit.orbitId);
+    const identity = getOrbitIdentity();
+    if (!identity) return [];
+    return get().bookings.filter((b) => b.ownerOrbitId === identity.orbitId);
   },
   getBookingsByListing: (listingId) => get().bookings.filter((b) => b.listingId === listingId),
 
