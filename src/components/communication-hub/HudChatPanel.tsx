@@ -297,56 +297,31 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     return () => window.clearTimeout(timer);
   }, [callStateV2.activeCall?.uiState]);
 
-  const handleStartAudioCall = async () => {
-    const peerTarget = thread?.peerOrbitId || thread?.peerUserId;
-    if (!peerTarget) {
-      toast.error("No peer available for call");
-      return;
-    }
-    const micOk = devicePermissions.permissions.microphone === "granted" || await devicePermissions.requestMicrophone();
-    if (!micOk) return;
-    const session = await callActionsV2.createOutgoingCall({
-      conversationId: thread!.v2ConversationId || null,
-      peerOrbitId: peerTarget,
-      peerName: thread!.name || "Contact",
-      mode: "audio",
-    });
-    if (!session) return;
-    callStateV2.startOutgoing({
-      sessionId: session.id,
-      conversationId: thread!.v2ConversationId || null,
-      peerOrbitId: peerTarget,
-      peerUserId: thread!.peerUserId || null,
-      peerName: thread!.name || "Contact",
-      mode: "audio",
-    });
-  };
+  // ── Extracted hooks replace 290 lines of inline handlers ──
+  const { handleStartAudioCall, handleStartVideoCall } = useHudCallSetup(
+    thread, devicePermissions, callActionsV2, callStateV2
+  );
 
-  const handleStartVideoCall = async () => {
-    const peerTarget = thread?.peerOrbitId || thread?.peerUserId;
-    if (!peerTarget) {
-      toast.error("No peer available for video call");
-      return;
-    }
-    const micOk = devicePermissions.permissions.microphone === "granted" || await devicePermissions.requestMicrophone();
-    const camOk = devicePermissions.permissions.camera === "granted" || await devicePermissions.requestCamera();
-    if (!micOk || !camOk) return;
-    const session = await callActionsV2.createOutgoingCall({
-      conversationId: thread!.v2ConversationId || null,
-      peerOrbitId: peerTarget,
-      peerName: thread!.name || "Contact",
-      mode: "video",
-    });
-    if (!session) return;
-    callStateV2.startOutgoing({
-      sessionId: session.id,
-      conversationId: thread!.v2ConversationId || null,
-      peerOrbitId: peerTarget,
-      peerUserId: thread!.peerUserId || null,
-      peerName: thread!.name || "Contact",
-      mode: "video",
-    });
-  };
+  const { updateConversationStatus } = useHudConversationStatus(
+    thread, loader.setConvStatus, onThreadUpdate
+  );
+
+  const { handleBookingAction } = useHudBookingActions(
+    thread, orgId, user?.id, myOrbitId, onThreadUpdate
+  );
+
+  const { handleUploadAndSendAttachments } = useHudAttachmentUpload({
+    queue: attachmentQueue.queue,
+    setItemProgress: attachmentQueue.setItemProgress,
+    markUploaded: attachmentQueue.markUploaded,
+    markFailed: attachmentQueue.markFailed,
+    clearQueue: attachmentQueue.clearQueue,
+    uploadSingleFile: uploadTransport.uploadSingleFile,
+    sendAttachments: attachmentSend.sendAttachments,
+    sendingAttachments: attachmentSend.sendingAttachments,
+    viewOnceEnabled,
+    setViewOnceEnabled,
+  });
 
   // Attachment file handlers
   const handlePickFiles = () => fileInputRef.current?.click();
@@ -356,50 +331,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const handleFilesSelected = (files: FileList | null) => {
     if (!files?.length) return;
     attachmentQueue.enqueueFiles(files);
-  };
-
-  const handleUploadAndSendAttachments = async () => {
-    // Collect uploaded attachments directly — don't rely on React state memo (race condition)
-    const uploadedItems: Array<{ localId: string; file: File; kind: string; url: string }> = [];
-
-    for (const item of attachmentQueue.queue) {
-      if (item.status === "uploaded" && item.uploadedUrl) {
-        uploadedItems.push({ localId: item.localId, file: item.file, kind: item.kind, url: item.uploadedUrl });
-        continue;
-      }
-      try {
-        attachmentQueue.setItemProgress(item.localId, 15);
-        const uploaded = await uploadTransport.uploadSingleFile({
-          file: item.file,
-          pathPrefix: "orbit-media",
-          onProgress: (progress) => attachmentQueue.setItemProgress(item.localId, progress),
-        });
-        attachmentQueue.markUploaded(item.localId, uploaded.publicUrl);
-        uploadedItems.push({ localId: item.localId, file: item.file, kind: item.kind, url: uploaded.publicUrl });
-      } catch (err: any) {
-        attachmentQueue.markFailed(item.localId, err?.message || "Upload failed");
-      }
-    }
-
-    if (!uploadedItems.length) {
-      toast.error("No files uploaded successfully");
-      return;
-    }
-
-    const atts = uploadedItems.map((x) => ({
-      id: x.localId,
-      kind: x.kind as any,
-      name: x.file.name,
-      mimeType: x.file.type,
-      sizeBytes: x.file.size,
-      url: x.url,
-      thumbnailUrl: null,
-      viewOnce: viewOnceEnabled,
-    }));
-
-    await attachmentSend.sendAttachments({ attachments: atts, body: "", viewOnce: viewOnceEnabled });
-    attachmentQueue.clearQueue();
-    setViewOnceEnabled(false);
   };
 
   const handleOpenAttachment = async (message: any, attachment: any) => {
@@ -424,57 +355,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     return MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
   }, []);
 
-  const updateConversationStatus = useCallback(async (status: string) => {
-    if (!thread) return;
-    loader.setConvStatus(status);
-    onThreadUpdate(thread.id, { conversationStatus: status });
-    // V2: status is managed at conversation level, not message level
-    if (thread.v2ConversationId) {
-      await (supabase as any).from("conversations_v2").update({
-        metadata: { conversation_status: status },
-        updated_at: new Date().toISOString(),
-      }).eq("id", thread.v2ConversationId);
-    }
-  }, [thread, loader, onThreadUpdate]);
-
-  const handleBookingAction = useCallback(async (action: "confirm" | "cancel" | "complete") => {
-    if (!orgId || !user || !thread?.bookingId) return;
-    const statusMap = { confirm: "confirmed", cancel: "cancelled", complete: "completed" };
-    const newStatus = statusMap[action];
-    try {
-      if (thread.bookingType === "marketplace") await supabase.from("marketplace_bookings").update({ status: newStatus }).eq("id", thread.bookingId);
-      else if (thread.bookingType === "concierge") {
-        const updates: any = { status: newStatus };
-        if (action === "confirm") updates.confirmed_at = new Date().toISOString();
-        if (action === "cancel") updates.cancelled_at = new Date().toISOString();
-        if (action === "complete") updates.completed_at = new Date().toISOString();
-        await supabase.from("concierge_orders").update(updates).eq("id", thread.bookingId);
-      } else if (thread.bookingType === "seasonal") await supabase.from("booking_requests").update({ status: newStatus }).eq("id", thread.bookingId);
-
-      // V2: Write system message to chat_messages_v2
-      if (thread.v2ConversationId) {
-        const actionLabels = { confirm: "✅ Booking confirmed", cancel: "❌ Booking cancelled", complete: "🏁 Booking completed" };
-        await (supabase as any).from("chat_messages_v2").insert({
-          conversation_id: thread.v2ConversationId,
-          sender_user_id: user.id,
-          sender_orbit_id: myOrbitId || `orbit_${user.id.slice(0, 12)}`,
-          type: "system",
-          body: actionLabels[action],
-          metadata: { booking_action: action, booking_id: thread.bookingId },
-        });
-        await (supabase as any).from("conversations_v2").update({
-          last_message_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }).eq("id", thread.v2ConversationId);
-      }
-
-      onThreadUpdate(thread.id, { bookingStatus: newStatus });
-      toast.success(t(`orbit.booking_${action}`) || action);
-    } catch (e: any) {
-      toast.error(e?.message || "Booking action failed");
-    }
-  }, [orgId, user, thread, onThreadUpdate, t, myOrbitId]);
-
   const handleViewOnceUpload = useCallback(async (file: File) => {
     if (!thread || !orgId) return;
     const authUserId = await resolveAuthUserId();
@@ -489,8 +369,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       const finalUrl = await attachments.uploadToStorage(file, path);
       if (!finalUrl) throw new Error("Upload failed");
       const disappearAt = computeDisappearAt(security.disappearTTL !== "off" ? security.disappearTTL : privacySettings.defaultDisappearTtl);
-
-      // V2 only — auto-create if needed
       const conversationId = await resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
       await (supabase as any).from("chat_messages_v2").insert({
@@ -524,8 +402,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       const path = `${orgId}/${thread.id}/voice-${Date.now()}.${ext}`;
       const audioUrl = await attachments.uploadToStorage(blob, path);
       if (!audioUrl) throw new Error("Voice upload failed");
-
-      // V2 only — auto-create if needed
       const conversationId = await resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
       const { error } = await (supabase as any).from("chat_messages_v2").insert({
@@ -561,15 +437,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       : loc.type === "place"
       ? `📍 ${loc.label}\n${loc.address || ""}\n${mapUrl}`
       : `📍 My location\n${mapUrl}`;
-
     let storedContent = locationMsg;
     const peerId = thread.peerUserId || thread.contextId || thread.id;
     if (e2eReady && peerId) {
       const enc = await encrypt(locationMsg, peerId);
-      if (enc) { storedContent = enc; }
+      if (enc) storedContent = enc;
     }
-
-    // V2 only — auto-create if needed
     const conversationId = await resolveConversationId(authUserId);
     if (!conversationId) return;
     await (supabase as any).from("chat_messages_v2").insert({
@@ -582,7 +455,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       metadata: { lat: loc.lat, lng: loc.lng, mode: loc.type },
     });
     await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
-
     platformBus.emit("orbit:message_sent", { threadId: thread.threadId || thread.id, contextId: thread.contextId, type: "location" }, "orbit", { userId: user?.id, orgId });
     toast.success(t("orbit.location_shared") || "Location shared");
     security.setShowLocationPicker(false);
