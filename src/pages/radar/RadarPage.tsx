@@ -200,8 +200,8 @@ export default function RadarPage() {
             onClick={() => navigate("/")}
             className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
             style={{
-              background: "hsl(var(--background) / 0.3)",
-              backdropFilter: "blur(24px) saturate(1.8)",
+              background: "hsl(var(--background) / 0.2)",
+              backdropFilter: "blur(28px) saturate(1.8)",
             }}
           >
             <ArrowLeft className="w-[18px] h-[18px]" style={{ color: "hsl(var(--foreground))" }} />
