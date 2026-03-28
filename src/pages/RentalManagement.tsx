@@ -72,6 +72,9 @@ const defaultTenantForm = {
 };
 // EXPENSE_CATEGORIES now uses i18n - see render usage
 
+const escapeEmailHtml = (value: string) =>
+  value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+const normalizeEmail = (email: string | null | undefined) => (email || "").trim().toLowerCase();
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const RentalManagement = () => {
