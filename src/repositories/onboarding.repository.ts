@@ -44,7 +44,7 @@ export async function insertOwnerProfile(userId: string, orgId: string, ownerFor
 }
 
 export async function insertProperty(orgId: string, userId: string, propertyForm: Record<string, any>, country: string, rentalMode: string) {
-  const { data, error } = await supabase.from("properties").insert({
+  const { data, error } = await (supabase as any).from("properties").insert({
     org_id: orgId, user_id: userId, country, ...propertyForm, rental_mode: rentalMode,
   }).select("id").single();
   if (error) throw error;
@@ -52,7 +52,7 @@ export async function insertProperty(orgId: string, userId: string, propertyForm
 }
 
 export async function insertTenantOnboarding(orgId: string, userId: string, propertyId: string | null, tenantForm: Record<string, any>) {
-  const { error } = await supabase.from("tenants").insert({
+  const { error } = await (supabase as any).from("tenants").insert({
     org_id: orgId, user_id: userId, property_id: propertyId, ...tenantForm,
   });
   if (error) throw error;
