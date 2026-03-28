@@ -41,7 +41,7 @@ export function OrbitThreadListV2({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-foreground line-clamp-1 break-words">{thread.name}</p>
+                  <p className="text-sm font-medium text-foreground line-clamp-2 break-words">{thread.name}</p>
                   <span className="text-[11px] text-muted-foreground shrink-0">
                     {thread.lastMessageTime
                       ? new Date(thread.lastMessageTime).toLocaleTimeString([], {
