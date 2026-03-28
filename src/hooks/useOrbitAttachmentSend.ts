@@ -111,12 +111,12 @@ export function useOrbitAttachmentSend(params: {
       }, "orbit", { userId: currentUserId });
 
       trackPropagation({
-        flowId: flow.id,
+        flowId: flow.flowId,
         domain: "orbit",
         action: "sendAttachment",
         dbWriteSuccess: true,
         eventEmitted: "orbit:attachment_sent",
-        cacheInvalidated: false,
+        cacheInvalidated: [],
       });
 
       reportHealth("orbit", "ok");
@@ -126,12 +126,12 @@ export function useOrbitAttachmentSend(params: {
     } catch (err: any) {
       reportHealth("orbit", "degraded", undefined, err?.message);
       trackPropagation({
-        flowId: flow.id,
+        flowId: flow.flowId,
         domain: "orbit",
         action: "sendAttachment",
         dbWriteSuccess: false,
         eventEmitted: null,
-        cacheInvalidated: false,
+        cacheInvalidated: [],
       });
       endFlow(flow, "failed");
       toast.error(err?.message || "Attachment send failed");
