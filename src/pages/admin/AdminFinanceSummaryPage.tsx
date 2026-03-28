@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchFinanceSummaryData } from "@/repositories/admin-ops.repository";
 
 export default function AdminFinanceSummaryPage() {
   const navigate = useNavigate();
@@ -8,37 +8,14 @@ export default function AdminFinanceSummaryPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-finance-summary"],
     queryFn: async () => {
-      const [{ data: orders }, { data: ledger }, { data: wallets }] = await Promise.all([
-        supabase.from("orders").select("total_amount,payment_status,status,currency").limit(5000),
-        supabase.from("wallet_ledger_entries").select("amount,direction,entry_type").limit(5000),
-        supabase.from("wallet_accounts").select("balance").limit(2000),
-      ]);
-
-      const orderRows = orders ?? [];
-      const ledgerRows = ledger ?? [];
-      const walletRows = wallets ?? [];
-
+      const raw = await fetchFinanceSummaryData();
       return {
-        grossGMV: orderRows.reduce(
-          (sum: number, row: any) => sum + Number(row.total_amount ?? 0),
-          0
-        ),
-        capturedOrders: orderRows.filter((row: any) =>
-          ["captured", "paid"].includes(String(row.payment_status ?? ""))
-        ).length,
-        refundedOrders: orderRows.filter((row: any) =>
-          ["refunded"].includes(String(row.payment_status ?? ""))
-        ).length,
-        walletIn: ledgerRows
-          .filter((row: any) => row.direction === "in")
-          .reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0),
-        walletOut: ledgerRows
-          .filter((row: any) => row.direction === "out")
-          .reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0),
-        totalWalletBalance: walletRows.reduce(
-          (sum: number, row: any) => sum + Number(row.balance ?? 0),
-          0
-        ),
+        grossGMV: raw.orders.reduce((sum: number, row: any) => sum + Number(row.total_amount ?? 0), 0),
+        capturedOrders: raw.orders.filter((row: any) => ["captured", "paid"].includes(String(row.payment_status ?? ""))).length,
+        refundedOrders: raw.orders.filter((row: any) => ["refunded"].includes(String(row.payment_status ?? ""))).length,
+        walletIn: raw.ledger.filter((row: any) => row.direction === "in").reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0),
+        walletOut: raw.ledger.filter((row: any) => row.direction === "out").reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0),
+        totalWalletBalance: raw.wallets.reduce((sum: number, row: any) => sum + Number(row.balance ?? 0), 0),
       };
     },
     staleTime: 10000,
@@ -47,22 +24,13 @@ export default function AdminFinanceSummaryPage() {
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/admin")}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
+        <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
         <div>
           <h1 className="text-lg font-bold text-foreground">Finance Summary</h1>
           <p className="text-xs text-muted-foreground">Platform money overview</p>
         </div>
       </div>
-
-      {isLoading && [1, 2, 3].map((i) => (
-        <div key={i} className="mx-4 mb-3 h-16 rounded-2xl bg-muted animate-pulse" />
-      ))}
-
+      {isLoading && [1, 2, 3].map((i) => <div key={i} className="mx-4 mb-3 h-16 rounded-2xl bg-muted animate-pulse" />)}
       {!isLoading && data && (
         <div className="grid grid-cols-2 gap-3 px-4">
           <Metric title="Gross GMV" value={`${data.grossGMV.toFixed(2)} AED`} />

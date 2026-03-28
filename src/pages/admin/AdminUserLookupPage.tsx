@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchUserLookupData } from "@/repositories/admin-ops.repository";
 
 export default function AdminUserLookupPage() {
   const navigate = useNavigate();
@@ -10,25 +10,7 @@ export default function AdminUserLookupPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-user-lookup", submitted],
-    queryFn: async () => {
-      const q = submitted.trim();
-      if (!q) return { favorites: [], tickets: [], orders: [], wallets: [] };
-
-      const [{ data: favorites }, { data: tickets }, { data: orders }, { data: wallets }] =
-        await Promise.all([
-          supabase.from("user_favorites").select("*").eq("user_id", q).limit(200),
-          supabase.from("support_tickets").select("*").eq("requester_user_id", q).limit(200),
-          supabase.from("orders").select("*").eq("customer_user_id", q).limit(200),
-          supabase.from("wallet_accounts").select("*").eq("owner_user_id", q).limit(50),
-        ]);
-
-      return {
-        favorites: favorites ?? [],
-        tickets: tickets ?? [],
-        orders: orders ?? [],
-        wallets: wallets ?? [],
-      };
-    },
+    queryFn: () => fetchUserLookupData(submitted),
     enabled: !!submitted.trim(),
     staleTime: 5000,
   });
@@ -36,39 +18,17 @@ export default function AdminUserLookupPage() {
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/admin")}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
+        <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
         <div>
           <h1 className="text-lg font-bold text-foreground">User Lookup</h1>
           <p className="text-xs text-muted-foreground">Inspect user activity quickly</p>
         </div>
       </div>
-
       <div className="flex gap-2 px-4 pb-4">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Enter user id"
-          className="flex-1 rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm"
-        />
-        <button
-          onClick={() => setSubmitted(query)}
-          className="rounded-xl bg-primary text-primary-foreground px-4 py-2.5 text-sm font-bold"
-        >
-          Find
-        </button>
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Enter user id" className="flex-1 rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm" />
+        <button onClick={() => setSubmitted(query)} className="rounded-xl bg-primary text-primary-foreground px-4 py-2.5 text-sm font-bold">Find</button>
       </div>
-
-      {isLoading && submitted ? (
-        [1, 2].map((i) => (
-          <div key={i} className="mx-4 mb-3 h-16 rounded-2xl bg-muted animate-pulse" />
-        ))
-      ) : null}
-
+      {isLoading && submitted ? [1, 2].map((i) => <div key={i} className="mx-4 mb-3 h-16 rounded-2xl bg-muted animate-pulse" />) : null}
       {!isLoading && submitted && data ? (
         <div className="grid grid-cols-2 gap-3 px-4">
           <Metric title="Favorites" value={String(data.favorites.length)} />
