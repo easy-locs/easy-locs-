@@ -116,7 +116,7 @@ export default function ProductComparator({ shopId, catalogItems = [], mode = "b
                     <th key={p.id} className="text-center p-2 border-b border-border min-w-[100px]">
                       <div className="flex flex-col items-center gap-1">
                         {p.photo_url && <img src={p.photo_url} alt="" className="w-10 h-10 rounded-lg object-cover" />}
-                        <span className="font-semibold truncate max-w-[90px]">{p.title}</span>
+                        <span className="font-semibold line-clamp-2 break-words leading-snug max-w-[100px]">{p.title}</span>
                         <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => toggleItem(p.id)}>
                           <X className="w-3 h-3" />
                         </Button>

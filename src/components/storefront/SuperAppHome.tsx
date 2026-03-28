@@ -89,10 +89,10 @@ function RecentChats({ threads }: { threads: any[] }) {
             <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+            <p className="text-xs font-semibold line-clamp-2 break-words leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
               {t.provider_name || t.listing_title || "Conversation"}
             </p>
-            <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+            <p className="text-[10px] line-clamp-1 break-words leading-snug" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
               {t.context_type === "direct" ? "Direct message" : t.context_type}
             </p>
           </div>
