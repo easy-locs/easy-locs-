@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import type { ListingSearchFilters } from "@/lib/types/search";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,7 +51,7 @@ export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
 
   saveSearch: async (name, filters) => {
     const user = useV2AuthStore.getState().user;
-    const orbit = useOrbitStore.getState().profile;
+    const orbit = getOrbitIdentity();
     if (!user || !orbit) return;
 
     const row = {

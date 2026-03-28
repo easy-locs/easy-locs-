@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { uploadFile, getPublicFileUrl } from "@/lib/storage/uploadFile";
 import { supabase } from "@/integrations/supabase/client";
+import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitStore } from "@/stores/orbitStore";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,8 +16,9 @@ export const useAvatarStore = create<AvatarStore>((set) => ({
   uploading: false,
 
   uploadAvatar: async (file) => {
-    const orbit = useOrbitStore.getState().profile;
-    if (!orbit) throw new Error("Missing orbit");
+    const orbit = requireOrbitIdentity();
+    const fullProfile = useOrbitStore.getState().profile;
+    if (!fullProfile) throw new Error("Missing orbit profile");
 
     set({ uploading: true });
 
@@ -35,11 +37,11 @@ export const useAvatarStore = create<AvatarStore>((set) => ({
     const { error } = await db
       .from("orbit_profiles_v2")
       .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
-      .eq("id", orbit.id);
+      .eq("id", orbit.userId);
 
     if (!error) {
       useOrbitStore.setState({
-        profile: { ...orbit, avatarUrl: publicUrl },
+        profile: { ...fullProfile, avatarUrl: publicUrl },
       });
     }
 

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { uploadFile } from "@/lib/storage/uploadFile";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
 type LeaseDocumentsStore = {
   uploading: boolean;
@@ -11,8 +11,7 @@ export const useLeaseDocumentsStore = create<LeaseDocumentsStore>((set) => ({
   uploading: false,
 
   uploadLeaseDocument: async (leaseId, file) => {
-    const orbit = useOrbitStore.getState().profile;
-    if (!orbit) throw new Error("Missing orbit");
+    const orbit = requireOrbitIdentity();
 
     set({ uploading: true });
 
