@@ -12,19 +12,16 @@ export class RadarRealtimeBridge {
   private unsubs: (() => void)[] = [];
   private handlers: RealtimeUpdateHandler[] = [];
 
-  /** Start listening to platform events and forward as radar updates */
   start() {
     this.unsubs.push(
-      platformBus.on("driver:position_updated", (payload: any) => {
+      platformBus.on("tracking:position_updated", (event) => {
+        const payload = event.payload as any;
         if (!payload?.lat || !payload?.lng) return;
         const projection: CanonicalRadarProjection = {
-          lat: payload.lat,
-          lng: payload.lng,
+          lat: payload.lat, lng: payload.lng,
           layerKey: "driver",
           iconKey: payload.vehicleType === "courier" ? "courier" : "taxi",
-          color: "hsl(var(--accent))",
-          intensity: 1,
-          clusterable: false,
+          color: "hsl(var(--accent))", intensity: 1, clusterable: false,
           popupTitle: payload.label || "Driver",
           popupSubtitle: payload.eta ? `ETA ${payload.eta}min` : undefined,
         };
@@ -33,16 +30,13 @@ export class RadarRealtimeBridge {
     );
 
     this.unsubs.push(
-      platformBus.on("order:status_changed", (payload: any) => {
+      platformBus.on("tracking:status_changed", (event) => {
+        const payload = event.payload as any;
         if (!payload?.pickupLat || !payload?.pickupLng) return;
         const projection: CanonicalRadarProjection = {
-          lat: payload.pickupLat,
-          lng: payload.pickupLng,
-          layerKey: "order",
-          iconKey: "order_active",
-          color: "hsl(var(--success))",
-          intensity: 0.8,
-          clusterable: false,
+          lat: payload.pickupLat, lng: payload.pickupLng,
+          layerKey: "order", iconKey: "order_active",
+          color: "hsl(var(--success))", intensity: 0.8, clusterable: false,
           popupTitle: `Order #${payload.orderId?.slice(0, 8) || ""}`,
           popupSubtitle: payload.status,
         };
@@ -60,13 +54,6 @@ export class RadarRealtimeBridge {
     this.handlers.forEach(fn => fn(layerKey, items));
   }
 
-  stop() {
-    this.unsubs.forEach(fn => fn());
-    this.unsubs = [];
-  }
-
-  destroy() {
-    this.stop();
-    this.handlers = [];
-  }
+  stop() { this.unsubs.forEach(fn => fn()); this.unsubs = []; }
+  destroy() { this.stop(); this.handlers = []; }
 }
