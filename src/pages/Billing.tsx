@@ -3,7 +3,7 @@ import { CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock, Sparkles, Hel
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
 import { PLANS, getPlanDisplay, PRODUCT_TIER_MAP, type PlanConfig } from "@/lib/stripe-plans";
-import { supabase } from "@/integrations/supabase/client";
+import { createCheckoutSession, openCustomerPortal, signOut } from "@/repositories/billing.repository";
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";

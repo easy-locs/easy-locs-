@@ -35,7 +35,7 @@ const Expenses = () => {
   ];
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<PropertyOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [filterProp, setFilterProp] = useState("");
