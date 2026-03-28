@@ -9,13 +9,16 @@ import {
   ShieldAlert, MessageSquare, Star, Flag,
   Check, X, Eye, ChevronDown,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { format } from "date-fns";
 import { fr as frLocale } from "@/lib/date-locales";
+import {
+  fetchPendingReviews, moderateReview as moderateReviewRepo,
+  fetchBlockedUsers as fetchBlockedUsersRepo, unblockUser as unblockUserRepo,
+} from "@/repositories/admin.repository";
 
 type ModerationTab = "reviews" | "blocked";
 
@@ -41,55 +44,37 @@ export default function ModerationPanel() {
     setLoading(true);
 
     if (tab === "reviews") {
-      const fetchReviews = async () => {
-        const { data } = await (supabase as any)
-          .from("marketplace_reviews")
-          .select("id, reviewer_name, rating, comment, status, created_at, service_id")
-          .eq("org_id", orgId)
-          .in("status", ["pending", "flagged"])
-          .order("created_at", { ascending: false })
-          .limit(100);
-        setReviews((data || []) as PendingReview[]);
+      fetchPendingReviews(orgId).then(data => {
+        setReviews(data as PendingReview[]);
         setLoading(false);
-      };
-      fetchReviews();
+      });
     } else {
-      supabase
-        .from("blocked_users")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50)
-        .then(({ data }) => {
-          setBlockedUsers(data || []);
-          setLoading(false);
-        });
+      fetchBlockedUsersRepo().then(data => {
+        setBlockedUsers(data);
+        setLoading(false);
+      });
     }
   }, [orgId, tab]);
 
   const moderateReview = async (reviewId: string, action: "published" | "rejected") => {
-    const { error } = await supabase
-      .from("marketplace_reviews")
-      .update({ status: action } as any)
-      .eq("id", reviewId);
-
-    if (error) {
+    try {
+      await moderateReviewRepo(reviewId, action);
+      setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+      haptic(action === "published" ? "success" : "warning");
+      toast.success(action === "published" ? "Avis approuvé" : "Avis rejeté");
+    } catch {
       toast.error("Erreur de modération");
-      return;
     }
-
-    setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-    haptic(action === "published" ? "success" : "warning");
-    toast.success(action === "published" ? "Avis approuvé" : "Avis rejeté");
   };
 
   const unblockUser = async (blockId: string) => {
-    const { error } = await supabase.from("blocked_users").delete().eq("id", blockId);
-    if (error) {
+    try {
+      await unblockUserRepo(blockId);
+      setBlockedUsers((prev) => prev.filter((b) => b.id !== blockId));
+      toast.success("Utilisateur débloqué");
+    } catch {
       toast.error("Erreur");
-      return;
     }
-    setBlockedUsers((prev) => prev.filter((b) => b.id !== blockId));
-    toast.success("Utilisateur débloqué");
   };
 
   return (
