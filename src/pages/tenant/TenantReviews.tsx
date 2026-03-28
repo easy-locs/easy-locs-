@@ -3,7 +3,7 @@ import { Star, Loader2, MessageCircle } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import * as tenantRepo from "@/repositories/tenant-portal.repository";
 import { useToast } from "@/hooks/use-toast";
 
 const TenantReviews = () => {

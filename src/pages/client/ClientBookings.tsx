@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { CalendarCheck, MapPin, Clock, Inbox, Star } from "lucide-react";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchClientAllBookings, fetchReviewedBookingIds } from "@/repositories/client-portal.repository";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

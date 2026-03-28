@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { CreditCard, Inbox, CheckCircle2 } from "lucide-react";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchClientPayments } from "@/repositories/client-portal.repository";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -30,10 +30,7 @@ const ClientPayments = () => {
     const email = user.email;
 
     const fetch = async () => {
-      const [{ data: concierge }, { data: marketplace }] = await Promise.all([
-        supabase.from("concierge_orders").select("id, service_date, total_price, currency, payment_status, status, created_at").eq("guest_email", email).order("created_at", { ascending: false }).limit(50),
-        supabase.from("marketplace_bookings").select("id, service_date, total_price, currency, payment_confirmed, status, created_at").eq("booker_email", email).order("created_at", { ascending: false }).limit(50),
-      ]);
+      const { concierge, marketplace } = await fetchClientPayments(email);
 
       const items: PaymentItem[] = [
         ...(concierge || []).map(b => ({
