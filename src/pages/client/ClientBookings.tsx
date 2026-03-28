@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { CalendarCheck, MapPin, Clock, Inbox, Star } from "lucide-react";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchClientAllBookings, fetchReviewedBookingIds } from "@/repositories/client-portal.repository";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,31 +48,17 @@ const ClientBookings = () => {
   useEffect(() => {
     if (!user?.email) return;
     const email = user.email;
-
     const fetchAll = async () => {
-      const [{ data: seasonal }, { data: concierge }, { data: marketplace }] = await Promise.all([
-        supabase.from("booking_requests").select("id, guest_name, check_in, check_out, status, created_at").eq("guest_email", email).order("created_at", { ascending: false }).limit(50),
-        supabase.from("concierge_orders").select("id, guest_name, service_date, status, total_price, currency, created_at").eq("guest_email", email).order("created_at", { ascending: false }).limit(50),
-        supabase.from("marketplace_bookings").select("id, booker_name, booker_email, service_date, status, total_price, currency, created_at, completed_at, service_id, provider_id, marketplace_services(title)").eq("booker_email", email).order("created_at", { ascending: false }).limit(50),
-      ]);
-
-      const mkIds = (marketplace || []).map(b => b.id);
-      let reviewed = new Set<string>();
-      if (mkIds.length > 0) {
-        const { data: existingReviews } = await supabase
-          .from("marketplace_reviews")
-          .select("booking_id")
-          .in("booking_id", mkIds);
-        reviewed = new Set((existingReviews || []).map(r => r.booking_id).filter(Boolean));
-      }
+      const { seasonal, concierge, marketplace } = await fetchClientAllBookings(email);
+      const mkIds = marketplace.map((b: any) => b.id);
+      const reviewed = await fetchReviewedBookingIds(mkIds);
       setReviewedBookingIds(reviewed);
-
       const lblSeasonal = t("client.type_seasonal") || "Seasonal";
       const lblConcierge = t("client.type_concierge") || "Concierge";
       const lblService = t("client.type_service") || "Service";
       const items: BookingItem[] = [
-        ...(seasonal || []).map(b => ({ id: b.id, type: "seasonal" as const, title: `${lblSeasonal}: ${b.check_in} → ${b.check_out}`, date: b.created_at, status: b.status })),
-        ...(concierge || []).map(b => ({ id: b.id, type: "concierge" as const, title: `${lblConcierge}: ${b.service_date || "—"}`, date: b.created_at, status: b.status, total: b.total_price, currency: b.currency })),
+        ...(seasonal || []).map((b: any) => ({ id: b.id, type: "seasonal" as const, title: `${lblSeasonal}: ${b.check_in} → ${b.check_out}`, date: b.created_at, status: b.status })),
+        ...(concierge || []).map((b: any) => ({ id: b.id, type: "concierge" as const, title: `${lblConcierge}: ${b.service_date || "—"}`, date: b.created_at, status: b.status, total: b.total_price, currency: b.currency })),
         ...(marketplace || []).map((b: any) => ({
           id: b.id, type: "marketplace" as const,
           title: `${lblService}: ${b.marketplace_services?.title || b.service_date || "—"}`,
