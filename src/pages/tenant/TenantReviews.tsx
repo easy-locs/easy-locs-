@@ -23,22 +23,13 @@ const TenantReviews = () => {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("id, org_id, property_id")
-        .eq("tenant_user_id", user.id)
-        .limit(1)
-        .single();
+      const tenant = await tenantRepo.fetchTenantInfo(user.id);
       if (tenant) {
         setTenantId(tenant.id);
         setOrgId(tenant.org_id);
         setPropertyId(tenant.property_id);
-        const { data } = await supabase
-          .from("reviews")
-          .select("*")
-          .eq("tenant_id", tenant.id)
-          .order("created_at", { ascending: false });
-        setReviews(data || []);
+        const data = await tenantRepo.fetchTenantReviews(tenant.id);
+        setReviews(data);
       }
       setLoading(false);
     };
