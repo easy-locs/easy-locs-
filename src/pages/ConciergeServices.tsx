@@ -1,9 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { computeExchangeRate } from "@/hooks/useCurrencyConversion";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,14 +18,16 @@ import BookingLinkShare from "@/components/concierge/BookingLinkShare";
 import BookingDetailDrawer from "@/components/concierge/BookingDetailDrawer";
 import CurrencyWalletWidget from "@/components/dashboard/CurrencyWalletWidget";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Plus, Trash2, Edit, Sparkles, DollarSign, ShoppingBag, Clock, CheckCircle2,
-  XCircle, Link2, Eye, MapPin, CreditCard, Building2, Users, TrendingUp,
-  Search, ExternalLink, FileText, MessageCircle, Copy
+  XCircle, Link2, Eye, CreditCard, TrendingUp,
+  Search, ExternalLink, FileText, MessageCircle
 } from "lucide-react";
 import { format } from "date-fns";
 import { useI18n } from "@/lib/i18n";
+import { useConciergeData, emptyForm, type ServiceForm } from "@/hooks/concierge/useConciergeData";
+import { useConciergeActions } from "@/hooks/concierge/useConciergeActions";
 
 const SERVICE_CATEGORIES = [
   { value: "transfer", label: "✈️ Airport Transfer" },
@@ -61,28 +61,6 @@ const BOOKING_STATUSES: Record<string, { label: string; cls: string }> = {
   refunded: { label: "Refunded", cls: "bg-muted text-muted-foreground" },
 };
 
-interface ServiceForm {
-  category: string; title: string; description: string; price: number; currency: string;
-  duration_minutes: number | null; provider_name: string; provider_phone: string;
-  country: string; city: string; active: boolean; photo_urls: string[];
-  location: string; conditions: string; booking_type: string;
-  payment_methods: string[]; bank_details: any; commission_type: string; commission_amount: number;
-  paypal_email: string; booking_slug: string;
-  time_slots: { start: string; end: string }[]; blocked_dates: string[];
-  requires_id_document: boolean;
-}
-
-const emptyForm: ServiceForm = {
-  category: "transfer", title: "", description: "", price: 0, currency: "EUR",
-  duration_minutes: null, provider_name: "", provider_phone: "", country: "", city: "",
-  active: true, photo_urls: [], location: "", conditions: "", booking_type: "instant",
-  payment_methods: ["stripe"], bank_details: {}, commission_type: "percentage",
-  commission_amount: 0, paypal_email: "", booking_slug: "",
-  time_slots: [], blocked_dates: [], requires_id_document: false,
-};
-
-const generateSlug = (title: string) =>
-  title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
 
 /** Format price using Intl based on currency code */
 const fmtPrice = (amount: number, currency: string = "EUR") => {
@@ -96,12 +74,9 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 
 const ConciergeServices = () => {
   const { user, orgId, subscription } = useAuth();
-  const { ensureOrg, creating: creatingOrg } = useEnsureOrg();
+  const { ensureOrg } = useEnsureOrg();
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [services, setServices] = useState<any[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ServiceForm>(emptyForm);
@@ -110,103 +85,59 @@ const ConciergeServices = () => {
   const [showLinks, setShowLinks] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
-  const [landlordProfile, setLandlordProfile] = useState<any>(null);
-  const [preferredCurrency, setPreferredCurrency] = useState("EUR");
   const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
 
-  // Reactive deep-link: auto-open booking from ?booking=ID (works on mount AND subsequent navigations)
+  const {
+    services,
+    orders,
+    loading,
+    preferredCurrency,
+    showcaseUrl,
+    kpis,
+    load,
+    handlePreferredCurrencyChange,
+  } = useConciergeData();
+
+  const {
+    saveService,
+    deleteService,
+    updateOrderStatus,
+    markPaid,
+  } = useConciergeActions(user?.id, orgId, ensureOrg, services, orders, load);
+
   useEffect(() => {
     const bookingId = searchParams.get("booking");
-    if (!bookingId || bookingId === lastAppliedBookingId) return;
-    if (loading) return; // Wait for data to load
+    if (!bookingId || bookingId === lastAppliedBookingId || loading) return;
     const found = orders.find((o: any) => String(o.id) === String(bookingId));
+    setTab("bookings");
+    setLastAppliedBookingId(bookingId);
+    const next = new URLSearchParams(searchParams);
+    next.delete("booking");
+    setSearchParams(next, { replace: true });
     if (found) {
-      setTab("bookings");
       setSelectedBooking(found);
-      setLastAppliedBookingId(bookingId);
-      const next = new URLSearchParams(searchParams);
-      next.delete("booking");
-      setSearchParams(next, { replace: true });
-      console.log("[deep-link] auto-opened concierge booking:", bookingId);
-    } else if (!loading) {
-      // Data loaded but booking not found — show fallback
-      setTab("bookings");
-      setLastAppliedBookingId(bookingId);
-      const next = new URLSearchParams(searchParams);
-      next.delete("booking");
-      setSearchParams(next, { replace: true });
+    } else {
       toast.error("Booking not found or no longer available");
-      console.warn("[deep-link] concierge booking not found:", bookingId);
     }
   }, [orders, loading, searchParams, lastAppliedBookingId, setSearchParams]);
-
-  // Load landlord profile + preferred currency
-  useEffect(() => {
-    if (!orgId || !user) return;
-    supabase.from("landlord_profiles").select("slug").eq("org_id", orgId).eq("active", true).limit(1).maybeSingle()
-      .then(({ data }) => { if (data) setLandlordProfile(data); });
-    supabase.from("profiles").select("preferred_currency").eq("id", user.id).single()
-      .then(({ data }) => { if (data?.preferred_currency) setPreferredCurrency(data.preferred_currency); });
-  }, [orgId, user]);
-
-  const load = useCallback(async () => {
-    if (!orgId) return;
-    const [{ data: s }, { data: o }] = await Promise.all([
-      supabase.from("concierge_services").select("*").eq("org_id", orgId).order("sort_order"),
-      supabase.from("concierge_orders").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
-    ]);
-    setServices(s || []);
-    setOrders((o || []) as any[]);
-    setLoading(false);
-  }, [orgId]);
-
-  useEffect(() => { load(); }, [load]);
-
-  // Realtime sync for orders
-  useEffect(() => {
-    if (!orgId) return;
-    const channel = supabase
-      .channel('concierge-orders-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'concierge_orders', filter: `org_id=eq.${orgId}` }, () => {
-        load();
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [orgId, load]);
-
-  const save = async () => {
-    const resolvedOrgId = orgId || await ensureOrg();
-    if (!resolvedOrgId || !user || !form.title) {
-      if (!resolvedOrgId) toast.error("Impossible de créer votre espace. Veuillez vous reconnecter.");
-      return;
-    }
-    const slug = form.booking_slug || generateSlug(form.title);
-    const record: any = {
-      ...form, org_id: resolvedOrgId, user_id: user.id, booking_slug: slug,
-      photo_urls: form.photo_urls, time_slots: form.time_slots,
-      blocked_dates: form.blocked_dates, payment_methods: form.payment_methods,
-      bank_details: form.bank_details,
-    };
-    if (editingId) {
-      await supabase.from("concierge_services").update(record).eq("id", editingId);
-      toast.success(t("page.concierge.service_updated") || "Service updated");
-    } else {
-      await supabase.from("concierge_services").insert(record);
-      toast.success(t("page.concierge.service_created") || "Service created");
-    }
-    setShowForm(false); setEditingId(null); setForm(emptyForm);
-    await load();
-  };
 
   const startEdit = (s: any) => {
     setEditingId(s.id);
     setForm({
-      category: s.category, title: s.title, description: s.description || "",
-      price: s.price, currency: s.currency || "EUR", duration_minutes: s.duration_minutes,
-      provider_name: s.provider_name || "", provider_phone: s.provider_phone || "",
-      country: s.country || "", city: s.city || "", active: s.active,
+      category: s.category,
+      title: s.title,
+      description: s.description || "",
+      price: s.price,
+      currency: s.currency || "EUR",
+      duration_minutes: s.duration_minutes,
+      provider_name: s.provider_name || "",
+      provider_phone: s.provider_phone || "",
+      country: s.country || "",
+      city: s.city || "",
+      active: s.active,
       photo_urls: Array.isArray(s.photo_urls) ? s.photo_urls : s.photo_url ? [s.photo_url] : [],
-      location: s.location || "", conditions: s.conditions || "",
+      location: s.location || "",
+      conditions: s.conditions || "",
       booking_type: s.booking_type || "instant",
       payment_methods: Array.isArray(s.payment_methods) ? s.payment_methods : ["stripe"],
       bank_details: typeof s.bank_details === "object" ? s.bank_details : {},
@@ -221,81 +152,22 @@ const ConciergeServices = () => {
     setShowForm(true);
   };
 
-  const remove = async (id: string) => {
-    await supabase.from("concierge_services").delete().eq("id", id);
-    toast.success(t("page.concierge.service_deleted") || "Service deleted");
-    await load();
-  };
-
-  const updateOrderStatus = async (orderId: string, status: string) => {
-    const updates: any = { status };
-    if (status === "confirmed") updates.confirmed_at = new Date().toISOString();
-    if (status === "completed") updates.completed_at = new Date().toISOString();
-    if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
-    if (status === "refunded") updates.refunded_at = new Date().toISOString();
-    await supabase.from("concierge_orders").update(updates).eq("id", orderId);
-    toast.success(t("page.concierge.order_status_updated") || `Order ${status}`);
-
-    // Resolve related notifications — real action completed
-    try {
-      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
-      await resolveNotificationsForTarget("concierge_order", orderId, user?.id);
-    } catch (e) { console.error("[resolve-notif]", e); }
-
-    // Send notification via shared communication pipeline
-    const order = orders.find((o: any) => o.id === orderId);
-    if (order?.guest_email) {
-      const svc = services.find(s => s.id === order.service_id);
-      try {
-        const { sendCommunicationEvent, createDeepLinkMeta } = await import("@/lib/shared");
-        const meta = createDeepLinkMeta({
-          targetType: "concierge_order",
-          targetId: orderId,
-          module: "marketplace",
-          countryCode: svc?.country || "",
-          bookingId: orderId,
-          orgId: order.org_id,
-          propertyId: order.property_id,
-        });
-        await sendCommunicationEvent({
-          orgId: order.org_id,
-          senderId: user?.id,
-          recipientEmail: order.guest_email,
-          subject: `Order ${status}: ${svc?.title || "Service"}`,
-          message: `Your order for ${svc?.title || "Service"} on ${order.service_date || "—"} has been ${status}. Total: ${order.total_price} ${order.currency || "EUR"}.`,
-          category: "booking",
-          meta,
-        });
-      } catch (e) {
-        console.error("Status notification error:", e);
-      }
-    }
-
-    await load();
-  };
-
-  const markPaid = async (orderId: string) => {
-    await supabase.from("concierge_orders").update({ payment_status: "paid" } as any).eq("id", orderId);
-    toast.success(t("page.concierge.payment_confirmed") || "Payment confirmed");
-
-    // Resolve payment notifications — action completed
-    try {
-      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
-      await resolveNotificationsForTarget("concierge_order", orderId, user?.id);
-    } catch (e) { console.error("[resolve-notif]", e); }
-
-    await load();
+  const handleSave = async () => {
+    const ok = await saveService(form, editingId);
+    if (!ok) return;
+    setShowForm(false);
+    setEditingId(null);
+    setForm(emptyForm);
   };
 
   const catIcon = (cat: string) => SERVICE_CATEGORIES.find(c => c.value === cat)?.label?.split(" ")[0] || "📦";
-  const filtered = filterCategory ? services.filter(s => s.category === filterCategory) : services;
+  const filtered = filterCategory ? services.filter((s) => s.category === filterCategory) : services;
 
-  // Filtered orders by search
   const filteredOrders = useMemo(() => {
     if (!searchQuery) return orders;
     const q = searchQuery.toLowerCase();
     return orders.filter((o: any) => {
-      const svc = services.find(s => s.id === o.service_id);
+      const svc = services.find((s) => s.id === o.service_id);
       return (
         (o.guest_name || "").toLowerCase().includes(q) ||
         (o.guest_email || "").toLowerCase().includes(q) ||
@@ -307,28 +179,7 @@ const ConciergeServices = () => {
     });
   }, [orders, searchQuery, services]);
 
-  // KPIs — convert to preferred currency
-  const activeServices = services.filter(s => s.active).length;
-  const totalRevenue = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => {
-    const cur = (o.currency || "EUR").toUpperCase();
-    return s + Number(o.total_price || 0) * computeExchangeRate(cur, preferredCurrency);
-  }, 0);
-  const pendingOrders = orders.filter(o => o.status === "pending" || o.status === "awaiting_payment").length;
-  const commissionEarned = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => {
-    const cur = (o.currency || "EUR").toUpperCase();
-    return s + Number(o.commission_amount || 0) * computeExchangeRate(cur, preferredCurrency);
-  }, 0);
-  const completedCount = orders.filter(o => o.status === "completed").length;
-  const pendingPayments = orders.filter(o => o.payment_status !== "paid" && o.status !== "cancelled").length;
-
-  const handlePreferredCurrencyChange = async (cur: string) => {
-    setPreferredCurrency(cur);
-    if (user) {
-      await supabase.from("profiles").update({ preferred_currency: cur } as any).eq("id", user.id);
-    }
-  };
-
-  const showcaseUrl = landlordProfile?.slug ? `/showcase/${landlordProfile.slug}` : null;
+  const { activeServices, pendingOrders, totalRevenue, commissionEarned, completedCount, pendingPayments } = kpis;
 
   return (
     <DashboardLayout>
@@ -406,9 +257,9 @@ const ConciergeServices = () => {
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-1.5 mb-1">
                     <kpi.icon className={`h-4 w-4 shrink-0 ${kpi.cls}`} />
-                    <span className="text-2xs text-muted-foreground uppercase tracking-wider truncate">{kpi.label}</span>
+                    <span className="text-2xs text-muted-foreground uppercase tracking-wider whitespace-normal break-words leading-snug">{kpi.label}</span>
                   </div>
-                  <p className="text-lg sm:text-xl font-bold text-foreground tabular-nums truncate">{kpi.value}</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground tabular-nums whitespace-normal break-words leading-snug">{kpi.value}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -475,18 +326,18 @@ const ConciergeServices = () => {
                           )}
                           <Separator />
                           <div className="flex items-center gap-1 flex-wrap">
-                            <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => startEdit(s)}>
-                              <Edit className="h-3 w-3 mr-1" /> Edit
+                            <Button size="sm" variant="ghost" className="text-xs h-auto min-h-[2rem] whitespace-normal text-left" onClick={() => startEdit(s)}>
+                              <Edit className="h-3 w-3 mr-1 shrink-0" /> Edit
                             </Button>
                             {s.booking_slug && (
-                              <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => setShowLinks(s.id)}>
-                                <Link2 className="h-3 w-3 mr-1" /> Share
+                              <Button size="sm" variant="ghost" className="text-xs h-auto min-h-[2rem] whitespace-normal text-left" onClick={() => setShowLinks(s.id)}>
+                                <Link2 className="h-3 w-3 mr-1 shrink-0" /> Share
                               </Button>
                             )}
-                            <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => window.open(`/book/${s.booking_slug}`, "_blank")}>
-                              <Eye className="h-3 w-3 mr-1" /> Preview
+                            <Button size="sm" variant="ghost" className="text-xs h-auto min-h-[2rem] whitespace-normal text-left" onClick={() => window.open(`/book/${s.booking_slug}`, "_blank")}>
+                              <Eye className="h-3 w-3 mr-1 shrink-0" /> Preview
                             </Button>
-                            <Button size="sm" variant="ghost" className="text-xs h-7 text-destructive" onClick={() => remove(s.id)}>
+                            <Button size="sm" variant="ghost" className="text-xs h-auto min-h-[2rem] text-destructive" onClick={() => deleteService(s.id)}>
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
@@ -851,7 +702,7 @@ const ConciergeServices = () => {
 
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancel</Button>
-                <Button onClick={save} disabled={!form.title}>
+                <Button onClick={handleSave} disabled={!form.title}>
                   {editingId ? "Update" : "Create"} Service
                 </Button>
               </div>

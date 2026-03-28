@@ -173,7 +173,7 @@ export function useConciergeData() {
 
   return {
     services, orders, loading, preferredCurrency, showcaseUrl, kpis,
-    saveService, removeService, updateOrderStatus, markPaid,
+    load, saveService, removeService, updateOrderStatus, markPaid,
     handlePreferredCurrencyChange, emptyForm, creatingOrg,
   };
 }

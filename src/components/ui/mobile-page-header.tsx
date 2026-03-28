@@ -64,9 +64,9 @@ export function MobilePageHeader({
       )}
       {icon && <div className="shrink-0">{icon}</div>}
       <div className="flex-1 min-w-0">
-        <h1 className="text-base font-bold text-foreground truncate">{title}</h1>
+        <h1 className="text-base font-bold text-foreground whitespace-normal break-words leading-snug">{title}</h1>
         {subtitle && (
-          <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
+          <p className="text-[11px] text-muted-foreground whitespace-normal break-words leading-snug">{subtitle}</p>
         )}
       </div>
       {actions && (
