@@ -267,19 +267,19 @@ export function useRentalData(countryFilter?: string | null) {
           let landlordSignature = "";
           let stampUrl = "";
           try {
-            const { data: profile } = await supabase.from("profiles").select("signature_url, name").eq("id", user.id).single();
+            const profile = await rentalRepo.fetchProfile(user.id);
             if (profile?.signature_url) landlordSignature = profile.signature_url;
             if (profile?.name) landlordName = profile.name;
           } catch { /* ignore */ }
           try {
-            const { data: ownerProfile } = await supabase.from("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).maybeSingle();
+            const ownerProfile = await rentalRepo.fetchOwnerProfile(orgId);
             if (ownerProfile) {
               landlordName = ownerProfile.full_name || landlordName;
               landlordAddress = [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city].filter(Boolean).join(", ");
             }
           } catch { /* ignore */ }
           try {
-            const { data: orgData } = await supabase.from("orgs").select("stamp_url, name, address, postal_code, city").eq("id", orgId).single();
+            const orgData = await rentalRepo.fetchOrgInfo(orgId);
             if ((orgData as any)?.stamp_url) stampUrl = (orgData as any).stamp_url;
             if (!landlordName && orgData?.name) landlordName = orgData.name;
             if (!landlordAddress) landlordAddress = [orgData?.address, orgData?.postal_code, orgData?.city].filter(Boolean).join(", ");
@@ -312,14 +312,10 @@ export function useRentalData(countryFilter?: string | null) {
 
           const receiptTitle = t("hook.rental.receipt_title").replace("{name}", tenant.name).replace("{month}", call.month);
 
-          await supabase.from("documents").insert({
-            org_id: orgId,
-            user_id: user.id,
-            doc_type: "rent-receipt",
-            title: receiptTitle,
-            data_json: receiptData as any,
-            country: propCountryCode,
-            status: "final",
+          await rentalRepo.insertDocument({
+            org_id: orgId, user_id: user.id, doc_type: "rent-receipt",
+            title: receiptTitle, data_json: receiptData as any,
+            country: propCountryCode, status: "final",
           });
 
           // 3. Email receipt to tenant
@@ -327,27 +323,21 @@ export function useRentalData(countryFilter?: string | null) {
           if (tenantEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(tenantEmail)) {
             try {
               const pdfBase64 = pdfDoc.output("datauristring").split(",")[1];
-              await supabase.functions.invoke("send-email", {
-                body: {
-                  to: tenantEmail,
-                  subject: t("hook.rental.receipt_email_subject").replace("{month}", call.month),
-                  from_name: landlordName || "Easy-Locs",
-                  html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-                    <h2 style="color:#1a1a1a;text-align:center;">${t("hook.rental.receipt_email_heading")}</h2>
-                    <p style="color:#555;font-size:15px;">${t("hook.rental.receipt_email_body").replace("{month}", call.month)}</p>
-                    <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                      <p style="margin:4px 0;font-size:14px;color:#333;">${t("hook.rental.receipt_email_rent")} : <strong>${call.rent_amount}</strong></p>
-                      <p style="margin:4px 0;font-size:14px;color:#333;">${t("hook.rental.receipt_email_charges")} : <strong>${call.charges_amount}</strong></p>
-                      <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">${t("hook.rental.receipt_email_total")} : ${call.total_amount}</p>
-                    </div>
-                    <p style="color:#888;font-size:12px;text-align:center;">${t("hook.rental.receipt_email_footer")}</p>
-                  </div>`,
-                  attachments: [{
-                    content: pdfBase64,
-                    filename: `${receiptTitle.replace(/\s/g, "_")}.pdf`,
-                    type: "application/pdf",
-                  }],
-                },
+              await rentalRepo.invokeSendEmail({
+                to: tenantEmail,
+                subject: t("hook.rental.receipt_email_subject").replace("{month}", call.month),
+                from_name: landlordName || "Easy-Locs",
+                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+                  <h2 style="color:#1a1a1a;text-align:center;">${t("hook.rental.receipt_email_heading")}</h2>
+                  <p style="color:#555;font-size:15px;">${t("hook.rental.receipt_email_body").replace("{month}", call.month)}</p>
+                  <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+                    <p style="margin:4px 0;font-size:14px;color:#333;">${t("hook.rental.receipt_email_rent")} : <strong>${call.rent_amount}</strong></p>
+                    <p style="margin:4px 0;font-size:14px;color:#333;">${t("hook.rental.receipt_email_charges")} : <strong>${call.charges_amount}</strong></p>
+                    <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">${t("hook.rental.receipt_email_total")} : ${call.total_amount}</p>
+                  </div>
+                  <p style="color:#888;font-size:12px;text-align:center;">${t("hook.rental.receipt_email_footer")}</p>
+                </div>`,
+                attachments: [{ content: pdfBase64, filename: `${receiptTitle.replace(/\s/g, "_")}.pdf`, type: "application/pdf" }],
               });
               toast({ title: t("hook.rental.payment_registered"), description: t("hook.rental.receipt_generated_emailed") });
             } catch (emailErr) {
