@@ -3,7 +3,7 @@
  * Loads property-linked data: expenses, furniture, inventories, mode badges.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as rentalRepo from "@/repositories/rental-data.repository";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function useRentalPropertyDetail() {
@@ -16,26 +16,17 @@ export function useRentalPropertyDetail() {
 
   const loadDetail = useCallback(async (propertyId: string) => {
     if (!orgId) return;
-    const [{ data: exp }, { data: fur }, { data: inv }] = await Promise.all([
-      supabase.from("expenses").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("expense_date", { ascending: false }),
-      supabase.from("furniture_items").select("*").eq("org_id", orgId).eq("property_id", propertyId),
-      supabase.from("inventory_reports").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("report_date", { ascending: false }),
-    ]);
-    setExpenses(exp || []);
-    setFurniture(fur || []);
-    setInventories(inv || []);
+    const detail = await rentalRepo.fetchPropertyDetail(orgId, propertyId);
+    setExpenses(detail.expenses);
+    setFurniture(detail.furniture);
+    setInventories(detail.inventories);
   }, [orgId]);
 
   const loadModeBadges = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: seasonal }, { data: realEstate }] = await Promise.all([
-      supabase.from("public_listings").select("property_id").eq("org_id", orgId).eq("active", true),
-      supabase.from("real_estate_listings").select("property_id, listing_type").eq("org_id", orgId).eq("status", "active"),
-    ]);
-    setSeasonalPropertyIds(new Set((seasonal || []).map((s: any) => s.property_id).filter(Boolean)));
-    setSalePropertyIds(new Set(
-      (realEstate || []).filter((r: any) => r.listing_type === "sale").map((r: any) => r.property_id).filter(Boolean)
-    ));
+    const badges = await rentalRepo.fetchModeBadges(orgId);
+    setSeasonalPropertyIds(badges.seasonalIds);
+    setSalePropertyIds(badges.saleIds);
   }, [orgId]);
 
   // Aliases for backward compat
