@@ -69,6 +69,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     const normalized = rawTargetId.trim();
     if (!normalized) return "";
 
+    // ── 1. Try direct profile lookup (user UUID) ──
     const { data: directProfile } = await supabase
       .from("profiles")
       .select("id")
@@ -77,7 +78,27 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
     if (directProfile?.id && directProfile.id !== user?.id) return directProfile.id;
 
-    // Try org owner first
+    // ── 2. Try orbit_profiles_v2 by orbit_id (e.g. "orbit_abc123") ──
+    if (normalized.startsWith("orbit_")) {
+      const { data: orbitProfile } = await (supabase as any)
+        .from("orbit_profiles_v2")
+        .select("id")
+        .eq("orbit_id", normalized)
+        .maybeSingle();
+
+      if (orbitProfile?.id && orbitProfile.id !== user?.id) return orbitProfile.id;
+    }
+
+    // ── 3. Try orbit_profiles_v2 by user id (fallback) ──
+    const { data: orbitByUserId } = await (supabase as any)
+      .from("orbit_profiles_v2")
+      .select("id")
+      .eq("id", normalized)
+      .maybeSingle();
+
+    if (orbitByUserId?.id && orbitByUserId.id !== user?.id) return orbitByUserId.id;
+
+    // ── 4. Try org owner ──
     const { data: ownerMembership } = await supabase
       .from("org_members")
       .select("user_id, role")
@@ -90,7 +111,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       return ownerMembership.user_id;
     }
 
-    // Try org.owner_user_id
+    // ── 5. Try org.owner_user_id ──
     const { data: org } = await supabase
       .from("orgs")
       .select("owner_user_id")
@@ -101,7 +122,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       return org.owner_user_id;
     }
 
-    // Fallback: any OTHER member of the org (skip self)
+    // ── 6. Fallback: any OTHER member of the org (skip self) ──
     const { data: otherMembers } = await supabase
       .from("org_members")
       .select("user_id")
@@ -112,8 +133,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
     if (otherMembers?.user_id) return otherMembers.user_id;
 
-    // No other member found — return empty to trigger clear error
-    console.warn("[CallProvider] no callable target found (all resolved to self)", { rawTarget: rawTargetId, callerId: user?.id });
+    console.warn("[CallProvider] no callable target found", { rawTarget: rawTargetId, callerId: user?.id });
     return "";
   }, [user?.id]);
 
