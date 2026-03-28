@@ -18,7 +18,7 @@ export interface AssignInput {
 
 export async function assignDriver(input: AssignInput): Promise<{ success: boolean; error?: string }> {
   const flow = startFlow("delivery", "assign_driver");
-  trace("assign", "input", input);
+  trace("assign", "input", { ...input });
 
   // Check job exists and is assignable
   const checkStep = addStep(flow, "check_job");
