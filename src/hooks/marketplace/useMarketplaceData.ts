@@ -1,38 +1,31 @@
 /**
- * useMarketplaceData — Extracted data-fetching for ActivitiesMarketplace.
- * Queries providers, services, bookings + realtime subscription.
+ * useMarketplaceData — Data-fetching for ActivitiesMarketplace via repository.
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { computeExchangeRate } from "@/hooks/useCurrencyConversion";
+import {
+  fetchMyProvider, fetchMyServices, fetchMyBookings,
+  fetchPublicProviders,
+} from "@/repositories/marketplace.repository";
 
 export function useMarketplaceData(orgId: string | undefined, displayCurrency: string) {
   const { data: myProvider } = useQuery({
     queryKey: ["my_marketplace_provider", orgId],
-    queryFn: async () => {
-      const { data } = await supabase.from("marketplace_providers").select("*").eq("org_id", orgId!).limit(1).single();
-      return data;
-    },
+    queryFn: () => fetchMyProvider(orgId!),
     enabled: !!orgId,
   });
 
   const { data: myServices = [] } = useQuery({
     queryKey: ["my_marketplace_services", myProvider?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("marketplace_services").select("*").eq("provider_id", myProvider!.id).order("sort_order");
-      return data || [];
-    },
+    queryFn: () => fetchMyServices(myProvider!.id),
     enabled: !!myProvider?.id,
   });
 
   const { data: myBookings = [] } = useQuery({
     queryKey: ["my_marketplace_bookings", orgId],
-    queryFn: async () => {
-      const { data } = await supabase.from("marketplace_bookings").select("*").eq("org_id", orgId!).order("created_at", { ascending: false });
-      return data || [];
-    },
+    queryFn: () => fetchMyBookings(orgId!),
     enabled: !!orgId,
   });
 
@@ -46,10 +39,7 @@ export function useMarketplaceData(orgId: string | undefined, displayCurrency: s
 
   const { data: allProviders = [] } = useQuery({
     queryKey: ["browse_marketplace_providers"],
-    queryFn: async () => {
-      const { data } = await supabase.rpc("get_public_marketplace_providers", { p_active_only: true });
-      return (data || []) as any[];
-    },
+    queryFn: () => fetchPublicProviders(),
   });
 
   const providersMap = useMemo(() => {
@@ -76,7 +66,6 @@ export function useMarketplaceData(orgId: string | undefined, displayCurrency: s
   }, [revenueByCurrency, displayCurrency]);
 
   const paidBookings = useMemo(() => myBookings.filter((b: any) => b.payment_confirmed), [myBookings]);
-
   const totalBookings = myBookings.length;
   const pendingBookings = myBookings.filter((b: any) => b.status === "pending").length;
 
