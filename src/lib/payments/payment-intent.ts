@@ -63,6 +63,16 @@ export async function createPaymentIntent(input: PaymentIntentInput): Promise<Pa
     }
 
     completeStep(flow, createStep, { intentId: data?.id });
+
+    platformBus.emit("payment:intent_created", {
+      intentId: data?.id, amount: input.amount, method: input.paymentMethod,
+    }, "payments");
+
+    trackPropagation({
+      flowId: flow.flowId, domain: "payments", action: "create_intent",
+      dbWriteSuccess: true, eventEmitted: "payment:intent_created", cacheInvalidated: [],
+    });
+
     reportHealth("payments", "ok", flow.totalLatencyMs);
     endFlow(flow, "success");
     trace("intent.create", "output", { intentId: data?.id });
