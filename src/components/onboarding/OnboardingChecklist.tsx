@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as checklistRepo from "@/repositories/onboarding-checklist.repository";
 import { useI18n } from "@/lib/i18n";
 
 interface ChecklistItem {
@@ -50,24 +50,7 @@ const OnboardingChecklist = () => {
       return;
     }
 
-    Promise.all([
-      supabase.from("properties").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("tenants").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("owner_profiles").select("id").eq("org_id", orgId).limit(1).maybeSingle(),
-      supabase.from("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      (supabase as any).from("chat_messages_v2").select("id", { count: "exact", head: true }),
-    ]).then(([props, tenants, docs, owner, payments, messages]) => {
-      setCounts({
-        properties: props.count ?? 0,
-        tenants: tenants.count ?? 0,
-        documents: docs.count ?? 0,
-        ownerProfile: !!owner.data,
-        payments: payments.count ?? 0,
-        messages: messages.count ?? 0,
-      });
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    checklistRepo.fetchChecklistCounts(orgId).then(setCounts).catch(() => {}).finally(() => setLoading(false));
   }, [orgId, user]);
 
   const items: ChecklistItem[] = useMemo(() => [

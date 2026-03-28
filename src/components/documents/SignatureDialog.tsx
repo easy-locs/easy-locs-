@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import * as docRepo from "@/repositories/documents.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import SignaturePad from "@/components/ui/SignaturePad";
@@ -26,38 +26,27 @@ const SignatureDialog = ({ open, onOpenChange, documentId, documentTitle, signer
     if (!signature || !user) return;
     setSaving(true);
     try {
-      // Upload signature image
       const blob = await (await fetch(signature)).blob();
       const path = `signatures/${documentId}_${signerRole}_${Date.now()}.png`;
-      await supabase.storage.from("rental-docs").upload(path, blob, { contentType: "image/png" });
+      await docRepo.uploadSignature(path, blob);
 
-      // Update document
       const updateData = signerRole === "owner"
         ? { signed_by_owner_at: new Date().toISOString(), owner_signature_url: path }
         : { signed_by_tenant_at: new Date().toISOString(), tenant_signature_url: path };
+      await docRepo.updateDocument(documentId, updateData);
 
-      await supabase.from("documents").update(updateData).eq("id", documentId);
-
-      // Audit log
-      await supabase.from("audit_logs").insert({
-        user_id: user.id,
-        org_id: orgId,
-        action: "document_signed",
+      await docRepo.insertAuditLog({
+        user_id: user.id, org_id: orgId, action: "document_signed",
         metadata_json: { document_id: documentId, signer_role: signerRole, title: documentTitle },
       });
 
-      // Notification
-      if (orgId) {
-        const notifTitle = signerRole === "owner" ? "✍️ Document signé par le bailleur" : "✍️ Document signé par le locataire";
-        // Notify the other party
-        if (signerRole === "tenant") {
-          const { data: org } = await supabase.from("orgs").select("owner_user_id").eq("id", orgId).single();
-          if (org?.owner_user_id) {
-            await supabase.from("app_notifications").insert({
-              user_id: org.owner_user_id, org_id: orgId, type: "document",
-              title: notifTitle, message: `${documentTitle} a été signé.`, link: "/dashboard/documents",
-            });
-          }
+      if (orgId && signerRole === "tenant") {
+        const ownerUserId = await docRepo.fetchOrgOwnerUserId(orgId);
+        if (ownerUserId) {
+          await docRepo.insertNotification({
+            user_id: ownerUserId, org_id: orgId, type: "document",
+            title: "✍️ Document signé par le locataire", message: `${documentTitle} a été signé.`, link: "/dashboard/documents",
+          });
         }
       }
 
