@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useParams, useSearchParams } from "react-router-dom";
 import {
   fetchServiceBySlug,
