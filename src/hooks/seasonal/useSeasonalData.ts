@@ -221,7 +221,7 @@ export function useSeasonalData() {
     }
     const { error } = await supabase.from("seasonal_bookings").insert(newBookings);
     if (error) throw error;
-    platformBus.emit(APP_EVENTS.SEASONAL_ICAL_SYNCED as any, { count: newBookings.length });
+    platformBus.emit(APP_EVENTS.SEASONAL_ICAL_SYNCED as any, { count: newBookings.length }, "seasonal");
     await load();
     return newBookings.length;
   }, [orgId, user, bookings, t, toast, load]);
