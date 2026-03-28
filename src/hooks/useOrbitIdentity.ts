@@ -35,6 +35,16 @@ export function requireOrbitIdentity(): OrbitIdentity {
   return identity;
 }
 
+/**
+ * React hook — subscribes reactively to orbit profile changes.
+ * Use in components/pages instead of direct orbitStore access.
+ */
+export function useOrbitIdentity(): OrbitIdentity | null {
+  const profile = useOrbitStore((s) => s.profile);
+  if (!profile) return null;
+  return mapProfile(profile);
+}
+
 function mapProfile(p: OrbitProfileV2): OrbitIdentity {
   return {
     userId: p.id,

@@ -11,7 +11,7 @@ import {
   Receipt, Users, Scale,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -117,7 +117,7 @@ const fadeUp = {
 export default function SettingsHome() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const profile = useOrbitStore((s) => s.profile);
+  const profile = useOrbitIdentity();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

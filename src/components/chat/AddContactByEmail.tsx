@@ -2,7 +2,7 @@ import { useState } from "react";
 import { findUserByEmail } from "@/lib/orbit/findUserByEmail";
 import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 import { upsertOrbitContact } from "@/lib/orbit/orbit-contacts-service";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useAuth } from "@/contexts/AuthContext";
 import { Search, AlertCircle, MessageCircle, UserPlus } from "lucide-react";
 import { toast } from "sonner";
@@ -21,7 +21,7 @@ export function AddContactByEmail(props: {
   onSelect?: (user: FoundUser) => void;
   onSaved?: () => void;
 }) {
-  const myOrbit = useOrbitStore((s) => s.profile);
+  const myOrbit = useOrbitIdentity();
   const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [result, setResult] = useState<FoundUser | null>(null);
