@@ -25,12 +25,7 @@ const Collaboration = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("org_members").select("org_id").eq("user_id", user!.id).limit(1).single();
-      if (!data) return null;
-      const { data: o } = await supabase.from("orgs").select("*").eq("id", data.org_id).single();
-      return o;
-    },
+    queryFn: () => collabRepo.fetchUserOrgDetails(user!.id),
     enabled: !!user,
   });
 
@@ -38,46 +33,18 @@ const Collaboration = () => {
 
   const { data: members = [] } = useQuery({
     queryKey: ["org_members", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("org_members").select("id, user_id, role, created_at").eq("org_id", org!.id);
-      if (!data) return [];
-      const profiles = await Promise.all(
-        data.map(async (m) => {
-          const { data: p } = await supabase.from("profiles").select("email, name").eq("id", m.user_id).single();
-          return { ...m, email: p?.email || "", name: p?.name || "" };
-        })
-      );
-      return profiles;
-    },
+    queryFn: () => collabRepo.fetchOrgMembers(org!.id),
     enabled: !!org,
   });
 
   const { data: invitations = [] } = useQuery({
     queryKey: ["collab_invitations", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("collaboration_invitations" as any)
-        .select("*")
-        .eq("org_id", org!.id)
-        .order("created_at", { ascending: false });
-      return (data || []) as unknown as Array<{
-        id: string; email: string; role: string; status: string;
-        created_at: string; expires_at: string;
-      }>;
-    },
+    queryFn: () => collabRepo.fetchCollabInvitations(org!.id),
     enabled: !!org,
   });
 
   const inviteMut = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from("collaboration_invitations" as any).insert({
-        org_id: org!.id,
-        invited_by: user!.id,
-        email,
-        role,
-      });
-      if (error) throw error;
-    },
+    mutationFn: () => collabRepo.insertInvitation(org!.id, user!.id, email, role),
     onSuccess: () => {
       toast.success("Invitation sent!");
       qc.invalidateQueries({ queryKey: ["collab_invitations"] });
@@ -89,10 +56,7 @@ const Collaboration = () => {
   });
 
   const cancelMut = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("collaboration_invitations" as any).delete().eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => collabRepo.deleteInvitation(id),
     onSuccess: () => {
       toast.success("Invitation cancelled");
       qc.invalidateQueries({ queryKey: ["collab_invitations"] });
@@ -100,10 +64,7 @@ const Collaboration = () => {
   });
 
   const removeMut = useMutation({
-    mutationFn: async (memberId: string) => {
-      const { error } = await supabase.from("org_members").delete().eq("id", memberId);
-      if (error) throw error;
-    },
+    mutationFn: (memberId: string) => collabRepo.removeOrgMember(memberId),
     onSuccess: () => {
       toast.success("Member removed");
       qc.invalidateQueries({ queryKey: ["org_members"] });
@@ -111,10 +72,7 @@ const Collaboration = () => {
   });
 
   const updateRoleMut = useMutation({
-    mutationFn: async ({ memberId, newRole }: { memberId: string; newRole: string }) => {
-      const { error } = await supabase.from("org_members").update({ role: newRole } as any).eq("id", memberId);
-      if (error) throw error;
-    },
+    mutationFn: ({ memberId, newRole }: { memberId: string; newRole: string }) => collabRepo.updateOrgMemberRole(memberId, newRole),
     onSuccess: () => {
       toast.success("Role updated");
       qc.invalidateQueries({ queryKey: ["org_members"] });
