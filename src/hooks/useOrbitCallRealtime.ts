@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { reportHealth } from "@/lib/runtime/health-aggregator";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export function useOrbitCallRealtime(params: {
   currentOrbitId?: string | null;

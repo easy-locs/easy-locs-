@@ -142,21 +142,31 @@ export function CallProvider({ children }: { children: ReactNode }) {
     startingCallRef.current = true;
     setIsStartingCall(true);
 
+    const flow = startFlow("orbit", "outgoingCall");
     try {
+      const authStep = addStep(flow, "auth_check");
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData?.user?.id) {
+        failStep(flow, authStep, "session_expired");
+        endFlow(flow, "failed");
         toast.error(t("call.error.session_expired") || "Session expired.");
         return;
       }
+      completeStep(flow, authStep);
 
+      const resolveStep = addStep(flow, "resolve_target");
       const receiverUserId = await resolveCallTarget(opts.targetId, authData.user.id);
       if (!receiverUserId || receiverUserId === authData.user.id) {
+        failStep(flow, resolveStep, "no_callable_target");
+        endFlow(flow, "failed");
         toast.error(receiverUserId === authData.user.id
           ? "No other team member available."
           : "Could not find a callable contact.");
         return;
       }
+      completeStep(flow, resolveStep, { receiverUserId });
 
+      const rpcStep = addStep(flow, "db_write");
       const result = await createCallRpc({
         callerUserId: authData.user.id, receiverUserId,
         threadId: opts.threadId, contextType: opts.contextType,
@@ -165,9 +175,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
       });
 
       if (!result.success || !result.callId) {
+        failStep(flow, rpcStep, result.error || "rpc_failed");
+        endFlow(flow, "failed");
         toast.error(result.error || "Unable to start call");
         return;
       }
+      completeStep(flow, rpcStep, { callId: result.callId });
 
       const manager = new CallManager({
         callId: result.callId, userId: authData.user.id, role: "caller",
@@ -180,8 +193,16 @@ export function CallProvider({ children }: { children: ReactNode }) {
       setShowCallDialog(true);
       activeCallRef.current = { callId: result.callId, threadId: opts.threadId, orgId: opts.targetId, contextId: opts.contextId };
       platformBus.emit("call:started", { callId: result.callId, role: "caller", isVideo: opts.isVideo || false, peerName: opts.peerName }, "orbit");
+      
+      const mediaStep = addStep(flow, "media_start");
       await manager.startCall(opts.isVideo || false);
-    } catch (err) {
+      completeStep(flow, mediaStep);
+      
+      reportHealth("orbit", "ok");
+      endFlow(flow, "success");
+    } catch (err: any) {
+      reportHealth("orbit", "degraded", undefined, err?.message);
+      endFlow(flow, "failed");
       console.error("[CallProvider] startCall error:", err);
     } finally {
       startingCallRef.current = false;
