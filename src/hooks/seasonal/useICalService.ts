@@ -1,22 +1,15 @@
 /**
  * useICalService — Atomic: iCal import/export for seasonal bookings.
+ * Delegates DB writes to seasonal.repository.ts (single source of truth).
  */
 import { useCallback, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as seasonalRepo from "@/repositories/seasonal.repository";
 
 interface Booking {
-  id: string;
-  property_id: string;
-  guest_name: string;
-  guest_email: string;
-  guest_phone: string;
-  check_in: string;
-  check_out: string;
-  total_price: number;
-  cleaning_fee: number;
-  deposit_amount: number;
-  status: string;
-  notes: string;
+  id: string; property_id: string; guest_name: string; guest_email: string;
+  guest_phone: string; check_in: string; check_out: string;
+  total_price: number; cleaning_fee: number; deposit_amount: number;
+  status: string; notes: string;
 }
 
 interface Property { id: string; label: string; }
@@ -78,12 +71,9 @@ export function useICalService(orgId: string | null, userId: string | undefined)
         total_price: 0, cleaning_fee: 0, deposit_amount: 0, guest_email: "", guest_phone: "", notes: "Imported via iCal", status: "confirmed",
       }));
       if (newBookings.length === 0) return 0;
-      const { error } = await supabase.from("seasonal_bookings").insert(newBookings);
-      if (error) throw error;
+      await seasonalRepo.insertSeasonalBookings(newBookings);
       return newBookings.length;
-    } finally {
-      setImporting(false);
-    }
+    } finally { setImporting(false); }
   }, [orgId, userId]);
 
   const importFromFile = useCallback(async (file: File, bookings: Booking[], defaultPropertyId: string): Promise<number> => {
@@ -100,12 +90,9 @@ export function useICalService(orgId: string | null, userId: string | undefined)
         total_price: 0, cleaning_fee: 0, deposit_amount: 0, guest_email: "", guest_phone: "", notes: "Imported via iCal", status: "confirmed",
       }));
       if (newBookings.length === 0) return 0;
-      const { error } = await supabase.from("seasonal_bookings").insert(newBookings);
-      if (error) throw error;
+      await seasonalRepo.insertSeasonalBookings(newBookings);
       return newBookings.length;
-    } finally {
-      setImporting(false);
-    }
+    } finally { setImporting(false); }
   }, [orgId, userId]);
 
   return { importing, exportIcal, copyIcalContent, importFromUrl, importFromFile };
