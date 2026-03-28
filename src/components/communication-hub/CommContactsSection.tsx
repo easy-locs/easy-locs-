@@ -450,17 +450,10 @@ export default function CommContactsSection() {
         await sendInviteEmail(
           contact.email.trim(),
           `${user?.email || "Un utilisateur"} vous invite sur Easy-Locs`,
-          `Rejoignez la plateforme pour communiquer directement.`,
+          `Bonjour ${contact.name},\n\nVous avez été invité(e) à rejoindre Easy-Locs pour communiquer directement via l'application.\n\nCréez votre compte gratuit pour échanger des messages et passer des appels sécurisés.`,
           inviteUrl,
-          "Rejoindre Easy-Locs",
+          "Créer mon compte",
         );
-              message: `Bonjour ${contact.name},\n\nVous avez été invité(e) à rejoindre Easy-Locs pour communiquer directement via l'application.\n\nCréez votre compte gratuit pour échanger des messages et passer des appels sécurisés.`,
-              cta_url: inviteUrl,
-              cta_label: "Créer mon compte",
-            },
-            locale: "fr",
-          },
-        });
         toast.success(`Invitation envoyée par email à ${contact.name}`);
 
         // Update last_contacted_at
