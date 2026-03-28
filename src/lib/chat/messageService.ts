@@ -134,6 +134,34 @@ async function notifyConversationParticipants(ctx: {
   }
 }
 
+/**
+ * Send a system-type message (booking created, lease started, etc.)
+ */
+export async function sendSystemMessage(input: {
+  conversationId: string;
+  senderOrbitId?: string | null;
+  body: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const userId = await getCurrentUserId();
+  const senderOrbitId = input.senderOrbitId || await resolveOrbitId(userId);
+
+  const { error } = await (supabase as any)
+    .from("chat_messages_v2")
+    .insert({
+      conversation_id: input.conversationId,
+      sender_user_id: userId,
+      sender_orbit_id: senderOrbitId,
+      type: "system",
+      body: input.body,
+      metadata: input.metadata ?? null,
+    });
+
+  if (error) {
+    console.error("sendSystemMessage error", error);
+  }
+}
+
 export async function createCallSystemMessage(input: {
   conversationId: string;
   senderOrbitId?: string | null;

@@ -7,7 +7,8 @@ import type {
 } from "@/lib/types/property-management";
 import { useListingStore } from "@/stores/listingStore";
 import { useWalletStore } from "@/stores/walletStore";
-import { useChatStore } from "@/stores/chatStore";
+import { useOrbitThreadStore } from "@/stores/orbit/thread.store";
+import { sendSystemMessage } from "@/lib/chat/messageService";
 
 type CreateUnitInput = {
   listingId: string;
@@ -120,7 +121,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       leases: [lease, ...state.leases],
     }));
 
-    const conversation = await useChatStore.getState().createConversation({
+    const conversation = await useOrbitThreadStore.getState().createThread({
       type: "property_management",
       participants: [
         { orbitId: input.ownerOrbitId, role: "owner" },
@@ -131,10 +132,9 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       leaseId: lease.id,
     });
 
-    await useChatStore.getState().sendMessage({
+    await sendSystemMessage({
       conversationId: conversation.id,
       senderOrbitId: input.ownerOrbitId,
-      type: "system",
       body: "Lease conversation created",
       metadata: {
         leaseId: lease.id,
