@@ -10,6 +10,7 @@ export type GeoPoint = {
 };
 
 export type GeoPermission = "unknown" | "granted" | "denied" | "prompt";
+export type GeoSource = "gps" | "ip" | "fallback" | "manual";
 
 type GeoState = {
   ready: boolean;
@@ -17,8 +18,12 @@ type GeoState = {
   permission: GeoPermission;
   tracking: boolean;
   point: GeoPoint | null;
+  source: GeoSource;
+  city: string | null;
+  country: string | null;
   error: string | null;
   watchId: number | null;
+  lastUpdated: number | null;
   setStatePartial: (data: Partial<GeoState>) => void;
 };
 
@@ -28,7 +33,11 @@ export const useGeoStore = create<GeoState>((set) => ({
   permission: "unknown",
   tracking: false,
   point: null,
+  source: "fallback",
+  city: null,
+  country: null,
   error: null,
   watchId: null,
-  setStatePartial: (data) => set(data),
+  lastUpdated: null,
+  setStatePartial: (data) => set((prev) => ({ ...prev, ...data, lastUpdated: Date.now() })),
 }));
