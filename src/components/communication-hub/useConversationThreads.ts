@@ -30,7 +30,9 @@ export function useConversationThreads() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadThreads = useCallback(async () => {
+    console.log("%c[TRACE][THREADS] STEP 1 — loadThreads called", "color:cyan;font-weight:bold", { userId: user?.id, orgId, hasUser: !!user });
     if (!user?.id || loadingRef.current) {
+      console.warn("%c[TRACE][THREADS] ❌ BLOCKED — no user or already loading", "color:orange;font-weight:bold", { userId: user?.id, loading: loadingRef.current });
       setThreads([]);
       setStats({ unread: 0, pending_docs: 0, overdue: 0, maintenance: 0 });
       setLoading(false);
