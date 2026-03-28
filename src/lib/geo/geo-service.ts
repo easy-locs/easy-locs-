@@ -1,7 +1,10 @@
 import { useGeoStore, type GeoPermission } from "./geo-store";
+import { getIPLocation } from "./ip-fallback";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 class GeoService {
   private _retryTimer: ReturnType<typeof setTimeout> | null = null;
+  private _fallbackApplied = false;
 
   private async probePermission(): Promise<GeoPermission | null> {
     try {
@@ -15,6 +18,64 @@ class GeoService {
     }
   }
 
+  /** Apply IP-based fallback location */
+  private async applyFallback(reason: string) {
+    if (this._fallbackApplied) return;
+    this._fallbackApplied = true;
+
+    try {
+      const ip = await getIPLocation();
+      const current = useGeoStore.getState();
+      // Don't overwrite a real GPS fix
+      if (current.point && current.source === "gps") return;
+
+      useGeoStore.getState().setStatePartial({
+        ready: true,
+        loading: false,
+        point: {
+          lat: ip.lat,
+          lng: ip.lng,
+          accuracy: null,
+          heading: null,
+          speed: null,
+          timestamp: Date.now(),
+        },
+        source: ip.source,
+        city: ip.city,
+        country: ip.country,
+        error: reason,
+      });
+
+      platformBus.emit("geo.position.updated", {
+        lat: ip.lat,
+        lng: ip.lng,
+        source: "ip",
+        city: ip.city,
+        country: ip.country,
+      }, "geo-service");
+    } catch {
+      // Even IP failed — use hardcoded default
+      const { getDefaultFallback } = await import("./ip-fallback");
+      const fb = getDefaultFallback();
+      useGeoStore.getState().setStatePartial({
+        ready: true,
+        loading: false,
+        point: {
+          lat: fb.lat,
+          lng: fb.lng,
+          accuracy: null,
+          heading: null,
+          speed: null,
+          timestamp: Date.now(),
+        },
+        source: "fallback",
+        city: fb.city,
+        country: fb.country,
+        error: reason,
+      });
+    }
+  }
+
   async start(allowPrompt = false) {
     const state = useGeoStore.getState();
     if (state.tracking) return;
@@ -25,6 +86,7 @@ class GeoService {
         ready: true,
         loading: false,
       });
+      await this.applyFallback("Geolocation not supported");
       return;
     }
 
@@ -37,6 +99,12 @@ class GeoService {
         permission,
         error: permission === "denied" ? "Location access denied" : null,
       });
+
+      platformBus.emit("geo.permission.changed", { permission }, "geo-service");
+
+      if (permission === "denied") {
+        await this.applyFallback("Location access denied");
+      }
       return;
     }
 
@@ -47,11 +115,13 @@ class GeoService {
 
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
+        this._fallbackApplied = false; // GPS recovered
         useGeoStore.getState().setStatePartial({
           ready: true,
           loading: false,
           permission: "granted",
           tracking: true,
+          source: "gps",
           point: {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
@@ -62,6 +132,15 @@ class GeoService {
           },
           error: null,
         });
+
+        platformBus.emit("geo.position.updated", {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+          source: "gps",
+        }, "geo-service");
+        platformBus.emit("geo.permission.changed", { permission: "granted" }, "geo-service");
+
         // Clear any pending retry
         if (this._retryTimer) {
           clearTimeout(this._retryTimer);
@@ -86,6 +165,11 @@ class GeoService {
           permission,
           error: err.message || "Location error",
         });
+
+        platformBus.emit("geo.permission.changed", { permission }, "geo-service");
+
+        // Apply fallback for denied or timeout
+        void this.applyFallback(err.message || "Location error");
 
         // Auto-retry after 3s for non-denial errors
         if (err.code !== 1 && !this._retryTimer) {
@@ -124,6 +208,7 @@ class GeoService {
   /** Force a fresh GPS attempt — stops current watch and restarts */
   forceRetry(allowPrompt = true) {
     this.stop();
+    this._fallbackApplied = false;
     const current = useGeoStore.getState();
     // Only reset permission if not already granted (avoid losing valid state)
     if (current.permission !== "granted") {
@@ -139,6 +224,10 @@ class GeoService {
 
   getCurrent() {
     return useGeoStore.getState().point;
+  }
+
+  getSource() {
+    return useGeoStore.getState().source;
   }
 }
 

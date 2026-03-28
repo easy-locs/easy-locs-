@@ -6,6 +6,7 @@
 import { useEffect, useRef } from "react";
 import { useRiderDispatchStore } from "@/stores/riderDispatchStore";
 import { useTripTrackingStore } from "@/stores/tripTrackingStore";
+import { useGeoStore } from "@/lib/geo/geo-store";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { MapPin, Navigation, Truck, Play, CheckCircle2, Locate, Package } from "lucide-react";
@@ -27,19 +28,14 @@ export function DriverLiveTripCard({ jobId, job }: { jobId: string; job: any }) 
     startTracking(jobId);
 
     const pushGeo = () => {
-      if (!navigator.geolocation) return;
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          pushRiderLocation(
-            jobId,
-            pos.coords.latitude,
-            pos.coords.longitude,
-            pos.coords.heading ?? undefined,
-            pos.coords.speed ? pos.coords.speed * 3.6 : undefined
-          );
-        },
-        () => {},
-        { enableHighAccuracy: true, maximumAge: 5000 }
+      const point = useGeoStore.getState().point;
+      if (!point) return;
+      pushRiderLocation(
+        jobId,
+        point.lat,
+        point.lng,
+        point.heading ?? undefined,
+        point.speed ? point.speed * 3.6 : undefined
       );
     };
 

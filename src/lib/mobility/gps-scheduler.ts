@@ -13,6 +13,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { eventBus } from "@/lib/core/event-bus";
+import { useGeoStore } from "@/lib/geo/geo-store";
 
 export type GPSPhase = "idle" | "assigned_far" | "assigned_close" | "in_progress" | "background";
 
@@ -120,22 +121,29 @@ async function pushLocation() {
   }
 }
 
+let _geoUnsub: (() => void) | null = null;
+
 function startGeoWatch() {
-  if (state.watchId != null || !navigator.geolocation) return;
-  state.watchId = navigator.geolocation.watchPosition(
-    (pos) => {
-      state.lastLat = pos.coords.latitude;
-      state.lastLng = pos.coords.longitude;
-    },
-    () => { /* GPS error — signal degrades */ },
-    { enableHighAccuracy: true, maximumAge: 5000 }
-  );
+  if (_geoUnsub) return;
+  // Subscribe to canonical geoStore instead of raw navigator.geolocation
+  _geoUnsub = useGeoStore.subscribe((gs) => {
+    if (gs.point) {
+      state.lastLat = gs.point.lat;
+      state.lastLng = gs.point.lng;
+    }
+  });
+  // Seed with current value
+  const cur = useGeoStore.getState().point;
+  if (cur) {
+    state.lastLat = cur.lat;
+    state.lastLng = cur.lng;
+  }
 }
 
 function stopGeoWatch() {
-  if (state.watchId != null) {
-    navigator.geolocation.clearWatch(state.watchId);
-    state.watchId = null;
+  if (_geoUnsub) {
+    _geoUnsub();
+    _geoUnsub = null;
   }
 }
 
