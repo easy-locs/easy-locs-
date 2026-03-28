@@ -1,13 +1,6 @@
 /**
  * OrgMemberManager — Manage organization members, roles, invitations.
  * PASS55 Block H: Admin / Audit
- *
- * Features:
- * - List all org members with roles
- * - Change member roles (owner/admin/agent/staff/accountant/member)
- * - Remove members
- * - Invite new members
- * - RBAC: only admin+ can manage
  */
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,13 +9,16 @@ import {
   Crown, ShieldCheck, UserCog, Briefcase, Calculator, User,
   Mail, Check, X, ChevronDown,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
+import {
+  fetchOrgMembers, fetchProfilesByIds, changeOrgMemberRole,
+  removeOrgMember, sendCollaborationInvite,
+} from "@/repositories/admin.repository";
 
 const ROLES = [
   { value: "owner", label: "Owner", icon: Crown, color: "hsl(38 92% 50%)" },
@@ -56,25 +52,15 @@ export default function OrgMemberManager() {
 
   const canManage = myRole === "owner" || myRole === "admin";
 
-  const fetchMembers = useCallback(async () => {
+  const fetchMembersData = useCallback(async () => {
     if (!orgId) return;
     setLoading(true);
 
-    const { data: membersData } = await supabase
-      .from("org_members")
-      .select("id, user_id, role, created_at")
-      .eq("org_id", orgId)
-      .order("created_at");
+    const membersData = await fetchOrgMembers(orgId);
+    if (!membersData.length) { setLoading(false); return; }
 
-    if (!membersData) { setLoading(false); return; }
-
-    // Fetch profiles
     const userIds = membersData.map((m) => m.user_id);
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, name, email, first_name, last_name")
-      .in("id", userIds);
-
+    const profiles = await fetchProfilesByIds(userIds);
     const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
 
     const enriched = membersData.map((m) => ({
@@ -89,58 +75,53 @@ export default function OrgMemberManager() {
     setLoading(false);
   }, [orgId, user?.id]);
 
-  useEffect(() => { fetchMembers(); }, [fetchMembers]);
+  useEffect(() => { fetchMembersData(); }, [fetchMembersData]);
 
   const changeRole = async (memberId: string, newRole: OrgRole) => {
-    const { error } = await supabase
-      .from("org_members")
-      .update({ role: newRole } as any)
-      .eq("id", memberId);
-
-    if (error) {
+    try {
+      await changeOrgMemberRole(memberId, newRole);
+      setMembers((prev) => prev.map((m) => (m.id === memberId ? { ...m, role: newRole } : m)));
+      setRoleMenuId(null);
+      haptic("success");
+      toast.success(`Rôle mis à jour: ${ROLES.find((r) => r.value === newRole)?.label}`);
+    } catch {
       toast.error("Erreur lors du changement de rôle");
-      return;
     }
-    setMembers((prev) => prev.map((m) => (m.id === memberId ? { ...m, role: newRole } : m)));
-    setRoleMenuId(null);
-    haptic("success");
-    toast.success(`Rôle mis à jour: ${ROLES.find((r) => r.value === newRole)?.label}`);
   };
 
-  const removeMember = async (member: OrgMember) => {
+  const removeMemberHandler = async (member: OrgMember) => {
     if (member.role === "owner") {
       toast.error("Impossible de retirer le propriétaire");
       return;
     }
     if (!confirm(`Retirer ${member.profile?.name || member.profile?.email || "ce membre"} de l'organisation ?`)) return;
 
-    const { error } = await supabase.from("org_members").delete().eq("id", member.id);
-    if (error) {
+    try {
+      await removeOrgMember(member.id);
+      setMembers((prev) => prev.filter((m) => m.id !== member.id));
+      haptic("warning");
+      toast.success("Membre retiré");
+    } catch {
       toast.error("Erreur lors du retrait");
-      return;
     }
-    setMembers((prev) => prev.filter((m) => m.id !== member.id));
-    haptic("warning");
-    toast.success("Membre retiré");
   };
 
   const sendInvite = async () => {
     if (!orgId || !user?.id || !inviteEmail.trim()) return;
     setInviting(true);
 
-    const { error } = await supabase.from("collaboration_invitations").insert({
-      org_id: orgId,
-      invited_by: user.id,
-      email: inviteEmail.trim().toLowerCase(),
-      role: inviteRole,
-    } as any);
-
-    if (error) {
-      toast.error(error.message.includes("duplicate") ? "Invitation déjà envoyée" : "Erreur d'envoi");
-    } else {
+    try {
+      await sendCollaborationInvite({
+        org_id: orgId,
+        invited_by: user.id,
+        email: inviteEmail.trim().toLowerCase(),
+        role: inviteRole,
+      });
       toast.success(`Invitation envoyée à ${inviteEmail}`);
       setInviteEmail("");
       setShowInvite(false);
+    } catch (error: any) {
+      toast.error(error.message?.includes("duplicate") ? "Invitation déjà envoyée" : "Erreur d'envoi");
     }
     setInviting(false);
   };
@@ -157,7 +138,6 @@ export default function OrgMemberManager() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-primary" />
@@ -173,7 +153,6 @@ export default function OrgMemberManager() {
         )}
       </div>
 
-      {/* Members list */}
       <div className="space-y-2">
         {members.map((member) => {
           const roleCfg = ROLES.find((r) => r.value === member.role) || ROLES[5];
@@ -187,13 +166,11 @@ export default function OrgMemberManager() {
               layout
               className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5"
             >
-              {/* Avatar */}
               <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold"
                 style={{ background: `${roleCfg.color}15`, color: roleCfg.color }}>
                 {member.profile?.name?.charAt(0)?.toUpperCase() || "?"}
               </div>
 
-              {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                    <p className="text-xs font-semibold text-foreground break-words leading-snug">
@@ -210,7 +187,6 @@ export default function OrgMemberManager() {
                  </p>
               </div>
 
-              {/* Role badge */}
               <div className="relative">
                 <button
                   onClick={() => {
@@ -232,7 +208,6 @@ export default function OrgMemberManager() {
                   {canManage && member.role !== "owner" && <ChevronDown className="w-2.5 h-2.5 ml-0.5" />}
                 </button>
 
-                {/* Role dropdown */}
                 <AnimatePresence>
                   {showMenu && (
                     <motion.div
@@ -263,7 +238,7 @@ export default function OrgMemberManager() {
                       ))}
                       <div className="border-t border-border" />
                       <button
-                        onClick={() => removeMember(member)}
+                        onClick={() => removeMemberHandler(member)}
                         className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs text-destructive hover:bg-destructive/5 transition-colors"
                       >
                         <Trash2 className="w-3 h-3" /> Retirer
@@ -277,7 +252,6 @@ export default function OrgMemberManager() {
         })}
       </div>
 
-      {/* Invite Dialog */}
       <Dialog open={showInvite} onOpenChange={setShowInvite}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

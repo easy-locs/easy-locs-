@@ -1,13 +1,15 @@
 /**
  * MerchantOrdersPage — Simple order management: New → Preparing → Ready → Completed
- * Real-time via Supabase subscription.
+ * Real-time via repository subscription.
  */
 import { useState, useEffect, useCallback, memo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Clock, ChefHat, PackageCheck, CheckCircle2 } from "lucide-react";
 import OrderNotificationAlert, { type IncomingOrder } from "@/components/merchant/OrderNotificationAlert";
+import {
+  fetchAllConciergeOrders, updateConciergeOrderStatus, subscribeMerchantOrders,
+} from "@/repositories/concierge.repository";
 
 type OrderStatus = "new" | "preparing" | "ready" | "completed";
 interface MerchantOrder {
@@ -74,47 +76,36 @@ export default function MerchantOrdersPage() {
   const [orders, setOrders] = useState<MerchantOrder[]>([]);
   const [incomingOrder, setIncomingOrder] = useState<IncomingOrder | null>(null);
 
-  // Fetch orders
   useEffect(() => {
     if (!user?.id) return;
     const fetchOrders = async () => {
-      const { data } = await supabase
-        .from("concierge_orders")
-        .select("id, status, guest_name, total_price, currency, created_at, notes")
-        .order("created_at", { ascending: false })
-        .limit(100);
+      const data = await fetchAllConciergeOrders();
       if (data) {
         setOrders(data.map((o: any) => ({ ...o, status: STATUS_MAP[o.status] || "new" })));
       }
     };
     fetchOrders();
 
-    // Real-time subscription
-    const channel = supabase
-      .channel("merchant-orders")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "concierge_orders" }, (payload) => {
-        const newOrder = payload.new as any;
-        const mapped: MerchantOrder = { ...newOrder, status: "new" };
-        setOrders(prev => [mapped, ...prev]);
-        // Trigger full-screen alert
-        setIncomingOrder({
-          id: newOrder.id,
-          customerName: newOrder.guest_name || "Customer",
-          items: [{ name: "Order", qty: 1, price: newOrder.total_price || 0 }],
-          total: newOrder.total_price || 0,
-          currency: newOrder.currency || "EUR",
-          type: "pickup",
-          createdAt: newOrder.created_at,
-        });
-      })
-      .subscribe();
+    const unsub = subscribeMerchantOrders((newOrder: any) => {
+      const mapped: MerchantOrder = { ...newOrder, status: "new" };
+      setOrders(prev => [mapped, ...prev]);
+      setIncomingOrder({
+        id: newOrder.id,
+        customerName: newOrder.guest_name || "Customer",
+        items: [{ name: "Order", qty: 1, price: newOrder.total_price || 0 }],
+        total: newOrder.total_price || 0,
+        currency: newOrder.currency || "EUR",
+        type: "pickup",
+        createdAt: newOrder.created_at,
+      });
+    });
 
-    return () => { supabase.removeChannel(channel); };
+    return unsub;
   }, [user?.id]);
 
   const handleStatusChange = useCallback(async (orderId: string, newStatus: OrderStatus) => {
     const dbStatus = newStatus === "new" ? "pending" : newStatus === "preparing" ? "confirmed" : newStatus;
-    await supabase.from("concierge_orders").update({ status: dbStatus }).eq("id", orderId);
+    await updateConciergeOrderStatus(orderId, dbStatus);
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
   }, []);
 
@@ -132,7 +123,6 @@ export default function MerchantOrdersPage() {
 
   return (
     <div className="app-mobile-page flex flex-col" style={{ background: "hsl(var(--hud-bg))" }}>
-      {/* Header */}
       <header className="sticky top-0 z-40 flex items-center gap-3 px-4 h-14 border-b" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.1)" }}>
         <button onClick={() => navigate(-1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl active:scale-95">
           <ArrowLeft className="w-5 h-5" style={{ color: "hsl(var(--hud-text))" }} />
@@ -140,22 +130,18 @@ export default function MerchantOrdersPage() {
         <span className="text-base font-bold" style={{ color: "hsl(var(--hud-text))" }}>Orders</span>
       </header>
 
-      {/* Tabs */}
       <div className="flex gap-1 px-4 py-3 overflow-x-auto scrollbar-hide">
         {TABS.map((tab) => {
           const count = orders.filter(o => o.status === tab.key).length;
           const active = activeTab === tab.key;
           return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all active:scale-95 min-h-[40px]"
               style={{
                 background: active ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface))",
                 color: active ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.6)",
                 border: `1px solid ${active ? "hsl(var(--hud-cyan) / 0.2)" : "hsl(var(--hud-border) / 0.06)"}`,
-              }}
-            >
+              }}>
               <tab.icon className="w-3.5 h-3.5" />
               {tab.label}
               {count > 0 && (
@@ -168,7 +154,6 @@ export default function MerchantOrdersPage() {
         })}
       </div>
 
-      {/* Order list */}
       <div className="flex-1 px-4 pb-6 space-y-3">
         {filteredOrders.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -181,7 +166,6 @@ export default function MerchantOrdersPage() {
         ))}
       </div>
 
-      {/* Full-screen alert */}
       <OrderNotificationAlert order={incomingOrder} onAccept={handleAccept} onReject={handleReject} />
     </div>
   );

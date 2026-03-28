@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchFirstSeedMerchant, fetchSeedProducts, toggleProductAvailability } from "@/repositories/merchant.repository";
 import { toast } from "sonner";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 
@@ -15,32 +15,19 @@ export default function MerchantMenuPage() {
     queryFn: async () => {
       let mid = merchantId;
       if (!mid) {
-        const { data } = await supabase.from("seed_merchants").select("id").limit(1).maybeSingle();
+        const data = await fetchFirstSeedMerchant();
         mid = data?.id;
       }
       if (!mid) return [];
-
-      const { data, error } = await supabase
-        .from("seed_products")
-        .select("*")
-        .eq("merchant_id", mid)
-        .order("sort_order", { ascending: true });
-
-      if (error) throw error;
-      return data ?? [];
+      return fetchSeedProducts(mid);
     },
     staleTime: 30_000,
   });
 
-  const toggleAvailability = async (product: any) => {
+  const toggleAvailabilityHandler = async (product: any) => {
     try {
       setSavingId(product.id);
-      const { error } = await supabase
-        .from("seed_products")
-        .update({ is_available: !product.is_available })
-        .eq("id", product.id);
-
-      if (error) throw error;
+      await toggleProductAvailability(product.id, !product.is_available);
       toast.success("Availability updated");
       refetch();
     } catch (err: any) {
@@ -73,7 +60,7 @@ export default function MerchantMenuPage() {
                 <p className="text-xs font-bold mt-1">{formatMoneyByCountry(Number(product.price), null, product.currency)}</p>
               </div>
               <button
-                onClick={() => toggleAvailability(product)}
+                onClick={() => toggleAvailabilityHandler(product)}
                 disabled={savingId === product.id}
                 className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${
                   product.is_available
