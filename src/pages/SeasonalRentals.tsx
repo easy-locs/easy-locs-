@@ -697,7 +697,7 @@ const SeasonalRentals = () => {
                                 },
                               });
                               toast({ title: t("page.seasonal.request_approved") });
-                              setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "approved" } : r));
+                              await load();
                               await load();
                             }}
                             className="btn-success btn-sm"
@@ -719,7 +719,7 @@ const SeasonalRentals = () => {
                                 },
                               });
                               toast({ title: t("page.seasonal.request_rejected") });
-                              setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "rejected" } : r));
+                              await load();
                             }}
                             className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
                           >
@@ -796,7 +796,7 @@ const SeasonalRentals = () => {
                                   }).catch(() => {});
 
                                   toast({ title: "✅ Payment link generated and sent!" });
-                                  setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "payment_pending" } : r));
+                                  await load();
                                 } catch (err: any) {
                                   toast({ title: t("page.common.error"), description: err.message || "Payment link generation failed", variant: "destructive" });
                                 } finally {
@@ -840,7 +840,7 @@ const SeasonalRentals = () => {
                                 },
                               });
                               toast({ title: t("page.seasonal.request_cancelled") });
-                              setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "cancelled" } : r));
+                              await load();
                               await load();
                             }}
                             className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
@@ -854,7 +854,7 @@ const SeasonalRentals = () => {
                           onClick={async () => {
                             await supabase.from("booking_requests").delete().eq("id", req.id);
                             toast({ title: t("page.seasonal.booking_deleted") });
-                            setAllRequests(prev => prev.filter(r => r.id !== req.id));
+                            await load();
                           }}
                           className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
                         >
@@ -955,7 +955,7 @@ const SeasonalRentals = () => {
                     orgId={orgId || ""}
                     photos={currentPhotos}
                     onPhotosChange={(urls) => {
-                      setProperties(prev => prev.map(p => p.id === propId ? { ...p, photo_urls: urls } : p));
+                      load();
                     }}
                     allowVideo={subscription.subscribed}
                   />
@@ -1019,7 +1019,7 @@ const SeasonalRentals = () => {
               ))}
             </div>
           ) : loadError ? (
-            <ErrorState message={loadError} onRetry={() => { setLoading(true); load(); }} />
+            <ErrorState message={loadError} onRetry={() => { load(); }} />
           ) :
             bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.no_reservations")}</p> :
               bookings.map(b => (
@@ -1094,7 +1094,7 @@ const SeasonalRentals = () => {
                     },
                   });
                   toast({ title: t("page.seasonal.dates_modified") });
-                  setAllRequests(prev => prev.map(r => r.id === focusedRequest.id ? { ...r, check_in: editingRequestDates.check_in, check_out: editingRequestDates.check_out } : r));
+                  await load();
                   setShowEditRequestModal(false);
                   setFocusedRequest(null);
                   await load();
