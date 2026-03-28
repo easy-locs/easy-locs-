@@ -10,7 +10,7 @@ export async function fetchMyProvider(orgId: string) {
 }
 
 export async function insertProvider(record: Record<string, any>) {
-  const { error } = await supabase.from("marketplace_providers").insert(record);
+  const { error } = await (supabase as any).from("marketplace_providers").insert(record);
   if (error) throw error;
 }
 
@@ -60,7 +60,7 @@ export async function fetchMyBookings(orgId: string) {
 }
 
 export async function insertBooking(record: Record<string, any>) {
-  const { data, error } = await supabase.from("marketplace_bookings").insert(record).select().single();
+  const { data, error } = await (supabase as any).from("marketplace_bookings").insert(record).select().single();
   if (error) throw error;
   return data;
 }
@@ -91,7 +91,7 @@ export async function checkBookingStatus(bookingId: string) {
 }
 
 export async function insertReview(record: Record<string, any>) {
-  const { error } = await supabase.from("marketplace_reviews").insert(record);
+  const { error } = await (supabase as any).from("marketplace_reviews").insert(record);
   if (error) throw error;
 }
 
@@ -107,7 +107,7 @@ export async function fetchBookingNotifications(userId: string, bookingId: strin
 }
 
 export async function insertAuditLog(record: Record<string, any>) {
-  await supabase.from("audit_logs").insert(record);
+  await (supabase as any).from("audit_logs").insert(record);
 }
 
 // ── Storage ──
