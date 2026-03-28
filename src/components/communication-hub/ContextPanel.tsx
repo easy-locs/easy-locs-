@@ -66,10 +66,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
       .catch(() => setBookingCtx({ booking: null, service: null, loading: false }));
   }, [thread.conversationType, thread.bookingId, thread.bookingType, orgId]);
 
-      setBookingCtx({ booking, service, loading: false });
-    };
-    loadBookingContext();
-  }, [thread.conversationType, thread.bookingId, thread.bookingType, orgId]);
 
   // Determine if deal room panel should show — only when a deal actually exists
   const showDealRoom = !!(thread.dealId || thread.conversationType === "deal");
