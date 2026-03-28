@@ -177,11 +177,7 @@ const PublicServiceBooking = () => {
       const dateFrom = isRangeMode ? format(selectedRange!.from, "yyyy-MM-dd") : format(selectedDate!, "yyyy-MM-dd");
       const dateTo = isRangeMode ? format(selectedRange!.to, "yyyy-MM-dd") : null;
 
-      const { data: available } = await supabase.rpc("check_service_availability", {
-        p_service_id: service.id,
-        p_date_from: dateFrom,
-        p_date_to: dateTo,
-      });
+      const available = await checkServiceAvailability(service.id, dateFrom, dateTo);
 
       if (available === false) {
         toast.error(t("mp.dates_unavailable") || "These dates are no longer available. Please select different dates.");
@@ -193,8 +189,18 @@ const PublicServiceBooking = () => {
       const idDocUrl = (form as any).id_document_url || null;
       const isConcierge = service._source === "concierge" || !service._source;
 
+      const notifyParams = {
+        orgId: service.org_id,
+        guestName: form.name,
+        guestEmail: form.email,
+        serviceTitle: service.title,
+        serviceDate: dateFrom,
+        totalPrice: String(totalPrice),
+        currency: service.currency || "EUR",
+      };
+
       if (isConcierge) {
-        const orderData: any = {
+        const order = await createConciergeOrder({
           org_id: service.org_id,
           service_id: service.id,
           property_id: service.property_id || null,
@@ -221,53 +227,26 @@ const PublicServiceBooking = () => {
             ? service.commission_amount
             : (service.price * (service.commission_amount || 0)) / 100,
           ...(idDocUrl ? { document_urls: [idDocUrl] } : {}),
-        };
+        });
 
-        const { data: order, error: orderError } = await supabase
-          .from("concierge_orders")
-          .insert(orderData)
-          .select()
-          .single();
-        if (orderError) throw orderError;
-
-        try {
-          await supabase.functions.invoke("send-notification-email", {
-            body: {
-              event_type: "booking_request",
-              recipient_email: null,
-              org_id: service.org_id,
-              data: {
-                guest_name: form.name,
-                guest_email: form.email,
-                service_title: service.title,
-                service_date: dateFrom,
-                total_price: String(totalPrice),
-                currency: service.currency || "EUR",
-              },
-              locale: "en",
-            },
-          });
-        } catch (e) { console.error("Notification email error:", e); }
+        await sendBookingNotificationEmail(notifyParams);
 
         if (paymentMethod === "card") {
-          const { data: checkout, error: checkoutError } = await supabase.functions.invoke("create-concierge-payment", {
-            body: {
-              order_id: order.id,
-              service_id: service.id,
-              amount: totalPrice,
-              currency: service.currency || "EUR",
-              guest_email: form.email,
-              guest_name: form.name,
-              service_title: service.title,
-              origin: window.location.origin,
-              booking_slug: slug,
-            },
+          const checkout = await createConciergePaymentCheckout({
+            orderId: order.id,
+            serviceId: service.id,
+            amount: totalPrice,
+            currency: service.currency || "EUR",
+            guestEmail: form.email,
+            guestName: form.name,
+            serviceTitle: service.title,
+            origin: window.location.origin,
+            bookingSlug: slug || "",
           });
-          if (checkoutError) throw checkoutError;
           if (checkout?.url) { window.location.href = checkout.url; return; }
         }
       } else {
-        const bookingData: any = {
+        await createMarketplaceBooking({
           service_id: service.id,
           provider_id: service.provider_id,
           org_id: service.org_id,
@@ -286,31 +265,9 @@ const PublicServiceBooking = () => {
           date_to: dateTo,
           payment_method: paymentMethod === "card" ? "stripe" : paymentMethod || "cash",
           status: "pending",
-        };
+        });
 
-        const { error: bookingError } = await supabase
-          .from("marketplace_bookings")
-          .insert(bookingData);
-        if (bookingError) throw bookingError;
-
-        try {
-          await supabase.functions.invoke("send-notification-email", {
-            body: {
-              event_type: "booking_request",
-              recipient_email: null,
-              org_id: service.org_id,
-              data: {
-                guest_name: form.name,
-                guest_email: form.email,
-                service_title: service.title,
-                service_date: dateFrom,
-                total_price: String(totalPrice),
-                currency: service.currency || "EUR",
-              },
-              locale: "en",
-            },
-          });
-        } catch (e) { console.error("Notification email error:", e); }
+        await sendBookingNotificationEmail(notifyParams);
       }
 
       setSuccess(true);
