@@ -1,26 +1,26 @@
-import { Suspense, lazy, memo } from "react";
+import { Suspense, lazy, memo, useRef, useState, useEffect } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import SEOHead from "@/components/SEOHead";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Priority sections
+// Priority sections — load immediately
 const LiveActivityBar = lazy(() => import("@/components/landing/LiveActivityBar"));
 const CategoryBanners = lazy(() => import("@/components/landing/CategoryBanners"));
 const TrendingSection = lazy(() => import("@/components/landing/TrendingSection"));
-const RadarPreviewSection = lazy(() => import("@/components/landing/RadarPreviewSection"));
 const FoodSection = lazy(() => import("@/components/landing/FoodSection"));
+
+// Deferred sections — only load when near viewport
+const RadarPreviewSection = lazy(() => import("@/components/landing/RadarPreviewSection"));
 const TravelSection = lazy(() => import("@/components/landing/TravelSection"));
 const ServicesSection = lazy(() => import("@/components/landing/ServicesSection"));
 const OffersSection = lazy(() => import("@/components/landing/OffersSection"));
 const ForYouSection = lazy(() => import("@/components/landing/ForYouSection"));
-
-// Micro sections
 const MicroOpenNow = lazy(() => import("@/components/landing/MicroSections").then(m => ({ default: m.OpenNowStrip })));
 const MicroNearYou = lazy(() => import("@/components/landing/MicroSections").then(m => ({ default: m.NearYouStrip })));
 const MicroQuickStats = lazy(() => import("@/components/landing/MicroSections").then(m => ({ default: m.QuickStatsBar })));
 
-// Below-fold sections
+// Far below-fold — deferred heavily
 const SocialProofStrip = lazy(() => import("@/components/landing/SocialProofStrip"));
 const BrowseByCountry = lazy(() => import("@/components/landing/BrowseByCountry"));
 const PopularCities = lazy(() => import("@/components/landing/PopularCities"));
@@ -31,8 +31,6 @@ const Newsletter = lazy(() => import("@/components/landing/Newsletter"));
 const Footer = lazy(() => import("@/components/landing/Footer"));
 const TrustSection = lazy(() => import("@/components/landing/TrustSection"));
 const WorldMapSection = lazy(() => import("@/components/landing/WorldMapSection"));
-
-// Previously orphaned landing sections — now wired
 const AISection = lazy(() => import("@/components/landing/AISection"));
 const AdvantagesSection = lazy(() => import("@/components/landing/AdvantagesSection"));
 const ConciergeSection = lazy(() => import("@/components/landing/ConciergeSection"));
@@ -47,6 +45,22 @@ const RemoteEntrepreneurship = lazy(() => import("@/components/landing/RemoteEnt
 const LegalDisclaimer = lazy(() => import("@/components/landing/LegalDisclaimer"));
 const SmartRecommendationsSection = lazy(() => import("@/components/home/SmartRecommendationsSection"));
 const HomePromoCarousel = lazy(() => import("@/components/promo/HomePromoCarousel"));
+
+/** Deferred section — only renders when scrolled near */
+function DeferredSection({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { rootMargin: "400px" }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  return <div ref={ref}>{visible ? children : <div className="min-h-[48px]" />}</div>;
+}
 
 const SectionLoader = memo(() => (
   <div className="min-h-[48px]" />
