@@ -1,16 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useEngineDebugSnapshot, EngineSupervisorRow } from "@/hooks/useEngineDebugSnapshot";
-import { supabase } from "@/integrations/supabase/client";
+import { triggerEngineCron, toggleEngineStatus } from "@/repositories/admin-ops.repository";
 
 export default function CentralControlPanelPage() {
   const navigate = useNavigate();
   const { rows, loading } = useEngineDebugSnapshot();
 
-  const triggerCron = async () => {
+  const handleTriggerCron = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("engine-cron-server", { body: {} });
-      if (error) throw error;
+      const data = await triggerEngineCron();
       toast.success(`Engine run: ${data?.engines ?? 0} engines, ${data?.errors ?? 0} errors`);
     } catch (e: any) {
       toast.error(e.message || "Cron trigger failed");
@@ -18,7 +17,7 @@ export default function CentralControlPanelPage() {
   };
 
   const toggleEngine = async (name: string, current: boolean) => {
-    await (supabase as any).from("engine_supervisor").update({ enabled: !current }).eq("engine_name", name);
+    await toggleEngineStatus(name, current);
     toast.success(`${name} → ${!current ? "enabled" : "disabled"}`);
   };
 
@@ -65,7 +64,7 @@ export default function CentralControlPanelPage() {
         </div>
       </div>
 
-      <button onClick={triggerCron} className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold">
+      <button onClick={handleTriggerCron} className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold">
         ▶ Run Engine Cron Now
       </button>
 

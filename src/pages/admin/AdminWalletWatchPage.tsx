@@ -1,21 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchWalletWatchData } from "@/repositories/admin-ops.repository";
 
 export default function AdminWalletWatchPage() {
   const navigate = useNavigate();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-wallet-watch"],
-    queryFn: async () => {
-      const [{ data: accounts }, { data: ledger }] = await Promise.all([
-        supabase.from("wallet_accounts").select("*").limit(2000),
-        supabase.from("wallet_ledger_entries").select("*").limit(5000),
-      ]);
-      return { accounts: accounts ?? [], ledger: ledger ?? [] };
-    },
-    staleTime: 10000,
-  });
+  const { data, isLoading } = useQuery({ queryKey: ["admin-wallet-watch"], queryFn: fetchWalletWatchData, staleTime: 10000 });
 
   const accounts = data?.accounts ?? [];
   const ledger = data?.ledger ?? [];
@@ -32,7 +22,6 @@ export default function AdminWalletWatchPage() {
           <p className="text-xs text-muted-foreground">Wallet accounts and ledger pulse</p>
         </div>
       </div>
-
       {isLoading ? (
         <>{[1, 2].map((i) => <div key={i} className="mx-4 mb-3 h-16 rounded-2xl bg-muted animate-pulse" />)}</>
       ) : (

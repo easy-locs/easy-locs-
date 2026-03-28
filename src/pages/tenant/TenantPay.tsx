@@ -2,7 +2,11 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { CreditCard, Loader2, ExternalLink, Home, Banknote, Building, CheckCircle } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  fetchTenantInfoForPay, fetchOrgForTenant, fetchOwnerBankForTenant,
+  fetchUnpaidRentCalls, invokeRentPayment, declareTransfer,
+  notifyOwnerOfTransfer, fetchOrgOwner,
+} from "@/repositories/tenant.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
@@ -62,39 +66,19 @@ const TenantPay = () => {
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("id, org_id, property_id, rent_amount, charges_amount, properties(label)")
-        .eq("tenant_user_id", user.id)
-        .limit(1)
-        .single();
-
+      const tenant = await fetchTenantInfoForPay(user.id);
       if (!tenant) { setLoading(false); return; }
       setTenantInfo(tenant);
 
-      // Fetch org info + Stripe Connect status
-      const { data: org } = await supabase
-        .from("orgs")
-        .select("name, email, phone, stripe_account_id, stripe_onboarding_complete")
-        .eq("id", tenant.org_id)
-        .single();
+      const org = await fetchOrgForTenant(tenant.org_id);
       setOrgInfo(org);
       setHasStripeConnect(!!(org?.stripe_account_id && org.stripe_onboarding_complete));
 
-      // Fetch owner bank info for manual SEPA transfer (via secure RPC)
-      const { data: ownerBankData } = await supabase
-        .rpc("get_owner_bank_for_tenant", { _org_id: tenant.org_id });
-      const ownerProfile = Array.isArray(ownerBankData) ? ownerBankData[0] || null : ownerBankData;
+      const ownerProfile = await fetchOwnerBankForTenant(tenant.org_id);
       setOwnerBank(ownerProfile || null);
 
-      // Fetch unpaid rent calls
-      const { data } = await supabase
-        .from("rent_calls")
-        .select("*")
-        .eq("tenant_id", tenant.id)
-        .eq("paid", false)
-        .order("month", { ascending: false });
-      setUnpaidCalls(data || []);
+      const calls = await fetchUnpaidRentCalls(tenant.id);
+      setUnpaidCalls(calls);
       setLoading(false);
     };
     fetchData();
@@ -110,11 +94,7 @@ const TenantPay = () => {
   const handlePayStripe = async (rentCallId: string) => {
     setPayingId(rentCallId);
     try {
-      const { data, error } = await supabase.functions.invoke("create-rent-payment", {
-        body: { rent_call_id: rentCallId, payment_method: method === "sepa" ? "sepa" : "card" },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      const data = await invokeRentPayment(rentCallId, method === "sepa" ? "sepa" : "card");
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       const msg = err.message || String(err);
@@ -129,33 +109,16 @@ const TenantPay = () => {
 
   const handleDeclareTransfer = async (rentCallId: string, month: string) => {
     try {
-      // Update rent call status to "processing"
-      await supabase
-        .from("rent_calls")
-        .update({ payment_status: "processing", payment_method: "bank_transfer" } as any)
-        .eq("id", rentCallId);
+      await declareTransfer(rentCallId);
 
-      // Find org owner to notify
       if (tenantInfo?.org_id) {
-        const { data: members } = await supabase
-          .from("org_members")
-          .select("user_id")
-          .eq("org_id", tenantInfo.org_id)
-          .eq("role", "owner")
-          .limit(1);
-        const ownerId = members?.[0]?.user_id;
-
-        // Create notification for landlord
+        const ownerId = await fetchOrgOwner(tenantInfo.org_id);
         if (ownerId) {
-          await (supabase as any).from("app_notifications").insert({
-            user_id: ownerId,
-            scope: "global",
-            category: "payment",
-            title: `🏦 ${t("page.tenant_pay.transfer_declared") || "Bank transfer declared"}`,
-            body: `${user?.email} - ${month} - ${fmt(unpaidCalls.find(c => c.id === rentCallId)?.total_amount || 0)}`,
-            severity: "info",
-            metadata: { target_type: "rent_call", target_id: rentCallId, module: "rental" },
-          });
+          await notifyOwnerOfTransfer(
+            tenantInfo.org_id,
+            ownerId,
+            `${user?.email} - ${month} - ${fmt(unpaidCalls.find(c => c.id === rentCallId)?.total_amount || 0)}`
+          );
         }
       }
 
@@ -164,7 +127,6 @@ const TenantPay = () => {
         description: t("page.tenant_pay.transfer_declared_desc") || "Your landlord has been notified. Payment will be confirmed upon receipt.",
       });
 
-      // Update local state
       setUnpaidCalls(prev => prev.map(c => c.id === rentCallId ? { ...c, payment_status: "processing" } : c));
     } catch (err: any) {
       toast({ title: t("page.common.error") || "Error", description: err.message, variant: "destructive" });
