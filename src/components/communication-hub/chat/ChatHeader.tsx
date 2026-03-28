@@ -50,13 +50,13 @@ export default function ChatHeader({
           border: "1.5px solid hsl(var(--hud-cyan) / 0.2)",
         }}>
           <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
-            {(thread.name || "?")[0].toUpperCase()}
+            {(typeof thread.name === "string" ? thread.name : "?")[0]?.toUpperCase() || "?"}
           </span>
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <p className="text-sm font-semibold line-clamp-1 break-words" style={{ color: "hsl(var(--hud-text))" }}>{thread.name}</p>
+            <p className="text-sm font-semibold line-clamp-1 break-words" style={{ color: "hsl(var(--hud-text))" }}>{typeof thread.name === "string" ? thread.name : "Contact"}</p>
             {thread.propertyCountry && <span className="text-xs shrink-0">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
