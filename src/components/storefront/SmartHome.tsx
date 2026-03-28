@@ -170,23 +170,21 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
     >
       <Link
         to={cat.route}
-        className="group relative flex h-[112px] w-[84px] flex-col items-center justify-between overflow-visible rounded-2xl border border-border/10 bg-muted/30 p-2.5 transition-all duration-150 active:scale-[0.92]"
+        className="group relative flex h-[106px] w-[78px] flex-col items-center justify-between overflow-visible rounded-2xl border border-border/10 bg-muted/30 p-2 transition-all duration-150 active:scale-[0.92]"
       >
         {cat.subtitle && (
-          <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-[7px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground leading-none z-10 whitespace-nowrap shadow-sm">
+          <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-[7px] font-bold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground leading-none z-10 whitespace-nowrap shadow-sm">
             {cat.subtitle}
           </span>
         )}
         <div className="flex w-full flex-1 items-center justify-center">
           {imgSrc ? (
-            <img src={imgSrc} alt={cat.label} className="h-11 w-11 object-contain drop-shadow-md" loading="lazy" />
+            <img src={imgSrc} alt={cat.label} className="h-10 w-10 object-contain drop-shadow-md" loading="lazy" />
           ) : (
             <span className="text-2xl">{cat.icon}</span>
           )}
         </div>
-        <p className="mt-1 w-full text-center text-[10px] font-bold leading-snug text-foreground line-clamp-2 break-words hyphens-auto text-balance-soft"
-           style={{ wordBreak: "break-word" }}
-        >{cat.label}</p>
+        <p className="mt-1 w-full text-center text-[10px] font-bold leading-tight text-foreground line-clamp-1 truncate">{cat.label}</p>
       </Link>
     </motion.div>
   );
