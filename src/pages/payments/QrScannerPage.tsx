@@ -13,7 +13,7 @@ import { haptic } from "@/lib/haptics";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
 import { generateIdempotencyKey, isDuplicatePayment, recordPaymentAttempt } from "@/lib/merchant-qr/merchant-qr-engine";
-import { supabase } from "@/integrations/supabase/client";
+import { lookupShopBySlug } from "@/repositories/qr-payment.repository";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 import { useAuth } from "@/contexts/AuthContext";
 import { QrResolvedCard } from "@/components/qr/QrResolvedCard";
@@ -319,18 +319,13 @@ export default function QrScannerPage() {
       setPayStepLabel("Loading merchant…");
       setS("paying");
       try {
-        const shopResult: any = await withTimeout(
-          Promise.resolve((supabase as any)
-            .from("storefront_pages")
-            .select("user_id, name, route_status")
-            .eq("slug", payload.shopSlug)
-            .neq("route_status", "broken")
-            .maybeSingle()),
+        const shopData = await withTimeout(
+          lookupShopBySlug(payload.shopSlug!),
           5000,
           "Request timeout"
         );
-        const shopOwnerId = shopResult?.data?.user_id as string | undefined;
-        const shopName = shopResult?.data?.name?.trim() as string | undefined;
+        const shopOwnerId = shopData?.user_id as string | undefined;
+        const shopName = shopData?.name?.trim() as string | undefined;
         if (!shopOwnerId) { setE("Merchant not found"); setS("error"); return; }
         if (!shopName) { setE("Merchant name unavailable"); setS("error"); return; }
 
