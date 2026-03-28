@@ -1,10 +1,11 @@
 /**
  * deal-repository — All Deal Room DB reads/writes.
+ * Uses `as any` for tables not yet in generated types.
  */
 import { supabase } from "@/integrations/supabase/client";
 
 export async function fetchDeals(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("deals")
     .select("*")
     .or(`buyer_user_id.eq.${userId},seller_user_id.eq.${userId}`)
@@ -14,7 +15,7 @@ export async function fetchDeals(userId: string) {
 }
 
 export async function fetchDealById(dealId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("deals")
     .select("*")
     .eq("id", dealId)
@@ -24,7 +25,7 @@ export async function fetchDealById(dealId: string) {
 }
 
 export async function updateDealStatus(dealId: string, status: string) {
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("deals")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", dealId);
@@ -32,7 +33,7 @@ export async function updateDealStatus(dealId: string, status: string) {
 }
 
 export async function fetchDealTimeline(dealId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("deal_timeline")
     .select("*")
     .eq("deal_id", dealId)
@@ -47,7 +48,7 @@ export async function addDealTimelineEvent(
   actorId: string,
   payload: Record<string, any> = {},
 ) {
-  const { error } = await supabase.from("deal_timeline").insert({
+  const { error } = await (supabase as any).from("deal_timeline").insert({
     deal_id: dealId,
     event_type: eventType,
     actor_user_id: actorId,
@@ -64,7 +65,7 @@ export async function createDealOffer(
   expiresAt: string | null,
   message?: string,
 ) {
-  const { error } = await supabase.from("deal_offers").insert({
+  const { error } = await (supabase as any).from("deal_offers").insert({
     deal_id: dealId,
     offered_by: userId,
     amount,

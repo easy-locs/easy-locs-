@@ -16,7 +16,7 @@ export async function fetchConciergeServices(orgId: string) {
 export async function createConciergeService(orgId: string, userId: string, form: Record<string, any>) {
   const { data, error } = await supabase
     .from("concierge_services")
-    .insert({ ...form, org_id: orgId, user_id: userId })
+    .insert({ ...form, org_id: orgId, user_id: userId } as any)
     .select()
     .single();
   if (error) throw error;
@@ -24,7 +24,7 @@ export async function createConciergeService(orgId: string, userId: string, form
 }
 
 export async function updateConciergeService(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("concierge_services").update(updates).eq("id", id);
+  const { error } = await supabase.from("concierge_services").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
@@ -34,7 +34,7 @@ export async function deleteConciergeService(id: string) {
 }
 
 export async function fetchConciergeBookings(orgId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("concierge_bookings")
     .select("*, concierge_services(title, category)")
     .eq("org_id", orgId)
@@ -44,7 +44,7 @@ export async function fetchConciergeBookings(orgId: string) {
 }
 
 export async function updateBookingStatus(bookingId: string, status: string) {
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("concierge_bookings")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", bookingId);

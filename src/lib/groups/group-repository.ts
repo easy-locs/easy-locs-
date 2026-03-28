@@ -1,10 +1,11 @@
 /**
  * group-repository — All group/channel/community DB reads/writes.
+ * Uses `as any` for tables not in generated types.
  */
 import { supabase } from "@/integrations/supabase/client";
 
 export async function fetchGroups(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("orbit_groups")
     .select("*, orbit_group_members!inner(user_id, role)")
     .eq("orbit_group_members.user_id", userId)
@@ -19,7 +20,7 @@ export async function createGroup(
   groupType: string = "group",
   description?: string,
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("orbit_groups")
     .insert({
       name,
@@ -32,7 +33,7 @@ export async function createGroup(
   if (error) throw error;
 
   // Auto-add creator as admin
-  await supabase.from("orbit_group_members").insert({
+  await (supabase as any).from("orbit_group_members").insert({
     group_id: data.id,
     user_id: createdBy,
     role: "admin",
@@ -42,7 +43,7 @@ export async function createGroup(
 }
 
 export async function fetchGroupMessages(groupId: string, limit = 50) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("orbit_group_messages")
     .select("*")
     .eq("group_id", groupId)
@@ -53,7 +54,7 @@ export async function fetchGroupMessages(groupId: string, limit = 50) {
 }
 
 export async function sendGroupMessage(groupId: string, senderId: string, content: string) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("orbit_group_messages")
     .insert({ group_id: groupId, sender_id: senderId, content })
     .select()
@@ -63,7 +64,7 @@ export async function sendGroupMessage(groupId: string, senderId: string, conten
 }
 
 export async function fetchGroupMembers(groupId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("orbit_group_members")
     .select("*")
     .eq("group_id", groupId);
@@ -72,14 +73,14 @@ export async function fetchGroupMembers(groupId: string) {
 }
 
 export async function addGroupMember(groupId: string, userId: string, role = "member") {
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("orbit_group_members")
     .insert({ group_id: groupId, user_id: userId, role });
   if (error) throw error;
 }
 
 export async function removeGroupMember(groupId: string, userId: string) {
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("orbit_group_members")
     .delete()
     .eq("group_id", groupId)
@@ -88,7 +89,7 @@ export async function removeGroupMember(groupId: string, userId: string) {
 }
 
 export async function togglePinMessage(messageId: string, pinned: boolean) {
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("orbit_group_messages")
     .update({ pinned })
     .eq("id", messageId);
