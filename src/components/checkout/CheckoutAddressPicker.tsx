@@ -54,7 +54,7 @@ export default function CheckoutAddressPicker({
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-xs text-muted-foreground">Delivery Address</p>
-          <p className="text-sm font-semibold text-foreground truncate">{selectedText}</p>
+          <p className="text-sm font-semibold text-foreground min-w-0 break-words leading-snug">{selectedText}</p>
         </div>
         <button
           onClick={() => setOpen((v) => !v)}

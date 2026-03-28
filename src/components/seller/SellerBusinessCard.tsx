@@ -82,14 +82,14 @@ export default function SellerBusinessCard({
       <div className="flex-1 min-w-0 flex flex-col justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-foreground truncate">{cleanUiText(name)}</h3>
+            <h3 className="text-sm font-bold text-foreground min-w-0 break-words leading-snug">{cleanUiText(name)}</h3>
             <StatusChip label={st.label} variant={st.variant as any} size="sm" />
           </div>
           {category && (
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">{cleanUiText(category)}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 min-w-0 break-words leading-snug">{cleanUiText(category)}</p>
           )}
           {address && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 min-w-0 break-words leading-snug">
               <MapPin className="w-3 h-3 flex-shrink-0" />
               {cleanUiText(address)}
             </p>

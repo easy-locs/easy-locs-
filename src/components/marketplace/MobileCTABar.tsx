@@ -40,7 +40,7 @@ export default function MobileCTABar({ phone, whatsapp, telegram, email, listing
       <div className="flex items-center gap-2">
         {priceLine && (
           <div className="flex-1 min-w-0">
-            <span className="text-sm font-bold text-accent truncate block">{priceLine}</span>
+            <span className="text-sm font-bold text-accent break-words block leading-snug">{priceLine}</span>
           </div>
         )}
         <div className="flex items-center gap-1.5 shrink-0">
