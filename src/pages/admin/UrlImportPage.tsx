@@ -20,9 +20,9 @@ type PipelineStep = "idle" | "scanning" | "extracting" | "mapping" | "scoring" |
 const VERTICALS: { value: Vertical; label: string; icon: string }[] = [
   { value: "food", label: "Food & Restaurant", icon: "🍕" },
   { value: "hotel", label: "Hotel & Stays", icon: "🏨" },
-  { value: "shop", label: "Retail & Shop", icon: "🛍️" },
+  { value: "grocery", label: "Grocery & Retail", icon: "🛒" },
   { value: "services", label: "Services", icon: "🔧" },
-  { value: "grocery", label: "Grocery", icon: "🛒" },
+  { value: "property", label: "Property", icon: "🏠" },
 ];
 
 const STEP_LABELS: Record<string, string> = {
