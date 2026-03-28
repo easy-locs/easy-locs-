@@ -3,7 +3,7 @@
  * PASS86-KK: Admin Moderation Panel
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as modRepo from "@/repositories/moderation.repository";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield, UserX, AlertTriangle, CheckCircle2, Eye, Ban, RefreshCw, MessageCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,25 +50,17 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
     if (!orgId) return;
     setLoading(true);
 
-    const [driversRes, disputesRes] = await Promise.all([
-      (supabase as any).from("rider_presence").select("*").limit(100),
-      supabase.from("delivery_disputes").select("*").order("created_at", { ascending: false }).limit(50),
-    ]);
+    const { drivers: driverList, disputes: disputeData } = await modRepo.fetchModerationData();
 
-    const driverList = (driversRes.data || []) as ModerationDriver[];
-
-    // Fetch names
-    const userIds = driverList.map(d => d.user_id);
+    const userIds = (driverList as ModerationDriver[]).map(d => d.user_id);
     if (userIds.length > 0) {
-      const { data: profiles } = await supabase.from("profiles").select("id, name, first_name, last_name").in("id", userIds);
-      if (profiles) {
-        const nameMap = new Map(profiles.map(p => [p.id, p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || null]));
-        driverList.forEach(d => { d.name = nameMap.get(d.user_id) || undefined; });
-      }
+      const profiles = await modRepo.fetchDriverNames(userIds);
+      const nameMap = new Map(profiles.map((p: any) => [p.id, p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || null]));
+      (driverList as ModerationDriver[]).forEach(d => { d.name = nameMap.get(d.user_id) || undefined; });
     }
 
-    setDrivers(driverList);
-    setDisputes((disputesRes.data || []) as EscalatedDispute[]);
+    setDrivers(driverList as ModerationDriver[]);
+    setDisputes(disputeData as EscalatedDispute[]);
     setLoading(false);
   }, [orgId]);
 
@@ -77,19 +69,14 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
   const handleDriverAction = async (driverId: string, userId: string, action: ModerationAction) => {
     try {
       if (action === "suspend" || action === "ban") {
-        await (supabase as any).from("rider_presence").update({ is_online: false, is_available: false }).eq("user_id", userId);
+        await modRepo.suspendDriver(userId);
       }
 
-      // Log moderation action
-      await supabase.from("audit_logs").insert({
-        user_id: userId,
-        org_id: orgId,
-        action: `moderation_${action}`,
-        metadata_json: { driver_id: driverId, action, note: actionNote, timestamp: new Date().toISOString() },
+      await modRepo.insertModerationAuditLog(userId, orgId, `moderation_${action}`, {
+        driver_id: driverId, action, note: actionNote, timestamp: new Date().toISOString(),
       });
 
-      // Notify driver — canonical: notifications
-      await (supabase as any).from("app_notifications").insert({
+      await modRepo.insertModerationNotification({
         user_id: userId,
         type: `moderation.${action}`,
         title: action === "warn" ? "⚠️ Avertissement" : action === "suspend" ? "🚫 Compte suspendu" : action === "ban" ? "❌ Compte banni" : "✅ Compte réactivé",
@@ -110,11 +97,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
   const resolveDispute = async (disputeId: string) => {
     if (!resolutionNote.trim()) { toast.error("Résolution requise"); return; }
     try {
-      await supabase.from("delivery_disputes").update({
-        status: "resolved",
-        resolution: resolutionNote,
-        resolved_at: new Date().toISOString(),
-      }).eq("id", disputeId);
+      await modRepo.resolveDispute(disputeId, resolutionNote);
 
       toast.success("Litige résolu");
       setResolutionNote("");

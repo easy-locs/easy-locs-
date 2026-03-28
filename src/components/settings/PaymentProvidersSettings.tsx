@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { CreditCard, Loader2, CheckCircle, ExternalLink, AlertCircle, Building2, Link as LinkIcon, XCircle, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as ppRepo from "@/repositories/payment-providers.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { isSepaCountry } from "@/lib/sepa-countries";
@@ -49,30 +49,23 @@ const PaymentProvidersSettings = () => {
   useEffect(() => {
     if (!orgId) return;
     const fetchData = async () => {
-      const { data: org } = await supabase
-        .from("orgs")
-        .select("paypal_email, default_payment_provider, stripe_account_id, stripe_onboarding_complete, country, bank_holder_name, bank_iban, bank_bic, bank_name, payment_link_url")
-        .eq("id", orgId)
-        .single();
-
+      const org = await ppRepo.fetchOrgPaymentSettings(orgId);
       if (org) {
-        setPaypalEmail((org as any).paypal_email || "");
-        setDefaultProvider((org as any).default_payment_provider || "stripe");
-        if ((org as any).country) setOrgCountry((org as any).country);
-        setBankHolder((org as any).bank_holder_name || "");
-        setBankIban((org as any).bank_iban || "");
-        setBankBic((org as any).bank_bic || "");
-        setBankName((org as any).bank_name || "");
-        setPaymentLinkUrl((org as any).payment_link_url || "");
+        setPaypalEmail(org.paypal_email || "");
+        setDefaultProvider(org.default_payment_provider || "stripe");
+        if (org.country) setOrgCountry(org.country);
+        setBankHolder(org.bank_holder_name || "");
+        setBankIban(org.bank_iban || "");
+        setBankBic(org.bank_bic || "");
+        setBankName(org.bank_name || "");
+        setPaymentLinkUrl(org.payment_link_url || "");
       }
-
       try {
-        const { data } = await supabase.functions.invoke("check-connect-status");
+        const data = await ppRepo.checkConnectStatus();
         setConnectStatus(data);
       } catch {
         setConnectStatus({ connected: false });
       }
-
       setLoading(false);
     };
     fetchData();
@@ -87,8 +80,7 @@ const PaymentProvidersSettings = () => {
   const handleConnectStripe = async () => {
     setConnectingStripe(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-connect-account");
-      if (error) throw error;
+      const data = await ppRepo.createConnectAccount();
       if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
       toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
@@ -101,8 +93,7 @@ const PaymentProvidersSettings = () => {
     if (!confirm(t("page.finances.disconnect_confirm"))) return;
     setDisconnectingStripe(true);
     try {
-      const { data, error } = await supabase.functions.invoke("disconnect-stripe");
-      if (error) throw error;
+      await ppRepo.disconnectStripe();
       toast({ title: t("page.finances.disconnect_success") });
       setConnectStatus({ connected: false, onboarding_complete: false });
     } catch (err: any) {
@@ -115,7 +106,7 @@ const PaymentProvidersSettings = () => {
   const handleSave = async () => {
     if (!orgId) return;
     setSaving(true);
-    await supabase.from("orgs").update({
+    await ppRepo.savePaymentSettings(orgId, {
       paypal_email: paypalEmail || null,
       default_payment_provider: defaultProvider,
       bank_holder_name: bankHolder || null,
@@ -123,7 +114,7 @@ const PaymentProvidersSettings = () => {
       bank_bic: bankBic || null,
       bank_name: bankName || null,
       payment_link_url: paymentLinkUrl || null,
-    } as any).eq("id", orgId);
+    });
     toast({ title: t("page.settings.org_updated") });
     setSaving(false);
   };
