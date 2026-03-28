@@ -19,7 +19,7 @@ export default function PageBreadcrumb({ items, className = "" }: Props) {
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className={`flex items-center gap-1 text-xs text-muted-foreground overflow-x-auto scrollbar-thin pb-1 ${className}`}>
+    <nav aria-label="Breadcrumb" className={`flex flex-wrap items-center gap-1 text-xs text-muted-foreground pb-1 ${className}`}>
       <Link
         to="/dashboard"
         className="shrink-0 hover:text-foreground transition-colors p-1 rounded-md"
@@ -31,16 +31,16 @@ export default function PageBreadcrumb({ items, className = "" }: Props) {
       {items.map((item, i) => {
         const isLast = i === items.length - 1;
         return (
-          <span key={i} className="flex items-center gap-1 min-w-0">
+          <span key={i} className="flex min-w-0 max-w-full items-center gap-1">
             <ChevronRight className="h-3 w-3 shrink-0 opacity-40" />
             {isLast || !item.href ? (
-              <span className={`truncate ${isLast ? "text-foreground font-medium" : ""}`}>
+              <span className={`min-w-0 whitespace-normal break-words leading-snug ${isLast ? "text-foreground font-medium" : ""}`}>
                 {item.label}
               </span>
             ) : (
               <Link
                 to={item.href}
-                className="truncate hover:text-foreground transition-colors"
+                className="min-w-0 whitespace-normal break-words leading-snug hover:text-foreground transition-colors"
               >
                 {item.label}
               </Link>

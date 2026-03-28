@@ -84,11 +84,11 @@ export function SearchableSelector({
           disabled && "opacity-50 cursor-not-allowed"
         )}
       >
-        <span className={cn("truncate", !selected && "text-muted-foreground")}>
+        <span className={cn("min-w-0 flex-1 whitespace-normal break-words text-left leading-snug", !selected && "text-muted-foreground")}>
           {selected ? (
-            <span className="flex items-center gap-2">
+            <span className="flex min-w-0 items-center gap-2">
               {selected.icon}
-              {selected.label}
+              <span className="min-w-0 whitespace-normal break-words leading-snug">{selected.label}</span>
             </span>
           ) : placeholder}
         </span>
@@ -127,8 +127,8 @@ export function SearchableSelector({
                 >
                   {opt.icon}
                   <div className="flex-1 min-w-0">
-                    <span className="truncate block">{opt.label}</span>
-                    {opt.sublabel && <span className="text-[10px] text-muted-foreground truncate block">{opt.sublabel}</span>}
+                    <span className="block whitespace-normal break-words leading-snug">{opt.label}</span>
+                    {opt.sublabel && <span className="text-[10px] text-muted-foreground block whitespace-normal break-words leading-snug">{opt.sublabel}</span>}
                   </div>
                   {opt.value === value && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                 </button>
