@@ -120,27 +120,9 @@ export default function OrbitAccountSection() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Photo must be under 5MB");
-      return;
-    }
-
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/avatar.${ext}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { upsert: true });
-      
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(path);
-      
+      const publicUrl = await uploadAvatar(user.id, file);
       setAvatarUrl(publicUrl);
       toast.success("Photo uploaded!");
     } catch (err: any) {
