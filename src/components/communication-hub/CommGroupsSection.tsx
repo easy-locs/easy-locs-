@@ -663,7 +663,7 @@ export default function CommGroupsSection() {
                 <div key={m.id} className="flex items-center gap-3 px-2 py-2 rounded-lg">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold"
                     style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
-                    {m.user_id.slice(0, 2).toUpperCase()}
+                    {(m.profile_name || guardDisplayName(m.user_id, "M", { screen: "groups", component: "CommGroupsSection" })).slice(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm line-clamp-1 break-words block" style={{ color: "hsl(var(--hud-text))" }}>
