@@ -1,30 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchSystemHealthData } from "@/repositories/admin-ops.repository";
 
 export default function AdminSystemHealthPage() {
   const navigate = useNavigate();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-system-health"],
-    queryFn: async () => {
-      const [
-        { count: users },
-        { count: orders },
-        { count: tickets },
-        { count: wallets },
-        { count: notifications },
-      ] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }),
-        supabase.from("orders").select("*", { count: "exact", head: true }),
-        supabase.from("support_tickets").select("*", { count: "exact", head: true }),
-        supabase.from("wallet_accounts").select("*", { count: "exact", head: true }),
-        (supabase as any).from("app_notifications").select("*", { count: "exact", head: true }),
-      ]);
-      return { users: users ?? 0, orders: orders ?? 0, tickets: tickets ?? 0, wallets: wallets ?? 0, notifications: notifications ?? 0 };
-    },
-    staleTime: 10000,
-  });
+  const { data, isLoading } = useQuery({ queryKey: ["admin-system-health"], queryFn: fetchSystemHealthData, staleTime: 10000 });
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
@@ -35,7 +16,6 @@ export default function AdminSystemHealthPage() {
           <p className="text-xs text-muted-foreground">Global platform monitor</p>
         </div>
       </div>
-
       {isLoading ? (
         <>{[1, 2, 3].map((i) => <div key={i} className="mx-4 mb-3 h-16 rounded-2xl bg-muted animate-pulse" />)}</>
       ) : data ? (
