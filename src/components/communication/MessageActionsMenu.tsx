@@ -11,9 +11,12 @@ import {
 import {
   Reply, Copy, Trash2, Forward, Star, StarOff,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import {
+  starMessage, deleteMessageForSender, deleteMessageForUser, deleteMessageForAll,
+} from "@/repositories/communication.repository";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   children: ReactNode;
@@ -58,8 +61,9 @@ export default function MessageActionsMenu({
 
   const handleStar = async () => {
     const v = !isStarred;
-    const { error } = await supabase.from("chat_messages_v2").update({ starred: v } as any).eq("id", messageId);
-    if (error) {
+    try {
+      await starMessage(messageId, v);
+    } catch {
       toast.error(t("common.error") || "Error");
       close();
       return;
@@ -70,29 +74,19 @@ export default function MessageActionsMenu({
   };
 
   const handleDeleteForMe = async () => {
-    if (isMe) {
-      const { error } = await supabase.from("chat_messages_v2").update({ 
-        deleted_for_sender: true,
-        deleted_at: new Date().toISOString(),
-        deletion_reason: "self_hide",
-      } as any).eq("id", messageId);
-      if (error) { toast.error(t("chat.delete_failed") || "Delete failed"); close(); return; }
-    } else {
-      // Recipient: append to deleted_for_user_ids
-      const { data: { user } } = await supabase.auth.getUser();
-      const uid = user?.id;
-      if (uid) {
-        const { data: existing } = await (supabase as any)
-          .from("chat_messages_v2").select("metadata").eq("id", messageId).single();
-        const meta = (existing?.metadata as Record<string, any>) || {};
-        const currentIds: string[] = Array.isArray(meta.deleted_for_user_ids) ? meta.deleted_for_user_ids : [];
-        if (!currentIds.includes(uid)) {
-          const { error } = await (supabase as any).from("chat_messages_v2").update({
-            metadata: { ...meta, deleted_for_user_ids: [...currentIds, uid] },
-          }).eq("id", messageId);
-          if (error) { toast.error(t("chat.delete_failed") || "Delete failed"); close(); return; }
+    try {
+      if (isMe) {
+        await deleteMessageForSender(messageId);
+      } else {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.id) {
+          await deleteMessageForUser(messageId, user.id);
         }
       }
+    } catch {
+      toast.error(t("chat.delete_failed") || "Delete failed");
+      close();
+      return;
     }
     onDeleted("for_me");
     toast.success(t("chat.deleted_for_you") || "Deleted for you");
@@ -102,11 +96,9 @@ export default function MessageActionsMenu({
   const canDeleteForAll = isMe && (minutesSinceSent === undefined || minutesSinceSent <= DELETE_FOR_ALL_LIMIT_MIN);
 
   const handleDeleteForAll = async () => {
-    const { error } = await supabase.from("chat_messages_v2").update({
-      deleted_for_all: true,
-      content: "🚫 This message was deleted",
-    } as any).eq("id", messageId);
-    if (error) {
+    try {
+      await deleteMessageForAll(messageId);
+    } catch {
       toast.error(t("chat.delete_failed") || "Delete failed");
       close();
       return;

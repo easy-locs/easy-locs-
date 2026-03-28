@@ -1,5 +1,6 @@
 /**
  * useGroupChat — manages active group chat state: messages, members, realtime.
+ * DB calls delegated to communication.repository.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { haptic } from "@/lib/haptics";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 import type { Group, GroupMember, GroupMessage } from "./types";
+import { fetchGroupMessages, fetchGroupMembers } from "@/repositories/communication.repository";
 
 export function useGroupChat() {
   const { user } = useAuth();
@@ -16,7 +18,7 @@ export function useGroupChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const refreshMembers = useCallback(async (groupId: string) => {
-    const { data: mems } = await supabase.from("group_members").select("*").eq("group_id", groupId);
+    const mems = await fetchGroupMembers(groupId);
     setMembers((mems as GroupMember[]) || []);
   }, []);
 
@@ -25,13 +27,7 @@ export function useGroupChat() {
     setActiveGroup(group);
     haptic("light");
 
-    const { data: msgs } = await (supabase as any)
-      .from("chat_messages_v2")
-      .select("*")
-      .eq("conversation_id", group.id)
-      .order("created_at", { ascending: true })
-      .limit(200);
-
+    const msgs = await fetchGroupMessages(group.id, 200);
     const mapped = ((msgs as any[]) || []).map((m: any) => ({
       id: m.id,
       sender_id: m.sender_user_id || m.sender_id,
@@ -52,7 +48,7 @@ export function useGroupChat() {
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   }, []);
 
-  // Realtime subscription
+  // Realtime subscription (supabase.channel is infrastructure, not data access)
   useEffect(() => {
     if (!activeGroup) return;
     const channel = supabase
@@ -78,7 +74,6 @@ export function useGroupChat() {
     return () => { supabase.removeChannel(channel); };
   }, [activeGroup?.id, user?.id, appendMessage]);
 
-  // Derived state
   const myMember = members.find(m => m.user_id === user?.id);
   const isAdmin = myMember?.role === "admin";
   const isViewer = myMember?.role === "viewer";

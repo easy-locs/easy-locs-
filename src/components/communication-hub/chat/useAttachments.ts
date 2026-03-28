@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
-
-const db = supabase as any;
+import {
+  uploadToStorage, insertMessage, updateConversationTimestamp,
+} from "@/repositories/communication.repository";
 
 type ThreadLike = {
   id: string;
@@ -32,22 +32,21 @@ export function useAttachments(params: {
   }, []);
 
   /** Upload a file/blob to storage and return signed URL */
-  const uploadToStorage = async (file: File | Blob, path: string): Promise<string | null> => {
+  const uploadFile = async (file: File | Blob, path: string): Promise<string | null> => {
     const bucket = "chat-attachments";
     trace("attachment.storage.upload", "input", { path, bucket, size: (file as File)?.size ?? null, type: (file as File)?.type ?? null });
-    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
-    if (error) {
-      trace("attachment.storage.upload", "error", { message: error.message });
+    try {
+      const signedUrl = await uploadToStorage(bucket, path, file);
+      if (!signedUrl) {
+        trace("attachment.storage.upload", "error", { reason: "missing_signed_url", path });
+        return null;
+      }
+      trace("attachment.storage.upload", "output", { path, signedUrlLength: signedUrl.length });
+      return signedUrl;
+    } catch (e: any) {
+      trace("attachment.storage.upload", "error", { message: e?.message });
       return null;
     }
-    const { data: signedData } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
-    const signedUrl = signedData?.signedUrl || null;
-    if (!signedUrl) {
-      trace("attachment.storage.upload", "error", { reason: "missing_signed_url", path });
-      return null;
-    }
-    trace("attachment.storage.upload", "output", { path, signedUrlLength: signedUrl.length });
-    return signedUrl;
   };
 
   /** Resolve or auto-create v2ConversationId */
@@ -133,7 +132,7 @@ export function useAttachments(params: {
       const orgId = params.orgId || "orbit";
       const path = `${orgId}/${params.thread!.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${file.name.split(".").pop() || "bin"}`;
       
-      const finalUrl = await uploadToStorage(file, path);
+      const finalUrl = await uploadFile(file, path);
       if (!finalUrl) {
         trace("attachment.storage.upload", "error", { reason: "upload_returned_null", path });
         throw new Error("File upload failed. Please try again.");
@@ -142,27 +141,18 @@ export function useAttachments(params: {
       const content = isMedia ? `📷 ${file.name}` : `📎 ${file.name}`;
 
       trace("attachment.message.insert", "input", { conversationId, type: isMedia ? "media" : "file", fileName: file.name });
-      const { error } = await db.from("chat_messages_v2").insert({
-        conversation_id: conversationId,
-        sender_user_id: authUserId,
-        sender_orbit_id: params.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: params.thread?.peerOrbitId ?? null,
+      await insertMessage({
+        conversationId,
+        senderUserId: authUserId,
+        senderOrbitId: params.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        receiverOrbitId: params.thread?.peerOrbitId ?? null,
         type: isMedia ? "media" : "file",
         body: content,
         metadata: { url: finalUrl },
       });
-      if (error) {
-        trace("attachment.message.insert", "error", { message: error.message, code: error.code });
-        throw error;
-      }
       trace("attachment.message.insert", "output", { conversationId, inserted: true, fileName: file.name });
 
-      await db.from("conversations_v2").update({
-        last_message_at: new Date().toISOString(),
-        last_message_preview: content,
-        updated_at: new Date().toISOString(),
-      }).eq("id", conversationId);
-
+      await updateConversationTimestamp(conversationId, content);
       trace("attachment.preview.update", "output", { conversationId, preview: content, threadId: params.thread?.id ?? null });
       trace("attachment.realtime.reconcile", "output", { expectedViaRealtime: true, conversationId });
       toast.success("File sent");
@@ -186,7 +176,7 @@ export function useAttachments(params: {
     setUploading,
     fileInputRef,
     handleFileUpload,
-    uploadToStorage,
+    uploadToStorage: uploadFile,
     sendFiles,
   };
 }

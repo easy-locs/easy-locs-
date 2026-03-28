@@ -7,8 +7,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
-
-const db = supabase as any;
+import { fetchUnreadCount } from "@/repositories/communication.repository";
 
 export function useUnreadMessages() {
   const { user } = useAuth();
@@ -21,13 +20,8 @@ export function useUnreadMessages() {
     }
 
     try {
-      const { count: unread } = await db
-        .from("chat_messages_v2")
-        .select("id", { count: "exact", head: true })
-        .is("read_at", null)
-        .neq("sender_user_id", user.id);
-
-      setCount(unread ?? 0);
+      const unread = await fetchUnreadCount(user.id);
+      setCount(unread);
     } catch {
       setCount(0);
     }
