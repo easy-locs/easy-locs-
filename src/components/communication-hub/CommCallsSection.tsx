@@ -355,7 +355,7 @@ export default function CommCallsSection() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <span
-                        className="text-sm font-medium truncate block"
+                        className="text-sm font-medium line-clamp-1 break-words block"
                         style={{
                           color: call.status === "missed" ? "hsl(var(--hud-danger))" : "hsl(var(--hud-text))",
                         }}
