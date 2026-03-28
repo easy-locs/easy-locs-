@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { sendCommunicationEvent, createDeepLinkMeta } from "@/lib/shared";
-import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { scrollToAndHighlight } from "@/lib/shared/deep-link";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { ErrorState } from "@/components/ui/error-state";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useSeasonalData } from "@/hooks/seasonal/useSeasonalData";
+import { supabase } from "@/integrations/supabase/client";
+import { sendCommunicationEvent, createDeepLinkMeta } from "@/lib/shared";
+import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { Plus, Trash2, ChevronLeft, ChevronRight, Download, Upload, Link2, Copy, Check, X, Edit, CalendarDays, Camera, LayoutGrid, List } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import PropertyPhotos from "@/components/seasonal/PropertyPhotos";
