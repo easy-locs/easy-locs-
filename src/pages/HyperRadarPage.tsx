@@ -22,6 +22,7 @@ import {
   Activity, Navigation, Search, Minus, Plus, CloudRain, CloudSun,
 } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
+import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 
 /* ── Layer config ── */
 const LAYERS: { id: RadarLayer; label: string; icon: React.ReactNode; color: string }[] = [
@@ -134,7 +135,7 @@ export default function HyperRadarPage() {
           showHeatmap={visibleEntities.length > 30}
           heatmapPoints={visibleEntities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
           radiusKm={radius}
-          showWeatherLayer={showWeatherLayer}
+          showWeatherLayer={radarOverlay !== "off"}
           onZoneClick={handleZoneClick}
         />
       </div>
