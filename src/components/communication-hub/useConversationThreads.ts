@@ -604,7 +604,11 @@ export function useConversationThreads() {
     }
 
     // Filter out deleted (archived + muted) threads from non-archived views
-    const allThreads = Array.from(threadMap.values());
+    // Normalize all thread names to strings — prevents React error #185
+    const allThreads = Array.from(threadMap.values()).map(t => ({
+      ...t,
+      name: typeof t.name === "string" ? t.name : (t.name ? String(t.name) : "Contact"),
+    }));
 
     const sorted = allThreads.sort((a, b) => {
       if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
