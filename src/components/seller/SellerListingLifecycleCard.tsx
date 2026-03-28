@@ -96,7 +96,7 @@ export default function SellerListingLifecycleCard(props: ListingLifecycleProps)
     <div className="rounded-2xl border border-border/40 bg-card p-4 space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-bold text-foreground truncate">{cleanUiText(props.title)}</h4>
+        <h4 className="text-sm font-bold text-foreground min-w-0 break-words leading-snug">{cleanUiText(props.title)}</h4>
         <StatusChip label={lifecycle.label} variant={lifecycle.variant as any} size="sm" />
       </div>
 

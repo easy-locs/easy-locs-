@@ -148,15 +148,15 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md w-[calc(100vw-1.5rem)] max-h-[85vh] p-0 overflow-hidden flex flex-col rounded-2xl">
         <DialogHeader className="px-4 pt-4 pb-2.5 shrink-0 border-b border-border/50">
-          <DialogTitle className="text-base font-semibold truncate">{t("mp.book") || "Book"}: {service?.title}</DialogTitle>
+          <DialogTitle className="text-base font-semibold min-w-0 break-words leading-snug">{t("mp.book") || "Book"}: {service?.title}</DialogTitle>
         </DialogHeader>
 
         {service && (
           <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3.5 overscroll-contain">
             {/* Service info */}
             <div className="p-3 bg-muted/30 rounded-lg">
-              <p className="font-medium text-foreground text-sm truncate">{service.title}</p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="font-medium text-foreground text-sm min-w-0 break-words leading-snug">{service.title}</p>
+              <p className="text-xs text-muted-foreground min-w-0 break-words leading-snug">
                 {provider?.display_name} — {service.city}, {service.country}
               </p>
               <div className="flex items-center gap-2 mt-1">

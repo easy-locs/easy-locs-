@@ -207,7 +207,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
               <span className="font-medium text-foreground text-[11px]">📌 {service.source_contact_name}</span>
               <div className="flex items-center gap-2 flex-wrap">
                 {service.source_contact_phone && <span className="text-[10px]">📞 {service.source_contact_phone}</span>}
-                {service.source_contact_email && <span className="text-[10px] truncate">✉️ {service.source_contact_email}</span>}
+                {service.source_contact_email && <span className="text-[10px] min-w-0 break-words leading-snug">✉️ {service.source_contact_email}</span>}
               </div>
             </div>
           </div>

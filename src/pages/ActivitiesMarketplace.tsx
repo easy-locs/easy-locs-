@@ -1,12 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
-import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { useListingSync, useExploreRealtimeSync } from "@/hooks/useListingSync";
 import { useAppStore } from "@/stores/useAppStore";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,24 +18,19 @@ import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, Externa
 import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
 import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
 import ServiceCard from "@/components/marketplace/ServiceCard";
-import { type NotificationMeta } from "@/components/marketplace/BookingsManager";
-import { dispatchSyncEvent, syncPaymentRequest } from "@/lib/shared/sync-engine";
 import { useBookingLifecycle } from "@/hooks/useBookingLifecycle";
 import BookingRequestCenter from "@/components/marketplace/BookingRequestCenter";
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/lib/taxonomy/category-tree";
 import ReviewsManagerPanel from "@/components/marketplace/ReviewsManagerPanel";
-import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
-import { useEnsureOrg } from "@/hooks/useEnsureOrg";
-import { checkServiceDuplicate } from "@/lib/geo/duplicateGuard";
-import { assignZoneToService } from "@/lib/zones/autoAssignZone";
+import { computeExchangeRate } from "@/hooks/useCurrencyConversion";
+import { useMarketplaceData } from "@/hooks/marketplace/useMarketplaceData";
+import { useMarketplaceMutations } from "@/hooks/marketplace/useMarketplaceMutations";
 
 const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XOF", "CAD", "AUD", "TND", "TRY", "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP"];
 
 const ActivitiesMarketplace = () => {
   const { user, orgId, subscription } = useAuth();
-  const { ensureOrg, creating: creatingOrg } = useEnsureOrg();
-  const qc = useQueryClient();
   const { changeStatus } = useListingSync();
   useExploreRealtimeSync();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -54,84 +48,39 @@ const ActivitiesMarketplace = () => {
   const [deepLinkedBookingId, setDeepLinkedBookingId] = useState<string | null>(null);
   const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
 
-  // Reactive deep-link: read ?booking=ID from searchParams (works on mount AND on subsequent navigations)
+  // Data layer (extracted hook)
+  const {
+    myProvider, myServices, myBookings, providersMap,
+    revenueByCurrency, totalRevenueConverted, paidBookings,
+    totalBookings, pendingBookings,
+  } = useMarketplaceData(orgId, displayCurrency);
+
+  // Mutations layer (extracted hook)
+  const mutations = useMarketplaceMutations(myProvider, orgId);
+
+  // Deep-link handling
   useEffect(() => {
     const bookingId = searchParams.get("booking");
     if (bookingId && bookingId !== lastAppliedBookingId) {
       setActiveTab("bookings");
       setDeepLinkedBookingId(String(bookingId));
       setLastAppliedBookingId(String(bookingId));
-      // Clean URL
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
         next.delete("booking");
         return next;
       }, { replace: true });
-      console.log("[deep-link] marketplace booking param:", bookingId);
     }
   }, [searchParams, lastAppliedBookingId, setSearchParams]);
 
-
-  // --- My Provider Profile ---
-  const { data: myProvider } = useQuery({
-    queryKey: ["my_marketplace_provider", orgId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("marketplace_providers")
-        .select("*")
-        .eq("org_id", orgId!)
-        .limit(1)
-        .single();
-      return data;
-    },
-    enabled: !!orgId,
-  });
-
-  // --- My Services ---
-  const { data: myServices = [] } = useQuery({
-    queryKey: ["my_marketplace_services", myProvider?.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("marketplace_services")
-        .select("*")
-        .eq("provider_id", myProvider!.id)
-        .order("sort_order");
-      return (data || []);
-    },
-    enabled: !!myProvider?.id,
-  });
-
-  // --- My Bookings (received) ---
-  const { data: myBookings = [] } = useQuery({
-    queryKey: ["my_marketplace_bookings", orgId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("marketplace_bookings")
-        .select("*")
-        .eq("org_id", orgId!)
-        .order("created_at", { ascending: false });
-      return (data || []);
-    },
-    enabled: !!orgId,
-  });
-
-  // Realtime: live updates for marketplace bookings
-  useRealtimeSubscription({
-    table: "marketplace_bookings",
-    channelName: `marketplace-bookings-rt-${orgId}`,
-    filter: orgId ? `org_id=eq.${orgId}` : undefined,
-    queryKeys: [["my_marketplace_bookings", orgId]],
-    enabled: !!orgId,
-  });
-
-  // --- Centralized Booking Lifecycle ---
+  // Booking lifecycle
   const lifecycle = useBookingLifecycle({
     provider: myProvider,
     services: myServices,
     queryKeys: [["my_marketplace_bookings"]],
   });
 
-  // --- Browse all active services ---
+  // Browse services
   const { data: allServices = [] } = useQuery({
     queryKey: ["browse_marketplace_services", filterCat, filterCountry],
     queryFn: async () => {
@@ -139,25 +88,9 @@ const ActivitiesMarketplace = () => {
         _category: filterCat !== "all" ? filterCat : null,
         _country: filterCountry || null,
       });
-      return (data || []);
+      return data || [];
     },
   });
-
-  // --- All providers for display ---
-  const { data: allProviders = [] } = useQuery({
-    queryKey: ["browse_marketplace_providers"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .rpc("get_public_marketplace_providers", { p_active_only: true });
-      return (data || []) as any[];
-    },
-  });
-
-  const providersMap = useMemo(() => {
-    const m: Record<string, any> = {};
-    allProviders.forEach((p: any) => { m[p.id] = p; });
-    return m;
-  }, [allProviders]);
 
   const filteredServices = useMemo(() => {
     if (!searchQuery) return allServices;
@@ -166,182 +99,6 @@ const ActivitiesMarketplace = () => {
       s.title?.toLowerCase().includes(q) || s.city?.toLowerCase().includes(q) || s.country?.toLowerCase().includes(q)
     );
   }, [allServices, searchQuery]);
-
-  // --- Mutations ---
-  const createProvider = useMutation({
-    mutationFn: async (data: any) => {
-      // Auto-create org for free accounts
-      const resolvedOrgId = await ensureOrg();
-      if (!resolvedOrgId) throw new Error("Impossible de créer votre espace. Veuillez vous reconnecter.");
-      const slug = data.display_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-      const { error } = await supabase.from("marketplace_providers").insert({
-        ...data,
-        slug,
-        user_id: user!.id,
-        org_id: resolvedOrgId,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Provider profile created!");
-      qc.invalidateQueries({ queryKey: ["my_marketplace_provider"] });
-      setProviderFormOpen(false);
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  const updateProvider = useMutation({
-    mutationFn: async (data: any) => {
-      const { error } = await supabase.from("marketplace_providers").update(data).eq("id", myProvider!.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Profile updated!");
-      qc.invalidateQueries({ queryKey: ["my_marketplace_provider"] });
-      setProviderFormOpen(false);
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  const createService = useMutation({
-    mutationFn: async (data: ServiceFormData) => {
-      const resolvedOrgId = orgId || await ensureOrg();
-      if (!resolvedOrgId) throw new Error("Organisation introuvable");
-
-      // Duplicate detection
-      const dupCheck = await checkServiceDuplicate(data.title, (data as any).lat ?? null, (data as any).lng ?? null, (data as any).phone ?? null);
-      if (dupCheck.blocked) {
-        throw new Error(`Duplicate detected: similar service "${dupCheck.existingMatch?.name ?? "unknown"}" already exists nearby.`);
-      }
-
-      const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-      const insertData: Record<string, unknown> = {
-        ...data,
-        booking_slug: slug,
-        provider_id: myProvider!.id,
-        org_id: resolvedOrgId,
-        user_id: user!.id,
-      };
-      const { data: created, error } = await supabase.from("marketplace_services").insert(insertData as any).select("id, lat, lng").single();
-      if (error) throw error;
-
-      // Auto-assign zone
-      if (created?.id && created.lat && created.lng) {
-        assignZoneToService(created.id, created.lat, created.lng).catch(() => {});
-      }
-    },
-    onSuccess: () => {
-      toast.success("Service created!");
-      qc.invalidateQueries({ queryKey: ["my_marketplace_services"] });
-      qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
-      setServiceFormOpen(false);
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  const updateService = useMutation({
-    mutationFn: async (data: ServiceFormData) => {
-      const { error } = await supabase.from("marketplace_services").update(data as any).eq("id", editingService!.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Service mis à jour !");
-      qc.invalidateQueries({ queryKey: ["my_marketplace_services"] });
-      qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
-      setServiceFormOpen(false);
-      setEditingService(null);
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  const deleteService = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("marketplace_services").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Service supprimé");
-      qc.invalidateQueries({ queryKey: ["my_marketplace_services"] });
-      qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
-    },
-  });
-
-  const submitBooking = useMutation({
-    mutationFn: async (formData: any) => {
-      const svc = bookingService;
-      const prov = providersMap[svc.provider_id];
-      const provOrgId = prov?.org_id || svc.org_id;
-      const totalPrice = formData.date_from && formData.date_to
-        ? Number(svc.price) * Math.max(1, Math.ceil((new Date(formData.date_to).getTime() - new Date(formData.date_from).getTime()) / 86400000))
-        : Number(svc.price) * (formData.quantity || 1);
-
-      const { data: booking, error } = await supabase.from("marketplace_bookings").insert({
-        service_id: svc.id,
-        provider_id: svc.provider_id,
-        org_id: provOrgId,
-        booker_user_id: user?.id || null,
-        booker_name: formData.booker_name,
-        booker_email: formData.booker_email,
-        booker_phone: formData.booker_phone,
-        service_date: formData.service_date || formData.date_from,
-        service_time: formData.service_time,
-        date_from: formData.date_from || null,
-        date_to: formData.date_to || null,
-        quantity: formData.quantity || 1,
-        total_price: totalPrice,
-        currency: svc.currency,
-        notes: formData.notes,
-      }).select().single();
-      if (error) throw error;
-
-      // Sync engine: provider notification + email + thread
-      await dispatchSyncEvent({
-        type: "service_booking",
-        context: {
-          orgId: provOrgId,
-          bookingId: booking?.id,
-          propertyId: booking?.property_id || undefined,
-          countryCode: svc.country || "",
-        },
-        actorUserId: user?.id || "",
-        targetUserId: prov?.user_id || svc.user_id,
-        targetEmail: prov?.email,
-        clientName: formData.booker_name,
-        serviceTitle: svc.title,
-        serviceDate: formData.service_date || formData.date_from || "—",
-        totalPrice,
-        currency: svc.currency,
-      });
-
-      // Also notify the booker via sync engine (document_shared reused as confirmation)
-      if (formData.booker_email) {
-        const { sendCommunicationEvent } = await import("@/lib/shared/communication-pipeline");
-        const { createDeepLinkMeta } = await import("@/lib/shared/notification-engine");
-        const meta = createDeepLinkMeta({
-          targetType: "marketplace_booking",
-          targetId: booking?.id || "",
-          module: "marketplace",
-          countryCode: svc.country || "",
-          bookingId: booking?.id,
-          orgId: provOrgId,
-        });
-        await sendCommunicationEvent({
-          orgId: provOrgId,
-          recipientEmail: formData.booker_email,
-          subject: `✅ Booking request sent: ${svc.title}`,
-          message: `Hello ${formData.booker_name},\n\nYour booking for "${svc.title}" has been submitted.\nDate: ${formData.service_date || formData.date_from || "—"}\nAmount: ${totalPrice} ${svc.currency}\n\nYou will be notified when the provider confirms.\n\nThank you!`,
-          category: "info",
-          meta,
-        });
-      }
-    },
-    onSuccess: () => {
-      toast.success("Demande de réservation envoyée !");
-      setBookingService(null);
-      qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
 
   const updateBookingStatus = async (id: string, status: string) => {
     await lifecycle.updateStatusById(myBookings, id, status as any);
@@ -366,28 +123,6 @@ const ActivitiesMarketplace = () => {
     }
   };
 
-  // Stats
-  const totalBookings = myBookings.length;
-  const pendingBookings = myBookings.filter((b: any) => b.status === "pending").length;
-
-  // Revenue by currency
-  const revenueByCurrency = useMemo(() => {
-    const map: Record<string, number> = {};
-    myBookings.filter((b: any) => b.payment_confirmed).forEach((b: any) => {
-      const cur = b.currency || "EUR";
-      map[cur] = (map[cur] || 0) + Number(b.total_price || 0);
-    });
-    return map;
-  }, [myBookings]);
-
-  const totalRevenueConverted = useMemo(() => {
-    let total = 0;
-    for (const [cur, amount] of Object.entries(revenueByCurrency)) {
-      total += amount * computeExchangeRate(cur, displayCurrency);
-    }
-    return Math.round(total * 100) / 100;
-  }, [revenueByCurrency, displayCurrency]);
-
   const formatAmount = (amount: number, currency: string) => {
     try {
       return new Intl.NumberFormat(undefined, { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
@@ -396,7 +131,7 @@ const ActivitiesMarketplace = () => {
     }
   };
 
-  const paidBookings = useMemo(() => myBookings.filter((b: any) => b.payment_confirmed), [myBookings]);
+  
 
   return (
     <DashboardLayout>
@@ -639,8 +374,8 @@ const ActivitiesMarketplace = () => {
             invoice_prefix: myProvider.invoice_prefix || "INV",
             invoice_next_number: myProvider.invoice_next_number || 1,
           } : undefined}
-          onSave={(data) => myProvider ? updateProvider.mutate(data) : createProvider.mutate(data)}
-          isPending={createProvider.isPending || updateProvider.isPending}
+          onSave={(data) => myProvider ? mutations.updateProvider.mutate(data) : mutations.createProvider.mutate(data)}
+          isPending={mutations.createProvider.isPending || mutations.updateProvider.isPending}
         />
 
         {/* Service Form */}
@@ -673,8 +408,8 @@ const ActivitiesMarketplace = () => {
           } : undefined}
           providerCountry={myProvider?.country}
           providerCity={myProvider?.city}
-          onSave={(data) => editingService ? updateService.mutate(data) : createService.mutate(data)}
-          isPending={createService.isPending || updateService.isPending}
+          onSave={(data) => editingService ? mutations.updateService.mutate({ id: editingService.id, data }) : mutations.createService.mutate(data)}
+          isPending={mutations.createService.isPending || mutations.updateService.isPending}
           allowVideo={subscription.subscribed}
         />
 
@@ -685,8 +420,8 @@ const ActivitiesMarketplace = () => {
             onOpenChange={(v) => !v && setBookingService(null)}
             service={bookingService}
             provider={providersMap[bookingService.provider_id]}
-            onSubmit={(data) => submitBooking.mutate(data)}
-            isPending={submitBooking.isPending}
+            onSubmit={(data) => mutations.submitBooking.mutate({ formData: data, service: bookingService, providersMap })}
+            isPending={mutations.submitBooking.isPending}
           />
         )}
 
@@ -752,8 +487,8 @@ const ActivitiesMarketplace = () => {
                     return (
                       <div key={b.id} className="flex items-center justify-between p-2 rounded-md bg-card border border-border text-sm">
                         <div className="min-w-0 flex-1">
-                          <p className="text-foreground font-medium truncate">{b.booker_name}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">{svc?.title || "Service"} • {b.service_date || "—"}</p>
+                          <p className="text-foreground font-medium min-w-0 break-words leading-snug">{b.booker_name}</p>
+                          <p className="text-[10px] text-muted-foreground min-w-0 break-words leading-snug">{svc?.title || "Service"} • {b.service_date || "—"}</p>
                         </div>
                         <div className="text-right shrink-0 ml-2">
                           <p className="font-bold text-foreground tabular-nums">{formatAmount(Number(b.total_price || 0), b.currency || "EUR")}</p>
