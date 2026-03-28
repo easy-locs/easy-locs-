@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
 import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
 import { useOfflineMessages } from "@/hooks/useOfflineMessages";
@@ -83,7 +83,7 @@ interface Props {
 export default function HudChatPanel({ thread, onBack, onToggleContext, onThreadUpdate }: Props) {
   const { user, orgId } = useAuth();
   const { t, locale } = useI18n();
-  const myOrbitId = useOrbitStore((s) => s.profile?.orbitId ?? null);
+  const myOrbitId = useOrbitIdentity()?.orbitId ?? null;
   const { ready: e2eReady, encrypt, decrypt } = useOrbitEncryption(user?.id);
   const offline = useOfflineMessages({ userId: user?.id, orgId: orgId || undefined, threadId: thread?.id });
   const { settings: privacySettings } = usePrivacySettings();

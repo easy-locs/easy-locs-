@@ -4,7 +4,7 @@
  */
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { SettingsSectionCard } from "@/components/settings/SettingsSectionCard";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { StatusPulse } from "@/components/ui/StatusPulse";
@@ -24,7 +24,7 @@ import { motion } from "framer-motion";
 export default function CustomerProfilePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const profile = useOrbitStore((s) => s.profile);
+  const profile = useOrbitIdentity();
 
   const initials = (profile?.displayName || user?.email || "U")
     .split(/[\s@]/)
