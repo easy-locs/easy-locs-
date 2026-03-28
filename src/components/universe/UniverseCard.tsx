@@ -65,8 +65,8 @@ export default function UniverseCard({
             )}
           </div>
           <div className="p-3 space-y-1">
-            <h3 className="text-sm font-bold text-foreground line-clamp-1">{title}</h3>
-            {subtitle && <p className="text-2xs text-muted-foreground line-clamp-1">{subtitle}</p>}
+             <h3 className="text-sm font-bold text-foreground line-clamp-2 break-words leading-snug">{title}</h3>
+             {subtitle && <p className="text-2xs text-muted-foreground line-clamp-2 break-words leading-snug">{subtitle}</p>}
             <div className="flex items-center gap-2 pt-0.5">
               {rating != null && (
                 <span className="flex items-center gap-0.5 text-2xs font-semibold text-accent">
@@ -113,8 +113,8 @@ export default function UniverseCard({
 
         {/* Info */}
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-          <h3 className="text-sm font-bold text-foreground line-clamp-1">{title}</h3>
-          {subtitle && <p className="text-2xs text-muted-foreground line-clamp-1">{subtitle}</p>}
+           <h3 className="text-sm font-bold text-foreground line-clamp-2 break-words leading-snug">{title}</h3>
+           {subtitle && <p className="text-2xs text-muted-foreground line-clamp-2 break-words leading-snug">{subtitle}</p>}
           <div className="flex items-center gap-3 mt-0.5">
             {rating != null && (
               <span className="flex items-center gap-0.5 text-2xs font-semibold text-accent">

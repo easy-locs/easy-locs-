@@ -23,20 +23,20 @@ export function OrbitComposerTopState({
         {replyState && (
           <>
             <div className="flex items-center gap-1 text-xs font-medium text-primary">
-              <Reply className="w-3 h-3" />
+              <Reply className="w-3 h-3 shrink-0" />
               Replying {replyState.senderName ? `to ${replyState.senderName}` : ""}
             </div>
-            <p className="text-xs text-muted-foreground truncate mt-0.5">{replyState.preview}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2 break-words leading-snug mt-0.5">{replyState.preview}</p>
           </>
         )}
 
         {editState && (
           <>
             <div className="flex items-center gap-1 text-xs font-medium text-primary">
-              <Pencil className="w-3 h-3" />
+              <Pencil className="w-3 h-3 shrink-0" />
               Editing message
             </div>
-            <p className="text-xs text-muted-foreground truncate mt-0.5">{editState.originalBody}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2 break-words leading-snug mt-0.5">{editState.originalBody}</p>
           </>
         )}
       </div>

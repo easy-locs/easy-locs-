@@ -18,11 +18,11 @@ export function OrbitPinnedBanner({ pinnedBody, onClick, onUnpin }: Props) {
           className="flex-1 min-w-0 text-left"
         >
           <p className="text-[10px] font-semibold text-primary uppercase tracking-wide">Pinned message</p>
-          <p className="text-xs text-muted-foreground truncate">{pinnedBody}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2 break-words leading-snug">{pinnedBody}</p>
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onUnpin?.(); }}
-          className="p-1 rounded-full hover:bg-muted/50 transition-colors"
+          className="p-1 rounded-full hover:bg-muted/50 transition-colors shrink-0"
         >
           <X className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
