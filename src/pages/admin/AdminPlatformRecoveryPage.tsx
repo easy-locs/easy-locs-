@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, Play, Clock, CheckCircle, XCircle, SkipForward, Wrench, Timer, Database, Zap, Activity, Shield, Heart } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPlatformRecoveryRuns, invokeServerRecovery } from "@/repositories/admin-ops.repository";
 import {
   runPlatformRecovery,
   type RecoveryRunReport,
@@ -100,12 +100,8 @@ export default function AdminPlatformRecoveryPage() {
   const continuousStatus = useBackendEngineStatus();
 
   const loadDbRuns = useCallback(async () => {
-    const { data } = await (supabase as any)
-      .from("platform_recovery_runs")
-      .select("*")
-      .order("started_at", { ascending: false })
-      .limit(20);
-    if (data) setDbRuns(data);
+    const data = await fetchPlatformRecoveryRuns();
+    setDbRuns(data);
     setLoading(false);
   }, []);
 
@@ -126,7 +122,7 @@ export default function AdminPlatformRecoveryPage() {
   const handleServerRun = useCallback(async (job = "full") => {
     setRunning(true);
     try {
-      await supabase.functions.invoke("platform-recovery", { body: { job } });
+      await invokeServerRecovery(job);
       await new Promise(r => setTimeout(r, 2000));
       await loadDbRuns();
     } finally {

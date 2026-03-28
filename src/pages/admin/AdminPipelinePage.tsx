@@ -5,7 +5,7 @@ import { processQueue, getQueueStats, enqueueUnprocessedEntities, recoverStaleIt
 import { PIPELINE_STAGES } from "@/lib/pipeline/queue-driven-pipeline";
 import { ENGINE_RATIONALIZATION_MAP } from "@/lib/pipeline/vertical-schema-registry";
 import { runAiCore, getAiMode, setAiMode, type AiCoreResult, type AiExecutionMode } from "@/lib/ai/ai-core-engine";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeUaeScrape } from "@/repositories/admin-ops.repository";
 
 const UAE_CITIES = ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah"];
 const VERTICALS = ["food", "hotel", "services", "grocery"];
@@ -70,11 +70,7 @@ export default function AdminPipelinePage() {
     setRunning(true);
     setScrapeResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke("uae-scrape-onboard", {
-        body: { city: scrapeCity, vertical: scrapeVertical, limit: 20 },
-      });
-      if (error) throw error;
-      setScrapeResult(data);
+      setScrapeResult(await invokeUaeScrape(scrapeCity, scrapeVertical));
     } catch (e: any) {
       setScrapeResult({ error: e?.message ?? "Failed" });
     } finally { setRunning(false); }
