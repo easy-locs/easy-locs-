@@ -15,7 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
 import { useWalletBalance } from "@/payments/wallet-hooks";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPropertyHubOverview } from "@/repositories/property-management-hub.repository";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { format } from "date-fns";
 import {
@@ -65,14 +65,11 @@ export default function PropertyManagementHub() {
   useEffect(() => {
     if (!orgId) { setLoading(false); return; }
     const timeout = setTimeout(() => setLoading(false), 8000);
-    Promise.all([
-      supabase.from("properties").select("id, country").eq("org_id", orgId),
-      supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
-      supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
-    ]).then(([props, tenantsRes, rc]) => {
+    fetchPropertyHubOverview(orgId).then((result) => {
       clearTimeout(timeout);
-      const propData = (props.data || []) as { id: string; country: string }[];
-      const tenantsList = (tenantsRes.data || []) as { id: string; property_id: string | null; lease_end: string | null }[];
+      // Use the properties list from the hub repository
+      const propData = (result.properties || []) as Array<{ id: string; country: string }>;
+      const tenantsList = (result.tenants || []) as Array<{ id: string; property_id: string | null; lease_end: string | null }>;
       const countryMap = new Map<string, { count: number; propIds: Set<string> }>();
       propData.forEach((p) => {
         const c = p.country || "FR";
@@ -92,10 +89,10 @@ export default function PropertyManagementHub() {
         })
         .sort((a, b) => b.count - a.count);
       const currentMonth = format(new Date(), "yyyy-MM");
-      const monthCalls = ((rc.data || []) as Array<{ month: string; paid: boolean; total_amount: number | string }>).filter(
-        (r) => r.month === currentMonth
+      const monthCalls = (result.rentCalls || []).filter(
+        (r: any) => r.month === currentMonth
       );
-      const revenueThisMonth = monthCalls.filter((r) => r.paid).reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
+      const revenueThisMonth = monthCalls.filter((r: any) => r.paid).reduce((sum: number, r: any) => sum + Number(r.total_amount || 0), 0);
       setStats({ totalProperties: propData.length, totalCountries: countryMap.size, revenueThisMonth, propertiesByCountry });
       setLoading(false);
     }).catch((err) => {
