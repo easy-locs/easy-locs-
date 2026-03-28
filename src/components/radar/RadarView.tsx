@@ -441,7 +441,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-sm font-bold truncate text-foreground">{selected.title || selected.name}</p>
+                    <p className="text-sm font-bold break-words leading-snug text-foreground">{selected.title || selected.name}</p>
                     {(selected as any).isSponsored && (
                       <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/20 text-amber-400">⚡</span>
                     )}
@@ -519,12 +519,12 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-sm font-semibold truncate text-foreground">{entity.title || entity.name}</p>
+                    <p className="text-sm font-semibold break-words leading-snug text-foreground">{entity.title || entity.name}</p>
                     {(entity as any).isSponsored && (
                       <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/20 text-amber-400 shrink-0">⚡</span>
                     )}
                   </div>
-                  {entity.subtitle && <p className="text-[11px] text-muted-foreground truncate">{entity.subtitle}</p>}
+                  {entity.subtitle && <p className="text-[11px] text-muted-foreground break-words leading-snug line-clamp-2">{entity.subtitle}</p>}
                   <div className="flex items-center gap-2 mt-0.5">
                     {entity.rating != null && entity.rating > 0 && (
                       <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-400">
