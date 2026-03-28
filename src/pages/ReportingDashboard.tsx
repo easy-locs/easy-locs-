@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchReportingData } from "@/repositories/reporting.repository";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
 import { exportToCSV } from "@/lib/csv-export";
@@ -71,18 +71,10 @@ const ReportingDashboard = () => {
     if (!orgId) return;
     const load = async () => {
       setLoading(true);
-      let propQ = supabase.from("properties").select("id, label, country").eq("org_id", orgId);
-      if (countryFilter) propQ = propQ.eq("country", countryFilter);
-      const [{ data: props }, { data: rc }, { data: exp }] = await Promise.all([
-        propQ,
-        supabase.from("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId),
-        supabase.from("expenses").select("label, amount, category, expense_date, property_id").eq("org_id", orgId),
-      ]);
-      const p = (props || []) as Property[];
-      setProperties(p);
-      const pIds = new Set(p.map(pr => pr.id));
-      setRentCalls(countryFilter ? (rc || []).filter((r: any) => r.property_id && pIds.has(r.property_id)) : (rc || []));
-      setExpenses(countryFilter ? (exp || []).filter((e: any) => e.property_id && pIds.has(e.property_id)) : (exp || []));
+      const result = await fetchReportingData(orgId, countryFilter);
+      setProperties(result.properties);
+      setRentCalls(result.rentCalls as any);
+      setExpenses(result.expenses as any);
       setLoading(false);
     };
     load();
