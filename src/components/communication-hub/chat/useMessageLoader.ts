@@ -82,6 +82,9 @@ function mapV2ToChat(m: any, conversationId: string): ChatMessage {
   } as any;
 }
 
+// Simple in-memory cache for instant re-open
+const messageCache = new Map<string, ChatMessage[]>();
+
 export function useMessageLoader({
   thread,
   userId,
@@ -93,6 +96,7 @@ export function useMessageLoader({
   const [pendingOffline, setPendingOffline] = useState<any[]>([]);
   const [convStatus, setConvStatus] = useState("active");
   const [typingIndicator, setTypingIndicator] = useState(false);
+  const [messagesLoading, setMessagesLoading] = useState(false);
 
   const typingChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<any>(null);
@@ -101,16 +105,27 @@ export function useMessageLoader({
     if (!thread?.v2ConversationId) {
       setRawMessages([]);
       setPendingOffline([]);
+      setMessagesLoading(false);
       return;
     }
 
     const conversationId = thread.v2ConversationId;
+
+    // Show cached messages instantly, then refresh in background
+    const cached = messageCache.get(conversationId);
+    if (cached?.length) {
+      setRawMessages(cached);
+      setMessagesLoading(false);
+    } else {
+      setMessagesLoading(true);
+    }
 
     if (!offline.isOnline) {
       const cached = await offline.getCachedMessages();
       const pending = await offline.getThreadPending();
       setRawMessages((cached ?? []) as ChatMessage[]);
       setPendingOffline(pending ?? []);
+      setMessagesLoading(false);
       return;
     }
 
@@ -123,27 +138,27 @@ export function useMessageLoader({
       .limit(300);
 
     if (error) {
+      setMessagesLoading(false);
       return;
     }
 
     const mapped = (data ?? []).map((m: any) => mapV2ToChat(m, conversationId));
     setRawMessages(mapped);
+    messageCache.set(conversationId, mapped);
     offline.cacheMessages(mapped);
+    setMessagesLoading(false);
+    setPendingOffline([]);
 
     const unreadIds = (data ?? [])
       .filter((m: any) => !m.read_at && m.sender_user_id !== userId)
       .map((m: any) => m.id);
 
     if (readReceipts && unreadIds.length > 0) {
-      await db
-        .from("chat_messages_v2")
+      db.from("chat_messages_v2")
         .update({ read_at: new Date().toISOString() })
-        .in("id", unreadIds);
-
-      onThreadUpdate(thread.id, { unreadCount: 0 });
+        .in("id", unreadIds)
+        .then(() => onThreadUpdate(thread.id, { unreadCount: 0 }));
     }
-
-    setPendingOffline([]);
   }, [thread, userId, readReceipts, onThreadUpdate, offline]);
 
   useEffect(() => {
@@ -282,5 +297,6 @@ export function useMessageLoader({
     typingIndicator,
     broadcastTyping,
     loadMessages,
+    messagesLoading,
   };
 }

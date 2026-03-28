@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { haptic } from "@/lib/haptics";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
@@ -562,6 +563,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
   const empty = !thread;
   const visibleMessages = useMemo(() => messages, [messages]);
+  const isLoadingMessages = loader.messagesLoading && messages.length === 0;
 
   if (empty) return <ChatEmptyState t={t} />;
 
@@ -657,39 +659,52 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         )}
 
         <div className="relative flex-1 min-h-0">
-          <MessageList
-            ref={scrollRef}
-            messages={visibleMessages}
-            rawCount={loader.rawMessages.length}
-            isDecrypting={loader.rawMessages.length > 0 && visibleMessages.length === 0}
-            typingIndicator={loader.typingIndicator}
-            hiddenMsgIds={selection.hiddenMsgIds}
-            selectedMsgIds={selection.selectedMsgIds}
-            selectMode={selection.selectMode}
-            pendingOffline={loader.pendingOffline}
-            userId={user?.id}
-            threadName={thread.name}
-            locale={locale}
-            showOriginal={showOriginal}
-            translatingMsgId={translatingMsgId}
-            onTranslate={handleTranslateMessage}
-            onContextMenu={(_, msg, isMe) => {
-              selection.setContextMessage({
-                msgId: msg.id,
-                content: msg.content,
-                isMe,
-                createdAt: msg.created_at,
-                hasAudio: !!(msg as any).audio_url,
-                hasAttachment: !!msg.attachment_url,
-                senderId: msg.sender_id,
-                canModerate: false,
-                isStarred: !!(msg as any).starred,
-              });
-            }}
-            onToggleSelect={selection.toggleMsgSelect}
-            getCategoryIcon={getCategoryIcon}
-            t={t}
-          />
+          {isLoadingMessages ? (
+            <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 pb-6 space-y-4" style={{ background: "hsl(var(--hud-bg))" }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
+                  <div className="space-y-1.5" style={{ maxWidth: "75%" }}>
+                    {i % 2 === 0 && <Skeleton className="h-2.5 w-16" />}
+                    <Skeleton className={`h-10 rounded-2xl ${i % 2 === 0 ? "w-48 rounded-bl-md" : "w-40 rounded-br-md"}`} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <MessageList
+              ref={scrollRef}
+              messages={visibleMessages}
+              rawCount={loader.rawMessages.length}
+              isDecrypting={loader.rawMessages.length > 0 && visibleMessages.length === 0}
+              typingIndicator={loader.typingIndicator}
+              hiddenMsgIds={selection.hiddenMsgIds}
+              selectedMsgIds={selection.selectedMsgIds}
+              selectMode={selection.selectMode}
+              pendingOffline={loader.pendingOffline}
+              userId={user?.id}
+              threadName={thread.name}
+              locale={locale}
+              showOriginal={showOriginal}
+              translatingMsgId={translatingMsgId}
+              onTranslate={handleTranslateMessage}
+              onContextMenu={(_, msg, isMe) => {
+                selection.setContextMessage({
+                  msgId: msg.id,
+                  content: msg.content,
+                  isMe,
+                  createdAt: msg.created_at,
+                  hasAudio: !!(msg as any).audio_url,
+                  hasAttachment: !!msg.attachment_url,
+                  senderId: msg.sender_id,
+                  canModerate: false,
+                  isStarred: !!(msg as any).starred,
+                });
+              }}
+              onToggleSelect={selection.toggleMsgSelect}
+              getCategoryIcon={getCategoryIcon}
+              t={t}
+            />
+          )}
 
           <OrbitJumpToBottomButton visible={showJumpToBottom} onClick={jumpToBottom} />
         </div>
