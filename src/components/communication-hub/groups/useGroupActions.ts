@@ -1,9 +1,8 @@
 /**
  * useGroupActions — Create, send, add/remove members, leave.
- * Pure action layer, no rendering.
+ * Pure action layer, no rendering. Delegates all DB to communication.repository.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
@@ -11,6 +10,12 @@ import { toast } from "sonner";
 import { trackOrbitEvent, guardDisplayName } from "@/lib/orbit/orbitTelemetry";
 import type { Group, GroupType, GroupMember, GroupMessage, MemberRole } from "./types";
 import { TYPE_LABELS, ROLE_LABELS } from "./group-helpers";
+import {
+  resolveOrbitProfile, resolveProfileByEmail, createConversation,
+  insertGroupMember, insertMessage, updateConversationTimestamp,
+  getConversationParticipants, updateConversationParticipants,
+  deleteGroupMember, deleteGroupMemberByUser, updateGroupMemberRole,
+} from "@/repositories/communication.repository";
 
 export function useGroupActions(
   loadGroups: () => Promise<void>,
@@ -22,11 +27,7 @@ export function useGroupActions(
   const createGroup = useCallback(async (input: { name: string; description: string; group_type: GroupType }) => {
     if (!user?.id || !input.name.trim()) return null;
 
-    const { data: myOrbit } = await (supabase as any)
-      .from("orbit_profiles_v2")
-      .select("orbit_id, display_name, email, avatar_url")
-      .eq("id", user.id)
-      .maybeSingle();
+    const myOrbit = await resolveOrbitProfile(user.id);
 
     const participants = [{
       userId: user.id,
@@ -36,23 +37,21 @@ export function useGroupActions(
       avatarUrl: myOrbit?.avatar_url || null,
     }];
 
-    const { data: created, error } = await (supabase as any).from("conversations_v2").insert({
+    const created = await createConversation({
       type: input.group_type,
       title: input.name.trim(),
       participants,
-      created_by_orbit_id: myOrbit?.orbit_id || null,
-      last_message_at: new Date().toISOString(),
-    } as any).select("id, type, title, created_at, created_by_orbit_id").single();
+      createdByOrbitId: myOrbit?.orbit_id || null,
+    });
 
-    if (error || !created) { toast.error(error?.message || "Failed to create"); return null; }
+    if (!created) { toast.error("Failed to create"); return null; }
 
-    const { error: memberError } = await supabase.from("group_members").insert({
-      group_id: created.id,
-      user_id: user.id,
-      role: "admin",
-    } as any);
-
-    if (memberError) { toast.error(memberError.message || "Failed to add creator"); return null; }
+    try {
+      await insertGroupMember(created.id, user.id, "admin");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to add creator");
+      return null;
+    }
 
     haptic("success");
     toast.success(
@@ -82,49 +81,29 @@ export function useGroupActions(
   const sendMessage = useCallback(async (group: Group, content: string) => {
     if (!content.trim() || !user?.id) return null;
 
-    const { data: myOrbit } = await (supabase as any)
-      .from("orbit_profiles_v2")
-      .select("orbit_id")
-      .eq("id", user.id)
-      .maybeSingle();
+    const myOrbit = await resolveOrbitProfile(user.id);
 
-    const { data, error } = await (supabase as any).from("chat_messages_v2").insert({
-      conversation_id: group.id,
-      sender_user_id: user.id,
-      sender_orbit_id: myOrbit?.orbit_id || null,
+    const data = await insertMessage({
+      conversationId: group.id,
+      senderUserId: user.id,
+      senderOrbitId: myOrbit?.orbit_id || null,
       type: "text",
       body: content,
-    } as any).select().single();
+    });
 
-    if (error) { toast.error(error.message || "Failed to send"); return null; }
-
-    await (supabase as any).from("conversations_v2")
-      .update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-      .eq("id", group.id);
-
+    await updateConversationTimestamp(group.id);
     return data;
   }, [user?.id]);
 
   const addMember = useCallback(async (group: Group, email: string, role: MemberRole) => {
     const normalizedEmail = email.trim().toLowerCase();
-    const { data: profile } = await supabase.from("profiles").select("id").eq("email", normalizedEmail).single();
+    const profile = await resolveProfileByEmail(normalizedEmail);
     if (!profile) { toast.error(t("orbit.groups.user_not_found") || "User not found"); return false; }
 
-    const { data: orbitProfile } = await (supabase as any)
-      .from("orbit_profiles_v2")
-      .select("orbit_id, display_name, email, avatar_url")
-      .eq("id", profile.id)
-      .maybeSingle();
+    const orbitProfile = await resolveOrbitProfile(profile.id);
+    const currentParticipants = await getConversationParticipants(group.id);
 
-    const { data: currentConv } = await (supabase as any)
-      .from("conversations_v2")
-      .select("participants")
-      .eq("id", group.id)
-      .single();
-
-    if (!currentConv) { toast.error("Failed to resolve group"); return false; }
-
-    const participants = Array.isArray(currentConv.participants) ? [...currentConv.participants] : [];
+    const participants = Array.isArray(currentParticipants) ? [...currentParticipants] : [];
     if (participants.some((p: any) => p?.userId === profile.id || p?.user_id === profile.id)) {
       toast.info("Already a member");
       return false;
@@ -138,18 +117,12 @@ export function useGroupActions(
       avatarUrl: orbitProfile?.avatar_url || null,
     });
 
-    await (supabase as any).from("conversations_v2")
-      .update({ participants, updated_at: new Date().toISOString() })
-      .eq("id", group.id);
+    await updateConversationParticipants(group.id, participants);
 
-    const { error } = await supabase.from("group_members").insert({
-      group_id: group.id,
-      user_id: profile.id,
-      role,
-    } as any);
-
-    if (error) {
-      toast.error(error.message.includes("duplicate") ? "Already a member" : "Failed to add member");
+    try {
+      await insertGroupMember(group.id, profile.id, role);
+    } catch (e: any) {
+      toast.error(e?.message?.includes("duplicate") ? "Already a member" : "Failed to add member");
       return false;
     }
 
@@ -161,19 +134,13 @@ export function useGroupActions(
   }, [t, loadGroups, refreshMembers]);
 
   const removeMember = useCallback(async (group: Group, memberId: string, memberUserId?: string) => {
-    await supabase.from("group_members").delete().eq("id", memberId);
+    await deleteGroupMember(memberId);
 
     if (memberUserId) {
-      const { data: currentConv } = await (supabase as any)
-        .from("conversations_v2")
-        .select("participants")
-        .eq("id", group.id)
-        .single();
-      const participants = (Array.isArray(currentConv?.participants) ? currentConv.participants : [])
+      const currentParticipants = await getConversationParticipants(group.id);
+      const participants = (Array.isArray(currentParticipants) ? currentParticipants : [])
         .filter((p: any) => p?.userId !== memberUserId && p?.user_id !== memberUserId);
-      await (supabase as any).from("conversations_v2")
-        .update({ participants, updated_at: new Date().toISOString() })
-        .eq("id", group.id);
+      await updateConversationParticipants(group.id, participants);
     }
 
     haptic("light");
@@ -183,17 +150,19 @@ export function useGroupActions(
   }, [t, loadGroups, refreshMembers]);
 
   const changeMemberRole = useCallback(async (memberId: string, newRole: MemberRole) => {
-    const { error } = await supabase.from("group_members").update({ role: newRole } as any).eq("id", memberId);
-    if (!error) {
+    try {
+      await updateGroupMemberRole(memberId, newRole);
       haptic("light");
       toast.success(`Role updated to ${ROLE_LABELS[newRole]}`);
+      return true;
+    } catch {
+      return false;
     }
-    return !error;
   }, []);
 
   const leaveGroup = useCallback(async (group: Group) => {
     if (!user?.id) return;
-    await supabase.from("group_members").delete().eq("group_id", group.id).eq("user_id", user.id);
+    await deleteGroupMemberByUser(group.id, user.id);
     haptic("medium");
     toast.success(t("orbit.groups.left") || "Left group");
     loadGroups();

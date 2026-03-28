@@ -8,11 +8,13 @@ import { Trash2, Copy, Forward, X, CheckSquare } from "lucide-react";
 import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { platformBus } from "@/lib/shared/platform-bus";
+import {
+  deleteMessageForSender, deleteMessageForUser, deleteMessageForAll,
+} from "@/repositories/communication.repository";
 
 interface Props {
   selectedIds: Set<string>;
@@ -56,25 +58,9 @@ export default function MessageMultiSelectToolbar({
       for (const id of ids) {
         const msg = messages.find(m => m.id === id);
         if (msg && msg.sender_id === currentUserId) {
-          await supabase.from("chat_messages_v2").update({
-            deleted_for_sender: true,
-            deleted_at: new Date().toISOString(),
-            deleted_by: currentUserId,
-            deletion_reason: "self_hide",
-          } as any).eq("id", id);
-        } else {
-          const { data: existing } = await (supabase as any)
-            .from("chat_messages_v2")
-            .select("metadata")
-            .eq("id", id)
-            .single();
-          const meta = (existing?.metadata as Record<string, any>) || {};
-          const currentIds: string[] = Array.isArray(meta.deleted_for_user_ids) ? meta.deleted_for_user_ids : [];
-          if (currentUserId && !currentIds.includes(currentUserId)) {
-            await (supabase as any).from("chat_messages_v2").update({
-              metadata: { ...meta, deleted_for_user_ids: [...currentIds, currentUserId] },
-            }).eq("id", id);
-          }
+          await deleteMessageForSender(id);
+        } else if (currentUserId) {
+          await deleteMessageForUser(id, currentUserId);
         }
       }
       onDeletedForMe(ids);
@@ -95,16 +81,7 @@ export default function MessageMultiSelectToolbar({
     const ids = Array.from(selectedIds);
     try {
       for (const id of ids) {
-        await supabase.from("chat_messages_v2").update({
-          deleted_for_all: true,
-          deleted_at: new Date().toISOString(),
-          deleted_by: currentUserId,
-          deletion_reason: "user_action",
-          content: "🚫 This message was deleted",
-          attachment_url: null,
-          audio_url: null,
-          audio_duration_seconds: null,
-        } as any).eq("id", id);
+        await deleteMessageForAll(id, currentUserId);
       }
       onDeletedForAll(ids);
       toast.success(`${count} ${t("orbit.messages_deleted_all") || "messages deleted for everyone"}`);
