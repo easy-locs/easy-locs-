@@ -470,7 +470,7 @@ export default function ShopPage() {
                           className="flex gap-3 p-3 rounded-xl border border-border/10 bg-card/50 active:bg-muted/30 transition-colors"
                         >
                           <div className="flex-1 min-w-0 space-y-1">
-                            <h4 className="text-sm font-semibold text-foreground line-clamp-1">{item.name || item.title}</h4>
+                            <h4 className="text-sm font-semibold text-foreground line-clamp-2 break-words">{item.name || item.title}</h4>
                             {item.description && (
                               <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{item.description}</p>
                             )}
