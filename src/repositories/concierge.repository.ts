@@ -12,10 +12,10 @@ export async function fetchConciergeServices(orgId: string) {
 
 export async function upsertConciergeService(record: Record<string, any>, editingId: string | null) {
   if (editingId) {
-    const { error } = await supabase.from("concierge_services").update(record).eq("id", editingId);
+    const { error } = await (supabase as any).from("concierge_services").update(record).eq("id", editingId);
     if (error) throw error;
   } else {
-    const { error } = await supabase.from("concierge_services").insert(record);
+    const { error } = await (supabase as any).from("concierge_services").insert(record);
     if (error) throw error;
   }
 }
