@@ -368,11 +368,18 @@ export function useConversationThreads() {
           .limit(500);
 
         if (v2Msgs?.length) {
+          // Build a reverse lookup: v2ConversationId → thread key
+          const convIdToThread = new Map<string, ConversationThread>();
+          for (const thread of threadMap.values()) {
+            if (thread.isV2 && thread.v2ConversationId) {
+              convIdToThread.set(thread.v2ConversationId, thread);
+            }
+          }
+
           for (const msg of v2Msgs) {
-            const key = `v2-direct-${msg.conversation_id}`;
-            const thread = threadMap.get(key);
+            const thread = convIdToThread.get(msg.conversation_id);
             if (thread) {
-              thread.unreadCount++;
+              thread.unreadCount = (thread.unreadCount || 0) + 1;
               if (!thread.lastMessage) {
                 thread.lastMessage = msg.body;
                 thread.lastMessageTime = msg.created_at;

@@ -193,9 +193,18 @@ export function useMessageLoader({
           const mapped = mapV2ToChat(msg, conversationId);
 
           setRawMessages((prev) => {
+            // Dedup: skip if already present by real ID
             if (prev.some((m) => m.id === mapped.id)) return prev;
-            return [...prev, mapped];
+            // Also deduplicate against optimistic messages from same sender
+            // by removing any pending optimistic msg with matching content
+            const withoutOptimistic = msg.sender_user_id === userId
+              ? prev.filter((m) => !(m.pending && m.sender_id === userId && m.content === mapped.content))
+              : prev;
+            return [...withoutOptimistic, mapped];
           });
+
+          // Update message cache for instant re-open
+          messageCache.set(conversationId, []);  // invalidate — will refresh on next open
 
           if (msg.sender_user_id !== userId && !msg.read_at && readReceipts) {
             await db
