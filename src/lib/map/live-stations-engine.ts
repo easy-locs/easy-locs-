@@ -84,7 +84,7 @@ export function ensureLiveStationLayers(map: mapboxgl.Map, beforeLayerId?: strin
         "text-size": 12,
       },
       paint: {
-        "text-color": "hsl(0 0% 100%)",
+        "text-color": "hsl(0, 0%, 100%)",
       },
     });
   }
@@ -101,9 +101,9 @@ export function ensureLiveStationLayers(map: mapboxgl.Map, beforeLayerId?: strin
         "circle-color": [
           "match",
           ["get", "status"],
-          "live", "hsl(152 60% 42% / 0.18)",
-          "busy", "hsl(38 92% 50% / 0.18)",
-          "hsl(210 80% 52% / 0.1)",
+          "live", "hsla(152, 60%, 42%, 0.18)",
+          "busy", "hsla(38, 92%, 50%, 0.18)",
+          "hsla(210, 80%, 52%, 0.1)",
         ],
         "circle-blur": 0.8,
       },
@@ -122,12 +122,12 @@ export function ensureLiveStationLayers(map: mapboxgl.Map, beforeLayerId?: strin
         "circle-color": [
           "match",
           ["get", "status"],
-          "live", "hsl(152 60% 42%)",
-          "busy", "hsl(38 92% 50%)",
-          "hsl(210 80% 52%)",
+          "live", "hsl(152, 60%, 42%)",
+          "busy", "hsl(38, 92%, 50%)",
+          "hsl(210, 80%, 52%)",
         ],
         "circle-stroke-width": 2,
-        "circle-stroke-color": "hsl(0 0% 100%)",
+        "circle-stroke-color": "hsl(0, 0%, 100%)",
       },
     });
   }
@@ -148,8 +148,8 @@ export function ensureLiveStationLayers(map: mapboxgl.Map, beforeLayerId?: strin
         "text-max-width": 10,
       },
       paint: {
-        "text-color": "hsl(0 0% 100%)",
-        "text-halo-color": "hsl(220 35% 10% / 0.82)",
+        "text-color": "hsl(0, 0%, 100%)",
+        "text-halo-color": "hsla(220, 35%, 10%, 0.82)",
         "text-halo-width": 1,
       },
     });
