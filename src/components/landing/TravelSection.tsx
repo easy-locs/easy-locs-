@@ -75,12 +75,12 @@ export default function TravelSection() {
                   </span>
                 </div>
                 <div className="p-3 space-y-1.5">
-                  <p className="text-sm font-bold text-foreground truncate group-hover:text-accent transition-colors">
+                  <p className="text-sm font-bold text-foreground line-clamp-2 break-words leading-snug group-hover:text-accent transition-colors">
                     {card.title}
                   </p>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{card.location}</span>
+                    <span className="line-clamp-2 break-words leading-snug">{card.location}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-extrabold text-foreground">{card.price}</span>

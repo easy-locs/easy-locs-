@@ -189,7 +189,7 @@ export default function InventoryManager({ shopId }: InventoryManagerProps) {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{item.title}</p>
+                    <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{item.title}</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       {item.sku && <span className="text-[9px] text-muted-foreground font-mono">{item.sku}</span>}
                       {isLow && <Badge variant="outline" className="text-[8px] px-1 py-0 border-amber-500/50 text-amber-600">Low</Badge>}

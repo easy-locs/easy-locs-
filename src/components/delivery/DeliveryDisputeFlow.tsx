@@ -203,7 +203,7 @@ export default function DeliveryDisputeFlow({ orgId, jobId, onClose }: Props) {
                 >
                   <span className="text-sm">{cfg.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                    <p className="text-xs font-semibold line-clamp-2 break-words leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
                       {reasonLabel}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
