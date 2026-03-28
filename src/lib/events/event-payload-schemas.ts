@@ -2,6 +2,8 @@
  * Canonical Event Payload Schemas — strictly typed, forensic-grade.
  * Every event in the system MUST use one of these schemas.
  * No more Record<string, any> payloads.
+ * 
+ * RULE: Schemas must match actual consumer usage, not aspirational minimalism.
  */
 
 // ── Wallet Events ──────────────────────────────────────────
@@ -12,6 +14,7 @@ export interface WalletTransactionCreatedPayload {
   amount: number;
   currency: string;
   type: "credit" | "debit";
+  userId?: string;
   _bridgedFrom?: string;
 }
 
@@ -21,6 +24,7 @@ export interface WalletPaymentSuccessPayload {
   amount: number;
   currency: string;
   method: string;
+  userId?: string;
   _bridgedFrom?: string;
 }
 
@@ -31,6 +35,7 @@ export interface WalletPaymentFailedPayload {
   currency?: string;
   errorCode: string;
   errorMessage: string;
+  userId?: string;
   _bridgedFrom?: string;
 }
 
@@ -99,6 +104,11 @@ export interface OrderConfirmedPayload {
 export interface OrderCompletedPayload {
   orderId: string;
   completedAt?: string;
+  userId?: string;
+  amount?: number;
+  category?: string;
+  subcategory?: string;
+  city?: string;
   _bridgedFrom?: string;
 }
 
@@ -111,9 +121,12 @@ export interface OrderPaymentUpdatedPayload {
 // ── Orbit / Communication Events ───────────────────────────
 
 export interface OrbitMessageSentPayload {
-  threadId: string;
+  threadId?: string;
+  conversationId?: string;
   messageId?: string;
   senderUserId?: string;
+  userId?: string;
+  contentPreview?: string;
   _bridgedFrom?: string;
 }
 
@@ -161,6 +174,7 @@ export interface ListingCreatedPayload {
 
 export interface ListingPublishedPayload {
   listingId: string;
+  userId?: string;
   _bridgedFrom?: string;
 }
 
@@ -169,6 +183,10 @@ export interface ListingPublishedPayload {
 export interface EntityClickPayload {
   entityId?: string;
   entityType?: string;
+  userId?: string;
+  category?: string;
+  subcategory?: string;
+  city?: string;
   _bridgedFrom?: string;
 }
 
@@ -199,13 +217,28 @@ export interface DashboardRefreshPayload {
 export interface RideRequestedPayload {
   rideId: string;
   userId?: string;
+  customer_user_id?: string;
+  pickup_lat?: number;
+  pickup_lng?: number;
+  dropoff_lat?: number;
+  dropoff_lng?: number;
+  pickup_label?: string;
+  dropoff_label?: string;
+  service_level?: string;
+  currency?: string;
+  zone?: string;
+  metadata?: Record<string, unknown>;
   _bridgedFrom?: string;
 }
 
 export interface RideDriverAssignedPayload {
   rideId: string;
   driverId: string;
+  jobId?: string;
+  customerUserId?: string;
+  riderUserId?: string;
   _bridgedFrom?: string;
+  [key: string]: unknown; // allow spread to Record<string, string>
 }
 
 export interface RideCompletedPayload {
