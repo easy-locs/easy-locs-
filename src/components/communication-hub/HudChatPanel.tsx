@@ -110,6 +110,31 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     return data.user.id;
   }, [t]);
 
+  /** Resolve or auto-create V2 conversationId for this thread */
+  const resolveConversationId = useCallback(async (authUserId: string): Promise<string | null> => {
+    if (!thread) return null;
+    if (thread.v2ConversationId) return thread.v2ConversationId;
+    if (!thread.peerUserId) {
+      toast.error("No conversation found. Open a thread first.");
+      return null;
+    }
+    try {
+      const { createOrGetDirectConversation } = await import("@/lib/orbit/createOrGetDirectConversation");
+      const conv = await createOrGetDirectConversation({
+        myUserId: authUserId,
+        myOrbitId: myOrbitId,
+        peerUserId: thread.peerUserId,
+        peerOrbitId: thread.peerOrbitId,
+      });
+      onThreadUpdate(thread.id, { v2ConversationId: conv.id });
+      return conv.id;
+    } catch (err: any) {
+      console.error("[HudChatPanel] auto-create conversation failed", err);
+      toast.error("Failed to create conversation.");
+      return null;
+    }
+  }, [thread, myOrbitId, onThreadUpdate]);
+
   const loader = useMessageLoader({
     thread,
     orgId: orgId || null,
