@@ -49,7 +49,7 @@ export function useQrPaymentHandler(userId: string | undefined) {
 
   const resolveRecipient = useCallback(async (payload: UniversalQrPayload) => {
     const t0 = performance.now();
-    const target = await resolvePayTarget(payload);
+    const target = await resolvePayTarget(payload as any);
     return { target, resolveMs: performance.now() - t0 };
   }, []);
 
