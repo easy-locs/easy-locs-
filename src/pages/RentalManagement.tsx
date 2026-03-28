@@ -14,24 +14,17 @@ import InventoryTab from "@/components/rental/InventoryTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRentalData, type Property, type Tenant, type RentCall } from "@/hooks/useRentalData";
-import { getDocuments, type GeneratedDocument } from "@/lib/store";
-import { getTemplatesByCategory, getTemplateById } from "@/lib/templates/registry";
-import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
-import { frLeaseEmpty } from "@/lib/templates/fr/lease-empty";
-import { frLeaseFurnished } from "@/lib/templates/fr/lease-furnished";
-import { frLeaseCommercial } from "@/lib/templates/fr/lease-commercial";
-import { getAllTemplates } from "@/lib/templates/registry";
-import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
+import { getTemplatesByCategory } from "@/lib/templates/registry";
 import type { DocumentTemplate } from "@/lib/templates/types";
-import { supabase } from "@/integrations/supabase/client";
-import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
+// ── Extracted hooks (wired) ──
 import { useRentalMessages } from "@/hooks/rental/useRentalMessages";
 import { useRentalPropertyDetail } from "@/hooks/rental/useRentalPropertyDetail";
 import { useRentalReceipts } from "@/hooks/rental/useRentalReceipts";
 import { useRentalLeaseGenerator } from "@/hooks/rental/useRentalLeaseGenerator";
 import { useRentalNotifications } from "@/hooks/rental/useRentalNotifications";
+import { useRentalPropertyLoader } from "@/hooks/rental/useRentalPropertyLoader";
 import {
   Home, FileText, ChevronRight, Plus, Users, Send, X,
   Phone, MapPin, Calendar, Download, Receipt, ClipboardList,
@@ -44,7 +37,6 @@ import {
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import CountrySelect from "@/components/ui/CountrySelect";
 import { buildAppUrl } from "@/lib/app-domain";
-
 type Tab = "dashboard" | "properties" | "tenants" | "payments" | "inventory";
 type TenantDetailTab = "info" | "messages" | "documents" | "payments";
 type LeaseFilter = "all" | "active" | "terminated";
