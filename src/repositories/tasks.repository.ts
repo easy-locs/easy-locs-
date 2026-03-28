@@ -17,7 +17,7 @@ export async function fetchTasksData(orgId: string) {
 }
 
 export async function insertTask(payload: Record<string, any>) {
-  const { error } = await supabase.from("tasks").insert(payload);
+  const { error } = await (supabase as any).from("tasks").insert(payload);
   if (error) throw error;
 }
 

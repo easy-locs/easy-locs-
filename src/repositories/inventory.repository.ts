@@ -19,7 +19,7 @@ export async function fetchInventoryItems(roomId: string) {
 }
 
 export async function insertInventoryReport(record: Record<string, any>) {
-  const { data, error } = await supabase.from("inventory_reports").insert(record).select("id").single();
+  const { data, error } = await (supabase as any).from("inventory_reports").insert(record).select("id").single();
   if (error) throw error;
   return data.id;
 }
@@ -33,13 +33,13 @@ export async function deleteRoomsForReport(reportId: string) {
 }
 
 export async function insertRoom(record: Record<string, any>) {
-  const { data, error } = await supabase.from("inventory_rooms").insert(record).select("id").single();
+  const { data, error } = await (supabase as any).from("inventory_rooms").insert(record).select("id").single();
   if (error) throw error;
   return data.id;
 }
 
 export async function insertItems(items: Record<string, any>[]) {
-  const { error } = await supabase.from("inventory_items").insert(items);
+  const { error } = await (supabase as any).from("inventory_items").insert(items);
   if (error) throw error;
 }
 
