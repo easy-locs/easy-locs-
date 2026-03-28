@@ -88,7 +88,7 @@ export function useRentalRentCalls() {
           link: "/tenant/pay",
         });
       }
-      platformBus.emit(APP_EVENTS.RENTAL_RENT_CALL_CREATED as any, { rentCallId: payment.id });
+      platformBus.emit(APP_EVENTS.RENTAL_RENT_CALL_CREATED as any, { rentCallId: payment.id }, "rental");
       toast({ title: t("page.rental.notif_sent"), description: `${t("page.rental.email_sent_to")} ${tenant.email}` });
     } catch (err: any) {
       toast({ title: t("page.rental.error"), description: err.message, variant: "destructive" });
@@ -119,7 +119,7 @@ export function useRentalRentCalls() {
           currency: "EUR", tenantName: form.name, propertyLabel: prop?.label || "",
           rentCallId: inserted.id,
         }).catch(() => {});
-        platformBus.emit(APP_EVENTS.RENTAL_RENT_CALL_CREATED as any, { rentCallId: inserted.id });
+        platformBus.emit(APP_EVENTS.RENTAL_RENT_CALL_CREATED as any, { rentCallId: inserted.id }, "rental");
       }
     } catch { /* ignore duplicate */ }
   }, [orgId, user, fmt, L, toast]);
