@@ -53,19 +53,19 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
         className="h-[92dvh] rounded-t-3xl p-0 flex flex-col overflow-hidden border-t border-border/20"
       >
         {/* ── Header ── */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
               <MapPin className="w-4.5 h-4.5 text-primary" />
             </div>
-            <div>
-              <h2 className="text-base font-bold text-foreground tracking-tight">Delivery address</h2>
-              <p className="text-[11px] text-muted-foreground">Where should we deliver?</p>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-bold text-foreground tracking-tight break-words">Delivery address</h2>
+              <p className="text-[11px] leading-relaxed text-muted-foreground break-words text-balance-soft">Where should we deliver?</p>
             </div>
           </div>
           <button
             onClick={() => onOpenChange(false)}
-            className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center active:scale-90 transition-transform"
+            className="w-8 h-8 shrink-0 rounded-full bg-muted/60 flex items-center justify-center active:scale-90 transition-transform"
           >
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
@@ -156,10 +156,10 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
 
           {/* Empty state */}
           {!home?.address && !work?.address && recents.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+            <div className="flex flex-col items-center justify-center px-4 py-16 text-center text-muted-foreground">
               <MapPin className="h-8 w-8 mb-3 opacity-20" />
-              <p className="text-sm font-medium">Search or use GPS above</p>
-              <p className="text-xs mt-1">Your recent addresses will appear here</p>
+              <p className="text-sm font-medium break-words text-balance-soft">Search or use GPS above</p>
+              <p className="mt-1 text-xs leading-relaxed break-words text-balance-soft">Your recent addresses will appear here</p>
             </div>
           )}
         </div>
@@ -195,7 +195,7 @@ function SavedPlaceRow({
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{address}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 break-words leading-relaxed">{address}</p>
       </div>
       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
     </motion.button>
