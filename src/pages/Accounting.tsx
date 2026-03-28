@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { StatCard } from "@/components/ui/stat-card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchOrgForUser, fetchPropertiesForOrg, fetchJournal, fetchRentCalls, fetchAllExpenses, insertJournalEntry } from "@/repositories/accounting.repository";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,23 +36,13 @@ const Accounting = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("org_members").select("org_id").eq("user_id", user!.id).limit(1).single();
-      if (!data) return null;
-      const { data: o } = await supabase.from("orgs").select("*").eq("id", data.org_id).single();
-      return o;
-    },
+    queryFn: () => fetchOrgForUser(user!.id),
     enabled: !!user,
   });
 
   const { data: properties = [] } = useQuery({
     queryKey: ["properties", org?.id, countryFilter],
-    queryFn: async () => {
-      let query = supabase.from("properties").select("id, label, country, monthly_rent, monthly_charges").eq("org_id", org!.id);
-      if (countryFilter) query = query.eq("country", countryFilter);
-      const { data } = await query;
-      return data || [];
-    },
+    queryFn: () => fetchPropertiesForOrg(org!.id, countryFilter),
     enabled: !!org,
   });
 
@@ -69,32 +59,19 @@ const Accounting = () => {
 
   const { data: journal = [] } = useQuery({
     queryKey: ["journal", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("transaction_journal" as any).select("*").eq("org_id", org!.id).order("transaction_date", { ascending: false }).limit(500);
-      return (data || []) as unknown as Array<{
-        id: string; label: string; category: string; debit: number; credit: number;
-        transaction_date: string; currency: string; notes: string; source_type: string;
-        property_id: string | null; created_at: string;
-      }>;
-    },
+    queryFn: () => fetchJournal(org!.id),
     enabled: !!org,
   });
 
   const { data: rentCalls = [] } = useQuery({
     queryKey: ["rent_calls", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("rent_calls").select("*").eq("org_id", org!.id).eq("paid", true);
-      return data || [];
-    },
+    queryFn: () => fetchRentCalls(org!.id),
     enabled: !!org,
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ["expenses", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("expenses").select("*").eq("org_id", org!.id);
-      return data || [];
-    },
+    queryFn: () => fetchAllExpenses(org!.id),
     enabled: !!org,
   });
 
@@ -155,15 +132,13 @@ const Accounting = () => {
 
   const addMut = useMutation({
     mutationFn: async () => {
-      // STRICT: Require a property to ensure correct country ledger isolation
       if (!newEntry.property_id) {
         throw new Error("A property must be selected to ensure correct country ledger isolation.");
       }
-      // Determine currency from the linked property
       const linkedProp = properties.find((p: any) => p.id === newEntry.property_id);
       const entryCurrency = linkedProp ? (COUNTRY_CURRENCY_MAP[linkedProp.country] || "EUR") : activeRules.currency;
 
-      const { error } = await supabase.from("transaction_journal" as any).insert({
+      await insertJournalEntry({
         org_id: org!.id, user_id: user!.id,
         label: newEntry.label, category: newEntry.category,
         debit: Number(newEntry.debit) || 0, credit: Number(newEntry.credit) || 0,
@@ -171,7 +146,6 @@ const Accounting = () => {
         property_id: newEntry.property_id || null, source_type: "manual",
         currency: entryCurrency,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       toast.success(t("page.accounting.entry_added") || "Entry added");

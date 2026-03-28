@@ -14,7 +14,7 @@ import LeaseFormDialog from "@/components/leases/LeaseFormDialog";
 import LeaseStatusBadge from "@/components/leases/LeaseStatusBadge";
 import { useLeaseWorkflow } from "@/hooks/useLeaseWorkflow";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchLeases, sendLeaseForSignature } from "@/repositories/leases.repository";
 import { formatCurrency } from "@/lib/country-config";
 import { useI18n } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
@@ -72,18 +72,7 @@ const Leases = () => {
 
   const { data: leases = [], isLoading, refetch } = useQuery({
     queryKey: ["leases", orgId, countryFilter],
-    queryFn: async () => {
-      let query = supabase
-        .from("leases")
-        .select("*, tenants(name, email), properties(label, address, city, country)")
-        .eq("org_id", orgId!)
-        .order("created_at", { ascending: false });
-
-      if (countryFilter) query = query.eq("country", countryFilter);
-
-      const { data } = await query;
-      return (data || []) as LeaseRow[];
-    },
+    queryFn: () => fetchLeases(orgId!, countryFilter),
     enabled: !!orgId,
   });
 
@@ -269,7 +258,7 @@ const Leases = () => {
                         {lease.status === "draft" && (
                           <button
                             onClick={async () => {
-                              await supabase.from("leases").update({ status: "pending_signature" }).eq("id", lease.id);
+                              await sendLeaseForSignature(lease.id);
                               refetch();
                             }}
                             className="inline-flex items-center gap-1.5 text-xs font-medium bg-accent text-accent-foreground px-3 py-1.5 rounded-md hover:opacity-90 transition-opacity">

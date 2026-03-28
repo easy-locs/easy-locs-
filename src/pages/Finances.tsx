@@ -8,7 +8,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { Link, useSearchParams } from "react-router-dom";
 import { exportToCSV } from "@/lib/csv-export";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { checkConnectStatus as checkStripeStatus, createConnectAccount, disconnectStripe as disconnectStripeApi, fetchFinancialData } from "@/repositories/finances.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,10 +89,8 @@ const Finances = () => {
   const checkConnectStatus = async (silent = false) => {
     if (silent) setConnectSyncing(true);
     else setConnectLoading(true);
-
     try {
-      const { data, error } = await supabase.functions.invoke("check-connect-status");
-      if (error) throw error;
+      const data = await checkStripeStatus();
       setConnectStatus(data);
     } catch {
       setConnectStatus({ connected: false, onboarding_complete: false });
@@ -105,31 +103,10 @@ const Finances = () => {
   const fetchData = async () => {
     if (!orgId) return;
     try {
-      let propsQuery = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
-      if (countryFilter) propsQuery = propsQuery.eq("country", countryFilter);
-      const { data: props } = await propsQuery;
-      const filteredProps = props || [];
-      setProperties(filteredProps.map(p => ({ id: p.id, label: p.label })));
-
-      const propIds = filteredProps.map(p => p.id);
-      if (propIds.length > 0) {
-        const [{ data: rc }, { data: exp }] = await Promise.all([
-          supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id, payment_status, payment_method").eq("org_id", orgId).in("property_id", propIds).order("month", { ascending: true }),
-          supabase.from("expenses").select("id, label, amount, category, expense_date, property_id").eq("org_id", orgId).in("property_id", propIds).order("expense_date", { ascending: false }),
-        ]);
-        setRentCalls(rc || []);
-        setExpenses(exp || []);
-      } else if (!countryFilter) {
-        const [{ data: rc }, { data: exp }] = await Promise.all([
-          supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id, payment_status, payment_method").eq("org_id", orgId).order("month", { ascending: true }),
-          supabase.from("expenses").select("id, label, amount, category, expense_date, property_id").eq("org_id", orgId).order("expense_date", { ascending: false }),
-        ]);
-        setRentCalls(rc || []);
-        setExpenses(exp || []);
-      } else {
-        setRentCalls([]);
-        setExpenses([]);
-      }
+      const result = await fetchFinancialData(orgId, countryFilter);
+      setProperties(result.properties.map(p => ({ id: p.id, label: p.label })));
+      setRentCalls(result.rentCalls);
+      setExpenses(result.expenses);
     } catch {
       setRentCalls([]);
       setExpenses([]);
@@ -151,8 +128,7 @@ const Finances = () => {
   const handleConnectOnboarding = async () => {
     setOnboardingLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-connect-account");
-      if (error) throw error;
+      const data = await createConnectAccount();
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
@@ -165,8 +141,7 @@ const Finances = () => {
     if (!confirm(t("page.finances.disconnect_confirm"))) return;
     setDisconnectLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("disconnect-stripe");
-      if (error) throw error;
+      await disconnectStripeApi();
       toast({ title: t("page.finances.disconnect_success") });
       setConnectStatus({ connected: false, onboarding_complete: false });
     } catch (err: any) {

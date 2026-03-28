@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchMerchantProfile, fetchMenuItems, fetchStorefrontSlug, deleteMenuItem, upsertMenuItem, translateText } from "@/repositories/merchant-dashboard.repository";
 import { updateMerchantInfo, setMerchantOpenStatus, activateMerchant } from "@/lib/merchant/claim-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,11 +77,7 @@ export default function MerchantDashboardPage() {
   useEffect(() => {
     if (!profileId) { setLoading(false); return; }
     (async () => {
-      const { data: m } = await (supabase as any)
-        .from("merchant_onboarding_profiles")
-        .select("*")
-        .eq("id", profileId)
-        .maybeSingle();
+      const m = await fetchMerchantProfile(profileId);
       if (m) {
         setMerchant(m);
         setName(m.merchant_name || "");
@@ -91,23 +87,13 @@ export default function MerchantDashboardPage() {
         setCuisine(m.cuisine_type || "");
       }
 
-      const { data: items } = await (supabase as any)
-        .from("menu_items")
-        .select("id, name, name_ar, price, is_available, description, description_ar")
-        .eq("merchant_profile_id", profileId)
-        .order("sort_order");
+      const items = await fetchMenuItems(profileId);
       if (items) {
         setMenuItems(items);
-        // Check if any items have prices
         setShowPrices(items.some((i: any) => i.price != null));
       }
 
-      // Get storefront slug
-      const { data: shop } = await (supabase as any)
-        .from("storefront_pages")
-        .select("slug, active, shop_visibility")
-        .eq("merchant_profile_id", profileId)
-        .maybeSingle();
+      const shop = await fetchStorefrontSlug(profileId);
       if (shop) {
         setStorefrontSlug(shop.slug);
         setIsOpen(shop.active && shop.shop_visibility === "public");
@@ -137,11 +123,9 @@ export default function MerchantDashboardPage() {
     if (!name) return;
     setSaving(true);
     try {
-      const { data } = await supabase.functions.invoke("translate-message", {
-        body: { text: name, from_locale: "en", to_locale: "ar" },
-      });
-      if (data?.translated) {
-        setNameAr(data.translated);
+      const translated = await translateText(name, "en", "ar");
+      if (translated) {
+        setNameAr(translated);
         toast.success("Arabic name generated");
       }
     } catch { toast.error("Translation failed"); }
@@ -179,7 +163,7 @@ export default function MerchantDashboardPage() {
 
   const removeItem = async (id: string) => {
     if (!id.startsWith("new-")) {
-      await (supabase as any).from("menu_items").delete().eq("id", id);
+      await deleteMenuItem(id);
     }
     setMenuItems((prev) => prev.filter((i) => i.id !== id));
   };
@@ -193,19 +177,16 @@ export default function MerchantDashboardPage() {
     setSaving(true);
     try {
       for (const item of menuItems) {
-        const payload = {
+        await upsertMenuItem({
+          id: item.id,
+          isNew: item.isNew,
           merchant_profile_id: profileId,
           name: item.name,
           name_ar: item.name_ar ?? null,
           price: showPrices ? item.price : null,
           is_available: item.is_available,
           sort_order: menuItems.indexOf(item),
-        };
-        if (item.isNew) {
-          await (supabase as any).from("menu_items").insert(payload);
-        } else {
-          await (supabase as any).from("menu_items").update(payload).eq("id", item.id);
-        }
+        });
       }
       toast.success("Menu saved");
     } catch { toast.error("Menu save failed"); }
@@ -217,11 +198,9 @@ export default function MerchantDashboardPage() {
     for (const item of menuItems) {
       if (item.name && !item.name_ar) {
         try {
-          const { data } = await supabase.functions.invoke("translate-message", {
-            body: { text: item.name, from_locale: "en", to_locale: "ar" },
-          });
-          if (data?.translated) {
-            updateItem(item.id, "name_ar", data.translated);
+          const translated = await translateText(item.name, "en", "ar");
+          if (translated) {
+            updateItem(item.id, "name_ar", translated);
           }
         } catch { /* skip */ }
       }
