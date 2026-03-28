@@ -2,7 +2,7 @@ import { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrgRole } from "@/hooks/useOrgRole";
-import { supabase } from "@/integrations/supabase/client";
+import * as collabRepo from "@/repositories/collaboration.repository";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
