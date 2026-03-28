@@ -1,15 +1,16 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitStore } from "@/stores/orbitStore";
 
 /**
  * OrbitIdentityPage — displays canonical orbit profile from orbit_profiles_v2.
- * Legacy orbit_identity_profiles system has been removed.
+ * NOTE: This page uses orbitStore directly because it needs loadProfile, loading,
+ * and verificationLevel which are not on the OrbitIdentity interface.
+ * Will be fully migrated when OrbitIdentity is extended or a dedicated page hook is created.
  */
 export default function OrbitIdentityPage() {
   const { user } = useAuth();
-  const profile = useOrbitIdentity();
+  const profile = useOrbitStore((s) => s.profile);
   const loading = useOrbitStore((s) => s.loading);
   const loadProfile = useOrbitStore((s) => s.loadProfile);
 
