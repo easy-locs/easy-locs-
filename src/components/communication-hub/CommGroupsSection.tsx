@@ -500,7 +500,7 @@ export default function CommGroupsSection() {
             <TypeIcon className="h-4.5 w-4.5" />
           </div>
           <div className="flex-1 min-w-0">
-            <span className="text-sm font-semibold truncate block" style={{ color: "hsl(var(--hud-text))" }}>
+            <span className="text-sm font-semibold line-clamp-2 break-words block" style={{ color: "hsl(var(--hud-text))" }}>
               {activeGroup.name}
             </span>
             <div className="flex items-center gap-1.5">
@@ -666,8 +666,8 @@ export default function CommGroupsSection() {
                     {m.user_id.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-sm truncate block" style={{ color: "hsl(var(--hud-text))" }}>
-                      {m.user_id === user?.id ? "You" : m.user_id.slice(0, 8)}
+                    <span className="text-sm line-clamp-1 break-words block" style={{ color: "hsl(var(--hud-text))" }}>
+                      {m.user_id === user?.id ? "You" : (m.profile_name || guardDisplayName(m.user_id))}
                     </span>
                     <div className="flex items-center gap-1">
                       {m.role === "admin" && (
