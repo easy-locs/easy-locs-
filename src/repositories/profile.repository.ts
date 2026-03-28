@@ -23,7 +23,7 @@ export async function updateProfile(userId: string, updates: Record<string, any>
 }
 
 export async function upsertOwnerProfile(payload: Record<string, any>) {
-  await supabase.from("owner_profiles").upsert(payload, { onConflict: "org_id" });
+  await (supabase as any).from("owner_profiles").upsert(payload, { onConflict: "org_id" });
 }
 
 export async function createOrg(name: string, ownerUserId: string, email: string) {
@@ -33,5 +33,5 @@ export async function createOrg(name: string, ownerUserId: string, email: string
 }
 
 export async function addOrgMember(orgId: string, userId: string, role: string) {
-  await supabase.from("org_members").insert({ org_id: orgId, user_id: userId, role });
+  await (supabase as any).from("org_members").insert({ org_id: orgId, user_id: userId, role });
 }
