@@ -4,21 +4,23 @@
  * Single orchestrator, zero source logic in UI.
  */
 import type { CanonicalShop } from "@/lib/onboarding/pipeline/canonical-shop.schema";
-import { deliverooAdapter } from "@/lib/onboarding/pipeline/adapters/deliveroo.adapter";
-import { talabatAdapter } from "@/lib/onboarding/pipeline/adapters/talabat.adapter";
-import { webAdapter } from "@/lib/onboarding/pipeline/adapters/web.adapter";
+import { adaptDeliverooMerchant } from "@/lib/onboarding/pipeline/adapters/deliveroo.adapter";
+import { adaptTalabatMerchant } from "@/lib/onboarding/pipeline/adapters/talabat.adapter";
+import { adaptWebMerchant } from "@/lib/onboarding/pipeline/adapters/web.adapter";
 import { careemAdapter } from "@/lib/onboarding/pipeline/adapters/careem.adapter";
 import { noonAdapter } from "@/lib/onboarding/pipeline/adapters/noon.adapter";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 export type ImportSource = "deliveroo" | "talabat" | "careem" | "noon" | "web" | "manual" | "internal";
 
+const wrapSync = (fn: (raw: any) => any) => async (raw: any) => fn(raw) as CanonicalShop;
+
 const ADAPTERS: Record<string, (raw: any) => Promise<CanonicalShop>> = {
-  deliveroo: deliverooAdapter,
-  talabat: talabatAdapter,
+  deliveroo: wrapSync((raw) => { const r = adaptDeliverooMerchant(raw); return { id: r.id, name: r.name, location: { address: r.geo.normalizedAddress, city: r.geo.city, country: r.geo.country, lat: r.geo.lat, lng: r.geo.lng }, categories: r.tags, products: [], media: r.media, hours: r.hours, delivery: r.delivery, quality: { score: r.quality.score, missingFields: r.quality.missingFields } } as any; }),
+  talabat: wrapSync((raw) => { const r = adaptTalabatMerchant(raw); return { id: r.id, name: r.name, location: { address: r.geo.normalizedAddress, city: r.geo.city, country: r.geo.country, lat: r.geo.lat, lng: r.geo.lng }, categories: r.tags, products: [], media: r.media, hours: r.hours, delivery: r.delivery, quality: { score: r.quality.score, missingFields: r.quality.missingFields } } as any; }),
   careem: careemAdapter,
   noon: noonAdapter,
-  web: webAdapter,
+  web: wrapSync((raw) => { const r = adaptWebMerchant(raw); return { id: r.id, name: r.name, location: { address: r.geo.normalizedAddress, city: r.geo.city, country: r.geo.country, lat: r.geo.lat, lng: r.geo.lng }, categories: r.tags, products: [], media: r.media, hours: r.hours, delivery: r.delivery, quality: { score: r.quality.score, missingFields: r.quality.missingFields } } as any; }),
 };
 
 export interface ImportResult {
