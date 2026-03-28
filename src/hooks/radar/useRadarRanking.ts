@@ -17,8 +17,6 @@ function toRankable(e: GeoEntity & { isSponsored?: boolean; reviewsCount?: numbe
     lng: e.lng,
     isSponsored: e.isSponsored,
     title: e.title || e.name,
-    priceLevel: undefined,
-    tags: [],
   };
 }
 
