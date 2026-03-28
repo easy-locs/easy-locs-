@@ -244,11 +244,11 @@ export default function HyperRadarPage() {
       >
         <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-1">
           <button
-            onClick={() => setShowWeatherLayer((current) => !current)}
+            onClick={() => setRadarOverlay(radarOverlay === "off" ? "full" : "off")}
             className="flex items-center gap-1 rounded-full border border-border/15 bg-card/85 px-2.5 py-1.5 text-[10px] font-semibold whitespace-nowrap shrink-0 text-foreground backdrop-blur-md active:scale-95"
           >
             <CloudRain className="h-3 w-3 shrink-0 text-primary" />
-            {showWeatherLayer ? "Rain on" : "Rain off"}
+            {radarOverlay !== "off" ? "Radar" : "Radar off"}
           </button>
           {LAYERS.map(layer => {
             const active = activeLayers.includes(layer.id);
