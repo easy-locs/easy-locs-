@@ -219,7 +219,7 @@ export const CommunicationCenter = () => {
                 <ArrowLeft className="w-4.5 h-4.5" />
               </button>
               <h1 className="text-sm font-semibold flex-1 line-clamp-2 break-words min-w-0" style={{ color: "hsl(var(--foreground))" }}>
-                {selectedThread.name}
+                {typeof selectedThread.name === "string" ? selectedThread.name : "Contact"}
               </h1>
             </>
           ) : (
@@ -331,7 +331,7 @@ export const CommunicationCenter = () => {
           <SheetContent side="bottom" className="h-[80dvh] p-0 rounded-t-2xl" style={{ background: "hsl(var(--background))" }}>
             <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border) / 0.1)" }}>
               <SheetTitle className="text-sm" style={{ color: "hsl(var(--foreground))" }}>
-                {selectedThread.name}
+                {typeof selectedThread.name === "string" ? selectedThread.name : "Contact"}
               </SheetTitle>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto">
