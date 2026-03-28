@@ -34,8 +34,8 @@ export function QuickActionGrid({ actions, columns = 4, className }: QuickAction
               : "bg-muted/60 text-foreground hover:bg-muted",
           )}
         >
-          <span className="[&_svg]:w-5 [&_svg]:h-5">{a.icon}</span>
-          <span className="text-[10px] font-semibold leading-tight truncate max-w-full px-1">{a.label}</span>
+          <span className="[&_svg]:w-5 [&_svg]:h-5 shrink-0">{a.icon}</span>
+          <span className="text-[10px] font-semibold leading-snug whitespace-normal break-words text-center max-w-full px-1">{a.label}</span>
         </button>
       ))}
     </div>
