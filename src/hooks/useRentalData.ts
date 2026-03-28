@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as rentalRepo from "@/repositories/rental-data.repository";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -87,9 +87,8 @@ export function useRentalData(countryFilter?: string | null) {
     setLoading(true);
 
     // 1. Load properties first (needed for country filtering tenants/rents)
-    let propsQuery = supabase.from("properties").select("*").eq("org_id", orgId);
-    if (countryFilter) propsQuery = propsQuery.eq("country", countryFilter);
-    const { data: propsData } = await propsQuery.order("label");
+    let propsQuery = await rentalRepo.fetchProperties(orgId, countryFilter);
+    const propsData = propsQuery;
 
     const mappedProps = (propsData || []).map(p => ({
       id: p.id, label: p.label, address: p.address, postal_code: p.postal_code,
@@ -107,13 +106,12 @@ export function useRentalData(countryFilter?: string | null) {
     const propIds = countryFilter ? new Set(mappedProps.map(p => p.id)) : null;
 
     // 2. Load tenants + rent calls in parallel (no extra property query needed)
-    const [tenantsRes, rentRes] = await Promise.all([
-      supabase.from("tenants").select("*").eq("org_id", orgId).order("name"),
-      supabase.from("rent_calls").select("*").eq("org_id", orgId).order("month", { ascending: false }),
+    const [tenantsRaw, rentRaw] = await Promise.all([
+      rentalRepo.fetchTenants(orgId),
+      rentalRepo.fetchRentCalls(orgId),
     ]);
-
-    let filteredTenants = tenantsRes.data || [];
-    if (propIds) {
+    const tenantsData = tenantsRaw;
+    const rentData = rentRaw;
       filteredTenants = filteredTenants.filter(t => t.property_id && propIds.has(t.property_id));
     }
     setTenants(filteredTenants.map(t => ({
