@@ -183,8 +183,8 @@ export default function RadarPlaceSearch() {
                       {PLACE_TYPE_ICON[result.place_type] ?? <MapPin className="w-3.5 h-3.5" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{result.label}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">
+                      <p className="text-sm font-semibold text-foreground line-clamp-2 break-words leading-snug">{result.label}</p>
+                      <p className="text-[10px] text-muted-foreground line-clamp-2 break-words leading-snug">
                         {[result.district, result.city, result.country_code].filter(Boolean).join(" · ")}
                         {result.place_type !== "address" && (
                           <span className="ml-1 capitalize text-primary/70">{result.place_type}</span>
