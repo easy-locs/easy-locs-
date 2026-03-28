@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as photoRepo from "@/repositories/photo-uploader.repository";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, X, Upload, Loader2, Star, Video } from "lucide-react";
 import { isVideoUrl, isVideoFile, validateMediaFile, MEDIA_ACCEPT, IMAGE_ONLY_ACCEPT } from "@/lib/media-utils";
@@ -43,15 +43,15 @@ const RealEstatePhotoUploader = ({ listingId, orgId, photos, onPhotosChange, mai
 
       const ext = file.name.split(".").pop();
       const path = `${orgId}/real-estate/${listingId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from("property-photos").upload(path, file);
-      if (error) { toast({ title: "Upload error", description: error.message, variant: "destructive" }); continue; }
-      const { data: urlData } = supabase.storage.from("property-photos").getPublicUrl(path);
-      newUrls.push(urlData.publicUrl);
+      try {
+        await photoRepo.uploadPropertyPhoto(path, file);
+        newUrls.push(photoRepo.getPublicUrl(path));
+      } catch (err: any) { toast({ title: "Upload error", description: err.message, variant: "destructive" }); continue; }
     }
 
     const updated = [...photos, ...newUrls];
     onPhotosChange(updated);
-    await supabase.from("real_estate_listings").update({ photo_urls: updated } as any).eq("id", listingId);
+    await photoRepo.updateListingPhotos(listingId, updated);
     toast({ title: `${newUrls.length} media added` });
     setUploading(false);
     if (fileRef.current) fileRef.current.value = "";
@@ -65,9 +65,9 @@ const RealEstatePhotoUploader = ({ listingId, orgId, photos, onPhotosChange, mai
       else if (index < mainIndex) onMainIndexChange(mainIndex - 1);
     }
     if (!listingId) return;
-    await supabase.from("real_estate_listings").update({ photo_urls: updated } as any).eq("id", listingId);
+    await photoRepo.updateListingPhotos(listingId, updated);
     const path = url.split("/property-photos/")[1];
-    if (path) await supabase.storage.from("property-photos").remove([path]);
+    if (path) await photoRepo.removeStorageFile(path);
     toast({ title: "Media removed" });
   };
 
@@ -79,7 +79,7 @@ const RealEstatePhotoUploader = ({ listingId, orgId, photos, onPhotosChange, mai
     onPhotosChange(reordered);
     onMainIndexChange(0);
     if (listingId) {
-      supabase.from("real_estate_listings").update({ photo_urls: reordered } as any).eq("id", listingId);
+      photoRepo.updateListingPhotos(listingId, reordered);
     }
   };
 

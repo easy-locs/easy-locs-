@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FileText, Download, Mail, CheckCircle, Clock, Loader2, PenTool } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import * as docRepo from "@/repositories/documents.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -55,19 +55,8 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
   useEffect(() => {
     if (!orgId) return;
     const fetchDocs = async () => {
-      let query = supabase
-        .from("documents")
-        .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at, country")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false });
-
-      if (propertyId) {
-        // Filter docs linked to this property via data_json
-        // We can't filter on jsonb easily, so we fetch and filter client-side
-      }
-
-      const { data } = await query;
-      setDocs((data as DocRecord[]) || []);
+      const data = await docRepo.fetchDocumentsForOrg(orgId);
+      setDocs(data as DocRecord[]);
       setLoading(false);
     };
     fetchDocs();
@@ -82,13 +71,13 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
     }
     setOpeningId(doc.id);
     try {
-      const { data } = await supabase.storage.from("rental-docs").createSignedUrl(doc.pdf_url, 3600);
-      if (!data?.signedUrl) {
+      const signedUrl = await docRepo.createSignedUrl("rental-docs", doc.pdf_url, 3600);
+      if (!signedUrl) {
         toast({ title: "Erreur", description: "Impossible d'ouvrir le document", variant: "destructive" });
         return;
       }
 
-      const response = await fetch(data.signedUrl);
+      const response = await fetch(signedUrl);
       if (!response.ok) throw new Error("Téléchargement impossible");
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -110,67 +99,46 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
     if (!doc.pdf_url || !orgId) return;
     setSendingId(doc.id);
     try {
-      // Get tenant email from doc data
-      const { data: docData } = await supabase
-        .from("documents")
-        .select("data_json")
-        .eq("id", doc.id)
-        .single();
-
+      const docData = await docRepo.fetchDocDataJson(doc.id);
       const tenantIdFromDoc = (docData?.data_json as any)?.tenant_id;
       if (!tenantIdFromDoc) {
         toast({ title: "Erreur", description: "Pas de locataire associé", variant: "destructive" });
         return;
       }
 
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("email, name")
-        .eq("id", tenantIdFromDoc)
-        .single();
-
+      const tenant = await docRepo.fetchTenantById(tenantIdFromDoc);
       if (!tenant?.email) {
         toast({ title: "Erreur", description: "Email du locataire non disponible", variant: "destructive" });
         return;
       }
 
-      // Get signed URL for attachment
-      const { data: urlData } = await supabase.storage.from("rental-docs").createSignedUrl(doc.pdf_url, 3600);
+      const signedUrl = await docRepo.createSignedUrl("rental-docs", doc.pdf_url!, 3600);
 
-      await supabase.functions.invoke("send-email", {
-        body: {
-          to: tenant.email,
-          subject: `📎 ${doc.title}`,
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-            <h2 style="color:#1a1a1a;text-align:center;">📎 ${doc.title}</h2>
-            <p style="color:#555;font-size:15px;">Bonjour ${tenant.name},</p>
-            <p style="color:#555;font-size:15px;">Vous trouverez ci-joint votre document : <strong>${doc.title}</strong>.</p>
-            ${urlData?.signedUrl ? `<div style="text-align:center;margin:24px 0;">
-              <a href="${urlData.signedUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">📥 Télécharger le document</a>
-            </div>` : ""}
-            <p style="color:#888;font-size:12px;text-align:center;">E-mail envoyé automatiquement.</p>
-          </div>`,
-        },
+      await docRepo.sendEmailViaFunction({
+        to: tenant.email,
+        subject: `📎 ${doc.title}`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+          <h2 style="color:#1a1a1a;text-align:center;">📎 ${doc.title}</h2>
+          <p style="color:#555;font-size:15px;">Bonjour ${tenant.name},</p>
+          <p style="color:#555;font-size:15px;">Vous trouverez ci-joint votre document : <strong>${doc.title}</strong>.</p>
+          ${signedUrl ? `<div style="text-align:center;margin:24px 0;">
+            <a href="${signedUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">📥 Télécharger le document</a>
+          </div>` : ""}
+          <p style="color:#888;font-size:12px;text-align:center;">E-mail envoyé automatiquement.</p>
+        </div>`,
       });
 
-      // Update doc as emailed
-      await supabase.from("documents").update({ emailed_at: new Date().toISOString() }).eq("id", doc.id);
-
-      // Audit log
-      await supabase.from("audit_logs").insert({
+      await docRepo.markDocumentEmailed(doc.id);
+      await docRepo.insertAuditLog({
         user_id: user!.id, org_id: orgId, action: "document_emailed",
         metadata_json: { document_id: doc.id, doc_type: doc.doc_type, tenant_email: tenant.email },
       });
 
-      // Notify tenant in-app
-      if (tenantIdFromDoc) {
-        const { data: tenantData } = await supabase.from("tenants").select("tenant_user_id").eq("id", tenantIdFromDoc).single();
-        if (tenantData?.tenant_user_id) {
-          await (supabase as any).from("app_notifications").insert({
-            user_id: tenantData.tenant_user_id, scope: "global", category: "document",
-            title: "📎 Nouveau document", body: `${doc.title} disponible`, severity: "info", route: "/tenant/documents",
-          });
-        }
+      if (tenantIdFromDoc && tenant.tenant_user_id) {
+        await docRepo.insertNotification({
+          user_id: tenant.tenant_user_id, scope: "global", category: "document",
+          title: "📎 Nouveau document", body: `${doc.title} disponible`, severity: "info", route: "/tenant/documents",
+        });
       }
 
       setDocs(prev => prev.map(d => d.id === doc.id ? { ...d, emailed_at: new Date().toISOString() } : d));
