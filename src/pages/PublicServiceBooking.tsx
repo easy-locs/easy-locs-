@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  fetchServiceBySlug,
+  createConciergeOrder,
+  createMarketplaceBooking,
+  checkServiceAvailability,
+  sendBookingNotificationEmail,
+  createConciergePaymentCheckout,
+} from "@/repositories/booking.repository";
 import { detectCustomerCurrency, computeExchangeRate } from "@/hooks/useCurrencyConversion";
 import ServiceBookingCalendar from "@/components/concierge/ServiceBookingCalendar";
 import { Button } from "@/components/ui/button";
