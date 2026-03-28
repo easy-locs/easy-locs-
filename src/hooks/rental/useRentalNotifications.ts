@@ -1,9 +1,10 @@
 /**
  * useRentalNotifications — Extracted from RentalManagement.tsx
  * Handles rent call notifications via email + in-app.
+ * MIGRATED: All DB ops via rental-data.repository.
  */
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as rentalRepo from "@/repositories/rental-data.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -31,32 +32,30 @@ export function useRentalNotifications(tenants: Tenant[], userCountry: string) {
     setNotifyingRentId(payment.id);
     try {
       const appUrl = buildAppUrl("/");
-      const { data, error } = await supabase.functions.invoke("send-email", {
-        body: {
-          to: tenant.email,
-          subject: `${t("page.rental.rent_call_notif")} — ${payment.month}`,
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-            <h2 style="color:#1a1a1a;text-align:center;">${escapeEmailHtml(t("page.rental.email_rent_call_title"))}</h2>
-            <p style="color:#555;font-size:15px;">${escapeEmailHtml(t("page.rental.rent_call_hello"))} ${escapeEmailHtml(tenant.name)},</p>
-            <p style="color:#555;font-size:15px;">${escapeEmailHtml(t("page.rental.rent_call_reminder"))} <strong>${payment.month}</strong> :</p>
-            <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-              <p style="margin:4px 0;font-size:14px;color:#333;">${escapeEmailHtml(t("page.rental.email_rent_label"))} : <strong>${fmt(payment.rent_amount)}</strong></p>
-              <p style="margin:4px 0;font-size:14px;color:#333;">${escapeEmailHtml(t("page.rental.email_charges_label"))} : <strong>${fmt(payment.charges_amount)}</strong></p>
-              <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">${escapeEmailHtml(t("page.rental.email_total_label"))} : ${fmt(payment.total_amount)}</p>
-            </div>
-            <div style="text-align:center;margin:24px 0;">
-              <a href="${appUrl}/tenant/pay" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(t("page.rental.pay_rent_btn"))}</a>
-            </div>
-            <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(t("page.rental.email_auto_footer"))}</p>
-          </div>`,
-        },
+      const emailData = await rentalRepo.invokeSendEmail({
+        to: tenant.email,
+        subject: `${t("page.rental.rent_call_notif")} — ${payment.month}`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+          <h2 style="color:#1a1a1a;text-align:center;">${escapeEmailHtml(t("page.rental.email_rent_call_title"))}</h2>
+          <p style="color:#555;font-size:15px;">${escapeEmailHtml(t("page.rental.rent_call_hello"))} ${escapeEmailHtml(tenant.name)},</p>
+          <p style="color:#555;font-size:15px;">${escapeEmailHtml(t("page.rental.rent_call_reminder"))} <strong>${payment.month}</strong> :</p>
+          <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+            <p style="margin:4px 0;font-size:14px;color:#333;">${escapeEmailHtml(t("page.rental.email_rent_label"))} : <strong>${fmt(payment.rent_amount)}</strong></p>
+            <p style="margin:4px 0;font-size:14px;color:#333;">${escapeEmailHtml(t("page.rental.email_charges_label"))} : <strong>${fmt(payment.charges_amount)}</strong></p>
+            <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">${escapeEmailHtml(t("page.rental.email_total_label"))} : ${fmt(payment.total_amount)}</p>
+          </div>
+          <div style="text-align:center;margin:24px 0;">
+            <a href="${appUrl}/tenant/pay" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(t("page.rental.pay_rent_btn"))}</a>
+          </div>
+          <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(t("page.rental.email_auto_footer"))}</p>
+        </div>`,
       });
-      if (error || (data && data.success === false)) {
-        throw error || new Error(data?.error || "error");
+      if (emailData && emailData.success === false) {
+        throw new Error(emailData?.error || "error");
       }
 
       if (tenant.tenant_user_id && orgId) {
-        await supabase.from("app_notifications").insert({
+        await rentalRepo.insertAppNotification({
           user_id: tenant.tenant_user_id,
           org_id: orgId,
           type: "payment",

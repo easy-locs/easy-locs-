@@ -1,9 +1,9 @@
 /**
  * usePrivacySettings — Server-persisted privacy preferences.
- * Replaces localStorage-only approach with profiles table columns.
+ * MIGRATED: All DB ops via profile.repository.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as profileRepo from "@/repositories/profile.repository";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface PrivacySettings {
@@ -11,7 +11,7 @@ export interface PrivacySettings {
   typingIndicators: boolean;
   displayNameMode: "real" | "username" | "custom" | "anonymous" | "hidden";
   customDisplayName: string;
-  defaultDisappearTtl: string; // "off" | "24h" | "7d" | "30d"
+  defaultDisappearTtl: string;
   lastSeen: boolean;
   onlineStatus: boolean;
   profilePhoto: boolean;
@@ -38,11 +38,7 @@ export function usePrivacySettings() {
   useEffect(() => {
     if (!user?.id) return;
     (async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("privacy_read_receipts, privacy_typing_indicators, display_name_mode, custom_display_name, default_disappear_ttl, privacy_last_seen, privacy_online_status, privacy_profile_photo, privacy_link_previews")
-        .eq("id", user.id)
-        .maybeSingle();
+      const data = await profileRepo.fetchBaseProfile(user.id);
       if (data) {
         setSettings({
           readReceipts: (data as any).privacy_read_receipts ?? true,
@@ -76,19 +72,15 @@ export function usePrivacySettings() {
     if (patch.profilePhoto !== undefined) dbPatch.privacy_profile_photo = patch.profilePhoto;
     if (patch.linkPreviews !== undefined) dbPatch.privacy_link_previews = patch.linkPreviews;
 
-    await supabase.from("profiles").update(dbPatch as any).eq("id", user.id);
+    await profileRepo.updateProfile(user.id, dbPatch);
   }, [user?.id, settings]);
 
   return { settings, update, loaded };
 }
 
-/** Fetch another user's privacy settings (for checking before sending read receipts) */
+/** Fetch another user's privacy settings */
 export async function fetchUserPrivacy(userId: string): Promise<{ readReceipts: boolean; typingIndicators: boolean } | null> {
-  const { data } = await supabase
-    .from("profiles")
-    .select("privacy_read_receipts, privacy_typing_indicators")
-    .eq("id", userId)
-    .maybeSingle();
+  const data = await profileRepo.fetchBaseProfile(userId);
   if (!data) return null;
   return {
     readReceipts: (data as any).privacy_read_receipts ?? true,
@@ -96,7 +88,6 @@ export async function fetchUserPrivacy(userId: string): Promise<{ readReceipts: 
   };
 }
 
-/** Calculate disappear_at timestamp from TTL string */
 export function computeDisappearAt(ttl: string): string | null {
   if (!ttl || ttl === "off") return null;
   const now = new Date();

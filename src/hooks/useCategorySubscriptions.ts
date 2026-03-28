@@ -1,5 +1,9 @@
+/**
+ * useCategorySubscriptions — Category subscription management.
+ * MIGRATED: All DB ops via discovery.repository.
+ */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as discoveryRepo from "@/repositories/discovery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -20,13 +24,9 @@ export function useCategorySubscriptions() {
   const fetchSubs = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("category_subscriptions" as any)
-      .select("*")
-      .eq("user_id", user.id);
-    const items = (data || []) as any as CategorySubscription[];
-    setSubs(items);
-    setSubscribedCategories(new Set(items.map((i) => i.category)));
+    const items = await discoveryRepo.fetchCategorySubscriptions(user.id);
+    setSubs(items as any as CategorySubscription[]);
+    setSubscribedCategories(new Set((items as any[]).map((i) => i.category)));
     setLoading(false);
   }, [user]);
 
@@ -39,30 +39,16 @@ export function useCategorySubscriptions() {
 
   const toggleSubscription = useCallback(
     async (category: string) => {
-      if (!user) {
-        toast.error("Please sign in to subscribe to categories");
-        return;
-      }
+      if (!user) { toast.error("Please sign in to subscribe to categories"); return; }
       if (subscribedCategories.has(category)) {
-        await supabase
-          .from("category_subscriptions" as any)
-          .delete()
-          .eq("user_id", user.id)
-          .eq("category", category);
-        setSubscribedCategories((prev) => {
-          const next = new Set(prev);
-          next.delete(category);
-          return next;
-        });
+        await discoveryRepo.removeCategorySubscription(user.id, category);
+        setSubscribedCategories((prev) => { const next = new Set(prev); next.delete(category); return next; });
         setSubs((prev) => prev.filter((s) => s.category !== category));
         toast.success("Unsubscribed from category");
       } else {
-        await supabase.from("category_subscriptions" as any).insert({
-          user_id: user.id,
-          category,
-          notify_push: true,
-          notify_email: false,
-        } as any);
+        await discoveryRepo.insertCategorySubscription({
+          user_id: user.id, category, notify_push: true, notify_email: false,
+        });
         setSubscribedCategories((prev) => new Set(prev).add(category));
         toast.success("Subscribed! You'll get notified for new listings");
         fetchSubs();

@@ -1,9 +1,10 @@
 /**
  * useRentalLeaseGenerator — Extracted from RentalManagement.tsx
  * Auto-generates lease PDF + first rent call on tenant creation.
+ * MIGRATED: All DB ops via rental-data.repository.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as rentalRepo from "@/repositories/rental-data.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -52,7 +53,7 @@ export function useRentalLeaseGenerator(properties: Property[], userCountry: str
     let landlordEmail = user?.email || "";
     let landlordSignature = "";
     try {
-      const { data: profile } = await supabase.from("profiles").select("name, email, signature_url").eq("id", user!.id).single();
+      const profile = await rentalRepo.fetchProfile(user!.id);
       if (profile?.name) landlordName = profile.name;
       if (profile?.email) landlordEmail = profile.email;
       if (profile?.signature_url) landlordSignature = profile.signature_url;
@@ -99,11 +100,11 @@ export function useRentalLeaseGenerator(properties: Property[], userCountry: str
       const leaseLabel = form.lease_type === "furnished" ? t("page.rental.lease_furnished") : form.lease_type === "commercial" ? t("page.rental.lease_commercial") : t("page.rental.lease_empty");
       const title = `${leaseLabel} — ${form.name}`;
       if (orgId) {
-        await supabase.from("documents").insert({
+        await rentalRepo.insertDocument({
           org_id: orgId, user_id: user!.id, title, doc_type: template.docType,
           template_id: template.id, template_version: template.version,
           data_json: leaseData as any, status: "draft", country: propCountry,
-        } as any);
+        });
       }
       downloadPDF(doc, `${title.replace(/\s/g, "_")}.pdf`);
       toast({ title: t("page.rental.lease_generated"), description: `${leaseLabel} ${t("page.rental.lease_downloaded")} ${form.name}` });
@@ -120,11 +121,11 @@ export function useRentalLeaseGenerator(properties: Property[], userCountry: str
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     try {
-      const { data: inserted } = await supabase.from("rent_calls").insert({
+      const inserted = await rentalRepo.insertSingleRentCall({
         org_id: orgId, tenant_id: tenantId, property_id: form.property_id,
         month, rent_amount: form.rent_amount || 0, charges_amount: form.charges_amount || 0,
         total_amount: (form.rent_amount || 0) + (form.charges_amount || 0), paid: false,
-      }).select("id").single();
+      });
       toast({ title: L.monthCalls, description: `${month} — ${fmt((form.rent_amount || 0) + (form.charges_amount || 0))}` });
 
       if (inserted?.id) {

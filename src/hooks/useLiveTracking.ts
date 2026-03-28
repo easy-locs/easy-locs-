@@ -1,24 +1,14 @@
 /**
- * useLiveTracking — Deliveroo/Uber-style live GPS tracking hook.
- * 
- * For TRACKER (agent/driver): creates tracking, updates position in real-time.
- * For VIEWER (client): subscribes to position updates via Supabase Realtime.
- * 
- * BUSINESS CONTEXT ENFORCEMENT:
- * Every tracking session MUST be linked to a business entity:
- * - delivery     → concierge_order / marketplace_booking
- * - visit        → booking_request / real_estate_listing
- * - intervention → booking_task / maintenance request
- * - appointment  → deal_room / conversation thread
- * - agent        → org_member assignment
+ * useLiveTracking — Live GPS tracking hook.
+ * MIGRATED: All DB ops via delivery.repository.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
+import * as deliveryRepo from "@/repositories/delivery.repository";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 export type TrackingStatus = "pending" | "en_route" | "nearby" | "arrived" | "completed" | "cancelled";
-
 export type TrackingContextType = "delivery" | "visit" | "intervention" | "appointment" | "agent";
 
 export interface TrackingData {
@@ -45,42 +35,31 @@ export interface TrackingData {
 }
 
 interface UseTrackerOpts {
-  /** Resume an existing tracking session */
   trackingId?: string;
-  /** REQUIRED — business context type */
   contextType: TrackingContextType;
-  /** REQUIRED — ID of the linked business entity (booking, order, task, deal, etc.) */
   contextId: string;
-  /** Human-readable label shown on the map */
   contextLabel?: string;
-  /** User who will see the tracking (client / tenant) */
   viewerUserId?: string;
-  /** Destination coordinates */
   destinationLat?: number;
   destinationLng?: number;
 }
 
-/** Hook for the TRACKER (person being tracked) */
 export function useTracker(opts: UseTrackerOpts) {
   const { user, orgId } = useAuth();
   const [trackingId, setTrackingId] = useState<string | null>(opts.trackingId || null);
   const [status, setStatus] = useState<TrackingStatus>("pending");
-  const watchIdRef = useRef<number | null>(null);
 
   const startTracking = useCallback(async () => {
     if (!user?.id || !orgId) return null;
-
-    // Enforce mandatory business context
     if (!opts.contextType || !opts.contextId) {
       console.error("[tracker] Cannot start: contextType and contextId are required");
       return null;
     }
 
-    // Use canonical locationStore + requestLocation instead of raw navigator.geolocation
     const { requestLocation } = await import("@/lib/location/requestLocation");
     const origin = await requestLocation();
 
-    const insertPayload: Record<string, unknown> = {
+    const id = await deliveryRepo.insertLiveTracking({
       org_id: orgId,
       tracker_user_id: user.id,
       viewer_user_id: opts.viewerUserId || null,
@@ -95,37 +74,19 @@ export function useTracker(opts: UseTrackerOpts) {
       current_lng: origin?.lng || null,
       status: "en_route",
       started_at: new Date().toISOString(),
-      metadata_json: {
-        context_type: opts.contextType,
-        context_id: opts.contextId,
-        started_by: user.id,
-      },
-    };
+      metadata_json: { context_type: opts.contextType, context_id: opts.contextId, started_by: user.id },
+    });
 
-    const { data, error } = await supabase
-      .from("live_trackings")
-      .insert(insertPayload as any)
-      .select()
-      .single();
-
-    if (error) { console.error("[tracker] start failed:", error); return null; }
-
-    const id = (data as any).id;
     setTrackingId(id);
     setStatus("en_route");
 
     platformBus.emit("tracking:started", {
-      trackingId: id,
-      contextType: opts.contextType,
-      contextId: opts.contextId,
+      trackingId: id, contextType: opts.contextType, contextId: opts.contextId,
     }, "tracking", { userId: user.id, orgId });
 
-    // Use canonical geo pipeline for GPS watch
     const { watchCurrentPosition } = await import("@/lib/location/geolocation");
     watchCurrentPosition(
-      (pos) => {
-        updatePosition(id, pos.lat, pos.lng, null, null);
-      },
+      (pos) => { updatePosition(id, pos.lat, pos.lng, null, null); },
       () => {},
     );
 
@@ -136,38 +97,23 @@ export function useTracker(opts: UseTrackerOpts) {
     const eta = calculateETA(lat, lng, opts.destinationLat, opts.destinationLng, speed);
     const newStatus = getProximityStatus(lat, lng, opts.destinationLat, opts.destinationLng);
 
-    const positionUpdate: Record<string, unknown> = {
-      current_lat: lat,
-      current_lng: lng,
+    await deliveryRepo.updateLiveTracking(id, {
+      current_lat: lat, current_lng: lng,
       speed_kmh: speed ? speed * 3.6 : 0,
       heading: heading || 0,
-      eta_minutes: eta,
-      status: newStatus,
+      eta_minutes: eta, status: newStatus,
       last_position_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    };
+    });
 
-    await supabase
-      .from("live_trackings")
-      .update(positionUpdate as any)
-      .eq("id", id);
-
-    // Emit position update for ecosystem radar refresh
     platformBus.emit("tracking:position_updated", {
-      trackingId: id,
-      lat, lng,
-      status: newStatus,
-      contextType: opts.contextType,
-      contextId: opts.contextId,
+      trackingId: id, lat, lng, status: newStatus, contextType: opts.contextType, contextId: opts.contextId,
     }, "tracking", { userId: user?.id, orgId });
 
     if (newStatus !== status) {
       setStatus(newStatus);
       platformBus.emit("tracking:status_changed", {
-        trackingId: id,
-        status: newStatus,
-        contextType: opts.contextType,
-        contextId: opts.contextId,
+        trackingId: id, status: newStatus, contextType: opts.contextType, contextId: opts.contextId,
       }, "tracking", { userId: user?.id, orgId });
     }
   }, [status, opts.destinationLat, opts.destinationLng, opts.contextType, opts.contextId, user?.id, orgId]);
@@ -177,58 +123,37 @@ export function useTracker(opts: UseTrackerOpts) {
     const updates: Record<string, unknown> = { status: newStatus, updated_at: new Date().toISOString() };
     if (newStatus === "completed") updates.completed_at = new Date().toISOString();
 
-    await supabase.from("live_trackings").update(updates as Record<string, unknown> as any).eq("id", trackingId);
+    await deliveryRepo.updateLiveTracking(trackingId, updates);
     setStatus(newStatus);
 
     if (newStatus === "completed") {
       stopWatch();
-      platformBus.emit("tracking:completed", {
-        trackingId,
-        contextType: opts.contextType,
-        contextId: opts.contextId,
-      }, "tracking", { userId: user?.id, orgId });
+      platformBus.emit("tracking:completed", { trackingId, contextType: opts.contextType, contextId: opts.contextId }, "tracking", { userId: user?.id, orgId });
     } else {
-      platformBus.emit("tracking:status_changed", {
-        trackingId,
-        status: newStatus,
-        contextType: opts.contextType,
-        contextId: opts.contextId,
-      }, "tracking", { userId: user?.id, orgId });
+      platformBus.emit("tracking:status_changed", { trackingId, status: newStatus, contextType: opts.contextType, contextId: opts.contextId }, "tracking", { userId: user?.id, orgId });
     }
   }, [trackingId, user?.id, orgId, opts.contextType, opts.contextId]);
 
   const stopWatch = useCallback(() => {
-    import("@/lib/location/geolocation").then(({ stopWatchingPosition }) => {
-      stopWatchingPosition();
-    });
+    import("@/lib/location/geolocation").then(({ stopWatchingPosition }) => { stopWatchingPosition(); });
   }, []);
 
-  useEffect(() => {
-    return () => stopWatch();
-  }, [stopWatch]);
+  useEffect(() => { return () => stopWatch(); }, [stopWatch]);
 
   return { trackingId, status, startTracking, updateStatus, stopWatch };
 }
 
-/** Hook for the VIEWER (person watching the tracker) */
 export function useTrackingViewer(trackingId: string | null) {
   const [tracking, setTracking] = useState<TrackingData | null>(null);
   const [positions, setPositions] = useState<Array<{ lat: number; lng: number; time: number }>>([]);
 
-  // Initial load
   useEffect(() => {
     if (!trackingId) return;
-
     (async () => {
-      const { data } = await supabase
-        .from("live_trackings")
-        .select("*")
-        .eq("id", trackingId)
-        .single();
+      const data = await deliveryRepo.fetchLiveTracking(trackingId);
       if (data) {
         const td = data as unknown as TrackingData;
         setTracking(td);
-        // Seed positions with initial position
         if (td.current_lat && td.current_lng) {
           setPositions([{ lat: td.current_lat, lng: td.current_lng, time: Date.now() }]);
         }
@@ -236,63 +161,26 @@ export function useTrackingViewer(trackingId: string | null) {
     })();
   }, [trackingId]);
 
-  // Realtime subscription
   useEffect(() => {
     if (!trackingId) return;
-
-    const channel = supabase
-      .channel(`tracking-${trackingId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "live_trackings",
-          filter: `id=eq.${trackingId}`,
-        },
-        (payload) => {
-          const updated = payload.new as unknown as TrackingData;
-          setTracking(updated);
-
-          if (updated.current_lat && updated.current_lng) {
-            setPositions((prev) => [
-              ...prev,
-              { lat: updated.current_lat!, lng: updated.current_lng!, time: Date.now() },
-            ].slice(-500));
-          }
-        }
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    return deliveryRepo.subscribeLiveTracking(trackingId, (updated) => {
+      const td = updated as unknown as TrackingData;
+      setTracking(td);
+      if (td.current_lat && td.current_lng) {
+        setPositions((prev) => [...prev, { lat: td.current_lat!, lng: td.current_lng!, time: Date.now() }].slice(-500));
+      }
+    });
   }, [trackingId]);
 
   const isComplete = tracking?.status === "completed" || tracking?.status === "cancelled";
-
   return { tracking, positions, isComplete };
 }
 
-/** Find active tracking for a business context */
 export async function findActiveTracking(contextType: TrackingContextType, contextId: string): Promise<string | null> {
-  const { data } = await supabase
-    .from("live_trackings")
-    .select("id")
-    .eq("context_type", contextType)
-    .eq("context_id", contextId)
-    .in("status", ["pending", "en_route", "nearby", "arrived"] as any)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return (data as any)?.id || null;
+  return deliveryRepo.findActiveTracking(contextType, contextId);
 }
 
-// ── Helpers ──
-
-function calculateETA(
-  lat: number, lng: number,
-  destLat?: number, destLng?: number,
-  speedMs?: number | null
-): number | null {
+function calculateETA(lat: number, lng: number, destLat?: number, destLng?: number, speedMs?: number | null): number | null {
   if (!destLat || !destLng) return null;
   const dist = haversineKm(lat, lng, destLat, destLng);
   const speedKmh = speedMs ? speedMs * 3.6 : 30;
@@ -300,10 +188,7 @@ function calculateETA(
   return Math.max(1, Math.round((dist / speedKmh) * 60));
 }
 
-function getProximityStatus(
-  lat: number, lng: number,
-  destLat?: number, destLng?: number
-): TrackingStatus {
+function getProximityStatus(lat: number, lng: number, destLat?: number, destLng?: number): TrackingStatus {
   if (!destLat || !destLng) return "en_route";
   const dist = haversineKm(lat, lng, destLat, destLng);
   if (dist < 0.05) return "arrived";
@@ -315,8 +200,6 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) ** 2;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }

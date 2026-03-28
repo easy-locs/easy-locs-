@@ -1,9 +1,10 @@
 /**
  * useRentalMessages — Extracted from RentalManagement.tsx
  * Handles tenant messages: load, send, realtime, email notification.
+ * MIGRATED: All DB ops via rental-data.repository.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as rentalRepo from "@/repositories/rental-data.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -24,51 +25,31 @@ export function useRentalMessages(selectedTenantId: string | null) {
 
   const loadMessages = useCallback(async (tenantId: string) => {
     if (!orgId) return;
-    const contextId = `tenant_${orgId}_${tenantId}`;
-    const { data } = await (supabase as any).from("chat_messages_v2")
-      .select("*")
-      .eq("conversation_id", contextId)
-      .order("created_at", { ascending: true });
-    setMessages(data || []);
+    const data = await rentalRepo.fetchChatMessages(orgId, tenantId);
+    setMessages(data);
   }, [orgId]);
 
   // Realtime listener
   useEffect(() => {
     if (!orgId || !selectedTenantId) return;
-    const channel = supabase
-      .channel(`rental-msg-${selectedTenantId}`)
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "chat_messages_v2",
-      }, (payload) => {
-        const newMsg = payload.new as any;
+    return rentalRepo.subscribeToRentalChat(
+      selectedTenantId,
+      (newMsg) => {
         if (newMsg.metadata?.tenant_id === selectedTenantId || newMsg.conversation_id?.includes(selectedTenantId)) {
           setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
         }
-      })
-      .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "chat_messages_v2",
-      }, (payload) => {
-        const updated = payload.new as any;
-        setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+      },
+      (updated) => setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m)),
+    );
   }, [orgId, selectedTenantId]);
 
   const sendMessage = useCallback(async (tenant: { id: string; email: string; tenant_user_id?: string | null }) => {
     if (!newMessage.trim() || !orgId || !user) return;
     const messageToSend = newMessage.trim();
-    const contextId = `tenant_${orgId}_${tenant.id}`;
 
-    const { error } = await (supabase as any).from("chat_messages_v2").insert({
-      conversation_id: contextId,
-      sender_user_id: user.id,
-      sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
-      type: "text",
-      body: messageToSend,
-    });
-
-    if (error) {
+    try {
+      await rentalRepo.insertChatMessage(orgId, tenant.id, user.id, messageToSend);
+    } catch (error: any) {
       toast({ title: t("page.rental.error"), description: error.message, variant: "destructive" });
       return;
     }
@@ -78,7 +59,7 @@ export function useRentalMessages(selectedTenantId: string | null) {
 
     // In-app notification
     if (tenant.tenant_user_id) {
-      await (supabase as any).from("app_notifications").insert({
+      await rentalRepo.insertAppNotification({
         user_id: tenant.tenant_user_id,
         scope: "global",
         category: "message",
@@ -93,8 +74,8 @@ export function useRentalMessages(selectedTenantId: string | null) {
     const tenantEmail = normalizeEmail(tenant.email);
     if (tenantEmail && isValidEmail(tenantEmail)) {
       const appUrl = buildAppUrl("/");
-      const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
-        body: {
+      try {
+        const emailData = await rentalRepo.invokeSendEmail({
           to: tenantEmail,
           subject: t("page.rental.email_new_msg_subject"),
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
@@ -108,13 +89,19 @@ export function useRentalMessages(selectedTenantId: string | null) {
             </div>
             <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(t("page.rental.email_auto_footer"))}</p>
           </div>`,
-        },
-      });
+        });
 
-      if (emailError || (emailData && emailData.success === false)) {
+        if (emailData && emailData.success === false) {
+          toast({
+            title: t("page.rental.msg_sent"),
+            description: `${t("page.rental.email_not_sent")} : ${emailData?.error || "unknown error"}`,
+            variant: "destructive",
+          });
+        }
+      } catch (err: any) {
         toast({
           title: t("page.rental.msg_sent"),
-          description: `${t("page.rental.email_not_sent")} : ${(emailError as any)?.message || emailData?.error || "unknown error"}`,
+          description: `${t("page.rental.email_not_sent")} : ${err.message || "unknown error"}`,
           variant: "destructive",
         });
       }
