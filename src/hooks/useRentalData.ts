@@ -161,22 +161,18 @@ export function useRentalData(countryFilter?: string | null) {
       building_name: form.building_name || null, lot_number: form.lot_number || null,
       country: form.country || "FR",
     };
-    if (editId) {
-      const { error } = await supabase.from("properties").update(record).eq("id", editId);
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
-      toast({ title: t("hook.rental.property_modified") });
-    } else {
-      const { error } = await supabase.from("properties").insert(record);
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
-      toast({ title: t("hook.rental.property_added") });
+    try {
+      await rentalRepo.upsertProperty(orgId, user.id, record, editId);
+      toast({ title: editId ? t("hook.rental.property_modified") : t("hook.rental.property_added") });
+    } catch (error: any) {
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false;
     }
     await loadProperties();
     return true;
   };
 
-  const deleteProperty = async (id: string) => {
-    const { error } = await supabase.from("properties").delete().eq("id", id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+  const deletePropertyFn = async (id: string) => {
+    try { await rentalRepo.deleteProperty(id); } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: t("hook.rental.property_deleted") });
     await loadProperties();
   };
@@ -195,24 +191,18 @@ export function useRentalData(countryFilter?: string | null) {
       guarantor_name: form.guarantor_name || null, guarantor_phone: form.guarantor_phone || null,
       caf_apl_amount: form.caf_apl_amount || 0,
     };
-    if (editId) {
-      const { error } = await supabase.from("tenants").update(record).eq("id", editId);
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
-      toast({ title: t("hook.rental.tenant_modified") });
+    try {
+      const resultId = await rentalRepo.upsertTenant(orgId, user.id, record, editId);
+      toast({ title: editId ? t("hook.rental.tenant_modified") : t("hook.rental.tenant_added") });
       await loadTenants();
-      return editId;
-    } else {
-      const { data, error } = await supabase.from("tenants").insert(record).select("id").single();
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
-      toast({ title: t("hook.rental.tenant_added") });
-      await loadTenants();
-      return data.id;
+      return resultId;
+    } catch (error: any) {
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false;
     }
   };
 
-  const deleteTenant = async (id: string) => {
-    const { error } = await supabase.from("tenants").delete().eq("id", id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+  const deleteTenantFn = async (id: string) => {
+    try { await rentalRepo.deleteTenant(id); } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: t("hook.rental.tenant_deleted") });
     await loadTenants();
   };
@@ -223,31 +213,20 @@ export function useRentalData(countryFilter?: string | null) {
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-    const { data: existingCalls } = await supabase
-      .from("rent_calls")
-      .select("tenant_id")
-      .eq("org_id", orgId)
-      .eq("month", month);
-
-    const existingIds = new Set((existingCalls || []).map(r => r.tenant_id));
+    const existingCalls = await rentalRepo.fetchExistingRentCallsForMonth(orgId, month);
+    const existingIds = new Set(existingCalls.map(r => r.tenant_id));
     const newCalls = tenants
       .filter(tn => tn.rent_amount > 0 && !existingIds.has(tn.id))
       .map(tn => ({
-        org_id: orgId,
-        tenant_id: tn.id,
-        property_id: tn.property_id,
-        month,
-        rent_amount: tn.rent_amount,
-        charges_amount: tn.charges_amount,
+        org_id: orgId, tenant_id: tn.id, property_id: tn.property_id, month,
+        rent_amount: tn.rent_amount, charges_amount: tn.charges_amount,
         total_amount: tn.rent_amount + tn.charges_amount,
       }));
-    if (newCalls.length === 0) {
-      toast({ title: t("hook.rental.all_calls_created") });
-      return;
-    }
-    const { error } = await supabase.from("rent_calls").upsert(newCalls, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true });
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-    toast({ title: `${newCalls.length} ${t("hook.rental.calls_generated")}` });
+    if (newCalls.length === 0) { toast({ title: t("hook.rental.all_calls_created") }); return; }
+    try {
+      await rentalRepo.insertRentCalls(newCalls);
+      toast({ title: `${newCalls.length} ${t("hook.rental.calls_generated")}` });
+    } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     await loadRentCalls();
   };
 
@@ -255,13 +234,12 @@ export function useRentalData(countryFilter?: string | null) {
     const call = rentCalls.find(r => r.id === id);
     if (!call) return;
     const nowPaid = !call.paid;
-    const { error } = await supabase.from("rent_calls").update({
-      paid: nowPaid,
-      paid_date: nowPaid ? new Date().toISOString() : null,
-      payment_method: nowPaid ? (paymentMethod || null) : null,
-      receipt_validated: nowPaid ? true : false,
-    }).eq("id", id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    try {
+      await rentalRepo.updateRentCall(id, {
+        paid: nowPaid, paid_date: nowPaid ? new Date().toISOString() : null,
+        payment_method: nowPaid ? (paymentMethod || null) : null, receipt_validated: nowPaid ? true : false,
+      });
+    } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
 
     if (nowPaid && user && orgId) {
       try {
