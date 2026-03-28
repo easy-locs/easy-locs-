@@ -4,6 +4,7 @@
  */
 import { useRef, memo } from "react";
 import { useSuperMapStore } from "@/stores/superMapStore";
+import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useMapCore } from "@/hooks/map/useMapCore";
 import { useMapDataSync } from "@/hooks/map/useMapDataSync";
 import { useMapInteractions } from "@/hooks/map/useMapInteractions";
@@ -37,75 +38,68 @@ export default memo(function SuperMap({
   const centerLng = useSuperMapStore(s => s.centerLng);
   const zoom = useSuperMapStore(s => s.zoom);
   const entities = useSuperMapStore(s => s.entities);
-  const showHeatmap = useSuperMapStore(s => s.showHeatmap);
-  const showWeather = useSuperMapStore(s => s.showWeather);
-  const showStations = useSuperMapStore(s => s.showStations);
-  const showMobility = useSuperMapStore(s => s.showMobility);
-  const toggleHeatmap = useSuperMapStore(s => s.toggleHeatmap);
-  const toggleWeather = useSuperMapStore(s => s.toggleWeather);
-  const toggleStations = useSuperMapStore(s => s.toggleStations);
-  const toggleMobility = useSuperMapStore(s => s.toggleMobility);
+
+  const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
 
   // ── Preset resolution ──
   const preset = useMapPreset();
 
-  // ── 1. MapCore: init + lifecycle ──
+  // ── 1. MapCore ──
   const { mapRef, ready } = useMapCore(containerRef, { centerLng, centerLat, zoom });
 
-  // ── 2. Data sync: store → map sources ──
+  // ── 2. Data sync ──
   useMapDataSync(mapRef, ready);
 
-  // ── 3. Interactions: click/hover/popup ──
+  // ── 3. Interactions ──
   useMapInteractions(mapRef, ready, { onSelectEntity, onZoneClick, entities });
 
-  // ── 4. Weather: fog/rain/stations ──
+  // ── 4. Weather (data always-on, display controlled by weatherDisplayStore) ──
   const { weather } = useMapWeather(mapRef, ready);
 
-  // ── 5. Camera: fit bounds + recenter ──
+  // ── 5. Camera ──
   const { recenter } = useMapCamera(mapRef, ready);
 
-  // ── 6. Animations: wired to preset config ──
+  // ── 6. Animations ──
   useMapAnimations(mapRef, ready, preset);
 
   // ── 7. Adaptive intelligence ──
   const { adaptive } = useMapAdaptive(mapRef, ready, entities.length);
 
+  // Show rain effects only if effects level allows it
+  const showRainEffects = weather.isRaining && effectsLevel !== "off";
+
   return (
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
       <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" />
 
-      {/* Weather badge */}
+      {/* Weather badge — always shows real weather data */}
       <div className="pointer-events-none absolute left-3 right-3 top-3 z-20 flex items-start justify-between gap-3">
         <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/40 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md">
           {weather.isRaining
             ? <CloudRain className="h-4 w-4 shrink-0 text-primary" />
             : <CloudSun className="h-4 w-4 shrink-0 text-primary" />}
-          <span className="truncate text-[11px] font-medium text-foreground">Live station · {weather.label}</span>
+          <span className="truncate text-[11px] font-medium text-foreground">
+            {weather.label}
+          </span>
         </div>
       </div>
 
-      {/* Rain overlays */}
-      {weather.isRaining && (
+      {/* Rain visual effects — controlled by effectsLevel, not weather toggle */}
+      {showRainEffects && (
         <>
           <div className="map-rain-tint pointer-events-none absolute inset-0 rounded-2xl" />
-          <div className="map-rain-overlay pointer-events-none absolute inset-0 rounded-2xl" />
-          <div className="map-rain-glow pointer-events-none absolute inset-0 rounded-2xl" />
+          {effectsLevel === "immersive" && (
+            <>
+              <div className="map-rain-overlay pointer-events-none absolute inset-0 rounded-2xl" />
+              <div className="map-rain-glow pointer-events-none absolute inset-0 rounded-2xl" />
+            </>
+          )}
         </>
       )}
 
-      {/* Controls */}
+      {/* Controls — self-contained, reads from weatherDisplayStore + superMapStore */}
       <div className="absolute bottom-3 right-3 z-30 flex max-w-[calc(100%-1.5rem)] justify-end">
-        <MapControls
-          showWeather={showWeather || weather.isRaining}
-          showStations={showStations}
-          showMobility={showMobility}
-          showHeatmap={showHeatmap}
-          onToggleWeather={toggleWeather}
-          onToggleStations={toggleStations}
-          onToggleMobility={toggleMobility}
-          onToggleHeatmap={toggleHeatmap}
-          onRecenter={recenter}
-        />
+        <MapControls onRecenter={recenter} />
       </div>
 
       {/* Cockpit */}
