@@ -90,7 +90,15 @@ export function markRetry(trace: FlowTrace) {
 }
 
 export function getTraces(): FlowTrace[] { return [...traces]; }
+export function getFlowTraces(): FlowTrace[] { return [...traces]; }
+export function getSlowFlows(thresholdMs = 1000): FlowTrace[] {
+  return traces.filter(t => (t.totalLatencyMs ?? 0) > thresholdMs);
+}
+export function getBrokenFlows(): FlowTrace[] {
+  return traces.filter(t => t.status === "failed" || t.status === "timeout");
+}
 export function clearTraces() { traces = []; notify(); }
+export function clearFlowTraces() { traces = []; notify(); }
 export function subscribeTraces(fn: () => void) {
   listeners.add(fn);
   return () => listeners.delete(fn);

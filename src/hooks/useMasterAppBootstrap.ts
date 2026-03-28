@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { installOrchestrationEngine } from "@/lib/orchestration/orchestrator";
 import { installEngineConnectorHub } from "@/lib/system/engineConnectorHub";
+import { startAutoRepairEngine } from "@/lib/runtime/auto-repair-engine";
+import { startRealtimeHealthCheck } from "@/lib/runtime/realtime-intelligence";
 import { installPlatformReactions } from "@/lib/shared/platform-bus";
 import { installStorefrontReactions } from "@/lib/shared/storefront-reactions";
 import { installCrossAppReactions } from "@/lib/shared/cross-app-reactions";
@@ -94,7 +96,13 @@ export function useMasterAppBootstrap() {
     // 12. Core flow registry
     initCoreFlowRegistry();
 
-    // 13. Platform recovery — deferred
+    // 13. Auto-repair engine — self-healing runtime
+    const cleanupAutoRepair = startAutoRepairEngine(45_000);
+
+    // 14. Realtime health check
+    const cleanupRealtimeHealth = startRealtimeHealthCheck(30_000);
+
+    // 15. Platform recovery — deferred
     const t1 = setTimeout(() => void runPlatformRecovery("boot"), 30000);
 
     return () => {
@@ -121,6 +129,8 @@ export function useMasterAppBootstrap() {
       cleanupCounters();
       cleanupNotifications();
       cleanupStaleScanner();
+      cleanupAutoRepair();
+      cleanupRealtimeHealth();
       booted = false;
     };
   }, [queryClient]);
