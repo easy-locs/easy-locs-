@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import * as repo from "@/repositories/mobility.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { ArrowLeft, Camera, CheckCircle } from "lucide-react";
@@ -20,29 +20,15 @@ export default function DriverProofPage() {
     if (!orderId) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("delivery_proofs").insert({
-        order_id: orderId,
-        driver_user_id: user?.id ?? null,
-        notes: note || null,
-        proof_type: "photo",
-        photo_url: null,
-        geo_lat: null,
-        geo_lng: null,
+      await repo.insertDeliveryProof({
+        order_id: orderId, driver_user_id: user?.id ?? null,
+        notes: note || null, proof_type: "photo", photo_url: null, geo_lat: null, geo_lng: null,
       });
-      if (error) throw error;
-
-      platformBus.emit("MISSION_COMPLETED", {
-        orderId,
-        driverId: user?.id ?? "",
-      }, "system");
-
+      platformBus.emit("MISSION_COMPLETED", { orderId, driverId: user?.id ?? "" }, "system");
       setSubmitted(true);
       toast.success("Delivery proof submitted");
-    } catch (err: any) {
-      toast.error(err.message || "Could not submit proof");
-    } finally {
-      setSubmitting(false);
-    }
+    } catch (err: any) { toast.error(err.message || "Could not submit proof"); }
+    finally { setSubmitting(false); }
   };
 
   if (submitted) {
@@ -71,38 +57,26 @@ export default function DriverProofPage() {
           <p className="text-xs text-muted-foreground">{orderId ? `Order #${orderId.slice(0, 8)}` : ""}</p>
         </div>
       </header>
-
       <div className="flex-1 px-4 pb-24 space-y-4">
         <div className="space-y-3">
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Recipient name</label>
-            <input
-              type="text" value={recipientName} onChange={(e) => setRecipientName(e.target.value)}
-              className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm text-foreground"
-              placeholder="Who received the order?"
-            />
+            <input type="text" value={recipientName} onChange={(e) => setRecipientName(e.target.value)}
+              className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm text-foreground" placeholder="Who received the order?" />
           </div>
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Driver note</label>
-            <textarea
-              value={note} onChange={(e) => setNote(e.target.value)} rows={3}
-              className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm text-foreground resize-none"
-              placeholder="Add a note..."
-            />
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3}
+              className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm text-foreground resize-none" placeholder="Add a note..." />
           </div>
         </div>
-
         <div className="rounded-xl bg-muted p-3 flex items-center gap-2">
           <Camera className="w-4 h-4 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">Photo upload, GPS & signature can be connected later.</span>
         </div>
-
         <p className="text-[11px] text-muted-foreground">Timestamp: {new Date().toLocaleString()}</p>
-
-        <button
-          onClick={submitProof} disabled={submitting}
-          className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold disabled:opacity-50 active:scale-[0.97] transition-transform"
-        >
+        <button onClick={submitProof} disabled={submitting}
+          className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold disabled:opacity-50 active:scale-[0.97] transition-transform">
           {submitting ? "Submitting..." : "Submit Proof"}
         </button>
       </div>
