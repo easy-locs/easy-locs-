@@ -62,11 +62,20 @@
   min-width: 0;
 }
 
-/* 3. Grid children — prevent overflow */
+/* 3. Grid children — prevent overflow but NOT clip text */
 [class*="grid-cols"] > * {
   min-width: 0;
-  overflow: hidden;
 }
+
+/* 4a. Anti-strangling — containers should not clip text by default */
+p, span, label, h1, h2, h3, h4, h5, h6, li, dt, dd, td, th, a {
+  overflow: visible;
+  text-overflow: unset;
+}
+
+/* 4b. Multi-line text safety — prefer wrapping over clipping */
+.text-balance { text-wrap: balance; }
+.text-pretty { text-wrap: pretty; }
 
 /* 4. Card safety — enforce content boundaries only on explicit card containers */
 .card-clip,
