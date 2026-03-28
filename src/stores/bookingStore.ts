@@ -3,7 +3,8 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { diffNights, isRangeOverlap } from "@/lib/utils/booking";
 import type { BookingRecordV2 } from "@/lib/types/domain";
 import { useListingStore } from "@/stores/listingStore";
-import { useChatStore } from "@/stores/chatStore";
+import { useOrbitThreadStore } from "@/stores/orbit/thread.store";
+import { sendSystemMessage } from "@/lib/chat/messageService";
 import { requireOrbitIdentity, getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
 type CreateBookingInput = {
@@ -58,7 +59,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
     const bookingId = `booking_${Math.random().toString(36).slice(2, 11)}`;
     const now = new Date().toISOString();
 
-    const conversation = await useChatStore.getState().createConversation({
+    const conversation = await useOrbitThreadStore.getState().createThread({
       type: "booking",
       participants: [
         { orbitId: buyerOrbit.orbitId, role: "buyer" },
@@ -69,10 +70,9 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
       bookingId,
     });
 
-    await useChatStore.getState().sendMessage({
+    await sendSystemMessage({
       conversationId: conversation.id,
       senderOrbitId: listing.ownerOrbitId,
-      type: "system",
       body: `Booking conversation created for ${listing.title}`,
       metadata: { listingId: listing.id, bookingId },
     });
