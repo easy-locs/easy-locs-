@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { createWalletTopup } from "@/repositories/payments.repository";
 import { toast } from "sonner";
 import { Loader2, CreditCard, ArrowLeft, Smartphone, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
@@ -31,21 +31,15 @@ export default function WalletTopUpPage() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-wallet-topup", {
-        body: {
-          amount: num,
-          currency,
-          // Stripe Checkout natively shows Apple Pay / Google Pay
-          // when customer's device supports it — no extra config needed
-          payment_method_types: method === "apple_google"
-            ? ["card", "apple_pay", "google_pay"]
-            : ["card"],
-        },
+      const data = await createWalletTopup({
+        amount: num,
+        currency,
+        payment_method_types: method === "apple_google"
+          ? ["card", "apple_pay", "google_pay"]
+          : ["card"],
       });
 
-      if (error) throw error;
       if (!data?.url) throw new Error("No checkout URL returned");
-
       window.location.href = data.url;
     } catch (err: any) {
       toast.error(err.message || "Top up failed");

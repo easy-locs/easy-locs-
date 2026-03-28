@@ -75,3 +75,34 @@ export async function updateBookingPayment(table: string, id: string, updates: R
   const { error } = await (supabase as any).from(table).update(updates).eq("id", id);
   if (error) throw error;
 }
+
+// ── Payment requests ──
+export async function fetchPaymentRequest(requestId: string) {
+  const { data, error } = await (supabase as any)
+    .from("payment_requests")
+    .select("*")
+    .eq("id", requestId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// ── Wallet activity ──
+export async function fetchWalletActivity(userId: string) {
+  const { data: accounts, error: aErr } = await supabase
+    .from("wallet_accounts")
+    .select("id")
+    .eq("owner_user_id", userId);
+  if (aErr) throw aErr;
+  const ids = (accounts ?? []).map((a: any) => a.id);
+  if (!ids.length) return [];
+
+  const { data, error } = await supabase
+    .from("wallet_ledger_entries")
+    .select("*")
+    .in("wallet_account_id", ids)
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error) throw error;
+  return (data ?? []) as any[];
+}
