@@ -1,6 +1,6 @@
 /**
  * RadarPage — Immersive full-screen map-first experience.
- * Clean map canvas with floating glass controls + pull-up bottom sheet.
+ * Premium glass controls + live geocoded place search + pull-up bottom sheet.
  */
 import { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,11 +15,12 @@ import { geoService } from "@/lib/geo/geo-service";
 import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pipeline";
 import { getTimeContext } from "@/lib/discovery/timeContext";
 import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/world-class-taxonomy";
+import { searchPlaces, type NormalizedPlace } from "@/lib/location/geocode";
 import type { RadarCategory } from "@/lib/radar/types";
-import { Search, MapPin, Navigation, Loader2, Flame, ArrowLeft, ChevronUp, Layers, X } from "lucide-react";
+import { Search, MapPin, Navigation, Loader2, ArrowLeft, ChevronUp, Layers, X } from "lucide-react";
 import "@/styles/radar-pro.css";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
+import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
 
@@ -65,6 +66,9 @@ export default function RadarPage() {
   const [showWeatherLayer, setShowWeatherLayer] = useState(true);
   const [searchFocused, setSearchFocused] = useState(false);
   const [sheetSnap, setSheetSnap] = useState<SheetSnap>("collapsed");
+  const [placeSuggestions, setPlaceSuggestions] = useState<NormalizedPlace[]>([]);
+  const [searchingPlaces, setSearchingPlaces] = useState(false);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timeCtx = useMemo(() => getTimeContext(), []);
   const weather = useLiveWeatherStation({ lat: userLocation?.lat, lng: userLocation?.lng });
 
