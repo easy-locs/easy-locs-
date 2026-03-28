@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchExpensesProperties, fetchExpenses, insertExpense, deleteExpense, type ExpenseRecord, type PropertyOption } from "@/repositories/expenses.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -12,18 +12,7 @@ import { Plus, Trash2, Download, Filter } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 
-interface Expense {
-  id: string;
-  property_id: string | null;
-  category: string;
-  label: string;
-  amount: number;
-  expense_date: string;
-  supplier: string | null;
-  notes: string;
-}
-
-interface Property { id: string; label: string; }
+type Expense = ExpenseRecord;
 
 const Expenses = () => {
   const countryFilter = useCountryFilter();
@@ -55,19 +44,13 @@ const Expenses = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    let propQuery = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
-    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
-    const [{ data: p }] = await Promise.all([propQuery]);
-    const filteredProps = p || [];
-    setProperties(filteredProps.map(pr => ({ id: pr.id, label: pr.label })));
-    
-    const propIds = filteredProps.map(pr => pr.id);
+    const props = await fetchExpensesProperties(orgId, countryFilter);
+    setProperties(props);
+    const propIds = props.map(p => p.id);
     if (countryFilter && propIds.length > 0) {
-      const { data: e } = await supabase.from("expenses").select("*").eq("org_id", orgId).in("property_id", propIds).order("expense_date", { ascending: false });
-      if (e) setExpenses(e as Expense[]);
+      setExpenses(await fetchExpenses(orgId, propIds));
     } else if (!countryFilter) {
-      const { data: e } = await supabase.from("expenses").select("*").eq("org_id", orgId).order("expense_date", { ascending: false });
-      if (e) setExpenses(e as Expense[]);
+      setExpenses(await fetchExpenses(orgId));
     } else {
       setExpenses([]);
     }
@@ -78,20 +61,23 @@ const Expenses = () => {
 
   const save = async () => {
     if (!orgId || !user || !form.label) return;
-    const { error } = await supabase.from("expenses").insert({
-      org_id: orgId, user_id: user.id, property_id: form.property_id || null,
-      category: form.category, label: form.label, amount: form.amount,
-      expense_date: form.expense_date, supplier: form.supplier || null, notes: form.notes,
-    });
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-    toast({ title: t("page.expenses.new") });
-    setShowForm(false);
-    setForm({ property_id: "", category: "other", label: "", amount: 0, expense_date: new Date().toISOString().slice(0, 10), supplier: "", notes: "" });
-    await load();
+    try {
+      await insertExpense({
+        org_id: orgId, user_id: user.id, property_id: form.property_id || null,
+        category: form.category, label: form.label, amount: form.amount,
+        expense_date: form.expense_date, supplier: form.supplier || null, notes: form.notes,
+      });
+      toast({ title: t("page.expenses.new") });
+      setShowForm(false);
+      setForm({ property_id: "", category: "other", label: "", amount: 0, expense_date: new Date().toISOString().slice(0, 10), supplier: "", notes: "" });
+      await load();
+    } catch (err: any) {
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+    }
   };
 
   const remove = async (id: string) => {
-    await supabase.from("expenses").delete().eq("id", id);
+    await deleteExpense(id);
     toast({ title: t("page.common.delete") });
     await load();
   };
