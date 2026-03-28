@@ -14,20 +14,25 @@ export interface GeoUpdate {
 /** Dispatch a geo update to all platform consumers */
 export function dispatchGeoUpdate(geo: CanonicalGeoEntity, trigger: GeoUpdate["trigger"]) {
   const update: GeoUpdate = { geo, trigger, timestamp: Date.now() };
-  platformBus.emit("geo:canonical_updated", update, "geo-dispatcher");
+  platformBus.emit("geo.position.updated", update, "system");
 }
 
 /** Subscribe to canonical geo updates */
 export function onGeoUpdate(handler: (update: GeoUpdate) => void): () => void {
-  return platformBus.on("geo:canonical_updated", handler);
+  return platformBus.on("geo.position.updated", (event) => {
+    handler(event.payload as GeoUpdate);
+  });
 }
 
 /** Dispatch user position specifically (for map/radar centering) */
 export function dispatchUserPosition(lat: number, lng: number, source: string) {
-  platformBus.emit("geo:user_position", { lat, lng, source, timestamp: Date.now() }, "geo-dispatcher");
+  platformBus.emit("geo.position.updated", { lat, lng, source, timestamp: Date.now() }, "system");
 }
 
 /** Subscribe to user position updates */
 export function onUserPosition(handler: (pos: { lat: number; lng: number; source: string }) => void): () => void {
-  return platformBus.on("geo:user_position", handler);
+  return platformBus.on("geo.position.updated", (event) => {
+    const p = event.payload as any;
+    if (p?.lat && p?.lng) handler(p);
+  });
 }
