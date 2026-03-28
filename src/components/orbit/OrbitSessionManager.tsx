@@ -206,9 +206,9 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
-                      {session.device_label}
-                    </span>
+                     <span className="text-sm font-medium min-w-0 break-words leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
+                       {session.device_label}
+                     </span>
                     {isCurrent && (
                       <Badge variant="outline" className="text-micro px-1.5 py-0 shrink-0" style={{
                         borderColor: "hsl(var(--hud-success) / 0.3)", color: "hsl(var(--hud-success))",

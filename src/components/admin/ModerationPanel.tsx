@@ -208,11 +208,11 @@ export default function ModerationPanel() {
               <div key={bu.id} className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5">
                 <Flag className="w-4 h-4 text-destructive shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate">
-                    {bu.blocked_id}
-                  </p>
+                   <p className="text-xs font-medium text-foreground break-words leading-snug">
+                     {bu.blocked_id}
+                   </p>
                   {bu.reason && (
-                    <p className="text-[10px] text-muted-foreground truncate">{bu.reason}</p>
+                    <p className="text-[10px] text-muted-foreground break-words leading-snug">{bu.reason}</p>
                   )}
                 </div>
                 <Button

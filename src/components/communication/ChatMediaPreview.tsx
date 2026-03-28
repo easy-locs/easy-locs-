@@ -112,7 +112,7 @@ export default function ChatMediaPreview({ url, fileName, isMe }: Props) {
           </div>
           {fileName && (
             <div className="flex items-center justify-between px-2.5 py-1.5">
-              <p className="text-2xs text-muted-foreground truncate flex-1">{fileName}</p>
+              <p className="text-2xs text-muted-foreground min-w-0 flex-1 break-words leading-snug">{fileName}</p>
               <a href={url} download={fileName} target="_blank" rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors p-0.5">
                 <Download className="h-3 w-3" />
@@ -163,9 +163,9 @@ export default function ChatMediaPreview({ url, fileName, isMe }: Props) {
         <FileText className={`h-4 w-4 ${isMe ? "text-accent-foreground/70" : "text-accent"}`} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-xs font-medium truncate ${isMe ? "text-accent-foreground" : "text-foreground"}`}>
-          {fileName || "Document"}
-        </p>
+         <p className={`text-xs font-medium min-w-0 break-words leading-snug ${isMe ? "text-accent-foreground" : "text-foreground"}`}>
+           {fileName || "Document"}
+         </p>
         <p className={`text-2xs ${isMe ? "text-accent-foreground/50" : "text-muted-foreground"}`}>
           Tap to open
         </p>

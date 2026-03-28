@@ -62,7 +62,7 @@ export default function ShopSwitcher({ shops, activeShopId, onSelectShop, loadin
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-foreground truncate">{shop.name}</p>
+                  <p className="text-sm font-semibold text-foreground break-words leading-snug">{shop.name}</p>
                   {isActive && <span className="text-[8px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">ACTIVE</span>}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
