@@ -1,5 +1,7 @@
-import { CloudRain, LocateFixed, Radio, CarFront, Sparkles } from "lucide-react";
+import { CloudRain, LocateFixed, Radio, CarFront, Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
+import { useSuperMapStore } from "@/stores/superMapStore";
 
 function Chip({ active, label, icon: Icon, onClick }: { active: boolean; label: string; icon: React.ElementType; onClick: () => void }) {
   return (
@@ -18,34 +20,44 @@ function Chip({ active, label, icon: Icon, onClick }: { active: boolean; label: 
 }
 
 export default function MapControls({
-  showWeather,
-  showStations,
-  showMobility,
-  showHeatmap,
-  onToggleWeather,
-  onToggleStations,
-  onToggleMobility,
-  onToggleHeatmap,
   onRecenter,
   className,
 }: {
-  showWeather: boolean;
-  showStations: boolean;
-  showMobility: boolean;
-  showHeatmap: boolean;
-  onToggleWeather: () => void;
-  onToggleStations: () => void;
-  onToggleMobility: () => void;
-  onToggleHeatmap: () => void;
   onRecenter?: () => void;
   className?: string;
 }) {
+  // Weather display controls (overlay, not data)
+  const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
+  const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
+  const showStations = useWeatherDisplayStore(s => s.showStations);
+  const toggleStations = useWeatherDisplayStore(s => s.toggleStations);
+  const autoMode = useWeatherDisplayStore(s => s.autoMode);
+  const toggleAutoMode = useWeatherDisplayStore(s => s.toggleAutoMode);
+
+  // Map store controls
+  const showMobility = useSuperMapStore(s => s.showMobility);
+  const toggleMobility = useSuperMapStore(s => s.toggleMobility);
+  const showHeatmap = useSuperMapStore(s => s.showHeatmap);
+  const toggleHeatmap = useSuperMapStore(s => s.toggleHeatmap);
+
+  const toggleRadar = () => {
+    // Cycle: off → minimal → full → off
+    const next = radarOverlay === "off" ? "full" : radarOverlay === "full" ? "minimal" : "off";
+    setRadarOverlay(next);
+  };
+
   return (
     <div className={cn("pointer-events-auto flex flex-wrap items-center gap-2", className)}>
-      <Chip active={showWeather} label="Radar" icon={CloudRain} onClick={onToggleWeather} />
-      <Chip active={showStations} label="Stations" icon={Radio} onClick={onToggleStations} />
-      <Chip active={showMobility} label="Live" icon={CarFront} onClick={onToggleMobility} />
-      <Chip active={showHeatmap} label="Zones" icon={Sparkles} onClick={onToggleHeatmap} />
+      <Chip
+        active={radarOverlay !== "off"}
+        label={radarOverlay === "minimal" ? "Radar ·" : "Radar"}
+        icon={CloudRain}
+        onClick={toggleRadar}
+      />
+      <Chip active={showStations} label="Stations" icon={Radio} onClick={toggleStations} />
+      <Chip active={showMobility} label="Live" icon={CarFront} onClick={toggleMobility} />
+      <Chip active={showHeatmap} label="Zones" icon={Sparkles} onClick={toggleHeatmap} />
+      <Chip active={autoMode} label="Auto" icon={Zap} onClick={toggleAutoMode} />
       {onRecenter ? (
         <button
           type="button"
