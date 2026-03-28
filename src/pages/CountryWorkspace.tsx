@@ -14,7 +14,7 @@ import { useI18n } from "@/lib/i18n";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { getCountryProfile } from "@/lib/country-profile";
 import { formatCurrency } from "@/lib/country-config";
-import { supabase } from "@/integrations/supabase/client";
+import * as cwRepo from "@/repositories/country-workspace.repository";
 import { useState, useEffect } from "react";
 
 const CountryWorkspace = () => {
@@ -33,29 +33,8 @@ const CountryWorkspace = () => {
 
   useEffect(() => {
     if (!orgId) return;
-    Promise.all([
-      supabase.from("properties").select("id", { count: "exact" }).eq("org_id", orgId).eq("country", country),
-      supabase.from("tenants").select("id, property_id, lease_start").eq("org_id", orgId),
-      supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("country", country),
-      supabase.from("buildings").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("inventory_reports").select("id, property_id").eq("org_id", orgId),
-      supabase.from("furniture_items").select("id, property_id").eq("org_id", orgId),
-    ]).then(([props, tenants, docs, buildings, inventories, furniture]) => {
-      const propIds = new Set((props.data || []).map(p => p.id));
-      const countryTenants = (tenants.data || []).filter(t => t.property_id && propIds.has(t.property_id));
-      const countryLeases = countryTenants.filter(t => t.lease_start);
-      const countryInventories = (inventories.data || []).filter(i => i.property_id && propIds.has(i.property_id));
-      const countryFurniture = (furniture.data || []).filter(f => f.property_id && propIds.has(f.property_id));
-
-      setStats({
-        properties: props.count || 0,
-        tenants: countryTenants.length,
-        leases: countryLeases.length,
-        documents: docs.count || 0,
-        buildings: buildings.count || 0,
-        inventories: countryInventories.length,
-        furniture: countryFurniture.length,
-      });
+    cwRepo.fetchCountryStats(orgId, country).then((result) => {
+      setStats(result);
       setLoading(false);
     });
   }, [orgId, country]);
