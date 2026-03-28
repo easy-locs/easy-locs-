@@ -32,6 +32,7 @@ import { useHudCallSetup } from "@/hooks/orbit/useHudCallSetup";
 import { useHudBookingActions } from "@/hooks/orbit/useHudBookingActions";
 import { useHudConversationStatus } from "@/hooks/orbit/useHudConversationStatus";
 import { useHudAttachmentUpload } from "@/hooks/orbit/useHudAttachmentUpload";
+import { useHudInlineHandlers } from "@/hooks/orbit/useHudInlineHandlers";
 import { Button } from "@/components/ui/button";
 
 import ChatHeader from "./chat/ChatHeader";
@@ -96,7 +97,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
   const [viewOnceEnabled, setViewOnceEnabled] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerAttachment, setViewerAttachment] = useState<any>(null);
@@ -359,110 +359,31 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     return MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
   }, []);
 
-  const handleViewOnceUpload = useCallback(async (file: File) => {
-    if (!thread || !orgId) return;
-    const authUserId = await resolveAuthUserId();
-    if (!authUserId) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error(t("orbit.view_once_only_photo") || "View once only supports photos");
-      return;
-    }
-    attachments.setUploading(true);
-    try {
-      const path = `${orgId}/${thread.id}/viewonce-${Date.now()}.${file.name.split(".").pop() || "jpg"}`;
-      const finalUrl = await attachments.uploadToStorage(file, path);
-      if (!finalUrl) throw new Error("Upload failed");
-      const disappearAt = computeDisappearAt(security.disappearTTL !== "off" ? security.disappearTTL : privacySettings.defaultDisappearTtl);
-      const conversationId = await resolveConversationId(authUserId);
-      if (!conversationId) throw new Error("No conversation available");
-      await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: conversationId,
-        sender_user_id: authUserId,
-        sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: thread.peerOrbitId ?? null,
-        type: "media",
-        body: "📷 View-once photo",
-        metadata: { url: finalUrl, view_once: true, disappear_at: disappearAt },
-      });
-      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
-      toast.success(t("orbit.view_once_sent") || "View-once photo sent");
-    } catch (e: any) {
-      toast.error(e?.message || "Upload failed");
-    } finally {
-      attachments.setUploading(false);
-      security.setViewOnceNext(false);
-    }
-  }, [thread, orgId, resolveAuthUserId, attachments, security, privacySettings.defaultDisappearTtl, myOrbitId, locale, t]);
+  // ── Extracted inline handlers (voice, location, view-once) ──
+  const inlineHandlers = useHudInlineHandlers({
+    thread,
+    orgId: orgId || null,
+    userId: user?.id,
+    myOrbitId,
+    e2eReady,
+    encrypt,
+    resolveAuthUserId,
+    resolveConversationId,
+    uploadToStorage: attachments.uploadToStorage,
+    setUploading: attachments.setUploading,
+    disappearTTL: security.disappearTTL,
+    defaultDisappearTtl: privacySettings.defaultDisappearTtl,
+    setSecurityLevel: security.setSecurityLevel,
+    setViewOnceNext: security.setViewOnceNext,
+    setShowLocationPicker: security.setShowLocationPicker,
+    t,
+  });
 
-  const handleVoiceSend = useCallback(async () => {
-    if (!voicePreview || !thread || !orgId) return;
-    const authUserId = await resolveAuthUserId();
-    if (!authUserId) return;
-    attachments.setUploading(true);
-    try {
-      const blob = voicePreview.blob;
-      const dur = voicePreview.duration;
-      const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
-      const path = `${orgId}/${thread.id}/voice-${Date.now()}.${ext}`;
-      const audioUrl = await attachments.uploadToStorage(blob, path);
-      if (!audioUrl) throw new Error("Voice upload failed");
-      const conversationId = await resolveConversationId(authUserId);
-      if (!conversationId) throw new Error("No conversation available");
-      const { error } = await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: conversationId,
-        sender_user_id: authUserId,
-        sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: thread.peerOrbitId ?? null,
-        type: "voice",
-        body: `🎤 Voice message (${formatVoiceDuration(dur)})`,
-        metadata: { audio_url: audioUrl, audio_duration_seconds: dur, transcript_status: "pending" },
-      });
-      if (error) throw error;
-      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
-      security.setSecurityLevel("normal");
-      toast.success(t("orbit.voice_sent") || "Voice message sent");
-      platformBus.emit("orbit:message_sent", { threadId: thread.threadId || thread.id, contextId: thread.contextId, type: "voice" }, "orbit", { userId: authUserId, orgId });
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to send voice message");
-    } finally {
-      URL.revokeObjectURL(voicePreview.url);
-      setVoicePreview(null);
-      attachments.setUploading(false);
-    }
-  }, [voicePreview, thread, orgId, resolveAuthUserId, attachments, security, myOrbitId, locale, t]);
-
-  const handleLocationSend = useCallback(async (loc: any) => {
-    if (!thread) return;
-    const authUserId = await resolveAuthUserId();
-    if (!authUserId) return;
-    const mapUrl = `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`;
-    const locationMsg = loc.type === "live"
-      ? `📡 Live location shared for ${loc.duration}min\n📍 ${mapUrl}`
-      : loc.type === "place"
-      ? `📍 ${loc.label}\n${loc.address || ""}\n${mapUrl}`
-      : `📍 My location\n${mapUrl}`;
-    let storedContent = locationMsg;
-    const peerId = thread.peerUserId || thread.contextId || thread.id;
-    if (e2eReady && peerId) {
-      const enc = await encrypt(locationMsg, peerId);
-      if (enc) storedContent = enc;
-    }
-    const conversationId = await resolveConversationId(authUserId);
-    if (!conversationId) return;
-    await (supabase as any).from("chat_messages_v2").insert({
-      conversation_id: conversationId,
-      sender_user_id: authUserId,
-      sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-      receiver_orbit_id: thread.peerOrbitId ?? null,
-      type: "location",
-      body: storedContent,
-      metadata: { lat: loc.lat, lng: loc.lng, mode: loc.type },
-    });
-    await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
-    platformBus.emit("orbit:message_sent", { threadId: thread.threadId || thread.id, contextId: thread.contextId, type: "location" }, "orbit", { userId: user?.id, orgId });
-    toast.success(t("orbit.location_shared") || "Location shared");
-    security.setShowLocationPicker(false);
-  }, [thread, resolveAuthUserId, e2eReady, encrypt, myOrbitId, user?.id, orgId, t, security]);
+  const handleViewOnceUpload = inlineHandlers.handleViewOnceUpload;
+  const handleVoiceSend = inlineHandlers.handleVoiceSend;
+  const handleLocationSend = inlineHandlers.handleLocationSend;
+  const voicePreview = inlineHandlers.voicePreview;
+  const setVoicePreview = inlineHandlers.setVoicePreview;
 
   const empty = !thread;
   const visibleMessages = useMemo(() => messages, [messages]);
