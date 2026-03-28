@@ -31,3 +31,96 @@ export async function fetchAdminStats() {
     confirmedRes: confirmedRes.data || [],
   };
 }
+
+// ── Moderation ──
+export async function fetchPendingReviews(orgId: string) {
+  const { data } = await (supabase as any)
+    .from("marketplace_reviews")
+    .select("id, reviewer_name, rating, comment, status, created_at, service_id")
+    .eq("org_id", orgId)
+    .in("status", ["pending", "flagged"])
+    .order("created_at", { ascending: false })
+    .limit(100);
+  return data ?? [];
+}
+
+export async function moderateReview(reviewId: string, action: "published" | "rejected") {
+  const { error } = await supabase.from("marketplace_reviews").update({ status: action } as any).eq("id", reviewId);
+  if (error) throw error;
+}
+
+export async function fetchBlockedUsers() {
+  const { data } = await supabase.from("blocked_users").select("*").order("created_at", { ascending: false }).limit(50);
+  return data ?? [];
+}
+
+export async function unblockUser(blockId: string) {
+  const { error } = await supabase.from("blocked_users").delete().eq("id", blockId);
+  if (error) throw error;
+}
+
+// ── Org Members ──
+export async function fetchOrgMembers(orgId: string) {
+  const { data } = await supabase.from("org_members").select("id, user_id, role, created_at").eq("org_id", orgId).order("created_at");
+  return data ?? [];
+}
+
+export async function fetchProfilesByIds(ids: string[]) {
+  const { data } = await supabase.from("profiles").select("id, name, email, first_name, last_name").in("id", ids);
+  return data ?? [];
+}
+
+export async function changeOrgMemberRole(memberId: string, newRole: string) {
+  const { error } = await supabase.from("org_members").update({ role: newRole } as any).eq("id", memberId);
+  if (error) throw error;
+}
+
+export async function removeOrgMember(memberId: string) {
+  const { error } = await supabase.from("org_members").delete().eq("id", memberId);
+  if (error) throw error;
+}
+
+export async function sendCollaborationInvite(record: Record<string, any>) {
+  const { error } = await supabase.from("collaboration_invitations").insert(record as any);
+  if (error) throw error;
+}
+
+// ── Rider Moderation ──
+export async function fetchRiderPresence() {
+  const { data } = await (supabase as any).from("rider_presence").select("*").limit(100);
+  return data ?? [];
+}
+
+export async function updateRiderPresenceStatus(userId: string, updates: Record<string, any>) {
+  await (supabase as any).from("rider_presence").update(updates).eq("user_id", userId);
+}
+
+export async function insertAppNotification(record: Record<string, any>) {
+  await (supabase as any).from("app_notifications").insert(record);
+}
+
+// ── Bulk Seed ──
+export async function getAuthUser() {
+  const { data } = await supabase.auth.getUser();
+  return data.user;
+}
+
+export async function getUserOrgId(userId: string) {
+  const { data } = await supabase.from("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
+  return data?.org_id ?? null;
+}
+
+export async function insertStorefrontPage(record: Record<string, any>) {
+  const { data, error } = await (supabase as any).from("storefront_pages").insert(record).select("id").single();
+  if (error) throw error;
+  return data;
+}
+
+export async function insertProducts(records: Record<string, any>[]) {
+  await (supabase as any).from("products").insert(records);
+}
+
+export async function bulkLaunchStorefronts() {
+  const { error } = await (supabase as any).from("storefront_pages").update({ visibility_mode: "live" }).eq("visibility_mode", "coming_soon");
+  if (error) throw error;
+}

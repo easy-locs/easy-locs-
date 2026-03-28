@@ -105,3 +105,53 @@ export function subscribeConciergeOrders(orgId: string, onChange: () => void) {
     .subscribe();
   return () => { supabase.removeChannel(channel); };
 }
+
+// ── Dashboard Queries (ConciergeOperations) ──
+export async function fetchUserOrg(userId: string) {
+  const { data: member } = await supabase.from("org_members").select("org_id").eq("user_id", userId).limit(1).single();
+  if (!member) return null;
+  const { data: org } = await supabase.from("orgs").select("*").eq("id", member.org_id).single();
+  return org;
+}
+
+export async function fetchOrgProperties(orgId: string) {
+  const { data } = await supabase.from("properties").select("id, label, city, country").eq("org_id", orgId);
+  return data ?? [];
+}
+
+export async function fetchAllBookings(orgId: string) {
+  const [{ data: seasonal }, { data: requests }] = await Promise.all([
+    supabase.from("seasonal_bookings" as any).select("*").eq("org_id", orgId),
+    supabase.from("booking_requests").select("*").eq("org_id", orgId).in("status", ["confirmed", "paid", "approved"]) as any,
+  ]);
+  const merged: any[] = [];
+  const seen = new Set<string>();
+  for (const b of [...(seasonal || []), ...(requests || [])] as any[]) {
+    const key = `${b.property_id}-${b.check_in}-${b.check_out}-${b.guest_name}`;
+    if (!seen.has(key)) { seen.add(key); merged.push(b); }
+  }
+  return merged;
+}
+
+export async function fetchBookingTasks(orgId: string) {
+  const { data } = await supabase.from("booking_tasks").select("*").eq("org_id", orgId);
+  return data ?? [];
+}
+
+// ── Merchant Orders (all orders, no org filter) ──
+export async function fetchAllConciergeOrders() {
+  const { data } = await supabase
+    .from("concierge_orders")
+    .select("id, status, guest_name, total_price, currency, created_at, notes")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  return data ?? [];
+}
+
+export function subscribeMerchantOrders(onInsert: (payload: any) => void) {
+  const channel = supabase
+    .channel("merchant-orders")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "concierge_orders" }, (payload) => onInsert(payload.new))
+    .subscribe();
+  return () => { supabase.removeChannel(channel); };
+}
