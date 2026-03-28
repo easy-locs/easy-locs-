@@ -565,6 +565,14 @@ export function useConversationThreads() {
       return bt.localeCompare(at);
     });
 
+    console.log("%c[TRACE][THREADS] STEP 7 — ✅ DONE", "color:lime;font-weight:bold", {
+      totalThreads: sorted.length,
+      v2Threads: sorted.filter(t => t.isV2).length,
+      directThreads: sorted.filter(t => t.conversationType === "direct").length,
+      withUnread: sorted.filter(t => t.unreadCount > 0).length,
+      types: [...new Set(sorted.map(t => t.conversationType))],
+    });
+
     setThreads(sorted);
     setStats(s => ({ ...s, unread: sorted.filter(t => !t.archived).reduce((acc, t) => acc + t.unreadCount, 0) }));
     setLoading(false);
