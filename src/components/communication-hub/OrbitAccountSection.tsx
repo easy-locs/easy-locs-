@@ -451,10 +451,7 @@ export default function OrbitAccountSection() {
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("orbit.security.advanced") || "Advanced"}</p>
           <MenuItem icon={UserX} label={t("orbit.security.blocked") || "Blocked Contacts"} desc={t("orbit.security.blocked_desc") || "Manage blocked users"} onClick={async () => {
             if (!user) return;
-            const { count } = await supabase
-              .from("blocked_users")
-              .select("id", { count: "exact", head: true })
-              .eq("blocker_id", user.id);
+            const count = await getBlockedCount(user.id);
             toast.info(count ? `${count} ${t("orbit.security.blocked") || "blocked"}` : t("orbit.security.blocked_desc") || "No blocked contacts");
           }} color="hsl(var(--destructive))" />
           <MenuItem icon={ShieldAlert} label={t("orbit.security.alerts") || "Security Notifications"} desc={t("orbit.security.alerts_desc") || "Get alerts on key changes"} onClick={() => setSubPage("notifications")} color="hsl(var(--accent))" />
