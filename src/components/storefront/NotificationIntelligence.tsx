@@ -87,7 +87,7 @@ export default function NotificationIntelligence({ shopId }: Props) {
                 <Icon className={`h-3 w-3 shrink-0 ${meta.color}`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-medium">{meta.label}</p>
-                  <p className="text-[9px] text-muted-foreground truncate">
+                  <p className="text-[9px] text-muted-foreground line-clamp-1 break-words">
                     {n.buyer_email || `Cart #${payload.cart_id?.slice(0, 8) || ""}` || "—"}
                   </p>
                 </div>

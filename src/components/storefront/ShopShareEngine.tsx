@@ -54,7 +54,7 @@ export default function ShopShareEngine({ shopName, shopSlug, shopDescription, s
             {copied ? <Check className="h-4 w-4 text-success shrink-0" /> : <Copy className="h-4 w-4 text-muted-foreground shrink-0" />}
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium">{copied ? "Copied!" : "Copy link"}</p>
-              <p className="text-[10px] text-muted-foreground truncate">{shopUrl}</p>
+              <p className="text-[10px] text-muted-foreground break-all leading-snug">{shopUrl}</p>
             </div>
           </button>
 

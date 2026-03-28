@@ -176,7 +176,7 @@ export default function ReorderEngine({ shopId, compact = false }: Props) {
               {data.favorites.map((fav) => (
                 <div key={`${fav.item_id}-${fav.variant_id}`} className="flex items-center gap-2 py-1">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-medium truncate">{fav.title}</p>
+                    <p className="text-[11px] font-medium line-clamp-2 break-words leading-snug">{fav.title}</p>
                     <p className="text-[9px] text-muted-foreground">Ordered {fav.count}x · {fmtPrice(fav.unit_price)}</p>
                   </div>
                   <Button

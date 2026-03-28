@@ -190,7 +190,7 @@ export default function SellerFinancePanel({ shopId }: SellerFinancePanelProps) 
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium text-foreground truncate">
+                  <p className="text-[11px] font-medium text-foreground line-clamp-1 break-words">
                     Order #{(s.order_id ?? s.id).slice(0, 8)}
                   </p>
                   <p className="text-[9px] text-muted-foreground">
