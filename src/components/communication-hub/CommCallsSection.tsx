@@ -5,6 +5,9 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  fetchCallLogs, deleteCallLog, resolveProfilesByIds, resolveOrbitProfilesByUserIds,
+} from "@/repositories/communication.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
 import { useI18n } from "@/lib/i18n";
@@ -76,14 +79,7 @@ export default function CommCallsSection() {
     setLoadError(null);
 
     try {
-      const { data: callData, error } = await supabase
-        .from("call_logs")
-        .select("*")
-        .or(`caller_orbit_id.eq.${user.id},receiver_orbit_id.eq.${user.id}`)
-        .order("created_at", { ascending: false })
-        .limit(100);
-
-      if (error) throw error;
+      const callData = await fetchCallLogs(user.id, 100);
 
       if (!callData || callData.length === 0) {
         setCalls([]);
@@ -93,7 +89,7 @@ export default function CommCallsSection() {
 
       setCalls(callData as unknown as CallLog[]);
 
-      // Resolve orbit IDs → display names from profiles AND orbit_profiles_v2
+      // Resolve orbit IDs → display names
       const orbitIds = new Set<string>();
       callData.forEach((c: any) => {
         if (c.caller_orbit_id) orbitIds.add(c.caller_orbit_id);
@@ -103,35 +99,23 @@ export default function CommCallsSection() {
         const ids = Array.from(orbitIds);
         const cache: Record<string, string> = {};
 
-        // Try profiles table first (by user id)
         const uuidIds = ids.filter(id => isUUID(id));
         if (uuidIds.length > 0) {
-          const { data: profiles } = await supabase
-            .from("profiles")
-            .select("id, full_name, email, phone")
-            .in("id", uuidIds);
-          if (profiles) {
-            profiles.forEach((p: any) => {
-              cache[p.id] = p.full_name || p.email || p.phone || "Contact";
-            });
-          }
-        }
-
-        // Also try orbit_profiles_v2 for orbit IDs
-        const { data: orbitProfiles } = await (supabase as any)
-          .from("orbit_profiles_v2")
-          .select("orbit_id, display_name, email, user_id")
-          .in("user_id", uuidIds.length > 0 ? uuidIds : ids);
-        if (orbitProfiles) {
-          orbitProfiles.forEach((op: any) => {
-            if (op.user_id && !cache[op.user_id]) {
-              cache[op.user_id] = op.display_name || op.email || "Contact";
-            }
-            if (op.orbit_id) {
-              cache[op.orbit_id] = op.display_name || op.email || "Contact";
-            }
+          const profiles = await resolveProfilesByIds(uuidIds);
+          profiles.forEach((p: any) => {
+            cache[p.id] = p.full_name || p.email || p.phone || "Contact";
           });
         }
+
+        const orbitProfiles = await resolveOrbitProfilesByUserIds(uuidIds.length > 0 ? uuidIds : ids);
+        orbitProfiles.forEach((op: any) => {
+          if (op.user_id && !cache[op.user_id]) {
+            cache[op.user_id] = op.display_name || op.email || "Contact";
+          }
+          if (op.orbit_id) {
+            cache[op.orbit_id] = op.display_name || op.email || "Contact";
+          }
+        });
 
         setNameCache(cache);
       }
@@ -323,8 +307,9 @@ export default function CommCallsSection() {
               const secondaryLabel = labels.length > 1 ? labels[1] : null;
 
               const handleDeleteCall = async () => {
-                const { error } = await supabase.from("call_logs").delete().eq("id", call.id);
-                if (error) { toast.error(t("orbit.calls.delete_failed") || "Failed to delete call"); return; }
+                try {
+                  await deleteCallLog(call.id);
+                } catch { toast.error(t("orbit.calls.delete_failed") || "Failed to delete call"); return; }
                 setCalls(prev => prev.filter(c => c.id !== call.id));
                 toast.success(t("orbit.calls.deleted") || "Call deleted");
               };

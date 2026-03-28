@@ -5,6 +5,9 @@
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  resolveProfilesByEmail, resolveProfilesByPhone, resolveOrgMemberships, sendInviteEmail,
+} from "@/repositories/communication.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { usePresenceStatus, PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
@@ -109,11 +112,8 @@ export default function CommContactsSection() {
     const emails = unlinked.filter(c => c.email?.trim()).map(c => c.email!.trim().toLowerCase());
     const emailToProfileId = new Map<string, string>();
     if (emails.length > 0) {
-      const { data: emailProfiles } = await supabase
-        .from("profiles")
-        .select("id, email")
-        .in("email", emails);
-      emailProfiles?.forEach(p => {
+      const emailProfiles = await resolveProfilesByEmail(emails);
+      emailProfiles.forEach(p => {
         if (p.email) emailToProfileId.set(p.email.toLowerCase(), p.id);
       });
     }
@@ -126,13 +126,9 @@ export default function CommContactsSection() {
 
     const phoneToProfileId = new Map<string, string>();
     if (phonesToMatch.length > 0) {
-      // Query profiles with phone numbers
-      const { data: phoneProfiles } = await supabase
-        .from("profiles")
-        .select("id, phone, whatsapp_number")
-        .not("phone", "is", null);
+      const phoneProfiles = await resolveProfilesByPhone();
 
-      phoneProfiles?.forEach(p => {
+      phoneProfiles.forEach(p => {
         if (p.phone) {
           const normalized = normalizePhone(p.phone);
           phoneToProfileId.set(normalized, p.id);
@@ -190,12 +186,7 @@ export default function CommContactsSection() {
     const userIds = resolvedContacts.filter(c => c.contact_user_id).map(c => c.contact_user_id!);
     if (userIds.length === 0) return;
 
-    const { data: memberships } = await supabase
-      .from("org_members")
-      .select("user_id, org_id")
-      .in("user_id", userIds);
-
-    if (!memberships) return;
+    const memberships = await resolveOrgMemberships(userIds);
 
     const map: Record<string, string> = {};
     memberships.forEach(m => { map[m.user_id] = m.org_id; });
@@ -455,12 +446,14 @@ export default function CommContactsSection() {
     // If contact has email, send real invitation via edge function
     if (contact.email?.trim()) {
       try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            event_type: "marketplace_notification",
-            recipient_email: contact.email.trim(),
-            data: {
-              subject: `${user?.email || "Un utilisateur"} vous invite sur Easy-Locs`,
+        const inviteUrl = `${window.location.origin}/auth`;
+        await sendInviteEmail(
+          contact.email.trim(),
+          `${user?.email || "Un utilisateur"} vous invite sur Easy-Locs`,
+          `Rejoignez la plateforme pour communiquer directement.`,
+          inviteUrl,
+          "Rejoindre Easy-Locs",
+        );
               message: `Bonjour ${contact.name},\n\nVous avez été invité(e) à rejoindre Easy-Locs pour communiquer directement via l'application.\n\nCréez votre compte gratuit pour échanger des messages et passer des appels sécurisés.`,
               cta_url: inviteUrl,
               cta_label: "Créer mon compte",
