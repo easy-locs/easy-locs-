@@ -1,7 +1,7 @@
 /**
  * OrbitAccountSection — "YOU" section inside Orbit hub.
  * Signal/WhatsApp-level personal account control panel with profile editing.
- * Fully i18n'd and end-to-end operational.
+ * Rewired: chat actions via useOrbitAccountActions hook.
  */
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePrivacySettings } from "@/hooks/usePrivacySettings";
 import { getNotifAlertPrefs, setNotifAlertPrefs, requestNotificationPermission, type NotifAlertPrefs } from "@/lib/notif-alert-prefs";
 import { useUsername } from "@/hooks/useUsername";
+import { useOrbitAccountActions } from "@/hooks/orbit/useOrbitAccountActions";
 type SubPage = "main" | "privacy" | "security" | "notifications" | "storage" | "devices" | "edit-profile" | "chats";
 
 export default function OrbitAccountSection() {
@@ -45,6 +46,7 @@ export default function OrbitAccountSection() {
   const [usernameInput, setUsernameInput] = useState("");
   const [usernameStatus, setUsernameStatus] = useState<{ msg: string; ok: boolean } | null>(null);
   const [savingUsername, setSavingUsername] = useState(false);
+  const actions = useOrbitAccountActions(user?.id);
 
   useEffect(() => { if (username) setUsernameInput(username); }, [username]);
 
