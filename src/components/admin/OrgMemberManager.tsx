@@ -196,18 +196,18 @@ export default function OrgMemberManager() {
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-semibold text-foreground truncate">
-                    {member.profile?.name || member.profile?.email || "Utilisateur"}
-                  </p>
+                   <p className="text-xs font-semibold text-foreground break-words leading-snug">
+                     {member.profile?.name || member.profile?.email || "Utilisateur"}
+                   </p>
                   {isMe && (
                     <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
                       Vous
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {member.profile?.email || "—"}
-                </p>
+                 <p className="text-[10px] text-muted-foreground break-words leading-snug">
+                   {member.profile?.email || "—"}
+                 </p>
               </div>
 
               {/* Role badge */}

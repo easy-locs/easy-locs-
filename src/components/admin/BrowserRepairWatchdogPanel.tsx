@@ -19,7 +19,7 @@ export function BrowserRepairWatchdogPanel({ watchdog }: Props) {
               className="flex items-start justify-between gap-3 rounded-xl border border-border bg-card p-3"
             >
               <div className="min-w-0 flex-1 space-y-1">
-                <p className="text-sm font-medium text-foreground truncate">{row.page_key}</p>
+                <p className="text-sm font-medium text-foreground break-words leading-snug">{row.page_key}</p>
                 <p className="text-xs text-muted-foreground">
                   {row.route_group || "other"} · {row.current_status}
                 </p>

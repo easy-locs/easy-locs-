@@ -181,7 +181,7 @@ export default function ForwardMessageDialog({
                       <MessageCircle className="h-4 w-4 text-accent" />
                     )}
                   </div>
-                  <span className="text-sm font-medium text-foreground truncate">{thread.display_name}</span>
+                  <span className="text-sm font-medium text-foreground min-w-0 break-words leading-snug">{thread.display_name}</span>
                 </button>
               );
             })
