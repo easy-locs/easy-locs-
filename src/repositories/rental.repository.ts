@@ -190,3 +190,37 @@ export async function updateDocumentRequest(id: string, updates: Record<string, 
   const { error } = await (supabase as any).from("document_requests").update(updates).eq("id", id);
   if (error) throw error;
 }
+
+// ── Lease Signature Workflow ──
+export async function fetchLeaseForSignature(leaseId: string) {
+  const { data } = await supabase.from("leases").select("tenant_signed_at, org_id").eq("id", leaseId).single();
+  return data;
+}
+
+export async function updateLeaseSignature(leaseId: string, party: "tenant" | "owner", signedAt: string, signatureUrl?: string) {
+  const updates: Record<string, any> = party === "tenant"
+    ? { tenant_signed_at: signedAt, status: "signed" }
+    : { owner_signed_at: signedAt };
+  const { data, error } = await supabase.from("leases").update(updates as any).eq("id", leaseId).select("*").single();
+  if (error) throw error;
+  if (signatureUrl) {
+    const docUpdate: Record<string, any> = party === "tenant"
+      ? { tenant_signature_url: signatureUrl, signed_by_tenant_at: signedAt }
+      : { owner_signature_url: signatureUrl, signed_by_owner_at: signedAt };
+    await supabase.from("documents").update(docUpdate).eq("lease_id", leaseId);
+  }
+  return data;
+}
+
+export async function updateLeaseOwnerSignature(leaseId: string, signedAt: string, newStatus: string, signatureUrl?: string) {
+  const { data, error } = await supabase.from("leases").update({ owner_signed_at: signedAt, status: newStatus } as any).eq("id", leaseId).select("*").single();
+  if (error) throw error;
+  if (signatureUrl) {
+    await supabase.from("documents").update({ owner_signature_url: signatureUrl, signed_by_owner_at: signedAt, status: newStatus === "active" ? "signed" : "pending_signature" }).eq("lease_id", leaseId);
+  }
+  return data;
+}
+
+export async function insertLeaseAuditLog(orgId: string | undefined, action: string, metadata: Record<string, any>) {
+  await (supabase as any).from("audit_logs").insert({ user_id: null, org_id: orgId, action, metadata_json: metadata });
+}
