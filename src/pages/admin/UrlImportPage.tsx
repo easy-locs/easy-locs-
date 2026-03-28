@@ -259,25 +259,73 @@ export default function UrlImportPage() {
                 </Card>
               )}
 
-              {/* Pipeline Trace */}
+              {/* Quality Reports */}
+              {results.qualityReports?.length > 0 && (
+                <Card className="border-border/30">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold text-muted-foreground">Quality Reports</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {results.qualityReports.map((q: any, i: number) => (
+                      <div key={i} className="text-xs space-y-1">
+                        <div className="flex gap-3 flex-wrap">
+                          {["completeness", "media", "location", "catalog", "trust"].map((dim) => (
+                            <span key={dim} className="text-muted-foreground">
+                              {dim}: <span className={q[dim]?.score >= 60 ? "text-green-500" : q[dim]?.score >= 30 ? "text-yellow-500" : "text-destructive"}>{q[dim]?.score ?? 0}</span>
+                            </span>
+                          ))}
+                        </div>
+                        {q.warnings?.length > 0 && (
+                          <div className="text-muted-foreground/70">{q.warnings.join(" · ")}</div>
+                        )}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Governance Decisions */}
+              {results.governance?.length > 0 && (
+                <Card className="border-border/30">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold text-muted-foreground">Governance</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1">
+                    {results.governance.map((g: any, i: number) => (
+                      <div key={i} className="text-xs font-mono space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={g.visibilityMode === "live" ? "default" : "outline"} className="text-[10px]">
+                            {g.visibilityMode}
+                          </Badge>
+                          {g.policyCheck?.violations?.length > 0 && (
+                            <span className="text-destructive">⚠ {g.policyCheck.violations.join(", ")}</span>
+                          )}
+                        </div>
+                        <div className="text-muted-foreground/60 text-[10px]">{g.reasonLog?.join(" | ")}</div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Forensic Pipeline Trace */}
               {results.trace && (
                 <Card className="border-border/30">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold text-muted-foreground">
-                      Pipeline Trace — {results.trace.totalDurationMs}ms total
+                      Forensic Trace — {results.trace.totalDurationMs}ms · {results.trace.steps?.length} steps
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-1">
                     {results.trace.steps?.map((s: any, i: number) => (
                       <div key={i} className="flex items-center gap-2 text-xs font-mono">
-                        <span className={s.success ? "text-green-500" : "text-destructive"}>
-                          {s.success ? "✓" : "✗"}
+                        <span className={s.status === "success" ? "text-green-500" : s.status === "failed" ? "text-destructive" : "text-muted-foreground"}>
+                          {s.status === "success" ? "✓" : s.status === "failed" ? "✗" : "○"}
                         </span>
                         <span className="text-foreground flex-1 truncate">{s.name}</span>
-                        <span className="text-muted-foreground">{s.durationMs}ms</span>
-                        {s.outputSummary && (
-                          <span className="text-muted-foreground/60 truncate max-w-[200px]">{s.outputSummary}</span>
-                        )}
+                        <span className="text-muted-foreground tabular-nums">{s.durationMs}ms</span>
+                        {s.error && <span className="text-destructive truncate max-w-[150px]">{s.error}</span>}
+                        {s.retryCount > 0 && <span className="text-yellow-500">×{s.retryCount + 1}</span>}
                       </div>
                     ))}
                   </CardContent>
