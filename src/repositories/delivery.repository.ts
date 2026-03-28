@@ -83,3 +83,40 @@ export async function invokeProofOfDelivery(body: Record<string, any>) {
   if (error) throw error;
   return data;
 }
+
+// ── Live Tracking ──
+export async function insertLiveTracking(record: Record<string, any>) {
+  const { data, error } = await supabase.from("live_trackings").insert(record as any).select().single();
+  if (error) throw error;
+  return (data as any).id;
+}
+
+export async function updateLiveTracking(id: string, updates: Record<string, any>) {
+  await supabase.from("live_trackings").update(updates as any).eq("id", id);
+}
+
+export async function fetchLiveTracking(id: string) {
+  const { data } = await supabase.from("live_trackings").select("*").eq("id", id).single();
+  return data;
+}
+
+export function subscribeLiveTracking(trackingId: string, onUpdate: (data: any) => void) {
+  const channel = supabase
+    .channel(`tracking-${trackingId}`)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "live_trackings", filter: `id=eq.${trackingId}` }, (payload) => onUpdate(payload.new))
+    .subscribe();
+  return () => { supabase.removeChannel(channel); };
+}
+
+export async function findActiveTracking(contextType: string, contextId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("live_trackings")
+    .select("id")
+    .eq("context_type", contextType)
+    .eq("context_id", contextId)
+    .in("status", ["pending", "en_route", "nearby", "arrived"] as any)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as any)?.id || null;
+}
