@@ -1,13 +1,17 @@
 /**
- * useMessageSender — V2-ONLY canonical message sender.
- * Writes to chat_messages_v2 exclusively. No legacy path.
- * Auto-creates V2 conversation if missing.
+ * useMessageSender — THIN ORCHESTRATOR for message sending.
+ * Delegates conversation resolution to conversation-resolver.
+ * Delegates payload construction to message-payload-builder.
+ * Keeps: optimistic UI, offline queue, encryption, event emission.
  */
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
+import { resolveConversationId } from "@/lib/orbit/messaging/conversation-resolver";
+import { buildMessagePayload } from "@/lib/orbit/messaging/message-payload-builder";
+import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
+import { reportHealth } from "@/lib/runtime/health-aggregator";
 
 const db = supabase as any;
 
@@ -46,16 +50,9 @@ type Params = {
   encrypt?: (content: string, peerId: string) => Promise<string | null>;
   offline: {
     isOnline: boolean;
-    queueMessage: (
-      body: string,
-      encrypted: boolean,
-      meta: Record<string, unknown>
-    ) => Promise<string>;
+    queueMessage: (body: string, encrypted: boolean, meta: Record<string, unknown>) => Promise<string>;
   };
-  privacySettings?: {
-    defaultDisappearTtl?: string;
-    readReceipts?: boolean;
-  };
+  privacySettings?: { defaultDisappearTtl?: string; readReceipts?: boolean };
   disappearTTL?: string;
   securityLevel: SecurityLevel;
   setSecurityLevel: (l: SecurityLevel) => void;
@@ -72,385 +69,193 @@ export function useMessageSender(params: Params) {
   const [sending, setSending] = useState(false);
   const [newMessage, setNewMessage] = useState("");
 
-  const trace = useCallback((step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
-    const logger = phase === "error" ? console.error : console.log;
-    logger(`[SEND_MESSAGE][${step}] ${phase}:`, payload ?? {});
-  }, []);
-
   const handleSend = useCallback(async () => {
-    trace("composer.read", "input", { rawValue: newMessage, trimmedValue: newMessage.trim(), length: newMessage.length });
-
     const {
-      thread,
-      orgId,
-      locale,
-      myOrbitId,
-      e2eReady,
-      encrypt,
-      offline,
-      securityLevel,
-      setSecurityLevel,
-      replyTo,
-      setReplyTo,
-      setRawMessages,
-      setPendingOffline,
-      onThreadUpdate,
-      resolveAuthUserId,
-      selectedCategory,
-      disappearTTL,
+      thread, orgId, locale, myOrbitId, e2eReady, encrypt,
+      offline, securityLevel, setSecurityLevel, replyTo, setReplyTo,
+      setRawMessages, setPendingOffline, onThreadUpdate,
+      resolveAuthUserId, selectedCategory, disappearTTL,
     } = params;
 
-    trace("composer.read", "output", {
-      hasThread: !!thread,
-      threadId: thread?.id,
-      v2ConversationId: thread?.v2ConversationId,
-      peerUserId: thread?.peerUserId,
-      peerOrbitId: thread?.peerOrbitId,
-      messageLength: newMessage.trim().length,
-      messagePreview: newMessage.trim().slice(0, 30),
-    });
+    const flow = startFlow("orbit", "sendMessage");
 
-    trace("composer.validate", "input", {
-      hasThread: !!thread,
-      trimmedLength: newMessage.trim().length,
-    });
-
+    // ── Validate ──
+    const validateStep = addStep(flow, "validate");
     if (!thread) {
-      trace("composer.validate", "error", { reason: "missing_thread" });
+      failStep(flow, validateStep, "missing_thread");
+      endFlow(flow, "failed");
       toast.error("No thread selected.");
       return;
     }
-
     if (!newMessage.trim()) {
-      trace("composer.validate", "error", { reason: "empty_message" });
+      failStep(flow, validateStep, "empty_message");
+      endFlow(flow, "failed");
       toast.error("Message is empty.");
       return;
     }
+    completeStep(flow, validateStep);
 
-    trace("composer.validate", "output", {
-      valid: true,
-      threadId: thread.id,
-      trimmedLength: newMessage.trim().length,
-    });
-
-    let conversationId = thread.v2ConversationId;
-
-    trace("conversation.resolve", "input", {
-      threadId: thread.id,
-      v2ConversationId: conversationId,
-      peerUserId: thread.peerUserId,
-      peerOrbitId: thread.peerOrbitId,
-      contextId: thread.contextId,
-      conversationType: thread.conversationType,
-    });
-
-    if (!conversationId) {
-      trace("auth.resolve", "input", { stage: "pre-autocreate" });
-      const earlyAuthUserId = await resolveAuthUserId();
-      trace("auth.resolve", "output", { stage: "pre-autocreate", authUserId: earlyAuthUserId || null });
-      if (!earlyAuthUserId) {
-        trace("auth.resolve", "error", { stage: "pre-autocreate", reason: "missing_auth_user" });
+    // ── Resolve conversation ──
+    const resolveStep = addStep(flow, "resolve_conversation");
+    let conversationId: string;
+    try {
+      const authUserId = await resolveAuthUserId();
+      if (!authUserId) {
+        failStep(flow, resolveStep, "missing_auth_user");
+        endFlow(flow, "failed");
         toast.error("Authentication required.");
         return;
       }
 
-      if (thread.contextId) {
-        trace("conversation.resolve", "input", { strategy: "contextId", candidate: thread.contextId });
-        const { data: existingConv } = await (supabase as any)
-          .from("conversations_v2")
-          .select("id")
-          .eq("id", thread.contextId)
-          .maybeSingle();
-        if (existingConv?.id) {
-          conversationId = existingConv.id;
-          onThreadUpdate(thread.id, { v2ConversationId: conversationId });
-          trace("conversation.resolve", "output", { strategy: "contextId", conversationId });
-        }
-      }
+      const result = await resolveConversationId({
+        threadId: thread.id,
+        v2ConversationId: thread.v2ConversationId,
+        contextId: thread.contextId,
+        threadDbId: thread.threadId,
+        peerUserId: thread.peerUserId,
+        peerOrbitId: thread.peerOrbitId,
+        myUserId: authUserId,
+        myOrbitId,
+      });
 
-      if (!conversationId && thread.threadId) {
-        trace("conversation.resolve", "input", { strategy: "threadId", candidate: thread.threadId });
-        const { data: existingConv } = await (supabase as any)
-          .from("conversations_v2")
-          .select("id")
-          .eq("id", thread.threadId)
-          .maybeSingle();
-        if (existingConv?.id) {
-          conversationId = existingConv.id;
-          onThreadUpdate(thread.id, { v2ConversationId: conversationId });
-          trace("conversation.resolve", "output", { strategy: "threadId", conversationId });
-        }
+      conversationId = result.conversationId;
+      if (result.wasCreated) {
+        onThreadUpdate(thread.id, { v2ConversationId: conversationId });
       }
-
-      if (!conversationId && thread.peerUserId) {
-        trace("conversation.autoCreate", "input", {
-          myUserId: earlyAuthUserId,
-          myOrbitId,
-          peerUserId: thread.peerUserId,
-          peerOrbitId: thread.peerOrbitId,
-        });
-        try {
-          const conv = await createOrGetDirectConversation({
-            myUserId: earlyAuthUserId,
-            myOrbitId: myOrbitId,
-            peerUserId: thread.peerUserId,
-            peerOrbitId: thread.peerOrbitId,
-          });
-          conversationId = conv.id;
-          onThreadUpdate(thread.id, { v2ConversationId: conv.id });
-          trace("conversation.autoCreate", "output", { conversationId: conv.id });
-        } catch (err: any) {
-          trace("conversation.autoCreate", "error", { message: err?.message || "auto_create_failed" });
-          toast.error("Failed to create conversation");
-          return;
-        }
-      }
-
-      if (!conversationId) {
-        trace("conversation.resolve", "error", { reason: "unresolved_conversation" });
-        toast.error("No conversation found. Try reopening the chat.");
-        return;
-      }
+      completeStep(flow, resolveStep, { conversationId, wasCreated: result.wasCreated });
+    } catch (err: any) {
+      failStep(flow, resolveStep, err.message);
+      endFlow(flow, "failed");
+      toast.error("Failed to resolve conversation");
+      return;
     }
 
-    trace("conversation.resolve", "output", { conversationId });
-
-    trace("auth.resolve", "input", { stage: "send" });
+    // ── Auth (final) ──
+    const authStep = addStep(flow, "auth_final");
     const authUserId = await resolveAuthUserId();
-    trace("auth.resolve", "output", { stage: "send", authUserId: authUserId || null });
     if (!authUserId) {
-      trace("auth.resolve", "error", { stage: "send", reason: "missing_auth_user" });
+      failStep(flow, authStep, "missing_auth_user");
+      endFlow(flow, "failed");
       toast.error("Authentication required.");
       return;
     }
+    completeStep(flow, authStep);
 
     const msgText = newMessage.trim();
     const optimisticId = `opt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const now = new Date().toISOString();
 
+    // ── Optimistic insert ──
     const optimisticMsg: ChatMessage = {
-      id: optimisticId,
-      content: msgText,
-      sender_id: authUserId,
-      created_at: now,
-      read: false,
-      message_type: "text",
-      category: selectedCategory || "general",
-      pending: true,
-      failed: false,
+      id: optimisticId, content: msgText, sender_id: authUserId,
+      created_at: now, read: false, message_type: "text",
+      category: selectedCategory || "general", pending: true, failed: false,
       reply_to_message_id: replyTo?.msgId ?? null,
     };
-
-    trace("message.optimistic.insert", "input", {
-      optimisticId,
-      conversationId,
-      senderId: authUserId,
-      preview: msgText.slice(0, 40),
-    });
     setRawMessages((prev) => [...prev, optimisticMsg]);
     setNewMessage("");
     const currentReply = replyTo;
     setReplyTo(null);
-    trace("message.optimistic.insert", "output", { optimisticId, inserted: true });
 
+    // ── Encryption ──
     let storedContent = msgText;
     let encryptedState = false;
     const peerId = thread.peerOrbitId || thread.peerUserId || null;
-
     if (e2eReady && encrypt && peerId) {
       try {
         const encrypted = await encrypt(msgText, peerId);
-        if (encrypted) {
-          storedContent = encrypted;
-          encryptedState = true;
-        }
-      } catch (error: any) {
-        trace("message.db.confirm", "error", { stage: "encrypt", message: error?.message || "encryption_failed_plaintext_fallback" });
-      }
+        if (encrypted) { storedContent = encrypted; encryptedState = true; }
+      } catch { /* plaintext fallback */ }
     }
 
+    // ── Build payload ──
+    const senderOrbitId = myOrbitId || `orbit_${authUserId.slice(0, 12)}`;
+    const payload = buildMessagePayload({
+      conversationId, senderUserId: authUserId,
+      senderOrbitId, receiverOrbitId: thread.peerOrbitId,
+      body: storedContent, encrypted: encryptedState,
+      replyToMessageId: currentReply?.msgId,
+      category: selectedCategory, locale, securityLevel, disappearTTL,
+    });
+
+    // ── Offline queue ──
     if (!offline.isOnline) {
+      const offlineStep = addStep(flow, "offline_queue");
       try {
         const queuedId = await offline.queueMessage(storedContent, encryptedState, {
-          conversationId,
-          sender_user_id: authUserId,
-          sender_orbit_id: myOrbitId ?? null,
-          receiver_orbit_id: thread.peerOrbitId ?? null,
-          type: "text",
-          reply_to_message_id: currentReply?.msgId ?? null,
-          metadata: {
-            encrypted: encryptedState,
-            category: selectedCategory || "general",
-            locale: locale || "en",
-            security_level: securityLevel,
-            disappear_ttl: disappearTTL ?? null,
-          },
+          ...payload, reply_to_message_id: currentReply?.msgId ?? null,
         });
-
-        setRawMessages((prev) =>
-          prev.map((m) =>
-            m.id === optimisticId ? { ...m, id: queuedId, pending: true, failed: false } : m
-          )
-        );
-
-        setPendingOffline((prev) => [
-          ...prev,
-          {
-            id: queuedId,
-            conversationId,
-            body: storedContent,
-          },
-        ]);
-
-        onThreadUpdate(thread.id, {
-          lastMessage: msgText,
-          lastMessageTime: now,
-          lastMessagePreview: msgText.slice(0, 120),
-        });
-
-        trace("thread.preview.update", "output", {
-          threadId: thread.id,
-          lastMessagePreview: msgText.slice(0, 120),
-          offline: true,
-        });
-
-        platformBus.emit(
-          "orbit:message_sent",
-          {
-            threadId: thread.id,
-            conversationId,
-            contentPreview: msgText.slice(0, 80),
-            offline: true,
-          },
-          "orbit",
-          { userId: authUserId, orgId: orgId || undefined }
-        );
-
+        setRawMessages((prev) => prev.map((m) => m.id === optimisticId ? { ...m, id: queuedId, pending: true, failed: false } : m));
+        setPendingOffline((prev) => [...prev, { id: queuedId, conversationId, body: storedContent }]);
+        onThreadUpdate(thread.id, { lastMessage: msgText, lastMessageTime: now, lastMessagePreview: msgText.slice(0, 120) });
+        platformBus.emit("orbit:message_sent", { threadId: thread.id, conversationId, contentPreview: msgText.slice(0, 80), offline: true }, "orbit", { userId: authUserId, orgId: orgId || undefined });
+        completeStep(flow, offlineStep);
+        endFlow(flow, "success");
         toast("Queued — will send when connection returns.");
         return;
       } catch (e: any) {
-        trace("message.optimistic.reconcile", "error", { stage: "offline_queue", message: e?.message || "queue_failed" });
-        setRawMessages((prev) =>
-          prev.map((m) => (m.id === optimisticId ? { ...m, pending: false, failed: true } : m))
-        );
+        failStep(flow, offlineStep, e.message);
+        endFlow(flow, "failed");
+        setRawMessages((prev) => prev.map((m) => m.id === optimisticId ? { ...m, pending: false, failed: true } : m));
         setNewMessage(msgText);
         toast.error(e?.message || "Failed to queue message.");
         return;
       }
     }
 
+    // ── DB write ──
     setSending(true);
-
+    const dbStep = addStep(flow, "db_write");
     try {
-      trace("message.db.insert", "input", {
-        conversationId,
-        senderUserId: authUserId,
-        senderOrbitId: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        preview: msgText.slice(0, 40),
-      });
       const { data, error } = await db
         .from("chat_messages_v2")
-        .insert({
-          conversation_id: conversationId,
-          sender_user_id: authUserId,
-          sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-          receiver_orbit_id: thread.peerOrbitId ?? null,
-          type: "text",
-          body: storedContent,
-          reply_to_message_id: currentReply?.msgId ?? null,
-          metadata: {
-            encrypted: encryptedState,
-            category: selectedCategory || "general",
-            locale: locale || "en",
-            security_level: securityLevel,
-            disappear_ttl: disappearTTL ?? null,
-          },
-        })
+        .insert(payload)
         .select("*")
         .single();
 
       if (error) {
-        trace("message.db.insert", "error", { message: error.message, code: error.code });
+        failStep(flow, dbStep, error.message);
         throw error;
       }
+      completeStep(flow, dbStep, { id: data.id });
 
-      trace("message.db.insert", "output", { id: data.id, created_at: data.created_at });
-      trace("message.db.confirm", "output", { confirmedId: data.id, optimisticId });
-
+      // Update conversation preview
       const preview = msgText.slice(0, 120);
+      await db.from("conversations_v2").update({
+        last_message_at: data.created_at || now,
+        last_message_preview: preview,
+        updated_at: data.created_at || now,
+      }).eq("id", conversationId);
 
-      await db
-        .from("conversations_v2")
-        .update({
-          last_message_at: data.created_at || now,
-          last_message_preview: preview,
-          updated_at: data.created_at || now,
-        })
-        .eq("id", conversationId);
-
-      setRawMessages((prev) =>
-        prev.map((m) =>
-          m.id === optimisticId
-            ? {
-                ...m,
-                id: data.id,
-                created_at: data.created_at || now,
-                pending: false,
-                failed: false,
-              }
-            : m
-        )
-      );
-
-      trace("message.optimistic.reconcile", "output", {
-        optimisticId,
-        confirmedId: data.id,
-      });
+      // ── Reconcile optimistic ──
+      setRawMessages((prev) => prev.map((m) =>
+        m.id === optimisticId ? { ...m, id: data.id, created_at: data.created_at || now, pending: false, failed: false } : m
+      ));
 
       onThreadUpdate(thread.id, {
-        lastMessage: msgText,
-        lastMessageTime: data.created_at || now,
-        lastMessagePreview: preview,
-        unreadCount: 0,
+        lastMessage: msgText, lastMessageTime: data.created_at || now,
+        lastMessagePreview: preview, unreadCount: 0,
       });
 
-      trace("thread.preview.update", "output", {
-        threadId: thread.id,
-        lastMessagePreview: preview,
-        lastMessageTime: data.created_at || now,
-      });
-
-      platformBus.emit(
-        "orbit:message_sent",
-        {
-          threadId: thread.id,
-          conversationId,
-          contentPreview: msgText.slice(0, 80),
-          offline: false,
-        },
-        "orbit",
-        { userId: authUserId, orgId: orgId || undefined }
-      );
-
-      trace("message.realtime.echo", "output", {
-        emitted: "orbit:message_sent",
-        conversationId,
-        threadId: thread.id,
-      });
+      platformBus.emit("orbit:message_sent", {
+        threadId: thread.id, conversationId,
+        contentPreview: msgText.slice(0, 80), offline: false,
+      }, "orbit", { userId: authUserId, orgId: orgId || undefined });
 
       setSecurityLevel("normal");
-      trace("thread.preview.update", "output", { uiUpdated: true, securityLevel: "normal" });
+      reportHealth("orbit", "ok");
+      endFlow(flow, "success");
     } catch (e: any) {
-      trace("message.db.confirm", "error", { message: e?.message || "send_failed" });
-      setRawMessages((prev) =>
-        prev.map((m) => (m.id === optimisticId ? { ...m, pending: false, failed: true } : m))
-      );
+      failStep(flow, dbStep, e?.message || "send_failed");
+      reportHealth("orbit", "degraded", undefined, e?.message);
+      endFlow(flow, "failed");
+      setRawMessages((prev) => prev.map((m) => m.id === optimisticId ? { ...m, pending: false, failed: true } : m));
       setNewMessage(msgText);
       toast.error(e?.message || "Failed to send message.");
     } finally {
       setSending(false);
     }
-  }, [newMessage, params, trace]);
+  }, [newMessage, params]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
@@ -462,11 +267,5 @@ export function useMessageSender(params: Params) {
     [handleSend]
   );
 
-  return {
-    sending,
-    newMessage,
-    setNewMessage,
-    handleSend,
-    handleKeyDown,
-  };
+  return { sending, newMessage, setNewMessage, handleSend, handleKeyDown };
 }
