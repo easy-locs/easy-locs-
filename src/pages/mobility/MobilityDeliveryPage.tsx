@@ -175,7 +175,7 @@ export default function MobilityDeliveryPage() {
             <MapPin className="h-4 w-4 text-primary shrink-0" />
             <div className="flex-1 min-w-0 text-left">
               <p className="text-xs text-muted-foreground">Delivering to</p>
-              <p className="text-sm font-semibold text-foreground truncate">
+              <p className="text-sm font-semibold leading-snug text-foreground line-clamp-2 break-words text-balance-soft">
                 {station.label || "Set your delivery address"}
               </p>
             </div>
@@ -293,10 +293,10 @@ export default function MobilityDeliveryPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.1 + i * 0.03 }}
-                className="flex flex-col items-center gap-1.5 p-3 rounded-2xl border border-border/20 bg-card/60 hover:border-primary/30 hover:shadow-md transition-all shrink-0 min-w-[76px] active:scale-95"
+                className="flex min-h-[88px] flex-col items-center gap-1.5 rounded-2xl border border-border/20 bg-card/60 p-3 text-center hover:border-primary/30 hover:shadow-md transition-all shrink-0 min-w-[92px] active:scale-95"
               >
                 <span className="text-2xl">{a.emoji}</span>
-                <span className="text-[10px] font-semibold text-foreground whitespace-nowrap">{a.label}</span>
+                <span className="text-[10px] font-semibold leading-snug text-foreground line-clamp-2 break-words text-balance-soft">{a.label}</span>
                 {station.etas[a.etaKey] != null && (
                   <span className="text-[9px] text-primary font-bold">{station.etas[a.etaKey]} min</span>
                 )}
@@ -328,17 +328,17 @@ export default function MobilityDeliveryPage() {
                   {mode.emoji}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold text-foreground">{mode.label}</p>
+                  <div className="flex items-start gap-2">
+                    <p className="text-sm font-bold leading-snug text-foreground break-words text-balance-soft">{mode.label}</p>
                     {station.etas[mode.etaKey] != null && (
-                      <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                      <span className="shrink-0 text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
                         {station.etas[mode.etaKey]}min
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{mode.description}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground break-words line-clamp-2">{mode.description}</p>
                   {extraStat && (
-                    <p className="text-[10px] text-primary/70 mt-0.5 font-medium">• {extraStat}</p>
+                    <p className="mt-0.5 text-[10px] font-medium leading-relaxed text-primary/70 break-words line-clamp-2">• {extraStat}</p>
                   )}
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
@@ -362,8 +362,8 @@ export default function MobilityDeliveryPage() {
               >
                 <span className="text-lg">{s.emoji}</span>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-foreground truncate">{s.label}</p>
-                  <p className="text-[9px] text-muted-foreground">{s.reason}</p>
+                  <p className="text-xs font-semibold leading-snug text-foreground line-clamp-2 break-words">{s.label}</p>
+                  <p className="text-[9px] leading-relaxed text-muted-foreground break-words">{s.reason}</p>
                 </div>
               </button>
             ))}
@@ -395,9 +395,9 @@ export default function MobilityDeliveryPage() {
             { icon: <Shield className="h-3.5 w-3.5" />, label: "Verified riders" },
             { icon: <Sparkles className="h-3.5 w-3.5" />, label: "Secure payments" },
           ].map((b, i) => (
-            <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/30">
+              <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/30 min-w-0">
               <span className="text-primary">{b.icon}</span>
-              <span className="text-xs text-muted-foreground font-medium">{b.label}</span>
+                <span className="text-xs text-muted-foreground font-medium leading-snug break-words line-clamp-2">{b.label}</span>
             </div>
           ))}
         </motion.div>
@@ -415,7 +415,7 @@ export default function MobilityDeliveryPage() {
                     <span className="text-xs font-semibold text-foreground capitalize">{j.job_type.replace(/_/g, " ")}</span>
                     <Badge variant="secondary" className="text-[9px]">Completed</Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground truncate">
+                  <p className="text-[11px] leading-relaxed text-muted-foreground line-clamp-2 break-words">
                     📍 {j.pickup_label || j.pickup_address} → 🏁 {j.dropoff_label || j.dropoff_address}
                   </p>
                 </div>

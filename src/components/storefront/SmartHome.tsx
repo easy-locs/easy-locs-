@@ -80,7 +80,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
       <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
         <button onClick={onLocationTap} className="flex min-w-0 max-w-[78%] items-center gap-2 active:scale-95 transition-transform">
           <MapPin className="h-4 w-4 text-white/70 shrink-0" />
-          <span className="text-xs font-medium text-white/80 break-words line-clamp-2 leading-snug text-left">{locationLabel}</span>
+          <span className="text-xs font-medium text-white/80 break-words line-clamp-2 leading-snug text-left text-balance-soft">{locationLabel}</span>
         </button>
         <div className="shrink-0 rounded-full bg-white/15">
           <NotificationBell />
@@ -99,7 +99,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
             {hero.title}
           </motion.h2>
           <motion.p
-            className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-white/70"
+            className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-white/70 text-balance-soft"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
@@ -170,7 +170,7 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
     >
       <Link
         to={cat.route}
-        className="group relative flex h-[104px] w-[84px] flex-col items-center justify-between overflow-visible rounded-2xl border border-border/10 bg-muted/30 p-2.5 transition-all duration-150 active:scale-[0.92]"
+        className="group relative flex h-[112px] w-[84px] flex-col items-center justify-between overflow-visible rounded-2xl border border-border/10 bg-muted/30 p-2.5 transition-all duration-150 active:scale-[0.92]"
       >
         {cat.subtitle && (
           <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-[7px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground leading-none z-10 whitespace-nowrap shadow-sm">
@@ -184,7 +184,7 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
             <span className="text-2xl">{cat.icon}</span>
           )}
         </div>
-        <p className="mt-1 w-full text-center text-[10px] font-bold leading-snug text-foreground break-words hyphens-auto"
+        <p className="mt-1 w-full text-center text-[10px] font-bold leading-snug text-foreground line-clamp-2 break-words hyphens-auto text-balance-soft"
            style={{ wordBreak: "break-word" }}
         >{cat.label}</p>
       </Link>
