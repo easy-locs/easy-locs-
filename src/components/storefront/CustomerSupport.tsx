@@ -273,7 +273,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold truncate">{t.subject}</p>
+                      <p className="text-xs font-semibold line-clamp-2 break-words leading-snug">{t.subject}</p>
                       <div className="flex items-center gap-1.5 mt-1">
                         <Badge variant="secondary" className="text-[8px] capitalize">{t.category}</Badge>
                         <PriorityIcon className={`h-3 w-3 ${t.priority === "urgent" ? "text-destructive" : t.priority === "high" ? "text-warning" : "text-muted-foreground"}`} />

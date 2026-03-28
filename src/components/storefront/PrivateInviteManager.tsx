@@ -98,7 +98,7 @@ export default function PrivateInviteManager({ shopId, shopSlug }: Props) {
               <div key={inv.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-card border border-border">
                 <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">{inv.email}</p>
+                  <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{inv.email}</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {inv.accepted ? (
                       <Badge className="text-[8px] bg-success/10 text-success">Accepted</Badge>
