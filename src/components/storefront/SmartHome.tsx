@@ -158,7 +158,7 @@ const QuickActions = memo(() => (
   </div>
 ));
 
-/* ═══ Category Card — Careem-style with 3D image ═══ */
+/* ═══ Category Card — Full-width grid, no truncation ═══ */
 function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
   const imgSrc = cat.image ? CATEGORY_IMAGES[cat.image] : null;
   return (
@@ -166,25 +166,25 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.015 * index, duration: 0.2 }}
-      className="shrink-0"
+      className="w-full"
     >
       <Link
         to={cat.route}
-        className="group relative flex h-[106px] w-[78px] flex-col items-center justify-between overflow-visible rounded-2xl border border-border/10 bg-muted/30 p-2 transition-all duration-150 active:scale-[0.92]"
+        className="group relative flex flex-col items-center justify-between overflow-visible rounded-2xl border border-border/10 bg-muted/30 p-2 pt-4 pb-2.5 transition-all duration-150 active:scale-[0.92]"
       >
         {cat.subtitle && (
           <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-[7px] font-bold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground leading-none z-10 whitespace-nowrap shadow-sm">
             {cat.subtitle}
           </span>
         )}
-        <div className="flex w-full flex-1 items-center justify-center">
+        <div className="flex items-center justify-center mb-1.5">
           {imgSrc ? (
-            <img src={imgSrc} alt={cat.label} className="h-10 w-10 object-contain drop-shadow-md" loading="lazy" />
+            <img src={imgSrc} alt={cat.label} className="h-11 w-11 object-contain drop-shadow-md" loading="lazy" />
           ) : (
             <span className="text-2xl">{cat.icon}</span>
           )}
         </div>
-        <p className="mt-1 w-full text-center text-[10px] font-bold leading-tight text-foreground line-clamp-1 truncate">{cat.label}</p>
+        <p className="w-full text-center text-[10px] font-bold leading-snug text-foreground">{cat.label}</p>
       </Link>
     </motion.div>
   );
@@ -328,21 +328,15 @@ export default function SmartHome() {
         <TopHeroBanner city={city} greeting={greeting} timezone={timezone} onLocationTap={handleLocationTap} />
         <QuickActions />
 
-        {/* Category grid — horizontal scrollable, 2 rows */}
-        <div className="mb-4 touch-pan-x overflow-x-auto scrollbar-none">
+        {/* Category grid — full-width 4-column grid, 2 rows */}
+        <div className="mb-4">
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="flex flex-col gap-2 px-0.5"
-            style={{ width: "max-content" }}
+            className="grid grid-cols-4 gap-2"
           >
-            <div className="flex gap-2.5">
-              {row1.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i} />)}
-            </div>
-            <div className="flex gap-2.5">
-              {row2.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i + half} />)}
-            </div>
+            {categories.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i} />)}
           </motion.div>
         </div>
 
