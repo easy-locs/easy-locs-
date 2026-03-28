@@ -84,6 +84,12 @@ const SeasonalRentals = () => {
 
   // Realtime already handled by useSeasonalData — no duplicate channel needed
 
+  // ── Request actions hook: approve, reject, cancel, payment ──
+  const {
+    approveRequest, rejectRequest, cancelRequest, deleteRequest,
+    generatePaymentLink, payingRequest,
+  } = useSeasonalRequestActions({ properties, reload: load });
+
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [calMonth, setCalMonth] = useState(() => {
