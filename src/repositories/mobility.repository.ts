@@ -59,7 +59,7 @@ export async function updateMobilityJob(jobId: string, updates: Record<string, a
 }
 
 export async function insertMobilityJobs(jobs: Record<string, any>[]) {
-  const { error } = await supabase.from("mobility_jobs").insert(jobs);
+  const { error } = await (supabase as any).from("mobility_jobs").insert(jobs);
   if (error) throw error;
 }
 
@@ -95,11 +95,11 @@ export async function fetchRiderPresence(riderProfileId: string) {
 }
 
 export async function upsertRiderPresence(payload: Record<string, any>) {
-  await supabase.from("rider_presence").upsert(payload);
+  await (supabase as any).from("rider_presence").upsert(payload);
 }
 
 export async function updateRiderProfile(profileId: string, updates: Record<string, any>) {
-  await supabase.from("rider_profiles").update(updates).eq("id", profileId);
+  await (supabase as any).from("rider_profiles").update(updates).eq("id", profileId);
 }
 
 export async function fetchOnlineRiders(limit = 20) {
@@ -140,12 +140,12 @@ export async function fetchDeliveryDisputes(orgId: string, limit = 100) {
 }
 
 export async function insertDeliveryDispute(payload: Record<string, any>) {
-  const { error } = await supabase.from("delivery_disputes").insert(payload);
+  const { error } = await (supabase as any).from("delivery_disputes").insert(payload);
   if (error) throw error;
 }
 
 export async function updateDeliveryDispute(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("delivery_disputes").update(updates).eq("id", id);
+  const { error } = await (supabase as any).from("delivery_disputes").update(updates).eq("id", id);
   if (error) throw error;
 }
 
@@ -157,19 +157,19 @@ export async function fetchDeliveryRatings(riderUserId: string) {
 }
 
 export async function insertDeliveryRating(payload: Record<string, any>) {
-  const { error } = await supabase.from("delivery_ratings").insert(payload);
+  const { error } = await (supabase as any).from("delivery_ratings").insert(payload);
   if (error) throw error;
 }
 
 // ─── Delivery Proofs ───
 export async function insertDeliveryProof(payload: Record<string, any>) {
-  const { error } = await supabase.from("delivery_proofs").insert(payload);
+  const { error } = await (supabase as any).from("delivery_proofs").insert(payload);
   if (error) throw error;
 }
 
 // ─── Delivery Offers ───
 export async function insertDeliveryOffer(payload: Record<string, any>) {
-  const { error } = await supabase.from("delivery_offers").insert(payload);
+  const { error } = await (supabase as any).from("delivery_offers").insert(payload);
   if (error) throw error;
 }
 
@@ -181,11 +181,11 @@ export async function fetchTripLiveState(jobId: string) {
 }
 
 export async function upsertTripLiveState(payload: Record<string, any>) {
-  await supabase.from("trip_live_state").upsert(payload);
+  await (supabase as any).from("trip_live_state").upsert(payload);
 }
 
 export async function insertTripLocationPoint(payload: Record<string, any>) {
-  await supabase.from("trip_location_points").insert(payload);
+  await (supabase as any).from("trip_location_points").insert(payload);
 }
 
 // ─── Merchant Profiles ───
@@ -209,7 +209,7 @@ export async function fetchProfileNames(userIds: string[]) {
 
 // ─── Audit Logs ───
 export async function insertAuditLog(payload: Record<string, any>) {
-  await supabase.from("audit_logs").insert(payload);
+  await (supabase as any).from("audit_logs").insert(payload);
 }
 
 // ─── App Notifications ───
