@@ -1,9 +1,10 @@
 /**
  * useRentalReceipts — Extracted from RentalManagement.tsx
  * Handles receipt generation and rent payment via Stripe.
+ * MIGRATED: All DB ops via rental-data.repository.
  */
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as rentalRepo from "@/repositories/rental-data.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -35,12 +36,12 @@ export function useRentalReceipts(
     let landlordSignature = "";
     let stampUrl = "";
     try {
-      const { data: profile } = await supabase.from("profiles").select("signature_url").eq("id", user.id).single();
+      const profile = await rentalRepo.fetchProfile(user.id);
       if (profile?.signature_url) landlordSignature = profile.signature_url;
     } catch {}
     if (orgId) {
       try {
-        const { data: orgData } = await supabase.from("orgs").select("stamp_url").eq("id", orgId).single();
+        const orgData = await rentalRepo.fetchOrgInfo(orgId);
         if ((orgData as any)?.stamp_url) stampUrl = (orgData as any).stamp_url;
       } catch {}
     }
@@ -49,7 +50,7 @@ export function useRentalReceipts(
     let landlordAddress = "";
     if (orgId) {
       try {
-        const { data: ownerProfile } = await supabase.from("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).maybeSingle();
+        const ownerProfile = await rentalRepo.fetchOwnerProfile(orgId);
         if (ownerProfile) {
           landlordName = ownerProfile.full_name || "";
           landlordAddress = [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city].filter(Boolean).join(", ");
@@ -58,7 +59,7 @@ export function useRentalReceipts(
     }
     if (!landlordName && orgId) {
       try {
-        const { data: orgData } = await supabase.from("orgs").select("name, address, postal_code, city").eq("id", orgId).single();
+        const orgData = await rentalRepo.fetchOrgInfo(orgId);
         if (orgData) {
           landlordName = orgData.name || "";
           if (!landlordAddress) landlordAddress = [orgData.address, orgData.postal_code, orgData.city].filter(Boolean).join(", ");
@@ -100,11 +101,9 @@ export function useRentalReceipts(
     if (!tenant || !orgId) return;
     setPayingRentId(payment.id);
     try {
-      const { data, error } = await supabase.functions.invoke("create-rent-payment", {
-        body: { rentCallId: payment.id, amount: payment.total_amount, tenantName: tenant.name, month: payment.month, orgId },
+      const data = await rentalRepo.invokeRentPayment({
+        rentCallId: payment.id, amount: payment.total_amount, tenantName: tenant.name, month: payment.month, orgId,
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       const msg = err.message || String(err);
