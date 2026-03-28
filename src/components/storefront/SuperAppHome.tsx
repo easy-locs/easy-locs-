@@ -171,7 +171,10 @@ export default function SuperAppHome() {
           .maybeSingle(),
       ]);
       return {
-        threads: threadsRes.data || [],
+        threads: (threadsRes.data || []).filter((t: any) =>
+          Array.isArray(t.participants) &&
+          t.participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user!.id)
+        ).slice(0, 5),
         activeOrders: ordersRes.data || [],
         hasShop: !!shopRes.data,
       };
