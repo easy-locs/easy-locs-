@@ -1,20 +1,23 @@
 /**
  * useOnboardingImport — UI hook for triggering the shop import pipeline.
+ * NOW uses src/lib/import-engine as canonical source.
  */
 import { useCallback, useState } from "react";
-import { runImportPipeline } from "@/lib/onboarding/pipeline/run-import-pipeline";
-import type { CanonicalShop } from "@/lib/onboarding/pipeline/canonical-shop.schema";
+import { runImportEngine, type ImportResult, type SourceEntityRecord, type Vertical } from "@/lib/import-engine";
 
 export function useOnboardingImport() {
   const [importing, setImporting] = useState(false);
-  const [lastResult, setLastResult] = useState<CanonicalShop | null>(null);
+  const [lastResult, setLastResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const importShop = useCallback(async (source: string, raw: any) => {
+  const importShop = useCallback(async (
+    vertical: Vertical,
+    records: SourceEntityRecord[],
+  ) => {
     setImporting(true);
     setError(null);
     try {
-      const result = await runImportPipeline(source, raw);
+      const result = runImportEngine({ vertical }, records);
       setLastResult(result);
       return result;
     } catch (err: any) {
