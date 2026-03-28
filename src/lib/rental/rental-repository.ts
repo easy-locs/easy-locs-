@@ -1,6 +1,5 @@
 /**
  * rental-repository — All rental domain DB reads/writes.
- * Single source for properties, tenants, leases, rent calls.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,7 +16,7 @@ export async function fetchProperties(orgId: string) {
 export async function createProperty(orgId: string, userId: string, form: Record<string, any>) {
   const { data, error } = await supabase
     .from("properties")
-    .insert({ ...form, org_id: orgId, user_id: userId })
+    .insert({ ...form, org_id: orgId, user_id: userId } as any)
     .select()
     .single();
   if (error) throw error;
@@ -25,7 +24,7 @@ export async function createProperty(orgId: string, userId: string, form: Record
 }
 
 export async function updateProperty(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("properties").update(updates).eq("id", id);
+  const { error } = await supabase.from("properties").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
@@ -47,7 +46,7 @@ export async function fetchTenants(orgId: string) {
 export async function createTenant(orgId: string, userId: string, form: Record<string, any>) {
   const { data, error } = await supabase
     .from("tenants")
-    .insert({ ...form, org_id: orgId, user_id: userId })
+    .insert({ ...form, org_id: orgId, user_id: userId } as any)
     .select()
     .single();
   if (error) throw error;
@@ -55,7 +54,7 @@ export async function createTenant(orgId: string, userId: string, form: Record<s
 }
 
 export async function updateTenant(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("tenants").update(updates).eq("id", id);
+  const { error } = await supabase.from("tenants").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
@@ -77,7 +76,7 @@ export async function fetchRentCalls(orgId: string) {
 export async function createRentCall(orgId: string, call: Record<string, any>) {
   const { data, error } = await supabase
     .from("rent_calls")
-    .insert({ ...call, org_id: orgId })
+    .insert({ ...call, org_id: orgId } as any)
     .select()
     .single();
   if (error) throw error;
@@ -85,7 +84,7 @@ export async function createRentCall(orgId: string, call: Record<string, any>) {
 }
 
 export async function updateRentCall(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("rent_calls").update(updates).eq("id", id);
+  const { error } = await supabase.from("rent_calls").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
