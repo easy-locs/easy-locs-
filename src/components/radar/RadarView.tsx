@@ -3,7 +3,9 @@
  * advanced filters (rating, promoted, open now), smart ranking,
  * and real-time live layers (weather, traffic, demand, zone events).
  */
-import { useState, useCallback, useMemo, memo, useEffect } from "react";
+import { useState, useCallback, useMemo, memo, useEffect, useRef } from "react";
+import { useRadarEngines } from "@/hooks/radar/useRadarEngines";
+import type { CanonicalRadarProjection } from "@/lib/domains/canonical-entities";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
