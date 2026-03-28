@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { notifyOrderCreated } from "@/lib/engines/notification-event-dispatcher";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { APP_EVENTS } from "@/lib/platform/events";
 
 async function getCurrentUserId() {
   const { data } = await supabase.auth.getUser();
@@ -7,6 +9,10 @@ async function getCurrentUserId() {
   return data.user.id;
 }
 
+/**
+ * Idempotent order creation.
+ * If a draft order already exists for same user+workspace+type, return it.
+ */
 export async function createOrder(params: {
   workspaceId?: string;
   merchantProfileId?: string;
@@ -15,8 +21,20 @@ export async function createOrder(params: {
   pickupAddressId?: string;
   dropoffAddressId?: string;
   notes?: string;
+  idempotencyKey?: string;
 }) {
   const userId = await getCurrentUserId();
+
+  // Idempotency: check for existing draft order with same key or same workspace+type
+  if (params.idempotencyKey) {
+    const { data: existing } = await (supabase as any)
+      .from("orders")
+      .select("*")
+      .eq("customer_user_id", userId)
+      .eq("idempotency_key", params.idempotencyKey)
+      .maybeSingle();
+    if (existing) return existing;
+  }
 
   const { data, error } = await (supabase as any)
     .from("orders")
@@ -30,13 +48,18 @@ export async function createOrder(params: {
       pickup_address_id: params.pickupAddressId ?? null,
       dropoff_address_id: params.dropoffAddressId ?? null,
       notes: params.notes ?? null,
+      idempotency_key: params.idempotencyKey ?? null,
     })
     .select("*")
     .single();
 
   if (error) throw error;
 
-  // Fire notification
+  // Emit platform events
+  platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { userId }, "order");
+  platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, { userId }, "order");
+
+  // Fire notification (non-blocking)
   notifyOrderCreated(userId, data.id, params.merchantProfileId || "", 0).catch(console.error);
 
   return data;
