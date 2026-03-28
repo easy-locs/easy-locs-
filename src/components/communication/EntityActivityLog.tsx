@@ -64,16 +64,15 @@ export default function EntityActivityLog({ entityType, entityId, orgId, maxItem
 
       if (entityType === "property" || entityType === "tenant") {
         const payments = await actRepo.fetchPayments(orgId, entityType, entityId, maxItems);
-          payments.forEach((p: any) => {
-            allEvents.push({
-              id: `pay-${p.id}`, type: "payment",
-              title: p.paid ? `💚 Rent paid — ${p.month}` : `⏳ Rent due — ${p.month}`,
-              description: `${p.total_amount}€${p.paid_date ? ` — Paid on ${p.paid_date}` : ""}`,
-              timestamp: p.paid_date || `${p.month}-01`,
-              icon: TYPE_CONFIG.payment.icon, color: TYPE_CONFIG.payment.color,
-            });
+        payments.forEach((p: any) => {
+          allEvents.push({
+            id: `pay-${p.id}`, type: "payment",
+            title: p.paid ? `💚 Rent paid — ${p.month}` : `⏳ Rent due — ${p.month}`,
+            description: `${p.total_amount}€${p.paid_date ? ` — Paid on ${p.paid_date}` : ""}`,
+            timestamp: p.paid_date || `${p.month}-01`,
+            icon: TYPE_CONFIG.payment.icon, color: TYPE_CONFIG.payment.color,
           });
-        }
+        });
       }
 
       if (entityType === "property" || entityType === "tenant") {
