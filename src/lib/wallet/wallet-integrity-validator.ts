@@ -18,11 +18,11 @@ export async function validateWalletIntegrity(walletId: string): Promise<{ issue
   if (bal) {
     if (bal.available < 0) {
       issues.push("Negative available balance");
-      reportAnomaly("wallet", "critical", "Negative available balance detected", { walletId, available: bal.available });
+      reportAnomaly("schema_conflict", "wallet", "Negative available balance detected", "critical", { walletId, available: bal.available });
     }
     if (bal.escrow < 0) {
       issues.push("Negative escrow balance");
-      reportAnomaly("wallet", "warning", "Negative escrow balance", { walletId });
+      reportAnomaly("schema_conflict", "wallet", "Negative escrow balance", "medium", { walletId });
     }
   }
 
@@ -37,7 +37,7 @@ export async function validateWalletIntegrity(walletId: string): Promise<{ issue
 
   if (stuckTxns?.length) {
     issues.push(`${stuckTxns.length} stuck pending transaction(s)`);
-    reportAnomaly("wallet", "warning", "Stuck pending transactions", { walletId, count: stuckTxns.length });
+    reportAnomaly("stale_cache", "wallet", "Stuck pending transactions", "medium", { walletId, count: stuckTxns.length });
   }
 
   return { issues };
