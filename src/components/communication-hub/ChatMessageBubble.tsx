@@ -39,12 +39,27 @@ interface Props {
   getCategoryIcon: (cat: string) => string;
 }
 
+/** Safely coerce a value to a renderable string — prevents React error #185 */
+function safeStr(val: unknown): string {
+  if (val == null) return "";
+  if (typeof val === "string") return val;
+  if (typeof val === "number" || typeof val === "boolean") return String(val);
+  try { return JSON.stringify(val); } catch { return ""; }
+}
+
 function ChatMessageBubble({
-  msg, isMe, threadName, locale, showOriginal,
+  msg: rawMsg, isMe, threadName, locale, showOriginal,
   translatingMsgId, isPendingOffline, isConsecutive,
   selected, selectMode, currentUserId,
   onTranslate, onContextMenu, onToggleSelect, getCategoryIcon,
 }: Props) {
+  // Guard: ensure content and contact_name are always strings
+  const msg = {
+    ...rawMsg,
+    content: safeStr(rawMsg.content),
+    contact_name: safeStr(rawMsg.contact_name),
+    translated_content: rawMsg.translated_content ? safeStr(rawMsg.translated_content) : rawMsg.translated_content,
+  };
   // Hooks MUST be called before any early returns
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggeredRef = useRef(false);
