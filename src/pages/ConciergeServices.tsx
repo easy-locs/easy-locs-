@@ -61,28 +61,6 @@ const BOOKING_STATUSES: Record<string, { label: string; cls: string }> = {
   refunded: { label: "Refunded", cls: "bg-muted text-muted-foreground" },
 };
 
-interface ServiceForm {
-  category: string; title: string; description: string; price: number; currency: string;
-  duration_minutes: number | null; provider_name: string; provider_phone: string;
-  country: string; city: string; active: boolean; photo_urls: string[];
-  location: string; conditions: string; booking_type: string;
-  payment_methods: string[]; bank_details: any; commission_type: string; commission_amount: number;
-  paypal_email: string; booking_slug: string;
-  time_slots: { start: string; end: string }[]; blocked_dates: string[];
-  requires_id_document: boolean;
-}
-
-const emptyForm: ServiceForm = {
-  category: "transfer", title: "", description: "", price: 0, currency: "EUR",
-  duration_minutes: null, provider_name: "", provider_phone: "", country: "", city: "",
-  active: true, photo_urls: [], location: "", conditions: "", booking_type: "instant",
-  payment_methods: ["stripe"], bank_details: {}, commission_type: "percentage",
-  commission_amount: 0, paypal_email: "", booking_slug: "",
-  time_slots: [], blocked_dates: [], requires_id_document: false,
-};
-
-const generateSlug = (title: string) =>
-  title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
 
 /** Format price using Intl based on currency code */
 const fmtPrice = (amount: number, currency: string = "EUR") => {
@@ -724,7 +702,7 @@ const ConciergeServices = () => {
 
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancel</Button>
-                <Button onClick={save} disabled={!form.title}>
+                <Button onClick={handleSave} disabled={!form.title}>
                   {editingId ? "Update" : "Create"} Service
                 </Button>
               </div>
