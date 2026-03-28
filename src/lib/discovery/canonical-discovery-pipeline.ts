@@ -24,6 +24,7 @@ import {
   getClusterForSubcategory,
   getParentVertical,
 } from "@/lib/taxonomy/world-class-taxonomy";
+import { fetchOSMPlaces, osmCategoryToRadarCategory } from "@/lib/geo/osm-places-engine";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";
 
 // ═══ Placeholder image filter — blocks truly generic images from discovery ═══
@@ -309,5 +310,55 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     }
   }
 
-  return points;
+  // ── OSM Enrichment: fetch real-world POIs from OpenStreetMap ──
+  if (userLocation?.lat && userLocation?.lng) {
+    try {
+      const osmPlaces = await fetchOSMPlaces(userLocation.lat, userLocation.lng, {
+        radiusM: 3000,
+        limit: 150,
+      });
+
+      for (const place of osmPlaces) {
+        if (seenIds.has(place.id)) continue;
+        seenIds.add(place.id);
+
+        const cat = osmCategoryToRadarCategory(place.category) as RadarCategory;
+        if (category && category !== "all" && cat !== category) continue;
+
+        const dist = haversineKm(userLocation.lat, userLocation.lng, place.lat, place.lng);
+        if (radiusKm && dist > radiusKm) continue;
+
+        points.push({
+          id: place.id,
+          title: place.name,
+          subtitle: place.address || place.subcategory,
+          imageUrl: null,
+          category: cat,
+          subcategory: place.subcategory,
+          lat: place.lat,
+          lng: place.lng,
+          rating: undefined,
+          reviewsCount: undefined,
+          isSponsored: false,
+          distanceKm: dist,
+          timeScore: 0,
+          slug: null,
+          district: place.address || null,
+          cityName: null,
+        });
+      }
+    } catch (err) {
+      console.warn("[Discovery] OSM enrichment failed:", err);
+    }
+  }
+
+  // ── Sort: storefront results first (have images/ratings), then OSM by distance ──
+  points.sort((a, b) => {
+    const aIsOsm = a.id.startsWith("osm-") ? 1 : 0;
+    const bIsOsm = b.id.startsWith("osm-") ? 1 : 0;
+    if (aIsOsm !== bIsOsm) return aIsOsm - bIsOsm;
+    return (a.distanceKm ?? 999) - (b.distanceKm ?? 999);
+  });
+
+  return points.slice(0, limit + 150); // Allow extra for OSM density
 }
