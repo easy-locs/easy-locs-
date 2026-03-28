@@ -3,8 +3,12 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  fetchOrgForUser, fetchProperties, fetchOtaConnections, fetchPricingRules,
+  fetchChannelReservations, syncIcal, addOtaConnection, deleteOtaConnection,
+  cancelReservation as cancelRes, notifyOwner, modifyReservationDates,
+} from "@/repositories/channel-manager.repository";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,96 +58,33 @@ const ChannelManager = () => {
   const [editDates, setEditDates] = useState({ check_in: "", check_out: "" });
   const [selectedTab, setSelectedTab] = useState("calendar");
 
-  // Fetch org
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("org_members").select("org_id").eq("user_id", user!.id).limit(1).single();
-      if (!data) return null;
-      const { data: o } = await supabase.from("orgs").select("*").eq("id", data.org_id).single();
-      return o;
-    },
+    queryFn: () => fetchOrgForUser(user!.id),
     enabled: !!user,
   });
 
-  // Fetch properties
   const { data: properties = [] } = useQuery({
     queryKey: ["properties", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("properties").select("id, label, city, country").eq("org_id", org!.id);
-      return data || [];
-    },
+    queryFn: () => fetchProperties(org!.id),
     enabled: !!org,
   });
 
-  // Fetch OTA connections via RPC
   const { data: connections = [] } = useQuery({
     queryKey: ["ota_connections", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.rpc("get_ota_connections", { _org_id: org!.id });
-      return (data || []) as Array<{
-        id: string; provider: string; status: string; last_sync_at: string | null;
-        linked_properties: any; created_at: string;
-      }>;
-    },
+    queryFn: () => fetchOtaConnections(org!.id),
     enabled: !!org,
   });
 
-  // Fetch pricing rules for dynamic pricing indicators
   const { data: pricingRules = [] } = useQuery({
     queryKey: ["pricing_rules", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("pricing_rules").select("*").eq("org_id", org!.id).eq("active", true);
-      return data || [];
-    },
+    queryFn: () => fetchPricingRules(org!.id),
     enabled: !!org,
   });
 
-  // Fetch all reservations: seasonal_bookings + booking_requests (merged)
   const { data: reservations = [] } = useQuery({
     queryKey: ["channel_reservations", org?.id],
-    queryFn: async () => {
-      const [{ data: seasonalData }, { data: requestsData }] = await Promise.all([
-        supabase.from("seasonal_bookings").select("*").eq("org_id", org!.id),
-        supabase.from("booking_requests").select("*").eq("org_id", org!.id),
-      ]);
-
-      const seasonal: Reservation[] = (seasonalData || []).map((b: any) => ({
-        id: b.id,
-        property_id: b.property_id,
-        guest_name: b.guest_name,
-        guest_email: b.guest_email || "",
-        check_in: b.check_in,
-        check_out: b.check_out,
-        status: b.status || "confirmed",
-        ota_provider: "direct",
-        amount: Number(b.total_price) || 0,
-        source_table: "seasonal_bookings" as const,
-      }));
-
-      const requests: Reservation[] = (requestsData || [])
-        .filter((r: any) => ["paid", "approved", "confirmed", "pending", "payment_pending"].includes(r.status))
-        .map((r: any) => ({
-          id: r.id,
-          property_id: r.property_id,
-          guest_name: r.guest_name,
-          guest_email: r.guest_email || "",
-          check_in: r.check_in,
-          check_out: r.check_out,
-          status: r.status,
-          ota_provider: "direct",
-          amount: 0,
-          source_table: "booking_requests" as const,
-        }));
-
-      const seen = new Set<string>();
-      return [...seasonal, ...requests].filter(r => {
-        const key = `${r.property_id}-${r.check_in}-${r.check_out}-${r.guest_name}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-    },
+    queryFn: () => fetchChannelReservations(org!.id),
     enabled: !!org,
   });
 
@@ -152,153 +93,38 @@ const ChannelManager = () => {
     qc.invalidateQueries({ queryKey: ["ota_connections"] });
   };
 
-  // Sync iCal
   const syncMut = useMutation({
-    mutationFn: async (conn: any) => {
-      setSyncingId(conn.id);
-      const res = await supabase.functions.invoke("sync-ical", {
-        body: {
-          ical_url: conn.linked_properties?.[0]?.ical_url || "",
-          property_id: conn.linked_properties?.[0]?.property_id || "",
-          provider: conn.provider,
-          org_id: org!.id,
-        },
-      });
-      if (res.error) throw new Error(res.error.message);
-      return res.data;
-    },
-    onSuccess: (data) => {
-      toast.success(`Sync terminée : ${data.inserted} nouvelles, ${data.skipped} existantes`);
-      invalidateAll();
-      setSyncingId(null);
-    },
+    mutationFn: async (conn: any) => { setSyncingId(conn.id); return syncIcal(conn, org!.id); },
+    onSuccess: (data) => { toast.success(`Sync terminée : ${data.inserted} nouvelles, ${data.skipped} existantes`); invalidateAll(); setSyncingId(null); },
     onError: (err: Error) => { toast.error(err.message); setSyncingId(null); },
   });
 
-  // Add connection
   const addMut = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from("ota_connections").insert({
-        org_id: org!.id, user_id: user!.id, provider: newConn.provider,
-        status: "active", linked_properties: [{ property_id: newConn.property_id, ical_url: newConn.ical_url }],
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Connexion OTA ajoutée");
-      invalidateAll();
-      setAddOpen(false);
-      setNewConn({ provider: "airbnb", ical_url: "", property_id: "" });
-    },
+    mutationFn: () => addOtaConnection(org!.id, user!.id, newConn.provider, newConn.ical_url, newConn.property_id),
+    onSuccess: () => { toast.success("Connexion OTA ajoutée"); invalidateAll(); setAddOpen(false); setNewConn({ provider: "airbnb", ical_url: "", property_id: "" }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  // Delete connection
   const deleteMut = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("ota_connections").delete().eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => deleteOtaConnection(id),
     onSuccess: () => { toast.success("Connexion supprimée"); invalidateAll(); },
   });
 
-  // Cancel reservation with email
   const cancelReservation = async (res: Reservation) => {
     setCancellingId(res.id);
     try {
-      if (res.source_table === "seasonal_bookings") {
-        await supabase.from("seasonal_bookings").update({ status: "cancelled" } as any).eq("id", res.id);
-      } else {
-        await supabase.from("booking_requests").update({ status: "cancelled" } as any).eq("id", res.id);
-        // Also remove matching seasonal_booking
-        if (org?.id) {
-          await supabase.from("seasonal_bookings").delete()
-            .eq("org_id", org.id).eq("property_id", res.property_id)
-            .eq("check_in", res.check_in).eq("check_out", res.check_out)
-            .eq("guest_name", res.guest_name);
-        }
-      }
-
-      // Send cancellation email
-      if (res.guest_email) {
-        await supabase.functions.invoke("send-email", {
-          body: {
-            to: res.guest_email,
-            subject: `🚫 Réservation annulée — ${res.check_in} → ${res.check_out}`,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-              <h2 style="color:#dc2626;text-align:center;">🚫 Réservation annulée</h2>
-              <p style="color:#555;font-size:15px;text-align:center;">Bonjour ${res.guest_name},<br/>Votre réservation du ${res.check_in} au ${res.check_out} a été annulée.</p>
-              <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">EASY-LOCS®</p>
-            </div>`,
-          },
-        });
-      }
-
-      // Notify owner
-      if (org?.id && user) {
-        await (supabase as any).from("app_notifications").insert({
-          user_id: user.id, scope: "global", category: "info",
-          title: "🚫 Réservation annulée",
-          body: `${res.guest_name} — ${res.check_in} → ${res.check_out}`,
-          severity: "info", route: "/dashboard/channel-manager",
-        });
-      }
-
+      await cancelRes(res, org!.id);
+      if (user) await notifyOwner(user.id, "🚫 Réservation annulée", `${res.guest_name} — ${res.check_in} → ${res.check_out}`, "/dashboard/channel-manager");
       toast.success("Réservation annulée et e-mail envoyé");
       invalidateAll();
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setCancellingId(null);
-    }
+    } catch (err: any) { toast.error(err.message); }
+    finally { setCancellingId(null); }
   };
 
-  // Modify dates with email
   const modifyDates = async () => {
     if (!editModalRes || !editDates.check_in || !editDates.check_out) return;
-    if (editDates.check_out <= editDates.check_in) {
-      toast.error("La date de départ doit être après l'arrivée");
-      return;
-    }
-
-    const oldCheckIn = editModalRes.check_in;
-    const oldCheckOut = editModalRes.check_out;
-
-    if (editModalRes.source_table === "seasonal_bookings") {
-      await supabase.from("seasonal_bookings").update({
-        check_in: editDates.check_in, check_out: editDates.check_out,
-      } as any).eq("id", editModalRes.id);
-    } else {
-      await supabase.from("booking_requests").update({
-        check_in: editDates.check_in, check_out: editDates.check_out,
-      } as any).eq("id", editModalRes.id);
-      // Update matching seasonal_booking
-      if (org?.id) {
-        await supabase.from("seasonal_bookings").update({
-          check_in: editDates.check_in, check_out: editDates.check_out,
-        } as any)
-          .eq("org_id", org.id).eq("property_id", editModalRes.property_id)
-          .eq("check_in", oldCheckIn).eq("check_out", oldCheckOut)
-          .eq("guest_name", editModalRes.guest_name);
-      }
-    }
-
-    // Send modification email
-    if (editModalRes.guest_email) {
-      await supabase.functions.invoke("send-email", {
-        body: {
-          to: editModalRes.guest_email,
-          subject: `📅 Dates modifiées — ${editDates.check_in} → ${editDates.check_out}`,
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-            <h2 style="color:#1a1a1a;text-align:center;">📅 Dates de réservation modifiées</h2>
-            <p style="color:#555;font-size:15px;text-align:center;">Bonjour ${editModalRes.guest_name},<br/>
-            Vos nouvelles dates : du <strong>${editDates.check_in}</strong> au <strong>${editDates.check_out}</strong>.</p>
-            <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">EASY-LOCS®</p>
-          </div>`,
-        },
-      });
-    }
-
+    if (editDates.check_out <= editDates.check_in) { toast.error("La date de départ doit être après l'arrivée"); return; }
+    await modifyReservationDates(editModalRes, editDates.check_in, editDates.check_out, org!.id);
     toast.success("Dates modifiées et e-mail envoyé");
     setEditModalRes(null);
     invalidateAll();
