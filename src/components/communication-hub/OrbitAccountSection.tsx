@@ -137,19 +137,7 @@ export default function OrbitAccountSection() {
     if (!user) return;
     setSaving(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: {
-          full_name: displayName,
-          display_name: displayName,
-          avatar_url: avatarUrl,
-        }
-      });
-      if (error) throw error;
-
-      await supabase.from("profiles").update({
-        name: displayName,
-      }).eq("id", user.id);
-
+      await saveProfile(user.id, displayName, avatarUrl);
       haptic("medium");
       toast.success(t("orbit.profile.save") || "Profile updated!");
       setSubPage("main");
@@ -164,66 +152,19 @@ export default function OrbitAccountSection() {
   const handleArchiveAll = async () => {
     if (!user) return;
     try {
-      const { data: threads } = await supabase
-        .from("conversations_v2")
-        .select("id")
-        .order("updated_at", { ascending: false })
-        .limit(500);
-      
-      const userThreads = (threads || []).filter((t: any) => {
-        if (Array.isArray((t as any).participants)) {
-          return (t as any).participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user.id);
-        }
-        return false;
-      });
-
-      if (userThreads.length > 0) {
-        for (const thread of userThreads) {
-          await supabase.from("conversation_preferences").upsert({
-            user_id: user.id,
-            context_id: thread.id,
-            archived: true,
-          }, { onConflict: "user_id,context_id" });
-        }
-        toast.success(`${userThreads.length} ${t("orbit.chats.archive_all") || "chats archived"}`);
-      } else {
-        toast.info(t("orbit.no_conversations") || "No conversations");
-      }
-    } catch {
-      toast.error("Failed to archive");
-    }
+      const count = await archiveAllChats(user.id);
+      if (count > 0) toast.success(`${count} ${t("orbit.chats.archive_all") || "chats archived"}`);
+      else toast.info(t("orbit.no_conversations") || "No conversations");
+    } catch { toast.error("Failed to archive"); }
   };
 
   // Clear all chats
   const handleClearAll = async () => {
     if (!user) return;
     try {
-      const { data: threads } = await supabase
-        .from("conversations_v2")
-        .select("id")
-        .order("updated_at", { ascending: false })
-        .limit(500);
-      
-      const userThreads = (threads || []).filter((t: any) => {
-        if (Array.isArray((t as any).participants)) {
-          return (t as any).participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user.id);
-        }
-        return false;
-      });
-
-      if (userThreads.length > 0) {
-        for (const thread of userThreads) {
-          await supabase.from("conversation_preferences").upsert({
-            user_id: user.id,
-            context_id: thread.id,
-            cleared_at: new Date().toISOString(),
-          }, { onConflict: "user_id,context_id" });
-        }
-        toast.success(t("orbit.chats.clear_all") || "All chats cleared");
-      }
-    } catch {
-      toast.error("Failed to clear");
-    }
+      await clearAllChats(user.id);
+      toast.success(t("orbit.chats.clear_all") || "All chats cleared");
+    } catch { toast.error("Failed to clear"); }
   };
 
   // Delete all chats
@@ -231,55 +172,17 @@ export default function OrbitAccountSection() {
     if (!user) return;
     if (!confirm(t("orbit.delete_for_all_q") || "Delete all chats? This cannot be undone.")) return;
     try {
-      const { data: threads } = await supabase
-        .from("conversations_v2")
-        .select("id")
-        .order("updated_at", { ascending: false })
-        .limit(500);
-      
-      const userThreads = (threads || []).filter((t: any) => {
-        if (Array.isArray((t as any).participants)) {
-          return (t as any).participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user.id);
-        }
-        return false;
-      });
-
-      if (userThreads.length > 0) {
-        for (const thread of userThreads) {
-          await supabase.from("conversation_preferences").upsert({
-            user_id: user.id,
-            context_id: thread.id,
-            archived: true,
-            cleared_at: new Date().toISOString(),
-          }, { onConflict: "user_id,context_id" });
-        }
-        toast.success(t("orbit.chats.delete_all") || "All chats deleted");
-      }
-    } catch {
-      toast.error("Failed to delete");
-    }
+      await deleteAllChats(user.id);
+      toast.success(t("orbit.chats.delete_all") || "All chats deleted");
+    } catch { toast.error("Failed to delete"); }
   };
 
   // Export chat history
   const handleExportChat = async () => {
     if (!user) return;
     try {
-      const { data: messages } = await supabase
-        .from("chat_messages_v2")
-        .select("body, created_at, sender_user_id")
-        .or(`sender_user_id.eq.${user.id}`)
-        .order("created_at", { ascending: true })
-        .limit(1000);
-      
-      if (!messages || messages.length === 0) {
-        toast.info(t("orbit.no_conversations") || "No messages to export");
-        return;
-      }
-
-      const text = messages.map((m: any) => 
-        `[${new Date(m.created_at).toLocaleString()}] ${m.sender_user_id === user.id ? "You" : "Contact"}: ${m.body}`
-      ).join("\n");
-
+      const text = await exportChatHistory(user.id);
+      if (!text) { toast.info(t("orbit.no_conversations") || "No messages to export"); return; }
       const blob = new Blob([text], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -288,9 +191,7 @@ export default function OrbitAccountSection() {
       a.click();
       URL.revokeObjectURL(url);
       toast.success(t("orbit.chats.export") || "Chat exported");
-    } catch {
-      toast.error("Export failed");
-    }
+    } catch { toast.error("Export failed"); }
   };
 
   // ── Sub-page header ──
