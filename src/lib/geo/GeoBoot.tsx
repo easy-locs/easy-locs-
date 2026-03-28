@@ -1,7 +1,7 @@
 /**
  * GeoBoot — Single GPS lifecycle manager.
  * Requests GPS permission on first visit, syncs to canonical address pipeline.
- * Emits canonical geo events via platformBus for cross-module propagation.
+ * Emits canonical geo events via geo-dispatcher for cross-module propagation.
  */
 import { useEffect, useRef } from "react";
 import { geoService } from "./geo-service";
@@ -11,6 +11,8 @@ import { reverseGeocode } from "@/lib/location/geocode";
 import { fromGPS } from "@/lib/address/canonical-place";
 import { setAddressFromPlace } from "@/lib/brain/geo-brain";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
+import { dispatchUserPosition } from "@/lib/geo/geo-dispatcher";
+import { resolveCanonicalGeo } from "@/lib/geo/geo-canonical-resolver";
 
 export function GeoBoot() {
   const lastSyncRef = useRef<string>("");
@@ -31,6 +33,12 @@ export function GeoBoot() {
       lastSyncRef.current = key;
 
       const { lat, lng } = state.point;
+
+      // Dispatch canonical user position to all consumers via geo-dispatcher
+      dispatchUserPosition(lat, lng, "gps");
+
+      // Resolve canonical geo for quality tracking
+      resolveCanonicalGeo({ lat, lng, source: "gps", precision: "gps" });
 
       // Update map viewport to user location if no custom viewport set
       const locStore = useLocationStore.getState();
