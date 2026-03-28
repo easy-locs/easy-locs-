@@ -353,9 +353,9 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 
     if (tenantId && orgId) {
       try {
-        const { data: tenant } = await supabase.from("tenants").select("tenant_user_id, email, name").eq("id", tenantId).single();
+        const tenant = await tdRepo.fetchTenantContactInfo(tenantId) as any;
         if (tenant?.tenant_user_id) {
-          await supabase.from("app_notifications").insert({
+          await tdRepo.insertAppNotificationForTenant({
             user_id: tenant.tenant_user_id,
             org_id: orgId,
             type: "info",
@@ -380,19 +380,18 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
           const emailSubject = reportType === "entry"
             ? `${t("page.inventory.email_subject_entry")} — ${propertyLabel}`
             : `${t("page.inventory.email_subject_exit")} — ${propertyLabel}`;
-          await supabase.functions.invoke("send-email", {
-            body: {
-              to: tenant.email,
-              subject: emailSubject,
-              html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-                <h2 style="color:#1a2744;text-align:center;">${t("page.inventory.email_title")}</h2>
-                <p style="color:#555;">${t("page.inventory.email_hello")} ${tenant.name || ""},</p>
-                <p style="color:#555;">${t("page.inventory.email_body").replace("{property}", propertyLabel).replace("{date}", reportDate)}</p>
-                <p style="color:#555;">${t("page.inventory.email_pdf_note")}</p>
-                <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — ${t("page.listing.powered_by_brand") || "EASY-LOCS®"}</p>
-              </div>`,
-              attachments,
-            },
+          await tdRepo.invokeSendEmail({
+            to: tenant.email,
+            subject: emailSubject,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+              <h2 style="color:#1a2744;text-align:center;">${t("page.inventory.email_title")}</h2>
+              <p style="color:#555;">${t("page.inventory.email_hello")} ${tenant.name || ""},</p>
+              <p style="color:#555;">${t("page.inventory.email_body").replace("{property}", propertyLabel).replace("{date}", reportDate)}</p>
+              <p style="color:#555;">${t("page.inventory.email_pdf_note")}</p>
+              <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — ${t("page.listing.powered_by_brand") || "EASY-LOCS®"}</p>
+            </div>`,
+            attachments,
+          });
           });
         }
       } catch {}
