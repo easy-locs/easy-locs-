@@ -232,84 +232,21 @@ const SeasonalRentals = () => {
     if (ok) resetForm();
   };
 
-    if (form.check_out <= form.check_in) {
-      toast({ title: t("page.common.error"), description: t("page.seasonal.error_dates"), variant: "destructive" });
-      return;
-    }
-
-    const bookingEmail = normalizeEmail(form.guest_email);
-    if (bookingEmail && !isValidEmail(bookingEmail)) {
-      toast({ title: t("page.common.error"), description: t("page.seasonal.error_email"), variant: "destructive" });
-      return;
-    }
-
-    const details = [
-      form.guest_address && `${t("page.seasonal.full_address")}: ${form.guest_address}`,
-      form.guest_postal_code && `${t("page.seasonal.postal_code")}: ${form.guest_postal_code}`,
-      form.guest_city && `${t("page.seasonal.city")}: ${form.guest_city}`,
-      form.guest_country && `${t("page.seasonal.country")}: ${form.guest_country}`,
-      form.identity_type !== "none" && `${t("page.seasonal.identity_doc")}: ${form.identity_type === "cni" ? t("page.seasonal.id_cni") : t("page.seasonal.id_passport")}`,
-      form.identity_number && `${t("page.seasonal.id_number")}: ${form.identity_number}`,
-    ].filter(Boolean);
-
-    const record = {
-      org_id: orgId,
-      user_id: user.id,
-      property_id: form.property_id,
-      guest_name: form.guest_name,
-      guest_email: bookingEmail,
-      guest_phone: form.guest_phone.trim(),
-      check_in: form.check_in,
-      check_out: form.check_out,
-      total_price: form.total_price,
-      cleaning_fee: form.cleaning_fee,
-      deposit_amount: form.deposit_amount,
-      notes: [form.notes.trim(), details.length ? `---\n${details.join("\n")}` : ""].filter(Boolean).join("\n"),
-    };
-
-    if (editingId) {
-      const { error } = await supabase.from("seasonal_bookings").update(record).eq("id", editingId);
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-      await notifyReservation(t("page.seasonal.modified_reservation_notif"), t("page.seasonal.modified_reservation_msg").replace("{name}", form.guest_name), bookingEmail || undefined);
-      toast({ title: t("page.seasonal.booking_modified") });
-    } else {
-      const { error } = await supabase.from("seasonal_bookings").insert({ ...record, status: "confirmed" });
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-      await notifyReservation(t("page.seasonal.new_reservation_notif"), t("page.seasonal.new_reservation_msg").replace("{name}", form.guest_name), bookingEmail || undefined);
-      toast({ title: t("page.seasonal.booking_added") });
-    }
-
-    resetForm();
-    await load();
-  };
 
   const startEdit = (b: Booking) => {
     setEditingId(b.id);
     setForm({
-      property_id: b.property_id,
-      guest_name: b.guest_name,
-      guest_email: b.guest_email,
-      guest_phone: b.guest_phone,
-      guest_address: "",
-      guest_postal_code: "",
-      guest_city: "",
-      guest_country: "France",
-      identity_type: "none",
-      identity_number: "",
-      check_in: b.check_in,
-      check_out: b.check_out,
-      total_price: b.total_price,
-      cleaning_fee: b.cleaning_fee,
-      deposit_amount: b.deposit_amount,
-      notes: b.notes,
+      property_id: b.property_id, guest_name: b.guest_name, guest_email: b.guest_email,
+      guest_phone: b.guest_phone, guest_address: "", guest_postal_code: "", guest_city: "",
+      guest_country: "France", identity_type: "none", identity_number: "",
+      check_in: b.check_in, check_out: b.check_out, total_price: b.total_price,
+      cleaning_fee: b.cleaning_fee, deposit_amount: b.deposit_amount, notes: b.notes,
     });
     setShowForm(true);
   };
 
   const remove = async (id: string) => {
-    await supabase.from("seasonal_bookings").delete().eq("id", id);
-    toast({ title: t("page.seasonal.booking_deleted") });
-    await load();
+    await deleteBooking(id);
   };
 
   const propName = (id: string) => properties.find(p => p.id === id)?.label || "—";
