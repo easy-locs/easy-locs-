@@ -34,7 +34,7 @@ export function StatusChip({ label, variant = "neutral", size = "sm", dot = true
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 border font-medium rounded-full whitespace-nowrap",
+        "inline-flex max-w-full items-center gap-1.5 border font-medium rounded-full whitespace-nowrap",
         size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs",
         variantStyles[variant],
         className,
@@ -42,7 +42,7 @@ export function StatusChip({ label, variant = "neutral", size = "sm", dot = true
     >
       {dot && !icon && <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", dotStyles[variant])} />}
       {icon && <span className="shrink-0 [&_svg]:w-3 [&_svg]:h-3">{icon}</span>}
-      <span className="truncate">{label}</span>
+      <span className="min-w-0 overflow-hidden text-ellipsis">{label}</span>
     </span>
   );
 }
