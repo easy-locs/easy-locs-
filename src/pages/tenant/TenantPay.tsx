@@ -2,8 +2,11 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { CreditCard, Loader2, ExternalLink, Home, Banknote, Building, CheckCircle } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import {
+  fetchTenantInfoForPay, fetchOrgForTenant, fetchOwnerBankForTenant,
+  fetchUnpaidRentCalls, invokeRentPayment, declareTransfer,
+  notifyOwnerOfTransfer, fetchOrgOwner,
+} from "@/repositories/tenant.repository";
 import { useSearchParams } from "react-router-dom";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
 import { useI18n } from "@/lib/i18n";
@@ -21,7 +24,7 @@ interface OwnerBankInfo {
 
 const TenantPay = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { toast } = (await import("@/hooks/use-toast")).useToast ? { toast: (await import("sonner")).toast as any } : { toast: () => {} };
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const { propertyCountry, fmt: fmtProp, L } = useTenantProperty();
