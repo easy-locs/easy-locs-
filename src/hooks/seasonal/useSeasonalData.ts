@@ -137,13 +137,13 @@ export function useSeasonalData() {
       if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
       await notifyReservation(t("page.seasonal.modified_reservation_notif"), t("page.seasonal.modified_reservation_msg").replace("{name}", record.guest_name), bookingEmail || undefined);
       toast({ title: t("page.seasonal.booking_modified") });
-      platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_UPDATED as any, { bookingId: editingId });
+      platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_UPDATED as any, { bookingId: editingId }, "seasonal");
     } else {
       const { error } = await supabase.from("seasonal_bookings").insert({ ...dbRecord, status: "confirmed" });
       if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
       await notifyReservation(t("page.seasonal.new_reservation_notif"), t("page.seasonal.new_reservation_msg").replace("{name}", record.guest_name), bookingEmail || undefined);
       toast({ title: t("page.seasonal.booking_added") });
-      platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_CREATED as any, {});
+      platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_CREATED as any, {}, "seasonal");
     }
     await load();
     return true;
@@ -152,7 +152,7 @@ export function useSeasonalData() {
   const deleteBooking = useCallback(async (id: string) => {
     await supabase.from("seasonal_bookings").delete().eq("id", id);
     toast({ title: t("page.seasonal.booking_deleted") });
-    platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_CANCELLED as any, { bookingId: id });
+    platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_CANCELLED as any, { bookingId: id }, "seasonal");
     await load();
   }, [toast, t, load]);
 
@@ -190,7 +190,7 @@ export function useSeasonalData() {
     }
     const { error } = await supabase.from("seasonal_bookings").insert(newBookings);
     if (error) throw error;
-    platformBus.emit(APP_EVENTS.SEASONAL_ICAL_SYNCED as any, { count: newBookings.length });
+    platformBus.emit(APP_EVENTS.SEASONAL_ICAL_SYNCED as any, { count: newBookings.length }, "seasonal");
     await load();
     return newBookings.length;
   }, [orgId, user, bookings, t, toast, load]);

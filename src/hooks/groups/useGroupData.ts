@@ -132,7 +132,7 @@ export function useGroupData() {
 
     await supabase.from("group_members").insert({ group_id: created.id, user_id: user.id, role: "admin" } as any);
     haptic("success");
-    platformBus.emit(APP_EVENTS.GROUP_CREATED as any, { groupId: created.id });
+    platformBus.emit(APP_EVENTS.GROUP_CREATED as any, { groupId: created.id }, "groups");
     toast.success(groupType === "channel" ? "Channel created" : groupType === "community" ? "Community created" : (t("orbit.groups.created") || "Group created"));
     await loadGroups();
 
@@ -161,7 +161,7 @@ export function useGroupData() {
         created_at: data.created_at, sender_name: "You", is_pinned: false,
       } as GroupMessage]);
       await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", activeGroup.id);
-      platformBus.emit(APP_EVENTS.GROUP_MESSAGE_SENT as any, { groupId: activeGroup.id });
+      platformBus.emit(APP_EVENTS.GROUP_MESSAGE_SENT as any, { groupId: activeGroup.id }, "groups");
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
       return true;
     }
