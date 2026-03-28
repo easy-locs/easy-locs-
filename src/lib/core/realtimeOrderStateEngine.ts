@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { assignMatchedDriver } from "./driverMatchingEngine";
 import { releaseOrderEscrow } from "./orderEscrowEngine";
+import { setOrderStatusWithEvents } from "@/lib/orders/order-status-bridge";
 
 export const ORDER_STATE_FLOW = [
   "draft",
@@ -39,15 +40,12 @@ export async function moveOrderToNextState(orderId: string) {
     nextStatus = "driver_search";
   }
 
-  const { error: updateErr } = await supabase
-    .from("orders")
-    .update({
-      status: nextStatus,
-      updated_at: new Date().toISOString(),
-    } as any)
-    .eq("id", orderId);
-
-  if (updateErr) throw updateErr;
+  // Use the bridge for full event propagation
+  await setOrderStatusWithEvents({
+    orderId,
+    status: nextStatus,
+    actorType: "system",
+  });
 
   if (nextStatus === "driver_search") {
     await assignMatchedDriver({
@@ -72,14 +70,11 @@ export async function moveOrderToNextState(orderId: string) {
 }
 
 export async function setSpecificOrderState(orderId: string, nextStatus: string) {
-  const { error } = await supabase
-    .from("orders")
-    .update({
-      status: nextStatus,
-      updated_at: new Date().toISOString(),
-    } as any)
-    .eq("id", orderId);
-
-  if (error) throw error;
+  // Use the bridge for full event propagation
+  await setOrderStatusWithEvents({
+    orderId,
+    status: nextStatus,
+    actorType: "system",
+  });
   return { orderId, nextStatus };
 }

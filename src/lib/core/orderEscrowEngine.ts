@@ -1,4 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { eventBus } from "@/lib/core/event-bus";
+import { APP_EVENTS } from "@/lib/platform/events";
+import { notifyWalletCredit } from "@/lib/engines/notification-event-dispatcher";
 
 export type CreateEscrowInput = {
   orderId: string;
@@ -42,6 +46,16 @@ export async function createOrderEscrow(input: CreateEscrowInput) {
     .eq("id", input.orderId);
 
   if (orderErr) throw orderErr;
+
+  // Emit commerce payment captured
+  void eventBus.emit("commerce.payment.captured", {
+    orderId: input.orderId,
+    amount: input.amount,
+    currency,
+    stage: "escrow_hold",
+  });
+
+  platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, { userId: input.customerUserId }, "escrow");
 
   return data;
 }
@@ -130,6 +144,33 @@ export async function releaseOrderEscrow(params: {
 
   if (orderErr) throw orderErr;
 
+  // 5. Emit settlement events
+  void eventBus.emit("commerce.payment.settled", {
+    orderId: params.orderId,
+    totalAmount,
+    platformAmount,
+    storeAmount,
+    driverAmount,
+    currency,
+    stage: "settled",
+  });
+
+  // 6. Wallet balance refresh for merchant
+  if (params.merchantUserId) {
+    platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, { userId: params.merchantUserId }, "escrow");
+    notifyWalletCredit(params.merchantUserId, storeAmount, currency, `Order ${params.orderId.slice(0, 8)} settled`).catch(console.error);
+  }
+
+  // 7. Wallet balance refresh for driver
+  if (params.driverUserId) {
+    platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, { userId: params.driverUserId }, "escrow");
+    notifyWalletCredit(params.driverUserId, driverAmount, currency, `Delivery ${params.orderId.slice(0, 8)} completed`).catch(console.error);
+  }
+
+  // 8. Dashboard refresh
+  platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId: params.orderId }, "escrow");
+  platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, {}, "escrow");
+
   return { totalAmount, platformAmount, storeAmount, driverAmount };
 }
 
@@ -171,6 +212,21 @@ export async function refundOrderEscrow(params: {
     .eq("id", params.orderId);
 
   if (orderErr) throw orderErr;
+
+  // Emit refund/reverse events
+  void eventBus.emit("commerce.payment.reversed", {
+    orderId: params.orderId,
+    amount: params.amount,
+    currency,
+    reason: params.reason,
+    stage: "reversed",
+  });
+
+  platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, { userId: params.customerUserId }, "escrow");
+  platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId: params.orderId }, "escrow");
+  platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, { userId: params.customerUserId }, "escrow");
+
+  notifyWalletCredit(params.customerUserId, params.amount, currency, `Refund for order ${params.orderId.slice(0, 8)}`).catch(console.error);
 
   return data;
 }
