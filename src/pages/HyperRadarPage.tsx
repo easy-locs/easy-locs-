@@ -45,7 +45,8 @@ export default function HyperRadarPage() {
   const [panelSnap, setPanelSnap] = useState<"closed" | "peek" | "half">("peek");
   const [zoneClick, setZoneClick] = useState<{ lat: number; lng: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showWeatherLayer, setShowWeatherLayer] = useState(true);
+  const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
+  const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
   const weather = useLiveWeatherStation({ lat: location?.lat, lng: location?.lng });
 
   /* ── Performance: limit visible pins ── */
