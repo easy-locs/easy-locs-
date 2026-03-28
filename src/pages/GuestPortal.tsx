@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  fetchGuestPortalData, createGuestOrder, notifyOrgOwner,
+  sendGuestEmail, fetchGuestMessages,
+} from "@/repositories/guest-portal.repository";
 import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
@@ -31,57 +34,23 @@ const GuestPortal = () => {
 
   useEffect(() => { setLocale(locale); }, [locale, setLocale]);
 
-  const loadMessages = useCallback(async (orgId: string, guestEmail: string) => {
-    // Load guest messages from booking_requests messages or concierge_orders notes
-    const { data } = await (supabase as any)
-      .from("app_notifications")
-      .select("*")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
-      .order("created_at", { ascending: true })
-      .limit(50);
-    setMessages(data || []);
+  const loadMessages = useCallback(async () => {
+    const msgs = await fetchGuestMessages("");
+    setMessages(msgs);
   }, []);
 
   useEffect(() => {
     const load = async () => {
       if (!bookingId) { setNotFound(true); setLoading(false); return; }
-
-      // Try seasonal_bookings first
-      const { data: b } = await supabase
-        .from("seasonal_bookings" as any)
-        .select("*")
-        .eq("id", bookingId)
-        .maybeSingle();
-
-      let bookingData: any = b;
-      let source = "seasonal";
-
-      if (!b) {
-        const { data: br } = await supabase
-          .from("booking_requests")
-          .select("*")
-          .eq("id", bookingId)
-          .maybeSingle() as any;
-        if (!br) { setNotFound(true); setLoading(false); return; }
-        bookingData = br;
-        source = "request";
-      }
-
-      setBooking({ ...bookingData, source });
-
-      const [{ data: p }, { data: svc }, { data: act }, { data: orgData }] = await Promise.all([
-        supabase.from("properties").select("*").eq("id", bookingData.property_id).maybeSingle(),
-        supabase.from("concierge_services_public" as any).select("*").eq("org_id", bookingData.org_id).order("sort_order"),
-        supabase.from("activities_public" as any).select("*").eq("org_id", bookingData.org_id).order("sort_order"),
-        supabase.from("orgs").select("name, email, phone, logo_url, brand_name").eq("id", bookingData.org_id).maybeSingle(),
-      ]);
-      setProperty(p);
-      setServices(svc || []);
-      setActivities(act || []);
-      setOrg(orgData);
-
-      if (bookingData.guest_email && bookingData.org_id) {
-        await loadMessages(bookingData.org_id, bookingData.guest_email);
+      const result = await fetchGuestPortalData(bookingId);
+      if (!result) { setNotFound(true); setLoading(false); return; }
+      setBooking(result.booking);
+      setProperty(result.property);
+      setServices(result.services);
+      setActivities(result.activities);
+      setOrg(result.org);
+      if (result.booking.guest_email && result.booking.org_id) {
+        await loadMessages();
       }
       setLoading(false);
     };
@@ -104,42 +73,15 @@ const GuestPortal = () => {
     if (!booking || orderingServiceId) return;
     setOrderingServiceId(service.id);
     try {
-      const { error } = await supabase.from("concierge_orders").insert({
-        org_id: booking.org_id,
-        service_id: service.id,
-        property_id: booking.property_id,
-        booking_id: booking.id,
-        guest_name: booking.guest_name,
-        guest_email: booking.guest_email || "",
-        guest_phone: booking.guest_phone || "",
-        quantity: 1,
-        unit_price: service.price,
-        total_price: service.price,
-        currency: service.currency || "EUR",
-        scheduled_at: booking.check_in,
-        status: "pending",
-        payment_status: "unpaid",
-        notes: `Requested via Guest Portal for booking ${booking.id}`,
-      } as any);
-      if (error) throw error;
-
-      // Notify the owner
-      await (supabase as any).from("app_notifications").insert({
-        user_id: (await supabase.from("orgs").select("owner_user_id").eq("id", booking.org_id).single()).data?.owner_user_id || "",
-        scope: "global", category: "service_request",
-        title: "🛎️ New service request",
-        body: `${booking.guest_name} requested "${service.title}" (${service.price}${service.currency || "€"})`,
-        severity: "info", route: "/dashboard/activities",
-      });
-
+      await createGuestOrder(booking, service);
+      await notifyOrgOwner(booking.org_id, "🛎️ New service request",
+        `${booking.guest_name} requested "${service.title}" (${service.price}${service.currency || "€"})`,
+        "service_request", "/dashboard/activities");
       setOrderSuccess(service.id);
       setTimeout(() => setOrderSuccess(null), 3000);
       toast.success(`"${service.title}" requested successfully!`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to request service");
-    } finally {
-      setOrderingServiceId(null);
-    }
+    } catch (err: any) { toast.error(err.message || "Failed to request service"); }
+    finally { setOrderingServiceId(null); }
   };
 
   // Book an activity
@@ -147,89 +89,28 @@ const GuestPortal = () => {
     if (!booking || orderingActivityId) return;
     setOrderingActivityId(activity.id);
     try {
-      const { error } = await supabase.from("concierge_orders").insert({
-        org_id: booking.org_id,
-        service_id: activity.id,
-        property_id: booking.property_id,
-        booking_id: booking.id,
-        guest_name: booking.guest_name,
-        guest_email: booking.guest_email || "",
-        guest_phone: booking.guest_phone || "",
-        quantity: 1,
-        unit_price: activity.price,
-        total_price: activity.price,
-        currency: activity.currency || "EUR",
-        status: "pending",
-        payment_status: "unpaid",
-        notes: `Activity booking via Guest Portal: ${activity.title}`,
-      } as any);
-      if (error) throw error;
-
-      await (supabase as any).from("app_notifications").insert({
-        user_id: (await supabase.from("orgs").select("owner_user_id").eq("id", booking.org_id).single()).data?.owner_user_id || "",
-        scope: "global", category: "activity_booking",
-        title: "🎯 New activity booking",
-        body: `${booking.guest_name} wants to book "${activity.title}" (${activity.price}${activity.currency || "€"})`,
-        severity: "info", route: "/dashboard/activities",
-      });
-
+      await createGuestOrder(booking, activity);
+      await notifyOrgOwner(booking.org_id, "🎯 New activity booking",
+        `${booking.guest_name} wants to book "${activity.title}" (${activity.price}${activity.currency || "€"})`,
+        "activity_booking", "/dashboard/activities");
       setOrderSuccess(activity.id);
       setTimeout(() => setOrderSuccess(null), 3000);
       toast.success(`"${activity.title}" booked successfully!`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to book activity");
-    } finally {
-      setOrderingActivityId(null);
-    }
+    } catch (err: any) { toast.error(err.message || "Failed to book activity"); }
+    finally { setOrderingActivityId(null); }
   };
 
-  // Send guest message
   const sendGuestMessage = async () => {
     if (!message.trim() || !booking || sendingMessage) return;
     setSendingMessage(true);
     try {
-      // Send via email to the org owner
-      await supabase.functions.invoke("send-email", {
-        body: {
-          to: org?.email || "",
-          subject: `💬 Message from ${booking.guest_name}`,
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-            <h2 style="color:#1a1a1a;">💬 Guest Message</h2>
-            <p style="background:#f5f5f5;padding:16px;border-radius:8px;color:#333;font-size:15px;">${message}</p>
-            <p style="color:#888;font-size:13px;margin-top:12px;">From: ${booking.guest_name} (${booking.guest_email})<br/>
-            Booking: ${booking.check_in} → ${booking.check_out}<br/>
-            Property: ${property?.label || "—"}</p>
-            <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">EASY-LOCS®</p>
-          </div>`,
-        },
-      });
-
-      // Create in-app notification for owner
-      const { data: orgOwner } = await supabase.from("orgs").select("owner_user_id").eq("id", booking.org_id).single();
-      if (orgOwner?.owner_user_id) {
-        await (supabase as any).from("app_notifications").insert({
-          user_id: orgOwner.owner_user_id,
-          scope: "global", category: "guest_message",
-          title: `💬 ${booking.guest_name}`,
-          body: message.slice(0, 200),
-          severity: "info", route: "/dashboard/communication",
-        });
-      }
-
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        created_at: new Date().toISOString(),
-        title: `💬 You`,
-        message: message,
-        type: "guest",
-      }]);
+      await sendGuestEmail(org?.email || "", booking.guest_name, booking.guest_email, message, property?.label || "—", booking.check_in, booking.check_out);
+      await notifyOrgOwner(booking.org_id, `💬 ${booking.guest_name}`, message.slice(0, 200), "guest_message", "/dashboard/communication");
+      setMessages(prev => [...prev, { id: Date.now().toString(), created_at: new Date().toISOString(), title: `💬 You`, message, type: "guest" }]);
       setMessage("");
       toast.success("Message sent!");
-    } catch (err: any) {
-      toast.error("Failed to send message");
-    } finally {
-      setSendingMessage(false);
-    }
+    } catch { toast.error("Failed to send message"); }
+    finally { setSendingMessage(false); }
   };
 
   if (loading) {
