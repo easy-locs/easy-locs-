@@ -21,6 +21,7 @@ type ThreadLike = {
   v2ConversationId?: string | null;
   peerUserId?: string | null;
   peerOrbitId?: string | null;
+  threadId?: string | null;
 };
 
 type ChatMessage = {
