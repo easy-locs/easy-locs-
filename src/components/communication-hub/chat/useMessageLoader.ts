@@ -189,6 +189,7 @@ export function useMessageLoader({
     if (!thread?.v2ConversationId) return;
 
     const conversationId = thread.v2ConversationId;
+    console.log("%c[TRACE][REALTIME] STEP 6 — subscribing to channel", "color:magenta;font-weight:bold", { conversationId, channel: `rt:v2:${conversationId}` });
 
     const channel = supabase
       .channel(`rt:v2:${conversationId}`)
