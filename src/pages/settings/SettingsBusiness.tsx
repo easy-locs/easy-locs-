@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Building2, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as settingsRepo from "@/repositories/settings.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
@@ -22,7 +22,7 @@ export default function SettingsBusiness() {
 
   useEffect(() => {
     if (!orgId) return;
-    supabase.from("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url").eq("id", orgId).single().then(({ data }) => {
+    settingsRepo.fetchOrg(orgId).then((data) => {
       if (data) setOrg({
         name: data.name || "", address: (data as any).address || "", postal_code: (data as any).postal_code || "",
         city: (data as any).city || "", phone: (data as any).phone || "", siret: (data as any).siret || "",
@@ -34,10 +34,10 @@ export default function SettingsBusiness() {
   const saveOrg = async () => {
     if (!orgId) return;
     setSaving(true);
-    await supabase.from("orgs").update({
+    await settingsRepo.updateOrg(orgId, {
       name: org.name, address: org.address, postal_code: org.postal_code,
       city: org.city, phone: org.phone, siret: org.siret, email: org.email,
-    } as any).eq("id", orgId);
+    });
     toast({ title: t("page.settings.org_updated") || "Organization updated" });
     setSaving(false);
   };
@@ -46,16 +46,13 @@ export default function SettingsBusiness() {
     const file = e.target.files?.[0];
     if (!file || !orgId) return;
     setUploading(true);
-    const path = `${orgId}/logo-${Date.now()}.${file.name.split(".").pop()}`;
-    const { error } = await supabase.storage.from("rental-docs").upload(path, file, { upsert: true });
-    if (error) {
-      toast({ title: "Upload error", description: error.message, variant: "destructive" });
-    } else {
-      const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
-      const logoUrl = signedData?.signedUrl || path;
-      await supabase.from("orgs").update({ logo_url: logoUrl } as any).eq("id", orgId);
+    try {
+      const logoUrl = await settingsRepo.uploadLogo(orgId, file);
+      await settingsRepo.updateOrg(orgId, { logo_url: logoUrl });
       setOrg(prev => ({ ...prev, logo_url: logoUrl }));
       toast({ title: "Logo updated" });
+    } catch (err: any) {
+      toast({ title: "Upload error", description: err.message, variant: "destructive" });
     }
     setUploading(false);
   };
