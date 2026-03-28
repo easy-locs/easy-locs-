@@ -131,7 +131,6 @@ const TenantPay = () => {
     } catch (err: any) {
       toast({ title: t("page.common.error") || "Error", description: err.message, variant: "destructive" });
     }
-    }
   };
 
   const handlePay = async (rentCallId: string) => {
