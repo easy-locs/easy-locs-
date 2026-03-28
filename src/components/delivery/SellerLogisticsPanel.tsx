@@ -1,127 +1,26 @@
 /**
- * SellerLogisticsPanel — Seller delivery management: create missions, track, assign drivers.
- * PASS70-C: Seller Logistics UI
+ * SellerLogisticsPanel — THIN ORCHESTRATOR for delivery management.
+ * Composes: CreateJobForm, DriverSearchPanel, logistics-tab-registry.
+ * All sub-panels are lazy-loaded via the registry.
  */
-import { useState } from "react";
-import DeliveryAnalyticsDashboard from "@/components/delivery/DeliveryAnalyticsDashboard";
-import DeliveryDisputeFlow from "@/components/delivery/DeliveryDisputeFlow";
-import BatchDispatchPanel from "@/components/delivery/BatchDispatchPanel";
-import DeliveryLiveTracker from "@/components/delivery/DeliveryLiveTracker";
-import ScheduledDeliveryPanel from "@/components/delivery/ScheduledDeliveryPanel";
-import DeliveryHistoryExport from "@/components/delivery/DeliveryHistoryExport";
-import DriverOnboardingFlow from "@/components/delivery/DriverOnboardingFlow";
-import MultiStopRoutePanel from "@/components/delivery/MultiStopRoutePanel";
-import SellerAnalyticsDashboard from "@/components/delivery/SellerAnalyticsDashboard";
-import DriverWalletPanel from "@/components/delivery/DriverWalletPanel";
-import GeofencingPanel from "@/components/delivery/GeofencingPanel";
-import InMissionChat from "@/components/delivery/InMissionChat";
-import AdminFleetDashboard from "@/components/delivery/AdminFleetDashboard";
-import DriverReputationPanel from "@/components/delivery/DriverReputationPanel";
-import RouteOptimizationEngine from "@/components/delivery/RouteOptimizationEngine";
-import BuyerDeliveryDashboard from "@/components/delivery/BuyerDeliveryDashboard";
-import DeliveryInvoicePanel from "@/components/delivery/DeliveryInvoicePanel";
-import DeliverySLAPanel from "@/components/delivery/DeliverySLAPanel";
-import MultiDropBatchPanel from "@/components/delivery/MultiDropBatchPanel";
-import DriverOnboardingWizard from "@/components/delivery/DriverOnboardingWizard";
-import DeliveryAnalyticsReports from "@/components/delivery/DeliveryAnalyticsReports";
-import FleetManagementDashboard from "@/components/delivery/FleetManagementDashboard";
-import AutomatedDispatchRules from "@/components/delivery/AutomatedDispatchRules";
-import CustomerTrackingPage from "@/components/delivery/CustomerTrackingPage";
-import DriverEarningsPayroll from "@/components/delivery/DriverEarningsPayroll";
-import DynamicPricingSurge from "@/components/delivery/DynamicPricingSurge";
-import DriverShiftScheduling from "@/components/delivery/DriverShiftScheduling";
-import AdminModerationPanel from "@/components/delivery/AdminModerationPanel";
-import DeliveryEventNotifications from "@/components/delivery/DeliveryEventNotifications";
-import MultiCurrencyDelivery from "@/components/delivery/MultiCurrencyDelivery";
-import RouteOptimizationPanel from "@/components/delivery/RouteOptimizationPanel";
-import DeliveryInsurancePanel from "@/components/delivery/DeliveryInsurancePanel";
-import DeliveryAdvancedAnalytics from "@/components/delivery/DeliveryAdvancedAnalytics";
-import DriverReferralProgram from "@/components/delivery/DriverReferralProgram";
-import DeliverySupportBot from "@/components/delivery/DeliverySupportBot";
-import ReturnsReverseLogistics from "@/components/delivery/ReturnsReverseLogistics";
-import DeliverySlotBooking from "@/components/delivery/DeliverySlotBooking";
-import FleetManagementHub from "@/components/delivery/FleetManagementHub";
-import DeliveryGamification from "@/components/delivery/DeliveryGamification";
-import SmartNotificationsEngine from "@/components/delivery/SmartNotificationsEngine";
-import DeliveryAPIWebhooks from "@/components/delivery/DeliveryAPIWebhooks";
-import ZoneBasedPricing from "@/components/delivery/ZoneBasedPricing";
-import CustomerWalletLoyalty from "@/components/delivery/CustomerWalletLoyalty";
-import ComplianceDashboard from "@/components/delivery/ComplianceDashboard";
-import AIPredictivePlanning from "@/components/delivery/AIPredictivePlanning";
-import MultiStopRoutePlanner from "@/components/delivery/MultiStopRoutePlanner";
-import ReturnsManagement from "@/components/delivery/ReturnsManagement";
-import DeliverySchedulingCalendar from "@/components/delivery/DeliverySchedulingCalendar";
-import DriverOnboardingPortal from "@/components/delivery/DriverOnboardingPortal";
-import PromoCouponsEngine from "@/components/delivery/PromoCouponsEngine";
-import LiveDeliveryChat from "@/components/delivery/LiveDeliveryChat";
-import WarehouseManagement from "@/components/delivery/WarehouseManagement";
-import GreenDeliveryDashboard from "@/components/delivery/GreenDeliveryDashboard";
-import FleetManagementSystem from "@/components/delivery/FleetManagementSystem";
-import OrderBundlingEngine from "@/components/delivery/OrderBundlingEngine";
-import CustomerTrackingPortal from "@/components/delivery/CustomerTrackingPortal";
-import SellerRatingSystem from "@/components/delivery/SellerRatingSystem";
-import AddressBookManager from "@/components/delivery/AddressBookManager";
-import DeliveryKPIDashboard from "@/components/delivery/DeliveryKPIDashboard";
-import MaintenanceScheduler from "@/components/delivery/MaintenanceScheduler";
-import DriverOnboardingComplete from "@/components/delivery/DriverOnboardingComplete";
-import DeliveryNotificationCenter from "@/components/delivery/DeliveryNotificationCenter";
-import SellerPayoutReports from "@/components/delivery/SellerPayoutReports";
-import DeliveryZonesManager from "@/components/delivery/DeliveryZonesManager";
-import ProofOfDeliveryPlus from "@/components/delivery/ProofOfDeliveryPlus";
-import DriverAnalyticsDashboard from "@/components/delivery/DriverAnalyticsDashboard";
-import SLAAlertSystem from "@/components/delivery/SLAAlertSystem";
-import DriverJobMarketplace from "@/components/delivery/DriverJobMarketplace";
-import FleetGPSTracker from "@/components/delivery/FleetGPSTracker";
-import DeliveryInsuranceClaims from "@/components/delivery/DeliveryInsuranceClaims";
-import DriverShiftScheduler from "@/components/delivery/DriverShiftScheduler";
-import CustomerLiveTracking from "@/components/delivery/CustomerLiveTracking";
-import AdminCommandCenter from "@/components/delivery/AdminCommandCenter";
-import AutomatedInvoicingEngine from "@/components/delivery/AutomatedInvoicingEngine";
-import CustomerRewardsProgram from "@/components/delivery/CustomerRewardsProgram";
-import MultiChannelDriverComms from "@/components/delivery/MultiChannelDriverComms";
-import DeliveryBIDashboard from "@/components/delivery/DeliveryBIDashboard";
-import DriverOnboardingRegistration from "@/components/delivery/DriverOnboardingRegistration";
-import SLAPerformanceMonitor from "@/components/delivery/SLAPerformanceMonitor";
-import DeliveryNotificationHub from "@/components/delivery/DeliveryNotificationHub";
-import AdvancedReturnsHub from "@/components/delivery/AdvancedReturnsHub";
-import FinancialControlCenter from "@/components/delivery/FinancialControlCenter";
-import IncidentManagement from "@/components/delivery/IncidentManagement";
-import SellerPartnerPortal from "@/components/delivery/SellerPartnerPortal";
-import SmartCapacityPlanning from "@/components/delivery/SmartCapacityPlanning";
-import MultiVendorMarketplace from "@/components/delivery/MultiVendorMarketplace";
-import QualityAssuranceSystem from "@/components/delivery/QualityAssuranceSystem";
-import CustomerExperienceHub from "@/components/delivery/CustomerExperienceHub";
-import EVFleetIntelligence from "@/components/delivery/EVFleetIntelligence";
-import FranchiseManagement from "@/components/delivery/FranchiseManagement";
-import CrossBorderLogistics from "@/components/delivery/CrossBorderLogistics";
-import RealTimeDataHub from "@/components/delivery/RealTimeDataHub";
-import AIDispatchBrain from "@/components/delivery/AIDispatchBrain";
-import InsuranceClaims from "@/components/delivery/InsuranceClaims";
-import FleetMaintenanceAI from "@/components/delivery/FleetMaintenanceAI";
-import RegulatoryCompliance from "@/components/delivery/RegulatoryCompliance";
-import DroneDelivery from "@/components/delivery/DroneDelivery";
-import BlockchainTraceability from "@/components/delivery/BlockchainTraceability";
-import DriverTrainingAcademy from "@/components/delivery/DriverTrainingAcademy";
-import CrowdDeliveryNetwork from "@/components/delivery/CrowdDeliveryNetwork";
-import SmartLockerNetwork from "@/components/delivery/SmartLockerNetwork";
-import CarbonOffsetEngine from "@/components/delivery/CarbonOffsetEngine";
-import MultiModalTransport from "@/components/delivery/MultiModalTransport";
-import DeliveryMarketplace from "@/components/delivery/DeliveryMarketplace";
-import PackageSizePicker from "@/components/delivery/PackageSizePicker";
-import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
+import { useState, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Plus, Package, Truck, MapPin, Clock, CheckCircle2,
-  XCircle, ChevronRight, Users, TrendingUp, Search,
-  Send, Star, AlertTriangle, MessageCircle,
+  Plus, Package, Truck, MapPin,
+  XCircle, Users, MessageCircle, AlertTriangle,
 } from "lucide-react";
-import { useSellerDelivery, type CreateJobPayload, type NearbyDriver } from "@/hooks/useSellerDelivery";
+import { useSellerDelivery, type CreateJobPayload } from "@/hooks/useSellerDelivery";
+import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+
+import CreateJobForm from "./CreateJobForm";
+import DriverSearchPanel from "./DriverSearchPanel";
+import DeliveryDisputeFlow from "./DeliveryDisputeFlow";
+import DeliveryLiveTracker from "./DeliveryLiveTracker";
+import InMissionChat from "./InMissionChat";
+import { LOGISTICS_TAB_REGISTRY, CORE_TAB_LABELS } from "./logistics-tab-registry";
 
 const STATUS_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
   pending: { label: "En attente", emoji: "⏳", color: "hsl(var(--warning))" },
@@ -132,207 +31,18 @@ const STATUS_LABELS: Record<string, { label: string; emoji: string; color: strin
   cancelled: { label: "Annulé", emoji: "❌", color: "hsl(var(--destructive))" },
 };
 
-function CreateJobForm({ onSubmit, onCancel }: { onSubmit: (p: CreateJobPayload) => Promise<void>; onCancel: () => void }) {
-  const [form, setForm] = useState<CreateJobPayload>({
-    pickup_address: "", dropoff_address: "", package_description: "",
-    weight_kg: 1, priority: "standard", delivery_fee: 5, currency: "EUR", notes: "",
-    package_size: "medium", pricing_mode: "fixed",
-  });
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleSubmit = async () => {
-    if (!form.pickup_address || !form.dropoff_address) { toast.error("Adresses requises"); return; }
-    setSubmitting(true);
-    try { await onSubmit(form); toast.success("Mission créée !"); onCancel(); }
-    catch (e: any) { toast.error(e.message || "Erreur"); }
-    finally { setSubmitting(false); }
-  };
-
-  const set = (k: keyof CreateJobPayload, v: any) => setForm(p => ({ ...p, [k]: v }));
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      className="rounded-xl p-4 space-y-3"
-      style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}
-    >
-      <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: "hsl(var(--hud-text))" }}>
-        <Plus className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} /> Nouvelle mission
-      </h3>
-
-      <div className="space-y-2.5">
-        <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Adresse de retrait *</Label>
-          <Input value={form.pickup_address} onChange={e => set("pickup_address", e.target.value)}
-            placeholder="123 Rue du Commerce, Paris"
-            className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-        </div>
-        <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Adresse de livraison *</Label>
-          <Input value={form.dropoff_address} onChange={e => set("dropoff_address", e.target.value)}
-            placeholder="45 Avenue de la Liberté, Lyon"
-            className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Description colis</Label>
-            <Input value={form.package_description} onChange={e => set("package_description", e.target.value)}
-              placeholder="Carton 30x20"
-              className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-          </div>
-          <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Poids (kg)</Label>
-            <Input type="number" value={form.weight_kg} onChange={e => set("weight_kg", +e.target.value)}
-              className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-          </div>
-        </div>
-
-        {/* Package size picker — PASS 182 */}
-        <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Taille du colis</Label>
-          <div className="mt-1">
-            <PackageSizePicker value={form.package_size || "medium"} onChange={v => set("package_size", v)} />
-          </div>
-        </div>
-
-        {/* Pricing mode — PASS 182 */}
-        <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Mode tarifaire</Label>
-          <div className="grid grid-cols-2 gap-2 mt-1">
-            <button type="button" onClick={() => set("pricing_mode", "fixed")}
-              className="flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 text-xs font-semibold transition-all min-h-[40px]"
-              style={{
-                borderColor: form.pricing_mode === "fixed" ? "hsl(var(--accent))" : "hsl(var(--hud-border) / 0.15)",
-                background: form.pricing_mode === "fixed" ? "hsl(var(--accent) / 0.1)" : "transparent",
-                color: form.pricing_mode === "fixed" ? "hsl(var(--accent))" : "hsl(var(--hud-text-dim))",
-              }}>
-              📦 Prix fixe
-            </button>
-            <button type="button" onClick={() => set("pricing_mode", "progressive")}
-              className="flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 text-xs font-semibold transition-all min-h-[40px]"
-              style={{
-                borderColor: form.pricing_mode === "progressive" ? "hsl(var(--accent))" : "hsl(var(--hud-border) / 0.15)",
-                background: form.pricing_mode === "progressive" ? "hsl(var(--accent) / 0.1)" : "transparent",
-                color: form.pricing_mode === "progressive" ? "hsl(var(--accent))" : "hsl(var(--hud-text-dim))",
-              }}>
-              📍 Par km
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Priorité</Label>
-            <select value={form.priority} onChange={e => set("priority", e.target.value)}
-              className="w-full h-9 text-xs mt-1 rounded-md px-2"
-              style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", border: "1px solid" }}>
-              <option value="standard">🟢 Standard</option>
-              <option value="express">🟠 Express</option>
-              <option value="urgent">🔴 Urgent</option>
-            </select>
-          </div>
-          <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais livraison (€)</Label>
-            <Input type="number" step="0.5" value={form.delivery_fee} onChange={e => set("delivery_fee", +e.target.value)}
-              className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Notes</Label>
-          <Textarea value={form.notes} onChange={e => set("notes", e.target.value)}
-            placeholder="Instructions spéciales…" rows={2}
-            className="text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-        </div>
-      </div>
-
-      <div className="flex gap-2 pt-1">
-        <Button size="sm" className="flex-1 text-xs h-9" onClick={handleSubmit} disabled={submitting}
-          style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
-          <Send className="h-3.5 w-3.5 mr-1" /> {submitting ? "Création…" : "Créer la mission"}
-        </Button>
-        <Button size="sm" variant="outline" className="text-xs h-9" onClick={onCancel}
-          style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text-dim))" }}>
-          Annuler
-        </Button>
-      </div>
-    </motion.div>
-  );
-}
-
-function DriverSearchPanel({ jobId, onAssign, onClose }: { jobId: string; onAssign: (driverId: string) => Promise<void>; onClose: () => void }) {
-  const { findDrivers } = useSellerDelivery();
-  const [drivers, setDrivers] = useState<NearbyDriver[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [searched, setSearched] = useState(false);
-
-  const handleSearch = async () => {
-    setSearching(true);
-    try {
-      const result = await findDrivers(jobId);
-      setDrivers(result);
-      setSearched(true);
-      if (result.length === 0) toast("Aucun chauffeur disponible à proximité");
-    } catch { toast.error("Erreur de recherche"); }
-    finally { setSearching(false); }
-  };
-
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="space-y-2 pt-2">
-      <div className="flex gap-2">
-        <Button size="sm" className="flex-1 text-xs h-8" onClick={handleSearch} disabled={searching}
-          style={{ background: "hsl(var(--info) / 0.15)", color: "hsl(var(--info))" }}>
-          <Search className="h-3 w-3 mr-1" /> {searching ? "Recherche…" : "Chercher chauffeurs"}
-        </Button>
-        <Button size="sm" variant="ghost" className="text-xs h-8" onClick={onClose}
-          style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>✕</Button>
-      </div>
-
-      {searched && drivers.length === 0 && (
-        <p className="text-[10px] text-center py-3" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-          Aucun chauffeur trouvé dans un rayon de 15 km
-        </p>
-      )}
-
-      {drivers.map(d => (
-        <div key={d.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
-          style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-          <div className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: "hsl(var(--info) / 0.1)" }}>
-            <Truck className="h-3.5 w-3.5" style={{ color: "hsl(var(--info))" }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
-              {d.vehicle_type} • {d.distance_km} km
-            </p>
-            <div className="flex items-center gap-2">
-              {d.avg_rating && <span className="text-[9px]" style={{ color: "hsl(var(--warning))" }}>⭐ {d.avg_rating.toFixed(1)}</span>}
-              {d.total_completed != null && <span className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{d.total_completed} livraisons</span>}
-            </div>
-          </div>
-          <Button size="sm" className="text-[10px] h-7 px-3" onClick={() => onAssign(d.user_id)}
-            style={{ background: "hsl(var(--success))", color: "#fff" }}>
-            Assigner
-          </Button>
-        </div>
-      ))}
-    </motion.div>
-  );
-}
-
 export default function SellerLogisticsPanel() {
   const { jobs, loading, metrics, createJob, assignDriver, cancelJob } = useSellerDelivery();
-  useDeliveryNotifications(); // PASS81-P: activate push notifications
+  useDeliveryNotifications();
   const [showCreate, setShowCreate] = useState(false);
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning" | "route-planner" | "returns-mgmt" | "schedule-cal" | "driver-portal" | "promo-coupons" | "live-chat" | "warehouse" | "green-delivery" | "fleet-system" | "order-bundle" | "tracking-portal" | "seller-rating" | "address-book" | "delivery-kpi" | "maint-sched" | "driver-onboard" | "notif-center" | "payout-reports" | "zones-mgr" | "proof-delivery" | "driver-analytics" | "sla-alerts" | "job-marketplace" | "fleet-gps" | "insurance-claims" | "shift-scheduler" | "live-tracking" | "command-center" | "auto-invoicing" | "rewards" | "driver-comms" | "bi-dashboard" | "driver-registration" | "sla-monitor" | "notif-hub" | "adv-returns" | "finance-ctrl" | "incidents" | "seller-portal" | "capacity" | "multi-vendor" | "quality" | "cx-hub" | "ev-fleet" | "franchise" | "cross-border" | "data-hub" | "ai-dispatch" | "insur-claims" | "maint-ai" | "regulatory" | "drone" | "blockchain" | "training" | "crowd" | "smart-lockers" | "carbon-offset" | "multimodal" | "delivery-mkt">("all");
   const [chatJobId, setChatJobId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<string>("all");
+
+  const orgId = jobs[0]?.org_id || "";
+  const registryEntry = LOGISTICS_TAB_REGISTRY[filter];
 
   const filteredJobs = jobs.filter(j => {
     if (filter === "active") return ["pending", "assigned", "accepted", "in_progress"].includes(j.status);
@@ -351,6 +61,10 @@ export default function SellerLogisticsPanel() {
     try { await cancelJob(jobId, "seller_cancelled"); toast("Mission annulée"); }
     catch { toast.error("Erreur"); }
   };
+
+  // All tab keys for the filter bar
+  const allTabKeys = ["all", "active", "completed", ...Object.keys(LOGISTICS_TAB_REGISTRY)];
+  const getTabLabel = (k: string) => CORE_TAB_LABELS[k] || LOGISTICS_TAB_REGISTRY[k]?.label || k;
 
   return (
     <div className="space-y-4">
@@ -373,11 +87,7 @@ export default function SellerLogisticsPanel() {
       {/* Create button */}
       <AnimatePresence mode="wait">
         {showCreate ? (
-          <CreateJobForm
-            key="form"
-            onSubmit={createJob}
-            onCancel={() => setShowCreate(false)}
-          />
+          <CreateJobForm key="form" onSubmit={createJob} onCancel={() => setShowCreate(false)} />
         ) : (
           <motion.div key="btn">
             <Button
@@ -393,396 +103,132 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "route-planner", "scheduled", "schedule-cal", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "bi-dashboard", "seller-stats", "sla", "sla-alerts", "sla-monitor", "surge", "multi-currency", "zone-pricing", "zones-mgr", "promo-coupons", "route-optim", "insurance", "insurance-claims", "insur-claims", "onboarding", "driver-reg", "driver-portal", "driver-onboard", "driver-registration", "driver-analytics", "job-marketplace", "referral", "gamification", "shifts", "shift-scheduler", "wallet", "customer-loyalty", "rewards", "geofence", "fleet", "fleet-gps", "fleet-hub", "fleet-mgmt", "warehouse", "dispatch-rules", "command-center", "moderation", "compliance", "regulatory", "smart-notifs", "notif-center", "notif-hub", "driver-comms", "ai-planning", "ai-dispatch", "maint-ai", "auto-invoicing", "green-delivery", "fleet-system", "order-bundle", "tracking-portal", "live-tracking", "proof-delivery", "seller-rating", "address-book", "delivery-kpi", "maint-sched", "payout-reports", "reputation", "optimize", "buyer", "customer-track", "live-chat", "support-bot", "returns", "returns-mgmt", "adv-returns", "finance-ctrl", "incidents", "seller-portal", "capacity", "multi-vendor", "quality", "cx-hub", "ev-fleet", "franchise", "cross-border", "data-hub", "drone", "blockchain", "training", "crowd", "smart-lockers", "carbon-offset", "multimodal", "delivery-mkt", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
-          const labels: Record<string, string> = {
-            all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
-            "multi-drop": "📦 Multi-Drop",
-            multistop: "🗺️ Multi", scheduled: "📅 Planif.", "slot-booking": "🕐 Créneaux", history: "📋 Histo.",
-            disputes: "⚠️ Litiges", analytics: "📊 Stats", reports: "📈 Rapports", "seller-stats": "📈 Perf.",
-            sla: "⏱️ SLA", surge: "💹 Surge", onboarding: "🚗 Livreur", "driver-reg": "📝 Inscription",
-            referral: "🎁 Parrainage", shifts: "📅 Shifts", wallet: "💰 Wallet", geofence: "🛡️ Zones", fleet: "🏢 Flotte",
-            "fleet-mgmt": "🗺️ Fleet", "dispatch-rules": "⚙️ Dispatch", moderation: "🛡️ Modération",
-            "customer-track": "📲 Suivi client", "support-bot": "🤖 Support IA", returns: "🔄 Retours",
-            payroll: "💶 Paie", "notif-rules": "🔔 Notifs",
-            reputation: "🏆 Réputation", optimize: "⚡ Optim.", buyer: "👤 Client", invoices: "🧾 Factures",
-            "multi-currency": "💱 Devises", "zone-pricing": "📍 Zones Tarif", "route-optim": "🧭 Routes", insurance: "🛡️ Assurance", "adv-analytics": "📊 Analytics+",
-            "fleet-hub": "🚐 Fleet Hub", gamification: "🎮 Gamification", "customer-loyalty": "💳 Fidélité", "smart-notifs": "🧠 Smart Notifs", "compliance": "🛡️ Compliance", "ai-planning": "🧠 IA Planning", "api-webhooks": "🔌 API",
-            "route-planner": "🗺️ Planner", "returns-mgmt": "📦 Retours+", "schedule-cal": "📅 Calendrier", "driver-portal": "🚀 Onboarding+",
-            "promo-coupons": "🎟️ Promos", "live-chat": "💬 Chat Live", "warehouse": "🏭 Entrepôts", "green-delivery": "🌱 Green",
-            "fleet-system": "🚐 Flotte+", "order-bundle": "📦 Lots", "tracking-portal": "📲 Tracking",
-            "seller-rating": "⭐ Rating", "address-book": "📍 Adresses", "delivery-kpi": "📊 KPIs", "maint-sched": "🔧 Maintenance",
-            "driver-onboard": "🚀 Inscription+", "notif-center": "🔔 Notifs+", "payout-reports": "💰 Rapports$", "zones-mgr": "🗺️ Zones+",
-            "proof-delivery": "📸 Preuve+", "driver-analytics": "📊 Driver Stats", "sla-alerts": "🚨 SLA Alertes", "job-marketplace": "🏪 Marketplace",
-            "fleet-gps": "📡 GPS Fleet", "insurance-claims": "🛡️ Réclamations", "shift-scheduler": "📅 Shifts+", "live-tracking": "📲 Live Track",
-            "command-center": "🎯 Command", "auto-invoicing": "🧾 Factures+", "rewards": "🏆 Récompenses", "driver-comms": "📡 Comms",
-            "bi-dashboard": "📊 BI", "driver-registration": "📝 Registre", "sla-monitor": "⏱️ SLA+", "notif-hub": "🔔 Hub Notifs",
-            "adv-returns": "🔄 Retours++", "finance-ctrl": "💵 Finance", "incidents": "🚨 Incidents", "seller-portal": "🏪 Partenaires",
-            "capacity": "🧠 Capacité", "multi-vendor": "🛒 Multi-vendeur", "quality": "🛡️ Qualité", "cx-hub": "❤️ CX Hub",
-            "ev-fleet": "⚡ EV Fleet", "franchise": "🏢 Franchises", "cross-border": "🌍 Cross-Border", "data-hub": "📡 Data Hub",
-            "ai-dispatch": "🧠 AI Dispatch", "insur-claims": "🛡️ Assurance+", "maint-ai": "🔧 Maint. IA", "regulatory": "⚖️ Conformité",
-            "drone": "🛩️ Drones", "blockchain": "🔗 Blockchain", "training": "🎓 Formation", "crowd": "👥 Crowd Delivery",
-            "smart-lockers": "📦 Casiers", "carbon-offset": "🌱 Carbone", "multimodal": "🚊 Multimodal", "delivery-mkt": "🏪 Marché Livr.",
-          };
-          return (
-            <button key={f} onClick={() => setFilter(f)}
-              className="shrink-0 py-1.5 px-2 rounded-lg text-[9px] font-semibold transition-all"
-              style={{
-                background: filter === f ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
-                color: filter === f ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
-              }}>
-              {labels[f] || f}
-            </button>
-          );
-        })}
+        {allTabKeys.map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            className="shrink-0 py-1.5 px-2 rounded-lg text-[9px] font-semibold transition-all"
+            style={{
+              background: filter === f ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
+              color: filter === f ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
+            }}>
+            {getTabLabel(f)}
+          </button>
+        ))}
       </div>
 
-      {/* Content */}
-      {filter === "analytics" ? (
-        <DeliveryAnalyticsDashboard orgId={jobs[0]?.org_id} />
-      ) : filter === "seller-stats" ? (
-        <SellerAnalyticsDashboard orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "multistop" ? (
-        <MultiStopRoutePanel orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "onboarding" ? (
-        <DriverOnboardingFlow onComplete={() => setFilter("all")} />
-      ) : filter === "disputes" ? (
-        <DeliveryDisputeFlow orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "batch" ? (
-        <BatchDispatchPanel jobs={jobs} onDone={() => setFilter("all")} />
-      ) : filter === "scheduled" ? (
-        <ScheduledDeliveryPanel onDone={() => setFilter("all")} />
-      ) : filter === "history" ? (
-        <DeliveryHistoryExport jobs={jobs} loading={loading} />
-      ) : filter === "wallet" ? (
-        <DriverWalletPanel />
-      ) : filter === "geofence" ? (
-        <GeofencingPanel />
-      ) : filter === "fleet" ? (
-        <AdminFleetDashboard orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "reputation" ? (
-        <DriverReputationPanel />
-      ) : filter === "optimize" ? (
-        <RouteOptimizationEngine orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "buyer" ? (
-        <BuyerDeliveryDashboard />
-      ) : filter === "invoices" ? (
-        <DeliveryInvoicePanel orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "sla" ? (
-        <DeliverySLAPanel orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "multi-drop" ? (
-        <MultiDropBatchPanel orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "driver-reg" ? (
-        <DriverOnboardingWizard onComplete={() => setFilter("all")} />
-      ) : filter === "reports" ? (
-        <DeliveryAnalyticsReports orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "fleet-mgmt" ? (
-        <FleetManagementDashboard orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "dispatch-rules" ? (
-        <AutomatedDispatchRules orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "customer-track" ? (
-        <CustomerTrackingPage />
-      ) : filter === "payroll" ? (
-        <DriverEarningsPayroll />
-      ) : filter === "surge" ? (
-        <DynamicPricingSurge orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "shifts" ? (
-        <DriverShiftScheduling orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "moderation" ? (
-        <AdminModerationPanel orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "notif-rules" ? (
-        <DeliveryEventNotifications orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "multi-currency" ? (
-        <MultiCurrencyDelivery orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "route-optim" ? (
-        <RouteOptimizationPanel orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "insurance" ? (
-        <DeliveryInsurancePanel orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "adv-analytics" ? (
-        <DeliveryAdvancedAnalytics orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "referral" ? (
-        <DriverReferralProgram />
-      ) : filter === "support-bot" ? (
-        <DeliverySupportBot />
-      ) : filter === "returns" ? (
-        <ReturnsReverseLogistics orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "slot-booking" ? (
-        <DeliverySlotBooking orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "fleet-hub" ? (
-        <FleetManagementHub orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "gamification" ? (
-        <DeliveryGamification />
-      ) : filter === "smart-notifs" ? (
-        <SmartNotificationsEngine orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "api-webhooks" ? (
-        <DeliveryAPIWebhooks orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "zone-pricing" ? (
-        <ZoneBasedPricing orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "customer-loyalty" ? (
-        <CustomerWalletLoyalty />
-      ) : filter === "compliance" ? (
-        <ComplianceDashboard orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "ai-planning" ? (
-        <AIPredictivePlanning orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "route-planner" ? (
-        <MultiStopRoutePlanner orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "returns-mgmt" ? (
-        <ReturnsManagement orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "schedule-cal" ? (
-        <DeliverySchedulingCalendar orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "driver-portal" ? (
-        <DriverOnboardingPortal onComplete={() => setFilter("all")} />
-      ) : filter === "promo-coupons" ? (
-        <PromoCouponsEngine orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "live-chat" ? (
-        <LiveDeliveryChat onClose={() => setFilter("all")} />
-      ) : filter === "warehouse" ? (
-        <WarehouseManagement orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "green-delivery" ? (
-        <GreenDeliveryDashboard orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "fleet-system" ? (
-        <FleetManagementSystem orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "order-bundle" ? (
-        <OrderBundlingEngine orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "tracking-portal" ? (
-        <CustomerTrackingPortal orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "seller-rating" ? (
-        <SellerRatingSystem orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "address-book" ? (
-        <AddressBookManager orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "delivery-kpi" ? (
-        <DeliveryKPIDashboard orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "maint-sched" ? (
-        <MaintenanceScheduler orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "driver-onboard" ? (
-        <DriverOnboardingComplete onComplete={() => setFilter("all")} />
-      ) : filter === "notif-center" ? (
-        <DeliveryNotificationCenter orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "payout-reports" ? (
-        <SellerPayoutReports orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "zones-mgr" ? (
-        <DeliveryZonesManager orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "proof-delivery" ? (
-        <ProofOfDeliveryPlus orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "driver-analytics" ? (
-        <DriverAnalyticsDashboard />
-      ) : filter === "sla-alerts" ? (
-        <SLAAlertSystem orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "job-marketplace" ? (
-        <DriverJobMarketplace />
-      ) : filter === "fleet-gps" ? (
-        <FleetGPSTracker orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "insurance-claims" ? (
-        <DeliveryInsuranceClaims orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "shift-scheduler" ? (
-        <DriverShiftScheduler orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "live-tracking" ? (
-        <CustomerLiveTracking />
-      ) : filter === "command-center" ? (
-        <AdminCommandCenter orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "auto-invoicing" ? (
-        <AutomatedInvoicingEngine orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "rewards" ? (
-        <CustomerRewardsProgram />
-      ) : filter === "driver-comms" ? (
-        <MultiChannelDriverComms orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "bi-dashboard" ? (
-        <DeliveryBIDashboard orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "driver-registration" ? (
-        <DriverOnboardingRegistration onComplete={() => setFilter("all")} />
-      ) : filter === "sla-monitor" ? (
-        <SLAPerformanceMonitor orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "notif-hub" ? (
-        <DeliveryNotificationHub orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "adv-returns" ? (
-        <AdvancedReturnsHub orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "finance-ctrl" ? (
-        <FinancialControlCenter orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "incidents" ? (
-        <IncidentManagement orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "seller-portal" ? (
-        <SellerPartnerPortal orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "capacity" ? (
-        <SmartCapacityPlanning orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "multi-vendor" ? (
-        <MultiVendorMarketplace orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "quality" ? (
-        <QualityAssuranceSystem orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "cx-hub" ? (
-        <CustomerExperienceHub orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "ev-fleet" ? (
-        <EVFleetIntelligence orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "franchise" ? (
-        <FranchiseManagement orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "cross-border" ? (
-        <CrossBorderLogistics orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "data-hub" ? (
-        <RealTimeDataHub orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "ai-dispatch" ? (
-        <AIDispatchBrain orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "insur-claims" ? (
-        <InsuranceClaims orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "maint-ai" ? (
-        <FleetMaintenanceAI orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "regulatory" ? (
-        <RegulatoryCompliance orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "drone" ? (
-        <DroneDelivery orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "blockchain" ? (
-        <BlockchainTraceability orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "training" ? (
-        <DriverTrainingAcademy orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "crowd" ? (
-        <CrowdDeliveryNetwork orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "smart-lockers" ? (
-        <SmartLockerNetwork orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "carbon-offset" ? (
-        <CarbonOffsetEngine orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "multimodal" ? (
-        <MultiModalTransport orgId={jobs[0]?.org_id || ""} />
-      ) : filter === "delivery-mkt" ? (
-        <DeliveryMarketplace orgId={jobs[0]?.org_id || ""} />
+      {/* Content — registry-driven or job list */}
+      {registryEntry ? (
+        <Suspense fallback={<div className="flex items-center justify-center py-12"><Package className="h-6 w-6 animate-pulse" style={{ color: "hsl(var(--hud-cyan) / 0.3)" }} /></div>}>
+          {registryEntry.render({ orgId, jobs, loading, onReset: () => setFilter("all") })}
+        </Suspense>
       ) : (
-      <div className="space-y-2">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Package className="h-6 w-6 animate-pulse" style={{ color: "hsl(var(--hud-cyan) / 0.3)" }} />
-          </div>
-        ) : filteredJobs.length === 0 ? (
-          <div className="flex flex-col items-center py-12 text-center">
-            <Truck className="h-8 w-8 mb-2" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
-            <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Aucune mission</p>
-          </div>
-        ) : (
-          filteredJobs.map(job => {
-            const cfg = STATUS_LABELS[job.status] || STATUS_LABELS.pending;
-            return (
-              <div key={job.id} className="rounded-xl overflow-hidden"
-                style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${cfg.color}20` }}>
-                <div className="flex items-center gap-3 px-4 py-3">
-                  <span className="text-base">{cfg.emoji}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
-                      {job.package_description || "Colis"}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-medium" style={{ color: cfg.color }}>{cfg.label}</span>
-                      <span className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
-                        {job.created_at ? new Date(job.created_at).toLocaleDateString("fr") : ""}
-                      </span>
+        <div className="space-y-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Package className="h-6 w-6 animate-pulse" style={{ color: "hsl(var(--hud-cyan) / 0.3)" }} />
+            </div>
+          ) : filteredJobs.length === 0 ? (
+            <div className="flex flex-col items-center py-12 text-center">
+              <Truck className="h-8 w-8 mb-2" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
+              <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Aucune mission</p>
+            </div>
+          ) : (
+            filteredJobs.map(job => {
+              const cfg = STATUS_LABELS[job.status] || STATUS_LABELS.pending;
+              return (
+                <div key={job.id} className="rounded-xl overflow-hidden"
+                  style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${cfg.color}20` }}>
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <span className="text-base">{cfg.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                        {job.package_description || "Colis"}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-medium" style={{ color: cfg.color }}>{cfg.label}</span>
+                        <span className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                          {job.created_at ? new Date(job.created_at).toLocaleDateString("fr") : ""}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {job.status === "pending" && (
+                        <Button size="sm" className="text-[10px] h-7 px-2"
+                          onClick={() => setSearchingJobId(searchingJobId === job.id ? null : job.id)}
+                          style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
+                          <Users className="h-3 w-3 mr-0.5" /> Assigner
+                        </Button>
+                      )}
+                      {["assigned", "accepted", "in_progress"].includes(job.status) && (
+                        <Button size="sm" className="text-[10px] h-7 px-2"
+                          onClick={() => setTrackingJobId(trackingJobId === job.id ? null : job.id)}
+                          style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}>
+                          <MapPin className="h-3 w-3 mr-0.5" /> GPS
+                        </Button>
+                      )}
+                      {["assigned", "accepted", "in_progress"].includes(job.status) && job.driver_id && (
+                        <Button size="sm" className="text-[10px] h-7 px-2"
+                          onClick={() => setChatJobId(chatJobId === job.id ? null : job.id)}
+                          style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
+                          <MessageCircle className="h-3 w-3 mr-0.5" /> Chat
+                        </Button>
+                      )}
+                      {["pending", "assigned"].includes(job.status) && (
+                        <Button size="sm" variant="ghost" className="text-[10px] h-7 px-1.5"
+                          onClick={() => handleCancel(job.id)}
+                          style={{ color: "hsl(var(--destructive) / 0.6)" }}>
+                          <XCircle className="h-3 w-3" />
+                        </Button>
+                      )}
+                      {["completed", "cancelled"].includes(job.status) && (
+                        <Button size="sm" variant="ghost" className="text-[10px] h-7 px-2"
+                          onClick={() => setDisputeJobId(disputeJobId === job.id ? null : job.id)}
+                          style={{ color: "hsl(var(--destructive) / 0.6)" }}>
+                          <AlertTriangle className="h-3 w-3 mr-0.5" /> Litige
+                        </Button>
+                      )}
+                      {job.delivery_fee != null && (
+                        <span className="text-[10px] font-bold ml-1" style={{ color: "hsl(var(--hud-cyan))" }}>
+                          {job.delivery_fee.toFixed(2)}€
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {job.status === "pending" && (
-                      <Button size="sm" className="text-[10px] h-7 px-2"
-                        onClick={() => setSearchingJobId(searchingJobId === job.id ? null : job.id)}
-                        style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
-                        <Users className="h-3 w-3 mr-0.5" /> Assigner
-                      </Button>
+
+                  <AnimatePresence>
+                    {searchingJobId === job.id && (
+                      <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
+                        <div className="px-4 pb-3">
+                          <DriverSearchPanel jobId={job.id} onAssign={(driverId) => handleAssign(job.id, driverId)} onClose={() => setSearchingJobId(null)} />
+                        </div>
+                      </motion.div>
                     )}
-                    {["assigned", "accepted", "in_progress"].includes(job.status) && (
-                      <Button size="sm" className="text-[10px] h-7 px-2"
-                        onClick={() => setTrackingJobId(trackingJobId === job.id ? null : job.id)}
-                        style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}>
-                        <MapPin className="h-3 w-3 mr-0.5" /> GPS
-                      </Button>
+                    {disputeJobId === job.id && (
+                      <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
+                        <div className="px-4 pb-3">
+                          <DeliveryDisputeFlow orgId={job.org_id} jobId={job.id} onClose={() => setDisputeJobId(null)} />
+                        </div>
+                      </motion.div>
                     )}
-                    {["assigned", "accepted", "in_progress"].includes(job.status) && job.driver_id && (
-                      <Button size="sm" className="text-[10px] h-7 px-2"
-                        onClick={() => setChatJobId(chatJobId === job.id ? null : job.id)}
-                        style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
-                        <MessageCircle className="h-3 w-3 mr-0.5" /> Chat
-                      </Button>
+                    {trackingJobId === job.id && (
+                      <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
+                        <div className="px-4 pb-3">
+                          <DeliveryLiveTracker jobId={job.id} onClose={() => setTrackingJobId(null)} />
+                        </div>
+                      </motion.div>
                     )}
-                    {["pending", "assigned"].includes(job.status) && (
-                      <Button size="sm" variant="ghost" className="text-[10px] h-7 px-1.5"
-                        onClick={() => handleCancel(job.id)}
-                        style={{ color: "hsl(var(--destructive) / 0.6)" }}>
-                        <XCircle className="h-3 w-3" />
-                      </Button>
+                    {chatJobId === job.id && job.driver_id && (
+                      <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
+                        <div className="px-4 pb-3">
+                          <InMissionChat jobId={job.id} sellerId={job.seller_id} driverId={job.driver_id} onClose={() => setChatJobId(null)} />
+                        </div>
+                      </motion.div>
                     )}
-                    {["completed", "cancelled"].includes(job.status) && (
-                      <Button size="sm" variant="ghost" className="text-[10px] h-7 px-2"
-                        onClick={() => setDisputeJobId(disputeJobId === job.id ? null : job.id)}
-                        style={{ color: "hsl(var(--destructive) / 0.6)" }}>
-                        <AlertTriangle className="h-3 w-3 mr-0.5" /> Litige
-                      </Button>
-                    )}
-                    {job.delivery_fee != null && (
-                      <span className="text-[10px] font-bold ml-1" style={{ color: "hsl(var(--hud-cyan))" }}>
-                        {job.delivery_fee.toFixed(2)}€
-                      </span>
-                    )}
-                  </div>
+                  </AnimatePresence>
                 </div>
-
-                {/* Driver search panel */}
-                <AnimatePresence>
-                  {searchingJobId === job.id && (
-                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
-                      className="overflow-hidden">
-                      <div className="px-4 pb-3">
-                        <DriverSearchPanel
-                          jobId={job.id}
-                          onAssign={(driverId) => handleAssign(job.id, driverId)}
-                          onClose={() => setSearchingJobId(null)}
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Dispute panel */}
-                <AnimatePresence>
-                  {disputeJobId === job.id && (
-                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
-                      className="overflow-hidden">
-                      <div className="px-4 pb-3">
-                        <DeliveryDisputeFlow
-                          orgId={job.org_id}
-                          jobId={job.id}
-                          onClose={() => setDisputeJobId(null)}
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Live GPS tracking panel */}
-                <AnimatePresence>
-                  {trackingJobId === job.id && (
-                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
-                      className="overflow-hidden">
-                      <div className="px-4 pb-3">
-                        <DeliveryLiveTracker
-                          jobId={job.id}
-                          onClose={() => setTrackingJobId(null)}
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* In-mission chat */}
-                <AnimatePresence>
-                  {chatJobId === job.id && job.driver_id && (
-                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
-                      className="overflow-hidden">
-                      <div className="px-4 pb-3">
-                        <InMissionChat
-                          jobId={job.id}
-                          sellerId={job.seller_id}
-                          driverId={job.driver_id}
-                          onClose={() => setChatJobId(null)}
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })
-        )}
-      </div>
+              );
+            })
+          )}
+        </div>
       )}
     </div>
   );

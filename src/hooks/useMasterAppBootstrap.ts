@@ -7,6 +7,7 @@ import { installCrossAppReactions } from "@/lib/shared/cross-app-reactions";
 import { runPlatformRecovery } from "@/lib/platform/platform-recovery-engine";
 import { installSmartFlowBridge } from "@/lib/runtime/smart-flow-bridge";
 import { installOrbitCacheListener, registerQueryClient } from "@/lib/orbit/orbit-cache-invalidator";
+import { installDeadEventConsumers } from "@/lib/shared/dead-event-consumers";
 import { useQueryClient } from "@tanstack/react-query";
 
 let booted = false;
@@ -20,7 +21,6 @@ export function useMasterAppBootstrap() {
 
     // 0. Register queryClient for cache invalidation
     registerQueryClient(queryClient);
-    booted = true;
 
     // 1. Platform event bus reactions (wallet ↔ orbit ↔ marketplace)
     const cleanupBus = installPlatformReactions();
@@ -41,7 +41,10 @@ export function useMasterAppBootstrap() {
     // 6. Orbit cache auto-invalidation on events
     const cleanupOrbitCache = installOrbitCacheListener();
 
-    // 6. Platform recovery — deferred well after initial render for speed
+    // 7. Dead event consumers — wire previously orphaned events
+    const cleanupDeadEvents = installDeadEventConsumers();
+
+    // 8. Platform recovery — deferred well after initial render for speed
     const t1 = setTimeout(() => void runPlatformRecovery("boot"), 30000);
 
     return () => {
@@ -51,6 +54,7 @@ export function useMasterAppBootstrap() {
       cleanupCrossApp();
       cleanupFlowBridge();
       cleanupOrbitCache();
+      cleanupDeadEvents();
       booted = false;
     };
   }, [queryClient]);
