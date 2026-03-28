@@ -9,8 +9,12 @@ import { useMapDataSync } from "@/hooks/map/useMapDataSync";
 import { useMapInteractions } from "@/hooks/map/useMapInteractions";
 import { useMapWeather } from "@/hooks/map/useMapWeather";
 import { useMapCamera } from "@/hooks/map/useMapCamera";
+import { useMapAnimations } from "@/hooks/map/useMapAnimations";
+import { useMapPreset } from "@/hooks/map/useMapPreset";
+import { useMapAdaptive } from "@/hooks/map/useMapAdaptive";
 import SuperMapModeBar from "@/components/map/SuperMapModeBar";
 import MapControls from "@/components/map/MapControls";
+import MapCockpit from "@/components/map/MapCockpit";
 import { CloudRain, CloudSun } from "lucide-react";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
@@ -42,6 +46,9 @@ export default memo(function SuperMap({
   const toggleStations = useSuperMapStore(s => s.toggleStations);
   const toggleMobility = useSuperMapStore(s => s.toggleMobility);
 
+  // ── Preset resolution ──
+  const preset = useMapPreset();
+
   // ── 1. MapCore: init + lifecycle ──
   const { mapRef, ready } = useMapCore(containerRef, { centerLng, centerLat, zoom });
 
@@ -56,6 +63,12 @@ export default memo(function SuperMap({
 
   // ── 5. Camera: fit bounds + recenter ──
   const { recenter } = useMapCamera(mapRef, ready);
+
+  // ── 6. Animations: wired to preset config ──
+  useMapAnimations(mapRef, ready, preset);
+
+  // ── 7. Adaptive intelligence ──
+  const { adaptive } = useMapAdaptive(mapRef, ready, entities.length);
 
   return (
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
@@ -93,6 +106,11 @@ export default memo(function SuperMap({
           onToggleHeatmap={toggleHeatmap}
           onRecenter={recenter}
         />
+      </div>
+
+      {/* Cockpit */}
+      <div className="absolute bottom-3 left-3 z-30">
+        <MapCockpit adaptive={adaptive} presetLabel={preset.label} />
       </div>
 
       {showModeBar && <SuperMapModeBar />}
