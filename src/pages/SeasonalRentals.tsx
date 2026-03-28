@@ -111,7 +111,7 @@ const SeasonalRentals = () => {
     check_in: "", check_out: "", total_price: 0 as any, cleaning_fee: 0 as any,
     deposit_amount: 0 as any, notes: "",
   });
-  const [payingRequest, setPayingRequest] = useState<string | null>(null);
+  // payingRequest state now managed by useSeasonalRequestActions hook
   const [showIcalPanel, setShowIcalPanel] = useState(false);
   const [icalUrl, setIcalUrl] = useState("");
   const [importingIcal, setImportingIcal] = useState(false);
