@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { haptic } from "@/lib/haptics";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
