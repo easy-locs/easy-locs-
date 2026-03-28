@@ -5,6 +5,8 @@
  */
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
+import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
