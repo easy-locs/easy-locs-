@@ -44,7 +44,7 @@ describe("Legacy universal-import-engine facade", () => {
 
 describe("Legacy vertical-classifier facade", () => {
   it("classifyVertical delegates to canonical engine", () => {
-    const result = classifyVertical({ businessName: "Pizza Palace" });
+    const result = classifyVertical({ businessName: "Pizza Palace Pizzeria" });
     expect(result.vertical).toBe("food");
     expect(result.confidence).toBeGreaterThan(30);
   });
