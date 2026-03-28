@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Search, CalendarCheck, MessageCircle, FileText, CreditCard, ArrowRight, Inbox, Clock, Star, TrendingUp } from "lucide-react";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchClientStats, fetchClientTimeline } from "@/repositories/client-portal.repository";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
@@ -32,108 +32,34 @@ const ClientDashboard = () => {
       const email = user.email || "";
 
       // Stats: bookings
-      const [seasonalRes, conciergeRes, marketplaceRes] = await Promise.all([
-        supabase.from("booking_requests").select("id", { count: "exact", head: true }).eq("guest_email", email),
-        supabase.from("concierge_orders").select("id", { count: "exact", head: true }).eq("guest_email", email),
-        supabase.from("marketplace_bookings").select("id", { count: "exact", head: true }).eq("booker_email", email),
-      ]);
-      const bookingCount = (seasonalRes.count || 0) + (conciergeRes.count || 0) + (marketplaceRes.count || 0);
+      const statsData = await fetchClientStats(email, user.id);
+      setStats(statsData);
 
-      // Stats: unread messages (V2 via notifications)
-      const { count: unreadCount } = await (supabase as any)
-        .from("app_notifications")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .eq("category", "message")
-        .is("read_at", null);
-
-      // Stats: payments
-      const [{ count: paidConcierge }, { count: paidMarketplace }] = await Promise.all([
-        supabase.from("concierge_orders").select("id", { count: "exact", head: true }).eq("guest_email", email).eq("payment_status", "paid"),
-        supabase.from("marketplace_bookings").select("id", { count: "exact", head: true }).eq("booker_email", email).eq("payment_confirmed", true),
-      ]);
-
-      // Stats: documents (tenant-linked)
-      let docCount = 0;
-      const { data: tenantLinks } = await supabase.from("tenants").select("id").eq("tenant_user_id", user.id);
-      if (tenantLinks && tenantLinks.length > 0) {
-        const { count } = await supabase
-          .from("documents")
-          .select("id", { count: "exact", head: true })
-          .in("tenant_id", tenantLinks.map(tl => tl.id));
-        docCount = count || 0;
-      }
-
-      setStats({
-        bookings: bookingCount,
-        messages: unreadCount || 0,
-        documents: docCount,
-        payments: (paidConcierge || 0) + (paidMarketplace || 0),
-      });
-
-      // Activity timeline — recent 10 items from all sources
+      // Activity timeline
       const timeline: ActivityItem[] = [];
-
-      // Recent bookings
-      const { data: recentBookings } = await supabase
-        .from("marketplace_bookings")
-        .select("id, service_date, status, created_at, marketplace_services(title)")
-        .eq("booker_email", email)
-        .order("created_at", { ascending: false })
-        .limit(5);
-      if (recentBookings) {
-        for (const b of recentBookings) {
-          timeline.push({
-            id: `bk-${b.id}`,
-            icon: CalendarCheck,
-            label: (b as any).marketplace_services?.title || "Booking",
-            detail: b.status,
-            time: b.created_at,
-            type: "booking",
-            link: "/client/bookings",
-          });
-        }
+      const { recentBookings, recentConcierge, recentMsgs } = await fetchClientTimeline(email, user.id);
+      for (const b of recentBookings) {
+        timeline.push({
+          id: `bk-${b.id}`, icon: CalendarCheck,
+          label: (b as any).marketplace_services?.title || "Booking",
+          detail: b.status, time: b.created_at, type: "booking", link: "/client/bookings",
+        });
       }
-
-      const { data: recentConcierge } = await supabase
-        .from("concierge_orders")
-        .select("id, service_date, status, total_price, currency, created_at")
-        .eq("guest_email", email)
-        .order("created_at", { ascending: false })
-        .limit(5);
-      if (recentConcierge) {
-        for (const c of recentConcierge) {
-          timeline.push({
-            id: `co-${c.id}`,
-            icon: Star,
-            label: `Concierge — ${c.service_date || "—"}`,
-            detail: `${c.total_price} ${c.currency} • ${c.status}`,
-            time: c.created_at,
-            type: "booking",
-            link: "/client/bookings",
-          });
-        }
+      for (const c of recentConcierge) {
+        timeline.push({
+          id: `co-${c.id}`, icon: Star,
+          label: `Concierge — ${c.service_date || "—"}`,
+          detail: `${c.total_price} ${c.currency} • ${c.status}`,
+          time: c.created_at, type: "booking", link: "/client/bookings",
+        });
       }
-
-      // Recent messages (V2)
-      const { data: recentMsgs } = await (supabase as any)
-        .from("chat_messages_v2")
-        .select("id, body, sender_user_id, created_at, metadata")
-        .eq("sender_user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(3);
-      if (recentMsgs) {
-        for (const m of recentMsgs) {
-          timeline.push({
-            id: `msg-${m.id}`,
-            icon: MessageCircle,
-            label: (m.metadata as any)?.contact_name || "Provider",
-            detail: m.body?.substring(0, 60) || "",
-            time: m.created_at,
-            type: "message",
-            link: "/client/messages",
-          });
-        }
+      for (const m of recentMsgs) {
+        timeline.push({
+          id: `msg-${m.id}`, icon: MessageCircle,
+          label: (m.metadata as any)?.contact_name || "Provider",
+          detail: m.body?.substring(0, 60) || "",
+          time: m.created_at, type: "message", link: "/client/messages",
+        });
       }
 
       timeline.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
