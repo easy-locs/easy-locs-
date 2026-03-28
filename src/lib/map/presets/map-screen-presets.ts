@@ -1,5 +1,6 @@
 /**
  * Map Screen Presets — Per-screen configuration for layers, animations, style, density, camera.
+ * Weather data is always-on. "radarOverlay" controls visual overlay only.
  */
 import type { MapStylePreset, MapDensityMode } from "../engine/types";
 
@@ -29,7 +30,7 @@ export const MAP_PRESETS: Record<string, MapScreenPreset> = {
       heatmap: false,
       zones: false,
       radius: false,
-      weather: false,
+      radarOverlay: false,
     },
     animations: {
       pulse: ["ml-user-glow"],
@@ -50,7 +51,7 @@ export const MAP_PRESETS: Record<string, MapScreenPreset> = {
       heatmap: true,
       zones: true,
       radius: false,
-      weather: true,
+      radarOverlay: true,
     },
     animations: {
       pulse: ["ml-user-glow"],
@@ -73,7 +74,7 @@ export const MAP_PRESETS: Record<string, MapScreenPreset> = {
       heatmap: false,
       zones: true,
       radius: true,
-      weather: false,
+      radarOverlay: false,
     },
     animations: {
       "live-move": ["ml-drivers-point"],
@@ -95,7 +96,7 @@ export const MAP_PRESETS: Record<string, MapScreenPreset> = {
       heatmap: false,
       zones: false,
       radius: true,
-      weather: false,
+      radarOverlay: false,
     },
     animations: {
       pulse: ["ml-user-glow"],
@@ -117,7 +118,7 @@ export const MAP_PRESETS: Record<string, MapScreenPreset> = {
       heatmap: false,
       zones: false,
       radius: false,
-      weather: true,
+      radarOverlay: true,
     },
     animations: {
       pulse: ["ml-user-glow"],
@@ -126,6 +127,94 @@ export const MAP_PRESETS: Record<string, MapScreenPreset> = {
     style: "dark",
     density: "low",
     cameraDuration: 800,
+    interactionLevel: "standard",
+  },
+
+  property: {
+    id: "property",
+    label: "Property",
+    layers: {
+      "user-location": true,
+      merchants: false,
+      "drivers-live": false,
+      heatmap: false,
+      zones: true,
+      radius: true,
+      radarOverlay: false,
+    },
+    animations: {
+      pulse: ["ml-user-glow"],
+    },
+    style: "dark",
+    density: "medium",
+    cameraDuration: 700,
+    interactionLevel: "standard",
+  },
+
+  services: {
+    id: "services",
+    label: "Services",
+    layers: {
+      "user-location": true,
+      merchants: true,
+      "drivers-live": false,
+      heatmap: false,
+      zones: false,
+      radius: true,
+      radarOverlay: false,
+    },
+    animations: {
+      pulse: ["ml-user-glow"],
+      glow: ["ml-merchants-glow"],
+    },
+    style: "dark",
+    density: "medium",
+    cameraDuration: 600,
+    interactionLevel: "standard",
+  },
+
+  food: {
+    id: "food",
+    label: "Food & Dining",
+    layers: {
+      "user-location": true,
+      merchants: true,
+      "drivers-live": true,
+      heatmap: false,
+      zones: false,
+      radius: true,
+      radarOverlay: false,
+    },
+    animations: {
+      pulse: ["ml-user-glow"],
+      glow: ["ml-merchants-glow"],
+      "live-move": ["ml-drivers-point"],
+    },
+    style: "dark",
+    density: "high",
+    cameraDuration: 500,
+    interactionLevel: "full",
+  },
+
+  retail: {
+    id: "retail",
+    label: "Shopping",
+    layers: {
+      "user-location": true,
+      merchants: true,
+      "drivers-live": false,
+      heatmap: false,
+      zones: false,
+      radius: true,
+      radarOverlay: false,
+    },
+    animations: {
+      pulse: ["ml-user-glow"],
+      glow: ["ml-merchants-glow"],
+    },
+    style: "dark",
+    density: "medium",
+    cameraDuration: 600,
     interactionLevel: "standard",
   },
 };
