@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MARKETPLACE_CATEGORIES } from "@/lib/taxonomy/category-tree";
 import { Building2, User, ImagePlus, Loader2, FileText } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadMarketplaceFile } from "@/repositories/marketplace.repository";
 import { toast } from "sonner";
 
 interface ProviderFormData {
@@ -105,18 +105,17 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
     const file = e.target.files?.[0];
     if (!file || !orgId) return;
     setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `${orgId}/providers/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
-    if (error) {
-      toast.error(`Upload failed: ${error.message}`);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${orgId}/providers/${crypto.randomUUID()}.${ext}`;
+      const url = await uploadMarketplaceFile("property-photos", path, file);
+      setForm((f) => ({ ...f, avatar_url: url }));
+      toast.success("Photo uploaded!");
+    } catch (err: any) {
+      toast.error(`Upload failed: ${err.message}`);
+    } finally {
       setUploading(false);
-      return;
     }
-    const { data: urlData } = supabase.storage.from("property-photos").getPublicUrl(path);
-    setForm((f) => ({ ...f, avatar_url: urlData.publicUrl }));
-    setUploading(false);
-    toast.success("Photo uploaded!");
   };
 
   return (

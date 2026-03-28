@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ImagePlus, X, Loader2, Video } from "lucide-react";
 import { toast } from "sonner";
 import { isVideoUrl, isVideoFile, validateMediaFile, MEDIA_ACCEPT, IMAGE_ONLY_ACCEPT } from "@/lib/media-utils";
+import { uploadConciergeFile } from "@/repositories/concierge.repository";
 
 interface Props {
   photos: string[];
   onChange: (urls: string[]) => void;
   serviceId?: string;
   orgId: string;
-  /** Allow video uploads (enterprise only) */
   allowVideo?: boolean;
 }
 
@@ -29,10 +28,12 @@ const ServicePhotoManager = ({ photos, onChange, orgId, allowVideo = false }: Pr
 
       const ext = file.name.split(".").pop();
       const path = `${orgId}/concierge/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
-      if (error) { toast.error(`Upload failed: ${error.message}`); continue; }
-      const { data: urlData } = supabase.storage.from("property-photos").getPublicUrl(path);
-      newUrls.push(urlData.publicUrl);
+      try {
+        const url = await uploadConciergeFile("property-photos", path, file);
+        newUrls.push(url);
+      } catch (err: any) {
+        toast.error(`Upload failed: ${err.message}`);
+      }
     }
     onChange([...photos, ...newUrls]);
     setUploading(false);

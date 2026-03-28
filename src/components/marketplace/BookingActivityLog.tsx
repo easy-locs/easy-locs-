@@ -1,79 +1,40 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Clock, MessageCircle, CreditCard, Edit, Bell, FileText } from "lucide-react";
 import { format } from "date-fns";
+import { fetchBookingAuditLogs, fetchBookingNotifications } from "@/repositories/marketplace.repository";
+import { supabase } from "@/integrations/supabase/client";
 
 const ICON_MAP: Record<string, any> = {
-  status_change: Edit,
-  message: MessageCircle,
-  payment: CreditCard,
-  notification: Bell,
-  invoice: FileText,
-  default: Clock,
+  status_change: Edit, message: MessageCircle, payment: CreditCard,
+  notification: Bell, invoice: FileText, default: Clock,
 };
 
-interface Props {
-  bookingId: string;
-  orgId: string;
-}
+interface Props { bookingId: string; orgId: string; }
 
 export default function BookingActivityLog({ bookingId, orgId }: Props) {
-  // Pull audit logs related to this booking
   const { data: logs = [] } = useQuery({
     queryKey: ["booking_audit", bookingId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("audit_logs")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      // Filter for this booking
-      return (data || []).filter((l: any) => {
-        const meta = l.metadata_json as any;
-        return meta?.booking_id === bookingId;
-      });
-    },
+    queryFn: () => fetchBookingAuditLogs(orgId, bookingId),
     enabled: !!bookingId && !!orgId,
   });
 
-  // Also pull notifications for this booking
   const { data: notifications = [] } = useQuery({
     queryKey: ["booking_notifications", bookingId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("app_notifications")
-        .select("*")
-        .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      return (data || []).filter((n: any) => {
-        const meta = n.metadata as any;
-        return meta?.booking_id === bookingId;
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      return fetchBookingNotifications(user.id, bookingId);
     },
     enabled: !!bookingId && !!orgId,
   });
 
   const timeline = [
-    ...logs.map((l: any) => ({
-      type: (l.metadata_json as any)?.event_type || "status_change",
-      text: l.action,
-      date: l.created_at,
-    })),
-    ...notifications.map((n: any) => ({
-      type: "notification",
-      text: `${n.title}: ${n.message}`,
-      date: n.created_at,
-    })),
+    ...logs.map((l: any) => ({ type: (l.metadata_json as any)?.event_type || "status_change", text: l.action, date: l.created_at })),
+    ...notifications.map((n: any) => ({ type: "notification", text: `${n.title}: ${n.message}`, date: n.created_at })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   if (timeline.length === 0) {
-    return (
-      <div className="text-center py-6 text-muted-foreground text-sm">
-        No activity recorded yet
-      </div>
-    );
+    return <div className="text-center py-6 text-muted-foreground text-sm">No activity recorded yet</div>;
   }
 
   return (
@@ -87,9 +48,7 @@ export default function BookingActivityLog({ bookingId, orgId }: Props) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-foreground">{item.text}</p>
-              <p className="text-[10px] text-muted-foreground">
-                {format(new Date(item.date), "dd/MM/yyyy HH:mm")}
-              </p>
+              <p className="text-[10px] text-muted-foreground">{format(new Date(item.date), "dd/MM/yyyy HH:mm")}</p>
             </div>
           </div>
         );

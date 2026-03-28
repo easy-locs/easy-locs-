@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchShowcaseBySlug, fetchShowcaseServices, fetchShowcaseListings } from "@/repositories/concierge.repository";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,24 +40,17 @@ export default function ConciergeShowcase() {
     const load = async () => {
       if (!orgSlug) { setLoading(false); return; }
 
-      // Find org by brand_name slug or landlord profile slug
-      const { data: profile } = await supabase
-        .from("landlord_profiles")
-        .select("*, orgs!landlord_profiles_org_id_fkey(id, brand_name, logo_url, city, country, email, phone)")
-        .eq("slug", orgSlug)
-        .eq("active", true)
-        .maybeSingle();
+      const profile = await fetchShowcaseBySlug(orgSlug);
 
       if (profile) {
         setOrg({ ...profile, org: (profile as any).orgs });
-
         const orgId = profile.org_id;
-        const [{ data: svc }, { data: lst }] = await Promise.all([
-          supabase.from("concierge_services_public" as any).select("*").eq("org_id", orgId).order("sort_order"),
-          supabase.from("public_listings").select("*").eq("org_id", orgId).eq("active", true).order("created_at", { ascending: false }),
+        const [svc, lst] = await Promise.all([
+          fetchShowcaseServices(orgId),
+          fetchShowcaseListings(orgId),
         ]);
-        setServices(svc || []);
-        setListings(lst || []);
+        setServices(svc);
+        setListings(lst);
       }
 
       setLoading(false);
