@@ -24,6 +24,7 @@ import {
   getClusterForSubcategory,
   getParentVertical,
 } from "@/lib/taxonomy/world-class-taxonomy";
+import { fetchOSMPlaces, osmCategoryToRadarCategory } from "@/lib/geo/osm-places-engine";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";
 
 // ═══ Placeholder image filter — blocks truly generic images from discovery ═══
