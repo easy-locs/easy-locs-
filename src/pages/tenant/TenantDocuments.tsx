@@ -92,18 +92,10 @@ const TenantDocuments = () => {
 
     const fetchAll = async () => {
       // 1. Tenant-uploaded docs
-      const { data: uploaded } = await supabase
-        .from("tenant_documents")
-        .select("id, label, filename, file_url, status")
-        .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false });
+      const uploaded = await tenantRepo.fetchTenantUploadedDocs(tenantId);
 
       // 2. Landlord-generated docs (receipts, leases, notices, etc.)
-      const { data: generated } = await supabase
-        .from("documents")
-        .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false });
+      const generated = await tenantRepo.fetchLandlordDocs(orgId);
 
       // Filter landlord docs linked to this tenant (via data_json.tenant_id or data_json.property_id)
       // Since we can't filter jsonb easily in query, we fetch and filter
@@ -151,7 +143,7 @@ const TenantDocuments = () => {
           signedUrl = await tenantRepo.createSignedUrl("rental-docs", fileRef.path, 3600);
         }
       }
-      if (!signedUrl) throw primary.error || new Error(T.linkUnavailable);
+      if (!signedUrl) throw new Error(T.linkUnavailable);
       downloadFile(signedUrl, doc.filename || `${doc.label}.pdf`);
     } catch (err: any) {
       toast({ title: T.cannotOpenDoc, description: err.message, variant: "destructive" });
@@ -342,16 +334,12 @@ const TenantDocuments = () => {
                   onSigned={async () => {
                     const doc = landlordDocs.find(d => d.id === signDocId);
                     if (doc) {
-                      const { data: docData } = await supabase.from("documents").select("lease_id").eq("id", signDocId).single();
-                      if ((docData as any)?.lease_id) {
-                        await recordTenantSignature((docData as any).lease_id);
+                      const leaseId = await tenantRepo.getDocLeaseId(signDocId);
+                      if (leaseId) {
+                        await recordTenantSignature(leaseId);
                       }
                     }
-                    const { data: generated } = await supabase
-                      .from("documents")
-                      .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at")
-                      .eq("org_id", orgId!)
-                      .order("created_at", { ascending: false });
+                    const generated = await tenantRepo.fetchLandlordDocs(orgId!);
                     const relevantTypes = ["rent-receipt", "lease", "payment-notice", "inventory", "dunning", "termination", "sworn-statement"];
                     const filtered = (generated || []).filter((d: any) =>
                       relevantTypes.includes(d.doc_type) && (d.status === "generated" || d.status === "signed" || d.status === "pending_signature" || d.emailed_at)
