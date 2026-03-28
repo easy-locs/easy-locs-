@@ -94,6 +94,10 @@ export async function upsertListing(record: Record<string, any>, existingId?: st
   }
 }
 
+export async function toggleListingActive(listingId: string, active: boolean) {
+  await supabase.from("public_listings").update({ active } as any).eq("id", listingId);
+}
+
 export async function fetchAllListingsWithProperties(orgId: string) {
   const { data } = await supabase.from("public_listings").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   return data ?? [];
