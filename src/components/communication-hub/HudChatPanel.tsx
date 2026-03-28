@@ -373,7 +373,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     setUploading: attachments.setUploading,
     disappearTTL: security.disappearTTL,
     defaultDisappearTtl: privacySettings.defaultDisappearTtl,
-    setSecurityLevel: security.setSecurityLevel,
+    setSecurityLevel: security.setSecurityLevel as (l: string) => void,
     setViewOnceNext: security.setViewOnceNext,
     setShowLocationPicker: security.setShowLocationPicker,
     t,
