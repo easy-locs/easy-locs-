@@ -601,62 +601,9 @@ const seoPublicPrefixes = [
   "/explore", "/properties",
 ];
 
-/** Registers device session + suspicious login detection */
-const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
-/** Centralized realtime: replaces usePresence, useOrbitCallSync, RealtimeMessageToast */
-const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
-/** Canonical notification realtime — starts listener for current user on notifications_v2 */
-const NotificationsRealtimeGuard = () => {
-  const { user } = useAuth();
-  useEffect(() => {
-    if (!user?.id) return;
-    const store = useNotificationV2Store.getState();
-    store.hydrate(user.id);
-    store.startRealtime(user.id);
-    return () => store.stopRealtime();
-  }, [user?.id]);
-  return null;
-};
-
-// Apply lightweight mode class on slow devices
-if (typeof window !== "undefined") {
-  import("@/lib/performance").then(({ isLightweightMode }) => {
-    if (isLightweightMode()) {
-      document.documentElement.classList.add("lightweight-mode");
-    }
-  });
-}
-
-/** Route "/" → Onboarding (if needed) or Dashboard (authenticated) or Index (guest) */
-function HomeRouter() {
-  const { user, loading, profileLoaded, onboardingCompleted, emailVerified, activeRole } = useAuth();
-  if (loading) return <PageLoader />;
-  if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
-  // Wait for profile to load before making onboarding decision — prevents flicker
-  if (!profileLoaded) return <PageLoader />;
-  if (!emailVerified) return <Navigate to="/verify-email" replace />;
-  if (!onboardingCompleted) return <Navigate to="/onboarding" replace />;
-  // Redirect to role-appropriate dashboard
-  if (activeRole === "tenant") return <Navigate to="/tenant" replace />;
-  if (activeRole === "client") return <Navigate to="/client" replace />;
-  return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
-}
-
-/** Route "/home" → OrbitHome marketplace hub (authenticated) or Index (guest) */
-function MarketplaceHomeRouter() {
-  const { user, loading, profileLoaded, onboardingCompleted, emailVerified } = useAuth();
-  if (loading) return <PageLoader />;
-  if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
-  if (!profileLoaded) return <PageLoader />;
-  if (!emailVerified) return <Navigate to="/verify-email" replace />;
-  if (!onboardingCompleted) return <Navigate to="/onboarding" replace />;
-  return <Suspense fallback={<PageLoader />}><OrbitAppShell><OrbitHome /></OrbitAppShell></Suspense>;
-}
-
-const AppHealthGuard = () => {
-  const health = useAppHealthCheck();
-  return <SystemHealthBanner db={health.db} auth={health.auth} realtime={health.realtime} checked={health.checked} />;
-};
+// Guards + Routers extracted to atomic files
+import { OrbitSessionGuard, RealtimeHubGuard, NotificationsRealtimeGuard, AppHealthGuard } from "@/components/app/AppGuards";
+import { HomeRouter, MarketplaceHomeRouter } from "@/components/app/AppRouters";
 
 const App = () => (
   <AppCrashBoundary>
