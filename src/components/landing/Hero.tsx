@@ -186,12 +186,12 @@ const Hero = () => {
               )}
             </motion.div>
 
-            {/* Universe chips — single scrollable row on mobile */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex gap-1 sm:gap-1.5 overflow-x-auto sm:flex-wrap sm:justify-center lg:justify-start scrollbar-none pb-1">
+            {/* Universe chips — wrap to show full labels, never truncate */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-wrap gap-1.5 justify-center lg:justify-start pb-1">
               {UNIVERSES.map((u, i) => (
                 <motion.div key={u.label} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.45 + i * 0.03 }}>
-                  <Link to={u.to} className="inline-flex items-center gap-0.5 sm:gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-semibold border shrink-0 whitespace-nowrap active:scale-95 transition-transform" style={{ background: u.bg, borderColor: `${u.color}25`, color: u.color }}>
-                    <u.icon className="h-2.5 w-2.5 shrink-0" />{u.label}
+                  <Link to={u.to} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold border shrink-0 active:scale-95 transition-transform" style={{ background: u.bg, borderColor: `${u.color}25`, color: u.color }}>
+                    <u.icon className="h-3 w-3 shrink-0" />{u.label}
                   </Link>
                 </motion.div>
               ))}
