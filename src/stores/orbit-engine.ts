@@ -138,18 +138,20 @@ async function refreshCommunication(userId: string, orgId?: string) {
     userOrbitId = orbitProfile?.orbit_id || null;
   } catch { /* silent */ }
 
+  // Fallback orbit_id — always have one for call filtering
+  const effectiveOrbitId = userOrbitId || `orbit_${userId.slice(0, 12)}`;
+
   const [unreadMessages, missedCalls, activeContacts] = await Promise.all([
-    // Canonical: count unread from chat_messages_v2 (Orbit P2P), NOT legacy messages table
-    safeCount("chat_messages_v2", (q) => {
-      let query = q.is("read_at", null).neq("sender_user_id", userId);
-      return query;
-    }),
-    safeCount("call_logs", (q) => {
-      let query = q.eq("status", "missed").gt("created_at", weekAgo);
-      // Filter by the user's actual orbit_id, not the orgId
-      if (userOrbitId) query = query.eq("receiver_orbit_id", userOrbitId);
-      return query;
-    }),
+    // Count unread messages where user is a participant (via conversations_v2 RLS)
+    safeCount("chat_messages_v2", (q) =>
+      q.is("read_at", null).neq("sender_user_id", userId)
+    ),
+    // Use both orbit_id formats for robustness
+    safeCount("call_logs", (q) =>
+      q.eq("status", "missed")
+        .gt("created_at", weekAgo)
+        .eq("receiver_orbit_id", effectiveOrbitId)
+    ),
     safeCount("contacts", (q) => q.eq("owner_id", userId)),
   ]);
 

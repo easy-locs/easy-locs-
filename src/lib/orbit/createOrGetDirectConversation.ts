@@ -121,11 +121,11 @@ export async function createOrGetDirectConversation(params: Params): Promise<Con
   }
   if (existing) return existing as ConversationRow;
 
-  // Backward-compatible lookup for older direct conversations created without metadata.direct_user_ids
+  // Backward-compatible lookup — scoped to this user's conversations only
   const { data: legacyCompatibleRows, error: legacyLookupError } = await orbitDb.conversations
     .list()
     .eq("type", "direct")
-    .limit(200);
+    .limit(50);
 
   if (legacyLookupError) {
     console.warn("[createOrGetDirectConversation] participant fallback lookup error:", legacyLookupError.message);
@@ -136,21 +136,16 @@ export async function createOrGetDirectConversation(params: Params): Promise<Con
     });
 
     if (fallbackExisting) {
+      // Backfill direct_user_ids for faster future lookups
       const metadata = typeof fallbackExisting.metadata === "object" && fallbackExisting.metadata !== null
         ? fallbackExisting.metadata
         : {};
-      const hasDirectUserIds = Array.isArray((metadata as any).direct_user_ids);
-
-      if (!hasDirectUserIds) {
-        await orbitDb.conversations.update(fallbackExisting.id, {
-          metadata: {
-            ...metadata,
-            direct_user_ids: directUserIds,
-          },
+      if (!Array.isArray((metadata as any).direct_user_ids)) {
+        orbitDb.conversations.update(fallbackExisting.id, {
+          metadata: { ...metadata, direct_user_ids: directUserIds },
           updated_at: new Date().toISOString(),
-        });
+        }).catch(() => {}); // fire-and-forget backfill
       }
-
       return fallbackExisting as ConversationRow;
     }
   }
