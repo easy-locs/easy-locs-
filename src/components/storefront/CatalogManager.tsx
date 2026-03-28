@@ -345,7 +345,7 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.title}</p>
+                    <p className="text-sm font-medium line-clamp-2 break-words leading-snug">{item.title}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-xs font-bold text-primary">{fmtPrice(item.price)}</span>
                       <Badge variant={item.available ? "secondary" : "outline"} className="text-[9px]">

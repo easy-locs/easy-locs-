@@ -153,7 +153,7 @@ export default function SellerAnalyticsV2({ shopId }: Props) {
               <div key={p.id} className="flex items-center gap-2 py-1 border-b border-border last:border-0">
                 <span className="text-[10px] font-bold text-muted-foreground w-4">#{i + 1}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium truncate">{p.title}</p>
+                  <p className="text-[11px] font-medium line-clamp-2 break-words leading-snug">{p.title}</p>
                   <p className="text-[10px] text-muted-foreground">{p.qty} sold</p>
                 </div>
                 <span className="text-xs font-semibold text-primary">{fmtPrice(p.revenue, data.currency)}</span>

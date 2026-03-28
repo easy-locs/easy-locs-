@@ -156,8 +156,8 @@ export default function SmartNotifications({ shopId, mode }: Props) {
               <div key={log.id} className={`flex items-start gap-2 p-1.5 rounded text-[11px] ${log.read_at ? "opacity-60" : ""}`}>
                 <span className="shrink-0">{EVENT_LABELS[log.event_type]?.slice(0, 2) || "📌"}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{log.title}</p>
-                  {log.body && <p className="text-[9px] text-muted-foreground truncate">{log.body}</p>}
+                  <p className="font-medium line-clamp-2 break-words leading-snug">{log.title}</p>
+                  {log.body && <p className="text-[9px] text-muted-foreground line-clamp-2 break-words leading-snug">{log.body}</p>}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <Badge variant="secondary" className="text-[7px]">{log.channel}</Badge>
