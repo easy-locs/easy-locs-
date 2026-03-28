@@ -530,6 +530,7 @@ const CustomerAutoRepeatPage = safeLazy(() => import("./pages/customer/CustomerA
 const AdminRefundQueuePage = safeLazy(() => import("./pages/admin/AdminRefundQueuePage"), "AdminRefundQueuePage");
 const CustomerPartyOrderPage = safeLazy(() => import("./pages/customer/CustomerPartyOrderPage"), "CustomerPartyOrderPage");
 const AdminPlatformHealthPage = safeLazy(() => import("./pages/admin/AdminPlatformHealthPage"), "AdminPlatformHealthPage");
+const AdminRuntimeCockpitPage = safeLazy(() => import("./pages/admin/AdminRuntimeCockpitPage"), "AdminRuntimeCockpitPage");
 // HI-HN block
 const CustomerRewardRedemptionPage = safeLazy(() => import("./pages/customer/CustomerRewardRedemptionPage"), "CustomerRewardRedemptionPage");
 // HO-HT block
@@ -1194,6 +1195,7 @@ const App = () => (
                 <Route path="/admin/refund-queue" element={<ProtectedRoute><AdminRefundQueuePage /></ProtectedRoute>} />
                 <Route path="/checkout/party-order" element={<ProtectedRoute><CustomerPartyOrderPage /></ProtectedRoute>} />
                 <Route path="/admin/platform-health" element={<ProtectedRoute><AdminPlatformHealthPage /></ProtectedRoute>} />
+                <Route path="/admin/runtime-cockpit" element={<ProtectedRoute><AdminRuntimeCockpitPage /></ProtectedRoute>} />
                 {/* HI-HN */}
                 <Route path="/me/redeem-rewards" element={<ProtectedRoute><CustomerRewardRedemptionPage /></ProtectedRoute>} />
                 {/* HO-HT */}
