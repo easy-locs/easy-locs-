@@ -5,7 +5,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchOwnerCockpitStats, invokeOwnerAction } from "@/repositories/admin-ops.repository";
 import { toast } from "sonner";
 import { FuturisticCard } from "@/components/ui/FuturisticCard";
 import { StatusPulse } from "@/components/ui/StatusPulse";
@@ -68,28 +68,7 @@ export default function OwnerCockpitPage() {
   const loadStats = async () => {
     setLoading(true);
     try {
-      const queries = [
-        { key: "merchants",   table: "seed_merchants" },
-        { key: "notifications", table: "app_notifications" },
-        { key: "conversations", table: "conversations_v2" },
-        { key: "aiSignals",   table: "entity_feedback_signals" },
-        { key: "rankings",    table: "ranking_snapshots" },
-        { key: "recovery",    table: "platform_recovery_runs" },
-        { key: "support",     table: "support_tickets" },
-        { key: "reviews",     table: "verified_reviews" },
-        { key: "orders",      table: "storefront_orders" },
-        { key: "wallets",     table: "wallet_accounts" },
-      ];
-
-      const results = await Promise.all(
-        queries.map(q =>
-          (supabase as any).from(q.table).select("*", { count: "exact", head: true }).catch(() => ({ count: 0 }))
-        )
-      );
-
-      const s: Record<string, number> = {};
-      queries.forEach((q, i) => { s[q.key] = results[i]?.count ?? 0; });
-      setStats(s);
+      setStats(await fetchOwnerCockpitStats());
     } catch (e) {
       console.error("[OwnerCockpit] load error", e);
     }
@@ -99,8 +78,7 @@ export default function OwnerCockpitPage() {
   const runAction = async (action: string) => {
     toast.info(`Running ${action}...`);
     try {
-      const { error } = await supabase.functions.invoke(action);
-      if (error) throw error;
+      await invokeOwnerAction(action);
       toast.success(`${action} completed`);
       await loadStats();
     } catch (e: any) {
