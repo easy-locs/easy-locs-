@@ -1,7 +1,7 @@
 /**
- * CallProvider — Global call state provider.
- * Listens for incoming calls via Supabase Realtime on call_logs table.
- * Renders IncomingCallDialog and InAppCallDialog globally.
+ * CallProvider — THIN ORCHESTRATOR for call state.
+ * Delegates to atomic units: call-target-resolver, call-rpc, call-incoming-handler.
+ * CallManager handles WebRTC (already decomposed into call/ice-config, signaling, media, call-db).
  */
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -14,9 +14,12 @@ import { toast } from "sonner";
 import InAppCallDialog from "./InAppCallDialog";
 import IncomingCallDialog from "./IncomingCallDialog";
 import { debugLog } from "@/lib/debug/runtime-debug-bus";
+import { resolveCallTarget } from "@/lib/call/call-target-resolver";
+import { createCallRpc } from "@/lib/call/call-rpc";
+import { processIncomingInsert, processIncomingUpdate, declineIncomingCall, markCallMissed } from "@/lib/call/call-incoming-handler";
+import { registerChannel, unregisterChannel, recordEvent } from "@/lib/runtime/realtime-monitor";
 
 interface CallContextType {
-  /** Start a call — targetId is the peer userId OR an orgId (resolved internally) */
   startCall: (opts: {
     targetId: string;
     threadId?: string;
@@ -55,174 +58,55 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [incomingIsVideo, setIncomingIsVideo] = useState(false);
   const [incomingOrgId, setIncomingOrgId] = useState("");
   const [incomingThreadId, setIncomingThreadId] = useState<string | null>(null);
-  // Track active call metadata for logging
   const activeCallRef = useRef<{ callId: string; threadId?: string; orgId: string; contextId?: string } | null>(null);
-  const startingCallRef = useRef(false); // Lock to prevent duplicate startCall
+  const startingCallRef = useRef(false);
 
-  const trace = useCallback((step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
-    const logger = phase === "error" ? console.error : console.log;
-    logger(`[CALL][${step}] ${phase}:`, payload ?? {});
-  }, []);
-
-  // Keep ref in sync for use in realtime closures
   useEffect(() => { incomingCallIdRef.current = incomingCallId; }, [incomingCallId]);
 
-  // Listen for incoming calls via Supabase Realtime on call_logs
-  const channelRef = useRef<any>(null);
-
-  const resolveReceiverUserId = useCallback(async (rawTargetId: string) => {
-    const normalized = rawTargetId.trim();
-    if (!normalized) return "";
-
-    // ── 1. Try direct profile lookup (user UUID) ──
-    const { data: directProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("id", normalized)
-      .maybeSingle();
-
-    if (directProfile?.id && directProfile.id !== user?.id) return directProfile.id;
-
-    // ── 2. Try orbit_profiles_v2 by orbit_id (e.g. "orbit_abc123") ──
-    if (normalized.startsWith("orbit_")) {
-      const { data: orbitProfile } = await (supabase as any)
-        .from("orbit_profiles_v2")
-        .select("id")
-        .eq("orbit_id", normalized)
-        .maybeSingle();
-
-      if (orbitProfile?.id && orbitProfile.id !== user?.id) return orbitProfile.id;
-    }
-
-    // ── 3. Try orbit_profiles_v2 by user id (fallback) ──
-    const { data: orbitByUserId } = await (supabase as any)
-      .from("orbit_profiles_v2")
-      .select("id")
-      .eq("id", normalized)
-      .maybeSingle();
-
-    if (orbitByUserId?.id && orbitByUserId.id !== user?.id) return orbitByUserId.id;
-
-    // ── 4. Try org owner ──
-    const { data: ownerMembership } = await supabase
-      .from("org_members")
-      .select("user_id, role")
-      .eq("org_id", normalized)
-      .eq("role", "owner")
-      .limit(1)
-      .maybeSingle();
-
-    if (ownerMembership?.user_id && ownerMembership.user_id !== user?.id) {
-      return ownerMembership.user_id;
-    }
-
-    // ── 5. Try org.owner_user_id ──
-    const { data: org } = await supabase
-      .from("orgs")
-      .select("owner_user_id")
-      .eq("id", normalized)
-      .maybeSingle();
-
-    if (org?.owner_user_id && org.owner_user_id !== user?.id) {
-      return org.owner_user_id;
-    }
-
-    // ── 6. Fallback: any OTHER member of the org (skip self) ──
-    const { data: otherMembers } = await supabase
-      .from("org_members")
-      .select("user_id")
-      .eq("org_id", normalized)
-      .neq("user_id", user?.id ?? "")
-      .limit(1)
-      .maybeSingle();
-
-    if (otherMembers?.user_id) return otherMembers.user_id;
-
-    console.warn("[CallProvider] no callable target found", { rawTarget: rawTargetId, callerId: user?.id });
-    return "";
-  }, [user?.id]);
-
-  // Resolve orbit ID for realtime filter
+  // Resolve orbit ID
   const [myOrbitId, setMyOrbitId] = useState<string | null>(null);
   useEffect(() => {
     if (!user?.id) return;
     (supabase as any)
-      .from("orbit_profiles_v2")
-      .select("orbit_id")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }: any) => {
-        if (data?.orbit_id) setMyOrbitId(data.orbit_id);
-      });
+      .from("orbit_profiles_v2").select("orbit_id").eq("id", user.id).maybeSingle()
+      .then(({ data }: any) => { if (data?.orbit_id) setMyOrbitId(data.orbit_id); });
   }, [user?.id]);
+
+  // ── Incoming call listener (realtime) ──
+  const channelRef = useRef<any>(null);
 
   useEffect(() => {
     if (!user) return;
+    if (channelRef.current) { supabase.removeChannel(channelRef.current); channelRef.current = null; }
 
-    // Clean up previous channel synchronously to prevent race
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-
-    // Listen on BOTH auth user ID and orbit ID to catch calls from both paths
     const receiverIds = [user.id, ...(myOrbitId && myOrbitId !== user.id ? [myOrbitId] : [])];
-
-    console.log("[CallProvider] incoming listener setup", {
-      userId: user.id,
-      receiverIds,
-    });
-    debugLog.info("realtime", "call.subscription.setup", "Creating incoming call subscription", {
-      userId: user.id,
-      receiverIds,
-    });
+    const channelName = `incoming-calls-${user.id}-${Date.now()}`;
+    registerChannel(channelName, "calls");
 
     const handleInsert = async (payload: any) => {
-      try {
-        const call = payload.new as any;
-        console.log("[CallProvider] realtime INSERT received", { callId: call?.id, status: call?.status, receiver: call?.receiver_orbit_id });
-        debugLog.success("call", "call.signal.received", `INSERT ${call?.id || "unknown"}`, call);
-        if (!call || call.status !== "ringing") return;
-        if (call.caller_orbit_id === user.id || call.caller_orbit_id === myOrbitId) return; // skip self
-
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("name, email")
-          .eq("id", call.caller_orbit_id)
-          .single();
-
-        setIncomingCallId(call.id);
-        setIncomingCallerName(profile?.name || profile?.email || "User");
-        setIncomingContextLabel("");
-        setIncomingIsVideo(call.call_type === "video");
-        setIncomingOrgId(call.receiver_orbit_id || "");
-        setIncomingThreadId(call.conversation_id || null);
-        setShowIncoming(true);
-
-        console.log("[CallProvider] incoming popup SHOWN", { callId: call.id });
-      } catch (err) {
-        console.error("[CallProvider] incoming handler error:", err);
-      }
+      recordEvent(channelName);
+      const info = await processIncomingInsert(payload.new, user.id, myOrbitId);
+      if (!info) return;
+      debugLog.success("call", "call.signal.received", `INSERT ${info.callId}`, payload.new);
+      setIncomingCallId(info.callId);
+      setIncomingCallerName(info.callerName);
+      setIncomingContextLabel(info.contextLabel);
+      setIncomingIsVideo(info.isVideo);
+      setIncomingOrgId(info.orgId);
+      setIncomingThreadId(info.threadId);
+      setShowIncoming(true);
     };
 
     const handleUpdate = (payload: any) => {
-      try {
-        console.log("[CallProvider] realtime UPDATE received", payload.new);
-        const call = payload.new as any;
-        debugLog.info("call", "call.signal.updated", `UPDATE ${call?.id || "unknown"}`, call);
-        if (call && call.status !== "ringing" && call.id === incomingCallIdRef.current) {
-          setShowIncoming(false);
-          setIncomingCallId(null);
-        }
-      } catch (err) {
-        console.error("[CallProvider] update handler error:", err);
+      recordEvent(channelName);
+      debugLog.info("call", "call.signal.updated", `UPDATE ${payload.new?.id || "unknown"}`, payload.new);
+      if (processIncomingUpdate(payload.new, incomingCallIdRef.current)) {
+        setShowIncoming(false);
+        setIncomingCallId(null);
       }
     };
 
-    // Build channel with listeners for each receiver ID
-    let channel = supabase
-      .channel(`incoming-calls-${user.id}-${Date.now()}`);
-
+    let channel = supabase.channel(channelName);
     for (const rid of receiverIds) {
       channel = channel
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "call_logs", filter: `receiver_orbit_id=eq.${rid}` }, handleInsert)
@@ -231,166 +115,86 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
     channel.subscribe((status, err) => {
       if (status === "SUBSCRIBED") {
-        console.log("[CallProvider] realtime subscription active");
         debugLog.success("realtime", "call.subscription.subscribed", "CallProvider reached SUBSCRIBED", { userId: user.id });
       } else if (status === "CHANNEL_ERROR") {
-        console.warn("[CallProvider] channel error, will auto-retry on next mount");
-        debugLog.error("realtime", "call.subscription.error", err?.message || "CHANNEL_ERROR", { userId: user.id, err });
+        debugLog.error("realtime", "call.subscription.error", err?.message || "CHANNEL_ERROR", { userId: user.id });
       } else if (status === "TIMED_OUT") {
-        console.warn("[CallProvider] subscription timed out");
         debugLog.warn("realtime", "call.subscription.timeout", "Subscription timed out", { userId: user.id });
-      } else {
-        debugLog.info("realtime", "call.subscription.status", status, { userId: user.id, err });
       }
     });
 
     channelRef.current = channel;
-
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      unregisterChannel(channelName);
+      if (channelRef.current) { supabase.removeChannel(channelRef.current); channelRef.current = null; }
     };
   }, [user?.id, myOrbitId]);
 
-  const startCall = useCallback(
-    async (opts: {
-      targetId: string;
-      threadId?: string;
-      contextType?: string;
-      contextId?: string;
-      contextLabel?: string;
-      peerName: string;
-      isVideo?: boolean;
-    }) => {
-      trace("call.rpc.create", "input", {
-        targetId: opts.targetId,
-        threadId: opts.threadId || null,
-        contextType: opts.contextType || "listing",
-        contextId: opts.contextId || null,
-        peerName: opts.peerName,
-        isVideo: !!opts.isVideo,
+  // ── Start call (outgoing) ──
+  const startCall = useCallback(async (opts: {
+    targetId: string; threadId?: string; contextType?: string;
+    contextId?: string; contextLabel?: string; peerName: string; isVideo?: boolean;
+  }) => {
+    if (!user) { toast.error("Authentication required."); return; }
+    if (startingCallRef.current) return;
+    startingCallRef.current = true;
+    setIsStartingCall(true);
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData?.user?.id) {
+        toast.error(t("call.error.session_expired") || "Session expired.");
+        return;
+      }
+
+      const receiverUserId = await resolveCallTarget(opts.targetId, authData.user.id);
+      if (!receiverUserId || receiverUserId === authData.user.id) {
+        toast.error(receiverUserId === authData.user.id
+          ? "No other team member available."
+          : "Could not find a callable contact.");
+        return;
+      }
+
+      const result = await createCallRpc({
+        callerUserId: authData.user.id, receiverUserId,
+        threadId: opts.threadId, contextType: opts.contextType,
+        contextId: opts.contextId, contextLabel: opts.contextLabel,
+        isVideo: opts.isVideo || false,
       });
 
-      if (!user) {
-        trace("call.rpc.create", "error", { reason: "missing_user_context" });
-        toast.error("Authentication required.");
-        return;
-      }
-      if (startingCallRef.current) {
-        trace("call.rpc.create", "error", { reason: "already_starting" });
+      if (!result.success || !result.callId) {
+        toast.error(result.error || "Unable to start call");
         return;
       }
 
-      startingCallRef.current = true;
-      setIsStartingCall(true);
+      const manager = new CallManager({
+        callId: result.callId, userId: authData.user.id, role: "caller",
+        onStateChange: (state) => setCallState((prev) => ({ ...prev, ...state })),
+      });
 
-      try {
-        const { data: authData, error: authError } = await supabase.auth.getUser();
-        const authUser = authData?.user;
+      setPeerName(opts.peerName);
+      setContextLabel(opts.contextLabel || "");
+      setCallManager(manager);
+      setShowCallDialog(true);
+      activeCallRef.current = { callId: result.callId, threadId: opts.threadId, orgId: opts.targetId, contextId: opts.contextId };
+      platformBus.emit("call:started", { callId: result.callId, role: "caller", isVideo: opts.isVideo || false, peerName: opts.peerName }, "orbit");
+      await manager.startCall(opts.isVideo || false);
+    } catch (err) {
+      console.error("[CallProvider] startCall error:", err);
+    } finally {
+      startingCallRef.current = false;
+      setIsStartingCall(false);
+    }
+  }, [user, t]);
 
-        if (authError || !authUser?.id) {
-          trace("call.rpc.create", "error", { reason: "auth_failed", message: authError?.message || null });
-          toast.error(t("call.error.session_expired") || "Session expired. Please log in again.");
-          return;
-        }
-
-        trace("call.log.insert", "input", {
-          targetId: opts.targetId,
-          contextType: opts.contextType || "listing",
-          contextId: opts.contextId || null,
-          threadId: opts.threadId || null,
-          contextUserId: user.id,
-          authUserId: authUser.id,
-        });
-
-        trace("call.target.resolve", "input", { rawTargetId: opts.targetId, callerId: authUser.id });
-        const receiverOrbitId = await resolveReceiverUserId(opts.targetId);
-        trace("call.target.resolve", receiverOrbitId ? "output" : "error", {
-          rawTargetId: opts.targetId,
-          receiverOrbitId: receiverOrbitId || null,
-        });
-
-        if (!receiverOrbitId || receiverOrbitId === authUser.id) {
-          const reason = receiverOrbitId === authUser.id
-            ? "No other team member available to receive this call."
-            : "Could not find a callable contact for this business.";
-          toast.error(reason);
-          console.warn("[CallProvider] no callable target", { rawTarget: opts.targetId, resolved: receiverOrbitId, reason });
-          return;
-        }
-
-        trace("call.rpc.create", "input", {
-          callerOrbitId: authUser.id,
-          rawTarget: opts.targetId,
-          receiverOrbitId,
-        });
-
-        // Use idempotent server-side function to prevent duplicates
-        const { data: callId, error } = await supabase.rpc("create_call_idempotent" as any, {
-          _caller_orbit_id: authUser.id,
-          _receiver_orbit_id: receiverOrbitId,
-          _thread_id: opts.threadId || null,
-          _context_type: opts.contextType || "listing",
-          _context_id: opts.contextId || null,
-          _context_label: opts.contextLabel || null,
-          _is_video: opts.isVideo || false,
-        });
-
-        trace("call.rpc.create", error || !callId ? "error" : "output", { callId: callId || null, error: error?.message || null });
-
-        if (error || !callId) {
-          console.error("Failed to create call:", error);
-          const errMsg = error?.message || (t("call.error.start_failed") || "Unable to start call");
-          if (errMsg.includes("Unauthorized")) {
-            toast.error(t("call.error.auth_denied") || "Authorization denied. Please log in again.");
-          } else {
-            toast.error(errMsg);
-          }
-          return;
-        }
-
-        const manager = new CallManager({
-          callId: callId as string,
-          userId: authUser.id,
-          role: "caller",
-          onStateChange: (state) => setCallState((prev) => ({ ...prev, ...state })),
-        });
-
-        setPeerName(opts.peerName);
-        setContextLabel(opts.contextLabel || "");
-        setCallManager(manager);
-        setShowCallDialog(true);
-        activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.targetId, contextId: opts.contextId };
-
-        trace("call.log.insert", "output", { callId: callId as string, threadId: opts.threadId || null });
-        trace("call.signal.subscribe", "output", { callId: callId as string, phase: "manager_initialized" });
-        platformBus.emit("call:started", { callId, role: "caller", isVideo: opts.isVideo || false, peerName: opts.peerName }, "orbit");
-        trace("call.ui.active", "output", { callId: callId as string, showCallDialog: true, peerName: opts.peerName });
-        await manager.startCall(opts.isVideo || false);
-      } catch (err) {
-        trace("call.rpc.create", "error", { message: err instanceof Error ? err.message : String(err) });
-      } finally {
-        startingCallRef.current = false;
-        setIsStartingCall(false);
-      }
-    },
-    [resolveReceiverUserId, t, user, trace]
-  );
-
-  // Legacy call.request listener removed — contactStore purged. Use useCall().startCall directly.
-
+  // ── Accept incoming ──
   const handleAcceptIncoming = useCallback(async () => {
     if (!user || !incomingCallId) return;
-
     setShowIncoming(false);
     activeCallRef.current = { callId: incomingCallId, threadId: incomingThreadId || undefined, orgId: incomingOrgId, contextId: undefined };
 
     const manager = new CallManager({
-      callId: incomingCallId,
-      userId: user.id,
-      role: "callee",
+      callId: incomingCallId, userId: user.id, role: "callee",
       onStateChange: (state) => setCallState((prev) => ({ ...prev, ...state })),
     });
 
@@ -398,93 +202,40 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setContextLabel(incomingContextLabel);
     setCallManager(manager);
     setShowCallDialog(true);
-
     await manager.acceptCall(incomingIsVideo);
   }, [user, incomingCallId, incomingCallerName, incomingContextLabel, incomingIsVideo, incomingOrgId, incomingThreadId]);
 
+  // ── Decline incoming ──
   const handleDeclineIncoming = useCallback(async () => {
-    if (!incomingCallId) return;
+    if (!incomingCallId || !user) return;
     setShowIncoming(false);
-
-    await supabase
-      .from("call_logs")
-      .update({ status: "declined", ended_at: new Date().toISOString() } as any)
-      .eq("id", incomingCallId);
-
-    // Log decline to thread
-    if (incomingThreadId && user) {
-      logCallEventToThread({
-        callId: incomingCallId, threadId: incomingThreadId,
-        orgId: incomingOrgId, senderId: user.id, event: "declined",
-      });
+    await declineIncomingCall(incomingCallId, user.id);
+    if (incomingThreadId) {
+      logCallEventToThread({ callId: incomingCallId, threadId: incomingThreadId, orgId: incomingOrgId, senderId: user.id, event: "declined" });
     }
-
-    const channel = supabase.channel(`call:${incomingCallId}`, {
-      config: { broadcast: { self: false } },
-    });
-    await channel.subscribe();
-    channel.send({
-      type: "broadcast",
-      event: "signal",
-      payload: { type: "declined", data: "{}", from: user?.id || "" },
-    });
-    setTimeout(() => supabase.removeChannel(channel), 1000);
-
     setIncomingCallId(null);
   }, [incomingCallId, user, incomingThreadId, incomingOrgId]);
 
+  // ── Missed incoming ──
   const handleMissedIncoming = useCallback(async () => {
-    if (!incomingCallId) return;
+    if (!incomingCallId || !user) return;
     setShowIncoming(false);
-
-    await supabase
-      .from("call_logs")
-      .update({ status: "missed", ended_at: new Date().toISOString() } as any)
-      .eq("id", incomingCallId);
-
-    // Log missed to thread
-    if (incomingThreadId && user) {
-      logCallEventToThread({
-        callId: incomingCallId, threadId: incomingThreadId,
-        orgId: incomingOrgId, senderId: user.id, event: "missed",
-      });
+    await markCallMissed(incomingCallId, user.id);
+    if (incomingThreadId) {
+      logCallEventToThread({ callId: incomingCallId, threadId: incomingThreadId, orgId: incomingOrgId, senderId: user.id, event: "missed" });
     }
-
-    const channel = supabase.channel(`call:${incomingCallId}`, {
-      config: { broadcast: { self: false } },
-    });
-    await channel.subscribe();
-    channel.send({
-      type: "broadcast",
-      event: "signal",
-      payload: { type: "declined", data: "{}", from: user?.id || "" },
-    });
-    setTimeout(() => supabase.removeChannel(channel), 1000);
-
     setIncomingCallId(null);
   }, [incomingCallId, user, incomingThreadId, incomingOrgId]);
 
+  // ── Close call ──
   const handleCloseCall = useCallback(async () => {
-    console.log("[CallProvider] handleCloseCall", {
-      activeCallId: activeCallRef.current?.callId || null,
-      status: callState.status || null,
-    });
-
-    // Log ended call to thread
     const meta = activeCallRef.current;
     if (meta?.threadId && user) {
-      // Fetch duration from call_logs
-      const { data: log } = await supabase
-        .from("call_logs")
-        .select("status, duration_sec")
-        .eq("id", meta.callId)
-        .single();
-      const status = (log as any)?.status;
-      if (status === "ended") {
+      const { data: log } = await supabase.from("call_logs").select("status, duration_sec").eq("id", meta.callId).single();
+      if ((log as any)?.status === "ended") {
         logCallEventToThread({
-          callId: meta.callId, threadId: meta.threadId,
-          orgId: meta.orgId, senderId: user.id, event: "ended",
-          durationSeconds: (log as any)?.duration_sec || 0,
+          callId: meta.callId, threadId: meta.threadId, orgId: meta.orgId,
+          senderId: user.id, event: "ended", durationSeconds: (log as any)?.duration_sec || 0,
           contextId: meta.contextId,
         });
       }
@@ -502,26 +253,15 @@ export function CallProvider({ children }: { children: ReactNode }) {
   return (
     <CallContext.Provider value={{ startCall, isInCall: showCallDialog, isStartingCall }}>
       {children}
-
-
-      {/* Incoming call dialog */}
       <IncomingCallDialog
-        open={showIncoming}
-        callerName={incomingCallerName}
-        contextLabel={incomingContextLabel}
-        isVideo={incomingIsVideo}
-        onAccept={handleAcceptIncoming}
-        onDecline={handleDeclineIncoming}
+        open={showIncoming} callerName={incomingCallerName}
+        contextLabel={incomingContextLabel} isVideo={incomingIsVideo}
+        onAccept={handleAcceptIncoming} onDecline={handleDeclineIncoming}
         onMissed={handleMissedIncoming}
       />
-
-      {/* Active call dialog */}
       <InAppCallDialog
-        open={showCallDialog}
-        onClose={handleCloseCall}
-        callManager={callManager}
-        peerName={peerName}
-        contextLabel={contextLabel}
+        open={showCallDialog} onClose={handleCloseCall}
+        callManager={callManager} peerName={peerName} contextLabel={contextLabel}
       />
     </CallContext.Provider>
   );
