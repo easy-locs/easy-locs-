@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as actRepo from "@/repositories/activity-log.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -49,136 +49,84 @@ export default function EntityActivityLog({ entityType, entityId, orgId, maxItem
     const allEvents: ActivityEvent[] = [];
 
     try {
-      // Messages
-      let msgQuery = (supabase as any).from("chat_messages_v2").select("id, body, created_at, sender_user_id, type, metadata");
-      if (entityType === "property") msgQuery = msgQuery.eq("property_id", entityId);
-      else if (entityType === "tenant") msgQuery = msgQuery.eq("tenant_id", entityId);
-      else if (entityType === "booking") msgQuery = msgQuery.eq("booking_id", entityId);
-      const { data: msgs } = await msgQuery.order("created_at", { ascending: false }).limit(maxItems);
+      const msgs = await actRepo.fetchMessages(entityType, entityId, maxItems);
 
       if (msgs) {
-        msgs.forEach(m => {
+        msgs.forEach((m: any) => {
           allEvents.push({
-            id: `msg-${m.id}`,
-            type: "message",
+            id: `msg-${m.id}`, type: "message",
             title: m.message_type === "system" ? "System message" : `Message${m.contact_name ? ` from ${m.contact_name}` : ""}`,
-            description: m.content.slice(0, 120),
-            timestamp: m.created_at,
-            icon: TYPE_CONFIG.message.icon,
-            color: TYPE_CONFIG.message.color,
-            metadata: { category: m.category },
+            description: (m.content || m.body || "").slice(0, 120), timestamp: m.created_at,
+            icon: TYPE_CONFIG.message.icon, color: TYPE_CONFIG.message.color,
           });
         });
       }
 
-      // Payments (rent_calls for property/tenant)
       if (entityType === "property" || entityType === "tenant") {
-        let payQuery = supabase.from("rent_calls").select("id, month, total_amount, paid, paid_date").eq("org_id", orgId);
-        if (entityType === "property") payQuery = payQuery.eq("property_id", entityId);
-        if (entityType === "tenant") payQuery = payQuery.eq("tenant_id", entityId);
-        const { data: payments } = await payQuery.order("month", { ascending: false }).limit(maxItems);
-        if (payments) {
-          payments.forEach(p => {
+        const payments = await actRepo.fetchPayments(orgId, entityType, entityId, maxItems);
+          payments.forEach((p: any) => {
             allEvents.push({
-              id: `pay-${p.id}`,
-              type: "payment",
+              id: `pay-${p.id}`, type: "payment",
               title: p.paid ? `💚 Rent paid — ${p.month}` : `⏳ Rent due — ${p.month}`,
               description: `${p.total_amount}€${p.paid_date ? ` — Paid on ${p.paid_date}` : ""}`,
               timestamp: p.paid_date || `${p.month}-01`,
-              icon: TYPE_CONFIG.payment.icon,
-              color: TYPE_CONFIG.payment.color,
+              icon: TYPE_CONFIG.payment.icon, color: TYPE_CONFIG.payment.color,
             });
           });
         }
       }
 
-      // Documents
       if (entityType === "property" || entityType === "tenant") {
-        let docQuery = supabase.from("documents").select("id, title, doc_type, created_at, status").eq("org_id", orgId);
-        // Documents are linked via lease_id, not directly. Try by lease.
-        if (entityType === "property") {
-          const { data: leases } = await supabase.from("leases").select("id").eq("property_id", entityId).eq("org_id", orgId);
-          if (leases?.length) {
-            docQuery = docQuery.in("lease_id", leases.map(l => l.id));
-          }
-        }
-        const { data: docs } = await docQuery.order("created_at", { ascending: false }).limit(maxItems);
+        const docs = await actRepo.fetchDocuments(orgId, entityType, entityId, maxItems);
         if (docs) {
-          docs.forEach(d => {
+          docs.forEach((d: any) => {
             allEvents.push({
-              id: `doc-${d.id}`,
-              type: "document",
-              title: d.title,
-              description: `${d.doc_type} — ${d.status}`,
-              timestamp: d.created_at,
-              icon: TYPE_CONFIG.document.icon,
-              color: TYPE_CONFIG.document.color,
+              id: `doc-${d.id}`, type: "document", title: d.title,
+              description: `${d.doc_type} — ${d.status}`, timestamp: d.created_at,
+              icon: TYPE_CONFIG.document.icon, color: TYPE_CONFIG.document.color,
             });
           });
         }
       }
 
-      // Interventions
       if (entityType === "property" || entityType === "tenant") {
-        let intQuery = supabase.from("interventions").select("id, title, status, priority, created_at, category").eq("org_id", orgId);
-        if (entityType === "property") intQuery = intQuery.eq("property_id", entityId);
-        if (entityType === "tenant") intQuery = intQuery.eq("tenant_id", entityId);
-        const { data: interventions } = await intQuery.order("created_at", { ascending: false }).limit(maxItems);
+        const interventions = await actRepo.fetchInterventions(orgId, entityType, entityId, maxItems);
         if (interventions) {
-          interventions.forEach(i => {
+          interventions.forEach((i: any) => {
             allEvents.push({
-              id: `int-${i.id}`,
-              type: "intervention",
-              title: i.title,
-              description: `${i.category} — ${i.priority} — ${i.status}`,
-              timestamp: i.created_at,
-              icon: TYPE_CONFIG.intervention.icon,
-              color: TYPE_CONFIG.intervention.color,
+              id: `int-${i.id}`, type: "intervention", title: i.title,
+              description: `${i.category} — ${i.priority} — ${i.status}`, timestamp: i.created_at,
+              icon: TYPE_CONFIG.intervention.icon, color: TYPE_CONFIG.intervention.color,
             });
           });
         }
       }
 
-      // Booking requests (for property)
       if (entityType === "property") {
-        const { data: bookings } = await supabase
-          .from("booking_requests")
-          .select("id, guest_name, check_in, check_out, status, created_at")
-          .eq("property_id", entityId)
-          .eq("org_id", orgId)
-          .order("created_at", { ascending: false })
-          .limit(maxItems);
+        const bookings = await actRepo.fetchBookingRequests(orgId, entityId, maxItems);
         if (bookings) {
-          bookings.forEach(b => {
+          bookings.forEach((b: any) => {
             allEvents.push({
-              id: `book-${b.id}`,
-              type: "booking",
+              id: `book-${b.id}`, type: "booking",
               title: `Booking from ${b.guest_name}`,
               description: `${b.check_in} → ${b.check_out} — ${b.status}`,
               timestamp: b.created_at || b.check_in,
-              icon: TYPE_CONFIG.booking.icon,
-              color: TYPE_CONFIG.booking.color,
+              icon: TYPE_CONFIG.booking.icon, color: TYPE_CONFIG.booking.color,
             });
           });
         }
       }
 
-      // Leases (for property or tenant)
       if (entityType === "property" || entityType === "tenant") {
-        let leaseQuery = supabase.from("leases").select("id, lease_type, start_date, end_date, rent_amount, status, created_at").eq("org_id", orgId);
-        if (entityType === "property") leaseQuery = leaseQuery.eq("property_id", entityId);
-        if (entityType === "tenant") leaseQuery = leaseQuery.eq("tenant_id", entityId);
-        const { data: leases } = await leaseQuery.order("created_at", { ascending: false }).limit(10);
+        const leases = await actRepo.fetchLeases(orgId, entityType, entityId);
         if (leases) {
-          leases.forEach(l => {
+          leases.forEach((l: any) => {
             allEvents.push({
-              id: `lease-${l.id}`,
-              type: "lease",
+              id: `lease-${l.id}`, type: "lease",
               title: `Lease ${l.lease_type}`,
               description: `${l.start_date}${l.end_date ? ` → ${l.end_date}` : ""} — ${l.rent_amount}€ — ${l.status}`,
               timestamp: l.created_at,
-              icon: TYPE_CONFIG.lease.icon,
-              color: TYPE_CONFIG.lease.color,
+              icon: TYPE_CONFIG.lease.icon, color: TYPE_CONFIG.lease.color,
             });
           });
         }

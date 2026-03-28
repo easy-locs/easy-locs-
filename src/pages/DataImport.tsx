@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, ArrowRight, Loader2, Users, Home, Receipt } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as diRepo from "@/repositories/data-import.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -67,24 +67,30 @@ const DataImport = () => {
     if (importType === "properties") {
       for (const row of mappedRows) {
         if (!row.label && !row.address) { errors++; continue; }
-        const { error } = await supabase.from("properties").insert({ org_id: orgId, user_id: user.id, label: row.label || row.address || "Import", address: row.address || "", postal_code: row.postal_code || "", city: row.city || "", property_type: normalizePropertyType(row.property_type), surface: parseNum(row.surface), rooms: parseInt(row.rooms) || 1, floor: row.floor ? parseInt(row.floor) : null, heating: row.heating || "individual-gas", furnished: parseBool(row.furnished), monthly_rent: parseNum(row.monthly_rent), monthly_charges: parseNum(row.monthly_charges), deposit_amount: parseNum(row.deposit_amount), notes: row.notes || `Imported from ${fileName}` });
-        if (error) errors++; else success++;
+        try {
+          await diRepo.insertProperty({ org_id: orgId, user_id: user.id, label: row.label || row.address || "Import", address: row.address || "", postal_code: row.postal_code || "", city: row.city || "", property_type: normalizePropertyType(row.property_type), surface: parseNum(row.surface), rooms: parseInt(row.rooms) || 1, floor: row.floor ? parseInt(row.floor) : null, heating: row.heating || "individual-gas", furnished: parseBool(row.furnished), monthly_rent: parseNum(row.monthly_rent), monthly_charges: parseNum(row.monthly_charges), deposit_amount: parseNum(row.deposit_amount), notes: row.notes || `Imported from ${fileName}` });
+          success++;
+        } catch { errors++; }
       }
     } else if (importType === "tenants") {
       for (const row of mappedRows) {
         if (!row.name) { errors++; continue; }
-        const { error } = await supabase.from("tenants").insert({ org_id: orgId, user_id: user.id, name: row.name, email: row.email || null, phone: row.phone || null, birth_date: row.birth_date || null, birth_place: row.birth_place || null, nationality: row.nationality || null, profession: row.profession || null, lease_type: row.lease_type || "empty", lease_start: row.lease_start || null, lease_end: row.lease_end || null, rent_amount: parseNum(row.rent_amount), charges_amount: parseNum(row.charges_amount), deposit_amount: parseNum(row.deposit_amount), guarantor_name: row.guarantor_name || null, guarantor_phone: row.guarantor_phone || null, current_address: row.current_address || null, notes: `Imported from ${fileName}` });
-        if (error) errors++; else success++;
+        try {
+          await diRepo.insertTenant({ org_id: orgId, user_id: user.id, name: row.name, email: row.email || null, phone: row.phone || null, birth_date: row.birth_date || null, birth_place: row.birth_place || null, nationality: row.nationality || null, profession: row.profession || null, lease_type: row.lease_type || "empty", lease_start: row.lease_start || null, lease_end: row.lease_end || null, rent_amount: parseNum(row.rent_amount), charges_amount: parseNum(row.charges_amount), deposit_amount: parseNum(row.deposit_amount), guarantor_name: row.guarantor_name || null, guarantor_phone: row.guarantor_phone || null, current_address: row.current_address || null, notes: `Imported from ${fileName}` });
+          success++;
+        } catch { errors++; }
       }
     } else if (importType === "rent_history") {
-      const { data: tenants } = await supabase.from("tenants").select("id, name").eq("org_id", orgId);
-      const tenantMap = new Map((tenants || []).map(t2 => [t2.name.toLowerCase().trim(), t2.id]));
+      const tenants = await diRepo.fetchTenantNames(orgId);
+      const tenantMap = new Map(tenants.map(t2 => [t2.name.toLowerCase().trim(), t2.id]));
       for (const row of mappedRows) {
         const tenantName = (row.tenant_name || "").toLowerCase().trim();
         const tenantId = tenantMap.get(tenantName);
         if (!tenantId || !row.month) { errors++; continue; }
-        const { error } = await supabase.from("rent_calls").upsert({ org_id: orgId, tenant_id: tenantId, month: normalizeMonth(row.month), rent_amount: parseNum(row.rent_amount), charges_amount: parseNum(row.charges_amount), total_amount: parseNum(row.total_amount) || (parseNum(row.rent_amount) + parseNum(row.charges_amount)), paid: parseBool(row.paid), paid_date: row.paid_date || null, payment_method: row.payment_method || null }, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true });
-        if (error) errors++; else success++;
+        try {
+          await diRepo.upsertRentCall({ org_id: orgId, tenant_id: tenantId, month: normalizeMonth(row.month), rent_amount: parseNum(row.rent_amount), charges_amount: parseNum(row.charges_amount), total_amount: parseNum(row.total_amount) || (parseNum(row.rent_amount) + parseNum(row.charges_amount)), paid: parseBool(row.paid), paid_date: row.paid_date || null, payment_method: row.payment_method || null });
+          success++;
+        } catch { errors++; }
       }
     }
     setImportResult({ success, errors });

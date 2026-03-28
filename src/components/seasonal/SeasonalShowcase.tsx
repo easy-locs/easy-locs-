@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as seasonalRepo from "@/repositories/seasonal.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
@@ -73,16 +73,16 @@ const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: Sea
     if (!orgId) return;
     setLoading(true);
 
-    const [{ data: rawListings }, { data: props }, { data: reqs }, { data: sBookings }] = await Promise.all([
-      supabase.from("public_listings").select("*").eq("org_id", orgId).order("created_at", { ascending: false }),
-      supabase.from("properties").select("id, label, city, country, photo_urls").eq("org_id", orgId),
-      supabase.from("booking_requests").select("id, listing_id, check_in, check_out, guest_name, status").eq("org_id", orgId).order("check_in"),
-      supabase.from("seasonal_bookings").select("property_id, check_in, check_out, total_price, status").eq("org_id", orgId),
+    const [rawListings, props, reqs, sBookings] = await Promise.all([
+      seasonalRepo.fetchAllListingsWithProperties(orgId),
+      seasonalRepo.fetchPropertiesForSeasonal(orgId),
+      seasonalRepo.fetchBookingRequests(orgId),
+      seasonalRepo.fetchSeasonalBookingsForAnalytics(orgId),
     ]);
 
-    const propMap = new Map((props || []).map(p => [p.id, p]));
+    const propMap = new Map((props).map(p => [p.id, p]));
 
-    const merged: ListingWithProperty[] = (rawListings || []).map((l: any) => {
+    const merged: ListingWithProperty[] = (rawListings).map((l: any) => {
       const prop = propMap.get(l.property_id);
       return {
         id: l.id,
@@ -102,14 +102,11 @@ const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: Sea
     });
 
     setListings(merged);
-    setBookings((reqs || []).map((r: any) => ({
-      listing_id: r.listing_id,
-      check_in: r.check_in,
-      check_out: r.check_out,
-      guest_name: r.guest_name,
-      status: r.status,
+    setBookings((reqs).map((r: any) => ({
+      listing_id: r.listing_id, check_in: r.check_in, check_out: r.check_out,
+      guest_name: r.guest_name, status: r.status,
     })));
-    setSeasonalBookings((sBookings || []) as SeasonalBookingData[]);
+    setSeasonalBookings(sBookings as SeasonalBookingData[]);
     setLoading(false);
   }, [orgId]);
 
@@ -119,7 +116,7 @@ const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: Sea
   const toggleActive = async (listing: ListingWithProperty) => {
     setTogglingId(listing.id);
     const newActive = !listing.active;
-    await supabase.from("public_listings").update({ active: newActive } as any).eq("id", listing.id);
+    await seasonalRepo.toggleListingActive(listing.id, newActive);
     setListings(prev => prev.map(l => l.id === listing.id ? { ...l, active: newActive } : l));
     toast({
       title: newActive

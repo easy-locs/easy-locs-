@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import * as candRepo from "@/repositories/candidates.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Star, UserCheck, UserX, Clock } from "lucide-react";
@@ -35,12 +35,9 @@ const Candidates = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: c }, { data: p }] = await Promise.all([
-      supabase.from("candidates").select("*").eq("org_id", orgId).order("created_at", { ascending: false }),
-      supabase.from("properties").select("id, label").eq("org_id", orgId).order("label"),
-    ]);
-    if (c) setCandidates(c as Candidate[]);
-    if (p) setProperties(p);
+    const { candidates: c, properties: p } = await candRepo.fetchCandidatesAndProperties(orgId);
+    setCandidates(c as Candidate[]);
+    setProperties(p);
     setLoading(false);
   }, [orgId]);
 
@@ -48,27 +45,30 @@ const Candidates = () => {
 
   const save = async () => {
     if (!orgId || !user || !form.name) return;
-    const { error } = await supabase.from("candidates").insert({
-      org_id: orgId, user_id: user.id, property_id: form.property_id || null,
-      name: form.name, email: form.email, phone: form.phone, profession: form.profession,
-      monthly_income: form.monthly_income, guarantor_info: form.guarantor_info,
-      notes: form.notes, score: form.score,
-    });
-    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
-    toast({ title: t("page.candidates.added") });
-    setShowForm(false);
-    setForm({ property_id: "", name: "", email: "", phone: "", profession: "", monthly_income: 0, guarantor_info: "", notes: "", score: 0 });
-    await load();
+    try {
+      await candRepo.insertCandidate({
+        org_id: orgId, user_id: user.id, property_id: form.property_id || null,
+        name: form.name, email: form.email, phone: form.phone, profession: form.profession,
+        monthly_income: form.monthly_income, guarantor_info: form.guarantor_info,
+        notes: form.notes, score: form.score,
+      });
+      toast({ title: t("page.candidates.added") });
+      setShowForm(false);
+      setForm({ property_id: "", name: "", email: "", phone: "", profession: "", monthly_income: 0, guarantor_info: "", notes: "", score: 0 });
+      await load();
+    } catch (error: any) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    }
   };
 
   const updateStatus = async (id: string, status: string) => {
-    await supabase.from("candidates").update({ status }).eq("id", id);
+    await candRepo.updateCandidateStatus(id, status);
     toast({ title: t("page.candidates.status_updated") });
     await load();
   };
 
   const remove = async (id: string) => {
-    await supabase.from("candidates").delete().eq("id", id);
+    await candRepo.deleteCandidate(id);
     toast({ title: t("page.candidates.deleted") });
     await load();
   };
