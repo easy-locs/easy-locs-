@@ -5,6 +5,7 @@ import { installPlatformReactions } from "@/lib/shared/platform-bus";
 import { installStorefrontReactions } from "@/lib/shared/storefront-reactions";
 import { installCrossAppReactions } from "@/lib/shared/cross-app-reactions";
 import { runPlatformRecovery } from "@/lib/platform/platform-recovery-engine";
+import { installSmartFlowBridge } from "@/lib/runtime/smart-flow-bridge";
 
 let booted = false;
 
@@ -26,7 +27,10 @@ export function useMasterAppBootstrap() {
     // 4. Engine connector hub (driver matching, escrow, state machine)
     installEngineConnectorHub();
 
-    // 5. Platform recovery — deferred well after initial render for speed
+    // 5. Smart flow bridge — runtime supervision (event audit, coupling detection, auto-validation)
+    const cleanupFlowBridge = installSmartFlowBridge();
+
+    // 6. Platform recovery — deferred well after initial render for speed
     const t1 = setTimeout(() => void runPlatformRecovery("boot"), 30000);
 
     return () => {
@@ -34,6 +38,7 @@ export function useMasterAppBootstrap() {
       cleanupBus();
       cleanupStorefront();
       cleanupCrossApp();
+      cleanupFlowBridge();
       booted = false;
     };
   }, []);

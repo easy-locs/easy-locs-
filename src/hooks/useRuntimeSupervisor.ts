@@ -7,6 +7,8 @@ import { subscribeTraces } from "@/lib/runtime/flow-tracer";
 import { subscribeHealth } from "@/lib/runtime/health-aggregator";
 import { subscribeAnomalies } from "@/lib/runtime/anomaly-detector";
 import { subscribeMonitor } from "@/lib/runtime/realtime-monitor";
+import { subscribeFlowIntegrity } from "@/lib/runtime/flow-integrity-validator";
+import { subscribeCoupling } from "@/lib/runtime/coupling-detector";
 
 export function useRuntimeSupervisor(pollIntervalMs = 5000) {
   const [snapshot, setSnapshot] = useState<RuntimeSnapshot>(() => getRuntimeSnapshot());
@@ -21,6 +23,8 @@ export function useRuntimeSupervisor(pollIntervalMs = 5000) {
       subscribeHealth(refresh),
       subscribeAnomalies(refresh),
       subscribeMonitor(refresh),
+      subscribeFlowIntegrity(refresh),
+      subscribeCoupling(refresh),
     ];
     const timer = setInterval(refresh, pollIntervalMs);
     return () => {
