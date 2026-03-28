@@ -117,95 +117,13 @@ const SeasonalRentals = () => {
   const [viewMode, setViewMode] = useState<"showcase" | "bookings">(() => {
     return searchParams.get("booking") || searchParams.get("focusRequest") ? "bookings" : "showcase";
   });
-  
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [calMonth, setCalMonth] = useState(() => {
-    const monthParam = searchParams.get("month");
-    if (monthParam) {
-      const [y, m] = monthParam.split("-").map(Number);
-      if (y && m) return new Date(y, m - 1, 1);
-    }
-    return new Date();
-  });
-  const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
-  const [deepLinkRequestId] = useState(() => searchParams.get("focusRequest") || null);
-  const initialPropertyId = searchParams.get("propertyId") || "";
-  
-  const [form, setForm] = useState<SeasonalForm>({
-    property_id: initialPropertyId,
-    guest_name: "",
-    guest_email: "",
-    guest_phone: "",
-    guest_address: "",
-    guest_postal_code: "",
-    guest_city: "",
-    guest_country: "",
-    identity_type: "none",
-    identity_number: "",
-    check_in: "",
-    check_out: "",
-    total_price: 0 as any,
-    cleaning_fee: 0 as any,
-    deposit_amount: 0 as any,
-    notes: "",
-  });
-  const [payingRequest, setPayingRequest] = useState<string | null>(null);
-  const [showIcalPanel, setShowIcalPanel] = useState(false);
-  const [icalUrl, setIcalUrl] = useState("");
-  const [importingIcal, setImportingIcal] = useState(false);
-  const [copiedExport, setCopiedExport] = useState(false);
-  const [selectedPropertyForPhotos, setSelectedPropertyForPhotos] = useState<string | null>(null);
-  const [focusedRequest, setFocusedRequest] = useState<any>(null);
-  const [allRequests, setAllRequests] = useState<any[]>([]);
-  const [showEditRequestModal, setShowEditRequestModal] = useState(false);
-  const [editingRequestDates, setEditingRequestDates] = useState<{ check_in: string; check_out: string }>({ check_in: "", check_out: "" });
 
-  const load = useCallback(async () => {
-    if (!orgId) return;
-    setLoadError(null);
-    try {
-      const [{ data: b, error: bErr }, { data: p }, { data: reqs }] = await Promise.all([
-        supabase.from("seasonal_bookings").select("*").eq("org_id", orgId).order("check_in"),
-        supabase.from("properties").select("id, label, photo_urls").eq("org_id", orgId).order("label"),
-        supabase.from("booking_requests").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50),
-      ]);
-      if (bErr) throw bErr;
-      const seasonalBookings = (b || []) as Booking[];
-      const paidRequests = (reqs || []).filter((r: any) => r.status === "paid" || r.status === "approved");
-      const existingKeys = new Set(seasonalBookings.map(sb => `${sb.property_id}-${sb.check_in}-${sb.check_out}-${sb.guest_name}`));
-      const missingBookings: Booking[] = paidRequests
-        .filter((r: any) => !existingKeys.has(`${r.property_id}-${r.check_in}-${r.check_out}-${r.guest_name}`))
-        .map((r: any) => ({
-          id: r.id,
-          property_id: r.property_id,
-          guest_name: r.guest_name,
-          guest_email: r.guest_email || "",
-          guest_phone: r.guest_phone || "",
-          check_in: r.check_in,
-          check_out: r.check_out,
-          total_price: 0,
-          cleaning_fee: 0,
-          deposit_amount: 0,
-          status: r.status === "paid" ? "confirmed" : "confirmed",
-          notes: `Via booking request (${r.status})`,
-        }));
-      setBookings([...seasonalBookings, ...missingBookings]);
-      if (p) setProperties(p);
-      if (reqs) setAllRequests(reqs);
-    } catch (err: any) {
-      console.error("[SeasonalRentals] load error:", err);
-      setLoadError(t("error.load_failed") || "Failed to load data");
-    } finally {
-      setLoading(false);
-    }
-  }, [orgId, t]);
-
-  useEffect(() => { load(); }, [load]);
+  // ── Wired hook: ALL data + CRUD from useSeasonalData ──
+  const {
+    bookings, properties, allRequests, loading, loadError,
+    reload: load, saveBooking, deleteBooking,
+    importICalFromUrl, importICalFromFile,
+  } = useSeasonalData();
 
   // Realtime: live updates for booking requests
   useEffect(() => {
