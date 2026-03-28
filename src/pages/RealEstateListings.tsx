@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import FeatureGate from "@/components/subscription/FeatureGate";
-import { supabase } from "@/integrations/supabase/client";
+import * as reRepo from "@/repositories/real-estate.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
@@ -140,13 +140,12 @@ export default function RealEstateListings() {
     if (!orgId) return;
     const fetch = async () => {
       setLoading(true);
-      let q = supabase.from("real_estate_listings").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
-      if (activeCountry) q = q.eq("country", activeCountry);
-      const { data } = await q;
-      setListings((data || []) as any);
-
-      const { data: leadsData } = await supabase.from("real_estate_leads").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
-      setLeads((leadsData || []) as any);
+      const [listData, leadsData] = await Promise.all([
+        reRepo.fetchListings(orgId, activeCountry),
+        reRepo.fetchLeads(orgId),
+      ]);
+      setListings(listData);
+      setLeads(leadsData);
       setLoading(false);
     };
     fetch();
@@ -162,29 +161,27 @@ export default function RealEstateListings() {
       latitude: form.latitude || null,
       longitude: form.longitude || null,
     };
-
-    if (editId) {
-      const { error } = await supabase.from("real_estate_listings").update(payload).eq("id", editId);
-      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-      toast({ title: "Listing updated" });
-    } else {
-      const { error } = await supabase.from("real_estate_listings").insert(payload);
-      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-      toast({ title: "Listing created" });
+    try {
+      await reRepo.upsertListing(editId, payload);
+      toast({ title: editId ? "Listing updated" : "Listing created" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" }); return;
     }
     setCreateOpen(false);
     setEditId(null);
     setForm(emptyForm);
-    // Refresh
-    const { data } = await supabase.from("real_estate_listings").select("*").eq("org_id", orgId!).order("created_at", { ascending: false });
-    setListings((data || []) as any);
+    const refreshed = await reRepo.fetchListings(orgId!, activeCountry);
+    setListings(refreshed);
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("real_estate_listings").delete().eq("id", id);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    setListings(prev => prev.filter(l => l.id !== id));
-    toast({ title: "Listing deleted" });
+    try {
+      await reRepo.deleteListing(id);
+      setListings(prev => prev.filter(l => l.id !== id));
+      toast({ title: "Listing deleted" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
   };
 
   const handleEdit = (listing: Listing) => {
@@ -212,10 +209,13 @@ export default function RealEstateListings() {
   };
 
   const handleUpdateLeadStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("real_estate_leads").update({ status }).eq("id", id);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l));
-    toast({ title: `Lead marked as ${status}` });
+    try {
+      await reRepo.updateLeadStatus(id, status);
+      setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l));
+      toast({ title: `Lead marked as ${status}` });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
   };
 
   const navigate = useNavigate();

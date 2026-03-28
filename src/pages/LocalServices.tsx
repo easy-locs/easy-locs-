@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import * as lsRepo from "@/repositories/local-services.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -56,14 +56,10 @@ const LocalServices = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: svc }, { data: props }, { data: org }] = await Promise.all([
-      supabase.from("local_services").select("*").eq("org_id", orgId).order("sort_order"),
-      supabase.from("properties").select("id, label, city, country").eq("org_id", orgId).order("label"),
-      supabase.from("orgs").select("local_services_enabled").eq("id", orgId).single(),
-    ]);
-    setServices(svc || []);
-    setProperties(props || []);
-    setFeatureEnabled(org?.local_services_enabled || false);
+    const result = await lsRepo.fetchLocalServicesData(orgId);
+    setServices(result.services);
+    setProperties(result.properties);
+    setFeatureEnabled(result.featureEnabled);
     setLoading(false);
   }, [orgId]);
 
@@ -72,7 +68,7 @@ const LocalServices = () => {
   const toggleFeature = async () => {
     if (!orgId) return;
     const newVal = !featureEnabled;
-    await supabase.from("orgs").update({ local_services_enabled: newVal } as any).eq("id", orgId);
+    await lsRepo.toggleLocalServicesFeature(orgId, newVal);
     setFeatureEnabled(newVal);
     toast({ title: newVal ? (t("page.services.feature_enabled") || "Activities enabled") : (t("page.services.feature_disabled") || "Activities disabled") });
   };
@@ -88,11 +84,7 @@ const LocalServices = () => {
       price_indication: form.price_indication.trim(), availability_note: form.availability_note.trim(),
       property_id: form.property_id || null, active: form.active,
     };
-    if (editingId) {
-      await supabase.from("local_services").update(payload).eq("id", editingId);
-    } else {
-      await supabase.from("local_services").insert(payload);
-    }
+    await lsRepo.upsertLocalService(editingId, payload);
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm);
@@ -102,7 +94,7 @@ const LocalServices = () => {
 
   const remove = async (id: string) => {
     if (!confirm(t("page.services.delete_confirm") || "Delete this service?")) return;
-    await supabase.from("local_services").delete().eq("id", id);
+    await lsRepo.deleteLocalService(id);
     await load();
     toast({ title: t("page.services.deleted") || "Service deleted" });
   };
