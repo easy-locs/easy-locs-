@@ -95,12 +95,12 @@ export default function PaymentMethodSelector({
               </div>
               <div className="flex-1 min-w-0">
                 <p className={cn(
-                  "text-xs font-medium truncate",
+                  "text-xs font-medium line-clamp-1 break-words",
                   selected ? "text-accent" : "text-foreground"
                 )}>
                   {label}
                 </p>
-                <p className="text-[9px] text-muted-foreground truncate">{description}</p>
+                <p className="text-[9px] text-muted-foreground line-clamp-1 break-words">{description}</p>
               </div>
               {selected && (
                 <Check className="h-3 w-3 text-accent shrink-0 absolute top-1.5 right-1.5" />
