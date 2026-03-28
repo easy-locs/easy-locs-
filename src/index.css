@@ -2020,6 +2020,7 @@ html {
   align-items: flex-start;
   gap: 14px;
   min-height: 56px;
+  width: 100%;
 }
 
 .mobile-hero__back {
@@ -2038,6 +2039,8 @@ html {
   min-width: 0;
   flex: 1;
   padding-top: 2px;
+  display: grid;
+  gap: 6px;
 }
 
 .mobile-hero__title {
@@ -2063,15 +2066,18 @@ html {
 .mobile-hero__titleText {
   display: block;
   min-width: 0;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .mobile-hero__subtitle {
-  margin-top: 6px;
-  font-size: 15px;
+  margin-top: 0;
+  font-size: clamp(14px, 3.6vw, 15px);
   line-height: 1.35;
   opacity: 0.85;
   white-space: normal;
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 /* ── Global Search Bar Fix ── */
@@ -2399,6 +2405,14 @@ input[type="search"]::-webkit-search-results-decoration {
   .mobile-hero__title {
     font-size: 26px;
     gap: 8px;
+  }
+  .mobile-hero__back {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+  }
+  .mobile-hero__subtitle {
+    font-size: 14px;
   }
   .search-shell__input {
     font-size: 16px;
