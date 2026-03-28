@@ -62,8 +62,8 @@ export default function MerchantCard({
             )}
           </div>
           <div className="p-3 space-y-1">
-            <h3 className="text-sm font-bold text-foreground line-clamp-1">{name}</h3>
-            {category && <p className="text-[11px] text-muted-foreground line-clamp-1">{category}</p>}
+            <h3 className="text-sm font-bold text-foreground line-clamp-2 break-words">{name}</h3>
+            {category && <p className="text-[11px] text-muted-foreground line-clamp-1 break-words">{category}</p>}
             <div className="flex items-center gap-3 pt-0.5">
               {rating != null && (
                 <span className="flex items-center gap-1 text-[11px] font-semibold">
@@ -110,8 +110,8 @@ export default function MerchantCard({
           )}
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-          <h3 className="text-sm font-bold text-foreground line-clamp-1">{name}</h3>
-          {category && <p className="text-[11px] text-muted-foreground line-clamp-1">{category}</p>}
+          <h3 className="text-sm font-bold text-foreground line-clamp-2 break-words">{name}</h3>
+          {category && <p className="text-[11px] text-muted-foreground line-clamp-1 break-words">{category}</p>}
           <div className="flex items-center gap-3 mt-0.5">
             {rating != null && (
               <span className="flex items-center gap-1 text-[11px] font-semibold">
