@@ -151,16 +151,16 @@ export function RadarOpportunityFeed({ className }: { className?: string }) {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground truncate">
-                    {opp.title}
-                  </span>
+                   <span className="text-sm font-semibold text-foreground break-words leading-snug">
+                     {opp.title}
+                   </span>
                   {opp.score >= 0.7 && (
                     <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">
                       HOT
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 break-words leading-snug">
                   {opp.description}
                 </p>
                 <div className="flex items-center gap-2 mt-1.5">

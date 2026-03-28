@@ -206,11 +206,11 @@ export function ZoneEventAlerts({ events }: { events: ZoneEvent[] }) {
               {EVENT_ICONS[evt.event_type] ?? <AlertTriangle className="w-3 h-3" />}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold text-foreground truncate">
-                {evt.title ?? evt.event_type.replace(/_/g, " ")}
-              </p>
+               <p className="text-[10px] font-bold text-foreground break-words leading-snug">
+                 {evt.title ?? evt.event_type.replace(/_/g, " ")}
+               </p>
               {evt.description && (
-                <p className="text-[9px] text-muted-foreground truncate">{evt.description}</p>
+                <p className="text-[9px] text-muted-foreground break-words leading-snug">{evt.description}</p>
               )}
             </div>
             {evt.severity === "critical" && (
@@ -296,7 +296,7 @@ export function DemandPredictionCard({ prediction }: { prediction: DemandPredict
                 : "bg-muted/50 text-muted-foreground",
             )}>
               <Zap className="w-2.5 h-2.5 shrink-0" />
-              <span className="truncate">{a.description}</span>
+              <span className="min-w-0 break-words leading-snug">{a.description}</span>
             </div>
           ))}
         </div>

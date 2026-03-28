@@ -23,7 +23,7 @@ export default function PropertyHubBreadcrumb({ currentPage }: Props) {
         Property Hub
       </button>
       <ChevronRight className="h-3 w-3 text-muted-foreground/40" />
-      <span className="text-foreground font-medium truncate">{currentPage}</span>
+      <span className="text-foreground font-medium break-words leading-snug">{currentPage}</span>
     </nav>
   );
 }

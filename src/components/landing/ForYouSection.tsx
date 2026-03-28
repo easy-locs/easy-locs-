@@ -63,10 +63,10 @@ export default function ForYouSection() {
                   )}
                 </div>
                 <div className="p-2.5">
-                  <p className="text-xs font-bold text-foreground truncate">{shop.name}</p>
-                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                    {shop.vertical || shop.address || t("landing.foryou.recommended") || "Recommended"}
-                  </p>
+                   <p className="text-xs font-bold text-foreground break-words leading-snug">{shop.name}</p>
+                   <p className="text-[10px] text-muted-foreground break-words leading-snug mt-0.5">
+                     {shop.vertical || shop.address || t("landing.foryou.recommended") || "Recommended"}
+                   </p>
                 </div>
               </Link>
             </motion.div>
