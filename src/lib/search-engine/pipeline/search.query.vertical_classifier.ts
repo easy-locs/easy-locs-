@@ -12,17 +12,13 @@ export interface VerticalMatch {
 
 const VERTICAL_KEYWORDS: Record<Vertical, string[]> = {
   food: ["restaurant", "café", "cafe", "bakery", "boulangerie", "fast food", "pizza", "sushi", "grill", "bistro"],
-  shopping: ["shop", "store", "boutique", "market", "supermarket", "mall", "fashion", "clothing"],
-  health: ["pharmacy", "clinic", "hospital", "doctor", "dentist", "laboratory", "optician"],
-  beauty: ["salon", "spa", "barber", "coiffure", "nails", "massage", "skincare"],
-  services: ["garage", "mechanic", "plumber", "electrician", "repair", "cleaning", "laundry"],
-  education: ["school", "university", "training", "course", "tutor", "academy"],
-  entertainment: ["cinema", "theater", "club", "bar", "lounge", "karaoke", "bowling"],
-  travel: ["hotel", "hostel", "guesthouse", "airbnb", "lodge", "resort", "motel"],
-  logistics: ["delivery", "courier", "shipping", "transport", "moving", "freight"],
-  realestate: ["apartment", "house", "villa", "studio", "room", "property", "rent", "lease"],
-  auto: ["car", "moto", "auto", "vehicle", "tire", "carwash"],
-  finance: ["bank", "insurance", "exchange", "transfer", "microfinance"],
+  grocery: ["supermarket", "market", "grocery", "épicerie", "minimarket", "provisions"],
+  shops: ["shop", "store", "boutique", "mall", "fashion", "clothing", "electronics"],
+  services: ["garage", "mechanic", "plumber", "electrician", "repair", "cleaning", "laundry", "salon", "spa", "barber"],
+  property: ["apartment", "house", "villa", "studio", "room", "property", "rent", "lease", "hotel", "hostel", "resort"],
+  healthcare: ["pharmacy", "clinic", "hospital", "doctor", "dentist", "laboratory", "optician"],
+  mobility: ["delivery", "courier", "transport", "taxi", "car", "moto", "vehicle", "moving"],
+  experiences: ["cinema", "theater", "club", "bar", "lounge", "museum", "tour", "activity", "event"],
 };
 
 export function classifyVertical(query: string): VerticalMatch | null {
