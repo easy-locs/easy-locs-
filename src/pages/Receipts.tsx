@@ -10,7 +10,7 @@ import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
-import { supabase } from "@/integrations/supabase/client";
+import * as rcptRepo from "@/repositories/receipts.repository";
 import { formatCurrency } from "@/lib/country-config";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -37,14 +37,8 @@ const Receipts = () => {
   // Load receipts from DB
   const loadReceipts = async () => {
     if (!orgId) return;
-    let query = supabase
-      .from("documents")
-      .select("id, title, doc_type, data_json, created_at")
-      .eq("org_id", orgId)
-      .eq("doc_type", "rent-receipt");
-    if (countryFilter) query = query.eq("country", countryFilter);
-    const { data } = await query.order("created_at", { ascending: false });
-    setReceipts((data as DBDocument[]) || []);
+    const data = await rcptRepo.fetchReceipts(orgId, countryFilter);
+    setReceipts(data as DBDocument[]);
     setLoading(false);
   };
 
@@ -53,7 +47,7 @@ const Receipts = () => {
   // Load landlord signature + owner info + stamp on mount
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("signature_url, name").eq("id", user.id).single().then(({ data }) => {
+    rcptRepo.fetchProfileSignature(user.id).then((data) => {
       if (data?.signature_url) setLandlordSignature(data.signature_url);
       if (data?.name) setOwnerName(data.name);
     });
@@ -61,12 +55,10 @@ const Receipts = () => {
 
   useEffect(() => {
     if (!orgId) return;
-    // Load org stamp
-    supabase.from("orgs").select("stamp_url").eq("id", orgId).single().then(({ data }) => {
-      if ((data as any)?.stamp_url) setStampUrl((data as any).stamp_url);
+    rcptRepo.fetchOrgStamp(orgId).then((url) => {
+      if (url) setStampUrl(url);
     });
-    // Load owner profile for name/address
-    supabase.from("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).single().then(({ data }) => {
+    rcptRepo.fetchOwnerProfile(orgId).then((data) => {
       if (data) {
         setOwnerName(data.full_name || "");
         setOwnerAddress([data.address, data.postal_code, data.city].filter(Boolean).join(", "));

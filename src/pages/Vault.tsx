@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import * as vaultRepo from "@/repositories/vault.repository";
 import { useToast } from "@/hooks/use-toast";
 import {
   FolderLock, Upload, Trash2, Download, FileText, Image,
@@ -44,12 +44,8 @@ const Vault = () => {
 
   const loadFiles = useCallback(async () => {
     if (!orgId) return;
-    const { data } = await supabase
-      .from("vault_files")
-      .select("*")
-      .eq("org_id", orgId)
-      .order("created_at", { ascending: false });
-    setFiles((data || []) as VaultFile[]);
+    const data = await vaultRepo.fetchVaultFiles(orgId);
+    setFiles(data as VaultFile[]);
     setLoading(false);
   }, [orgId]);
 
@@ -62,22 +58,16 @@ const Vault = () => {
 
     for (const file of Array.from(fileList)) {
       const path = `${orgId}/${Date.now()}_${file.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from("vault")
-        .upload(path, file);
-
-      if (uploadError) {
-        toast({ title: t("page.vault.upload_error"), description: uploadError.message, variant: "destructive" });
+      try {
+        await vaultRepo.uploadVaultFile(path, file);
+        await vaultRepo.insertVaultFileRecord({
+          org_id: orgId, user_id: user.id,
+          filename: file.name, file_url: path, size: file.size,
+        });
+      } catch (err: any) {
+        toast({ title: t("page.vault.upload_error"), description: err.message, variant: "destructive" });
         continue;
       }
-
-      await supabase.from("vault_files").insert({
-        org_id: orgId,
-        user_id: user.id,
-        filename: file.name,
-        file_url: path,
-        size: file.size,
-      });
     }
 
     toast({ title: t("page.vault.uploaded") });
@@ -87,31 +77,26 @@ const Vault = () => {
   };
 
   const handleDownload = async (file: VaultFile) => {
-    const { data, error } = await supabase.storage
-      .from("vault")
-      .download(file.file_url);
-
-    if (error || !data) {
+    try {
+      const data = await vaultRepo.downloadVaultFile(file.file_url);
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url; a.download = file.filename; a.click();
+      URL.revokeObjectURL(url);
+    } catch {
       toast({ title: t("common.error"), description: t("page.vault.download_error"), variant: "destructive" });
-      return;
     }
-
-    const url = URL.createObjectURL(data);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = file.filename;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   const handleDelete = async (file: VaultFile) => {
     if (!confirm(`${t("page.vault.delete_confirm")} "${file.filename}" ?`)) return;
-
-    await supabase.storage.from("vault").remove([file.file_url]);
-    const { error } = await supabase.from("vault_files").delete().eq("id", file.id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-    toast({ title: t("page.vault.deleted") });
-    await loadFiles();
+    try {
+      await vaultRepo.deleteVaultFile(file.id, file.file_url);
+      toast({ title: t("page.vault.deleted") });
+      await loadFiles();
+    } catch (err: any) {
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+    }
   };
 
   const filtered = files.filter(f =>
