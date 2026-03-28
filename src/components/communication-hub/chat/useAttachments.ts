@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 
 const db = supabase as any;
 
@@ -8,6 +9,7 @@ type ThreadLike = {
   id: string;
   v2ConversationId?: string | null;
   peerOrbitId?: string | null;
+  peerUserId?: string | null;
 };
 
 export function useAttachments(params: {
@@ -15,7 +17,6 @@ export function useAttachments(params: {
   myOrbitId?: string | null;
   resolveAuthUserId: () => Promise<string | null>;
   onThreadUpdate?: (threadId: string, updates: Record<string, unknown>) => void;
-  // Legacy compat props (ignored but accepted)
   orgId?: string | null;
   userId?: string;
   locale?: string;
@@ -27,7 +28,6 @@ export function useAttachments(params: {
 
   /** Upload a file/blob to storage and return signed URL */
   const uploadToStorage = async (file: File | Blob, path: string): Promise<string | null> => {
-    // Use chat-attachments as primary bucket (matches OrbitUploadTransport)
     const bucket = "chat-attachments";
     const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
     if (error) {
@@ -38,27 +38,62 @@ export function useAttachments(params: {
     return signedData?.signedUrl || null;
   };
 
-  /** Handle single file upload — legacy API compat */
+  /** Resolve or auto-create v2ConversationId */
+  const resolveConversationId = async (authUserId: string): Promise<string | null> => {
+    const thread = params.thread;
+    if (!thread) return null;
+
+    if (thread.v2ConversationId) return thread.v2ConversationId;
+
+    // Auto-create if we have a peer
+    if (thread.peerUserId) {
+      try {
+        const conv = await createOrGetDirectConversation({
+          myUserId: authUserId,
+          myOrbitId: params.myOrbitId,
+          peerUserId: thread.peerUserId,
+          peerOrbitId: thread.peerOrbitId,
+        });
+        params.onThreadUpdate?.(thread.id, { v2ConversationId: conv.id });
+        return conv.id;
+      } catch (err: any) {
+        console.error("[useAttachments] auto-create conversation failed", err);
+      }
+    }
+
+    return null;
+  };
+
+  /** Handle single file upload */
   const handleFileUpload = useCallback(async (file: File) => {
-    if (!params.thread?.v2ConversationId) return;
     const authUserId = await params.resolveAuthUserId();
-    if (!authUserId) { toast.error("Authentication required."); return; }
+    if (!authUserId) {
+      toast.error("Authentication required to send files.");
+      return;
+    }
+
+    const conversationId = await resolveConversationId(authUserId);
+    if (!conversationId) {
+      toast.error("No conversation found. Open a thread first.");
+      console.error("[useAttachments] no conversationId resolved", { threadId: params.thread?.id });
+      return;
+    }
 
     setUploading(true);
     try {
       const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
       const orgId = params.orgId || "orbit";
-      const path = `${orgId}/${params.thread.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${file.name.split(".").pop() || "bin"}`;
+      const path = `${orgId}/${params.thread!.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${file.name.split(".").pop() || "bin"}`;
       const finalUrl = await uploadToStorage(file, path);
       if (!finalUrl) throw new Error("File upload failed. Please try again.");
 
       const content = isMedia ? `📷 ${file.name}` : `📎 ${file.name}`;
 
       const { error } = await db.from("chat_messages_v2").insert({
-        conversation_id: params.thread.v2ConversationId,
+        conversation_id: conversationId,
         sender_user_id: authUserId,
         sender_orbit_id: params.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: params.thread.peerOrbitId ?? null,
+        receiver_orbit_id: params.thread?.peerOrbitId ?? null,
         type: isMedia ? "media" : "file",
         body: content,
         metadata: { url: finalUrl },
@@ -67,8 +102,9 @@ export function useAttachments(params: {
 
       await db.from("conversations_v2").update({
         last_message_at: new Date().toISOString(),
+        last_message_preview: content,
         updated_at: new Date().toISOString(),
-      }).eq("id", params.thread.v2ConversationId);
+      }).eq("id", conversationId);
 
       toast.success("File sent");
     } catch (e: any) {
@@ -77,7 +113,7 @@ export function useAttachments(params: {
     setUploading(false);
   }, [params]);
 
-  /** Batch file send — new API */
+  /** Batch file send */
   const sendFiles = useCallback(async (files: File[]) => {
     for (const file of files) {
       await handleFileUpload(file);
