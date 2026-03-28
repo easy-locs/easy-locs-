@@ -1,17 +1,19 @@
 /**
  * AdminRuntimeCockpitPage — Debug cockpit for runtime supervision.
- * Displays: module health, flow traces, anomalies, realtime channels, event audit, cache state.
+ * Displays: module health, flow traces, anomalies, realtime channels, event audit, cache state,
+ *           flow integrity issues, and module coupling analysis.
  */
 import { useRuntimeSupervisor } from "@/hooks/useRuntimeSupervisor";
 import { useNavigate } from "react-router-dom";
 import { clearTraces } from "@/lib/runtime/flow-tracer";
 import { clearAnomalies, resolveAnomaly } from "@/lib/runtime/anomaly-detector";
+import { clearFlowIssues } from "@/lib/runtime/flow-integrity-validator";
 import { useState } from "react";
 
 const statusColor = (s: string) => {
-  if (s === "ok" || s === "success" || s === "active") return "text-green-500";
-  if (s === "degraded" || s === "retrying" || s === "stale") return "text-yellow-500";
-  if (s === "down" || s === "failed" || s === "dead" || s === "critical") return "text-red-500";
+  if (s === "ok" || s === "success" || s === "active" || s === "healthy") return "text-green-500";
+  if (s === "degraded" || s === "retrying" || s === "stale" || s === "coupled") return "text-yellow-500";
+  if (s === "down" || s === "failed" || s === "dead" || s === "critical" || s === "over-coupled") return "text-red-500";
   return "text-muted-foreground";
 };
 
@@ -22,10 +24,12 @@ const badge = (label: string, value: number | string, color?: string) => (
   </div>
 );
 
+type Tab = "health" | "flows" | "anomalies" | "realtime" | "events" | "integrity" | "coupling";
+
 export default function AdminRuntimeCockpitPage() {
   const navigate = useNavigate();
   const snap = useRuntimeSupervisor(3000);
-  const [tab, setTab] = useState<"health" | "flows" | "anomalies" | "realtime" | "events">("health");
+  const [tab, setTab] = useState<Tab>("health");
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
@@ -42,18 +46,27 @@ export default function AdminRuntimeCockpitPage() {
       {/* KPI Strip */}
       <div className="grid grid-cols-4 gap-2">
         {badge("Modules", snap.modules.filter(m => m.status === "ok").length + "/" + snap.modules.length, statusColor(snap.globalStatus))}
-        {badge("Flows", snap.flows.running + " running")}
-        {badge("Anomalies", snap.anomalies.unresolved, snap.anomalies.critical > 0 ? "text-red-500" : undefined)}
-        {badge("RT Channels", snap.realtime.channels)}
+        {badge("Flows", snap.flows.running + " run")}
+        {badge("Issues", snap.integrity.total, snap.integrity.critical > 0 ? "text-red-500" : undefined)}
+        {badge("Coupling", snap.coupling.overCoupled, snap.coupling.overCoupled > 0 ? "text-red-500" : undefined)}
       </div>
 
-      {/* Tab Bar */}
-      <div className="flex gap-1 bg-muted/30 rounded-xl p-1">
-        {(["health", "flows", "anomalies", "realtime", "events"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-bold capitalize transition-colors ${tab === t ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}>
-            {t}
-          </button>
-        ))}
+      {/* Tab Bar — 2 rows for 7 tabs */}
+      <div className="space-y-1">
+        <div className="flex gap-1 bg-muted/30 rounded-xl p-1">
+          {(["health", "flows", "anomalies", "realtime"] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-bold capitalize transition-colors ${tab === t ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1 bg-muted/30 rounded-xl p-1">
+          {(["events", "integrity", "coupling"] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-bold capitalize transition-colors ${tab === t ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}>
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Health Tab */}
@@ -143,6 +156,59 @@ export default function AdminRuntimeCockpitPage() {
             {badge("Stale Cache", snap.cache.stale, snap.cache.stale > 0 ? "text-yellow-500" : undefined)}
             {badge("Cache Entries", snap.cache.total)}
           </div>
+        </div>
+      )}
+
+      {/* Integrity Tab */}
+      {tab === "integrity" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold">{snap.integrity.total} issues ({snap.integrity.critical} critical)</p>
+            <button onClick={clearFlowIssues} className="text-xs bg-muted px-2 py-1 rounded-lg font-bold">Clear</button>
+          </div>
+          {snap.integrity.issues.map(i => (
+            <div key={i.id} className="rounded-xl border border-border/20 bg-card p-3">
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-bold ${statusColor(i.severity)}`}>{i.severity}</span>
+                <span className="text-xs text-muted-foreground">{i.issue}</span>
+                <span className="text-xs text-muted-foreground">· {i.domain}</span>
+              </div>
+              <p className="text-sm mt-1 font-medium">{i.flowName}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{i.suggestion}</p>
+              <p className="text-[10px] text-muted-foreground">{i.detectedAt.slice(11, 19)}</p>
+            </div>
+          ))}
+          {snap.integrity.issues.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">All flows healthy ✓</p>}
+        </div>
+      )}
+
+      {/* Coupling Tab */}
+      {tab === "coupling" && (
+        <div className="space-y-3">
+          <p className="text-sm font-bold">{snap.coupling.overCoupled} over-coupled modules</p>
+          {snap.coupling.reports.map(r => (
+            <div key={r.module} className="rounded-xl border border-border/20 bg-card p-3">
+              <div className="flex items-center gap-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${statusColor(r.status).replace("text-", "bg-")}`} />
+                <span className="text-sm font-bold capitalize">{r.module}</span>
+                <span className={`ml-auto text-xs font-bold ${statusColor(r.status)}`}>{r.status}</span>
+              </div>
+              <div className="mt-1.5 grid grid-cols-3 gap-2 text-[10px]">
+                <div><span className="text-muted-foreground">Score:</span> <span className="font-bold">{r.couplingScore}</span></div>
+                <div><span className="text-muted-foreground">Emits to:</span> <span className="font-bold">{r.emitsTo.length}</span></div>
+                <div><span className="text-muted-foreground">Consumes:</span> <span className="font-bold">{r.consumesFrom.length}</span></div>
+              </div>
+              {r.suggestion && <p className="text-xs text-muted-foreground mt-1">{r.suggestion}</p>}
+              {r.emitsTo.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {r.emitsTo.map(t => (
+                    <span key={t} className="text-[9px] bg-muted/70 rounded px-1.5 py-0.5 font-mono">{t}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          {snap.coupling.reports.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">No coupling data yet</p>}
         </div>
       )}
     </div>
