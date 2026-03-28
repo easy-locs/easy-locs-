@@ -105,6 +105,15 @@ export const CommunicationCenter = () => {
   }, [threads, loading, searchParams, setSearchParams]);
 
   const handleSelectThread = useCallback((thread: ConversationThread) => {
+    console.log("%c[TRACE][OPEN_THREAD] STEP 1 — UI click on thread", "color:cyan;font-weight:bold", {
+      threadId: thread.id,
+      name: thread.name,
+      v2ConversationId: thread.v2ConversationId,
+      peerUserId: thread.peerUserId,
+      peerOrbitId: thread.peerOrbitId,
+      conversationType: thread.conversationType,
+      contextId: thread.contextId,
+    });
     setSelectedThread(thread);
     if (!isMobile && ["booking", "property", "listing", "deal"].includes(thread.conversationType)) {
       setShowContext(true);
