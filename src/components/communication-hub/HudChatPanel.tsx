@@ -110,6 +110,31 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     return data.user.id;
   }, [t]);
 
+  /** Resolve or auto-create V2 conversationId for this thread */
+  const resolveConversationId = useCallback(async (authUserId: string): Promise<string | null> => {
+    if (!thread) return null;
+    if (thread.v2ConversationId) return thread.v2ConversationId;
+    if (!thread.peerUserId) {
+      toast.error("No conversation found. Open a thread first.");
+      return null;
+    }
+    try {
+      const { createOrGetDirectConversation } = await import("@/lib/orbit/createOrGetDirectConversation");
+      const conv = await createOrGetDirectConversation({
+        myUserId: authUserId,
+        myOrbitId: myOrbitId,
+        peerUserId: thread.peerUserId,
+        peerOrbitId: thread.peerOrbitId,
+      });
+      onThreadUpdate(thread.id, { v2ConversationId: conv.id });
+      return conv.id;
+    } catch (err: any) {
+      console.error("[HudChatPanel] auto-create conversation failed", err);
+      toast.error("Failed to create conversation.");
+      return null;
+    }
+  }, [thread, myOrbitId, onThreadUpdate]);
+
   const loader = useMessageLoader({
     thread,
     orgId: orgId || null,
@@ -167,7 +192,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     conversationId: thread?.v2ConversationId ?? null,
     currentUserId: user?.id ?? null,
     currentOrbitId: myOrbitId ?? null,
+    peerUserId: thread?.peerUserId ?? null,
+    peerOrbitId: thread?.peerOrbitId ?? null,
     onAfterSend: () => loader.loadMessages(),
+    onConversationCreated: (convId) => {
+      if (thread) onThreadUpdate(thread.id, { v2ConversationId: convId });
+    },
   });
 
   const viewOnceHook = useOrbitViewOnce({ currentUserId: user?.id ?? null });
@@ -460,9 +490,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       if (!finalUrl) throw new Error("Upload failed");
       const disappearAt = computeDisappearAt(security.disappearTTL !== "off" ? security.disappearTTL : privacySettings.defaultDisappearTtl);
 
-      // V2 only
-      const conversationId = thread.v2ConversationId;
-      if (!conversationId) throw new Error("No V2 conversation");
+      // V2 only — auto-create if needed
+      const conversationId = await resolveConversationId(authUserId);
+      if (!conversationId) throw new Error("No conversation available");
       await (supabase as any).from("chat_messages_v2").insert({
         conversation_id: conversationId,
         sender_user_id: authUserId,
@@ -495,9 +525,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       const audioUrl = await attachments.uploadToStorage(blob, path);
       if (!audioUrl) throw new Error("Voice upload failed");
 
-      // V2 only
-      const conversationId = thread.v2ConversationId;
-      if (!conversationId) throw new Error("No V2 conversation");
+      // V2 only — auto-create if needed
+      const conversationId = await resolveConversationId(authUserId);
+      if (!conversationId) throw new Error("No conversation available");
       const { error } = await (supabase as any).from("chat_messages_v2").insert({
         conversation_id: conversationId,
         sender_user_id: authUserId,
@@ -539,12 +569,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       if (enc) { storedContent = enc; }
     }
 
-    // V2 only
-    const conversationId = thread.v2ConversationId;
-    if (!conversationId) {
-      toast.error("No V2 conversation for location sharing");
-      return;
-    }
+    // V2 only — auto-create if needed
+    const conversationId = await resolveConversationId(authUserId);
+    if (!conversationId) return;
     await (supabase as any).from("chat_messages_v2").insert({
       conversation_id: conversationId,
       sender_user_id: authUserId,
