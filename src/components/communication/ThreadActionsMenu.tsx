@@ -13,8 +13,10 @@ import { Button } from "@/components/ui/button";
 import {
   MoreVertical, Archive, BellOff, Bell, Ban, Flag,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  upsertConversationPreference, blockUser, reportUser,
+} from "@/repositories/communication.repository";
 
 interface Props {
   userId: string;
@@ -34,13 +36,7 @@ export default function ThreadActionsMenu({
   const [submitting, setSubmitting] = useState(false);
 
   const upsertPref = async (muted: boolean, archived: boolean) => {
-    await supabase.from("conversation_preferences").upsert({
-      user_id: userId,
-      context_id: contextId,
-      muted,
-      archived,
-      updated_at: new Date().toISOString(),
-    } as any, { onConflict: "user_id,context_id" });
+    await upsertConversationPreference(userId, contextId, muted, archived);
     onPrefsChanged(muted, archived);
   };
 
@@ -58,22 +54,14 @@ export default function ThreadActionsMenu({
 
   const handleBlock = async () => {
     if (!otherUserId) return;
-    await supabase.from("blocked_users").upsert({
-      blocker_id: userId,
-      blocked_id: otherUserId,
-    } as any, { onConflict: "blocker_id,blocked_id" });
+    await blockUser(userId, otherUserId);
     toast.success("User blocked");
   };
 
   const handleReport = async () => {
     if (!otherUserId || !reportReason.trim()) return;
     setSubmitting(true);
-    await supabase.from("user_reports").insert({
-      reporter_id: userId,
-      reported_user_id: otherUserId,
-      reason: reportReason.trim(),
-      context_id: contextId,
-    } as any);
+    await reportUser(userId, otherUserId, reportReason.trim(), contextId);
     setSubmitting(false);
     setReportOpen(false);
     setReportReason("");
