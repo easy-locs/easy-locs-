@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +8,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Calendar, TrendingUp, Users, Home, Plane, PlaneLanding, DollarSign, Sparkles, Clock, CheckCircle2, ShoppingBag } from "lucide-react";
 import { format, parseISO, differenceInDays, isWithinInterval, addDays, isBefore, isAfter } from "date-fns";
 import { motion } from "framer-motion";
+import {
+  fetchUserOrg, fetchOrgProperties, fetchAllBookings,
+  fetchConciergeOrders, fetchConciergeServices, fetchBookingTasks,
+} from "@/repositories/concierge.repository";
 
 const COLORS = ["hsl(var(--accent))", "hsl(var(--primary))", "hsl(142,71%,45%)", "hsl(45,93%,47%)", "hsl(280,60%,50%)", "hsl(0,84%,60%)"];
 
@@ -17,66 +20,37 @@ const ConciergeOperations = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("org_members").select("org_id").eq("user_id", user!.id).limit(1).single();
-      if (!data) return null;
-      const { data: o } = await supabase.from("orgs").select("*").eq("id", data.org_id).single();
-      return o;
-    },
+    queryFn: () => fetchUserOrg(user!.id),
     enabled: !!user,
   });
 
   const { data: properties = [] } = useQuery({
     queryKey: ["props", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("properties").select("id, label, city, country").eq("org_id", org!.id);
-      return data || [];
-    },
+    queryFn: () => fetchOrgProperties(org!.id),
     enabled: !!org,
   });
 
   const { data: bookings = [] } = useQuery({
     queryKey: ["all_bookings", org?.id],
-    queryFn: async () => {
-      const [{ data: seasonal }, { data: requests }] = await Promise.all([
-        supabase.from("seasonal_bookings" as any).select("*").eq("org_id", org!.id),
-        supabase.from("booking_requests").select("*").eq("org_id", org!.id).in("status", ["confirmed", "paid", "approved"]) as any,
-      ]);
-      const merged: any[] = [];
-      const seen = new Set<string>();
-      for (const b of [...(seasonal || []), ...(requests || [])] as any[]) {
-        const key = `${b.property_id}-${b.check_in}-${b.check_out}-${b.guest_name}`;
-        if (!seen.has(key)) { seen.add(key); merged.push(b); }
-      }
-      return merged;
-    },
+    queryFn: () => fetchAllBookings(org!.id),
     enabled: !!org,
   });
 
   const { data: orders = [] } = useQuery({
     queryKey: ["concierge_orders", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("concierge_orders").select("*").eq("org_id", org!.id);
-      return data || [];
-    },
+    queryFn: () => fetchConciergeOrders(org!.id),
     enabled: !!org,
   });
 
   const { data: services = [] } = useQuery({
     queryKey: ["services", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("concierge_services").select("*").eq("org_id", org!.id);
-      return data || [];
-    },
+    queryFn: () => fetchConciergeServices(org!.id),
     enabled: !!org,
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ["tasks", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("booking_tasks").select("*").eq("org_id", org!.id);
-      return data || [];
-    },
+    queryFn: () => fetchBookingTasks(org!.id),
     enabled: !!org,
   });
 
