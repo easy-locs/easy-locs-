@@ -7,6 +7,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSeasonalData } from "@/hooks/seasonal/useSeasonalData";
+import { fetchBookingRequest, deleteBookingRequest, updateBookingRequestDates, updateSeasonalBookingDates, insertSeasonalBookings } from "@/repositories/seasonal.repository";
 import { supabase } from "@/integrations/supabase/client";
 import { sendCommunicationEvent, createDeepLinkMeta } from "@/lib/shared";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
@@ -125,7 +126,7 @@ const SeasonalRentals = () => {
   useEffect(() => {
     if (!deepLinkRequestId || !orgId) return;
     const loadRequest = async () => {
-      const { data } = await supabase.from("booking_requests").select("*").eq("id", deepLinkRequestId).single();
+      const data = await fetchBookingRequest(deepLinkRequestId);
       if (data) setFocusedRequest(data);
     };
     loadRequest();
@@ -273,8 +274,7 @@ const SeasonalRentals = () => {
         setImportingIcal(false);
         return;
       }
-      const { error } = await supabase.from("seasonal_bookings").insert(newBookings);
-      if (error) throw error;
+      await insertSeasonalBookings(newBookings);
       toast({ title: `${newBookings.length} ${t("page.seasonal.ical_imported")}` });
       setIcalUrl("");
       await load();
@@ -315,8 +315,7 @@ const SeasonalRentals = () => {
       if (newBookings.length === 0) {
         toast({ title: t("page.seasonal.all_exist") });
       } else {
-        const { error } = await supabase.from("seasonal_bookings").insert(newBookings);
-        if (error) throw error;
+        await insertSeasonalBookings(newBookings);
         toast({ title: `${newBookings.length} ${t("page.seasonal.ical_imported")}` });
         await load();
       }
@@ -624,7 +623,7 @@ const SeasonalRentals = () => {
                       {!isActive && req.status !== "pending" && (
                         <button
                           onClick={async () => {
-                            await supabase.from("booking_requests").delete().eq("id", req.id);
+                            await deleteBookingRequest(req.id);
                             toast({ title: t("page.seasonal.booking_deleted") });
                             await load();
                           }}
@@ -839,19 +838,9 @@ const SeasonalRentals = () => {
                     toast({ title: t("page.common.error"), description: t("page.seasonal.error_dates"), variant: "destructive" });
                     return;
                   }
-                  await supabase.from("booking_requests").update({
-                    check_in: editingRequestDates.check_in,
-                    check_out: editingRequestDates.check_out,
-                  } as any).eq("id", focusedRequest.id);
-                  // Update matching seasonal_booking too
+                  await updateBookingRequestDates(focusedRequest.id, editingRequestDates.check_in, editingRequestDates.check_out);
                   if (orgId) {
-                    await supabase.from("seasonal_bookings").update({
-                      check_in: editingRequestDates.check_in,
-                      check_out: editingRequestDates.check_out,
-                    } as any)
-                      .eq("org_id", orgId).eq("property_id", focusedRequest.property_id)
-                      .eq("check_in", focusedRequest.check_in).eq("check_out", focusedRequest.check_out)
-                      .eq("guest_name", focusedRequest.guest_name);
+                    await updateSeasonalBookingDates(orgId, focusedRequest.guest_email, focusedRequest.check_in, editingRequestDates.check_in, editingRequestDates.check_out);
                   }
                   // Send modification email
                   await supabase.functions.invoke("send-email", {

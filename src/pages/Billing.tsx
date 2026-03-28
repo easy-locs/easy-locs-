@@ -3,7 +3,7 @@ import { CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock, Sparkles, Hel
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
 import { PLANS, getPlanDisplay, PRODUCT_TIER_MAP, type PlanConfig } from "@/lib/stripe-plans";
-import { supabase } from "@/integrations/supabase/client";
+import { createCheckoutSession, openCustomerPortal, signOut } from "@/repositories/billing.repository";
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -52,9 +52,8 @@ const Billing = () => {
   const handleCheckout = async (priceId: string) => {
     setLoadingPriceId(priceId);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", { body: { priceId } });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      const url = await createCheckoutSession(priceId);
+      if (url) window.location.href = url;
     } catch (err: any) {
       toast({ title: t("page.common.error") || "Error", description: err.message, variant: "destructive" });
       setLoadingPriceId(null);
@@ -64,9 +63,8 @@ const Billing = () => {
   const handlePortal = async () => {
     setPortalLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("customer-portal");
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      const url = await openCustomerPortal();
+      if (url) window.location.href = url;
     } catch (err: any) {
       toast({ title: t("page.common.error") || "Error", description: err.message, variant: "destructive" });
     } finally {
@@ -75,7 +73,7 @@ const Billing = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     navigate("/login");
   };
 
