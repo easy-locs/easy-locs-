@@ -6,6 +6,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { APP_EVENTS } from "@/lib/platform/events";
+import { reportHealth } from "@/lib/runtime/health-aggregator";
 import {
   resolveUnifiedStatus,
   buildUnifiedTimeline,
@@ -120,6 +123,9 @@ export function useUnifiedOrder(orderId: string | undefined) {
   const updateOrderStatus = useCallback(async (status: string) => {
     if (!orderId) return;
     await (supabase as any).from("storefront_orders").update({ status, updated_at: new Date().toISOString() }).eq("id", orderId);
+    platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId }, "orders");
+    platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, {}, "orders");
+    reportHealth("orders", "ok");
     toast({ title: "Order updated", description: `Status: ${status}` });
   }, [orderId, toast]);
 
@@ -168,6 +174,9 @@ export function useUnifiedOrder(orderId: string | undefined) {
       payment_status: "released",
       updated_at: new Date().toISOString(),
     }).eq("id", orderId);
+    platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId }, "orders");
+    platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, {}, "orders");
+    reportHealth("orders", "ok");
     toast({ title: "Order completed", description: "Thank you for your purchase!" });
   }, [orderId, toast]);
 
