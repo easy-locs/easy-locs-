@@ -569,12 +569,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       if (enc) { storedContent = enc; }
     }
 
-    // V2 only
-    const conversationId = thread.v2ConversationId;
-    if (!conversationId) {
-      toast.error("No V2 conversation for location sharing");
-      return;
-    }
+    // V2 only — auto-create if needed
+    const conversationId = await resolveConversationId(authUserId);
+    if (!conversationId) return;
     await (supabase as any).from("chat_messages_v2").insert({
       conversation_id: conversationId,
       sender_user_id: authUserId,
