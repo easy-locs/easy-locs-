@@ -26,28 +26,52 @@ export function useAttachments(params: {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const trace = useCallback((step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
+    const logger = phase === "error" ? console.error : console.log;
+    logger(`[ATTACHMENT][${step}] ${phase}:`, payload ?? {});
+  }, []);
+
   /** Upload a file/blob to storage and return signed URL */
   const uploadToStorage = async (file: File | Blob, path: string): Promise<string | null> => {
     const bucket = "chat-attachments";
+    trace("attachment.storage.upload", "input", { path, bucket, size: (file as File)?.size ?? null, type: (file as File)?.type ?? null });
     const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
     if (error) {
-      console.error("[useAttachments] upload error:", error.message);
+      trace("attachment.storage.upload", "error", { message: error.message });
       return null;
     }
     const { data: signedData } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
-    return signedData?.signedUrl || null;
+    const signedUrl = signedData?.signedUrl || null;
+    if (!signedUrl) {
+      trace("attachment.storage.upload", "error", { reason: "missing_signed_url", path });
+      return null;
+    }
+    trace("attachment.storage.upload", "output", { path, signedUrlLength: signedUrl.length });
+    return signedUrl;
   };
 
   /** Resolve or auto-create v2ConversationId */
   const resolveConversationId = async (authUserId: string): Promise<string | null> => {
     const thread = params.thread;
-    if (!thread) return null;
+    trace("attachment.conversation.resolve", "input", {
+      threadId: thread?.id ?? null,
+      v2ConversationId: thread?.v2ConversationId ?? null,
+      peerUserId: thread?.peerUserId ?? null,
+    });
+    if (!thread) {
+      trace("attachment.conversation.resolve", "error", { reason: "missing_thread" });
+      return null;
+    }
 
-    if (thread.v2ConversationId) return thread.v2ConversationId;
+    if (thread.v2ConversationId) {
+      trace("attachment.conversation.resolve", "output", { conversationId: thread.v2ConversationId, strategy: "existing_thread" });
+      return thread.v2ConversationId;
+    }
 
-    // Auto-create if we have a peer
     if (thread.peerUserId) {
+      trace("attachment.conversation.resolve", "output", { strategy: "needs_auto_create" });
       try {
+        trace("attachment.auth.resolve", "output", { authUserId });
         const conv = await createOrGetDirectConversation({
           myUserId: authUserId,
           myOrbitId: params.myOrbitId,
@@ -55,41 +79,50 @@ export function useAttachments(params: {
           peerOrbitId: thread.peerOrbitId,
         });
         params.onThreadUpdate?.(thread.id, { v2ConversationId: conv.id });
+        trace("attachment.conversation.resolve", "output", { conversationId: conv.id, strategy: "auto_create" });
         return conv.id;
       } catch (err: any) {
-        console.error("[useAttachments] auto-create conversation failed", err);
+        trace("attachment.conversation.resolve", "error", { message: err?.message || "auto_create_failed" });
       }
     }
 
+    trace("attachment.conversation.resolve", "error", { reason: "unresolved_conversation" });
     return null;
   };
 
   /** Handle single file upload */
   const handleFileUpload = useCallback(async (file: File) => {
-    console.log("%c[TRACE][ATTACHMENT] STEP 1 — UI upload triggered", "color:cyan;font-weight:bold", {
+    trace("attachment.pick", "input", {
       fileName: file.name,
       fileType: file.type,
       fileSize: file.size,
       threadId: params.thread?.id,
     });
 
-    console.log("%c[TRACE][ATTACHMENT] STEP 3 — checking auth", "color:cyan;font-weight:bold");
+    trace("attachment.validate", "input", {
+      exists: !!file,
+      size: file.size,
+      type: file.type,
+    });
+    if (!file) {
+      trace("attachment.validate", "error", { reason: "missing_file" });
+      toast.error("No file selected.");
+      return;
+    }
+    trace("attachment.validate", "output", { valid: true, fileName: file.name });
+
+    trace("attachment.auth.resolve", "input", { threadId: params.thread?.id ?? null });
     const authUserId = await params.resolveAuthUserId();
-    console.log("%c[TRACE][ATTACHMENT] STEP 3 — auth result:", "color:cyan;font-weight:bold", { authUserId: authUserId || "NULL" });
+    trace("attachment.auth.resolve", "output", { authUserId: authUserId || null });
     if (!authUserId) {
-      console.error("%c[TRACE][ATTACHMENT] ❌ BLOCKED — no auth", "color:red;font-weight:bold");
+      trace("attachment.auth.resolve", "error", { reason: "missing_auth" });
       toast.error("Authentication required to send files.");
       return;
     }
 
-    console.log("%c[TRACE][ATTACHMENT] STEP 4 — resolving conversationId", "color:cyan;font-weight:bold", {
-      v2ConversationId: params.thread?.v2ConversationId,
-      peerUserId: params.thread?.peerUserId,
-    });
     const conversationId = await resolveConversationId(authUserId);
-    console.log("%c[TRACE][ATTACHMENT] STEP 4 — result:", "color:cyan;font-weight:bold", { conversationId: conversationId || "NULL" });
     if (!conversationId) {
-      console.error("%c[TRACE][ATTACHMENT] ❌ BLOCKED — no conversationId", "color:red;font-weight:bold");
+      trace("attachment.conversation.resolve", "error", { reason: "missing_conversationId_after_resolution" });
       toast.error("No conversation found. Open a thread first.");
       return;
     }
@@ -100,17 +133,15 @@ export function useAttachments(params: {
       const orgId = params.orgId || "orbit";
       const path = `${orgId}/${params.thread!.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${file.name.split(".").pop() || "bin"}`;
       
-      console.log("%c[TRACE][ATTACHMENT] STEP 5a — uploading to storage", "color:cyan;font-weight:bold", { path, bucket: "chat-attachments" });
       const finalUrl = await uploadToStorage(file, path);
       if (!finalUrl) {
-        console.error("%c[TRACE][ATTACHMENT] ❌ STORAGE UPLOAD FAILED", "color:red;font-weight:bold");
+        trace("attachment.storage.upload", "error", { reason: "upload_returned_null", path });
         throw new Error("File upload failed. Please try again.");
       }
-      console.log("%c[TRACE][ATTACHMENT] STEP 5a — ✅ storage OK", "color:lime;font-weight:bold", { urlLength: finalUrl.length });
 
       const content = isMedia ? `📷 ${file.name}` : `📎 ${file.name}`;
 
-      console.log("%c[TRACE][ATTACHMENT] STEP 5b — DB insert chat_messages_v2", "color:cyan;font-weight:bold", { conversationId, type: isMedia ? "media" : "file" });
+      trace("attachment.message.insert", "input", { conversationId, type: isMedia ? "media" : "file", fileName: file.name });
       const { error } = await db.from("chat_messages_v2").insert({
         conversation_id: conversationId,
         sender_user_id: authUserId,
@@ -121,10 +152,10 @@ export function useAttachments(params: {
         metadata: { url: finalUrl },
       });
       if (error) {
-        console.error("%c[TRACE][ATTACHMENT] STEP 5b — ❌ DB INSERT FAILED", "color:red;font-weight:bold", error);
+        trace("attachment.message.insert", "error", { message: error.message, code: error.code });
         throw error;
       }
-      console.log("%c[TRACE][ATTACHMENT] STEP 5b — ✅ DB INSERT OK", "color:lime;font-weight:bold");
+      trace("attachment.message.insert", "output", { conversationId, inserted: true, fileName: file.name });
 
       await db.from("conversations_v2").update({
         last_message_at: new Date().toISOString(),
@@ -132,14 +163,16 @@ export function useAttachments(params: {
         updated_at: new Date().toISOString(),
       }).eq("id", conversationId);
 
-      console.log("%c[TRACE][ATTACHMENT] STEP 7 — ✅ COMPLETE", "color:lime;font-weight:bold");
+      trace("attachment.preview.update", "output", { conversationId, preview: content, threadId: params.thread?.id ?? null });
+      trace("attachment.realtime.reconcile", "output", { expectedViaRealtime: true, conversationId });
       toast.success("File sent");
     } catch (e: any) {
-      console.error("%c[TRACE][ATTACHMENT] ❌ FAILED", "color:red;font-weight:bold", e);
+      trace("attachment.message.insert", "error", { message: e?.message || "attachment_failed" });
       toast.error(e?.message || "Upload failed");
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
-  }, [params]);
+  }, [params, trace]);
 
   /** Batch file send */
   const sendFiles = useCallback(async (files: File[]) => {

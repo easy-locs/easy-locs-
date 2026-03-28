@@ -13,15 +13,26 @@ import type { ConversationThread } from "../types";
 export function useCallActions(thread: ConversationThread | null, workspaceId: string | null) {
   const { startCall, isInCall, isStartingCall } = useCall();
 
+  const trace = useCallback((step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
+    const logger = phase === "error" ? console.error : console.log;
+    logger(`[CALL][${step}] ${phase}:`, payload ?? {});
+  }, []);
+
   const handleStartCall = useCallback((isVideo: boolean) => {
     void runGuardedAction(
       async () => {
+        trace("call.button.trigger", "input", {
+          threadId: thread?.id ?? null,
+          isVideo,
+          workspaceId,
+        });
+
         const isDirect = thread?.conversationType === "direct";
         const targetId = isDirect
           ? (thread?.peerUserId || thread?.peerOrbitId)
           : (thread?.peerUserId || thread?.peerOrbitId || thread?.tenantId);
 
-        console.log("[useCallActions] handleStartCall", {
+        trace("call.target.resolve", "input", {
           threadId: thread?.id,
           v2ConversationId: thread?.v2ConversationId,
           peerUserId: thread?.peerUserId,
@@ -33,11 +44,24 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
         });
 
         if (!targetId) {
+          trace("call.target.resolve", "error", { reason: "no_target_resolved" });
           toast.error("Unable to resolve call target — no peer found");
           throw new Error("No call target resolved");
         }
 
+        trace("call.target.resolve", "output", {
+          targetId,
+          contextId: thread?.v2ConversationId || thread?.contextId || null,
+        });
+
         haptic("medium");
+        trace("call.rpc.create", "input", {
+          targetId,
+          threadId: thread?.v2ConversationId || thread?.threadId || null,
+          contextType: thread?.conversationType || "direct",
+          contextId: thread?.v2ConversationId || thread?.contextId || null,
+          isVideo,
+        });
         await startCall({
           targetId,
           threadId: thread?.v2ConversationId || thread?.threadId,
@@ -47,6 +71,7 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
           peerName: thread?.name || "Contact",
           isVideo,
         });
+        trace("call.rpc.create", "output", { requested: true, targetId, isVideo });
       },
       {
         routeKey: "orbit",
@@ -57,9 +82,9 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
         slowMs: 1800,
       },
     ).catch((err) => {
-      console.error("[useCallActions] call failed", err);
+      trace("call.rpc.create", "error", { message: err?.message || "call_failed" });
     });
-  }, [thread, startCall]);
+  }, [thread, startCall, workspaceId, trace]);
 
   return { handleStartCall, isInCall, isStartingCall };
 }
