@@ -22,8 +22,11 @@ import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { haptic } from "@/lib/haptics";
-import { supabase } from "@/integrations/supabase/client";
 import { usePrivacySettings } from "@/hooks/usePrivacySettings";
+import {
+  uploadAvatar, saveProfile, archiveAllChats,
+  clearAllChats, deleteAllChats, exportChatHistory, getBlockedCount,
+} from "@/lib/orbit/orbit-account.repository";
 import { getNotifAlertPrefs, setNotifAlertPrefs, requestNotificationPermission, type NotifAlertPrefs } from "@/lib/notif-alert-prefs";
 import { useUsername } from "@/hooks/useUsername";
 import { useOrbitAccountActions } from "@/hooks/orbit/useOrbitAccountActions";
