@@ -438,6 +438,17 @@ export const CustomerPartyOrderPage = safeLazy(() => import("@/pages/customer/Cu
 export const CustomerRewardRedemptionPage = safeLazy(() => import("@/pages/customer/CustomerRewardRedemptionPage"), "CustomerRewardRedemptionPage");
 export const CustomerShareCartPage = safeLazy(() => import("@/pages/customer/CustomerShareCartPage"), "CustomerShareCartPage");
 
+// ── Universe Hubs (vertical browsing) ──
+export const FoodHub = safeLazy(() => import("@/pages/universe/FoodHub"), "FoodHub");
+export const GroceryHub = safeLazy(() => import("@/pages/universe/GroceryHub"), "GroceryHub");
+export const ServicesHub = safeLazy(() => import("@/pages/universe/ServicesHub"), "ServicesHub");
+export const RetailHub = safeLazy(() => import("@/pages/universe/RetailHub"), "RetailHub");
+export const PropertyHubUniverse = safeLazy(() => import("@/pages/universe/PropertyHub"), "PropertyHubUniverse");
+export const HealthcareHub = safeLazy(() => import("@/pages/universe/HealthcareHub"), "HealthcareHub");
+export const ElectronicsHub = safeLazy(() => import("@/pages/universe/ElectronicsHub"), "ElectronicsHub");
+export const GiftsHub = safeLazy(() => import("@/pages/universe/GiftsHub"), "GiftsHub");
+export const PetsHub = safeLazy(() => import("@/pages/universe/PetsHub"), "PetsHub");
+
 // ── Map/Radar ──
 export const SuperMapPage = safeLazy(() => import("@/pages/SuperMapPage"), "SuperMapPage");
 export const CanonicalMapTestPage = safeLazy(() => import("@/pages/CanonicalMapTestPage"), "CanonicalMapTestPage");
