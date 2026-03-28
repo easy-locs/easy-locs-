@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FileText, Upload, Loader2, CheckCircle, Clock, XCircle, Download, Filter, PenTool } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as tenantRepo from "@/repositories/tenant-portal.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
 import { useLeaseWorkflow } from "@/hooks/useLeaseWorkflow";
@@ -144,12 +144,12 @@ const TenantDocuments = () => {
     setOpeningId(doc.id);
     try {
       let signedUrl: string | null = null;
-      const primary = await supabase.storage.from(fileRef.bucket).createSignedUrl(fileRef.path, 3600);
-      if (primary.data?.signedUrl) {
-        signedUrl = primary.data.signedUrl;
-      } else if (fileRef.bucket !== "rental-docs") {
-        const fallback = await supabase.storage.from("rental-docs").createSignedUrl(fileRef.path, 3600);
-        signedUrl = fallback.data?.signedUrl ?? null;
+      try {
+        signedUrl = await tenantRepo.createSignedUrl(fileRef.bucket, fileRef.path, 3600);
+      } catch {
+        if (fileRef.bucket !== "rental-docs") {
+          signedUrl = await tenantRepo.createSignedUrl("rental-docs", fileRef.path, 3600);
+        }
       }
       if (!signedUrl) throw primary.error || new Error(T.linkUnavailable);
       downloadFile(signedUrl, doc.filename || `${doc.label}.pdf`);
@@ -168,9 +168,9 @@ const TenantDocuments = () => {
     }
     setOpeningId(doc.id);
     try {
-      const { data } = await supabase.storage.from("rental-docs").createSignedUrl(doc.pdf_url, 3600);
-      if (!data?.signedUrl) throw new Error(T.linkUnavailable);
-      downloadFile(data.signedUrl, `${doc.title || "document"}.pdf`);
+      const signedUrl = await tenantRepo.createSignedUrl("rental-docs", doc.pdf_url, 3600);
+      if (!signedUrl) throw new Error(T.linkUnavailable);
+      downloadFile(signedUrl, `${doc.title || "document"}.pdf`);
     } catch (err: any) {
       toast({ title: T.cannotOpenDoc, description: err.message, variant: "destructive" });
     } finally {
@@ -198,26 +198,13 @@ const TenantDocuments = () => {
     if (!file || !user || !tenantId || !orgId) return;
     setUploading(true);
     const path = `${orgId}/${tenantId}/${Date.now()}_${file.name}`;
-    const { error: upErr } = await supabase.storage.from("rental-docs").upload(path, file);
-    if (upErr) {
-      toast({ title: T.error, description: upErr.message, variant: "destructive" });
-      setUploading(false);
-      return;
-    }
-    const label = DOC_TYPES.find(d => d.value === docType)?.label || docType;
-    const { error } = await supabase.from("tenant_documents").insert({
-      tenant_id: tenantId, org_id: orgId, uploaded_by: user.id,
-      doc_type: docType, label, filename: file.name, file_url: path,
-    });
-    if (error) {
-      toast({ title: T.error, description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await tenantRepo.uploadTenantDoc(tenantId, orgId, user.id, file, docType, DOC_TYPES.find(d => d.value === docType)?.label || docType);
       toast({ title: T.docSent, description: T.docSentDesc });
-      // Refresh uploaded docs
-      const { data } = await supabase.from("tenant_documents")
-        .select("id, label, filename, file_url, status")
-        .eq("tenant_id", tenantId).order("created_at", { ascending: false });
+      const data = await tenantRepo.fetchTenantUploadedDocs(tenantId);
       setMyDocs((data as TenantDoc[]) || []);
+    } catch (err: any) {
+      toast({ title: T.error, description: err.message, variant: "destructive" });
     }
     setUploading(false);
     e.target.value = "";
