@@ -59,6 +59,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const activeCallRef = useRef<{ callId: string; threadId?: string; orgId: string; contextId?: string } | null>(null);
   const startingCallRef = useRef(false); // Lock to prevent duplicate startCall
 
+  const trace = useCallback((step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
+    const logger = phase === "error" ? console.error : console.log;
+    logger(`[CALL][${step}] ${phase}:`, payload ?? {});
+  }, []);
+
   // Keep ref in sync for use in realtime closures
   useEffect(() => { incomingCallIdRef.current = incomingCallId; }, [incomingCallId]);
 
@@ -259,9 +264,22 @@ export function CallProvider({ children }: { children: ReactNode }) {
       peerName: string;
       isVideo?: boolean;
     }) => {
-      if (!user) return;
+      trace("call.rpc.create", "input", {
+        targetId: opts.targetId,
+        threadId: opts.threadId || null,
+        contextType: opts.contextType || "listing",
+        contextId: opts.contextId || null,
+        peerName: opts.peerName,
+        isVideo: !!opts.isVideo,
+      });
+
+      if (!user) {
+        trace("call.rpc.create", "error", { reason: "missing_user_context" });
+        toast.error("Authentication required.");
+        return;
+      }
       if (startingCallRef.current) {
-        console.log("[CallProvider] startCall ignored (already starting)");
+        trace("call.rpc.create", "error", { reason: "already_starting" });
         return;
       }
 
@@ -273,11 +291,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
         const authUser = authData?.user;
 
         if (authError || !authUser?.id) {
+          trace("call.rpc.create", "error", { reason: "auth_failed", message: authError?.message || null });
           toast.error(t("call.error.session_expired") || "Session expired. Please log in again.");
           return;
         }
 
-        console.log("[CallProvider] startCall requested", {
+        trace("call.log.insert", "input", {
           targetId: opts.targetId,
           contextType: opts.contextType || "listing",
           contextId: opts.contextId || null,
@@ -286,7 +305,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
           authUserId: authUser.id,
         });
 
+        trace("call.target.resolve", "input", { rawTargetId: opts.targetId, callerId: authUser.id });
         const receiverOrbitId = await resolveReceiverUserId(opts.targetId);
+        trace("call.target.resolve", receiverOrbitId ? "output" : "error", {
+          rawTargetId: opts.targetId,
+          receiverOrbitId: receiverOrbitId || null,
+        });
 
         if (!receiverOrbitId || receiverOrbitId === authUser.id) {
           const reason = receiverOrbitId === authUser.id
@@ -297,7 +321,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        console.log("[CallProvider] sending to RPC", {
+        trace("call.rpc.create", "input", {
           callerOrbitId: authUser.id,
           rawTarget: opts.targetId,
           receiverOrbitId,
@@ -314,7 +338,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           _is_video: opts.isVideo || false,
         });
 
-        console.log("[CallProvider] create_call_idempotent response", { callId, error: error?.message || null });
+        trace("call.rpc.create", error || !callId ? "error" : "output", { callId: callId || null, error: error?.message || null });
 
         if (error || !callId) {
           console.error("Failed to create call:", error);
@@ -340,17 +364,19 @@ export function CallProvider({ children }: { children: ReactNode }) {
         setShowCallDialog(true);
         activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.targetId, contextId: opts.contextId };
 
-        console.log("[CallProvider] call manager initialized", { callId });
+        trace("call.log.insert", "output", { callId: callId as string, threadId: opts.threadId || null });
+        trace("call.signal.subscribe", "output", { callId: callId as string, phase: "manager_initialized" });
         platformBus.emit("call:started", { callId, role: "caller", isVideo: opts.isVideo || false, peerName: opts.peerName }, "orbit");
+        trace("call.ui.active", "output", { callId: callId as string, showCallDialog: true, peerName: opts.peerName });
         await manager.startCall(opts.isVideo || false);
       } catch (err) {
-        console.error("Failed to start call:", err);
+        trace("call.rpc.create", "error", { message: err instanceof Error ? err.message : String(err) });
       } finally {
         startingCallRef.current = false;
         setIsStartingCall(false);
       }
     },
-    [resolveReceiverUserId, t, user]
+    [resolveReceiverUserId, t, user, trace]
   );
 
   // Legacy call.request listener removed — contactStore purged. Use useCall().startCall directly.

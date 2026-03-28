@@ -101,14 +101,24 @@ export function useMessageLoader({
   const typingChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<any>(null);
 
+  const trace = useCallback((step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
+    const logger = phase === "error" ? console.error : console.log;
+    logger(`[THREAD_OPEN][${step}] ${phase}:`, payload ?? {});
+  }, []);
+
+  const realtimeTrace = useCallback((step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
+    const logger = phase === "error" ? console.error : console.log;
+    logger(`[SEND_MESSAGE][${step}] ${phase}:`, payload ?? {});
+  }, []);
+
   const loadMessages = useCallback(async () => {
-    console.log("%c[TRACE][OPEN_THREAD] STEP 2 — loadMessages handler entered", "color:cyan;font-weight:bold", {
+    trace("messages.load.request", "input", {
       threadId: thread?.id,
       v2ConversationId: thread?.v2ConversationId,
     });
 
     if (!thread?.v2ConversationId) {
-      console.warn("%c[TRACE][OPEN_THREAD] ❌ NO v2ConversationId — cannot load messages", "color:orange;font-weight:bold", { threadId: thread?.id });
+      trace("messages.load.request", "error", { reason: "missing_v2ConversationId", threadId: thread?.id ?? null });
       setRawMessages([]);
       setPendingOffline([]);
       setMessagesLoading(false);
@@ -117,28 +127,34 @@ export function useMessageLoader({
 
     const conversationId = thread.v2ConversationId;
 
-    // Show cached messages instantly, then refresh in background
+    trace("messages.load.request", "output", { conversationId });
+
     const cached = messageCache.get(conversationId);
     if (cached?.length) {
-      console.log("%c[TRACE][OPEN_THREAD] STEP 2a — cache HIT, showing", "color:lime;font-weight:bold", { count: cached.length });
+      trace("messages.load.cache", "output", { hit: true, count: cached.length, conversationId });
       setRawMessages(cached);
       setMessagesLoading(false);
     } else {
-      console.log("%c[TRACE][OPEN_THREAD] STEP 2b — cache MISS, loading from DB", "color:orange;font-weight:bold");
+      trace("messages.load.cache", "output", { hit: false, count: 0, conversationId });
       setMessagesLoading(true);
     }
 
     if (!offline.isOnline) {
-      console.warn("%c[TRACE][OPEN_THREAD] ⚠ OFFLINE — loading from local cache", "color:orange;font-weight:bold");
+      trace("messages.load.cache", "input", { source: "offline_cache", conversationId });
       const cached = await offline.getCachedMessages();
       const pending = await offline.getThreadPending();
       setRawMessages((cached ?? []) as ChatMessage[]);
       setPendingOffline(pending ?? []);
       setMessagesLoading(false);
+      trace("messages.load.render", "output", {
+        source: "offline_cache",
+        rawCount: (cached ?? []).length,
+        pendingCount: (pending ?? []).length,
+      });
       return;
     }
 
-    console.log("%c[TRACE][OPEN_THREAD] STEP 5 — DB query chat_messages_v2", "color:cyan;font-weight:bold", { conversationId });
+    trace("messages.load.db", "input", { conversationId, limit: 300 });
     const { data, error } = await db
       .from("chat_messages_v2")
       .select("*")
@@ -148,32 +164,34 @@ export function useMessageLoader({
       .limit(300);
 
     if (error) {
-      console.error("%c[TRACE][OPEN_THREAD] STEP 5 — ❌ DB QUERY FAILED", "color:red;font-weight:bold", error);
+      trace("messages.load.db", "error", { message: error.message, code: error.code, conversationId });
       setMessagesLoading(false);
       return;
     }
 
+    trace("messages.load.db", "output", { rowCount: (data ?? []).length, conversationId });
     const mapped = (data ?? []).map((m: any) => mapV2ToChat(m, conversationId));
-    console.log("%c[TRACE][OPEN_THREAD] STEP 5 — ✅ DB OK", "color:lime;font-weight:bold", { messageCount: mapped.length });
+    trace("messages.load.map", "output", { mappedCount: mapped.length, conversationId });
     setRawMessages(mapped);
     messageCache.set(conversationId, mapped);
     offline.cacheMessages(mapped);
     setMessagesLoading(false);
     setPendingOffline([]);
-    console.log("%c[TRACE][OPEN_THREAD] STEP 7 — ✅ UI state updated", "color:lime;font-weight:bold");
+    trace("messages.load.cache", "output", { storedCount: mapped.length, conversationId });
+    trace("messages.load.render", "output", { renderedCount: mapped.length, conversationId });
 
     const unreadIds = (data ?? [])
       .filter((m: any) => !m.read_at && m.sender_user_id !== userId)
       .map((m: any) => m.id);
 
     if (readReceipts && unreadIds.length > 0) {
-      console.log("%c[TRACE][OPEN_THREAD] marking", "color:cyan;font-weight:bold", unreadIds.length, "messages as read");
+      trace("messages.load.render", "input", { action: "mark_read", unreadCount: unreadIds.length, conversationId });
       db.from("chat_messages_v2")
         .update({ read_at: new Date().toISOString() })
         .in("id", unreadIds)
         .then(() => onThreadUpdate(thread.id, { unreadCount: 0 }));
     }
-  }, [thread, userId, readReceipts, onThreadUpdate, offline]);
+  }, [thread, userId, readReceipts, onThreadUpdate, offline, trace]);
 
   useEffect(() => {
     void loadMessages();
@@ -189,7 +207,7 @@ export function useMessageLoader({
     if (!thread?.v2ConversationId) return;
 
     const conversationId = thread.v2ConversationId;
-    console.log("%c[TRACE][REALTIME] STEP 6 — subscribing to channel", "color:magenta;font-weight:bold", { conversationId, channel: `rt:v2:${conversationId}` });
+    realtimeTrace("message.realtime.echo", "input", { conversationId, channel: `rt:v2:${conversationId}` });
 
     const channel = supabase
       .channel(`rt:v2:${conversationId}`)
@@ -203,9 +221,12 @@ export function useMessageLoader({
         },
         async (payload) => {
           const msg = payload.new as any;
-          if (!msg?.id) return;
+          if (!msg?.id) {
+            realtimeTrace("message.realtime.echo", "error", { reason: "missing_message_id", conversationId });
+            return;
+          }
 
-          console.log("%c[TRACE][REALTIME] STEP 6 — INSERT received", "color:magenta;font-weight:bold", {
+          realtimeTrace("message.realtime.echo", "output", {
             id: msg.id,
             sender: msg.sender_user_id,
             body: (msg.body || "").slice(0, 30),
@@ -216,13 +237,13 @@ export function useMessageLoader({
 
           setRawMessages((prev) => {
             if (prev.some((m) => m.id === mapped.id)) {
-              console.log("%c[TRACE][REALTIME] dedup — already present", "color:yellow", msg.id);
+              realtimeTrace("message.realtime.echo", "output", { deduped: true, id: msg.id });
               return prev;
             }
             const withoutOptimistic = msg.sender_user_id === userId
               ? prev.filter((m) => !(m.pending && m.sender_id === userId && m.content === mapped.content))
               : prev;
-            console.log("%c[TRACE][REALTIME] STEP 7 — UI updated with new message", "color:lime;font-weight:bold");
+            realtimeTrace("message.optimistic.reconcile", "output", { id: mapped.id, replacedOptimistic: msg.sender_user_id === userId });
             return [...withoutOptimistic, mapped];
           });
 
@@ -241,6 +262,12 @@ export function useMessageLoader({
           onThreadUpdate(thread.id, {
             lastMessageTime: msg.created_at,
             lastMessagePreview: msg.body?.slice?.(0, 120) ?? "",
+          });
+
+          realtimeTrace("thread.preview.update", "output", {
+            threadId: thread.id,
+            lastMessagePreview: msg.body?.slice?.(0, 120) ?? "",
+            lastMessageTime: msg.created_at,
           });
         }
       )
@@ -296,7 +323,7 @@ export function useMessageLoader({
       supabase.removeChannel(channel);
       supabase.removeChannel(typingChannel);
     };
-  }, [thread, userId, readReceipts, onThreadUpdate]);
+  }, [thread, userId, readReceipts, onThreadUpdate, realtimeTrace]);
 
   const broadcastTyping = useCallback(
     (typingEnabled: boolean) => {

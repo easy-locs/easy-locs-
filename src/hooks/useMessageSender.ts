@@ -72,8 +72,13 @@ export function useMessageSender(params: Params) {
   const [sending, setSending] = useState(false);
   const [newMessage, setNewMessage] = useState("");
 
+  const trace = useCallback((step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
+    const logger = phase === "error" ? console.error : console.log;
+    logger(`[SEND_MESSAGE][${step}] ${phase}:`, payload ?? {});
+  }, []);
+
   const handleSend = useCallback(async () => {
-    console.log("%c[TRACE][SEND_MSG] STEP 1 — UI onClick triggered", "color:cyan;font-weight:bold");
+    trace("composer.read", "input", { rawValue: newMessage, trimmedValue: newMessage.trim(), length: newMessage.length });
 
     const {
       thread,
@@ -95,7 +100,7 @@ export function useMessageSender(params: Params) {
       disappearTTL,
     } = params;
 
-    console.log("%c[TRACE][SEND_MSG] STEP 2 — handler entered", "color:cyan;font-weight:bold", {
+    trace("composer.read", "output", {
       hasThread: !!thread,
       threadId: thread?.id,
       v2ConversationId: thread?.v2ConversationId,
@@ -105,14 +110,32 @@ export function useMessageSender(params: Params) {
       messagePreview: newMessage.trim().slice(0, 30),
     });
 
-    if (!thread || !newMessage.trim()) {
-      console.error("%c[TRACE][SEND_MSG] ❌ BLOCKED — empty message or no thread", "color:red;font-weight:bold", { hasThread: !!thread, msg: newMessage });
+    trace("composer.validate", "input", {
+      hasThread: !!thread,
+      trimmedLength: newMessage.trim().length,
+    });
+
+    if (!thread) {
+      trace("composer.validate", "error", { reason: "missing_thread" });
+      toast.error("No thread selected.");
       return;
     }
 
+    if (!newMessage.trim()) {
+      trace("composer.validate", "error", { reason: "empty_message" });
+      toast.error("Message is empty.");
+      return;
+    }
+
+    trace("composer.validate", "output", {
+      valid: true,
+      threadId: thread.id,
+      trimmedLength: newMessage.trim().length,
+    });
+
     let conversationId = thread.v2ConversationId;
 
-    console.log("[useMessageSender] THREAD_DEBUG", {
+    trace("conversation.resolve", "input", {
       threadId: thread.id,
       v2ConversationId: conversationId,
       peerUserId: thread.peerUserId,
@@ -121,21 +144,18 @@ export function useMessageSender(params: Params) {
       conversationType: thread.conversationType,
     });
 
-    // Auto-create V2 conversation if missing
     if (!conversationId) {
-      console.warn("%c[TRACE][SEND_MSG] STEP 4a — NO v2ConversationId, attempting resolve/create", "color:orange;font-weight:bold");
-
-      console.log("%c[TRACE][SEND_MSG] STEP 3 — checking auth (early)", "color:cyan;font-weight:bold");
+      trace("auth.resolve", "input", { stage: "pre-autocreate" });
       const earlyAuthUserId = await resolveAuthUserId();
-      console.log("%c[TRACE][SEND_MSG] STEP 3 — auth result:", "color:cyan;font-weight:bold", { earlyAuthUserId: earlyAuthUserId || "NULL" });
+      trace("auth.resolve", "output", { stage: "pre-autocreate", authUserId: earlyAuthUserId || null });
       if (!earlyAuthUserId) {
-        console.error("%c[TRACE][SEND_MSG] ❌ BLOCKED — no auth user", "color:red;font-weight:bold");
+        trace("auth.resolve", "error", { stage: "pre-autocreate", reason: "missing_auth_user" });
         toast.error("Authentication required.");
         return;
       }
 
-      // Try contextId as conversation ID first (from navigation)
       if (thread.contextId) {
+        trace("conversation.resolve", "input", { strategy: "contextId", candidate: thread.contextId });
         const { data: existingConv } = await (supabase as any)
           .from("conversations_v2")
           .select("id")
@@ -144,11 +164,12 @@ export function useMessageSender(params: Params) {
         if (existingConv?.id) {
           conversationId = existingConv.id;
           onThreadUpdate(thread.id, { v2ConversationId: conversationId });
+          trace("conversation.resolve", "output", { strategy: "contextId", conversationId });
         }
       }
 
-      // Try threadId as conversation ID
       if (!conversationId && thread.threadId) {
+        trace("conversation.resolve", "input", { strategy: "threadId", candidate: thread.threadId });
         const { data: existingConv } = await (supabase as any)
           .from("conversations_v2")
           .select("id")
@@ -157,11 +178,17 @@ export function useMessageSender(params: Params) {
         if (existingConv?.id) {
           conversationId = existingConv.id;
           onThreadUpdate(thread.id, { v2ConversationId: conversationId });
+          trace("conversation.resolve", "output", { strategy: "threadId", conversationId });
         }
       }
 
-      // If still missing, auto-create from peerUserId
       if (!conversationId && thread.peerUserId) {
+        trace("conversation.autoCreate", "input", {
+          myUserId: earlyAuthUserId,
+          myOrbitId,
+          peerUserId: thread.peerUserId,
+          peerOrbitId: thread.peerOrbitId,
+        });
         try {
           const conv = await createOrGetDirectConversation({
             myUserId: earlyAuthUserId,
@@ -171,37 +198,31 @@ export function useMessageSender(params: Params) {
           });
           conversationId = conv.id;
           onThreadUpdate(thread.id, { v2ConversationId: conv.id });
+          trace("conversation.autoCreate", "output", { conversationId: conv.id });
         } catch (err: any) {
-          console.error("[useMessageSender] AUTO_CREATE_FAILED", err);
+          trace("conversation.autoCreate", "error", { message: err?.message || "auto_create_failed" });
           toast.error("Failed to create conversation");
           return;
         }
       }
 
       if (!conversationId) {
-        console.error("%c[TRACE][SEND_MSG] ❌ BLOCKED — conversation could not be resolved or created", "color:red;font-weight:bold");
+        trace("conversation.resolve", "error", { reason: "unresolved_conversation" });
         toast.error("No conversation found. Try reopening the chat.");
         return;
       }
-      console.log("%c[TRACE][SEND_MSG] STEP 4b — conversation resolved:", "color:lime;font-weight:bold", conversationId);
     }
 
-    console.log("%c[TRACE][SEND_MSG] STEP 3 — checking auth", "color:cyan;font-weight:bold");
+    trace("conversation.resolve", "output", { conversationId });
+
+    trace("auth.resolve", "input", { stage: "send" });
     const authUserId = await resolveAuthUserId();
-    console.log("%c[TRACE][SEND_MSG] STEP 3 — auth result:", "color:cyan;font-weight:bold", { authUserId: authUserId || "NULL" });
+    trace("auth.resolve", "output", { stage: "send", authUserId: authUserId || null });
     if (!authUserId) {
-      console.error("%c[TRACE][SEND_MSG] ❌ BLOCKED — no auth user", "color:red;font-weight:bold");
+      trace("auth.resolve", "error", { stage: "send", reason: "missing_auth_user" });
       toast.error("Authentication required.");
       return;
     }
-
-    console.log("%c[TRACE][SEND_MSG] STEP 4 — conversation OK", "color:lime;font-weight:bold", { conversationId });
-    console.log("%c[TRACE][SEND_MSG] STEP 5 — preparing DB insert", "color:cyan;font-weight:bold", {
-      conversationId,
-      authUserId,
-      myOrbitId,
-      body: newMessage.trim().slice(0, 40),
-    });
 
     const msgText = newMessage.trim();
     const optimisticId = `opt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -220,10 +241,17 @@ export function useMessageSender(params: Params) {
       reply_to_message_id: replyTo?.msgId ?? null,
     };
 
+    trace("message.optimistic.insert", "input", {
+      optimisticId,
+      conversationId,
+      senderId: authUserId,
+      preview: msgText.slice(0, 40),
+    });
     setRawMessages((prev) => [...prev, optimisticMsg]);
     setNewMessage("");
     const currentReply = replyTo;
     setReplyTo(null);
+    trace("message.optimistic.insert", "output", { optimisticId, inserted: true });
 
     let storedContent = msgText;
     let encryptedState = false;
@@ -236,8 +264,8 @@ export function useMessageSender(params: Params) {
           storedContent = encrypted;
           encryptedState = true;
         }
-      } catch {
-        // keep plaintext fallback
+      } catch (error: any) {
+        trace("message.db.confirm", "error", { stage: "encrypt", message: error?.message || "encryption_failed_plaintext_fallback" });
       }
     }
 
@@ -280,6 +308,12 @@ export function useMessageSender(params: Params) {
           lastMessagePreview: msgText.slice(0, 120),
         });
 
+        trace("thread.preview.update", "output", {
+          threadId: thread.id,
+          lastMessagePreview: msgText.slice(0, 120),
+          offline: true,
+        });
+
         platformBus.emit(
           "orbit:message_sent",
           {
@@ -295,6 +329,7 @@ export function useMessageSender(params: Params) {
         toast("Queued — will send when connection returns.");
         return;
       } catch (e: any) {
+        trace("message.optimistic.reconcile", "error", { stage: "offline_queue", message: e?.message || "queue_failed" });
         setRawMessages((prev) =>
           prev.map((m) => (m.id === optimisticId ? { ...m, pending: false, failed: true } : m))
         );
@@ -307,6 +342,12 @@ export function useMessageSender(params: Params) {
     setSending(true);
 
     try {
+      trace("message.db.insert", "input", {
+        conversationId,
+        senderUserId: authUserId,
+        senderOrbitId: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        preview: msgText.slice(0, 40),
+      });
       const { data, error } = await db
         .from("chat_messages_v2")
         .insert({
@@ -329,11 +370,12 @@ export function useMessageSender(params: Params) {
         .single();
 
       if (error) {
-        console.error("%c[TRACE][SEND_MSG] STEP 5 — ❌ DB INSERT FAILED", "color:red;font-weight:bold", error);
+        trace("message.db.insert", "error", { message: error.message, code: error.code });
         throw error;
       }
 
-      console.log("%c[TRACE][SEND_MSG] STEP 5 — ✅ DB INSERT OK", "color:lime;font-weight:bold", { id: data.id, created_at: data.created_at });
+      trace("message.db.insert", "output", { id: data.id, created_at: data.created_at });
+      trace("message.db.confirm", "output", { confirmedId: data.id, optimisticId });
 
       const preview = msgText.slice(0, 120);
 
@@ -360,11 +402,22 @@ export function useMessageSender(params: Params) {
         )
       );
 
+      trace("message.optimistic.reconcile", "output", {
+        optimisticId,
+        confirmedId: data.id,
+      });
+
       onThreadUpdate(thread.id, {
         lastMessage: msgText,
         lastMessageTime: data.created_at || now,
         lastMessagePreview: preview,
         unreadCount: 0,
+      });
+
+      trace("thread.preview.update", "output", {
+        threadId: thread.id,
+        lastMessagePreview: preview,
+        lastMessageTime: data.created_at || now,
       });
 
       platformBus.emit(
@@ -379,10 +432,16 @@ export function useMessageSender(params: Params) {
         { userId: authUserId, orgId: orgId || undefined }
       );
 
+      trace("message.realtime.echo", "output", {
+        emitted: "orbit:message_sent",
+        conversationId,
+        threadId: thread.id,
+      });
+
       setSecurityLevel("normal");
-      console.log("%c[TRACE][SEND_MSG] STEP 7 — ✅ UI state updated (optimistic replaced, thread preview set)", "color:lime;font-weight:bold");
+      trace("thread.preview.update", "output", { uiUpdated: true, securityLevel: "normal" });
     } catch (e: any) {
-      console.error("%c[TRACE][SEND_MSG] ❌ SEND FAILED", "color:red;font-weight:bold", e);
+      trace("message.db.confirm", "error", { message: e?.message || "send_failed" });
       setRawMessages((prev) =>
         prev.map((m) => (m.id === optimisticId ? { ...m, pending: false, failed: true } : m))
       );
@@ -391,7 +450,7 @@ export function useMessageSender(params: Params) {
     } finally {
       setSending(false);
     }
-  }, [newMessage, params]);
+  }, [newMessage, params, trace]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
