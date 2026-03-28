@@ -27,6 +27,22 @@ if (typeof window !== "undefined") {
   buildWindow.__EASYLOCS_BUILD_ID__ = APP_VERSION;
   console.info("[Boot] Easy-Locs version", APP_VERSION);
 
+  // ── Boot-time purge: kill stale service workers & caches ──
+  (async () => {
+    try {
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+        if (regs.length) console.info("[Boot] Purged", regs.length, "stale service worker(s)");
+      }
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+        if (keys.length) console.info("[Boot] Purged", keys.length, "stale cache(s)");
+      }
+    } catch { /* best-effort */ }
+  })();
+
   initMonitoring();
 }
 
