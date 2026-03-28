@@ -4,7 +4,7 @@
 import { useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRealtimeSubscription } from "../useRealtimeSubscription";
+import { useRealtimeSubscription } from "./useRealtimeSubscription";
 import { toast } from "sonner";
 import * as dealRepo from "@/repositories/deal.repository";
 
