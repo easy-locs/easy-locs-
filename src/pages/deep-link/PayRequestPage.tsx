@@ -6,7 +6,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UnifiedPayButton } from "@/payments/UnifiedPaymentSystem";
 import { markPaymentRequestPaid } from "@/payments/payment-request-hooks";
@@ -16,6 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Send, Shield, ArrowLeft, Receipt, CheckCircle2, CreditCard, Loader2 } from "lucide-react";
 import { PaymentRequestQr } from "@/components/qr/UniversalQrWidgets";
+import { createGuestCheckout } from "@/repositories/payments.repository";
+import { fetchPaymentRequest } from "@/repositories/payments.repository";
 
 /** Guest checkout button — creates a Stripe Checkout session and redirects */
 function GuestCheckoutButton({ requestId, amount, currency }: { requestId: string; amount: number; currency: string }) {
@@ -26,10 +27,7 @@ function GuestCheckoutButton({ requestId, amount, currency }: { requestId: strin
     setLoading(true);
     setError("");
     try {
-      const { data, error: fnErr } = await supabase.functions.invoke("create-guest-checkout", {
-        body: { payment_request_id: requestId },
-      });
-      if (fnErr) throw fnErr;
+      const data = await createGuestCheckout({ payment_request_id: requestId });
       if (data?.url) {
         window.location.href = data.url;
       } else {
@@ -72,15 +70,7 @@ export default function PayRequestPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["pay-request", requestId],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("payment_requests")
-        .select("*")
-        .eq("id", requestId)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => fetchPaymentRequest(requestId!),
     enabled: !!requestId,
   });
 

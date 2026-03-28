@@ -4,10 +4,10 @@
  */
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
 import { CheckCircle2, Download, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { verifyGuestPayment } from "@/repositories/payments.repository";
 
 export default function GuestPaymentSuccess() {
   const [params] = useSearchParams();
@@ -27,10 +27,9 @@ export default function GuestPaymentSuccess() {
 
     (async () => {
       try {
-        const { data, error: fnErr } = await supabase.functions.invoke("verify-guest-payment", {
-          body: { session_id: sessionId, payment_request_id: requestId },
+        const data = await verifyGuestPayment({
+          session_id: sessionId, payment_request_id: requestId,
         });
-        if (fnErr) throw fnErr;
         if (data?.verified) {
           setVerified(true);
         } else {

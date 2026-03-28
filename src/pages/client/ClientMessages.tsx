@@ -13,7 +13,6 @@ import { motion } from "framer-motion";
 import { Inbox, MessageCircle, Send, Loader2, Image as ImageIcon, Check, CheckCheck, Star, Search, Archive, Forward as ForwardIcon } from "lucide-react";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { format, formatDistanceToNow, differenceInMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -28,6 +27,8 @@ import ThreadActionsMenu from "@/components/communication/ThreadActionsMenu";
 import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import { validateMediaFile, MEDIA_ACCEPT } from "@/lib/media-utils";
 import { toast } from "sonner";
+import * as clientPortalRepo from "@/repositories/client-portal.repository";
+import { softDeleteMessage } from "@/repositories/chat.repository";
 
 interface ThreadSummary {
   context_id: string;
@@ -64,27 +65,16 @@ const ClientMessages = () => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch threads — includes both contact_email threads AND direct threads where user is sender
+  // Fetch threads
   useEffect(() => {
     if (!user?.id) { setLoading(false); return; }
     const fetchThreads = async () => {
-      // Fetch messages where user is involved (by email or by sender_id for direct threads)
       const [byEmail, bySender] = await Promise.all([
-        user.email ? (supabase as any)
-          .from("chat_messages_v2")
-          .select("conversation_id, sender_user_id, body, created_at, metadata")
-          .eq("metadata->>contact_email", user.email.toLowerCase())
-          .order("created_at", { ascending: false })
-          .limit(500) : { data: [] },
-        (supabase as any)
-          .from("chat_messages_v2")
-          .select("conversation_id, sender_user_id, body, created_at, metadata")
-          .eq("sender_user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(500),
+        user.email ? clientPortalRepo.fetchClientMessagesByEmail(user.email) : [],
+        clientPortalRepo.fetchClientMessagesBySender(user.id),
       ]);
 
-      const allData = [...(byEmail.data || []), ...(bySender.data || [])];
+      const allData = [...(byEmail || []), ...(bySender || [])];
       if (allData.length === 0) { setLoading(false); return; }
 
       const threadMap = new Map<string, ThreadSummary>();
@@ -120,15 +110,12 @@ const ClientMessages = () => {
         const match = sortedThreads.find(t => t.context_id === threadParam);
         if (match) {
           setActiveThread(match);
-          setSearchParams({}, { replace: true }); // Clean URL
+          setSearchParams({}, { replace: true });
         }
       }
 
       // Load conversation preferences
-      const { data: prefs } = await supabase
-        .from("conversation_preferences")
-        .select("context_id, muted, archived")
-        .eq("user_id", user.id);
+      const prefs = await clientPortalRepo.fetchConversationPrefs(user.id);
       if (prefs) {
         const map: Record<string, { muted: boolean; archived: boolean }> = {};
         prefs.forEach((p: any) => { map[p.context_id] = { muted: p.muted, archived: p.archived }; });
@@ -136,12 +123,9 @@ const ClientMessages = () => {
       }
 
       // Load blocked users
-      const { data: blocked } = await supabase
-        .from("blocked_users")
-        .select("blocked_id")
-        .eq("blocker_id", user.id);
+      const blocked = await clientPortalRepo.fetchBlockedUsers(user.id);
       if (blocked) {
-        setBlockedUserIds(new Set(blocked.map((b: any) => b.blocked_id)));
+        setBlockedUserIds(new Set(blocked));
       }
 
       setLoading(false);
@@ -152,19 +136,15 @@ const ClientMessages = () => {
   // Filtered threads
   const filteredThreads = useMemo(() => {
     let list = threads;
-    // Global search
     if (globalSearch) {
       const q = globalSearch.toLowerCase();
       list = list.filter(t => t.contact_name?.toLowerCase().includes(q) || t.last_message?.toLowerCase().includes(q));
     }
-    // Filter by tab
     if (threadFilter === "archived") {
       list = list.filter(t => threadPrefs[t.context_id]?.archived);
     } else if (threadFilter === "starred") {
-      // Show threads that have at least one starred message — for now show all non-archived as we track at message level
       list = list.filter(t => !threadPrefs[t.context_id]?.archived);
     } else {
-      // "all" — exclude archived
       list = list.filter(t => !threadPrefs[t.context_id]?.archived);
     }
     return list;
@@ -175,10 +155,8 @@ const ClientMessages = () => {
     if (!activeThread) return;
     setMsgLoading(true);
     const load = async () => {
-      const { data } = await (supabase as any).from("chat_messages_v2").select("*")
-        .eq("conversation_id", activeThread.context_id)
-        .order("created_at", { ascending: true });
-      setMessages(data || []);
+      const data = await clientPortalRepo.fetchThreadMessages(activeThread.context_id);
+      setMessages(data);
       setMsgLoading(false);
     };
     load();
@@ -187,24 +165,16 @@ const ClientMessages = () => {
   // Realtime
   useEffect(() => {
     if (!activeThread) return;
-    const channel = supabase
-      .channel(`client-thread-v2-${activeThread.context_id}`)
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "chat_messages_v2",
-        filter: `conversation_id=eq.${activeThread.context_id}`,
-      }, (payload) => {
-        const incoming = payload.new as any;
+    const unsub = clientPortalRepo.subscribeToThread(
+      activeThread.context_id,
+      (incoming) => {
         setMessages(prev => prev.some(m => m.id === incoming.id) ? prev : [...prev, incoming]);
-      })
-      .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "chat_messages_v2",
-        filter: `conversation_id=eq.${activeThread.context_id}`,
-      }, (payload) => {
-        const updated = payload.new as any;
+      },
+      (updated) => {
         setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+      }
+    );
+    return unsub;
   }, [activeThread, user?.id]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
@@ -214,7 +184,7 @@ const ClientMessages = () => {
     if (!newMsg.trim() || !user || !activeThread) return;
     setSending(true);
     try {
-      const { data: inserted } = await (supabase as any).from("chat_messages_v2").insert({
+      const inserted = await clientPortalRepo.insertClientMessage({
         conversation_id: activeThread.context_id,
         sender_user_id: user.id,
         sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
@@ -226,7 +196,7 @@ const ClientMessages = () => {
           contact_name: user.user_metadata?.full_name || user.email,
           ...(replyTo ? { reply_to_id: replyTo.id } : {}),
         },
-      }).select("*").single();
+      });
       if (inserted) setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
       setNewMsg(""); setReplyTo(null);
     } finally { setSending(false); }
@@ -238,14 +208,9 @@ const ClientMessages = () => {
     if (err) { toast.error(err); return; }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop() || "bin";
-      const path = `${activeThread.org_id}/${activeThread.context_id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from("chat-media").upload(path, file);
-      if (error) throw error;
-      const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
-      const url = signed?.signedUrl || path;
+      const url = await clientPortalRepo.uploadClientMedia(activeThread.org_id, activeThread.context_id, file);
       const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
-      const { data: inserted } = await (supabase as any).from("chat_messages_v2").insert({
+      const inserted = await clientPortalRepo.insertClientMessage({
         conversation_id: activeThread.context_id,
         sender_user_id: user.id,
         sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
@@ -257,7 +222,7 @@ const ClientMessages = () => {
           contact_name: user.user_metadata?.full_name || user.email,
           attachment_url: url,
         },
-      }).select("*").single();
+      });
       if (inserted) setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
       toast.success("Media sent");
     } catch (e: any) { toast.error(e.message); }
@@ -391,7 +356,7 @@ const ClientMessages = () => {
           </div>
         )}
 
-        {/* Deal Room Panel — shows if a deal exists for this context */}
+        {/* Deal Room Panel */}
         {activeThread.context_id && activeThread.org_id && (
           <div className="mb-2 bg-card rounded-xl shadow-card border border-border/50 overflow-hidden max-h-60">
             <DealRoomPanel
@@ -452,14 +417,12 @@ const ClientMessages = () => {
                         ? "bg-muted/30 border border-border/30"
                         : isMe ? "bg-accent text-accent-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"
                     }`}>
-                      {/* Forwarded label */}
                       {isForwarded && !isDeletedForAll && (
                         <div className={`flex items-center gap-1 mb-1 text-[10px] ${isMe ? "text-accent-foreground/50" : "text-muted-foreground"}`}>
                           <ForwardIcon className="h-2.5 w-2.5" /> Forwarded
                         </div>
                       )}
 
-                      {/* Reply quote */}
                       {repliedMsg && !isDeletedForAll && (
                         <div className="mb-1.5">
                           <ReplyPreview
@@ -470,12 +433,10 @@ const ClientMessages = () => {
                         </div>
                       )}
 
-                      {/* Starred */}
                       {meta.starred && !isDeletedForAll && (
                         <Star className="h-2.5 w-2.5 text-amber-400 fill-amber-400 inline mr-1" />
                       )}
 
-                      {/* Content */}
                       {isDeletedForAll ? (
                         <p className="text-xs italic text-muted-foreground">🚫 This message was deleted</p>
                       ) : (
@@ -490,7 +451,6 @@ const ClientMessages = () => {
                         </>
                       )}
 
-                      {/* Timestamp */}
                       <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : ""}`}>
                         <p className={`text-[10px] ${isMe && !isDeletedForAll ? "text-accent-foreground/60" : "text-muted-foreground"}`}>
                           {format(new Date(m.created_at), "dd MMM HH:mm")}
@@ -508,10 +468,7 @@ const ClientMessages = () => {
                 if (isDeletedForAll) return <div key={m.id}>{bubble}</div>;
 
                 const handleDeleteForMe = async () => {
-                  // Soft-delete via metadata update on V2
-                  await (supabase as any).from("chat_messages_v2").update({
-                    metadata: { ...(m.metadata || {}), deleted_by: [...((m.metadata as any)?.deleted_by || []), user?.id] },
-                  }).eq("id", m.id);
+                  await softDeleteMessage(m.id, user?.id || "", m.metadata);
                   setMessages(prev => prev.filter(x => x.id !== m.id));
                   toast.success(t("chat.deleted_for_you") || "Deleted for you");
                 };
@@ -566,7 +523,6 @@ const ClientMessages = () => {
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
             </button>
 
-            {/* Voice recorder (when no text typed) */}
             {!newMsg.trim() && activeThread && user && (
               <VoiceRecorder
                 orgId={activeThread.org_id}
