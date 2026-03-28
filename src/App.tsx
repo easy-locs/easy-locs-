@@ -51,524 +51,147 @@ import { OrbitPromptOverlay } from "@/components/engine/OrbitPromptOverlay";
 
 // V2 Suite 4 pages
 // V2 Suite 4 pages — all removed, routes redirect to canonical paths
-const ClaimPage = safeLazy(() => import("./pages/ClaimPage"), "ClaimPage");
-const ClaimShopPage = safeLazy(() => import("./pages/ClaimShopPage"), "ClaimShopPage");
+// ── All lazy page imports from centralized registry ──
+import * as Pages from "@/app/app-route-registry";
 
+// Re-export all page components for route consumption (preserves existing variable names)
+const {
+  Index, Login, Signup, ForgotPassword, ResetPassword, VerifyEmail, Onboarding, AuthCallbackPage,
+  Dashboard, Receipts, Reminders, Documents, AIAssistant, Leases, Company, Billing, Settings,
+  Tenants, RentalManagement, Finances, Interventions, Tasks, Messages, CommunicationCenter,
+  ChargesRegularization, FiscalReport, Expenses, Candidates, SeasonalRentals, PaymentNotices,
+  DunningLetters, FurnitureInventory, Buildings, Vault, DataImport, CVGenerator,
+  CategorySubscriptions, ChannelManager, Accounting, LandlordRentDashboard, AccountingEntries,
+  ReportingDashboard, DynamicPricing, PropertyCalendar, RealEstateListings, LandlordProfile,
+  Referrals, Collaboration, DeveloperPortal, AuditTrail, CountryWorkspace, ServiceTrackingPage,
+  // Real Estate Module
+  RealEstateModulePage, REPropertiesPage, REUnitsPage, RETenantsPage, RELeasesPage,
+  REPaymentsPage, REDocumentsPage, REPropertyDetailPage, RELeaseDetailPage,
+  // Tenant Portal
+  TenantDashboard, TenantReceipts, TenantDocuments, TenantMessages, TenantPay, TenantSettings,
+  TenantReviews, TenantRequests, TenantSignup,
+  // Client Portal
+  ClientDashboard, ClientBookings, ClientMessages, ClientDocuments, ClientPayments, ClientSettings,
+  // Orbit
+  OrbitAppShell, OrbitHome, OrbitContactsPage, OrbitIdentityPage,
+  // Wallet
+  WalletHubPage, WalletTopUpPage, WalletTransferPage, WalletRequestPage,
+  // Marketplace
+  PublicListing, PublicServiceBooking, PublicRealEstateListing, PropertyManagement, AddProperty,
+  PropertyDetailHub, CreateListing, LocalServices, RentalCatalog, StaysCatalog, HostCatalog,
+  ActivitiesMarketplace, GuestPortal, ProviderStorefront, StorePage, ShopCategoryPage,
+  PropertiesShowcase, AccountShowcase, SavedListings, PropertyManagementHub, ExplorePage,
+  Install, NotFound,
+  // Travel
+  TravelHub, TravelFlights, TravelStays, TravelHotelDetail, HotelCheckout, TravelStayDetail, TravelFlightDetail,
+  // Universe Hubs
+  DiscoverPage, BrowseVerticalPage, RetailIndexPage, RetailCategoryPage, RetailMallPage, RetailStorePage,
+  FoodHub, GroceryHub, ServicesHub, RetailHub, PropertyHubUniverse, HealthcareHub, ElectronicsHub, GiftsHub, PetsHub,
+  // Food
+  FoodTypePage, CuisineListPage, FoodRestaurantPage,
+  // Settings sub-pages
+  SettingsHomePage, SettingsAccountPage, SettingsOrbitPage, SettingsBusinessPage, SettingsWalletPage,
+  SettingsAddressesPage, SettingsNotificationsPage, SettingsSecurityPage, SettingsPreferencesPage,
+  SettingsSupportPage, SettingsPaymentMethodsPage, NotificationPreferencesPage,
+  // Mobility
+  MobilityTaxiPage, MobilityDeliveryPage, DeliveryBringPage, DeliveryParcelPage, DeliveryGiftPage,
+  DeliveryErrandPage, RiderLivePage, TrackRidePage, PayRidePage, RideReceiptPage, CallDriverPage, DriverPayoutPage,
+  // Deep-link
+  UserProfilePage, ProductPage, LivePage, PayPage, QrPayResolver, QrResolvePage, PayRequestPage,
+  GuestPaymentSuccess, AddContactPage,
+  // QR
+  QrScannerPage, QrEntryPage, QrTrackingPage, QrPickupPage, QrGeneratePage,
+  // Payment
+  PaymentLinkResolverPage, PaymentConfirmPage, PaymentPage, StripeElementsPage,
+  CheckoutPage, FoodOrderCheckoutPage, GuestCheckoutPage,
+  // Orders
+  OrdersPage, MyOrdersPage, UnifiedOrderDetailPage, TrackingPage, DeliveryProofPage,
+  OrderReceiptPage, OrderRefundRequestPage, ReorderPage,
+  // Seller
+  SellerHubPage, SellerDashboardPage,
+  // Merchant
+  MerchantOnboardingPage, MerchantOnboardingAdminPage, MerchantClaimPage, MerchantDashboardPage,
+  MerchantFinancePage, MerchantPosPage, MerchantKitchenPage, MerchantOrdersPage,
+  ShopQrCenterPage, ShopOrderPage, MerchantMenuPageNew, MerchantStoreSettingsPage,
+  MerchantPromoManagerPage, MerchantOrderBoardPage, MerchantInventoryPage, MerchantLiveControlPage,
+  MerchantCouponManagerPage, MerchantBasicAnalyticsPage, MerchantCustomersPage,
+  MerchantPromoBannerEditorPage, MerchantBusinessSummaryPage, MerchantClosingModePage,
+  MerchantCustomerInsightsPage, MerchantProductPerformancePage, MerchantAutoAcceptSettingsPage,
+  MerchantInventoryAlertsPage, MerchantStaffAccessPage, MerchantDailySalesPage,
+  MerchantReviewRepliesPage, MerchantRefundRequestsPage, MerchantMenuBulkEditPage,
+  MerchantDeliveryZonesPage, MerchantKitchenDisplayPage, MerchantBusinessHoursPage,
+  MerchantMenuCategoryManagerPage,
+  // Driver
+  DriverDashboard, DeliveryCommandCenter, DriverDashboardPageNew, DriverLivePage,
+  DriverEarningsPage, DriverEarningsPageNew, DriverMissionsPage, DriverMissionDetailPage,
+  DriverProofPage, DriverEarningsSummaryPage, DriverActiveMissionsPage, DriverShiftPage,
+  DriverAvailabilityZonesPage, DriverCompletedDeliveriesPage, DriverLiveMissionsPage,
+  DriverFuelCostsPage, DriverBreaksPage,
+  // Admin
+  AdminDashboard, AIQualityDashboard, AdminDisputesPage, DemandHeatmapPage, AdminFraudPage,
+  AdminLiveOpsPage, RiderPrioritySubscriptionPage, AdminDispatchBoardPage, AdminSLAPage,
+  RefundRequestPage, TeamCommandCenterPage, AdminTrustGraphPage, ExecutiveKPIBoardPage,
+  TeamPermissionsPage, AIOpsChatPage, FinancialReconPage, ReconAlertsPage,
+  ExecutiveDashboard, ConciergeOperations, CustomerProfilePage, WorkspaceBootstrapPage,
+  MenuAdminPage, SupportInboxPage, AdminHomeV1Page, KpiChartsPage, DriverHeatmapMapPage,
+  AdminRealtimeControlPage, DeploymentChecklistPage, LoyaltyRedeemPage, AdminAlertCenterPage,
+  AuditDebugPanelPage, AdminOutreachPage, AdminWalletDiagnosticsPage, AdminOpsExceptionsPage,
+  AdminReviewQueuePage, AdminGrowthDashboard, RouteAuditPage, AdminRestaurantTestSeederPage,
+  AdminRuntimeAuditPage, AdminRuntimeQuickLinksPage, AdminMasterDebugPage,
+  AdminUiEnginePage, AdminMarketplaceOpsPage, AdminOpsDashboardPage, AdminOrchestrationPage,
+  AdminPipelinePage, AdminEnginesDashboardPage, AdminBackendTruthPage, AdminGaragePage,
+  PermissionCenterPage, AdminSupportOpsPage, AdminDeliveryOpsPage,
+  SupportTicketsPage, SupportTicketDetailPage, AdminMerchantAutofillPage, AdminBulkSeedPage,
+  AdminSuperDashboardPage, AdminPaymentsOpsPage, AdminBulkMerchantImportPage,
+  AdminSeedToolsPage, AdminContentOpsPage, AdminAnalyticsOpsPage, AdminQualityOpsPage,
+  AdminUaeOpsDashboard, AdminCrmOpsPage, AdminHomeEnginePage, AdminMapEnginePage,
+  AdminNotificationEnginePage, OwnerCockpitPage, OnboardingQualityDashboardPage,
+  UnifiedGlobalEnginePage, AIDecisionsDashboardPage, UrlImportPage,
+  AdminGrowthOpsPage, AdminRetentionOpsPage, AdminMerchantHealthPage,
+  AdminPlatformRecoveryPage, AdminShopImportPage, AdminVisualQualityPage,
+  AdminRankingControlPage, AdminShopQualityPage, AdminCoherenceControlPage, AdminSourceAuditPage,
+  AdminDriverMonitorPage, AdminUserLookupPage, AdminNotificationOpsPage, AdminFinanceSummaryPage,
+  AdminPlatformAlertsPage, AdminOrderWatchPage, AdminSearchWatchPage, AdminMerchantPromoWatchPage,
+  AdminRefundWatchPage, AdminDriverHeatmapPage, AdminWalletWatchPage, AdminSystemHealthPage,
+  AdminFraudDetectionPage, AdminOrderTimelinePage, AdminMerchantApprovalQueuePage,
+  AdminFailedPaymentsPage, AdminSupportSlaPage, AdminDeliveryIncidentsPage,
+  AdminGrowthDashboardPage, AdminGrowthEnginePage, AdminCouponOversightPage,
+  AdminActiveSessionsPage, AdminFraudMonitorPage, AdminCoreEnginePage, AdminOrderAuditPage,
+  AdminRefundQueuePage, AdminPlatformHealthPage, AdminRuntimeCockpitPage,
+  AdminSystemLivePanelPage, AdminRestaurantFillPage, AdminMasterControlPage,
+  AdminQaCommandPage, AdminMenuQualityControlPage, AdminUxLiveTestPage, AdminEngineCockpit,
+  AdminBrowserRepairPage, AdminCentralControlPanelPage,
+  // Customer
+  CustomerSpendingInsightsPage, CustomerAddressBookPage, CustomerLoyaltyHistoryPage,
+  CustomerActiveOrdersPage, CustomerOrderArchivePage, CustomerReorderPage,
+  CustomerLiveLocationPage, CustomerSavedCardsPage, CustomerDeliveryNotesPage,
+  CustomerPaymentActivityPage, CustomerOrderReceiptsPage, CustomerAddressSelectorPage,
+  CustomerGroupOrderPage, CustomerOrderGiftsPage, CustomerSplitBillPage,
+  CustomerSavedCartsPage2, CustomerAutoRepeatPage, CustomerPartyOrderPage,
+  CustomerRewardRedemptionPage, CustomerShareCartPage,
+  // Map/Radar
+  SuperMapPage, CanonicalMapTestPage, HyperRadarPage, RadarViewPage,
+  // Shops
+  ShopPage, MyShopPage, ShopsPage, MyShopsPage, MyBusinessHub, POSPage, OpsCenter,
+  // Concierge
+  ConciergeServicesPage,
+  // SEO
+  MarketplaceServicesPage, ActivitiesPage, SeasonalRentalsPage, SEOCatchAll,
+  LongTermRentalsPage, ServiceCitySEOPage, ActivityCitySEOPage,
+  CoreSEOPages, PropertyManagementPlatformPage, RentalManagementSoftwarePage,
+  LocationsPage, CountryHubPage, CityHubPage, DynamicCityCategoryPage,
+  MarketplaceHubPage, MarketplaceCityPage, MarketplaceServiceCityPage,
+  ServicesHubPage, ServiceCategoryPage, ServiceCityPage, ProviderSEOPage,
+  SlugResolver, SlugCategoryResolver,
+  // Legal
+  TermsPage, PrivacyPage, CookiePage, LegalNoticePage, AboutPage, ContactPage, HelpPage, PlatformVision,
+  // Misc
+  ClaimPage, ClaimShopPage, SearchResultsPage, MeCommandCenter,
+  NotificationCenterPage, CityMarketplacePage, BoostDashboardPage, AppNotFoundPage,
+  LiveTrackingPageNew, StripeCheckoutHandlerPage, ConciergeServices, FavoritesPage,
+} = Pages;
 
-function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
-  return lazy(async () => {
-    try {
-      const mod = await factory();
-      if (!mod?.default) {
-        throw new Error(`[lazy] Missing default export for ${name}`);
-      }
-      return mod;
-    } catch (err) {
-      console.error(`[lazy] Failed to load chunk: ${name}`, err);
-      return {
-        default: () => (
-          <div className="p-8 text-center text-destructive">
-            Failed to load {name}. <button onClick={() => window.location.reload()} className="underline ml-2">Reload</button>
-          </div>
-        ),
-      } as { default: ComponentType<any> };
-    }
-  });
-}
-
-// Explore — dead, redirected to /radar. Import removed.
-
-// Lazy load all pages
-const Index = safeLazy(() => import("./pages/Index"), "Index");
-const Login = safeLazy(() => import("./pages/Login"), "Login");
-const Signup = safeLazy(() => import("./pages/Signup"), "Signup");
-const ForgotPassword = safeLazy(() => import("./pages/ForgotPassword"), "ForgotPassword");
-const ResetPassword = safeLazy(() => import("./pages/ResetPassword"), "ResetPassword");
-const VerifyEmail = safeLazy(() => import("./pages/VerifyEmail"), "VerifyEmail");
-const Onboarding = safeLazy(() => import("./pages/Onboarding"), "Onboarding");
-const Dashboard = safeLazy(() => import("./pages/Dashboard"), "Dashboard");
-const Receipts = safeLazy(() => import("./pages/Receipts"), "Receipts");
-const Reminders = safeLazy(() => import("./pages/Reminders"), "Reminders");
-const Documents = safeLazy(() => import("./pages/Documents"), "Documents");
-const AIAssistant = safeLazy(() => import("./pages/AIAssistant"), "AIAssistant");
-const Leases = safeLazy(() => import("./pages/Leases"), "Leases");
-const Company = safeLazy(() => import("./pages/Company"), "Company");
-const Billing = safeLazy(() => import("./pages/Billing"), "Billing");
-const Settings = safeLazy(() => import("./pages/Settings"), "Settings");
-const Tenants = safeLazy(() => import("./pages/Tenants"), "Tenants");
-const RentalManagement = safeLazy(() => import("./pages/RentalManagement"), "RentalManagement");
-const Finances = safeLazy(() => import("./pages/Finances"), "Finances");
-const Interventions = safeLazy(() => import("./pages/Interventions"), "Interventions");
-
-// Real Estate Module
-const RealEstateModulePage = safeLazy(() => import("./pages/real-estate/RealEstateModule"), "RealEstateModule");
-const REPropertiesPage = safeLazy(() => import("./pages/real-estate/PropertiesPage"), "REProperties");
-const REUnitsPage = safeLazy(() => import("./pages/real-estate/UnitsPage"), "REUnits");
-const RETenantsPage = safeLazy(() => import("./pages/real-estate/TenantsPage"), "RETenants");
-const RELeasesPage = safeLazy(() => import("./pages/real-estate/LeasesPage"), "RELeases");
-const REPaymentsPage = safeLazy(() => import("./pages/real-estate/PaymentsPage"), "REPayments");
-const REDocumentsPage = safeLazy(() => import("./pages/real-estate/DocumentsPage"), "REDocuments");
-const REPropertyDetailPage = safeLazy(() => import("./pages/real-estate/PropertyDetailPage"), "REPropertyDetail");
-const RELeaseDetailPage = safeLazy(() => import("./pages/real-estate/LeaseDetailPage"), "RELeaseDetail");
-
-const Tasks = safeLazy(() => import("./pages/Tasks"), "Tasks");
-const Messages = safeLazy(() => import("./pages/Messages"), "Messages");
-const CommunicationCenter = safeLazy(() => import("./pages/CommunicationCenter"), "CommunicationCenter");
-const ChargesRegularization = safeLazy(() => import("./pages/ChargesRegularization"), "ChargesRegularization");
-const FiscalReport = safeLazy(() => import("./pages/FiscalReport"), "FiscalReport");
-const Expenses = safeLazy(() => import("./pages/Expenses"), "Expenses");
-const Candidates = safeLazy(() => import("./pages/Candidates"), "Candidates");
-const SeasonalRentals = safeLazy(() => import("./pages/SeasonalRentals"), "SeasonalRentals");
-const PaymentNotices = safeLazy(() => import("./pages/PaymentNotices"), "PaymentNotices");
-const DunningLetters = safeLazy(() => import("./pages/DunningLetters"), "DunningLetters");
-const FurnitureInventory = safeLazy(() => import("./pages/FurnitureInventory"), "FurnitureInventory");
-const Buildings = safeLazy(() => import("./pages/Buildings"), "Buildings");
-const Vault = safeLazy(() => import("./pages/Vault"), "Vault");
-const NotFound = safeLazy(() => import("./pages/NotFound"), "NotFound");
-const ExplorePage = safeLazy(() => import("./pages/ExplorePage"), "ExplorePage");
-const DataImport = safeLazy(() => import("./pages/DataImport"), "DataImport");
-const TenantDashboard = safeLazy(() => import("./pages/tenant/TenantDashboard"), "TenantDashboard");
-const TenantReceipts = safeLazy(() => import("./pages/tenant/TenantReceipts"), "TenantReceipts");
-const TenantDocuments = safeLazy(() => import("./pages/tenant/TenantDocuments"), "TenantDocuments");
-const TenantMessages = safeLazy(() => import("./pages/tenant/TenantMessages"), "TenantMessages");
-const TenantPay = safeLazy(() => import("./pages/tenant/TenantPay"), "TenantPay");
-const TenantSettings = safeLazy(() => import("./pages/tenant/TenantSettings"), "TenantSettings");
-const TenantSignup = safeLazy(() => import("./pages/TenantSignup"), "TenantSignup");
-const TenantReviews = safeLazy(() => import("./pages/tenant/TenantReviews"), "TenantReviews");
-const TenantRequests = safeLazy(() => import("./pages/tenant/TenantRequests"), "TenantRequests");
-const PublicListing = safeLazy(() => import("./pages/PublicListing"), "PublicListing");
-const PublicServiceBooking = safeLazy(() => import("./pages/PublicServiceBooking"), "PublicServiceBooking");
-const PropertyManagement = safeLazy(() => import("./pages/PropertyManagement"), "PropertyManagement");
-const LandlordProfile = safeLazy(() => import("./pages/LandlordProfile"), "LandlordProfile");
-const Referrals = safeLazy(() => import("./pages/Referrals"), "Referrals");
-const AdminDashboard = safeLazy(() => import("./pages/AdminDashboard"), "AdminDashboard");
-const AIQualityDashboard = safeLazy(() => import("./pages/AIQualityDashboard"), "AIQualityDashboard");
-const Install = safeLazy(() => import("./pages/Install"), "Install");
-const SavedListings = safeLazy(() => import("./pages/SavedListings"), "SavedListings");
-const CVGenerator = safeLazy(() => import("./pages/CVGenerator"), "CVGenerator");
-const CategorySubscriptions = safeLazy(() => import("./pages/CategorySubscriptions"), "CategorySubscriptions");
-const ChannelManager = safeLazy(() => import("./pages/ChannelManager"), "ChannelManager");
-const Accounting = safeLazy(() => import("./pages/Accounting"), "Accounting");
-const LandlordRentDashboard = safeLazy(() => import("./pages/LandlordRentDashboard"), "LandlordRentDashboard");
-const AccountingEntries = safeLazy(() => import("./pages/AccountingEntries"), "AccountingEntries");
-const ReportingDashboard = safeLazy(() => import("./pages/ReportingDashboard"), "ReportingDashboard");
-const DynamicPricing = safeLazy(() => import("./pages/DynamicPricing"), "DynamicPricing");
-const PropertyCalendar = safeLazy(() => import("./pages/PropertyCalendar"), "PropertyCalendar");
-const RealEstateListings = safeLazy(() => import("./pages/RealEstateListings"), "RealEstateListings");
-const PublicRealEstateListing = safeLazy(() => import("./pages/PublicRealEstateListing"), "PublicRealEstateListing");
-const PropertiesShowcase = safeLazy(() => import("./pages/PropertiesShowcase"), "PropertiesShowcase");
-const AccountShowcase = safeLazy(() => import("./pages/AccountShowcase"), "AccountShowcase");
-
-const ClientDashboard = safeLazy(() => import("./pages/client/ClientDashboard"), "ClientDashboard");
-const ClientBookings = safeLazy(() => import("./pages/client/ClientBookings"), "ClientBookings");
-const ClientMessages = safeLazy(() => import("./pages/client/ClientMessages"), "ClientMessages");
-const ClientDocuments = safeLazy(() => import("./pages/client/ClientDocuments"), "ClientDocuments");
-const ClientPayments = safeLazy(() => import("./pages/client/ClientPayments"), "ClientPayments");
-const ClientSettings = safeLazy(() => import("./pages/client/ClientSettings"), "ClientSettings");
-
-const Collaboration = safeLazy(() => import("./pages/Collaboration"), "Collaboration");
-const DeveloperPortal = safeLazy(() => import("./pages/DeveloperPortal"), "DeveloperPortal");
-const AuditTrail = safeLazy(() => import("./pages/AuditTrail"), "AuditTrail");
-const CountryWorkspace = safeLazy(() => import("./pages/CountryWorkspace"), "CountryWorkspace");
-
-// Orbit App Shell & Home
-const OrbitAppShell = safeLazy(() => import("./components/orbit/OrbitAppShell"), "OrbitAppShell");
-const OrbitHome = safeLazy(() => import("./pages/OrbitHome"), "OrbitHome");
-// WalletHub duplicate removed — use WalletHubPage (line 260) for both /wallet and /wallet/hub
-const AddProperty = safeLazy(() => import("./pages/AddProperty"), "AddProperty");
-const PropertyDetailHub = safeLazy(() => import("./pages/PropertyDetailHub"), "PropertyDetailHub");
-const CreateListing = safeLazy(() => import("./pages/CreateListing"), "CreateListing");
-const LocalServices = safeLazy(() => import("./pages/LocalServices"), "LocalServices");
-const RentalCatalog = safeLazy(() => import("./pages/RentalCatalog"), "RentalCatalog");
-const StaysCatalog = safeLazy(() => import("./pages/StaysCatalog"), "StaysCatalog");
-const HostCatalog = safeLazy(() => import("./pages/HostCatalog"), "HostCatalog");
-const ActivitiesMarketplace = safeLazy(() => import("./pages/ActivitiesMarketplace"), "ActivitiesMarketplace");
-const GuestPortal = safeLazy(() => import("./pages/GuestPortal"), "GuestPortal");
-const ProviderStorefront = safeLazy(() => import("./components/marketplace/ProviderStorefront"), "ProviderStorefront");
-const StorePage = safeLazy(() => import("./pages/StorePage"), "StorePage");
-const ShopCategoryPage = safeLazy(() => import("./pages/ShopCategoryPage"), "ShopCategoryPage");
-// Legal pages
-const TermsPage = safeLazy(() => import("./pages/legal/TermsPage"), "TermsPage");
-const PrivacyPage = safeLazy(() => import("./pages/legal/PrivacyPage"), "PrivacyPage");
-const CookiePage = safeLazy(() => import("./pages/legal/CookiePage"), "CookiePage");
-const LegalNoticePage = safeLazy(() => import("./pages/legal/LegalNoticePage"), "LegalNoticePage");
-const AboutPage = safeLazy(() => import("./pages/legal/AboutPage"), "AboutPage");
-const ContactPage = safeLazy(() => import("./pages/legal/ContactPage"), "ContactPage");
-const AddContactPage = safeLazy(() => import("./pages/AddContactPage"), "AddContactPage");
-const HelpPage = safeLazy(() => import("./pages/legal/HelpPage"), "HelpPage");
-const PlatformVision = safeLazy(() => import("./pages/PlatformVision"), "PlatformVision");
-const ServiceTrackingPage = safeLazy(() => import("./pages/ServiceTrackingPage"), "ServiceTrackingPage");
-const SellerHubPage = safeLazy(() => import("./pages/SellerHubPage"), "SellerHubPage");
-const SellerDashboardPage = safeLazy(() => import("./pages/seller/SellerDashboardPage"), "SellerDashboardPage");
-const DriverDashboard = safeLazy(() => import("./pages/DriverDashboard"), "DriverDashboard");
-const DeliveryCommandCenter = safeLazy(() => import("./pages/DeliveryCommandCenter"), "DeliveryCommandCenter");
-const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
-const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
-const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
-const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
-const AdminUiEnginePage = safeLazy(() => import("./pages/admin/AdminUiEnginePage"), "AdminUiEnginePage");
-const RadarViewPage = safeLazy(() => import("./pages/RadarViewPage"), "RadarViewPage");
-const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
-const MyShopsPage = safeLazy(() => import("./pages/MyShopsPage"), "MyShopsPage");
-const MyOrdersPage = safeLazy(() => import("./pages/MyOrdersPage"), "MyOrdersPage");
-const UnifiedOrderDetailPage = safeLazy(() => import("./pages/UnifiedOrderDetailPage"), "UnifiedOrderDetailPage");
-const POSPage = safeLazy(() => import("./pages/POSPage"), "POSPage");
-const PropertyManagementHub = safeLazy(() => import("./pages/PropertyManagementHub"), "PropertyManagementHub");
-const ConciergeServicesPage = safeLazy(() => import("./pages/seo/ConciergeServicesPage"), "ConciergeServicesPage");
-const MarketplaceServicesPage = safeLazy(() => import("./pages/seo/MarketplaceServicesPage"), "MarketplaceServicesPage");
-const ActivitiesPage = safeLazy(() => import("./pages/seo/ActivitiesPage"), "ActivitiesPage");
-const SeasonalRentalsPage = safeLazy(() => import("./pages/seo/SeasonalRentalsPage"), "SeasonalRentalsPage");
-// SEO Layer pages
-const SEOCatchAll = safeLazy(() => import("./pages/seo/SEOCatchAll"), "SEOCatchAll");
-const LongTermRentalsPage = safeLazy(() => import("./pages/seo/LongTermRentalsPage"), "LongTermRentalsPage");
-const ServiceCitySEOPage = safeLazy(() => import("./pages/seo/ServiceCitySEOPage"), "ServiceCitySEOPage");
-const ActivityCitySEOPage = safeLazy(() => import("./pages/seo/ActivityCitySEOPage"), "ActivityCitySEOPage");
-const CoreSEOPages = safeLazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.PropertyOwnerSoftwarePage })), "CoreSEOPages");
-const PropertyManagementPlatformPage = safeLazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.PropertyManagementPlatformPage })), "PropertyManagementPlatformPage");
-const RentalManagementSoftwarePage = safeLazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.RentalManagementSoftwarePage })), "RentalManagementSoftwarePage");
-// Programmatic SEO pages
-const LocationsPage = safeLazy(() => import("./pages/seo/LocationsPage"), "LocationsPage");
-const CountryHubPage = safeLazy(() => import("./pages/seo/CountryHubPage"), "CountryHubPage");
-const CityHubPage = safeLazy(() => import("./pages/seo/CityHubPage"), "CityHubPage");
-const DynamicCityCategoryPage = safeLazy(() => import("./pages/seo/CityCategoryPage"), "DynamicCityCategoryPage");
-const MarketplaceHubPage = safeLazy(() => import("./pages/seo/MarketplaceCityPage").then(m => ({ default: m.MarketplaceHubPage })), "MarketplaceHubPage");
-const MarketplaceCityPage = safeLazy(() => import("./pages/seo/MarketplaceCityPage").then(m => ({ default: m.MarketplaceCityPage })), "MarketplaceCityPage");
-const MarketplaceServiceCityPage = safeLazy(() => import("./pages/seo/MarketplaceCityPage").then(m => ({ default: m.MarketplaceServiceCityPage })), "MarketplaceServiceCityPage");
-const ServicesHubPage = safeLazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServicesHubPage })), "ServicesHubPage");
-const ServiceCategoryPage = safeLazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServiceCategoryPage })), "ServiceCategoryPage");
-const ServiceCityPage = safeLazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServiceCityPage })), "ServiceCityPage");
-const ProviderSEOPage = safeLazy(() => import("./pages/seo/ProviderSEOPage"), "ProviderSEOPage");
-const SlugResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugResolver })), "SlugResolver");
-const SlugCategoryResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })), "SlugCategoryResolver");
-// Mobility — canonical pages
-const MobilityTaxiPage = safeLazy(() => import("./pages/mobility/MobilityTaxiPage"), "MobilityTaxiPage");
-const MobilityDeliveryPage = safeLazy(() => import("./pages/mobility/MobilityDeliveryPage"), "MobilityDeliveryPage");
-const DeliveryBringPage = safeLazy(() => import("./pages/mobility/DeliveryBringPage"), "DeliveryBringPage");
-const DeliveryParcelPage = safeLazy(() => import("./pages/mobility/DeliveryParcelPage"), "DeliveryParcelPage");
-const DeliveryGiftPage = safeLazy(() => import("./pages/mobility/DeliveryGiftPage"), "DeliveryGiftPage");
-const DeliveryErrandPage = safeLazy(() => import("./pages/mobility/DeliveryErrandPage"), "DeliveryErrandPage");
-const RiderLivePage = safeLazy(() => import("./pages/mobility/RiderLivePage"), "RiderLivePage");
-// RideHubPage deleted — canonical replacement is MobilityTaxiPage
-const TrackRidePage = safeLazy(() => import("./pages/TrackRidePage"), "TrackRidePage");
-const PayRidePage = safeLazy(() => import("./pages/PayRidePage"), "PayRidePage");
-const RideReceiptPage = safeLazy(() => import("./pages/RideReceiptPage"), "RideReceiptPage");
-const CallDriverPage = safeLazy(() => import("./pages/CallDriverPage"), "CallDriverPage");
-const DriverPayoutPage = safeLazy(() => import("./pages/DriverPayoutPage"), "DriverPayoutPage");
-const AdminDisputesPage = safeLazy(() => import("./pages/AdminDisputesPage"), "AdminDisputesPage");
-const DemandHeatmapPage = safeLazy(() => import("./pages/DemandHeatmapPage"), "DemandHeatmapPage");
-const AdminFraudPage = safeLazy(() => import("./pages/AdminFraudPage"), "AdminFraudPage");
-const AdminLiveOpsPage = safeLazy(() => import("./pages/AdminLiveOpsPage"), "AdminLiveOpsPage");
-const RiderPrioritySubscriptionPage = safeLazy(() => import("./pages/RiderPrioritySubscriptionPage"), "RiderPrioritySubscriptionPage");
-const AdminDispatchBoardPage = safeLazy(() => import("./pages/AdminDispatchBoardPage"), "AdminDispatchBoardPage");
-const AdminSLAPage = safeLazy(() => import("./pages/AdminSLAPage"), "AdminSLAPage");
-const RefundRequestPage = safeLazy(() => import("./pages/RefundRequestPage"), "RefundRequestPage");
-// OrbitLiveCallPage removed — legacy, calls handled by CallProvider
-const OrbitContactsPage = safeLazy(() => import("./pages/OrbitContactsPageV2"), "OrbitContactsPage");
-const TeamCommandCenterPage = safeLazy(() => import("./pages/TeamCommandCenterPage"), "TeamCommandCenterPage");
-const AdminTrustGraphPage = safeLazy(() => import("./pages/AdminTrustGraphPage"), "AdminTrustGraphPage");
-const ExecutiveKPIBoardPage = safeLazy(() => import("./pages/ExecutiveKPIBoardPage"), "ExecutiveKPIBoardPage");
-const TeamPermissionsPage = safeLazy(() => import("./pages/TeamPermissionsPage"), "TeamPermissionsPage");
-const AIOpsChatPage = safeLazy(() => import("./pages/AIOpsChatPage"), "AIOpsChatPage");
-const FinancialReconPage = safeLazy(() => import("./pages/FinancialReconPage"), "FinancialReconPage");
-const ReconAlertsPage = safeLazy(() => import("./pages/ReconAlertsPage"), "ReconAlertsPage");
-// CallSessionPage — removed (orphan, bypassed CallProvider)
-const OrbitIdentityPage = safeLazy(() => import("./pages/OrbitIdentityPage"), "OrbitIdentityPage");
-const WalletHubPage = safeLazy(() => import("./pages/WalletHubPage"), "WalletHubPage");
-const MerchantOnboardingPage = safeLazy(() => import("./pages/MerchantOnboardingPage"), "MerchantOnboardingPage");
-const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboardingAdminPage"), "MerchantOnboardingAdminPage");
-const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
-// GhostCallPage — removed (orphan, bypassed CallProvider)
-const ConciergeOperations = safeLazy(() => import("./pages/ConciergeOperations"), "ConciergeOperations");
-const CustomerProfilePage = safeLazy(() => import("./pages/CustomerProfilePage"), "CustomerProfilePage");
-// TravelHotels removed — /travel/hotels redirects to /travel/stays (line 895)
-const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
-const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
-const SupportInboxPage = safeLazy(() => import("./pages/SupportInboxPage"), "SupportInboxPage");
-const AdminHomeV1Page = safeLazy(() => import("./pages/AdminHomeV1Page"), "AdminHomeV1Page");
-const DriverLivePage = safeLazy(() => import("./pages/DriverLivePage"), "DriverLivePage");
-const FoodOrderCheckoutPage = safeLazy(() => import("./pages/FoodOrderCheckoutPage"), "FoodOrderCheckoutPage");
-const CheckoutPage = safeLazy(() => import("./pages/CheckoutPage"), "CheckoutPage");
-const OrdersPage = safeLazy(() => import("./pages/OrdersPage"), "OrdersPage");
-const TrackingPage = safeLazy(() => import("./pages/TrackingPage"), "TrackingPage");
-const DeliveryProofPage = safeLazy(() => import("./pages/DeliveryProofPage"), "DeliveryProofPage");
-const GuestCheckoutPage = safeLazy(() => import("./pages/GuestCheckoutPage"), "GuestCheckoutPage");
-const PaymentPage = safeLazy(() => import("./pages/PaymentPage"), "PaymentPage");
-const KpiChartsPage = safeLazy(() => import("./pages/KpiChartsPage"), "KpiChartsPage");
-// PublicStorefrontBySlugPage removed — route was shadowed by /store/:storeId
-const DriverHeatmapMapPage = safeLazy(() => import("./pages/DriverHeatmapMapPage"), "DriverHeatmapMapPage");
-const AdminRealtimeControlPage = safeLazy(() => import("./pages/AdminRealtimeControlPage"), "AdminRealtimeControlPage");
-const DeploymentChecklistPage = safeLazy(() => import("./pages/DeploymentChecklistPage"), "DeploymentChecklistPage");
-const LoyaltyRedeemPage = safeLazy(() => import("./pages/LoyaltyRedeemPage"), "LoyaltyRedeemPage");
-const AdminAlertCenterPage = safeLazy(() => import("./pages/AdminAlertCenterPage"), "AdminAlertCenterPage");
-const StripeElementsPage = safeLazy(() => import("./pages/StripeElementsPage"), "StripeElementsPage");
-const AuditDebugPanelPage = safeLazy(() => import("./pages/AuditDebugPanelPage"), "AuditDebugPanelPage");
-const MerchantClaimPage = safeLazy(() => import("./pages/MerchantClaimPage"), "MerchantClaimPage");
-const MerchantDashboardPage = safeLazy(() => import("./pages/MerchantDashboardPage"), "MerchantDashboardPage");
-const MerchantFinancePage = safeLazy(() => import("./pages/merchant/MerchantFinancePage"), "MerchantFinancePage");
-const AdminOutreachPage = safeLazy(() => import("./pages/AdminOutreachPage"), "AdminOutreachPage");
-const MerchantPosPage = safeLazy(() => import("./pages/MerchantPosPage"), "MerchantPosPage");
-const MerchantKitchenPage = safeLazy(() => import("./pages/MerchantKitchenPage"), "MerchantKitchenPage");
-const MerchantOrdersPage = safeLazy(() => import("./pages/MerchantOrdersPage"), "MerchantOrdersPage");
-const ShopQrCenterPage = safeLazy(() => import("./pages/merchant/ShopQrCenterPage"), "ShopQrCenterPage");
-const ShopOrderPage = safeLazy(() => import("./pages/merchant/ShopOrderPage"), "ShopOrderPage");
-// WalletCommerceTestPage removed — legacy test page
-const AdminWalletDiagnosticsPage = safeLazy(() => import("./pages/AdminWalletDiagnosticsPage"), "AdminWalletDiagnosticsPage");
-const DriverEarningsPage = safeLazy(() => import("./pages/DriverEarningsPage"), "DriverEarningsPage");
-const AdminOpsExceptionsPage = safeLazy(() => import("./pages/AdminOpsExceptionsPage"), "AdminOpsExceptionsPage");
-const AdminReviewQueuePage = safeLazy(() => import("./pages/AdminReviewQueuePage"), "AdminReviewQueuePage");
-const AdminGrowthDashboard = safeLazy(() => import("./pages/AdminGrowthDashboard"), "AdminGrowthDashboard");
-const CityMarketplacePage = safeLazy(() => import("./pages/CityMarketplacePage"), "CityMarketplacePage");
-const BoostDashboardPage = safeLazy(() => import("./pages/boost/BoostDashboardPage"), "BoostDashboardPage");
-
-// Travel universe
-const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
-const TravelFlights = safeLazy(() => import("./pages/travel/TravelFlights"), "TravelFlights");
-const TravelStays = safeLazy(() => import("./pages/travel/TravelStayHub"), "TravelStayHub");
-const TravelHotelDetail = safeLazy(() => import("./pages/travel/TravelHotelDetail"), "TravelHotelDetail");
-const HotelCheckout = safeLazy(() => import("./pages/travel/HotelCheckout"), "HotelCheckout");
-const TravelStayDetail = safeLazy(() => import("./pages/travel/TravelStayDetail"), "TravelStayDetail");
-const TravelFlightDetail = safeLazy(() => import("./pages/travel/TravelFlightDetail"), "TravelFlightDetail");
-
-// Universe hubs
-const FoodHub = safeLazy(() => import("./pages/universe/FoodHub"), "FoodHub");
-const GroceryHub = safeLazy(() => import("./pages/universe/GroceryHub"), "GroceryHub");
-const ServicesHub = safeLazy(() => import("./pages/universe/ServicesHub"), "ServicesHub");
-const RetailHub = safeLazy(() => import("./pages/universe/RetailHub"), "RetailHub");
-const PropertyHubUniverse = safeLazy(() => import("./pages/universe/PropertyHub"), "PropertyHubUniverse");
-const DiscoverPage = safeLazy(() => import("./pages/universe/DiscoverPage"), "DiscoverPage");
-const HealthcareHub = safeLazy(() => import("./pages/universe/HealthcareHub"), "HealthcareHub");
-const ElectronicsHub = safeLazy(() => import("./pages/universe/ElectronicsHub"), "ElectronicsHub");
-const GiftsHub = safeLazy(() => import("./pages/universe/GiftsHub"), "GiftsHub");
-const PetsHub = safeLazy(() => import("./pages/universe/PetsHub"), "PetsHub");
-const BrowseVerticalPage = safeLazy(() => import("./pages/universe/BrowseVerticalPage"), "BrowseVerticalPage");
-const RetailIndexPage = safeLazy(() => import("./pages/universe/RetailIndexPage"), "RetailIndexPage");
-const RetailCategoryPage = safeLazy(() => import("./pages/universe/RetailCategoryPage"), "RetailCategoryPage");
-const RetailMallPage = safeLazy(() => import("./pages/universe/RetailMallPage"), "RetailMallPage");
-const RetailStorePage = safeLazy(() => import("./pages/universe/RetailStorePage"), "RetailStorePage");
-
-// Food sub-pages (Careem-style drill-down)
-const FoodTypePage = safeLazy(() => import("./pages/food/FoodTypePage"), "FoodTypePage");
-const CuisineListPage = safeLazy(() => import("./pages/food/CuisineListPage"), "CuisineListPage");
-const FoodRestaurantPage = safeLazy(() => import("./pages/food/RestaurantPage"), "FoodRestaurantPage");
-
-// Settings sub-pages
-const SettingsHomePage = safeLazy(() => import("./pages/settings/SettingsHome"), "SettingsHome");
-const SettingsAccountPage = safeLazy(() => import("./pages/settings/SettingsAccount"), "SettingsAccount");
-const SettingsOrbitPage = safeLazy(() => import("./pages/settings/SettingsOrbit"), "SettingsOrbit");
-const SettingsBusinessPage = safeLazy(() => import("./pages/settings/SettingsBusiness"), "SettingsBusiness");
-const SettingsWalletPage = safeLazy(() => import("./pages/settings/SettingsWallet"), "SettingsWallet");
-const SettingsAddressesPage = safeLazy(() => import("./pages/settings/SettingsAddresses"), "SettingsAddresses");
-const SettingsNotificationsPage = safeLazy(() => import("./pages/settings/SettingsNotifications"), "SettingsNotifications");
-const SettingsSecurityPage = safeLazy(() => import("./pages/settings/SettingsSecurity"), "SettingsSecurity");
-const SettingsPreferencesPage = safeLazy(() => import("./pages/settings/SettingsPreferences"), "SettingsPreferences");
-const SettingsSupportPage = safeLazy(() => import("./pages/settings/SettingsSupport"), "SettingsSupport");
-
-// Deep-link public pages
-const UserProfilePage = safeLazy(() => import("./pages/deep-link/UserProfilePage"), "UserProfilePage");
-const ProductPage = safeLazy(() => import("./pages/deep-link/ProductPage"), "ProductPage");
-const LivePage = safeLazy(() => import("./pages/deep-link/LivePage"), "LivePage");
-const PayPage = safeLazy(() => import("./pages/deep-link/PayPage"), "PayPage");
-const QrPayResolver = safeLazy(() => import("./pages/deep-link/QrPayResolver"), "QrPayResolver");
-const QrResolvePage = safeLazy(() => import("./pages/deep-link/QrResolvePage"), "QrResolvePage");
-const PayRequestPage = safeLazy(() => import("./pages/deep-link/PayRequestPage"), "PayRequestPage");
-const QrScannerPage = safeLazy(() => import("./pages/payments/QrScannerPage"), "QrScannerPage");
-const GuestPaymentSuccess = safeLazy(() => import("./pages/deep-link/GuestPaymentSuccess"), "GuestPaymentSuccess");
-const QrEntryPage = safeLazy(() => import("./pages/QrEntryPage"), "QrEntryPage");
-const QrTrackingPage = safeLazy(() => import("./pages/qr/QrTrackingPage"), "QrTrackingPage");
-const QrPickupPage = safeLazy(() => import("./pages/qr/QrPickupPage"), "QrPickupPage");
-const AppNotFoundPage = safeLazy(() => import("./pages/AppNotFoundPage"), "AppNotFoundPage");
-const QrGeneratePage = safeLazy(() => import("./pages/QrGeneratePage"), "QrGeneratePage");
-const RouteAuditPage = safeLazy(() => import("./pages/RouteAuditPage"), "RouteAuditPage");
-// OrbitCallTestPage removed — legacy test page
-const AdminRestaurantTestSeederPage = safeLazy(() => import("./pages/AdminRestaurantTestSeederPage"), "AdminRestaurantTestSeederPage");
-const AdminRuntimeAuditPage = safeLazy(() => import("./pages/AdminRuntimeAuditPage"), "AdminRuntimeAuditPage");
-const AdminRuntimeQuickLinksPage = safeLazy(() => import("./pages/AdminRuntimeQuickLinksPage"), "AdminRuntimeQuickLinksPage");
-const AdminMasterDebugPage = safeLazy(() => import("./pages/AdminMasterDebugPage"), "AdminMasterDebugPage");
-// AdminDinoControlPanel removed — legacy dino system
-const AdminMarketplaceOpsPage = safeLazy(() => import("./pages/admin/AdminMarketplaceOpsPage"), "AdminMarketplaceOpsPage");
-const SettingsPaymentMethodsPage = safeLazy(() => import("./pages/settings/SettingsPaymentMethods"), "SettingsPaymentMethods");
-const MerchantMenuPageNew = safeLazy(() => import("./pages/merchant/MerchantMenuPage"), "MerchantMenuPageNew");
-const DriverDashboardPageNew = safeLazy(() => import("./pages/driver/DriverDashboardPage"), "DriverDashboardPageNew");
-const AdminOpsDashboardPage = safeLazy(() => import("./pages/admin/AdminOpsDashboardPage"), "AdminOpsDashboardPage");
-const AdminOrchestrationPage = safeLazy(() => import("./pages/admin/AdminOrchestrationPage"), "AdminOrchestrationPage");
-const AdminPipelinePage = safeLazy(() => import("./pages/admin/AdminPipelinePage"), "AdminPipelinePage");
-const AdminEnginesDashboardPage = safeLazy(() => import("./pages/admin/AdminEnginesDashboardPage"), "AdminEnginesDashboardPage");
-const AdminBackendTruthPage = safeLazy(() => import("./pages/admin/AdminBackendTruthPage"), "AdminBackendTruthPage");
-const AdminGaragePage = safeLazy(() => import("./pages/admin/AdminGaragePage"), "AdminGaragePage");
-const PermissionCenterPage = safeLazy(() => import("./pages/PermissionCenterPage"), "PermissionCenterPage");
-const AdminSupportOpsPage = safeLazy(() => import("./pages/admin/AdminSupportOpsPage"), "AdminSupportOpsPage");
-const AdminDeliveryOpsPage = safeLazy(() => import("./pages/admin/AdminDeliveryOpsPage"), "AdminDeliveryOpsPage");
-const SupportTicketsPage = safeLazy(() => import("./pages/support/SupportTicketsPage"), "SupportTicketsPage");
-const SupportTicketDetailPage = safeLazy(() => import("./pages/support/SupportTicketDetailPage"), "SupportTicketDetailPage");
-const DriverMissionsPage = safeLazy(() => import("./pages/driver/DriverMissionsPage"), "DriverMissionsPage");
-const DriverMissionDetailPage = safeLazy(() => import("./pages/driver/DriverMissionDetailPage"), "DriverMissionDetailPage");
-const DriverProofPage = safeLazy(() => import("./pages/driver/DriverProofPage"), "DriverProofPage");
-const AdminMerchantAutofillPage = safeLazy(() => import("./pages/admin/AdminMerchantAutofillPage"), "AdminMerchantAutofillPage");
-const AdminBulkSeedPage = safeLazy(() => import("./pages/admin/AdminBulkSeedPage"), "AdminBulkSeedPage");
-const AdminSuperDashboardPage = safeLazy(() => import("./pages/admin/AdminSuperDashboardPage"), "AdminSuperDashboardPage");
-const MerchantStoreSettingsPage = safeLazy(() => import("./pages/merchant/MerchantStoreSettingsPage"), "MerchantStoreSettingsPage");
-const MerchantPromoManagerPage = safeLazy(() => import("./pages/merchant/MerchantPromoManagerPage"), "MerchantPromoManagerPage");
-const AdminPaymentsOpsPage = safeLazy(() => import("./pages/admin/AdminPaymentsOpsPage"), "AdminPaymentsOpsPage");
-const AdminBulkMerchantImportPage = safeLazy(() => import("./pages/admin/AdminBulkMerchantImportPage"), "AdminBulkMerchantImportPage");
-const FavoritesPage = safeLazy(() => import("./pages/FavoritesPage"), "FavoritesPage");
-const AdminSeedToolsPage = safeLazy(() => import("./pages/admin/AdminSeedToolsPage"), "AdminSeedToolsPage");
-const SearchResultsPage = safeLazy(() => import("./pages/SearchResultsPage"), "SearchResultsPage");
-const AdminContentOpsPage = safeLazy(() => import("./pages/admin/AdminContentOpsPage"), "AdminContentOpsPage");
-const ReorderPage = safeLazy(() => import("./pages/ReorderPage"), "ReorderPage");
-const MerchantOrderBoardPage = safeLazy(() => import("./pages/merchant/MerchantOrderBoardPage"), "MerchantOrderBoardPage");
-const AdminAnalyticsOpsPage = safeLazy(() => import("./pages/admin/AdminAnalyticsOpsPage"), "AdminAnalyticsOpsPage");
-const MeCommandCenter = safeLazy(() => import("./pages/MeCommandCenter"), "MeCommandCenter");
-const NotificationPreferencesPage = safeLazy(() => import("./pages/settings/NotificationPreferencesPage"), "NotificationPreferencesPage");
-const AdminQualityOpsPage = safeLazy(() => import("./pages/admin/AdminQualityOpsPage"), "AdminQualityOpsPage");
-const AdminUaeOpsDashboard = safeLazy(() => import("./pages/admin/AdminUaeOpsDashboard"), "AdminUaeOpsDashboard");
-const MerchantReviewRepliesPage = safeLazy(() => import("./pages/merchant/MerchantReviewRepliesPage"), "MerchantReviewRepliesPage");
-const AdminCrmOpsPage = safeLazy(() => import("./pages/admin/AdminCrmOpsPage"), "AdminCrmOpsPage");
-const AdminHomeEnginePage = safeLazy(() => import("./pages/admin/AdminHomeEnginePage"), "AdminHomeEnginePage");
-const AdminMapEnginePage = safeLazy(() => import("./pages/admin/AdminMapEnginePage"), "AdminMapEnginePage");
-const AdminNotificationEnginePage = safeLazy(() => import("./pages/admin/AdminNotificationEnginePage"), "AdminNotificationEnginePage");
-const OwnerCockpitPage = safeLazy(() => import("./pages/admin/OwnerCockpitPage"), "OwnerCockpitPage");
-const SuperMapPage = safeLazy(() => import("./pages/SuperMapPage"), "SuperMapPage");
-const CanonicalMapTestPage = safeLazy(() => import("./pages/CanonicalMapTestPage"), "CanonicalMapTestPage");
-const OnboardingQualityDashboardPage = safeLazy(() => import("./pages/admin/OnboardingQualityDashboardPage"), "OnboardingQualityDashboardPage");
-const UnifiedGlobalEnginePage = safeLazy(() => import("./pages/admin/UnifiedGlobalEnginePage"), "UnifiedGlobalEnginePage");
-const AIDecisionsDashboardPage = safeLazy(() => import("./pages/admin/AIDecisionsDashboardPage"), "AIDecisionsDashboardPage");
-const UrlImportPage = safeLazy(() => import("./pages/admin/UrlImportPage"), "UrlImportPage");
-const MerchantInventoryPage = safeLazy(() => import("./pages/merchant/MerchantInventoryPage"), "MerchantInventoryPage");
-const MerchantLiveControlPage = safeLazy(() => import("./pages/merchant/MerchantLiveControlPage"), "MerchantLiveControlPage");
-const MerchantCouponManagerPage = safeLazy(() => import("./pages/merchant/MerchantCouponManagerPage"), "MerchantCouponManagerPage");
-const AdminGrowthOpsPage = safeLazy(() => import("./pages/admin/AdminGrowthOpsPage"), "AdminGrowthOpsPage");
-const NotificationCenterPage = safeLazy(() => import("./pages/notifications/NotificationCenterPage"), "NotificationCenterPage");
-const AdminRetentionOpsPage = safeLazy(() => import("./pages/admin/AdminRetentionOpsPage"), "AdminRetentionOpsPage");
-const DriverEarningsPageNew = safeLazy(() => import("./pages/driver/DriverEarningsPageNew"), "DriverEarningsPageNew");
-const OrderReceiptPage = safeLazy(() => import("./pages/OrderReceiptPage"), "OrderReceiptPage");
-const MerchantBasicAnalyticsPage = safeLazy(() => import("./pages/merchant/MerchantBasicAnalyticsPage"), "MerchantBasicAnalyticsPage");
-const MerchantCustomersPage = safeLazy(() => import("./pages/merchant/MerchantCustomersPage"), "MerchantCustomersPage");
-const AdminMerchantHealthPage = safeLazy(() => import("./pages/admin/AdminMerchantHealthPage"), "AdminMerchantHealthPage");
-const WalletTopUpPage = safeLazy(() => import("./pages/wallet/WalletTopUpPage"), "WalletTopUpPage");
-const WalletTransferPage = safeLazy(() => import("./pages/wallet/WalletTransferPage"), "WalletTransferPage");
-const WalletRequestPage = safeLazy(() => import("./pages/wallet/WalletRequestPage"), "WalletRequestPage");
-const PaymentLinkResolverPage = safeLazy(() => import("./pages/pay/PaymentLinkResolverPage"), "PaymentLinkResolverPage");
-const PaymentConfirmPage = safeLazy(() => import("./pages/pay/PaymentConfirmPage"), "PaymentConfirmPage");
-const OrderRefundRequestPage = safeLazy(() => import("./pages/orders/OrderRefundRequestPage"), "OrderRefundRequestPage");
-const MerchantPromoBannerEditorPage = safeLazy(() => import("./pages/merchant/MerchantPromoBannerEditorPage"), "MerchantPromoBannerEditorPage");
-const AdminDriverMonitorPage = safeLazy(() => import("./pages/admin/AdminDriverMonitorPage"), "AdminDriverMonitorPage");
-const AdminUserLookupPage = safeLazy(() => import("./pages/admin/AdminUserLookupPage"), "AdminUserLookupPage");
-const AdminNotificationOpsPage = safeLazy(() => import("./pages/admin/AdminNotificationOpsPage"), "AdminNotificationOpsPage");
-const AdminFinanceSummaryPage = safeLazy(() => import("./pages/admin/AdminFinanceSummaryPage"), "AdminFinanceSummaryPage");
-const CustomerSpendingInsightsPage = safeLazy(() => import("./pages/CustomerSpendingInsightsPage"), "CustomerSpendingInsightsPage");
-const AdminPlatformAlertsPage = safeLazy(() => import("./pages/admin/AdminPlatformAlertsPage"), "AdminPlatformAlertsPage");
-const CustomerAddressBookPage = safeLazy(() => import("./pages/customer/CustomerAddressBookPage"), "CustomerAddressBookPage");
-const MerchantBusinessSummaryPage = safeLazy(() => import("./pages/merchant/MerchantBusinessSummaryPage"), "MerchantBusinessSummaryPage");
-const AdminOrderWatchPage = safeLazy(() => import("./pages/admin/AdminOrderWatchPage"), "AdminOrderWatchPage");
-const CustomerLoyaltyHistoryPage = safeLazy(() => import("./pages/customer/CustomerLoyaltyHistoryPage"), "CustomerLoyaltyHistoryPage");
-const AdminSearchWatchPage = safeLazy(() => import("./pages/admin/AdminSearchWatchPage"), "AdminSearchWatchPage");
-const CustomerActiveOrdersPage = safeLazy(() => import("./pages/customer/CustomerActiveOrdersPage"), "CustomerActiveOrdersPage");
-const MerchantClosingModePage = safeLazy(() => import("./pages/merchant/MerchantClosingModePage"), "MerchantClosingModePage");
-const AdminMerchantPromoWatchPage = safeLazy(() => import("./pages/admin/AdminMerchantPromoWatchPage"), "AdminMerchantPromoWatchPage");
-const DriverEarningsSummaryPage = safeLazy(() => import("./pages/driver/DriverEarningsSummaryPage"), "DriverEarningsSummaryPage");
-const AdminRefundWatchPage = safeLazy(() => import("./pages/admin/AdminRefundWatchPage"), "AdminRefundWatchPage");
-const MerchantCustomerInsightsPage = safeLazy(() => import("./pages/merchant/MerchantCustomerInsightsPage"), "MerchantCustomerInsightsPage");
-const AdminDriverHeatmapPage = safeLazy(() => import("./pages/admin/AdminDriverHeatmapPage"), "AdminDriverHeatmapPage");
-const CustomerOrderArchivePage = safeLazy(() => import("./pages/customer/CustomerOrderArchivePage"), "CustomerOrderArchivePage");
-const MerchantProductPerformancePage = safeLazy(() => import("./pages/merchant/MerchantProductPerformancePage"), "MerchantProductPerformancePage");
-const AdminWalletWatchPage = safeLazy(() => import("./pages/admin/AdminWalletWatchPage"), "AdminWalletWatchPage");
-const AdminPlatformRecoveryPage = safeLazy(() => import("./pages/admin/AdminPlatformRecoveryPage"), "AdminPlatformRecoveryPage");
-const AdminShopImportPage = safeLazy(() => import("./pages/admin/AdminShopImportPage"), "AdminShopImportPage");
-const AdminVisualQualityPage = safeLazy(() => import("./pages/admin/AdminVisualQualityPage"), "AdminVisualQualityPage");
-const AdminRankingControlPage = safeLazy(() => import("./pages/admin/AdminRankingControlPage"), "AdminRankingControlPage");
-const AdminShopQualityPage = safeLazy(() => import("./pages/admin/AdminShopQualityPage"), "AdminShopQualityPage");
-const AdminCoherenceControlPage = safeLazy(() => import("./pages/admin/AdminCoherenceControlPage"), "AdminCoherenceControlPage");
-const AdminSourceAuditPage = safeLazy(() => import("./pages/admin/AdminSourceAuditPage"), "AdminSourceAuditPage");
-const CustomerReorderPage = safeLazy(() => import("./pages/customer/CustomerReorderPage"), "CustomerReorderPage");
-const MerchantAutoAcceptSettingsPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptSettingsPage"), "MerchantAutoAcceptSettingsPage");
-const AdminSystemHealthPage = safeLazy(() => import("./pages/admin/AdminSystemHealthPage"), "AdminSystemHealthPage");
-const CustomerLiveLocationPage = safeLazy(() => import("./pages/customer/CustomerLiveLocationPage"), "CustomerLiveLocationPage");
-const DriverActiveMissionsPage = safeLazy(() => import("./pages/driver/DriverActiveMissionsPage"), "DriverActiveMissionsPage");
-const AdminFraudDetectionPage = safeLazy(() => import("./pages/admin/AdminFraudDetectionPage"), "AdminFraudDetectionPage");
-const CustomerSavedCardsPage = safeLazy(() => import("./pages/customer/CustomerSavedCardsPage"), "CustomerSavedCardsPage");
-const MerchantInventoryAlertsPage = safeLazy(() => import("./pages/merchant/MerchantInventoryAlertsPage"), "MerchantInventoryAlertsPage");
-const AdminOrderTimelinePage = safeLazy(() => import("./pages/admin/AdminOrderTimelinePage"), "AdminOrderTimelinePage");
-const DriverShiftPage = safeLazy(() => import("./pages/driver/DriverShiftPage"), "DriverShiftPage");
-const AdminMerchantApprovalQueuePage = safeLazy(() => import("./pages/admin/AdminMerchantApprovalQueuePage"), "AdminMerchantApprovalQueuePage");
-const CustomerDeliveryNotesPage = safeLazy(() => import("./pages/customer/CustomerDeliveryNotesPage"), "CustomerDeliveryNotesPage");
-const MerchantStaffAccessPage = safeLazy(() => import("./pages/merchant/MerchantStaffAccessPage"), "MerchantStaffAccessPage");
-const AdminFailedPaymentsPage = safeLazy(() => import("./pages/admin/AdminFailedPaymentsPage"), "AdminFailedPaymentsPage");
-const AdminSupportSlaPage = safeLazy(() => import("./pages/admin/AdminSupportSlaPage"), "AdminSupportSlaPage");
-const CustomerAddressSelectorPage = safeLazy(() => import("./pages/customer/CustomerAddressSelectorPage"), "CustomerAddressSelectorPage");
-const MerchantDailySalesPage = safeLazy(() => import("./pages/merchant/MerchantDailySalesPage"), "MerchantDailySalesPage");
-const AdminDeliveryIncidentsPage = safeLazy(() => import("./pages/admin/AdminDeliveryIncidentsPage"), "AdminDeliveryIncidentsPage");
-const CustomerPaymentActivityPage = safeLazy(() => import("./pages/customer/CustomerPaymentActivityPage"), "CustomerPaymentActivityPage");
-const DriverAvailabilityZonesPage = safeLazy(() => import("./pages/driver/DriverAvailabilityZonesPage"), "DriverAvailabilityZonesPage");
-const AdminGrowthDashboardPage = safeLazy(() => import("./pages/admin/AdminGrowthDashboardPage"), "AdminGrowthDashboardPage");
-const CustomerOrderReceiptsPage = safeLazy(() => import("./pages/customer/CustomerOrderReceiptsPage"), "CustomerOrderReceiptsPage");
-const MerchantRefundRequestsPage = safeLazy(() => import("./pages/merchant/MerchantRefundRequestsPage"), "MerchantRefundRequestsPage");
-const AdminCouponOversightPage = safeLazy(() => import("./pages/admin/AdminCouponOversightPage"), "AdminCouponOversightPage");
-const DriverCompletedDeliveriesPage = safeLazy(() => import("./pages/driver/DriverCompletedDeliveriesPage"), "DriverCompletedDeliveriesPage");
-const AdminActiveSessionsPage = safeLazy(() => import("./pages/admin/AdminActiveSessionsPage"), "AdminActiveSessionsPage");
-const MerchantMenuBulkEditPage = safeLazy(() => import("./pages/merchant/MerchantMenuBulkEditPage"), "MerchantMenuBulkEditPage");
-const AdminFraudMonitorPage = safeLazy(() => import("./pages/admin/AdminFraudMonitorPage"), "AdminFraudMonitorPage");
-const DriverLiveMissionsPage = safeLazy(() => import("./pages/driver/DriverLiveMissionsPage"), "DriverLiveMissionsPage");
-// FA-FF block
-// FG-FL block
-// FM-FR block
-// FS-FX block
-const AdminCoreEnginePage = safeLazy(() => import("./pages/admin/AdminCoreEnginePage"), "AdminCoreEnginePage");
-// FY-GD block
-const CustomerGroupOrderPage = safeLazy(() => import("./pages/customer/CustomerGroupOrderPage"), "CustomerGroupOrderPage");
-// GE-GJ block
-const MerchantDeliveryZonesPage = safeLazy(() => import("./pages/merchant/MerchantDeliveryZonesPage"), "MerchantDeliveryZonesPage");
-// GK-GP block
-const CustomerOrderGiftsPage = safeLazy(() => import("./pages/customer/CustomerOrderGiftsPage"), "CustomerOrderGiftsPage");
-// GQ-GV block
-const CustomerSplitBillPage = safeLazy(() => import("./pages/customer/CustomerSplitBillPage"), "CustomerSplitBillPage");
-const MerchantKitchenDisplayPage = safeLazy(() => import("./pages/merchant/MerchantKitchenDisplayPage"), "MerchantKitchenDisplayPage");
-const AdminOrderAuditPage = safeLazy(() => import("./pages/admin/AdminOrderAuditPage"), "AdminOrderAuditPage");
-// GW-HB block
-const CustomerSavedCartsPage2 = safeLazy(() => import("./pages/customer/CustomerSavedCartsPage"), "CustomerSavedCartsPage2");
-// HC-HH block
-const CustomerAutoRepeatPage = safeLazy(() => import("./pages/customer/CustomerAutoRepeatPage"), "CustomerAutoRepeatPage");
-const AdminRefundQueuePage = safeLazy(() => import("./pages/admin/AdminRefundQueuePage"), "AdminRefundQueuePage");
-const CustomerPartyOrderPage = safeLazy(() => import("./pages/customer/CustomerPartyOrderPage"), "CustomerPartyOrderPage");
-const AdminPlatformHealthPage = safeLazy(() => import("./pages/admin/AdminPlatformHealthPage"), "AdminPlatformHealthPage");
-const AdminRuntimeCockpitPage = safeLazy(() => import("./pages/admin/AdminRuntimeCockpitPage"), "AdminRuntimeCockpitPage");
-// HI-HN block
-const CustomerRewardRedemptionPage = safeLazy(() => import("./pages/customer/CustomerRewardRedemptionPage"), "CustomerRewardRedemptionPage");
-// HO-HT block
-const AdminSystemLivePanelPage = safeLazy(() => import("./pages/admin/AdminSystemLivePanelPage"), "AdminSystemLivePanelPage");
-// HU-HZ block
-const AdminRestaurantFillPage = safeLazy(() => import("./pages/admin/AdminRestaurantFillPage"), "AdminRestaurantFillPage");
-// IA-IF block
-const StripeCheckoutHandlerPage = safeLazy(() => import("./pages/payments/StripeCheckoutHandlerPage"), "StripeCheckoutHandlerPage");
-// IG-IL block
-// IM-IR block
-// AppBootstrapGuard imported directly (not lazy) — it's a tiny null component
-const AdminMasterControlPage = safeLazy(() => import("./pages/admin/AdminMasterControlPage"), "AdminMasterControlPage");
-// IS-IX block
-// JA-JF block
-const AdminQaCommandPage = safeLazy(() => import("./pages/admin/AdminQaCommandPage"), "AdminQaCommandPage");
-// KA-KF block
-const LiveTrackingPageNew = safeLazy(() => import("./pages/live/LiveTrackingPage"), "LiveTrackingPageNew");
-// LG-LR block
-const DriverFuelCostsPage = safeLazy(() => import("./pages/driver/DriverFuelCostsPage"), "DriverFuelCostsPage");
-const DriverBreaksPage = safeLazy(() => import("./pages/driver/DriverBreaksPage"), "DriverBreaksPage");
-const MerchantBusinessHoursPage = safeLazy(() => import("./pages/merchant/MerchantBusinessHoursPage"), "MerchantBusinessHoursPage");
-// MA-MW block
-const CustomerShareCartPage = safeLazy(() => import("./pages/customer/CustomerShareCartPage"), "CustomerShareCartPage");
-const AdminGrowthEnginePage = safeLazy(() => import("./pages/AdminGrowthEnginePage"), "AdminGrowthEnginePage");
-// MX-OG block
-const CentralControlPanelPage = safeLazy(() => import("./pages/admin/CentralControlPanelPage"), "CentralControlPanelPage");
-// OH-PI block
-const MerchantMenuCategoryManagerPage = safeLazy(() => import("./pages/merchant/MerchantMenuCategoryManagerPage"), "MerchantMenuCategoryManagerPage");
-const AdminMenuQualityControlPage = safeLazy(() => import("./pages/admin/AdminMenuQualityControlPage"), "AdminMenuQualityControlPage");
-const AdminUxLiveTestPage = safeLazy(() => import("./pages/admin/AdminUxLiveTestPage"), "AdminUxLiveTestPage");
-const HyperRadarPage = safeLazy(() => import("./pages/HyperRadarPage"), "HyperRadarPage");
-const AdminEngineCockpit = safeLazy(() => import("./pages/AdminEngineCockpit"), "AdminEngineCockpit");
-const AdminBrowserRepairPage = safeLazy(() => import("./pages/admin/AdminBrowserRepairPage"), "AdminBrowserRepairPage");
-// PJ-PO block
-// V1WalletHubPage removed — legacy redirect
-
-const AuthCallbackPage = safeLazy(() => import("./pages/AuthCallbackPage"), "AuthCallbackPage");
-// City sub-page wrappers
+// City sub-page wrappers (inline components, not lazy)
 const CityServicesPage = () => <CityHubPage subPage="services" />;
 const CityActivitiesPage = () => <CityHubPage subPage="activities" />;
 const CityConciergePage = () => <CityHubPage subPage="concierge" />;
