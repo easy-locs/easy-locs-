@@ -29,13 +29,13 @@ export function checkSlowFlow(domain: string, operation: string, latencyMs: numb
   if (recentFlows.length > MAX_HISTORY) recentFlows.shift();
 
   if (latencyMs >= thresholds.criticalMs) {
-    reportAnomaly(domain, "critical", `Critically slow: ${operation} took ${latencyMs}ms`, {
+    reportAnomaly("slow_flow", domain, `Critically slow: ${operation} took ${latencyMs}ms`, "critical", {
       operation, latencyMs, threshold: thresholds.criticalMs,
     });
     return "critical";
   }
   if (latencyMs >= thresholds.warningMs) {
-    reportAnomaly(domain, "warning", `Slow flow: ${operation} took ${latencyMs}ms`, {
+    reportAnomaly("slow_flow", domain, `Slow flow: ${operation} took ${latencyMs}ms`, "medium", {
       operation, latencyMs, threshold: thresholds.warningMs,
     });
     return "warning";

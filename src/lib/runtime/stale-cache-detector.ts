@@ -18,7 +18,10 @@ export function scanForStaleCache(): StaleCacheReport {
 
   if (stale.length > 0) {
     const domains = [...new Set(stale.map(e => e.module))];
-    reportAnomaly("cache", "warning", `${stale.length} stale cache entries`, {
+    reportAnomaly("stale_cache", "cache", `${stale.length} stale cache entries`, "medium", {
+      staleKeys: stale.map(e => e.key),
+      domains,
+    });
       staleKeys: stale.map(e => e.key),
       domains,
     });
