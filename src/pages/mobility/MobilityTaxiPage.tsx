@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
 import { supabase } from "@/integrations/supabase/client";
-import { Car, Clock, CheckCircle2 } from "lucide-react";
+import { Car, Clock, CheckCircle2, MapPin, Navigation2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileHeroHeader } from "@/components/layout/MobileHeroHeader";
@@ -144,7 +144,7 @@ export default function MobilityTaxiPage() {
                       )}>{j.status}</span>
                     </div>
                      <p className="text-xs text-muted-foreground break-words leading-snug flex items-center gap-1.5"><MapPin className="h-3 w-3 text-emerald-500 shrink-0" /> {j.pickup_label || j.pickup_address}</p>
-                     <p className="text-xs text-muted-foreground break-words leading-snug flex items-center gap-1.5"><Navigation className="h-3 w-3 text-primary shrink-0" /> {j.dropoff_label || j.dropoff_address}</p>
+                     <p className="text-xs text-muted-foreground break-words leading-snug flex items-center gap-1.5"><Navigation2 className="h-3 w-3 text-primary shrink-0" /> {j.dropoff_label || j.dropoff_address}</p>
                     {j.current_price != null && (
                       <p className="text-sm font-bold text-foreground">{j.current_price} {j.currency}</p>
                     )}
