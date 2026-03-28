@@ -623,11 +623,15 @@ export default memo(function UnifiedMap({
           <span className="truncate text-[11px] font-medium text-foreground">Live station · {weather.label}</span>
         </div>
       </div>
-      {weather.isRaining && (
+      {weather.isRaining && effectsLevel !== "off" && (
         <>
           <div className="map-rain-tint pointer-events-none absolute inset-0 rounded-2xl" />
-          <div className="map-rain-overlay pointer-events-none absolute inset-0 rounded-2xl" />
-          <div className="map-rain-glow pointer-events-none absolute inset-0 rounded-2xl" />
+          {effectsLevel === "immersive" && (
+            <>
+              <div className="map-rain-overlay pointer-events-none absolute inset-0 rounded-2xl" />
+              <div className="map-rain-glow pointer-events-none absolute inset-0 rounded-2xl" />
+            </>
+          )}
         </>
       )}
       <DiscoveryHeatmapLayer
