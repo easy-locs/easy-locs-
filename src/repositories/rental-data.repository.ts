@@ -17,10 +17,10 @@ export async function fetchProperties(orgId: string, countryFilter?: string | nu
 export async function upsertProperty(orgId: string, userId: string, record: Record<string, any>, editId?: string) {
   const payload = { org_id: orgId, user_id: userId, ...record };
   if (editId) {
-    const { error } = await supabase.from("properties").update(payload).eq("id", editId);
+    const { error } = await supabase.from("properties").update(payload as any).eq("id", editId);
     if (error) throw error;
   } else {
-    const { error } = await supabase.from("properties").insert(payload);
+    const { error } = await supabase.from("properties").insert(payload as any);
     if (error) throw error;
   }
 }
@@ -39,11 +39,11 @@ export async function fetchTenants(orgId: string) {
 export async function upsertTenant(orgId: string, userId: string, record: Record<string, any>, editId?: string) {
   const payload = { org_id: orgId, user_id: userId, ...record };
   if (editId) {
-    const { error } = await supabase.from("tenants").update(payload).eq("id", editId);
+    const { error } = await supabase.from("tenants").update(payload as any).eq("id", editId);
     if (error) throw error;
     return editId;
   } else {
-    const { data, error } = await supabase.from("tenants").insert(payload).select("id").single();
+    const { data, error } = await supabase.from("tenants").insert(payload as any).select("id").single();
     if (error) throw error;
     return data.id;
   }
@@ -66,7 +66,7 @@ export async function fetchExistingRentCallsForMonth(orgId: string, month: strin
 }
 
 export async function insertRentCalls(calls: Record<string, any>[]) {
-  const { error } = await supabase.from("rent_calls").upsert(calls, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true });
+  const { error } = await supabase.from("rent_calls").upsert(calls as any, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true });
   if (error) throw error;
 }
 
@@ -76,7 +76,7 @@ export async function updateRentCall(id: string, update: Record<string, any>) {
 }
 
 export async function insertSingleRentCall(record: Record<string, any>) {
-  const { data, error } = await supabase.from("rent_calls").insert(record).select("id").single();
+  const { data, error } = await supabase.from("rent_calls").insert(record as any).select("id").single();
   if (error) throw error;
   return data;
 }
@@ -99,7 +99,7 @@ export async function fetchOrgInfo(orgId: string) {
 
 // ─── Documents ───
 export async function insertDocument(record: Record<string, any>) {
-  const { error } = await supabase.from("documents").insert(record);
+  const { error } = await supabase.from("documents").insert(record as any);
   if (error) throw error;
 }
 
