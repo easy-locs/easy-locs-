@@ -263,110 +263,36 @@ const Index = () => {
           <HomePromoCarousel />
         </Suspense>
 
-        {/* 13. Value Proposition */}
-        <Suspense fallback={<SectionLoader />}>
-          <ValueProposition />
-        </Suspense>
+        {/* Below-fold — deferred until scroll */}
+        <DeferredSection>
+          <Suspense fallback={<SectionLoader />}><ValueProposition /></Suspense>
+          <Suspense fallback={<SectionLoader />}><RoleCards /></Suspense>
+          <Suspense fallback={<SectionLoader />}><StatsSection /></Suspense>
+          <Suspense fallback={<SectionLoader />}><AdvantagesSection /></Suspense>
+          <Suspense fallback={<SectionLoader />}><ServiceCategories /></Suspense>
+        </DeferredSection>
 
-        {/* 13b. Role Cards */}
-        <Suspense fallback={<SectionLoader />}>
-          <RoleCards />
-        </Suspense>
+        <DeferredSection>
+          <Suspense fallback={<SectionLoader />}><AISection /></Suspense>
+          <Suspense fallback={<SectionLoader />}><ConciergeSection /></Suspense>
+          <Suspense fallback={<SectionLoader />}><UniverseShowcase /></Suspense>
+          <Suspense fallback={<SectionLoader />}><DashboardPreview /></Suspense>
+          <Suspense fallback={<SectionLoader />}><ExplorePreview /></Suspense>
+          <Suspense fallback={<SectionLoader />}><RemoteEntrepreneurship /></Suspense>
+        </DeferredSection>
 
-        {/* 13c. Stats */}
-        <Suspense fallback={<SectionLoader />}>
-          <StatsSection />
-        </Suspense>
-
-        {/* 13d. Advantages */}
-        <Suspense fallback={<SectionLoader />}>
-          <AdvantagesSection />
-        </Suspense>
-
-        {/* 13e. Service Categories */}
-        <Suspense fallback={<SectionLoader />}>
-          <ServiceCategories />
-        </Suspense>
-
-        {/* 13f. AI Section */}
-        <Suspense fallback={<SectionLoader />}>
-          <AISection />
-        </Suspense>
-
-        {/* 13g. Concierge */}
-        <Suspense fallback={<SectionLoader />}>
-          <ConciergeSection />
-        </Suspense>
-
-        {/* 13h. Universe Showcase */}
-        <Suspense fallback={<SectionLoader />}>
-          <UniverseShowcase />
-        </Suspense>
-
-        {/* 13i. Dashboard Preview */}
-        <Suspense fallback={<SectionLoader />}>
-          <DashboardPreview />
-        </Suspense>
-
-        {/* 13j. Explore Preview */}
-        <Suspense fallback={<SectionLoader />}>
-          <ExplorePreview />
-        </Suspense>
-
-        {/* 13k. Remote Entrepreneurship */}
-        <Suspense fallback={<SectionLoader />}>
-          <RemoteEntrepreneurship />
-        </Suspense>
-
-        {/* 14. Browse by Country + Cities */}
-        <Suspense fallback={<SectionLoader />}>
-          <BrowseByCountry />
-        </Suspense>
-        <Suspense fallback={<SectionLoader />}>
-          <PopularCities />
-        </Suspense>
-
-        {/* 15. How it works */}
-        <Suspense fallback={<SectionLoader />}>
-          <HowItWorks />
-        </Suspense>
-
-        {/* 16. World Map */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <WorldMapSection />
-          </Suspense>
-        )}
-
-        {/* 17. Trust */}
-        <Suspense fallback={<SectionLoader />}>
-          <TrustSection />
-        </Suspense>
-
-        {/* 18. Pricing */}
-        <Suspense fallback={<SectionLoader />}>
-          <Pricing />
-        </Suspense>
-
-        {/* 19. FAQ */}
-        <Suspense fallback={<SectionLoader />}>
-          <LandingFAQ />
-        </Suspense>
-
-        {/* 20. Newsletter */}
-        <Suspense fallback={<SectionLoader />}>
-          <Newsletter />
-        </Suspense>
-
-        {/* 21. Social Proof */}
-        <Suspense fallback={null}>
-          <SocialProofStrip />
-        </Suspense>
-
-        {/* 22. Legal Disclaimer */}
-        <Suspense fallback={null}>
-          <LegalDisclaimer />
-        </Suspense>
+        <DeferredSection>
+          <Suspense fallback={<SectionLoader />}><BrowseByCountry /></Suspense>
+          <Suspense fallback={<SectionLoader />}><PopularCities /></Suspense>
+          <Suspense fallback={<SectionLoader />}><HowItWorks /></Suspense>
+          {!isMobile && <Suspense fallback={<SectionLoader />}><WorldMapSection /></Suspense>}
+          <Suspense fallback={<SectionLoader />}><TrustSection /></Suspense>
+          <Suspense fallback={<SectionLoader />}><Pricing /></Suspense>
+          <Suspense fallback={<SectionLoader />}><LandingFAQ /></Suspense>
+          <Suspense fallback={<SectionLoader />}><Newsletter /></Suspense>
+          <Suspense fallback={null}><SocialProofStrip /></Suspense>
+          <Suspense fallback={null}><LegalDisclaimer /></Suspense>
+        </DeferredSection>
       </div>
 
       {/* Footer */}
