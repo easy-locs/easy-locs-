@@ -133,7 +133,17 @@ eventBus.on("message.sent", (p) => {
   });
 });
 
-// Wallet
+// Wallet — listen on both legacy alias and new specific event
+eventBus.on("wallet.balance.refresh", (p) => {
+  enqueue({
+    signal_type: "payment_activity",
+    source_module: "wallet",
+    user_id: p.userId as string,
+    intensity: 2,
+    metadata_json: { bridgedFrom: p._bridgedFrom },
+  });
+});
+// Legacy compat — will be removed once all consumers migrate
 eventBus.on("wallet.updated", (p) => {
   enqueue({
     signal_type: "payment_activity",
