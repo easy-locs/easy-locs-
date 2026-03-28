@@ -4,6 +4,9 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { trackPropagation } from "@/lib/runtime/propagation-validator";
+import { APP_EVENTS } from "@/lib/platform/events";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -60,6 +63,14 @@ export async function dispatchNotification(input: NotificationInput): Promise<No
 
     trace("dispatch", "output", { notificationId: data?.id, latency });
     reportHealth("notifications", "ok", latency);
+
+    platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, { userId: input.userId }, "notifications");
+
+    trackPropagation({
+      flowId: `notif-${data?.id}`, domain: "notifications", action: "dispatch",
+      dbWriteSuccess: true, eventEmitted: APP_EVENTS.NOTIFICATIONS_REFRESH, cacheInvalidated: [],
+    });
+
     return { success: true, notificationId: data?.id };
   } catch (err: any) {
     trace("dispatch", "error", { message: err.message });
