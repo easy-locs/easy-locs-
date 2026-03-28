@@ -177,7 +177,7 @@ export default function WishlistSaveLater({ shopId, mode = "buyer", catalogItems
                   return (
                     <div key={item.id} className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate">{catalog?.title || "Product"}</p>
+                        <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{catalog?.title || "Product"}</p>
                         <p className="text-2xs text-muted-foreground">
                           Added at {item.price_at_add?.toFixed(2) || "—"}
                           {catalog?.price && catalog.price < item.price_at_add && (

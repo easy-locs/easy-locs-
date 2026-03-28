@@ -138,8 +138,8 @@ export default function GlobalSearch() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">{r.title}</p>
-                      {r.subtitle && <p className="text-[10px] text-muted-foreground truncate">{r.subtitle}</p>}
+                      <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{r.title}</p>
+                      {r.subtitle && <p className="text-[10px] text-muted-foreground line-clamp-1 break-words">{r.subtitle}</p>}
                     </div>
                     <div className="shrink-0 text-right">
                       {r.price != null && <p className="text-xs font-bold text-primary">{fmtPrice(r.price, r.currency)}</p>}

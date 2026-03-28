@@ -205,7 +205,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span>{typeInfo.icon}</span>
-                        <p className="text-xs font-semibold truncate">{c.title}</p>
+                        <p className="text-xs font-semibold line-clamp-2 break-words leading-snug">{c.title}</p>
                       </div>
                       {c.description && <p className="text-[10px] text-muted-foreground mt-0.5">{c.description}</p>}
                       <div className="flex items-center gap-2 mt-1.5">

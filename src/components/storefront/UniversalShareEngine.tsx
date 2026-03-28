@@ -82,7 +82,7 @@ export default function UniversalShareEngine({
             <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/50">
               {imageUrl && <img src={imageUrl} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />}
               <div className="min-w-0">
-                <p className="text-xs font-semibold truncate">{title}</p>
+                <p className="text-xs font-semibold line-clamp-2 break-words leading-snug">{title}</p>
                 {price && <p className="text-xs text-primary font-bold">{price}</p>}
               </div>
             </div>
@@ -100,7 +100,7 @@ export default function UniversalShareEngine({
             {copied ? <Check className="h-4 w-4 text-success shrink-0" /> : <Copy className="h-4 w-4 text-muted-foreground shrink-0" />}
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium">{copied ? "Copied!" : "Copy link"}</p>
-              <p className="text-[10px] text-muted-foreground truncate">{shareUrl}</p>
+              <p className="text-[10px] text-muted-foreground line-clamp-1 break-words">{shareUrl}</p>
             </div>
           </button>
 

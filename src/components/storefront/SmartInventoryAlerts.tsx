@@ -121,7 +121,7 @@ export default function SmartInventoryAlerts({ shopId }: { shopId: string }) {
                     <div className="flex items-center gap-2">
                       {item?.photo_url && <img src={item.photo_url} alt="" className="w-8 h-8 rounded object-cover" />}
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate">{item?.title || "Item"}</p>
+                        <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{item?.title || "Item"}</p>
                         <p className="text-[10px] text-destructive font-medium">
                           Stock: {a.current_stock} (threshold: {a.threshold})
                         </p>
