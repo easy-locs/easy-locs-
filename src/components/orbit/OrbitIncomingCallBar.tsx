@@ -20,7 +20,7 @@ export function OrbitIncomingCallBar({ visible, peerName, mode, onAccept, onDecl
             <p className="text-xs font-semibold text-green-600">
               Incoming {mode === "video" ? "video" : "audio"} call
             </p>
-            <p className="text-sm font-medium truncate">{peerName || "Unknown contact"}</p>
+            <p className="text-sm font-medium break-words leading-snug">{peerName || "Unknown contact"}</p>
           </div>
         </div>
 

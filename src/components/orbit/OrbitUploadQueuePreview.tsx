@@ -13,7 +13,7 @@ export function OrbitUploadQueuePreview({ queue, onRemove }: Props) {
       {queue.map((item: any) => (
         <div key={item.localId} className="flex items-center justify-between gap-2 rounded-xl border p-2">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium truncate">{item.file.name}</p>
+            <p className="text-xs font-medium break-words leading-snug">{item.file.name}</p>
             <p className="text-[10px] text-muted-foreground">
               {item.kind} · {formatBytes(item.file.size)} · {item.status}
               {item.status === "uploading" ? ` · ${item.progress}%` : ""}
@@ -21,7 +21,7 @@ export function OrbitUploadQueuePreview({ queue, onRemove }: Props) {
           </div>
           <button
             onClick={() => onRemove(item.localId)}
-            className="rounded-lg border px-3 py-1.5 text-xs hover:bg-destructive/10 transition-colors"
+            className="rounded-lg border px-3 py-1.5 text-xs hover:bg-destructive/10 transition-colors shrink-0"
           >
             ✕
           </button>
