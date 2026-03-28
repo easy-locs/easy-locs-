@@ -2423,3 +2423,130 @@ input[type="search"]::-webkit-search-results-decoration {
     padding-inline-end: 2.6rem !important;
   }
 }
+
+/* ══════════════════════════════════════════════════
+   PREMIUM SMART FLOW UX — Global interaction polish
+   ══════════════════════════════════════════════════ */
+
+/* 1. Universal micro-transition — every interactive element feels alive */
+button, a, [role="button"], input, select, textarea,
+.cursor-pointer, [data-interactive] {
+  transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.15s ease,
+              box-shadow 0.2s ease,
+              background-color 0.15s ease,
+              border-color 0.15s ease;
+}
+
+/* 2. Tap feedback — subtle scale on press */
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled),
+.cursor-pointer:active {
+  transform: scale(0.97);
+}
+
+/* 3. Premium focus ring — consistent across all inputs */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.5);
+  outline-offset: 2px;
+}
+
+/* 4. Smart skeleton shimmer — premium loading state */
+@keyframes premium-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-premium,
+[data-skeleton] {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted-foreground) / 0.08) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: premium-shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius);
+}
+
+/* 5. Card hover elevation — desktop premium feel */
+@media (hover: hover) {
+  [data-card-hover]:hover {
+    box-shadow: 0 8px 30px -8px hsl(var(--foreground) / 0.1);
+    transform: translateY(-1px);
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+/* 6. Empty state — centered, breathable */
+.empty-state-premium {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+}
+
+.empty-state-premium svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.4;
+}
+
+/* 7. Success flash — subtle green pulse */
+@keyframes success-flash {
+  0% { box-shadow: 0 0 0 0 hsl(142 71% 45% / 0.4); }
+  70% { box-shadow: 0 0 0 8px hsl(142 71% 45% / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(142 71% 45% / 0); }
+}
+
+.animate-success {
+  animation: success-flash 0.6s ease-out;
+}
+
+/* 8. Error state — subtle red border pulse */
+@keyframes error-pulse {
+  0%, 100% { border-color: hsl(var(--destructive)); }
+  50% { border-color: hsl(var(--destructive) / 0.5); }
+}
+
+.animate-error {
+  animation: error-pulse 1s ease-in-out 2;
+}
+
+/* 9. Flow progress indicator */
+.flow-progress {
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--primary) / 0.3) 100%
+  );
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 10. Premium badge glow */
+.badge-glow {
+  box-shadow: 0 0 6px 1px hsl(var(--primary) / 0.3);
+}
+
+/* 11. Smooth page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
