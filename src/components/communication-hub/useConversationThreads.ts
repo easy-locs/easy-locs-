@@ -548,7 +548,7 @@ export function useConversationThreads() {
         }
       }
     } catch (err) {
-      console.error("[comm-threads] loadThreads error:", err);
+      console.error("%c[TRACE][THREADS] ❌ loadThreads CRASHED", "color:red;font-weight:bold", err);
     }
 
     // Normalize all thread names to strings — prevents React error #185
