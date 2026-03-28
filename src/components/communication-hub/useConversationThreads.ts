@@ -41,7 +41,7 @@ export function useConversationThreads() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadThreads = useCallback(async () => {
-    if (!user?.id || !orgId || loadingRef.current) {
+    if (!user?.id || loadingRef.current) {
       setThreads([]);
       setStats({ unread: 0, pending_docs: 0, overdue: 0, maintenance: 0 });
       setLoading(false);
@@ -52,14 +52,16 @@ export function useConversationThreads() {
     const threadMap = new Map<string, ConversationThread>();
 
     try {
-      // ── Parallel fetch: sections 1-6 fire concurrently ──
+      // ── Parallel fetch: sections 1-6 fire concurrently (only if orgId exists) ──
+      const hasOrg = !!orgId;
+      const emptyResult = { data: null, error: null, count: null, status: 200, statusText: "OK" };
       const [tenantRes, mBookingRes, cOrderRes, sBookingRes, reLeadRes, guestRes] = await Promise.all([
-        supabase.from("tenants").select("id, name, email, tenant_user_id, property_id, lease_type").eq("org_id", orgId).order("name"),
-        supabase.from("marketplace_bookings").select("id, booker_name, booker_email, booker_phone, status, total_price, currency, service_id, service_date, provider_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
-        supabase.from("concierge_orders").select("id, guest_name, guest_email, guest_phone, status, total_price, currency, service_id, service_date, property_label, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
-        supabase.from("booking_requests").select("id, guest_name, guest_email, guest_phone, status, check_in, check_out, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
-        supabase.from("real_estate_leads").select("id, name, email, phone, status, message, listing_id, created_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
-        supabase.from("guest_sessions").select("id, display_name, email, context_type, context_id, created_at, expires_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50).then(r => r, () => ({ data: null, error: null, count: null, status: 200, statusText: "OK" })),
+        hasOrg ? supabase.from("tenants").select("id, name, email, tenant_user_id, property_id, lease_type").eq("org_id", orgId).order("name") : emptyResult,
+        hasOrg ? supabase.from("marketplace_bookings").select("id, booker_name, booker_email, booker_phone, status, total_price, currency, service_id, service_date, provider_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200) : emptyResult,
+        hasOrg ? supabase.from("concierge_orders").select("id, guest_name, guest_email, guest_phone, status, total_price, currency, service_id, service_date, property_label, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200) : emptyResult,
+        hasOrg ? supabase.from("booking_requests").select("id, guest_name, guest_email, guest_phone, status, check_in, check_out, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200) : emptyResult,
+        hasOrg ? supabase.from("real_estate_leads").select("id, name, email, phone, status, message, listing_id, created_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200) : emptyResult,
+        hasOrg ? supabase.from("guest_sessions").select("id, display_name, email, context_type, context_id, created_at, expires_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50).then(r => r, () => emptyResult) : emptyResult,
       ]);
 
       const tenants = tenantRes.data;
@@ -228,13 +230,20 @@ export function useConversationThreads() {
       // ── 7. Conversation threads table (non-direct: listing, business, team) ──
       // Direct conversations are handled exclusively in section 11 below to avoid duplicates.
       try {
-        const { data: convThreads } = await (supabase as any)
+        let convQuery = (supabase as any)
           .from("conversations_v2")
           .select("*")
           .neq("type", "direct")
-          .or(`org_id.eq.${orgId}${user?.id ? `,participant_ids.cs.{${user.id}}` : ""}`)
           .order("last_message_at", { ascending: false })
           .limit(200);
+        
+        if (hasOrg) {
+          convQuery = convQuery.or(`org_id.eq.${orgId},participant_ids.cs.{${user.id}}`);
+        } else {
+          convQuery = convQuery.contains("participant_ids", [user.id]);
+        }
+
+        const { data: convThreads } = await convQuery;
 
         if (convThreads?.length) {
           const nonDirectPeerIds = new Set<string>();
@@ -424,7 +433,7 @@ export function useConversationThreads() {
       }
 
       // ── 8. Deal rooms ──
-      try {
+      if (hasOrg) try {
         const { data: deals } = await supabase
           .from("deal_rooms")
           .select("*")
