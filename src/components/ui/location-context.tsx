@@ -70,9 +70,9 @@ export function LocationContext({
   return (
     <div className={cn("flex items-center gap-1.5 flex-wrap", compact ? "text-[10px]" : "text-xs", className)}>
       {showCity && effectiveCity && (
-        <span className="inline-flex items-center gap-1 text-muted-foreground">
-          <MapPin className={compact ? "h-2.5 w-2.5" : "h-3 w-3"} />
-          <span className="truncate max-w-[100px]">{effectiveCity}</span>
+        <span className="inline-flex min-w-0 items-center gap-1 text-muted-foreground">
+          <MapPin className={compact ? "h-2.5 w-2.5 shrink-0" : "h-3 w-3 shrink-0"} />
+          <span className="min-w-0 max-w-[160px] whitespace-normal break-words leading-snug">{effectiveCity}</span>
         </span>
       )}
 

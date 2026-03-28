@@ -58,9 +58,9 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl, shareVersion }:
       <label className="text-xs text-muted-foreground font-medium">Booking Link</label>
 
       {photoUrl && (
-        <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
-          <img src={photoUrl} alt="" className="h-10 w-10 rounded object-cover" loading="lazy" />
-          <span className="text-xs text-muted-foreground truncate">{serviceTitle}</span>
+        <div className="flex min-w-0 items-center gap-2 rounded-md bg-muted/50 p-2">
+          <img src={photoUrl} alt="" className="h-10 w-10 shrink-0 rounded object-cover" loading="lazy" />
+          <span className="min-w-0 whitespace-normal break-words text-xs text-muted-foreground leading-snug">{serviceTitle}</span>
         </div>
       )}
 

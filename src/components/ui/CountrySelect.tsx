@@ -77,15 +77,15 @@ export default function CountrySelect({ value, onChange, placeholder = "Select a
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between gap-2 border border-border rounded-lg px-3 py-2 text-sm bg-background text-foreground hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px]"
       >
-        <span className="flex items-center gap-2 truncate">
+        <span className="flex min-w-0 flex-1 items-center gap-2">
           {selected ? (
             <>
-              <span className="text-lg">{selected.flag}</span>
-              <span className="truncate">{selected.localName}</span>
-              <span className="text-muted-foreground text-xs">({selected.code})</span>
+              <span className="text-lg shrink-0">{selected.flag}</span>
+              <span className="min-w-0 whitespace-normal break-words leading-snug">{selected.localName}</span>
+              <span className="text-muted-foreground text-xs shrink-0">({selected.code})</span>
             </>
           ) : (
-            <span className="text-muted-foreground">{placeholder}</span>
+            <span className="text-muted-foreground whitespace-normal break-words">{placeholder}</span>
           )}
         </span>
         <div className="flex items-center gap-1 shrink-0">
@@ -138,10 +138,10 @@ export default function CountrySelect({ value, onChange, placeholder = "Select a
                             value === c.code ? "bg-accent/20 font-medium" : ""
                           }`}
                         >
-                          <span className="text-lg">{c.flag}</span>
-                          <span className="flex-1 text-left truncate">{c.localName}</span>
-                          <span className="text-xs text-muted-foreground">{c.code}</span>
-                          <span className="text-xs text-muted-foreground">{c.currencySymbol}</span>
+                          <span className="text-lg shrink-0">{c.flag}</span>
+                          <span className="flex-1 min-w-0 text-left whitespace-normal break-words leading-snug">{c.localName}</span>
+                          <span className="text-xs text-muted-foreground shrink-0">{c.code}</span>
+                          <span className="text-xs text-muted-foreground shrink-0">{c.currencySymbol}</span>
                         </button>
                       ))}
                     </div>
