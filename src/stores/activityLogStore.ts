@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -33,7 +33,7 @@ export const useActivityLogStore = create<ActivityLogStore>((set) => ({
 
   log: async (input) => {
     const user = useV2AuthStore.getState().user;
-    const orbit = useOrbitStore.getState().profile;
+    const orbit = getOrbitIdentity();
 
     const row = {
       id: `act_${Math.random().toString(36).slice(2, 11)}`,

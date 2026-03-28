@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { uploadFile } from "@/lib/storage/uploadFile";
 import { supabase } from "@/integrations/supabase/client";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
 type ChatAttachment = {
   id: string;
@@ -30,8 +30,7 @@ export const useChatAttachmentStore = create<ChatAttachmentStore>((set) => ({
   uploading: false,
 
   uploadAttachment: async (conversationId, file) => {
-    const orbit = useOrbitStore.getState().profile;
-    if (!orbit) throw new Error("Missing orbit");
+    const orbit = requireOrbitIdentity();
 
     set({ uploading: true });
 

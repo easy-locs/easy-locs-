@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -50,7 +50,7 @@ export const useFavoritesStore = create<FavoritesStore>((set, get) => ({
 
   addFavorite: async (listingId) => {
     const user = useV2AuthStore.getState().user;
-    const orbit = useOrbitStore.getState().profile;
+    const orbit = getOrbitIdentity();
     if (!user || !orbit) return;
 
     const row = {
