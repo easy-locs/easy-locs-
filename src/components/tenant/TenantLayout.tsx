@@ -114,7 +114,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
               <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">{t("badge.tenant") || L.tenantSpace}</span>
             )}
           </div>
-          {user && <p className="text-xs text-sidebar-foreground/50 mt-2 truncate">{user.email}</p>}
+          {user && <p className="text-xs text-sidebar-foreground/50 mt-2 line-clamp-1 break-words">{user.email}</p>}
         </div>
 
         <nav className="flex-1 py-4 px-3 overflow-y-auto">
