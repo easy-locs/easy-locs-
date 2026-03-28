@@ -82,22 +82,26 @@ function AuthenticatedContact({
       let threadId: string | null = null;
       const { data: existing } = await (supabase as any)
         .from("conversations_v2")
-        .select("id")
-        .contains("participant_ids", [user.id])
+        .select("id, participants")
         .eq("type", "direct")
-        .limit(1)
-        .maybeSingle();
+        .order("updated_at", { ascending: false })
+        .limit(50);
 
-      if (existing) {
-        threadId = existing.id;
+      const matchingThread = (existing || []).find((t: any) =>
+        Array.isArray(t.participants) &&
+        t.participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user.id)
+      );
+
+      if (matchingThread) {
+        threadId = matchingThread.id;
       } else {
         const { data: thread } = await (supabase as any)
           .from("conversations_v2")
           .insert({
-            participant_ids: [user.id],
+            participants: [{ userId: user.id }],
             type: "direct",
             title: serviceTitle,
-            created_by: user.id,
+            created_by_orbit_id: `orbit_${user.id.slice(0, 12)}`,
           })
           .select("id")
           .single();

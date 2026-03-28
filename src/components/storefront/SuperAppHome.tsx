@@ -156,10 +156,9 @@ export default function SuperAppHome() {
     queryFn: async () => {
       const [threadsRes, ordersRes, shopRes] = await Promise.all([
         (supabase as any).from("conversations_v2")
-          .select("id, type, title, updated_at, status")
-          .contains("participant_ids", [user!.id])
+          .select("id, type, title, updated_at, participants")
           .order("updated_at", { ascending: false })
-          .limit(5),
+          .limit(50),
         (supabase as any).from("storefront_orders")
           .select("id, status, total, currency, created_at")
           .eq("buyer_id", user!.id)
@@ -172,7 +171,10 @@ export default function SuperAppHome() {
           .maybeSingle(),
       ]);
       return {
-        threads: threadsRes.data || [],
+        threads: (threadsRes.data || []).filter((t: any) =>
+          Array.isArray(t.participants) &&
+          t.participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user!.id)
+        ).slice(0, 5),
         activeOrders: ordersRes.data || [],
         hasShop: !!shopRes.data,
       };
