@@ -1,8 +1,9 @@
 /**
  * useDriverMissions — Fetches mobility jobs assigned to the current rider.
- * CANONICAL: reads from mobility_jobs only.
+ * CANONICAL: reads from mobility_jobs only via mobility.repository.
  */
 import { useState, useEffect, useCallback } from "react";
+import * as repo from "@/repositories/mobility.repository";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -29,13 +30,11 @@ export interface DeliveryJob {
   completed_at: string | null;
   cancelled_at: string | null;
   created_at: string | null;
-  // Legacy compat aliases
   driver_id: string | null;
   delivery_fee: number | null;
   delivered_at: string | null;
   pickup_address_compat: string;
   dropoff_address_compat: string;
-  // Additional compat fields for downstream components
   package_description: string | null;
   priority: string;
   org_id: string | null;
@@ -76,24 +75,24 @@ export function useDriverMissions() {
     if (!user?.id) return;
     setLoading(true);
 
-    const [activeRes, completedRes] = await Promise.all([
-      supabase
-        .from("mobility_jobs")
-        .select("*")
-        .eq("rider_user_id", user.id)
-        .in("status", ["accepted", "rider_arriving_pickup", "rider_arrived_pickup", "picked_up", "in_progress", "rider_arriving_dropoff"])
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("mobility_jobs")
-        .select("*")
-        .eq("rider_user_id", user.id)
-        .in("status", ["completed", "cancelled"])
-        .order("completed_at", { ascending: false })
-        .limit(20),
+    const [activeData, completedData] = await Promise.all([
+      repo.fetchMobilityJobs({
+        riderUserId: user.id,
+        statuses: ["accepted", "rider_arriving_pickup", "rider_arrived_pickup", "picked_up", "in_progress", "rider_arriving_dropoff"],
+        orderBy: "created_at",
+        ascending: false,
+      }),
+      repo.fetchMobilityJobs({
+        riderUserId: user.id,
+        statuses: ["completed", "cancelled"],
+        orderBy: "completed_at",
+        ascending: false,
+        limit: 20,
+      }),
     ]);
 
-    if (activeRes.data) setActiveMissions(activeRes.data.map(mapRow));
-    if (completedRes.data) setCompletedMissions(completedRes.data.map(mapRow));
+    setActiveMissions(activeData.map(mapRow));
+    setCompletedMissions(completedData.map(mapRow));
     setLoading(false);
   }, [user?.id]);
 
@@ -101,44 +100,28 @@ export function useDriverMissions() {
 
   useEffect(() => {
     if (!user?.id) return;
-    const channel = supabase
-      .channel(`rider-jobs-${user.id}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "mobility_jobs",
-        filter: `rider_user_id=eq.${user.id}`,
-      }, () => { fetchMissions(); })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const channel = repo.subscribeToTable(
+      `rider-jobs-${user.id}`, "mobility_jobs",
+      `rider_user_id=eq.${user.id}`,
+      () => { fetchMissions(); }
+    );
+    return () => { repo.unsubscribeChannel(channel); };
   }, [user?.id, fetchMissions]);
 
   const acceptMission = useCallback(async (jobId: string) => {
-    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
-      body: { action: "accept_offer", job_id: jobId },
-    });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
+    const data = await repo.invokeDispatchRide({ action: "accept_offer", job_id: jobId });
     await fetchMissions();
     return data;
   }, [fetchMissions]);
 
   const updateStatus = useCallback(async (jobId: string, status: string, reason?: string) => {
-    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
-      body: { action: "advance_status", job_id: jobId, new_status: status, cancel_reason: reason },
-    });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
+    const data = await repo.invokeDispatchRide({ action: "advance_status", job_id: jobId, new_status: status, cancel_reason: reason });
     await fetchMissions();
     return data;
   }, [fetchMissions]);
 
   const confirmDelivery = useCallback(async (jobId: string, _code?: string, _photoUrl?: string) => {
-    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
-      body: { action: "advance_status", job_id: jobId, new_status: "completed" },
-    });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
+    const data = await repo.invokeDispatchRide({ action: "advance_status", job_id: jobId, new_status: "completed" });
     await fetchMissions();
     return data;
   }, [fetchMissions]);
@@ -153,13 +136,7 @@ export function useDriverMissions() {
   };
 
   return {
-    activeMissions,
-    completedMissions,
-    loading,
-    stats,
-    acceptMission,
-    updateStatus,
-    confirmDelivery,
-    refetch: fetchMissions,
+    activeMissions, completedMissions, loading, stats,
+    acceptMission, updateStatus, confirmDelivery, refetch: fetchMissions,
   };
 }

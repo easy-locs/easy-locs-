@@ -1,12 +1,9 @@
 /**
  * customerMobilityStore — Customer-only mobility state.
- * Reads/writes: mobility_jobs (via dispatch-ride edge function)
- * Actor: CUSTOMER only.
- * Customers can: create jobs, track, cancel.
- * Customers CANNOT: accept offers, go online, see rider controls.
+ * All DB access via mobility.repository.
  */
 import { create } from "zustand";
-import { supabase } from "@/integrations/supabase/client";
+import * as repo from "@/repositories/mobility.repository";
 
 export interface MobilityJob {
   id: string;
@@ -45,30 +42,8 @@ interface CustomerMobilityState {
   activeJob: MobilityJob | null;
   loading: boolean;
   error: string | null;
-
   hydrateMyJobs: () => Promise<void>;
-  createJob: (input: {
-    jobType: string;
-    serviceLevel: string;
-    bookingMode?: string;
-    scheduledFor?: string;
-    pickupLabel?: string;
-    pickupAddress: string;
-    pickupLat: number;
-    pickupLng: number;
-    dropoffLabel?: string;
-    dropoffAddress: string;
-    dropoffLat: number;
-    dropoffLng: number;
-    merchantId?: string;
-    orderId?: string;
-    parcelReference?: string;
-    seatsRequested?: number;
-    packageSize?: string;
-    quotedPrice?: number;
-    currency?: string;
-    notes?: string;
-  }) => Promise<MobilityJob>;
+  createJob: (input: any) => Promise<MobilityJob>;
   cancelJob: (jobId: string, reason?: string) => Promise<void>;
   setActiveJob: (job: MobilityJob | null) => void;
   refreshJob: (jobId: string) => Promise<void>;
@@ -81,72 +56,57 @@ export const useCustomerMobilityStore = create<CustomerMobilityState>((set, get)
   error: null,
 
   hydrateMyJobs: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    const userId = await repo.getCurrentUserId();
+    if (!userId) return;
     set({ loading: true, error: null });
-
-    const { data, error } = await supabase
-      .from("mobility_jobs")
-      .select("*")
-      .eq("customer_user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    if (error) {
-      set({ loading: false, error: error.message });
-      return;
+    try {
+      const data = await repo.fetchMobilityJobs({
+        customerUserId: userId,
+        orderBy: "created_at",
+        ascending: false,
+        limit: 50,
+      });
+      const jobs = data as unknown as MobilityJob[];
+      const activeJob = jobs.find(j => !["completed", "cancelled", "failed_no_rider", "expired"].includes(j.status)) ?? null;
+      set({ jobs, activeJob, loading: false });
+    } catch (err: any) {
+      set({ loading: false, error: err.message });
     }
-
-    const jobs = (data ?? []) as unknown as MobilityJob[];
-    const activeJob = jobs.find(j => !["completed", "cancelled", "failed_no_rider", "expired"].includes(j.status)) ?? null;
-    set({ jobs, activeJob, loading: false });
   },
 
   createJob: async (input) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Authentication required");
-
-    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
-      body: {
-        action: "create_job",
-        job_type: input.jobType,
-        service_level: input.serviceLevel,
-        booking_mode: input.bookingMode || "now",
-        scheduled_for: input.scheduledFor || null,
-        pickup_label: input.pickupLabel,
-        pickup_address: input.pickupAddress,
-        pickup_lat: input.pickupLat,
-        pickup_lng: input.pickupLng,
-        dropoff_label: input.dropoffLabel,
-        dropoff_address: input.dropoffAddress,
-        dropoff_lat: input.dropoffLat,
-        dropoff_lng: input.dropoffLng,
-        merchant_id: input.merchantId,
-        order_id: input.orderId,
-        parcel_reference: input.parcelReference,
-        seats_requested: input.seatsRequested,
-        package_size: input.packageSize,
-        quoted_price: input.quotedPrice,
-        currency: input.currency ?? "AED",
-        notes: input.notes,
-      },
+    const userId = await repo.getCurrentUserId();
+    if (!userId) throw new Error("Authentication required");
+    const data = await repo.invokeDispatchRide({
+      action: "create_job",
+      job_type: input.jobType,
+      service_level: input.serviceLevel,
+      booking_mode: input.bookingMode || "now",
+      scheduled_for: input.scheduledFor || null,
+      pickup_label: input.pickupLabel,
+      pickup_address: input.pickupAddress,
+      pickup_lat: input.pickupLat,
+      pickup_lng: input.pickupLng,
+      dropoff_label: input.dropoffLabel,
+      dropoff_address: input.dropoffAddress,
+      dropoff_lat: input.dropoffLat,
+      dropoff_lng: input.dropoffLng,
+      merchant_id: input.merchantId,
+      order_id: input.orderId,
+      parcel_reference: input.parcelReference,
+      seats_requested: input.seatsRequested,
+      package_size: input.packageSize,
+      quoted_price: input.quotedPrice,
+      currency: input.currency ?? "AED",
+      notes: input.notes,
     });
-
-    if (error) throw new Error(error.message);
-    if (data?.error) throw new Error(data.error);
-
     const job = data.job as MobilityJob;
     set(s => ({ jobs: [job, ...s.jobs], activeJob: job }));
     return job;
   },
 
   cancelJob: async (jobId, reason) => {
-    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
-      body: { action: "cancel_job", job_id: jobId, reason },
-    });
-    if (error) throw new Error(error.message);
-    if (data?.error) throw new Error(data.error);
-
+    await repo.invokeDispatchRide({ action: "cancel_job", job_id: jobId, reason });
     set(s => ({
       jobs: s.jobs.map(j => j.id === jobId ? { ...j, status: "cancelled" } : j),
       activeJob: s.activeJob?.id === jobId ? null : s.activeJob,
@@ -156,12 +116,7 @@ export const useCustomerMobilityStore = create<CustomerMobilityState>((set, get)
   setActiveJob: (job) => set({ activeJob: job }),
 
   refreshJob: async (jobId) => {
-    const { data } = await supabase
-      .from("mobility_jobs")
-      .select("*")
-      .eq("id", jobId)
-      .single();
-
+    const data = await repo.fetchMobilityJobMaybe(jobId);
     if (data) {
       const job = data as unknown as MobilityJob;
       set(s => ({
