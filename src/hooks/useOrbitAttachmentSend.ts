@@ -4,6 +4,10 @@ import { buildAttachmentSummary } from "@/lib/orbit/orbit-attachment-utils";
 import type { OrbitAttachmentItem } from "@/lib/orbit/orbit-attachment-types";
 import { toast } from "sonner";
 import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
+import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { reportHealth } from "@/lib/runtime/health-aggregator";
+import { trackPropagation } from "@/lib/runtime/propagation-validator";
 
 export function useOrbitAttachmentSend(params: {
   conversationId?: string | null;
@@ -54,11 +58,16 @@ export function useOrbitAttachmentSend(params: {
     }
 
     setSendingAttachments(true);
+    const flow = startFlow("orbit", "sendAttachment");
+    const validateStep = addStep(flow, "validate");
+    completeStep(flow, validateStep, { count: payload.attachments.length, conversationId });
+
     try {
       const mediaKind =
         payload.attachments.length === 1 ? payload.attachments[0].kind : "file";
       const summary = buildAttachmentSummary(payload.attachments);
 
+      const dbStep = addStep(flow, "db_write");
       const { error } = await (supabase as any)
         .from("chat_messages_v2")
         .insert({
@@ -78,8 +87,13 @@ export function useOrbitAttachmentSend(params: {
           metadata: { has_attachments: true },
         });
 
-      if (error) throw error;
+      if (error) {
+        failStep(flow, dbStep, error.message);
+        throw error;
+      }
+      completeStep(flow, dbStep);
 
+      const updateStep = addStep(flow, "conversation_update");
       await (supabase as any)
         .from("conversations_v2")
         .update({
@@ -88,10 +102,38 @@ export function useOrbitAttachmentSend(params: {
           updated_at: new Date().toISOString(),
         })
         .eq("id", conversationId);
+      completeStep(flow, updateStep);
 
+      platformBus.emit("orbit:attachment_sent", {
+        conversationId,
+        count: payload.attachments.length,
+        mediaKind,
+      }, "orbit", { userId: currentUserId });
+
+      trackPropagation({
+        flowId: flow.id,
+        domain: "orbit",
+        action: "sendAttachment",
+        dbWriteSuccess: true,
+        eventEmitted: "orbit:attachment_sent",
+        cacheInvalidated: false,
+      });
+
+      reportHealth("orbit", "ok");
+      endFlow(flow, "success");
       toast.success("Attachment sent");
       onAfterSend?.();
     } catch (err: any) {
+      reportHealth("orbit", "degraded", undefined, err?.message);
+      trackPropagation({
+        flowId: flow.id,
+        domain: "orbit",
+        action: "sendAttachment",
+        dbWriteSuccess: false,
+        eventEmitted: null,
+        cacheInvalidated: false,
+      });
+      endFlow(flow, "failed");
       toast.error(err?.message || "Attachment send failed");
     } finally {
       setSendingAttachments(false);
