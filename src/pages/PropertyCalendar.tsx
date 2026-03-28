@@ -2,7 +2,16 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import FeatureGate from "@/components/subscription/FeatureGate";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  fetchCalendarProperties,
+  fetchSeasonalEvents,
+  fetchLeaseEvents,
+  fetchMarketplaceEvents,
+  fetchConciergeEvents,
+  fetchBlockedDates,
+  insertBlockedDate,
+  deleteBlockedDate,
+} from "@/repositories/property-calendar.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { Button } from "@/components/ui/button";
@@ -122,13 +131,7 @@ export default function PropertyCalendar() {
   // Fetch properties
   useEffect(() => {
     if (!orgId) return;
-    const fetch = async () => {
-      let q = supabase.from("properties").select("id, label, country").eq("org_id", orgId);
-      if (activeCountry) q = q.eq("country", activeCountry);
-      const { data } = await q;
-      setProperties((data || []) as PropertyOption[]);
-    };
-    fetch();
+    fetchCalendarProperties(orgId, activeCountry).then(setProperties);
   }, [orgId, activeCountry]);
 
   // Fetch all events
@@ -142,11 +145,7 @@ export default function PropertyCalendar() {
 
       // 1. Seasonal bookings
       if (selectedSource === "all" || selectedSource === "seasonal") {
-        const { data: seasonal } = await supabase
-          .from("booking_requests")
-          .select("*, properties!booking_requests_property_id_fkey(label)")
-          .eq("org_id", orgId)
-          .in("property_id", propIds);
+        const seasonal = await fetchSeasonalEvents(orgId, propIds);
         (seasonal || []).forEach((b: any) => {
           allEvents.push({
             id: b.id, title: b.guest_name, guestName: b.guest_name,
@@ -162,11 +161,7 @@ export default function PropertyCalendar() {
 
       // 2. Long-term leases
       if (selectedSource === "all" || selectedSource === "long_term") {
-        const { data: leases } = await supabase
-          .from("leases")
-          .select("*, tenants!leases_tenant_id_fkey(name, email, phone), properties!leases_property_id_fkey(label)")
-          .eq("org_id", orgId)
-          .in("property_id", propIds);
+        const leases = await fetchLeaseEvents(orgId, propIds);
         (leases || []).forEach((l: any) => {
           allEvents.push({
             id: l.id, title: l.tenants?.name || "Tenant",
@@ -184,11 +179,7 @@ export default function PropertyCalendar() {
 
       // 3. Marketplace bookings
       if (selectedSource === "all" || selectedSource === "marketplace") {
-        const { data: mkp } = await supabase
-          .from("marketplace_bookings")
-          .select("*")
-          .eq("org_id", orgId)
-          .not("property_id", "is", null);
+        const mkp = await fetchMarketplaceEvents(orgId);
         (mkp || []).filter((b: any) => propIds.includes(b.property_id)).forEach((b: any) => {
           const from = b.date_from || b.service_date;
           const to = b.date_to || b.date_from || b.service_date;
@@ -207,11 +198,7 @@ export default function PropertyCalendar() {
 
       // 4. Concierge orders
       if (selectedSource === "all" || selectedSource === "concierge") {
-        const { data: con } = await supabase
-          .from("concierge_orders")
-          .select("*")
-          .eq("org_id", orgId)
-          .not("property_id", "is", null);
+        const con = await fetchConciergeEvents(orgId, propIds);
         (con || []).filter((b: any) => propIds.includes(b.property_id)).forEach((b: any) => {
           const from = b.service_date;
           const to = b.end_time && /^\d{4}-\d{2}-\d{2}$/.test(b.end_time) ? b.end_time : b.service_date;
@@ -230,11 +217,7 @@ export default function PropertyCalendar() {
 
       // 5. Blocked dates
       if (selectedSource === "all" || selectedSource === "blocked") {
-        const { data: blocked } = await supabase
-          .from("property_blocked_dates")
-          .select("*, properties!property_blocked_dates_property_id_fkey(label)")
-          .eq("org_id", orgId)
-          .in("property_id", propIds);
+        const blocked = await fetchBlockedDates(orgId, propIds);
         (blocked || []).forEach((b: any) => {
           allEvents.push({
             id: b.id, title: b.reason || "Blocked",
@@ -295,24 +278,32 @@ export default function PropertyCalendar() {
 
   const handleBlockDates = async () => {
     if (!blockForm.propertyId || !blockForm.dateFrom || !blockForm.dateTo) return;
-    const { error } = await supabase.from("property_blocked_dates").insert({
-      org_id: orgId!, property_id: blockForm.propertyId,
-      date_from: blockForm.dateFrom, date_to: blockForm.dateTo,
-      reason: blockForm.reason || "Blocked by owner",
-    });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Dates blocked" });
-    setBlockDialogOpen(false);
-    setBlockForm({ propertyId: "", dateFrom: "", dateTo: "", reason: "" });
-    window.location.reload();
+    try {
+      await insertBlockedDate({
+        org_id: orgId!,
+        property_id: blockForm.propertyId,
+        date_from: blockForm.dateFrom,
+        date_to: blockForm.dateTo,
+        reason: blockForm.reason || "Blocked by owner",
+      });
+      toast({ title: "Dates blocked" });
+      setBlockDialogOpen(false);
+      setBlockForm({ propertyId: "", dateFrom: "", dateTo: "", reason: "" });
+      window.location.reload();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   const handleUnblock = async (id: string) => {
-    const { error } = await supabase.from("property_blocked_dates").delete().eq("id", id);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    setEvents(prev => prev.filter(e => e.id !== id));
-    setDrawerOpen(false);
-    toast({ title: "Dates unblocked" });
+    try {
+      await deleteBlockedDate(id);
+      setEvents(prev => prev.filter(e => e.id !== id));
+      setDrawerOpen(false);
+      toast({ title: "Dates unblocked" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   const headerLabel = viewMode === "month"
