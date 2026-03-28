@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { haversineKm } from "@/lib/geo/distance";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { eventBus } from "@/lib/core/event-bus";
+import { APP_EVENTS } from "@/lib/platform/events";
 
 export type DriverCandidate = {
   user_id: string;
@@ -79,26 +82,63 @@ export async function matchBestDriver(input: MatchDriverInput) {
 
 export async function assignMatchedDriver(input: MatchDriverInput) {
   const matched = await matchBestDriver(input);
-  if (!matched?.driver?.user_id) return null;
+  if (!matched?.driver?.user_id) {
+    console.warn(`[driver-matching] No driver found for order ${input.orderId}`);
+    return null;
+  }
 
   const etaMinutes = Math.max(8, Math.round(18 - Math.min(10, matched.score / 20)));
 
-  const { error } = await supabase
+  const { data: order, error } = await (supabase as any)
     .from("orders")
     .update({
       driver_id: matched.driver.user_id,
+      assigned_driver_user_id: matched.driver.user_id,
       status: "driver_assigned",
       updated_at: new Date().toISOString(),
       estimated_driver_arrival_min: etaMinutes,
-    } as any)
-    .eq("id", input.orderId);
+    })
+    .eq("id", input.orderId)
+    .select("*")
+    .single();
 
   if (error) throw error;
 
-  return {
+  const result = {
     orderId: input.orderId,
     driverId: matched.driver.user_id,
     etaMinutes,
     matchingScore: matched.score,
   };
+
+  // 1. Event bus — driver assigned
+  void eventBus.emit("order.driver.assigned", {
+    orderId: input.orderId,
+    driverId: matched.driver.user_id,
+    etaMinutes,
+  });
+
+  // 2. Radar sync — new driver pin
+  platformBus.emit(APP_EVENTS.RADAR_GEO_UPDATED, {
+    orderId: input.orderId,
+    driverId: matched.driver.user_id,
+    lat: matched.driver.current_lat,
+    lng: matched.driver.current_lng,
+  }, "driver");
+
+  // 3. Orbit context — notify conversation
+  void eventBus.emit("orbit.delivery.context", {
+    orderId: input.orderId,
+    driverId: matched.driver.user_id,
+    etaMinutes,
+    status: "driver_assigned",
+  });
+
+  // 4. Dashboard + notification refresh
+  platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId: input.orderId }, "driver");
+  platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, {
+    userId: order?.customer_user_id,
+  }, "driver");
+
+  return result;
 }
