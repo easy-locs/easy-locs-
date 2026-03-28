@@ -8,9 +8,10 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useI18n } from "@/lib/i18n";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import InventoryBuilder from "@/components/rental/InventoryBuilder";
-import TenantDocuments from "@/components/rental/TenantDocuments";
-import TenantRequestsPanel from "@/components/rental/TenantRequestsPanel";
 import InventoryTab from "@/components/rental/InventoryTab";
+import RentalPropertyDetailView from "@/components/rental/RentalPropertyDetailView";
+import RentalTenantDetailView from "@/components/rental/RentalTenantDetailView";
+import RentalPaymentsTab from "@/components/rental/RentalPaymentsTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRentalData, type Property, type Tenant, type RentCall } from "@/hooks/useRentalData";
@@ -345,452 +346,66 @@ const RentalManagement = () => {
 
     return (
       <DashboardLayout>
-        <div className="max-w-5xl mx-auto">
-          <button onClick={() => setSelectedProperty(null)} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
-            <ArrowLeft className="h-3.5 w-3.5" /> {L.properties}
-          </button>
-
-          {/* Header — responsive */}
-          <div className="bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 mb-6">
-            <div className="detail-header">
-              <div className="detail-header-main">
-                <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
-                  <Home className="h-6 w-6 text-accent-foreground" />
-                </div>
-                <div className="flex-1 min-w-0 space-y-1">
-                  <h1 className="text-xl font-bold text-foreground flex items-center gap-2 flex-wrap min-w-0">
-                    <span>{getFlag(selectedProperty.country)}</span>
-                    <span className="break-words">{selectedProperty.label}</span>
-                  </h1>
-                  <p className="detail-meta flex items-start gap-1">
-                    <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
-                    <span className="break-words">{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</span>
-                  </p>
-                </div>
-              </div>
-              <div className="detail-header-actions">
-                <button
-                  onClick={() => { startEditProperty(selectedProperty); setSelectedProperty(null); setActiveTab("properties"); }}
-                  className="text-xs text-accent hover:underline flex items-center gap-1"
-                >
-                  <Edit className="h-3 w-3" />{L.editProperty}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* KPIs */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div className="bg-card rounded-xl p-4 border border-border/50">
-              <p className="text-xs text-muted-foreground">{L.rent} + {L.charges}</p>
-              <p className="text-lg font-bold text-foreground">{fmt(selectedProperty.monthly_rent + selectedProperty.monthly_charges)}</p>
-            </div>
-            <div className="bg-card rounded-xl p-4 border border-border/50">
-              <p className="text-xs text-muted-foreground">{L.tenants}</p>
-              <p className="text-lg font-bold text-foreground">{propTenants.length}</p>
-            </div>
-            <div className="bg-card rounded-xl p-4 border border-border/50">
-              <p className="text-xs text-muted-foreground">{L.totalExpenses}</p>
-              <p className="text-lg font-bold text-foreground">{fmt(totalExpenses)}</p>
-            </div>
-            <div className="bg-card rounded-xl p-4 border border-border/50">
-              <p className="text-xs text-muted-foreground">{L.inventoryReports}</p>
-              <p className="text-lg font-bold text-foreground">{propertyInventories.length}</p>
-            </div>
-          </div>
-
-          {/* Locataires */}
-          <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-foreground flex items-center gap-2"><Users className="h-4 w-4 text-accent" />{L.tenants}</h3>
-              {propTenants.length === 0 && (
-                <button
-                  onClick={() => setAssignPropertyId(assignPropertyId === selectedProperty.id ? null : selectedProperty.id)}
-                   className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 flex items-center gap-1"
-                 >
-                   <UserPlus className="h-3 w-3" /> {L.assignTenant}
-                 </button>
-               )}
-            </div>
-            {propTenants.length === 0 ? (
-               <>
-                 <p className="text-sm text-muted-foreground">{L.noTenant}.</p>
-                {assignPropertyId === selectedProperty.id && (
-                  <div className="mt-3 bg-muted/50 border border-border rounded-lg p-3">
-                     <div className="flex items-center justify-between mb-2">
-                       <span className="text-xs font-semibold text-foreground">{L.assignExisting}</span>
-                       <button onClick={() => setAssignPropertyId(null)} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
-                    </div>
-                    <input
-                      type="text"
-                      value={assignSearch}
-                      onChange={(e) => setAssignSearch(e.target.value)}
-                      placeholder={L.searchTenant}
-                      className="w-full bg-background border border-border/50 rounded-md px-2.5 py-1.5 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-accent"
-                    />
-                    <div className="max-h-32 overflow-y-auto space-y-1">
-                      {tenants
-                        .filter(t => !t.property_id || t.property_id === null)
-                        .filter(t => !assignSearch || t.name.toLowerCase().includes(assignSearch.toLowerCase()))
-                        .map(t => (
-                          <button
-                            key={t.id}
-                            onClick={async () => {
-                              const ok = await assignTenantToProperty(t.id, selectedProperty.id);
-                              if (ok) { setAssignPropertyId(null); setSelectedProperty(null); }
-                            }}
-                            className="w-full text-left px-2.5 py-1.5 text-xs rounded hover:bg-accent/10 transition-colors flex items-center gap-2"
-                          >
-                            <Users className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-foreground">{t.name}</span>
-                            {t.email && <span className="text-muted-foreground ml-auto">{t.email}</span>}
-                          </button>
-                        ))}
-                       {tenants.filter(t => !t.property_id).filter(t => !assignSearch || t.name.toLowerCase().includes(assignSearch.toLowerCase())).length === 0 && (
-                         <p className="text-xs text-muted-foreground text-center py-2">{L.noUnassigned}</p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => { setActiveTab("tenants"); setShowTenantForm(true); setSelectedProperty(null); }}
-                      className="w-full mt-2 text-xs text-accent hover:underline flex items-center justify-center gap-1 py-1"
-                    >
-                      <Plus className="h-3 w-3" /> {L.createNewTenant}
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="space-y-2">
-                {propTenants.map(t => (
-                  <button key={t.id} onClick={() => { setSelectedTenant(t); setTenantTab("info"); setSelectedProperty(null); }}
-                    className="w-full flex items-center gap-3 bg-muted/30 rounded-lg p-3 hover:bg-muted/50 transition-colors text-left">
-                    <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center shrink-0">
-                      <span className="text-xs font-bold text-accent-foreground">{t.name[0]?.toUpperCase()}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{t.name}</p>
-                      <p className="text-xs text-muted-foreground">{t.lease_start || "—"} → {t.lease_end || "—"} · {fmt(t.rent_amount)}/mois</p>
-                    </div>
-                    <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${isLeaseActive(t) ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                      {isLeaseActive(t) ? L.active : L.terminated}
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Paiements */}
-           <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
-             <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Euro className="h-4 w-4 text-accent" />{L.payments}</h3>
-            {propPayments.length === 0 ? <p className="text-sm text-muted-foreground">{L.noPayment}</p> : (
-              <div className="space-y-1">
-                {propPayments.slice(0, 10).map(p => {
-                  const tenant = tenants.find(t => t.id === p.tenant_id);
-                  return (
-                    <div key={p.id} className="detail-row bg-muted/30 rounded-lg px-4 py-2.5">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className={`w-2 h-2 rounded-full ${p.paid ? "bg-success" : "bg-destructive"}`} />
-                        <span className="text-sm text-foreground">{p.month}</span>
-                        <span className="text-xs text-muted-foreground">{tenant?.name}</span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 justify-start sm:justify-end">
-                        <span className="text-sm font-medium text-foreground">{fmt(p.total_amount)}</span>
-                        <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${p.paid ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>{p.paid ? L.paid : L.unpaid}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Dépenses */}
-          <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
-             <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Wallet className="h-4 w-4 text-accent" />{L.totalExpenses}</h3>
-             {propertyExpenses.length === 0 ? <p className="text-sm text-muted-foreground">{L.noExpense}</p> : (
-              <div className="space-y-1">
-                {propertyExpenses.slice(0, 10).map(e => (
-                  <div key={e.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{e.label}</p>
-                      <p className="text-xs text-muted-foreground">{e.expense_date} · {EXPENSE_CATEGORIES[e.category] || e.category}</p>
-                    </div>
-                    <span className="text-sm font-semibold text-foreground">{fmt(Number(e.amount))}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* États des lieux */}
-          <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
-            <div className="flex items-center justify-between mb-3">
-               <h3 className="font-semibold text-foreground flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-accent" />{L.inventoryReports}</h3>
-               <div className="flex gap-2">
-                 <button onClick={() => setInventoryMode({ propertyId: selectedProperty.id, tenantId: propTenants[0]?.id, reportType: "entry", propertyLabel: selectedProperty.label })}
-                   className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20">+ {L.entry}</button>
-                 <button onClick={() => setInventoryMode({ propertyId: selectedProperty.id, tenantId: propTenants[0]?.id, reportType: "exit", propertyLabel: selectedProperty.label })}
-                   className="text-xs bg-destructive/10 text-destructive px-3 py-1.5 rounded-lg hover:bg-destructive/20">+ {L.exit}</button>
-               </div>
-            </div>
-            {propertyInventories.length === 0 ? <p className="text-sm text-muted-foreground">{L.noInventory}</p> : (
-              <div className="space-y-1">
-                {propertyInventories.map(inv => {
-                  const invTenant = tenants.find(t => t.id === inv.tenant_id);
-                  return (
-                    <div key={inv.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5">
-                      <div>
-                         <p className="text-sm font-medium text-foreground">{inv.report_type === "entry" ? L.entry : L.exit} — {inv.report_date}</p>
-                         {invTenant && <p className="text-xs text-muted-foreground">{L.tenant_label} : {invTenant.name}</p>}
-                      </div>
-                      <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${inv.status === "completed" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
-                        {inv.status === "completed" ? L.completed : L.draft}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Mobilier */}
-          {selectedProperty.furnished && (
-            <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
-              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Sofa className="h-4 w-4 text-accent" />{t("page.rental.furniture")}</h3>
-              {propertyFurniture.length === 0 ? <p className="text-sm text-muted-foreground">{L.noFurniture}</p> : (
-                <div className="space-y-3">
-                  {Object.entries(groupedFurniture).map(([room, items]) => (
-                    <div key={room}>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{room}</p>
-                      <div className="space-y-1">
-                        {(items as any[]).map(item => (
-                          <div key={item.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2">
-                            <span className="text-sm text-foreground">{item.item_name} <span className="text-muted-foreground">×{item.quantity}</span></span>
-                            <span className="text-xs text-muted-foreground">{CONDITIONS_LABEL[item.condition] || item.condition}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        <RentalPropertyDetailView
+          property={selectedProperty}
+          tenants={tenants}
+          rentCalls={rentCalls}
+          propertyExpenses={propertyExpenses}
+          propertyFurniture={propertyFurniture}
+          propertyInventories={propertyInventories}
+          conditionsLabel={CONDITIONS_LABEL}
+          expenseCategories={EXPENSE_CATEGORIES}
+          labels={L}
+          fmt={fmt}
+          getFlag={getFlag}
+          isLeaseActive={isLeaseActive}
+          onBack={() => setSelectedProperty(null)}
+          onEditProperty={(p) => { startEditProperty(p); setSelectedProperty(null); setActiveTab("properties"); }}
+          onSelectTenant={(t) => { setSelectedTenant(t); setSelectedProperty(null); }}
+          onAssignTenant={async (tid, pid) => { const ok = await assignTenantToProperty(tid, pid); if (ok) setSelectedProperty(null); return ok; }}
+          onInventoryMode={setInventoryMode}
+          onCreateTenant={() => { setActiveTab("tenants"); setShowTenantForm(true); setSelectedProperty(null); }}
+          t={t}
+        />
       </DashboardLayout>
     );
   }
 
   /* ─── Tenant detail mode ─── */
   if (selectedTenant) {
-    const tenantPayments = rentCalls.filter(p => p.tenant_id === selectedTenant.id);
     const prop = getPropertyForTenant(selectedTenant);
     return (
       <DashboardLayout>
-        <div className="max-w-4xl mx-auto">
-           <button onClick={() => setSelectedTenant(null)} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
-             <ArrowLeft className="h-3.5 w-3.5" /> {L.tenants}
-          </button>
-          {/* Profile header — responsive: stacks on mobile */}
-          <div className="bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 mb-6">
-            <div className="detail-header">
-              <div className="detail-header-main">
-                <div className="w-12 h-12 rounded-full bg-gradient-gold flex items-center justify-center shrink-0">
-                  <span className="text-lg font-bold text-accent-foreground">{selectedTenant.name[0]?.toUpperCase()}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-xl font-bold text-foreground break-words">{selectedTenant.name}</h1>
-                  <p className="detail-meta">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
-                </div>
-              </div>
-              <div className="detail-header-actions">
-                <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${isLeaseActive(selectedTenant) ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                  {isLeaseActive(selectedTenant) ? L.active : L.terminated}
-                </span>
-                {selectedTenant.tenant_user_id ? (
-                  <span className="detail-action-btn text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
-                ) : (
-                  <button
-                    onClick={() => handleInviteTenant(selectedTenant)}
-                    disabled={invitingTenantId === selectedTenant.id}
-                    className="detail-action-btn text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50"
-                  >
-                    <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? L.sending : L.invite}
-                  </button>
-                )}
-                <button onClick={() => startEditTenant(selectedTenant)} className="detail-action-btn text-xs text-accent hover:underline flex items-center gap-1">
-                  <Edit className="h-3 w-3" /> {L.editTenant}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabs — horizontal scroll on mobile */}
-          <div className="detail-tab-row mb-6">
-             {([
-               { key: "info" as const, label: L.overview, short: L.overview.slice(0, 8), icon: FileText },
-               { key: "payments" as const, label: L.payments, short: L.payments.slice(0, 8), icon: Euro },
-               { key: "messages" as const, label: "Messages", short: "Msgs", icon: MessageSquare },
-               { key: "documents" as const, label: "Documents", short: "Docs", icon: Upload },
-             ]).map((tab) => (
-               <button key={tab.key} onClick={() => { setTenantTab(tab.key); if (tab.key === "messages") loadMessages(selectedTenant.id); }}
-                 className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${tenantTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                 <tab.icon className="h-4 w-4 shrink-0" />
-                 <span className="sm:hidden">{tab.short}</span>
-                 <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {tenantTab === "info" && (
-            <div className="space-y-4">
-              <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                   <div><span className="text-xs text-muted-foreground">{L.email}</span><p className="font-medium text-foreground">{selectedTenant.email || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.phone}</span><p className="font-medium text-foreground">{selectedTenant.phone || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.birthDate}</span><p className="font-medium text-foreground">{selectedTenant.birth_date || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.birthPlace}</span><p className="font-medium text-foreground">{selectedTenant.birth_place || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.nationality}</span><p className="font-medium text-foreground">{selectedTenant.nationality || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.profession}</span><p className="font-medium text-foreground">{selectedTenant.profession || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.leaseType}</span><p className="font-medium text-foreground">{cc.leaseTypes.find(lt => lt.value === selectedTenant.lease_type)?.label || selectedTenant.lease_type}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.leaseStart} / {L.leaseEnd}</span><p className="font-medium text-foreground">{selectedTenant.lease_start || "—"} → {selectedTenant.lease_end || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.rent} / {L.charges}</span><p className="font-medium text-foreground">{fmt(selectedTenant.rent_amount || 0)} / {fmt(selectedTenant.charges_amount || 0)}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.deposit}</span><p className="font-medium text-foreground">{fmt(selectedTenant.deposit_amount || 0)}</p></div>
-                  {selectedTenant.guarantor_name && (
-                     <>
-                       <div><span className="text-xs text-muted-foreground">{L.guarantor}</span><p className="font-medium text-foreground">{selectedTenant.guarantor_name}</p></div>
-                       <div><span className="text-xs text-muted-foreground">{L.guarantorPhone}</span><p className="font-medium text-foreground">{selectedTenant.guarantor_phone || "—"}</p></div>
-                     </>
-                  )}
-                </div>
-                {selectedTenant.notes && <div className="mt-4 border-t border-border/50 pt-3"><span className="text-xs text-muted-foreground">{L.notes}</span><p className="text-sm text-foreground mt-1">{selectedTenant.notes}</p></div>}
-              </div>
-
-              {prop && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                   <button onClick={() => setInventoryMode({ propertyId: prop.id, tenantId: selectedTenant.id, reportType: "entry", propertyLabel: prop.label })}
-                     className="flex items-center gap-3 bg-card rounded-xl p-4 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left">
-                     <ClipboardCheck className="h-5 w-5 text-accent" />
-                     <div><div className="text-sm font-medium text-foreground">{L.entryInventory}</div><div className="text-xs text-muted-foreground">{L.roomByRoom}</div></div>
-                   </button>
-                   <button onClick={() => setInventoryMode({ propertyId: prop.id, tenantId: selectedTenant.id, reportType: "exit", propertyLabel: prop.label })}
-                     className="flex items-center gap-3 bg-card rounded-xl p-4 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left">
-                     <ClipboardCheck className="h-5 w-5 text-destructive" />
-                     <div><div className="text-sm font-medium text-foreground">{L.exitInventory}</div><div className="text-xs text-muted-foreground">{L.compareEntry}</div></div>
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {tenantTab === "payments" && (
-            <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-               <h3 className="font-semibold text-foreground mb-4">{L.paymentHistory}</h3>
-               {tenantPayments.length === 0 ? (
-                 <p className="text-sm text-muted-foreground">{L.noPayment}</p>
-              ) : (
-                <div className="space-y-2">
-                  {tenantPayments.sort((a, b) => b.month.localeCompare(a.month)).map(p => (
-                    <div key={p.id} className="detail-row bg-muted/30 rounded-lg px-4 py-2.5 relative">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className={`w-2.5 h-2.5 rounded-full ${p.paid ? "bg-success" : "bg-destructive"}`} />
-                        <span className="text-sm font-medium text-foreground">{p.month}</span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 justify-start sm:justify-end">
-                        <span className="text-sm text-foreground">{fmt(p.total_amount)}</span>
-                        {p.paid ? (
-                           <button onClick={() => togglePayment(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">
-                             {L.paid}
-                           </button>
-                        ) : (
-                           <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-destructive/10 text-destructive">
-                             {L.unpaid}
-                           </button>
-                        )}
-                        {paymentMethodDialog === p.id && (
-                          <div className="absolute right-4 top-10 bg-card border border-border rounded-xl shadow-lg p-3 z-50 w-48">
-                             {[
-                               { id: "online", label: L.online, icon: CreditCard },
-                               { id: "bank_transfer", label: L.transfer, icon: Wallet },
-                               { id: "cash", label: L.cash, icon: Euro },
-                             ].map(m => (
-                               <button key={m.id} onClick={() => { togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
-                                 className="flex items-center gap-2 w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted transition-colors">
-                                <m.icon className="h-3.5 w-3.5 text-muted-foreground" />
-                                {m.label}
-                              </button>
-                            ))}
-                            <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-[10px] text-muted-foreground w-full text-center">{L.cancel}</button>
-                          </div>
-                        )}
-                         {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{L.validateReceipt}</button>}
-                         {p.paid && p.receipt_validated && <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.accessible}</span>}
-                        {p.paid && <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground"><Download className="h-3.5 w-3.5" /></button>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {tenantTab === "messages" && (
-            <div className="bg-card rounded-xl shadow-card border border-border/50 flex flex-col" style={{ minHeight: 400 }}>
-              <div className="flex-1 p-4 space-y-3 overflow-y-auto max-h-80">
-                {messages.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">{L.noExchange}</p>}
-                {messages.map((msg: any) => (
-                  <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[70%] rounded-xl px-4 py-2 text-sm ${msg.sender_id === user?.id ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
-                      {msg.content}
-                      <div className={`text-xs mt-1 ${msg.sender_id === user?.id ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-                        {new Date(msg.created_at).toLocaleString("fr-FR")}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-border/50 p-3 flex gap-2">
-                <input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                  placeholder="Écrire un message..." className="flex-1 bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
-                <button onClick={handleSendMessage} className="bg-primary text-primary-foreground px-3 py-2 rounded-lg hover:opacity-90 transition-opacity"><Send className="h-4 w-4" /></button>
-              </div>
-            </div>
-          )}
-
-          {tenantTab === "documents" && (
-            <div className="space-y-6">
-              <TenantDocuments tenantId={selectedTenant.id} tenantName={selectedTenant.name} />
-
-              {/* Demandes du locataire */}
-              <TenantRequestsPanel tenantId={selectedTenant.id} tenantName={selectedTenant.name} />
-
-              {/* Modèles de documents */}
-              <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-                <h3 className="font-semibold text-foreground mb-4">Générer un document</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {rentalTemplates.map((t) => {
-                    const Icon = Object.entries(iconMap).find(([k]) => t.docType.includes(k))?.[1] || FileText;
-                    return (
-                      <button key={t.id} onClick={() => setSelectedTemplate(t)}
-                        className="flex items-start gap-3 bg-muted/30 rounded-lg p-4 hover:bg-muted/50 transition-colors text-left group">
-                        <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gradient-gold transition-colors shrink-0">
-                          <Icon className="h-4 w-4 text-muted-foreground group-hover:text-accent-foreground transition-colors" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-foreground text-sm">{t.label}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">{t.description}</div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 mt-1 shrink-0" />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <RentalTenantDetailView
+          tenant={selectedTenant}
+          property={prop}
+          rentCalls={rentCalls}
+          messages={messages}
+          newMessage={newMessage}
+          setNewMessage={setNewMessage}
+          templates={rentalTemplates}
+          labels={L}
+          fmt={fmt}
+          cc={cc}
+          isLeaseActive={isLeaseActive}
+          userId={user?.id}
+          invitingTenantId={invitingTenantId}
+          notifyingRentId={notifyingRentId}
+          payingRentId={payingRentId}
+          onBack={() => setSelectedTenant(null)}
+          onEditTenant={startEditTenant}
+          onInviteTenant={handleInviteTenant}
+          onLoadMessages={loadMessages}
+          onSendMessage={handleSendMessage}
+          onTogglePayment={togglePayment}
+          onValidateReceipt={validateReceipt}
+          onGenerateReceipt={generateReceiptForPayment}
+          onNotifyRentCall={handleNotifyRentCall}
+          onPayRent={handlePayRent}
+          onSelectTemplate={setSelectedTemplate}
+          onInventoryMode={setInventoryMode}
+          t={t}
+        />
       </DashboardLayout>
     );
   }
@@ -1354,214 +969,23 @@ const RentalManagement = () => {
 
         {/* ─── Payments Tab ─── */}
         {activeTab === "payments" && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-               <h2 className="font-semibold text-foreground">{L.rentTracking}</h2>
-               <button onClick={generateMonthlyRentCalls} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity min-h-[44px] w-full sm:w-auto justify-center sm:justify-start">
-                 <Plus className="h-4 w-4" />{L.monthCalls}
-               </button>
-            </div>
-
-            {/* KPI summary */}
-            {(() => {
-              const unpaidCalls = filteredPayments.filter(p => !p.paid);
-              const paidCalls = filteredPayments.filter(p => p.paid);
-              const unpaidTotal = unpaidCalls.reduce((s, p) => s + p.total_amount, 0);
-              const paidTotal = paidCalls.reduce((s, p) => s + p.total_amount, 0);
-              return (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="bg-card rounded-xl border border-border/50 p-4">
-                    <p className="text-xs text-muted-foreground">{L.calls}</p>
-                    <p className="text-xl font-bold text-foreground">{filteredPayments.length}</p>
-                  </div>
-                  <div className="bg-card rounded-xl border border-destructive/20 p-4">
-                    <p className="text-xs text-destructive">{t("page.rental.unpaid")}</p>
-                    <p className="text-xl font-bold text-destructive">{unpaidCalls.length}</p>
-                    <p className="text-xs text-muted-foreground">{fmt(unpaidTotal)}</p>
-                  </div>
-                  <div className="bg-card rounded-xl border border-success/20 p-4">
-                    <p className="text-xs text-success">{L.paid}</p>
-                    <p className="text-xl font-bold text-success">{paidCalls.length}</p>
-                    <p className="text-xs text-muted-foreground">{fmt(paidTotal)}</p>
-                  </div>
-                  <div className="bg-card rounded-xl border border-border/50 p-4">
-                    <p className="text-xs text-muted-foreground">{L.properties}</p>
-                    <p className="text-xl font-bold text-foreground">{new Set(filteredPayments.map(p => p.property_id).filter(Boolean)).size}</p>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Property filter */}
-            <div className="flex items-center gap-3">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <select value={paymentPropertyFilter} onChange={e => setPaymentPropertyFilter(e.target.value)}
-                className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
-                <option value="">{L.allProperties}</option>
-                {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-              </select>
-              <span className="text-xs text-muted-foreground">{filteredPayments.length} {L.calls}</span>
-            </div>
-
-            {filteredPayments.length === 0 ? (
-              <div className="bg-card rounded-xl shadow-card border border-border/50 p-12 text-center">
-                <Euro className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground text-sm">{L.noRentCall}</p>
-              </div>
-            ) : (
-              /* Group payments by property, unpaid properties first */
-              (() => {
-                // Group by property
-                const byProperty: Record<string, typeof filteredPayments> = {};
-                filteredPayments.forEach(p => {
-                  const key = p.property_id || "no-property";
-                  if (!byProperty[key]) byProperty[key] = [];
-                  byProperty[key].push(p);
-                });
-
-                // Sort: properties with unpaid first
-                const sortedEntries = Object.entries(byProperty).sort(([, a], [, b]) => {
-                  const aUnpaid = a.some(p => !p.paid);
-                  const bUnpaid = b.some(p => !p.paid);
-                  if (aUnpaid && !bUnpaid) return -1;
-                  if (!aUnpaid && bUnpaid) return 1;
-                  return 0;
-                });
-
-                return (
-                  <div className="space-y-6">
-                    {sortedEntries.map(([propId, propPayments]) => {
-                      const prop = properties.find(p => p.id === propId);
-                      const unpaid = propPayments.filter(p => !p.paid).sort((a, b) => a.month.localeCompare(b.month));
-                      const paid = propPayments.filter(p => p.paid).sort((a, b) => b.month.localeCompare(a.month));
-                      const propCountry = prop?.country?.toUpperCase() || "";
-                      const flag = getFlag(propCountry);
-
-                      return (
-                        <div key={propId} className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
-                          {/* Property header */}
-                          <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border/30">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="text-base">{flag}</span>
-                              <h3 className="text-sm font-semibold text-foreground truncate">{prop?.label || t("page.rental.no_property")}</h3>
-                              {prop?.city && <span className="text-xs text-muted-foreground hidden sm:inline">· {prop.city}</span>}
-                            </div>
-                            <div className="flex items-center gap-3 shrink-0">
-                              {unpaid.length > 0 && (
-                                <span className="text-xs font-semibold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
-                                  {unpaid.length} {t("page.rental.unpaid")}
-                                </span>
-                              )}
-                              <span className="text-xs text-muted-foreground">{propPayments.length} {L.calls}</span>
-                            </div>
-                          </div>
-
-                          {/* Unpaid section */}
-                          {unpaid.length > 0 && (
-                            <div>
-                              <div className="px-4 py-2 bg-destructive/5 border-b border-destructive/10">
-                                <p className="text-xs font-semibold text-destructive flex items-center gap-1.5">
-                                  <AlertTriangle className="h-3 w-3" />
-                                  {t("page.rental.unpaid")} ({fmt(unpaid.reduce((s, p) => s + p.total_amount, 0))})
-                                </p>
-                              </div>
-                              <div className="divide-y divide-border/30">
-                                {unpaid.map(p => {
-                                  const tenant = tenants.find(t => t.id === p.tenant_id);
-                                  return (
-                                    <div key={p.id} id={`payment-${p.id}`} className="flex flex-col gap-2 px-4 py-3 hover:bg-muted/20 transition-all">
-                                      <div className="flex items-center gap-3">
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
-                                          <p className="text-xs text-muted-foreground">{p.month} · {fmt(p.total_amount)}</p>
-                                        </div>
-                                        <button
-                                          onClick={() => handleNotifyRentCall(p)}
-                                          disabled={notifyingRentId === p.id}
-                                          className="inline-flex items-center gap-1 h-8 text-xs px-2.5 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50 shrink-0">
-                                          {notifyingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-                                        </button>
-                                      </div>
-                                      <div className="flex flex-wrap gap-2 relative">
-                                        <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center h-8 text-xs px-4 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors min-h-[32px]">
-                                          {L.markPaid}
-                                        </button>
-                                        <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
-                                          className="inline-flex items-center gap-1.5 h-8 text-xs px-4 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 min-h-[32px]">
-                                          {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
-                                          {L.online}
-                                        </button>
-                                        {/* Payment method dialog */}
-                                        {paymentMethodDialog === p.id && (
-                                          <div className="absolute left-0 top-full mt-1 bg-card border border-border rounded-xl shadow-lg p-3 z-50 w-56">
-                                            <p className="text-xs font-semibold text-foreground mb-2">{t("page.rental.payment_method")}</p>
-                                            {[
-                                              { id: "online", label: t("page.rental.payment_method_online"), icon: CreditCard },
-                                              { id: "bank_transfer", label: t("page.rental.payment_method_transfer"), icon: Wallet },
-                                              { id: "cash", label: t("page.rental.payment_method_cash"), icon: Euro },
-                                            ].map(m => (
-                                              <button key={m.id} onClick={(e) => { e.stopPropagation(); togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
-                                                className="flex items-center gap-2 w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-muted transition-colors min-h-[36px]">
-                                                <m.icon className="h-3.5 w-3.5 text-muted-foreground" /> {m.label}
-                                              </button>
-                                            ))}
-                                            <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-xs text-muted-foreground hover:text-foreground w-full text-center py-1">{t("page.rental.cancel")}</button>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Paid section */}
-                          {paid.length > 0 && (
-                            <div>
-                              {unpaid.length > 0 && (
-                                <div className="px-4 py-2 bg-success/5 border-b border-success/10 border-t border-border/20">
-                                  <p className="text-xs font-semibold text-success flex items-center gap-1.5">
-                                    <CheckCircle className="h-3 w-3" />
-                                    {L.paid} ({fmt(paid.reduce((s, p) => s + p.total_amount, 0))})
-                                  </p>
-                                </div>
-                              )}
-                              <div className="divide-y divide-border/30">
-                                {paid.map(p => {
-                                  const tenant = tenants.find(t => t.id === p.tenant_id);
-                                  return (
-                                    <div key={p.id} id={`payment-${p.id}`} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {p.month} · {fmt(p.total_amount)}
-                                          {p.payment_method === "online" ? ` · ${L.online}` : p.payment_method === "bank_transfer" ? ` · ${L.transfer}` : p.payment_method === "cash" ? ` · ${L.cash}` : ""}
-                                        </p>
-                                      </div>
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="inline-flex items-center h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">✓ {L.paid}</span>
-                                        <button onClick={() => togglePayment(p.id)} className="text-muted-foreground hover:text-foreground" title={t("page.rental.unpaid")}>
-                                          <X className="h-3.5 w-3.5" />
-                                        </button>
-                                        {!p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{t("page.rental.validate")}</button>}
-                                        {p.receipt_validated && <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" /></span>}
-                                        <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground"><Download className="h-3.5 w-3.5" /></button>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()
-            )}
-          </div>
+          <RentalPaymentsTab
+            properties={properties}
+            tenants={tenants}
+            rentCalls={rentCalls}
+            labels={L}
+            fmt={fmt}
+            getFlag={getFlag}
+            onGenerateMonthlyRentCalls={generateMonthlyRentCalls}
+            onTogglePayment={togglePayment}
+            onValidateReceipt={validateReceipt}
+            onGenerateReceipt={generateReceiptForPayment}
+            onNotifyRentCall={handleNotifyRentCall}
+            onPayRent={handlePayRent}
+            notifyingRentId={notifyingRentId}
+            payingRentId={payingRentId}
+            t={t}
+          />
         )}
       </div>
     </DashboardLayout>
