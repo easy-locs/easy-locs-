@@ -105,7 +105,6 @@ const RentalManagement = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>((searchParams.get("tab") as Tab) || "dashboard");
 
-  // Sync tab from URL params
   useEffect(() => {
     const tab = searchParams.get("tab") as Tab;
     if (tab && ["dashboard", "properties", "tenants", "payments", "inventory"].includes(tab)) {
@@ -113,7 +112,6 @@ const RentalManagement = () => {
     }
   }, [searchParams]);
 
-  // Deep-link: auto-select tenant or scroll to record from ?record=ID (runs only once, then cleans URL)
   const [hasAppliedRecordDeepLink, setHasAppliedRecordDeepLink] = useState(false);
   useEffect(() => {
     if (hasAppliedRecordDeepLink || loading) return;
@@ -127,7 +125,6 @@ const RentalManagement = () => {
       const next = new URLSearchParams(searchParams);
       next.delete("record");
       setSearchParams(next, { replace: true });
-      console.log("[deep-link] auto-selected tenant:", recordId);
       return;
     }
     setTimeout(() => {
@@ -140,138 +137,50 @@ const RentalManagement = () => {
         const next = new URLSearchParams(searchParams);
         next.delete("record");
         setSearchParams(next, { replace: true });
-        console.log("[deep-link] scrolled to payment:", recordId);
       }
     }, 100);
   }, [searchParams, tenants, loading, hasAppliedRecordDeepLink, setSearchParams]);
+
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [tenantTab, setTenantTab] = useState<TenantDetailTab>("info");
-
-  // Filters
   const [leaseFilter, setLeaseFilter] = useState<LeaseFilter>("active");
   const [paymentPropertyFilter, setPaymentPropertyFilter] = useState("");
-
-  // Inventory builder
   const [inventoryMode, setInventoryMode] = useState<{ propertyId: string; tenantId?: string; reportType: "entry" | "exit"; propertyLabel: string; existingReportId?: string } | null>(null);
-
-  // Property form
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
   const [propertyForm, setPropertyForm] = useState(defaultPropertyForm);
   const propertyFormConfig = useMemo(() => getCountryConfig(propertyForm.country || userCountry), [propertyForm.country, userCountry]);
-
-  // Tenant form
   const [showTenantForm, setShowTenantForm] = useState(false);
   const [editingTenantId, setEditingTenantId] = useState<string | null>(null);
   const [tenantForm, setTenantForm] = useState(defaultTenantForm);
   const tenantFormCountry = properties.find((p) => p.id === tenantForm.property_id)?.country || userCountry;
   const tenantFormConfig = useMemo(() => getCountryConfig(tenantFormCountry), [tenantFormCountry]);
 
-  // Messages
-  const [messages, setMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState("");
+  // ── Wired extracted hooks ──
+  const { messages, newMessage, setNewMessage, loadMessages, sendMessage } = useRentalMessages(selectedTenant?.id ?? null);
+  const { payingRentId, generateReceiptForPayment, handlePayRent } = useRentalReceipts(properties, tenants, userCountry);
+  const { autoGenerateLease, autoGenerateFirstRentCall } = useRentalLeaseGenerator(properties, userCountry);
+  const { notifyingRentId, invitingTenantId, setInvitingTenantId, handleNotifyRentCall } = useRentalNotifications(tenants, userCountry);
+  const {
+    propertyExpenses, propertyFurniture, propertyInventories,
+    seasonalPropertyIds, salePropertyIds,
+    loadPropertyDetail: loadDetail, loadModeBadges,
+  } = useRentalPropertyLoader(orgId ?? null);
 
-  // Realtime listener for tenant messages
-  useEffect(() => {
-    if (!orgId || !selectedTenant) return;
-    const channel = supabase
-      .channel(`rental-msg-${selectedTenant.id}`)
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "chat_messages_v2",
-      }, (payload) => {
-        const newMsg = payload.new as any;
-        const tenantId = selectedTenant.id;
-        // Filter messages relevant to this tenant conversation
-        if (newMsg.metadata?.tenant_id === tenantId || newMsg.conversation_id?.includes(tenantId)) {
-          setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
-        }
-      })
-      .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "chat_messages_v2",
-      }, (payload) => {
-        const updated = payload.new as any;
-        setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [orgId, selectedTenant?.id]);
-
-  // Stripe rent payment
-  const [payingRentId, setPayingRentId] = useState<string | null>(null);
-  const [notifyingRentId, setNotifyingRentId] = useState<string | null>(null);
-  const [invitingTenantId, setInvitingTenantId] = useState<string | null>(null);
   const [paymentMethodDialog, setPaymentMethodDialog] = useState<string | null>(null);
-
-  // Postal code lookup
   const [postalSuggestions, setPostalSuggestions] = useState<{ city: string; code: string }[]>([]);
   const [showPostalSuggestions, setShowPostalSuggestions] = useState(false);
   const [assignPropertyId, setAssignPropertyId] = useState<string | null>(null);
   const [assignSearch, setAssignSearch] = useState("");
   const [autoGenDone, setAutoGenDone] = useState(false);
-  // Property detail linked data
-  const [propertyExpenses, setPropertyExpenses] = useState<any[]>([]);
-  const [propertyFurniture, setPropertyFurniture] = useState<any[]>([]);
-  const [propertyInventories, setPropertyInventories] = useState<any[]>([]);
-  // Mode badges data — which properties have seasonal listings or sale listings
-  const [seasonalPropertyIds, setSeasonalPropertyIds] = useState<Set<string>>(new Set());
-  const [salePropertyIds, setSalePropertyIds] = useState<Set<string>>(new Set());
 
-  // Templates (strictement liés au pays du bien du locataire sélectionné)
+  // Reload mode badges when properties change
+  useEffect(() => { loadModeBadges(); }, [properties.length, loadModeBadges]);
+
   const selectedTenantCountry = selectedTenant ? (properties.find((p) => p.id === selectedTenant.property_id)?.country || userCountry) : userCountry;
   const rentalTemplates = getTemplatesByCategory("rental", selectedTenantCountry as any);
-
-  // Stats
-  const totalRent = tenants.reduce((s, t) => s + (t.rent_amount || 0), 0);
-  const totalCharges = tenants.reduce((s, t) => s + (t.charges_amount || 0), 0);
-  const unpaidCount = rentCalls.filter(p => !p.paid).length;
-  const occupiedProperties = new Set(tenants.filter(t => t.property_id).map(t => t.property_id)).size;
-  const vacantProperties = properties.length - occupiedProperties;
-
-  // Lease filter logic
-  const today = new Date().toISOString().split("T")[0];
-  const isLeaseActive = (t: Tenant) => !t.lease_end || t.lease_end >= today;
-  const filteredTenants = tenants.filter(t => {
-    if (leaseFilter === "active") return isLeaseActive(t);
-    if (leaseFilter === "terminated") return !isLeaseActive(t);
-    return true;
-  });
-  const activeCount = tenants.filter(isLeaseActive).length;
-  const terminatedCount = tenants.filter(t => !isLeaseActive(t)).length;
-
-  // Payment filter
-  const filteredPayments = paymentPropertyFilter
-    ? rentCalls.filter(r => r.property_id === paymentPropertyFilter)
-    : rentCalls;
-
-  /* ─── Load property detail data ─── */
-  const loadPropertyDetail = useCallback(async (propertyId: string) => {
-    if (!orgId) return;
-    const [{ data: expenses }, { data: furniture }, { data: inventories }] = await Promise.all([
-      supabase.from("expenses").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("expense_date", { ascending: false }),
-      supabase.from("furniture_items").select("*").eq("org_id", orgId).eq("property_id", propertyId),
-      supabase.from("inventory_reports").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("report_date", { ascending: false }),
-    ]);
-    setPropertyExpenses(expenses || []);
-    setPropertyFurniture(furniture || []);
-    setPropertyInventories(inventories || []);
-  }, [orgId]);
-
-  // Load mode badges (seasonal + sale) for all properties
-  useEffect(() => {
-    if (!orgId) return;
-    (async () => {
-      const [{ data: seasonal }, { data: realEstate }] = await Promise.all([
-        supabase.from("public_listings").select("property_id").eq("org_id", orgId).eq("active", true),
-        supabase.from("real_estate_listings").select("property_id, listing_type").eq("org_id", orgId).eq("status", "active"),
-      ]);
-      setSeasonalPropertyIds(new Set((seasonal || []).map((s: any) => s.property_id).filter(Boolean)));
-      setSalePropertyIds(new Set(
-        (realEstate || []).filter((r: any) => r.listing_type === "sale").map((r: any) => r.property_id).filter(Boolean)
-      ));
-    })();
-  }, [orgId, properties.length]);
 
   /* ─── Postal code lookup ─── */
   const handlePostalCodeChange = async (value: string) => {
