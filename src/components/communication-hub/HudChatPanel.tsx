@@ -167,7 +167,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     conversationId: thread?.v2ConversationId ?? null,
     currentUserId: user?.id ?? null,
     currentOrbitId: myOrbitId ?? null,
+    peerUserId: thread?.peerUserId ?? null,
+    peerOrbitId: thread?.peerOrbitId ?? null,
     onAfterSend: () => loader.loadMessages(),
+    onConversationCreated: (convId) => {
+      if (thread) onThreadUpdate(thread.id, { v2ConversationId: convId });
+    },
   });
 
   const viewOnceHook = useOrbitViewOnce({ currentUserId: user?.id ?? null });
