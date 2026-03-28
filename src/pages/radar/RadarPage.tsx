@@ -20,6 +20,7 @@ import type { RadarCategory } from "@/lib/radar/types";
 import { Search, MapPin, Navigation, Loader2, ArrowLeft, ChevronUp, Layers, X } from "lucide-react";
 import "@/styles/radar-pro.css";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
+import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
@@ -63,7 +64,8 @@ export default function RadarPage() {
   const setSearchQuery = useDiscoveryStore((s) => s.setSearchQuery);
 
   const [loadingListings, setLoadingListings] = useState(true);
-  const [showWeatherLayer, setShowWeatherLayer] = useState(true);
+  const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
+  const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
   const [searchFocused, setSearchFocused] = useState(false);
   const [sheetSnap, setSheetSnap] = useState<SheetSnap>("collapsed");
   const [placeSuggestions, setPlaceSuggestions] = useState<NormalizedPlace[]>([]);
@@ -182,7 +184,7 @@ export default function RadarPage() {
             showUserLocation={!!userLocation}
             zoom={14}
             showHeatmap={false}
-            showWeatherLayer={showWeatherLayer}
+            showWeatherLayer={radarOverlay !== "off"}
           />
         </Suspense>
       </div>
@@ -316,7 +318,7 @@ export default function RadarPage() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setShowWeatherLayer(v => !v)}
+            onClick={() => setRadarOverlay(radarOverlay === "off" ? "full" : "off")}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold shadow-lg"
             style={{
               background: weather.isRaining
@@ -372,15 +374,15 @@ export default function RadarPage() {
       >
         <motion.button
           whileTap={{ scale: 0.88 }}
-          onClick={() => setShowWeatherLayer(v => !v)}
+          onClick={() => setRadarOverlay(radarOverlay === "off" ? "full" : "off")}
           className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg"
           style={{
-            background: showWeatherLayer ? "hsl(var(--primary) / 0.15)" : "hsl(var(--card) / 0.85)",
+            background: radarOverlay !== "off" ? "hsl(var(--primary) / 0.15)" : "hsl(var(--card) / 0.85)",
             backdropFilter: "blur(20px)",
-            border: showWeatherLayer ? "1px solid hsl(var(--primary) / 0.3)" : "1px solid hsl(var(--border) / 0.15)",
+            border: radarOverlay !== "off" ? "1px solid hsl(var(--primary) / 0.3)" : "1px solid hsl(var(--border) / 0.15)",
           }}
         >
-          <Layers className="w-4 h-4" style={{ color: showWeatherLayer ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
+          <Layers className="w-4 h-4" style={{ color: radarOverlay !== "off" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
         </motion.button>
       </motion.div>
 

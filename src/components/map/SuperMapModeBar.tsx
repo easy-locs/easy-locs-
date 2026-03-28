@@ -1,8 +1,10 @@
 /**
  * SuperMapModeBar — Floating mode switcher for SuperMap.
+ * Radar overlay toggle uses weatherDisplayStore (never "disables weather").
  */
 import { cn } from "@/lib/utils";
 import { useSuperMapStore } from "@/stores/superMapStore";
+import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import type { SuperMapMode } from "@/lib/map/superMapLayers";
 import {
   Compass, Car, UtensilsCrossed, ShoppingBag,
@@ -24,8 +26,13 @@ const MODES: { value: SuperMapMode; label: string; icon: React.ElementType }[] =
 export default function SuperMapModeBar() {
   const mode = useSuperMapStore((s) => s.mode);
   const setMode = useSuperMapStore((s) => s.setMode);
-  const showWeather = useSuperMapStore((s) => s.showWeather);
-  const toggleWeather = useSuperMapStore((s) => s.toggleWeather);
+  const radarOverlay = useWeatherDisplayStore((s) => s.radarOverlay);
+  const setRadarOverlay = useWeatherDisplayStore((s) => s.setRadarOverlay);
+
+  const toggleRadar = () => {
+    const next = radarOverlay === "off" ? "full" : "off";
+    setRadarOverlay(next);
+  };
 
   return (
     <div className="absolute top-3 left-3 right-3 z-30 flex flex-col gap-2">
@@ -53,16 +60,16 @@ export default function SuperMapModeBar() {
 
       <div className="flex justify-end">
         <button
-          onClick={toggleWeather}
+          onClick={toggleRadar}
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold shadow-sm backdrop-blur-md transition-all active:scale-95",
-            showWeather
+            radarOverlay !== "off"
               ? "border-primary/30 bg-primary text-primary-foreground"
               : "border-border/20 bg-card/80 text-muted-foreground"
           )}
         >
           <CloudRain className="h-3.5 w-3.5 shrink-0" />
-          Rain radar
+          Radar
         </button>
       </div>
     </div>
