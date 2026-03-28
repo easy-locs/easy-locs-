@@ -9,6 +9,7 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const BLOCKED = [
+  /supabase\s*\)\s*\.\s*from\s*\(/,
   /supabase\s*\.\s*from\s*\(/,
   /supabase\s*\.\s*rpc\s*\(/,
   /supabase\s*\.\s*functions\s*\.\s*invoke\s*\(/,
@@ -21,6 +22,7 @@ const AUTH_FILES = new Set([
   "src/pages/ResetPassword.tsx", "src/pages/VerifyEmail.tsx", "src/pages/AuthCallbackPage.tsx",
   "src/pages/TenantSignup.tsx", "src/components/auth/AdminRoute.tsx",
   "src/components/auth/ProtectedRoute.tsx", "src/contexts/AuthContext.tsx",
+  "src/stores/v2AuthStore.ts",
 ]);
 
 const args = process.argv.slice(2);

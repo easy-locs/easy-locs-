@@ -10,7 +10,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck, Upload, Languages, Phone, Video, Shield, ArrowLeft } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCall } from "@/components/call/CallProvider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,6 +22,7 @@ import { useTenantProperty } from "@/hooks/useTenantProperty";
 import { buildAppUrl } from "@/lib/app-domain";
 import { motion } from "framer-motion";
 import { toast as sonnerToast } from "sonner";
+import * as tenantPortalRepo from "@/repositories/tenant-portal.repository";
 
 const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
 
@@ -63,12 +63,12 @@ const TenantMessages = () => {
   const tenantLocale = dateLang;
 
   const resolveAuthUserId = useCallback(async (): Promise<string | null> => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data?.user?.id) {
+    const userId = await tenantPortalRepo.getAuthUser();
+    if (!userId) {
       sonnerToast.error("Session expirée. Reconnectez-vous.");
       return null;
     }
-    return data.user.id;
+    return userId;
   }, []);
 
   // ── Call handlers ──
@@ -104,15 +104,10 @@ const TenantMessages = () => {
     if (!tenantId) return;
     const fetch = async () => {
       const contextId = `tenant_${orgId}_${tenantId}`;
-      const { data } = await (supabase as any)
-        .from("chat_messages_v2")
-        .select("*")
-        .eq("conversation_id", contextId)
-        .order("created_at", { ascending: true });
-      setMessages(data || []);
+      const data = await tenantPortalRepo.fetchTenantMessages(contextId);
+      setMessages(data);
       // Mark notifications as read
-      await (supabase as any).from("app_notifications").update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-        .eq("user_id", user!.id).eq("category", "message").is("read_at", null);
+      await tenantPortalRepo.markNotificationsRead(user!.id);
       setLoading(false);
     };
     fetch();
@@ -121,15 +116,10 @@ const TenantMessages = () => {
   // Real-time (V2)
   useEffect(() => {
     if (!tenantId || !orgId) return;
-    const contextId = `tenant_${orgId}_${tenantId}`;
-    const channel = supabase
-      .channel(`tenant-messages-v2-${tenantId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2", filter: `conversation_id=eq.${contextId}` }, (payload) => {
-        const incoming = payload.new as any;
-        setMessages((prev) => (prev.some((m: any) => m.id === incoming.id) ? prev : [...prev, incoming]));
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const unsub = tenantPortalRepo.subscribeTenantMessages(tenantId, orgId, (incoming) => {
+      setMessages((prev) => (prev.some((m: any) => m.id === incoming.id) ? prev : [...prev, incoming]));
+    });
+    return unsub;
   }, [tenantId, orgId, user?.id]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
@@ -144,12 +134,10 @@ const TenantMessages = () => {
       setTranslatingId(m.id);
       try {
         const senderLocale = m.sender_locale || "en";
-        const { data: transData } = await supabase.functions.invoke("translate-message", {
-          body: { text: m.body || m.content, from_locale: senderLocale, to_locale: tenantLocale },
-        });
-        if (transData?.translated) {
-          setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, translated_content: transData.translated } : msg));
-          await (supabase as any).from("chat_messages_v2").update({ metadata: { ...(m.metadata || {}), translated_content: transData.translated } }).eq("id", m.id);
+        const translated = await tenantPortalRepo.invokeTranslation(m.body || m.content, senderLocale, tenantLocale);
+        if (translated) {
+          setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, translated_content: translated } : msg));
+          await tenantPortalRepo.updateMessageMetadata(m.id, { ...(m.metadata || {}), translated_content: translated });
         }
       } catch (e) { console.error("Translation failed:", e); }
       setTranslatingId(null);
@@ -164,24 +152,14 @@ const TenantMessages = () => {
     if (!authUserId) return;
     setUploading(true);
     try {
-      const path = `${orgId}/messages/${tenantId}/${Date.now()}-${file.name}`;
-      const { error: uploadErr } = await supabase.storage.from("rental-docs").upload(path, file);
-      if (uploadErr) throw uploadErr;
-      const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
-      const url = signedData?.signedUrl || path;
-
+      const url = await tenantPortalRepo.uploadChatFile(orgId, tenantId, file);
       const contextId = `tenant_${orgId}_${tenantId}`;
-      const { data: inserted } = await (supabase as any)
-        .from("chat_messages_v2")
-        .insert({
-          conversation_id: contextId, sender_user_id: authUserId,
-          sender_orbit_id: `orbit_${authUserId.slice(0, 12)}`,
-          type: "file", body: `📎 ${file.name}`,
-          metadata: { attachment_url: url, sender_locale: tenantLocale },
-        })
-        .select("*")
-        .single();
-
+      const inserted = await tenantPortalRepo.insertChatMessage({
+        conversation_id: contextId, sender_user_id: authUserId,
+        sender_orbit_id: `orbit_${authUserId.slice(0, 12)}`,
+        type: "file", body: `📎 ${file.name}`,
+        metadata: { attachment_url: url, sender_locale: tenantLocale },
+      });
       if (inserted) setMessages(prev => prev.some((m: any) => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
       toast({ title: T.sendDocument || "File sent" });
     } catch (e: any) {
@@ -202,33 +180,24 @@ const TenantMessages = () => {
       const landlordLocale = "fr";
       if (tenantLocale !== landlordLocale) {
         try {
-          const { data: transData } = await supabase.functions.invoke("translate-message", {
-            body: { text: messageToSend, from_locale: tenantLocale, to_locale: landlordLocale },
-          });
-          if (transData?.translated) translatedContent = transData.translated;
+          translatedContent = await tenantPortalRepo.invokeTranslation(messageToSend, tenantLocale, landlordLocale);
         } catch (e) { console.error("Translation failed:", e); }
       }
 
       const contextId = `tenant_${orgId}_${tenantId}`;
-      const { data: inserted, error } = await (supabase as any)
-        .from("chat_messages_v2")
-        .insert({
-          conversation_id: contextId, sender_user_id: authUserId,
-          sender_orbit_id: `orbit_${authUserId.slice(0, 12)}`,
-          type: "text", body: messageToSend,
-          metadata: { translated_content: translatedContent, category: selectedCategory, sender_locale: tenantLocale },
-        })
-        .select("*")
-        .single();
+      const inserted = await tenantPortalRepo.insertChatMessage({
+        conversation_id: contextId, sender_user_id: authUserId,
+        sender_orbit_id: `orbit_${authUserId.slice(0, 12)}`,
+        type: "text", body: messageToSend,
+        metadata: { translated_content: translatedContent, category: selectedCategory, sender_locale: tenantLocale },
+      });
 
-      if (error) {
-        toast({ title: T.error, description: error.message, variant: "destructive" });
-      } else {
-        if (inserted) setMessages((prev) => (prev.some((m) => m.id === (inserted as any).id) ? prev : [...prev, inserted]));
+      if (inserted) {
+        setMessages((prev) => (prev.some((m) => m.id === (inserted as any).id) ? prev : [...prev, inserted]));
         setNewMsg("");
 
         // Audit
-        await supabase.from("audit_logs").insert({
+        await tenantPortalRepo.insertAuditLog({
           user_id: authUserId, org_id: orgId, action: "message_sent",
           metadata_json: { tenant_id: tenantId, category: selectedCategory, direction: "tenant_to_landlord" },
         });
@@ -236,36 +205,33 @@ const TenantMessages = () => {
         // Notification + email to landlord
         if (orgId) {
           try {
-            const { data: org } = await supabase.from("orgs").select("email, owner_user_id").eq("id", orgId).single();
+            const org = await tenantPortalRepo.fetchOrgEmailAndOwner(orgId);
             if (org?.owner_user_id) {
-              await (supabase as any).from("app_notifications").insert({
+              await tenantPortalRepo.insertNotification({
                 user_id: org.owner_user_id, scope: "global", category: "message",
                 title: L.notifNewMsgTenant, body: L.notifTenantSentMsg, severity: "info", route: "/dashboard/communication",
               });
             }
             let landlordEmail = normalizeEmail(org?.email);
             if ((!landlordEmail || !isValidEmail(landlordEmail)) && org?.owner_user_id) {
-              const { data: ownerProfile } = await supabase.from("profiles").select("email").eq("id", org.owner_user_id).maybeSingle();
-              landlordEmail = normalizeEmail(ownerProfile?.email ?? null);
+              landlordEmail = normalizeEmail(await tenantPortalRepo.fetchProfileEmail(org.owner_user_id));
             }
             if (landlordEmail && isValidEmail(landlordEmail)) {
               const appUrl = buildAppUrl("/");
-              await supabase.functions.invoke("send-email", {
-                body: {
-                  to: landlordEmail,
-                  subject: L.emailNewMsgSubjectFromTenant,
-                  html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-                    <h2 style="color:#1a1a1a;text-align:center;">📩 ${escapeEmailHtml(L.emailNewMsgFromTenant)}</h2>
-                    <p style="color:#555;font-size:15px;">${escapeEmailHtml(L.emailTenantSentMsg)}</p>
-                    <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-                      <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(translatedContent || messageToSend)}</p>
-                    </div>
-                    <div style="text-align:center;margin:24px 0;">
-                      <a href="${appUrl}/dashboard/communication" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(L.emailReplyInApp)}</a>
-                    </div>
-                    <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(L.emailAutoSent)}</p>
-                  </div>`,
-                },
+              await tenantPortalRepo.invokeEmail({
+                to: landlordEmail,
+                subject: L.emailNewMsgSubjectFromTenant,
+                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+                  <h2 style="color:#1a1a1a;text-align:center;">📩 ${escapeEmailHtml(L.emailNewMsgFromTenant)}</h2>
+                  <p style="color:#555;font-size:15px;">${escapeEmailHtml(L.emailTenantSentMsg)}</p>
+                  <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
+                    <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(translatedContent || messageToSend)}</p>
+                  </div>
+                  <div style="text-align:center;margin:24px 0;">
+                    <a href="${appUrl}/dashboard/communication" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(L.emailReplyInApp)}</a>
+                  </div>
+                  <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(L.emailAutoSent)}</p>
+                </div>`,
               });
             }
           } catch (mailErr: any) { console.error("Email notification failed:", mailErr); }

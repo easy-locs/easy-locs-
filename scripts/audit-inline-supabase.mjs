@@ -9,7 +9,9 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const BLOCKED_PATTERNS = [
+  /supabase\s*\)\s*\.\s*from\s*\(/,
   /supabase\s*\.\s*from\s*\(/,
+  /supabase\s*\)\s*\.\s*from\s*\(/,
   /supabase\s*\.\s*rpc\s*\(/,
   /supabase\s*\.\s*functions\s*\.\s*invoke\s*\(/,
   /supabase\s*\.\s*storage\s*\.\s*from\s*\(/,
@@ -27,6 +29,7 @@ const AUTH_EXCEPTIONS = [
   "src/components/auth/AdminRoute.tsx",
   "src/components/auth/ProtectedRoute.tsx",
   "src/contexts/AuthContext.tsx",
+  "src/stores/v2AuthStore.ts",
 ];
 
 // These dirs are allowed to use supabase directly

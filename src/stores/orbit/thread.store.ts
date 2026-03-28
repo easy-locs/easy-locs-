@@ -5,9 +5,8 @@
 import { create } from "zustand";
 import type { ConversationRecord, ConversationType, ConversationParticipant } from "@/lib/types/comms";
 import { chatRepoExtended } from "@/lib/supabase/chat-repo-extended";
-import { supabase } from "@/integrations/supabase/client";
-
-const db = supabase as any;
+import { resolveOrbitProfile, createConversation as createConv } from "@/repositories/communication.repository";
+import { getAuthUser } from "@/repositories/tenant-portal.repository";
 
 export interface OrbitThreadState {
   threads: ConversationRecord[];
@@ -74,51 +73,33 @@ export const useOrbitThreadStore = create<OrbitThreadState>((set, get) => ({
     }) ?? null,
 
   createThread: async (input) => {
-    const { data: authData } = await supabase.auth.getUser();
-    const userId = authData?.user?.id;
+    const userId = await getAuthUser();
     if (!userId) throw new Error("Not authenticated");
 
     let createdByOrbitId = `orbit_${userId.slice(0, 12)}`;
     try {
-      const { data: op } = await db
-        .from("orbit_profiles_v2")
-        .select("orbit_id")
-        .eq("id", userId)
-        .maybeSingle();
+      const op = await resolveOrbitProfile(userId);
       if (op?.orbit_id) createdByOrbitId = op.orbit_id;
     } catch { /* fallback */ }
 
-    const now = new Date().toISOString();
-    const { data, error } = await db
-      .from("conversations_v2")
-      .insert({
-        type: input.type,
-        title: input.title || null,
-        participants: input.participants || [],
-        listing_id: input.listingId || null,
-        booking_id: input.bookingId || null,
-        lease_id: input.leaseId || null,
-        last_message_at: now,
-        created_at: now,
-        updated_at: now,
-        created_by_orbit_id: createdByOrbitId,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
+    const data = await createConv({
+      type: input.type,
+      title: input.title || "",
+      participants: input.participants || [],
+      createdByOrbitId,
+    });
 
     const saved: ConversationRecord = {
       id: data.id,
       type: data.type,
-      participants: data.participants || [],
+      participants: (data as any).participants || [],
       title: data.title,
-      listingId: data.listing_id,
-      bookingId: data.booking_id,
-      leaseId: data.lease_id,
-      lastMessageAt: data.last_message_at,
+      listingId: (data as any).listing_id,
+      bookingId: (data as any).booking_id,
+      leaseId: (data as any).lease_id,
+      lastMessageAt: (data as any).last_message_at,
       createdAt: data.created_at,
-      updatedAt: data.updated_at,
+      updatedAt: (data as any).updated_at,
     };
 
     set((s) => ({ threads: [saved, ...s.threads.filter((t) => t.id !== saved.id)] }));

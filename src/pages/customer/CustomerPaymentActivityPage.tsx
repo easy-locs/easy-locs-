@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchWalletActivity } from "@/repositories/payments.repository";
 
 export default function CustomerPaymentActivityPage() {
   const navigate = useNavigate();
@@ -9,26 +9,7 @@ export default function CustomerPaymentActivityPage() {
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["customer-payment-activity", user?.id],
-    queryFn: async () => {
-      const { data: accounts, error: aErr } = await supabase
-        .from("wallet_accounts")
-        .select("id")
-        .eq("owner_user_id", user!.id);
-
-      if (aErr) throw aErr;
-      const ids = (accounts ?? []).map((a: any) => a.id);
-      if (!ids.length) return [];
-
-      const { data, error } = await supabase
-        .from("wallet_ledger_entries")
-        .select("*")
-        .in("wallet_account_id", ids)
-        .order("created_at", { ascending: false })
-        .limit(200);
-
-      if (error) throw error;
-      return (data ?? []) as any[];
-    },
+    queryFn: () => fetchWalletActivity(user!.id),
     enabled: !!user?.id,
     staleTime: 10000,
   });
