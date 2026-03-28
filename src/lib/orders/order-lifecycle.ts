@@ -41,7 +41,7 @@ export function validateTransition(from: string, to: string): boolean {
 
 export async function transitionOrder(input: TransitionInput): Promise<TransitionResult> {
   const flow = startFlow("orders", "transition");
-  trace("transition", "input", input);
+  trace("transition", "input", { ...input });
 
   // Validate
   const validateStep = addStep(flow, "validate");

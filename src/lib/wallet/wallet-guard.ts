@@ -44,7 +44,7 @@ export async function guardWalletReady(userId: string): Promise<WalletGuardResul
     currency: data.currency ?? "EUR",
   };
 
-  trace("guard.ready", "output", result);
+  trace("guard.ready", "output", { ...result });
   return result;
 }
 

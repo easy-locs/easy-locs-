@@ -24,7 +24,7 @@ export interface ResolvedAddress {
 }
 
 export async function reverseGeocode(coords: GeoCoords): Promise<ResolvedAddress | null> {
-  trace("reverse", "input", coords);
+  trace("reverse", "input", { ...coords });
   const start = Date.now();
 
   try {
