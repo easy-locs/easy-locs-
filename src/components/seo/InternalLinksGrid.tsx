@@ -18,7 +18,7 @@ const InternalLinksGrid = ({ links, title, columns = 5 }: { links: InternalLink[
             className="flex items-center gap-2 bg-card rounded-lg px-3 py-2.5 border border-border/50 hover:border-primary/50 hover:bg-muted/30 transition-all text-sm"
           >
             {l.icon && <span className="text-lg">{l.icon}</span>}
-            <span className="truncate text-foreground">{l.label}</span>
+            <span className="min-w-0 break-words text-foreground leading-snug">{l.label}</span>
           </Link>
         ))}
       </div>
