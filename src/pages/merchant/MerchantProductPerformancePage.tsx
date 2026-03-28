@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchSeedProductsByMerchant, fetchOrderItems } from "@/repositories/merchant.repository";
 
 export default function MerchantProductPerformancePage() {
   const navigate = useNavigate();
@@ -9,9 +9,9 @@ export default function MerchantProductPerformancePage() {
   const { data, isLoading } = useQuery({
     queryKey: ["merchant-product-performance", merchantId],
     queryFn: async () => {
-      const [{ data: products }, { data: orderItems }] = await Promise.all([
-        (supabase as any).from("seed_products").select("*").eq("merchant_id", merchantId).limit(1000),
-        supabase.from("order_items").select("*").limit(5000),
+      const [products, orderItems] = await Promise.all([
+        fetchSeedProductsByMerchant(merchantId),
+        fetchOrderItems(5000),
       ]);
       const items = orderItems ?? [];
       const rows = (products ?? []).map((product: any) => {
