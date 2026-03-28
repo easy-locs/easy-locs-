@@ -4,6 +4,9 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
+import { reportHealth } from "@/lib/runtime/health-aggregator";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { trackPropagation } from "@/lib/runtime/propagation-validator";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -59,6 +62,17 @@ export async function assignDriver(input: AssignInput): Promise<{ success: boole
   }
 
   completeStep(flow, writeStep);
+
+  platformBus.emit("delivery:driver_assigned", {
+    jobId: input.jobId, driverUserId: input.driverUserId,
+  }, "delivery");
+
+  trackPropagation({
+    flowId: flow.flowId, domain: "delivery", action: "assign_driver",
+    dbWriteSuccess: true, eventEmitted: "delivery:driver_assigned", cacheInvalidated: [],
+  });
+
+  reportHealth("delivery", "ok");
   endFlow(flow, "success");
   trace("assign", "output", { success: true });
   return { success: true };
