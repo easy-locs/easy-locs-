@@ -86,7 +86,8 @@ export default function UrlImportPage() {
       setResults(result);
       setStep("done");
       setProgress(100);
-      toast.success(`Pipeline complete — ${result.canonical?.length ?? 0} entities processed`);
+      const traceMs = result.trace?.totalDurationMs ?? 0;
+      toast.success(`Pipeline complete — ${result.canonical?.length ?? 0} entities in ${traceMs}ms`);
     } catch (e: any) {
       setStep("error");
       setError(e?.message ?? "Pipeline failed");
