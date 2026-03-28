@@ -95,6 +95,13 @@ interface RadarViewProps {
 
 export default memo(function RadarView({ initialType, radiusKm: initialRadius, showMap = true, mode = "client" }: RadarViewProps) {
   const navigate = useNavigate();
+
+  // ── Radar Engines (decoupled) ──
+  const radarEngines = useRadarEngines({
+    initialCenter: { lat: 25.2048, lng: 55.2708 },
+    enableRealtime: true,
+  });
+
   const [activeType, setActiveType] = useState<GeoEntity["type"] | "all">(initialType || "all");
   const [sortBy, setSortBy] = useState<RadarSortMode>("smart");
   const [viewMode, setViewMode] = useState<"map" | "list" | "heatmap">(showMap ? "map" : "list");
