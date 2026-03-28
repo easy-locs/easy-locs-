@@ -46,11 +46,19 @@ type UseMessageLoaderOptions = {
   };
 };
 
+/** Safely coerce a value to a renderable string — prevents React error #185 */
+function safeString(val: unknown): string {
+  if (val == null) return "";
+  if (typeof val === "string") return val;
+  if (typeof val === "number" || typeof val === "boolean") return String(val);
+  try { return JSON.stringify(val); } catch { return "[unrenderable]"; }
+}
+
 function mapV2ToChat(m: any, conversationId: string): ChatMessage {
   return {
     id: m.id,
     sender_id: m.sender_user_id,
-    content: m.body,
+    content: safeString(m.body),
     created_at: m.created_at,
     read: !!m.read_at,
     category: (m.metadata?.category as string) || "general",
@@ -65,6 +73,7 @@ function mapV2ToChat(m: any, conversationId: string): ChatMessage {
     failed: !!m.failed_at,
     reply_to_message_id: m.reply_to_message_id ?? null,
     metadata: m.metadata ?? {},
+    contact_name: safeString(m.metadata?.contact_name || m.sender_display_name),
     attachments: Array.isArray(m.attachments) ? m.attachments : [],
     view_once: !!m.view_once,
     media_kind: m.media_kind || null,
