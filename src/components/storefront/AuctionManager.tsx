@@ -199,7 +199,7 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <h4 className="text-xs font-semibold text-foreground line-clamp-1">{auction.title}</h4>
+                        <h4 className="text-xs font-semibold text-foreground line-clamp-2 break-words leading-snug">{auction.title}</h4>
                         <Badge variant={isActive ? "default" : "secondary"} className="text-[8px] shrink-0">
                           {isActive ? "LIVE" : auction.status}
                         </Badge>

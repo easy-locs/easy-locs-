@@ -90,8 +90,8 @@ export function GlobalActionBanner() {
                 {ACTION_ICONS[action.type] || <Sparkles className="w-5 h-5 text-white" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-white truncate">{action.title}</p>
-                <p className="text-[11px] text-white/70 truncate">{action.description}</p>
+                <p className="text-sm font-bold text-white line-clamp-2 break-words leading-snug">{action.title}</p>
+                <p className="text-[11px] text-white/70 line-clamp-2 break-words leading-snug">{action.description}</p>
               </div>
             </div>
             {action.cta && (

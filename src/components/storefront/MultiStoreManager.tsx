@@ -136,7 +136,7 @@ export default function MultiStoreManager() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">{shop.name}</p>
+                  <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{shop.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <Badge variant="outline" className="text-[8px]">{shop.shop_visibility}</Badge>
                     <span className="text-[9px] text-muted-foreground">{stats.items} items • {stats.orders} orders</span>

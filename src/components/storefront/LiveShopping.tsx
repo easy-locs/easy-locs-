@@ -168,7 +168,7 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       {s.status === "live" && <Radio className="h-3 w-3 text-destructive animate-pulse" />}
-                      <p className="text-xs font-semibold truncate">{s.title}</p>
+                      <p className="text-xs font-semibold line-clamp-2 break-words leading-snug">{s.title}</p>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge className={`text-[8px] ${LIVE_STATUS_COLORS[s.status] || ""}`}>{s.status}</Badge>

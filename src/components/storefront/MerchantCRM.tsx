@@ -191,8 +191,8 @@ function CustomerRow({
               {(c.buyer_name || c.buyer_email || "?")[0]?.toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold truncate">{c.buyer_name || c.buyer_email || "Anonymous"}</p>
-              <p className="text-[9px] text-muted-foreground truncate">{c.buyer_email}</p>
+              <p className="text-xs font-semibold line-clamp-2 break-words leading-snug">{c.buyer_name || c.buyer_email || "Anonymous"}</p>
+              <p className="text-[9px] text-muted-foreground line-clamp-1 break-words">{c.buyer_email}</p>
             </div>
             <Badge className={`text-[8px] h-4 border ${segmentBadge(c.segment)}`}>
               {c.segment}

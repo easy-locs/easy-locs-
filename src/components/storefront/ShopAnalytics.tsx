@@ -206,7 +206,7 @@ export default function ShopAnalytics({ shopId }: Props) {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium truncate">{p.title}</p>
+                  <p className="text-[11px] font-medium line-clamp-2 break-words leading-snug">{p.title}</p>
                   <p className="text-[10px] text-muted-foreground">{p.sold} sold</p>
                 </div>
                 <span className="text-[11px] font-semibold text-primary">{fmtPrice(p.revenue)}</span>

@@ -80,7 +80,7 @@ export default function SubscriptionManager({ shopId }: { shopId: string }) {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate">{sub.catalog_items?.title || "Item"}</p>
+                <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{sub.catalog_items?.title || "Item"}</p>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] text-muted-foreground">{sub.buyer_email}</span>
                   <Badge variant="outline" className="text-[8px] px-1">{FREQ_LABEL[sub.frequency] || sub.frequency}</Badge>

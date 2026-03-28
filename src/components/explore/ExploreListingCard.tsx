@@ -94,7 +94,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
           <div className="absolute top-2.5 left-2.5 flex items-start gap-1.5 flex-wrap">
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-token-xs font-semibold border backdrop-blur-md ${typeBadge.color}`}>
               {subInfo?.emoji && <span className="text-xs">{subInfo.emoji}</span>}
-              <span className="truncate max-w-[120px]">{typeBadge.label}</span>
+              <span className="line-clamp-1 break-words max-w-[140px]">{typeBadge.label}</span>
             </span>
             {isVerified && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-token-xs font-semibold bg-accent/90 text-accent-foreground backdrop-blur-md">
@@ -121,7 +121,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
 
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 shrink-0 text-accent/70" />
-            <span className="line-clamp-1">{locationText || "—"}</span>
+            <span className="line-clamp-2 break-words leading-snug">{locationText || "—"}</span>
           </div>
 
           {type === "seasonal" && (

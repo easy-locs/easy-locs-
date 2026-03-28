@@ -42,7 +42,7 @@ export default function CategoryCard({
         )}
       >
         <span className="text-xl leading-none">{icon}</span>
-        <span className="text-2xs font-bold text-foreground leading-tight line-clamp-1">{label}</span>
+        <span className="text-2xs font-bold text-foreground leading-snug line-clamp-2 break-words">{label}</span>
         {count != null && (
           <span className="text-[9px] text-muted-foreground font-medium">{count}+</span>
         )}

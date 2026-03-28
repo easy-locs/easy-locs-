@@ -270,7 +270,7 @@ export default function AdvancedCheckout({ shop, cartItems, total, discount = 0,
                 <div key={ci.id} className="flex items-center gap-2">
                   {ci.photo_url && <img src={ci.photo_url} alt="" className="w-8 h-8 rounded object-cover" />}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{ci.title}</p>
+                    <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{ci.title}</p>
                     <p className="text-[10px] text-muted-foreground">×{ci.quantity}</p>
                   </div>
                   <span className="text-xs font-semibold">{formatPrice(ci.unit_price * ci.quantity, currency)}</span>
