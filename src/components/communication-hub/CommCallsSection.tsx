@@ -79,6 +79,7 @@ export default function CommCallsSection() {
       const { data: callData, error } = await supabase
         .from("call_logs")
         .select("*")
+        .or(`caller_orbit_id.eq.${user.id},receiver_orbit_id.eq.${user.id}`)
         .order("created_at", { ascending: false })
         .limit(100);
 

@@ -141,6 +141,17 @@ export default function CommGroupsSection() {
     }
     setLoading(true);
     setLoadError(null);
+
+    // First get groups where user is a member
+    const { data: memberRows, error: memberErr } = await supabase
+      .from("group_members")
+      .select("group_id")
+      .eq("user_id", user.id);
+
+    if (memberErr) { setLoadError(memberErr.message); setLoading(false); return; }
+    const memberGroupIds = (memberRows || []).map((r: any) => r.group_id).filter(Boolean);
+
+    // Also get groups from conversations_v2 where user is participant
     const { data, error } = await (supabase as any)
       .from("conversations_v2")
       .select("*")
@@ -148,8 +159,17 @@ export default function CommGroupsSection() {
       .order("updated_at", { ascending: false });
 
     if (error) { setLoadError(error.message); setLoading(false); return; }
-    if (data) {
-      const enriched = await Promise.all(data.map(async (g: any) => {
+
+    // Filter: user must be in participant_ids OR in group_members
+    const filtered = (data || []).filter((g: any) => {
+      if (memberGroupIds.includes(g.id)) return true;
+      const pIds = Array.isArray(g.participant_ids) ? g.participant_ids : [];
+      if (pIds.includes(user.id)) return true;
+      const participants = Array.isArray(g.participants) ? g.participants : [];
+      return participants.some((p: any) => p?.userId === user.id || p?.user_id === user.id);
+    });
+    if (filtered) {
+      const enriched = await Promise.all(filtered.map(async (g: any) => {
         const { count } = await supabase
           .from("group_members")
           .select("*", { count: "exact", head: true })
