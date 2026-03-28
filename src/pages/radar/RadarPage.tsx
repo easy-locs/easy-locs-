@@ -130,7 +130,6 @@ export default function RadarPage() {
     setSearchQuery(place.label);
     setPlaceSuggestions([]);
     setSearchFocused(false);
-    // TODO: Could center map on place.lat, place.lng
   };
 
   const handleLocate = () => {
@@ -151,15 +150,18 @@ export default function RadarPage() {
     const vy = info.velocity.y;
     const dy = info.offset.y;
     if (vy > 300 || dy > 80) {
-      // Swipe down
       setSheetSnap(sheetSnap === "full" ? "half" : "collapsed");
     } else if (vy < -300 || dy < -80) {
-      // Swipe up
       setSheetSnap(sheetSnap === "collapsed" ? "half" : "full");
     }
   };
 
   const sheetHeight = getSheetHeight(sheetSnap);
+
+  // Live age indicator
+  const weatherAge = weather.lastUpdated
+    ? Math.round((Date.now() - weather.lastUpdated) / 1000)
+    : null;
 
   return (
     <div className="fixed inset-0 bg-background overflow-hidden" style={{ zIndex: 1 }}>
@@ -168,7 +170,7 @@ export default function RadarPage() {
       {/* ═══ FULL-SCREEN MAP ═══ */}
       <div className="absolute inset-0">
         <Suspense fallback={
-          <div className="w-full h-full flex items-center justify-center" style={{ background: "hsl(var(--background))" }}>
+          <div className="w-full h-full flex items-center justify-center bg-background">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         }>
@@ -204,7 +206,7 @@ export default function RadarPage() {
               backdropFilter: "blur(28px) saturate(1.8)",
             }}
           >
-            <ArrowLeft className="w-[18px] h-[18px]" style={{ color: "hsl(var(--foreground))" }} />
+            <ArrowLeft className="w-[18px] h-[18px] text-foreground" />
           </motion.button>
 
           {/* Search bar — premium glass */}
@@ -219,7 +221,7 @@ export default function RadarPage() {
               }}
             >
               {searchingPlaces ? (
-                <Loader2 className="w-4 h-4 shrink-0 animate-spin" style={{ color: "hsl(var(--primary))" }} />
+                <Loader2 className="w-4 h-4 shrink-0 animate-spin text-primary" />
               ) : (
                 <Search className="w-4 h-4 shrink-0" style={{ color: searchFocused ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.5)" }} />
               )}
@@ -230,8 +232,7 @@ export default function RadarPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => { setSearchFocused(true); setSheetSnap("half"); }}
                 onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
-                className="flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground/40"
-                style={{ color: "hsl(var(--foreground))" }}
+                className="flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground/40"
               />
               {searchQuery && (
                 <motion.button
@@ -240,7 +241,7 @@ export default function RadarPage() {
                   whileTap={{ scale: 0.8 }}
                   onClick={() => { setSearchQuery(""); setPlaceSuggestions([]); }}
                 >
-                  <X className="w-3.5 h-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
+                  <X className="w-3.5 h-3.5 text-muted-foreground" />
                 </motion.button>
               )}
             </div>
@@ -272,13 +273,13 @@ export default function RadarPage() {
                         borderBottom: i < placeSuggestions.length - 1 ? "1px solid hsl(var(--border) / 0.08)" : "none",
                       }}
                     >
-                      <MapPin className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                      <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium leading-snug break-words" style={{ color: "hsl(var(--foreground))" }}>
+                        <p className="text-sm font-medium leading-snug break-words text-foreground">
                           {place.street || place.label.split(",")[0]}
                         </p>
                         {place.area || place.city ? (
-                          <p className="text-[11px] leading-snug mt-0.5 break-words" style={{ color: "hsl(var(--muted-foreground))" }}>
+                          <p className="text-[11px] leading-snug mt-0.5 break-words text-muted-foreground">
                             {[place.area, place.city, place.country].filter(Boolean).join(", ")}
                           </p>
                         ) : null}
@@ -301,45 +302,60 @@ export default function RadarPage() {
             }}
           >
             {geoLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" style={{ color: "hsl(var(--primary))" }} />
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
             ) : (
-              <Navigation className="w-4 h-4" style={{ color: "hsl(var(--primary))" }} />
+              <Navigation className="w-4 h-4 text-primary" />
             )}
           </motion.button>
         </div>
 
-        {/* Weather + status pill */}
+        {/* ── Live Weather Station + Context ── */}
         <div className="flex items-center gap-2 px-4 pb-1">
-          <AnimatePresence>
-            {weather.isRaining && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-lg"
-                style={{
-                  background: "hsl(var(--card) / 0.8)",
-                  backdropFilter: "blur(16px)",
-                  color: "hsl(200 80% 60%)",
-                }}
-              >
-                🌧 Rain live
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Always-visible live weather pill */}
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowWeatherLayer(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold shadow-lg"
+            style={{
+              background: weather.isRaining
+                ? "hsl(200 80% 40% / 0.25)"
+                : "hsl(var(--card) / 0.75)",
+              backdropFilter: "blur(20px) saturate(1.6)",
+              border: weather.isRaining
+                ? "1px solid hsl(200 80% 60% / 0.3)"
+                : "1px solid hsl(var(--border) / 0.15)",
+              color: weather.isRaining
+                ? "hsl(200 80% 70%)"
+                : "hsl(var(--foreground))",
+            }}
+          >
+            <span className="text-sm">{weather.icon}</span>
+            <span>{weather.loading ? "…" : weather.label}</span>
+            {/* Live pulse dot */}
+            <span
+              className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse"
+              style={{
+                background: weather.isRaining ? "hsl(200 80% 60%)" : "hsl(142 70% 50%)",
+              }}
+            />
+          </motion.button>
+
+          {/* Time context */}
           {userLocation && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-medium"
               style={{
                 background: "hsl(var(--card) / 0.6)",
                 backdropFilter: "blur(12px)",
                 color: "hsl(var(--muted-foreground))",
               }}
             >
-              <MapPin className="w-3 h-3" style={{ color: "hsl(var(--primary))" }} />
+              <MapPin className="w-3 h-3 text-primary" />
               {timeCtx.emoji} {timeCtx.label}
             </motion.div>
           )}
@@ -357,7 +373,7 @@ export default function RadarPage() {
         <motion.button
           whileTap={{ scale: 0.88 }}
           onClick={() => setShowWeatherLayer(v => !v)}
-          className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg"
+          className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg"
           style={{
             background: showWeatherLayer ? "hsl(var(--primary) / 0.15)" : "hsl(var(--card) / 0.85)",
             backdropFilter: "blur(20px)",
@@ -398,7 +414,7 @@ export default function RadarPage() {
         {/* Sheet header — result count + expand */}
         <div className="flex items-center justify-between px-4 pb-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>
+            <span className="text-sm font-bold text-foreground">
               {filtered.length} places
             </span>
             {category !== "all" && (
@@ -419,7 +435,7 @@ export default function RadarPage() {
             style={{ background: "hsl(var(--muted) / 0.5)" }}
           >
             <motion.div animate={{ rotate: sheetSnap === "full" ? 180 : 0 }} transition={{ type: "spring", stiffness: 400 }}>
-              <ChevronUp className="w-4 h-4" style={{ color: "hsl(var(--foreground))" }} />
+              <ChevronUp className="w-4 h-4 text-foreground" />
             </motion.div>
           </motion.button>
         </div>
@@ -436,7 +452,7 @@ export default function RadarPage() {
                 transition={{ delay: i * 0.03, type: "spring", stiffness: 500, damping: 35 }}
                 whileTap={{ scale: 0.92 }}
                 onClick={() => { ultraHaptic("light"); setCategory(cat); }}
-                className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-[11px] whitespace-nowrap font-medium shrink-0"
+                className="flex items-center gap-1.5 rounded-2xl px-3 py-2 text-[11px] whitespace-nowrap shrink-0"
                 style={{
                   background: active ? "hsl(var(--primary) / 0.12)" : "hsl(var(--muted) / 0.4)",
                   color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -468,7 +484,7 @@ export default function RadarPage() {
                       key={key}
                       whileTap={{ scale: 0.92 }}
                       onClick={() => { ultraHaptic("light"); setSortMode(key); }}
-                      className="rounded-full px-3 py-1 text-[10px] whitespace-nowrap shrink-0"
+                      className="rounded-full px-3 py-1.5 text-[10px] whitespace-nowrap shrink-0"
                       style={{
                         background: active ? "hsl(var(--primary) / 0.1)" : "transparent",
                         color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.7)",
@@ -491,7 +507,7 @@ export default function RadarPage() {
                           key={sub.value}
                           whileTap={{ scale: 0.92 }}
                           onClick={() => { ultraHaptic("light"); setSubCategory(subcategory === sub.value ? null : sub.value); }}
-                          className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] whitespace-nowrap shrink-0"
+                          className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[10px] whitespace-nowrap shrink-0"
                           style={{
                             background: active ? "hsl(var(--primary) / 0.1)" : "transparent",
                             color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.6)",
@@ -516,8 +532,8 @@ export default function RadarPage() {
         >
           {loadingListings ? (
             <div className="flex flex-col items-center gap-3 py-10">
-              <Loader2 className="h-5 w-5 animate-spin" style={{ color: "hsl(var(--primary))" }} />
-              <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Loading…</p>
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <p className="text-xs text-muted-foreground">Loading…</p>
             </div>
           ) : (
             <RadarResultsList />
