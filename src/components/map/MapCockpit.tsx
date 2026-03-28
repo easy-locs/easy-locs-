@@ -60,7 +60,7 @@ export default memo(function MapCockpit({ adaptive, presetLabel }: Props) {
           />
         )}
         {adaptive.isMobile && (
-          <div className="mt-1 rounded bg-primary/10 px-1.5 py-0.5 text-center text-[9px] font-medium text-primary">
+          <div className="mt-1 rounded bg-accent/20 px-1.5 py-0.5 text-center text-[9px] font-medium text-accent-foreground">
             Mobile mode
           </div>
         )}
