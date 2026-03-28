@@ -176,12 +176,12 @@ export default function ExplorePreview() {
                     </div>
                   </div>
                   <div className="p-4 flex flex-col flex-1 min-h-[100px]">
-                    <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">
+                    <h3 className="font-semibold text-foreground text-sm line-clamp-2 break-words group-hover:text-accent transition-colors leading-snug">
                       {item.title}
                     </h3>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1.5">
                       <MapPin className="h-3 w-3 shrink-0" />
-                      <span className="truncate">
+                      <span className="line-clamp-2 break-words leading-snug">
                         {item.city}{item.country ? `, ${item.country.toUpperCase()}` : ""}
                       </span>
                     </div>
