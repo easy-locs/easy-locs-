@@ -104,13 +104,13 @@ const Hero = () => {
         >
           <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(220 15% 90% / 0.06)" }}>
             <Users className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent) / 0.6)" }} />
-            <span className="text-[9px] sm:text-[11px] font-bold truncate" style={{ color: "hsl(var(--accent))" }}>
+            <span className="text-[9px] sm:text-[11px] font-bold line-clamp-1 break-words" style={{ color: "hsl(var(--accent))" }}>
               {liveStats.users.toLocaleString()}+ {t("landing.hero.users") || "users"}
             </span>
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(var(--success) / 0.1)" }}>
             <TrendingUp className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--success))" }} />
-            <span className="text-[9px] sm:text-[11px] font-bold truncate" style={{ color: "hsl(var(--success))" }}>
+            <span className="text-[9px] sm:text-[11px] font-bold line-clamp-1 break-words" style={{ color: "hsl(var(--success))" }}>
               ${liveStats.processed}M {t("landing.hero.processed") || "processed"}
             </span>
           </div>
