@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import AppLogo from "@/components/AppLogo";
 import CountrySelect from "@/components/ui/CountrySelect";
-import { supabase } from "@/integrations/supabase/client";
+import * as obRepo from "@/repositories/onboarding.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n, type Locale } from "@/lib/i18n";
@@ -83,18 +83,17 @@ const Onboarding = () => {
   // Load saved progress
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("onboarding_step, country, user_type").eq("id", user.id).single()
-      .then(({ data }) => {
-        if (data?.onboarding_step) setStep(data.onboarding_step);
-        if (data?.country) setCountry(data.country);
-        if (data?.user_type) setSelectedType(data.user_type as UserType);
-      });
+    obRepo.fetchOnboardingProgress(user.id).then((data) => {
+      if (data?.onboarding_step) setStep(data.onboarding_step);
+      if (data?.country) setCountry(data.country);
+      if (data?.user_type) setSelectedType(data.user_type as UserType);
+    });
   }, [user]);
 
   // Auto-save step
   const saveStep = useCallback(async (s: number) => {
     if (!user) return;
-    await supabase.from("profiles").update({ onboarding_step: s }).eq("id", user.id);
+    await obRepo.saveOnboardingStep(user.id, s);
   }, [user]);
 
   const totalSteps = STEPS.length;
@@ -108,26 +107,21 @@ const Onboarding = () => {
     const autoLocale = (countryEntry.defaultLanguage || "en") as Locale;
     const autoCurrency = countryEntry.currency || "EUR";
 
-    await supabase.from("profiles").update({
+    await obRepo.updateProfileCountryAndType(user.id, {
       country, locale: autoLocale, currency: autoCurrency, user_type: selectedType,
-    }).eq("id", user.id);
+    });
     setLocale(autoLocale as Locale);
 
     if (selectedType === "tenant") {
-      await supabase.from("profiles").update({ onboarding_completed: true, onboarding_step: 7 }).eq("id", user.id);
+      await obRepo.completeOnboarding(user.id);
       setSaving(false);
       navigate("/tenant");
       return;
     }
 
-    // For landlord type: ensure org exists (client accounts don't have one yet)
-    const { data: existingOrg } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).maybeSingle();
+    const existingOrg = await obRepo.fetchUserOrg(user.id);
     if (!existingOrg) {
-      const newOrgId = crypto.randomUUID();
-      await supabase.from("orgs").insert({ id: newOrgId, owner_user_id: user.id, name: "Mon organisation" });
-      await supabase.from("org_members").insert({ org_id: newOrgId, user_id: user.id, role: "owner" });
-      // Create trial subscription
-      await supabase.from("subscriptions").insert({ user_id: user.id, plan: "trial", status: "trialing", trial_ends_at: new Date(Date.now() + 3 * 86400000).toISOString() });
+      await obRepo.createOrgForUser(user.id);
     }
 
     setSaving(false);
@@ -138,43 +132,41 @@ const Onboarding = () => {
   const handleOwnerSave = async () => {
     if (!user || !ownerForm.full_name) return;
     setSaving(true);
-    const { data: orgData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).single();
+    const orgData = await obRepo.fetchUserOrg(user.id);
     if (!orgData) { setSaving(false); return; }
-    const { error } = await supabase.from("owner_profiles").insert({
-      user_id: user.id, org_id: orgData.org_id, ...ownerForm, country: country || "FR",
-      email: ownerForm.email || user.email || "",
-    });
+    try {
+      await obRepo.insertOwnerProfile(user.id, orgData.org_id, { ...ownerForm, email: ownerForm.email || user.email || "" }, country || "FR");
+    } catch (error: any) {
+      setSaving(false);
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      return;
+    }
     setSaving(false);
-    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     setStep(2); saveStep(2);
   };
 
   const handlePropertySave = async () => {
     if (!user || !propertyForm.label) return;
     setSaving(true);
-    const { data: orgData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).single();
+    const orgData = await obRepo.fetchUserOrg(user.id);
     if (!orgData) { setSaving(false); return; }
-    const { data: propData, error } = await supabase.from("properties").insert({
-      org_id: orgData.org_id,
-      user_id: user.id,
-      country: country || "FR",
-      ...propertyForm,
-      rental_mode: rentalMode || "long_term",
-    }).select("id").single();
-    setSaving(false);
-    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
-
-    // Save property ID and auto-fill tenant financial fields
-    if (propData) {
-      setSavedPropertyId(propData.id);
-      setTenantForm(f => ({
-        ...f,
-        rent_amount: propertyForm.monthly_rent,
-        charges_amount: propertyForm.monthly_charges,
-        deposit_amount: propertyForm.deposit_amount,
-      }));
+    try {
+      const propId = await obRepo.insertProperty(orgData.org_id, user.id, propertyForm, country || "FR", rentalMode || "long_term");
+      if (propId) {
+        setSavedPropertyId(propId);
+        setTenantForm(f => ({
+          ...f,
+          rent_amount: propertyForm.monthly_rent,
+          charges_amount: propertyForm.monthly_charges,
+          deposit_amount: propertyForm.deposit_amount,
+        }));
+      }
+    } catch (error: any) {
+      setSaving(false);
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      return;
     }
-
+    setSaving(false);
     const nextStep = rentalMode === "short_term" ? 3 : rentalMode === "mixed" ? 3 : 4;
     setStep(nextStep); saveStep(nextStep);
   };
@@ -182,27 +174,23 @@ const Onboarding = () => {
   const handleTenantSave = async () => {
     if (!user || !tenantForm.name) return;
     setSaving(true);
-    const { data: orgData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).single();
+    const orgData = await obRepo.fetchUserOrg(user.id);
     if (!orgData) { setSaving(false); return; }
-
-    const propertyId = savedPropertyId || null;
-
-    const { error } = await supabase.from("tenants").insert({
-      org_id: orgData.org_id, user_id: user.id, property_id: propertyId,
-      name: tenantForm.name, email: tenantForm.email, phone: tenantForm.phone,
-      lease_type: tenantForm.lease_type, rent_amount: tenantForm.rent_amount,
-      charges_amount: tenantForm.charges_amount, deposit_amount: tenantForm.deposit_amount,
-      lease_start: tenantForm.lease_start,
-    });
+    try {
+      await obRepo.insertTenantOnboarding(orgData.org_id, user.id, savedPropertyId, tenantForm);
+    } catch (error: any) {
+      setSaving(false);
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      return;
+    }
     setSaving(false);
-    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     setStep(5); saveStep(5);
   };
 
   const handleFinish = async () => {
     if (!user) return;
     setSaving(true);
-    await supabase.from("profiles").update({ onboarding_completed: true, onboarding_step: 7 }).eq("id", user.id);
+    await obRepo.completeOnboarding(user.id);
     await refreshProfile();
     setSaving(false);
     toast({ title: "🎉 " + t("ob.finish_title"), description: t("ob.finish_desc") });
@@ -235,22 +223,14 @@ const Onboarding = () => {
     if (!url || !user || !savedPropertyId) return;
     setIcalSyncing(provider);
     try {
-      const { data: orgData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).single();
+      const orgData = await obRepo.fetchUserOrg(user.id);
       if (!orgData) throw new Error("No org");
 
-      // Save OTA connection
-      await supabase.from("ota_connections").upsert({
-        org_id: orgData.org_id,
-        user_id: user.id,
-        provider,
-        status: "active",
-        linked_properties: [savedPropertyId],
-      }, { onConflict: "id" });
+      await obRepo.upsertOtaConnection(orgData.org_id, user.id, provider, savedPropertyId);
 
-      const { data, error } = await supabase.functions.invoke("sync-ical", {
-        body: { ical_url: url, property_id: savedPropertyId, provider, org_id: orgData.org_id },
+      const data = await obRepo.syncIcal({
+        ical_url: url, property_id: savedPropertyId, provider, org_id: orgData.org_id,
       });
-      if (error) throw error;
       setIcalResults(prev => ({ ...prev, [provider]: data.inserted || 0 }));
       toast({ title: "✅ " + (data.inserted || 0) + " " + t("ob.ical_success") });
     } catch (err: any) {
