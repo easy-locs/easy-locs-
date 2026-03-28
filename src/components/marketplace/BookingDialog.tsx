@@ -9,7 +9,7 @@ import { CreditCard, Mail, MapPin, Users, Clock, Upload } from "lucide-react";
 import PaymentMethodSelector, { type PaymentMethod } from "./PaymentMethodSelector";
 import MarketplaceDisclaimer from "./MarketplaceDisclaimer";
 import { format } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchBookedDates } from "@/repositories/marketplace.repository";
 import { toast } from "sonner";
 import ServiceBookingCalendar, { type ActivityBookingRules } from "@/components/concierge/ServiceBookingCalendar";
 import { getCategoryBookingConfig } from "./CategoryBookingConfig";
@@ -82,17 +82,11 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
   useEffect(() => {
     if (!open || !service?.id) return;
     const loadBookings = async () => {
-      const { data } = await supabase
-        .from("marketplace_bookings")
-        .select("service_date, date_from, date_to, status")
-        .eq("service_id", service.id)
-        .in("status", ["pending", "confirmed", "completed"]);
-      if (data) {
-        setBookedDates(data.map((b: any) => ({
-          from: b.date_from || b.service_date,
-          to: b.date_to || b.service_date,
-        })).filter((b: any) => b.from));
-      }
+      const data = await fetchBookedDates(service.id);
+      setBookedDates(data.map((b: any) => ({
+        from: b.date_from || b.service_date,
+        to: b.date_to || b.service_date,
+      })).filter((b: any) => b.from));
     };
     loadBookings();
   }, [open, service?.id]);
@@ -215,8 +209,8 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                     try {
                       const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
                       const path = `${service.org_id}/id-docs/${crypto.randomUUID()}.${ext}`;
-                      const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
-                      if (error) { toast.error("Upload failed: " + error.message); return; }
+                      const { uploadBookingDocument } = await import("@/repositories/marketplace.repository");
+                      await uploadBookingDocument("booking-documents", path, file);
                       setIdDocUrl(path);
                       toast.success(t("mp.document_uploaded") || "ID document uploaded");
                     } finally { setIdDocUploading(false); }

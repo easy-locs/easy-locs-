@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Star, Send } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { checkBookingStatus, checkExistingReview, insertReview } from "@/repositories/marketplace.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -48,54 +48,42 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
 
     setSubmitting(true);
 
-    // Check booking is still in completed status (guard against status revert)
-    const { data: bookingCheck } = await supabase
-      .from("marketplace_bookings")
-      .select("status")
-      .eq("id", booking.id)
-      .maybeSingle();
-
+    const bookingCheck = await checkBookingStatus(booking.id);
     if (!bookingCheck || bookingCheck.status !== "completed") {
       toast.error(t("mp.review_booking_not_eligible") || "This booking is no longer eligible for review");
       setSubmitting(false);
       return;
     }
 
-    const { data: existing } = await supabase
-      .from("marketplace_reviews")
-      .select("id")
-      .eq("booking_id", booking.id)
-      .maybeSingle();
-
+    const existing = await checkExistingReview(booking.id);
     if (existing) {
       toast.error(t("mp.review_already_submitted") || "You have already reviewed this booking");
       setSubmitting(false);
       return;
     }
 
-    const { error } = await supabase.from("marketplace_reviews").insert({
-      provider_id: booking.provider_id,
-      service_id: booking.service_id,
-      booking_id: booking.id,
-      reviewer_name: reviewerName.trim(),
-      reviewer_email: booking.booker_email || null,
-      reviewer_user_id: user?.id || null,
-      rating,
-      comment: comment.trim(),
-      status: "published",
-      verified: true,
-    });
-
-    if (error) {
-      if (error.code === "23505") {
-        toast.error(t("mp.review_already_submitted") || "You have already reviewed this booking");
-      } else {
-        toast.error(error.message);
-      }
-    } else {
+    try {
+      await insertReview({
+        provider_id: booking.provider_id,
+        service_id: booking.service_id,
+        booking_id: booking.id,
+        reviewer_name: reviewerName.trim(),
+        reviewer_email: booking.booker_email || null,
+        reviewer_user_id: user?.id || null,
+        rating,
+        comment: comment.trim(),
+        status: "published",
+        verified: true,
+      });
       toast.success(t("mp.review_submitted") || "Thank you for your review!");
       onOpenChange(false);
       onSubmitted?.();
+    } catch (error: any) {
+      if (error?.code === "23505") {
+        toast.error(t("mp.review_already_submitted") || "You have already reviewed this booking");
+      } else {
+        toast.error(error?.message || "Failed to submit review");
+      }
     }
     setSubmitting(false);
   };

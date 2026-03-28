@@ -1,11 +1,13 @@
 /**
- * useConciergeActions — All concierge mutations extracted from ConciergeServices.
- * Single responsibility: save/edit/delete services, update orders, mark paid.
+ * useConciergeActions — All concierge mutations via repository.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import {
+  upsertConciergeService, deleteConciergeService,
+  updateConciergeOrderStatus, markConciergeOrderPaid,
+} from "@/repositories/concierge.repository";
 
 interface ServiceForm {
   category: string; title: string; description: string; price: number; currency: string;
@@ -44,30 +46,20 @@ export function useConciergeActions(
       blocked_dates: form.blocked_dates, payment_methods: form.payment_methods,
       bank_details: form.bank_details,
     };
-    if (editingId) {
-      await supabase.from("concierge_services").update(record).eq("id", editingId);
-      toast.success(t("page.concierge.service_updated") || "Service updated");
-    } else {
-      await supabase.from("concierge_services").insert(record);
-      toast.success(t("page.concierge.service_created") || "Service created");
-    }
+    await upsertConciergeService(record, editingId);
+    toast.success(editingId ? (t("page.concierge.service_updated") || "Service updated") : (t("page.concierge.service_created") || "Service created"));
     await reload();
     return true;
   }, [orgId, userId, ensureOrg, reload, t]);
 
   const deleteService = useCallback(async (id: string) => {
-    await supabase.from("concierge_services").delete().eq("id", id);
+    await deleteConciergeService(id);
     toast.success(t("page.concierge.service_deleted") || "Service deleted");
     await reload();
   }, [reload, t]);
 
-  const updateOrderStatus = useCallback(async (orderId: string, status: string) => {
-    const updates: any = { status };
-    if (status === "confirmed") updates.confirmed_at = new Date().toISOString();
-    if (status === "completed") updates.completed_at = new Date().toISOString();
-    if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
-    if (status === "refunded") updates.refunded_at = new Date().toISOString();
-    await supabase.from("concierge_orders").update(updates).eq("id", orderId);
+  const handleUpdateOrderStatus = useCallback(async (orderId: string, status: string) => {
+    await updateConciergeOrderStatus(orderId, status);
     toast.success(t("page.concierge.order_status_updated") || `Order ${status}`);
 
     try {
@@ -97,7 +89,7 @@ export function useConciergeActions(
   }, [orders, services, userId, reload, t]);
 
   const markPaid = useCallback(async (orderId: string) => {
-    await supabase.from("concierge_orders").update({ payment_status: "paid" } as any).eq("id", orderId);
+    await markConciergeOrderPaid(orderId);
     toast.success(t("page.concierge.payment_confirmed") || "Payment confirmed");
     try {
       const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
@@ -106,7 +98,7 @@ export function useConciergeActions(
     await reload();
   }, [userId, reload, t]);
 
-  return { saveService, deleteService, updateOrderStatus, markPaid };
+  return { saveService, deleteService, updateOrderStatus: handleUpdateOrderStatus, markPaid };
 }
 
 export type { ServiceForm };

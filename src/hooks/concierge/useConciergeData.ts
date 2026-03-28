@@ -1,13 +1,18 @@
 /**
  * useConciergeData — Data loading, realtime sync, and mutations for ConciergeServices.
- * Pure data hook, zero UI.
+ * Pure data hook, zero UI. All DB calls via concierge.repository.
  */
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 import { computeExchangeRate } from "@/hooks/useCurrencyConversion";
 import { toast } from "sonner";
+import {
+  fetchConciergeServices, fetchConciergeOrders, upsertConciergeService,
+  deleteConciergeService, updateConciergeOrderStatus, markConciergeOrderPaid,
+  fetchLandlordProfile, fetchPreferredCurrency, updatePreferredCurrency,
+  subscribeConciergeOrders,
+} from "@/repositories/concierge.repository";
 
 interface ServiceForm {
   category: string; title: string; description: string; price: number; currency: string;
@@ -41,36 +46,28 @@ export function useConciergeData() {
   const [landlordProfile, setLandlordProfile] = useState<any>(null);
   const [preferredCurrency, setPreferredCurrency] = useState("EUR");
 
-  // Load landlord profile + preferred currency
   useEffect(() => {
     if (!orgId || !user) return;
-    supabase.from("landlord_profiles").select("slug").eq("org_id", orgId).eq("active", true).limit(1).maybeSingle()
-      .then(({ data }) => { if (data) setLandlordProfile(data); });
-    supabase.from("profiles").select("preferred_currency").eq("id", user.id).single()
-      .then(({ data }) => { if (data?.preferred_currency) setPreferredCurrency(data.preferred_currency); });
+    fetchLandlordProfile(orgId).then(data => { if (data) setLandlordProfile(data); });
+    fetchPreferredCurrency(user.id).then(cur => setPreferredCurrency(cur));
   }, [orgId, user]);
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: s }, { data: o }] = await Promise.all([
-      supabase.from("concierge_services").select("*").eq("org_id", orgId).order("sort_order"),
-      supabase.from("concierge_orders").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
+    const [s, o] = await Promise.all([
+      fetchConciergeServices(orgId),
+      fetchConciergeOrders(orgId),
     ]);
-    setServices(s || []);
-    setOrders((o || []) as any[]);
+    setServices(s);
+    setOrders(o);
     setLoading(false);
   }, [orgId]);
 
   useEffect(() => { load(); }, [load]);
 
-  // Realtime sync
   useEffect(() => {
     if (!orgId) return;
-    const channel = supabase
-      .channel('concierge-orders-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'concierge_orders', filter: `org_id=eq.${orgId}` }, () => load())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return subscribeConciergeOrders(orgId, () => load());
   }, [orgId, load]);
 
   const saveService = async (form: ServiceForm, editingId: string | null) => {
@@ -86,29 +83,19 @@ export function useConciergeData() {
       blocked_dates: form.blocked_dates, payment_methods: form.payment_methods,
       bank_details: form.bank_details,
     };
-    if (editingId) {
-      await supabase.from("concierge_services").update(record).eq("id", editingId);
-      toast.success("Service updated");
-    } else {
-      await supabase.from("concierge_services").insert(record);
-      toast.success("Service created");
-    }
+    await upsertConciergeService(record, editingId);
+    toast.success(editingId ? "Service updated" : "Service created");
     await load();
   };
 
   const removeService = async (id: string) => {
-    await supabase.from("concierge_services").delete().eq("id", id);
+    await deleteConciergeService(id);
     toast.success("Service deleted");
     await load();
   };
 
-  const updateOrderStatus = async (orderId: string, status: string) => {
-    const updates: any = { status };
-    if (status === "confirmed") updates.confirmed_at = new Date().toISOString();
-    if (status === "completed") updates.completed_at = new Date().toISOString();
-    if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
-    if (status === "refunded") updates.refunded_at = new Date().toISOString();
-    await supabase.from("concierge_orders").update(updates).eq("id", orderId);
+  const handleUpdateOrderStatus = async (orderId: string, status: string) => {
+    await updateConciergeOrderStatus(orderId, status);
     toast.success(`Order ${status}`);
 
     try {
@@ -138,7 +125,7 @@ export function useConciergeData() {
   };
 
   const markPaid = async (orderId: string) => {
-    await supabase.from("concierge_orders").update({ payment_status: "paid" } as any).eq("id", orderId);
+    await markConciergeOrderPaid(orderId);
     toast.success("Payment confirmed");
     try {
       const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
@@ -149,10 +136,9 @@ export function useConciergeData() {
 
   const handlePreferredCurrencyChange = async (cur: string) => {
     setPreferredCurrency(cur);
-    if (user) await supabase.from("profiles").update({ preferred_currency: cur } as any).eq("id", user.id);
+    if (user) await updatePreferredCurrency(user.id, cur);
   };
 
-  // KPIs
   const kpis = useMemo(() => {
     const activeServices = services.filter(s => s.active).length;
     const pendingOrders = orders.filter(o => o.status === "pending" || o.status === "awaiting_payment").length;
@@ -173,7 +159,7 @@ export function useConciergeData() {
 
   return {
     services, orders, loading, preferredCurrency, showcaseUrl, kpis,
-    load, saveService, removeService, updateOrderStatus, markPaid,
+    load, saveService, removeService, updateOrderStatus: handleUpdateOrderStatus, markPaid,
     handlePreferredCurrencyChange, emptyForm, creatingOrg,
   };
 }
