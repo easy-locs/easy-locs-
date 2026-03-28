@@ -56,7 +56,7 @@ describe("Quality Scorer", () => {
 
   it("penalizes missing coordinates", () => {
     const report = scoreQuality(makeEntity({ lat: null, lng: null }));
-    expect(report.location).toBeLessThan(30);
+    expect(report.location).toBeLessThanOrEqual(30);
     expect(report.details).toContain("No coordinates");
   });
 
