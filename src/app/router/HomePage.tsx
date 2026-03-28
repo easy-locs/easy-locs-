@@ -19,6 +19,16 @@ import {
   Bell,
   Settings,
   LogOut,
+  UtensilsCrossed,
+  ShoppingCart,
+  Wrench,
+  Plane,
+  Building2,
+  Heart,
+  Sparkles,
+  Bike,
+  Gift,
+  Ticket,
 } from "lucide-react";
 
 const QUICK_ACTIONS = [
@@ -30,6 +40,21 @@ const QUICK_ACTIONS = [
   { key: "scan", label: "Scan", icon: QrCode, path: "/pay/scan", color: "bg-amber-500/10 text-amber-600" },
   { key: "pay", label: "Pay", icon: CreditCard, path: "/wallet/hub", color: "bg-rose-500/10 text-rose-600" },
   { key: "orders", label: "Orders", icon: ShoppingBag, path: "/my-orders", color: "bg-teal-500/10 text-teal-600" },
+];
+
+const DISCOVER_CATEGORIES = [
+  // Row 1
+  { key: "food", label: "Food", icon: UtensilsCrossed, path: "/food", gradient: "from-orange-500/15 to-red-500/10", iconColor: "text-orange-500" },
+  { key: "grocery", label: "Grocery", icon: ShoppingCart, path: "/grocery", gradient: "from-emerald-500/15 to-green-500/10", iconColor: "text-emerald-500" },
+  { key: "services", label: "Services", icon: Wrench, path: "/services-hub", gradient: "from-blue-500/15 to-cyan-500/10", iconColor: "text-blue-500" },
+  { key: "travel", label: "Travel", icon: Plane, path: "/explore", gradient: "from-violet-500/15 to-purple-500/10", iconColor: "text-violet-500" },
+  { key: "property", label: "Property", icon: Building2, path: "/explore?vertical=property", gradient: "from-amber-500/15 to-yellow-500/10", iconColor: "text-amber-500" },
+  // Row 2
+  { key: "wellness", label: "Wellness", icon: Heart, path: "/explore?vertical=wellness", gradient: "from-rose-500/15 to-pink-500/10", iconColor: "text-rose-500" },
+  { key: "beauty", label: "Beauty", icon: Sparkles, path: "/explore?vertical=beauty", gradient: "from-fuchsia-500/15 to-pink-500/10", iconColor: "text-fuchsia-500" },
+  { key: "courier", label: "Courier", icon: Bike, path: "/mobility/delivery?mode=parcel", gradient: "from-teal-500/15 to-cyan-500/10", iconColor: "text-teal-500" },
+  { key: "gifts", label: "Gifts", icon: Gift, path: "/achille?category=gifts", gradient: "from-red-500/15 to-rose-500/10", iconColor: "text-red-500" },
+  { key: "events", label: "Events", icon: Ticket, path: "/explore?vertical=events", gradient: "from-indigo-500/15 to-blue-500/10", iconColor: "text-indigo-500" },
 ];
 
 export default function HomePage() {
@@ -70,7 +95,7 @@ export default function HomePage() {
               )}
             </button>
             <div>
-              <p className="text-[15px] font-bold text-foreground leading-tight">Hey, {displayName} 👋</p>
+              <p className="text-[15px] font-bold text-foreground leading-tight">Hey, {displayName}</p>
               <p className="text-[11px] text-muted-foreground">What do you need today?</p>
             </div>
           </div>
@@ -134,7 +159,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Discover Section */}
+      {/* Discover — 2-row horizontal scroll, premium cards */}
       <div className="px-4 mb-4">
         <div className="flex items-center justify-between mb-3">
           <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Discover</p>
@@ -146,23 +171,21 @@ export default function HomePage() {
           </button>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
-          {[
-            { label: "Food & Dining", emoji: "🍕", path: "/food", desc: "Restaurants nearby" },
-            { label: "Grocery", emoji: "🛒", path: "/grocery", desc: "Fresh & fast" },
-            { label: "Services", emoji: "🔧", path: "/services-hub", desc: "Home & more" },
-            { label: "Travel", emoji: "✈️", path: "/explore", desc: "Hotels & stays" },
-          ].map((item) => (
-            <button
-              key={item.label}
-              onClick={() => navigate(item.path)}
-              className="shrink-0 w-[130px] rounded-2xl bg-card border border-border/15 p-3 text-left active:scale-[0.97] transition-transform"
-            >
-              <span className="text-2xl">{item.emoji}</span>
-              <p className="text-xs font-bold text-foreground mt-2 leading-tight">{item.label}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{item.desc}</p>
-            </button>
-          ))}
+        <div className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-hide">
+          <div className="grid grid-rows-2 grid-flow-col gap-2.5 w-max">
+            {DISCOVER_CATEGORIES.map((cat) => (
+              <button
+                key={cat.key}
+                onClick={() => navigate(cat.path)}
+                className={`flex items-center gap-3 w-[150px] rounded-2xl bg-gradient-to-br ${cat.gradient} border border-border/10 backdrop-blur-sm px-3.5 py-3 text-left active:scale-[0.96] transition-transform`}
+              >
+                <div className="h-9 w-9 rounded-xl bg-background/60 flex items-center justify-center shrink-0">
+                  <cat.icon className={`h-[18px] w-[18px] ${cat.iconColor}`} />
+                </div>
+                <span className="text-[12px] font-bold text-foreground leading-tight">{cat.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
