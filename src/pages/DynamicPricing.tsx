@@ -2,8 +2,8 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchOrgForUser, fetchSeasonalProperties, fetchPricingRules, fetchListings, fetchReservations, addPricingRule, togglePricingRule, deletePricingRule } from "@/repositories/dynamic-pricing.repository";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,52 +36,31 @@ const DynamicPricing = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("org_members").select("org_id").eq("user_id", user!.id).limit(1).single();
-      if (!data) return null;
-      const { data: o } = await supabase.from("orgs").select("*").eq("id", data.org_id).single();
-      return o;
-    },
+    queryFn: () => fetchOrgForUser(user!.id),
     enabled: !!user,
   });
 
   const { data: properties = [] } = useQuery({
     queryKey: ["properties", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("properties").select("id, label, monthly_rent").eq("org_id", org!.id).eq("rental_mode", "seasonal");
-      return data || [];
-    },
+    queryFn: () => fetchSeasonalProperties(org!.id),
     enabled: !!org,
   });
 
   const { data: rules = [] } = useQuery({
     queryKey: ["pricing_rules", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("pricing_rules" as any).select("*").eq("org_id", org!.id).order("priority", { ascending: false });
-      return (data || []) as unknown as Array<{
-        id: string; name: string; rule_type: string; adjustment_type: string;
-        adjustment_value: number; start_date: string | null; end_date: string | null;
-        active: boolean; property_id: string; priority: number;
-      }>;
-    },
+    queryFn: () => fetchPricingRules(org!.id),
     enabled: !!org,
   });
 
   const { data: listings = [] } = useQuery({
     queryKey: ["listings", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("public_listings").select("id, property_id, price_per_night, title").eq("org_id", org!.id);
-      return data || [];
-    },
+    queryFn: () => fetchListings(org!.id),
     enabled: !!org,
   });
 
   const { data: reservations = [] } = useQuery({
     queryKey: ["reservations", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("reservations" as any).select("*").eq("org_id", org!.id);
-      return (data || []) as unknown as Array<{ property_id: string; check_in: string; check_out: string; amount: number }>;
-    },
+    queryFn: () => fetchReservations(org!.id),
     enabled: !!org,
   });
 
@@ -112,15 +91,13 @@ const DynamicPricing = () => {
 
   const addMut = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("pricing_rules" as any).insert({
-        org_id: org!.id, user_id: user!.id,
+      await addPricingRule(org!.id, user!.id, {
         rule_type: newRule.rule_type, name: newRule.name,
         adjustment_type: newRule.adjustment_type,
         adjustment_value: Number(newRule.adjustment_value) || 0,
         start_date: newRule.start_date || null, end_date: newRule.end_date || null,
         property_id: newRule.property_id,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Pricing rule added");
@@ -132,16 +109,14 @@ const DynamicPricing = () => {
 
   const toggleMut = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
-      const { error } = await supabase.from("pricing_rules" as any).update({ active }).eq("id", id);
-      if (error) throw error;
+      await togglePricingRule(id, active);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["pricing_rules"] }),
   });
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("pricing_rules" as any).delete().eq("id", id);
-      if (error) throw error;
+      await deletePricingRule(id);
     },
     onSuccess: () => {
       toast.success("Rule deleted");

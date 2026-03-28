@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { fetchPaymentNoticesData, insertPaymentNotices, sendNoticeEmail, fetchTenantEmail, regularizeRentCall, partialPayRentCall } from "@/repositories/payment-notices.repository";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Building, Globe, CreditCard, Banknote } from "lucide-react";
 import jsPDF from "jspdf";
@@ -31,16 +31,11 @@ const PaymentNotices = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: n }, { data: te }, { data: p }, { data: rc }] = await Promise.all([
-      supabase.from("payment_notices").select("*").eq("org_id", orgId).order("due_date", { ascending: false }),
-      supabase.from("tenants").select("id, name, property_id, rent_amount, charges_amount").eq("org_id", orgId),
-      supabase.from("properties").select("id, label, address, city, country").eq("org_id", orgId),
-      supabase.from("rent_calls").select("id, tenant_id, month, total_amount, paid").eq("org_id", orgId).eq("paid", false),
-    ]);
-    if (n) setAllNotices(n as Notice[]);
-    if (te) setAllTenants(te as Tenant[]);
-    if (p) setAllProperties(p as Property[]);
-    if (rc) setAllRentCalls(rc as RentCall[]);
+    const { notices: n, tenants: te, properties: p, rentCalls: rc } = await fetchPaymentNoticesData(orgId);
+    setAllNotices(n as Notice[]);
+    setAllTenants(te as Tenant[]);
+    setAllProperties(p as Property[]);
+    setAllRentCalls(rc as RentCall[]);
     setLoading(false);
   }, [orgId]);
 
@@ -103,33 +98,31 @@ const PaymentNotices = () => {
         due_date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`,
       }));
     if (newNotices.length === 0) { toast({ title: t("page.notices.all_created") }); return; }
-    const { error } = await supabase.from("payment_notices").insert(newNotices);
-    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    try {
+      await insertPaymentNotices(newNotices);
+    } catch (error: any) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return;
+    }
     toast({ title: `${newNotices.length} ${t("page.notices.generated")}` });
 
     const fmt2 = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
     for (const notice of newNotices) {
       const tenant = tenants.find(te => te.id === notice.tenant_id);
       if (!tenant) continue;
-      const { data: tenantData } = await supabase.from("tenants").select("email").eq("id", tenant.id).single();
-      if (tenantData?.email) {
-        supabase.functions.invoke("send-email", {
-          body: {
-            to: tenantData.email,
-            subject: `${t("email.notice_subject")} — ${notice.month}`,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-              <h2 style="color:#1a1a1a;">${t("email.notice_title")}</h2>
-              <p style="color:#555;">${t("email.notice_body").replace("{month}", notice.month)}</p>
-              <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                <p style="color:#1a1a1a;"><strong>${t("pdf.rent")} :</strong> ${fmt2(notice.rent_amount)}</p>
-                <p style="color:#1a1a1a;"><strong>${t("pdf.charges")} :</strong> ${fmt2(notice.charges_amount)}</p>
-                <p style="color:#1a1a1a;"><strong>Total :</strong> ${fmt2(notice.total_amount)}</p>
-                <p style="color:#1a1a1a;"><strong>${t("email.notice_due")} :</strong> ${notice.due_date}</p>
-              </div>
-              <p style="color:#888;font-size:13px;">${t("email.notice_footer")}</p>
-            </div>`,
-          },
-        }).catch(() => {});
+      const email = await fetchTenantEmail(tenant.id);
+      if (email) {
+        await sendNoticeEmail(email, `${t("email.notice_subject")} — ${notice.month}`,
+          `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+            <h2 style="color:#1a1a1a;">${t("email.notice_title")}</h2>
+            <p style="color:#555;">${t("email.notice_body").replace("{month}", notice.month)}</p>
+            <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+              <p style="color:#1a1a1a;"><strong>${t("pdf.rent")} :</strong> ${fmt2(notice.rent_amount)}</p>
+              <p style="color:#1a1a1a;"><strong>${t("pdf.charges")} :</strong> ${fmt2(notice.charges_amount)}</p>
+              <p style="color:#1a1a1a;"><strong>Total :</strong> ${fmt2(notice.total_amount)}</p>
+              <p style="color:#1a1a1a;"><strong>${t("email.notice_due")} :</strong> ${notice.due_date}</p>
+            </div>
+            <p style="color:#888;font-size:13px;">${t("email.notice_footer")}</p>
+          </div>`);
       }
     }
     await load();
@@ -195,14 +188,8 @@ const PaymentNotices = () => {
   const tenantName = (id: string) => tenants.find(te => te.id === id)?.name || "—";
   const unpaidTotal = rentCalls.reduce((s, c) => s + (c.total_amount - (c.paid_amount || 0)), 0);
 
-  // Regularize: mark rent call as fully paid
   const regularize = async (rentCall: RentCall) => {
-    await supabase.from("rent_calls").update({
-      paid: true,
-      paid_date: new Date().toISOString().split("T")[0],
-      paid_amount: rentCall.total_amount,
-      payment_status: "paid",
-    }).eq("id", rentCall.id);
+    await regularizeRentCall(rentCall.id, rentCall.total_amount);
     toast({ title: t("page.common.paid") });
     await load();
   };
@@ -215,12 +202,7 @@ const PaymentNotices = () => {
     if (!partialDialog || partialAmount <= 0) return;
     const newPaid = Math.min((partialDialog.paid_amount || 0) + partialAmount, partialDialog.total_amount);
     const isFullyPaid = newPaid >= partialDialog.total_amount;
-    await supabase.from("rent_calls").update({
-      paid: isFullyPaid,
-      paid_date: new Date().toISOString().split("T")[0],
-      paid_amount: newPaid,
-      payment_status: isFullyPaid ? "paid" : "partial",
-    }).eq("id", partialDialog.id);
+    await partialPayRentCall(partialDialog.id, newPaid, partialDialog.total_amount);
     toast({ title: isFullyPaid ? t("page.common.paid") : `${t("page.notices.partial_recorded")} — ${fmt(newPaid)}` });
     setPartialDialog(null);
     setPartialAmount(0);

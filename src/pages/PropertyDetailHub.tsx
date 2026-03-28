@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPropertyHubData } from "@/repositories/property-hub.repository";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import EntityActivityLog from "@/components/communication/EntityActivityLog";
@@ -74,50 +74,17 @@ const PropertyDetailHub = () => {
   const loadAll = async () => {
     if (!propertyId || !orgId) return;
     setLoading(true);
-    const [
-      { data: prop },
-      { data: ten },
-      { data: rents },
-      { data: leasesData },
-      { data: exp },
-      { data: intv },
-      { data: inv },
-      { data: seasonal },
-      { data: realEstate },
-    ] = await Promise.all([
-      supabase.from("properties").select("*").eq("id", propertyId).eq("org_id", orgId).single(),
-      supabase.from("tenants").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("name"),
-      supabase.from("rent_calls").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("month", { ascending: false }).limit(24),
-      supabase.from("leases").select("id").eq("org_id", orgId).eq("property_id", propertyId),
-      supabase.from("expenses").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("expense_date", { ascending: false }).limit(20),
-      supabase.from("interventions").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("created_at", { ascending: false }).limit(20),
-      supabase.from("inventory_reports").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("report_date", { ascending: false }),
-      supabase.from("public_listings").select("*").eq("org_id", orgId).eq("property_id", propertyId),
-      supabase.from("real_estate_listings").select("*").eq("org_id", orgId).eq("property_id", propertyId),
-    ]);
-
-    setProperty(prop);
-    setTenants(ten || []);
-    setRentCalls(rents || []);
-    setLeases(leasesData || []);
-    setExpenses(exp || []);
-    setInterventions(intv || []);
-    setInventories(inv || []);
-    setSeasonalListings(seasonal || []);
-    setRealEstateListings(realEstate || []);
-
-    // Load documents filtered by property's leases
-    const leaseIds = (leasesData || []).map((l: any) => l.id);
-    if (leaseIds.length > 0) {
-      const { data: docs } = await supabase
-        .from("documents").select("*").eq("org_id", orgId)
-        .in("lease_id", leaseIds)
-        .order("created_at", { ascending: false }).limit(50);
-      setDocuments(docs || []);
-    } else {
-      setDocuments([]);
-    }
-
+    const result = await fetchPropertyHubData(propertyId, orgId);
+    setProperty(result.property);
+    setTenants(result.tenants);
+    setRentCalls(result.rentCalls);
+    setLeases(result.leases);
+    setExpenses(result.expenses);
+    setInterventions(result.interventions);
+    setInventories(result.inventories);
+    setSeasonalListings(result.seasonalListings);
+    setRealEstateListings(result.realEstateListings);
+    setDocuments(result.documents);
     setLoading(false);
   };
 
