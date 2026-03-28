@@ -1,48 +1,25 @@
 /**
- * Global Profile Engine — Auto-fill identity & address across the entire app.
- * Loads once, reusable everywhere: documents, bookings, payments, emails, PDFs.
+ * useGlobalProfile — Auto-fill identity & address across the entire app.
  */
-
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
+import * as profileRepo from "@/repositories/profile.repository";
 
 export interface GlobalProfile {
-  // Identity
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  dateOfBirth: string;
-  nationality: string;
-  idNumber: string;
-  // Address
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
-  // Business
-  companyName: string;
-  taxId: string;
-  // Signature
-  signatureUrl: string;
-  // Banking (landlord only)
-  bankName: string;
-  bankIban: string;
-  bankBic: string;
-  // Computed
-  formattedAddress: string;
-  personType: "individual" | "company";
+  firstName: string; lastName: string; fullName: string; email: string; phone: string;
+  dateOfBirth: string; nationality: string; idNumber: string;
+  address: string; city: string; postalCode: string; country: string;
+  companyName: string; taxId: string; signatureUrl: string;
+  bankName: string; bankIban: string; bankBic: string;
+  formattedAddress: string; personType: "individual" | "company";
 }
 
 const EMPTY_PROFILE: GlobalProfile = {
   firstName: "", lastName: "", fullName: "", email: "", phone: "",
   dateOfBirth: "", nationality: "", idNumber: "",
   address: "", city: "", postalCode: "", country: "FR",
-  companyName: "", taxId: "",
-  signatureUrl: "",
+  companyName: "", taxId: "", signatureUrl: "",
   bankName: "", bankIban: "", bankBic: "",
   formattedAddress: "", personType: "individual",
 };
@@ -53,21 +30,12 @@ export function useGlobalProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Load profile data from multiple sources
   const loadProfile = useCallback(async () => {
     if (!user) { setLoading(false); return; }
     setLoading(true);
-
     try {
-      // 1. Base profile (all users)
-      const { data: baseProfile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
+      const baseProfile = await profileRepo.fetchBaseProfile(user.id);
       const p: GlobalProfile = { ...EMPTY_PROFILE };
-
       if (baseProfile) {
         p.email = baseProfile.email || "";
         p.firstName = (baseProfile as any).first_name || "";
@@ -85,16 +53,8 @@ export function useGlobalProfile() {
         p.taxId = (baseProfile as any).tax_id || "";
         p.signatureUrl = baseProfile.signature_url || "";
       }
-
-      // 2. For landlords, overlay with owner_profiles (richer data)
       if (userType === "landlord" && orgId) {
-        const { data: ownerProfile } = await supabase
-          .from("owner_profiles")
-          .select("*")
-          .eq("org_id", orgId)
-          .limit(1)
-          .maybeSingle();
-
+        const ownerProfile = await profileRepo.fetchOwnerProfile(orgId);
         if (ownerProfile) {
           p.fullName = ownerProfile.full_name || p.fullName;
           p.companyName = ownerProfile.company_name || p.companyName;
@@ -111,16 +71,8 @@ export function useGlobalProfile() {
           p.bankBic = ownerProfile.bank_bic || "";
         }
       }
-
-      // 3. For tenants, overlay with tenant data
       if (userType === "tenant") {
-        const { data: tenantData } = await supabase
-          .from("tenants")
-          .select("*")
-          .eq("tenant_user_id", user.id)
-          .limit(1)
-          .maybeSingle();
-
+        const tenantData = await profileRepo.fetchTenantProfile(user.id);
         if (tenantData) {
           p.fullName = tenantData.name || p.fullName;
           p.email = tenantData.email || p.email;
@@ -130,13 +82,8 @@ export function useGlobalProfile() {
           p.address = tenantData.current_address || p.address;
         }
       }
-
-      // Compute formatted address
       p.formattedAddress = [p.address, p.postalCode, p.city].filter(Boolean).join(", ");
-      if (!p.fullName && (p.firstName || p.lastName)) {
-        p.fullName = [p.firstName, p.lastName].filter(Boolean).join(" ");
-      }
-
+      if (!p.fullName && (p.firstName || p.lastName)) p.fullName = [p.firstName, p.lastName].filter(Boolean).join(" ");
       setProfile(p);
     } catch (err) {
       console.error("[GlobalProfile] load error:", err);
@@ -147,54 +94,31 @@ export function useGlobalProfile() {
 
   useEffect(() => { loadProfile(); }, [loadProfile]);
 
-  // Save profile to database
   const saveProfile = useCallback(async (updates: Partial<GlobalProfile>): Promise<boolean> => {
     if (!user) return false;
     setSaving(true);
-
     try {
       const merged = { ...profile, ...updates };
       const fullName = merged.fullName || [merged.firstName, merged.lastName].filter(Boolean).join(" ");
-
-      // Update base profile
-      await supabase.from("profiles").update({
-        name: fullName,
-        first_name: merged.firstName,
-        last_name: merged.lastName,
-        phone: merged.phone,
-        address: merged.address,
-        city: merged.city,
-        postal_code: merged.postalCode,
-        country: merged.country,
-        date_of_birth: merged.dateOfBirth || null,
-        nationality: merged.nationality,
-        id_number: merged.idNumber,
-        company_name: merged.companyName,
-        tax_id: merged.taxId,
-        signature_url: merged.signatureUrl,
-      } as any).eq("id", user.id);
-
-      // For landlords, sync to owner_profiles
+      await profileRepo.updateProfile(user.id, {
+        name: fullName, first_name: merged.firstName, last_name: merged.lastName,
+        phone: merged.phone, address: merged.address, city: merged.city,
+        postal_code: merged.postalCode, country: merged.country,
+        date_of_birth: merged.dateOfBirth || null, nationality: merged.nationality,
+        id_number: merged.idNumber, company_name: merged.companyName,
+        tax_id: merged.taxId, signature_url: merged.signatureUrl,
+      });
       if (userType === "landlord" && orgId) {
-        await supabase.from("owner_profiles").upsert({
-          org_id: orgId,
-          user_id: user.id,
-          full_name: fullName,
-          company_name: merged.companyName || null,
-          person_type: merged.personType || "individual",
-          address: merged.address || null,
-          postal_code: merged.postalCode || null,
-          city: merged.city || null,
-          country: merged.country || null,
-          email: merged.email || null,
-          phone: merged.phone || null,
-          tax_id: merged.taxId || null,
-          bank_name: merged.bankName || null,
-          bank_iban: merged.bankIban || null,
-          bank_bic: merged.bankBic || null,
-        }, { onConflict: "org_id" });
+        await profileRepo.upsertOwnerProfile({
+          org_id: orgId, user_id: user.id, full_name: fullName,
+          company_name: merged.companyName || null, person_type: merged.personType || "individual",
+          address: merged.address || null, postal_code: merged.postalCode || null,
+          city: merged.city || null, country: merged.country || null,
+          email: merged.email || null, phone: merged.phone || null,
+          tax_id: merged.taxId || null, bank_name: merged.bankName || null,
+          bank_iban: merged.bankIban || null, bank_bic: merged.bankBic || null,
+        });
       }
-
       setProfile({ ...merged, fullName, formattedAddress: [merged.address, merged.postalCode, merged.city].filter(Boolean).join(", ") });
       return true;
     } catch (err) {
@@ -205,49 +129,13 @@ export function useGlobalProfile() {
     }
   }, [user, orgId, userType, profile]);
 
-  // Generate auto-fill map for document templates
   const getDocumentAutoFill = useCallback((role: "landlord" | "tenant" = "landlord"): Record<string, unknown> => {
     const cc = getCountryEntryOrDefault(profile.country);
     if (role === "landlord") {
-      return {
-        landlordName: profile.personType === "company" ? (profile.companyName || profile.fullName) : profile.fullName,
-        landlordAddress: profile.formattedAddress,
-        landlordEmail: profile.email,
-        landlordPhone: profile.phone,
-        landlordTaxId: profile.taxId,
-        landlordBankName: profile.bankName,
-        landlordBankIban: profile.bankIban,
-        landlordBankBic: profile.bankBic,
-        senderName: profile.fullName,
-        senderAddress: profile.formattedAddress,
-        hostName: profile.fullName,
-        companyName: profile.companyName,
-        taxId: profile.taxId,
-        bankName: profile.bankName,
-        bankIban: profile.bankIban,
-        bankBic: profile.bankBic,
-      };
+      return { landlordName: profile.personType === "company" ? (profile.companyName || profile.fullName) : profile.fullName, landlordAddress: profile.formattedAddress, landlordEmail: profile.email, landlordPhone: profile.phone, landlordTaxId: profile.taxId, landlordBankName: profile.bankName, landlordBankIban: profile.bankIban, landlordBankBic: profile.bankBic, senderName: profile.fullName, senderAddress: profile.formattedAddress, hostName: profile.fullName, companyName: profile.companyName, taxId: profile.taxId, bankName: profile.bankName, bankIban: profile.bankIban, bankBic: profile.bankBic };
     }
-    return {
-      tenantName: profile.fullName,
-      tenantEmail: profile.email,
-      tenantPhone: profile.phone,
-      tenantAddress: profile.formattedAddress,
-      tenantBirthDate: profile.dateOfBirth,
-      tenantNationality: profile.nationality,
-      tenantIdNumber: profile.idNumber,
-      recipientName: profile.fullName,
-      recipientAddress: profile.formattedAddress,
-      guestName: profile.fullName,
-    };
+    return { tenantName: profile.fullName, tenantEmail: profile.email, tenantPhone: profile.phone, tenantAddress: profile.formattedAddress, tenantBirthDate: profile.dateOfBirth, tenantNationality: profile.nationality, tenantIdNumber: profile.idNumber, recipientName: profile.fullName, recipientAddress: profile.formattedAddress, guestName: profile.fullName };
   }, [profile]);
 
-  return {
-    profile,
-    loading,
-    saving,
-    saveProfile,
-    refreshProfile: loadProfile,
-    getDocumentAutoFill,
-  };
+  return { profile, loading, saving, saveProfile, refreshProfile: loadProfile, getDocumentAutoFill };
 }
