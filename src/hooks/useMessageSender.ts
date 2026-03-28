@@ -21,6 +21,7 @@ type ThreadLike = {
   v2ConversationId?: string | null;
   peerUserId?: string | null;
   peerOrbitId?: string | null;
+  threadId?: string | null;
 };
 
 type ChatMessage = {
@@ -113,12 +114,38 @@ export function useMessageSender(params: Params) {
       console.warn("[useMessageSender] NO_V2_CONVERSATION_ID — attempting auto-create");
       const earlyAuthUserId = await resolveAuthUserId();
       if (!earlyAuthUserId) {
-        console.error("[useMessageSender] NO_AUTH_USER for auto-create");
         toast.error("Authentication required.");
         return;
       }
 
-      if (thread.peerUserId) {
+      // Try contextId as conversation ID first (from navigation)
+      if (thread.contextId) {
+        const { data: existingConv } = await (supabase as any)
+          .from("conversations_v2")
+          .select("id")
+          .eq("id", thread.contextId)
+          .maybeSingle();
+        if (existingConv?.id) {
+          conversationId = existingConv.id;
+          onThreadUpdate(thread.id, { v2ConversationId: conversationId });
+        }
+      }
+
+      // Try threadId as conversation ID
+      if (!conversationId && thread.threadId) {
+        const { data: existingConv } = await (supabase as any)
+          .from("conversations_v2")
+          .select("id")
+          .eq("id", thread.threadId)
+          .maybeSingle();
+        if (existingConv?.id) {
+          conversationId = existingConv.id;
+          onThreadUpdate(thread.id, { v2ConversationId: conversationId });
+        }
+      }
+
+      // If still missing, auto-create from peerUserId
+      if (!conversationId && thread.peerUserId) {
         try {
           const conv = await createOrGetDirectConversation({
             myUserId: earlyAuthUserId,
@@ -127,16 +154,16 @@ export function useMessageSender(params: Params) {
             peerOrbitId: thread.peerOrbitId,
           });
           conversationId = conv.id;
-          console.log("[useMessageSender] AUTO_CREATED_CONVERSATION", conv.id);
           onThreadUpdate(thread.id, { v2ConversationId: conv.id });
         } catch (err: any) {
           console.error("[useMessageSender] AUTO_CREATE_FAILED", err);
           toast.error("Failed to create conversation");
           return;
         }
-      } else {
-        console.error("[useMessageSender] NO_PEER_USER_ID — cannot create conversation");
-        toast.error("No V2 conversation found for this thread.");
+      }
+
+      if (!conversationId) {
+        toast.error("No conversation found. Try reopening the chat.");
         return;
       }
     }

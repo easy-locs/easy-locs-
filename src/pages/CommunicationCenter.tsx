@@ -73,7 +73,9 @@ export const CommunicationCenter = () => {
       t.bookingId === threadParam || t.dealId === threadParam ||
       t.id === `deal-${threadParam}` || t.id === `tenant-${threadParam}` ||
       t.tenantId === threadParam || t.id === `lead-${threadParam}` ||
-      t.leadId === threadParam || t.contextId === threadParam
+      t.leadId === threadParam || t.contextId === threadParam ||
+      t.v2ConversationId === threadParam || t.id === `v2-direct-${threadParam}` ||
+      t.threadId === threadParam
     );
     if (found) {
       setSelectedThread(found);
