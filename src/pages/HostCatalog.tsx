@@ -141,7 +141,7 @@ const HostCatalog = () => {
                   )}
                 </div>
                 <div className="p-4 space-y-2">
-                  <h3 className="font-semibold text-foreground text-sm line-clamp-1">{l.title}</h3>
+                  <h3 className="font-semibold text-foreground text-sm line-clamp-2 break-words">{l.title}</h3>
                   <div className="flex items-center justify-between text-xs">
                     {l.price_per_night > 0 && (
                       <span className="flex items-center gap-1 font-medium text-accent">

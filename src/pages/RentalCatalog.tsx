@@ -157,7 +157,7 @@ const RentalCatalog = () => {
                   )}
                 </div>
                 <div className="p-4 space-y-2">
-                  <h3 className="font-semibold text-foreground text-sm line-clamp-1">{l.title}</h3>
+                  <h3 className="font-semibold text-foreground text-sm line-clamp-2 break-words">{l.title}</h3>
                   {(l.city || l.country) && (
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <MapPin className="h-3 w-3" /> {l.city}{l.city && l.country ? ", " : ""}{l.country}
