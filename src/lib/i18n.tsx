@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { interpolate, resolvePlural, trackMissingKey } from "./i18n-utils";
+import { landingKeysEn, landingKeysFr } from "./i18n-landing";
 
 // Lazy-loaded locale data is merged at runtime — no more eager imports
 // fr + en are always inline; other locales load their heavy packs on demand
@@ -1505,10 +1506,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const t = useCallback((key: string, vars?: Record<string, string | number>): string => {
     // Lookup helper across all sources including page translations
     const pageMap: Record<string, Record<string, string>> = { fr: pageFr, en: pageEn, es: pageEs, de: pageDe, it: pageIt, pt: pagePt };
+    const landingMap: Record<string, Record<string, string>> = { en: landingKeysEn, fr: landingKeysFr };
     const lookup = (k: string): string | undefined =>
-      translations[locale]?.[k] || lazyData.get(locale)?.[k] || pageMap[locale]?.[k] ||
-      translations.en?.[k] || enExtras[k] || pageEn[k] ||
-      translations.fr?.[k] || frExtras[k] || pageFr[k] || undefined;
+      translations[locale]?.[k] || lazyData.get(locale)?.[k] || pageMap[locale]?.[k] || landingMap[locale]?.[k] ||
+      translations.en?.[k] || enExtras[k] || pageEn[k] || landingKeysEn[k] ||
+      translations.fr?.[k] || frExtras[k] || pageFr[k] || landingKeysFr[k] || undefined;
 
     // If count is provided, try plural resolution
     let resolved: string | undefined;
@@ -1520,12 +1522,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
     if (resolved) return interpolate(resolved, vars);
 
-    // Missing key — return empty string so `t("key") || "fallback"` patterns work
+    // Missing key — generate readable fallback from key name
     if (import.meta.env.DEV && !key.startsWith("pricing.")) {
       console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     }
     trackMissingKey(key, locale);
-    return "";
+    // Auto-generate readable text from the last segment of the key
+    const lastSegment = key.split(".").pop() || key;
+    return lastSegment
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   }, [locale]);
 
   return (
