@@ -256,9 +256,9 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
                 <span className="text-[10px] font-bold w-4" style={{ color: i === 0 ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
                   #{i + 1}
                 </span>
-                <span className="text-[10px] truncate flex-1" style={{ color: "hsl(var(--hud-text))" }}>
-                  {d.driverId.slice(0, 8)}…
-                </span>
+                 <span className="text-[10px] min-w-0 flex-1 break-words leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
+                   {d.driverId.slice(0, 8)}…
+                 </span>
                 <span className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
                   {d.count} missions
                 </span>

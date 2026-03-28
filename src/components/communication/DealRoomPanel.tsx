@@ -157,7 +157,7 @@ export default function DealRoomPanel({
             </Badge>
           )}
         </div>
-        {dealData?.context_title && <p className="text-[10px] text-muted-foreground mt-1.5 truncate">{dealData.context_title}</p>}
+        {dealData?.context_title && <p className="text-[10px] text-muted-foreground mt-1.5 break-words leading-snug">{dealData.context_title}</p>}
       </div>
 
       {/* Negotiation history */}
@@ -173,7 +173,7 @@ export default function DealRoomPanel({
                   className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     {isCounter ? <TrendingUp className="h-3 w-3 text-orange-500 shrink-0" /> : <DollarSign className="h-3 w-3 text-purple-500 shrink-0" />}
-                    <span className="text-[10px] text-muted-foreground truncate">{ev.actor_role === "seller" ? "Seller" : "Buyer"} • R{ev.round_number || idx + 1}</span>
+                    <span className="text-[10px] text-muted-foreground min-w-0 break-words leading-snug">{ev.actor_role === "seller" ? "Seller" : "Buyer"} • R{ev.round_number || idx + 1}</span>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className={`text-[11px] font-semibold ${isCounter ? "text-orange-600" : "text-purple-600"}`}>{fmtCurrency(data.amount, data.currency)}</span>

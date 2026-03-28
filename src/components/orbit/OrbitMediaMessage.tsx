@@ -39,13 +39,13 @@ export function OrbitMediaMessage({ message, isOwn, onOpenAttachment }: Props) {
                 {isVideo && (
                   <div className="p-3 flex items-center gap-2">
                     <span>🎬</span>
-                    <span className="text-xs truncate">{att.name}</span>
+                     <span className="text-xs min-w-0 break-words leading-snug">{att.name}</span>
                   </div>
                 )}
                 {!isImage && !isVideo && (
                   <div className="p-3 flex items-center gap-2">
                     <span>{isPdf ? "📄" : "📎"}</span>
-                    <span className="text-xs truncate">{att.name}</span>
+                    <span className="text-xs min-w-0 break-words leading-snug">{att.name}</span>
                   </div>
                 )}
                 <div className="px-3 pb-2 text-[10px] text-muted-foreground">

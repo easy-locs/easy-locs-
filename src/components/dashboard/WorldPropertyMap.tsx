@@ -189,7 +189,7 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
                 onMouseLeave={() => setHoveredCountry(null)}
               >
                 <span className="text-base shrink-0">{c.flag}</span>
-                <span className="truncate flex-1">{c.name}</span>
+                <span className="min-w-0 flex-1 break-words leading-snug">{c.name}</span>
                 <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-bold shrink-0">{c.count}</span>
                 <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-accent transition-colors shrink-0" />
               </Link>

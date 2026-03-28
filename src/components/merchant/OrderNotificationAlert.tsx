@@ -127,16 +127,16 @@ function OrderNotificationAlert({ order, onAccept, onReject }: Props) {
               {/* Customer */}
               <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl" style={{ background: "hsl(var(--hud-surface))" }}>
                 <User className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />
-                <span className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{order.customerName}</span>
+                <span className="text-sm font-semibold min-w-0 break-words leading-snug" style={{ color: "hsl(var(--hud-text))" }}>{order.customerName}</span>
               </div>
 
               {/* Items */}
               <div className="space-y-1.5 mb-3 max-h-[140px] overflow-y-auto">
                 {order.items.map((item, i) => (
                   <div key={i} className="flex items-center justify-between px-3 py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-surface) / 0.5)" }}>
-                    <span className="text-xs font-medium truncate flex-1" style={{ color: "hsl(var(--hud-text) / 0.8)" }}>
-                      {item.qty}× {item.name}
-                    </span>
+                     <span className="text-xs font-medium min-w-0 flex-1 break-words leading-snug" style={{ color: "hsl(var(--hud-text) / 0.8)" }}>
+                       {item.qty}× {item.name}
+                     </span>
                     <span className="text-xs font-bold shrink-0 ml-2" style={{ color: "hsl(var(--hud-text))" }}>
                       {item.price.toFixed(2)} {order.currency}
                     </span>
@@ -148,7 +148,7 @@ function OrderNotificationAlert({ order, onAccept, onReject }: Props) {
               {order.address && (
                 <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl" style={{ background: "hsl(var(--hud-surface))" }}>
                   <MapPin className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />
-                  <span className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}>{order.address}</span>
+                  <span className="text-[11px] min-w-0 break-words leading-snug" style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}>{order.address}</span>
                 </div>
               )}
 
