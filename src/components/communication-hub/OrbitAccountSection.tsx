@@ -180,17 +180,25 @@ export default function OrbitAccountSection() {
       const { data: threads } = await supabase
         .from("conversations_v2")
         .select("id")
-        .contains("participant_ids", [user.id]);
+        .order("updated_at", { ascending: false })
+        .limit(500);
       
-      if (threads && threads.length > 0) {
-        for (const thread of threads) {
+      const userThreads = (threads || []).filter((t: any) => {
+        if (Array.isArray((t as any).participants)) {
+          return (t as any).participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user.id);
+        }
+        return false;
+      });
+
+      if (userThreads.length > 0) {
+        for (const thread of userThreads) {
           await supabase.from("conversation_preferences").upsert({
             user_id: user.id,
             context_id: thread.id,
             archived: true,
           }, { onConflict: "user_id,context_id" });
         }
-        toast.success(`${threads.length} ${t("orbit.chats.archive_all") || "chats archived"}`);
+        toast.success(`${userThreads.length} ${t("orbit.chats.archive_all") || "chats archived"}`);
       } else {
         toast.info(t("orbit.no_conversations") || "No conversations");
       }
@@ -206,10 +214,18 @@ export default function OrbitAccountSection() {
       const { data: threads } = await supabase
         .from("conversations_v2")
         .select("id")
-        .contains("participant_ids", [user.id]);
+        .order("updated_at", { ascending: false })
+        .limit(500);
       
-      if (threads && threads.length > 0) {
-        for (const thread of threads) {
+      const userThreads = (threads || []).filter((t: any) => {
+        if (Array.isArray((t as any).participants)) {
+          return (t as any).participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user.id);
+        }
+        return false;
+      });
+
+      if (userThreads.length > 0) {
+        for (const thread of userThreads) {
           await supabase.from("conversation_preferences").upsert({
             user_id: user.id,
             context_id: thread.id,
@@ -231,10 +247,18 @@ export default function OrbitAccountSection() {
       const { data: threads } = await supabase
         .from("conversations_v2")
         .select("id")
-        .contains("participant_ids", [user.id]);
+        .order("updated_at", { ascending: false })
+        .limit(500);
       
-      if (threads && threads.length > 0) {
-        for (const thread of threads) {
+      const userThreads = (threads || []).filter((t: any) => {
+        if (Array.isArray((t as any).participants)) {
+          return (t as any).participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user.id);
+        }
+        return false;
+      });
+
+      if (userThreads.length > 0) {
+        for (const thread of userThreads) {
           await supabase.from("conversation_preferences").upsert({
             user_id: user.id,
             context_id: thread.id,

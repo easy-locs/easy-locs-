@@ -286,7 +286,12 @@ export function useConversationThreads() {
         const participantUserIds = Array.isArray(ct.participant_ids)
           ? ct.participant_ids.filter((id: unknown): id is string => typeof id === "string" && id.length > 0)
           : [];
-        const peerUserId = participantUserIds.find((id) => id !== user?.id) ?? null;
+        // Also extract from participants JSONB (canonical source)
+        const participantsJsonb = Array.isArray(ct.participants)
+          ? ct.participants.map((p: any) => p?.userId || p?.user_id || p?.id).filter(Boolean)
+          : [];
+        const mergedParticipantIds = [...new Set([...participantUserIds, ...participantsJsonb])];
+        const peerUserId = mergedParticipantIds.find((id) => id !== user?.id) ?? null;
         if (peerUserId) allPeerIds.add(peerUserId);
 
         const key = `${convType}-${ct.id}`;
@@ -304,7 +309,7 @@ export function useConversationThreads() {
             v2ConversationId: ct.id,
             isV2: true,
             peerUserId,
-            participantUserIds,
+            participantUserIds: mergedParticipantIds,
             unreadCount: 0,
             lastMessageTime: ct.last_message_at || ct.updated_at,
           });
