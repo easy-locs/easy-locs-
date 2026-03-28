@@ -217,15 +217,22 @@ export function useConversationThreads() {
       }
 
       // ── 7+11 MERGED: Fetch ALL conversations_v2 + deals + preferences in PARALLEL ──
+      // NOTE: conversations_v2 has `participants` (JSONB array of {userId, orbitId, ...}) — NOT `participant_ids`
+      // We fetch all recent conversations and filter client-side for participant matching
+      console.log("%c[TRACE][THREADS] STEP 2 — fetching conversations_v2", "color:cyan;font-weight:bold", { userId: user.id, hasOrg });
+
       const convQueryBase = (supabase as any)
         .from("conversations_v2")
         .select("*")
         .order("last_message_at", { ascending: false })
         .limit(300);
 
+      // For org users: get org conversations OR conversations where user is a participant
+      // For non-org users: get all recent conversations (filter client-side)
+      // We can't use .contains on JSONB array of objects with just userId, so we fetch broadly
       const convQueryFinal = hasOrg
-        ? convQueryBase.or(`org_id.eq.${orgId},participant_ids.cs.{${user.id}}`)
-        : convQueryBase.contains("participant_ids", [user.id]);
+        ? convQueryBase.or(`created_by_orbit_id.ilike.orbit_${user.id.slice(0, 12)}%,metadata->>direct_user_ids.cs.["${user.id}"]`)
+        : convQueryBase;
 
       const [convResult, dealResult, prefResult] = await Promise.all([
         convQueryFinal,
@@ -237,7 +244,29 @@ export function useConversationThreads() {
           : { data: [] },
       ]);
 
-      const allConvs = (convResult as any).data || [];
+      // Filter conversations to only those where user is actually a participant
+      const rawConvs = (convResult as any).data || [];
+      console.log("%c[TRACE][THREADS] STEP 2 — raw conversations fetched:", "color:cyan;font-weight:bold", rawConvs.length);
+      
+      const allConvs = rawConvs.filter((conv: any) => {
+        // Check participants JSONB array
+        if (Array.isArray(conv.participants)) {
+          const isParticipant = conv.participants.some((p: any) => {
+            const pUserId = p?.userId || p?.user_id || p?.id;
+            return pUserId === user.id;
+          });
+          if (isParticipant) return true;
+        }
+        // Check metadata.direct_user_ids
+        if (conv.metadata?.direct_user_ids && Array.isArray(conv.metadata.direct_user_ids)) {
+          if (conv.metadata.direct_user_ids.includes(user.id)) return true;
+        }
+        // Check created_by_orbit_id
+        if (conv.created_by_orbit_id?.includes(user.id.slice(0, 12))) return true;
+        return false;
+      });
+      
+      console.log("%c[TRACE][THREADS] STEP 2 — filtered conversations (user is participant):", "color:lime;font-weight:bold", allConvs.length);
       const allPeerIds = new Set<string>();
 
       // ── Process non-direct conversations ──
