@@ -1,165 +1,137 @@
 /**
- * Onboarding Orchestrator — Master pipeline coordinator.
- * Runs the full vertical-aware multi-source onboarding sequence.
+ * Onboarding Orchestrator — Thin coordinator that delegates to atomic micro-engines.
+ * NO business logic here. Each step is isolated, logged, and traceable.
  */
-import { getPolicy } from "./source-policy.engine";
-import { CONNECTOR_REGISTRY } from "./connectors/index";
+import { validatePipelineInput } from "./micro/input.validator";
+import { fetchFromSources } from "./micro/source.fetcher";
+import { sanitizeCanonicalRecord } from "./micro/record.sanitizer";
+import { decidePublish } from "./micro/publish.decider";
+import { runStep, logPipelineTrace } from "./micro/pipeline.logger";
+import type { PipelineInput, PipelineTrace, PublishDecision } from "./micro/pipeline.types";
 import { groupEntities } from "./entity-resolution.engine";
 import { mergeEntityRecords } from "./field-merge.engine";
 import { fillMissingWithWebFallback } from "./web-fallback.engine";
-import { scoreOnboardingQuality } from "./onboarding-quality.engine";
-import { evaluatePublishGate } from "./publish-gate.engine";
-import type {
-  CanonicalOnboardingRecord,
-  SourceEntityRecord,
-  Vertical,
-} from "./types";
+import type { CanonicalOnboardingRecord } from "./types";
 
-export interface OnboardingRequest {
-  vertical: Vertical;
-  name?: string;
-  city?: string;
-  district?: string;
-  country?: string;
-  website?: string;
-  phone?: string;
-  query?: string;
-}
+// Re-export for backward compatibility
+export type OnboardingRequest = PipelineInput;
 
 export interface OnboardingPipelineResult {
   canonical: CanonicalOnboardingRecord[];
-  publish: Array<{
-    entityId: string;
-    allowed: boolean;
-    targetVisibility: "draft" | "public";
-    reasons: string[];
-    qualityScore: number;
-  }>;
-}
-
-function normalizeText(value: string | null | undefined) {
-  if (!value) return null;
-  const normalized = value
-    .replace(/deliveroo|talabat|careem|booking|noon/gi, " ")
-    .replace(/[_|]+/g, " ")
-    .replace(/[•·]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!normalized) return null;
-
-  return normalized
-    .split(" ")
-    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
-    .join(" ");
-}
-
-function dedupePhotos(photos: string[]) {
-  const seen = new Set<string>();
-  return photos.filter((photo) => {
-    const key = photo.replace(/[?#].*$/, "").trim();
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function dedupeNamedItems(items: Array<Record<string, unknown>>) {
-  const seen = new Set<string>();
-  return items.filter((item) => {
-    const rawName = [item.name, item.title, item.label, item.room_type]
-      .find((value) => typeof value === "string" && value.trim().length > 0);
-    const normalizedName = typeof rawName === "string" ? normalizeText(rawName)?.toLowerCase() : null;
-    if (!normalizedName || normalizedName.length < 2 || /^(item|menu|product|test|undefined|null)$/i.test(normalizedName) || seen.has(normalizedName)) return false;
-    seen.add(normalizedName);
-
-    if (typeof item.name === "string") item.name = normalizeText(item.name) ?? item.name;
-    if (typeof item.title === "string") item.title = normalizeText(item.title) ?? item.title;
-    if (typeof item.label === "string") item.label = normalizeText(item.label) ?? item.label;
-    if (typeof item.room_type === "string") item.room_type = normalizeText(item.room_type) ?? item.room_type;
-    return true;
-  });
-}
-
-function sanitizeCanonicalRecord(record: CanonicalOnboardingRecord): CanonicalOnboardingRecord {
-  return {
-    ...record,
-    canonicalName: normalizeText(record.canonicalName),
-    branchName: normalizeText(record.branchName),
-    address: normalizeText(record.address),
-    city: normalizeText(record.city),
-    district: normalizeText(record.district),
-    country: normalizeText(record.country),
-    photos: dedupePhotos(record.photos),
-    categories: Array.from(new Set(record.categories.map((item) => normalizeText(item) ?? "").filter(Boolean))),
-    subcategories: Array.from(new Set(record.subcategories.map((item) => normalizeText(item) ?? "").filter(Boolean))),
-    menuItems: dedupeNamedItems([...record.menuItems]),
-    hotelInventory: dedupeNamedItems([...record.hotelInventory]),
-    serviceItems: dedupeNamedItems([...record.serviceItems]),
-  };
+  publish: PublishDecision[];
+  trace: PipelineTrace;
 }
 
 export async function runOnboardingPipeline(
-  input: OnboardingRequest,
+  input: PipelineInput,
 ): Promise<OnboardingPipelineResult> {
-  const policy = getPolicy(input.vertical);
+  const pipelineId = crypto.randomUUID();
+  const pipelineStart = performance.now();
+  const traceSteps: PipelineTrace["steps"] = [];
 
-  const primaryConnectors = CONNECTOR_REGISTRY.filter((c) =>
-    (policy.allowedSources as string[]).includes(c.source),
+  // Step 1: Validate input
+  const validation = await runStep("input.validator", input, async () =>
+    validatePipelineInput(input),
   );
+  traceSteps.push({ name: "input.validator", durationMs: validation.durationMs, success: true });
 
-  const rawRecords: SourceEntityRecord[] = [];
-
-  for (const connector of primaryConnectors) {
-    const rows = await connector.search({
-      vertical: input.vertical,
-      query: input.query,
-      name: input.name,
-      city: input.city,
-      district: input.district,
-      country: input.country,
-      website: input.website,
-      phone: input.phone,
-    });
-    rawRecords.push(...rows);
-  }
-
-  const grouped = groupEntities(rawRecords);
-  const canonicalResults: CanonicalOnboardingRecord[] = [];
-
-  for (const group of grouped) {
-    const mergedInitial = mergeEntityRecords(input.vertical, group);
-
-    let completedGroup = [...group];
-
-    if (mergedInitial.missingFields.length > 0) {
-      const fallbackRows = await fillMissingWithWebFallback(input.vertical, {
-        name: mergedInitial.canonicalName,
-        city: mergedInitial.city,
-        district: mergedInitial.district,
-        country: mergedInitial.country,
-        website: mergedInitial.website,
-        phone: mergedInitial.phone,
-      });
-      completedGroup = [...completedGroup, ...fallbackRows];
-    }
-
-    const mergedFinal = mergeEntityRecords(input.vertical, completedGroup);
-    canonicalResults.push(sanitizeCanonicalRecord(mergedFinal));
-  }
-
-  const publish = canonicalResults.map((record) => {
-    const quality = scoreOnboardingQuality(record);
-    const gate = evaluatePublishGate(record, quality);
-
-    return {
-      entityId: record.entityId,
-      allowed: gate.allowed,
-      targetVisibility: gate.targetVisibility,
-      reasons: gate.reasons,
-      qualityScore: quality.score,
+  if (!validation.data.valid) {
+    const trace: PipelineTrace = {
+      pipelineId,
+      input,
+      steps: traceSteps,
+      totalDurationMs: Math.round(performance.now() - pipelineStart),
+      completedAt: new Date().toISOString(),
     };
+    logPipelineTrace(trace);
+    return { canonical: [], publish: [], trace };
+  }
+
+  const sanitizedInput = validation.data.sanitizedInput;
+
+  // Step 2: Fetch from sources
+  const fetchResult = await runStep("source.fetcher", sanitizedInput, () =>
+    fetchFromSources(sanitizedInput),
+  );
+  traceSteps.push({
+    name: "source.fetcher",
+    durationMs: fetchResult.durationMs,
+    success: true,
+    outputSummary: `${fetchResult.data.records.length} records from ${fetchResult.data.sourcesQueried.join(",")}`,
   });
 
-  return { canonical: canonicalResults, publish };
+  // Step 3: Entity grouping
+  const groupResult = await runStep("entity.grouper", { count: fetchResult.data.records.length }, async () =>
+    groupEntities(fetchResult.data.records),
+  );
+  traceSteps.push({
+    name: "entity.grouper",
+    durationMs: groupResult.durationMs,
+    success: true,
+    outputSummary: `${groupResult.data.length} groups`,
+  });
+
+  // Step 4-6: Per-group: merge → fallback → sanitize
+  const canonicalResults: CanonicalOnboardingRecord[] = [];
+
+  for (let i = 0; i < groupResult.data.length; i++) {
+    const group = groupResult.data[i];
+
+    // Step 4: Field merge
+    const mergeResult = await runStep(`field.merger[${i}]`, { groupSize: group.length }, async () =>
+      mergeEntityRecords(sanitizedInput.vertical, group),
+    );
+    traceSteps.push({ name: `field.merger[${i}]`, durationMs: mergeResult.durationMs, success: true });
+
+    // Step 5: Web fallback (conditional)
+    let finalGroup = [...group];
+    if (mergeResult.data.missingFields.length > 0) {
+      const fallbackResult = await runStep(`web.fallback[${i}]`, { missing: mergeResult.data.missingFields }, async () =>
+        fillMissingWithWebFallback(sanitizedInput.vertical, {
+          name: mergeResult.data.canonicalName,
+          city: mergeResult.data.city,
+          district: mergeResult.data.district,
+          country: mergeResult.data.country,
+          website: mergeResult.data.website,
+          phone: mergeResult.data.phone,
+        }),
+      );
+      traceSteps.push({ name: `web.fallback[${i}]`, durationMs: fallbackResult.durationMs, success: true });
+      finalGroup = [...finalGroup, ...fallbackResult.data];
+    }
+
+    // Re-merge with fallback data
+    const finalMerge = mergeEntityRecords(sanitizedInput.vertical, finalGroup);
+
+    // Step 6: Sanitize
+    const sanitizeResult = await runStep(`record.sanitizer[${i}]`, { entityId: finalMerge.entityId }, async () =>
+      sanitizeCanonicalRecord(finalMerge),
+    );
+    traceSteps.push({ name: `record.sanitizer[${i}]`, durationMs: sanitizeResult.durationMs, success: true });
+
+    canonicalResults.push(sanitizeResult.data);
+  }
+
+  // Step 7: Publish decisions
+  const publishResult = await runStep("publish.decider", { count: canonicalResults.length }, async () =>
+    canonicalResults.map(decidePublish),
+  );
+  traceSteps.push({
+    name: "publish.decider",
+    durationMs: publishResult.durationMs,
+    success: true,
+    outputSummary: `${publishResult.data.filter((p) => p.allowed).length}/${publishResult.data.length} allowed`,
+  });
+
+  const trace: PipelineTrace = {
+    pipelineId,
+    input: sanitizedInput,
+    steps: traceSteps,
+    totalDurationMs: Math.round(performance.now() - pipelineStart),
+    completedAt: new Date().toISOString(),
+  };
+
+  logPipelineTrace(trace);
+
+  return { canonical: canonicalResults, publish: publishResult.data, trace };
 }

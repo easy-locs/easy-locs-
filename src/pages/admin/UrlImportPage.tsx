@@ -86,7 +86,8 @@ export default function UrlImportPage() {
       setResults(result);
       setStep("done");
       setProgress(100);
-      toast.success(`Pipeline complete — ${result.canonical?.length ?? 0} entities processed`);
+      const traceMs = result.trace?.totalDurationMs ?? 0;
+      toast.success(`Pipeline complete — ${result.canonical?.length ?? 0} entities in ${traceMs}ms`);
     } catch (e: any) {
       setStep("error");
       setError(e?.message ?? "Pipeline failed");
@@ -254,6 +255,31 @@ export default function UrlImportPage() {
                 <Card className="border-border/30">
                   <CardContent className="py-8 text-center">
                     <p className="text-sm text-muted-foreground">No entities found for this input</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Pipeline Trace */}
+              {results.trace && (
+                <Card className="border-border/30">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold text-muted-foreground">
+                      Pipeline Trace — {results.trace.totalDurationMs}ms total
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1">
+                    {results.trace.steps?.map((s: any, i: number) => (
+                      <div key={i} className="flex items-center gap-2 text-xs font-mono">
+                        <span className={s.success ? "text-green-500" : "text-destructive"}>
+                          {s.success ? "✓" : "✗"}
+                        </span>
+                        <span className="text-foreground flex-1 truncate">{s.name}</span>
+                        <span className="text-muted-foreground">{s.durationMs}ms</span>
+                        {s.outputSummary && (
+                          <span className="text-muted-foreground/60 truncate max-w-[200px]">{s.outputSummary}</span>
+                        )}
+                      </div>
+                    ))}
                   </CardContent>
                 </Card>
               )}
