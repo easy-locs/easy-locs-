@@ -1,14 +1,14 @@
 /**
  * DriverLiveMissionsPage — Rider-only dispatch screen.
  * Route: /driver/live-missions
- * Actor: RIDER only. Go online, see offers, accept/reject, manage active trip.
+ * All DB access via mobility.repository + riderDispatchStore.
  */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRiderDispatchStore } from "@/stores/riderDispatchStore";
 import { RiderOfferCard } from "@/components/rides/RiderOfferCard";
 import { DriverLiveTripCard } from "@/components/rides/DriverLiveTripCard";
-import { supabase } from "@/integrations/supabase/client";
+import * as repo from "@/repositories/mobility.repository";
 import { ArrowLeft, Power, Zap, Inbox } from "lucide-react";
 
 export default function DriverLiveMissionsPage() {
@@ -26,22 +26,15 @@ export default function DriverLiveMissionsPage() {
   // Realtime: listen for new offers on mobility_job_offers
   useEffect(() => {
     const setupRealtime = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const channel = supabase
-        .channel(`rider-offers:${user.id}`)
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "mobility_job_offers",
-          filter: `rider_user_id=eq.${user.id}`,
-        }, () => { hydrateOffers(); })
-        .subscribe();
-
-      return () => { supabase.removeChannel(channel); };
+      const userId = await repo.getCurrentUserId();
+      if (!userId) return;
+      const channel = repo.subscribeToTable(
+        `rider-offers:${userId}`, "mobility_job_offers",
+        `rider_user_id=eq.${userId}`,
+        () => { hydrateOffers(); }
+      );
+      return () => { repo.unsubscribeChannel(channel); };
     };
-
     const cleanup = setupRealtime();
     return () => { cleanup.then(fn => fn?.()); };
   }, []);
@@ -128,24 +121,9 @@ function ActiveTripSection({ jobId }: { jobId: string }) {
   const [job, setJob] = useState<any>(null);
 
   useEffect(() => {
-    supabase
-      .from("mobility_jobs")
-      .select("*")
-      .eq("id", jobId)
-      .single()
-      .then(({ data }) => setJob(data));
-
-    const ch = supabase
-      .channel(`active-trip:${jobId}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "mobility_jobs",
-        filter: `id=eq.${jobId}`,
-      }, (payload: any) => setJob(payload.new))
-      .subscribe();
-
-    return () => { supabase.removeChannel(ch); };
+    repo.fetchMobilityJobMaybe(jobId).then(data => setJob(data));
+    const ch = repo.subscribeToTable(`active-trip:${jobId}`, "mobility_jobs", `id=eq.${jobId}`, (payload: any) => setJob(payload.new));
+    return () => { repo.unsubscribeChannel(ch); };
   }, [jobId]);
 
   if (!job) return <div className="h-32 bg-muted/40 rounded-xl animate-pulse" />;

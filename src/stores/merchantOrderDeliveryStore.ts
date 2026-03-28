@@ -1,10 +1,9 @@
 /**
  * merchantOrderDeliveryStore — Merchant-only delivery state.
- * Actor: MERCHANT only.
- * Merchants can: accept orders, set preparing/ready, view assigned rider.
+ * All DB access via mobility.repository.
  */
 import { create } from "zustand";
-import { supabase } from "@/integrations/supabase/client";
+import * as repo from "@/repositories/mobility.repository";
 
 export interface MerchantDeliveryJob {
   id: string;
@@ -26,7 +25,6 @@ export interface MerchantDeliveryJob {
 interface MerchantOrderDeliveryState {
   jobs: MerchantDeliveryJob[];
   loading: boolean;
-
   hydrateMyJobs: () => Promise<void>;
   updateMerchantStatus: (jobId: string, merchantStatus: string) => Promise<void>;
 }
@@ -36,40 +34,23 @@ export const useMerchantOrderDeliveryStore = create<MerchantOrderDeliveryState>(
   loading: false,
 
   hydrateMyJobs: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    const userId = await repo.getCurrentUserId();
+    if (!userId) return;
     set({ loading: true });
-
-    // Get merchant profile
-    const { data: merchant } = await supabase
-      .from("merchant_profiles")
-      .select("id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!merchant) {
-      set({ loading: false });
-      return;
-    }
-
-    const { data } = await supabase
-      .from("mobility_jobs")
-      .select("*")
-      .eq("merchant_id", merchant.id)
-      .in("job_type", ["food_delivery"])
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    set({ jobs: (data ?? []) as unknown as MerchantDeliveryJob[], loading: false });
+    const merchant = await repo.fetchMerchantProfileByUserId(userId);
+    if (!merchant) { set({ loading: false }); return; }
+    const data = await repo.fetchMobilityJobs({
+      merchantId: merchant.id,
+      jobTypes: ["food_delivery"],
+      orderBy: "created_at",
+      ascending: false,
+      limit: 50,
+    });
+    set({ jobs: data as unknown as MerchantDeliveryJob[], loading: false });
   },
 
   updateMerchantStatus: async (jobId, merchantStatus) => {
-    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
-      body: { action: "merchant_update", job_id: jobId, merchant_status: merchantStatus },
-    });
-    if (error) throw new Error(error.message);
-    if (data?.error) throw new Error(data.error);
-
+    await repo.invokeDispatchRide({ action: "merchant_update", job_id: jobId, merchant_status: merchantStatus });
     set(s => ({
       jobs: s.jobs.map(j => j.id === jobId ? { ...j, merchant_status: merchantStatus } : j),
     }));
