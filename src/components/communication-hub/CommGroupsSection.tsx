@@ -847,7 +847,7 @@ export default function CommGroupsSection() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                        <span className="text-sm font-semibold line-clamp-2 break-words" style={{ color: "hsl(var(--hud-text))" }}>
                           {group.name}
                         </span>
                         {group.group_type !== "group" && (
@@ -864,7 +864,7 @@ export default function CommGroupsSection() {
                         {group.last_message_at ? formatMsgTime(group.last_message_at) : ""}
                       </span>
                     </div>
-                    <span className="text-[11px] truncate block mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                    <span className="text-[11px] line-clamp-1 break-words block mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                       {group.last_message || group.description || "No messages yet"}
                     </span>
                     <span className="text-[10px] mt-0.5 block" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }}>
