@@ -73,6 +73,8 @@ export function useMessageSender(params: Params) {
   const [newMessage, setNewMessage] = useState("");
 
   const handleSend = useCallback(async () => {
+    console.log("%c[TRACE][SEND_MSG] STEP 1 — UI onClick triggered", "color:cyan;font-weight:bold");
+
     const {
       thread,
       orgId,
@@ -93,8 +95,18 @@ export function useMessageSender(params: Params) {
       disappearTTL,
     } = params;
 
+    console.log("%c[TRACE][SEND_MSG] STEP 2 — handler entered", "color:cyan;font-weight:bold", {
+      hasThread: !!thread,
+      threadId: thread?.id,
+      v2ConversationId: thread?.v2ConversationId,
+      peerUserId: thread?.peerUserId,
+      peerOrbitId: thread?.peerOrbitId,
+      messageLength: newMessage.trim().length,
+      messagePreview: newMessage.trim().slice(0, 30),
+    });
+
     if (!thread || !newMessage.trim()) {
-      console.warn("[useMessageSender] EMPTY_MESSAGE or NO_THREAD", { hasThread: !!thread, msg: newMessage });
+      console.error("%c[TRACE][SEND_MSG] ❌ BLOCKED — empty message or no thread", "color:red;font-weight:bold", { hasThread: !!thread, msg: newMessage });
       return;
     }
 
@@ -111,9 +123,13 @@ export function useMessageSender(params: Params) {
 
     // Auto-create V2 conversation if missing
     if (!conversationId) {
-      console.warn("[useMessageSender] NO_V2_CONVERSATION_ID — attempting auto-create");
+      console.warn("%c[TRACE][SEND_MSG] STEP 4a — NO v2ConversationId, attempting resolve/create", "color:orange;font-weight:bold");
+
+      console.log("%c[TRACE][SEND_MSG] STEP 3 — checking auth (early)", "color:cyan;font-weight:bold");
       const earlyAuthUserId = await resolveAuthUserId();
+      console.log("%c[TRACE][SEND_MSG] STEP 3 — auth result:", "color:cyan;font-weight:bold", { earlyAuthUserId: earlyAuthUserId || "NULL" });
       if (!earlyAuthUserId) {
+        console.error("%c[TRACE][SEND_MSG] ❌ BLOCKED — no auth user", "color:red;font-weight:bold");
         toast.error("Authentication required.");
         return;
       }
@@ -163,23 +179,28 @@ export function useMessageSender(params: Params) {
       }
 
       if (!conversationId) {
+        console.error("%c[TRACE][SEND_MSG] ❌ BLOCKED — conversation could not be resolved or created", "color:red;font-weight:bold");
         toast.error("No conversation found. Try reopening the chat.");
         return;
       }
+      console.log("%c[TRACE][SEND_MSG] STEP 4b — conversation resolved:", "color:lime;font-weight:bold", conversationId);
     }
 
+    console.log("%c[TRACE][SEND_MSG] STEP 3 — checking auth", "color:cyan;font-weight:bold");
     const authUserId = await resolveAuthUserId();
+    console.log("%c[TRACE][SEND_MSG] STEP 3 — auth result:", "color:cyan;font-weight:bold", { authUserId: authUserId || "NULL" });
     if (!authUserId) {
-      console.error("[useMessageSender] NO_AUTH_USER");
+      console.error("%c[TRACE][SEND_MSG] ❌ BLOCKED — no auth user", "color:red;font-weight:bold");
       toast.error("Authentication required.");
       return;
     }
 
-    console.log("[useMessageSender] SEND_START", {
+    console.log("%c[TRACE][SEND_MSG] STEP 4 — conversation OK", "color:lime;font-weight:bold", { conversationId });
+    console.log("%c[TRACE][SEND_MSG] STEP 5 — preparing DB insert", "color:cyan;font-weight:bold", {
       conversationId,
       authUserId,
       myOrbitId,
-      body: newMessage.trim().slice(0, 40) + "...",
+      body: newMessage.trim().slice(0, 40),
     });
 
     const msgText = newMessage.trim();
@@ -308,11 +329,11 @@ export function useMessageSender(params: Params) {
         .single();
 
       if (error) {
-        console.error("[useMessageSender] INSERT_ERROR", error);
+        console.error("%c[TRACE][SEND_MSG] STEP 5 — ❌ DB INSERT FAILED", "color:red;font-weight:bold", error);
         throw error;
       }
 
-      console.log("[useMessageSender] SEND_OK", { id: data.id, created_at: data.created_at });
+      console.log("%c[TRACE][SEND_MSG] STEP 5 — ✅ DB INSERT OK", "color:lime;font-weight:bold", { id: data.id, created_at: data.created_at });
 
       const preview = msgText.slice(0, 120);
 
@@ -359,7 +380,9 @@ export function useMessageSender(params: Params) {
       );
 
       setSecurityLevel("normal");
+      console.log("%c[TRACE][SEND_MSG] STEP 7 — ✅ UI state updated (optimistic replaced, thread preview set)", "color:lime;font-weight:bold");
     } catch (e: any) {
+      console.error("%c[TRACE][SEND_MSG] ❌ SEND FAILED", "color:red;font-weight:bold", e);
       setRawMessages((prev) =>
         prev.map((m) => (m.id === optimisticId ? { ...m, pending: false, failed: true } : m))
       );
