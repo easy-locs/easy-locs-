@@ -28,10 +28,10 @@ export async function fetchBuildings(orgId: string) {
 
 export async function upsertBuilding(record: Record<string, any>, editId?: string) {
   if (editId) {
-    const { error } = await supabase.from("buildings").update(record).eq("id", editId);
+    const { error } = await (supabase as any).from("buildings").update(record).eq("id", editId);
     if (error) throw error;
   } else {
-    const { error } = await supabase.from("buildings").insert(record);
+    const { error } = await (supabase as any).from("buildings").insert(record);
     if (error) throw error;
   }
 }
@@ -53,10 +53,10 @@ export async function fetchTasksData(orgId: string) {
 
 export async function upsertTask(record: Record<string, any>, editId?: string) {
   if (editId) {
-    const { error } = await supabase.from("tasks").update(record).eq("id", editId);
+    const { error } = await (supabase as any).from("tasks").update(record).eq("id", editId);
     if (error) throw error;
   } else {
-    const { error } = await supabase.from("tasks").insert(record);
+    const { error } = await (supabase as any).from("tasks").insert(record);
     if (error) throw error;
   }
 }
@@ -95,11 +95,11 @@ export async function fetchInterventionsData(orgId: string, countryFilter?: stri
 
 export async function upsertIntervention(record: Record<string, any>, editId?: string) {
   if (editId) {
-    const { data, error } = await supabase.from("interventions").update(record).eq("id", editId).select().single();
+    const { data, error } = await (supabase as any).from("interventions").update(record).eq("id", editId).select().single();
     if (error) throw error;
     return data;
   } else {
-    const { data, error } = await supabase.from("interventions").insert(record).select().single();
+    const { data, error } = await (supabase as any).from("interventions").insert(record).select().single();
     if (error) throw error;
     return data;
   }
@@ -182,7 +182,7 @@ export async function fetchCandidatesData(orgId: string) {
 }
 
 export async function insertCandidate(record: Record<string, any>) {
-  const { error } = await supabase.from("candidates").insert(record);
+  const { error } = await (supabase as any).from("candidates").insert(record);
   if (error) throw error;
 }
 
@@ -209,8 +209,8 @@ export async function toggleLocalServicesFeature(orgId: string, enabled: boolean
 }
 
 export async function upsertLocalService(record: Record<string, any>, editId?: string) {
-  if (editId) await supabase.from("local_services").update(record).eq("id", editId);
-  else await supabase.from("local_services").insert(record);
+  if (editId) await (supabase as any).from("local_services").update(record).eq("id", editId);
+  else await (supabase as any).from("local_services").insert(record);
 }
 
 export async function deleteLocalService(id: string) {
@@ -341,18 +341,18 @@ export async function createOrg(orgId: string, userId: string) {
 }
 
 export async function insertOwnerProfile(record: Record<string, any>) {
-  const { error } = await supabase.from("owner_profiles").insert(record);
+  const { error } = await (supabase as any).from("owner_profiles").insert(record);
   if (error) throw error;
 }
 
 export async function insertProperty(record: Record<string, any>) {
-  const { data, error } = await supabase.from("properties").insert(record).select("id").single();
+  const { data, error } = await (supabase as any).from("properties").insert(record).select("id").single();
   if (error) throw error;
   return data?.id;
 }
 
 export async function insertTenant(record: Record<string, any>) {
-  const { error } = await supabase.from("tenants").insert(record);
+  const { error } = await (supabase as any).from("tenants").insert(record);
   if (error) throw error;
 }
 

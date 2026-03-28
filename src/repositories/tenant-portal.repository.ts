@@ -106,7 +106,7 @@ export async function fetchTenantReviews(tenantId: string) {
 }
 
 export async function insertReview(record: Record<string, any>) {
-  const { error } = await supabase.from("reviews").insert(record);
+  const { error } = await (supabase as any).from("reviews").insert(record);
   if (error) throw error;
 }
 
@@ -161,7 +161,7 @@ export async function updateMessageMetadata(msgId: string, metadata: Record<stri
 }
 
 export async function insertAuditLog(record: Record<string, any>) {
-  await supabase.from("audit_logs").insert(record);
+  await (supabase as any).from("audit_logs").insert(record);
 }
 
 export async function fetchOrgEmailAndOwner(orgId: string) {
