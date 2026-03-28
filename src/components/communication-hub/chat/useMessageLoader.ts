@@ -102,7 +102,13 @@ export function useMessageLoader({
   const typingTimeoutRef = useRef<any>(null);
 
   const loadMessages = useCallback(async () => {
+    console.log("%c[TRACE][OPEN_THREAD] STEP 2 — loadMessages handler entered", "color:cyan;font-weight:bold", {
+      threadId: thread?.id,
+      v2ConversationId: thread?.v2ConversationId,
+    });
+
     if (!thread?.v2ConversationId) {
+      console.warn("%c[TRACE][OPEN_THREAD] ❌ NO v2ConversationId — cannot load messages", "color:orange;font-weight:bold", { threadId: thread?.id });
       setRawMessages([]);
       setPendingOffline([]);
       setMessagesLoading(false);
@@ -114,13 +120,16 @@ export function useMessageLoader({
     // Show cached messages instantly, then refresh in background
     const cached = messageCache.get(conversationId);
     if (cached?.length) {
+      console.log("%c[TRACE][OPEN_THREAD] STEP 2a — cache HIT, showing", "color:lime;font-weight:bold", { count: cached.length });
       setRawMessages(cached);
       setMessagesLoading(false);
     } else {
+      console.log("%c[TRACE][OPEN_THREAD] STEP 2b — cache MISS, loading from DB", "color:orange;font-weight:bold");
       setMessagesLoading(true);
     }
 
     if (!offline.isOnline) {
+      console.warn("%c[TRACE][OPEN_THREAD] ⚠ OFFLINE — loading from local cache", "color:orange;font-weight:bold");
       const cached = await offline.getCachedMessages();
       const pending = await offline.getThreadPending();
       setRawMessages((cached ?? []) as ChatMessage[]);
@@ -129,6 +138,7 @@ export function useMessageLoader({
       return;
     }
 
+    console.log("%c[TRACE][OPEN_THREAD] STEP 5 — DB query chat_messages_v2", "color:cyan;font-weight:bold", { conversationId });
     const { data, error } = await db
       .from("chat_messages_v2")
       .select("*")
@@ -138,22 +148,26 @@ export function useMessageLoader({
       .limit(300);
 
     if (error) {
+      console.error("%c[TRACE][OPEN_THREAD] STEP 5 — ❌ DB QUERY FAILED", "color:red;font-weight:bold", error);
       setMessagesLoading(false);
       return;
     }
 
     const mapped = (data ?? []).map((m: any) => mapV2ToChat(m, conversationId));
+    console.log("%c[TRACE][OPEN_THREAD] STEP 5 — ✅ DB OK", "color:lime;font-weight:bold", { messageCount: mapped.length });
     setRawMessages(mapped);
     messageCache.set(conversationId, mapped);
     offline.cacheMessages(mapped);
     setMessagesLoading(false);
     setPendingOffline([]);
+    console.log("%c[TRACE][OPEN_THREAD] STEP 7 — ✅ UI state updated", "color:lime;font-weight:bold");
 
     const unreadIds = (data ?? [])
       .filter((m: any) => !m.read_at && m.sender_user_id !== userId)
       .map((m: any) => m.id);
 
     if (readReceipts && unreadIds.length > 0) {
+      console.log("%c[TRACE][OPEN_THREAD] marking", "color:cyan;font-weight:bold", unreadIds.length, "messages as read");
       db.from("chat_messages_v2")
         .update({ read_at: new Date().toISOString() })
         .in("id", unreadIds)
@@ -190,16 +204,24 @@ export function useMessageLoader({
           const msg = payload.new as any;
           if (!msg?.id) return;
 
+          console.log("%c[TRACE][REALTIME] STEP 6 — INSERT received", "color:magenta;font-weight:bold", {
+            id: msg.id,
+            sender: msg.sender_user_id,
+            body: (msg.body || "").slice(0, 30),
+            conversation_id: msg.conversation_id,
+          });
+
           const mapped = mapV2ToChat(msg, conversationId);
 
           setRawMessages((prev) => {
-            // Dedup: skip if already present by real ID
-            if (prev.some((m) => m.id === mapped.id)) return prev;
-            // Also deduplicate against optimistic messages from same sender
-            // by removing any pending optimistic msg with matching content
+            if (prev.some((m) => m.id === mapped.id)) {
+              console.log("%c[TRACE][REALTIME] dedup — already present", "color:yellow", msg.id);
+              return prev;
+            }
             const withoutOptimistic = msg.sender_user_id === userId
               ? prev.filter((m) => !(m.pending && m.sender_id === userId && m.content === mapped.content))
               : prev;
+            console.log("%c[TRACE][REALTIME] STEP 7 — UI updated with new message", "color:lime;font-weight:bold");
             return [...withoutOptimistic, mapped];
           });
 
