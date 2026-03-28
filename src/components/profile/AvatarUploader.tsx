@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAvatarStore } from "@/stores/avatarStore";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -8,7 +8,7 @@ export function AvatarUploader() {
   const [file, setFile] = useState<File | null>(null);
   const uploadAvatar = useAvatarStore((s) => s.uploadAvatar);
   const uploading = useAvatarStore((s) => s.uploading);
-  const avatarUrl = useOrbitStore((s) => s.profile?.avatarUrl);
+  const avatarUrl = useOrbitIdentity()?.avatarUrl;
 
   return (
     <div className="space-y-3">

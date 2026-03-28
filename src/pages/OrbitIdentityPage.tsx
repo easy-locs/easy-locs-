@@ -4,7 +4,9 @@ import { useOrbitStore } from "@/stores/orbitStore";
 
 /**
  * OrbitIdentityPage — displays canonical orbit profile from orbit_profiles_v2.
- * Legacy orbit_identity_profiles system has been removed.
+ * NOTE: This page uses orbitStore directly because it needs loadProfile, loading,
+ * and verificationLevel which are not on the OrbitIdentity interface.
+ * Will be fully migrated when OrbitIdentity is extended or a dedicated page hook is created.
  */
 export default function OrbitIdentityPage() {
   const { user } = useAuth();

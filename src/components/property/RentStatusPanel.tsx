@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useSecureRentActionsStore } from "@/stores/secureRentActionsStore";
 
 export function RentStatusPanel() {
-  const orbit = useOrbitStore((s) => s.profile);
+  const orbit = useOrbitIdentity();
   const leases = usePropertyManagementStore((s) => s.leases);
   const rentPayments = usePropertyManagementStore((s) => s.rentPayments);
   const loading = useSecureRentActionsStore((s) => s.loading);

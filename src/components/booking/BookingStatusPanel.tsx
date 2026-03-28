@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { useBookingStore } from "@/stores/bookingStore";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useSecureBookingActionsStore } from "@/stores/secureBookingActionsStore";
 
 export function BookingStatusPanel() {
-  const orbit = useOrbitStore((s) => s.profile);
+  const orbit = useOrbitIdentity();
   const bookings = useBookingStore((s) => s.bookings);
   const loading = useSecureBookingActionsStore((s) => s.loading);
   const approve = useSecureBookingActionsStore((s) => s.approveBookingServer);

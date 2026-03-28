@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useListingStore } from "@/stores/listingStore";
 import { useBookingStore } from "@/stores/bookingStore";
 import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
 
 export function OwnerPropertyDashboard() {
-  const orbit = useOrbitStore((s) => s.profile);
+  const orbit = useOrbitIdentity();
   const listings = useListingStore((s) => s.listings);
   const bookings = useBookingStore((s) => s.bookings);
   const units = usePropertyManagementStore((s) => s.units);
