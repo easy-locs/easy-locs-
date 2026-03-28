@@ -1,18 +1,7 @@
 /**
  * useConversationThreads — Central data engine for the Communication Hub.
- * Aggregates ALL conversation sources into a unified ConversationThread[]:
- * 1. Property management (tenants)
- * 2. Marketplace bookings
- * 3. Concierge bookings
- * 4. Seasonal bookings
- * 5. Real estate leads (listing inquiries)
- * 6. Guest sessions (anonymous visitors)
- * 7. Direct conversations (user ↔ user)
- * 8. Deal rooms
- * 9. Marketplace listing inquiries (conversation_threads)
- * 10. Business/service conversations (conversation_threads)
- *
- * Includes realtime subscription for live updates with debounce.
+ * Aggregates ALL conversation sources into a unified ConversationThread[].
+ * OPTIMIZED: conversations_v2 + deals + preferences fetched in parallel.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -227,274 +216,212 @@ export function useConversationThreads() {
         }
       }
 
-      // ── 7. Conversation threads table (non-direct: listing, business, team) ──
-      // Direct conversations are handled exclusively in section 11 below to avoid duplicates.
-      try {
-        let convQuery = (supabase as any)
-          .from("conversations_v2")
-          .select("*")
-          .neq("type", "direct")
-          .order("last_message_at", { ascending: false })
-          .limit(200);
-        
-        if (hasOrg) {
-          convQuery = convQuery.or(`org_id.eq.${orgId},participant_ids.cs.{${user.id}}`);
-        } else {
-          convQuery = convQuery.contains("participant_ids", [user.id]);
+      // ── 7+11 MERGED: Fetch ALL conversations_v2 + deals + preferences in PARALLEL ──
+      const convQueryBase = (supabase as any)
+        .from("conversations_v2")
+        .select("*")
+        .order("last_message_at", { ascending: false })
+        .limit(300);
+
+      const convQueryFinal = hasOrg
+        ? convQueryBase.or(`org_id.eq.${orgId},participant_ids.cs.{${user.id}}`)
+        : convQueryBase.contains("participant_ids", [user.id]);
+
+      const [convResult, dealResult, prefResult] = await Promise.all([
+        convQueryFinal,
+        hasOrg
+          ? supabase.from("deal_rooms").select("*").eq("org_id", orgId).order("updated_at", { ascending: false }).limit(100)
+          : { data: [] },
+        user?.id
+          ? supabase.from("conversation_preferences").select("context_id, archived, muted, favorited, cleared_at").eq("user_id", user.id)
+          : { data: [] },
+      ]);
+
+      const allConvs = (convResult as any).data || [];
+      const allPeerIds = new Set<string>();
+
+      // ── Process non-direct conversations ──
+      for (const ct of allConvs) {
+        if (ct.type === "direct") continue;
+        const ctxType = ct.context_type || ct.type || "business";
+        let convType: "direct" | "business" | "listing" | "team" = "business";
+        let srcModule: "direct" | "marketplace" | "team" | "concierge" | "real_estate" = "marketplace";
+
+        if (ctxType === "team") { convType = "team"; srcModule = "team"; }
+        else if (ctxType === "listing" || ctxType === "marketplace_service") { convType = "listing"; srcModule = "marketplace"; }
+        else if (ctxType === "concierge_service") { convType = "listing"; srcModule = "marketplace"; }
+        else if (ctxType === "business" || ctxType === "service") { convType = "business"; srcModule = "marketplace"; }
+
+        const participantUserIds = Array.isArray(ct.participant_ids)
+          ? ct.participant_ids.filter((id: unknown): id is string => typeof id === "string" && id.length > 0)
+          : [];
+        const peerUserId = participantUserIds.find((id) => id !== user?.id) ?? null;
+        if (peerUserId) allPeerIds.add(peerUserId);
+
+        const key = `${convType}-${ct.id}`;
+        if (!threadMap.has(key)) {
+          threadMap.set(key, {
+            id: key,
+            conversationType: convType,
+            sourceModule: srcModule,
+            contextType: ctxType,
+            contextId: ct.context_id || ct.id,
+            name: ct.title || ct.last_message_preview || "Contact",
+            email: null,
+            threadId: ct.id,
+            listingTitle: ct.title || undefined,
+            v2ConversationId: ct.id,
+            isV2: true,
+            peerUserId,
+            participantUserIds,
+            unreadCount: 0,
+            lastMessageTime: ct.last_message_at || ct.updated_at,
+          });
         }
-
-        const { data: convThreads } = await convQuery;
-
-        if (convThreads?.length) {
-          const nonDirectPeerIds = new Set<string>();
-
-          for (const ct of convThreads) {
-            const ctxType = ct.context_type || ct.type || "business";
-            let convType: "direct" | "business" | "listing" | "team" = "business";
-            let srcModule: "direct" | "marketplace" | "team" | "concierge" | "real_estate" = "marketplace";
-
-            if (ctxType === "team") { convType = "team"; srcModule = "team"; }
-            else if (ctxType === "listing" || ctxType === "marketplace_service") { convType = "listing"; srcModule = "marketplace"; }
-            else if (ctxType === "concierge_service") { convType = "listing"; srcModule = "marketplace"; }
-            else if (ctxType === "business" || ctxType === "service") { convType = "business"; srcModule = "marketplace"; }
-
-            const participantUserIds = Array.isArray(ct.participant_ids)
-              ? ct.participant_ids.filter((id: unknown): id is string => typeof id === "string" && id.length > 0)
-              : [];
-            const peerUserId = participantUserIds.find((id) => id !== user?.id) ?? null;
-            if (peerUserId) nonDirectPeerIds.add(peerUserId);
-
-            const key = `${convType}-${ct.id}`;
-            if (!threadMap.has(key)) {
-              threadMap.set(key, {
-                id: key,
-                conversationType: convType,
-                sourceModule: srcModule,
-                contextType: ctxType,
-                contextId: ct.context_id || ct.id,
-                name: ct.title || ct.last_message_preview || "Contact",
-                email: null,
-                threadId: ct.id,
-                listingTitle: ct.title || undefined,
-                v2ConversationId: ct.id,
-                isV2: true,
-                peerUserId,
-                participantUserIds,
-                unreadCount: 0,
-                lastMessageTime: ct.last_message_at || ct.updated_at,
-              });
-            }
-          }
-
-          if (nonDirectPeerIds.size > 0) {
-            const peerIds = Array.from(nonDirectPeerIds);
-            const [{ data: peerProfiles }, { data: peerOrbitProfiles }] = await Promise.all([
-              supabase.from("profiles").select("id, email, first_name, last_name, name").in("id", peerIds),
-              (supabase as any).from("orbit_profiles_v2").select("id, orbit_id, display_name, avatar_url, email").in("id", peerIds),
-            ]);
-
-            const profileMap = new Map<string, any>((peerProfiles || []).map((p: any) => [p.id, p]));
-            const orbitMap = new Map<string, any>((peerOrbitProfiles || []).map((p: any) => [p.id, p]));
-
-            for (const thread of threadMap.values()) {
-              if (!thread.v2ConversationId || !thread.peerUserId) continue;
-              const base: any = profileMap.get(thread.peerUserId);
-              const orbit: any = orbitMap.get(thread.peerUserId);
-              if (!base && !orbit) continue;
-              const fullName = [base?.first_name, base?.last_name].filter(Boolean).join(" ").trim();
-              thread.name = orbit?.display_name || fullName || base?.name || thread.name || "Contact";
-              thread.email = orbit?.email || base?.email || thread.email || null;
-              thread.avatarUrl = orbit?.avatar_url || thread.avatarUrl || null;
-              thread.peerOrbitId = orbit?.orbit_id || thread.peerOrbitId || null;
-            }
-          }
-        }
-      } catch (e) {
-        console.warn("[comm-threads] conversation_threads query failed:", e);
       }
 
-      // ── 11. V2 Direct Conversations (canonical stack) ──
-      try {
-          const { data: v2Convs } = await (supabase as any)
-          .from("conversations_v2")
-          .select("id, type, participants, last_message_at, title, created_at")
-          .eq("type", "direct")
-          .order("last_message_at", { ascending: false, nullsFirst: false })
-          .limit(100);
+      // ── Process direct conversations ──
+      for (const conv of allConvs) {
+        if (conv.type !== "direct") continue;
+        const participants = conv.participants as any[];
+        if (!Array.isArray(participants)) continue;
+        const normalized = participants
+          .map((p: any) => ({
+            userId: normalizeUuid(p?.userId) || normalizeUuid(p?.user_id) || normalizeUuid(p?.id) || normalizeUuid(p),
+            orbitId: normalizeOrbitId(p?.orbitId) || normalizeOrbitId(p?.orbit_id),
+            displayName: typeof p?.displayName === "string" ? p.displayName : typeof p?.display_name === "string" ? p.display_name : typeof p?.name === "string" ? p.name : null,
+            email: typeof p?.email === "string" ? p.email : null,
+            avatarUrl: typeof p?.avatarUrl === "string" ? p.avatarUrl : typeof p?.avatar_url === "string" ? p.avatar_url : null,
+          }))
+          .filter((p) => p.userId || p.orbitId);
 
-        if (v2Convs?.length && user?.id) {
-            const peerIds = new Set<string>();
-          for (const conv of v2Convs) {
-            const participants = conv.participants as any[];
-            if (!Array.isArray(participants)) continue;
-              const normalized = participants
-                .map((p: any) => ({
-                  userId: normalizeUuid(p?.userId) || normalizeUuid(p?.user_id) || normalizeUuid(p?.id) || normalizeUuid(p),
-                  orbitId: normalizeOrbitId(p?.orbitId) || normalizeOrbitId(p?.orbit_id),
-                  displayName: typeof p?.displayName === "string" ? p.displayName : typeof p?.display_name === "string" ? p.display_name : typeof p?.name === "string" ? p.name : null,
-                  email: typeof p?.email === "string" ? p.email : null,
-                  avatarUrl: typeof p?.avatarUrl === "string" ? p.avatarUrl : typeof p?.avatar_url === "string" ? p.avatar_url : null,
-                }))
-                .filter((p) => p.userId || p.orbitId);
+        const currentParticipant = normalized.find((p) => p.userId === user.id);
+        if (!currentParticipant) continue;
+        const uniquePeerCandidates = normalized.filter((p) => p.userId !== user.id);
+        if (uniquePeerCandidates.length !== 1) continue;
+        const peer = uniquePeerCandidates[0];
+        if (!peer.userId || peer.userId === user.id) continue;
 
-              const currentParticipant = normalized.find((p) => p.userId === user.id);
-              if (!currentParticipant) continue;
+        allPeerIds.add(peer.userId);
+        const v2Key = `v2-direct-${conv.id}`;
 
-              const uniquePeerCandidates = normalized.filter((p) => p.userId !== user.id);
-              if (uniquePeerCandidates.length !== 1) continue;
-
-              const peer = uniquePeerCandidates[0];
-              if (!peer.userId || peer.userId === user.id) continue;
-
-              peerIds.add(peer.userId);
-              const v2Key = `v2-direct-${conv.id}`;
-
-              if (!threadMap.has(v2Key)) {
-                threadMap.set(v2Key, {
-                  id: v2Key,
-                  conversationType: "direct",
-                  sourceModule: "direct",
-                  contextType: "direct",
-                  contextId: conv.id,
-                  name: peer.displayName || "Contact",
-                  email: peer.email || null,
-                  avatarUrl: peer.avatarUrl || null,
-                  threadId: conv.id,
-                  v2ConversationId: conv.id,
-                  isV2: true,
-                  peerUserId: peer.userId,
-                  peerOrbitId: peer.orbitId,
-                  participantUserIds: normalized.map((p) => p.userId).filter(Boolean) as string[],
-                  unreadCount: 0,
-                  lastMessage: conv.title || undefined,
-                  lastMessageTime: conv.last_message_at || conv.created_at,
-                });
-              }
-          }
-
-            if (peerIds.size > 0) {
-              const { data: peerProfiles } = await supabase
-                .from("profiles")
-                .select("id, email, first_name, last_name, name")
-                .in("id", Array.from(peerIds));
-
-              const { data: peerOrbitProfiles } = await (supabase as any)
-                .from("orbit_profiles_v2")
-                .select("id, orbit_id, display_name, avatar_url, email")
-                .in("id", Array.from(peerIds));
-
-              const profileMap = new Map<string, any>((peerProfiles || []).map((p: any) => [p.id, p]));
-              const orbitMap = new Map<string, any>((peerOrbitProfiles || []).map((p: any) => [p.id, p]));
-
-              for (const thread of threadMap.values()) {
-                if (!thread.isV2 || !thread.peerUserId) continue;
-                const base: any = profileMap.get(thread.peerUserId);
-                const orbit: any = orbitMap.get(thread.peerUserId);
-                const fullName = [base?.first_name, base?.last_name].filter(Boolean).join(" ").trim();
-                thread.name = orbit?.display_name || fullName || base?.name || thread.name || "Contact";
-                thread.email = orbit?.email || base?.email || thread.email || null;
-                thread.avatarUrl = orbit?.avatar_url || thread.avatarUrl || null;
-                thread.peerOrbitId = orbit?.orbit_id || thread.peerOrbitId || null;
-              }
-            }
-
-          // Load unread counts for V2 conversations
-          const v2Ids = Array.from(threadMap.values())
-            .filter(t => t.isV2 && t.v2ConversationId)
-            .map(t => t.v2ConversationId!);
-          
-          if (v2Ids.length > 0) {
-            const { data: v2Msgs } = await (supabase as any)
-              .from("chat_messages_v2")
-              .select("conversation_id, sender_user_id, read_at, body, created_at")
-              .in("conversation_id", v2Ids)
-              .is("read_at", null)
-              .neq("sender_user_id", user.id)
-              .order("created_at", { ascending: false })
-              .limit(500);
-
-            if (v2Msgs?.length) {
-              for (const msg of v2Msgs) {
-                const key = `v2-direct-${msg.conversation_id}`;
-                const thread = threadMap.get(key);
-                if (thread) {
-                  thread.unreadCount++;
-                  if (!thread.lastMessage) {
-                    thread.lastMessage = msg.body;
-                    thread.lastMessageTime = msg.created_at;
-                  }
-                }
-              }
-            }
-          }
+        if (!threadMap.has(v2Key)) {
+          threadMap.set(v2Key, {
+            id: v2Key,
+            conversationType: "direct",
+            sourceModule: "direct",
+            contextType: "direct",
+            contextId: conv.id,
+            name: peer.displayName || "Contact",
+            email: peer.email || null,
+            avatarUrl: peer.avatarUrl || null,
+            threadId: conv.id,
+            v2ConversationId: conv.id,
+            isV2: true,
+            peerUserId: peer.userId,
+            peerOrbitId: peer.orbitId,
+            participantUserIds: normalized.map((p) => p.userId).filter(Boolean) as string[],
+            unreadCount: 0,
+            lastMessage: conv.title || undefined,
+            lastMessageTime: conv.last_message_at || conv.created_at,
+          });
         }
-      } catch (e) {
-        console.warn("[comm-threads] conversations_v2 query failed:", e);
       }
 
-      // ── 8. Deal rooms ──
-      if (hasOrg) try {
-        const { data: deals } = await supabase
-          .from("deal_rooms")
-          .select("*")
-          .eq("org_id", orgId)
-          .order("updated_at", { ascending: false })
-          .limit(100);
+      // ── Resolve ALL peer profiles in one batch ──
+      if (allPeerIds.size > 0) {
+        const peerIdArr = Array.from(allPeerIds);
+        const [{ data: peerProfiles }, { data: peerOrbitProfiles }] = await Promise.all([
+          supabase.from("profiles").select("id, email, first_name, last_name, name").in("id", peerIdArr),
+          (supabase as any).from("orbit_profiles_v2").select("id, orbit_id, display_name, avatar_url, email").in("id", peerIdArr),
+        ]);
 
-        if (deals?.length) {
-          for (const deal of deals) {
-            if (deal.status === "cancelled") continue;
-            const dealKey = `deal-${deal.id}`;
+        const profileMap = new Map<string, any>((peerProfiles || []).map((p: any) => [p.id, p]));
+        const orbitMap = new Map<string, any>((peerOrbitProfiles || []).map((p: any) => [p.id, p]));
 
-            // Attach deal to existing booking thread if booking_id matches
-            if (deal.booking_id) {
-              const bookingThread = threadMap.get(`booking-${deal.booking_id}`);
-              if (bookingThread) {
-                bookingThread.dealId = deal.id;
-                continue;
+        for (const thread of threadMap.values()) {
+          if (!thread.isV2 || !thread.peerUserId) continue;
+          const base: any = profileMap.get(thread.peerUserId);
+          const orbit: any = orbitMap.get(thread.peerUserId);
+          if (!base && !orbit) continue;
+          const fullName = [base?.first_name, base?.last_name].filter(Boolean).join(" ").trim();
+          thread.name = orbit?.display_name || fullName || base?.name || thread.name || "Contact";
+          thread.email = orbit?.email || base?.email || thread.email || null;
+          thread.avatarUrl = orbit?.avatar_url || thread.avatarUrl || null;
+          thread.peerOrbitId = orbit?.orbit_id || thread.peerOrbitId || null;
+        }
+      }
+
+      // ── Unread counts for V2 conversations ──
+      const v2Ids = Array.from(threadMap.values())
+        .filter(t => t.isV2 && t.v2ConversationId)
+        .map(t => t.v2ConversationId!);
+      
+      if (v2Ids.length > 0) {
+        const { data: v2Msgs } = await (supabase as any)
+          .from("chat_messages_v2")
+          .select("conversation_id, sender_user_id, read_at, body, created_at")
+          .in("conversation_id", v2Ids)
+          .is("read_at", null)
+          .neq("sender_user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(500);
+
+        if (v2Msgs?.length) {
+          for (const msg of v2Msgs) {
+            const key = `v2-direct-${msg.conversation_id}`;
+            const thread = threadMap.get(key);
+            if (thread) {
+              thread.unreadCount++;
+              if (!thread.lastMessage) {
+                thread.lastMessage = msg.body;
+                thread.lastMessageTime = msg.created_at;
               }
-            }
-
-            // Attach deal to listing thread via context_id
-            if (deal.context_id && deal.thread_id) {
-              let attached = false;
-              for (const [, t] of threadMap) {
-                if (t.threadId === deal.thread_id || t.contextId === deal.context_id) {
-                  t.dealId = deal.id;
-                  attached = true;
-                  break;
-                }
-              }
-              if (attached) continue;
-            }
-
-            // Create standalone deal thread only if not already represented
-            if (!threadMap.has(dealKey)) {
-              threadMap.set(dealKey, {
-                id: dealKey,
-                conversationType: "deal",
-                sourceModule: "marketplace",
-                contextType: deal.context_type || "deal",
-                contextId: deal.context_id || deal.id,
-                name: deal.context_title || "Deal",
-                email: null,
-                dealId: deal.id,
-                bookingStatus: deal.status,
-                totalPrice: deal.current_offer_amount || deal.accepted_amount || undefined,
-                currency: deal.current_offer_currency || "EUR",
-                threadId: deal.thread_id || undefined,
-                unreadCount: 0,
-                lastMessageTime: deal.updated_at,
-              });
             }
           }
         }
-      } catch (e) {
-        console.warn("[comm-threads] deal_rooms query failed:", e);
+      }
+
+      // ── 8. Deal rooms (already fetched in parallel) ──
+      const deals = (dealResult as any).data;
+      if (deals?.length) {
+        for (const deal of deals) {
+          if (deal.status === "cancelled") continue;
+          const dealKey = `deal-${deal.id}`;
+
+          if (deal.booking_id) {
+            const bookingThread = threadMap.get(`booking-${deal.booking_id}`);
+            if (bookingThread) { bookingThread.dealId = deal.id; continue; }
+          }
+          if (deal.context_id && deal.thread_id) {
+            let attached = false;
+            for (const [, t] of threadMap) {
+              if (t.threadId === deal.thread_id || t.contextId === deal.context_id) { t.dealId = deal.id; attached = true; break; }
+            }
+            if (attached) continue;
+          }
+          if (!threadMap.has(dealKey)) {
+            threadMap.set(dealKey, {
+              id: dealKey,
+              conversationType: "deal",
+              sourceModule: "marketplace",
+              contextType: deal.context_type || "deal",
+              contextId: deal.context_id || deal.id,
+              name: deal.context_title || "Deal",
+              email: null,
+              dealId: deal.id,
+              bookingStatus: deal.status,
+              totalPrice: deal.current_offer_amount || deal.accepted_amount || undefined,
+              currency: deal.current_offer_currency || "EUR",
+              threadId: deal.thread_id || undefined,
+              unreadCount: 0,
+              lastMessageTime: deal.updated_at,
+            });
+          }
+        }
       }
 
       // ── Load last messages & unread counts (SCOPED — no global scan) ──
-      // Collect ALL conversation IDs that need message data
       const allConvIds = Array.from(threadMap.values())
         .filter(t => t.v2ConversationId || t.contextId)
         .map(t => t.v2ConversationId || t.contextId!)
@@ -504,7 +431,6 @@ export function useConversationThreads() {
       const allMsgs: any[] = [];
 
       if (uniqueConvIds.length > 0) {
-        // Batch in chunks of 50 to avoid URL length limits
         const CHUNK = 50;
         const chunks: string[][] = [];
         for (let i = 0; i < uniqueConvIds.length; i += CHUNK) {
@@ -537,7 +463,6 @@ export function useConversationThreads() {
       }
 
       if (allMsgs.length > 0) {
-        // Group messages by conversation_id for efficient lookup
         const msgByConv = new Map<string, any[]>();
         for (const m of allMsgs) {
           const cid = m.conversation_id;
@@ -546,22 +471,40 @@ export function useConversationThreads() {
           msgByConv.get(cid)!.push(m);
         }
 
-        // Match messages to threads
         for (const [, thread] of threadMap) {
           const convId = thread.v2ConversationId || thread.contextId;
           if (!convId) continue;
           const msgs = msgByConv.get(convId);
           if (!msgs?.length) continue;
 
-          // First message is newest (ordered desc)
           if (!thread.lastMessage) {
             thread.lastMessage = msgs[0].body;
             thread.lastMessageTime = msgs[0].created_at;
           }
-          // Count unread
           for (const m of msgs) {
             if (!m.read_at && m.sender_user_id !== user?.id) {
               thread.unreadCount++;
+            }
+          }
+        }
+      }
+
+      // ── Apply preferences (already fetched in parallel) ──
+      const prefs = (prefResult as any).data;
+      if (prefs?.length) {
+        const prefMap = new Map(prefs.map((p: any) => [p.context_id, p]));
+        for (const [, thread] of threadMap) {
+          const pref: any = prefMap.get(thread.contextId) || prefMap.get(thread.id);
+          if (pref) {
+            thread.archived = !!pref.archived;
+            thread.muted = !!pref.muted;
+            thread.pinned = !!pref.favorited;
+            if (pref.cleared_at) {
+              thread.clearedAt = pref.cleared_at;
+              if (thread.lastMessageTime && thread.lastMessageTime < pref.cleared_at) {
+                thread.lastMessage = undefined;
+                thread.unreadCount = 0;
+              }
             }
           }
         }
@@ -570,40 +513,6 @@ export function useConversationThreads() {
       console.error("[comm-threads] loadThreads error:", err);
     }
 
-    // ── Load user preferences (archive, mute) ──
-    try {
-      if (user?.id) {
-        const { data: prefs } = await supabase
-          .from("conversation_preferences")
-          .select("context_id, archived, muted, favorited, cleared_at")
-          .eq("user_id", user.id);
-
-        if (prefs?.length) {
-          const prefMap = new Map(prefs.map((p: any) => [p.context_id, p]));
-          for (const [, thread] of threadMap) {
-            const pref = prefMap.get(thread.contextId) || prefMap.get(thread.id);
-            if (pref) {
-              thread.archived = !!pref.archived;
-              thread.muted = !!pref.muted;
-              thread.pinned = !!pref.favorited;
-              // Store cleared_at for chat panel filtering
-              if (pref.cleared_at) {
-                thread.clearedAt = pref.cleared_at;
-                // Hide messages before cleared_at in thread list preview
-                if (thread.lastMessageTime && thread.lastMessageTime < pref.cleared_at) {
-                  thread.lastMessage = undefined;
-                  thread.unreadCount = 0;
-                }
-              }
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("[comm-threads] preferences load failed:", e);
-    }
-
-    // Filter out deleted (archived + muted) threads from non-archived views
     // Normalize all thread names to strings — prevents React error #185
     const allThreads = Array.from(threadMap.values()).map(t => ({
       ...t,
@@ -619,7 +528,6 @@ export function useConversationThreads() {
     });
 
     setThreads(sorted);
-    // Only count unread from non-archived threads
     setStats(s => ({ ...s, unread: sorted.filter(t => !t.archived).reduce((acc, t) => acc + t.unreadCount, 0) }));
     setLoading(false);
     loadingRef.current = false;
@@ -656,8 +564,6 @@ export function useConversationThreads() {
   }, [loadThreads, loadStats]);
 
   // Realtime: refresh threads on conversations/deals/bookings/calls/preferences changes
-  // NOTE: We do NOT listen to chat_messages_v2 INSERT here — that's handled per-thread
-  // in useMessageLoader. Listening globally would trigger a full reload on every message.
   useEffect(() => {
     if (!user?.id) return;
     const channel = supabase
