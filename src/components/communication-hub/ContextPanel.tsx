@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { supabase } from "@/integrations/supabase/client";
+import * as commRepo from "@/repositories/communication-context.repository";
 import DealRoomPanel from "@/components/communication/DealRoomPanel";
 import EntityActivityLog from "@/components/communication/EntityActivityLog";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
@@ -52,66 +52,19 @@ export default function ContextPanel({ thread, orgId }: Props) {
   useEffect(() => {
     if (thread.conversationType !== "property" || !thread.tenantId) return;
     setPropertyCtx(p => ({ ...p, loading: true }));
-
-    const loadPropertyContext = async () => {
-      try {
-        const [leaseRes, rentRes, interventionRes, docRes] = await Promise.all([
-          supabase.from("leases").select("id, lease_type, start_date, end_date, rent_amount, charges_amount, status, country")
-            .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("start_date", { ascending: false }).limit(3),
-          supabase.from("rent_calls").select("id, month, total_amount, paid, paid_amount, paid_date")
-            .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("month", { ascending: false }).limit(6),
-          supabase.from("interventions").select("id, title, status, priority, category, created_at")
-            .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("created_at", { ascending: false }).limit(5),
-          supabase.from("documents").select("id, title, doc_type, status, created_at")
-            .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("created_at", { ascending: false }).limit(5),
-        ]);
-
-        setPropertyCtx({
-          leases: leaseRes.data || [],
-          rentCalls: rentRes.data || [],
-          interventions: interventionRes.data || [],
-          documents: docRes.data || [],
-          loading: false,
-        });
-      } catch (e) {
-        console.warn("[ContextPanel] property context load failed:", e);
-        setPropertyCtx(p => ({ ...p, loading: false }));
-      }
-    };
-    loadPropertyContext();
+    commRepo.fetchPropertyContext(orgId, thread.tenantId)
+      .then(ctx => setPropertyCtx({ ...ctx, loading: false }))
+      .catch(() => setPropertyCtx(p => ({ ...p, loading: false })));
   }, [thread.conversationType, thread.tenantId, orgId]);
 
   // Load booking context
   useEffect(() => {
     if (thread.conversationType !== "booking" || !thread.bookingId) return;
     setBookingCtx(b => ({ ...b, loading: true }));
-
-    const loadBookingContext = async () => {
-      let booking: any = null;
-      let service: any = null;
-
-      try {
-        if (thread.bookingType === "marketplace") {
-          const { data } = await supabase.from("marketplace_bookings").select("*").eq("id", thread.bookingId!).single();
-          booking = data;
-          if (data?.service_id) {
-            const { data: svc } = await supabase.from("marketplace_services").select("id, title, description, price, currency, category, city, country, photo_urls, booking_slug").eq("id", data.service_id).single();
-            service = svc;
-          }
-        } else if (thread.bookingType === "concierge") {
-          const { data } = await supabase.from("concierge_orders").select("*").eq("id", thread.bookingId!).single();
-          booking = data;
-          if (data?.service_id) {
-            const { data: svc } = await supabase.from("concierge_services").select("id, title, description, price, currency, category, city, country, photo_url").eq("id", data.service_id).single();
-            service = svc;
-          }
-        } else if (thread.bookingType === "seasonal") {
-          const { data } = await supabase.from("booking_requests").select("*").eq("id", thread.bookingId!).single();
-          booking = data;
-        }
-      } catch (e) {
-        console.warn("[ContextPanel] booking context load failed:", e);
-      }
+    commRepo.fetchBookingContext(thread.bookingId, thread.bookingType || "")
+      .then(ctx => setBookingCtx({ ...ctx, loading: false }))
+      .catch(() => setBookingCtx({ booking: null, service: null, loading: false }));
+  }, [thread.conversationType, thread.bookingId, thread.bookingType, orgId]);
 
       setBookingCtx({ booking, service, loading: false });
     };

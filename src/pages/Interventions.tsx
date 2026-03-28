@@ -8,7 +8,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Wrench, Plus, Pencil, Trash2, Calendar, Phone, Euro, CheckCircle2, Clock, AlertTriangle, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as intRepo from "@/repositories/interventions.repository";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,30 +82,23 @@ const Interventions = () => {
   const load = useCallback(async () => {
     if (!orgId) return;
     setLoading(true);
-    let propQuery = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
-    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
-    const { data: propData } = await propQuery;
-    const filteredProps = propData || [];
+    const filteredProps = await intRepo.fetchPropertiesForOrg(orgId, countryFilter);
     setProperties(filteredProps.map(p => ({ id: p.id, label: p.label, country: p.country })));
     const propIds = filteredProps.map(p => p.id);
 
-    let intQuery = supabase.from("interventions").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
-    if (countryFilter && propIds.length > 0) {
-      intQuery = intQuery.in("property_id", propIds);
-    } else if (countryFilter) {
+    if (countryFilter && propIds.length === 0) {
       setInterventions([]); setTenants([]); setLoading(false); return;
     }
-    const { data: intData } = await intQuery;
 
-    let tenQuery = supabase.from("tenants").select("id, name, property_id").eq("org_id", orgId).order("name");
-    const { data: tenData } = await tenQuery;
-    let filteredTenants = tenData || [];
+    const intData = await intRepo.fetchInterventions(orgId, countryFilter ? propIds : undefined);
+    const allTenants = await intRepo.fetchTenantsForOrg(orgId);
+    let filteredTenants = allTenants;
     if (countryFilter) {
       const propIdSet = new Set(propIds);
       filteredTenants = filteredTenants.filter(t => t.property_id && propIdSet.has(t.property_id));
     }
 
-    if (intData) setInterventions(intData as any);
+    setInterventions(intData);
     setTenants(filteredTenants);
     setLoading(false);
   }, [orgId, countryFilter]);
@@ -115,11 +108,7 @@ const Interventions = () => {
   // Realtime: live updates for interventions
   useEffect(() => {
     if (!orgId) return;
-    const channel = supabase
-      .channel("interventions-rt")
-      .on("postgres_changes", { event: "*", schema: "public", table: "interventions", filter: `org_id=eq.${orgId}` }, () => load())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return intRepo.subscribeInterventions(orgId, load);
   }, [orgId, load]);
 
   const openNew = () => { setEditId(null); setForm(emptyForm); setDialogOpen(true); };
@@ -148,40 +137,35 @@ const Interventions = () => {
       estimated_cost: form.estimated_cost || 0, actual_cost: form.actual_cost || 0,
       notes: form.notes, property_id: form.property_id || null, tenant_id: form.tenant_id || null,
     };
-    if (editId) {
-      const { error } = await supabase.from("interventions").update(record).eq("id", editId);
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-      toast({ title: t("page.interventions.modified") });
-    } else {
-      const { data: inserted, error } = await supabase.from("interventions").insert(record).select().single();
-      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-      toast({ title: t("page.interventions.added") });
-
-      // Sync engine: intervention_created
-      const prop = properties.find(p => p.id === form.property_id);
-      dispatchSyncEvent({
-        type: "intervention_created",
-        context: {
-          orgId: orgId!,
-          propertyId: inserted.property_id || undefined,
-          tenantId: inserted.tenant_id || undefined,
-          countryCode: prop?.country || "",
-        },
-        actorUserId: user.id,
-        title: inserted.title,
-        priority: inserted.priority,
-        propertyLabel: prop?.label || "—",
-      });
+    try {
+      if (editId) {
+        await intRepo.updateIntervention(editId, record);
+        toast({ title: t("page.interventions.modified") });
+      } else {
+        const inserted = await intRepo.insertIntervention(record);
+        toast({ title: t("page.interventions.added") });
+        const prop = properties.find(p => p.id === form.property_id);
+        dispatchSyncEvent({
+          type: "intervention_created",
+          context: { orgId: orgId!, propertyId: inserted.property_id || undefined, tenantId: inserted.tenant_id || undefined, countryCode: prop?.country || "" },
+          actorUserId: user.id, title: inserted.title, priority: inserted.priority, propertyLabel: prop?.label || "—",
+        });
+      }
+    } catch (error: any) {
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return;
     }
     setDialogOpen(false);
     load();
   };
 
   const remove = async (id: string) => {
-    const { error } = await supabase.from("interventions").delete().eq("id", id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-    toast({ title: t("page.interventions.deleted") });
-    load();
+    try {
+      await intRepo.deleteIntervention(id);
+      toast({ title: t("page.interventions.deleted") });
+      load();
+    } catch (error: any) {
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
+    }
   };
 
   const filtered = filterStatus === "all" ? interventions : interventions.filter(i => i.status === filterStatus);
