@@ -147,6 +147,7 @@ export function useMessageLoader({
     messageCache.set(conversationId, mapped);
     offline.cacheMessages(mapped);
     setMessagesLoading(false);
+    setPendingOffline([]);
 
     const unreadIds = (data ?? [])
       .filter((m: any) => !m.read_at && m.sender_user_id !== userId)
