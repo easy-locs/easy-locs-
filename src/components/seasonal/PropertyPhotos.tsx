@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as seasonalRepo from "@/repositories/seasonal.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Camera, X, Upload, Loader2, Video } from "lucide-react";
@@ -38,19 +38,19 @@ const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange, allowVideo 
       }
       const ext = file.name.split(".").pop();
       const path = `${orgId}/${propertyId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from("property-photos").upload(path, file);
-      if (error) {
+      try {
+        const publicUrl = await seasonalRepo.uploadPropertyPhoto(orgId, propertyId, file);
+        newUrls.push(publicUrl);
+      } catch (error: any) {
         toast({ title: t("page.photos.upload_error"), description: error.message, variant: "destructive" });
         continue;
       }
-      const { data: urlData } = supabase.storage.from("property-photos").getPublicUrl(path);
-      newUrls.push(urlData.publicUrl);
     }
 
     const updated = [...photos, ...newUrls];
     onPhotosChange(updated);
 
-    await supabase.from("properties").update({ photo_urls: updated } as any).eq("id", propertyId);
+    await seasonalRepo.upsertListing({ photo_urls: updated }, propertyId);
     toast({ title: `${newUrls.length} ${t("page.photos.added")}` });
     setUploading(false);
     if (fileRef.current) fileRef.current.value = "";
@@ -59,10 +59,8 @@ const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange, allowVideo 
   const removePhoto = async (url: string) => {
     const updated = photos.filter(p => p !== url);
     onPhotosChange(updated);
-    await supabase.from("properties").update({ photo_urls: updated } as any).eq("id", propertyId);
-
-    const path = url.split("/property-photos/")[1];
-    if (path) await supabase.storage.from("property-photos").remove([path]);
+    // Note: property update uses supabase directly via repository pattern
+    await seasonalRepo.deletePropertyPhoto(url);
     toast({ title: t("page.photos.deleted") });
   };
 

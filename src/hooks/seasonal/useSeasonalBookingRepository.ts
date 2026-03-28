@@ -1,22 +1,15 @@
 /**
  * useSeasonalBookingRepository — Atomic: CRUD for seasonal bookings.
+ * Delegates to seasonal.repository.ts (single source of truth).
  */
 import { useState, useCallback, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as seasonalRepo from "@/repositories/seasonal.repository";
 
 export interface SeasonalBooking {
-  id: string;
-  property_id: string;
-  guest_name: string;
-  guest_email: string;
-  guest_phone: string;
-  check_in: string;
-  check_out: string;
-  total_price: number;
-  cleaning_fee: number;
-  deposit_amount: number;
-  status: string;
-  notes: string;
+  id: string; property_id: string; guest_name: string; guest_email: string;
+  guest_phone: string; check_in: string; check_out: string;
+  total_price: number; cleaning_fee: number; deposit_amount: number;
+  status: string; notes: string;
 }
 
 export function useSeasonalBookingRepository(orgId: string | null) {
@@ -30,12 +23,11 @@ export function useSeasonalBookingRepository(orgId: string | null) {
     if (!orgId) return;
     setLoadError(null);
     try {
-      const [{ data: b, error: bErr }, { data: p }, { data: reqs }] = await Promise.all([
-        supabase.from("seasonal_bookings").select("*").eq("org_id", orgId).order("check_in"),
-        supabase.from("properties").select("id, label, photo_urls").eq("org_id", orgId).order("label"),
-        supabase.from("booking_requests").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50),
+      const [b, p, reqs] = await Promise.all([
+        seasonalRepo.fetchSeasonalBookings(orgId),
+        seasonalRepo.fetchPropertiesForSeasonal(orgId),
+        seasonalRepo.fetchBookingRequests(orgId),
       ]);
-      if (bErr) throw bErr;
       const seasonalBookings = (b || []) as SeasonalBooking[];
       const paidRequests = (reqs || []).filter((r: any) => r.status === "paid" || r.status === "approved");
       const existingKeys = new Set(seasonalBookings.map((sb) => `${sb.property_id}-${sb.check_in}-${sb.check_out}-${sb.guest_name}`));
@@ -47,38 +39,25 @@ export function useSeasonalBookingRepository(orgId: string | null) {
           total_price: 0, cleaning_fee: 0, deposit_amount: 0, status: "confirmed", notes: `Via booking request (${r.status})`,
         }));
       setBookings([...seasonalBookings, ...missingBookings]);
-      if (p) setProperties(p);
+      if (p) setProperties(p as any);
       if (reqs) setAllRequests(reqs);
     } catch (err: any) {
       console.error("[SeasonalBookingRepo] load error:", err);
       setLoadError(err.message || "Failed to load data");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, [orgId]);
 
   const save = useCallback(async (record: any, editingId: string | null) => {
-    if (editingId) {
-      const { error } = await supabase.from("seasonal_bookings").update(record).eq("id", editingId);
-      if (error) throw error;
-    } else {
-      const { error } = await supabase.from("seasonal_bookings").insert({ ...record, status: "confirmed" });
-      if (error) throw error;
-    }
+    await seasonalRepo.saveSeasonalBooking(record, editingId);
   }, []);
 
   const remove = useCallback(async (id: string) => {
-    await supabase.from("seasonal_bookings").delete().eq("id", id);
+    await seasonalRepo.deleteSeasonalBooking(id);
   }, []);
 
-  // Realtime
   useEffect(() => {
     if (!orgId) return;
-    const channel = supabase
-      .channel("seasonal-rt")
-      .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests", filter: `org_id=eq.${orgId}` }, () => load())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return seasonalRepo.subscribeToBookingRequests(orgId, () => load());
   }, [orgId, load]);
 
   useEffect(() => { load(); }, [load]);
