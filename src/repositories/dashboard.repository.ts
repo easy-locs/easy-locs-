@@ -357,7 +357,7 @@ export async function insertTenant(record: Record<string, any>) {
 }
 
 export async function upsertOtaConnection(record: Record<string, any>) {
-  await supabase.from("ota_connections").upsert(record, { onConflict: "id" });
+  await (supabase as any).from("ota_connections").upsert(record, { onConflict: "id" });
 }
 
 export async function invokeSyncIcal(body: Record<string, any>) {

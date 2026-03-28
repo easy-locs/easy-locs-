@@ -39,42 +39,22 @@ const TenantReviews = () => {
   const handleSubmit = async () => {
     if (!tenantId || !orgId || !user) return;
     setSubmitting(true);
-
-    if (editingId) {
-      const { error } = await supabase
-        .from("reviews")
-        .update({ rating, comment, updated_at: new Date().toISOString() })
-        .eq("id", editingId);
-      if (error) {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
-      } else {
+    try {
+      if (editingId) {
+        await tenantRepo.updateReview(editingId, { rating, comment, updated_at: new Date().toISOString() });
         toast({ title: t("reviews.updated") });
         setEditingId(null);
-      }
-    } else {
-      const { error } = await supabase.from("reviews").insert({
-        org_id: orgId,
-        property_id: propertyId,
-        tenant_id: tenantId,
-        reviewer_user_id: user.id,
-        rating,
-        comment,
-      });
-      if (error) {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
+        await tenantRepo.insertReview({ org_id: orgId, property_id: propertyId, tenant_id: tenantId, reviewer_user_id: user.id, rating, comment });
         toast({ title: t("reviews.submitted") });
       }
+      setComment("");
+      setRating(5);
+      const data = await tenantRepo.fetchTenantReviews(tenantId);
+      setReviews(data);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
-
-    setComment("");
-    setRating(5);
-    const { data } = await supabase
-      .from("reviews")
-      .select("*")
-      .eq("tenant_id", tenantId)
-      .order("created_at", { ascending: false });
-    setReviews(data || []);
     setSubmitting(false);
   };
 
@@ -85,10 +65,13 @@ const TenantReviews = () => {
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("reviews").delete().eq("id", id);
-    if (error) { toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" }); return; }
-    setReviews(reviews.filter((r) => r.id !== id));
-    toast({ title: t("reviews.delete") });
+    try {
+      await tenantRepo.deleteReview(id);
+      setReviews(reviews.filter((r) => r.id !== id));
+      toast({ title: t("reviews.delete") });
+    } catch (err: any) {
+      toast({ title: t("page.common.error") || "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   return (
