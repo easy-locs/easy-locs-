@@ -96,7 +96,13 @@ export function useMasterAppBootstrap() {
     // 12. Core flow registry
     initCoreFlowRegistry();
 
-    // 13. Platform recovery — deferred
+    // 13. Auto-repair engine — self-healing runtime
+    const cleanupAutoRepair = startAutoRepairEngine(45_000);
+
+    // 14. Realtime health check
+    const cleanupRealtimeHealth = startRealtimeHealthCheck(30_000);
+
+    // 15. Platform recovery — deferred
     const t1 = setTimeout(() => void runPlatformRecovery("boot"), 30000);
 
     return () => {
@@ -123,6 +129,8 @@ export function useMasterAppBootstrap() {
       cleanupCounters();
       cleanupNotifications();
       cleanupStaleScanner();
+      cleanupAutoRepair();
+      cleanupRealtimeHealth();
       booted = false;
     };
   }, [queryClient]);
