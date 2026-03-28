@@ -53,7 +53,7 @@ export default function LiveActivityBar() {
               className="flex items-center gap-1.5 min-w-0 overflow-hidden flex-1"
             >
               <event.icon className="h-3.5 w-3.5 shrink-0" style={{ color: event.color }} />
-              <span className="text-[10px] sm:text-xs text-muted-foreground truncate">{event.text}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground line-clamp-1 break-words">{event.text}</span>
               <span className="text-[8px] sm:text-[9px] text-muted-foreground/50 shrink-0 hidden sm:inline">{t("landing.live.just_now") || "just now"}</span>
             </motion.div>
           </AnimatePresence>
