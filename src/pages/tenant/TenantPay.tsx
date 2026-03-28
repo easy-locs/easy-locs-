@@ -7,6 +7,7 @@ import {
   fetchUnpaidRentCalls, invokeRentPayment, declareTransfer,
   notifyOwnerOfTransfer, fetchOrgOwner,
 } from "@/repositories/tenant.repository";
+import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
 import { useI18n } from "@/lib/i18n";
@@ -24,7 +25,7 @@ interface OwnerBankInfo {
 
 const TenantPay = () => {
   const { user } = useAuth();
-  const { toast } = (await import("@/hooks/use-toast")).useToast ? { toast: (await import("sonner")).toast as any } : { toast: () => {} };
+  const { toast } = useToast();
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const { propertyCountry, fmt: fmtProp, L } = useTenantProperty();
