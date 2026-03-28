@@ -223,9 +223,9 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
 
               {/* Info */}
               <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleView(e)}>
-                <p className="text-[11px] font-bold text-foreground truncate">{e.name}</p>
+                <p className="text-[11px] font-bold text-foreground break-words leading-snug">{e.name}</p>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] text-muted-foreground capitalize truncate">{e.category || e.type}</span>
+                  <span className="text-[9px] text-muted-foreground capitalize break-words">{e.category || e.type}</span>
                   {e.rating && e.rating > 0 && (
                     <span className="flex items-center gap-0.5 text-[9px]">
                       <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />

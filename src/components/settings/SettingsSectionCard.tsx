@@ -64,7 +64,7 @@ export function SettingsSectionCard({ title, items, className }: SettingsSection
                   {item.label}
                 </span>
                 {item.subtitle && (
-                  <p className="text-[11px] text-muted-foreground truncate">{item.subtitle}</p>
+                  <p className="text-[11px] text-muted-foreground break-words leading-snug">{item.subtitle}</p>
                 )}
               </div>
               {item.badge && (

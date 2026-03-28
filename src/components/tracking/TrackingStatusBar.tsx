@@ -50,11 +50,11 @@ export default function TrackingStatusBar({ session, distanceKm, isTracker, onSt
           <Truck className="h-5 w-5" style={{ color: "hsl(var(--hud-cyan))" }} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
-            {session.context_label || session.context_type}
-          </p>
+           <p className="text-sm font-semibold break-words leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
+             {session.context_label || session.context_type}
+           </p>
           {session.destination_label && (
-            <p className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+            <p className="text-[11px] break-words leading-snug" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
               → {session.destination_label}
             </p>
           )}

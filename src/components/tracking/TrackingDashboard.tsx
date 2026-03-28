@@ -111,9 +111,9 @@ export default function TrackingDashboard() {
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
-                  {session.context_label || session.context_type}
-                </p>
+                 <p className="text-xs font-semibold break-words leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
+                   {session.context_label || session.context_type}
+                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-[10px] font-medium" style={{ color: `hsl(var(${cfg.color}))` }}>
                     {cfg.label}
