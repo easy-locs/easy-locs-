@@ -222,6 +222,12 @@ export const landingKeysEn: Record<string, string> = {
   // Micro
   "landing.micro.near_you": "Near you", "landing.micro.open_now": "Open now",
   "landing.micro.delivering": "Delivering", "landing.micro.view_map": "View map",
+  "landing.micro.pizza": "Pizza", "landing.micro.pizza_count": "120+ restaurants",
+  "landing.micro.sushi": "Sushi", "landing.micro.sushi_count": "85+ restaurants",
+  "landing.micro.burger": "Burger", "landing.micro.burger_count": "200+ restaurants",
+  "landing.micro.shawarma": "Shawarma", "landing.micro.shawarma_count": "65+ restaurants",
+  "landing.micro.coffee": "Coffee", "landing.micro.coffee_count": "150+ cafés",
+  "landing.micro.bakery": "Bakery", "landing.micro.bakery_count": "90+ bakeries",
 
   // Radar
   "landing.radar.badge": "Radar", "landing.radar.title": "Discover", "landing.radar.title_hl": "nearby",

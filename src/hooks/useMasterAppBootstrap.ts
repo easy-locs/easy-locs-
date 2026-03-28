@@ -26,8 +26,8 @@ export function useMasterAppBootstrap() {
     // 4. Engine connector hub (driver matching, escrow, state machine)
     installEngineConnectorHub();
 
-    // 5. Platform recovery — after initial render
-    const t1 = setTimeout(() => void runPlatformRecovery("boot"), 8000);
+    // 5. Platform recovery — deferred well after initial render for speed
+    const t1 = setTimeout(() => void runPlatformRecovery("boot"), 30000);
 
     return () => {
       clearTimeout(t1);
