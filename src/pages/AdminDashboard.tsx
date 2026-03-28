@@ -88,12 +88,12 @@ const AdminDashboard = () => {
           const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
           revByMonth[key] = 0;
         }
-        const paidRentData = paidRents.data || [];
+        const paidRentData = raw.paidRents;
         paidRentData.forEach((r: any) => {
           const key = r.month?.slice(0, 7) || r.paid_date?.slice(0, 7);
           if (key && key in revByMonth) revByMonth[key] += Number(r.total_amount) || 0;
         });
-        const confirmedResData = confirmedRes.data || [];
+        const confirmedResData = raw.confirmedRes;
         confirmedResData.forEach((r: any) => {
           const key = r.created_at?.slice(0, 7);
           if (key && key in revByMonth) revByMonth[key] += Number(r.amount) || 0;
@@ -113,7 +113,7 @@ const AdminDashboard = () => {
           signupsByMonth,
           subscriptionsByPlan,
           churnedUsers: churned.length,
-          avgPropertiesPerUser: allUsers.length > 0 ? (props.count || 0) / allUsers.length : 0,
+          avgPropertiesPerUser: allUsers.length > 0 ? raw.propsCount / allUsers.length : 0,
           trialConversion: trialConverted,
           bookingRequests: raw.bookingReqs.count,
           confirmedBookings: confirmedResData.length,
