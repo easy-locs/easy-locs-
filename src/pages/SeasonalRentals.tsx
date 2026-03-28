@@ -10,7 +10,6 @@ import { useSeasonalData } from "@/hooks/seasonal/useSeasonalData";
 import { supabase } from "@/integrations/supabase/client";
 import { sendCommunicationEvent, createDeepLinkMeta } from "@/lib/shared";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
-import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, ChevronLeft, ChevronRight, Download, Upload, Link2, Copy, Check, X, Edit, CalendarDays, Camera, LayoutGrid, List } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import PropertyPhotos from "@/components/seasonal/PropertyPhotos";
