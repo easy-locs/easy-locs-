@@ -1,12 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
-import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { useListingSync, useExploreRealtimeSync } from "@/hooks/useListingSync";
 import { useAppStore } from "@/stores/useAppStore";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,17 +18,14 @@ import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, Externa
 import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
 import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
 import ServiceCard from "@/components/marketplace/ServiceCard";
-import { type NotificationMeta } from "@/components/marketplace/BookingsManager";
-import { dispatchSyncEvent, syncPaymentRequest } from "@/lib/shared/sync-engine";
 import { useBookingLifecycle } from "@/hooks/useBookingLifecycle";
 import BookingRequestCenter from "@/components/marketplace/BookingRequestCenter";
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/lib/taxonomy/category-tree";
 import ReviewsManagerPanel from "@/components/marketplace/ReviewsManagerPanel";
-import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
-import { useEnsureOrg } from "@/hooks/useEnsureOrg";
-import { checkServiceDuplicate } from "@/lib/geo/duplicateGuard";
-import { assignZoneToService } from "@/lib/zones/autoAssignZone";
+import { computeExchangeRate } from "@/hooks/useCurrencyConversion";
+import { useMarketplaceData } from "@/hooks/marketplace/useMarketplaceData";
+import { useMarketplaceMutations } from "@/hooks/marketplace/useMarketplaceMutations";
 
 const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XOF", "CAD", "AUD", "TND", "TRY", "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP"];
 
