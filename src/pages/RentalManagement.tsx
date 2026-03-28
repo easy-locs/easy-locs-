@@ -373,212 +373,39 @@ const RentalManagement = () => {
 
   /* ─── Tenant detail mode ─── */
   if (selectedTenant) {
-    const tenantPayments = rentCalls.filter(p => p.tenant_id === selectedTenant.id);
     const prop = getPropertyForTenant(selectedTenant);
     return (
       <DashboardLayout>
-        <div className="max-w-4xl mx-auto">
-           <button onClick={() => setSelectedTenant(null)} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
-             <ArrowLeft className="h-3.5 w-3.5" /> {L.tenants}
-          </button>
-          {/* Profile header — responsive: stacks on mobile */}
-          <div className="bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 mb-6">
-            <div className="detail-header">
-              <div className="detail-header-main">
-                <div className="w-12 h-12 rounded-full bg-gradient-gold flex items-center justify-center shrink-0">
-                  <span className="text-lg font-bold text-accent-foreground">{selectedTenant.name[0]?.toUpperCase()}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-xl font-bold text-foreground break-words">{selectedTenant.name}</h1>
-                  <p className="detail-meta">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
-                </div>
-              </div>
-              <div className="detail-header-actions">
-                <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${isLeaseActive(selectedTenant) ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                  {isLeaseActive(selectedTenant) ? L.active : L.terminated}
-                </span>
-                {selectedTenant.tenant_user_id ? (
-                  <span className="detail-action-btn text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
-                ) : (
-                  <button
-                    onClick={() => handleInviteTenant(selectedTenant)}
-                    disabled={invitingTenantId === selectedTenant.id}
-                    className="detail-action-btn text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50"
-                  >
-                    <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? L.sending : L.invite}
-                  </button>
-                )}
-                <button onClick={() => startEditTenant(selectedTenant)} className="detail-action-btn text-xs text-accent hover:underline flex items-center gap-1">
-                  <Edit className="h-3 w-3" /> {L.editTenant}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabs — horizontal scroll on mobile */}
-          <div className="detail-tab-row mb-6">
-             {([
-               { key: "info" as const, label: L.overview, short: L.overview.slice(0, 8), icon: FileText },
-               { key: "payments" as const, label: L.payments, short: L.payments.slice(0, 8), icon: Euro },
-               { key: "messages" as const, label: "Messages", short: "Msgs", icon: MessageSquare },
-               { key: "documents" as const, label: "Documents", short: "Docs", icon: Upload },
-             ]).map((tab) => (
-               <button key={tab.key} onClick={() => { setTenantTab(tab.key); if (tab.key === "messages") loadMessages(selectedTenant.id); }}
-                 className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${tenantTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                 <tab.icon className="h-4 w-4 shrink-0" />
-                 <span className="sm:hidden">{tab.short}</span>
-                 <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {tenantTab === "info" && (
-            <div className="space-y-4">
-              <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                   <div><span className="text-xs text-muted-foreground">{L.email}</span><p className="font-medium text-foreground">{selectedTenant.email || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.phone}</span><p className="font-medium text-foreground">{selectedTenant.phone || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.birthDate}</span><p className="font-medium text-foreground">{selectedTenant.birth_date || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.birthPlace}</span><p className="font-medium text-foreground">{selectedTenant.birth_place || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.nationality}</span><p className="font-medium text-foreground">{selectedTenant.nationality || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.profession}</span><p className="font-medium text-foreground">{selectedTenant.profession || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.leaseType}</span><p className="font-medium text-foreground">{cc.leaseTypes.find(lt => lt.value === selectedTenant.lease_type)?.label || selectedTenant.lease_type}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.leaseStart} / {L.leaseEnd}</span><p className="font-medium text-foreground">{selectedTenant.lease_start || "—"} → {selectedTenant.lease_end || "—"}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.rent} / {L.charges}</span><p className="font-medium text-foreground">{fmt(selectedTenant.rent_amount || 0)} / {fmt(selectedTenant.charges_amount || 0)}</p></div>
-                   <div><span className="text-xs text-muted-foreground">{L.deposit}</span><p className="font-medium text-foreground">{fmt(selectedTenant.deposit_amount || 0)}</p></div>
-                  {selectedTenant.guarantor_name && (
-                     <>
-                       <div><span className="text-xs text-muted-foreground">{L.guarantor}</span><p className="font-medium text-foreground">{selectedTenant.guarantor_name}</p></div>
-                       <div><span className="text-xs text-muted-foreground">{L.guarantorPhone}</span><p className="font-medium text-foreground">{selectedTenant.guarantor_phone || "—"}</p></div>
-                     </>
-                  )}
-                </div>
-                {selectedTenant.notes && <div className="mt-4 border-t border-border/50 pt-3"><span className="text-xs text-muted-foreground">{L.notes}</span><p className="text-sm text-foreground mt-1">{selectedTenant.notes}</p></div>}
-              </div>
-
-              {prop && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                   <button onClick={() => setInventoryMode({ propertyId: prop.id, tenantId: selectedTenant.id, reportType: "entry", propertyLabel: prop.label })}
-                     className="flex items-center gap-3 bg-card rounded-xl p-4 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left">
-                     <ClipboardCheck className="h-5 w-5 text-accent" />
-                     <div><div className="text-sm font-medium text-foreground">{L.entryInventory}</div><div className="text-xs text-muted-foreground">{L.roomByRoom}</div></div>
-                   </button>
-                   <button onClick={() => setInventoryMode({ propertyId: prop.id, tenantId: selectedTenant.id, reportType: "exit", propertyLabel: prop.label })}
-                     className="flex items-center gap-3 bg-card rounded-xl p-4 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left">
-                     <ClipboardCheck className="h-5 w-5 text-destructive" />
-                     <div><div className="text-sm font-medium text-foreground">{L.exitInventory}</div><div className="text-xs text-muted-foreground">{L.compareEntry}</div></div>
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {tenantTab === "payments" && (
-            <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-               <h3 className="font-semibold text-foreground mb-4">{L.paymentHistory}</h3>
-               {tenantPayments.length === 0 ? (
-                 <p className="text-sm text-muted-foreground">{L.noPayment}</p>
-              ) : (
-                <div className="space-y-2">
-                  {tenantPayments.sort((a, b) => b.month.localeCompare(a.month)).map(p => (
-                    <div key={p.id} className="detail-row bg-muted/30 rounded-lg px-4 py-2.5 relative">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className={`w-2.5 h-2.5 rounded-full ${p.paid ? "bg-success" : "bg-destructive"}`} />
-                        <span className="text-sm font-medium text-foreground">{p.month}</span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 justify-start sm:justify-end">
-                        <span className="text-sm text-foreground">{fmt(p.total_amount)}</span>
-                        {p.paid ? (
-                           <button onClick={() => togglePayment(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">
-                             {L.paid}
-                           </button>
-                        ) : (
-                           <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-destructive/10 text-destructive">
-                             {L.unpaid}
-                           </button>
-                        )}
-                        {paymentMethodDialog === p.id && (
-                          <div className="absolute right-4 top-10 bg-card border border-border rounded-xl shadow-lg p-3 z-50 w-48">
-                             {[
-                               { id: "online", label: L.online, icon: CreditCard },
-                               { id: "bank_transfer", label: L.transfer, icon: Wallet },
-                               { id: "cash", label: L.cash, icon: Euro },
-                             ].map(m => (
-                               <button key={m.id} onClick={() => { togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
-                                 className="flex items-center gap-2 w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted transition-colors">
-                                <m.icon className="h-3.5 w-3.5 text-muted-foreground" />
-                                {m.label}
-                              </button>
-                            ))}
-                            <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-[10px] text-muted-foreground w-full text-center">{L.cancel}</button>
-                          </div>
-                        )}
-                         {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{L.validateReceipt}</button>}
-                         {p.paid && p.receipt_validated && <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.accessible}</span>}
-                        {p.paid && <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground"><Download className="h-3.5 w-3.5" /></button>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {tenantTab === "messages" && (
-            <div className="bg-card rounded-xl shadow-card border border-border/50 flex flex-col" style={{ minHeight: 400 }}>
-              <div className="flex-1 p-4 space-y-3 overflow-y-auto max-h-80">
-                {messages.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">{L.noExchange}</p>}
-                {messages.map((msg: any) => (
-                  <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[70%] rounded-xl px-4 py-2 text-sm ${msg.sender_id === user?.id ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
-                      {msg.content}
-                      <div className={`text-xs mt-1 ${msg.sender_id === user?.id ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-                        {new Date(msg.created_at).toLocaleString("fr-FR")}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-border/50 p-3 flex gap-2">
-                <input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                  placeholder="Écrire un message..." className="flex-1 bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
-                <button onClick={handleSendMessage} className="bg-primary text-primary-foreground px-3 py-2 rounded-lg hover:opacity-90 transition-opacity"><Send className="h-4 w-4" /></button>
-              </div>
-            </div>
-          )}
-
-          {tenantTab === "documents" && (
-            <div className="space-y-6">
-              <TenantDocuments tenantId={selectedTenant.id} tenantName={selectedTenant.name} />
-
-              {/* Demandes du locataire */}
-              <TenantRequestsPanel tenantId={selectedTenant.id} tenantName={selectedTenant.name} />
-
-              {/* Modèles de documents */}
-              <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-                <h3 className="font-semibold text-foreground mb-4">Générer un document</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {rentalTemplates.map((t) => {
-                    const Icon = Object.entries(iconMap).find(([k]) => t.docType.includes(k))?.[1] || FileText;
-                    return (
-                      <button key={t.id} onClick={() => setSelectedTemplate(t)}
-                        className="flex items-start gap-3 bg-muted/30 rounded-lg p-4 hover:bg-muted/50 transition-colors text-left group">
-                        <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gradient-gold transition-colors shrink-0">
-                          <Icon className="h-4 w-4 text-muted-foreground group-hover:text-accent-foreground transition-colors" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-foreground text-sm">{t.label}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">{t.description}</div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 mt-1 shrink-0" />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <RentalTenantDetailView
+          tenant={selectedTenant}
+          property={prop}
+          rentCalls={rentCalls}
+          messages={messages}
+          newMessage={newMessage}
+          setNewMessage={setNewMessage}
+          templates={rentalTemplates}
+          labels={L}
+          fmt={fmt}
+          cc={cc}
+          isLeaseActive={isLeaseActive}
+          userId={user?.id}
+          invitingTenantId={invitingTenantId}
+          notifyingRentId={notifyingRentId}
+          payingRentId={payingRentId}
+          onBack={() => setSelectedTenant(null)}
+          onEditTenant={startEditTenant}
+          onInviteTenant={handleInviteTenant}
+          onLoadMessages={loadMessages}
+          onSendMessage={handleSendMessage}
+          onTogglePayment={togglePayment}
+          onValidateReceipt={validateReceipt}
+          onGenerateReceipt={generateReceiptForPayment}
+          onNotifyRentCall={handleNotifyRentCall}
+          onPayRent={handlePayRent}
+          onSelectTemplate={setSelectedTemplate}
+          onInventoryMode={setInventoryMode}
+          t={t}
+        />
       </DashboardLayout>
     );
   }
