@@ -144,7 +144,7 @@ const DealContextHeader = memo(function DealContextHeader({
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               {dealData.context_title && (
-                <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                <p className="text-[10px] line-clamp-1 break-words" style={{ color: "hsl(var(--hud-text-dim))" }}>
                   {dealData.context_title}
                 </p>
               )}

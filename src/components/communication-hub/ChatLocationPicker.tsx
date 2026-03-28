@@ -286,10 +286,10 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
                       border: "1px solid hsl(var(--hud-border) / 0.08)",
                     }}
                   >
-                    <p className="text-sm font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                    <p className="text-sm font-medium line-clamp-1 break-words" style={{ color: "hsl(var(--hud-text))" }}>
                       {place.name}
                     </p>
-                    <p className="text-[11px] truncate mt-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                    <p className="text-[11px] line-clamp-1 break-words mt-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>
                       {place.address}
                     </p>
                   </button>
