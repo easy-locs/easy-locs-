@@ -18,9 +18,9 @@ export async function toggleLocalServicesFeature(orgId: string, enabled: boolean
 
 export async function upsertLocalService(editingId: string | null, payload: Record<string, any>) {
   if (editingId) {
-    await supabase.from("local_services").update(payload).eq("id", editingId);
+    await (supabase as any).from("local_services").update(payload).eq("id", editingId);
   } else {
-    await supabase.from("local_services").insert(payload);
+    await (supabase as any).from("local_services").insert(payload);
   }
 }
 

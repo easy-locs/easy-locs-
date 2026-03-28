@@ -73,3 +73,37 @@ export async function fetchRealEstateStats(userId: string) {
     overduePayments: payments.count ?? 0,
   };
 }
+
+/* ── Listings page functions ── */
+
+export async function fetchListings(orgId: string, countryFilter?: string | null) {
+  let q = supabase.from("real_estate_listings").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  if (countryFilter) q = q.eq("country", countryFilter);
+  const { data } = await q;
+  return (data || []) as any[];
+}
+
+export async function fetchLeads(orgId: string) {
+  const { data } = await supabase.from("real_estate_leads").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  return (data || []) as any[];
+}
+
+export async function upsertListing(editId: string | null, payload: Record<string, any>) {
+  if (editId) {
+    const { error } = await (supabase as any).from("real_estate_listings").update(payload).eq("id", editId);
+    if (error) throw error;
+  } else {
+    const { error } = await (supabase as any).from("real_estate_listings").insert(payload);
+    if (error) throw error;
+  }
+}
+
+export async function deleteListing(id: string) {
+  const { error } = await supabase.from("real_estate_listings").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function updateLeadStatus(id: string, status: string) {
+  const { error } = await supabase.from("real_estate_leads").update({ status } as any).eq("id", id);
+  if (error) throw error;
+}
