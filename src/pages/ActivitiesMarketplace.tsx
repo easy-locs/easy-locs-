@@ -131,7 +131,7 @@ const ActivitiesMarketplace = () => {
     }
   };
 
-  const paidBookings = useMemo(() => myBookings.filter((b: any) => b.payment_confirmed), [myBookings]);
+  
 
   return (
     <DashboardLayout>
@@ -374,8 +374,8 @@ const ActivitiesMarketplace = () => {
             invoice_prefix: myProvider.invoice_prefix || "INV",
             invoice_next_number: myProvider.invoice_next_number || 1,
           } : undefined}
-          onSave={(data) => myProvider ? updateProvider.mutate(data) : createProvider.mutate(data)}
-          isPending={createProvider.isPending || updateProvider.isPending}
+          onSave={(data) => myProvider ? mutations.updateProvider.mutate(data) : mutations.createProvider.mutate(data)}
+          isPending={mutations.createProvider.isPending || mutations.updateProvider.isPending}
         />
 
         {/* Service Form */}
@@ -408,8 +408,8 @@ const ActivitiesMarketplace = () => {
           } : undefined}
           providerCountry={myProvider?.country}
           providerCity={myProvider?.city}
-          onSave={(data) => editingService ? updateService.mutate(data) : createService.mutate(data)}
-          isPending={createService.isPending || updateService.isPending}
+          onSave={(data) => editingService ? mutations.updateService.mutate({ id: editingService.id, data }) : mutations.createService.mutate(data)}
+          isPending={mutations.createService.isPending || mutations.updateService.isPending}
           allowVideo={subscription.subscribed}
         />
 
@@ -420,8 +420,8 @@ const ActivitiesMarketplace = () => {
             onOpenChange={(v) => !v && setBookingService(null)}
             service={bookingService}
             provider={providersMap[bookingService.provider_id]}
-            onSubmit={(data) => submitBooking.mutate(data)}
-            isPending={submitBooking.isPending}
+            onSubmit={(data) => mutations.submitBooking.mutate({ formData: data, service: bookingService, providersMap })}
+            isPending={mutations.submitBooking.isPending}
           />
         )}
 
