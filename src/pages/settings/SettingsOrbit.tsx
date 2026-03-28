@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Globe, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as settingsRepo from "@/repositories/settings.repository";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,7 +39,7 @@ export default function SettingsOrbit() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("locale, currency").eq("id", user.id).single().then(({ data }) => {
+    settingsRepo.fetchProfileLocale(user.id).then((data) => {
       if (data) {
         if ((data as any).locale) setSelectedLang((data as any).locale);
         if ((data as any).currency) setSelectedCurrency((data as any).currency);
@@ -51,7 +51,7 @@ export default function SettingsOrbit() {
     setSelectedLang(code as Locale);
     setLocale(code as any);
     if (user) {
-      await supabase.from("profiles").update({ locale: code } as any).eq("id", user.id);
+      await settingsRepo.updateProfileField(user.id, "locale", code);
     }
     toast({ title: "Language updated" });
   };
@@ -59,7 +59,7 @@ export default function SettingsOrbit() {
   const saveCurrency = async (code: string) => {
     setSelectedCurrency(code);
     if (user) {
-      await supabase.from("profiles").update({ currency: code } as any).eq("id", user.id);
+      await settingsRepo.updateProfileField(user.id, "currency", code);
     }
     toast({ title: "Currency updated" });
   };

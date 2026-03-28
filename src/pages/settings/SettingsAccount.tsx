@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as settingsRepo from "@/repositories/settings.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import SignaturePad from "@/components/ui/SignaturePad";
@@ -21,7 +21,7 @@ export default function SettingsAccount() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("name, email, country, locale, signature_url").eq("id", user.id).single().then(({ data }) => {
+    settingsRepo.fetchProfile(user.id).then((data) => {
       if (data) setProfile({ name: data.name || "", email: data.email || "", country: data.country || "FR", locale: data.locale || "fr", signature_url: (data as any)?.signature_url || "" });
     });
   }, [user]);
@@ -29,7 +29,7 @@ export default function SettingsAccount() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
-    await supabase.from("profiles").update({ name: profile.name, country: profile.country, locale: profile.locale, signature_url: profile.signature_url } as any).eq("id", user.id);
+    await settingsRepo.updateProfile(user.id, { name: profile.name, country: profile.country, locale: profile.locale, signature_url: profile.signature_url });
     toast({ title: t("page.settings.profile_updated") || "Profile updated" });
     setSaving(false);
   };
