@@ -5,7 +5,7 @@
  */
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPublicMarketplaceServices, fetchPublicListingsForCity } from "@/repositories/seo.repository";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
@@ -28,12 +28,11 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
     if (!result) return;
     const cityName = result.city.name;
     Promise.all([
-      supabase.rpc("get_public_marketplace_services", { _city: cityName }),
-      supabase.from("public_listings").select("id,title,slug,price_per_night,max_guests,min_nights,property_id")
-        .eq("active", true).limit(12),
-    ]).then(([svcsRes, listingsRes]) => {
-      setLiveServices((svcsRes.data || []).slice(0, 8));
-      setLiveListings(listingsRes.data || []);
+      fetchPublicMarketplaceServices({ _city: cityName }),
+      fetchPublicListingsForCity(12),
+    ]).then(([svcs, listings]) => {
+      setLiveServices((svcs || []).slice(0, 8));
+      setLiveListings(listings || []);
     });
   }, [result]);
 

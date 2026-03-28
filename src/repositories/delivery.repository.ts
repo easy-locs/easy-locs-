@@ -120,3 +120,66 @@ export async function findActiveTracking(contextType: string, contextId: string)
     .maybeSingle();
   return (data as any)?.id || null;
 }
+
+// ── Buyer orders ──
+export async function fetchBuyerOrders(userId: string) {
+  const { data } = await (supabase as any)
+    .from("mobility_jobs")
+    .select("id, status, pickup_address, dropoff_address, dropoff_lat, dropoff_lng, package_description, delivery_fee, currency, created_at, delivered_at, scheduled_at, confirmation_code, escrow_status, escrow_amount")
+    .eq("buyer_user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  return data ?? [];
+}
+
+// ── Available jobs (marketplace) ──
+export async function fetchAvailableJobs() {
+  const { data } = await (supabase as any)
+    .from("mobility_jobs")
+    .select("id, pickup_address, dropoff_address, notes, current_price, currency, package_size, pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, created_at, status")
+    .in("status", ["pending", "open"])
+    .order("created_at", { ascending: false })
+    .limit(100);
+  return data ?? [];
+}
+
+export async function acceptJob(jobId: string, userId: string) {
+  const { error } = await (supabase as any)
+    .from("mobility_jobs")
+    .update({ rider_user_id: userId, status: "accepted" })
+    .eq("id", jobId);
+  if (error) throw error;
+}
+
+// ── Rider presence ──
+export async function upsertRiderPresence(record: Record<string, any>) {
+  const { error } = await (supabase as any).from("rider_presence").upsert(record, { onConflict: "user_id" });
+  if (error) throw error;
+}
+
+// ── Pending jobs (batch) ──
+export async function fetchPendingJobsForBatch() {
+  const { data } = await (supabase as any)
+    .from("mobility_jobs")
+    .select("id, pickup_address, dropoff_address, dropoff_lat, dropoff_lng, pickup_lat, pickup_lng, notes, current_price, currency, package_size, status")
+    .in("status", ["pending", "open"])
+    .order("created_at", { ascending: false })
+    .limit(100);
+  return data ?? [];
+}
+
+export async function batchAssignJobs(jobIds: string[], userId: string) {
+  const { error } = await (supabase as any)
+    .from("mobility_jobs")
+    .update({ rider_user_id: userId, status: "accepted" })
+    .in("id", jobIds);
+  if (error) throw error;
+}
+
+// ── Proof photo upload ──
+export async function uploadProofPhoto(path: string, file: Blob) {
+  const { error } = await supabase.storage.from("delivery-proofs").upload(path, file);
+  if (error) throw error;
+  const { data } = supabase.storage.from("delivery-proofs").getPublicUrl(path);
+  return data.publicUrl;
+}
