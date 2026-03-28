@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import * as repo from "@/repositories/mobility.repository";
 import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
@@ -14,30 +14,20 @@ export default function DriverMissionDetailPage() {
   const { data: mission, isLoading, refetch } = useQuery({
     queryKey: ["driver-mission-detail", orderId],
     enabled: !!orderId,
-    queryFn: async () => {
-      const { data, error } = await supabase.from("orders").select("*").eq("id", orderId!).maybeSingle();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => repo.fetchOrderById(orderId!),
     staleTime: 10_000,
   });
 
   const advanceMission = async () => {
     if (!mission) return;
-    const nextMap: Record<string, string> = {
-      driver_assigned: "picked_up",
-      picked_up: "on_the_way",
-      on_the_way: "delivered",
-    };
+    const nextMap: Record<string, string> = { driver_assigned: "picked_up", picked_up: "on_the_way", on_the_way: "delivered" };
     const next = nextMap[mission.status];
     if (!next) return;
     try {
       await setOrderStatus({ orderId: mission.id, currentStatus: mission.status as any, nextStatus: next as any });
       toast.success(`Mission moved to ${next}`);
       refetch();
-    } catch (err: any) {
-      toast.error(err.message || "Could not update mission");
-    }
+    } catch (err: any) { toast.error(err.message || "Could not update mission"); }
   };
 
   const canAdvance = mission && ["driver_assigned", "picked_up", "on_the_way"].includes(mission.status);
@@ -53,14 +43,9 @@ export default function DriverMissionDetailPage() {
           <p className="text-xs text-muted-foreground">{orderId ? `#${orderId.slice(0, 8)}` : ""}</p>
         </div>
       </header>
-
       <div className="flex-1 px-4 pb-24 space-y-4">
         {isLoading && <Skeleton className="h-40 rounded-2xl" />}
-
-        {!isLoading && !mission && (
-          <div className="text-center py-16 text-sm text-muted-foreground">Mission not found</div>
-        )}
-
+        {!isLoading && !mission && <div className="text-center py-16 text-sm text-muted-foreground">Mission not found</div>}
         {!isLoading && mission && (
           <>
             <div className="rounded-2xl border border-border/20 bg-card p-4 space-y-3">
@@ -70,24 +55,15 @@ export default function DriverMissionDetailPage() {
               </div>
               <p className="text-xs text-muted-foreground">Pickup: Dubai placeholder</p>
               <p className="text-xs text-muted-foreground">Dropoff: Dubai placeholder</p>
-              <p className="text-xs text-muted-foreground">
-                Created: {new Date(mission.created_at).toLocaleString()}
-              </p>
+              <p className="text-xs text-muted-foreground">Created: {new Date(mission.created_at).toLocaleString()}</p>
             </div>
-
             <div className="space-y-3">
               {canAdvance && (
-                <button
-                  onClick={advanceMission}
-                  className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold active:scale-[0.97] transition-transform"
-                >
+                <button onClick={advanceMission} className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold active:scale-[0.97] transition-transform">
                   Advance Status
                 </button>
               )}
-              <button
-                onClick={() => navigate(`/driver/proof/${mission.id}`)}
-                className="w-full rounded-2xl bg-muted px-4 py-3 text-sm font-bold text-foreground active:scale-[0.97] transition-transform"
-              >
+              <button onClick={() => navigate(`/driver/proof/${mission.id}`)} className="w-full rounded-2xl bg-muted px-4 py-3 text-sm font-bold text-foreground active:scale-[0.97] transition-transform">
                 Delivery Proof
               </button>
             </div>
