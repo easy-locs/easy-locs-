@@ -112,7 +112,7 @@ export async function updateReturnStatus(returnId: string, status: string, notes
 
 // ── Catalog ──
 export async function fetchCatalogProducts(shopId: string) {
-  const { data } = await supabase.from("storefront_products").select("*").eq("shop_id", shopId).order("sort_order");
+  const { data } = await (supabase as any).from("storefront_products").select("*").eq("shop_id", shopId).order("sort_order");
   return data ?? [];
 }
 
@@ -123,12 +123,12 @@ export async function insertProduct(record: Record<string, any>) {
 }
 
 export async function updateProduct(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("storefront_products").update(updates as any).eq("id", id);
+  const { error } = await (supabase as any).from("storefront_products").update(updates).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteProduct(id: string) {
-  const { error } = await supabase.from("storefront_products").delete().eq("id", id);
+  const { error } = await (supabase as any).from("storefront_products").delete().eq("id", id);
   if (error) throw error;
 }
 
@@ -176,6 +176,6 @@ export async function updateOrder(orderId: string, updates: Record<string, any>)
 
 // ── Smart builders ──
 export async function fetchShopsByUser(userId: string) {
-  const { data } = await supabase.from("storefront_pages").select("*").eq("owner_user_id", userId);
+  const { data } = await (supabase as any).from("storefront_pages").select("*").eq("owner_user_id", userId);
   return data ?? [];
 }

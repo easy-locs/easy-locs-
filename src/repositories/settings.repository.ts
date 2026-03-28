@@ -141,7 +141,7 @@ export async function deleteUserAccount(userId: string) {
 
 // ── Roles check ──
 export async function hasRole(userId: string, role: string) {
-  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: role });
+  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: role as any });
   return !!data;
 }
 
