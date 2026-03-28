@@ -47,13 +47,13 @@ export function RadarResultsList() {
           {/* Info */}
           <div className="flex-1 min-w-0 py-2.5 pr-3 flex flex-col justify-center">
             <div className="flex items-start justify-between gap-2">
-              <p className="text-sm font-bold text-foreground truncate">{item.title}</p>
+              <p className="text-sm font-bold text-foreground break-words leading-snug line-clamp-2">{item.title}</p>
               {item.isSponsored && (
                 <span className="shrink-0 text-[8px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">AD</span>
               )}
             </div>
             {item.subtitle && (
-              <p className="text-[11px] text-muted-foreground truncate mt-0.5">{item.subtitle}</p>
+              <p className="text-[11px] text-muted-foreground break-words leading-snug line-clamp-2 mt-0.5">{item.subtitle}</p>
             )}
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               {item.district && (

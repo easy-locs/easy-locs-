@@ -30,7 +30,7 @@ export function PushSettingsPanel() {
         {items.map((item) => (
           <div key={item.id} className="rounded border border-border p-2 space-y-1">
             <p className="text-xs font-medium text-foreground">{item.platform ?? "unknown"}</p>
-            <p className="text-xs text-muted-foreground truncate">{item.token}</p>
+            <p className="text-xs text-muted-foreground break-all leading-snug">{item.token}</p>
             <p className={`text-xs font-medium ${item.active ? "text-emerald-600" : "text-muted-foreground"}`}>
               {item.active ? "Active" : "Inactive"}
             </p>

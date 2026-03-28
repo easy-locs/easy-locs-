@@ -56,7 +56,7 @@ export function BulkListingActionsPanel() {
               className="rounded border-border"
             />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-foreground truncate">{listing.title}</p>
+              <p className="text-sm font-medium text-foreground break-words leading-snug">{listing.title}</p>
               <p className="text-[10px] text-muted-foreground">{listing.status}</p>
             </div>
           </label>

@@ -52,9 +52,9 @@ export default function RadarLiveStationCard({ vertical, compact = false }: Prop
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 min-w-0">
           <MapPin className="w-3 h-3 text-primary shrink-0" />
-          <span className="text-[10px] font-semibold text-foreground truncate">
-            {station.label || station.zoneKey || "Zone"}
-          </span>
+           <span className="text-[10px] font-semibold text-foreground break-words leading-snug">
+             {station.label || station.zoneKey || "Zone"}
+           </span>
         </div>
         {station.arbitration?.decisions?.some((d: any) => d.module === "demand" && d.demandLevel === "high") && (
           <span className="flex items-center gap-1 text-[9px] font-bold text-orange-500">

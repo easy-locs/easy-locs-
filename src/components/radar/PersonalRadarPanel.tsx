@@ -218,7 +218,7 @@ export default function PersonalRadarPanel({ entities, open }: { entities: Entit
                   </div>
                 )}
                 <div className="px-2 py-1.5">
-                  <p className="text-[10px] font-bold text-foreground truncate">{t.name}</p>
+                  <p className="text-[10px] font-bold text-foreground break-words leading-snug">{t.name}</p>
                   <div className="flex items-center gap-1">
                     {t.rating && <span className="flex items-center gap-0.5 text-[9px]"><Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />{t.rating.toFixed(1)}</span>}
                     <span className="text-[8px] text-muted-foreground">{t.distanceKm < 1 ? `${Math.round(t.distanceKm * 1000)}m` : `${t.distanceKm.toFixed(1)}km`}</span>
@@ -294,7 +294,7 @@ function EntityRow({ entity, rank, isTop, onView, onChat, badge }: {
         </div>
       )}
       <div className="flex-1 min-w-0 cursor-pointer" onClick={onView}>
-        <p className="text-[11px] font-bold text-foreground truncate">{entity.name}</p>
+        <p className="text-[11px] font-bold text-foreground break-words leading-snug">{entity.name}</p>
         <div className="flex items-center gap-1.5">
           <span className="text-[9px] text-muted-foreground capitalize">{entity.category}</span>
           {entity.matchReasons[0] && (
