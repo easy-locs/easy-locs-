@@ -11,6 +11,7 @@ import DiscoveryHeatmapLayer from "@/components/map/DiscoveryHeatmapLayer";
 import { CloudRain, CloudSun } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useRainRadar } from "@/hooks/useRainRadar";
+import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import {
   animateStationPulse,
   buildStationGeoJSON,
@@ -90,6 +91,7 @@ interface UnifiedMapProps {
   heatmapPoints?: { lat: number; lng: number; intensity: number }[];
   /** Radius in km — renders a visual circle on map */
   radiusKm?: number;
+  /** @deprecated — use weatherDisplayStore instead. Kept for backward compat. */
   showWeatherLayer?: boolean;
 }
 
@@ -135,7 +137,7 @@ export default memo(function UnifiedMap({
   showHeatmap = false,
   heatmapPoints,
   radiusKm,
-  showWeatherLayer = true,
+  showWeatherLayer: _showWeatherLayerLegacy = true,
 }: UnifiedMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -149,10 +151,14 @@ export default memo(function UnifiedMap({
   const onZoneClickRef = useRef(onZoneClick);
   onZoneClickRef.current = onZoneClick;
 
+  // Weather display from canonical store (data always-on)
+  const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
+  const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
+
   const mapCenter: [number, number] = center
     || (userLat != null && userLng != null ? [userLng, userLat] : [55.2708, 25.2048]);
   const weather = useLiveWeatherStation({ lat: userLat ?? center?.[1], lng: userLng ?? center?.[0] });
-  const rainRadar = useRainRadar(showWeatherLayer || weather.isRaining);
+  const rainRadar = useRainRadar(radarOverlay !== "off" || weather.isRaining);
   const pulseFrameRef = useRef(0);
   const pulseRafRef = useRef<number | null>(null);
 
@@ -586,20 +592,23 @@ export default memo(function UnifiedMap({
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    const visible = showWeatherLayer || weather.isRaining;
+    const visible = radarOverlay !== "off" || weather.isRaining;
     const layer = map.getLayer(RAIN_LAYER);
     const source = map.getSource(RAIN_SOURCE) as (mapboxgl.Source & { setTiles?: (tiles: string[]) => void }) | undefined;
 
     if (layer) {
       map.setLayoutProperty(RAIN_LAYER, "visibility", visible ? "visible" : "none");
-      map.setPaintProperty(RAIN_LAYER, "raster-opacity", visible ? (weather.isRaining ? 0.7 : 0.38) : 0);
+      const opacity = radarOverlay === "full"
+        ? (weather.isRaining ? 0.7 : 0.38)
+        : radarOverlay === "minimal" ? 0.25 : 0;
+      map.setPaintProperty(RAIN_LAYER, "raster-opacity", visible ? opacity : 0);
       map.setPaintProperty(RAIN_LAYER, "raster-fade-duration", 300);
     }
 
     if (source?.setTiles && rainRadar.activeTileUrl) {
       source.setTiles([rainRadar.activeTileUrl]);
     }
-  }, [mapReady, rainRadar.activeTileUrl, showWeatherLayer, weather.isRaining]);
+  }, [mapReady, rainRadar.activeTileUrl, radarOverlay, weather.isRaining]);
 
   return (
     <>
