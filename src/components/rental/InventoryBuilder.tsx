@@ -392,7 +392,6 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
             </div>`,
             attachments,
           });
-          });
         }
       } catch {}
     }
