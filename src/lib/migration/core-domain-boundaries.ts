@@ -5,7 +5,7 @@ export const CORE_DOMAIN_BOUNDARIES = {
     "src/lib/orbit/",
     "src/hooks/useUnreadMessages.ts",
     "src/hooks/useChatAutoScroll.ts",
-    "src/stores/chatStore.ts",
+    "src/stores/orbit/thread.store.ts",
   ],
   isolated_legacy_domains: [
     "src/pages/tenant/",
