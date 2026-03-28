@@ -209,8 +209,8 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                     try {
                       const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
                       const path = `${service.org_id}/id-docs/${crypto.randomUUID()}.${ext}`;
-                      const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
-                      if (error) { toast.error("Upload failed: " + error.message); return; }
+                      const { uploadBookingDocument } = await import("@/repositories/marketplace.repository");
+                      await uploadBookingDocument("booking-documents", path, file);
                       setIdDocUrl(path);
                       toast.success(t("mp.document_uploaded") || "ID document uploaded");
                     } finally { setIdDocUploading(false); }
