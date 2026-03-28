@@ -10,9 +10,12 @@ const MODE_TO_PRESET: Record<SuperMapMode, string> = {
   explore: "default",
   radar: "radar",
   mobility: "delivery",
-  delivery: "delivery",
-  storefront: "storefront",
-  travel: "travel",
+  food: "storefront",
+  retail: "storefront",
+  stay: "travel",
+  property: "default",
+  services: "default",
+  wallet: "default",
 };
 
 export function useMapPreset(): MapScreenPreset {
