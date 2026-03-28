@@ -35,13 +35,8 @@ const TenantReceipts = () => {
   useEffect(() => {
     if (!tenantId) return;
     const fetchReceipts = async () => {
-      const { data } = await supabase
-        .from("rent_calls")
-        .select("id, month, rent_amount, charges_amount, total_amount, paid, receipt_pdf_url, receipt_validated")
-        .eq("tenant_id", tenantId)
-        .eq("receipt_validated", true)
-        .order("month", { ascending: false });
-      setReceipts(data || []);
+      const data = await tenantRepo.fetchTenantReceipts(tenantId);
+      setReceipts(data);
       setLoading(false);
     };
     fetchReceipts();
