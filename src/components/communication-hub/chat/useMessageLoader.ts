@@ -296,5 +296,6 @@ export function useMessageLoader({
     typingIndicator,
     broadcastTyping,
     loadMessages,
+    messagesLoading,
   };
 }
