@@ -101,6 +101,38 @@ export default function RadarPage() {
 
   useEffect(() => { fetchListings(); }, [fetchListings]);
 
+  // ── Live place search (debounced Mapbox geocoding) ──
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    const q = searchQuery?.trim();
+    if (!q || q.length < 2) {
+      setPlaceSuggestions([]);
+      return;
+    }
+    setSearchingPlaces(true);
+    searchTimerRef.current = setTimeout(async () => {
+      try {
+        const results = await searchPlaces(q, {
+          limit: 6,
+          proximity: userLocation ?? undefined,
+        });
+        setPlaceSuggestions(results);
+      } catch {
+        setPlaceSuggestions([]);
+      } finally {
+        setSearchingPlaces(false);
+      }
+    }, 300);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [searchQuery, userLocation?.lat, userLocation?.lng]);
+
+  const handleSelectPlace = (place: NormalizedPlace) => {
+    setSearchQuery(place.label);
+    setPlaceSuggestions([]);
+    setSearchFocused(false);
+    // TODO: Could center map on place.lat, place.lng
+  };
+
   const handleLocate = () => {
     ultraHaptic("light");
     geoService.forceRetry();
