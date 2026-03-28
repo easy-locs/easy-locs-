@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { CustomerJobCard } from "@/components/rides/CustomerJobCard";
-import { supabase } from "@/integrations/supabase/client";
+import * as repo from "@/repositories/mobility.repository";
 import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
 import {
   ArrowLeft, UtensilsCrossed, ShoppingCart, Send, Gift, Briefcase,
@@ -93,15 +93,14 @@ export default function MobilityDeliveryPage() {
 
   useEffect(() => {
     const setup = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const ch = supabase
-        .channel(`delivery-jobs:${user.id}`)
-        .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs", filter: `customer_user_id=eq.${user.id}` }, (payload: any) => {
-          if (payload.new?.id) refreshJob(payload.new.id);
-        })
-        .subscribe();
-      return () => { supabase.removeChannel(ch); };
+      const userId = await repo.getCurrentUserId();
+      if (!userId) return;
+      const ch = repo.subscribeToTable(
+        `delivery-jobs:${userId}`, "mobility_jobs",
+        `customer_user_id=eq.${userId}`,
+        (payload: any) => { if (payload.new?.id) refreshJob(payload.new.id); }
+      );
+      return () => { repo.unsubscribeChannel(ch); };
     };
     const cleanup = setup();
     return () => { cleanup.then(fn => fn?.()); };
