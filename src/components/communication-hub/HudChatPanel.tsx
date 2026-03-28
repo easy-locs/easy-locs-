@@ -28,6 +28,10 @@ import OrbitSmartPayment, { type PaymentConfirmation } from "@/components/orbit/
 import { RequestMoneyModal } from "@/components/chat/RequestMoneyModal";
 import { sendPaymentRequestMessageToThread, sendPaymentReceiptToThread } from "@/components/chat/ChatPaymentCards";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useHudCallSetup } from "@/hooks/orbit/useHudCallSetup";
+import { useHudBookingActions } from "@/hooks/orbit/useHudBookingActions";
+import { useHudConversationStatus } from "@/hooks/orbit/useHudConversationStatus";
+import { useHudAttachmentUpload } from "@/hooks/orbit/useHudAttachmentUpload";
 import { Button } from "@/components/ui/button";
 
 import ChatHeader from "./chat/ChatHeader";
