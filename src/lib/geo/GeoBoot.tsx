@@ -1,6 +1,7 @@
 /**
  * GeoBoot — Single GPS lifecycle manager.
  * Requests GPS permission on first visit, syncs to canonical address pipeline.
+ * Emits canonical geo events via platformBus for cross-module propagation.
  */
 import { useEffect, useRef } from "react";
 import { geoService } from "./geo-service";
@@ -37,6 +38,14 @@ export function GeoBoot() {
         locStore.setMapViewport({ lat, lng }, 14);
       }
 
+      // Update city/country on geoStore from reverse geocode
+      const updateGeoMeta = (city: string, country: string) => {
+        const gs = useGeoStore.getState();
+        if (gs.city !== city || gs.country !== country) {
+          gs.setStatePartial({ city, country });
+        }
+      };
+
       // Skip if user already has a manually selected place (priority: selected > GPS > fallback)
       const hasManualPlace = useRadarPlaceStore.getState().selectedPlace;
       if (hasManualPlace) return;
@@ -51,6 +60,8 @@ export function GeoBoot() {
             country: result.country,
             street: result.street,
           });
+
+          updateGeoMeta(result.city || "", result.country || "");
 
           // Use Geo Brain as the ONLY write path — this triggers all downstream events
           setAddressFromPlace(place);
