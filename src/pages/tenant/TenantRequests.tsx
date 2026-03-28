@@ -74,6 +74,8 @@ const TenantRequests = () => {
       const data = await tenantRepo.fetchDocumentRequests(tenantId);
       setRequests(data);
       setPeriod("");
+    } catch (err: any) {
+      toast({ title: T.error, description: err.message, variant: "destructive" });
     }
     setSubmitting(null);
   };
