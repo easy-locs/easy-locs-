@@ -1,16 +1,14 @@
 /**
  * delivery-cache-invalidator — Atomic unit: invalidate delivery caches on events.
- * Single responsibility: cache sync for delivery domain.
+ * Uses canonical APP_EVENTS.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
+import { APP_EVENTS } from "@/lib/platform/events";
 
 let queryClientRef: any = null;
 
 const DELIVERY_QUERY_KEYS = [
-  "delivery-jobs",
-  "active-deliveries",
-  "mobility-jobs",
-  "driver-presence",
+  "delivery-jobs", "active-deliveries", "mobility-jobs", "driver-presence",
 ] as const;
 
 export function registerDeliveryQueryClient(qc: any) {
@@ -26,10 +24,12 @@ export function invalidateDeliveryCaches() {
 
 export function installDeliveryCacheListener(): () => void {
   const unsubs = [
-    platformBus.on("delivery:dispatched" as any, () => invalidateDeliveryCaches()),
-    platformBus.on("delivery:completed" as any, () => invalidateDeliveryCaches()),
-    platformBus.on("delivery:failed" as any, () => invalidateDeliveryCaches()),
-    platformBus.on("delivery:driver_assigned" as any, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_DISPATCHED as any, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_COMPLETED as any, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_FAILED as any, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_DRIVER_ASSIGNED as any, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_PICKUP as any, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_DELIVERING as any, () => invalidateDeliveryCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

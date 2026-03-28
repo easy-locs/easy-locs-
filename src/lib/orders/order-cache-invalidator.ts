@@ -1,7 +1,9 @@
 /**
- * order-cache-invalidator — Atomic: invalidate order-related TanStack caches on events.
+ * order-cache-invalidator — Atomic: invalidate order-related TanStack caches.
+ * Uses canonical APP_EVENTS.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
+import { APP_EVENTS } from "@/lib/platform/events";
 
 let queryClientRef: any = null;
 
@@ -23,16 +25,17 @@ export function invalidateOrderCaches() {
 
 export function installOrderCacheListener(): () => void {
   const unsubs = [
-    platformBus.on("ORDER_CREATED", () => invalidateOrderCaches()),
-    platformBus.on("ORDER_CONFIRMED", () => invalidateOrderCaches()),
-    platformBus.on("ORDER_READY", () => invalidateOrderCaches()),
-    platformBus.on("ORDER_DELIVERED", () => invalidateOrderCaches()),
-    platformBus.on("PAYMENT_SUCCESS", () => invalidateOrderCaches()),
-    platformBus.on("REFUND_REQUESTED", () => invalidateOrderCaches()),
-    platformBus.on("MISSION_ACCEPTED", () => invalidateOrderCaches()),
-    platformBus.on("MISSION_COMPLETED", () => invalidateOrderCaches()),
-    platformBus.on("storefront:order_placed" as any, () => invalidateOrderCaches()),
-    platformBus.on("storefront:order_completed" as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_CREATED as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_CONFIRMED as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_READY as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_COMPLETED as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_CANCELLED as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_REFUNDED as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.PAYMENT_SUCCESS as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.MISSION_ACCEPTED as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.MISSION_COMPLETED as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED as any, () => invalidateOrderCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }
