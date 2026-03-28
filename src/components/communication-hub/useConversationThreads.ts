@@ -655,27 +655,21 @@ export function useConversationThreads() {
   // NOTE: We do NOT listen to chat_messages_v2 INSERT here — that's handled per-thread
   // in useMessageLoader. Listening globally would trigger a full reload on every message.
   useEffect(() => {
-    if (!orgId || !user?.id) return;
+    if (!user?.id) return;
     const channel = supabase
-      .channel("hub-live")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "marketplace_bookings", filter: `org_id=eq.${orgId}` }, () => {
-        debouncedReload();
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "concierge_orders", filter: `org_id=eq.${orgId}` }, () => {
-        debouncedReload();
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "deal_rooms", filter: `org_id=eq.${orgId}` }, () => {
-        debouncedReload();
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, () => {
-        debouncedReload();
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversations_v2" }, () => {
-        debouncedReload();
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_preferences", filter: `user_id=eq.${user.id}` }, () => {
-        debouncedReload();
-      })
+      .channel("hub-live");
+
+    if (orgId) {
+      channel
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "marketplace_bookings", filter: `org_id=eq.${orgId}` }, () => debouncedReload())
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "concierge_orders", filter: `org_id=eq.${orgId}` }, () => debouncedReload())
+        .on("postgres_changes", { event: "*", schema: "public", table: "deal_rooms", filter: `org_id=eq.${orgId}` }, () => debouncedReload());
+    }
+
+    channel
+      .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, () => debouncedReload())
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversations_v2" }, () => debouncedReload())
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_preferences", filter: `user_id=eq.${user.id}` }, () => debouncedReload())
       .subscribe();
 
     return () => {
