@@ -10,6 +10,8 @@ import { getAnomalies, type Anomaly } from "./anomaly-detector";
 import { getAllChannels, checkStaleness, type RealtimeChannelState } from "./realtime-monitor";
 import { getDeadEvents, getMismatchedEvents, getAllEventRecords } from "./event-audit";
 import { getStaleEntries } from "./cache-validator";
+import { getFlowIssues, type FlowIntegrityIssue } from "./flow-integrity-validator";
+import { computeCouplingReports, getOverCoupledModules, type ModuleCouplingReport } from "./coupling-detector";
 
 export interface RuntimeSnapshot {
   timestamp: string;
@@ -42,6 +44,15 @@ export interface RuntimeSnapshot {
     stale: number;
     total: number;
   };
+  integrity: {
+    issues: FlowIntegrityIssue[];
+    total: number;
+    critical: number;
+  };
+  coupling: {
+    reports: ModuleCouplingReport[];
+    overCoupled: number;
+  };
 }
 
 export function getRuntimeSnapshot(): RuntimeSnapshot {
@@ -52,6 +63,9 @@ export function getRuntimeSnapshot(): RuntimeSnapshot {
   const deadEvents = getDeadEvents();
   const mismatchedEvents = getMismatchedEvents();
   const staleCache = getStaleEntries();
+  const flowIssues = getFlowIssues();
+  const couplingReports = computeCouplingReports();
+  const overCoupled = getOverCoupledModules();
 
   const running = traces.filter(t => t.status === "running");
   const failed = traces.filter(t => t.status === "failed");
@@ -91,7 +105,16 @@ export function getRuntimeSnapshot(): RuntimeSnapshot {
     },
     cache: {
       stale: staleCache.length,
-      total: staleCache.length, // simplified
+      total: staleCache.length,
+    },
+    integrity: {
+      issues: flowIssues.slice(0, 50),
+      total: flowIssues.length,
+      critical: flowIssues.filter(i => i.severity === "critical").length,
+    },
+    coupling: {
+      reports: couplingReports.slice(0, 20),
+      overCoupled: overCoupled.length,
     },
   };
 }
