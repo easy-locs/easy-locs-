@@ -216,7 +216,7 @@ export const CommunicationCenter = () => {
               <button onClick={handleBack} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm mr-2 shrink-0">
                 <ArrowLeft className="w-4.5 h-4.5" />
               </button>
-              <h1 className="text-sm font-semibold flex-1 truncate" style={{ color: "hsl(var(--foreground))" }}>
+              <h1 className="text-sm font-semibold flex-1 line-clamp-2 break-words min-w-0" style={{ color: "hsl(var(--foreground))" }}>
                 {selectedThread.name}
               </h1>
             </>

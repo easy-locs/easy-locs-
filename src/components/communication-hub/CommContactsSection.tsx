@@ -556,7 +556,7 @@ export default function CommContactsSection() {
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+            <span className="text-sm font-semibold line-clamp-2 break-words" style={{ color: "hsl(var(--hud-text))" }}>
               {contact.name}
             </span>
             {contact.is_favorite && <Star className="h-3 w-3 fill-current shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />}
@@ -569,7 +569,7 @@ export default function CommContactsSection() {
               </span>
             )}
             {contact.company && (
-              <span className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <span className="text-[11px] line-clamp-1 break-words" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                 {contact.company}
               </span>
             )}
