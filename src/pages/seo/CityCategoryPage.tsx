@@ -86,11 +86,6 @@ export default function CityCategoryPage() {
       setListings(nextListings);
       setLoading(false);
     };
-
-      setServices(nextServices);
-      setListings(nextListings);
-      setLoading(false);
-    };
     void run().catch((error) => {
       console.error("[CityCategoryPage] failed to load city/category content", error);
       setServices([]);
