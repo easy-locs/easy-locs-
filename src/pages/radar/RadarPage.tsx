@@ -20,6 +20,7 @@ import type { RadarCategory } from "@/lib/radar/types";
 import { Search, MapPin, Navigation, Loader2, ArrowLeft, ChevronUp, Layers, X } from "lucide-react";
 import "@/styles/radar-pro.css";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
+import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
@@ -63,7 +64,8 @@ export default function RadarPage() {
   const setSearchQuery = useDiscoveryStore((s) => s.setSearchQuery);
 
   const [loadingListings, setLoadingListings] = useState(true);
-  const [showWeatherLayer, setShowWeatherLayer] = useState(true);
+  const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
+  const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
   const [searchFocused, setSearchFocused] = useState(false);
   const [sheetSnap, setSheetSnap] = useState<SheetSnap>("collapsed");
   const [placeSuggestions, setPlaceSuggestions] = useState<NormalizedPlace[]>([]);
