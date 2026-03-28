@@ -29073,6 +29073,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notification_preferences: {
+        Row: {
+          category_prefs: Json | null
+          created_at: string | null
+          email_enabled: boolean | null
+          id: string
+          order_updates: boolean | null
+          promo_updates: boolean | null
+          push_enabled: boolean | null
+          quiet_hours_enabled: boolean | null
+          sms_enabled: boolean | null
+          updated_at: string | null
+          user_id: string
+          wallet_updates: boolean | null
+        }
+        Insert: {
+          category_prefs?: Json | null
+          created_at?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          order_updates?: boolean | null
+          promo_updates?: boolean | null
+          push_enabled?: boolean | null
+          quiet_hours_enabled?: boolean | null
+          sms_enabled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          wallet_updates?: boolean | null
+        }
+        Update: {
+          category_prefs?: Json | null
+          created_at?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          order_updates?: boolean | null
+          promo_updates?: boolean | null
+          push_enabled?: boolean | null
+          quiet_hours_enabled?: boolean | null
+          sms_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          wallet_updates?: boolean | null
+        }
+        Relationships: []
+      }
       user_payment_preferences: {
         Row: {
           created_at: string
