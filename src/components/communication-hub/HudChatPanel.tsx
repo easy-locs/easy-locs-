@@ -153,6 +153,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     e2eReady,
     encrypt,
     resolveAuthUserId,
+    onThreadUpdate,
   });
 
   const payment = usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId });
