@@ -1029,6 +1029,7 @@ const App = () => (
                 <Route path="/admin/onboarding-quality" element={<ProtectedRoute><OnboardingQualityDashboardPage /></ProtectedRoute>} />
                 <Route path="/admin/unified-engine" element={<ProtectedRoute><UnifiedGlobalEnginePage /></ProtectedRoute>} />
                 <Route path="/admin/ai-decisions" element={<ProtectedRoute><AIDecisionsDashboardPage /></ProtectedRoute>} />
+                <Route path="/admin/url-import" element={<ProtectedRoute><UrlImportPage /></ProtectedRoute>} />
 
               {/* Merchant claim & dashboard */}
               <Route path="/merchant/claim" element={<MerchantClaimPage />} />
