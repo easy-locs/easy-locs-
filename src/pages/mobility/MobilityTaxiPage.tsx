@@ -57,10 +57,10 @@ export default function MobilityTaxiPage() {
 
   return (
     <div className="app-mobile-page bg-background">
-      <MobileHeroHeader
+        <MobileHeroHeader
         title="Taxi"
         subtitle="Book a ride now or later"
-        icon={<span>🚕</span>}
+        icon={<Car className="h-6 w-6 text-primary-foreground" />}
         onBack={() => inFlow ? reset() : navigate(-1)}
       />
 
