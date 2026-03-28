@@ -1,5 +1,9 @@
 export type UiIssueType =
   | "overflow_x"
+  | "overflow_y_clip"
+  | "text_clipping"
+  | "element_overlap"
+  | "z_index_collision"
   | "tiny_tap_targets"
   | "dotted_labels"
   | "untranslated_keys"
@@ -7,8 +11,11 @@ export type UiIssueType =
   | "empty_section"
   | "missing_primary_cta"
   | "duplicate_heading"
+  | "duplicate_content"
   | "broken_card_layout"
-  | "broken_settings_grouping";
+  | "broken_settings_grouping"
+  | "inconsistent_height"
+  | "wrapper_strangling";
 
 export type UiSeverity = "low" | "medium" | "high" | "critical";
 

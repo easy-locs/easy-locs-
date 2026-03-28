@@ -1,5 +1,11 @@
 import type { SafePatchResult, UiIssue } from "./types";
 import { titleize } from "./utils";
+import {
+  findVerticalClipping,
+  findTextClipping,
+  findElementOverlaps,
+  findStranglingWrappers,
+} from "./detectors";
 
 const PATCHED_ATTR = "data-ui-engine-patched";
 
@@ -24,6 +30,66 @@ export function applySafePatches(issues: UiIssue[]): SafePatchResult[] {
           break;
         }
 
+        case "overflow_y_clip": {
+          const clipped = findVerticalClipping();
+          let count = 0;
+          for (const el of clipped) {
+            if (alreadyPatched(el)) continue;
+            // Safe fix: allow overflow to be visible or auto
+            el.style.overflow = "visible";
+            markPatched(el, issue.id);
+            count++;
+          }
+          results.push({ issueId: issue.id, patched: count > 0, message: `Unclipped ${count} elements.` });
+          break;
+        }
+
+        case "text_clipping": {
+          const textClips = findTextClipping();
+          let count = 0;
+          for (const el of textClips) {
+            if (alreadyPatched(el)) continue;
+            el.style.overflow = "visible";
+            el.style.textOverflow = "unset";
+            markPatched(el, issue.id);
+            count++;
+          }
+          results.push({ issueId: issue.id, patched: count > 0, message: `Fixed ${count} text clips.` });
+          break;
+        }
+
+        case "element_overlap": {
+          const overlaps = findElementOverlaps();
+          let count = 0;
+          for (const { a, b } of overlaps) {
+            if (alreadyPatched(b)) continue;
+            // Add margin to resolve overlap
+            const ra = a.getBoundingClientRect();
+            const rb = b.getBoundingClientRect();
+            const overlapY = ra.bottom - rb.top;
+            if (overlapY > 0 && overlapY < 40) {
+              b.style.marginTop = `${Math.ceil(overlapY + 4)}px`;
+              markPatched(b, issue.id);
+              count++;
+            }
+          }
+          results.push({ issueId: issue.id, patched: count > 0, message: `Resolved ${count} overlaps.` });
+          break;
+        }
+
+        case "wrapper_strangling": {
+          const strangled = findStranglingWrappers();
+          let count = 0;
+          for (const el of strangled) {
+            if (alreadyPatched(el)) continue;
+            el.style.overflow = "visible";
+            markPatched(el, issue.id);
+            count++;
+          }
+          results.push({ issueId: issue.id, patched: count > 0, message: `Freed ${count} strangling wrappers.` });
+          break;
+        }
+
         case "tiny_tap_targets": {
           const els = Array.from(
             document.querySelectorAll("button, a, [role='button'], input, select, textarea")
@@ -36,9 +102,6 @@ export function applySafePatches(issues: UiIssue[]): SafePatchResult[] {
             if (rect.width > 0 && rect.height > 0 && (rect.width < 40 || rect.height < 40)) {
               el.style.minWidth = "40px";
               el.style.minHeight = "40px";
-              el.style.display = el.style.display || "inline-flex";
-              el.style.alignItems = "center";
-              el.style.justifyContent = "center";
               markPatched(el, issue.id);
               count++;
             }
@@ -107,8 +170,8 @@ export function applySafePatches(issues: UiIssue[]): SafePatchResult[] {
             if ((section.textContent ?? "").trim().length < 4) {
               section.innerHTML = `
                 <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px;">
-                  <p style="font-size:14px;color:#888;">Nothing to show yet</p>
-                  <p style="font-size:12px;color:#aaa;">This section will appear when content is available.</p>
+                  <p style="font-size:14px;color:hsl(var(--muted-foreground));">Nothing to show yet</p>
+                  <p style="font-size:12px;color:hsl(var(--muted-foreground)/0.7);">This section will appear when content is available.</p>
                 </div>
               `;
               markPatched(section, issue.id);
