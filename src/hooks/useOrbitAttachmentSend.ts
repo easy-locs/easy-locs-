@@ -3,14 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildAttachmentSummary } from "@/lib/orbit/orbit-attachment-utils";
 import type { OrbitAttachmentItem } from "@/lib/orbit/orbit-attachment-types";
 import { toast } from "sonner";
+import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 
 export function useOrbitAttachmentSend(params: {
   conversationId?: string | null;
   currentUserId?: string | null;
   currentOrbitId?: string | null;
+  peerUserId?: string | null;
+  peerOrbitId?: string | null;
   onAfterSend?: () => void;
+  onConversationCreated?: (convId: string) => void;
 }) {
-  const { conversationId, currentUserId, currentOrbitId, onAfterSend } = params;
+  const { currentUserId, currentOrbitId, peerUserId, peerOrbitId, onAfterSend, onConversationCreated } = params;
   const [sendingAttachments, setSendingAttachments] = useState(false);
 
   const sendAttachments = async (payload: {
@@ -18,8 +22,36 @@ export function useOrbitAttachmentSend(params: {
     body?: string;
     viewOnce?: boolean;
   }) => {
-    if (!conversationId || !currentUserId || !currentOrbitId) return;
+    if (!currentUserId || !currentOrbitId) {
+      toast.error("Authentication required to send attachments.");
+      return;
+    }
     if (!payload.attachments.length) return;
+
+    let conversationId = params.conversationId;
+
+    // Auto-create conversation if missing
+    if (!conversationId && peerUserId) {
+      try {
+        const conv = await createOrGetDirectConversation({
+          myUserId: currentUserId,
+          myOrbitId: currentOrbitId,
+          peerUserId,
+          peerOrbitId,
+        });
+        conversationId = conv.id;
+        onConversationCreated?.(conv.id);
+      } catch (err: any) {
+        console.error("[useOrbitAttachmentSend] auto-create failed", err);
+        toast.error("Failed to create conversation for attachment.");
+        return;
+      }
+    }
+
+    if (!conversationId) {
+      toast.error("No conversation found. Open a thread first.");
+      return;
+    }
 
     setSendingAttachments(true);
     try {
