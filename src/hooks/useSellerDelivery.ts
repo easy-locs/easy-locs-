@@ -71,7 +71,7 @@ export function useSellerDelivery() {
     }));
   }, []);
 
-  const assignDriver = useCallback(async (jobId: string) => {
+  const assignDriver = useCallback(async (jobId: string, _driverId?: string) => {
     const data = await repo.invokeDispatchRide({ action: "accept_offer", job_id: jobId });
     await fetchJobs();
     return data;
