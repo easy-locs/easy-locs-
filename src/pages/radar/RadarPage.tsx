@@ -184,7 +184,7 @@ export default function RadarPage() {
             showUserLocation={!!userLocation}
             zoom={14}
             showHeatmap={false}
-            showWeatherLayer={showWeatherLayer}
+            showWeatherLayer={radarOverlay !== "off"}
           />
         </Suspense>
       </div>
