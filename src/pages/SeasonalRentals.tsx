@@ -493,51 +493,8 @@ const SeasonalRentals = () => {
               <div className="flex items-center gap-3 pt-2 border-t border-border/50">
                  <button
                   onClick={async () => {
-                    await supabase.from("booking_requests").update({ status: "approved" } as any).eq("id", focusedRequest.id);
-                    // Resolve notifications — real action completed
-                    try {
-                      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
-                      await resolveNotificationsForTarget("booking_request", focusedRequest.id, user?.id);
-                    } catch (e) { console.error("[resolve-notif]", e); }
-                    if (orgId && user) {
-                      await supabase.from("seasonal_bookings").insert({
-                        org_id: orgId,
-                        user_id: user.id,
-                        property_id: focusedRequest.property_id,
-                        guest_name: focusedRequest.guest_name,
-                        guest_email: focusedRequest.guest_email,
-                        guest_phone: focusedRequest.guest_phone || "",
-                        check_in: focusedRequest.check_in,
-                        check_out: focusedRequest.check_out,
-                        total_price: 0,
-                        cleaning_fee: 0,
-                        deposit_amount: 0,
-                        notes: focusedRequest.message || "",
-                        status: "confirmed",
-                      } as any);
-                    }
-                    const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", focusedRequest.listing_id).single();
-                    const nights = Math.max(1, Math.ceil((new Date(focusedRequest.check_out).getTime() - new Date(focusedRequest.check_in).getTime()) / 86400000));
-                    const pricePerNight = listingData?.price_per_night || 0;
-                    const totalAmount = pricePerNight * nights;
-                    const payUrl = buildAppUrl(`/listing/${listingData?.slug}?pay_request=${focusedRequest.id}&email=${encodeURIComponent(focusedRequest.guest_email)}&name=${encodeURIComponent(focusedRequest.guest_name)}&amount=${totalAmount}&nights=${nights}`);
-                    await supabase.functions.invoke("send-email", {
-                      body: {
-                        to: focusedRequest.guest_email,
-                        subject: `✅ ${t("page.seasonal.approved_subject")} — ${listingData?.title || ""}`,
-                        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-                          <h2 style="color:#1a1a1a;text-align:center;">✅ ${t("page.seasonal.approved_heading")}</h2>
-                          <p style="color:#555;font-size:15px;text-align:center;">${t("page.seasonal.approved_body").replace("{name}", focusedRequest.guest_name).replace("{checkin}", focusedRequest.check_in).replace("{checkout}", focusedRequest.check_out)}</p>
-                          <p style="text-align:center;margin:24px 0;">
-                            <a href="${payUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">💳 ${t("page.seasonal.pay_now_btn")} — ${totalAmount}€</a>
-                          </p>
-                          <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
-                        </div>`,
-                      },
-                    });
-                    toast({ title: t("page.seasonal.request_approved") });
-                    setFocusedRequest({ ...focusedRequest, status: "approved" });
-                    await load();
+                    const updated = await approveRequest(focusedRequest);
+                    setFocusedRequest(updated);
                   }}
                   className="btn-success btn-sm"
                 >
@@ -545,14 +502,8 @@ const SeasonalRentals = () => {
                 </button>
                 <button
                   onClick={async () => {
-                    await supabase.from("booking_requests").update({ status: "rejected" } as any).eq("id", focusedRequest.id);
-                    // Resolve notifications — action completed
-                    try {
-                      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
-                      await resolveNotificationsForTarget("booking_request", focusedRequest.id, user?.id);
-                    } catch (e) { console.error("[resolve-notif]", e); }
-                    toast({ title: t("page.seasonal.request_rejected") });
-                    setFocusedRequest({ ...focusedRequest, status: "rejected" });
+                    const updated = await rejectRequest(focusedRequest);
+                    setFocusedRequest(updated);
                   }}
                   className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
                 >
