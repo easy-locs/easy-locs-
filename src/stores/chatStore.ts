@@ -1,11 +1,10 @@
 /**
- * chatStore — V2-ONLY canonical chat store.
- * Uses conversations_v2 + chat_messages_v2 exclusively.
- *
- * FIXED:
- * - createConversation: now resolves actual orbit_id for created_by_orbit_id (was using auth UUID)
- * - sendMessage: emits "orbit:message_sent" (canonical colon event, not dead "message.sent")
- * - createConversation: emits "orbit:thread_created" (canonical, not dead "conversation.created")
+ * chatStore — MIGRATION BRIDGE.
+ * Re-exports from decomposed Orbit units for backward compatibility.
+ * All new code should import from @/stores/orbit/ directly.
+ * 
+ * This file exists ONLY so existing consumers (bookingStore, propertyManagementStore, etc.)
+ * continue to work without breaking changes during migration.
  */
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -60,6 +59,10 @@ type ChatStore = {
   getMessagesByConversation: (conversationId: string) => ChatMessageRecord[];
 };
 
+/**
+ * @deprecated Import from @/stores/orbit/ instead.
+ * This bridge will be removed once all consumers are migrated.
+ */
 export const useChatStore = create<ChatStore>((set, get) => ({
   conversations: [],
   messages: [],
@@ -88,12 +91,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   createConversation: async (input) => {
-    // Get current user for RLS
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData?.user?.id;
     if (!userId) throw new Error("Not authenticated");
 
-    // Resolve actual orbit_id (not auth UUID)
     let createdByOrbitId = `orbit_${userId.slice(0, 12)}`;
     try {
       const { data: orbitProfile } = await db
@@ -105,7 +106,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         createdByOrbitId = orbitProfile.orbit_id;
       }
     } catch {
-      // fallback to generated orbit_id
+      // fallback
     }
 
     const now = new Date().toISOString();
@@ -146,14 +147,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       conversations: [saved, ...state.conversations.filter((c) => c.id !== saved.id)],
     }));
 
-    // Emit canonical event (not dead "conversation.created")
     platformBus.emit("orbit:thread_created", { conversation: saved }, "orbit");
-
     return saved;
   },
 
   sendMessage: async (input) => {
-    // Get current user for sender_user_id
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData?.user?.id;
     if (!userId) throw new Error("Not authenticated");
@@ -199,7 +197,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       ),
     }));
 
-    // Emit canonical event (not dead "message.sent")
     platformBus.emit("orbit:message_sent", {
       conversationId: input.conversationId,
       messageId: saved.id,
@@ -219,14 +216,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         if (listingId && c.listingId !== listingId) return false;
         if (bookingId && c.bookingId !== bookingId) return false;
         if (leaseId && c.leaseId !== leaseId) return false;
-
         if (participantOrbitIds?.length) {
           const ids = c.participants.map((p) => p.orbitId).sort();
           const target = [...participantOrbitIds].sort();
           if (ids.length !== target.length) return false;
           return ids.every((id, i) => id === target[i]);
         }
-
         return true;
       }) ?? null
     );
