@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import * as rideRepo from "@/repositories/ride-tracking.repository";
 import { useTripTrackingStore } from "@/stores/tripTrackingStore";
 import { useRideLiveETA } from "@/hooks/useRideLiveETA";
 import { useRideLiveRoute } from "@/hooks/useRideLiveRoute";
@@ -47,21 +47,15 @@ export default function TrackRidePage() {
   // ── Fetch job ──
   useEffect(() => {
     if (!jobId) return;
-    supabase.from("mobility_jobs").select("*").eq("id", jobId).single()
-      .then(({ data }) => { if (data) setJob(data as any); });
+    rideRepo.fetchMobilityJob(jobId).then((data) => { if (data) setJob(data); });
   }, [jobId]);
 
   // ── Realtime subscription ──
   useEffect(() => {
     if (!jobId) return;
-    const ch = supabase
-      .channel(`track-job-${jobId}`)
-      .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${jobId}`,
-      }, (payload) => setJob(payload.new as any))
-      .subscribe((st) => setRealtimeConnected(st === "SUBSCRIBED"));
-
-    return () => { supabase.removeChannel(ch); };
+    const { unsubscribe } = rideRepo.subscribeToJob(jobId, (newData) => setJob(newData));
+    setRealtimeConnected(true);
+    return () => { unsubscribe(); };
   }, [jobId]);
 
   // ── Trip tracking (GPS subscription) ──
@@ -75,26 +69,24 @@ export default function TrackRidePage() {
   useEffect(() => {
     const riderId = job?.rider_user_id;
     if (!riderId) { setRiderProfile(null); return; }
-    supabase.from("rider_profiles")
-      .select("id,display_name,vehicle_type,vehicle_plate,vehicle_model,rating,photo_url,phone")
-      .eq("user_id", riderId).maybeSingle()
-      .then(({ data }) => setRiderProfile(data as any));
+    rideRepo.fetchRiderProfile(riderId).then((data) => setRiderProfile(data));
   }, [job?.rider_user_id]);
 
   // ── Find ride conversation ──
   useEffect(() => {
     if (!job?.rider_user_id || !job?.customer_user_id) return;
-    supabase.from("conversations_v2").select("id")
-      .eq("type", "ride").limit(1).maybeSingle()
-      .then(({ data }) => setConversationId(data?.id ?? null));
+    rideRepo.fetchRideConversation().then((id) => setConversationId(id));
   }, [job?.rider_user_id, job?.customer_user_id]);
 
   // ── Cancel handler ──
   const handleCancel = async () => {
     if (!jobId || !canCancel(status)) return;
-    const { error } = await supabase.from("mobility_jobs").update({ status: "cancelled" } as any).eq("id", jobId);
-    if (error) toast.error(tc("ride.cancel_failed"));
-    else toast.success(tc("ride.cancelled"));
+    try {
+      await rideRepo.cancelRide(jobId);
+      toast.success(tc("ride.cancelled"));
+    } catch {
+      toast.error(tc("ride.cancel_failed"));
+    }
   };
 
   return (

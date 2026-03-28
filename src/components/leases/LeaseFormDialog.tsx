@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
+import * as docRepo from "@/repositories/documents.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useLeaseWorkflow } from "@/hooks/useLeaseWorkflow";
@@ -52,11 +52,11 @@ export default function LeaseFormDialog({
   useEffect(() => {
     if (!orgId) return;
     Promise.all([
-      supabase.from("properties").select("id, label, address, city, country").eq("org_id", orgId),
-      supabase.from("tenants").select("id, name, email, property_id, rent_amount, charges_amount, deposit_amount").eq("org_id", orgId),
+      docRepo.fetchProperties(orgId),
+      docRepo.fetchTenants(orgId),
     ]).then(([p, t]) => {
-      setProperties(p.data || []);
-      setTenants(t.data || []);
+      setProperties(p);
+      setTenants(t);
     });
   }, [orgId]);
 
@@ -112,7 +112,7 @@ export default function LeaseFormDialog({
     setSaving(true);
     try {
       if (isEdit) {
-        const { error } = await supabase.from("leases").update({
+        await docRepo.updateLease(lease.id, {
           lease_type: form.lease_type,
           start_date: form.start_date,
           end_date: form.end_date || null,
@@ -123,8 +123,7 @@ export default function LeaseFormDialog({
           country: form.country,
           notice_period_months: form.notice_period_months,
           duration_months: form.duration_months,
-        }).eq("id", lease.id);
-        if (error) throw error;
+        });
         toast.success("Lease updated");
       } else {
         // Use workflow to create lease with proper lifecycle
@@ -136,7 +135,7 @@ export default function LeaseFormDialog({
         });
         if (!result?.success && result?.action !== "existing") {
           // Fallback: direct insert
-          const { error } = await supabase.from("leases").insert({
+          const leaseId = await docRepo.insertLease({
             org_id: orgId!,
             user_id: user!.id,
             property_id: form.property_id,
@@ -153,7 +152,6 @@ export default function LeaseFormDialog({
             duration_months: form.duration_months,
             status: "pending_signature",
           });
-          if (error) throw error;
           toast.success("Lease created");
         }
       }
