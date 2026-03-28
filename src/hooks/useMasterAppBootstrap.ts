@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { installOrchestrationEngine } from "@/lib/orchestration/orchestrator";
 import { installEngineConnectorHub } from "@/lib/system/engineConnectorHub";
+import { startAutoRepairEngine } from "@/lib/runtime/auto-repair-engine";
+import { startRealtimeHealthCheck } from "@/lib/runtime/realtime-intelligence";
 import { installPlatformReactions } from "@/lib/shared/platform-bus";
 import { installStorefrontReactions } from "@/lib/shared/storefront-reactions";
 import { installCrossAppReactions } from "@/lib/shared/cross-app-reactions";
