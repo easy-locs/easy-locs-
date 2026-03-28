@@ -22,9 +22,6 @@ export function scanForStaleCache(): StaleCacheReport {
       staleKeys: stale.map(e => e.key),
       domains,
     });
-      staleKeys: stale.map(e => e.key),
-      domains,
-    });
   }
 
   return {
