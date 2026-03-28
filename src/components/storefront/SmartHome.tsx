@@ -305,9 +305,8 @@ export default function SmartHome() {
   const categories = useMemo(() => getSmartCategories(timezone, countryCode), [timezone, countryCode]);
   const greeting = useMemo(() => getTimeGreeting(timezone), [timezone]);
 
-  const half = Math.ceil(categories.length / 2);
-  const row1 = categories.slice(0, half);
-  const row2 = categories.slice(half);
+
+
 
   const _living = useLivingPage({ country: countryCode, city: city || undefined, maxSections: 6 });
   const globalCtx = useGlobalContext({ country: countryCode, city: city || undefined });
