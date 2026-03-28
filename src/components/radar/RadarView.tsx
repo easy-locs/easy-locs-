@@ -3,7 +3,9 @@
  * advanced filters (rating, promoted, open now), smart ranking,
  * and real-time live layers (weather, traffic, demand, zone events).
  */
-import { useState, useCallback, useMemo, memo, useEffect } from "react";
+import { useState, useCallback, useMemo, memo, useEffect, useRef } from "react";
+import { useRadarEngines } from "@/hooks/radar/useRadarEngines";
+import type { CanonicalRadarProjection } from "@/lib/domains/canonical-entities";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
@@ -93,6 +95,13 @@ interface RadarViewProps {
 
 export default memo(function RadarView({ initialType, radiusKm: initialRadius, showMap = true, mode = "client" }: RadarViewProps) {
   const navigate = useNavigate();
+
+  // ── Radar Engines (decoupled) ──
+  const radarEngines = useRadarEngines({
+    initialCenter: { lat: 25.2048, lng: 55.2708 },
+    enableRealtime: true,
+  });
+
   const [activeType, setActiveType] = useState<GeoEntity["type"] | "all">(initialType || "all");
   const [sortBy, setSortBy] = useState<RadarSortMode>("smart");
   const [viewMode, setViewMode] = useState<"map" | "list" | "heatmap">(showMap ? "map" : "list");
