@@ -182,6 +182,24 @@ const RentalManagement = () => {
   const selectedTenantCountry = selectedTenant ? (properties.find((p) => p.id === selectedTenant.property_id)?.country || userCountry) : userCountry;
   const rentalTemplates = getTemplatesByCategory("rental", selectedTenantCountry as any);
 
+  // ── Computed values ──
+  const totalRent = tenants.reduce((s, t) => s + (t.rent_amount || 0), 0);
+  const totalCharges = tenants.reduce((s, t) => s + (t.charges_amount || 0), 0);
+  const unpaidCount = rentCalls.filter(p => !p.paid).length;
+  const occupiedProperties = new Set(tenants.filter(t => t.property_id).map(t => t.property_id)).size;
+  const vacantProperties = properties.length - occupiedProperties;
+  const today = new Date().toISOString().split("T")[0];
+  const isLeaseActive = (t: Tenant) => !t.lease_end || t.lease_end >= today;
+  const filteredTenants = tenants.filter(t => {
+    if (leaseFilter === "active") return isLeaseActive(t);
+    if (leaseFilter === "terminated") return !isLeaseActive(t);
+    return true;
+  });
+  const activeCount = tenants.filter(isLeaseActive).length;
+  const terminatedCount = tenants.filter(t => !isLeaseActive(t)).length;
+  const filteredPayments = paymentPropertyFilter
+    ? rentCalls.filter(r => r.property_id === paymentPropertyFilter)
+    : rentCalls;
   /* ─── Postal code lookup ─── */
   const handlePostalCodeChange = async (value: string) => {
     setPropertyForm(prev => ({ ...prev, postal_code: value }));
