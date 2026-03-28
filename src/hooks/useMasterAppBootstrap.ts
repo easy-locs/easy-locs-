@@ -50,7 +50,8 @@ export function useMasterAppBootstrap() {
       cleanupStorefront();
       cleanupCrossApp();
       cleanupFlowBridge();
+      cleanupOrbitCache();
       booted = false;
     };
-  }, []);
+  }, [queryClient]);
 }
