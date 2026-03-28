@@ -110,8 +110,8 @@ export function useRentalData(countryFilter?: string | null) {
       rentalRepo.fetchTenants(orgId),
       rentalRepo.fetchRentCalls(orgId),
     ]);
-    const tenantsData = tenantsRaw;
-    const rentData = rentRaw;
+    let filteredTenants = tenantsData;
+    if (propIds) {
       filteredTenants = filteredTenants.filter(t => t.property_id && propIds.has(t.property_id));
     }
     setTenants(filteredTenants.map(t => ({
@@ -127,7 +127,7 @@ export function useRentalData(countryFilter?: string | null) {
       caf_apl_amount: Number((t as any).caf_apl_amount) || 0,
     })));
 
-    let rentCallData = rentRes.data || [];
+    let rentCallData = rentData;
     if (propIds) {
       rentCallData = rentCallData.filter(r => r.property_id && propIds.has(r.property_id));
     }
