@@ -125,16 +125,40 @@ const SeasonalRentals = () => {
     importICalFromUrl, importICalFromFile,
   } = useSeasonalData();
 
-  // Realtime: live updates for booking requests
-  useEffect(() => {
-    if (!orgId) return;
-    const channel = supabase
-      .channel("seasonal-rt")
-      .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests", filter: `org_id=eq.${orgId}` }, () => load())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [orgId, load]);
+  // Realtime already handled by useSeasonalData — no duplicate channel needed
 
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [calMonth, setCalMonth] = useState(() => {
+    const monthParam = searchParams.get("month");
+    if (monthParam) {
+      const [y, m] = monthParam.split("-").map(Number);
+      if (y && m) return new Date(y, m - 1, 1);
+    }
+    return new Date();
+  });
+  const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
+  const [deepLinkRequestId] = useState(() => searchParams.get("focusRequest") || null);
+  const initialPropertyId = searchParams.get("propertyId") || "";
+
+  const [form, setForm] = useState<SeasonalForm>({
+    property_id: initialPropertyId, guest_name: "", guest_email: "", guest_phone: "",
+    guest_address: "", guest_postal_code: "", guest_city: "", guest_country: "",
+    identity_type: "none", identity_number: "",
+    check_in: "", check_out: "", total_price: 0 as any, cleaning_fee: 0 as any,
+    deposit_amount: 0 as any, notes: "",
+  });
+  const [payingRequest, setPayingRequest] = useState<string | null>(null);
+  const [showIcalPanel, setShowIcalPanel] = useState(false);
+  const [icalUrl, setIcalUrl] = useState("");
+  const [importingIcal, setImportingIcal] = useState(false);
+  const [copiedExport, setCopiedExport] = useState(false);
+  const [selectedPropertyForPhotos, setSelectedPropertyForPhotos] = useState<string | null>(null);
+  const [focusedRequest, setFocusedRequest] = useState<any>(null);
+  const [showEditRequestModal, setShowEditRequestModal] = useState(false);
+  const [editingRequestDates, setEditingRequestDates] = useState<{ check_in: string; check_out: string }>({ check_in: "", check_out: "" });
+
+  // Deep link: focus request
   useEffect(() => {
     if (!deepLinkRequestId || !orgId) return;
     const loadRequest = async () => {
@@ -142,18 +166,16 @@ const SeasonalRentals = () => {
       if (data) setFocusedRequest(data);
     };
     loadRequest();
-    // Clean URL
     const next = new URLSearchParams(searchParams);
     next.delete("focusRequest");
     setSearchParams(next, { replace: true });
   }, [deepLinkRequestId, orgId]);
 
-  // Reactive deep-link: scroll to or open booking from ?booking=ID
+  // Deep link: scroll to booking
   useEffect(() => {
     const deepLinkBookingId = searchParams.get("booking");
     if (!deepLinkBookingId || deepLinkBookingId === lastAppliedBookingId) return;
-    if (loading) return; // Wait for data to load
-
+    if (loading) return;
     const el = document.getElementById(`booking-${deepLinkBookingId}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -163,100 +185,52 @@ const SeasonalRentals = () => {
       const found = bookings.find(b => String(b.id) === String(deepLinkBookingId));
       if (found) {
         startEdit(found);
-        console.log("[deep-link] opened seasonal booking for edit:", deepLinkBookingId);
       } else {
-        // Also check booking_requests
         const req = allRequests.find((r: any) => String(r.id) === String(deepLinkBookingId));
-        if (req) {
-          setFocusedRequest(req);
-          console.log("[deep-link] opened seasonal booking request:", deepLinkBookingId);
-        } else {
-          toast({
-            title: "Booking not found",
-            description: "This booking is no longer available.",
-            variant: "destructive",
-          });
-          console.warn("[deep-link] seasonal booking not found:", deepLinkBookingId);
-        }
+        if (req) { setFocusedRequest(req); }
+        else { toast({ title: "Booking not found", description: "This booking is no longer available.", variant: "destructive" }); }
       }
     }
     setLastAppliedBookingId(deepLinkBookingId);
-    // Clean URL
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.delete("booking");
-      return next;
-    }, { replace: true });
+    setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete("booking"); return next; }, { replace: true });
   }, [searchParams, bookings, allRequests, loading, lastAppliedBookingId, setSearchParams]);
 
   const resetForm = () => {
     setForm({
-      property_id: "",
-      guest_name: "",
-      guest_email: "",
-      guest_phone: "",
-      guest_address: "",
-      guest_postal_code: "",
-      guest_city: "",
-      guest_country: "",
-      identity_type: "none",
-      identity_number: "",
-      check_in: "",
-      check_out: "",
-      total_price: 0 as any,
-      cleaning_fee: 0 as any,
-      deposit_amount: 0 as any,
-      notes: "",
+      property_id: "", guest_name: "", guest_email: "", guest_phone: "",
+      guest_address: "", guest_postal_code: "", guest_city: "", guest_country: "",
+      identity_type: "none", identity_number: "",
+      check_in: "", check_out: "", total_price: 0 as any, cleaning_fee: 0 as any,
+      deposit_amount: 0 as any, notes: "",
     });
     setShowForm(false);
     setEditingId(null);
   };
 
-  /** Unified notification for seasonal bookings — uses shared communication pipeline */
-  const notifyReservation = async (title: string, message: string, bookingEmail?: string, bookingId?: string) => {
-    if (!orgId || !user) return;
-
-    const { data: org } = await supabase.from("orgs").select("owner_user_id, email, name").eq("id", orgId).single();
-    const orgEmail = normalizeEmail(org?.email);
-
-    const meta = createDeepLinkMeta({
-      targetType: "booking_request",
-      targetId: bookingId || "",
-      module: "seasonal",
-      countryCode: searchParams.get("country") || "",
-      bookingId,
-      orgId,
-    });
-
-    // Notify org owner via shared pipeline
-    await sendCommunicationEvent({
-      orgId,
-      senderId: user.id,
-      recipientUserId: org?.owner_user_id || user.id,
-      recipientEmail: orgEmail && isValidEmail(orgEmail) ? orgEmail : undefined,
-      subject: title,
-      message,
-      category: "booking",
-      meta,
-    });
-
-    // Also notify the guest if email provided
-    if (bookingEmail && isValidEmail(bookingEmail)) {
-      await sendCommunicationEvent({
-        orgId,
-        senderId: user.id,
-        recipientEmail: bookingEmail,
-        subject: t("page.seasonal.booking_confirmed_subject"),
-        message: t("page.seasonal.booking_confirmed_body"),
-        category: "booking",
-        emailLocale: "fr",
-        meta,
-      });
-    }
-  };
-
+  /** Save booking — delegates to useSeasonalData hook */
   const save = async () => {
     if (!orgId || !user || !form.guest_name || !form.property_id || !form.check_in || !form.check_out) return;
+
+    const details = [
+      form.guest_address && `${t("page.seasonal.full_address")}: ${form.guest_address}`,
+      form.guest_postal_code && `${t("page.seasonal.postal_code")}: ${form.guest_postal_code}`,
+      form.guest_city && `${t("page.seasonal.city")}: ${form.guest_city}`,
+      form.guest_country && `${t("page.seasonal.country")}: ${form.guest_country}`,
+      form.identity_type !== "none" && `${t("page.seasonal.identity_doc")}: ${form.identity_type === "cni" ? t("page.seasonal.id_cni") : t("page.seasonal.id_passport")}`,
+      form.identity_number && `${t("page.seasonal.id_number")}: ${form.identity_number}`,
+    ].filter(Boolean);
+
+    const record = {
+      property_id: form.property_id, guest_name: form.guest_name,
+      guest_email: normalizeEmail(form.guest_email), guest_phone: form.guest_phone.trim(),
+      check_in: form.check_in, check_out: form.check_out,
+      total_price: form.total_price, cleaning_fee: form.cleaning_fee, deposit_amount: form.deposit_amount,
+      notes: [form.notes.trim(), details.length ? `---\n${details.join("\n")}` : ""].filter(Boolean).join("\n"),
+    };
+
+    const ok = await saveBooking(record, editingId);
+    if (ok) resetForm();
+  };
 
     if (form.check_out <= form.check_in) {
       toast({ title: t("page.common.error"), description: t("page.seasonal.error_dates"), variant: "destructive" });
