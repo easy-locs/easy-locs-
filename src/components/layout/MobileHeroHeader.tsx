@@ -52,7 +52,7 @@ export function MobileHeroHeader({
           </h1>
 
           {subtitle ? (
-            <p className="mobile-hero__subtitle">{subtitle}</p>
+            <p className="mobile-hero__subtitle text-balance-soft">{subtitle}</p>
           ) : null}
         </div>
       </div>
