@@ -397,7 +397,7 @@ export const AdminFailedPaymentsPage = safeLazy(() => import("@/pages/admin/Admi
 export const AdminSupportSlaPage = safeLazy(() => import("@/pages/admin/AdminSupportSlaPage"), "AdminSupportSlaPage");
 export const AdminDeliveryIncidentsPage = safeLazy(() => import("@/pages/admin/AdminDeliveryIncidentsPage"), "AdminDeliveryIncidentsPage");
 export const AdminGrowthDashboardPage = safeLazy(() => import("@/pages/admin/AdminGrowthDashboardPage"), "AdminGrowthDashboardPage");
-export const AdminGrowthEnginePage = safeLazy(() => import("@/pages/admin/AdminGrowthEnginePage"), "AdminGrowthEnginePage");
+export const AdminGrowthEnginePage = safeLazy(() => import("@/pages/AdminGrowthEnginePage"), "AdminGrowthEnginePage");
 export const AdminCouponOversightPage = safeLazy(() => import("@/pages/admin/AdminCouponOversightPage"), "AdminCouponOversightPage");
 export const AdminActiveSessionsPage = safeLazy(() => import("@/pages/admin/AdminActiveSessionsPage"), "AdminActiveSessionsPage");
 export const AdminFraudMonitorPage = safeLazy(() => import("@/pages/admin/AdminFraudMonitorPage"), "AdminFraudMonitorPage");
@@ -412,7 +412,7 @@ export const AdminMasterControlPage = safeLazy(() => import("@/pages/admin/Admin
 export const AdminQaCommandPage = safeLazy(() => import("@/pages/admin/AdminQaCommandPage"), "AdminQaCommandPage");
 export const AdminMenuQualityControlPage = safeLazy(() => import("@/pages/admin/AdminMenuQualityControlPage"), "AdminMenuQualityControlPage");
 export const AdminUxLiveTestPage = safeLazy(() => import("@/pages/admin/AdminUxLiveTestPage"), "AdminUxLiveTestPage");
-export const AdminEngineCockpit = safeLazy(() => import("@/pages/admin/AdminEngineCockpit"), "AdminEngineCockpit");
+export const AdminEngineCockpit = safeLazy(() => import("@/pages/AdminEngineCockpit"), "AdminEngineCockpit");
 export const AdminBrowserRepairPage = safeLazy(() => import("@/pages/admin/AdminBrowserRepairPage"), "AdminBrowserRepairPage");
 export const AdminCentralControlPanelPage = safeLazy(() => import("@/pages/admin/CentralControlPanelPage"), "CentralControlPanelPage");
 
@@ -432,7 +432,7 @@ export const CustomerAddressSelectorPage = safeLazy(() => import("@/pages/custom
 export const CustomerGroupOrderPage = safeLazy(() => import("@/pages/customer/CustomerGroupOrderPage"), "CustomerGroupOrderPage");
 export const CustomerOrderGiftsPage = safeLazy(() => import("@/pages/customer/CustomerOrderGiftsPage"), "CustomerOrderGiftsPage");
 export const CustomerSplitBillPage = safeLazy(() => import("@/pages/customer/CustomerSplitBillPage"), "CustomerSplitBillPage");
-export const CustomerSavedCartsPage2 = safeLazy(() => import("@/pages/customer/CustomerSavedCartsPage2"), "CustomerSavedCartsPage2");
+export const CustomerSavedCartsPage2 = safeLazy(() => import("@/pages/customer/CustomerSavedCartsPage"), "CustomerSavedCartsPage2");
 export const CustomerAutoRepeatPage = safeLazy(() => import("@/pages/customer/CustomerAutoRepeatPage"), "CustomerAutoRepeatPage");
 export const CustomerPartyOrderPage = safeLazy(() => import("@/pages/customer/CustomerPartyOrderPage"), "CustomerPartyOrderPage");
 export const CustomerRewardRedemptionPage = safeLazy(() => import("@/pages/customer/CustomerRewardRedemptionPage"), "CustomerRewardRedemptionPage");
@@ -480,9 +480,7 @@ export const ServiceCityPage = safeLazy(() => import("@/pages/seo/ServiceHubPage
 export const ProviderSEOPage = safeLazy(() => import("@/pages/seo/ProviderSEOPage"), "ProviderSEOPage");
 export const SlugResolver = safeLazy(() => import("@/pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugResolver })), "SlugResolver");
 export const SlugCategoryResolver = safeLazy(() => import("@/pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })), "SlugCategoryResolver");
-export const CityServicesPage = safeLazy(() => import("@/pages/seo/CityServicesPage"), "CityServicesPage");
-export const CityActivitiesPage = safeLazy(() => import("@/pages/seo/CityActivitiesPage"), "CityActivitiesPage");
-export const CityConciergePage = safeLazy(() => import("@/pages/seo/CityConciergePage"), "CityConciergePage");
+// CityServicesPage, CityActivitiesPage, CityConciergePage are inline components using CityHubPage — defined in App.tsx
 
 // ── Legal ──
 export const TermsPage = safeLazy(() => import("@/pages/legal/TermsPage"), "TermsPage");
@@ -503,6 +501,6 @@ export const NotificationCenterPage = safeLazy(() => import("@/pages/notificatio
 export const CityMarketplacePage = safeLazy(() => import("@/pages/CityMarketplacePage"), "CityMarketplacePage");
 export const BoostDashboardPage = safeLazy(() => import("@/pages/boost/BoostDashboardPage"), "BoostDashboardPage");
 export const AppNotFoundPage = safeLazy(() => import("@/pages/AppNotFoundPage"), "AppNotFoundPage");
-export const LiveTrackingPageNew = safeLazy(() => import("@/pages/LiveTrackingPageNew"), "LiveTrackingPageNew");
-export const StripeCheckoutHandlerPage = safeLazy(() => import("@/pages/StripeCheckoutHandlerPage"), "StripeCheckoutHandlerPage");
+export const LiveTrackingPageNew = safeLazy(() => import("@/pages/live/LiveTrackingPage"), "LiveTrackingPageNew");
+export const StripeCheckoutHandlerPage = safeLazy(() => import("@/pages/payments/StripeCheckoutHandlerPage"), "StripeCheckoutHandlerPage");
 export const ConciergeServices = safeLazy(() => import("@/pages/ConciergeServices"), "ConciergeServices");
