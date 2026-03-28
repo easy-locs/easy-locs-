@@ -6,7 +6,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -114,7 +114,7 @@ const fadeUp = {
 export default function MeCommandCenter() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const profile = useOrbitStore((s) => s.profile);
+  const profile = useOrbitIdentity();
 
   // Detect if user has shops (merchant context)
   const { data: shopCount } = useQuery({

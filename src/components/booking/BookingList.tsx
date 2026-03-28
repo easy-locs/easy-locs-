@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { useBookingStore } from "@/stores/bookingStore";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
 export function BookingList(props: {
   mode: "owner" | "buyer" | "all";
   onOpen?: (bookingId: string) => void;
 }) {
   const bookings = useBookingStore((s) => s.bookings);
-  const orbitId = useOrbitStore((s) => s.profile?.orbitId);
+  const orbitId = useOrbitIdentity()?.orbitId;
 
   const filtered = useMemo(() => {
     if (props.mode === "all") return bookings;

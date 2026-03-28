@@ -1,4 +1,4 @@
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import type { AppRole } from "@/lib/types/domain";
 
 export function RoleGuard(props: {
@@ -6,7 +6,8 @@ export function RoleGuard(props: {
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }) {
-  const role = useOrbitStore((s) => s.profile?.role);
+  const identity = useOrbitIdentity();
+  const role = identity?.role as AppRole | undefined;
 
   if (!role || !props.allowed.includes(role)) {
     return (

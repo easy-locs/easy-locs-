@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useWalletStore } from "@/stores/walletStore";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { useActivityRealtime } from "@/hooks/useActivityRealtime";
@@ -59,7 +59,7 @@ const DISCOVER_CATEGORIES = [
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const orbit = useOrbitStore((s) => s.profile);
+  const orbit = useOrbitIdentity();
   const wallet = useWalletStore((s) => s.wallet);
   const user = useV2AuthStore((s) => s.user);
   const signOut = useV2AuthStore((s) => s.signOut);

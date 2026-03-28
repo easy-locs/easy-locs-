@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitStore } from "@/stores/orbitStore";
 
 /**
@@ -8,7 +9,7 @@ import { useOrbitStore } from "@/stores/orbitStore";
  */
 export default function OrbitIdentityPage() {
   const { user } = useAuth();
-  const profile = useOrbitStore((s) => s.profile);
+  const profile = useOrbitIdentity();
   const loading = useOrbitStore((s) => s.loading);
   const loadProfile = useOrbitStore((s) => s.loadProfile);
 
