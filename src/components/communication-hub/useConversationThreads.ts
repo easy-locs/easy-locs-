@@ -5,6 +5,7 @@
  */
 import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchThreadStats } from "@/repositories/communication.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import type { ConversationThread } from "./types";
 import { fetchOrgThreadSources, fetchV2Conversations, fetchDeals, fetchPreferences } from "@/lib/orbit/threads/thread-fetcher";
@@ -96,17 +97,8 @@ export function useConversationThreads() {
   const loadStats = useCallback(async () => {
     if (!orgId) return;
     try {
-      const [docRes, overdueRes, maintRes] = await Promise.all([
-        supabase.from("document_requests").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
-        supabase.from("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("paid", false),
-        supabase.from("interventions").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
-      ]);
-      setStats(s => ({
-        ...s,
-        pending_docs: docRes.count || 0,
-        overdue: overdueRes.count || 0,
-        maintenance: maintRes.count || 0,
-      }));
+      const result = await fetchThreadStats(orgId);
+      setStats(s => ({ ...s, ...result }));
     } catch (e) {
       console.warn("[comm-threads] loadStats error:", e);
     }
