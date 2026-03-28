@@ -25,16 +25,12 @@ const TenantRequests = () => {
 
   useEffect(() => {
     if (!tenantId) return;
-    const fetch = async () => {
-      const { data } = await supabase
-        .from("document_requests")
-        .select("*")
-        .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false });
-      setRequests(data || []);
+    const fetchReqs = async () => {
+      const data = await tenantRepo.fetchDocumentRequests(tenantId);
+      setRequests(data);
       setLoading(false);
     };
-    fetch();
+    fetchReqs();
   }, [tenantId]);
 
   const handleRequest = async (type: string) => {
