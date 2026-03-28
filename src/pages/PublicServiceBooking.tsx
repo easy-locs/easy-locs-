@@ -724,7 +724,7 @@ const PublicServiceBooking = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t("mp.service") || "Service"}</span>
-                      <span className="text-foreground font-medium truncate ms-2">{service.title}</span>
+                      <span className="text-foreground font-medium min-w-0 break-words ms-2 leading-snug">{service.title}</span>
                     </div>
 
                     {isRangeMode && selectedRange ? (

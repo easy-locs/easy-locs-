@@ -157,7 +157,7 @@ export default function StorefrontAnalytics({ providerId, services }: Storefront
               <div key={svc.id} className="flex items-center gap-3">
                 <span className="text-[10px] font-bold text-muted-foreground w-4">{i + 1}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate">{svc.title}</p>
+                  <p className="text-xs font-medium text-foreground line-clamp-2 break-words leading-snug">{svc.title}</p>
                 </div>
                 <span className="text-xs font-semibold text-primary">{svc.clicks} clics</span>
               </div>

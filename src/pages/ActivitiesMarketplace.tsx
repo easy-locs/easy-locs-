@@ -752,8 +752,8 @@ const ActivitiesMarketplace = () => {
                     return (
                       <div key={b.id} className="flex items-center justify-between p-2 rounded-md bg-card border border-border text-sm">
                         <div className="min-w-0 flex-1">
-                          <p className="text-foreground font-medium truncate">{b.booker_name}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">{svc?.title || "Service"} • {b.service_date || "—"}</p>
+                          <p className="text-foreground font-medium min-w-0 break-words leading-snug">{b.booker_name}</p>
+                          <p className="text-[10px] text-muted-foreground min-w-0 break-words leading-snug">{svc?.title || "Service"} • {b.service_date || "—"}</p>
                         </div>
                         <div className="text-right shrink-0 ml-2">
                           <p className="font-bold text-foreground tabular-nums">{formatAmount(Number(b.total_price || 0), b.currency || "EUR")}</p>
