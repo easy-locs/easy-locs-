@@ -5,6 +5,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { trackPropagation } from "@/lib/runtime/propagation-validator";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -51,6 +53,16 @@ export async function executeWalletTransfer(input: TransferInput): Promise<Trans
     }
 
     completeStep(flow, rpcStep, { transactionId: data });
+
+    platformBus.emit("wallet:transfer_completed", {
+      transactionId: data, amount: input.amount, currency: input.currency,
+    }, "wallet");
+
+    trackPropagation({
+      flowId: flow.flowId, domain: "wallet", action: "transfer",
+      dbWriteSuccess: true, eventEmitted: "wallet:transfer_completed", cacheInvalidated: ["wallet-balance"],
+    });
+
     reportHealth("wallet", "ok", flow.totalLatencyMs);
     endFlow(flow, "success");
     trace("transfer", "output", { transactionId: data });

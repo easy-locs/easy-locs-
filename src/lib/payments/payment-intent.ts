@@ -5,6 +5,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { trackPropagation } from "@/lib/runtime/propagation-validator";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -61,6 +63,16 @@ export async function createPaymentIntent(input: PaymentIntentInput): Promise<Pa
     }
 
     completeStep(flow, createStep, { intentId: data?.id });
+
+    platformBus.emit("payment:intent_created", {
+      intentId: data?.id, amount: input.amount, method: input.paymentMethod,
+    }, "payments");
+
+    trackPropagation({
+      flowId: flow.flowId, domain: "payments", action: "create_intent",
+      dbWriteSuccess: true, eventEmitted: "payment:intent_created", cacheInvalidated: [],
+    });
+
     reportHealth("payments", "ok", flow.totalLatencyMs);
     endFlow(flow, "success");
     trace("intent.create", "output", { intentId: data?.id });

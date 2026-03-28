@@ -5,6 +5,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { trackPropagation } from "@/lib/runtime/propagation-validator";
+import { APP_EVENTS } from "@/lib/platform/events";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -74,6 +77,17 @@ export async function transitionOrder(input: TransitionInput): Promise<Transitio
     }
 
     completeStep(flow, writeStep);
+
+    platformBus.emit("order:status_changed", {
+      orderId: input.orderId, from: input.fromStatus, to: input.toStatus,
+    }, "orders");
+    platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "orders");
+
+    trackPropagation({
+      flowId: flow.flowId, domain: "orders", action: `transition_${input.toStatus}`,
+      dbWriteSuccess: true, eventEmitted: "order:status_changed", cacheInvalidated: ["orders"],
+    });
+
     reportHealth("orders", "ok", flow.totalLatencyMs);
     endFlow(flow, "success");
     trace("transition", "output", { success: true });
