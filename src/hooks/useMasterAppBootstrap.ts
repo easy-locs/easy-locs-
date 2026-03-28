@@ -6,12 +6,20 @@ import { installStorefrontReactions } from "@/lib/shared/storefront-reactions";
 import { installCrossAppReactions } from "@/lib/shared/cross-app-reactions";
 import { runPlatformRecovery } from "@/lib/platform/platform-recovery-engine";
 import { installSmartFlowBridge } from "@/lib/runtime/smart-flow-bridge";
+import { installOrbitCacheListener, registerQueryClient } from "@/lib/orbit/orbit-cache-invalidator";
+import { useQueryClient } from "@tanstack/react-query";
 
 let booted = false;
 
 export function useMasterAppBootstrap() {
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     if (booted) return;
+    booted = true;
+
+    // 0. Register queryClient for cache invalidation
+    registerQueryClient(queryClient);
     booted = true;
 
     // 1. Platform event bus reactions (wallet ↔ orbit ↔ marketplace)
@@ -29,6 +37,9 @@ export function useMasterAppBootstrap() {
 
     // 5. Smart flow bridge — runtime supervision (event audit, coupling detection, auto-validation)
     const cleanupFlowBridge = installSmartFlowBridge();
+
+    // 6. Orbit cache auto-invalidation on events
+    const cleanupOrbitCache = installOrbitCacheListener();
 
     // 6. Platform recovery — deferred well after initial render for speed
     const t1 = setTimeout(() => void runPlatformRecovery("boot"), 30000);
