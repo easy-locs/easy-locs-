@@ -11,7 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  uploadConciergeFile, updateConciergeOrderField,
+  updateConciergeOrderStatus as repoUpdateStatus, markConciergeOrderPaid,
+} from "@/repositories/concierge.repository";
 import { toast } from "sonner";
 import {
   User, Mail, Phone, Calendar, Clock, CreditCard, FileText, Upload,
@@ -71,18 +74,12 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
     try {
       const newUrls = [...documentUrls];
       for (const file of Array.from(files)) {
-        const ext = file.name.split(".").pop();
         const path = `concierge-docs/${orgId}/${booking.id}/${Date.now()}-${file.name}`;
-        const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
-        if (error) throw error;
-        const { data: urlData } = supabase.storage.from("property-photos").getPublicUrl(path);
-        newUrls.push(urlData.publicUrl);
+        const url = await uploadConciergeFile("property-photos", path, file);
+        newUrls.push(url);
       }
 
-      await supabase.from("concierge_orders")
-        .update({ document_urls: newUrls } as any)
-        .eq("id", booking.id);
-
+      await updateConciergeOrderField(booking.id, { document_urls: newUrls });
       toast.success(`${files.length} document(s) uploaded`);
       onUpdate();
     } catch (err: any) {
@@ -94,32 +91,26 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
 
   const removeDoc = useCallback(async (index: number) => {
     const updated = documentUrls.filter((_, i) => i !== index);
-    await supabase.from("concierge_orders")
-      .update({ document_urls: updated } as any)
-      .eq("id", booking.id);
+    await updateConciergeOrderField(booking.id, { document_urls: updated });
     toast.success("Document removed");
     onUpdate();
   }, [booking, documentUrls, onUpdate]);
 
   const saveNotes = useCallback(async () => {
     setSaving(true);
-    await supabase.from("concierge_orders").update({ notes } as any).eq("id", booking.id);
+    await updateConciergeOrderField(booking.id, { notes });
     toast.success("Notes saved");
     setSaving(false);
   }, [booking, notes]);
 
   const updateStatus = useCallback(async (status: string) => {
-    const updates: any = { status };
-    if (status === "confirmed") updates.confirmed_at = new Date().toISOString();
-    if (status === "completed") updates.completed_at = new Date().toISOString();
-    if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
-    await supabase.from("concierge_orders").update(updates).eq("id", booking.id);
+    await repoUpdateStatus(booking.id, status);
     toast.success(`Booking ${status}`);
     onUpdate();
   }, [booking, onUpdate]);
 
   const markPaid = useCallback(async () => {
-    await supabase.from("concierge_orders").update({ payment_status: "paid" } as any).eq("id", booking.id);
+    await markConciergeOrderPaid(booking.id);
     toast.success("Payment confirmed");
     onUpdate();
   }, [booking, onUpdate]);

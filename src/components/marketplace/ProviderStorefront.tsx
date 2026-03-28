@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPublicProviders, fetchPublicServices, fetchProviderReviews, insertBooking } from "@/repositories/marketplace.repository";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,8 +32,7 @@ export default function ProviderStorefront() {
   const { data: provider, isLoading } = useQuery({
     queryKey: ["marketplace_provider_public", providerSlug],
     queryFn: async () => {
-      const { data } = await supabase
-        .rpc("get_public_marketplace_providers", { p_slug: providerSlug!, p_active_only: true });
+      const data = await fetchPublicProviders(providerSlug!);
       return (data && data.length > 0) ? data[0] : null;
     },
     enabled: !!providerSlug,
@@ -41,15 +40,7 @@ export default function ProviderStorefront() {
 
   const { data: services = [] } = useQuery({
     queryKey: ["marketplace_services_public", provider?.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("marketplace_services")
-        .select("*")
-        .eq("provider_id", provider!.id)
-        .eq("active", true)
-        .order("sort_order");
-      return (data || []);
-    },
+    queryFn: () => fetchPublicServices(provider!.id),
     enabled: !!provider?.id,
   });
 
@@ -60,11 +51,7 @@ export default function ProviderStorefront() {
   // Fetch ALL reviews from DB for client-side pagination
   const { data: reviews = [] } = useQuery({
     queryKey: ["provider_reviews", provider?.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .rpc("get_provider_reviews", { p_provider_id: provider!.id, p_limit: 100 });
-      return (data || []) as { id: string; reviewer_name: string; rating: number; comment: string; response: string | null; service_title: string | null; verified: boolean; created_at: string }[];
-    },
+    queryFn: () => fetchProviderReviews(provider!.id),
     enabled: !!provider?.id,
   });
 
@@ -73,22 +60,26 @@ export default function ProviderStorefront() {
   const replyRate = reviewsCount > 0 ? Math.round((repliedCount / reviewsCount) * 100) : 0;
 
   const handleBookingSubmit = async (formData: any) => {
-    const { error } = await supabase.from("marketplace_bookings").insert({
-      service_id: bookingService.id,
-      provider_id: provider.id,
-      org_id: bookingService.org_id,
-      booker_name: formData.booker_name,
-      booker_email: formData.booker_email,
-      booker_phone: formData.booker_phone,
-      service_date: formData.service_date,
-      service_time: formData.service_time,
-      quantity: formData.quantity,
-      total_price: Number(bookingService.price) * formData.quantity,
-      currency: bookingService.currency,
-      notes: formData.notes,
-    });
-    if (error) toast.error(error.message);
-    else { toast.success(t("mp.booking_submitted") || "Booking request sent!"); setBookingService(null); }
+    try {
+      await insertBooking({
+        service_id: bookingService.id,
+        provider_id: provider.id,
+        org_id: bookingService.org_id,
+        booker_name: formData.booker_name,
+        booker_email: formData.booker_email,
+        booker_phone: formData.booker_phone,
+        service_date: formData.service_date,
+        service_time: formData.service_time,
+        quantity: formData.quantity,
+        total_price: Number(bookingService.price) * formData.quantity,
+        currency: bookingService.currency,
+        notes: formData.notes,
+      });
+      toast.success(t("mp.booking_submitted") || "Booking request sent!");
+      setBookingService(null);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
   };
 
   if (isLoading) {
