@@ -232,8 +232,8 @@ export function DeliveryBookingForm() {
         </div>
       )}
 
-      <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl text-sm font-bold shadow-lg">
-        {loading ? "Requesting..." : bookingMode === "scheduled" ? "📅 Schedule delivery" : "🚀 Request delivery"}
+      <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl text-sm font-bold shadow-lg flex items-center justify-center gap-2">
+        {loading ? "Requesting..." : bookingMode === "scheduled" ? <><Calendar className="h-4 w-4" /> Schedule delivery</> : <><Package className="h-4 w-4" /> Request delivery</>}
       </Button>
     </form>
   );
