@@ -60,12 +60,15 @@ export class CallManager {
     this._isVideo = isVideo;
     this._cleaned = false;
     this._ending = false;
+    console.log(`[CALL][call.media.request] input:`, { callId: this.callId, role: this.role, isVideo });
     this.debug("startCall", { isVideo });
     this.onStateChange({ status: "ringing", callId: this.callId, isVideo });
 
     this.signaling = new SignalingChannel(this.callId, this.userId, (s) => void this.processSignal(s));
     await this.signaling.join();
+    console.log(`[CALL][call.signal.subscribe] output:`, { callId: this.callId, role: this.role, subscribed: true });
     await this.setupMedia(isVideo);
+    console.log(`[CALL][call.media.request] output:`, { callId: this.callId, role: this.role, granted: true });
   }
 
   async acceptCall(isVideo: boolean) {
@@ -77,6 +80,7 @@ export class CallManager {
 
     this.signaling = new SignalingChannel(this.callId, this.userId, (s) => void this.processSignal(s));
     await this.signaling.join();
+    console.log(`[CALL][call.answer.receive] output:`, { callId: this.callId, role: this.role, accepted: true });
     await this.setupMedia(isVideo);
 
     await markCallActive(this.callId);
@@ -84,6 +88,7 @@ export class CallManager {
     this.sendSignal({ type: "accepted", data: "{}" });
     await this.createPeerConnection();
     const offer = await this.pc!.createOffer();
+    console.log(`[CALL][call.offer.create] output:`, { callId: this.callId, role: this.role, type: offer.type });
     await this.pc!.setLocalDescription(offer);
     this.sendSignal({ type: "offer", data: JSON.stringify(offer) });
     this.startIceTimeout();
@@ -126,6 +131,7 @@ export class CallManager {
 
   private async processSignal(signal: SignalPayload) {
     try {
+      console.log(`[CALL][call.signal.subscribe] input:`, { callId: this.callId, role: this.role, signalType: signal.type });
       if (signal.type === "accepted") {
         this.onStateChange({ status: "connecting" });
         await this.createPeerConnection();
@@ -134,20 +140,31 @@ export class CallManager {
       } else if (signal.type === "offer") {
         if (!this.pc) await this.createPeerConnection();
         await this.pc!.setRemoteDescription(new RTCSessionDescription(JSON.parse(signal.data)));
+        console.log(`[CALL][call.answer.receive] output:`, { callId: this.callId, role: this.role, remoteOfferSet: true });
         this.flushPendingCandidates();
         const answer = await this.pc!.createAnswer();
         await this.pc!.setLocalDescription(answer);
         this.sendSignal({ type: "answer", data: JSON.stringify(answer) });
       } else if (signal.type === "answer") {
-        if (!this.pc) return;
+        if (!this.pc) {
+          console.error(`[CALL][call.answer.receive] error:`, { callId: this.callId, role: this.role, reason: "missing_peer_connection" });
+          return;
+        }
         await this.pc!.setRemoteDescription(new RTCSessionDescription(JSON.parse(signal.data)));
+        console.log(`[CALL][call.answer.receive] output:`, { callId: this.callId, role: this.role, remoteAnswerSet: true });
         this.flushPendingCandidates();
       } else if (signal.type === "ice") {
         const candidate = new RTCIceCandidate(JSON.parse(signal.data));
         if (this.pc?.remoteDescription) {
-          try { await this.pc.addIceCandidate(candidate); } catch {}
+          try {
+            await this.pc.addIceCandidate(candidate);
+            console.log(`[CALL][call.ice.connect] output:`, { callId: this.callId, role: this.role, candidateAdded: true });
+          } catch (error) {
+            console.error(`[CALL][call.ice.connect] error:`, { callId: this.callId, role: this.role, message: String(error) });
+          }
         } else {
           this._pendingCandidates.push(candidate);
+          console.log(`[CALL][call.ice.connect] output:`, { callId: this.callId, role: this.role, queuedCandidate: true, pendingCount: this._pendingCandidates.length });
         }
       } else if (signal.type === "declined") {
         this.onStateChange({ status: "declined" });
@@ -158,7 +175,7 @@ export class CallManager {
         this.cleanup("remote-ended");
       }
     } catch (err) {
-      this.debug("signal processing error", { type: signal.type, error: String(err) });
+      console.error(`[CALL][call.signal.subscribe] error:`, { callId: this.callId, role: this.role, type: signal.type, error: String(err) });
     }
   }
 
@@ -187,6 +204,7 @@ export class CallManager {
       event.streams[0]?.getTracks().forEach((track) => this.remoteStream!.addTrack(track));
       this.clearTimeouts();
       this.onStateChange({ remoteStream: this.remoteStream, status: "active" });
+      console.log(`[CALL][call.ui.active] output:`, { callId: this.callId, role: this.role, remoteTracks: this.remoteStream?.getTracks().length ?? 0 });
     };
 
     this.pc.onicecandidate = (event) => {
@@ -211,6 +229,7 @@ export class CallManager {
         this._reconnectAttempts = 0;
         this.clearTimeouts();
         this.onStateChange({ status: "active" });
+        console.log(`[CALL][call.ice.connect] output:`, { callId: this.callId, role: this.role, connectionState: state });
       } else if (state === "disconnected") {
         if (this.iceConnected && this._reconnectAttempts < 3) {
           this._reconnectAttempts++;
@@ -323,6 +342,7 @@ export class CallManager {
         status: "failed",
         error: isPermError ? (isVideo ? "CAMERA_MIC_DENIED" : "MIC_DENIED") : "MEDIA_UNAVAILABLE",
       });
+      console.error(`[CALL][call.media.request] error:`, { callId: this.callId, role: this.role, message: String(err) });
       throw new Error("Media permission denied");
     }
   }
@@ -362,7 +382,11 @@ export class CallManager {
   toggleSpeaker(): boolean { return false; }
 
   cleanup(reason = "unknown") {
-    if (this._cleaned) return;
+    if (this._cleaned) {
+      console.error(`[CALL][call.end.cleanup] error:`, { callId: this.callId, role: this.role, reason: "already_cleaned", cleanupReason: reason });
+      return;
+    }
+    console.log(`[CALL][call.end.cleanup] input:`, { callId: this.callId, role: this.role, reason });
     this._cleanupInvocations += 1;
     this._cleaned = true;
     this._ending = false;
@@ -386,5 +410,6 @@ export class CallManager {
 
     this.signaling?.destroy();
     this.signaling = null;
+    console.log(`[CALL][call.end.cleanup] output:`, { callId: this.callId, role: this.role, cleanupInvocations: this._cleanupInvocations });
   }
 }
