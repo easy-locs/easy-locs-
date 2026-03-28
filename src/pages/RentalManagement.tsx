@@ -16,17 +16,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useRentalData, type Property, type Tenant, type RentCall } from "@/hooks/useRentalData";
 import { getDocuments, type GeneratedDocument } from "@/lib/store";
 import { getTemplatesByCategory, getTemplateById } from "@/lib/templates/registry";
-import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
-import { frLeaseEmpty } from "@/lib/templates/fr/lease-empty";
-import { frLeaseFurnished } from "@/lib/templates/fr/lease-furnished";
-import { frLeaseCommercial } from "@/lib/templates/fr/lease-commercial";
 import { getAllTemplates } from "@/lib/templates/registry";
-import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
 import type { DocumentTemplate } from "@/lib/templates/types";
-import { supabase } from "@/integrations/supabase/client";
-import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
+import { useRentalMessages } from "@/hooks/rental/useRentalMessages";
+import { useRentalPropertyDetail } from "@/hooks/rental/useRentalPropertyDetail";
+import { useRentalReceipts } from "@/hooks/rental/useRentalReceipts";
+import { useRentalLeaseGenerator } from "@/hooks/rental/useRentalLeaseGenerator";
+import { useRentalNotifications } from "@/hooks/rental/useRentalNotifications";
 import {
   Home, FileText, ChevronRight, Plus, Users, Send, X,
   Phone, MapPin, Calendar, Download, Receipt, ClipboardList,
@@ -67,15 +65,6 @@ const defaultTenantForm = {
 };
 // EXPENSE_CATEGORIES now uses i18n - see render usage
 
-const escapeEmailHtml = (value: string) =>
-  value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-const normalizeEmail = (email: string | null | undefined) => (email || "").trim().toLowerCase();
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const RentalManagement = () => {
