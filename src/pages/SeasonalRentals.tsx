@@ -15,6 +15,9 @@ import AddressAutocomplete, { type AddressResult } from "@/components/ui/Address
 import PropertyPhotos from "@/components/seasonal/PropertyPhotos";
 import ListingManager from "@/components/seasonal/ListingManager";
 import SeasonalShowcase from "@/components/seasonal/SeasonalShowcase";
+import SeasonalCalendarGrid from "@/components/seasonal/SeasonalCalendarGrid";
+import SeasonalICalPanel from "@/components/seasonal/SeasonalICalPanel";
+import { generateICalFeed, parseICalEvents } from "@/lib/seasonal/ical-helpers";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
 import BookingDocumentsPanel from "@/components/booking/BookingDocumentsPanel";
@@ -60,54 +63,7 @@ interface SeasonalForm {
 const normalizeEmail = (email: string | null | undefined) => (email || "").trim().toLowerCase();
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-/* ─── iCal helpers ─── */
-const toICalDate = (d: string) => d.replace(/-/g, "");
-
-const generateICalFeed = (bookings: Booking[], properties: Property[]) => {
-  const propName = (id: string) => properties.find(p => p.id === id)?.label || "Property";
-    const events = bookings.map(b => [
-    "BEGIN:VEVENT",
-    `DTSTART;VALUE=DATE:${toICalDate(b.check_in)}`,
-    `DTEND;VALUE=DATE:${toICalDate(b.check_out)}`,
-    `SUMMARY:${b.guest_name} — ${propName(b.property_id)}`,
-    `DESCRIPTION:Price: ${b.total_price} | Phone: ${b.guest_phone || "—"} | Email: ${b.guest_email || "—"}`,
-    `UID:${b.id}@easy-locs`,
-    `STATUS:${b.status === "cancelled" ? "CANCELLED" : "CONFIRMED"}`,
-    "END:VEVENT",
-  ].join("\r\n"));
-
-  return [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Easy-Locs//Seasonal//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "X-WR-CALNAME:Easy-Locs Seasonal",
-    ...events,
-    "END:VCALENDAR",
-  ].join("\r\n");
-};
-
-const parseICalEvents = (ical: string): { summary: string; start: string; end: string; uid: string }[] => {
-  const events: { summary: string; start: string; end: string; uid: string }[] = [];
-  const blocks = ical.split("BEGIN:VEVENT");
-  for (let i = 1; i < blocks.length; i++) {
-    const block = blocks[i].split("END:VEVENT")[0];
-    const getVal = (key: string) => {
-      const match = block.match(new RegExp(`${key}[^:]*:(.+)`));
-      return match ? match[1].trim() : "";
-    };
-    const rawStart = getVal("DTSTART");
-    const rawEnd = getVal("DTEND");
-    const formatDate = (d: string) => {
-      const clean = d.replace(/[^0-9]/g, "").slice(0, 8);
-      if (clean.length >= 8) return `${clean.slice(0, 4)}-${clean.slice(4, 6)}-${clean.slice(6, 8)}`;
-      return "";
-    };
-    events.push({ summary: getVal("SUMMARY"), start: formatDate(rawStart), end: formatDate(rawEnd), uid: getVal("UID") });
-  }
-  return events.filter(e => e.start && e.end);
-};
+/* iCal helpers imported from src/lib/seasonal/ical-helpers.ts */
 
 const SeasonalRentals = () => {
   const { user, orgId, subscription } = useAuth();

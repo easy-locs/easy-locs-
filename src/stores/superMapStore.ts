@@ -32,8 +32,6 @@ interface SuperMapState {
   zones: MapZone[];
   selectedEntityId: string | null;
   showHeatmap: boolean;
-  showWeather: boolean;
-  showStations: boolean;
   showMobility: boolean;
   showRadius: boolean;
   radiusKm: number;
@@ -54,8 +52,6 @@ interface SuperMapState {
   setZoom: (zoom: number) => void;
   setRadiusKm: (km: number) => void;
   toggleHeatmap: () => void;
-  toggleWeather: () => void;
-  toggleStations: () => void;
   toggleMobility: () => void;
   toggleRadius: () => void;
 }
@@ -67,8 +63,6 @@ export const useSuperMapStore = create<SuperMapState>((set) => ({
   zones: [],
   selectedEntityId: null,
   showHeatmap: false,
-  showWeather: true,
-  showStations: true,
   showMobility: true,
   showRadius: false,
   radiusKm: 5,
@@ -88,8 +82,6 @@ export const useSuperMapStore = create<SuperMapState>((set) => ({
   setZoom: (zoom) => set({ zoom }),
   setRadiusKm: (km) => set({ radiusKm: km }),
   toggleHeatmap: () => set((s) => ({ showHeatmap: !s.showHeatmap })),
-  toggleWeather: () => set((s) => ({ showWeather: !s.showWeather })),
-  toggleStations: () => set((s) => ({ showStations: !s.showStations })),
   toggleMobility: () => set((s) => ({ showMobility: !s.showMobility })),
   toggleRadius: () => set((s) => ({ showRadius: !s.showRadius })),
 }));
