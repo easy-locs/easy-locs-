@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { CheckSquare, Plus, Calendar, AlertTriangle, Clock, Trash2, Edit, X, Building2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import * as tasksRepo from "@/repositories/tasks.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
