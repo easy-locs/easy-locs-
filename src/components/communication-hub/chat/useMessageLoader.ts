@@ -82,6 +82,9 @@ function mapV2ToChat(m: any, conversationId: string): ChatMessage {
   } as any;
 }
 
+// Simple in-memory cache for instant re-open
+const messageCache = new Map<string, ChatMessage[]>();
+
 export function useMessageLoader({
   thread,
   userId,
@@ -93,6 +96,7 @@ export function useMessageLoader({
   const [pendingOffline, setPendingOffline] = useState<any[]>([]);
   const [convStatus, setConvStatus] = useState("active");
   const [typingIndicator, setTypingIndicator] = useState(false);
+  const [messagesLoading, setMessagesLoading] = useState(false);
 
   const typingChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<any>(null);
@@ -101,10 +105,20 @@ export function useMessageLoader({
     if (!thread?.v2ConversationId) {
       setRawMessages([]);
       setPendingOffline([]);
+      setMessagesLoading(false);
       return;
     }
 
     const conversationId = thread.v2ConversationId;
+
+    // Show cached messages instantly, then refresh in background
+    const cached = messageCache.get(conversationId);
+    if (cached?.length) {
+      setRawMessages(cached);
+      setMessagesLoading(false);
+    } else {
+      setMessagesLoading(true);
+    }
 
     if (!offline.isOnline) {
       const cached = await offline.getCachedMessages();
