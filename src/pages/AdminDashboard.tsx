@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { checkAdminRole, fetchAdminStats } from "@/repositories/admin.repository";
 import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar, DollarSign, ArrowUpRight, ArrowDownRight, HeartPulse, UserCog, ShieldAlert } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
@@ -45,22 +45,13 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
-      setIsAdmin(!!data);
-      if (!data) { setLoading(false); return; }
+    checkAdminRole(user.id).then((admin) => {
+      setIsAdmin(admin);
+      if (!admin) { setLoading(false); return; }
 
-      Promise.all([
-        supabase.from("profiles").select("id, email, name, created_at, user_type", { count: "exact" }),
-        supabase.from("subscriptions").select("id, plan, status, created_at", { count: "exact" }),
-        supabase.from("properties").select("id", { count: "exact", head: true }),
-        supabase.from("documents").select("id", { count: "exact", head: true }),
-        supabase.from("referrals").select("id", { count: "exact", head: true }),
-        supabase.from("booking_requests").select("id, status", { count: "exact" }),
-        supabase.from("rent_calls").select("id, paid, total_amount, paid_date, month").eq("paid", true),
-        supabase.from("reservations").select("id, amount, status, created_at").eq("status", "confirmed"),
-      ]).then(([users, subs, props, docs, refs, bookingReqs, paidRents, confirmedRes]) => {
-        const allUsers = users.data || [];
-        const allSubs = subs.data || [];
+      fetchAdminStats().then((raw) => {
+        const allUsers = raw.users.data;
+        const allSubs = raw.subs.data;
         const activeSubs = allSubs.filter(s => s.status === "active");
         const churned = allSubs.filter(s => s.status === "canceled" || s.status === "cancelled");
         const trials = allSubs.filter(s => s.status === "trialing");
@@ -113,18 +104,18 @@ const AdminDashboard = () => {
         const totalBookingRevenue = confirmedResData.reduce((sum: number, r: any) => sum + (Number(r.amount) || 0), 0);
 
         setStats({
-          totalUsers: users.count || allUsers.length,
+          totalUsers: raw.users.count || allUsers.length,
           activeSubscriptions: activeSubs.length,
-          totalProperties: props.count || 0,
-          totalDocuments: docs.count || 0,
-          referrals: refs.count || 0,
+          totalProperties: raw.propsCount,
+          totalDocuments: raw.docsCount,
+          referrals: raw.refsCount,
           recentSignups: allUsers.slice(-10).reverse(),
           signupsByMonth,
           subscriptionsByPlan,
           churnedUsers: churned.length,
           avgPropertiesPerUser: allUsers.length > 0 ? (props.count || 0) / allUsers.length : 0,
           trialConversion: trialConverted,
-          bookingRequests: bookingReqs.count || (bookingReqs.data || []).length,
+          bookingRequests: raw.bookingReqs.count,
           confirmedBookings: confirmedResData.length,
           revenueByMonth,
           totalRentCollected: Math.round(totalRentCollected),
@@ -134,6 +125,8 @@ const AdminDashboard = () => {
       });
     });
   }, [user]);
+
+  // Derive paidRents/confirmedRes from stats for revenue tab (already computed in stats)
 
   if (!isAdmin && !loading) {
     return (
