@@ -46,7 +46,7 @@
 }
 
 /* ══════════════════════════════════════════════════
-   LAYOUT PROTECTION ENGINE — Global overlap prevention
+   LAYOUT PROTECTION ENGINE — Anti-clipping, anti-truncation, anti-overlap
    ══════════════════════════════════════════════════ */
 
 /* 1. Text safety — prevent vertical letter-by-letter breaks */
@@ -67,17 +67,77 @@
   min-width: 0;
 }
 
-/* 4a. Anti-strangling — containers should not clip text by default */
-p, span, label, h1, h2, h3, h4, h5, h6, li, dt, dd, td, th, a {
+/* 4a. Anti-strangling — text elements should never clip by default */
+p, span, label, h1, h2, h3, h4, h5, h6, li, dt, dd, td, th {
   overflow: visible;
   text-overflow: unset;
 }
 
-/* 4b. Multi-line text safety — prefer wrapping over clipping */
+/* 4b. Anchors inside nav/buttons can truncate, standalone anchors should not clip */
+a:not([class*="truncate"]):not([class*="line-clamp"]) {
+  overflow: visible;
+  text-overflow: unset;
+}
+
+/* 4c. Multi-line text safety — prefer wrapping over clipping */
 .text-balance { text-wrap: balance; }
 .text-pretty { text-wrap: pretty; }
 
-/* 4. Card safety — enforce content boundaries only on explicit card containers */
+/* 4d. Anti-text-clipping utility — force visible */
+.text-safe {
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+}
+
+/* 4e. Cards: text inside cards must wrap, not clip */
+[class*="rounded-2xl"] > * > p,
+[class*="rounded-2xl"] > * > h3,
+[class*="rounded-2xl"] > * > h4,
+[class*="rounded-xl"] > * > p,
+[class*="rounded-xl"] > * > h3,
+[class*="rounded-xl"] > * > h4 {
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+/* 4f. Buttons: text must fit — allow shrinking font if needed */
+button, [role="button"] {
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+}
+/* Exception: icon-only or compact buttons */
+button[class*="min-w-[44px]"]:not([class*="px-"]),
+button.icon-only {
+  white-space: nowrap;
+}
+
+/* 4g. Tab labels should wrap on small screens */
+[role="tablist"] [role="tab"] {
+  white-space: normal;
+  text-align: center;
+  overflow: visible;
+  min-height: 36px;
+}
+
+/* 4h. Badge / chip safety — intentional nowrap but with safety */
+[class*="rounded-full"][class*="px-"] {
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 4i. Input/placeholder safety — never clip placeholder text visually */
+input::placeholder, textarea::placeholder {
+  overflow: visible;
+  text-overflow: ellipsis;
+}
+
+/* 5. Card safety — enforce content boundaries only on explicit card containers */
 .card-clip,
 [data-card-clip] {
   overflow: hidden;
@@ -89,21 +149,13 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, dt, dd, td, th, a {
   overflow: visible !important;
 }
 
-/* 5. Image safety — never overflow container */
+/* 6. Image safety — never overflow container */
 img, video, svg.lucide {
   max-width: 100%;
   height: auto;
 }
 img {
   object-fit: cover;
-}
-
-/* 6. Badge / chip safety — prevent wrapping and overflow */
-[class*="rounded-full"][class*="px-"] {
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* 7. Scroll containers — hide scrollbars, ensure snap */
@@ -123,7 +175,7 @@ img {
   object-fit: cover;
 }
 
-/* 9. Truncation utilities (reinforce) */
+/* 9. Intentional truncation (explicit opt-in only) */
 .truncate {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -139,6 +191,23 @@ img {
 .line-clamp-1 { -webkit-line-clamp: 1; }
 .line-clamp-2 { -webkit-line-clamp: 2; }
 .line-clamp-3 { -webkit-line-clamp: 3; }
+
+/* 10. RTL text safety — prevent clipping in RTL contexts */
+[dir="rtl"] p, [dir="rtl"] span, [dir="rtl"] label,
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4 {
+  text-align: inherit;
+  overflow: visible;
+  direction: inherit;
+}
+
+/* 11. i18n long-text safety — German/Finnish/etc. */
+:lang(de) h1, :lang(de) h2, :lang(de) h3,
+:lang(fi) h1, :lang(fi) h2, :lang(fi) h3,
+:lang(nl) h1, :lang(nl) h2, :lang(nl) h3 {
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
 
 /* 10. Mobile layout protection — 320px-428px */
 @media (max-width: 428px) {
