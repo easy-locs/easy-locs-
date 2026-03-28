@@ -5,7 +5,10 @@
  */
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  fetchPublicMarketplaceServices, fetchPublicRealEstateListings,
+  fetchPublicListings, fetchConciergeServicesByCityCategory,
+} from "@/repositories/seo.repository";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
@@ -59,28 +62,30 @@ export default function CityCategoryPage() {
       const nextListings: any[] = [];
 
       if (config.serviceKey) {
-        const r = await supabase.rpc("get_public_marketplace_services", { _category: config.serviceKey, _city: cityName });
-        if (r.data) nextServices.push(...(r.data || []).slice(0, 20));
+        const data = await fetchPublicMarketplaceServices({ _category: config.serviceKey, _city: cityName });
+        nextServices.push(...(data || []).slice(0, 20));
       }
 
       if (config.listingType === "real-estate") {
-        const r = await supabase.rpc("get_public_real_estate_listings", { p_city: cityName, p_limit: 20 });
-        if (r.data) nextListings.push(...(r.data || []).map((l: any) => ({ ...l, _type: "real-estate" })));
+        const data = await fetchPublicRealEstateListings({ p_city: cityName, p_limit: 20 });
+        nextListings.push(...(data || []).map((l: any) => ({ ...l, _type: "real-estate" })));
       }
 
       if (config.listingType === "seasonal" || config.listingType === "long-term") {
-        const r = await supabase.from("public_listings").select("*").eq("active", true).limit(20);
-        if (r.data) nextListings.push(...(r.data || []).map((l: any) => ({ ...l, _type: "seasonal" })));
+        const data = await fetchPublicListings(20);
+        nextListings.push(...(data || []).map((l: any) => ({ ...l, _type: "seasonal" })));
       }
 
       if (config.serviceKey) {
-        const r = await supabase.from("concierge_services")
-          .select("id,title,description,category,city,country,price,currency,photo_urls,booking_slug,active")
-          .eq("active", true).eq("city", cityName).eq("category", config.serviceKey).limit(10);
-        const conciergeItems = (r.data || []).map((s: any) => ({ ...s, _type: "service" }));
+        const conciergeItems = (await fetchConciergeServicesByCityCategory(cityName, config.serviceKey) || []).map((s: any) => ({ ...s, _type: "service" }));
         const ids = new Set(nextServices.map((p) => p.id));
         nextServices.push(...conciergeItems.filter((c: any) => !ids.has(c.id)));
       }
+
+      setServices(nextServices);
+      setListings(nextListings);
+      setLoading(false);
+    };
 
       setServices(nextServices);
       setListings(nextListings);

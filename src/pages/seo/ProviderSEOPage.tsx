@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPublicMarketplaceProviders, fetchPublicMarketplaceServices } from "@/repositories/seo.repository";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Star, Shield, Phone, Globe, Mail } from "lucide-react";
@@ -55,14 +55,13 @@ const ProviderSEOPage = () => {
   useEffect(() => {
     if (!providerSlug) return;
     const load = async () => {
-      const { data: p } = await supabase.rpc("get_public_marketplace_providers", {
+      const p = await fetchPublicMarketplaceProviders({
         p_slug: providerSlug,
         p_active_only: true,
       });
       if (p && p.length > 0) {
         setProvider(p[0] as Provider);
-        // Fetch services for this provider
-        const { data: svcs } = await supabase.rpc("get_public_marketplace_services", {});
+        const svcs = await fetchPublicMarketplaceServices({});
         if (svcs) {
           setServices((svcs as Service[]).filter((s: any) => s.provider_id === p[0].id));
         }
