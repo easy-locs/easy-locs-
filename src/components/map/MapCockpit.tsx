@@ -1,9 +1,10 @@
 /**
  * MapCockpit — Mini observability panel for map engine.
- * Shows active layers, animations, density, visible entities, realtime rate.
+ * Shows active layers, animations, density, visible entities, realtime rate, weather state.
  */
 import { memo, useState } from "react";
-import { Layers, Activity, Eye, Gauge, ChevronDown, ChevronUp } from "lucide-react";
+import { Layers, Activity, Eye, Gauge, ChevronDown, ChevronUp, CloudRain } from "lucide-react";
+import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import type { MapAdaptiveState } from "@/hooks/map/useMapAdaptive";
 
 interface Props {
@@ -13,6 +14,10 @@ interface Props {
 
 export default memo(function MapCockpit({ adaptive, presetLabel }: Props) {
   const [open, setOpen] = useState(false);
+  const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
+  const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
+  const showStations = useWeatherDisplayStore(s => s.showStations);
+  const autoMode = useWeatherDisplayStore(s => s.autoMode);
 
   if (!open) {
     return (
@@ -29,7 +34,7 @@ export default memo(function MapCockpit({ adaptive, presetLabel }: Props) {
   }
 
   return (
-    <div className="w-52 rounded-xl border border-border/30 bg-card/90 p-3 shadow-lg backdrop-blur-md">
+    <div className="w-56 rounded-xl border border-border/30 bg-card/90 p-3 shadow-lg backdrop-blur-md">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-[11px] font-semibold text-foreground">Map Engine</span>
         <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
@@ -42,11 +47,7 @@ export default memo(function MapCockpit({ adaptive, presetLabel }: Props) {
         <Row icon={<Layers className="h-3 w-3" />} label="Visible" value={String(adaptive.visibleCount)} />
         <Row icon={<Activity className="h-3 w-3" />} label="Density" value={adaptive.density} />
         <Row icon={<Gauge className="h-3 w-3" />} label="Zoom" value={adaptive.zoom.toFixed(1)} />
-        <Row
-          icon={<Activity className="h-3 w-3" />}
-          label="RT rate"
-          value={`${adaptive.realtimeRate}/s`}
-        />
+        <Row icon={<Activity className="h-3 w-3" />} label="RT rate" value={`${adaptive.realtimeRate}/s`} />
         <Row
           icon={<Activity className="h-3 w-3" />}
           label="Anims"
@@ -59,6 +60,15 @@ export default memo(function MapCockpit({ adaptive, presetLabel }: Props) {
             value={adaptive.animationsPaused.join(", ")}
           />
         )}
+
+        {/* Weather state */}
+        <div className="mt-1 border-t border-border/20 pt-1.5">
+          <Row icon={<CloudRain className="h-3 w-3" />} label="Radar" value={radarOverlay} />
+          <Row icon={<CloudRain className="h-3 w-3" />} label="Effects" value={effectsLevel} />
+          <Row icon={<CloudRain className="h-3 w-3" />} label="Stations" value={showStations ? "on" : "off"} />
+          <Row icon={<CloudRain className="h-3 w-3" />} label="Auto" value={autoMode ? "on" : "off"} />
+        </div>
+
         {adaptive.isMobile && (
           <div className="mt-1 rounded bg-accent/20 px-1.5 py-0.5 text-center text-[9px] font-medium text-accent-foreground">
             Mobile mode
