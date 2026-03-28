@@ -343,9 +343,9 @@ const BrowseByCountry = () => {
                         <span className="text-xl group-hover:scale-110 transition-transform shrink-0">
                           {c.flag}
                         </span>
-                        <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                          {c.name}
-                        </span>
+                         <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors break-words leading-snug">
+                           {c.name}
+                         </span>
                         {c.star && <Star className="h-3 w-3 text-accent/50 fill-accent/30 shrink-0" />}
                       </Link>
                       {c.cities.length > 0 && (

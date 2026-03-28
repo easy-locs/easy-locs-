@@ -103,7 +103,7 @@ export default function RadarPreviewSection() {
                   <span className="text-lg">{item.emoji}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
+                  <p className="text-sm font-semibold text-foreground break-words leading-snug">{item.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Navigation className="w-2.5 h-2.5" />{item.dist}</span>
                     {item.rating && <span className="text-[10px] font-semibold flex items-center gap-0.5" style={{ color: "hsl(38 90% 55%)" }}><Star className="w-2.5 h-2.5 fill-current" />{item.rating}</span>}

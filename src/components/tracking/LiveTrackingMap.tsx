@@ -262,7 +262,7 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
       {/* Info panel */}
       <div className="p-4 space-y-3">
         {tracking.context_label && (
-          <p className="text-sm font-medium text-foreground truncate">{tracking.context_label}</p>
+          <p className="text-sm font-medium text-foreground break-words leading-snug">{tracking.context_label}</p>
         )}
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">

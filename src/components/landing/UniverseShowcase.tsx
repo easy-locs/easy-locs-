@@ -63,7 +63,7 @@ export default function UniverseShowcase() {
                     {t(s.titleKey)}
                     <ArrowRight className="h-3 w-3 opacity-0 -translate-x-1 group-hover:opacity-50 group-hover:translate-x-0 transition-all" />
                   </h3>
-                  <p className="text-[10px] sm:text-2xs text-muted-foreground mt-0.5 line-clamp-1">{t(s.descKey)}</p>
+                  <p className="text-[10px] sm:text-2xs text-muted-foreground mt-0.5 line-clamp-2 break-words leading-snug">{t(s.descKey)}</p>
                 </div>
               </Link>
             </motion.div>

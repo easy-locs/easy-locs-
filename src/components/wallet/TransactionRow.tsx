@@ -41,7 +41,7 @@ export default function TransactionRow({ title, amount, currency, type, directio
         <Icon className="w-4.5 h-4.5" style={{ color: config.color }} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground truncate">{title}</p>
+        <p className="text-sm font-semibold text-foreground break-words leading-snug">{title}</p>
         <div className="flex items-center gap-1.5">
           <p className="text-[10px] text-muted-foreground">{timeStr}</p>
           {referenceCode && (
