@@ -1,13 +1,13 @@
 /**
  * AdminRuntimeCockpitPage — Debug cockpit for runtime supervision.
- * Displays: module health, flow traces, anomalies, realtime channels, event audit, cache state,
- *           flow integrity issues, and module coupling analysis.
+ * Displays: health, flows, anomalies, realtime, events, integrity, coupling, propagation.
  */
 import { useRuntimeSupervisor } from "@/hooks/useRuntimeSupervisor";
 import { useNavigate } from "react-router-dom";
 import { clearTraces } from "@/lib/runtime/flow-tracer";
 import { clearAnomalies, resolveAnomaly } from "@/lib/runtime/anomaly-detector";
 import { clearFlowIssues } from "@/lib/runtime/flow-integrity-validator";
+import { clearPropagations } from "@/lib/runtime/propagation-validator";
 import { useState } from "react";
 
 const statusColor = (s: string) => {
@@ -24,7 +24,7 @@ const badge = (label: string, value: number | string, color?: string) => (
   </div>
 );
 
-type Tab = "health" | "flows" | "anomalies" | "realtime" | "events" | "integrity" | "coupling";
+type Tab = "health" | "flows" | "anomalies" | "realtime" | "events" | "integrity" | "coupling" | "propagation";
 
 export default function AdminRuntimeCockpitPage() {
   const navigate = useNavigate();
@@ -45,13 +45,13 @@ export default function AdminRuntimeCockpitPage() {
 
       {/* KPI Strip */}
       <div className="grid grid-cols-4 gap-2">
-        {badge("Modules", snap.modules.filter(m => m.status === "ok").length + "/" + snap.modules.length, statusColor(snap.globalStatus))}
-        {badge("Flows", snap.flows.running + " run")}
-        {badge("Issues", snap.integrity.total, snap.integrity.critical > 0 ? "text-red-500" : undefined)}
-        {badge("Coupling", snap.coupling.overCoupled, snap.coupling.overCoupled > 0 ? "text-red-500" : undefined)}
+        {badge("Health", snap.modules.filter(m => m.status === "ok").length + "/" + snap.modules.length, statusColor(snap.globalStatus))}
+        {badge("Broken", snap.propagation.totalBroken, snap.propagation.totalBroken > 0 ? "text-red-500" : undefined)}
+        {badge("Issues", snap.integrity.total + snap.anomalies.unresolved, (snap.integrity.critical + snap.anomalies.critical) > 0 ? "text-red-500" : undefined)}
+        {badge("Coupled", snap.coupling.overCoupled, snap.coupling.overCoupled > 0 ? "text-red-500" : undefined)}
       </div>
 
-      {/* Tab Bar — 2 rows for 7 tabs */}
+      {/* Tab Bar */}
       <div className="space-y-1">
         <div className="flex gap-1 bg-muted/30 rounded-xl p-1">
           {(["health", "flows", "anomalies", "realtime"] as const).map(t => (
@@ -61,9 +61,9 @@ export default function AdminRuntimeCockpitPage() {
           ))}
         </div>
         <div className="flex gap-1 bg-muted/30 rounded-xl p-1">
-          {(["events", "integrity", "coupling"] as const).map(t => (
+          {(["events", "integrity", "coupling", "propagation"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-bold capitalize transition-colors ${tab === t ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}>
-              {t}
+              {t === "propagation" ? "propag." : t}
             </button>
           ))}
         </div>
@@ -119,10 +119,9 @@ export default function AdminRuntimeCockpitPage() {
                 <button onClick={() => resolveAnomaly(a.id)} className="ml-auto text-[10px] bg-muted px-2 py-0.5 rounded font-bold">Resolve</button>
               </div>
               <p className="text-sm mt-1">{a.message}</p>
-              <p className="text-[10px] text-muted-foreground">{a.detectedAt.slice(11, 19)}</p>
             </div>
           ))}
-          {snap.anomalies.items.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">No anomalies detected ✓</p>}
+          {snap.anomalies.items.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">No anomalies ✓</p>}
         </div>
       )}
 
@@ -140,7 +139,7 @@ export default function AdminRuntimeCockpitPage() {
               <span className={`text-[10px] font-bold ${statusColor(ch.status)}`}>{ch.status}</span>
             </div>
           ))}
-          {snap.realtime.items.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">No realtime channels active</p>}
+          {snap.realtime.items.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">No channels active</p>}
         </div>
       )}
 
@@ -148,9 +147,9 @@ export default function AdminRuntimeCockpitPage() {
       {tab === "events" && (
         <div className="space-y-3">
           <div className="grid grid-cols-3 gap-2">
-            {badge("Dead Events", snap.events.dead, snap.events.dead > 0 ? "text-red-500" : undefined)}
+            {badge("Dead", snap.events.dead, snap.events.dead > 0 ? "text-red-500" : undefined)}
             {badge("Mismatched", snap.events.mismatched, snap.events.mismatched > 0 ? "text-yellow-500" : undefined)}
-            {badge("Total Tracked", snap.events.total)}
+            {badge("Total", snap.events.total)}
           </div>
           <div className="grid grid-cols-2 gap-2">
             {badge("Stale Cache", snap.cache.stale, snap.cache.stale > 0 ? "text-yellow-500" : undefined)}
@@ -171,11 +170,9 @@ export default function AdminRuntimeCockpitPage() {
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-bold ${statusColor(i.severity)}`}>{i.severity}</span>
                 <span className="text-xs text-muted-foreground">{i.issue}</span>
-                <span className="text-xs text-muted-foreground">· {i.domain}</span>
               </div>
               <p className="text-sm mt-1 font-medium">{i.flowName}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{i.suggestion}</p>
-              <p className="text-[10px] text-muted-foreground">{i.detectedAt.slice(11, 19)}</p>
             </div>
           ))}
           {snap.integrity.issues.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">All flows healthy ✓</p>}
@@ -195,20 +192,58 @@ export default function AdminRuntimeCockpitPage() {
               </div>
               <div className="mt-1.5 grid grid-cols-3 gap-2 text-[10px]">
                 <div><span className="text-muted-foreground">Score:</span> <span className="font-bold">{r.couplingScore}</span></div>
-                <div><span className="text-muted-foreground">Emits to:</span> <span className="font-bold">{r.emitsTo.length}</span></div>
+                <div><span className="text-muted-foreground">Emits:</span> <span className="font-bold">{r.emitsTo.length}</span></div>
                 <div><span className="text-muted-foreground">Consumes:</span> <span className="font-bold">{r.consumesFrom.length}</span></div>
               </div>
               {r.suggestion && <p className="text-xs text-muted-foreground mt-1">{r.suggestion}</p>}
-              {r.emitsTo.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {r.emitsTo.map(t => (
-                    <span key={t} className="text-[9px] bg-muted/70 rounded px-1.5 py-0.5 font-mono">{t}</span>
-                  ))}
-                </div>
-              )}
             </div>
           ))}
           {snap.coupling.reports.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">No coupling data yet</p>}
+        </div>
+      )}
+
+      {/* Propagation Tab */}
+      {tab === "propagation" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold">{snap.propagation.totalBroken} broken propagations</p>
+            <button onClick={clearPropagations} className="text-xs bg-muted px-2 py-1 rounded-lg font-bold">Clear</button>
+          </div>
+
+          {/* Domain stats */}
+          {Object.entries(snap.propagation.stats).length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-xs font-bold text-muted-foreground">By Domain</p>
+              {Object.entries(snap.propagation.stats).map(([domain, s]) => (
+                <div key={domain} className="rounded-xl border border-border/20 bg-card p-2.5 flex items-center gap-3">
+                  <span className="text-xs font-bold capitalize flex-1">{domain}</span>
+                  <span className="text-[10px] text-muted-foreground">{s.total} ops</span>
+                  {s.missingEvents > 0 && <span className="text-[10px] font-bold text-red-500">{s.missingEvents} no-event</span>}
+                  {s.missingCache > 0 && <span className="text-[10px] font-bold text-yellow-500">{s.missingCache} no-cache</span>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Broken records */}
+          {snap.propagation.broken.map((p, i) => (
+            <div key={i} className="rounded-xl border border-red-500/20 bg-red-500/5 p-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-red-500">{p.domain}</span>
+                <span className="text-xs text-muted-foreground">{p.action}</span>
+              </div>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {p.issues.map(issue => (
+                  <span key={issue} className="text-[9px] bg-red-500/10 text-red-600 rounded px-1.5 py-0.5 font-mono">{issue}</span>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">{p.timestamp.slice(11, 19)}</p>
+            </div>
+          ))}
+
+          {snap.propagation.totalBroken === 0 && Object.keys(snap.propagation.stats).length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-8">No propagation data yet — actions will appear here</p>
+          )}
         </div>
       )}
     </div>

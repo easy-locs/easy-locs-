@@ -12,6 +12,7 @@ import { getDeadEvents, getMismatchedEvents, getAllEventRecords } from "./event-
 import { getStaleEntries } from "./cache-validator";
 import { getFlowIssues, type FlowIntegrityIssue } from "./flow-integrity-validator";
 import { computeCouplingReports, getOverCoupledModules, type ModuleCouplingReport } from "./coupling-detector";
+import { getBrokenPropagations, getPropagationStats, type PropagationRecord } from "./propagation-validator";
 
 export interface RuntimeSnapshot {
   timestamp: string;
@@ -53,6 +54,11 @@ export interface RuntimeSnapshot {
     reports: ModuleCouplingReport[];
     overCoupled: number;
   };
+  propagation: {
+    broken: PropagationRecord[];
+    stats: Record<string, { total: number; withIssues: number; missingEvents: number; missingCache: number }>;
+    totalBroken: number;
+  };
 }
 
 export function getRuntimeSnapshot(): RuntimeSnapshot {
@@ -66,6 +72,8 @@ export function getRuntimeSnapshot(): RuntimeSnapshot {
   const flowIssues = getFlowIssues();
   const couplingReports = computeCouplingReports();
   const overCoupled = getOverCoupledModules();
+  const brokenPropagations = getBrokenPropagations();
+  const propagationStats = getPropagationStats();
 
   const running = traces.filter(t => t.status === "running");
   const failed = traces.filter(t => t.status === "failed");
@@ -115,6 +123,11 @@ export function getRuntimeSnapshot(): RuntimeSnapshot {
     coupling: {
       reports: couplingReports.slice(0, 20),
       overCoupled: overCoupled.length,
+    },
+    propagation: {
+      broken: brokenPropagations.slice(0, 30),
+      stats: propagationStats,
+      totalBroken: brokenPropagations.length,
     },
   };
 }
