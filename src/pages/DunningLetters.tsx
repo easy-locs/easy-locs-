@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { fetchDunningData, createDunningLetter, sendDunningEmail } from "@/repositories/dunning.repository";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, Download, Plus } from "lucide-react";
 import jsPDF from "jspdf";
@@ -34,42 +34,11 @@ const DunningLetters = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    // Load properties first for country filtering
-    let propQuery = supabase.from("properties").select("id, label, address, city, country").eq("org_id", orgId);
-    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
-    const { data: p } = await propQuery;
-    const filteredProps = (p || []) as (Property & { country: string })[];
-    setProperties(filteredProps);
-    const propIds = filteredProps.map(pr => pr.id);
-
-    // Filter tenants by country properties
-    const { data: t } = await supabase.from("tenants").select("id, name, property_id").eq("org_id", orgId);
-    let filteredTenants = (t || []) as Tenant[];
-    if (countryFilter) {
-      const propIdSet = new Set(propIds);
-      filteredTenants = filteredTenants.filter(ten => ten.property_id && propIdSet.has(ten.property_id));
-    }
-    setTenants(filteredTenants);
-    const tenantIds = filteredTenants.map(ten => ten.id);
-
-    // Dunning letters filtered by tenants in this country
-    if (tenantIds.length > 0) {
-      const [{ data: d }, { data: r }] = await Promise.all([
-        supabase.from("dunning_letters").select("*").eq("org_id", orgId).in("tenant_id", tenantIds).order("created_at", { ascending: false }),
-        supabase.from("rent_calls").select("id, tenant_id, month, total_amount, paid").eq("org_id", orgId).eq("paid", false).in("tenant_id", tenantIds),
-      ]);
-      if (d) setLetters(d as DunningLetter[]);
-      if (r) setUnpaid(r as RentCall[]);
-    } else if (!countryFilter) {
-      const [{ data: d }, { data: r }] = await Promise.all([
-        supabase.from("dunning_letters").select("*").eq("org_id", orgId).order("created_at", { ascending: false }),
-        supabase.from("rent_calls").select("id, tenant_id, month, total_amount, paid").eq("org_id", orgId).eq("paid", false),
-      ]);
-      if (d) setLetters(d as DunningLetter[]);
-      if (r) setUnpaid(r as RentCall[]);
-    } else {
-      setLetters([]); setUnpaid([]);
-    }
+    const result = await fetchDunningData(orgId, countryFilter);
+    setProperties(result.properties as Property[]);
+    setTenants(result.tenants as Tenant[]);
+    setLetters(result.letters as DunningLetter[]);
+    setUnpaid(result.unpaid as RentCall[]);
     setLoading(false);
   }, [orgId, countryFilter]);
 
@@ -78,37 +47,29 @@ const DunningLetters = () => {
   const createLetter = async (tenantId: string, month: string, amount: number, level: number) => {
     if (!orgId) return;
     const tenant = tenants.find(t => t.id === tenantId);
-    const { error } = await supabase.from("dunning_letters").insert({
-      org_id: orgId, tenant_id: tenantId, property_id: tenant?.property_id || null,
-      level, month, amount_due: amount,
-    });
-    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    try {
+      await createDunningLetter(orgId, tenantId, tenant?.property_id || null, level, month, amount);
+    } catch (error: any) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return;
+    }
     toast({ title: t("page.dunning.created").replace("{level}", String(level)) });
 
-    // Send email notification to tenant
     if (tenant?.id) {
-      const { data: tenantData } = await supabase.from("tenants").select("email, name").eq("id", tenant.id).single();
-      if (tenantData?.email) {
-        const levelInfo = LEVELS.find(l => l.value === level) || LEVELS[0];
-        const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
-        const levelLabel = t(levelInfo.labelKey);
-        const levelTone = t(levelInfo.toneKey);
-        supabase.functions.invoke("send-email", {
-          body: {
-            to: tenantData.email,
-            subject: `${level === 3 ? t("email.dunning_subject_3") : t("email.dunning_subject")} — ${month}`,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-              <h2 style="color:#1a1a1a;">⚠️ ${level === 3 ? t("email.dunning_subject_3") : levelLabel}</h2>
-              <p style="color:#555;">${levelTone}</p>
-              <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                <p style="color:#1a1a1a;"><strong>${t("email.dunning_month")} :</strong> ${month}</p>
-                <p style="color:#1a1a1a;"><strong>${t("email.dunning_amount")} :</strong> ${fmt(amount)}</p>
-              </div>
-              <p style="color:#888;font-size:13px;">${t("email.dunning_footer")}</p>
-            </div>`,
-          },
-        }).catch(() => {});
-      }
+      const levelInfo = LEVELS.find(l => l.value === level) || LEVELS[0];
+      const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+      const levelLabel = t(levelInfo.labelKey);
+      const levelTone = t(levelInfo.toneKey);
+      await sendDunningEmail(tenant.id,
+        `${level === 3 ? t("email.dunning_subject_3") : t("email.dunning_subject")} — ${month}`,
+        `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+          <h2 style="color:#1a1a1a;">⚠️ ${level === 3 ? t("email.dunning_subject_3") : levelLabel}</h2>
+          <p style="color:#555;">${levelTone}</p>
+          <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+            <p style="color:#1a1a1a;"><strong>${t("email.dunning_month")} :</strong> ${month}</p>
+            <p style="color:#1a1a1a;"><strong>${t("email.dunning_amount")} :</strong> ${fmt(amount)}</p>
+          </div>
+          <p style="color:#888;font-size:13px;">${t("email.dunning_footer")}</p>
+        </div>`);
     }
 
     await load();

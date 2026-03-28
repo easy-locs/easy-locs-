@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { fetchFurnitureData, createFurnitureItem, updateFurniturePhotoUrl, uploadFurniturePhoto, deleteFurnitureItem } from "@/repositories/furniture.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Plus, Trash2, Download, Sofa, Camera, X, Image as ImageIcon, ChevronDown } from "lucide-react";
@@ -96,24 +96,9 @@ const FurnitureInventory = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    let propQuery = supabase.from("properties").select("id, label, furnished, country").eq("org_id", orgId);
-    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
-    propQuery = propQuery.order("country").order("label");
-    const { data: p } = await propQuery;
-    const filteredProps = p || [];
-    setProperties(filteredProps as Property[]);
-
-    // Filter furniture items to only properties in the current country
-    const propIds = filteredProps.map(pr => pr.id);
-    if (propIds.length > 0) {
-      const { data: f } = await supabase.from("furniture_items").select("*").eq("org_id", orgId).in("property_id", propIds);
-      setItems((f || []) as FurnitureItem[]);
-    } else if (!countryFilter) {
-      const { data: f } = await supabase.from("furniture_items").select("*").eq("org_id", orgId);
-      setItems((f || []) as FurnitureItem[]);
-    } else {
-      setItems([]);
-    }
+    const { properties: p, items: f } = await fetchFurnitureData(orgId, countryFilter);
+    setProperties(p as Property[]);
+    setItems(f as FurnitureItem[]);
     setLoading(false);
   }, [orgId, countryFilter]);
 
@@ -140,35 +125,22 @@ const FurnitureInventory = () => {
 
   const uploadPhoto = async (itemId: string): Promise<string | null> => {
     if (!photoFile || !orgId) return null;
-    const ext = photoFile.name.split(".").pop() || "jpg";
-    const path = `${orgId}/furniture/${itemId}.${ext}`;
-    const { error } = await supabase.storage.from("property-photos").upload(path, photoFile, { upsert: true });
-    if (error) {
-      console.error("Upload error:", error.message);
-      return null;
-    }
-    const { data } = supabase.storage.from("property-photos").getPublicUrl(path);
-    return data.publicUrl;
+    return uploadFurniturePhoto(orgId, itemId, photoFile);
   };
 
   const save = async () => {
     if (!orgId || !form.property_id || !form.item_name) return;
     setUploading(true);
-    const { data, error } = await supabase.from("furniture_items").insert({
-      org_id: orgId, property_id: form.property_id, room_name: form.room_name,
-      item_name: form.item_name, quantity: form.quantity, condition: form.condition, notes: form.notes,
-    } as any).select().single();
-    if (error) {
+    try {
+      const data = await createFurnitureItem(orgId, form);
+      if (photoFile && data) {
+        const photoUrl = await uploadPhoto(data.id);
+        if (photoUrl) await updateFurniturePhotoUrl(data.id, photoUrl);
+      }
+    } catch (error: any) {
       toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
       setUploading(false);
       return;
-    }
-    // Upload photo if selected
-    if (photoFile && data) {
-      const photoUrl = await uploadPhoto(data.id);
-      if (photoUrl) {
-        await supabase.from("furniture_items").update({ photo_url: photoUrl } as any).eq("id", data.id);
-      }
     }
     toast({ title: t("page.furniture.added") });
     setForm(f => ({ ...f, item_name: "", quantity: 0, notes: "" }));
@@ -181,22 +153,18 @@ const FurnitureInventory = () => {
 
   const uploadPhotoForItem = async (itemId: string, file: File) => {
     if (!orgId) return;
-    const ext = file.name.split(".").pop() || "jpg";
-    const path = `${orgId}/furniture/${itemId}.${ext}`;
-    const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-    const { data } = supabase.storage.from("property-photos").getPublicUrl(path);
-    await supabase.from("furniture_items").update({ photo_url: data.publicUrl } as any).eq("id", itemId);
+    const photoUrl = await uploadFurniturePhoto(orgId, itemId, file);
+    if (!photoUrl) { toast({ title: t("page.common.error"), variant: "destructive" }); return; }
+    await updateFurniturePhotoUrl(itemId, photoUrl);
     toast({ title: "Photo ajoutée" });
     await load();
   };
 
   const remove = async (id: string) => {
-    const { error } = await supabase.from("furniture_items").delete().eq("id", id);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    // Also try to remove photo
-    if (orgId) {
-      await supabase.storage.from("property-photos").remove([`${orgId}/furniture/${id}.jpg`, `${orgId}/furniture/${id}.png`, `${orgId}/furniture/${id}.webp`]);
+    try {
+      await deleteFurnitureItem(id, orgId || "");
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" }); return;
     }
     await load();
   };

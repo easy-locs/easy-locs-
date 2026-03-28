@@ -1,8 +1,8 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchOrgForUser, fetchApiKeys, fetchWebhooks, fetchWebhookDeliveries, createApiKey, deleteApiKey, createWebhook, deleteWebhook, toggleWebhook } from "@/repositories/developer.repository";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,80 +50,41 @@ const DeveloperPortal = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("org_members").select("org_id").eq("user_id", user!.id).limit(1).single();
-      if (!data) return null;
-      const { data: o } = await supabase.from("orgs").select("*").eq("id", data.org_id).single();
-      return o;
-    },
+    queryFn: () => fetchOrgForUser(user!.id),
     enabled: !!user,
   });
 
   const { data: apiKeys = [] } = useQuery({
     queryKey: ["api_keys", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("api_keys" as any).select("*").eq("org_id", org!.id).order("created_at", { ascending: false });
-      return (data || []) as unknown as Array<{
-        id: string; name: string; key_prefix: string; scopes: string[];
-        active: boolean; last_used_at: string | null; created_at: string;
-      }>;
-    },
+    queryFn: () => fetchApiKeys(org!.id),
     enabled: !!org,
   });
 
   const { data: webhooks = [] } = useQuery({
     queryKey: ["webhooks", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("webhooks" as any).select("*").eq("org_id", org!.id).order("created_at", { ascending: false });
-      return (data || []) as unknown as Array<{
-        id: string; url: string; secret: string; events: string[];
-        active: boolean; failure_count: number; last_triggered_at: string | null; created_at: string;
-      }>;
-    },
+    queryFn: () => fetchWebhooks(org!.id),
     enabled: !!org,
   });
 
   const { data: deliveries = [] } = useQuery({
     queryKey: ["webhook_deliveries", org?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("webhook_deliveries" as any).select("*").order("delivered_at", { ascending: false }).limit(50);
-      return (data || []) as unknown as Array<{
-        id: string; webhook_id: string; event_type: string; response_status: number | null;
-        success: boolean; delivered_at: string;
-      }>;
-    },
+    queryFn: () => fetchWebhookDeliveries(),
     enabled: !!org,
   });
 
   const createMut = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.rpc("create_api_key", {
-        _org_id: org!.id, _name: keyName, _scopes: ["read", "write"],
-      });
-      if (error) throw error;
-      const result = data as any;
-      if (!result.success) throw new Error(result.error);
-      return result.key as string;
-    },
+    mutationFn: () => createApiKey(org!.id, keyName),
     onSuccess: (key) => { setNewKey(key); qc.invalidateQueries({ queryKey: ["api_keys"] }); toast.success("API key created"); },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const deleteMut = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("api_keys" as any).delete().eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => deleteApiKey(id),
     onSuccess: () => { toast.success("Key deleted"); qc.invalidateQueries({ queryKey: ["api_keys"] }); },
   });
 
   const createWebhookMut = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from("webhooks" as any).insert({
-        org_id: org!.id, user_id: user!.id, url: webhookUrl, events: webhookEvents,
-      });
-      if (error) throw error;
-    },
+    mutationFn: () => createWebhook(org!.id, user!.id, webhookUrl, webhookEvents),
     onSuccess: () => {
       toast.success("Webhook created");
       setWebhookOpen(false); setWebhookUrl(""); setWebhookEvents(["*"]);
@@ -133,18 +94,12 @@ const DeveloperPortal = () => {
   });
 
   const deleteWebhookMut = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("webhooks" as any).delete().eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => deleteWebhook(id),
     onSuccess: () => { toast.success("Webhook deleted"); qc.invalidateQueries({ queryKey: ["webhooks"] }); },
   });
 
   const toggleWebhookMut = useMutation({
-    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
-      const { error } = await supabase.from("webhooks" as any).update({ active }).eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: ({ id, active }: { id: string; active: boolean }) => toggleWebhook(id, active),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks"] }),
   });
 

@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { fetchProfile, updateProfile, fetchOrg, updateOrg, uploadLogo, exportUserData, updateOrgBranding, requestAccountDeletion } from "@/repositories/settings.repository";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useI18n } from "@/lib/i18n";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
@@ -53,14 +53,14 @@ const Settings = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("name, email, country, locale, signature_url").eq("id", user.id).single().then(({ data }) => {
+    fetchProfile(user.id).then((data) => {
       if (data) setProfile({ name: data.name || "", email: data.email || "", country: data.country || "FR", locale: data.locale || "fr", signature_url: (data as any)?.signature_url || "" });
     });
   }, [user]);
 
   useEffect(() => {
     if (!orgId) return;
-    supabase.from("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url, stamp_url, brand_name, brand_primary_color, brand_accent_color").eq("id", orgId).single().then(({ data }) => {
+    fetchOrg(orgId).then((data) => {
       if (data) setOrg({
         name: data.name || "", address: (data as any).address || "", postal_code: (data as any).postal_code || "",
         city: (data as any).city || "", phone: (data as any).phone || "", siret: (data as any).siret || "",
@@ -79,7 +79,7 @@ const Settings = () => {
   const saveProfile = async () => {
     if (!user) return;
     setSaving(true);
-    await supabase.from("profiles").update({ name: profile.name, country: profile.country, locale: profile.locale, signature_url: profile.signature_url } as any).eq("id", user.id);
+    await updateProfile(user.id, { name: profile.name, country: profile.country, locale: profile.locale, signature_url: profile.signature_url });
     toast({ title: t("page.settings.profile_updated") || "Profile updated" });
     setSaving(false);
   };
@@ -87,10 +87,10 @@ const Settings = () => {
   const saveOrg = async () => {
     if (!orgId) return;
     setSaving(true);
-    await supabase.from("orgs").update({
+    await updateOrg(orgId, {
       name: org.name, address: org.address, postal_code: org.postal_code,
       city: org.city, phone: org.phone, siret: org.siret, email: org.email,
-    } as any).eq("id", orgId);
+    });
     toast({ title: t("page.settings.org_updated") || "Organization updated" });
     setSaving(false);
   };
@@ -99,16 +99,12 @@ const Settings = () => {
     const file = e.target.files?.[0];
     if (!file || !orgId) return;
     setUploading(true);
-    const path = `${orgId}/logo-${Date.now()}.${file.name.split(".").pop()}`;
-    const { error } = await supabase.storage.from("rental-docs").upload(path, file, { upsert: true });
-    if (error) {
-      toast({ title: t("page.settings.upload_error") || "Upload error", description: error.message, variant: "destructive" });
-    } else {
-      const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
-      const logoUrl = signedData?.signedUrl || path;
-      await supabase.from("orgs").update({ logo_url: logoUrl } as any).eq("id", orgId);
+    try {
+      const logoUrl = await uploadLogo(orgId, file);
       setOrg(prev => ({ ...prev, logo_url: logoUrl }));
       toast({ title: t("page.settings.logo_updated") || "Logo updated" });
+    } catch (error: any) {
+      toast({ title: t("page.settings.upload_error") || "Upload error", description: error.message, variant: "destructive" });
     }
     setUploading(false);
   };
@@ -281,12 +277,13 @@ const Settings = () => {
                 <button onClick={async () => {
                   if (!orgId) return;
                   setSavingBrand(true);
-                  await supabase.from("orgs").update({ brand_name: org.brand_name || null, brand_primary_color: org.brand_primary_color || null, brand_accent_color: org.brand_accent_color || null } as any).eq("id", orgId);
+                  await updateOrgBranding(orgId, { brand_name: org.brand_name || null, brand_primary_color: org.brand_primary_color || null, brand_accent_color: org.brand_accent_color || null });
                   toast({ title: t("page.settings.branding_updated") || "Branding updated" });
                   setSavingBrand(false);
                 }} disabled={savingBrand} className="btn-primary w-full">
                   {savingBrand ? (t("page.settings.saving") || "Saving...") : (t("page.settings.save_branding") || "Save Branding")}
                 </button>
+
               </div>
             </SettingsCard>
 
@@ -304,12 +301,7 @@ const Settings = () => {
                   if (!user) return;
                   toast({ title: t("page.settings.export_started") || "Export started..." });
                   try {
-                    const tables = ["profiles", "wallet_transactions", "documents", "leases", "tenants", "properties"];
-                    const allData: Record<string, unknown[]> = {};
-                    for (const table of tables) {
-                      const { data } = await supabase.from(table as any).select("*").or(`user_id.eq.${user.id},owner_user_id.eq.${user.id}`).limit(1000);
-                      if (data?.length) allData[table] = data;
-                    }
+                    const allData = await exportUserData(user.id);
                     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: "application/json" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
@@ -329,10 +321,7 @@ const Settings = () => {
                   if (!window.confirm(t("page.settings.delete_confirm2") || "This is irreversible.")) return;
                   try {
                     toast({ title: t("page.settings.delete_requested") || "Deletion requested" });
-                    await supabase.from("audit_logs").insert({
-                      user_id: user.id, action: "account_deletion_requested",
-                      metadata_json: { email: user.email, requested_at: new Date().toISOString() },
-                    });
+                    await requestAccountDeletion(user.id, user.email || "");
                   } catch (err: any) {
                     toast({ title: t("page.settings.delete_error") || "Request failed", description: err.message, variant: "destructive" });
                   }
