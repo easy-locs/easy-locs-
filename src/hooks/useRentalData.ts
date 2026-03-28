@@ -110,7 +110,7 @@ export function useRentalData(countryFilter?: string | null) {
       rentalRepo.fetchTenants(orgId),
       rentalRepo.fetchRentCalls(orgId),
     ]);
-    let filteredTenants = tenantsData;
+    let filteredTenants = tenantsRaw;
     if (propIds) {
       filteredTenants = filteredTenants.filter(t => t.property_id && propIds.has(t.property_id));
     }
@@ -127,7 +127,7 @@ export function useRentalData(countryFilter?: string | null) {
       caf_apl_amount: Number((t as any).caf_apl_amount) || 0,
     })));
 
-    let rentCallData = rentData;
+    let rentCallData = rentRaw;
     if (propIds) {
       rentCallData = rentCallData.filter(r => r.property_id && propIds.has(r.property_id));
     }
@@ -372,8 +372,7 @@ export function useRentalData(countryFilter?: string | null) {
   };
 
   const validateReceipt = async (id: string) => {
-    const { error } = await supabase.from("rent_calls").update({ receipt_validated: true }).eq("id", id);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    try { await rentalRepo.updateRentCall(id, { receipt_validated: true }); } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: t("hook.rental.receipt_validated") });
     await loadRentCalls();
   };
@@ -392,14 +391,9 @@ export function useRentalData(countryFilter?: string | null) {
     try {
       const token = `inv_${Date.now()}_${Math.random().toString(36).slice(2)}_${Math.random().toString(36).slice(2)}`;
 
-      const { error: invError } = await supabase.from("tenant_invitations").insert({
-        org_id: orgId,
-        tenant_id: tenant.id,
-        token,
-        email: normalizedEmail,
-        invited_by: user.id,
+      await rentalRepo.insertTenantInvitation({
+        org_id: orgId, tenant_id: tenant.id, token, email: normalizedEmail, invited_by: user.id,
       });
-      if (invError) throw invError;
 
       const publishedOrigin = "https://www.easy-locs.com";
       const inviteUrl = `${publishedOrigin}/tenant-signup?token=${token}`;
@@ -424,31 +418,25 @@ export function useRentalData(countryFilter?: string | null) {
       let emailErrorMessage = "";
       let propCountry = "FR";
       if (tenant.property_id) {
-        const { data: prop } = await supabase.from("properties").select("country").eq("id", tenant.property_id).single();
-        if (prop?.country) propCountry = prop.country;
+        propCountry = await rentalRepo.fetchPropertyCountry(tenant.property_id);
       }
       const L = getCountryConfig(propCountry).labels;
       try {
-        const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
-          body: {
-            to: normalizedEmail,
-            subject: L.inviteSubject,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-              <h2 style="color:#1a1a1a;text-align:center;">${L.inviteTitle}</h2>
-              <p style="color:#555;font-size:15px;">${L.emailHello} ${tenant.name},</p>
-              <p style="color:#555;font-size:15px;">${L.inviteBody}</p>
-              <div style="text-align:center;margin:24px 0;">
-                <a href="${inviteUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;">${L.inviteButton}</a>
-              </div>
-              <p style="color:#777;font-size:13px;">${L.inviteLinkExpiry}</p>
-              <p style="color:#888;font-size:12px;text-align:center;">${L.emailAutoSent}</p>
-            </div>`,
-          },
+        const emailData = await rentalRepo.invokeSendEmail({
+          to: normalizedEmail,
+          subject: L.inviteSubject,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+            <h2 style="color:#1a1a1a;text-align:center;">${L.inviteTitle}</h2>
+            <p style="color:#555;font-size:15px;">${L.emailHello} ${tenant.name},</p>
+            <p style="color:#555;font-size:15px;">${L.inviteBody}</p>
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${inviteUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;">${L.inviteButton}</a>
+            </div>
+            <p style="color:#777;font-size:13px;">${L.inviteLinkExpiry}</p>
+            <p style="color:#888;font-size:12px;text-align:center;">${L.emailAutoSent}</p>
+          </div>`,
         });
-
-        if (emailError || (emailData && emailData.success === false)) {
-          throw emailError || new Error(emailData?.error || "Send failed");
-        }
+        if (emailData && emailData.success === false) throw new Error(emailData?.error || "Send failed");
         emailSent = true;
       } catch (err: any) {
         emailErrorMessage = err?.message || "unknown error";
@@ -476,11 +464,9 @@ export function useRentalData(countryFilter?: string | null) {
   /* ─── Assign tenant to property ─── */
   const assignTenantToProperty = async (tenantId: string, propertyId: string) => {
     const prop = properties.find(p => p.id === propertyId);
-    const { error } = await supabase
-      .from("tenants")
-      .update({ property_id: propertyId })
-      .eq("id", tenantId);
-    if (error) {
+    try {
+      await rentalRepo.updateTenantProperty(tenantId, propertyId);
+    } catch (error: any) {
       toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
       return false;
     }
@@ -494,8 +480,8 @@ export function useRentalData(countryFilter?: string | null) {
 
   return {
     properties, tenants, rentCalls, loading,
-    saveProperty, deleteProperty,
-    saveTenant, deleteTenant, sendTenantInvite,
+    saveProperty, deleteProperty: deletePropertyFn,
+    saveTenant, deleteTenant: deleteTenantFn, sendTenantInvite,
     generateMonthlyRentCalls, togglePayment, validateReceipt,
     loadAll, loadTenants, loadRentCalls, assignTenantToProperty,
   };

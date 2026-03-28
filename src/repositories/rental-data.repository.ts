@@ -172,3 +172,20 @@ export async function invokeRentPayment(body: Record<string, any>) {
   if (data?.error) throw new Error(data.error);
   return data;
 }
+
+// ─── Tenant Invitations ───
+export async function insertTenantInvitation(record: Record<string, any>) {
+  const { error } = await supabase.from("tenant_invitations").insert(record as any);
+  if (error) throw error;
+}
+
+export async function fetchPropertyCountry(propertyId: string) {
+  const { data } = await supabase.from("properties").select("country").eq("id", propertyId).single();
+  return data?.country ?? "FR";
+}
+
+// ─── Tenant Assignment ───
+export async function updateTenantProperty(tenantId: string, propertyId: string) {
+  const { error } = await supabase.from("tenants").update({ property_id: propertyId } as any).eq("id", tenantId);
+  if (error) throw error;
+}
