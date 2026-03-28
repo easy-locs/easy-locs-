@@ -94,7 +94,7 @@ export default function LoyaltyRewardsRedemption({ shopId, programId, userPoints
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-lg">{r.emoji || "🎁"}</span>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-foreground truncate">{r.title}</p>
+                  <p className="text-xs font-semibold text-foreground break-words leading-snug">{r.title}</p>
                   <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                     <Star className="h-2.5 w-2.5" /> {r.points_cost} pts
                     {r.discount_type === "percent" && <span>• {r.discount_value}% off</span>}

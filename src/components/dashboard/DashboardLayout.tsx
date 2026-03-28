@@ -244,7 +244,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             </span>
           </div>
           {user && (
-            <p className="text-xs text-sidebar-foreground/50 mt-2 truncate">{user.email}</p>
+            <p className="text-xs text-sidebar-foreground/50 mt-2 min-w-0 break-words leading-snug">{user.email}</p>
           )}
 
           {/* Multi-org switcher */}
@@ -255,9 +255,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs bg-muted/50 hover:bg-muted transition-colors text-sidebar-foreground/70"
               >
                 <Layers className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate flex-1 text-left">
-                  {allOrgs.find(o => o.id === orgId)?.name || "Select workspace"}
-                </span>
+                 <span className="min-w-0 flex-1 text-left break-words leading-snug">
+                   {allOrgs.find(o => o.id === orgId)?.name || "Select workspace"}
+                 </span>
                 <ChevronDown className={`h-3 w-3 shrink-0 transition-transform ${orgSelectorOpen ? "rotate-180" : ""}`} />
               </button>
               {orgSelectorOpen && (
@@ -273,7 +273,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                         }`}
                       >
                         <Store className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{org.name}</span>
+                        <span className="min-w-0 break-words leading-snug">{org.name}</span>
                         {orgId === org.id && <span className="ml-auto text-accent">✓</span>}
                       </button>
                     ))}
@@ -298,7 +298,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             <div className="flex items-center gap-2.5">
               <span className="text-2xl leading-none">{countryEntry.flag}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-sidebar-foreground truncate">{countryEntry.name}</p>
+                <p className="text-sm font-bold text-sidebar-foreground break-words leading-snug">{countryEntry.name}</p>
                 <p className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider">
                   {t("sidebar.workspace") || "Workspace"}
                 </p>
@@ -368,7 +368,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   }`}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{item.label}</span>
+                  <span className="min-w-0 break-words leading-snug">{item.label}</span>
                 </Link>
               );
             };

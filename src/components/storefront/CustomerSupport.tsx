@@ -164,7 +164,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => setSelectedTicket(null)} className="text-xs">← Back</Button>
-          <h4 className="text-sm font-semibold truncate flex-1">{ticket?.subject}</h4>
+          <h4 className="text-sm font-semibold min-w-0 flex-1 break-words leading-snug">{ticket?.subject}</h4>
           <Badge className={`text-[9px] ${STATUS_COLORS[ticket?.status] || ""}`}>{ticket?.status?.replace("_", " ")}</Badge>
         </div>
 

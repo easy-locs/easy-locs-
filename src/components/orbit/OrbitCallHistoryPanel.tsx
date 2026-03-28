@@ -25,7 +25,7 @@ export function OrbitCallHistoryPanel({ items, loading }: Props) {
               <Icon className={`w-4 h-4 shrink-0 ${isMissed ? "text-destructive" : "text-muted-foreground"}`} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium capitalize">{item.call_type} call</p>
-                <p className="text-[11px] text-muted-foreground truncate">
+                <p className="text-[11px] text-muted-foreground break-words leading-snug">
                   {item.direction} · {item.status}
                   {isMissed ? " · missed" : ""}
                 </p>

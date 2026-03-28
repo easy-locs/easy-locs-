@@ -138,7 +138,7 @@ export default function BrowserRepairLivePanel() {
               <p className="text-xs text-muted-foreground mt-1">
                 route={incident.route_key ?? "-"} flow={incident.flow_key ?? "-"} issue={incident.issue_type}
               </p>
-              {incident.summary && <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">{incident.summary}</p>}
+              {incident.summary && <p className="text-xs text-muted-foreground/70 mt-0.5 break-words leading-snug">{incident.summary}</p>}
             </div>
           ))}
         </div>

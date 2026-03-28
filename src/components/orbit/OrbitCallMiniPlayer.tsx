@@ -22,7 +22,7 @@ export function OrbitCallMiniPlayer({ visible, peerName, state, mode, muted, onO
             <p className="text-[11px] text-green-600 font-medium">
               {mode === "video" ? "Video call" : "Audio call"} · {state || "active"}
             </p>
-            <p className="text-xs font-semibold truncate">{peerName || "Unknown contact"}</p>
+            <p className="text-xs font-semibold break-words leading-snug">{peerName || "Unknown contact"}</p>
             {muted && (
               <span className="inline-flex items-center gap-0.5 text-[10px] text-destructive">
                 <MicOff className="w-2.5 h-2.5" /> Muted
@@ -33,7 +33,7 @@ export function OrbitCallMiniPlayer({ visible, peerName, state, mode, muted, onO
 
         <button
           onClick={onHangup}
-          className="px-2.5 py-1 rounded-full bg-destructive text-destructive-foreground text-[11px] font-medium hover:bg-destructive/90 transition-colors flex items-center gap-1"
+          className="px-2.5 py-1 rounded-full bg-destructive text-destructive-foreground text-[11px] font-medium hover:bg-destructive/90 transition-colors flex items-center gap-1 shrink-0"
         >
           <PhoneOff className="w-3 h-3" />
           Hang up

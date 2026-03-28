@@ -22,7 +22,7 @@ export function AdminPayoutPanel() {
         ) : (
           items.map((item) => (
             <div key={item.id} className="rounded-lg border border-border p-3 space-y-2">
-              <p className="text-sm font-medium text-foreground truncate">{item.id}</p>
+              <p className="text-sm font-medium text-foreground break-words leading-snug">{item.id}</p>
               <p className="text-xs text-muted-foreground">
                 Owner: {item.owner_orbit_id}
               </p>

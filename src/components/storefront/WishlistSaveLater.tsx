@@ -228,7 +228,7 @@ export default function WishlistSaveLater({ shopId, mode = "buyer", catalogItems
             return (
               <div key={alert.id} className="flex items-center gap-2 text-xs bg-muted/30 rounded-lg p-2">
                 <Bell className={`w-3 h-3 ${alert.triggered ? "text-primary" : "text-muted-foreground"}`} />
-                <span className="flex-1 truncate">{item?.title || "Product"}: alert at ≤{alert.target_price}</span>
+                <span className="flex-1 min-w-0 break-words leading-snug">{item?.title || "Product"}: alert at ≤{alert.target_price}</span>
                 {alert.triggered && <Badge className="text-2xs bg-primary/10 text-primary">Triggered!</Badge>}
                 <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => deleteAlert.mutate(alert.id)}>
                   <Trash2 className="w-3 h-3" />

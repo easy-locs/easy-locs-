@@ -11,8 +11,8 @@ export function OrbitGroupHeader({ title, participantCount, subtitle }: Props) {
     <div className="flex items-center gap-2 min-w-0">
       <Users className="w-4 h-4 text-muted-foreground shrink-0" />
       <div className="min-w-0">
-        <p className="text-sm font-semibold truncate">{title}</p>
-        <p className="text-[11px] text-muted-foreground truncate">
+        <p className="text-sm font-semibold break-words leading-snug">{title}</p>
+        <p className="text-[11px] text-muted-foreground break-words leading-snug">
           {participantCount ? `${participantCount} members` : ""}
           {participantCount && subtitle ? " · " : ""}
           {subtitle || ""}

@@ -239,9 +239,9 @@ export default function WarehouseManager({ shopId }: Props) {
           {transfers.slice(0, 5).map((t: any) => (
             <div key={t.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 text-xs">
               <Package className="h-3 w-3 text-muted-foreground shrink-0" />
-              <span className="truncate flex-1">
-                {getItemName(t.item_id)} ×{t.quantity} · {getWhName(t.from_warehouse_id)} → {getWhName(t.to_warehouse_id)}
-              </span>
+               <span className="min-w-0 flex-1 break-words leading-snug">
+                 {getItemName(t.item_id)} ×{t.quantity} · {getWhName(t.from_warehouse_id)} → {getWhName(t.to_warehouse_id)}
+               </span>
               {t.status === "pending" ? (
                 <Button size="icon" className="h-5 w-5 shrink-0" onClick={() => completeTransfer(t.id)}>
                   <Check className="h-2.5 w-2.5" />
