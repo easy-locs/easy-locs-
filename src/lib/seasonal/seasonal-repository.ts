@@ -4,10 +4,10 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export async function fetchSeasonalBookings(orgId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("stay_bookings")
     .select("*")
-    .eq("org_id", orgId as any)
+    .eq("org_id", orgId)
     .order("check_in", { ascending: false });
   if (error) throw error;
   return data ?? [];
