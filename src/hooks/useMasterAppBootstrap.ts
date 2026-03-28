@@ -18,6 +18,8 @@ import { installCrossDomainPropagationHandlers } from "@/lib/orchestration/handl
 import { installCounterBridge } from "@/lib/dashboard/dashboard-counter-bridge";
 import { installNotificationEventBridge } from "@/lib/notifications/notification-event-bridge";
 import { startStaleCacheScanner } from "@/lib/runtime/stale-cache-detector";
+import { installRentalCacheListeners } from "@/lib/rental/rental-cache-invalidator";
+import { initCoreFlowRegistry } from "@/lib/runtime/flow-completeness-validator";
 import { useQueryClient } from "@tanstack/react-query";
 
 let booted = false;
@@ -78,7 +80,13 @@ export function useMasterAppBootstrap() {
     // 11. Runtime: stale cache scanner
     const cleanupStaleScanner = startStaleCacheScanner(60_000);
 
-    // 12. Platform recovery — deferred well after initial render
+    // 12. Rental domain cache invalidation
+    const cleanupRentalCache = installRentalCacheListeners();
+
+    // 13. Core flow registry — register all expected domain flows
+    initCoreFlowRegistry();
+
+    // 14. Platform recovery — deferred well after initial render
     const t1 = setTimeout(() => void runPlatformRecovery("boot"), 30000);
 
     return () => {
@@ -99,6 +107,7 @@ export function useMasterAppBootstrap() {
       cleanupCounters();
       cleanupNotifications();
       cleanupStaleScanner();
+      cleanupRentalCache();
       booted = false;
     };
   }, [queryClient]);
