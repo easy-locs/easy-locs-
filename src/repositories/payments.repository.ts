@@ -1,0 +1,77 @@
+/**
+ * payments.repository — All DB ops for payment components and pages.
+ */
+import { supabase } from "@/integrations/supabase/client";
+
+// ── Stripe intent ──
+export async function createStripeIntent(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("create-stripe-intent", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Rent payment ──
+export async function createRentPayment(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("create-rent-payment", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Stripe checkout ──
+export async function createStripeCheckout(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("create-stripe-checkout" as any, { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Guest payment ──
+export async function verifyGuestPayment(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("verify-guest-payment", { body });
+  if (error) throw error;
+  return data;
+}
+
+export async function createGuestCheckout(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("create-guest-checkout", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Wallet ──
+export async function createWalletTopup(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("create-wallet-topup", { body });
+  if (error) throw error;
+  return data;
+}
+
+export async function invokeWalletPin(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("wallet-pin", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Orbit payment ──
+export async function invokeOrbitPayment(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("orbit-payment", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── FX ──
+export async function invokeFXRate(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("get-fx-rate" as any, { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Subscription ──
+export async function fetchSubscription(orgId: string) {
+  const { data } = await supabase.from("subscriptions" as any).select("*").eq("org_id", orgId).limit(1).maybeSingle();
+  return data;
+}
+
+// ── Booking payment ──
+export async function updateBookingPayment(table: string, id: string, updates: Record<string, any>) {
+  const { error } = await (supabase as any).from(table).update(updates).eq("id", id);
+  if (error) throw error;
+}
