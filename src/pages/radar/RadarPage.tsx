@@ -1,6 +1,6 @@
 /**
  * RadarPage — Immersive full-screen map-first experience.
- * Clean map canvas with floating glass controls + pull-up bottom sheet.
+ * Premium glass controls + live geocoded place search + pull-up bottom sheet.
  */
 import { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,11 +15,12 @@ import { geoService } from "@/lib/geo/geo-service";
 import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pipeline";
 import { getTimeContext } from "@/lib/discovery/timeContext";
 import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/world-class-taxonomy";
+import { searchPlaces, type NormalizedPlace } from "@/lib/location/geocode";
 import type { RadarCategory } from "@/lib/radar/types";
-import { Search, MapPin, Navigation, Loader2, Flame, ArrowLeft, ChevronUp, Layers, X } from "lucide-react";
+import { Search, MapPin, Navigation, Loader2, ArrowLeft, ChevronUp, Layers, X } from "lucide-react";
 import "@/styles/radar-pro.css";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
+import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
 
@@ -65,6 +66,9 @@ export default function RadarPage() {
   const [showWeatherLayer, setShowWeatherLayer] = useState(true);
   const [searchFocused, setSearchFocused] = useState(false);
   const [sheetSnap, setSheetSnap] = useState<SheetSnap>("collapsed");
+  const [placeSuggestions, setPlaceSuggestions] = useState<NormalizedPlace[]>([]);
+  const [searchingPlaces, setSearchingPlaces] = useState(false);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timeCtx = useMemo(() => getTimeContext(), []);
   const weather = useLiveWeatherStation({ lat: userLocation?.lat, lng: userLocation?.lng });
 
@@ -96,6 +100,38 @@ export default function RadarPage() {
   }, [searchQuery, setPoints, userLocation?.lat, userLocation?.lng, category, subcategory]);
 
   useEffect(() => { fetchListings(); }, [fetchListings]);
+
+  // ── Live place search (debounced Mapbox geocoding) ──
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    const q = searchQuery?.trim();
+    if (!q || q.length < 2) {
+      setPlaceSuggestions([]);
+      return;
+    }
+    setSearchingPlaces(true);
+    searchTimerRef.current = setTimeout(async () => {
+      try {
+        const results = await searchPlaces(q, {
+          limit: 6,
+          proximity: userLocation ?? undefined,
+        });
+        setPlaceSuggestions(results);
+      } catch {
+        setPlaceSuggestions([]);
+      } finally {
+        setSearchingPlaces(false);
+      }
+    }, 300);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [searchQuery, userLocation?.lat, userLocation?.lng]);
+
+  const handleSelectPlace = (place: NormalizedPlace) => {
+    setSearchQuery(place.label);
+    setPlaceSuggestions([]);
+    setSearchFocused(false);
+    // TODO: Could center map on place.lat, place.lng
+  };
 
   const handleLocate = () => {
     ultraHaptic("light");
@@ -164,44 +200,94 @@ export default function RadarPage() {
             onClick={() => navigate("/")}
             className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
             style={{
-              background: "hsl(var(--background) / 0.3)",
-              backdropFilter: "blur(24px) saturate(1.8)",
+              background: "hsl(var(--background) / 0.2)",
+              backdropFilter: "blur(28px) saturate(1.8)",
             }}
           >
             <ArrowLeft className="w-[18px] h-[18px]" style={{ color: "hsl(var(--foreground))" }} />
           </motion.button>
 
-          {/* Search bar */}
-          <motion.div
-            layout
-            className="flex-1 flex items-center gap-2 h-11 rounded-full px-4"
-            style={{
-              background: "hsl(var(--background) / 0.25)",
-              backdropFilter: "blur(24px) saturate(1.8)",
-              border: searchFocused ? "1px solid hsl(var(--primary) / 0.5)" : "1px solid hsl(var(--foreground) / 0.08)",
-            }}
-          >
-            <Search className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }} />
-            <input
-              type="text"
-              placeholder="Search places…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => { setSearchFocused(true); setSheetSnap("half"); }}
-              onBlur={() => setSearchFocused(false)}
-              className="flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground/50"
-              style={{ color: "hsl(var(--foreground))" }}
-            />
-            {searchQuery && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileTap={{ scale: 0.8 }}
-                onClick={() => setSearchQuery("")}
-              >
-                <X className="w-3.5 h-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
-              </motion.button>
-            )}
+          {/* Search bar — premium glass */}
+          <motion.div layout className="flex-1 relative">
+            <div
+              className="flex items-center gap-2.5 h-11 rounded-full px-4"
+              style={{
+                background: searchFocused ? "hsl(var(--background) / 0.55)" : "hsl(var(--background) / 0.2)",
+                backdropFilter: "blur(28px) saturate(1.8)",
+                border: searchFocused ? "1px solid hsl(var(--primary) / 0.4)" : "1px solid hsl(var(--foreground) / 0.06)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {searchingPlaces ? (
+                <Loader2 className="w-4 h-4 shrink-0 animate-spin" style={{ color: "hsl(var(--primary))" }} />
+              ) : (
+                <Search className="w-4 h-4 shrink-0" style={{ color: searchFocused ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.5)" }} />
+              )}
+              <input
+                type="text"
+                placeholder="Search places, buildings…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => { setSearchFocused(true); setSheetSnap("half"); }}
+                onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                className="flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground/40"
+                style={{ color: "hsl(var(--foreground))" }}
+              />
+              {searchQuery && (
+                <motion.button
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  whileTap={{ scale: 0.8 }}
+                  onClick={() => { setSearchQuery(""); setPlaceSuggestions([]); }}
+                >
+                  <X className="w-3.5 h-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
+                </motion.button>
+              )}
+            </div>
+
+            {/* Place suggestions dropdown */}
+            <AnimatePresence>
+              {searchFocused && placeSuggestions.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full left-0 right-0 mt-1.5 rounded-2xl overflow-hidden z-50"
+                  style={{
+                    background: "hsl(var(--card) / 0.95)",
+                    backdropFilter: "blur(32px) saturate(1.8)",
+                    border: "1px solid hsl(var(--border) / 0.15)",
+                    boxShadow: "0 12px 40px hsl(var(--background) / 0.6)",
+                  }}
+                >
+                  {placeSuggestions.map((place, i) => (
+                    <button
+                      key={`${place.lat}-${place.lng}-${i}`}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleSelectPlace(place)}
+                      className="w-full flex items-start gap-3 px-4 py-3 text-left transition-colors active:bg-primary/5"
+                      style={{
+                        borderBottom: i < placeSuggestions.length - 1 ? "1px solid hsl(var(--border) / 0.08)" : "none",
+                      }}
+                    >
+                      <MapPin className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium leading-snug break-words" style={{ color: "hsl(var(--foreground))" }}>
+                          {place.street || place.label.split(",")[0]}
+                        </p>
+                        {place.area || place.city ? (
+                          <p className="text-[11px] leading-snug mt-0.5 break-words" style={{ color: "hsl(var(--muted-foreground))" }}>
+                            {[place.area, place.city, place.country].filter(Boolean).join(", ")}
+                          </p>
+                        ) : null}
+                      </div>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
 
           {/* Locate */}
@@ -210,8 +296,8 @@ export default function RadarPage() {
             onClick={handleLocate}
             className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
             style={{
-              background: "hsl(var(--background) / 0.3)",
-              backdropFilter: "blur(24px) saturate(1.8)",
+              background: "hsl(var(--background) / 0.2)",
+              backdropFilter: "blur(28px) saturate(1.8)",
             }}
           >
             {geoLoading ? (
