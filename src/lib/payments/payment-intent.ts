@@ -5,6 +5,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
+import { platformBus } from "@/lib/shared/platform-bus";
+import { trackPropagation } from "@/lib/runtime/propagation-validator";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
