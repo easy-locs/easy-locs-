@@ -1520,12 +1520,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
     if (resolved) return interpolate(resolved, vars);
 
-    // Missing key — return empty string so `t("key") || "fallback"` patterns work
+    // Missing key — generate readable fallback from key name
     if (import.meta.env.DEV && !key.startsWith("pricing.")) {
       console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     }
     trackMissingKey(key, locale);
-    return "";
+    // Auto-generate readable text from the last segment of the key
+    const lastSegment = key.split(".").pop() || key;
+    return lastSegment
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   }, [locale]);
 
   return (
