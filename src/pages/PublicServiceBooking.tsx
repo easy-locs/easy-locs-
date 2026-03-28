@@ -59,56 +59,13 @@ const PublicServiceBooking = () => {
   const [success, setSuccess] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
-  useEffect(() => {
+   useEffect(() => {
     let mounted = true;
     const load = async () => {
       if (!slug) { if (mounted) setLoading(false); return; }
-      const normalizedSlug = decodeURIComponent(slug).trim();
-
-      const { data: exactMatch } = await supabase
-        .from("concierge_services_public" as any)
-        .select("*")
-        .eq("booking_slug", normalizedSlug)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      let resolvedService: any = exactMatch ? { ...(exactMatch as any), _source: "concierge" } : null;
-
-      if (!resolvedService) {
-        const { data: fallbackMatch } = await supabase
-          .from("concierge_services_public" as any)
-          .select("*")
-          .ilike("booking_slug", normalizedSlug)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (fallbackMatch) resolvedService = { ...(fallbackMatch as any), _source: "concierge" };
-      }
-
-      if (!resolvedService) {
-        const { data: mpExact } = await supabase
-          .from("marketplace_services_public" as any)
-          .select("*")
-          .eq("booking_slug", normalizedSlug)
-          .limit(1)
-          .maybeSingle();
-
-        if (mpExact) {
-          resolvedService = { ...(mpExact as any), _source: "marketplace" };
-        } else {
-          const { data: mpFallback } = await supabase
-            .from("marketplace_services_public" as any)
-            .select("*")
-            .ilike("booking_slug", normalizedSlug)
-            .limit(1)
-            .maybeSingle();
-          if (mpFallback) resolvedService = { ...(mpFallback as any), _source: "marketplace" };
-        }
-      }
-
+      const resolvedService = await fetchServiceBySlug(slug);
       if (!mounted) return;
-      setService(resolvedService ?? null);
+      setService(resolvedService);
       setLoading(false);
     };
     load();
