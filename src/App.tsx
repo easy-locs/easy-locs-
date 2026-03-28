@@ -789,7 +789,7 @@ const App = () => (
                 {/* MA-MW */}
                 <Route path="/checkout/share-cart" element={<ProtectedRoute><CustomerShareCartPage /></ProtectedRoute>} />
                 {/* MX-OG */}
-                <Route path="/admin/central-control" element={<ProtectedRoute><CentralControlPanelPage /></ProtectedRoute>} />
+                <Route path="/admin/central-control" element={<ProtectedRoute><AdminCentralControlPanelPage /></ProtectedRoute>} />
                 {/* OH-PI */}
                 <Route path="/merchant/menu-categories/:merchantId" element={<ProtectedRoute><MerchantMenuCategoryManagerPage /></ProtectedRoute>} />
                 <Route path="/admin/menu-quality-control" element={<ProtectedRoute><AdminMenuQualityControlPage /></ProtectedRoute>} />
