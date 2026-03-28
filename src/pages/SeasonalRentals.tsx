@@ -63,28 +63,7 @@ interface SeasonalForm {
 const normalizeEmail = (email: string | null | undefined) => (email || "").trim().toLowerCase();
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-/* iCal helpers now imported from src/lib/seasonal/ical-helpers.ts */
-
-const parseICalEvents = (ical: string): { summary: string; start: string; end: string; uid: string }[] => {
-  const events: { summary: string; start: string; end: string; uid: string }[] = [];
-  const blocks = ical.split("BEGIN:VEVENT");
-  for (let i = 1; i < blocks.length; i++) {
-    const block = blocks[i].split("END:VEVENT")[0];
-    const getVal = (key: string) => {
-      const match = block.match(new RegExp(`${key}[^:]*:(.+)`));
-      return match ? match[1].trim() : "";
-    };
-    const rawStart = getVal("DTSTART");
-    const rawEnd = getVal("DTEND");
-    const formatDate = (d: string) => {
-      const clean = d.replace(/[^0-9]/g, "").slice(0, 8);
-      if (clean.length >= 8) return `${clean.slice(0, 4)}-${clean.slice(4, 6)}-${clean.slice(6, 8)}`;
-      return "";
-    };
-    events.push({ summary: getVal("SUMMARY"), start: formatDate(rawStart), end: formatDate(rawEnd), uid: getVal("UID") });
-  }
-  return events.filter(e => e.start && e.end);
-};
+/* iCal helpers imported from src/lib/seasonal/ical-helpers.ts */
 
 const SeasonalRentals = () => {
   const { user, orgId, subscription } = useAuth();
