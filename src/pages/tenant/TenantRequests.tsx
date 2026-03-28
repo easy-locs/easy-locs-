@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FileText, Receipt, Home, Shield, Clock, CheckCircle, Loader2 } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as tenantRepo from "@/repositories/tenant-portal.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
 import { getCountryConfig } from "@/lib/country-config";
@@ -41,22 +41,14 @@ const TenantRequests = () => {
     if (!tenantId || !orgId || !user) return;
     setSubmitting(type);
 
-    const { error } = await supabase.from("document_requests").insert({
-      tenant_id: tenantId,
-      org_id: orgId,
-      request_type: type,
-      period: period || null,
-    });
-
-    if (error) {
-      toast({ title: T.error, description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await tenantRepo.insertDocumentRequest(tenantId, orgId, type, period || null);
       toast({ title: T.requestSent, description: T.requestSentDesc });
-      const { data: orgData } = await supabase.from("orgs").select("owner_user_id, email").eq("id", orgId).single();
+      const orgData = await tenantRepo.fetchOrgOwnerInfo(orgId);
       if (orgData) {
         const label = REQUEST_TYPES.find(r => r.value === type)?.label || type;
         const L = getCountryConfig(propertyCountry).labels;
-        await (supabase as any).from("app_notifications").insert({
+        await tenantRepo.insertNotification({
           user_id: orgData.owner_user_id,
           scope: "global",
           category: "request",
@@ -66,27 +58,21 @@ const TenantRequests = () => {
           route: "/dashboard/rental?tab=tenants",
         });
         if (orgData.email) {
-          supabase.functions.invoke("send-email", {
-            body: {
-              to: orgData.email,
-              subject: `${T.requestSent}: ${label}`,
-              html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-                <h2 style="color:#1a1a1a;">📋 ${T.requestsTitle}</h2>
-                <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                  <p style="color:#1a1a1a;"><strong>${label}</strong></p>
-                  ${period ? `<p style="color:#1a1a1a;">${T.periodLabel}: ${period}</p>` : ""}
-                </div>
-              </div>`,
-            },
+          tenantRepo.invokeEmail({
+            to: orgData.email,
+            subject: `${T.requestSent}: ${label}`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+              <h2 style="color:#1a1a1a;">📋 ${T.requestsTitle}</h2>
+              <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+                <p style="color:#1a1a1a;"><strong>${label}</strong></p>
+                ${period ? `<p style="color:#1a1a1a;">${T.periodLabel}: ${period}</p>` : ""}
+              </div>
+            </div>`,
           }).catch(() => {});
         }
       }
-      const { data } = await supabase
-        .from("document_requests")
-        .select("*")
-        .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false });
-      setRequests(data || []);
+      const data = await tenantRepo.fetchDocumentRequests(tenantId);
+      setRequests(data);
       setPeriod("");
     }
     setSubmitting(null);
