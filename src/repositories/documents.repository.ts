@@ -91,7 +91,7 @@ export async function insertLease(record: Record<string, any>) {
 
 // ── Inventory ──
 export async function fetchInventory(leaseId: string) {
-  const { data } = await supabase.from("inventory_items").select("*").eq("lease_id", leaseId).order("room");
+  const { data } = await (supabase as any).from("inventory_items").select("*").eq("lease_id", leaseId).order("room");
   return data ?? [];
 }
 
