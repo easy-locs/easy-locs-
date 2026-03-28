@@ -19,6 +19,11 @@ import { installCounterBridge } from "@/lib/dashboard/dashboard-counter-bridge";
 import { installNotificationEventBridge } from "@/lib/notifications/notification-event-bridge";
 import { startStaleCacheScanner } from "@/lib/runtime/stale-cache-detector";
 import { installRentalCacheListeners } from "@/lib/rental/rental-cache-invalidator";
+import { installSeasonalCacheListeners } from "@/lib/seasonal/seasonal-cache-invalidator";
+import { installDealCacheListeners } from "@/lib/deals/deals-cache-invalidator";
+import { installConciergeCacheListeners } from "@/lib/concierge/concierge-cache-invalidator";
+import { installGroupCacheListeners } from "@/lib/groups/groups-cache-invalidator";
+import { installRadarCacheListeners } from "@/lib/radar/radar-cache-invalidator";
 import { initCoreFlowRegistry } from "@/lib/runtime/flow-completeness-validator";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -40,17 +45,17 @@ export function useMasterAppBootstrap() {
     registerStorefrontQueryClient(queryClient);
     registerSupportQueryClient(queryClient);
 
-    // 1. Platform event bus reactions (wallet ↔ orbit ↔ marketplace)
+    // 1. Platform event bus reactions
     const cleanupBus = installPlatformReactions();
     const cleanupStorefront = installStorefrontReactions();
 
-    // 2. Cross-app integration (Wallet→Orbit, Booking→Orbit, Radar→Orbit, etc.)
+    // 2. Cross-app integration
     const cleanupCrossApp = installCrossAppReactions();
 
-    // 3. Orchestration engine (order lifecycle events)
+    // 3. Orchestration engine
     installOrchestrationEngine();
 
-    // 4. Engine connector hub (driver matching, escrow, state machine)
+    // 4. Engine connector hub
     installEngineConnectorHub();
 
     // 5. Smart flow bridge — runtime supervision
@@ -64,29 +69,32 @@ export function useMasterAppBootstrap() {
     const cleanupOrderCache = installOrderCacheListener();
     const cleanupStorefrontCache = installStorefrontCacheListener();
     const cleanupSupportCache = installSupportCacheListener();
+    const cleanupRentalCache = installRentalCacheListeners();
+    const cleanupSeasonalCache = installSeasonalCacheListeners();
+    const cleanupDealCache = installDealCacheListeners();
+    const cleanupConciergeCache = installConciergeCacheListeners();
+    const cleanupGroupCache = installGroupCacheListeners();
+    const cleanupRadarCache = installRadarCacheListeners();
 
-    // 7. Cross-domain propagation — wire events across domain boundaries
+    // 7. Cross-domain propagation
     const cleanupCrossDomain = installCrossDomainPropagationHandlers();
 
-    // 8. Dead event consumers — wire previously orphaned events
+    // 8. Dead event consumers
     const cleanupDeadEvents = installDeadEventConsumers();
 
-    // 9. Counter bridge — badge/counter refresh from events
+    // 9. Counter bridge
     const cleanupCounters = installCounterBridge();
 
-    // 10. Notification event bridge — auto-create notifications from domain events
+    // 10. Notification event bridge
     const cleanupNotifications = installNotificationEventBridge();
 
     // 11. Runtime: stale cache scanner
     const cleanupStaleScanner = startStaleCacheScanner(60_000);
 
-    // 12. Rental domain cache invalidation
-    const cleanupRentalCache = installRentalCacheListeners();
-
-    // 13. Core flow registry — register all expected domain flows
+    // 12. Core flow registry
     initCoreFlowRegistry();
 
-    // 14. Platform recovery — deferred well after initial render
+    // 13. Platform recovery — deferred
     const t1 = setTimeout(() => void runPlatformRecovery("boot"), 30000);
 
     return () => {
@@ -102,12 +110,17 @@ export function useMasterAppBootstrap() {
       cleanupOrderCache();
       cleanupStorefrontCache();
       cleanupSupportCache();
+      cleanupRentalCache();
+      cleanupSeasonalCache();
+      cleanupDealCache();
+      cleanupConciergeCache();
+      cleanupGroupCache();
+      cleanupRadarCache();
       cleanupCrossDomain();
       cleanupDeadEvents();
       cleanupCounters();
       cleanupNotifications();
       cleanupStaleScanner();
-      cleanupRentalCache();
       booted = false;
     };
   }, [queryClient]);
