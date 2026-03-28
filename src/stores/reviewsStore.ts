@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import type { ListingReview } from "@/lib/types/reviews";
 
 const db = supabase as any;
@@ -45,8 +45,7 @@ export const useReviewsStore = create<ReviewsStore>((set, get) => ({
   },
 
   createReview: async (input) => {
-    const orbit = useOrbitStore.getState().profile;
-    if (!orbit) throw new Error("Missing orbit");
+    const orbit = requireOrbitIdentity();
 
     const row: ListingReview = {
       id: `rev_${Math.random().toString(36).slice(2, 11)}`,

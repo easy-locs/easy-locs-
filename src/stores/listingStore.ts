@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { PropertyListingV2, ListingAvailabilityRange, CurrencyCode } from "@/lib/types/domain";
 import { listingRepo } from "@/lib/supabase/repositories";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { requireOrbitIdentity, getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
 type CreateListingInput = {
   title: string;
@@ -53,8 +53,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   },
 
   createListing: async (input) => {
-    const orbit = useOrbitStore.getState().profile;
-    if (!orbit) throw new Error("No authenticated orbit profile");
+    const orbit = requireOrbitIdentity();
 
     const now = new Date().toISOString();
     const listing: PropertyListingV2 = {
@@ -138,9 +137,9 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   getListingById: (listingId) => get().listings.find((l) => l.id === listingId) ?? null,
   getPublishedListings: () => get().listings.filter((l) => l.status === "published"),
   getMyListings: () => {
-    const orbit = useOrbitStore.getState().profile;
-    if (!orbit) return [];
-    return get().listings.filter((l) => l.ownerOrbitId === orbit.orbitId);
+    const identity = getOrbitIdentity();
+    if (!identity) return [];
+    return get().listings.filter((l) => l.ownerOrbitId === identity.orbitId);
   },
   getListingsByOwner: (ownerOrbitId) => get().listings.filter((l) => l.ownerOrbitId === ownerOrbitId),
 }));

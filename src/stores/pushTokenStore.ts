@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
 type PushTokenRow = {
   id: string;
@@ -49,7 +49,7 @@ export const usePushTokenStore = create<PushTokenStore>((set) => ({
 
   saveToken: async (token, platform) => {
     const user = useV2AuthStore.getState().user;
-    const orbit = useOrbitStore.getState().profile;
+    const orbit = getOrbitIdentity();
     if (!user) return;
 
     const row = {

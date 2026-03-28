@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { uploadFile, getPublicFileUrl } from "@/lib/storage/uploadFile";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useListingStore } from "@/stores/listingStore";
 
 type PropertyMediaStore = {
@@ -12,9 +12,9 @@ export const usePropertyMediaStore = create<PropertyMediaStore>((set) => ({
   uploading: false,
 
   uploadListingImage: async (listingId, file) => {
-    const orbit = useOrbitStore.getState().profile;
+    const orbit = requireOrbitIdentity();
     const listing = useListingStore.getState().getListingById(listingId);
-    if (!orbit || !listing) throw new Error("Missing orbit or listing");
+    if (!listing) throw new Error("Missing listing");
     if (listing.ownerOrbitId !== orbit.orbitId) throw new Error("Not allowed");
 
     set({ uploading: true });
