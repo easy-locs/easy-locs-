@@ -23,7 +23,7 @@ export async function fetchTenantsForOrg(orgId: string) {
 }
 
 export async function insertIntervention(record: Record<string, any>) {
-  const { data, error } = await supabase.from("interventions").insert(record).select().single();
+  const { data, error } = await (supabase as any).from("interventions").insert(record).select().single();
   if (error) throw error;
   return data;
 }
