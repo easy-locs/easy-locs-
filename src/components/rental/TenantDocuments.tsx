@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as tdRepo from "@/repositories/tenant-docs.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { FileText, Upload, CheckCircle, Clock, XCircle, Trash2, Download, Mail, Loader2 } from "lucide-react";
@@ -75,12 +75,12 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
   };
 
   const loadDocs = async () => {
-    const { data } = await supabase.from("tenant_documents").select("id, doc_type, label, file_url, filename, status, created_at").eq("tenant_id", tenantId).order("created_at", { ascending: false });
-    setDocs((data as TenantDoc[]) || []);
+    const data = await tdRepo.fetchTenantDocs(tenantId);
+    setDocs(data as TenantDoc[]);
   };
 
   const loadTenantContact = async () => {
-    const { data } = await supabase.from("tenants").select("email, tenant_user_id").eq("id", tenantId).single();
+    const data = await tdRepo.fetchTenantContactInfo(tenantId);
     setTenantContact((data as TenantContact) || null);
   };
 
@@ -89,14 +89,18 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
   const getSignedDocumentUrl = async (fileUrl: string) => {
     const fileRef = parseStorageFileRef(fileUrl);
     if (!fileRef?.path) return null;
-    const primary = await supabase.storage.from(fileRef.bucket).createSignedUrl(fileRef.path, 60 * 60 * 24 * 7);
-    if (primary.data?.signedUrl) return primary.data.signedUrl;
-    if (fileRef.bucket !== "rental-docs") {
-      const fallback = await supabase.storage.from("rental-docs").createSignedUrl(fileRef.path, 60 * 60 * 24 * 7);
-      if (fallback.data?.signedUrl) return fallback.data.signedUrl;
-      throw fallback.error || primary.error || new Error("Cannot generate signed URL");
+    try {
+      return await tdRepo.createSignedDocUrl(fileRef.bucket, fileRef.path);
+    } catch (primaryErr) {
+      if (fileRef.bucket !== "rental-docs") {
+        try {
+          return await tdRepo.createSignedDocUrl("rental-docs", fileRef.path);
+        } catch (fallbackErr) {
+          throw fallbackErr;
+        }
+      }
+      throw primaryErr;
     }
-    throw primary.error || new Error("Cannot generate signed URL");
   };
 
   const openDocument = async (doc: TenantDoc) => {
@@ -127,12 +131,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
     if (!user || !orgId) return;
     setUploading(docType);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${orgId}/tenants/${tenantId}/${docType}_${Date.now()}.${ext}`;
-      const { error: uploadErr } = await supabase.storage.from("rental-docs").upload(path, file);
-      if (uploadErr) throw uploadErr;
-      const { error: insertErr } = await supabase.from("tenant_documents").insert({ org_id: orgId, tenant_id: tenantId, doc_type: docType, label, file_url: path, filename: file.name, uploaded_by: user.id });
-      if (insertErr) throw insertErr;
+      await tdRepo.uploadTenantDocument(orgId, tenantId, docType, label, file, user.id);
       toast({ title: `${label} ${t("comp.docs.uploaded")}` });
       await loadDocs();
     } catch (err: any) {
@@ -143,16 +142,19 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
   };
 
   const handleValidate = async (docId: string, status: "validated" | "rejected") => {
-    await supabase.from("tenant_documents").update({ status }).eq("id", docId);
+    await tdRepo.validateTenantDoc(docId, status);
     toast({ title: status === "validated" ? t("comp.docs.doc_validated") : t("comp.docs.doc_rejected") });
     await loadDocs();
   };
 
   const handleDelete = async (docId: string) => {
-    const { error } = await supabase.from("tenant_documents").delete().eq("id", docId);
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
-    toast({ title: t("comp.docs.doc_deleted") });
-    await loadDocs();
+    try {
+      await tdRepo.deleteTenantDoc(docId);
+      toast({ title: t("comp.docs.doc_deleted") });
+      await loadDocs();
+    } catch (error: any) {
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
+    }
   };
 
   const handleRequestDocument = async (docType: string, label: string) => {
@@ -164,34 +166,30 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       const hasValidEmail = !!normalizedEmail && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizedEmail);
 
       const contextId = `tenant_${orgId}_${tenantId}`;
-      const { error: msgError } = await (supabase as any).from("chat_messages_v2").insert({ conversation_id: contextId, sender_user_id: user.id, sender_orbit_id: `orbit_${user.id.slice(0, 12)}`, type: "text", body: t("comp.docs.doc_requested_msg").replace("{label}", label) });
-      if (msgError) throw msgError;
+      await tdRepo.insertChatMessageV2({ conversation_id: contextId, sender_user_id: user.id, sender_orbit_id: `orbit_${user.id.slice(0, 12)}`, type: "text", body: t("comp.docs.doc_requested_msg").replace("{label}", label) });
 
       if (hasTenantAccount) {
-        await (supabase as any).from("app_notifications").insert({ user_id: tenantContact!.tenant_user_id, scope: "global", category: "request", title: t("comp.docs.doc_requested_notif"), body: t("comp.docs.doc_requested_notif_msg").replace("{label}", label), severity: "info", route: "/tenant/documents" });
+        await tdRepo.insertAppNotificationForTenant({ user_id: tenantContact!.tenant_user_id, scope: "global", category: "request", title: t("comp.docs.doc_requested_notif"), body: t("comp.docs.doc_requested_notif_msg").replace("{label}", label), severity: "info", route: "/tenant/documents" });
       }
 
       if (hasValidEmail) {
         const appUrl = buildAppUrl("/");
-        const { data, error } = await supabase.functions.invoke("send-email", {
-          body: {
-            to: normalizedEmail,
-            subject: `${t("comp.docs.doc_requested_notif")} : ${label}`,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-              <h2 style="color:#1a1a1a;text-align:center;">${t("comp.docs.email_heading")}</h2>
-              <p style="color:#555;font-size:15px;">Bonjour ${tenantName},</p>
-              <p style="color:#555;font-size:15px;">${t("comp.docs.email_body")}</p>
-              <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-                <p style="color:#1a1a1a;margin:0;font-size:15px;font-weight:600;">${label}</p>
-              </div>
-              <div style="text-align:center;margin:24px 0;">
-                <a href="${appUrl}/tenant/documents" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${t("comp.docs.email_cta")}</a>
-              </div>
-              <p style="color:#888;font-size:12px;text-align:center;">${t("hook.rental.receipt_email_footer")}</p>
-            </div>`,
-          },
+        await tdRepo.invokeSendEmail({
+          to: normalizedEmail,
+          subject: `${t("comp.docs.doc_requested_notif")} : ${label}`,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+            <h2 style="color:#1a1a1a;text-align:center;">${t("comp.docs.email_heading")}</h2>
+            <p style="color:#555;font-size:15px;">Bonjour ${tenantName},</p>
+            <p style="color:#555;font-size:15px;">${t("comp.docs.email_body")}</p>
+            <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
+              <p style="color:#1a1a1a;margin:0;font-size:15px;font-weight:600;">${label}</p>
+            </div>
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${appUrl}/tenant/documents" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${t("comp.docs.email_cta")}</a>
+            </div>
+            <p style="color:#888;font-size:12px;text-align:center;">${t("hook.rental.receipt_email_footer")}</p>
+          </div>`,
         });
-        if (error || (data && data.success === false)) throw error || new Error(data?.error || "Send failed");
       }
 
       if (!hasTenantAccount && !hasValidEmail) {
@@ -225,23 +223,20 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
           <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;"><a href="${d.accessUrl}" style="color:#d4a853;text-decoration:underline;">Download</a></td>
         </tr>`).join("");
 
-      const { data, error } = await supabase.functions.invoke("send-email", {
-        body: {
-          to: tenantEmail,
-          subject: t("comp.docs.email_docs_subject"),
-          html: `<div style="font-family:sans-serif;max-width:700px;margin:0 auto;padding:24px;background:#ffffff;">
-            <h2 style="color:#1a1a1a;text-align:center;">${t("comp.docs.email_docs_heading")}</h2>
-            <p style="color:#555;font-size:15px;">Bonjour ${tenantName},</p>
-            <p style="color:#555;font-size:15px;">${t("comp.docs.email_docs_body")}</p>
-            <table style="width:100%;border-collapse:collapse;margin:16px 0;"><thead><tr style="background:#f5f5f5;"><th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">Type</th><th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">File</th><th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">Status</th><th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">Link</th></tr></thead><tbody>${docListHtml}</tbody></table>
-            <div style="text-align:center;margin:24px 0;">
-              <a href="${appUrl}/tenant/documents" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${t("comp.docs.email_docs_cta")}</a>
-            </div>
-            <p style="color:#888;font-size:12px;text-align:center;">${t("hook.rental.receipt_email_footer")}</p>
-          </div>`,
-        },
+      await tdRepo.invokeSendEmail({
+        to: tenantEmail,
+        subject: t("comp.docs.email_docs_subject"),
+        html: `<div style="font-family:sans-serif;max-width:700px;margin:0 auto;padding:24px;background:#ffffff;">
+          <h2 style="color:#1a1a1a;text-align:center;">${t("comp.docs.email_docs_heading")}</h2>
+          <p style="color:#555;font-size:15px;">Bonjour ${tenantName},</p>
+          <p style="color:#555;font-size:15px;">${t("comp.docs.email_docs_body")}</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;"><thead><tr style="background:#f5f5f5;"><th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">Type</th><th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">File</th><th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">Status</th><th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">Link</th></tr></thead><tbody>${docListHtml}</tbody></table>
+          <div style="text-align:center;margin:24px 0;">
+            <a href="${appUrl}/tenant/documents" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${t("comp.docs.email_docs_cta")}</a>
+          </div>
+          <p style="color:#888;font-size:12px;text-align:center;">${t("hook.rental.receipt_email_footer")}</p>
+        </div>`,
       });
-      if (error || (data && data.success === false)) throw error || new Error(data?.error || "Send failed");
       toast({ title: t("comp.docs.email_sent"), description: t("comp.docs.email_sent_desc").replace("{email}", tenantEmail) });
     } catch (err: any) {
       toast({ title: t("comp.docs.send_error"), description: err.message, variant: "destructive" });

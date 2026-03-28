@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as invRepo from "@/repositories/inventory.repository";
+import * as tdRepo from "@/repositories/tenant-docs.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -103,11 +104,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
     if (!existingReportId) return;
     const load = async () => {
       setLoading(true);
-      const { data: report } = await supabase
-        .from("inventory_reports")
-        .select("*")
-        .eq("id", existingReportId)
-        .single();
+      const report = await invRepo.fetchInventoryReport(existingReportId);
       if (report) {
         setReportDate(report.report_date);
         setGeneralNotes(report.general_notes || "");
@@ -118,25 +115,17 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
         setKeysDetails(report.keys_details || "");
         setReportStatus(report.status);
       }
-      const { data: dbRooms } = await supabase
-        .from("inventory_rooms")
-        .select("*")
-        .eq("report_id", existingReportId)
-        .order("sort_order");
-      if (dbRooms && dbRooms.length > 0) {
+      const dbRooms = await invRepo.fetchInventoryRooms(existingReportId);
+      if (dbRooms.length > 0) {
         const roomsWithItems: InventoryRoom[] = [];
         for (const r of dbRooms) {
-          const { data: items } = await supabase
-            .from("inventory_items")
-            .select("*")
-            .eq("room_id", r.id)
-            .order("sort_order");
+          const items = await invRepo.fetchInventoryItems(r.id);
           roomsWithItems.push({
             id: r.id,
             room_name: r.room_name,
             sort_order: r.sort_order,
             expanded: false,
-            items: (items || []).map((it: any) => ({
+            items: items.map((it: any) => ({
               id: it.id,
               element_name: it.element_name,
               condition: it.condition as "good" | "average" | "bad",
@@ -155,22 +144,22 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("signature_url").eq("id", user.id).single().then(({ data }) => {
-      if (data?.signature_url) setLandlordSignature(data.signature_url);
+    invRepo.fetchSignatureUrl(user.id).then((url) => {
+      if (url) setLandlordSignature(url);
     });
   }, [user]);
 
   useEffect(() => {
     if (!orgId) return;
-    supabase.from("orgs").select("stamp_url").eq("id", orgId).single().then(({ data }) => {
-      if ((data as any)?.stamp_url) setStampUrl((data as any).stamp_url);
+    invRepo.fetchOrgStampUrl(orgId).then((url) => {
+      if (url) setStampUrl(url);
     });
   }, [orgId]);
 
   useEffect(() => {
     if (!tenantId) return;
-    supabase.from("tenants").select("name").eq("id", tenantId).single().then(({ data }) => {
-      if (data?.name) setTenantName(data.name);
+    invRepo.fetchTenantName(tenantId).then((name) => {
+      if (name) setTenantName(name);
     });
   }, [tenantId]);
 
@@ -224,22 +213,18 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 
   const handlePhotoUpload = async (roomId: string, itemId: string, file: File) => {
     if (!user || !orgId) return;
-    const ext = file.name.split(".").pop();
-    const path = `${orgId}/${reportId || "new"}/${roomId}/${itemId}_${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("rental-docs").upload(path, file);
-    if (error) {
+    try {
+      const url = await invRepo.uploadInventoryPhoto(orgId, reportId, roomId, itemId, file);
+      setRooms(prev =>
+        prev.map(r =>
+          r.id === roomId
+            ? { ...r, items: r.items.map(it => it.id === itemId ? { ...it, photo_urls: [...it.photo_urls, url] } : it) }
+            : r
+        )
+      );
+    } catch (error: any) {
       toast({ title: t("page.inventory.upload_error"), description: error.message, variant: "destructive" });
-      return;
     }
-    const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
-    const url = signedData?.signedUrl || path;
-    setRooms(prev =>
-      prev.map(r =>
-        r.id === roomId
-          ? { ...r, items: r.items.map(it => it.id === itemId ? { ...it, photo_urls: [...it.photo_urls, url] } : it) }
-          : r
-      )
-    );
   };
 
   const removePhoto = (roomId: string, itemId: string, photoIndex: number) => {
@@ -259,40 +244,32 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       const newStatus = finalize ? "completed" : "draft";
       let rId = reportId;
       if (!rId) {
-        const { data, error } = await supabase.from("inventory_reports").insert({
+        rId = await invRepo.insertInventoryReport({
           org_id: orgId, property_id: propertyId, tenant_id: tenantId || null,
           user_id: user.id, report_type: reportType, report_date: reportDate,
           general_notes: generalNotes, meter_electricity: meterElectricity,
           meter_gas: meterGas, meter_water: meterWater,
           keys_count: keysCount, keys_details: keysDetails, status: newStatus,
-        }).select("id").single();
-        if (error) throw error;
-        rId = data.id;
+        });
         setReportId(rId);
       } else {
-        await supabase.from("inventory_reports").update({
+        await invRepo.updateInventoryReport(rId, {
           report_date: reportDate, general_notes: generalNotes,
           meter_electricity: meterElectricity, meter_gas: meterGas, meter_water: meterWater,
           keys_count: keysCount, keys_details: keysDetails, status: newStatus,
-        }).eq("id", rId);
-        await supabase.from("inventory_rooms").delete().eq("report_id", rId);
+        });
+        await invRepo.deleteRoomsForReport(rId);
       }
 
       for (const room of rooms) {
-        const { data: roomData, error: roomErr } = await supabase
-          .from("inventory_rooms")
-          .insert({ report_id: rId, room_name: room.room_name, sort_order: room.sort_order })
-          .select("id").single();
-        if (roomErr) throw roomErr;
-
+        const roomDbId = await invRepo.insertRoom({ report_id: rId, room_name: room.room_name, sort_order: room.sort_order });
         if (room.items.length > 0) {
           const itemsToInsert = room.items.map((it, idx) => ({
-            room_id: roomData.id, element_name: it.element_name,
+            room_id: roomDbId, element_name: it.element_name,
             condition: it.condition, notes: it.notes,
             photo_urls: it.photo_urls, sort_order: idx,
           }));
-          const { error: itemErr } = await supabase.from("inventory_items").insert(itemsToInsert);
-          if (itemErr) throw itemErr;
+          await invRepo.insertItems(itemsToInsert);
         }
       }
 
@@ -376,9 +353,9 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 
     if (tenantId && orgId) {
       try {
-        const { data: tenant } = await supabase.from("tenants").select("tenant_user_id, email, name").eq("id", tenantId).single();
+        const tenant = await tdRepo.fetchTenantContactInfo(tenantId) as any;
         if (tenant?.tenant_user_id) {
-          await supabase.from("app_notifications").insert({
+          await tdRepo.insertAppNotificationForTenant({
             user_id: tenant.tenant_user_id,
             org_id: orgId,
             type: "info",
@@ -403,19 +380,17 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
           const emailSubject = reportType === "entry"
             ? `${t("page.inventory.email_subject_entry")} — ${propertyLabel}`
             : `${t("page.inventory.email_subject_exit")} — ${propertyLabel}`;
-          await supabase.functions.invoke("send-email", {
-            body: {
-              to: tenant.email,
-              subject: emailSubject,
-              html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-                <h2 style="color:#1a2744;text-align:center;">${t("page.inventory.email_title")}</h2>
-                <p style="color:#555;">${t("page.inventory.email_hello")} ${tenant.name || ""},</p>
-                <p style="color:#555;">${t("page.inventory.email_body").replace("{property}", propertyLabel).replace("{date}", reportDate)}</p>
-                <p style="color:#555;">${t("page.inventory.email_pdf_note")}</p>
-                <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — ${t("page.listing.powered_by_brand") || "EASY-LOCS®"}</p>
-              </div>`,
-              attachments,
-            },
+          await tdRepo.invokeSendEmail({
+            to: tenant.email,
+            subject: emailSubject,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+              <h2 style="color:#1a2744;text-align:center;">${t("page.inventory.email_title")}</h2>
+              <p style="color:#555;">${t("page.inventory.email_hello")} ${tenant.name || ""},</p>
+              <p style="color:#555;">${t("page.inventory.email_body").replace("{property}", propertyLabel).replace("{date}", reportDate)}</p>
+              <p style="color:#555;">${t("page.inventory.email_pdf_note")}</p>
+              <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — ${t("page.listing.powered_by_brand") || "EASY-LOCS®"}</p>
+            </div>`,
+            attachments,
           });
         }
       } catch {}
