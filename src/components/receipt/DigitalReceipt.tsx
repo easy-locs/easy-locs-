@@ -139,13 +139,13 @@ function DigitalReceipt({ data, onClose }: { data: ReceiptData; onClose?: () => 
           {data.from && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">From</span>
-              <span className="text-foreground font-medium truncate max-w-[55%] text-right">{data.from}</span>
+              <span className="text-foreground font-medium min-w-0 break-words max-w-[55%] text-right leading-snug">{data.from}</span>
             </div>
           )}
           {data.to && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">To</span>
-              <span className="text-foreground font-medium truncate max-w-[55%] text-right">{data.to}</span>
+              <span className="text-foreground font-medium min-w-0 break-words max-w-[55%] text-right leading-snug">{data.to}</span>
             </div>
           )}
           {data.distance && (
@@ -163,13 +163,13 @@ function DigitalReceipt({ data, onClose }: { data: ReceiptData; onClose?: () => 
           {data.customerName && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Customer</span>
-              <span className="text-foreground font-medium truncate max-w-[55%] text-right">{data.customerName}</span>
+              <span className="text-foreground font-medium min-w-0 break-words max-w-[55%] text-right leading-snug">{data.customerName}</span>
             </div>
           )}
           {data.providerName && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Provider</span>
-              <span className="text-foreground font-medium truncate max-w-[55%] text-right">{data.providerName}</span>
+              <span className="text-foreground font-medium min-w-0 break-words max-w-[55%] text-right leading-snug">{data.providerName}</span>
             </div>
           )}
         </div>
@@ -179,7 +179,7 @@ function DigitalReceipt({ data, onClose }: { data: ReceiptData; onClose?: () => 
           <div className="border-t border-border/10 pt-2 space-y-1.5">
             {data.items.map((item, i) => (
               <div key={i} className="flex justify-between text-xs">
-                <span className="text-muted-foreground truncate max-w-[60%]">{item.label}</span>
+                <span className="text-muted-foreground min-w-0 break-words max-w-[60%] leading-snug">{item.label}</span>
                 <span className="text-foreground font-medium">{item.amount.toFixed(2)}</span>
               </div>
             ))}
