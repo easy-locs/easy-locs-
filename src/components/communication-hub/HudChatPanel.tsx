@@ -490,9 +490,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       if (!finalUrl) throw new Error("Upload failed");
       const disappearAt = computeDisappearAt(security.disappearTTL !== "off" ? security.disappearTTL : privacySettings.defaultDisappearTtl);
 
-      // V2 only
-      const conversationId = thread.v2ConversationId;
-      if (!conversationId) throw new Error("No V2 conversation");
+      // V2 only — auto-create if needed
+      const conversationId = await resolveConversationId(authUserId);
+      if (!conversationId) throw new Error("No conversation available");
       await (supabase as any).from("chat_messages_v2").insert({
         conversation_id: conversationId,
         sender_user_id: authUserId,
