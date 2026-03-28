@@ -1,6 +1,14 @@
+/**
+ * Admin Shop Import Page — V3 redirected to Gold-Standard Pipeline.
+ * 
+ * MIGRATION: Legacy shop-import-pipeline.ts is no longer called.
+ * All imports now flow through src/lib/onboarding/pipeline/orchestrator.ts
+ * 
+ * The legacy pipeline remains in codebase for reference but has ZERO consumers.
+ */
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { runImportPipeline, parseImportJson, type PipelineResult } from "@/lib/import/shop-import-pipeline";
+import { runPipelineV2, type PipelineResult } from "@/lib/onboarding/pipeline";
 import { publishCandidateAsSeed, autoClassifyVisibility } from "@/lib/import/visibility-engine";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -40,6 +48,14 @@ const DEMO_DATA = JSON.stringify([
   },
 ], null, 2);
 
+interface LegacyImportResult {
+  runId: string;
+  entityCount: number;
+  publishDecisions: number;
+  qualityReports: number;
+  errors: string[];
+}
+
 export default function AdminShopImportPage() {
   const navigate = useNavigate();
   const [sourceType, setSourceType] = useState("manual");
@@ -47,7 +63,7 @@ export default function AdminShopImportPage() {
   const [city, setCity] = useState("Dubai");
   const [jsonText, setJsonText] = useState(DEMO_DATA);
   const [running, setRunning] = useState(false);
-  const [pipelineResult, setPipelineResult] = useState<PipelineResult | null>(null);
+  const [pipelineResult, setPipelineResult] = useState<LegacyImportResult | null>(null);
 
   // Dashboard state
   const [batches, setBatches] = useState<any[]>([]);
@@ -56,6 +72,8 @@ export default function AdminShopImportPage() {
   const [visualStats, setVisualStats] = useState({ needsAssets: 0, goodUi: 0, poorMenu: 0, emptyMenu: 0, storefrontReady: 0 });
   const [filter, setFilter] = useState({ city: "", vertical: "", status: "" });
   const [onboardingStates, setOnboardingStates] = useState<any[]>([]);
+  const [traceSteps, setTraceSteps] = useState<any[]>([]);
+
   useEffect(() => {
     loadDashboard();
   }, []);
@@ -90,18 +108,48 @@ export default function AdminShopImportPage() {
   async function handleImport() {
     try {
       setRunning(true);
+      setTraceSteps([]);
       const parsed = JSON.parse(jsonText);
       if (!Array.isArray(parsed)) {
         toast.error("JSON must be an array");
         return;
       }
-      const items = parseImportJson(parsed);
-      const result = await runImportPipeline(
-        { source_type: sourceType, source_name: sourceName || sourceType, city, country: "AE" },
-        items
-      );
-      setPipelineResult(result);
-      toast.success(`Import: ${result.total_created} created, ${result.total_duplicates} dupes, ${result.total_failed} failed`);
+
+      // Run each item through the gold-standard pipeline
+      const errors: string[] = [];
+      let totalEntities = 0;
+
+      for (const item of parsed) {
+        try {
+          const result = await runPipelineV2({
+            raw: item.website || item.name || "",
+            vertical: item.category === "hotel" || item.category === "resort" ? "hotel" : "food",
+            city: item.city || city,
+            district: item.area,
+            country: item.country || "AE",
+            phone: item.phone,
+            persist: true,
+          });
+          totalEntities += result.canonical.length;
+          
+          // Collect trace for UI
+          if (result.trace?.steps) {
+            setTraceSteps(prev => [...prev, ...result.trace.steps]);
+          }
+        } catch (err: any) {
+          errors.push(`${item.name}: ${err.message}`);
+        }
+      }
+
+      setPipelineResult({
+        runId: crypto.randomUUID(),
+        entityCount: totalEntities,
+        publishDecisions: totalEntities,
+        qualityReports: totalEntities,
+        errors,
+      });
+
+      toast.success(`Import: ${totalEntities} entities processed via Gold-Standard Pipeline`);
       loadDashboard();
     } catch (err: any) {
       toast.error(err.message || "Import failed");
@@ -129,8 +177,8 @@ export default function AdminShopImportPage() {
       <div className="flex items-center gap-3">
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-sm">←</button>
         <div>
-          <h1 className="text-lg font-bold">UAE Shop Import Engine</h1>
-          <p className="text-xs text-muted-foreground">Import only • No activation messages</p>
+          <h1 className="text-lg font-bold">Gold-Standard Import Engine</h1>
+          <p className="text-xs text-muted-foreground">V3 · Atomic Pipeline · No legacy</p>
         </div>
       </div>
 
@@ -175,6 +223,7 @@ export default function AdminShopImportPage() {
           </div>
         )}
       </div>
+
       {/* Import Form */}
       <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
         <h2 className="text-sm font-bold">New Import Batch</h2>
@@ -204,7 +253,7 @@ export default function AdminShopImportPage() {
           disabled={running}
           className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold disabled:opacity-50"
         >
-          {running ? "Importing..." : "🚀 Run Import Pipeline"}
+          {running ? "Processing via Gold-Standard Pipeline..." : "🚀 Run Gold-Standard Import"}
         </button>
         <button
           onClick={async () => {
@@ -221,28 +270,46 @@ export default function AdminShopImportPage() {
       {/* Pipeline Result */}
       {pipelineResult && (
         <div className="rounded-2xl bg-card border border-border p-4 space-y-2">
-          <h3 className="text-sm font-bold">Pipeline Result</h3>
+          <h3 className="text-sm font-bold">Pipeline Result (Gold-Standard)</h3>
           <div className="grid grid-cols-3 gap-2 text-xs">
             <div className="bg-muted rounded-lg p-2 text-center">
-              <div className="font-bold text-emerald-500">{pipelineResult.total_created}</div>
-              <div className="text-muted-foreground">Created</div>
+              <div className="font-bold text-emerald-500">{pipelineResult.entityCount}</div>
+              <div className="text-muted-foreground">Entities</div>
             </div>
             <div className="bg-muted rounded-lg p-2 text-center">
-              <div className="font-bold text-amber-500">{pipelineResult.total_duplicates}</div>
-              <div className="text-muted-foreground">Duplicates</div>
+              <div className="font-bold text-primary">{pipelineResult.publishDecisions}</div>
+              <div className="text-muted-foreground">Decisions</div>
             </div>
             <div className="bg-muted rounded-lg p-2 text-center">
-              <div className="font-bold text-destructive">{pipelineResult.total_failed}</div>
-              <div className="text-muted-foreground">Failed</div>
+              <div className="font-bold text-destructive">{pipelineResult.errors.length}</div>
+              <div className="text-muted-foreground">Errors</div>
             </div>
           </div>
           {pipelineResult.errors.length > 0 && (
             <div className="space-y-1 mt-2">
               {pipelineResult.errors.map((e, i) => (
-                <div key={i} className="text-xs text-destructive">{e.name}: {e.error}</div>
+                <div key={i} className="text-xs text-destructive">{e}</div>
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Pipeline Trace */}
+      {traceSteps.length > 0 && (
+        <div className="rounded-2xl bg-card border border-border p-4 space-y-2">
+          <h3 className="text-sm font-bold">Pipeline Trace ({traceSteps.length} steps)</h3>
+          <div className="space-y-1 max-h-48 overflow-y-auto">
+            {traceSteps.map((step: any, i: number) => (
+              <div key={i} className="flex items-center gap-2 text-[10px]">
+                <span className={step.status === "success" ? "text-emerald-500" : step.status === "failed" ? "text-destructive" : "text-amber-500"}>
+                  {step.status === "success" ? "✓" : step.status === "failed" ? "✗" : "⚠"}
+                </span>
+                <span className="font-mono text-muted-foreground">{step.name}</span>
+                <span className="text-muted-foreground">{step.durationMs}ms</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

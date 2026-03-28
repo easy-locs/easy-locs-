@@ -63,15 +63,17 @@ export async function validateP0Bridges(): Promise<ValidationResult[]> {
     });
   }
 
-  // ═══ BRIDGE 3: commerce:payment_authorized ═══
+  // ═══ BRIDGE 3: commerce:payment_authorized (V3 — split events) ═══
   {
     const downstream: string[] = [];
-    const onWallet = (p: any) => { downstream.push("wallet.updated"); };
+    const onWalletRefresh = (p: any) => { downstream.push("wallet.balance.refresh"); };
+    const onCommerceAuth = (p: any) => { downstream.push("commerce.payment.authorized"); };
     const onOrder = (p: any) => { downstream.push("order.payment.updated"); };
     const onOrbit = (p: any) => { downstream.push("orbit.payment.context"); };
     const onNotif = (p: any) => { downstream.push("notification.payment"); };
 
-    eventBus.on("wallet.updated", onWallet);
+    eventBus.on("wallet.balance.refresh", onWalletRefresh);
+    eventBus.on("commerce.payment.authorized", onCommerceAuth);
     eventBus.on("order.payment.updated", onOrder);
     eventBus.on("orbit.payment.context", onOrbit);
     eventBus.on("notification.payment", onNotif);
@@ -81,7 +83,8 @@ export async function validateP0Bridges(): Promise<ValidationResult[]> {
     
     await new Promise(r => setTimeout(r, 500));
     
-    eventBus.off("wallet.updated", onWallet);
+    eventBus.off("wallet.balance.refresh", onWalletRefresh);
+    eventBus.off("commerce.payment.authorized", onCommerceAuth);
     eventBus.off("order.payment.updated", onOrder);
     eventBus.off("orbit.payment.context", onOrbit);
     eventBus.off("notification.payment", onNotif);
@@ -91,7 +94,8 @@ export async function validateP0Bridges(): Promise<ValidationResult[]> {
       emitted: true,
       handlerFired: downstream.length > 0,
       downstreamEvents: downstream,
-      pass: downstream.includes("wallet.updated") &&
+      pass: downstream.includes("wallet.balance.refresh") &&
+            downstream.includes("commerce.payment.authorized") &&
             downstream.includes("order.payment.updated") &&
             downstream.includes("orbit.payment.context") &&
             downstream.includes("notification.payment"),
