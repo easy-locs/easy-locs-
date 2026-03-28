@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,14 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Send, Paperclip, StickyNote, Mail, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { insertAuditLog } from "@/repositories/marketplace.repository";
 
-interface Props {
-  bookingId: string;
-  orgId: string;
-  customerName: string;
-  customerEmail?: string;
-}
-
+interface Props { bookingId: string; orgId: string; customerName: string; customerEmail?: string; }
 type MessageType = "message" | "internal_note" | "email" | "notification";
 
 export default function BookingCommunicationThread({ bookingId, orgId, customerName, customerEmail }: Props) {
@@ -27,12 +22,7 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
   const { data: messages = [] } = useQuery({
     queryKey: ["booking_messages", bookingId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("chat_messages_v2")
-        .select("*")
-        .order("created_at", { ascending: true })
-        .limit(200);
-      // Filter messages for this booking by checking content or category
+      const { data } = await (supabase as any).from("chat_messages_v2").select("*").order("created_at", { ascending: true }).limit(200);
       return (data || []).filter((m: any) => {
         const content = m.content || "";
         return content.includes(bookingId) || (m.category === "booking" && content.includes(customerName));
@@ -45,51 +35,25 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
     mutationFn: async () => {
       const prefix = messageType === "internal_note" ? "📌 [Internal] " : messageType === "email" ? "📧 [Email] " : "";
       const content = `${prefix}${newMessage}\n\n[Booking: ${bookingId}]`;
-      
-      // Internal notes: just save the message directly
+
       if (messageType === "internal_note") {
         await (supabase as any).from("chat_messages_v2").insert({
-          org_id: orgId,
-          sender_id: user?.id || null,
-          content,
-          category: "booking",
-          message_type: "system",
-          read: false,
+          org_id: orgId, sender_id: user?.id || null, content,
+          category: "booking", message_type: "system", read: false,
         } as any);
       } else {
-        // Message or Email: use the shared communication pipeline
         const { sendCommunicationEvent, createDeepLinkMeta } = await import("@/lib/shared");
-        const meta = createDeepLinkMeta({
-          targetType: "marketplace_booking",
-          targetId: bookingId,
-          module: "marketplace",
-          bookingId,
-          orgId,
-        });
-        await sendCommunicationEvent({
-          orgId,
-          senderId: user?.id,
-          recipientEmail: messageType === "email" ? customerEmail : undefined,
-          subject: `Message from your provider`,
-          message: newMessage,
-          category: "booking",
-          meta,
-        });
+        const meta = createDeepLinkMeta({ targetType: "marketplace_booking", targetId: bookingId, module: "marketplace", bookingId, orgId });
+        await sendCommunicationEvent({ orgId, senderId: user?.id, recipientEmail: messageType === "email" ? customerEmail : undefined, subject: `Message from your provider`, message: newMessage, category: "booking", meta });
       }
 
-      // Log to audit
-      await supabase.from("audit_logs").insert({
-        org_id: orgId,
-        user_id: user?.id,
+      await insertAuditLog({
+        org_id: orgId, user_id: user?.id,
         action: `${messageType === "internal_note" ? "Internal note" : "Message"} sent for booking`,
         metadata_json: { booking_id: bookingId, type: messageType } as any,
       });
     },
-    onSuccess: () => {
-      setNewMessage("");
-      qc.invalidateQueries({ queryKey: ["booking_messages", bookingId] });
-      toast.success(messageType === "internal_note" ? "Note added" : "Message sent");
-    },
+    onSuccess: () => { setNewMessage(""); qc.invalidateQueries({ queryKey: ["booking_messages", bookingId] }); toast.success(messageType === "internal_note" ? "Note added" : "Message sent"); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -101,7 +65,6 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
 
   return (
     <div className="space-y-4">
-      {/* Messages list */}
       <div className="max-h-64 overflow-y-auto space-y-2 border border-border rounded-lg p-3">
         {messages.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground py-4">No messages yet</p>
@@ -116,20 +79,11 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
                   {isInternal && <Badge variant="outline" className="text-[10px]">📌 Internal</Badge>}
                   {isEmail && <Badge variant="outline" className="text-[10px]">📧 Email</Badge>}
                   {isSystem && <Badge variant="outline" className="text-[10px]">🤖 System</Badge>}
-                  <span className="text-[10px] text-muted-foreground ml-auto">
-                    {format(new Date(m.created_at), "dd/MM HH:mm")}
-                  </span>
+                  <span className="text-[10px] text-muted-foreground ml-auto">{format(new Date(m.created_at), "dd/MM HH:mm")}</span>
                 </div>
-                <p className="text-foreground whitespace-pre-line">
-                  {m.content?.replace(/\[Booking: [^\]]+\]/g, "").replace(/📌 \[Internal\] |📧 \[Email\] /g, "").trim()}
-                </p>
+                <p className="text-foreground whitespace-pre-line">{m.content?.replace(/\[Booking: [^\]]+\]/g, "").replace(/📌 \[Internal\] |📧 \[Email\] /g, "").trim()}</p>
                 {m.attachment_url && (
-                  <a
-                    href={m.attachment_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-1.5 text-xs underline text-accent"
-                  >
+                  <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 text-xs underline text-accent">
                     <Paperclip className="h-3 w-3" /> Pièce jointe
                   </a>
                 )}
@@ -138,34 +92,17 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
           })
         )}
       </div>
-
-      {/* Compose */}
       <div className="space-y-2">
         <div className="flex gap-1">
           {typeButtons.map(({ type, icon: Icon, label }) => (
-            <Button
-              key={type}
-              size="sm"
-              variant={messageType === type ? "default" : "ghost"}
-              onClick={() => setMessageType(type)}
-              className="text-xs"
-            >
+            <Button key={type} size="sm" variant={messageType === type ? "default" : "ghost"} onClick={() => setMessageType(type)} className="text-xs">
               <Icon className="h-3 w-3 mr-1" /> {label}
             </Button>
           ))}
         </div>
-        <Textarea
-          placeholder={messageType === "internal_note" ? "Add an internal note..." : `Message to ${customerName}...`}
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          className="min-h-[4rem]"
-        />
+        <Textarea placeholder={messageType === "internal_note" ? "Add an internal note..." : `Message to ${customerName}...`} value={newMessage} onChange={(e) => setNewMessage(e.target.value)} className="min-h-[4rem]" />
         <div className="flex justify-end">
-          <Button
-            size="sm"
-            disabled={!newMessage.trim() || sendMessage.isPending}
-            onClick={() => sendMessage.mutate()}
-          >
+          <Button size="sm" disabled={!newMessage.trim() || sendMessage.isPending} onClick={() => sendMessage.mutate()}>
             <Send className="h-3 w-3 mr-1" />
             {messageType === "email" ? "Send Email" : messageType === "internal_note" ? "Save Note" : "Send"}
           </Button>
