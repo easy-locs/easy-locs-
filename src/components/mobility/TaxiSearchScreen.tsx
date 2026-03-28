@@ -5,18 +5,17 @@
 import React from "react";
 import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
-import { Car, Calendar, Users, ChevronRight } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Car, Crown, Truck, Zap, Calendar, Users, ChevronRight, MapPin, Navigation, Minus, Plus } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { tc } from "@/lib/i18n-canonical";
 import { motion } from "framer-motion";
 
 const SERVICE_LEVELS = [
-  { value: "taxi_standard" as const, label: "Standard", emoji: "🚕", desc: "4 seats" },
-  { value: "taxi_premium" as const, label: "Premium", emoji: "✨", desc: "Luxury" },
-  { value: "taxi_xl" as const, label: "XL", emoji: "🚐", desc: "6+ seats" },
-  { value: "taxi_moto" as const, label: "Moto", emoji: "🏍️", desc: "Fast" },
+  { value: "taxi_standard" as const, label: "Standard", icon: Car, desc: "4 seats" },
+  { value: "taxi_premium" as const, label: "Premium", icon: Crown, desc: "Luxury" },
+  { value: "taxi_xl" as const, label: "XL", icon: Truck, desc: "6+ seats" },
+  { value: "taxi_moto" as const, label: "Moto", icon: Zap, desc: "Fast" },
 ];
 
 export function TaxiSearchScreen() {
@@ -36,10 +35,11 @@ export function TaxiSearchScreen() {
       exit={{ opacity: 0, y: -12 }}
       className="space-y-4"
     >
-      {/* Service level — premium card grid */}
+      {/* Service level — premium icon grid */}
       <div className="grid grid-cols-4 gap-2.5">
         {SERVICE_LEVELS.map(sl => {
           const active = serviceLevel === sl.value;
+          const Icon = sl.icon;
           return (
             <button
               key={sl.value}
@@ -52,7 +52,12 @@ export function TaxiSearchScreen() {
                   : "border-border/20 bg-card/60 hover:border-border/40"
               )}
             >
-              <span className="text-2xl leading-none select-none">{sl.emoji}</span>
+              <div className={cn(
+                "w-9 h-9 rounded-xl flex items-center justify-center transition-colors",
+                active ? "bg-primary/15" : "bg-muted/30"
+              )}>
+                <Icon className={cn("h-5 w-5", active ? "text-primary" : "text-muted-foreground")} />
+              </div>
               <span className={cn(
                 "text-[11px] font-bold leading-none",
                 active ? "text-primary" : "text-foreground"
@@ -93,7 +98,7 @@ export function TaxiSearchScreen() {
           className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-3 overflow-hidden"
         >
           <Label className="text-xs font-bold text-primary flex items-center gap-1.5">
-            📅 Schedule your ride
+            <Calendar className="h-3.5 w-3.5" /> Schedule your ride
           </Label>
           <div className="grid grid-cols-2 gap-3">
             <Input type="date" min={today} value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} className="bg-card border-border/20 rounded-xl h-11 text-sm" />
@@ -102,10 +107,10 @@ export function TaxiSearchScreen() {
         </motion.div>
       )}
 
-      {/* Address inputs */}
+      {/* Address inputs — clean, no redundant labels */}
       <div className="space-y-3">
-        <div>
-          <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1.5 block">Pickup</Label>
+        <div className="relative">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 z-10" />
           <CanonicalAddressInput
             value={pickup}
             onChange={setPickup}
@@ -116,8 +121,8 @@ export function TaxiSearchScreen() {
             allowSavedPlaces
           />
         </div>
-        <div>
-          <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1.5 block">Dropoff</Label>
+        <div className="relative">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-primary/20 z-10" />
           <CanonicalAddressInput
             value={dropoff}
             onChange={setDropoff}
@@ -130,18 +135,27 @@ export function TaxiSearchScreen() {
         </div>
       </div>
 
-      {/* Seats */}
+      {/* Passengers — horizontal layout, stepper buttons */}
       <div className="flex items-center gap-3 rounded-2xl border border-border/20 bg-card/60 px-4 py-3">
         <Users className="h-4 w-4 text-primary shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-foreground">Passengers</p>
+        <span className="text-sm font-semibold text-foreground flex-1">Passengers</span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setSeats(Math.max(1, seats - 1))}
+            className="w-8 h-8 rounded-lg bg-muted/40 flex items-center justify-center text-muted-foreground hover:bg-muted/60 active:scale-95 transition-all"
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </button>
+          <span className="w-8 text-center text-sm font-bold text-foreground tabular-nums">{seats}</span>
+          <button
+            type="button"
+            onClick={() => setSeats(Math.min(7, seats + 1))}
+            className="w-8 h-8 rounded-lg bg-muted/40 flex items-center justify-center text-muted-foreground hover:bg-muted/60 active:scale-95 transition-all"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
         </div>
-        <Input
-          type="number" min="1" max="7"
-          value={seats}
-          onChange={e => setSeats(Number(e.target.value) || 1)}
-          className="w-16 text-center bg-muted/30 border-border/20 rounded-xl h-9 text-sm font-bold"
-        />
       </div>
 
       {/* CTA */}
