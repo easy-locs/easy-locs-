@@ -1,12 +1,14 @@
 /**
- * useMapWeather — Weather fog, rain radar tiles, station layers.
- * Extracted from SuperMap. No UI rendering.
+ * useMapWeather — Weather data (always-on) + display (user/auto controlled).
+ * Separated: data layer vs overlay vs effects vs alerts.
  */
 import { useEffect, useRef } from "react";
 import type mapboxgl from "mapbox-gl";
 import { useSuperMapStore } from "@/stores/superMapStore";
+import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useRainRadar } from "@/hooks/useRainRadar";
+import { useWeatherAutoMode } from "@/hooks/map/useWeatherAutoMode";
 import {
   ensureLiveStationLayers,
   animateStationPulse,
@@ -29,17 +31,31 @@ export function useMapWeather(
   const centerLng = useSuperMapStore(s => s.centerLng);
   const userLat = useSuperMapStore(s => s.userLat);
   const userLng = useSuperMapStore(s => s.userLng);
-  const showWeather = useSuperMapStore(s => s.showWeather);
-  const showStations = useSuperMapStore(s => s.showStations);
   const showMobility = useSuperMapStore(s => s.showMobility);
 
+  // Display controls (user/auto managed)
+  const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
+  const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
+  const showStations = useWeatherDisplayStore(s => s.showStations);
+
+  // ── DATA: always-on, never toggled off ──
   const weather = useLiveWeatherStation({ lat: userLat ?? centerLat, lng: userLng ?? centerLng });
-  const weatherRadar = useRainRadar(showWeather || weather.isRaining);
+
+  // Radar tiles always loaded when raining OR user wants overlay
+  const radarEnabled = radarOverlay !== "off" || weather.isRaining;
+  const weatherRadar = useRainRadar(radarEnabled);
+
+  // ── AUTO MODE: adapts display based on conditions ──
+  useWeatherAutoMode({
+    isRaining: weather.isRaining,
+    precipitationMm: weather.precipitationMm,
+    windKmh: weather.windKmh,
+  });
 
   const pulseFrameRef = useRef(0);
   const pulseRafRef = useRef<number | null>(null);
 
-  // Setup rain source + layer + stations on first ready
+  // Setup rain source + stations on first ready
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
@@ -59,7 +75,7 @@ export function useMapWeather(
     }
     ensureLiveStationLayers(map, LAYERS.MOBILITY_POINT);
 
-    // Station pulse animation
+    // Station pulse
     const pulse = () => {
       if (mapRef.current && document.visibilityState !== "hidden") {
         pulseFrameRef.current += 1;
@@ -74,15 +90,18 @@ export function useMapWeather(
     };
   }, [ready]);
 
-  // Fog
+  // ── FOG: driven by effects level ──
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    if (weather.isRaining) {
+
+    const applyFog = effectsLevel !== "off" && weather.isRaining;
+    if (applyFog) {
+      const intense = effectsLevel === "immersive";
       map.setFog({
-        color: "rgba(94, 134, 190, 0.22)",
-        "high-color": "rgba(18, 35, 58, 0.20)",
-        "horizon-blend": 0.18,
+        color: intense ? "rgba(94, 134, 190, 0.30)" : "rgba(94, 134, 190, 0.15)",
+        "high-color": intense ? "rgba(18, 35, 58, 0.25)" : "rgba(18, 35, 58, 0.12)",
+        "horizon-blend": intense ? 0.22 : 0.12,
         range: [0.8, 8],
         "space-color": "rgba(10, 16, 28, 0.82)",
         "star-intensity": 0.03,
@@ -97,33 +116,31 @@ export function useMapWeather(
         "star-intensity": 0.08,
       });
     }
-  }, [weather.isRaining, ready]);
+  }, [weather.isRaining, effectsLevel, ready]);
 
-  // Auto-activate weather on rain
-  useEffect(() => {
-    if (weather.isRaining && !showWeather) {
-      useSuperMapStore.getState().toggleWeather();
-    }
-  }, [weather.isRaining, showWeather]);
-
-  // Rain radar tile cycling
+  // ── RADAR OVERLAY: visibility + opacity driven by radarOverlay level ──
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    const visible = showWeather || weather.isRaining;
+
+    const visible = radarOverlay !== "off";
     const layer = map.getLayer(RAIN_LAYER);
     const source = map.getSource(RAIN_SOURCE) as (mapboxgl.Source & { setTiles?: (tiles: string[]) => void }) | undefined;
+
     if (layer) {
       map.setLayoutProperty(RAIN_LAYER, "visibility", visible ? "visible" : "none");
-      map.setPaintProperty(RAIN_LAYER, "raster-opacity", visible ? (weather.isRaining ? 0.72 : 0.42) : 0);
+      const opacity = radarOverlay === "full"
+        ? (weather.isRaining ? 0.72 : 0.42)
+        : radarOverlay === "minimal" ? 0.25 : 0;
+      map.setPaintProperty(RAIN_LAYER, "raster-opacity", opacity);
       map.setPaintProperty(RAIN_LAYER, "raster-fade-duration", 300);
     }
     if (source?.setTiles && weatherRadar.activeTileUrl) {
       source.setTiles([weatherRadar.activeTileUrl]);
     }
-  }, [ready, showWeather, weather.isRaining, weatherRadar.activeTileUrl]);
+  }, [ready, radarOverlay, weather.isRaining, weatherRadar.activeTileUrl]);
 
-  // Station + mobility visibility
+  // ── STATION + MOBILITY visibility ──
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
