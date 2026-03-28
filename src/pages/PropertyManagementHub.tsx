@@ -15,7 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
 import { useWalletBalance } from "@/payments/wallet-hooks";
-import { fetchPropertyHubData } from "@/repositories/property-hub.repository";
+import { fetchPropertyHubOverview } from "@/repositories/property-management-hub.repository";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { format } from "date-fns";
 import {
@@ -65,7 +65,7 @@ export default function PropertyManagementHub() {
   useEffect(() => {
     if (!orgId) { setLoading(false); return; }
     const timeout = setTimeout(() => setLoading(false), 8000);
-    fetchPropertyHubData("", orgId).then((result) => {
+    fetchPropertyHubOverview(orgId).then((result) => {
       clearTimeout(timeout);
       // Use the properties list from the hub repository
       const propData = (result.properties || []) as Array<{ id: string; country: string }>;
