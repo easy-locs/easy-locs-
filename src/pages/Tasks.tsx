@@ -89,14 +89,10 @@ const Tasks = () => {
   const fetchData = async () => {
     if (!orgId) return;
     setLoading(true);
-    const [tasksRes, propsRes, tenantsRes] = await Promise.all([
-      supabase.from("tasks").select("*").eq("org_id", orgId).order("due_date", { ascending: true }),
-      supabase.from("properties").select("id, label").eq("org_id", orgId),
-      supabase.from("tenants").select("id, name").eq("org_id", orgId),
-    ]);
-    if (tasksRes.data) setTasks(tasksRes.data as Task[]);
-    if (propsRes.data) setProperties(propsRes.data);
-    if (tenantsRes.data) setTenants(tenantsRes.data);
+    const result = await tasksRepo.fetchTasksData(orgId);
+    setTasks(result.tasks as Task[]);
+    setProperties(result.properties);
+    setTenants(result.tenants);
     setLoading(false);
   };
 
@@ -122,29 +118,36 @@ const Tasks = () => {
     if (errors.length > 0) { setValidationErrors(errors); return; }
     if (!user || !orgId) return;
     const payload = { org_id: orgId, user_id: user.id, property_id: form.property_id || null, tenant_id: form.tenant_id || null, assigned_to: form.assigned_to || null, subject: form.subject.trim(), description: form.description.trim() || null, due_date: form.due_date, recurrence: form.recurrence, priority: form.priority, notify_participants: form.notify_participants };
-    if (editingTask) {
-      const { error } = await supabase.from("tasks").update(payload).eq("id", editingTask.id);
-      if (error) { toast.error(t("page.tasks.error_modify")); return; }
-      toast.success(t("page.tasks.modified"));
-    } else {
-      const { error } = await supabase.from("tasks").insert(payload);
-      if (error) { toast.error(t("page.tasks.error_create")); return; }
-      toast.success(t("page.tasks.created"));
+    try {
+      if (editingTask) {
+        await tasksRepo.updateTask(editingTask.id, payload);
+        toast.success(t("page.tasks.modified"));
+      } else {
+        await tasksRepo.insertTask(payload);
+        toast.success(t("page.tasks.created"));
+      }
+    } catch {
+      toast.error(editingTask ? t("page.tasks.error_modify") : t("page.tasks.error_create"));
+      return;
     }
     setShowForm(false); fetchData();
   };
 
   const handleDelete = async () => {
     if (!deleteTaskId) return;
-    const { error } = await supabase.from("tasks").delete().eq("id", deleteTaskId);
-    if (error) { toast.error(t("page.tasks.error_delete")); return; }
-    toast.success(t("page.tasks.deleted"));
+    try {
+      await tasksRepo.deleteTask(deleteTaskId);
+      toast.success(t("page.tasks.deleted"));
+    } catch {
+      toast.error(t("page.tasks.error_delete"));
+      return;
+    }
     setDeleteTaskId(null); fetchData();
   };
 
   const toggleStatus = async (task: Task) => {
     const next = task.status === "done" ? "pending" : task.status === "pending" ? "in_progress" : "done";
-    await supabase.from("tasks").update({ status: next }).eq("id", task.id);
+    await tasksRepo.updateTaskStatus(task.id, next);
     fetchData();
   };
 
