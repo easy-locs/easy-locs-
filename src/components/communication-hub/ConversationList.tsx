@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "@/lib/date-locales";
-import { motion } from "framer-motion";
-import type { ConversationThread, ConversationType } from "./types";
+import type { ConversationThread } from "./types";
 import { CONVERSATION_FILTERS } from "./types";
 
 interface Props {
@@ -23,15 +22,6 @@ interface Props {
 export default function ConversationList({ threads, loading, selectedThread, onSelectThread, visible }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [filterProperty, setFilterProperty] = useState("all");
-
-  const propertyOptions = useMemo(() => {
-    const props = new Map<string, string>();
-    threads.forEach(t => {
-      if (t.propertyId && t.propertyLabel) props.set(t.propertyId, t.propertyLabel);
-    });
-    return Array.from(props.entries()).map(([id, label]) => ({ id, label }));
-  }, [threads]);
 
   const filteredThreads = useMemo(() =>
     threads
