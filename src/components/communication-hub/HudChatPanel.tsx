@@ -1,25 +1,38 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+/**
+ * HudChatPanel — Thread Shell.
+ * Thin assembly layer that composes canonical family hooks.
+ * Contains NO business logic — only wiring.
+ */
+import { useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { getAuthUser } from "@/repositories/auth-utils.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { haptic } from "@/lib/haptics";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
-import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
 import { useOfflineMessages } from "@/hooks/useOfflineMessages";
-import { usePrivacySettings, computeDisappearAt } from "@/hooks/usePrivacySettings";
-import { useVoiceRecorder, formatVoiceDuration } from "@/hooks/useVoiceRecorder";
-import { type SecurityLevel } from "@/lib/message-security";
-import { platformBus } from "@/lib/shared/platform-bus";
+import { usePrivacySettings } from "@/hooks/usePrivacySettings";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
-import type { ConversationThread, ChatMessage } from "./types";
-import { MESSAGE_CATEGORIES, CONV_STATUSES } from "./types";
-import DealContextHeader from "./DealContextHeader";
+import type { ConversationThread } from "./types";
+
+// Canonical family hooks
+import { useThreadCallFamily } from "@/hooks/orbit/families/useThreadCallFamily";
+import { useThreadAttachmentFamily } from "@/hooks/orbit/families/useThreadAttachmentFamily";
+import { useThreadComposerFamily } from "@/hooks/orbit/families/useThreadComposerFamily";
+import { useThreadMessageFamily } from "@/hooks/orbit/families/useThreadMessageFamily";
+
+// Canonical UI components (presentational)
+import ChatHeader from "./chat/ChatHeader";
+import ChatEmptyState from "./chat/ChatEmptyState";
+import MessageList from "./chat/MessageList";
+import MessageComposer from "@/components/orbit/MessageComposer";
 import MessageContextMenu from "./MessageContextMenu";
 import MessageMultiSelectToolbar from "./MessageMultiSelect";
+import DealContextHeader from "./DealContextHeader";
 import ChatLocationPicker from "./ChatLocationPicker";
 import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import OrbitSafetyNumber from "@/components/orbit/OrbitSafetyNumber";
@@ -27,54 +40,20 @@ import OrbitSecurityPanel from "@/components/orbit/OrbitSecurityPanel";
 import OrbitSmartPayment, { type PaymentConfirmation } from "@/components/orbit/payments/OrbitSmartPayment";
 import { RequestMoneyModal } from "@/components/chat/RequestMoneyModal";
 import { sendPaymentRequestMessageToThread, sendPaymentReceiptToThread } from "@/components/chat/ChatPaymentCards";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useHudCallSetup } from "@/hooks/orbit/useHudCallSetup";
-import { useHudBookingActions } from "@/hooks/orbit/useHudBookingActions";
-import { useHudConversationStatus } from "@/hooks/orbit/useHudConversationStatus";
-import { useHudAttachmentUpload } from "@/hooks/orbit/useHudAttachmentUpload";
-import { useHudInlineHandlers } from "@/hooks/orbit/useHudInlineHandlers";
-import { Button } from "@/components/ui/button";
-
-import ChatHeader from "./chat/ChatHeader";
-import ChatEmptyState from "./chat/ChatEmptyState";
-import MessageList from "./chat/MessageList";
-import MessageComposer from "@/components/orbit/MessageComposer";
-import { useMessageLoader } from "./chat/useMessageLoader";
-import { useAttachments } from "./chat/useAttachments";
-import { useCallActions } from "./chat/useCallActions";
-import { useMessageSelection } from "./chat/useMessageSelection";
-import { useSecurityDialogs } from "./chat/useSecurityDialogs";
-
-import { useMessageSender } from "@/hooks/useMessageSender";
-import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
-import { useTranslation } from "@/hooks/useTranslation";
-
-import { useOrbitScrollManager } from "@/hooks/useOrbitScrollManager";
-import { useOrbitComposerState } from "@/hooks/useOrbitComposerState";
-import { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
-import { useOrbitThreadUiState } from "@/hooks/useOrbitThreadUiState";
 import { OrbitPinnedBanner } from "@/components/orbit/OrbitPinnedBanner";
 import { OrbitJumpToBottomButton } from "@/components/orbit/OrbitJumpToBottomButton";
-
-import { useOrbitDevicePermissions } from "@/hooks/useOrbitDevicePermissions";
-import { useOrbitCallState } from "@/hooks/useOrbitCallState";
-import { useOrbitCallActions } from "@/hooks/useOrbitCallActions";
-import { useOrbitCallHistory } from "@/hooks/useOrbitCallHistory";
-// useOrbitCallRealtime REMOVED — it listened on call_sessions but RPC writes to call_logs.
-// CallProvider.useIncomingCallListener is the canonical incoming call listener.
 import { OrbitIncomingCallBar } from "@/components/orbit/OrbitIncomingCallBar";
 import { OrbitCallControls } from "@/components/orbit/OrbitCallControls";
 import { OrbitCallMiniPlayer } from "@/components/orbit/OrbitCallMiniPlayer";
 import { OrbitCallPermissionBanner } from "@/components/orbit/OrbitCallPermissionBanner";
-import { useOrbitAttachmentQueue } from "@/hooks/useOrbitAttachmentQueue";
-import { useOrbitUploadTransport } from "@/hooks/useOrbitUploadTransport";
-import { useOrbitAttachmentSend } from "@/hooks/useOrbitAttachmentSend";
-import { useOrbitViewOnce } from "@/hooks/useOrbitViewOnce";
 import { OrbitUploadQueuePreview } from "@/components/orbit/OrbitUploadQueuePreview";
-import { OrbitMediaMessage } from "@/components/orbit/OrbitMediaMessage";
 import { OrbitAttachmentViewer } from "@/components/orbit/OrbitAttachmentViewer";
 
-// V2 only — no legacy SYSTEM_SENDER_ID needed
+import { useSecurityDialogs } from "./chat/useSecurityDialogs";
+import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
+import { useHudConversationStatus } from "@/hooks/orbit/useHudConversationStatus";
+import { useHudBookingActions } from "@/hooks/orbit/useHudBookingActions";
+import { useCallActions } from "./chat/useCallActions";
 
 interface Props {
   thread: ConversationThread | null;
@@ -91,18 +70,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const { ready: e2eReady, encrypt, decrypt } = useOrbitEncryption(user?.id);
   const offline = useOfflineMessages({ userId: user?.id, orgId: orgId || undefined, threadId: thread?.id });
   const { settings: privacySettings } = usePrivacySettings();
-  const voiceRecorder = useVoiceRecorder();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const [viewOnceEnabled, setViewOnceEnabled] = useState(false);
-  const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerAttachment, setViewerAttachment] = useState<any>(null);
 
-  const selection = useMessageSelection();
   const security = useSecurityDialogs();
   const callActions = useCallActions(thread, orgId || null);
 
+  // ── Identity resolver (canonical) ──
   const resolveAuthUserId = useCallback(async (): Promise<string | null> => {
     const { user, error } = await getAuthUser();
     if (error || !user?.id) {
@@ -112,7 +84,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     return user.id;
   }, [t]);
 
-  /** Resolve or auto-create V2 conversationId for this thread */
   const resolveConversationId = useCallback(async (authUserId: string): Promise<string | null> => {
     if (!thread) return null;
     if (thread.v2ConversationId) return thread.v2ConversationId;
@@ -124,7 +95,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       const { createOrGetDirectConversation } = await import("@/lib/orbit/createOrGetDirectConversation");
       const conv = await createOrGetDirectConversation({
         myUserId: authUserId,
-        myOrbitId: myOrbitId,
+        myOrbitId,
         peerUserId: thread.peerUserId,
         peerOrbitId: thread.peerOrbitId,
       });
@@ -137,234 +108,64 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     }
   }, [thread, myOrbitId, onThreadUpdate]);
 
-  const loader = useMessageLoader({
-    thread,
-    orgId: orgId || null,
-    userId: user?.id,
-    readReceipts: privacySettings.readReceipts,
-    onThreadUpdate,
-    offline,
-  });
-
-  const { messages: decryptedMessages } = useDecryptedMessages(loader.rawMessages, decrypt, user?.id);
-  const messages = decryptedMessages as ChatMessage[];
-
-  const { showOriginal, translatingMsgId, handleTranslateMessage } = useTranslation(locale, loader.setRawMessages as any);
-
-  const messageSender = useMessageSender({
-    thread,
-    orgId,
-    locale,
-    myOrbitId,
-    e2eReady,
-    encrypt,
-    offline,
-    privacySettings,
+  // ── FAMILY: Messages ──
+  const msgFamily = useThreadMessageFamily({
+    thread, orgId: orgId || null, userId: user?.id, myOrbitId, locale,
+    e2eReady, encrypt, decrypt, offline, privacySettings,
     disappearTTL: security.disappearTTL,
-    securityLevel: security.securityLevel as "normal" | "high" | "ghost",
-    setSecurityLevel: security.setSecurityLevel as (l: "normal" | "high" | "ghost") => void,
-    selectedCategory: "general",
-    replyTo: selection.replyTo,
-    setReplyTo: (r: any) => selection.setReplyTo(r),
-    setRawMessages: loader.setRawMessages as any,
-    setPendingOffline: loader.setPendingOffline,
-    onThreadUpdate,
-    resolveAuthUserId,
+    securityLevel: security.securityLevel as string,
+    setSecurityLevel: security.setSecurityLevel as (l: string) => void,
+    replyTo: null, setReplyTo: () => {},
+    resolveAuthUserId, onThreadUpdate,
   });
 
-  const attachments = useAttachments({
-    thread,
-    orgId: orgId || null,
-    userId: user?.id,
-    myOrbitId,
-    locale,
-    e2eReady,
-    encrypt,
-    resolveAuthUserId,
-    onThreadUpdate,
+  // ── FAMILY: Attachments ──
+  const attFamily = useThreadAttachmentFamily({
+    thread, orgId: orgId || null, userId: user?.id, myOrbitId, locale,
+    e2eReady, encrypt, resolveAuthUserId, onThreadUpdate,
+    onAfterSend: () => msgFamily.loader.loadMessages(),
   });
 
-  const payment = usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId });
-
-  // Orbit Attachments Pro — Bloc 11
-  const attachmentQueue = useOrbitAttachmentQueue();
-  const uploadTransport = useOrbitUploadTransport();
-
-  const attachmentSend = useOrbitAttachmentSend({
-    conversationId: thread?.v2ConversationId ?? null,
-    currentUserId: user?.id ?? null,
-    currentOrbitId: myOrbitId ?? null,
-    peerUserId: thread?.peerUserId ?? null,
-    peerOrbitId: thread?.peerOrbitId ?? null,
-    onAfterSend: () => loader.loadMessages(),
-    onConversationCreated: (convId) => {
-      if (thread) onThreadUpdate(thread.id, { v2ConversationId: convId });
-    },
-  });
-
-  const viewOnceHook = useOrbitViewOnce({ currentUserId: user?.id ?? null });
-
-  // Orbit UX Bloc 8 — scroll, composer, actions, thread UI
-  const composer = useOrbitComposerState();
-
-  const { showJumpToBottom, jumpToBottom } = useOrbitScrollManager(
-    scrollRef,
-    [messages.length, loader.typingIndicator]
-  );
-
-  const messageActions = useOrbitMessageActions({
-    conversationId: thread?.v2ConversationId ?? null,
-    currentUserId: user?.id ?? null,
-    onAfterChange: () => {
-      loader.loadMessages();
-    },
-  });
-
-  const threadUi = useOrbitThreadUiState({
-    conversationType: thread?.conversationType ?? null,
-    metadata: (thread as any)?.metadata ?? null,
-  });
-
-  const pinnedMessage = useMemo(() => {
-    if (!threadUi.pinnedMessageId) return null;
-    return messages.find((m: any) => m.id === threadUi.pinnedMessageId) || null;
-  }, [messages, threadUi.pinnedMessageId]);
-
-  // Orbit Calls Pro — Bloc 10
-  const devicePermissions = useOrbitDevicePermissions();
-  const callStateV2 = useOrbitCallState();
-
-  const callActionsV2 = useOrbitCallActions({
-    currentUserId: user?.id ?? null,
-    currentOrbitId: myOrbitId ?? null,
-    activeCall: callStateV2.activeCall,
-    patchCall: callStateV2.patchCall,
-    setUiState: callStateV2.setUiState,
-    endCall: callStateV2.endCall,
-  });
-
-  const callHistory = useOrbitCallHistory(myOrbitId ?? null);
-
-  // NOTE: Incoming calls are handled by CallProvider.useIncomingCallListener (on call_logs table).
-  // useOrbitCallRealtime was removed because it listened on call_sessions (wrong table).
-
-  // Missed call timeout
-  useEffect(() => {
-    if (!callStateV2.activeCall?.sessionId) return;
-    if (callStateV2.activeCall.uiState !== "incoming") return;
-    const timer = window.setTimeout(() => {
-      void (async () => {
-        const { markCallAsMissedV2 } = await import("@/repositories/communication.repository");
-        await markCallAsMissedV2(callStateV2.activeCall?.sessionId!, "timeout");
-        callStateV2.endCall("missed");
-      })();
-    }, 30000);
-    return () => window.clearTimeout(timer);
-  }, [callStateV2.activeCall?.sessionId, callStateV2.activeCall?.uiState]);
-
-  // Reconnect recovery
-  useEffect(() => {
-    if (!callStateV2.activeCall) return;
-    if (callStateV2.activeCall.uiState !== "reconnecting") return;
-    const timer = window.setTimeout(() => {
-      callStateV2.patchCall({ uiState: "active", qualityState: "stable" });
-    }, 2500);
-    return () => window.clearTimeout(timer);
-  }, [callStateV2.activeCall?.uiState]);
-
-  // ── Extracted hooks replace 290 lines of inline handlers ──
-  const { handleStartAudioCall, handleStartVideoCall } = useHudCallSetup(
-    thread, devicePermissions, callActionsV2, callStateV2
-  );
-
-  const { updateConversationStatus } = useHudConversationStatus(
-    thread, loader.setConvStatus, onThreadUpdate
-  );
-
-  const { handleBookingAction } = useHudBookingActions(
-    thread, orgId, user?.id, myOrbitId, onThreadUpdate
-  );
-
-  const { handleUploadAndSendAttachments } = useHudAttachmentUpload({
-    queue: attachmentQueue.queue,
-    setItemProgress: attachmentQueue.setItemProgress,
-    markUploaded: attachmentQueue.markUploaded,
-    markFailed: attachmentQueue.markFailed,
-    clearQueue: attachmentQueue.clearQueue,
-    uploadSingleFile: uploadTransport.uploadSingleFile,
-    sendAttachments: attachmentSend.sendAttachments,
-    sendingAttachments: attachmentSend.sendingAttachments,
-    viewOnceEnabled,
-    setViewOnceEnabled,
-  });
-
-  // Attachment file handlers
-  const handlePickFiles = () => fileInputRef.current?.click();
-  const handlePickCamera = () => cameraInputRef.current?.click();
-  const handlePickGallery = () => fileInputRef.current?.click();
-
-  const handleFilesSelected = (files: FileList | null) => {
-    if (!files?.length) return;
-    attachmentQueue.enqueueFiles(files);
-  };
-
-  const handleOpenAttachment = async (message: any, attachment: any) => {
-    setViewerAttachment(attachment);
-    setViewerOpen(true);
-    if (attachment.viewOnce && thread?.v2ConversationId) {
-      await viewOnceHook.markViewOnceOpened({
-        messageId: message.id,
-        conversationId: thread.v2ConversationId,
-      });
-    }
-  };
-
-  // Edit mode: inject original body into composer
-  useEffect(() => {
-    if (composer.editState) {
-      messageSender.setNewMessage(composer.editState.originalBody);
-    }
-  }, [composer.editState]);
-
-  const getCategoryIcon = useCallback((cat: string) => {
-    return MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
-  }, []);
-
-  // ── Extracted inline handlers (voice, location, view-once) ──
-  const inlineHandlers = useHudInlineHandlers({
-    thread,
-    orgId: orgId || null,
-    userId: user?.id,
-    myOrbitId,
-    e2eReady,
-    encrypt,
-    resolveAuthUserId,
-    resolveConversationId,
-    uploadToStorage: attachments.uploadToStorage,
-    setUploading: attachments.setUploading,
+  // ── FAMILY: Composer ──
+  const compFamily = useThreadComposerFamily({
+    thread, orgId: orgId || null, userId: user?.id, myOrbitId,
+    e2eReady, encrypt, resolveAuthUserId, resolveConversationId,
+    uploadToStorage: attFamily.attachments.uploadToStorage,
+    setUploading: attFamily.attachments.setUploading,
     disappearTTL: security.disappearTTL,
     defaultDisappearTtl: privacySettings.defaultDisappearTtl,
     setSecurityLevel: security.setSecurityLevel as (l: string) => void,
     setViewOnceNext: security.setViewOnceNext,
     setShowLocationPicker: security.setShowLocationPicker,
+    setNewMessage: msgFamily.messageSender.setNewMessage,
     t,
   });
 
-  const handleViewOnceUpload = inlineHandlers.handleViewOnceUpload;
-  const handleVoiceSend = inlineHandlers.handleVoiceSend;
-  const handleLocationSend = inlineHandlers.handleLocationSend;
-  const voicePreview = inlineHandlers.voicePreview;
-  const setVoicePreview = inlineHandlers.setVoicePreview;
+  // ── FAMILY: Calls ──
+  const callFamily = useThreadCallFamily({
+    thread, currentUserId: user?.id ?? null, currentOrbitId: myOrbitId,
+  });
 
-  const empty = !thread;
-  const visibleMessages = useMemo(() => messages, [messages]);
-  const isLoadingMessages = loader.messagesLoading && messages.length === 0;
+  // ── FAMILY: Payments ──
+  const payment = usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId });
 
-  if (empty) return <ChatEmptyState t={t} />;
+  // ── Thread-level helpers ──
+  const { updateConversationStatus } = useHudConversationStatus(
+    thread, msgFamily.loader.setConvStatus, onThreadUpdate
+  );
+  const { handleBookingAction } = useHudBookingActions(
+    thread, orgId, user?.id, myOrbitId, onThreadUpdate
+  );
+
+  // ── Short aliases ──
+  const { selection, messages, loader, messageSender, messageActions, threadUi, pinnedMessage } = msgFamily;
+
+  if (!thread) return <ChatEmptyState t={t} />;
 
   return (
     <>
       <div className="flex-1 min-h-0 flex flex-col" style={{ background: "hsl(var(--hud-bg))" }}>
+        {/* ── HEADER FAMILY ── */}
         <ChatHeader
           thread={thread}
           convStatus={loader.convStatus}
@@ -383,66 +184,62 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
         <DealContextHeader dealId={thread.dealId} contextType={thread.conversationType} contextId={thread.contextId} onToggleContext={onToggleContext} />
 
-
+        {/* ── CALL FAMILY UI ── */}
         <OrbitCallPermissionBanner
-          mic={devicePermissions.permissions.microphone}
-          cam={devicePermissions.permissions.camera}
-          videoMode={callStateV2.activeCall?.mode === "video"}
-          onRequestMic={() => { void devicePermissions.requestMicrophone(); }}
-          onRequestCam={() => { void devicePermissions.requestCamera(); }}
+          mic={callFamily.devicePermissions.permissions.microphone}
+          cam={callFamily.devicePermissions.permissions.camera}
+          videoMode={callFamily.callState.activeCall?.mode === "video"}
+          onRequestMic={() => void callFamily.devicePermissions.requestMicrophone()}
+          onRequestCam={() => void callFamily.devicePermissions.requestCamera()}
         />
-
         <OrbitIncomingCallBar
-          visible={callStateV2.activeCall?.uiState === "incoming"}
-          peerName={callStateV2.activeCall?.peerName}
-          mode={callStateV2.activeCall?.mode}
-          onAccept={() => { void callActionsV2.acceptIncomingCall(); }}
-          onDecline={() => { void callActionsV2.declineIncomingCall(); }}
+          visible={callFamily.callState.activeCall?.uiState === "incoming"}
+          peerName={callFamily.callState.activeCall?.peerName}
+          mode={callFamily.callState.activeCall?.mode}
+          onAccept={() => void callFamily.callActions.acceptIncomingCall()}
+          onDecline={() => void callFamily.callActions.declineIncomingCall()}
         />
-
-        {callStateV2.activeCall &&
-          ["outgoing", "connecting", "active", "reconnecting"].includes(callStateV2.activeCall.uiState) && (
+        {callFamily.callState.activeCall &&
+          ["outgoing", "connecting", "active", "reconnecting"].includes(callFamily.callState.activeCall.uiState) && (
             <OrbitCallControls
-              muted={callStateV2.activeCall.muted}
-              speakerOn={callStateV2.activeCall.speakerOn}
-              cameraOn={callStateV2.activeCall.cameraOn}
-              isVideo={callStateV2.activeCall.mode === "video"}
-              reconnecting={callStateV2.activeCall.uiState === "reconnecting"}
-              onToggleMute={() => { void callActionsV2.toggleMute(); }}
-              onToggleSpeaker={() => { void callActionsV2.toggleSpeaker(); }}
-              onToggleCamera={() => { void callActionsV2.toggleCamera(); }}
-              onHangup={() => { void callActionsV2.hangupCall(); }}
+              muted={callFamily.callState.activeCall.muted}
+              speakerOn={callFamily.callState.activeCall.speakerOn}
+              cameraOn={callFamily.callState.activeCall.cameraOn}
+              isVideo={callFamily.callState.activeCall.mode === "video"}
+              reconnecting={callFamily.callState.activeCall.uiState === "reconnecting"}
+              onToggleMute={() => void callFamily.callActions.toggleMute()}
+              onToggleSpeaker={() => void callFamily.callActions.toggleSpeaker()}
+              onToggleCamera={() => void callFamily.callActions.toggleCamera()}
+              onHangup={() => void callFamily.callActions.hangupCall()}
             />
           )}
-
         <OrbitCallMiniPlayer
-          visible={!!callStateV2.activeCall && callStateV2.activeCall.uiState === "active"}
-          peerName={callStateV2.activeCall?.peerName}
-          state={callStateV2.activeCall?.uiState}
-          mode={callStateV2.activeCall?.mode}
-          muted={callStateV2.activeCall?.muted}
-          onHangup={() => { void callActionsV2.hangupCall(); }}
+          visible={!!callFamily.callState.activeCall && callFamily.callState.activeCall.uiState === "active"}
+          peerName={callFamily.callState.activeCall?.peerName}
+          state={callFamily.callState.activeCall?.uiState}
+          mode={callFamily.callState.activeCall?.mode}
+          muted={callFamily.callState.activeCall?.muted}
+          onHangup={() => void callFamily.callActions.hangupCall()}
         />
 
+        {/* ── PINNED MESSAGE ── */}
         <OrbitPinnedBanner
           pinnedBody={(pinnedMessage as any)?.content || null}
           onClick={() => {
             if (threadUi.pinnedMessageId) {
-              const el = document.getElementById(`msg-${threadUi.pinnedMessageId}`);
-              el?.scrollIntoView({ behavior: "smooth", block: "center" });
+              document.getElementById(`msg-${threadUi.pinnedMessageId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
             }
           }}
           onUnpin={() => {
-            if (threadUi.pinnedMessageId) {
-              void messageActions.togglePinMessage(threadUi.pinnedMessageId, false);
-            }
+            if (threadUi.pinnedMessageId) void messageActions.togglePinMessage(threadUi.pinnedMessageId, false);
           }}
         />
 
+        {/* ── SELECTION FAMILY UI ── */}
         {selection.selectMode && (
           <MessageMultiSelectToolbar
             selectedIds={selection.selectedMsgIds}
-            messages={visibleMessages as any[]}
+            messages={messages as any[]}
             currentUserId={user?.id}
             currentContextId={thread?.contextId}
             userEmail={user?.email}
@@ -453,8 +250,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           />
         )}
 
+        {/* ── MESSAGE LIST FAMILY UI ── */}
         <div className="relative flex-1 min-h-0">
-          {isLoadingMessages ? (
+          {msgFamily.isLoadingMessages ? (
             <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 pb-6 space-y-4" style={{ background: "hsl(var(--hud-bg))" }}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
@@ -467,10 +265,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             </div>
           ) : (
             <MessageList
-              ref={scrollRef}
-              messages={visibleMessages}
+              ref={msgFamily.scrollRef}
+              messages={messages}
               rawCount={loader.rawMessages.length}
-              isDecrypting={loader.rawMessages.length > 0 && visibleMessages.length === 0}
+              isDecrypting={loader.rawMessages.length > 0 && messages.length === 0}
               typingIndicator={loader.typingIndicator}
               hiddenMsgIds={selection.hiddenMsgIds}
               selectedMsgIds={selection.selectedMsgIds}
@@ -479,9 +277,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
               userId={user?.id}
               threadName={thread.name}
               locale={locale}
-              showOriginal={showOriginal}
-              translatingMsgId={translatingMsgId}
-              onTranslate={handleTranslateMessage}
+              showOriginal={msgFamily.showOriginal}
+              translatingMsgId={msgFamily.translatingMsgId}
+              onTranslate={msgFamily.handleTranslateMessage}
               onContextMenu={(_, msg, isMe) => {
                 selection.setContextMessage({
                   msgId: msg.id,
@@ -496,14 +294,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
                 });
               }}
               onToggleSelect={selection.toggleMsgSelect}
-              getCategoryIcon={getCategoryIcon}
+              getCategoryIcon={msgFamily.getCategoryIcon}
               t={t}
             />
           )}
-
-          <OrbitJumpToBottomButton visible={showJumpToBottom} onClick={jumpToBottom} />
+          <OrbitJumpToBottomButton visible={msgFamily.showJumpToBottom} onClick={msgFamily.jumpToBottom} />
         </div>
 
+        {/* ── DEAL ACTIONS ── */}
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
           <div className="px-3 sm:px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)", background: "hsl(var(--hud-surface) / 0.25)" }}>
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
@@ -517,77 +315,64 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           </div>
         )}
 
+        {/* ── COMPOSER FAMILY UI ── */}
         <MessageComposer
           value={messageSender.newMessage}
           sending={messageSender.sending}
-          uploading={attachments.uploading}
-          voiceRecording={voiceRecorder.recording}
-          voicePreview={voicePreview}
-          voiceDuration={voiceRecorder.duration}
+          uploading={attFamily.attachments.uploading}
+          voiceRecording={compFamily.voiceRecorder.recording}
+          voicePreview={compFamily.voicePreview}
+          voiceDuration={compFamily.voiceRecorder.duration}
           replyTo={selection.replyTo ? { content: selection.replyTo.content, senderName: selection.replyTo.senderName } : null}
           onChange={messageSender.setNewMessage}
           onSend={async () => {
-            if (composer.editState) {
-              await messageActions.editMessage(composer.editState.messageId, messageSender.newMessage.trim());
+            if (compFamily.composer.editState) {
+              await messageActions.editMessage(compFamily.composer.editState.messageId, messageSender.newMessage.trim());
               messageSender.setNewMessage("");
-              composer.setEditState(null);
+              compFamily.composer.setEditState(null);
               return;
             }
             await messageSender.handleSend();
-            composer.setReplyState(null);
+            compFamily.composer.setReplyState(null);
           }}
           onKeyDown={messageSender.handleKeyDown}
           onTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
           attachmentActions={{
-            onFileUpload: attachments.handleFileUpload,
-            onCameraCapture: attachments.handleFileUpload,
+            onFileUpload: attFamily.attachments.handleFileUpload,
+            onCameraCapture: attFamily.attachments.handleFileUpload,
             onLocation: () => security.setShowLocationPicker(true),
-            onViewOnce: handleViewOnceUpload,
+            onViewOnce: compFamily.handleViewOnceUpload,
           }}
-          onStartVoice={async () => {
-            try {
-              await voiceRecorder.start();
-            } catch {
-              toast.error(t("orbit.mic_denied") || "Microphone access denied");
-            }
-          }}
-          onStopVoice={async () => {
-            const result = await voiceRecorder.stop();
-            setVoicePreview(result);
-            return result;
-          }}
-          onCancelVoice={voiceRecorder.cancel}
-          onSendVoice={handleVoiceSend}
-          onDiscardVoice={() => {
-            if (voicePreview) URL.revokeObjectURL(voicePreview.url);
-            setVoicePreview(null);
-          }}
+          onStartVoice={compFamily.startVoice}
+          onStopVoice={compFamily.stopVoice}
+          onCancelVoice={compFamily.cancelVoice}
+          onSendVoice={compFamily.handleVoiceSend}
+          onDiscardVoice={compFamily.discardVoice}
           onClearReply={() => selection.setReplyTo(null)}
         />
 
-        {/* Attachment queue preview only — media/attachment picker bars removed to prevent overlap */}
-
+        {/* ── ATTACHMENT QUEUE ── */}
         <OrbitUploadQueuePreview
-          queue={attachmentQueue.queue}
-          onRemove={attachmentQueue.removeQueueItem}
+          queue={attFamily.attachmentQueue.queue}
+          onRemove={attFamily.attachmentQueue.removeQueueItem}
         />
-
-        {attachmentQueue.queue.length > 0 && (
+        {attFamily.attachmentQueue.queue.length > 0 && (
           <div className="px-3 py-2 flex justify-end" style={{ borderTop: "1px solid hsl(var(--border) / 0.08)" }}>
             <button
-              onClick={() => { void handleUploadAndSendAttachments(); }}
+              onClick={() => void attFamily.handleUploadAndSendAttachments()}
               className="rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs font-medium"
-              disabled={attachmentSend.sendingAttachments}
+              disabled={attFamily.attachmentSend.sendingAttachments}
             >
-              {attachmentSend.sendingAttachments ? "Sending..." : "Send attachments"}
+              {attFamily.attachmentSend.sendingAttachments ? "Sending..." : "Send attachments"}
             </button>
           </div>
         )}
 
-        <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => handleFilesSelected(e.target.files)} />
-        <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFilesSelected(e.target.files)} />
+        <input ref={attFamily.fileInputRef} type="file" multiple className="hidden" onChange={(e) => attFamily.handleFilesSelected(e.target.files)} />
+        <input ref={attFamily.cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => attFamily.handleFilesSelected(e.target.files)} />
       </div>
 
+      {/* ── PAYMENT FAMILY DIALOGS ── */}
       <Sheet open={payment.paymentLinkDialog} onOpenChange={payment.setPaymentLinkDialog}>
         <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto p-0">
           <OrbitSmartPayment
@@ -657,6 +442,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         }}
       />
 
+      {/* ── CONTEXT MENU / FORWARD / SECURITY DIALOGS ── */}
       <MessageContextMenu
         message={selection.contextMessage}
         onClose={() => selection.setContextMessage(null)}
@@ -672,7 +458,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         onEnterSelectMode={selection.enterSelectMode}
       />
 
-      <ChatLocationPicker open={security.showLocationPicker} onClose={() => security.setShowLocationPicker(false)} onSend={handleLocationSend} />
+      <ChatLocationPicker open={security.showLocationPicker} onClose={() => security.setShowLocationPicker(false)} onSend={compFamily.handleLocationSend} />
       <OrbitSafetyNumber peerId={thread.peerUserId || thread.tenantId || thread.contextId || thread.id || ""} peerName={thread.name || "Contact"} open={security.showSafetyNumber} onOpenChange={security.setShowSafetyNumber} />
       <OrbitSecurityPanel peerId={thread.peerUserId || thread.tenantId || thread.contextId || thread.id || ""} peerName={thread.name || "Contact"} open={security.showSecurityPanel} onOpenChange={security.setShowSecurityPanel} />
 
@@ -690,9 +476,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       )}
 
       <OrbitAttachmentViewer
-        open={viewerOpen}
-        attachment={viewerAttachment}
-        onClose={() => { setViewerOpen(false); setViewerAttachment(null); }}
+        open={attFamily.viewerOpen}
+        attachment={attFamily.viewerAttachment}
+        onClose={() => { attFamily.setViewerOpen(false); attFamily.setViewerAttachment(null); }}
       />
     </>
   );
