@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
-import { supabase } from "@/integrations/supabase/client";
+import * as teamRepo from "@/repositories/team-permissions.repository";
 import { applyPermissionTemplate } from "@/lib/team/apply-permission-template";
 
 export default function TeamPermissionsPage() {
@@ -8,19 +8,16 @@ export default function TeamPermissionsPage() {
   const [templates, setTemplates] = useState<any[]>([]);
 
   useEffect(() => {
-    Promise.all([
-      supabase.from("team_workspace_members").select("*").limit(200),
-      supabase.from("permission_templates" as any).select("*").limit(50),
-    ]).then(([m, t]) => {
-      setMembers((m.data as any[]) ?? []);
-      setTemplates((t.data as any[]) ?? []);
+    teamRepo.fetchTeamData().then(({ members: m, templates: t }) => {
+      setMembers(m);
+      setTemplates(t);
     });
   }, []);
 
   const apply = async (memberId: string, templateKey: string) => {
     await applyPermissionTemplate({ workspaceMemberId: memberId, templateKey });
-    const { data } = await supabase.from("team_workspace_members").select("*").limit(200);
-    setMembers((data as any[]) ?? []);
+    const data = await teamRepo.refreshMembers();
+    setMembers(data);
   };
 
   return (

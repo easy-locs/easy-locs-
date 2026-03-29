@@ -5,7 +5,7 @@ import type { Json } from "@/integrations/supabase/types";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { validateDocument } from "@/lib/templates/validation";
 import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
-import { supabase } from "@/integrations/supabase/client";
+import * as docBuilderRepo from "@/repositories/document-builder.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -117,11 +117,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
 
     const loadOwnerData = async () => {
       // Load profile (signature)
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("signature_url, name, email")
-        .eq("id", user.id)
-        .single();
+      const profile = await docBuilderRepo.fetchProfileForDoc(user.id);
 
       if (profile?.signature_url) {
         setSignatures((s) => ({ ...s, landlord: profile.signature_url! }));
@@ -129,19 +125,10 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
 
       // Load owner profile (identity, address, bank)
       if (!orgId) return;
-      const { data: ownerProfile } = await supabase
-        .from("owner_profiles")
-        .select("*")
-        .eq("org_id", orgId)
-        .limit(1)
-        .single();
+      const ownerProfile = await docBuilderRepo.fetchOwnerProfileForDoc(orgId);
 
       // Load org info + stamp
-      const { data: org } = await supabase
-        .from("orgs")
-        .select("name, address, postal_code, city, siret, phone, email, stamp_url")
-        .eq("id", orgId)
-        .single();
+      const org = await docBuilderRepo.fetchOrgForDoc(orgId);
 
       if ((org as any)?.stamp_url) setStampUrl((org as any).stamp_url);
 
@@ -230,12 +217,8 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     }
 
     if (tenant.tenant_user_id) {
-      supabase
-        .from("profiles")
-        .select("signature_url, id_number")
-        .eq("id", tenant.tenant_user_id)
-        .single()
-        .then(({ data: tenantProfile }) => {
+      docBuilderRepo.fetchTenantProfile(tenant.tenant_user_id)
+        .then((tenantProfile) => {
           if (tenantProfile?.signature_url) {
             setSignatures((s) => ({ ...s, tenant: tenantProfile.signature_url! }));
           }
@@ -338,7 +321,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     setSaving(true);
     const title = `${template.label} — ${String(data.tenantName || data.fullName || data.companyName || data.senderName || "")}`.trim();
 
-    const { error } = await supabase.from("documents").insert({
+    const { error } = await docBuilderRepo.insertDocument({
       org_id: orgId,
       user_id: user.id,
       country: template.country,
@@ -348,7 +331,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       title,
       data_json: data as unknown as Json,
       status: "final",
-    });
+    }).catch((e: any) => ({ error: e })) as any;
 
     if (error) {
       toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
@@ -391,8 +374,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     const tenantEmail = data.tenantEmail as string;
     const tenantNotifiableDocTypes = ["rent-receipt", "dunning-letter", "payment-notice", "formal-notice", "lease-empty", "lease-furnished", "lease-commercial"];
     if (tenantEmail && tenantNotifiableDocTypes.includes(template.docType) && pdfBase64) {
-      supabase.functions.invoke("send-email", {
-        body: {
+      docBuilderRepo.sendDocEmail({
           to: tenantEmail,
           subject: `${eL.subject} : ${title}`,
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
@@ -409,16 +391,10 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
             filename: pdfFileName,
             type: "application/pdf",
           }],
-        },
-      }).catch(() => { /* best-effort */ });
+      });
     }
 
-    await supabase.from("audit_logs").insert({
-      org_id: orgId,
-      user_id: user.id,
-      action: "document.created",
-      metadata_json: { template_id: template.id, title } as unknown as Json,
-    });
+    await docBuilderRepo.insertDocAuditLog(orgId, user.id, { template_id: template.id, title });
 
     setSaving(false);
     setGenerated(true);

@@ -4,7 +4,7 @@
  * Uber/Deliveroo-style discovery with presence + privacy controls.
  */
 import { useState, useEffect, useCallback, lazy, Suspense, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as nearbyRepo from "@/repositories/nearby.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocationStore } from "@/stores/locationStore";
 import { PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
@@ -123,30 +123,29 @@ export default function CommNearbySection() {
   // Load my privacy settings
   useEffect(() => {
     if (!user?.id) return;
-    supabase.from("user_presence").select("visible_on_nearby, location_sharing, who_can_see")
-      .eq("user_id", user.id).single().then(({ data }) => {
-        if (data) {
-          setMyVisibility((data as any).visible_on_nearby || false);
-          setMyLocationSharing((data as any).location_sharing || false);
-          setWhoCanSee((data as any).who_can_see || "contacts");
-        }
-      });
+    nearbyRepo.fetchUserPresenceSettings(user.id).then((data) => {
+      if (data) {
+        setMyVisibility((data as any).visible_on_nearby || false);
+        setMyLocationSharing((data as any).location_sharing || false);
+        setWhoCanSee((data as any).who_can_see || "contacts");
+      }
+    });
   }, [user?.id]);
 
   const updatePrivacy = async (field: string, value: any) => {
     if (!user?.id) return;
-    await supabase.from("user_presence").update({ [field]: value } as any).eq("user_id", user.id);
+    await nearbyRepo.updateUserPresence(user.id, { [field]: value });
     haptic("light");
   };
 
   // Update my location in presence when sharing
   useEffect(() => {
     if (!user?.id || !lat || !lng || !myLocationSharing) return;
-    supabase.from("user_presence").update({
+    nearbyRepo.updateUserPresence(user.id, {
       lat, lng,
       location_sharing: true,
       visible_on_nearby: myVisibility,
-    } as any).eq("user_id", user.id);
+    });
   }, [lat, lng, myLocationSharing, myVisibility, user?.id]);
 
   const loadNearby = useCallback(async () => {
@@ -161,26 +160,16 @@ export default function CommNearbySection() {
 
     // Load items
     if (shouldLoadItems) {
-      const { data, error } = await supabase.rpc("search_nearby_items", {
-        _lat: lat, _lng: lng, _radius_km: radius,
-        _item_type: ["service", "real_estate", "concierge"].includes(typeFilter) ? typeFilter : null,
-      });
-      if (error) throw error;
-      if (data) setItems(data as NearbyItem[]);
+      const data = await nearbyRepo.searchNearbyItems(lat, lng, radius,
+        ["service", "real_estate", "concierge"].includes(typeFilter) ? typeFilter : null);
+      setItems(data as NearbyItem[]);
     } else {
       setItems([]);
     }
 
     // Load nearby users from presence
     if (shouldLoadUsers) {
-      const { data } = await supabase
-        .from("user_presence")
-        .select("user_id, display_name, avatar_url, status, professional_category, verified, lat, lng, last_seen_at")
-        .eq("visible_on_nearby", true)
-        .eq("location_sharing", true)
-        .not("lat", "is", null)
-        .not("lng", "is", null)
-        .neq("user_id", user?.id || "");
+      const data = await nearbyRepo.fetchNearbyUsers(user?.id || "");
 
       if (data) {
         // Calculate distance client-side for users

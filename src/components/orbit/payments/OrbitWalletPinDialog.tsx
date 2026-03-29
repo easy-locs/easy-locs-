@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Lock, AlertTriangle, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { supabase } from "@/integrations/supabase/client";
+import * as pinRepo from "@/repositories/security-pin.repository";
 import { toast } from "sonner";
 
 interface OrbitWalletPinDialogProps {
@@ -38,14 +38,14 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
     setError(null);
 
     const check = async () => {
-      const { data, error: fnErr } = await supabase.functions.invoke("wallet-pin", {
-        body: { action: "check_status" },
-      });
-      if (fnErr || !data) { setMode("setup"); return; }
-      setMode(data.has_pin ? "verify" : "setup");
-      setIsLocked(data.is_locked);
-      setLockedUntil(data.locked_until);
-      setAttemptsRemaining(5 - (data.failed_attempts || 0));
+      try {
+        const data = await pinRepo.checkPinStatus();
+        if (!data) { setMode("setup"); return; }
+        setMode(data.has_pin ? "verify" : "setup");
+        setIsLocked(data.is_locked);
+        setLockedUntil(data.locked_until);
+        setAttemptsRemaining(5 - (data.failed_attempts || 0));
+      } catch { setMode("setup"); }
     };
     check();
   }, [open]);
@@ -77,11 +77,11 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
     }
     if (confirmPin !== pin) { setError("PINs don't match. Try again."); setConfirmPin(""); return; }
     setProcessing(true);
-    const { data, error: fnErr } = await supabase.functions.invoke("wallet-pin", {
-      body: { action: "set_pin", pin },
-    });
+    try {
+      const data = await pinRepo.setPin(pin);
+      if (data?.error) { setError(data.error); setProcessing(false); return; }
+    } catch (err: any) { setError("Failed to set PIN"); setProcessing(false); return; }
     setProcessing(false);
-    if (fnErr || data?.error) { setError(data?.error || "Failed to set PIN"); return; }
     toast.success("Wallet PIN set successfully");
     onVerified();
   }, [step, pin, confirmPin, onVerified]);
@@ -90,12 +90,11 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
     if (isLocked) return;
     if (pin.length !== 6) { setError("Enter your 6-digit PIN"); return; }
     setProcessing(true);
-    const { data, error: fnErr } = await supabase.functions.invoke("wallet-pin", {
-      body: { action: "verify_pin", pin },
-    });
-    setProcessing(false);
+    try {
+      const data = await pinRepo.verifyPin(pin);
+      setProcessing(false);
 
-    if (fnErr) { setError("Server error"); return; }
+      if (!data) { setError("Server error"); return; }
     if (data?.verified) {
       setAttemptsRemaining(5);
       onVerified();
@@ -110,6 +109,7 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
       setAttemptsRemaining(data?.attempts_remaining ?? 0);
       setError(data?.error || "Wrong PIN");
     }
+    } catch { setError("Server error"); setProcessing(false); }
   }, [pin, isLocked, onVerified]);
 
   if (!open) return null;

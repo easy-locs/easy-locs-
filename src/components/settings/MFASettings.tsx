@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Shield, Loader2, Check, X, Smartphone } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import * as mfaRepo from "@/repositories/mfa.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 
@@ -16,7 +16,7 @@ const MFASettings = () => {
   const [factors, setFactors] = useState<any[]>([]);
 
   const loadFactors = async () => {
-    const { data } = await supabase.auth.mfa.listFactors();
+    const data = await mfaRepo.listFactors();
     if (data) {
       const verified = data.totp.filter((f: any) => f.status === "verified");
       setFactors(verified);
@@ -28,7 +28,7 @@ const MFASettings = () => {
 
   const startEnroll = async () => {
     setLoading(true);
-    const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Easy-Locs TOTP" });
+    const { data, error } = await mfaRepo.enrollTotp("Easy-Locs TOTP");
     if (error) {
       toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" });
     } else if (data) {
@@ -43,13 +43,13 @@ const MFASettings = () => {
   const verifyCode = async () => {
     if (code.length !== 6) return;
     setLoading(true);
-    const challenge = await supabase.auth.mfa.challenge({ factorId });
+    const challenge = await mfaRepo.challengeFactor(factorId);
     if (challenge.error) {
       toast({ title: t("page.common.error") || "Error", description: challenge.error.message, variant: "destructive" });
       setLoading(false);
       return;
     }
-    const { error } = await supabase.auth.mfa.verify({ factorId, challengeId: challenge.data.id, code });
+    const { error } = await mfaRepo.verifyFactor(factorId, challenge.data.id, code);
     if (error) {
       toast({ title: t("page.settings.mfa_invalid_code") || "Invalid code", description: error.message, variant: "destructive" });
     } else {
@@ -62,7 +62,7 @@ const MFASettings = () => {
 
   const unenroll = async (fId: string) => {
     setLoading(true);
-    const { error } = await supabase.auth.mfa.unenroll({ factorId: fId });
+    const { error } = await mfaRepo.unenrollFactor(fId);
     if (error) {
       toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" });
     } else {
