@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, ShoppingBag, Clock, DollarSign, MapPin, User } from "lucide-react";
+import { NotificationVibration } from "@/families/notifications/notification-vibration";
 
 export interface IncomingOrder {
   id: string;
@@ -53,25 +54,16 @@ function OrderNotificationAlert({ order, onAccept, onReject }: Props) {
       console.warn("Audio alert failed:", e);
     }
 
-    // Vibration
-    try {
-      if ("vibrate" in navigator) {
-        vibrationRef.current = setInterval(() => {
-          navigator.vibrate([200, 100, 200]);
-        }, 2000);
-        navigator.vibrate([200, 100, 200]);
-      }
-    } catch {}
+    // Vibration — via canonical family
+    NotificationVibration.startRepeating([200, 100, 200], 2000);
   }, []);
 
   const stopAlert = useCallback(() => {
     try { oscillatorRef.current?.stop(); } catch {}
     try { audioRef.current?.close(); } catch {}
-    if (vibrationRef.current) clearInterval(vibrationRef.current);
-    try { navigator.vibrate(0); } catch {}
+    NotificationVibration.stop();
     audioRef.current = null;
     oscillatorRef.current = null;
-    vibrationRef.current = null;
   }, []);
 
   useEffect(() => {
