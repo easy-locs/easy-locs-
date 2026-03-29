@@ -38,7 +38,7 @@ export const CommunicationCenter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { threads, loading, stats, loadThreads, updateThreadLocally } = useConversationThreads();
-  const { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread, changeStatus } = useThreadActions({ updateThreadLocally, loadThreads });
+  const { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread, changeStatus, markUnread } = useThreadActions({ updateThreadLocally, loadThreads });
   // Realtime sync centralized in RealtimeHubGuard (App.tsx)
   const [selectedThread, setSelectedThread] = useState<ConversationThread | null>(null);
   const [showContext, setShowContext] = useState(false);
