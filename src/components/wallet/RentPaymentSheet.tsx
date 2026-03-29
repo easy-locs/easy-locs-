@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { walletTransfer } from "@/payments/wallet-hooks";
+import { supabase } from "@/integrations/supabase/client";
 import { markRentCallPaid } from "@/repositories/rent-payment.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
