@@ -175,6 +175,9 @@ export function applyPreferences(
       thread.archived = !!pref.archived;
       thread.muted = !!pref.muted;
       thread.pinned = !!pref.favorited;
+      if (pref.marked_unread && thread.unreadCount === 0) {
+        thread.unreadCount = 1;
+      }
       if (pref.cleared_at) {
         thread.clearedAt = pref.cleared_at;
         if (thread.lastMessageTime && thread.lastMessageTime < pref.cleared_at) {

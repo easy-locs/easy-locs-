@@ -236,12 +236,21 @@ export async function resolveOrgMemberships(userIds: string[]) {
 
 // ═══ THREAD PREFERENCES ═══
 
-export async function upsertConversationPreference(userId: string, contextId: string, muted: boolean, archived: boolean) {
+export async function upsertConversationPreference(
+  userId: string,
+  contextId: string,
+  muted: boolean,
+  archived: boolean,
+  extras?: { favorited?: boolean; cleared_at?: string | null; marked_unread?: boolean }
+) {
   await supabase.from("conversation_preferences").upsert({
     user_id: userId,
     context_id: contextId,
     muted,
     archived,
+    ...(extras?.favorited !== undefined ? { favorited: extras.favorited } : {}),
+    ...(extras?.cleared_at !== undefined ? { cleared_at: extras.cleared_at } : {}),
+    ...(extras?.marked_unread !== undefined ? { marked_unread: extras.marked_unread } : {}),
     updated_at: new Date().toISOString(),
   } as any, { onConflict: "user_id,context_id" });
 }
