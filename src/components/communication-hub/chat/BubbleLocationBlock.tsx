@@ -44,7 +44,7 @@ function BubbleLocationBlockInner({ lat, lng, label, mode, messageId }: Props) {
           loading="lazy"
         />
         {isLive && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/90 text-white">
+          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "hsl(var(--primary) / 0.9)", color: "hsl(var(--primary-foreground))" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             LIVE
           </div>
@@ -54,7 +54,7 @@ function BubbleLocationBlockInner({ lat, lng, label, mode, messageId }: Props) {
       {/* Label */}
       <div className="flex items-center gap-2">
         {isLive ? (
-          <Navigation className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+          <Navigation className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
         ) : (
           <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
         )}
