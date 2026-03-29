@@ -52,10 +52,10 @@ export function OrbitContactsDirectoryPanel({
           {items.map((item) => (
             <div key={item.id} className="flex items-center justify-between rounded-xl border border-border p-3">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground truncate">
+                <p className="text-sm font-medium text-foreground break-words line-clamp-2">
                   {item.display_name || "Unnamed contact"}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-xs text-muted-foreground break-words line-clamp-1">
                   {item.email || item.phone || item.peer_orbit_id || ""}
                 </p>
               </div>

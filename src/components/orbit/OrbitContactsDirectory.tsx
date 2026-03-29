@@ -89,13 +89,13 @@ const ContactRow = memo(function ContactRow({
       {/* Info — min-w-0 for truncation */}
       <div className="flex-1 min-w-0 pr-1">
         <div className="flex items-center gap-1.5">
-          <span className="text-sm font-semibold text-foreground truncate block max-w-[140px]">
+          <span className="text-sm font-semibold text-foreground break-words line-clamp-1">
             {contact.name}
           </span>
           {contact.is_favorite && <Star className="h-3 w-3 text-amber-400 fill-amber-400 shrink-0" />}
         </div>
         {subtitle && (
-          <p className="text-xs text-muted-foreground truncate block max-w-[160px]">{subtitle}</p>
+          <p className="text-xs text-muted-foreground break-words line-clamp-1">{subtitle}</p>
         )}
       </div>
 
