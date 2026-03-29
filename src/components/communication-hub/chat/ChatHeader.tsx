@@ -1,11 +1,12 @@
 /**
  * ChatHeader — Compact messenger-first thread top bar.
- * Avatar + name + subtitle + call/video/menu.
+ * Uses canonical identity resolution for consistent display.
  */
 import { Phone, Video, MoreVertical, ArrowLeft } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { haptic } from "@/lib/haptics";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
+import { resolveCanonicalDisplayIdentity } from "@/lib/orbit/canonical-helpers";
 import type { ConversationThread } from "../types";
 
 interface Props {
@@ -29,9 +30,16 @@ export default function ChatHeader({
   onBack, onStartCall, onToggleContext,
   onEnterSelectMode, t,
 }: Props) {
-  const displayName = typeof thread.name === "string" ? thread.name : "Contact";
-  const initial = displayName[0]?.toUpperCase() || "?";
-  const subtitle = thread.email || "tap for info";
+  const identity = resolveCanonicalDisplayIdentity({
+    display_name: thread.name,
+    email: thread.email,
+    avatar_url: thread.avatarUrl,
+    role: thread.conversationType === "team" ? "Team" : undefined,
+    company: thread.propertyLabel || undefined,
+  });
+  const displayName = identity.displayName;
+  const initial = identity.initials[0] || "?";
+  const subtitle = identity.subtitle || "tap for info";
 
   return (
     <div className="px-2 sm:px-3 py-1.5 shrink-0" style={{

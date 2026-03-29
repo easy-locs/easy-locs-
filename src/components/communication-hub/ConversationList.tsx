@@ -1,12 +1,15 @@
 /**
  * ConversationList — Clean messenger-first conversation sidebar.
  * Filters: All / Unread / Groups only.
+ * Uses canonical identity + time + preview helpers.
  */
 import { useState, useMemo } from "react";
 import { Search, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatOrbitTimestamp, formatConversationPreview } from "@/lib/orbit/canonical-helpers";
+import {
+  formatOrbitTimestamp, formatConversationPreview, resolveCanonicalDisplayIdentity,
+} from "@/lib/orbit/canonical-helpers";
 import type { ConversationThread } from "./types";
 
 interface Props {
