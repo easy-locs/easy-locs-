@@ -76,15 +76,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const security = useSecurityDialogs();
   const callActions = useCallActions(thread, orgId || null);
 
-  // ── Identity resolver (canonical) ──
-  const resolveAuthUserId = useCallback(async (): Promise<string | null> => {
-    const { user, error } = await getAuthUser();
-    if (error || !user?.id) {
-      toast.error(t("orbit.session_expired") || "Session expired");
-      return null;
-    }
-    return user.id;
-  }, [t]);
+  // ── Identity resolver (canonical family) ──
+  const resolveAuthUserId = useResolveAuthUserId(t);
 
   const resolveConversationId = useCallback(async (authUserId: string): Promise<string | null> => {
     if (!thread) return null;
