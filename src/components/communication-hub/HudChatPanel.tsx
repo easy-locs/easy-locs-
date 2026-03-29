@@ -281,7 +281,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     if (callStateV2.activeCall.uiState !== "incoming") return;
     const timer = window.setTimeout(() => {
       void (async () => {
-        await (supabase as any).rpc("mark_call_as_missed_v2", {
+        await (await import("@/integrations/supabase/client")).supabase.rpc("mark_call_as_missed_v2" as any, {
           p_session_id: callStateV2.activeCall?.sessionId,
           p_reason: "timeout",
         });
