@@ -348,14 +348,14 @@ export default function HudContextPanel({ thread, orgId }: Props) {
           )}
 
           {/* Deal Room Panel */}
-          {showDealRoom && thread.contextId && orgId && (
+          {showDealRoom && thread.entityId && orgId && (
             <div className="pt-3" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)" }}>
               <DealRoomPanel
-                contextType={thread.contextType}
-                contextId={thread.contextId}
+                contextType={thread.entityType}
+                contextId={thread.entityId}
                 contextTitle={thread.serviceTitle || thread.listingTitle || thread.propertyLabel}
                 targetOrgId={orgId}
-                threadId={thread.threadId || thread.id}
+                threadId={thread.conversationId || thread.id}
                 isOrgMember={true}
               />
             </div>
@@ -380,7 +380,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
         <div className="flex-1 px-4 pb-4 min-h-0 overflow-y-auto">
           <EntityActivityLog
             entityType={thread.conversationType === "property" ? "tenant" : thread.propertyId ? "property" : "booking"}
-            entityId={thread.conversationType === "property" ? (thread.tenantId || thread.contextId) : thread.propertyId ? thread.propertyId : (thread.bookingId || thread.contextId)}
+            entityId={thread.conversationType === "property" ? (thread.tenantId || thread.entityId) : thread.propertyId ? thread.propertyId : (thread.bookingId || thread.entityId)}
             orgId={orgId}
             maxItems={20}
           />

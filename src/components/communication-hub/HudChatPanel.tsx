@@ -197,7 +197,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           t={t}
         />
 
-        <DealContextHeader dealId={thread.dealId} contextType={thread.conversationType} contextId={thread.contextId} onToggleContext={onToggleContext} />
+        <DealContextHeader dealId={thread.dealId} contextType={thread.conversationType} contextId={thread.entityId} onToggleContext={onToggleContext} />
 
         {/* ── CALL FAMILY UI ── */}
         <OrbitCallPermissionBanner
@@ -256,7 +256,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             selectedIds={selection.selectedMsgIds}
             messages={messages as any[]}
             currentUserId={user?.id}
-            currentContextId={thread?.contextId}
+            currentContextId={thread?.entityId}
             userEmail={user?.email}
             userName={user?.user_metadata?.full_name || user?.email || "User"}
             onClearSelection={selection.clearSelection}
