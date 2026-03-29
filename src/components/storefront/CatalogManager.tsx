@@ -4,7 +4,6 @@
  */
 import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -51,26 +50,12 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["my-catalog", shopId],
-    queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("catalog_items")
-        .select("*, storefront_catalog_categories(name)")
-        .eq("shop_id", shopId)
-        .order("sort_order");
-      return data || [];
-    },
+    queryFn: () => storefrontRepo.fetchCatalogItems(shopId),
   });
 
   const { data: categories = [] } = useQuery({
     queryKey: ["my-categories", shopId],
-    queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("storefront_catalog_categories")
-        .select("*")
-        .eq("shop_id", shopId)
-        .order("sort_order");
-      return data || [];
-    },
+    queryFn: () => storefrontRepo.fetchCatalogCategories(shopId),
   });
 
   const resetForm = () => {
@@ -157,10 +142,10 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
       };
 
       if (editingItem) {
-        await (supabase as any).from("catalog_items").update(payload).eq("id", editingItem.id);
+        await storefrontRepo.updateCatalogItem(editingItem.id, payload);
         toast.success("Item updated");
       } else {
-        await (supabase as any).from("catalog_items").insert(payload);
+        await storefrontRepo.insertCatalogItem(payload);
         toast.success("Item added");
       }
 
@@ -173,13 +158,13 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
   };
 
   const handleDelete = async (id: string) => {
-    await (supabase as any).from("catalog_items").delete().eq("id", id);
+    await storefrontRepo.deleteCatalogItem(id);
     qc.invalidateQueries({ queryKey: ["my-catalog", shopId] });
     toast.success("Item removed");
   };
 
   const handleToggle = async (id: string, val: boolean) => {
-    await (supabase as any).from("catalog_items").update({ available: val }).eq("id", id);
+    await storefrontRepo.updateCatalogItem(id, { available: val });
     qc.invalidateQueries({ queryKey: ["my-catalog", shopId] });
   };
 
