@@ -1,11 +1,12 @@
 /**
  * Signaling channel — Supabase Realtime broadcast for WebRTC signaling.
+ * Uses canonical realtime channel factory.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import type { SignalPayload } from "./types";
 
 export class SignalingChannel {
-  private channel: ReturnType<typeof supabase.channel> | null = null;
+  private channel: ReturnType<typeof createRealtimeChannel> | null = null;
   private _ready = false;
   private userId: string;
   private callId: string;
@@ -20,7 +21,7 @@ export class SignalingChannel {
   get ready() { return this._ready; }
 
   async join(): Promise<void> {
-    this.channel = supabase.channel(`call:${this.callId}`, {
+    this.channel = createRealtimeChannel(`call:${this.callId}`, {
       config: { broadcast: { self: false } },
     });
 
@@ -58,7 +59,7 @@ export class SignalingChannel {
   destroy() {
     this._ready = false;
     if (this.channel) {
-      try { supabase.removeChannel(this.channel); } catch {}
+      try { removeRealtimeChannel(this.channel); } catch {}
       this.channel = null;
     }
   }
