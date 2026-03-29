@@ -26,20 +26,42 @@ export async function processIncomingInsert(
   trace("incoming.insert", "input", {
     callId: callRow?.id, status: callRow?.status,
     receiver: callRow?.receiver_orbit_id,
+    caller: callRow?.caller_orbit_id,
   });
 
   if (!callRow || callRow.status !== "ringing") return null;
-  if (callRow.caller_orbit_id === currentUserId || callRow.caller_orbit_id === myOrbitId) return null;
 
+  // IDENTITY: caller_orbit_id stores auth.uid (from RPC).
+  // Skip if the caller is us (by auth.uid OR orbit_id).
+  const callerField = callRow.caller_orbit_id;
+  if (callerField === currentUserId || callerField === myOrbitId) return null;
+
+  // Resolve caller name: try profiles first (callerField is likely auth.uid),
+  // then orbit_profiles_v2 if it's an orbit_id format
+  let callerName = "User";
   const { data: profile } = await supabase
     .from("profiles")
     .select("name, email")
-    .eq("id", callRow.caller_orbit_id)
-    .single();
+    .eq("id", callerField)
+    .maybeSingle();
+
+  if (profile?.name || profile?.email) {
+    callerName = profile.name || profile.email || "User";
+  } else {
+    // Fallback: try orbit_profiles_v2
+    const { data: orbitProfile } = await (supabase as any)
+      .from("orbit_profiles_v2")
+      .select("display_name, email")
+      .or(`id.eq.${callerField},orbit_id.eq.${callerField}`)
+      .maybeSingle();
+    if (orbitProfile?.display_name || orbitProfile?.email) {
+      callerName = orbitProfile.display_name || orbitProfile.email;
+    }
+  }
 
   const info: IncomingCallInfo = {
     callId: callRow.id,
-    callerName: profile?.name || profile?.email || "User",
+    callerName,
     contextLabel: "",
     isVideo: callRow.call_type === "video",
     orgId: callRow.receiver_orbit_id || "",

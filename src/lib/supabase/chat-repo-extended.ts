@@ -9,8 +9,15 @@ import type { ConversationRecord, ChatMessageRecord } from "@/lib/types/domain";
 const db = supabase as any;
 
 export const chatRepoExtended = {
+  /**
+   * List conversations for a user by orbit_id.
+   * IDENTITY: participants JSONB stores { orbitId, userId, ... }.
+   * We try orbitId JSONB contains first, then fall back to userId contains,
+   * ensuring conversations are found regardless of which identity was stored.
+   */
   async listConversationsByOrbitId(orbitId: string): Promise<ConversationRecord[]> {
-    const { data, error } = await db
+    // Primary: match by orbitId in participants
+    let { data, error } = await db
       .from("conversations_v2")
       .select("*")
       .contains("participants", [{ orbitId }])
@@ -18,10 +25,22 @@ export const chatRepoExtended = {
 
     if (error) {
       console.warn("[chatRepoExtended] listConversationsByOrbitId error:", error.message);
-      return [];
     }
-    // Map DB snake_case to domain camelCase
-    return (data ?? []).map((row: any) => ({
+
+    // Fallback: if no results and orbitId doesn't look like "orbit_*",
+    // it might be an auth.uid — try matching by userId in participants
+    if ((!data || data.length === 0) && orbitId && !orbitId.startsWith("orbit_")) {
+      const fallback = await db
+        .from("conversations_v2")
+        .select("*")
+        .contains("participants", [{ userId: orbitId }])
+        .order("last_message_at", { ascending: false, nullsFirst: false });
+      if (!fallback.error && fallback.data?.length) {
+        data = fallback.data;
+      }
+    }
+
+    const mapRow = (row: any): ConversationRecord => ({
       id: row.id,
       type: row.type || "direct",
       participants: row.participants || [],
@@ -32,7 +51,9 @@ export const chatRepoExtended = {
       lastMessageAt: row.last_message_at || row.updated_at,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-    })) as ConversationRecord[];
+    });
+
+    return (data ?? []).map(mapRow) as ConversationRecord[];
   },
 
   async getConversationById(id: string): Promise<ConversationRecord | null> {
