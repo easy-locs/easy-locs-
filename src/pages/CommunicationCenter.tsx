@@ -3,7 +3,7 @@
  * Full-screen messaging experience — NO sidebar, standalone layout.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, Zap, Lock, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Plus, Zap, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
