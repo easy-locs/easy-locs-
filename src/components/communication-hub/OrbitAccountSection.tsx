@@ -75,8 +75,8 @@ export default function OrbitAccountSection() {
     if (key === "typeAlerts") return;
     const next = setNotifAlertPrefs({ [key]: !alertPrefs[key as keyof NotifAlertPrefs] });
     setAlertPrefsState(next);
-    if (key === "vibration" && !alertPrefs.vibration && navigator.vibrate) {
-      navigator.vibrate(50);
+    if (key === "vibration" && !alertPrefs.vibration) {
+      haptic("light");
     }
     // Request browser notification permission when enabling
     if (key === "browserNotifications" && !alertPrefs.browserNotifications) {

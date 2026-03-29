@@ -1,9 +1,11 @@
 /**
  * notifications.device-bridge — Canonical notification bridge to device/system.
- * Handles: in-app, push, vibration, sound, foreground/background routing.
+ * Delegates vibration to DeviceHaptics, permissions to DevicePermissions.
  */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { DeviceHaptics } from "@/families/device";
+import { DevicePermissions } from "@/families/device/device-permissions";
 
 export type NotificationChannel = "message" | "call" | "system" | "payment" | "location";
 export type NotificationPriority = "low" | "normal" | "high" | "critical";
@@ -26,8 +28,8 @@ interface NotificationPreferencesState {
   vibrationEnabled: boolean;
   channels: Record<NotificationChannel, boolean>;
   quietHoursEnabled: boolean;
-  quietHoursStart: string; // "22:00"
-  quietHoursEnd: string;   // "07:00"
+  quietHoursStart: string;
+  quietHoursEnd: string;
   setEnabled: (v: boolean) => void;
   setSoundEnabled: (v: boolean) => void;
   setVibrationEnabled: (v: boolean) => void;
@@ -65,19 +67,17 @@ export const useNotificationPreferences = create<NotificationPreferencesState>()
 export const NotificationDeviceBridge = {
   /** Check if notifications are supported */
   isSupported(): boolean {
-    return "Notification" in window;
+    return DevicePermissions.isNotificationSupported();
   },
 
   /** Request notification permission from browser/device */
   async requestPermission(): Promise<NotificationPermission> {
-    if (!NotificationDeviceBridge.isSupported()) return "denied";
-    return Notification.requestPermission();
+    return DevicePermissions.requestNotification();
   },
 
   /** Get current permission status */
   getPermissionStatus(): NotificationPermission | "unsupported" {
-    if (!NotificationDeviceBridge.isSupported()) return "unsupported";
-    return Notification.permission;
+    return DevicePermissions.getNotificationStatus();
   },
 
   /** Check if a notification should be delivered (respects prefs + quiet hours) */
@@ -93,18 +93,15 @@ export const NotificationDeviceBridge = {
   isQuietHours(): boolean {
     const prefs = useNotificationPreferences.getState();
     if (!prefs.quietHoursEnabled) return false;
-
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const [startH, startM] = prefs.quietHoursStart.split(":").map(Number);
     const [endH, endM] = prefs.quietHoursEnd.split(":").map(Number);
     const startMinutes = startH * 60 + startM;
     const endMinutes = endH * 60 + endM;
-
     if (startMinutes < endMinutes) {
       return currentMinutes >= startMinutes && currentMinutes < endMinutes;
     }
-    // Overnight quiet hours
     return currentMinutes >= startMinutes || currentMinutes < endMinutes;
   },
 
@@ -112,7 +109,6 @@ export const NotificationDeviceBridge = {
   async send(payload: NotificationPayload): Promise<boolean> {
     if (!NotificationDeviceBridge.shouldDeliver(payload.channel)) return false;
     if (NotificationDeviceBridge.getPermissionStatus() !== "granted") return false;
-
     const prefs = useNotificationPreferences.getState();
 
     try {
@@ -124,15 +120,13 @@ export const NotificationDeviceBridge = {
         data: payload.data,
       });
 
-      if (prefs.vibrationEnabled && payload.vibrate && "vibrate" in navigator) {
-        navigator.vibrate([200]);
+      if (prefs.vibrationEnabled && payload.vibrate) {
+        DeviceHaptics.trigger("medium");
       }
 
-      // Auto-close after 5s for non-critical
       if (payload.priority !== "critical") {
         setTimeout(() => notification.close(), 5000);
       }
-
       return true;
     } catch {
       return false;
@@ -160,8 +154,8 @@ export const NotificationDeviceBridge = {
       priority: "critical",
       title: `Incoming ${mode} call`,
       body: callerName,
-      sound: false, // ringtone handles sound
-      vibrate: false, // ringtone handles vibration
+      sound: false,
+      vibrate: false,
       tag: `call-${sessionId}`,
       data: { sessionId, type: "call", mode },
     });
