@@ -620,10 +620,6 @@ export default function OrbitAccountSection() {
           </button>
         </div>
 
-        <div className="flex items-center gap-1.5 mt-3">
-          <ShieldCheck className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
-          <span className="text-[10px] font-medium" style={{ color: "hsl(var(--primary))" }}>End-to-End Encrypted</span>
-        </div>
       </motion.div>
 
       <Separator className="mx-4" />

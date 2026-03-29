@@ -229,15 +229,17 @@ export default function CommCallsSection() {
 
   const getDisplayLabel = (call: CallLog) => {
     const peerId = call.direction === "outgoing" ? call.receiver_orbit_id : call.caller_orbit_id;
-    const resolvedName = nameCache[peerId] || safeDisplayName(peerId, call.direction === "outgoing" ? (t("orbit.calls.outgoing_call") || "Outgoing call") : (t("orbit.calls.incoming_call") || "Incoming call"));
-    return [resolvedName];
+    const resolvedName = nameCache[peerId] || safeDisplayName(peerId, "Contact");
+    const dirLabel = call.direction === "outgoing" ? "Outgoing" : "Incoming";
+    const typeLabel = call.call_type === "video" ? "Video" : "Audio";
+    return resolvedName !== "Contact" ? [resolvedName, `${dirLabel} · ${typeLabel}`] : [`${dirLabel} ${typeLabel} Call`];
   };
 
   return (
     <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
-        <h2 className="text-lg font-bold mb-3" style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.calls.title") || "Calls"}</h2>
+        <h2 className="text-lg font-bold mb-3" style={{ color: "hsl(var(--hud-text))" }}>Calls</h2>
 
         {/* Search */}
         <div className="relative mb-3">
