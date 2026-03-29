@@ -12,6 +12,7 @@ import { haptic } from "@/lib/haptics";
 import { isActionAllowed, getMessagePolicy } from "@/lib/message-security";
 import { useI18n } from "@/lib/i18n";
 
+import { supabase } from "@/integrations/supabase/client";
 const db = supabase as any;
 
 interface MessageAction {

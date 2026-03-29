@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { insertBookingRequest, invokeNotifyBooking } from "@/repositories/rental.repository";
+import { insertBookingRequest, invokeNotifyBooking, fetchExistingBookings } from "@/repositories/rental.repository";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { auditBookingResult } from "@/lib/ai-audit";
 import { useI18n } from "@/lib/i18n";
@@ -46,18 +46,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
   useEffect(() => {
     if (!property?.id) return;
     const loadBookings = async () => {
-      const [{ data: seasonal }, { data: requests }] = await Promise.all([
-        supabase
-          .from("seasonal_bookings" as any)
-          .select("check_in, check_out, status")
-          .eq("property_id", property.id)
-          .neq("status", "cancelled"),
-        supabase
-          .from("booking_requests")
-          .select("check_in, check_out, status")
-          .eq("property_id", property.id)
-          .in("status", ["confirmed", "paid", "approved", "payment_pending"]),
-      ]);
+      const bookings = await fetchExistingBookings(property.id);
       const all = [
         ...(seasonal || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
         ...(requests || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
