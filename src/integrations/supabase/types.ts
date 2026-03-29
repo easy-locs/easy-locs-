@@ -32065,6 +32065,25 @@ export type Database = {
           views_count: number
         }[]
       }
+      get_public_seed_merchants: {
+        Args: { p_city?: string; p_limit?: number }
+        Returns: {
+          category: string
+          city: string
+          country: string
+          cover_image: string
+          description: string
+          id: string
+          is_active: boolean
+          latitude: number
+          logo_image: string
+          longitude: number
+          name: string
+          rating: number
+          slug: string
+          subcategory: string
+        }[]
+      }
       get_public_service_availability: {
         Args: { p_service_id: string }
         Returns: {
@@ -32073,6 +32092,46 @@ export type Database = {
           service_date: string
           service_time: string
           status: string
+        }[]
+      }
+      get_public_storefronts: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          active: boolean
+          banner_url: string
+          category: string
+          city: string
+          country: string
+          description: string
+          id: string
+          latitude: number
+          logo_url: string
+          longitude: number
+          name: string
+          rating: number
+          reviews_count: number
+          shop_visibility: string
+          slug: string
+          subcategory: string
+        }[]
+      }
+      get_published_reviews: {
+        Args: {
+          p_limit?: number
+          p_provider_id?: string
+          p_service_id?: string
+        }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          provider_id: string
+          rating: number
+          reviewer_name: string
+          reviewer_user_id: string
+          service_id: string
+          status: string
+          updated_at: string
         }[]
       }
       get_real_estate_showcase: { Args: { p_slug: string }; Returns: Json }
