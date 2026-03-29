@@ -2,7 +2,7 @@
  * useOfflineMessages — Manages offline message queue with auto-sync on reconnection
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as commRepo from "@/repositories/communication.repository";
 import { useNetworkStatus } from "./useNetworkStatus";
 import {
   enqueueMessage,
@@ -46,8 +46,8 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
     metadata: Record<string, any>
   ): Promise<string> => {
     const id = crypto.randomUUID();
-    const { data: authData } = await supabase.auth.getUser();
-    const authUserId = authData?.user?.id || userId;
+    const authUser = await commRepo.getCommAuthUser();
+    const authUserId = authUser?.id || userId;
 
     await enqueueMessage({
       id,
@@ -68,8 +68,8 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
     setIsSyncing(true);
 
     try {
-      const { data: authData } = await supabase.auth.getUser();
-      const authUserId = authData?.user?.id || userId;
+      const authUser = await commRepo.getCommAuthUser();
+      const authUserId = authUser?.id || userId;
 
       const pending = await getPendingMessages();
       if (pending.length === 0) {
@@ -99,16 +99,14 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
             failed++;
             continue;
           }
-          const { error } = await (supabase as any).from("chat_messages_v2").insert({
-            conversation_id: conversationId,
-            sender_user_id: meta.userId || authUserId,
-            sender_orbit_id: meta.orbitId || `orbit_${(meta.userId || authUserId || "").slice(0, 12)}`,
+          await commRepo.insertMessage({
+            conversationId,
+            senderUserId: meta.userId || authUserId || "",
+            senderOrbitId: meta.orbitId || `orbit_${(meta.userId || authUserId || "").slice(0, 12)}`,
             type: "text",
             body: msg.content,
-            metadata: msg.encrypted ? { encrypted: true } : null,
+            metadata: msg.encrypted ? { encrypted: true } : undefined,
           });
-
-          if (error) throw error;
 
           await dequeueMessage(msg.id);
           sent++;
