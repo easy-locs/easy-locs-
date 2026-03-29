@@ -4,6 +4,7 @@
  * Falls back to polling if WebSocket fails.
  */
 import { useEffect, useState, useRef, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import type { Driver } from "@/lib/radar/radar-engine";
 

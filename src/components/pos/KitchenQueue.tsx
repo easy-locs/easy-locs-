@@ -3,6 +3,7 @@
  * 4-column KDS: New → Accepted → Preparing → Ready
  */
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";

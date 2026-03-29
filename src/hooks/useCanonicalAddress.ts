@@ -3,6 +3,7 @@
  * Provides active context, saved addresses, resolution, and activation.
  */
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import {
   getActiveAddressContext,

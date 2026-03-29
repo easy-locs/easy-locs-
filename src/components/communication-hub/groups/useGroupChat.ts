@@ -3,6 +3,7 @@
  * DB calls delegated to communication.repository.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { haptic } from "@/lib/haptics";
