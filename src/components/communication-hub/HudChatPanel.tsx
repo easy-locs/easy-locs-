@@ -306,32 +306,34 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           </div>
         )}
 
-        {/* ── COMPOSER FAMILY UI ── */}
-        <MessageComposer
-          value={messageSender.newMessage}
-          sending={messageSender.sending}
-          uploading={attFamily.attachments.uploading}
-          voiceRecording={compFamily.voiceRecorder.recording}
-          voicePreview={compFamily.voicePreview}
-          voiceDuration={compFamily.voiceRecorder.duration}
-          replyTo={selection.replyTo ? { content: selection.replyTo.content, senderName: selection.replyTo.senderName } : null}
-          onChange={messageSender.setNewMessage}
-          onSend={stableHandleSend}
-          onKeyDown={messageSender.handleKeyDown}
-          onTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
-          attachmentActions={{
-            onFileUpload: attFamily.attachments.handleFileUpload,
-            onCameraCapture: attFamily.attachments.handleFileUpload,
-            onLocation: () => security.setShowLocationPicker(true),
-            onViewOnce: compFamily.handleViewOnceUpload,
-          }}
-          onStartVoice={compFamily.startVoice}
-          onStopVoice={compFamily.stopVoice}
-          onCancelVoice={compFamily.cancelVoice}
-          onSendVoice={compFamily.handleVoiceSend}
-          onDiscardVoice={compFamily.discardVoice}
-          onClearReply={() => selection.setReplyTo(null)}
-        />
+        {/* ── COMPOSER FAMILY UI — hidden during selection mode ── */}
+        {!selection.selectMode && (
+          <MessageComposer
+            value={messageSender.newMessage}
+            sending={messageSender.sending}
+            uploading={attFamily.attachments.uploading}
+            voiceRecording={compFamily.voiceRecorder.recording}
+            voicePreview={compFamily.voicePreview}
+            voiceDuration={compFamily.voiceRecorder.duration}
+            replyTo={selection.replyTo ? { content: selection.replyTo.content, senderName: selection.replyTo.senderName } : null}
+            onChange={messageSender.setNewMessage}
+            onSend={stableHandleSend}
+            onKeyDown={messageSender.handleKeyDown}
+            onTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
+            attachmentActions={{
+              onFileUpload: attFamily.attachments.handleFileUpload,
+              onCameraCapture: attFamily.attachments.handleFileUpload,
+              onLocation: () => security.setShowLocationPicker(true),
+              onViewOnce: compFamily.handleViewOnceUpload,
+            }}
+            onStartVoice={compFamily.startVoice}
+            onStopVoice={compFamily.stopVoice}
+            onCancelVoice={compFamily.cancelVoice}
+            onSendVoice={compFamily.handleVoiceSend}
+            onDiscardVoice={compFamily.discardVoice}
+            onClearReply={() => selection.setReplyTo(null)}
+          />
+        )}
 
         {/* ── ATTACHMENT QUEUE ── */}
         <OrbitUploadQueuePreview
