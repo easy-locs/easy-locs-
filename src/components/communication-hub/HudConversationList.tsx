@@ -28,6 +28,7 @@ interface Props {
   onBlockThread?: (thread: ConversationThread) => void;
   onClearThread?: (thread: ConversationThread) => void;
   onFavoriteThread?: (thread: ConversationThread) => void;
+  onMarkUnreadThread?: (thread: ConversationThread) => void;
   onContactInfo?: (thread: ConversationThread) => void;
   onStatusChange?: (thread: ConversationThread, status: string) => void;
   onSecurity?: (thread: ConversationThread) => void;
@@ -41,7 +42,7 @@ interface Props {
 export default function HudConversationList({
   threads, loading, selectedThread, onSelectThread,
   onDeleteThread, onArchiveThread, onMuteThread, onBlockThread, onClearThread,
-  onFavoriteThread, onContactInfo, onStatusChange, onSecurity, onSafetyNumber,
+  onFavoriteThread, onMarkUnreadThread, onContactInfo, onStatusChange, onSecurity, onSafetyNumber,
   onDetails, onSelectMessages,
   visible, multiSelectActive,
 }: Props) {
@@ -252,12 +253,14 @@ export default function HudConversationList({
         <ThreadContextMenu
           thread={contextMenuThread}
           open={!!contextMenuThread}
-          onClose={() => setContextMenuThread(null)}
+           onClose={() => setContextMenuThread(null)}
           onMute={() => onMuteThread?.(contextMenuThread)}
           onDelete={() => onDeleteThread?.(contextMenuThread)}
           onBlock={() => onBlockThread?.(contextMenuThread)}
           onClearChat={() => onClearThread?.(contextMenuThread)}
           onFavorite={() => onFavoriteThread?.(contextMenuThread)}
+          onArchive={() => onArchiveThread?.(contextMenuThread)}
+          onMarkUnread={() => onMarkUnreadThread?.(contextMenuThread)}
           onContactInfo={() => onContactInfo?.(contextMenuThread)}
           onStatusChange={onStatusChange ? (status) => onStatusChange(contextMenuThread, status) : undefined}
           onSecurity={onSecurity ? () => onSecurity(contextMenuThread) : undefined}
