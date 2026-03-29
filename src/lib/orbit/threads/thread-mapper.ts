@@ -1,6 +1,11 @@
 /**
  * thread-mapper — Atomic unit: map raw DB rows into ConversationThread objects.
  * Single responsibility: structural transformation only, no DB calls.
+ * 
+ * CANONICAL NAMING:
+ * - entityType/entityId = business entity (listing, booking, etc.)
+ * - conversationId = UUID from conversations_v2
+ * - contextType/contextId/v2ConversationId/threadId kept as deprecated compat
  */
 import type { ConversationThread } from "@/components/communication-hub/types";
 import type { ThreadRawSources } from "./thread-fetcher";
@@ -16,6 +21,17 @@ function normalizeUuid(value: unknown): string | null {
     ? value : null;
 }
 
+/** Helper: create canonical + deprecated fields in one place */
+function withCanonicalIds(entityType: string, entityId: string, conversationId?: string) {
+  return {
+    entityType,
+    entityId,
+    contextType: entityType,
+    contextId: entityId,
+    ...(conversationId ? { conversationId, v2ConversationId: conversationId } : {}),
+  };
+}
+
 export function mapOrgSourcesToThreads(
   sources: ThreadRawSources,
   threadMap: Map<string, ConversationThread>
@@ -25,7 +41,8 @@ export function mapOrgSourcesToThreads(
   for (const t of tenants) {
     threadMap.set(`tenant-${t.id}`, {
       id: `tenant-${t.id}`, conversationType: "property", sourceModule: "long_term",
-      contextType: "tenant", contextId: t.id, name: t.name, email: t.email,
+      ...withCanonicalIds("tenant", t.id),
+      name: t.name, email: t.email,
       tenantId: t.id, propertyLabel: t.property_id ? propertyMap[t.property_id]?.label : undefined,
       propertyCountry: t.property_id ? propertyMap[t.property_id]?.country : undefined,
       propertyId: t.property_id || undefined, unreadCount: 0,
@@ -35,7 +52,8 @@ export function mapOrgSourcesToThreads(
   for (const b of mBookings) {
     threadMap.set(`booking-${b.id}`, {
       id: `booking-${b.id}`, conversationType: "booking", sourceModule: "marketplace",
-      contextType: "marketplace_booking", contextId: b.id, name: b.booker_name || "Client",
+      ...withCanonicalIds("marketplace_booking", b.id),
+      name: b.booker_name || "Client",
       email: b.booker_email || null, phone: b.booker_phone, bookingId: b.id,
       bookingType: "marketplace", bookingStatus: b.status,
       serviceTitle: b.service_id ? mSvcMap[b.service_id]?.title : undefined,
@@ -47,7 +65,8 @@ export function mapOrgSourcesToThreads(
   for (const o of cOrders) {
     threadMap.set(`booking-${o.id}`, {
       id: `booking-${o.id}`, conversationType: "booking", sourceModule: "marketplace",
-      contextType: "concierge_booking", contextId: o.id, name: o.guest_name || "Client",
+      ...withCanonicalIds("concierge_booking", o.id),
+      name: o.guest_name || "Client",
       email: o.guest_email || null, phone: o.guest_phone, bookingId: o.id,
       bookingType: "concierge", bookingStatus: o.status,
       serviceTitle: o.service_id ? cSvcMap[o.service_id]?.title : undefined,
@@ -59,7 +78,8 @@ export function mapOrgSourcesToThreads(
   for (const b of sBookings) {
     threadMap.set(`booking-${b.id}`, {
       id: `booking-${b.id}`, conversationType: "booking", sourceModule: "seasonal",
-      contextType: "seasonal_booking", contextId: b.id, name: b.guest_name || "Guest",
+      ...withCanonicalIds("seasonal_booking", b.id),
+      name: b.guest_name || "Guest",
       email: b.guest_email || null, phone: b.guest_phone, bookingId: b.id,
       bookingType: "seasonal", bookingStatus: b.status,
       propertyLabel: b.property_id ? sPropMap[b.property_id]?.label : undefined,
@@ -72,7 +92,8 @@ export function mapOrgSourcesToThreads(
     const listing = lead.listing_id ? listingMap[lead.listing_id] : null;
     threadMap.set(`lead-${lead.id}`, {
       id: `lead-${lead.id}`, conversationType: "listing", sourceModule: "real_estate",
-      contextType: "real_estate_lead", contextId: lead.id, name: lead.name || "Visitor",
+      ...withCanonicalIds("real_estate_lead", lead.id),
+      name: lead.name || "Visitor",
       email: lead.email || null, phone: lead.phone, leadId: lead.id,
       listingTitle: listing?.title, listingType: listing?.listing_type,
       propertyCountry: listing?.country, bookingStatus: lead.status,
@@ -83,7 +104,8 @@ export function mapOrgSourcesToThreads(
   for (const gs of guestSessions) {
     threadMap.set(`guest-${gs.id}`, {
       id: `guest-${gs.id}`, conversationType: "business", sourceModule: "marketplace",
-      contextType: "guest_session", contextId: gs.id, name: gs.display_name || "Guest",
+      ...withCanonicalIds("guest_session", gs.id),
+      name: gs.display_name || "Guest",
       email: gs.email || null,
       listingTitle: gs.context_type !== "general" ? gs.context_type : undefined,
       unreadCount: 0, lastMessageTime: gs.created_at,
@@ -121,10 +143,10 @@ export function mapV2ConversationsToThreads(
     if (!threadMap.has(key)) {
       threadMap.set(key, {
         id: key, conversationType: convType, sourceModule: srcModule as any,
-        contextType: ctxType, contextId: ct.context_id || ct.id,
+        ...withCanonicalIds(ctxType, ct.context_id || ct.id, ct.id),
         name: ct.title || ct.last_message_preview || "Contact", email: null,
         threadId: ct.id, listingTitle: ct.title || undefined,
-        v2ConversationId: ct.id, isV2: true, peerUserId,
+        isV2: true, peerUserId,
         participantUserIds: mergedParticipantIds, unreadCount: 0,
         lastMessageTime: ct.last_message_at || ct.updated_at,
       });
@@ -159,10 +181,10 @@ export function mapV2ConversationsToThreads(
     if (!threadMap.has(v2Key)) {
       threadMap.set(v2Key, {
         id: v2Key, conversationType: "direct", sourceModule: "direct",
-        contextType: "direct", contextId: conv.id,
+        ...withCanonicalIds("direct", conv.id, conv.id),
         name: peer.displayName || "Contact", email: peer.email || null,
         avatarUrl: peer.avatarUrl || null, threadId: conv.id,
-        v2ConversationId: conv.id, isV2: true, peerUserId: peer.userId,
+        isV2: true, peerUserId: peer.userId,
         peerOrbitId: peer.orbitId, participantUserIds: normalized.map((p) => p.userId).filter(Boolean) as string[],
         unreadCount: 0, lastMessage: conv.title || undefined,
         lastMessageTime: conv.last_message_at || conv.created_at,
@@ -186,14 +208,14 @@ export function mapDealsToThreads(
     if (deal.context_id && deal.thread_id) {
       let attached = false;
       for (const [, t] of threadMap) {
-        if (t.threadId === deal.thread_id || t.contextId === deal.context_id) { t.dealId = deal.id; attached = true; break; }
+        if (t.threadId === deal.thread_id || t.entityId === deal.context_id || t.contextId === deal.context_id) { t.dealId = deal.id; attached = true; break; }
       }
       if (attached) continue;
     }
     if (!threadMap.has(dealKey)) {
       threadMap.set(dealKey, {
         id: dealKey, conversationType: "deal", sourceModule: "marketplace",
-        contextType: deal.context_type || "deal", contextId: deal.context_id || deal.id,
+        ...withCanonicalIds(deal.context_type || "deal", deal.context_id || deal.id),
         name: deal.context_title || "Deal", email: null, dealId: deal.id,
         bookingStatus: deal.status, totalPrice: deal.current_offer_amount || deal.accepted_amount || undefined,
         currency: deal.current_offer_currency || "EUR", threadId: deal.thread_id || undefined,
