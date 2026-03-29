@@ -7,6 +7,7 @@ import { Send, Loader2, Paperclip } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { createAppNotification } from "@/lib/notifications/app-notification-service";
+import { insertMessage, updateConversationTimestamp, fetchGroupMessages } from "@/repositories/communication.repository";
 
 const db = supabase as any;
 
@@ -41,12 +42,7 @@ export default function GuestBookingReply({ bookingId, guestName, guestEmail }: 
 
       if (!conv?.id) return [];
 
-      const { data } = await db
-        .from("chat_messages_v2")
-        .select("id, body, created_at, type, sender_user_id, metadata")
-        .eq("conversation_id", conv.id)
-        .order("created_at", { ascending: true })
-        .limit(200);
+      const data = await fetchGroupMessages(conv.id, 200);
 
       return (data || [])
         .filter((m: any) => m.type !== "system" || !(m.metadata as any)?.internal)
@@ -73,11 +69,11 @@ export default function GuestBookingReply({ bookingId, guestName, guestEmail }: 
       const conversationId = conv?.id;
       if (!conversationId) throw new Error("Conversation not found for this booking");
 
-      // Insert guest message into V2 table
-      await db.from("chat_messages_v2").insert({
-        conversation_id: conversationId,
-        sender_user_id: null, // Guest has no auth user
-        sender_orbit_id: `guest_${guestEmail.replace(/[^a-z0-9]/gi, "_").slice(0, 20)}`,
+      // Insert guest message via canonical repository
+      await insertMessage({
+        conversationId,
+        senderUserId: "00000000-0000-0000-0000-000000000000",
+        senderOrbitId: `guest_${guestEmail.replace(/[^a-z0-9]/gi, "_").slice(0, 20)}`,
         type: "text",
         body: newMessage,
         metadata: {
@@ -88,15 +84,8 @@ export default function GuestBookingReply({ bookingId, guestName, guestEmail }: 
         },
       });
 
-      // Update conversation preview
-      await db
-        .from("conversations_v2")
-        .update({
-          last_message_at: new Date().toISOString(),
-          last_message_preview: `${guestName}: ${newMessage.slice(0, 100)}`,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", conversationId);
+      // Update conversation preview via canonical repository
+      await updateConversationTimestamp(conversationId, `${guestName}: ${newMessage.slice(0, 100)}`);
 
       // Notify host via app_notifications
       const { data: booking } = await supabase

@@ -18,6 +18,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { sendText } from "@/families/send/send-text";
+import { fetchGroupMessages } from "@/repositories/communication.repository";
+import type { SendContext } from "@/families/send/send-context";
 
 interface Props {
   jobId: string;
@@ -51,12 +54,7 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
   const loadMessages = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await (supabase as any)
-        .from("chat_messages_v2")
-        .select("id, sender_user_id, body, created_at")
-        .eq("conversation_id", contextId)
-        .order("created_at", { ascending: true })
-        .limit(100);
+      const data = await fetchGroupMessages(contextId, 100);
       setMessages((data || []).map((m: any) => ({ id: m.id, sender_id: m.sender_user_id, content: m.body, created_at: m.created_at })) as ChatMessage[]);
     } catch (err) {
       console.error("[mission-chat]", err);
@@ -98,21 +96,12 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
     if (!input.trim() || !user) return;
     setSending(true);
     try {
-      // We need merchant_id - fetch from the job
-      const { data: jobData } = await (supabase as any)
-        .from("mobility_jobs")
-        .select("merchant_id")
-        .eq("id", jobId)
-        .maybeSingle();
-
-      const { error } = await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: contextId,
-        sender_user_id: user.id,
-        sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
-        type: "text",
-        body: input.trim(),
-      });
-      if (error) throw error;
+      const ctx: SendContext = {
+        conversationId: contextId,
+        senderUserId: user.id,
+        senderOrbitId: `orbit_${user.id.slice(0, 12)}`,
+      };
+      await sendText(ctx, input.trim());
       setInput("");
     } catch (err: any) {
       toast.error("Erreur envoi");

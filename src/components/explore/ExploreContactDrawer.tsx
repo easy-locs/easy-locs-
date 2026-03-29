@@ -4,8 +4,10 @@
  */
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { sendText } from "@/families/send/send-text";
+import { getOrCreateCanonicalDirectConversation } from "@/families/threads";
+import type { SendContext } from "@/families/send/send-context";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -78,45 +80,20 @@ function AuthenticatedContact({
     if (!user) { toast.error("Please login first"); return; }
     setSending(true);
     try {
-      // 1. Get or create conversation thread
-      let threadId: string | null = null;
-      const { data: existing } = await (supabase as any)
-        .from("conversations_v2")
-        .select("id, participants")
-        .eq("type", "direct")
-        .order("updated_at", { ascending: false })
-        .limit(50);
+      // 1. Get or create conversation thread via canonical family
+      const conv = await getOrCreateCanonicalDirectConversation(user.id, user.id);
+      const threadId = conv?.v2ConversationId || conv?.contextId;
+      if (!threadId) throw new Error("Could not resolve thread");
 
-      const matchingThread = (existing || []).find((t: any) =>
-        Array.isArray(t.participants) &&
-        t.participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === user.id)
-      );
-
-      if (matchingThread) {
-        threadId = matchingThread.id;
-      } else {
-        const { data: thread } = await (supabase as any)
-          .from("conversations_v2")
-          .insert({
-            participants: [{ userId: user.id }],
-            type: "direct",
-            title: serviceTitle,
-            created_by_orbit_id: `orbit_${user.id.slice(0, 12)}`,
-          })
-          .select("id")
-          .single();
-        threadId = thread?.id || null;
-      }
-
-      // 2. Insert message with thread reference
-      const { error } = await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: threadId,
-        sender_user_id: user.id,
-        type: "text",
-        body: message.trim(),
-        metadata: { source: "explore_contact", service_id: serviceId },
+      // 2. Send via canonical send family
+      const ctx: SendContext = {
+        conversationId: threadId,
+        senderUserId: user.id,
+        senderOrbitId: `orbit_${user.id.slice(0, 12)}`,
+      };
+      await sendText(ctx, message.trim(), {
+        category: "explore_contact",
       });
-      if (error) throw error;
       toast.success("Message sent!");
       setMessage("");
       onClose();

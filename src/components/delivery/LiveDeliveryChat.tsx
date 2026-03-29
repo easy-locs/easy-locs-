@@ -19,6 +19,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { sendText } from "@/families/send/send-text";
+import { sendLocation } from "@/families/send/send-location";
+import type { SendContext } from "@/families/send/send-context";
 
 interface Props {
   jobId?: string;
@@ -101,40 +104,33 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
+  const buildCtx = useCallback((): SendContext | null => {
+    if (!thread?.id || !user?.id) return null;
+    return {
+      conversationId: thread.id,
+      senderUserId: user.id,
+      senderOrbitId: `orbit_${user.id.slice(0, 12)}`,
+    };
+  }, [thread?.id, user?.id]);
+
   const sendMessage = useCallback(async () => {
-    if (!input.trim() || !thread?.id || !user?.id) return;
+    if (!input.trim()) return;
+    const ctx = buildCtx();
+    if (!ctx) return;
     const text = input.trim();
     setInput("");
-
-    await (supabase as any).from("chat_messages_v2").insert({
-      conversation_id: thread.id,
-      sender_user_id: user.id,
-      sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
-      type: "text",
-      body: text,
-    });
-
-    // Update conversation last_message_at
-    await (supabase as any).from("conversations_v2")
-      .update({ last_message_at: new Date().toISOString(), last_message_preview: text.slice(0, 120) })
-      .eq("id", thread.id);
-  }, [input, thread?.id, user?.id]);
+    await sendText(ctx, text);
+  }, [input, buildCtx]);
 
   const shareLocation = useCallback(async () => {
-    if (!thread?.id || !user?.id) return;
+    const ctx = buildCtx();
+    if (!ctx) return;
     const { requestLocation } = await import("@/lib/location/requestLocation");
     const pos = await requestLocation();
     if (!pos) return;
-    await (supabase as any).from("chat_messages_v2").insert({
-      conversation_id: thread.id,
-      sender_user_id: user.id,
-      sender_orbit_id: `orbit_${user.id.slice(0, 12)}`,
-      type: "location",
-      body: `📍 ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`,
-      metadata: { lat: pos.lat, lng: pos.lng },
-    });
+    await sendLocation(ctx, { lat: pos.lat, lng: pos.lng, type: "static" });
     setShowLocation(false);
-  }, [thread?.id, user?.id]);
+  }, [buildCtx]);
 
   const driverName = job?.profiles
     ? `${job.profiles.first_name || ""} ${job.profiles.last_name || ""}`.trim() || "Driver"
