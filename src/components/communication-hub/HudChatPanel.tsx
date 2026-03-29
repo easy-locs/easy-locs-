@@ -3,6 +3,7 @@
  * Thin assembly layer that composes canonical family hooks.
  * Contains NO business logic — only wiring.
  */
+import { useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -255,19 +256,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
               showOriginal={msgFamily.showOriginal}
               translatingMsgId={msgFamily.translatingMsgId}
               onTranslate={msgFamily.handleTranslateMessage}
-              onContextMenu={(_, msg, isMe) => {
-                selection.setContextMessage({
-                  msgId: msg.id,
-                  content: msg.content,
-                  isMe,
-                  createdAt: msg.created_at,
-                  hasAudio: !!(msg as any).audio_url,
-                  hasAttachment: !!msg.attachment_url,
-                  senderId: msg.sender_id,
-                  canModerate: false,
-                  isStarred: !!(msg as any).starred,
-                });
-              }}
+              onContextMenu={stableContextMenu}
+
               onToggleSelect={selection.toggleMsgSelect}
               getCategoryIcon={msgFamily.getCategoryIcon}
               t={t}
