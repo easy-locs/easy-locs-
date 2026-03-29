@@ -5,12 +5,10 @@
  *         trip_live_state, trip_location_points, merchant_profiles
  */
 import { supabase } from "@/integrations/supabase/client";
+import { getCurrentUserIdOrNull } from "@/families/identity";
 
-// ─── Auth helper ───
-export async function getCurrentUserId(): Promise<string | null> {
-  const { data: { user } } = await supabase.auth.getUser();
-  return user?.id ?? null;
-}
+// Re-export for backward compatibility — consumers should migrate to @/families/identity
+export const getCurrentUserId = getCurrentUserIdOrNull;
 
 // ─── Mobility Jobs ───
 export async function fetchMobilityJobs(filters: {

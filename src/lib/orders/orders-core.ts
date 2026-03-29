@@ -2,12 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { notifyOrderCreated } from "@/lib/engines/notification-event-dispatcher";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
-
-async function getCurrentUserId() {
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) throw new Error("Not authenticated");
-  return data.user.id;
-}
+import { getCurrentUserId } from "@/families/identity";
 
 /**
  * Idempotent order creation.
