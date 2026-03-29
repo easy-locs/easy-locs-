@@ -260,7 +260,7 @@ export const CommunicationCenter = () => {
           overflow: "hidden",
         }}
       >
-        {/* Orbit header — clean WhatsApp-style */}
+        {/* Orbit header — clean canonical title per section */}
         <div
           className="flex items-center px-4 shrink-0"
           style={{
@@ -270,21 +270,15 @@ export const CommunicationCenter = () => {
           }}
         >
           {isMobile && selectedThread ? (
-            <>
-              <button onClick={handleBack} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm mr-2 shrink-0">
-                <ArrowLeft className="w-4.5 h-4.5" />
-              </button>
-              <h1 className="text-sm font-semibold flex-1 line-clamp-2 break-words min-w-0" style={{ color: "hsl(var(--foreground))" }}>
-                {typeof selectedThread.name === "string" ? selectedThread.name : "Contact"}
-              </h1>
-            </>
+            /* Thread is open on mobile — header handled by ChatHeader */
+            null
           ) : (
             <div className="flex items-center gap-2 flex-1">
               <button onClick={() => navigate("/")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm mr-1 shrink-0">
                 <ArrowLeft className="w-4.5 h-4.5" />
               </button>
               <h1 className="text-lg font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
-                Orbit
+                {activeSection === "chats" ? "Chats" : activeSection === "calls" ? "Calls" : activeSection === "contacts" ? "Contacts" : activeSection === "groups" ? "Groups" : activeSection === "you" ? "You" : "Orbit"}
               </h1>
             </div>
           )}

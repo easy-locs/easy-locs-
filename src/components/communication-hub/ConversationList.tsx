@@ -1,15 +1,13 @@
 /**
- * ConversationList — Layer 1: Conversation sidebar.
- * Shows all conversations with type badges, search, and category filters.
+ * ConversationList — Clean messenger-first conversation sidebar.
+ * Filters: All / Unread / Groups only.
  */
 import { useState, useMemo } from "react";
 import { Search, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "@/lib/date-locales";
+import { formatOrbitTimestamp, formatConversationPreview } from "@/lib/orbit/canonical-helpers";
 import type { ConversationThread } from "./types";
-import { CONVERSATION_FILTERS } from "./types";
 
 interface Props {
   threads: ConversationThread[];
@@ -19,37 +17,30 @@ interface Props {
   visible: boolean;
 }
 
+const FILTERS = [
+  { value: "all", label: "All" },
+  { value: "unread", label: "Unread" },
+  { value: "groups", label: "Groups" },
+] as const;
+
+type FilterValue = typeof FILTERS[number]["value"];
+
 export default function ConversationList({ threads, loading, selectedThread, onSelectThread, visible }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState<FilterValue>("all");
 
   const filteredThreads = useMemo(() =>
     threads
       .filter(t => {
-        if (activeFilter === "all") return true;
-        if (t.conversationType === activeFilter) return true;
-        if (activeFilter === "direct" && t.conversationType === "team") return true;
-        return false;
+        if (activeFilter === "unread") return t.unreadCount > 0;
+        if (activeFilter === "groups") return t.conversationType === "team" || t.conversationType === "business";
+        return true;
       })
       .filter(t => !searchQuery ||
-        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.serviceTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.listingTitle?.toLowerCase().includes(searchQuery.toLowerCase())
+        t.name.toLowerCase().includes(searchQuery.toLowerCase())
       ),
     [threads, activeFilter, searchQuery]
   );
-
-  const filterCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: threads.length };
-    for (const t of threads) {
-      counts[t.conversationType] = (counts[t.conversationType] || 0) + 1;
-      // Team threads also count under "direct"
-      if (t.conversationType === "team") {
-        counts["direct"] = (counts["direct"] || 0) + 1;
-      }
-    }
-    return counts;
-  }, [threads]);
 
   if (!visible) return null;
 
@@ -67,8 +58,8 @@ export default function ConversationList({ threads, loading, selectedThread, onS
             style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
           />
         </div>
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
-          {CONVERSATION_FILTERS.map(f => (
+        <div className="flex gap-1.5">
+          {FILTERS.map(f => (
             <button
               key={f.value}
               onClick={() => setActiveFilter(f.value)}
@@ -79,11 +70,7 @@ export default function ConversationList({ threads, loading, selectedThread, onS
                 border: `1px solid ${activeFilter === f.value ? "hsl(var(--primary) / 0.2)" : "transparent"}`,
               }}
             >
-              {f.emoji && <span className="mr-1">{f.emoji}</span>}
               {f.label}
-              {(filterCounts[f.value] || 0) > 0 && (
-                <span className="ml-1 opacity-60">{filterCounts[f.value]}</span>
-              )}
             </button>
           ))}
         </div>
@@ -107,29 +94,28 @@ export default function ConversationList({ threads, loading, selectedThread, onS
           <div className="p-8 text-center">
             <MessageCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
             <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>No conversations</p>
-            <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Messages will appear here</p>
+            <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Start a chat from Contacts</p>
           </div>
         ) : (
           <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
             {filteredThreads.map((thread) => {
               const isActive = selectedThread?.id === thread.id;
+              const initial = (typeof thread.name === "string" ? thread.name : "?")[0]?.toUpperCase() || "?";
 
               return (
                 <button
                   key={thread.id}
                   onClick={() => onSelectThread(thread)}
                   className="w-full flex items-center gap-3 px-3 py-3 text-left transition-colors"
-                  style={{
-                    background: isActive ? "hsl(var(--primary) / 0.06)" : "transparent",
-                  }}
+                  style={{ background: isActive ? "hsl(var(--primary) / 0.06)" : "transparent" }}
                 >
                   {/* Avatar */}
                   <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{
-                    background: "hsl(var(--hud-cyan) / 0.1)",
+                    background: thread.avatarUrl ? `url(${thread.avatarUrl}) center/cover` : "hsl(var(--hud-cyan) / 0.1)",
                   }}>
-                    <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
-                      {(typeof thread.name === "string" ? thread.name : "?")[0]?.toUpperCase() || "?"}
-                    </span>
+                    {!thread.avatarUrl && (
+                      <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{initial}</span>
+                    )}
                   </div>
 
                   {/* Content */}
@@ -143,16 +129,14 @@ export default function ConversationList({ threads, loading, selectedThread, onS
                         <span className="text-[10px] shrink-0 tabular-nums" style={{
                           color: thread.unreadCount > 0 ? "hsl(var(--primary))" : "hsl(var(--hud-text-dim) / 0.4)",
                         }}>
-                          {formatDistanceToNow(new Date(thread.lastMessageTime), { addSuffix: false, locale: fr })}
+                          {formatOrbitTimestamp(thread.lastMessageTime)}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-0.5">
                       <p className={`text-[11px] line-clamp-1 break-words ${thread.unreadCount > 0 ? "font-medium" : ""}`}
                         style={{ color: thread.unreadCount > 0 ? "hsl(var(--hud-text) / 0.7)" : "hsl(var(--hud-text-dim) / 0.45)" }}>
-                        {thread.lastMessage
-                          ? thread.lastMessage.replace(/\s*\[[^\]]+\]/g, "").slice(0, 50)
-                          : thread.serviceTitle || thread.listingTitle || thread.email || "—"}
+                        {formatConversationPreview(thread.lastMessage, thread.email)}
                       </p>
                       {thread.unreadCount > 0 && (
                         <span className="inline-flex min-w-5 h-5 items-center justify-center rounded-full px-1 text-[10px] font-bold shrink-0"
