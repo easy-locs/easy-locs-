@@ -42,3 +42,18 @@ export async function invokeTenantSignup(body: Record<string, any>) {
   if (error) throw error;
   return data;
 }
+
+export async function fetchOrgMembership(userId: string) {
+  const { data } = await supabase.from("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
+  return data;
+}
+
+export async function fetchProfileSettings(userId: string, columns: string) {
+  const { data } = await supabase.from("profiles").select(columns).eq("id", userId).single();
+  return data;
+}
+
+export async function updateProfileField(userId: string, field: string, value: any) {
+  const { error } = await supabase.from("profiles").update({ [field]: value } as any).eq("id", userId);
+  if (error) throw error;
+}
