@@ -185,8 +185,5 @@ export function subscribeTenantMessages(tenantId: string, orgId: string, onInser
   return () => { supabase.removeChannel(channel); };
 }
 
-export async function getAuthUser() {
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data?.user?.id) return null;
-  return data.user.id;
-}
+// Re-export canonical identity helper
+export { getCurrentUserIdOrNull as getAuthUser } from "@/families/identity";
