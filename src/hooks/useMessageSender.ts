@@ -112,10 +112,8 @@ export function useMessageSender(params: Params) {
       }
 
       const result = await resolveConversationId({
-        threadId: thread.id,
-        conversationId: thread.conversationId || thread.v2ConversationId,
-        entityId: thread.entityId || thread.contextId,
-        threadDbId: thread.threadId,
+        conversationId: thread.conversationId,
+        entityId: thread.entityId,
         peerUserId: thread.peerUserId,
         peerOrbitId: thread.peerOrbitId,
         myUserId: authUserId,
