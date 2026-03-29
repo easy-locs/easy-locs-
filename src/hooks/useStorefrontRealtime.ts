@@ -3,6 +3,7 @@
  * Emits proper storefront:* bus events consumed by storefront-reactions.
  */
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";

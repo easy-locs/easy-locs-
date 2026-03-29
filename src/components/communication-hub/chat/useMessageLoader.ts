@@ -3,6 +3,7 @@
  * Reads from chat_messages_v2 exclusively. No legacy path.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 const db = supabase as any;

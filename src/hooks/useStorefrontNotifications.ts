@@ -4,6 +4,7 @@
  * and shows toast + badge count in real-time. Zero setup.
  */
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";

@@ -3,6 +3,7 @@
  * Uses storefront_orders as source of truth with realtime subscriptions.
  */
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { updateStorefrontOrderStatus } from "@/lib/orders/orderEngine";
