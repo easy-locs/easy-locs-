@@ -593,6 +593,157 @@ export default function OrbitAccountSection() {
     );
   }
 
+  // ═══ Calls sub-page — wired to canonical families ═══
+  if (subPage === "calls") {
+    const callSettings = useCallSettingsStore();
+    const callPrivacy = useCallPrivacyStore();
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Calls" icon={Phone} />
+        <div className="space-y-1 mt-4">
+          <Row label="Ringtone" desc="Play ringtone for incoming calls">
+            <Switch checked={callSettings.ringtoneEnabled} onCheckedChange={callSettings.setRingtoneEnabled} />
+          </Row>
+          <Row label="Vibration" desc="Vibrate on incoming calls">
+            <Switch checked={callSettings.vibrationOnRing} onCheckedChange={callSettings.setVibrationOnRing} />
+          </Row>
+          <Row label="Show Call Duration" desc="Display timer during active calls">
+            <Switch checked={callSettings.showCallDuration} onCheckedChange={callSettings.setShowCallDuration} />
+          </Row>
+          <Separator className="my-3" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Default Audio Route</p>
+          <div className="grid grid-cols-2 gap-2">
+            {(["earpiece", "speaker"] as const).map(v => (
+              <button key={v} onClick={() => callSettings.setDefaultAudioOutput(v)}
+                className={`py-2.5 px-3 rounded-lg text-xs font-medium transition-colors capitalize ${callSettings.defaultAudioOutput === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {v}
+              </button>
+            ))}
+          </div>
+          <Separator className="my-3" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Incoming Call Privacy</p>
+          <Row label="Hidden Incoming Calls" desc="Mask caller identity on incoming calls">
+            <Switch checked={callPrivacy.incomingVisibility === "hidden"} onCheckedChange={(v) => callPrivacy.setIncomingVisibility(v ? "hidden" : "full")} />
+          </Row>
+          <Row label="Hide Caller Photo" desc="Don't show caller avatar">
+            <Switch checked={callPrivacy.hideCallerPhoto} onCheckedChange={callPrivacy.setHideCallerPhoto} />
+          </Row>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-3 mb-2">Lock Screen</p>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { v: "show_full" as const, label: "Full" },
+              { v: "show_notification_only" as const, label: "Notif Only" },
+              { v: "hide" as const, label: "Hide" },
+            ]).map(opt => (
+              <button key={opt.v} onClick={() => callPrivacy.setLockScreenPolicy(opt.v)}
+                className={`py-2 px-2 rounded-lg text-[11px] font-medium transition-colors ${callPrivacy.lockScreenPolicy === opt.v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══ Location sub-page ═══
+  if (subPage === "location") {
+    const orbitSettings = useOrbitSettingsStore();
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Live Location" icon={MapPin} />
+        <div className="space-y-1 mt-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Default Duration</p>
+          <div className="grid grid-cols-4 gap-2">
+            {[15, 30, 60, 120].map(mins => (
+              <button key={mins} onClick={() => orbitSettings.setDefaultLiveLocationDuration(mins)}
+                className={`py-2 px-2 rounded-lg text-xs font-medium transition-colors ${orbitSettings.defaultLiveLocationDuration === mins ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {mins >= 60 ? `${mins / 60}h` : `${mins}m`}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2">Duration used when starting live location sharing</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══ Background sub-page ═══
+  if (subPage === "background") {
+    const orbitSettings = useOrbitSettingsStore();
+    const presets = ["default", "dark-glass", "midnight", "ocean", "forest", "sunset"];
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Chat Background" icon={Wallpaper} />
+        <div className="mt-4">
+          <div className="grid grid-cols-3 gap-2">
+            {presets.map(preset => (
+              <button key={preset} onClick={() => orbitSettings.setChatBackground(preset)}
+                className={`py-3 px-2 rounded-xl text-xs font-medium transition-colors capitalize ${orbitSettings.chatBackground === preset ? "bg-primary text-primary-foreground ring-2 ring-primary/30" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {preset.replace("-", " ")}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-3">Applies to all conversation threads</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══ Media sub-page ═══
+  if (subPage === "media") {
+    const orbitSettings = useOrbitSettingsStore();
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Media" icon={ImageIcon} />
+        <div className="space-y-1 mt-4">
+          <Row label="Auto-Download Media" desc="Download photos and videos automatically">
+            <Switch checked={orbitSettings.autoDownloadMedia} onCheckedChange={orbitSettings.setAutoDownloadMedia} />
+          </Row>
+          <Separator className="my-3" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Quality</p>
+          <div className="grid grid-cols-3 gap-2">
+            {(["auto", "low", "high"] as const).map(q => (
+              <button key={q} onClick={() => orbitSettings.setMediaQuality(q)}
+                className={`py-2 px-2 rounded-lg text-xs font-medium transition-colors capitalize ${orbitSettings.mediaQuality === q ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══ Stories sub-page ═══
+  if (subPage === "stories") {
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Stories" icon={BookOpen} />
+        <div className="space-y-1 mt-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Default Audience</p>
+          <div className="grid grid-cols-3 gap-2">
+            {["contacts", "close_friends", "everyone"].map(a => (
+              <button key={a} className="py-2 px-2 rounded-lg text-xs font-medium bg-muted text-muted-foreground capitalize">
+                {a.replace("_", " ")}
+              </button>
+            ))}
+          </div>
+          <Separator className="my-3" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Expiry</p>
+          <div className="grid grid-cols-3 gap-2">
+            {["24h", "48h", "7d"].map(e => (
+              <button key={e} className="py-2 px-2 rounded-lg text-xs font-medium bg-muted text-muted-foreground">
+                {e}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2">Stories auto-expire after the selected period</p>
+        </div>
+      </div>
+    );
+  }
+
   // ═══ Main cockpit ═══
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin">
