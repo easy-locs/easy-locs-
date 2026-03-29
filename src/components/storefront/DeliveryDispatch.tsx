@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,41 +43,27 @@ export default function DeliveryDispatch({ shopId }: { shopId: string }) {
     setDispatching(order.id);
     try {
       // Get user's org
-      const { data: orgMember } = await (supabase as any)
-        .from("org_members")
-        .select("org_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .single();
+      const orgMemberId = await storefrontRepo.fetchUserOrgId(user!.id);
+      if (!orgMemberId) throw new Error("No organization found");
 
-      if (!orgMember) throw new Error("No organization found");
-
-      // Create mobility job via canonical dispatch
-      const { data: result, error } = await supabase.functions.invoke("dispatch-ride", {
-        body: {
-          action: "create_job",
-          job_type: "parcel_delivery",
-          service_level: "parcel_standard",
-          pickup_address: pickupAddress,
-          dropoff_address: order.shipping_address,
-          notes: `Storefront order for ${order.buyer_name || order.buyer_email}`,
-          quoted_price: 0,
-          currency: "AED",
-          order_id: order.id,
-          merchant_id: orgMember.org_id,
-        },
+      const result = await storefrontRepo.invokeDispatchRide({
+        action: "create_job",
+        job_type: "parcel_delivery",
+        service_level: "parcel_standard",
+        pickup_address: pickupAddress,
+        dropoff_address: order.shipping_address,
+        notes: `Storefront order for ${order.buyer_name || order.buyer_email}`,
+        quoted_price: 0,
+        currency: "AED",
+        order_id: order.id,
+        merchant_id: orgMemberId,
       });
-
-      if (error) throw error;
       const job = result?.job;
 
-      if (error) throw error;
-
       // Link job to order
-      await (supabase as any)
-        .from("storefront_orders")
-        .update({ delivery_job_id: job.id, delivery_requested: true, delivery_status: "pending" })
-        .eq("id", order.id);
+      await storefrontRepo.updateOrder(order.id, {
+        delivery_job_id: job?.id, delivery_requested: true, delivery_status: "pending",
+      });
 
       qc.invalidateQueries({ queryKey: ["dispatch-orders", shopId] });
       toast.success("Delivery requested!");

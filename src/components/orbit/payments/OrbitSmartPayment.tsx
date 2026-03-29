@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { usePaymentFX } from "@/hooks/usePaymentFX";
 import { supabase } from "@/integrations/supabase/client";
+import * as paymentsRepo from "@/repositories/payments.repository";
 import {
   detectLocalCurrency,
   formatCurrency,
@@ -101,15 +102,13 @@ export default function OrbitSmartPayment({
     try {
       const desc = description || `Payment to ${recipientName}`;
       if (method === "locs") {
-        const { data, error: fnErr } = await supabase.functions.invoke("orbit-payment", {
-          body: {
-            action: "pay_locs",
-            recipient_user_id: recipientUserId,
-            amount: numericAmount,
-            description: desc,
-            thread_id: threadId || null,
-            context: context || null,
-          },
+        const { data, error: fnErr } = await paymentsRepo.invokeOrbitPayment({
+          action: "pay_locs",
+          recipient_user_id: recipientUserId,
+          amount: numericAmount,
+          description: desc,
+          thread_id: threadId || null,
+          context: context || null,
         });
         if (fnErr) throw new Error(fnErr.message);
         if (data?.error) throw new Error(data.error);
@@ -128,17 +127,15 @@ export default function OrbitSmartPayment({
         setSuccess(true);
         setTimeout(() => onSuccess?.(conf), 1500);
       } else {
-        const { data, error: fnErr } = await supabase.functions.invoke("orbit-payment", {
-          body: {
-            action: "pay_fiat",
-            recipient_user_id: recipientUserId,
-            recipient_name: recipientName,
-            amount: numericAmount,
-            currency,
-            description: desc,
-            thread_id: threadId || null,
-            context: context || null,
-          },
+        const { data, error: fnErr } = await paymentsRepo.invokeOrbitPayment({
+          action: "pay_fiat",
+          recipient_user_id: recipientUserId,
+          recipient_name: recipientName,
+          amount: numericAmount,
+          currency,
+          description: desc,
+          thread_id: threadId || null,
+          context: context || null,
         });
         if (fnErr) throw new Error(fnErr.message);
         if (data?.error) throw new Error(data.error);

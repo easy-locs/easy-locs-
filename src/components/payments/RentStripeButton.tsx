@@ -2,7 +2,7 @@
  * RentStripeButton — Canonical rent payment via create-stripe-intent.
  */
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createStripeIntent } from "@/repositories/payments.repository";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -22,18 +22,15 @@ export function RentStripeButton(props: {
       onClick={async () => {
         setLoading(true);
         try {
-          const { data, error } = await supabase.functions.invoke("create-stripe-intent", {
-            body: {
-              amount: props.amount,
-              currency: props.currency.toLowerCase(),
-              metadata: {
-                rentPaymentId: props.rentPaymentId,
-                leaseId: props.leaseId,
-                flow: "rent_payment",
-              },
+          const data = await createStripeIntent({
+            amount: props.amount,
+            currency: props.currency.toLowerCase(),
+            metadata: {
+              rentPaymentId: props.rentPaymentId,
+              leaseId: props.leaseId,
+              flow: "rent_payment",
             },
           });
-          if (error) throw error;
           const params = new URLSearchParams({
             client_secret: data.clientSecret,
             intent_id: data.paymentIntentId,

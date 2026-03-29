@@ -8,7 +8,7 @@ import {
   Fingerprint, Smartphone, Eye, KeyRound, Globe, Zap, ShieldCheck, ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import * as paymentsRepo from "@/repositories/payments.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletTransactions, type UnifiedTx } from "@/payments/wallet-hooks";
 import { DAILY_TRANSFER_LIMITS } from "@/lib/wallet-limits";
@@ -50,8 +50,8 @@ export default function WalletSecurityPanel() {
   useEffect(() => {
     if (!user?.id) return;
     (async () => {
-      const { data } = await supabase.functions.invoke("wallet-pin", {
-        body: { action: "check_status" },
+      const { data } = await paymentsRepo.invokeWalletPin({
+        action: "check_status",
       });
       setPinStatus(data?.has_pin ? "set" : "not_set");
     })();
