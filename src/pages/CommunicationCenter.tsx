@@ -233,7 +233,18 @@ export const CommunicationCenter = () => {
 
   const renderSection = () => {
     switch (activeSection) {
-      case "calls": return <CommCallsSection />;
+      case "calls": return <CommCallsSection onOpenThread={async (peerId, peerName) => {
+          if (!userId) return;
+          try {
+            const { getOrCreateDirectThread } = await import("@/lib/direct-thread");
+            const result = await getOrCreateDirectThread({ currentUserId: userId, targetUserId: peerId, targetName: peerName });
+            if (result?.v2ConversationId) {
+              const existing = threads.find(t => t.v2ConversationId === result.v2ConversationId || t.id === result.v2ConversationId);
+              if (existing) { handleSelectThread(existing); setActiveSection("chats"); }
+              else { await loadThreads(); setSearchParams({ thread: result.v2ConversationId }); setActiveSection("chats"); }
+            }
+          } catch (e) { console.error("[calls→thread]", e); }
+        }} />;
       case "contacts": return <CommContactsSection />;
       case "groups": return <CommGroupsSection />;
       case "you":
