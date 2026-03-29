@@ -50,8 +50,8 @@ export default function WalletSecurityPanel() {
   useEffect(() => {
     if (!user?.id) return;
     (async () => {
-      const { data } = await supabase.functions.invoke("wallet-pin", {
-        body: { action: "check_status" },
+      const { data } = await paymentsRepo.invokeWalletPin({
+        action: "check_status",
       });
       setPinStatus(data?.has_pin ? "set" : "not_set");
     })();
