@@ -13026,6 +13026,36 @@ export type Database = {
           },
         ]
       }
+      merchant_private_contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          extra_private_fields: Json
+          id: string
+          merchant_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          extra_private_fields?: Json
+          id?: string
+          merchant_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          extra_private_fields?: Json
+          id?: string
+          merchant_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       merchant_profiles: {
         Row: {
           address: string | null
@@ -16153,6 +16183,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      owner_private_financials: {
+        Row: {
+          bank_holder_name: string | null
+          bic: string | null
+          created_at: string
+          extra_financial_fields: Json
+          iban: string | null
+          id: string
+          tax_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bank_holder_name?: string | null
+          bic?: string | null
+          created_at?: string
+          extra_financial_fields?: Json
+          iban?: string | null
+          id?: string
+          tax_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bank_holder_name?: string | null
+          bic?: string | null
+          created_at?: string
+          extra_financial_fields?: Json
+          iban?: string | null
+          id?: string
+          tax_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       owner_profiles: {
         Row: {
@@ -28137,6 +28203,39 @@ export type Database = {
           },
         ]
       }
+      tenant_private_contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          emergency_contact: string | null
+          extra_private_fields: Json
+          id: string
+          phone: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          emergency_contact?: string | null
+          extra_private_fields?: Json
+          id?: string
+          phone?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          emergency_contact?: string | null
+          extra_private_fields?: Json
+          id?: string
+          phone?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tenants: {
         Row: {
           birth_date: string | null
@@ -29219,6 +29318,36 @@ export type Database = {
           verified?: boolean
           visible_on_nearby?: boolean
           who_can_see?: string
+        }
+        Relationships: []
+      }
+      user_private_data: {
+        Row: {
+          created_at: string
+          email: string | null
+          extra_sensitive_fields: Json
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          extra_sensitive_fields?: Json
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          extra_sensitive_fields?: Json
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
