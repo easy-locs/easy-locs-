@@ -62,8 +62,8 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
         .in("id", userIds);
 
       if (profiles) {
-        const nameMap = new Map(profiles.map(p => [p.id, p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || null]));
-        driverList.forEach(d => { d.full_name = nameMap.get(d.user_id) || undefined; });
+        const nameMap = new Map(profiles.map(p => [p.id, (p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || null) as string | null]));
+        driverList.forEach(d => { d.full_name = nameMap.get(d.user_id) as string | undefined; });
       }
     }
 
