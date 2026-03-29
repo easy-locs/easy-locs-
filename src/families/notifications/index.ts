@@ -24,5 +24,16 @@ export {
 export { NotificationDeviceBridge, useNotificationPreferences } from "./notification-device-bridge";
 export type { NotificationChannel, NotificationPriority } from "./notification-device-bridge";
 
+// ── Sound ──
+export { NotificationSound } from "./notification-sound";
+
+// ── Vibration ──
+export { NotificationVibration } from "./notification-vibration";
+
+// ── Routing ──
+export { NotificationRouting } from "./notification-routing";
+export type { NotificationRoute } from "./notification-routing";
+
 // Notifications family owns: in-app notifications, message/call/wallet/order/system
-// notifications, preference handling, badge counts, device bridge, quiet hours.
+// notifications, preference handling, badge counts, device bridge, quiet hours,
+// sound playback, vibration, tap routing.
