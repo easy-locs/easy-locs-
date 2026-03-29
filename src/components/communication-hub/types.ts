@@ -34,8 +34,11 @@ export interface ConversationThread {
   id: string;
   conversationType: ConversationType;
   sourceModule: SourceModule;
-  contextType: string;
-  contextId: string;
+
+  /** Business entity type (listing, booking, deal, property, etc.) */
+  entityType: string;
+  /** Business entity ID */
+  entityId: string;
 
   // Display
   name: string;
@@ -57,14 +60,13 @@ export interface ConversationThread {
   currency?: string;
   tenantId?: string;
   leadId?: string;
-  threadId?: string;
   dealId?: string;
   assignedTo?: string;
 
   /** V2 canonical stack flag — when true, read/write uses conversations_v2 + chat_messages_v2 */
   isV2?: boolean;
-  /** V2 conversation ID (UUID from conversations_v2) */
-  v2ConversationId?: string;
+  /** Canonical conversation UUID (conversations_v2.id) */
+  conversationId?: string;
   /** Canonical peer identity for V2 direct conversations */
   peerUserId?: string | null;
   peerOrbitId?: string | null;
@@ -79,6 +81,16 @@ export interface ConversationThread {
   muted?: boolean;
   archived?: boolean;
   clearedAt?: string;
+
+  // ── Deprecated aliases — DO NOT USE in new code ──
+  /** @deprecated Use entityType */
+  contextType?: string;
+  /** @deprecated Use entityId */
+  contextId?: string;
+  /** @deprecated Use conversationId */
+  v2ConversationId?: string;
+  /** @deprecated Use id or conversationId */
+  threadId?: string;
 }
 
 /** Chat message */

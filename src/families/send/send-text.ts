@@ -37,8 +37,8 @@ export async function sendText(
   await updateConversationTimestamp(ctx.conversationId, body.slice(0, 120));
 
   platformBus.emit("orbit:message_sent", {
-    threadId: ctx.threadId,
     conversationId: ctx.conversationId,
+    threadId: ctx.threadId, // deprecated compat
     type: "text",
   }, "orbit", { userId: ctx.senderUserId, orgId: ctx.orgId || undefined });
 

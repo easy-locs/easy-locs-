@@ -23,14 +23,15 @@ export function useCallLifecycle(
     incomingContextLabel: string,
     incomingIsVideo: boolean,
     incomingOrgId: string,
-    incomingThreadId: string | null,
+    incomingConversationId: string | null,
     onAccepted: (manager: CallManager, peerName: string, contextLabel: string) => void,
   ) => {
     if (!userId || !incomingCallId) return;
 
     activeCallRef.current = {
       callId: incomingCallId,
-      threadId: incomingThreadId || undefined,
+      conversationId: incomingConversationId || undefined,
+      threadId: incomingConversationId || undefined, // deprecated compat
       orgId: incomingOrgId,
     };
 
@@ -45,14 +46,14 @@ export function useCallLifecycle(
 
   const handleDeclineIncoming = useCallback(async (
     incomingCallId: string | null,
-    incomingThreadId: string | null,
+    incomingConversationId: string | null,
     incomingOrgId: string,
   ) => {
     if (!incomingCallId || !userId) return;
     await declineIncomingCall(incomingCallId, userId);
-    if (incomingThreadId) {
+    if (incomingConversationId) {
       logCallEventToThread({
-        callId: incomingCallId, threadId: incomingThreadId,
+        callId: incomingCallId, threadId: incomingConversationId,
         orgId: incomingOrgId, senderId: userId, event: "declined",
       });
     }
@@ -60,14 +61,14 @@ export function useCallLifecycle(
 
   const handleMissedIncoming = useCallback(async (
     incomingCallId: string | null,
-    incomingThreadId: string | null,
+    incomingConversationId: string | null,
     incomingOrgId: string,
   ) => {
     if (!incomingCallId || !userId) return;
     await markCallMissed(incomingCallId, userId);
-    if (incomingThreadId) {
+    if (incomingConversationId) {
       logCallEventToThread({
-        callId: incomingCallId, threadId: incomingThreadId,
+        callId: incomingCallId, threadId: incomingConversationId,
         orgId: incomingOrgId, senderId: userId, event: "missed",
       });
     }
@@ -75,7 +76,8 @@ export function useCallLifecycle(
 
   const handleCloseCall = useCallback(async () => {
     const meta = activeCallRef.current;
-    if (meta?.threadId && userId) {
+    const convId = meta?.conversationId || meta?.threadId;
+    if (convId && userId) {
       const { data: log } = await supabase
         .from("call_logs")
         .select("status, duration_sec")
@@ -83,10 +85,10 @@ export function useCallLifecycle(
         .single();
       if ((log as any)?.status === "ended") {
         logCallEventToThread({
-          callId: meta.callId, threadId: meta.threadId, orgId: meta.orgId,
+          callId: meta.callId, threadId: convId, orgId: meta.orgId,
           senderId: userId, event: "ended",
           durationSeconds: (log as any)?.duration_sec || 0,
-          contextId: meta.contextId,
+          contextId: meta.entityId || meta.contextId,
         });
       }
     }

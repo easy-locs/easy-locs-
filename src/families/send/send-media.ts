@@ -38,8 +38,8 @@ export async function sendMedia(
   await updateConversationTimestamp(ctx.conversationId, preview);
 
   platformBus.emit("orbit:message_sent", {
-    threadId: ctx.threadId,
     conversationId: ctx.conversationId,
+    threadId: ctx.threadId, // deprecated compat
     type: "media",
   }, "orbit", { userId: ctx.senderUserId, orgId: ctx.orgId || undefined });
 
