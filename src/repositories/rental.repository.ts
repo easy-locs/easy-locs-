@@ -3,6 +3,8 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 
+const db = supabase as any;
+
 // ── Lease workflow ──
 export async function fetchLease(leaseId: string) {
   const { data } = await supabase.from("leases").select("*").eq("id", leaseId).single();
