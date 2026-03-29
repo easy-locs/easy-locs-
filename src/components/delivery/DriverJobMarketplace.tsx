@@ -9,6 +9,7 @@ import {
   Package, MapPin, DollarSign, Clock, Filter, Loader2,
   ChevronRight, Zap, Star, Truck, ArrowUpDown,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -87,12 +88,15 @@ export default function DriverJobMarketplace({ className }: Props) {
   const acceptJob = async (jobId: string) => {
     if (!user) return;
     haptic("success");
-    const { error } = await deliveryRepo.insertDeliveryOffer({
-      job_id: jobId, driver_id: user.id, status: "pending",
-      proposed_fee: bidAmount ? parseFloat(bidAmount) : null,
-      message: bidAmount ? `Proposition: ${bidAmount}€` : null,
-    });
-    if (error) { toast.error("Erreur"); return; }
+    try {
+      await deliveryRepo.insertDeliveryOffer({
+        job_id: jobId, driver_id: user.id, status: "pending",
+        proposed_fee: bidAmount ? parseFloat(bidAmount) : null,
+        message: bidAmount ? `Proposition: ${bidAmount}€` : null,
+      });
+    } catch (err: any) {
+      toast.error("Erreur"); return;
+    }
     toast.success("🎯 Candidature envoyée !");
     setBidding(null);
     setBidAmount("");

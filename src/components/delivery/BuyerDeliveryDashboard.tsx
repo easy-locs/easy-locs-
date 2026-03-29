@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Package, MapPin, Clock, CheckCircle2, Loader2, Eye, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import EscrowDeliveryValidator from "@/components/delivery/EscrowDeliveryValidator";
