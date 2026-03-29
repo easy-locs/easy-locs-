@@ -1,9 +1,10 @@
 /**
  * useHudConversationStatus — Extracted from HudChatPanel.
  * Single responsibility: update conversation status (open/closed/archived).
+ * PHASE 2: No direct Supabase — uses repository.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { updateConversationMetadata } from "@/repositories/communication.repository";
 import type { ConversationThread } from "@/components/communication-hub/types";
 
 export function useHudConversationStatus(
@@ -15,12 +16,9 @@ export function useHudConversationStatus(
     if (!thread) return;
     setConvStatus(status);
     onThreadUpdate(thread.id, { conversationStatus: status });
-    const conversationId = thread.conversationId || thread.v2ConversationId;
+    const conversationId = thread.conversationId;
     if (conversationId) {
-      await (supabase as any).from("conversations_v2").update({
-        metadata: { conversation_status: status },
-        updated_at: new Date().toISOString(),
-      }).eq("id", conversationId);
+      await updateConversationMetadata(conversationId, { conversation_status: status });
     }
   }, [thread, setConvStatus, onThreadUpdate]);
 

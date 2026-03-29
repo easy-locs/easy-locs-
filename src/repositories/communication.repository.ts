@@ -808,3 +808,112 @@ export async function invokeCreateConciergePayment(body: Record<string, any>) {
   if (error) throw error;
   return data;
 }
+
+// ═══ BYPASS REMOVAL — NEW CANONICAL METHODS ═══
+
+export async function updateConversationMetadata(conversationId: string, metadata: Record<string, any>) {
+  await db.from("conversations_v2").update({
+    metadata,
+    updated_at: new Date().toISOString(),
+  }).eq("id", conversationId);
+}
+
+export async function resolveOrbitProfilesByOrbitIds(orbitIds: string[]) {
+  if (orbitIds.length === 0) return [];
+  const { data } = await db.from("orbit_profiles_v2")
+    .select("orbit_id, display_name, email, id")
+    .in("orbit_id", orbitIds);
+  return data ?? [];
+}
+
+export async function resolveOrbitId(userId: string): Promise<string | null> {
+  const { data } = await db.from("orbit_profiles_v2")
+    .select("orbit_id")
+    .eq("id", userId)
+    .maybeSingle();
+  return data?.orbit_id || null;
+}
+
+export async function editMessageContent(messageId: string, newBody: string) {
+  const { error } = await db.from("chat_messages_v2").update({
+    body: newBody,
+    edited_at: new Date().toISOString(),
+  }).eq("id", messageId);
+  if (error) throw error;
+}
+
+export async function hideMessageForUser(messageId: string, userId: string) {
+  const { error } = await db.from("chat_messages_v2").update({
+    metadata: { hidden_for: [userId] },
+  }).eq("id", messageId);
+  if (error) throw error;
+}
+
+export async function deleteMessageForEveryone(messageId: string, userId: string) {
+  const { error } = await db.from("chat_messages_v2").update({
+    deleted_at: new Date().toISOString(),
+    body: "🚫 This message was deleted",
+    metadata: {
+      deleted_by: userId,
+      deletion_reason: "user_action",
+    },
+  }).eq("id", messageId);
+  if (error) throw error;
+}
+
+export async function moderateMessage(messageId: string, moderatorId: string) {
+  const { error } = await db.from("chat_messages_v2").update({
+    deleted_at: new Date().toISOString(),
+    body: "🚫 This message was deleted",
+    metadata: {
+      deleted_by: moderatorId,
+      deletion_reason: "moderation",
+    },
+  }).eq("id", messageId);
+  if (error) throw error;
+}
+
+export async function fetchCallLogStatus(callId: string) {
+  const { data } = await db.from("call_logs")
+    .select("status, duration_sec")
+    .eq("id", callId)
+    .single();
+  return data;
+}
+
+export async function fetchGroupConversations() {
+  const { data, error } = await db
+    .from("conversations_v2")
+    .select("*")
+    .in("type", ["group", "channel", "community"])
+    .order("updated_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function fetchGroupMemberIds(userId: string) {
+  const { data, error } = await supabase
+    .from("group_members")
+    .select("group_id")
+    .eq("user_id", userId);
+  if (error) throw error;
+  return (data || []).map((r: any) => r.group_id).filter(Boolean);
+}
+
+export async function fetchGroupMemberCount(groupId: string) {
+  const { count } = await supabase
+    .from("group_members")
+    .select("*", { count: "exact", head: true })
+    .eq("group_id", groupId);
+  return count || 0;
+}
+
+export async function fetchLastGroupMessage(groupId: string) {
+  const { data } = await db
+    .from("chat_messages_v2")
+    .select("body, created_at")
+    .eq("conversation_id", groupId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  return data?.[0] || null;
+}
