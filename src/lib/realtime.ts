@@ -5,7 +5,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 
-export function createRealtimeChannel(name: string, opts?: Record<string, any>) {
+export function createRealtimeChannel(name: string, opts?: any) {
   return supabase.channel(name, opts);
 }
 
