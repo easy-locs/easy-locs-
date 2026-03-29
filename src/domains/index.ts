@@ -37,6 +37,14 @@ export { deliveryEvents } from "./delivery/events";
 export type { AuditEntry, AdminAlert, AdminUseCases, AuditFilters, AuditRepository, AlertRepository, AdminEventPort } from "./admin/ports";
 export { adminEvents } from "./admin/events";
 
+// ── Domain Services (use-case entry points) ──
+export { createRentalService } from "./rental/service";
+export { createWalletService } from "./wallet/service";
+export { createMarketplaceService } from "./marketplace/service";
+export { createOrbitService } from "./orbit/service";
+export { createDeliveryService } from "./delivery/service";
+export { createAdminService } from "./admin/service";
+
 // Shared infrastructure
 export { createDomainLogger, registerLogSink, getLogBuffer } from "./shared/observability";
 export type { DomainLogEntry, LogLevel } from "./shared/observability";
