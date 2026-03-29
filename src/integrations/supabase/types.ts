@@ -203,6 +203,13 @@ export type Database = {
             referencedRelation: "auto_discovered_merchants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "acquisition_outreach_logs_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "public_discovered_merchants"
+            referencedColumns: ["id"]
+          },
         ]
       }
       activities: {
@@ -31323,6 +31330,60 @@ export type Database = {
           name?: string | null
           phone?: string | null
           postal_code?: string | null
+        }
+        Relationships: []
+      }
+      public_discovered_merchants: {
+        Row: {
+          category: string | null
+          city: string | null
+          country: string | null
+          cover_url: string | null
+          id: string | null
+          latitude: number | null
+          logo_url: string | null
+          longitude: number | null
+          name: string | null
+          quality_score: number | null
+          rating: number | null
+          review_count: number | null
+          source: string | null
+          subcategory: string | null
+          visibility_mode: string | null
+        }
+        Insert: {
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          cover_url?: string | null
+          id?: string | null
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          name?: string | null
+          quality_score?: number | null
+          rating?: number | null
+          review_count?: number | null
+          source?: string | null
+          subcategory?: string | null
+          visibility_mode?: string | null
+        }
+        Update: {
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          cover_url?: string | null
+          id?: string | null
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          name?: string | null
+          quality_score?: number | null
+          rating?: number | null
+          review_count?: number | null
+          source?: string | null
+          subcategory?: string | null
+          visibility_mode?: string | null
         }
         Relationships: []
       }
