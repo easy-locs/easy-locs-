@@ -543,66 +543,31 @@ export default function CommContactsSection() {
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-semibold line-clamp-2 break-words" style={{ color: "hsl(var(--hud-text))" }}>
+            <span className="text-sm font-semibold line-clamp-1 break-words" style={{ color: "hsl(var(--hud-text))" }}>
               {contact.name}
             </span>
             {contact.is_favorite && <Star className="h-3 w-3 fill-current shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />}
-            {getStateBadge(contact)}
           </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            {presence && presence.status !== "offline" && (
-              <span className="text-[10px] font-medium" style={{ color: presenceColor(presence.status) }}>
-                {presenceLabel(presence.status)}
-              </span>
-            )}
-            {contact.company && (
-              <span className="text-[11px] line-clamp-1 break-words" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                {contact.company}
-              </span>
-            )}
-            {contact.email && !contact.contact_user_id && (
-              <span className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                {contact.email}
-              </span>
-            )}
-          </div>
+          <p className="text-[11px] line-clamp-1 mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+            {presence && presence.status !== "offline"
+              ? presenceLabel(presence.status)
+              : contact.email || contact.company || "Tap to message"}
+          </p>
         </div>
 
-        {/* Actions — compact: message, call, video only */}
-        <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-          {/* Message button */}
-          <button onClick={() => startChat(contact)} disabled={anyLoading}
-            className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-            style={{
-              background: contact.canMessage ? "hsl(var(--hud-cyan) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
-              WebkitTapHighlightColor: "transparent",
-            }}>
-            {isMsgLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
-              : <MessageCircle className="h-4 w-4" style={{ color: contact.canMessage ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }} />}
-          </button>
-
-          {/* Call button */}
+        {/* Secondary actions: call + video only */}
+        <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
           <button onClick={() => handleCall(contact, false)} disabled={anyLoading || isStartingCall || !contact.canCall}
-            className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-            style={{
-              background: contact.canCall ? "hsl(var(--hud-success) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
-              WebkitTapHighlightColor: "transparent",
-              opacity: contact.canCall ? 1 : 0.4,
-            }}>
+            className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{ opacity: contact.canCall ? 1 : 0.3 }}>
             {isCallLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-success))" }} />
-              : <Phone className="h-4 w-4" style={{ color: contact.canCall ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim) / 0.3)" }} />}
+              : <Phone className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />}
           </button>
-
-          {/* Video button */}
           <button onClick={() => handleCall(contact, true)} disabled={anyLoading || isStartingCall || !contact.canCall}
-            className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-            style={{
-              background: contact.canCall ? "hsl(var(--hud-success) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
-              WebkitTapHighlightColor: "transparent",
-              opacity: contact.canCall ? 1 : 0.4,
-            }}>
-            {isVideoLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-success))" }} />
-              : <Video className="h-4 w-4" style={{ color: contact.canCall ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim) / 0.3)" }} />}
+            className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{ opacity: contact.canCall ? 1 : 0.3 }}>
+            {isVideoLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
+              : <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />}
           </button>
         </div>
       </div>

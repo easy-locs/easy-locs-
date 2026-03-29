@@ -631,21 +631,16 @@ export default function OrbitAccountSection() {
 
         <Separator className="my-2 mx-3" />
 
-        <MenuItem icon={Store} label="Business Tools" desc="Marketplace, services, catalog" onClick={() => navigate("/dashboard/my-shop")} color="hsl(var(--primary))" />
-        <MenuItem icon={Star} label="Starred" desc="Starred messages and contacts" onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
-
-        <Separator className="my-2 mx-3" />
-
         <MenuItem icon={Eye} label="Privacy" desc="Last seen, read receipts, typing" onClick={() => setSubPage("privacy")} color="hsl(var(--primary))" />
-        <MenuItem icon={Shield} label="Security" desc="E2E encryption, 2FA, screen lock" onClick={() => setSubPage("security")} color="hsl(var(--accent))" />
-        <MenuItem icon={MessageSquare} label="Chats" desc="Theme, animations, export" onClick={() => setSubPage("chats")} color="hsl(var(--primary))" />
+        <MenuItem icon={Shield} label="Security" desc="E2E encryption, 2FA" onClick={() => setSubPage("security")} color="hsl(var(--accent))" />
+        <MenuItem icon={MessageSquare} label="Chats" desc="Theme, export" onClick={() => setSubPage("chats")} color="hsl(var(--primary))" />
         <MenuItem icon={Bell} label="Notifications" desc="Messages, calls, sounds" onClick={() => setSubPage("notifications")} color="hsl(var(--accent))" />
-        <MenuItem icon={Database} label="Storage & Data" desc="Media, disappearing messages" onClick={() => setSubPage("storage")} color="hsl(var(--primary))" />
-        <MenuItem icon={Smartphone} label="Connected Devices" desc="Manage active sessions" onClick={() => setSubPage("devices")} color="hsl(var(--accent))" />
+        <MenuItem icon={Database} label="Storage & Data" desc="Media, downloads" onClick={() => setSubPage("storage")} color="hsl(var(--primary))" />
+        <MenuItem icon={Smartphone} label="Devices" desc="Active sessions" onClick={() => setSubPage("devices")} color="hsl(var(--accent))" />
 
         <Separator className="my-2 mx-3" />
 
-        <MenuItem icon={HelpCircle} label="Help" desc="FAQ, contact support" onClick={() => navigate("/contact")} color="hsl(var(--muted-foreground))" />
+        <MenuItem icon={HelpCircle} label="Help" desc="FAQ, support" onClick={() => navigate("/contact")} color="hsl(var(--muted-foreground))" />
       </div>
 
       <Separator className="mx-4" />
