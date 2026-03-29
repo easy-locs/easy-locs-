@@ -4,7 +4,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { getPublicMarketplaceServices } from "@/repositories/explore.repository";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,11 +84,11 @@ const ActivitiesMarketplace = () => {
   const { data: allServices = [] } = useQuery({
     queryKey: ["browse_marketplace_services", filterCat, filterCountry],
     queryFn: async () => {
-      const { data } = await supabase.rpc("get_public_marketplace_services", {
+      const data = await getPublicMarketplaceServices({
         _category: filterCat !== "all" ? filterCat : null,
         _country: filterCountry || null,
       });
-      return data || [];
+      return data;
     },
   });
 

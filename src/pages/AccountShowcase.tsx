@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { getRealEstateShowcase, insertRealEstateLead } from "@/repositories/explore.repository";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import SEOHead from "@/components/SEOHead";
 import AppLogo from "@/components/AppLogo";
@@ -60,7 +60,7 @@ export default function AccountShowcase() {
   useEffect(() => {
     if (!accountSlug) return;
     const load = async () => {
-      const { data } = await supabase.rpc("get_real_estate_showcase", { p_slug: accountSlug });
+      const data = await getRealEstateShowcase(accountSlug);
       if (data) {
         const p = (data as any).profile;
         // If showcase is disabled, treat as not found
@@ -97,11 +97,11 @@ export default function AccountShowcase() {
     setSubmitting(true);
     const targetListing = listings[0];
     if (targetListing) {
-      const { data: inserted } = await supabase.from("real_estate_leads").insert({
+      const inserted = await insertRealEstateLead({
         org_id: profile.org_id, listing_id: targetListing.id,
         name: contactForm.name, email: contactForm.email,
         phone: contactForm.phone, message: `[General inquiry via showcase] ${contactForm.message}`,
-      }).select("id").single();
+      });
 
       // Sync engine: lead_created (replaces legacy direct email + DB trigger notification)
       if (inserted?.id) {

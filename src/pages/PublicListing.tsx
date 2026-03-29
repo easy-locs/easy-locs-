@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPublicListingBySlug, getListingProperty } from "@/repositories/explore.repository";
+import { invokeCreateBookingPayment } from "@/repositories/ai.repository";
 import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";
@@ -41,16 +42,11 @@ const PublicListing = () => {
   useEffect(() => {
     const load = async () => {
       if (!listingSlug) { setNotFound(true); setLoading(false); return; }
-      const { data: l } = await supabase
-        .from("public_listings")
-        .select("*")
-        .eq("slug", listingSlug)
-        .eq("active", true)
-        .maybeSingle();
+      const l = await fetchPublicListingBySlug(listingSlug);
       if (!l) { setNotFound(true); setLoading(false); return; }
       setListing(l);
 
-      const { data: propData } = await supabase.rpc("get_listing_property", { p_listing_id: l.id });
+      const propData = await getListingProperty(l.id);
       setProperty(propData);
       setLoading(false);
     };
@@ -65,19 +61,16 @@ const PublicListing = () => {
         if (!requestId) return;
         setSubmitting(true);
         try {
-          const { data, error } = await supabase.functions.invoke("create-booking-payment", {
-            body: {
-              booking_request_id: requestId,
-              listing_id: listing.id,
-              guest_email: searchParams.get("email") || "",
-              guest_name: searchParams.get("name") || "Guest",
-              amount: Number(searchParams.get("amount")) || 0,
-              nights: Number(searchParams.get("nights")) || 1,
-              property_label: listing.title || property?.label,
-              origin: buildAppUrl("/"),
-            },
+          const data = await invokeCreateBookingPayment({
+            booking_request_id: requestId,
+            listing_id: listing.id,
+            guest_email: searchParams.get("email") || "",
+            guest_name: searchParams.get("name") || "Guest",
+            amount: Number(searchParams.get("amount")) || 0,
+            nights: Number(searchParams.get("nights")) || 1,
+            property_label: listing.title || property?.label,
+            origin: buildAppUrl("/"),
           });
-          if (error) throw error;
           if (data?.url) window.location.href = data.url;
         } catch (err: any) {
           alert(`${t("page.listing.error_payment")}: ${err.message || ""}`);

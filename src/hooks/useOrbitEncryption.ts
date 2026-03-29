@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { upsertKeyBundle } from "@/repositories/rental.repository";
 import {
   encryptMessage,
   decryptMessage,
@@ -90,12 +90,7 @@ export function useOrbitEncryption(userId: string | undefined): UseOrbitEncrypti
         const { publicKeyBase64, isNew } = await getOrCreateIdentityKeys(userId);
 
         if (isNew) {
-          await supabase.from("user_key_bundles" as any).upsert({
-            user_id: userId,
-            identity_public_key: publicKeyBase64,
-            device_id: deviceIdRef.current,
-            updated_at: new Date().toISOString(),
-          } as any, { onConflict: "user_id" });
+          await upsertKeyBundle(userId, publicKeyBase64, deviceIdRef.current);
         }
 
         setKeysPublished(true);
@@ -111,13 +106,8 @@ export function useOrbitEncryption(userId: string | undefined): UseOrbitEncrypti
     const cached = peerKeyCache.get(peerId);
     if (cached) return cached;
 
-    const { data } = await supabase
-      .from("user_key_bundles" as any)
-      .select("identity_public_key")
-      .eq("user_id", peerId)
-      .maybeSingle();
-
-    const key = (data as any)?.identity_public_key as string | undefined;
+    const { fetchPeerKeyBundle } = await import("@/repositories/rental.repository");
+    const key = await fetchPeerKeyBundle(peerId);
     if (key) {
       // Detect key change
       const prev = peerKeyHistory.get(peerId);

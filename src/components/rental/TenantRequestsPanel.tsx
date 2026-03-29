@@ -37,11 +37,7 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
   };
 
   const loadRequests = async () => {
-    const { data } = await supabase
-      .from("document_requests")
-      .select("*")
-      .eq("tenant_id", tenantId)
-      .order("created_at", { ascending: false });
+    const data = await fetchDocumentRequests(tenantId);
     setRequests(data || []);
     setLoading(false);
   };
@@ -56,12 +52,11 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
       const tenantUserId = await fetchTenantUserId(tenantId);
       if (tenantUserId) {
         await insertAppNotification({
-          user_id: tenantUserId,
-          org_id: orgId,
-          type: "document",
+          userId: tenantUserId,
+          category: "document",
           title: t("comp.requests.doc_available_notif"),
-          message: t("comp.requests.doc_available_msg"),
-          link: "/tenant/documents",
+          body: t("comp.requests.doc_available_msg"),
+          route: "/tenant/documents",
         });
       }
       await loadRequests();

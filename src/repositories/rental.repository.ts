@@ -574,3 +574,122 @@ export async function fetchAccountingProperties(orgId: string) {
   const { data } = await supabase.from("properties").select("id, label, country").eq("org_id", orgId);
   return data || [];
 }
+
+// ── Reminders ──
+export async function fetchRemindersForOrg(orgId: string) {
+  const { data } = await supabase.from("reminders").select("id, type, label, next_run_at, active").eq("org_id", orgId).eq("active", true).order("next_run_at", { ascending: true });
+  return data || [];
+}
+
+// ── Accounting entries ──
+// (fetchAccountingEntries already defined above)
+
+// ── Peer key bundles ──
+export async function fetchPeerKeyBundle(peerId: string) {
+  const { data } = await (supabase as any).from("user_key_bundles").select("identity_public_key").eq("user_id", peerId).maybeSingle();
+  return (data as any)?.identity_public_key as string | undefined;
+}
+
+// ── Group members ──
+export async function fetchGroupMemberIds(userId: string) {
+  const { data } = await supabase.from("group_members").select("group_id").eq("user_id", userId);
+  return (data || []).map((r: any) => r.group_id).filter(Boolean);
+}
+
+export async function fetchGroupConversations() {
+  const { data, error } = await (supabase as any).from("conversations_v2").select("*").in("type", ["group", "channel", "community"]).order("updated_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function fetchGroupMemberCount(groupId: string) {
+  const { count } = await supabase.from("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  return count || 0;
+}
+
+export async function fetchGroupLastMessage(groupId: string) {
+  const { data } = await (supabase as any).from("chat_messages_v2").select("body, created_at").eq("conversation_id", groupId).order("created_at", { ascending: false }).limit(1);
+  return data?.[0] || null;
+}
+
+export async function createGroupConversation(payload: Record<string, any>) {
+  const { data, error } = await (supabase as any).from("conversations_v2").insert(payload).select("id, type, title, created_at, created_by_orbit_id").single();
+  if (error) throw error;
+  return data;
+}
+
+export async function insertGroupMember(groupId: string, userId: string, role: string) {
+  await supabase.from("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
+}
+
+// ── Chat messages v2 (payment) ──
+export async function insertChatMessageV2(payload: Record<string, any>) {
+  const { error } = await (supabase as any).from("chat_messages_v2").insert(payload);
+  if (error) throw error;
+}
+
+export async function updateConversationTimestamp(conversationId: string) {
+  await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
+}
+
+export async function insertWalletTransaction(payload: Record<string, any>) {
+  await (supabase as any).from("unified_wallet_transactions").insert(payload);
+}
+
+export async function fetchLeasesByOrgSimple(orgId: string) {
+  const { data } = await supabase.from("leases").select("*").eq("org_id", orgId);
+  return data || [];
+}
+
+// ── Charges Regularization (properties) ──
+export async function fetchPropertiesForCharges(orgId: string) {
+  const { data } = await supabase.from("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
+  return data || [];
+}
+
+// ── Fiscal report (rent calls raw) ──
+export async function fetchFiscalRentCallsRaw(orgId: string) {
+  const { data } = await supabase.from("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
+  return data || [];
+}
+
+// ── Rent cockpit ──
+export async function fetchRentCockpit(orgId: string, countryFilter?: string | null) {
+  let query = supabase
+    .from("rent_calls")
+    .select("id, tenant_id, property_id, lease_id, month, rent_amount, charges_amount, total_amount, paid, paid_amount, paid_date, payment_status, payment_method, receipt_pdf_url, receipt_validated, tenants(name, email), properties(label, city, country)")
+    .eq("org_id", orgId)
+    .order("month", { ascending: false });
+
+  if (countryFilter) {
+    const { data: props } = await supabase.from("properties").select("id").eq("org_id", orgId).eq("country", countryFilter);
+    const ids = (props || []).map((p: any) => p.id);
+    if (ids.length > 0) query = query.in("property_id", ids);
+    else return [];
+  }
+
+  const { data } = await query.limit(500);
+  return data || [];
+}
+
+// ── Audit reports history ──
+export async function fetchAuditReportsHistory(limit = 30) {
+  const { data } = await supabase
+    .from("audit_reports")
+    .select("created_at, global_score, total_issues, scan_type")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data || [];
+}
+
+// ── Marketplace service slug lookup ──
+export async function fetchMarketplaceServiceBySlug(slug: string) {
+  const { data } = await supabase.from("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
+  return data;
+}
+
+// ── Booking document upload ──
+export async function uploadBookingDocumentFile(path: string, file: File) {
+  const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+  if (error) throw error;
+}

@@ -6,7 +6,7 @@ import * as rentalRepo from "@/repositories/rental.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeLeaseWorkflow } from "@/repositories/ai.repository";
 
 export type LeaseStatus = "draft" | "pending_signature" | "signed" | "active" | "archived" | "cancelled";
 export type RentCallStatus = "pending" | "overdue" | "paid" | "partial" | "cancelled";
@@ -20,10 +20,7 @@ export function useLeaseWorkflow() {
     override?: { rent_amount?: number; charges_amount?: number; lease_type?: string; start_date?: string },
   ) => {
     try {
-      const { data, error } = await supabase.functions.invoke("lease-workflow", {
-        body: { action: "generate_lease", tenant_id: tenantId, property_id: propertyId, org_id: orgId, override },
-      });
-      if (error) throw error;
+      const data = await invokeLeaseWorkflow({ action: "generate_lease", tenant_id: tenantId, property_id: propertyId, org_id: orgId, override });
       if (data?.action === "existing") {
         toast.info("A lease already exists for this tenant");
       } else if (data?.success) {
@@ -78,10 +75,7 @@ export function useLeaseWorkflow() {
 
   const generateRentSchedule = async (leaseId: string, options?: { due_day?: number }) => {
     try {
-      const { data, error } = await supabase.functions.invoke("lease-workflow", {
-        body: { action: "generate_rent_schedule", lease_id: leaseId, override: options },
-      });
-      if (error) throw error;
+      const data = await invokeLeaseWorkflow({ action: "generate_rent_schedule", lease_id: leaseId, override: options });
       if (data?.error === "lease_not_active") {
         toast.error("Lease must be fully signed (active) before generating rent schedule");
         return null;

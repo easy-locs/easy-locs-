@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import { insertProperty } from "@/repositories/rental.repository";
 import { getCountryConfig } from "@/lib/country-config";
 import { Home, Building2, Ruler, Thermometer, Car, Trees, Sun, Zap, Waves, DoorOpen, ChevronDown } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
@@ -98,7 +98,7 @@ const AddProperty = () => {
     if (!orgId || !user) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from("properties").insert({
+      await insertProperty({
         org_id: orgId, user_id: user.id,
         label: form.label.trim(), address: form.address, postal_code: form.postal_code,
         city: form.city, property_type: form.property_type, surface: form.surface,
@@ -113,8 +113,7 @@ const AddProperty = () => {
         elevator: form.elevator, balcony: form.balcony, pool: form.pool,
         year_built: form.year_built ?? null,
         description: form.description, listing_purpose: form.listing_modes.join(","),
-      } as any);
-      if (error) throw error;
+      });
       toast({ title: t("page.rental.property_saved") || "Bien enregistré !" });
       navigate(`/dashboard/country/${form.country.toLowerCase()}`);
     } catch (err: any) {

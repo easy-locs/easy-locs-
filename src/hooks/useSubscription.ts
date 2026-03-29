@@ -4,7 +4,7 @@
  * L2.6: Auth context split.
  */
 import { useState, useCallback, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckSubscription } from "@/repositories/ai.repository";
 import type { Session } from "@supabase/supabase-js";
 
 export interface SubscriptionState {
@@ -32,8 +32,7 @@ export function useSubscriptionLoader(session: Session | null, userId: string | 
     if (!session?.access_token) return;
     setSubscription((prev) => ({ ...prev, loading: true }));
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (error) throw error;
+      const data = await invokeCheckSubscription();
       if (data) {
         const isTrial = data.plan === "trial";
         const trialDaysLeft = isTrial && data.subscription_end
