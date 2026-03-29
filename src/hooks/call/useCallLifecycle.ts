@@ -76,7 +76,8 @@ export function useCallLifecycle(
 
   const handleCloseCall = useCallback(async () => {
     const meta = activeCallRef.current;
-    if (meta?.threadId && userId) {
+    const convId = meta?.conversationId || meta?.threadId;
+    if (convId && userId) {
       const { data: log } = await supabase
         .from("call_logs")
         .select("status, duration_sec")
@@ -84,10 +85,10 @@ export function useCallLifecycle(
         .single();
       if ((log as any)?.status === "ended") {
         logCallEventToThread({
-          callId: meta.callId, threadId: meta.threadId, orgId: meta.orgId,
+          callId: meta.callId, threadId: convId, orgId: meta.orgId,
           senderId: userId, event: "ended",
           durationSeconds: (log as any)?.duration_sec || 0,
-          contextId: meta.contextId,
+          contextId: meta.entityId || meta.contextId,
         });
       }
     }
