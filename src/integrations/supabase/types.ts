@@ -9116,20 +9116,6 @@ export type Database = {
             foreignKeyName: "hotel_availability_hotel_id_fkey"
             columns: ["hotel_id"]
             isOneToOne: false
-            referencedRelation: "vw_hotel_gate_failures"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_availability_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_hotel_quality"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_availability_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
             referencedRelation: "vw_hotel_rate_plan_coverage"
             referencedColumns: ["hotel_id"]
           },
@@ -9253,20 +9239,6 @@ export type Database = {
             foreignKeyName: "hotel_bookings_hotel_id_fkey"
             columns: ["hotel_id"]
             isOneToOne: false
-            referencedRelation: "vw_hotel_gate_failures"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_bookings_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_hotel_quality"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_bookings_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
             referencedRelation: "vw_hotel_rate_plan_coverage"
             referencedColumns: ["hotel_id"]
           },
@@ -9378,20 +9350,6 @@ export type Database = {
             foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
             columns: ["hotel_id"]
             isOneToOne: false
-            referencedRelation: "vw_hotel_gate_failures"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_hotel_quality"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_inventory_calendar_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
             referencedRelation: "vw_hotel_rate_plan_coverage"
             referencedColumns: ["hotel_id"]
           },
@@ -9488,20 +9446,6 @@ export type Database = {
             foreignKeyName: "hotel_rate_plans_hotel_id_fkey"
             columns: ["hotel_id"]
             isOneToOne: false
-            referencedRelation: "vw_hotel_gate_failures"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_rate_plans_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_hotel_quality"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_rate_plans_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
             referencedRelation: "vw_hotel_rate_plan_coverage"
             referencedColumns: ["hotel_id"]
           },
@@ -9586,20 +9530,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_hotel_calendar_coverage"
             referencedColumns: ["hotel_id"]
-          },
-          {
-            foreignKeyName: "hotel_rooms_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_hotel_gate_failures"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hotel_rooms_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_hotel_quality"
-            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "hotel_rooms_hotel_id_fkey"
@@ -12674,6 +12604,20 @@ export type Database = {
             referencedRelation: "vw_food_gate_failures"
             referencedColumns: ["merchant_id"]
           },
+          {
+            foreignKeyName: "merchant_menu_snapshots_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_gate_failures"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "merchant_menu_snapshots_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_quality"
+            referencedColumns: ["merchant_id"]
+          },
         ]
       }
       merchant_onboarding_profiles: {
@@ -13302,6 +13246,20 @@ export type Database = {
             columns: ["merchant_id"]
             isOneToOne: false
             referencedRelation: "vw_food_gate_failures"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "merchant_visual_audit_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_gate_failures"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "merchant_visual_audit_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_quality"
             referencedColumns: ["merchant_id"]
           },
         ]
@@ -20829,6 +20787,20 @@ export type Database = {
             referencedRelation: "vw_food_gate_failures"
             referencedColumns: ["merchant_id"]
           },
+          {
+            foreignKeyName: "seed_merchant_promos_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_gate_failures"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "seed_merchant_promos_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_quality"
+            referencedColumns: ["merchant_id"]
+          },
         ]
       }
       seed_merchants: {
@@ -21319,6 +21291,20 @@ export type Database = {
             columns: ["merchant_id"]
             isOneToOne: false
             referencedRelation: "vw_food_gate_failures"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "seed_products_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_gate_failures"
+            referencedColumns: ["merchant_id"]
+          },
+          {
+            foreignKeyName: "seed_products_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_quality"
             referencedColumns: ["merchant_id"]
           },
         ]
@@ -31523,31 +31509,25 @@ export type Database = {
       }
       vw_food_gate_failures: {
         Row: {
-          blocking_reason: string | null
           gate_failures: Json | null
           merchant_id: string | null
           name: string | null
-          overall_quality_score: number | null
+          pipeline_stage: string | null
           publish_gate_status: string | null
-          source_last_scraped_at: string | null
         }
         Insert: {
-          blocking_reason?: string | null
           gate_failures?: Json | null
           merchant_id?: string | null
           name?: string | null
-          overall_quality_score?: number | null
+          pipeline_stage?: string | null
           publish_gate_status?: string | null
-          source_last_scraped_at?: string | null
         }
         Update: {
-          blocking_reason?: string | null
           gate_failures?: Json | null
           merchant_id?: string | null
           name?: string | null
-          overall_quality_score?: number | null
+          pipeline_stage?: string | null
           publish_gate_status?: string | null
-          source_last_scraped_at?: string | null
         }
         Relationships: []
       }
@@ -31568,88 +31548,61 @@ export type Database = {
       }
       vw_hotel_gate_failures: {
         Row: {
-          blocking_reason: string | null
           gate_failures: Json | null
-          id: string | null
+          merchant_id: string | null
           name: string | null
-          overall_quality_score: number | null
+          pipeline_stage: string | null
           publish_gate_status: string | null
-          visibility_mode: string | null
         }
         Insert: {
-          blocking_reason?: string | null
           gate_failures?: Json | null
-          id?: string | null
+          merchant_id?: string | null
           name?: string | null
-          overall_quality_score?: number | null
+          pipeline_stage?: string | null
           publish_gate_status?: string | null
-          visibility_mode?: string | null
         }
         Update: {
-          blocking_reason?: string | null
           gate_failures?: Json | null
-          id?: string | null
+          merchant_id?: string | null
           name?: string | null
-          overall_quality_score?: number | null
+          pipeline_stage?: string | null
           publish_gate_status?: string | null
-          visibility_mode?: string | null
         }
         Relationships: []
       }
       vw_hotel_quality: {
         Row: {
-          avail_days: number | null
-          blocking_reason: string | null
-          city: string | null
-          has_cover: boolean | null
-          has_geo: boolean | null
-          id: string | null
+          content_status: string | null
+          data_completeness_score: number | null
+          integrity_score: number | null
+          menu_quality_score: number | null
+          merchant_id: string | null
           name: string | null
           overall_quality_score: number | null
           pipeline_stage: string | null
-          publish_gate_status: string | null
-          rate_plan_count: number | null
-          rating: number | null
-          room_count: number | null
-          source_type: string | null
-          stars: number | null
-          visibility_mode: string | null
+          visibility_score: number | null
         }
         Insert: {
-          avail_days?: never
-          blocking_reason?: string | null
-          city?: string | null
-          has_cover?: never
-          has_geo?: never
-          id?: string | null
+          content_status?: string | null
+          data_completeness_score?: number | null
+          integrity_score?: number | null
+          menu_quality_score?: number | null
+          merchant_id?: string | null
           name?: string | null
           overall_quality_score?: number | null
           pipeline_stage?: string | null
-          publish_gate_status?: string | null
-          rate_plan_count?: never
-          rating?: number | null
-          room_count?: never
-          source_type?: string | null
-          stars?: number | null
-          visibility_mode?: string | null
+          visibility_score?: number | null
         }
         Update: {
-          avail_days?: never
-          blocking_reason?: string | null
-          city?: string | null
-          has_cover?: never
-          has_geo?: never
-          id?: string | null
+          content_status?: string | null
+          data_completeness_score?: number | null
+          integrity_score?: number | null
+          menu_quality_score?: number | null
+          merchant_id?: string | null
           name?: string | null
           overall_quality_score?: number | null
           pipeline_stage?: string | null
-          publish_gate_status?: string | null
-          rate_plan_count?: never
-          rating?: number | null
-          room_count?: never
-          source_type?: string | null
-          stars?: number | null
-          visibility_mode?: string | null
+          visibility_score?: number | null
         }
         Relationships: []
       }
