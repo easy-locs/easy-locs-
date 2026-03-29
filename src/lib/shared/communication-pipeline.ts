@@ -33,7 +33,7 @@ export async function sendCommunicationEvent(event: CommunicationEvent): Promise
         ? `${event.message}\n\n[Booking: ${event.meta.booking_id}]`
         : event.message;
 
-      await sendSystemEvent(ctx, body, {
+      await sendSystemEvent(ctx, event.type || "system", body, {
         context_type: event.meta.target_type || "general",
         context_id: event.meta.target_id || null,
         category: event.category || "general",
