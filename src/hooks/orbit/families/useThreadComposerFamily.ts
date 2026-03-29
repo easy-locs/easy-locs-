@@ -18,7 +18,6 @@ export function useThreadComposerFamily(params: {
   encrypt: any;
   resolveAuthUserId: () => Promise<string | null>;
   resolveConversationId: (authUserId: string) => Promise<string | null>;
-  uploadToStorage: any;
   setUploading: (v: boolean) => void;
   disappearTTL: string;
   defaultDisappearTtl: string;
