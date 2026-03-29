@@ -33,11 +33,7 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
 
   const loadReports = useCallback(async () => {
     if (!orgId) return;
-    const { data } = await supabase
-      .from("inventory_reports")
-      .select("id, property_id, tenant_id, report_type, report_date, status")
-      .eq("org_id", orgId)
-      .order("report_date", { ascending: false });
+    const data = await fetchInventoryReports(orgId);
     setReports(data || []);
     setLoading(false);
   }, [orgId]);
@@ -47,12 +43,10 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
   const handleResendEmail = async (report: InventoryReport, property: Property, tenant: Tenant) => {
     setResendingId(report.id);
     try {
-      const { data: dbRooms } = await supabase
-        .from("inventory_rooms").select("*").eq("report_id", report.id).order("sort_order");
+      const dbRooms = await fetchInventoryRooms(report.id);
       const rooms: { room_name: string; items: { element_name: string; condition: string; notes: string; photo_urls: string[] }[] }[] = [];
       for (const r of dbRooms || []) {
-        const { data: items } = await supabase
-          .from("inventory_items").select("*").eq("room_id", r.id).order("sort_order");
+        const items = await fetchInventoryItems(r.id);
         rooms.push({
           room_name: r.room_name,
           items: (items || []).map((it: any) => ({
