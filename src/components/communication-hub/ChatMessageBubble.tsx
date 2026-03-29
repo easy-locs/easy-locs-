@@ -434,14 +434,23 @@ function ChatMessageBubble({
             )}
           </div>
         ) : (
-          /* Message content */
-          <p className={`text-[13.5px] leading-[1.45] whitespace-pre-wrap ${blurred ? "blur-lg transition-all" : ""}`} style={{
-            color: "hsl(var(--foreground))",
-            overflowWrap: "anywhere",
-            ...(securityPolicy.antiScreenshot ? { userSelect: "none" as const, WebkitUserSelect: "none" as const } : {}),
-          }}>
-            {isMe ? msg.content : (showOriginal ? msg.content : (msg.translated_content || msg.content))}
-          </p>
+          /* Message content + link preview */
+          <>
+            <p className={`text-[13.5px] leading-[1.45] whitespace-pre-wrap ${blurred ? "blur-lg transition-all" : ""}`} style={{
+              color: "hsl(var(--foreground))",
+              overflowWrap: "anywhere",
+              ...(securityPolicy.antiScreenshot ? { userSelect: "none" as const, WebkitUserSelect: "none" as const } : {}),
+            }}>
+              {isMe ? msg.content : (showOriginal ? msg.content : (msg.translated_content || msg.content))}
+            </p>
+            {(() => {
+              const urlMatch = msg.content?.match(/https?:\/\/[^\s]+/);
+              if (urlMatch && !msg.attachment_url) {
+                return <BubbleLinkPreview url={urlMatch[0]} isMe={isMe} />;
+              }
+              return null;
+            })()}
+          </>
         )}
 
         {/* Original text preview for translated messages */}
