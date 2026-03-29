@@ -515,12 +515,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
               caption: items.length === 1 ? caption : item.caption || caption,
               viewOnce,
               uploadFn: async (file, path, onProgress) => {
-                const result = await attFamily.attachments.uploadSingleFile({
-                  file,
-                  pathPrefix: orgId || "orbit-media",
-                  onProgress,
-                });
-                return result.publicUrl;
+                const url = await attFamily.attachments.uploadToStorage(file, path);
+                if (!url) throw new Error("Upload failed");
+                onProgress(100);
+                return url;
               },
               pathPrefix: orgId || "orbit-media",
             });
