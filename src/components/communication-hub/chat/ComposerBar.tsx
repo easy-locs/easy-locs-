@@ -1,12 +1,11 @@
 /**
- * ComposerBar — V2+ canonical composer with reply preview, attachments, voice, location, payment.
+ * ComposerBar — Canonical messenger composer: emoji, attach, input, send/mic.
  */
 import { useRef, useState } from "react";
 import {
-  Send, Loader2, Paperclip, Camera, MapPin, CreditCard, Eye, Mic, Ban, Check, Zap,
+  Send, Loader2, Paperclip, Camera, MapPin, Eye, Mic, Ban, Check, Zap,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import SecurityLevelPicker from "../SecurityLevelPicker";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import { haptic } from "@/lib/haptics";
 import { formatVoiceDuration } from "@/hooks/useVoiceRecorder";
