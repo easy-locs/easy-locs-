@@ -10,7 +10,11 @@ const db = supabase as any;
 
 type ThreadLike = {
   id: string;
+  /** Canonical conversation UUID */
+  conversationId?: string | null;
+  /** @deprecated Use conversationId */
   v2ConversationId?: string | null;
+  /** @deprecated Use entityId */
   contextId?: string | null;
 };
 
@@ -54,6 +58,11 @@ function safeString(val: unknown): string {
   if (typeof val === "string") return val;
   if (typeof val === "number" || typeof val === "boolean") return String(val);
   try { return JSON.stringify(val); } catch { return "[unrenderable]"; }
+}
+
+/** Resolve canonical conversationId from thread (with legacy fallback) */
+function resolveConversationId(thread: ThreadLike | null): string | null {
+  return thread?.conversationId || thread?.v2ConversationId || null;
 }
 
 function mapV2ToChat(m: any, conversationId: string): ChatMessage {
@@ -114,20 +123,20 @@ export function useMessageLoader({
   }, []);
 
   const loadMessages = useCallback(async () => {
+    const conversationId = resolveConversationId(thread);
+
     trace("messages.load.request", "input", {
       threadId: thread?.id,
-      v2ConversationId: thread?.v2ConversationId,
+      conversationId,
     });
 
-    if (!thread?.v2ConversationId) {
-      trace("messages.load.request", "error", { reason: "missing_v2ConversationId", threadId: thread?.id ?? null });
+    if (!conversationId) {
+      trace("messages.load.request", "error", { reason: "missing_conversationId", threadId: thread?.id ?? null });
       setRawMessages([]);
       setPendingOffline([]);
       setMessagesLoading(false);
       return;
     }
-
-    const conversationId = thread.v2ConversationId;
 
     trace("messages.load.request", "output", { conversationId });
 
@@ -191,9 +200,9 @@ export function useMessageLoader({
       db.from("chat_messages_v2")
         .update({ read_at: new Date().toISOString() })
         .in("id", unreadIds)
-        .then(() => onThreadUpdate(thread.id, { unreadCount: 0 }));
+        .then(() => onThreadUpdate(thread!.id, { unreadCount: 0 }));
       // Clear marked_unread preference when messages are read
-      const ctxId = thread.contextId || thread.id;
+      const ctxId = thread?.contextId || thread?.id;
       db.from("conversation_preferences")
         .update({ marked_unread: false })
         .eq("user_id", userId)
@@ -213,9 +222,9 @@ export function useMessageLoader({
   }, [offline.isOnline, loadMessages]);
 
   useEffect(() => {
-    if (!thread?.v2ConversationId) return;
+    const conversationId = resolveConversationId(thread);
+    if (!conversationId) return;
 
-    const conversationId = thread.v2ConversationId;
     realtimeTrace("message.realtime.echo", "input", { conversationId, channel: `rt:v2:${conversationId}` });
 
     const channel = createRealtimeChannel(`rt:v2:${conversationId}`)
@@ -265,16 +274,16 @@ export function useMessageLoader({
               .update({ read_at: new Date().toISOString() })
               .eq("id", msg.id);
 
-            onThreadUpdate(thread.id, { unreadCount: 0 });
+            onThreadUpdate(thread!.id, { unreadCount: 0 });
           }
 
-          onThreadUpdate(thread.id, {
+          onThreadUpdate(thread!.id, {
             lastMessageTime: msg.created_at,
             lastMessagePreview: msg.body?.slice?.(0, 120) ?? "",
           });
 
           realtimeTrace("thread.preview.update", "output", {
-            threadId: thread.id,
+            conversationId,
             lastMessagePreview: msg.body?.slice?.(0, 120) ?? "",
             lastMessageTime: msg.created_at,
           });

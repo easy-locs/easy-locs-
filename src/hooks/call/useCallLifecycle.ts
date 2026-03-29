@@ -31,7 +31,6 @@ export function useCallLifecycle(
     activeCallRef.current = {
       callId: incomingCallId,
       conversationId: incomingConversationId || undefined,
-      threadId: incomingConversationId || undefined, // deprecated compat
       orgId: incomingOrgId,
     };
 
@@ -76,7 +75,7 @@ export function useCallLifecycle(
 
   const handleCloseCall = useCallback(async () => {
     const meta = activeCallRef.current;
-    const convId = meta?.conversationId || meta?.threadId;
+    const convId = meta?.conversationId;
     if (convId && userId) {
       const { data: log } = await supabase
         .from("call_logs")
@@ -88,7 +87,7 @@ export function useCallLifecycle(
           callId: meta.callId, threadId: convId, orgId: meta.orgId,
           senderId: userId, event: "ended",
           durationSeconds: (log as any)?.duration_sec || 0,
-          contextId: meta.entityId || meta.contextId,
+          contextId: meta.entityId,
         });
       }
     }

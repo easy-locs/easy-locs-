@@ -17,10 +17,10 @@ const db = supabase as any;
 
 interface TargetThread {
   id: string;
-  context_id: string;
-  context_type: string;
-  org_id: string;
-  display_name: string;
+  conversationId: string;
+  conversationType: string;
+  orgId: string;
+  displayName: string;
 }
 
 interface Props {
@@ -67,10 +67,10 @@ export default function ForwardMessageDialog({
               const peerName = participants.find((p: any) => p.userId !== userId)?.displayName;
               result.push({
                 id: row.id,
-                context_id: row.id,
-                context_type: row.type || "direct",
-                org_id: (row.metadata as any)?.org_id || "",
-                display_name: row.title || peerName || t("chat.conversation") || "Conversation",
+                conversationId: row.id,
+                conversationType: row.type || "direct",
+                orgId: (row.metadata as any)?.org_id || "",
+                displayName: row.title || peerName || t("chat.conversation") || "Conversation",
               });
             }
           }
@@ -92,21 +92,20 @@ export default function ForwardMessageDialog({
     try {
       const { insertMessage, updateConversationTimestamp } = await import("@/repositories/communication.repository");
       await insertMessage({
-        conversationId: selectedThread.context_id,
+        conversationId: selectedThread.conversationId,
         senderUserId: userId,
         senderOrbitId: `orbit_${userId.slice(0, 12)}`,
         type: "text",
         body: messageContent,
         metadata: { forwarded_from: messageId },
       });
-      await updateConversationTimestamp(selectedThread.context_id);
+      await updateConversationTimestamp(selectedThread.conversationId);
 
       toast.success(
-        (t("chat.forwarded_to") || "Forwarded to") + " " + (selectedThread.display_name || t("chat.conversation") || "conversation")
+        (t("chat.forwarded_to") || "Forwarded to") + " " + (selectedThread.displayName || t("chat.conversation") || "conversation")
       );
       platformBus.emit("orbit:message_sent", {
-        threadId: selectedThread.id,
-        contextId: selectedThread.context_id,
+        conversationId: selectedThread.conversationId,
         type: "forward",
         originalMessageId: messageId,
       }, "orbit", { userId });
@@ -158,10 +157,10 @@ export default function ForwardMessageDialog({
             <p className="text-center text-sm text-muted-foreground py-8">{t("chat.no_conversations") || "No other conversations"}</p>
           ) : (
             threads.map(thread => {
-              const isSelected = selectedThread?.context_id === thread.context_id;
+              const isSelected = selectedThread?.conversationId === thread.conversationId;
               return (
                 <button
-                  key={thread.context_id}
+                  key={thread.conversationId}
                   onClick={() => setSelectedThread(isSelected ? null : thread)}
                   disabled={forwarding}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left disabled:opacity-50 ${
@@ -177,7 +176,7 @@ export default function ForwardMessageDialog({
                       <MessageCircle className="h-4 w-4 text-accent" />
                     )}
                   </div>
-                  <span className="text-sm font-medium text-foreground min-w-0 break-words leading-snug">{thread.display_name}</span>
+                  <span className="text-sm font-medium text-foreground min-w-0 break-words leading-snug">{thread.displayName}</span>
                 </button>
               );
             })
