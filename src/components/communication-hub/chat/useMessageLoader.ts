@@ -210,8 +210,8 @@ export function useMessageLoader({
     const conversationId = thread.v2ConversationId;
     realtimeTrace("message.realtime.echo", "input", { conversationId, channel: `rt:v2:${conversationId}` });
 
-    const channel = supabase
-      .channel(`rt:v2:${conversationId}`)
+    const channel = createRealtimeChannel(`rt:v2:${conversationId}`)
+      
       .on(
         "postgres_changes",
         {
