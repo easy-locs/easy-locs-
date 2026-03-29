@@ -22,6 +22,7 @@ export async function insertMessage(params: {
   type: string;
   body: string;
   metadata?: Record<string, any>;
+  replyToMessageId?: string | null;
 }) {
   const { data, error } = await db.from("chat_messages_v2").insert({
     conversation_id: params.conversationId,
@@ -31,6 +32,7 @@ export async function insertMessage(params: {
     type: params.type,
     body: params.body,
     metadata: params.metadata || null,
+    reply_to_message_id: params.replyToMessageId || null,
   }).select().single();
   if (error) throw error;
   return data;
