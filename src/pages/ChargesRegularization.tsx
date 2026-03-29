@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchTenantsForCharges, fetchPropertiesForCharges } from "@/repositories/rental.repository";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
@@ -29,11 +29,11 @@ const ChargesRegularization = () => {
   useEffect(() => {
     if (!orgId) return;
     Promise.all([
-      supabase.from("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId),
-      supabase.from("properties").select("id, label, monthly_charges, country").eq("org_id", orgId),
+      fetchTenantsForCharges(orgId),
+      fetchPropertiesForCharges(orgId),
     ]).then(([tData, pData]) => {
-      setAllTenants((tData.data || []) as Tenant[]);
-      setAllProperties((pData.data || []) as Property[]);
+      setAllTenants(tData as Tenant[]);
+      setAllProperties(pData as Property[]);
       setLoading(false);
     });
   }, [orgId]);

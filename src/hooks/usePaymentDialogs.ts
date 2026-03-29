@@ -3,7 +3,7 @@
  * Manages payment link creation, request money, and payment message sending.
  */
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeConciergePayment } from "@/repositories/ai.repository";
 import { toast } from "sonner";
 import type { ConversationThread } from "@/components/communication-hub/types";
 

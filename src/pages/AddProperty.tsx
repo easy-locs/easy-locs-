@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import { insertProperty } from "@/repositories/rental.repository";
 import { getCountryConfig } from "@/lib/country-config";
 import { Home, Building2, Ruler, Thermometer, Car, Trees, Sun, Zap, Waves, DoorOpen, ChevronDown } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";

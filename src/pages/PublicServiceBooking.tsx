@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadBookingDocumentFile } from "@/repositories/rental.repository";
 import { useParams, useSearchParams } from "react-router-dom";
 import {
   fetchServiceBySlug,

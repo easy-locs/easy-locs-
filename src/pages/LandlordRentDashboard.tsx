@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchRentCockpit } from "@/repositories/rental.repository";
 import { formatCurrency } from "@/lib/country-config";
 import RentStatusBadge from "@/components/rent/RentStatusBadge";
 import ReceiptStatusBadge from "@/components/rent/ReceiptStatusBadge";

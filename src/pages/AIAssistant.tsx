@@ -1,7 +1,7 @@
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { BrainCircuit, Send, Loader2, User, Sparkles, Activity, TrendingUp, Star, AlertTriangle, CheckCircle2, ChevronRight, BarChart3, Globe, Eye, Search, Zap, Building } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchLeasesByOrgSimple } from "@/repositories/rental.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { useRentalData } from "@/hooks/useRentalData";
@@ -234,7 +234,7 @@ const AIAssistant = () => {
   const { orgId } = useAuth();
   useEffect(() => {
     if (!orgId) return;
-    supabase.from("leases").select("*").eq("org_id", orgId).then(({ data }) => setLeases(data || []));
+    fetchLeasesByOrgSimple(orgId).then((data) => setLeases(data));
   }, [orgId]);
 
   useEffect(() => {

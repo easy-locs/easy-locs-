@@ -3,7 +3,7 @@
  * Single responsibility: status update, payment, delivery request, confirm, cancel.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { updateOrderStatus as repoUpdateOrderStatus, updatePaymentStatus as repoUpdatePaymentStatus, invokeDispatchRide, updateOrderDeliveryJob, completeOrder as repoCompleteOrder, cancelOrder as repoCancelOrder } from "@/repositories/order-actions.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { reportHealth } from "@/lib/runtime/health-aggregator";

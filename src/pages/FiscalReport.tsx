@@ -3,7 +3,7 @@ import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchFiscalProperties, fetchFiscalRentCallsRaw } from "@/repositories/rental.repository";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
@@ -63,13 +63,12 @@ const FiscalReport = () => {
 
   useEffect(() => {
     if (!orgId) return;
-    let propQuery = supabase.from("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
-    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
+    let propQuery = fetchFiscalProperties(orgId, countryFilter);
 
     Promise.all([
-      supabase.from("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId),
+      fetchFiscalRentCallsRaw(orgId),
       propQuery,
-    ]).then(([rc, p]) => {
+    ]).then(([rcData, propsData]) => {
       const propsData = (p.data || []) as Property[];
       setProperties(propsData);
       // Filter rent calls to only include properties in the filtered set
