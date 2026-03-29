@@ -1,9 +1,16 @@
 /**
  * useOrderActions — All order mutation actions.
- * Single responsibility: status update, payment, delivery request, confirm, cancel.
+ * MIGRATED: All DB ops via order-actions.repository.
  */
 import { useCallback } from "react";
-import { updateOrderStatus as repoUpdateOrderStatus, updatePaymentStatus as repoUpdatePaymentStatus, invokeDispatchRide, updateOrderDeliveryJob, completeOrder as repoCompleteOrder, cancelOrder as repoCancelOrder } from "@/repositories/order-actions.repository";
+import {
+  updateOrderStatus as repoUpdateOrderStatus,
+  updatePaymentStatus as repoUpdatePaymentStatus,
+  invokeDispatchRide,
+  updateOrderDeliveryJob,
+  completeOrder as repoCompleteOrder,
+  cancelOrder as repoCancelOrder,
+} from "@/repositories/order-actions.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
@@ -14,9 +21,7 @@ export function useOrderActions(orderId: string | undefined, order: any) {
 
   const updateOrderStatus = useCallback(async (status: string) => {
     if (!orderId) return;
-    await (supabase as any).from("storefront_orders")
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq("id", orderId);
+    await repoUpdateOrderStatus(orderId, status);
     platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId }, "orders");
     platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, {}, "orders");
     reportHealth("orders", "ok");
@@ -27,46 +32,34 @@ export function useOrderActions(orderId: string | undefined, order: any) {
     if (!orderId) return;
     const updates: Record<string, any> = { payment_status: paymentStatus, updated_at: new Date().toISOString() };
     if (paymentStatus === "secured") updates.status = "accepted";
-    await (supabase as any).from("storefront_orders").update(updates).eq("id", orderId);
+    await repoUpdatePaymentStatus(orderId, updates);
   }, [orderId]);
 
   const requestDelivery = useCallback(async () => {
     if (!order) return;
-    const { data: result, error } = await supabase.functions.invoke("dispatch-ride", {
-      body: {
-        action: "create_job",
-        job_type: "food_delivery",
-        service_level: "bike_delivery",
-        pickup_address: "Seller location",
-        dropoff_address: order.shipping_address || order.delivery_address || "Buyer location",
-        dropoff_lat: order.delivery_lat,
-        dropoff_lng: order.delivery_lng,
-        quoted_price: order.delivery_fee || 0,
-        currency: order.currency || "AED",
-        notes: `Order #${order.id.slice(0, 8)}`,
-        order_id: order.id,
-        merchant_id: order.shop_id,
-      },
+    const result = await invokeDispatchRide({
+      action: "create_job",
+      job_type: "food_delivery",
+      service_level: "bike_delivery",
+      pickup_address: "Seller location",
+      dropoff_address: order.shipping_address || order.delivery_address || "Buyer location",
+      dropoff_lat: order.delivery_lat,
+      dropoff_lng: order.delivery_lng,
+      quoted_price: order.delivery_fee || 0,
+      currency: order.currency || "AED",
+      notes: `Order #${order.id.slice(0, 8)}`,
+      order_id: order.id,
+      merchant_id: order.shop_id,
     });
-    if (error) throw error;
     if (result?.job?.id) {
-      await (supabase as any).from("storefront_orders").update({
-        delivery_job_id: result.job.id,
-        delivery_requested: true,
-        delivery_status: "searching",
-        status: "preparing",
-      }).eq("id", orderId);
+      await updateOrderDeliveryJob(orderId!, result.job.id);
       toast({ title: "Delivery requested", description: "Looking for available riders" });
     }
   }, [order, orderId, toast]);
 
   const confirmReceived = useCallback(async () => {
     if (!orderId) return;
-    await (supabase as any).from("storefront_orders").update({
-      status: "completed",
-      payment_status: "released",
-      updated_at: new Date().toISOString(),
-    }).eq("id", orderId);
+    await repoCompleteOrder(orderId);
     platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId }, "orders");
     platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, {}, "orders");
     reportHealth("orders", "ok");
@@ -75,15 +68,9 @@ export function useOrderActions(orderId: string | undefined, order: any) {
 
   const cancelOrder = useCallback(async (reason?: string) => {
     if (!orderId) return;
-    await (supabase as any).from("storefront_orders").update({
-      status: "cancelled",
-      notes: reason || "Cancelled by user",
-      updated_at: new Date().toISOString(),
-    }).eq("id", orderId);
+    await repoCancelOrder(orderId, reason);
     if (order?.delivery_job_id) {
-      await supabase.functions.invoke("dispatch-ride", {
-        body: { action: "cancel_job", job_id: order.delivery_job_id, cancel_reason: reason || "Order cancelled" },
-      });
+      await invokeDispatchRide({ action: "cancel_job", job_id: order.delivery_job_id, cancel_reason: reason || "Order cancelled" });
     }
     toast({ title: "Order cancelled" });
   }, [orderId, order, toast]);
