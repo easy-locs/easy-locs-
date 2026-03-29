@@ -89,3 +89,47 @@ export async function openContactThread(params: {
     return null;
   }
 }
+
+/**
+ * contactFromDiscovery — Open a thread from a discovered entity (radar, search).
+ * Resolves the entity owner and opens a direct thread with an auto-message.
+ */
+export async function contactFromDiscovery(params: {
+  currentUserId: string;
+  entityId: string;
+  entityType: string;
+  entityName: string;
+  navigate: (path: string) => void;
+  source?: string;
+  autoMessage?: string;
+}): Promise<void> {
+  try {
+    // Resolve the entity owner
+    const table = params.entityType === "shop" ? "storefront_pages" : "profiles";
+    const ownerField = params.entityType === "shop" ? "owner_id" : "id";
+    const { data: entity } = await db
+      .from(table)
+      .select(ownerField)
+      .eq("id", params.entityId)
+      .maybeSingle();
+
+    const targetUserId = entity?.[ownerField];
+    if (!targetUserId || targetUserId === params.currentUserId) {
+      toast.error("Cannot contact this entity");
+      return;
+    }
+
+    const convId = await openContactThread({
+      currentUserId: params.currentUserId,
+      targetUserId,
+      autoMessage: params.autoMessage || `Hi, I'm interested in ${params.entityName}.`,
+    });
+
+    if (convId) {
+      params.navigate(`/orbit?thread=${convId}`);
+    }
+  } catch (err: any) {
+    console.error("[contactBridge] contactFromDiscovery error:", err);
+    toast.error("Failed to contact");
+  }
+}
