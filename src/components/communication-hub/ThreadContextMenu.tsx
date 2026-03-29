@@ -1,9 +1,13 @@
 /**
- * ThreadContextMenu — WhatsApp-style bottom sheet "More" menu for a conversation thread.
- * Harmonized with HudChatPanel ⋮ menu: includes status actions, security, details, select.
+ * ThreadContextMenu — Premium WhatsApp-style bottom sheet for conversation actions.
+ * Canonical chat actions: Mark unread, Archive, Mute, Lock, Favorite, Block, Clear, Delete.
+ * Confirmation dialogs for destructive actions.
  * Fully i18n-aware.
  */
-import { X, BellOff, Bell, Info, Lock, Heart, XCircle, Ban, Trash2, Shield, ChevronRight, CheckCheck } from "lucide-react";
+import { useState } from "react";
+import { X, BellOff, Bell, Heart, HeartOff, Lock, Ban, Trash2, MailOpen, Archive, ArchiveRestore, Eraser, Shield, ChevronRight, CheckCheck, Info } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import type { ConversationThread } from "./types";
 import { useI18n } from "@/lib/i18n";
 
@@ -26,6 +30,9 @@ interface Props {
   onClearChat?: () => void;
   onBlock?: () => void;
   onDelete?: () => void;
+  onArchive?: () => void;
+  onMarkUnread?: () => void;
+  onLockChat?: () => void;
   onStatusChange?: (status: string) => void;
   onSecurity?: () => void;
   onSafetyNumber?: () => void;
@@ -33,14 +40,53 @@ interface Props {
   onSelectMessages?: () => void;
 }
 
+type ConfirmAction = "clear" | "delete" | "block" | null;
+
 export default function ThreadContextMenu({
   thread, open, onClose,
   onMute, onContactInfo, onFavorite, onClearChat, onBlock, onDelete,
+  onArchive, onMarkUnread, onLockChat,
   onStatusChange, onSecurity, onSafetyNumber, onDetails, onSelectMessages,
 }: Props) {
   const { t } = useI18n();
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
 
   if (!open) return null;
+
+  const isMuted = !!thread.muted;
+  const isArchived = !!thread.archived;
+  const isFavorite = !!(thread as any).is_favorite;
+
+  const executeAndClose = (fn?: () => void) => {
+    fn?.();
+    onClose();
+  };
+
+  const handleConfirm = () => {
+    if (confirmAction === "clear") onClearChat?.();
+    if (confirmAction === "delete") onDelete?.();
+    if (confirmAction === "block") onBlock?.();
+    setConfirmAction(null);
+    onClose();
+  };
+
+  const confirmLabels: Record<string, { title: string; desc: string; btn: string }> = {
+    clear: {
+      title: t("orbit.clear_chat_q") || "Clear chat?",
+      desc: t("orbit.clear_chat_desc") || "All messages will be removed from this conversation.",
+      btn: t("orbit.clear") || "Clear",
+    },
+    delete: {
+      title: t("orbit.delete_chat_q") || "Delete chat?",
+      desc: t("orbit.delete_chat_desc") || "This conversation will be permanently deleted.",
+      btn: t("orbit.delete") || "Delete",
+    },
+    block: {
+      title: `${t("orbit.block") || "Block"} ${thread.name}?`,
+      desc: t("orbit.block_desc") || "This contact will no longer be able to message or call you.",
+      btn: t("orbit.block") || "Block",
+    },
+  };
 
   return (
     <>
@@ -102,17 +148,19 @@ export default function ThreadContextMenu({
           </>
         )}
 
-        {/* ── Quick Actions ── */}
+        {/* ── Primary Actions ── */}
         <div className="px-2 py-1">
-          {[
-            { icon: thread.muted ? Bell : BellOff, label: thread.muted ? t("orbit.unmute") || "Unmute" : t("orbit.mute") || "Mute", onClick: onMute },
-            { icon: Info, label: t("orbit.contact_info") || "Contact info", onClick: onContactInfo },
-            { icon: Heart, label: t("orbit.add_favorite") || "Add to Favourites", onClick: onFavorite },
-            { icon: XCircle, label: t("orbit.clear_chat") || "Clear chat", onClick: onClearChat },
-          ].map((item) => (
+          {([
+            onMarkUnread && { icon: MailOpen, label: t("orbit.mark_unread") || "Mark as unread", action: onMarkUnread },
+            onArchive && { icon: isArchived ? ArchiveRestore : Archive, label: isArchived ? (t("orbit.unarchive") || "Unarchive") : (t("orbit.archive") || "Archive"), action: onArchive },
+            onMute && { icon: isMuted ? Bell : BellOff, label: isMuted ? (t("orbit.unmute") || "Unmute") : (t("orbit.mute") || "Mute"), action: onMute },
+            onLockChat && { icon: Lock, label: t("orbit.lock_chat") || "Lock chat", action: onLockChat },
+            onFavorite && { icon: isFavorite ? HeartOff : Heart, label: isFavorite ? (t("orbit.remove_favorite") || "Remove from Favorites") : (t("orbit.add_favorite") || "Add to Favorites"), action: onFavorite },
+            onContactInfo && { icon: Info, label: t("orbit.contact_info") || "Contact info", action: onContactInfo },
+          ] as Array<{ icon: any; label: string; action: () => void } | false>).filter(Boolean).map((item: any) => (
             <button
               key={item.label}
-              onClick={() => { item.onClick?.(); onClose(); }}
+              onClick={() => executeAndClose(item.action)}
               className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-muted/30 active:bg-muted/50"
             >
               <item.icon className="h-5 w-5" style={{ color: "hsl(var(--foreground))" }} />
@@ -123,44 +171,74 @@ export default function ThreadContextMenu({
 
         <div className="mx-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.1)" }} />
 
-        {/* ── Security & Tools ── */}
+        {/* ── Tools ── */}
         <div className="px-2 py-1">
-          {[
-            { icon: Shield, label: t("orbit.security") || "Security", onClick: onSecurity, color: "hsl(var(--foreground))" },
-            { icon: Lock, label: t("orbit.safety_number") || "Safety Number", onClick: onSafetyNumber, color: "hsl(var(--foreground))" },
-            { icon: ChevronRight, label: t("orbit.details") || "Details", onClick: onDetails, color: "hsl(var(--foreground))" },
-            { icon: CheckCheck, label: t("orbit.select_messages") || "Select Messages", onClick: onSelectMessages, color: "hsl(var(--foreground))" },
-          ].map((item) => (
+          {([
+            onSecurity && { icon: Shield, label: t("orbit.security") || "Security", action: onSecurity },
+            onSafetyNumber && { icon: Lock, label: t("orbit.safety_number") || "Safety Number", action: onSafetyNumber },
+            onDetails && { icon: ChevronRight, label: t("orbit.details") || "Details", action: onDetails },
+            onSelectMessages && { icon: CheckCheck, label: t("orbit.select_messages") || "Select Messages", action: onSelectMessages },
+          ] as Array<{ icon: any; label: string; action: () => void } | false>).filter(Boolean).map((item: any) => (
             <button
               key={item.label}
-              onClick={() => { item.onClick?.(); onClose(); }}
+              onClick={() => executeAndClose(item.action)}
               className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-muted/30 active:bg-muted/50"
             >
-              <item.icon className="h-5 w-5" style={{ color: item.color }} />
-              <span className="text-sm font-medium" style={{ color: item.color }}>{item.label}</span>
+              <item.icon className="h-5 w-5" style={{ color: "hsl(var(--foreground))" }} />
+              <span className="text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>{item.label}</span>
             </button>
           ))}
         </div>
 
         <div className="mx-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.1)" }} />
 
-        {/* ── Danger Actions ── */}
+        {/* ── Danger Actions (with confirmations) ── */}
         <div className="px-2 py-1">
-          {[
-            { icon: Ban, label: `${t("orbit.block") || "Block"} ${thread.name}`, onClick: onBlock },
-            { icon: Trash2, label: t("orbit.delete_chat") || "Delete chat", onClick: onDelete },
-          ].map((item) => (
+          {onClearChat && (
             <button
-              key={item.label}
-              onClick={() => { item.onClick?.(); onClose(); }}
+              onClick={() => setConfirmAction("clear")}
               className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-destructive/10 active:bg-destructive/20"
             >
-              <item.icon className="h-5 w-5" style={{ color: "hsl(var(--destructive))" }} />
-              <span className="text-sm font-medium" style={{ color: "hsl(var(--destructive))" }}>{item.label}</span>
+              <Eraser className="h-5 w-5" style={{ color: "hsl(var(--destructive))" }} />
+              <span className="text-sm font-medium" style={{ color: "hsl(var(--destructive))" }}>{t("orbit.clear_chat") || "Clear chat"}</span>
             </button>
-          ))}
+          )}
+          {onBlock && (
+            <button
+              onClick={() => setConfirmAction("block")}
+              className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-destructive/10 active:bg-destructive/20"
+            >
+              <Ban className="h-5 w-5" style={{ color: "hsl(var(--destructive))" }} />
+              <span className="text-sm font-medium" style={{ color: "hsl(var(--destructive))" }}>{`${t("orbit.block") || "Block"} ${thread.name}`}</span>
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => setConfirmAction("delete")}
+              className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-destructive/10 active:bg-destructive/20"
+            >
+              <Trash2 className="h-5 w-5" style={{ color: "hsl(var(--destructive))" }} />
+              <span className="text-sm font-medium" style={{ color: "hsl(var(--destructive))" }}>{t("orbit.delete_chat") || "Delete chat"}</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {confirmAction && (
+        <Dialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
+          <DialogContent className="z-[60]">
+            <DialogHeader>
+              <DialogTitle>{confirmLabels[confirmAction]?.title}</DialogTitle>
+              <DialogDescription>{confirmLabels[confirmAction]?.desc}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmAction(null)}>{t("orbit.cancel") || "Cancel"}</Button>
+              <Button variant="destructive" onClick={handleConfirm}>{confirmLabels[confirmAction]?.btn}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
