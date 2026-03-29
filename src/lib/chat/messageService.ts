@@ -2,15 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DOMPurify from "dompurify";
 import type { ChatMessageRow } from "@/lib/types/comms";
 import { sendInAppNotification } from "@/lib/notifications/notification-dispatcher";
-
-/**
- * Resolves the current auth user ID. Required for sender_user_id (NOT NULL).
- */
-async function getCurrentUserId(): Promise<string> {
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) throw new Error("Not authenticated");
-  return data.user.id;
-}
+import { getCurrentUserId } from "@/families/identity";
 
 /**
  * Resolves orbit_id for a user. Falls back to deterministic format.

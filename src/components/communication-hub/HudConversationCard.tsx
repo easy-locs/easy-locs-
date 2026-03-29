@@ -2,20 +2,18 @@
  * HudConversationCard — WhatsApp-inspired dense conversation row.
  * Avatar + bold name + context + message preview + timestamp + unread badge.
  */
-import { formatDistanceToNow, isToday, isYesterday, format } from "date-fns";
 import { User } from "lucide-react";
 import type { ConversationThread } from "./types";
 import { CONV_TYPE_CONFIG, CONV_STATUSES } from "./types";
 import { useI18n } from "@/lib/i18n";
 import { formatEventMessage } from "@/lib/orbit/message-formatter";
+import { formatOrbitTimestamp } from "@/families/time";
 
 /** Clean raw call/event strings from message previews */
 function formatPreview(raw: string | undefined): string | undefined {
   if (!raw) return undefined;
-  // Detect raw event patterns like "call:ended:0", "Call ended [call:ended:0]"
   const bracketMatch = raw.match(/\[([^\]]+)\]/);
   if (bracketMatch) {
-    // Strip the bracket part and format it
     const clean = raw.replace(/\s*\[[^\]]+\]/, "").trim();
     return clean || formatEventMessage(bracketMatch[1]);
   }
@@ -30,13 +28,6 @@ interface Props {
   isActive: boolean;
   index: number;
   onClick: () => void;
-}
-
-function formatTime(dateStr: string): string {
-  const d = new Date(dateStr);
-  if (isToday(d)) return format(d, "HH:mm");
-  if (isYesterday(d)) return "Yesterday";
-  return format(d, "dd/MM/yyyy");
 }
 
 export default function HudConversationCard({ thread, isActive, onClick }: Props) {

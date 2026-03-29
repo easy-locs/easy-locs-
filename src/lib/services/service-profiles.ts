@@ -1,10 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-
-async function getCurrentUserId() {
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) throw new Error("Not authenticated");
-  return data.user.id;
-}
+import { getCurrentUserId } from "@/families/identity";
 
 export async function getOrCreateServiceProfile(params?: {
   workspaceId?: string;

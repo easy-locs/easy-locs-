@@ -5,12 +5,7 @@
  *         trip_live_state, trip_location_points, merchant_profiles
  */
 import { supabase } from "@/integrations/supabase/client";
-
-// ─── Auth helper ───
-export async function getCurrentUserId(): Promise<string | null> {
-  const { data: { user } } = await supabase.auth.getUser();
-  return user?.id ?? null;
-}
+import { getCurrentUserIdOrNull as getCurrentUserId } from "@/families/identity";
 
 // ─── Mobility Jobs ───
 export async function fetchMobilityJobs(filters: {
