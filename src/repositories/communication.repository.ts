@@ -632,3 +632,55 @@ export async function uploadBookingDocument(path: string, file: File) {
   const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
   if (error) throw error;
 }
+
+// ── Chat payment message insert (alias) ──
+export const insertChatPaymentMessage = insertChatMessageV2;
+
+// ── Sign URLs (separate from upload) ──
+export async function signChatMediaUrl(path: string, expiresIn = 60 * 60 * 24 * 365) {
+  const { data } = await supabase.storage.from("chat-media").createSignedUrl(path, expiresIn);
+  return data?.signedUrl || path;
+}
+
+export async function signChatAttachmentUrl(path: string, expiresIn = 60 * 60 * 24 * 365) {
+  const { data } = await supabase.storage.from("chat-attachments").createSignedUrl(path, expiresIn);
+  return data?.signedUrl || path;
+}
+
+// ── Notification preferences ──
+export async function fetchNotificationPrefs(userId: string) {
+  const { data } = await db.from("notification_preferences").select("*").eq("user_id", userId).maybeSingle();
+  return data;
+}
+
+export async function upsertNotificationPrefs(userId: string, prefs: Record<string, any>) {
+  const { error } = await db.from("notification_preferences").upsert(
+    { user_id: userId, ...prefs, updated_at: new Date().toISOString() },
+    { onConflict: "user_id" }
+  );
+  if (error) throw error;
+}
+
+// ── Conversation participants fetch ──
+export async function fetchConversationParticipants(convId: string) {
+  const { data } = await db.from("conversations_v2").select("participants").eq("id", convId).single();
+  return data;
+}
+
+// ── Group member count ──
+export async function fetchGroupMemberCount(groupId: string) {
+  const { count } = await db.from("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  return count || 0;
+}
+
+// ── Mark call as missed ──
+export async function markCallAsMissedV2(sessionId: string, reason: string) {
+  await db.rpc("mark_call_as_missed_v2", { p_session_id: sessionId, p_reason: reason });
+}
+
+// ── Concierge payment ──
+export async function invokeCreateConciergePayment(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("create-concierge-payment", { body });
+  if (error) throw error;
+  return data;
+}
