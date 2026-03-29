@@ -35,8 +35,16 @@ export interface WorkflowConfig {
   name: string;
   domain: string;
   maxRetries?: number;
+  retryDelayMs?: number;
   correlationId?: string;
+  /** Optional idempotency key — prevents double-execution */
+  idempotencyKey?: string;
 }
+
+// ── Idempotency tracking for workflows ──
+const runningWorkflows = new Set<string>();
+const completedWorkflows = new Map<string, WorkflowResult<any>>();
+const MAX_COMPLETED = 200;
 
 export async function runWorkflow<TCtx extends Record<string, any>>(
   config: WorkflowConfig,
