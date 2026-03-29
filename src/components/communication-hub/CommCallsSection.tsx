@@ -1,7 +1,6 @@
 /**
- * CommCallsSection — Call history with single direction icon per entry.
- * Uses HUD tokens. Functional redial. Swipe-to-delete. Fully i18n'd.
- * Resolves orbit IDs to display names — NEVER shows UUIDs.
+ * CommCallsSection — Canonical call history screen.
+ * Identity-first: every row shows name, direction, type, status, time.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,14 +13,14 @@ import { useI18n } from "@/lib/i18n";
 import {
   Phone, PhoneMissed, Video, Search, ArrowDownLeft, ArrowUpRight,
 } from "lucide-react";
-import { format, isToday, isYesterday } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import SwipeableCallItem from "./SwipeableCallItem";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCallStatus, safeDisplayName, isUUID } from "@/lib/orbit/message-formatter";
+import { isUUID } from "@/lib/orbit/message-formatter";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
+import { formatOrbitTimestamp, formatCallStatusLabel } from "@/lib/orbit/canonical-helpers";
 
 type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
