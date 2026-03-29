@@ -15,7 +15,7 @@ const NOTIFICATION_SOUNDS = {
 
 export function useDeliveryNotifications() {
   const { user } = useAuth();
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const channelRef = useRef<ReturnType<typeof createRealtimeChannel> | null>(null);
   const permissionRef = useRef<NotificationPermission>("default");
 
   const requestPermission = useCallback(async () => {

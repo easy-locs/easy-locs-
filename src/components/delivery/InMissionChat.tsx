@@ -40,7 +40,7 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const channelRef = useRef<ReturnType<typeof createRealtimeChannel> | null>(null);
 
   const contextId = `delivery_chat_${jobId}`;
   const isDriver = user?.id === driverId;
