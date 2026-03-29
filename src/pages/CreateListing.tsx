@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import { insertMarketplaceService, fetchMarketplaceServiceBySlug } from "@/repositories/rental.repository";
 import { validateListing } from "@/lib/validation/marketplace-validators";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -324,7 +324,7 @@ const CreateListing = () => {
 
       const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
 
-      const { error } = await supabase.from("marketplace_services").insert({
+      await insertMarketplaceService({
         org_id: orgId, user_id: user.id, provider_id: provider!.id,
         title: form.title.trim(), category: form.category,
         listing_type: form.listing_type,
@@ -361,13 +361,11 @@ const CreateListing = () => {
         coverage_radius_m: form.coverage_radius_m,
         anchor_lat: geoLat,
         anchor_lng: geoLng,
-      } as any);
-
-      if (error) throw error;
+      });
 
       // Auto-assign zone after creation
       if (geoLat && geoLng) {
-        const { data: created } = await supabase.from("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
+        const created = await fetchMarketplaceServiceBySlug(slug);
         if (created?.id) {
           assignZoneToService(created.id, geoLat, geoLng).catch(() => {});
         }
