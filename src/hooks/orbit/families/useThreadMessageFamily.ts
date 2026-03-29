@@ -30,7 +30,7 @@ export function useThreadMessageFamily(params: {
   replyTo: any;
   setReplyTo: (r: any) => void;
   resolveAuthUserId: () => Promise<string | null>;
-  onThreadUpdate: (threadId: string, updates: any) => void;
+  onThreadUpdate: (conversationId: string, updates: any) => void;
 }) {
   const {
     thread, orgId, userId, myOrbitId, locale, e2eReady, encrypt, decrypt,
@@ -78,7 +78,7 @@ export function useThreadMessageFamily(params: {
   });
 
   const messageActions = useOrbitMessageActions({
-    conversationId: (thread?.conversationId || thread?.v2ConversationId) ?? null,
+    conversationId: thread?.conversationId ?? null,
     currentUserId: userId ?? null,
     onAfterChange: () => loader.loadMessages(),
   });

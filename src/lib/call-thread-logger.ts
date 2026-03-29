@@ -24,12 +24,12 @@ const recentCallLogs = new Set<string>();
 
 export async function logCallEventToThread(opts: {
   callId: string;
-  threadId: string;
+  conversationId: string;
   orgId: string;
   senderId: string;
   event: CallEvent;
   durationSeconds?: number;
-  contextId?: string;
+  entityId?: string;
 }) {
   const dedupKey = `${opts.callId}:${opts.event}`;
   if (recentCallLogs.has(dedupKey)) return;
@@ -40,7 +40,7 @@ export async function logCallEventToThread(opts: {
   const taggedContent = `${content} [call:${opts.event}:${opts.durationSeconds ?? 0}]`;
 
   await insertMessage({
-    conversationId: opts.threadId,
+    conversationId: opts.conversationId,
     senderUserId: opts.senderId,
     senderOrbitId: `orbit_${opts.senderId.slice(0, 12)}`,
     type: "system",
@@ -49,7 +49,7 @@ export async function logCallEventToThread(opts: {
       call_id: opts.callId,
       call_event: opts.event,
       duration_seconds: opts.durationSeconds ?? 0,
-      context_id: opts.contextId || opts.threadId,
+      context_id: opts.entityId || opts.conversationId,
     },
   });
 }

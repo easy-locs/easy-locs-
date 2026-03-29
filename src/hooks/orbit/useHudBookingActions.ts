@@ -13,7 +13,7 @@ export function useHudBookingActions(
   orgId: string | null,
   userId: string | undefined,
   myOrbitId: string | null,
-  onThreadUpdate: (threadId: string, updates: Partial<ConversationThread>) => void,
+  onThreadUpdate: (conversationId: string, updates: Partial<ConversationThread>) => void,
 ) {
   const { t } = useI18n();
 

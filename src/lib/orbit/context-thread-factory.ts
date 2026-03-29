@@ -29,7 +29,7 @@ export type OrbitContextType =
 /** Input to create or retrieve a context thread */
 export interface ContextThreadRequest {
   contextType: OrbitContextType;
-  contextId: string;
+  entityId: string;
   orgId: string;
   initiatorId: string;
   participantIds: string[];
@@ -39,11 +39,16 @@ export interface ContextThreadRequest {
   subtitle?: string;
   /** Optional metadata to store on the thread */
   metadata?: Record<string, any>;
+
+  // ── Deprecated compat ──
+  /** @deprecated Use entityId */
+  contextId?: string;
 }
 
 export interface ContextThreadResult {
-  threadId: string;
-  contextId: string;
+  /** Canonical conversation UUID */
+  conversationId: string;
+  entityId: string;
   contextType: OrbitContextType;
   orgId: string;
   isNew: boolean;
@@ -163,7 +168,8 @@ export const CONTEXT_TYPE_REGISTRY: Record<OrbitContextType, ContextTypeConfig> 
 export async function getOrCreateContextThread(
   req: ContextThreadRequest,
 ): Promise<ContextThreadResult | null> {
-  const { contextType, contextId, orgId, initiatorId, participantIds, title, subtitle, metadata } = req;
+  const entityId = req.entityId || req.contextId!;
+  const { contextType, orgId, initiatorId, participantIds, title, subtitle, metadata } = req;
 
   const db = supabase as any;
 
@@ -171,14 +177,14 @@ export async function getOrCreateContextThread(
   const { data: existing } = await db
     .from("conversations_v2")
     .select("id, metadata, type")
-    .contains("metadata", { context_type: contextType, context_id: contextId })
+    .contains("metadata", { context_type: contextType, context_id: entityId })
     .limit(1)
     .maybeSingle();
 
   if (existing) {
     return {
-      threadId: existing.id,
-      contextId,
+      conversationId: existing.id,
+      entityId,
       contextType,
       orgId,
       isNew: false,
@@ -203,7 +209,7 @@ export async function getOrCreateContextThread(
         participants,
         metadata: {
           context_type: contextType,
-          context_id: contextId,
+          context_id: entityId,
           org_id: orgId,
           subtitle: subtitle || null,
           ...metadata,
@@ -223,13 +229,13 @@ export async function getOrCreateContextThread(
         sender_orbit_id: `orbit_${initiatorId.slice(0, 12)}`,
         type: "system",
         body: `${config.emoji} ${config.label} thread created: ${title}`,
-        metadata: { context_type: contextType, context_id: contextId },
+        metadata: { context_type: contextType, context_id: entityId },
       });
     }
 
     return {
-      threadId: newConv.id,
-      contextId,
+      conversationId: newConv.id,
+      entityId,
       contextType,
       orgId,
       isNew: true,
@@ -240,14 +246,14 @@ export async function getOrCreateContextThread(
     const { data: fallback } = await db
       .from("conversations_v2")
       .select("id, metadata, type")
-      .contains("metadata", { context_type: contextType, context_id: contextId })
+      .contains("metadata", { context_type: contextType, context_id: entityId })
       .limit(1)
       .maybeSingle();
 
     if (fallback) {
       return {
-        threadId: fallback.id,
-        contextId,
+        conversationId: fallback.id,
+        entityId,
         contextType,
         orgId,
         isNew: false,
@@ -259,14 +265,12 @@ export async function getOrCreateContextThread(
 
 /**
  * Inject a system action message into a context thread.
- * Used by crons, edge functions, and lifecycle hooks to push
- * structured updates into threads.
  */
 export async function injectThreadSystemMessage(opts: {
-  threadId: string;
+  conversationId: string;
   orgId: string;
   contextType: OrbitContextType;
-  contextId: string;
+  entityId: string;
   content: string;
   category?: string;
   /** Optional structured action payload for rendering action cards */
@@ -278,14 +282,14 @@ export async function injectThreadSystemMessage(opts: {
 
   const db = supabase as any;
   return db.from("chat_messages_v2").insert({
-    conversation_id: opts.threadId,
+    conversation_id: opts.conversationId,
     sender_user_id: "00000000-0000-0000-0000-000000000000",
     sender_orbit_id: "system",
     type: "system",
     body: messageContent,
     metadata: {
       context_type: opts.contextType,
-      context_id: opts.contextId,
+      context_id: opts.entityId,
       category: opts.category || "general",
     },
   });

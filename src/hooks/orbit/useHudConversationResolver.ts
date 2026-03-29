@@ -9,7 +9,7 @@ import { toast } from "sonner";
 interface UseHudConversationResolverParams {
   thread: any;
   myOrbitId: string | null;
-  onThreadUpdate: (threadId: string, updates: any) => void;
+  onThreadUpdate: (conversationId: string, updates: any) => void;
   t: (k: string) => string;
 }
 

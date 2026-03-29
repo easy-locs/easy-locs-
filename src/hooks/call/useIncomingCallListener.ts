@@ -15,7 +15,7 @@ export function useIncomingCallListener(
   onIncoming: (info: {
     callId: string; callerName: string; contextLabel: string;
     isVideo: boolean; orgId: string;
-    conversationId: string | null; threadId?: string | null;
+    conversationId: string | null;
   }) => void,
   onDismissed: () => void,
 ) {

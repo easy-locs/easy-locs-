@@ -13,7 +13,7 @@ import type { ConversationThread } from "@/components/communication-hub/types";
 
 /** Resolve canonical conversationId from thread (with legacy fallback) */
 function getConversationId(thread: ConversationThread | null): string | null {
-  return thread?.conversationId || thread?.v2ConversationId || null;
+  return thread?.conversationId || null;
 }
 
 export function useThreadAttachmentFamily(params: {
@@ -25,7 +25,7 @@ export function useThreadAttachmentFamily(params: {
   e2eReady: boolean;
   encrypt: any;
   resolveAuthUserId: () => Promise<string | null>;
-  onThreadUpdate: (threadId: string, updates: any) => void;
+  onThreadUpdate: (conversationId: string, updates: any) => void;
   onAfterSend: () => void;
 }) {
   const {
@@ -64,7 +64,7 @@ export function useThreadAttachmentFamily(params: {
     peerOrbitId: thread?.peerOrbitId ?? null,
     onAfterSend,
     onConversationCreated: (convId) => {
-      if (thread) onThreadUpdate(thread.id, { conversationId: convId, v2ConversationId: convId });
+      if (thread) onThreadUpdate(thread.id, { conversationId: convId });
     },
   });
 
