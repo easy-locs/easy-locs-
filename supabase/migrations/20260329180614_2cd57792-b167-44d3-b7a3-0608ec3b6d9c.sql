@@ -1,0 +1,1 @@
+ALTER TABLE public.conversation_preferences ADD COLUMN IF NOT EXISTS marked_unread boolean DEFAULT false;
