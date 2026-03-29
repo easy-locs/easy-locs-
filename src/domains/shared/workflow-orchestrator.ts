@@ -51,6 +51,23 @@ export async function runWorkflow<TCtx extends Record<string, any>>(
   steps: WorkflowStep<TCtx>[],
   initialContext: TCtx
 ): Promise<WorkflowResult<TCtx>> {
+  const idKey = config.idempotencyKey ?? `${config.domain}:${config.name}:${JSON.stringify(initialContext).slice(0, 100)}`;
+
+  // Idempotency: return cached result if already completed
+  const cached = completedWorkflows.get(idKey);
+  if (cached) {
+    log.warn("workflow_idempotent_skip", { name: config.name, idKey });
+    return cached as WorkflowResult<TCtx>;
+  }
+
+  // Prevent concurrent duplicate runs
+  if (runningWorkflows.has(idKey)) {
+    log.warn("workflow_already_running", { name: config.name, idKey });
+    return { ok: false, context: initialContext, completedSteps: [], error: "Workflow already running" };
+  }
+
+  runningWorkflows.add(idKey);
+
   const correlationId = config.correlationId ?? crypto.randomUUID();
   const timer = log.timed(`workflow:${config.name}`, { correlationId });
   const completedSteps: string[] = [];
