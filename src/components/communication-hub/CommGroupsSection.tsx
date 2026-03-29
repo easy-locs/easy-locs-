@@ -420,9 +420,7 @@ export default function CommGroupsSection() {
     <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>
-            {t("orbit.groups.title") || "Communities"}
-          </h2>
+          <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>Groups</h2>
           <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs"
             style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4" /> {t("orbit.groups.create") || "Create"}
