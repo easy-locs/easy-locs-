@@ -1,14 +1,13 @@
 /**
  * orbit.realtime.subscriber — Realtime channel subscriptions for Orbit.
- * Manages Supabase realtime channels. Zero business logic.
+ * Uses canonical realtime channel factory. Zero direct supabase imports.
  */
-import { supabase } from "@/integrations/supabase/client";
-import type { RealtimeChannel } from "@supabase/supabase-js";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 type MessageCallback = (payload: any) => void;
 type ConversationCallback = (payload: any) => void;
 
-const activeChannels: Map<string, RealtimeChannel> = new Map();
+const activeChannels: Map<string, any> = new Map();
 
 /** Subscribe to new messages in a specific conversation */
 export function subscribeToMessages(
@@ -18,8 +17,7 @@ export function subscribeToMessages(
   const key = `msgs:${conversationId}`;
   unsubscribeChannel(key);
 
-  const channel = supabase
-    .channel(key)
+  const channel = createRealtimeChannel(key)
     .on(
       "postgres_changes",
       {
@@ -44,8 +42,7 @@ export function subscribeToConversations(
   const key = `convos:${orbitId}`;
   unsubscribeChannel(key);
 
-  const channel = supabase
-    .channel(key)
+  const channel = createRealtimeChannel(key)
     .on(
       "postgres_changes",
       {
@@ -65,7 +62,7 @@ export function subscribeToConversations(
 function unsubscribeChannel(key: string) {
   const existing = activeChannels.get(key);
   if (existing) {
-    supabase.removeChannel(existing);
+    removeRealtimeChannel(existing);
     activeChannels.delete(key);
   }
 }
