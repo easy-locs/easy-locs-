@@ -4,7 +4,7 @@
  * for the marketplace_services table (single source of truth).
  */
 import { useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -80,7 +80,7 @@ export function useListingRealtimeSync(orgId?: string) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(channel);
     };
   }, [orgId, queryClient]);
 }
@@ -107,7 +107,7 @@ export function useExploreRealtimeSync() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(channel);
     };
   }, [queryClient]);
 }
@@ -241,7 +241,7 @@ export function useBookingConfirmationSync() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(channel);
     };
   }, [queryClient]);
 }

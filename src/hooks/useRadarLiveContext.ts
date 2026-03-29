@@ -3,7 +3,7 @@
  * Subscribes to geo_live_context, rider_runtime_state, zone_events.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import type { GeoLiveContext, RiderRuntimeState } from "@/lib/mobility/live-context-engine";
 import type { ZoneEvent } from "@/lib/radar/predictive-demand-engine";
 
@@ -78,7 +78,7 @@ export function useRadarLiveContext(mode: RadarMode = "client") {
     }
 
     return () => {
-      channelsRef.current.forEach(ch => supabase.removeChannel(ch));
+      channelsRef.current.forEach(ch => removeRealtimeChannel(ch));
       channelsRef.current = [];
     };
   }, [mode, fetchAll]);

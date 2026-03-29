@@ -4,7 +4,7 @@
  * V3: Migrated to chat_messages_v2.
  */
 import { useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
@@ -47,7 +47,7 @@ export default function RealtimeMessageToast() {
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [user]);
 
   return null;

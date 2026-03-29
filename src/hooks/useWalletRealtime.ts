@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 
@@ -61,7 +61,7 @@ export function useWalletRealtime() {
     ];
 
     return () => {
-      supabase.removeChannel(walletChannel);
+      removeRealtimeChannel(walletChannel);
       unsubs.forEach((u) => u());
     };
   }, [refresh, user?.id]);

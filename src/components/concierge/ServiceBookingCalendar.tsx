@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { format, isBefore, startOfDay, addDays, eachDayOfInterval, differenceInCalendarDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
@@ -124,7 +124,7 @@ function useServiceAvailability(serviceId: string) {
       .on("postgres_changes", { event: "*", schema: "public", table: "concierge_orders", filter: `service_id=eq.${serviceId}` }, () => load())
       .on("postgres_changes", { event: "*", schema: "public", table: "marketplace_bookings", filter: `service_id=eq.${serviceId}` }, () => load())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [serviceId]);
 
   return { bookedSlots, loading };

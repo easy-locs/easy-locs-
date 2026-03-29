@@ -3,7 +3,7 @@
  * PASS85-GG: Customer Notifications & Tracking Page
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { motion, AnimatePresence } from "framer-motion";
 import { Package, MapPin, Clock, CheckCircle2, Truck, Phone, Star, Shield, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -127,7 +127,7 @@ export default function CustomerTrackingPage() {
           if (newStatus === "completed") toast.success("✅ Votre colis a été livré !");
         })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [tracking?.id]);
 
   const currentStep = tracking ? (STATUS_INDEX[tracking.status] ?? 0) : 0;

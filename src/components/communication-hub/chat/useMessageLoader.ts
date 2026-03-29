@@ -3,7 +3,7 @@
  * Reads from chat_messages_v2 exclusively. No legacy path.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 const db = supabase as any;
 
@@ -303,7 +303,7 @@ export function useMessageLoader({
       )
       .subscribe();
 
-    const typingChannel = supabase.channel(`rt:typing:v2:${conversationId}`);
+    const typingChannel = createRealtimeChannel(`rt:typing:v2:${conversationId}`);
 
     typingChannel
       .on("presence", { event: "sync" }, () => {
@@ -320,8 +320,8 @@ export function useMessageLoader({
     return () => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingChannelRef.current = null;
-      supabase.removeChannel(channel);
-      supabase.removeChannel(typingChannel);
+      removeRealtimeChannel(channel);
+      removeRealtimeChannel(typingChannel);
     };
   }, [thread, userId, readReceipts, onThreadUpdate, realtimeTrace]);
 

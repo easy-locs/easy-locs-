@@ -1,6 +1,6 @@
 /**
  * useRentalRealtimeBridge — Extracted realtime subscription for rental messages.
- * Replaces inline supabase.channel() calls in RentalManagement.tsx.
+ * Replaces inline createRealtimeChannel() calls in RentalManagement.tsx.
  */
 import { useEffect, useState, useCallback } from "react";
 import { subscribeRentalMessages, fetchRentalMessages, sendRentalMessage, sendRentalNotification } from "@/lib/rental/rental-repository";

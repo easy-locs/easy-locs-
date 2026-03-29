@@ -4,7 +4,7 @@
  * Actions are enabled/disabled based on state.
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import {
   resolveProfilesByEmail, resolveProfilesByPhone, resolveOrgMemberships, sendInviteEmail,
 } from "@/repositories/communication.repository";
@@ -234,7 +234,7 @@ export default function CommContactsSection() {
       .channel(`contacts-sync-${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "orbit_contacts_v2", filter: `owner_user_id=eq.${user.id}` }, () => loadContacts())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [user?.id, loadContacts]);
 
   // ── Resolve contact capabilities ──

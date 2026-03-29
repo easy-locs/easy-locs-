@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export interface TripLivePosition {
   job_id: string;
@@ -61,7 +61,7 @@ export function useTripLiveTracking(jobId: string | null) {
 
     return () => {
       mounted = false;
-      void supabase.removeChannel(channel);
+      void removeRealtimeChannel(channel);
     };
   }, [jobId]);
 
