@@ -18,7 +18,6 @@ export function useThreadComposerFamily(params: {
   encrypt: any;
   resolveAuthUserId: () => Promise<string | null>;
   resolveConversationId: (authUserId: string) => Promise<string | null>;
-  uploadToStorage: any;
   setUploading: (v: boolean) => void;
   disappearTTL: string;
   defaultDisappearTtl: string;
@@ -30,7 +29,7 @@ export function useThreadComposerFamily(params: {
 }) {
   const {
     thread, orgId, userId, myOrbitId, e2eReady, encrypt,
-    resolveAuthUserId, resolveConversationId, uploadToStorage, setUploading,
+    resolveAuthUserId, resolveConversationId, setUploading,
     disappearTTL, defaultDisappearTtl, setSecurityLevel, setViewOnceNext,
     setShowLocationPicker, setNewMessage, t,
   } = params;
@@ -47,7 +46,6 @@ export function useThreadComposerFamily(params: {
     encrypt,
     resolveAuthUserId,
     resolveConversationId,
-    uploadToStorage,
     setUploading,
     disappearTTL,
     defaultDisappearTtl,

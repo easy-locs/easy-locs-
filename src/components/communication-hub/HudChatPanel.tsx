@@ -106,7 +106,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const compFamily = useThreadComposerFamily({
     thread, orgId: orgId || null, userId: user?.id, myOrbitId,
     e2eReady, encrypt, resolveAuthUserId, resolveConversationId,
-    uploadToStorage: attFamily.attachments.uploadToStorage,
     setUploading: attFamily.attachments.setUploading,
     disappearTTL: security.disappearTTL,
     defaultDisappearTtl: privacySettings.defaultDisappearTtl,
