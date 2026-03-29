@@ -198,25 +198,22 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
     try {
       // If we have a jobId, confirm delivery via edge function
       if (jobId) {
-        const { data, error } = await deliveryRepo.invokeProofOfDelivery({
-          body: {
-            action: "update_status",
-            job_id: jobId,
-            status: "completed",
-            proof_data: {
-              recipient_name: proof.recipientName,
-              gps_lat: proof.geoLat,
-              gps_lng: proof.geoLng,
-              gps_accuracy: proof.geoAccuracy,
-              qr_code: proof.qrCode || null,
-              photo_taken: proof.photoTaken,
-              signature_captured: proof.signatureCaptured,
-              timestamp: proof.timestamp,
-              notes: proof.notes,
-            },
+        const data = await deliveryRepo.invokeProofOfDelivery({
+          action: "update_status",
+          job_id: jobId,
+          status: "completed",
+          proof_data: {
+            recipient_name: proof.recipientName,
+            gps_lat: proof.geoLat,
+            gps_lng: proof.geoLng,
+            gps_accuracy: proof.geoAccuracy,
+            qr_code: proof.qrCode || null,
+            photo_taken: proof.photoTaken,
+            signature_captured: proof.signatureCaptured,
+            timestamp: proof.timestamp,
+            notes: proof.notes,
           },
         });
-        if (error) throw error;
         if (data?.error) throw new Error(data.error);
       }
 
