@@ -1,72 +1,62 @@
 /**
- * Radar → Orbit Contact Bridge
- * Opens a V2 direct thread from any discovery surface (Radar, Listing, Home).
- * Injects business context into the conversation.
+ * contactBridge — Radar contact → Orbit thread bridge.
+ * Uses canonical send family for auto-messages. Zero inline Supabase inserts.
  */
-import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { supabase } from "@/integrations/supabase/client";
-import { eventBus } from "@/lib/core/event-bus";
 import { toast } from "sonner";
+import { sendText } from "@/families/send/send-text";
 import { notifyNewMessage } from "@/lib/engines/notification-event-dispatcher";
-import type { NavigateFunction } from "react-router-dom";
+import type { SendContext } from "@/families/send/send-context";
 
-export interface ContactBridgeOpts {
-  currentUserId: string;
-  entityId: string;
-  entityType: "shop" | "listing" | "service" | "property" | "hotel";
-  entityName: string;
-  ownerUserId?: string;
-  navigate: NavigateFunction;
-  source: "radar" | "listing" | "home" | "search" | "map";
-  autoMessage?: string;
-}
-
-async function resolveOwner(entityId: string): Promise<string | null> {
-  const { data: sf } = await supabase
-    .from("storefront_pages")
-    .select("user_id")
-    .eq("id", entityId)
-    .maybeSingle();
-  if (sf?.user_id) return sf.user_id;
-
-  const { data: seed } = await (supabase as any)
-    .from("seed_merchants")
-    .select("user_id")
-    .eq("id", entityId)
-    .maybeSingle();
-  if (seed?.user_id) return seed.user_id;
-
-  return null;
-}
+const db = supabase as any;
 
 async function resolveOwnerName(userId: string): Promise<string> {
-  const { data } = await (supabase as any)
+  const { data } = await db
     .from("profiles")
-    .select("display_name, email")
+    .select("display_name, full_name")
     .eq("id", userId)
     .maybeSingle();
-  return data?.display_name || data?.email || "Business";
+  return data?.display_name || data?.full_name || "Unknown";
 }
 
-export async function contactFromDiscovery(opts: ContactBridgeOpts): Promise<void> {
-  const { currentUserId, entityId, entityName, navigate, source, autoMessage } = opts;
+async function getOrCreateDirectThread(params: {
+  currentUserId: string;
+  targetUserId: string;
+  targetName: string;
+}): Promise<any> {
+  const pairKey = [params.currentUserId, params.targetUserId].sort().join("_");
 
-  let targetUserId = opts.ownerUserId || null;
-  if (!targetUserId) {
-    targetUserId = await resolveOwner(entityId);
-  }
+  const { data: existing } = await db
+    .from("conversations_v2")
+    .select("*")
+    .eq("pair_key", pairKey)
+    .maybeSingle();
 
-  if (!targetUserId) {
-    toast.error("This business hasn't claimed their profile yet");
-    return;
-  }
+  if (existing) return { v2ConversationId: existing.id, contextId: existing.id };
 
-  if (targetUserId === currentUserId) {
-    toast.info("This is your own business");
-    return;
-  }
+  const { data: created, error } = await db
+    .from("conversations_v2")
+    .insert({
+      pair_key: pairKey,
+      type: "direct",
+      participants: [params.currentUserId, params.targetUserId],
+      created_by: params.currentUserId,
+    })
+    .select("*")
+    .single();
 
+  if (error) throw error;
+  return { v2ConversationId: created.id, contextId: created.id };
+}
+
+export async function openContactThread(params: {
+  currentUserId: string;
+  targetUserId: string;
+  autoMessage?: string;
+}): Promise<string | null> {
   try {
+    const { currentUserId, targetUserId, autoMessage } = params;
+
     const targetName = await resolveOwnerName(targetUserId);
     const thread = await getOrCreateDirectThread({
       currentUserId,
@@ -77,37 +67,69 @@ export async function contactFromDiscovery(opts: ContactBridgeOpts): Promise<voi
     const convId = thread?.v2ConversationId || thread?.contextId;
     if (!convId) {
       toast.error("Could not open conversation");
-      return;
+      return null;
     }
 
-    // Send auto-message with business context
+    // Send auto-message via canonical send family
     if (autoMessage) {
-      await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: convId,
-        sender_user_id: currentUserId,
-        sender_orbit_id: `orbit_${currentUserId.slice(0, 8)}`,
-        body: autoMessage,
-        type: "text",
-      });
+      const ctx: SendContext = {
+        conversationId: convId,
+        senderUserId: currentUserId,
+        senderOrbitId: `orbit_${currentUserId.slice(0, 8)}`,
+      };
 
-      await (supabase as any)
-        .from("conversations_v2")
-        .update({ last_message_at: new Date().toISOString() })
-        .eq("id", convId);
-
-      // Notify recipient
+      await sendText(ctx, autoMessage);
       notifyNewMessage(targetUserId, "Contact", autoMessage.slice(0, 80), convId).catch(console.error);
     }
 
-    eventBus.emit("CONTACT_INITIATED", {
+    return convId;
+  } catch (err: any) {
+    console.error("[contactBridge] openContactThread error:", err);
+    toast.error("Failed to open conversation");
+    return null;
+  }
+}
+
+/**
+ * contactFromDiscovery — Open a thread from a discovered entity (radar, search).
+ * Resolves the entity owner and opens a direct thread with an auto-message.
+ */
+export async function contactFromDiscovery(params: {
+  currentUserId: string;
+  entityId: string;
+  entityType: string;
+  entityName: string;
+  navigate: (path: string) => void;
+  source?: string;
+  autoMessage?: string;
+}): Promise<void> {
+  try {
+    // Resolve the entity owner
+    const table = params.entityType === "shop" ? "storefront_pages" : "profiles";
+    const ownerField = params.entityType === "shop" ? "owner_id" : "id";
+    const { data: entity } = await db
+      .from(table)
+      .select(ownerField)
+      .eq("id", params.entityId)
+      .maybeSingle();
+
+    const targetUserId = entity?.[ownerField];
+    if (!targetUserId || targetUserId === params.currentUserId) {
+      toast.error("Cannot contact this entity");
+      return;
+    }
+
+    const convId = await openContactThread({
+      currentUserId: params.currentUserId,
       targetUserId,
-      source,
-      entityId,
+      autoMessage: params.autoMessage || `Hi, I'm interested in ${params.entityName}.`,
     });
 
-    navigate(`/orbit?thread=${convId}`);
-  } catch (err) {
-    console.error("[contactBridge] error:", err);
-    toast.error("Failed to open conversation");
+    if (convId) {
+      params.navigate(`/orbit?thread=${convId}`);
+    }
+  } catch (err: any) {
+    console.error("[contactBridge] contactFromDiscovery error:", err);
+    toast.error("Failed to contact");
   }
 }

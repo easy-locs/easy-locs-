@@ -1,11 +1,12 @@
 /**
- * useHudViewOnceSend — Atomic hook: handle view-once photo upload and send.
- * Single responsibility: view-once media in HudChatPanel.
+ * useHudViewOnceSend — Atomic: view-once photo upload + send via canonical send family.
+ * Zero inline Supabase.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { sendMedia } from "@/families/send/send-media";
 import { computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { toast } from "sonner";
+import type { SendContext } from "@/families/send/send-context";
 
 interface UseHudViewOnceSendParams {
   thread: any;
@@ -41,19 +42,22 @@ export function useHudViewOnceSend({
       const disappearAt = computeDisappearAt(disappearTTL !== "off" ? disappearTTL : defaultDisappearTtl);
       const conversationId = await resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
-      await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: conversationId,
-        sender_user_id: authUserId,
-        sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: thread.peerOrbitId ?? null,
-        type: "media",
+
+      const ctx: SendContext = {
+        conversationId,
+        senderUserId: authUserId,
+        senderOrbitId: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        receiverOrbitId: thread.peerOrbitId ?? null,
+      };
+
+      await sendMedia(ctx, {
+        mediaUrl: finalUrl,
         body: "📷 View-once photo",
-        metadata: { url: finalUrl, view_once: true, disappear_at: disappearAt },
+        viewOnce: true,
+        disappearAt,
+        mediaKind: "image",
       });
-      await (supabase as any).from("conversations_v2").update({
-        last_message_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }).eq("id", conversationId);
+
       toast.success(t("orbit.view_once_sent") || "View-once photo sent");
     } catch (e: any) {
       toast.error(e?.message || "Upload failed");
