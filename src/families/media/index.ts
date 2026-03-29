@@ -15,6 +15,11 @@ export type { UploadItem, UploadStatus } from "./media-upload";
 // ── Media Send (optimistic pipeline) ──
 export { sendMediaOptimistic, retryMediaUpload } from "@/families/send/send-media-optimistic";
 
+// ── Media Transport (compression, chunked upload, retry, network awareness) ──
+export { TransportPolicy, type TransportDecision } from "./transport/transport-policy";
+export { compressImage, type CompressResult } from "./transport/compress-image";
+export { transportUpload, transportUploadWithPrepare, type TransportCallbacks } from "./transport/transport-engine";
+
 // ── Media Preview State (preview-before-send) ──
 export { useMediaPreviewState } from "./media-preview-state";
 export type { PreviewItem } from "./media-preview-state";
