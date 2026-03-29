@@ -31798,6 +31798,15 @@ export type Database = {
           lng: number
         }[]
       }
+      get_display_profile: {
+        Args: { target_id: string }
+        Returns: {
+          first_name: string
+          id: string
+          last_name: string
+          username: string
+        }[]
+      }
       get_listing_property: { Args: { p_listing_id: string }; Returns: Json }
       get_order_by_session: { Args: { _session_id: string }; Returns: Json }
       get_org_role: {
