@@ -4,7 +4,7 @@
  * Layer 3.3: Realtime subscriptions.
  */
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -46,8 +46,7 @@ export function useRealtimeSubscription({
     };
     if (filter) channelConfig.filter = filter;
 
-    const channel = supabase
-      .channel(channelName)
+    const channel = createRealtimeChannel(channelName)
       .on("postgres_changes", channelConfig, (payload) => {
         // Invalidate specified query keys
         if (queryKeys?.length) {
