@@ -474,3 +474,121 @@ export async function sendInviteEmail(recipientEmail: string, subject: string, m
     },
   });
 }
+
+// ── Notification preferences ──
+export async function fetchNotificationPreferences(userId: string) {
+  const { data } = await db.from("notification_preferences").select("*").eq("user_id", userId).single();
+  return data;
+}
+
+export async function upsertNotificationPreferences(userId: string, prefs: Record<string, any>) {
+  const { error } = await db.from("notification_preferences").upsert(
+    { user_id: userId, ...prefs, updated_at: new Date().toISOString() },
+    { onConflict: "user_id" }
+  );
+  if (error) throw error;
+}
+
+// ── Group member role ──
+export async function updateGroupMemberRoleById(memberId: string, role: string) {
+  const { error } = await supabase.from("group_members").update({ role } as any).eq("id", memberId);
+  if (error) throw error;
+}
+
+export async function fetchGroupMembersByGroupId(groupId: string) {
+  const { data } = await supabase.from("group_members").select("*").eq("group_id", groupId);
+  return data || [];
+}
+
+// ── Group conversations ──
+export async function updateConversationParticipants(convId: string, participants: any[]) {
+  await db.from("conversations_v2").update({ participants, updated_at: new Date().toISOString() }).eq("id", convId);
+}
+
+// ── Chat message delete/edit ──
+export async function deleteChatMessageForEveryone(msgId: string, userId: string) {
+  const { error } = await db.from("chat_messages_v2").update({
+    deleted_at: new Date().toISOString(),
+    body: "🚫 This message was deleted",
+    metadata: { deleted_by: userId, deletion_reason: "user_action" },
+  }).eq("id", msgId);
+  if (error) throw error;
+}
+
+export async function deleteChatMessageModeration(msgId: string, userId: string) {
+  const { error } = await db.from("chat_messages_v2").update({
+    deleted_at: new Date().toISOString(),
+    body: "🚫 This message was deleted",
+    metadata: { deleted_by: userId, deletion_reason: "moderation" },
+  }).eq("id", msgId);
+  if (error) throw error;
+}
+
+export async function hideChatMessageForSelf(msgId: string, userId: string) {
+  const { error } = await db.from("chat_messages_v2").update({
+    metadata: { hidden_for: [userId] },
+  }).eq("id", msgId);
+  if (error) throw error;
+}
+
+export async function editChatMessage(msgId: string, newBody: string) {
+  const { error } = await db.from("chat_messages_v2").update({
+    body: newBody, edited_at: new Date().toISOString(),
+  }).eq("id", msgId);
+  if (error) throw error;
+}
+
+export async function setDisappearTimer(msgId: string, seconds: number) {
+  const disappearAt = seconds > 0 ? new Date(Date.now() + seconds * 1000).toISOString() : null;
+  const { error } = await db.from("chat_messages_v2").update({
+    metadata: { disappear_after_seconds: seconds, disappear_at: disappearAt },
+  }).eq("id", msgId);
+  if (error) throw error;
+}
+
+// ── Voice message insert ──
+export async function insertVoiceMessage(params: {
+  conversationId: string; senderUserId: string; senderOrbitId: string;
+  body: string; audioUrl: string; duration: number;
+}) {
+  const { data, error } = await db.from("chat_messages_v2").insert({
+    conversation_id: params.conversationId,
+    sender_user_id: params.senderUserId,
+    sender_orbit_id: params.senderOrbitId,
+    type: "audio",
+    body: params.body,
+    metadata: { audio_url: params.audioUrl, audio_duration_seconds: params.duration },
+  }).select("*").single();
+  if (error) throw error;
+  return data;
+}
+
+// ── Chat media/attachment upload ──
+export async function uploadChatMedia(path: string, file: File) {
+  const { error } = await supabase.storage.from("chat-media").upload(path, file);
+  if (error) throw error;
+  const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
+  return signed?.signedUrl || path;
+}
+
+export async function uploadChatAttachment(path: string, blob: Blob) {
+  const { error } = await supabase.storage.from("chat-attachments").upload(path, blob);
+  if (error) throw error;
+  const { data: signed } = await supabase.storage.from("chat-attachments").createSignedUrl(path, 60 * 60 * 24 * 365);
+  return signed?.signedUrl || path;
+}
+
+// ── Auth user for comm hooks ──
+export async function getCommAuthUser() {
+  const { data } = await supabase.auth.getUser();
+  return data?.user || null;
+}
+
+// ── Realtime channel for groups ──
+export function createRealtimeChannel(name: string) {
+  return supabase.channel(name);
+}
+
+export function removeRealtimeChannel(channel: any) {
+  supabase.removeChannel(channel);
+}

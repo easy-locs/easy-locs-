@@ -72,3 +72,32 @@ export async function invokeSendEmail(body: Record<string, any>) {
   const { error } = await supabase.functions.invoke("send-email", { body });
   if (error) throw error;
 }
+
+// ── Inventory rooms/items for report ──
+export async function fetchInventoryRoomsWithItems(reportId: string) {
+  const { data: rooms } = await supabase.from("inventory_rooms").select("*").eq("report_id", reportId).order("sort_order");
+  const result = [];
+  for (const r of rooms || []) {
+    const { data: items } = await supabase.from("inventory_items").select("*").eq("room_id", r.id).order("sort_order");
+    result.push({
+      room_name: r.room_name,
+      items: (items || []).map((it: any) => ({
+        element_name: it.element_name, condition: it.condition,
+        notes: it.notes || "", photo_urls: Array.isArray(it.photo_urls) ? it.photo_urls : [],
+      })),
+    });
+  }
+  return result;
+}
+
+export async function fetchInventoryReportById(reportId: string) {
+  const { data } = await supabase.from("inventory_reports").select("*").eq("id", reportId).single();
+  return data;
+}
+
+export async function fetchInventoryReportsForOrg(orgId: string) {
+  const { data } = await supabase.from("inventory_reports")
+    .select("id, property_id, tenant_id, report_type, report_date, status")
+    .eq("org_id", orgId).order("report_date", { ascending: false });
+  return data || [];
+}
