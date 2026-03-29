@@ -51,6 +51,9 @@ export interface CanonicalDisplayIdentity {
   subtitle: string;
   avatarUrl: string | null;
   initials: string;
+  /** Pass-through canonical IDs when available */
+  canonicalUserId?: string | null;
+  canonicalOrbitId?: string | null;
 }
 
 export function resolveCanonicalDisplayIdentity(entity: {
@@ -62,6 +65,9 @@ export function resolveCanonicalDisplayIdentity(entity: {
   avatarUrl?: string | null;
   company?: string | null;
   role?: string | null;
+  id?: string | null;
+  user_id?: string | null;
+  orbit_id?: string | null;
 }): CanonicalDisplayIdentity {
   const name = entity.display_name || entity.name || null;
   const email = entity.email || null;
@@ -82,5 +88,12 @@ export function resolveCanonicalDisplayIdentity(entity: {
     .join("")
     .toUpperCase() || "?";
 
-  return { displayName, subtitle, avatarUrl, initials };
+  return {
+    displayName,
+    subtitle,
+    avatarUrl,
+    initials,
+    canonicalUserId: entity.user_id || entity.id || null,
+    canonicalOrbitId: entity.orbit_id || null,
+  };
 }
