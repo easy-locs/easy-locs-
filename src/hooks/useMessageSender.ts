@@ -1,19 +1,15 @@
 /**
  * useMessageSender — THIN ORCHESTRATOR for message sending.
- * Delegates conversation resolution to conversation-resolver.
- * Delegates payload construction to message-payload-builder.
+ * Delegates to canonical sendText() from the send family.
  * Keeps: optimistic UI, offline queue, encryption, event emission.
  */
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolveConversationId } from "@/lib/orbit/messaging/conversation-resolver";
-import { buildMessagePayload } from "@/lib/orbit/messaging/message-payload-builder";
+import { sendText } from "@/families/send";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
-
-const db = supabase as any;
 
 type SecurityLevel = "normal" | "high" | "ghost";
 
@@ -168,22 +164,20 @@ export function useMessageSender(params: Params) {
       } catch { /* plaintext fallback */ }
     }
 
-    // ── Build payload ──
-    const senderOrbitId = myOrbitId || `orbit_${authUserId.slice(0, 12)}`;
-    const payload = buildMessagePayload({
-      conversationId, senderUserId: authUserId,
-      senderOrbitId, receiverOrbitId: thread.peerOrbitId,
-      body: storedContent, encrypted: encryptedState,
-      replyToMessageId: currentReply?.msgId,
-      category: selectedCategory, locale, securityLevel, disappearTTL,
-    });
-
     // ── Offline queue ──
     if (!offline.isOnline) {
       const offlineStep = addStep(flow, "offline_queue");
       try {
+        const senderOrbitId = myOrbitId || `orbit_${authUserId.slice(0, 12)}`;
         const queuedId = await offline.queueMessage(storedContent, encryptedState, {
-          ...payload, reply_to_message_id: currentReply?.msgId ?? null,
+          conversation_id: conversationId,
+          sender_user_id: authUserId,
+          sender_orbit_id: senderOrbitId,
+          receiver_orbit_id: thread.peerOrbitId ?? null,
+          type: "text",
+          body: storedContent,
+          reply_to_message_id: currentReply?.msgId ?? null,
+          metadata: { encrypted: encryptedState, category: selectedCategory || "general", locale: locale || "en", security_level: securityLevel || "normal", disappear_ttl: disappearTTL ?? null },
         });
         setRawMessages((prev) => prev.map((m) => m.id === optimisticId ? { ...m, id: queuedId, pending: true, failed: false } : m));
         setPendingOffline((prev) => [...prev, { id: queuedId, conversationId, body: storedContent }]);
@@ -203,44 +197,42 @@ export function useMessageSender(params: Params) {
       }
     }
 
-    // ── DB write ──
+    // ── Canonical send via send family ──
     setSending(true);
-    const dbStep = addStep(flow, "db_write");
+    const dbStep = addStep(flow, "canonical_send");
     try {
-      const { data, error } = await db
-        .from("chat_messages_v2")
-        .insert(payload)
-        .select("*")
-        .single();
+      const senderOrbitId = myOrbitId || `orbit_${authUserId.slice(0, 12)}`;
+      const data = await sendText(
+        {
+          conversationId,
+          senderUserId: authUserId,
+          senderOrbitId,
+          receiverOrbitId: thread.peerOrbitId,
+          threadId: thread.id,
+          orgId: orgId || null,
+        },
+        storedContent,
+        {
+          encrypted: encryptedState,
+          replyToMessageId: currentReply?.msgId,
+          category: selectedCategory,
+          locale,
+          securityLevel,
+          disappearTTL: disappearTTL ?? null,
+        },
+      );
 
-      if (error) {
-        failStep(flow, dbStep, error.message);
-        throw error;
-      }
-      completeStep(flow, dbStep, { id: data.id });
-
-      // Update conversation preview
-      const preview = msgText.slice(0, 120);
-      await db.from("conversations_v2").update({
-        last_message_at: data.created_at || now,
-        last_message_preview: preview,
-        updated_at: data.created_at || now,
-      }).eq("id", conversationId);
+      completeStep(flow, dbStep, { id: data?.id });
 
       // ── Reconcile optimistic ──
       setRawMessages((prev) => prev.map((m) =>
-        m.id === optimisticId ? { ...m, id: data.id, created_at: data.created_at || now, pending: false, failed: false } : m
+        m.id === optimisticId ? { ...m, id: data?.id || optimisticId, created_at: data?.created_at || now, pending: false, failed: false } : m
       ));
 
       onThreadUpdate(thread.id, {
-        lastMessage: msgText, lastMessageTime: data.created_at || now,
-        lastMessagePreview: preview, unreadCount: 0,
+        lastMessage: msgText, lastMessageTime: data?.created_at || now,
+        lastMessagePreview: msgText.slice(0, 120), unreadCount: 0,
       });
-
-      platformBus.emit("orbit:message_sent", {
-        threadId: thread.id, conversationId,
-        contentPreview: msgText.slice(0, 80), offline: false,
-      }, "orbit", { userId: authUserId, orgId: orgId || undefined });
 
       setSecurityLevel("normal");
       reportHealth("orbit", "ok");
