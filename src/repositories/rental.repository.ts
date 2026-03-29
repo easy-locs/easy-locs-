@@ -735,11 +735,4 @@ export async function fetchDriverEarningsData(userId: string) {
   return { wallet, allSplits: allSplits ?? [], jobs: jobs ?? [], completedCount: completedCount ?? 0, cancelledCount: cancelledCount ?? 0 };
 }
 
-// ── Realtime channel helpers (thin wrappers for decoupling) ──
-export function createRealtimeChannel(name: string, opts?: any) {
-  return supabase.channel(name, opts);
-}
-
-export function removeRealtimeChannel(channel: any) {
-  return supabase.removeChannel(channel);
-}
+// Realtime channel helpers moved to src/lib/realtime.ts
