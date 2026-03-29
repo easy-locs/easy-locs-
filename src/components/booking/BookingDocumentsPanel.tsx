@@ -2,8 +2,7 @@
  * BookingDocumentsPanel — Reusable document upload/view panel for any booking type.
  * Works with both seasonal booking_requests and concierge_orders.
  */
-import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadBookingDocumentFile, getBookingDocumentPublicUrl, updateDocumentUrls } from "@/repositories/rental.repository";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";

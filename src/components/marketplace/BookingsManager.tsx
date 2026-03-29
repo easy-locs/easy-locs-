@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Clock, X, Send, CreditCard, FileText, MessageCircle, Mail, ShoppingCart } from "lucide-react";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadBookingDocumentFile, signBookingDocumentUrl } from "@/repositories/rental.repository";
 import { sendCommunicationEvent, createDeepLinkMeta, type CommunicationEvent, type DeepLinkMeta } from "@/lib/shared";
 import BookingStatusBadge from "./BookingStatusBadge";
 
