@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as aiRepo from "@/repositories/ai.repository";
 
 /**
  * Automatically translates text content based on the visitor's browser language.
@@ -24,8 +24,8 @@ export function useAutoTranslate(originalText: string | null | undefined, source
     const doTranslate = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke("translate-message", {
-          body: { text: originalText, from_locale: srcLang, to_locale: browserLang },
+        const data = await aiRepo.invokeTranslateMessage({
+          text: originalText, from_locale: srcLang, to_locale: browserLang,
         });
         if (!cancelled && data?.translated) {
           setTranslated(data.translated);
@@ -87,8 +87,8 @@ export function useAutoTranslateBatch(
         await Promise.all(
           chunk.map(async ([key, text]) => {
             try {
-              const { data } = await supabase.functions.invoke("translate-message", {
-                body: { text, from_locale: srcLang, to_locale: browserLang },
+              const data = await aiRepo.invokeTranslateMessage({
+                text, from_locale: srcLang, to_locale: browserLang,
               });
               if (!cancelled && data?.translated) {
                 results[key] = data.translated;
