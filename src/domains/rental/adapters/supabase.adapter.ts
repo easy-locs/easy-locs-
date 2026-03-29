@@ -76,23 +76,15 @@ export const rentCallAdapter: RentCallRepository = {
 // ── Property Adapter ──
 export const propertyAdapter: PropertyRepository = {
   async findById(id: string): Promise<Property | null> {
-    const { fetchPropertyById } = await import("@/repositories/rental.repository");
-    try {
-      const raw = await fetchPropertyById(id);
-      return raw ? mapProperty(raw) : null;
-    } catch {
-      return null;
-    }
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase.from("properties").select("*").eq("id", id).maybeSingle();
+    return data ? mapProperty(data) : null;
   },
 
   async findByOrg(orgId: string): Promise<Property[]> {
-    const { fetchPropertiesByOrg } = await import("@/repositories/rental.repository");
-    try {
-      const rows = await fetchPropertiesByOrg(orgId);
-      return rows.map(mapProperty);
-    } catch {
-      return [];
-    }
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase.from("properties").select("*").eq("org_id", orgId);
+    return (data ?? []).map(mapProperty);
   },
 };
 

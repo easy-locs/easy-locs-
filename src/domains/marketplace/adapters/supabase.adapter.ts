@@ -15,7 +15,7 @@ const log = createDomainLogger("marketplace");
 export const listingAdapter: ListingRepository = {
   async findById(id: string): Promise<Listing | null> {
     const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("property_listings_v2")
       .select("*")
       .eq("id", id)

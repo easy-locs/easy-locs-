@@ -107,7 +107,7 @@ export const profileAdapter: OrbitProfileRepository = {
     const { supabase } = await import("@/integrations/supabase/client");
     const { data } = await supabase
       .from("profiles")
-      .select("id, email, name, first_name, last_name, avatar_url, role")
+      .select("id, email, name, first_name, last_name")
       .eq("id", userId)
       .maybeSingle();
     if (!data) return null;
@@ -116,8 +116,8 @@ export const profileAdapter: OrbitProfileRepository = {
       userId: data.id,
       orbitId: data.id,
       displayName: data.name || [data.first_name, data.last_name].filter(Boolean).join(" ") || "User",
-      avatarUrl: data.avatar_url ?? undefined,
-      role: (data as any).role ?? "user",
+      avatarUrl: undefined,
+      role: "user",
       online: false,
     };
   },
