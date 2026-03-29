@@ -26,8 +26,8 @@ export const walletAccountAdapter: WalletRepository = {
   async ensureAccount(userId: string, currency: string): Promise<WalletAccount> {
     const { supabase } = await import("@/integrations/supabase/client");
     const { data } = await supabase.rpc("ensure_wallet_account", {
-      p_user_id: userId,
-      p_currency: currency,
+      target_user_id: userId,
+      target_currency: currency,
     });
     if (!data) throw new Error("Failed to ensure wallet account");
     return mapWalletAccount(data);
