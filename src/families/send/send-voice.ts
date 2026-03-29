@@ -30,8 +30,8 @@ export async function sendVoice(
   await updateConversationTimestamp(ctx.conversationId, body);
 
   platformBus.emit("orbit:message_sent", {
-    threadId: ctx.threadId,
     conversationId: ctx.conversationId,
+    threadId: ctx.threadId, // deprecated compat
     type: "voice",
   }, "orbit", { userId: ctx.senderUserId, orgId: ctx.orgId || undefined });
 
