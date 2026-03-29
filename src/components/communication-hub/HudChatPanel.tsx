@@ -38,7 +38,7 @@ import { Button } from "@/components/ui/button";
 import ChatHeader from "./chat/ChatHeader";
 import ChatEmptyState from "./chat/ChatEmptyState";
 import MessageList from "./chat/MessageList";
-import ComposerBar from "./chat/ComposerBar";
+import MessageComposer from "@/components/orbit/MessageComposer";
 import { useMessageLoader } from "./chat/useMessageLoader";
 import { useAttachments } from "./chat/useAttachments";
 import { useCallActions } from "./chat/useCallActions";
@@ -55,9 +55,7 @@ import { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
 import { useOrbitThreadUiState } from "@/hooks/useOrbitThreadUiState";
 import { OrbitPinnedBanner } from "@/components/orbit/OrbitPinnedBanner";
 import { OrbitJumpToBottomButton } from "@/components/orbit/OrbitJumpToBottomButton";
-import { OrbitComposerTopState } from "@/components/orbit/OrbitComposerTopState";
 
-import { OrbitMediaBar } from "@/components/orbit/OrbitMediaBar";
 import { useOrbitDevicePermissions } from "@/hooks/useOrbitDevicePermissions";
 import { useOrbitCallState } from "@/hooks/useOrbitCallState";
 import { useOrbitCallActions } from "@/hooks/useOrbitCallActions";
@@ -72,7 +70,6 @@ import { useOrbitAttachmentQueue } from "@/hooks/useOrbitAttachmentQueue";
 import { useOrbitUploadTransport } from "@/hooks/useOrbitUploadTransport";
 import { useOrbitAttachmentSend } from "@/hooks/useOrbitAttachmentSend";
 import { useOrbitViewOnce } from "@/hooks/useOrbitViewOnce";
-import { OrbitAttachmentPickerBar } from "@/components/orbit/OrbitAttachmentPickerBar";
 import { OrbitUploadQueuePreview } from "@/components/orbit/OrbitUploadQueuePreview";
 import { OrbitMediaMessage } from "@/components/orbit/OrbitMediaMessage";
 import { OrbitAttachmentViewer } from "@/components/orbit/OrbitAttachmentViewer";
@@ -520,43 +517,33 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           </div>
         )}
 
-        <OrbitComposerTopState
-          replyState={composer.replyState}
-          editState={composer.editState}
-          onClose={() => {
-            composer.setReplyState(null);
-            composer.setEditState(null);
-            messageSender.setNewMessage("");
-          }}
-        />
-
-        <ComposerBar
-          newMessage={messageSender.newMessage}
+        <MessageComposer
+          value={messageSender.newMessage}
           sending={messageSender.sending}
           uploading={attachments.uploading}
-          securityLevel={security.securityLevel}
           voiceRecording={voiceRecorder.recording}
           voicePreview={voicePreview}
           voiceDuration={voiceRecorder.duration}
-          replyTo={selection.replyTo}
-          userId={user?.id}
-          onMessageChange={messageSender.setNewMessage}
+          replyTo={selection.replyTo ? { content: selection.replyTo.content, senderName: selection.replyTo.senderName } : null}
+          onChange={messageSender.setNewMessage}
           onSend={async () => {
-            // Handle edit mode
             if (composer.editState) {
               await messageActions.editMessage(composer.editState.messageId, messageSender.newMessage.trim());
               messageSender.setNewMessage("");
               composer.setEditState(null);
               return;
             }
-            // Normal send
             await messageSender.handleSend();
             composer.setReplyState(null);
           }}
           onKeyDown={messageSender.handleKeyDown}
-          onSecurityLevelChange={security.setSecurityLevel}
-          onFileUpload={attachments.handleFileUpload}
-          onViewOnceUpload={handleViewOnceUpload}
+          onTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
+          attachmentActions={{
+            onFileUpload: attachments.handleFileUpload,
+            onCameraCapture: attachments.handleFileUpload,
+            onLocation: () => security.setShowLocationPicker(true),
+            onViewOnce: handleViewOnceUpload,
+          }}
           onStartVoice={async () => {
             try {
               await voiceRecorder.start();
@@ -575,12 +562,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             if (voicePreview) URL.revokeObjectURL(voicePreview.url);
             setVoicePreview(null);
           }}
-          onShowLocation={() => security.setShowLocationPicker(true)}
-          onShowPayment={() => payment.setPaymentLinkDialog(true)}
-          onShowRequestMoney={() => payment.setRequestMoneyDialog(true)}
           onClearReply={() => selection.setReplyTo(null)}
-          onBroadcastTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
-          t={t}
         />
 
         {/* Attachment queue preview only — media/attachment picker bars removed to prevent overlap */}
