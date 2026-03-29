@@ -20,7 +20,7 @@ function LocationViewerOverlayInner() {
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "hsl(var(--border) / 0.2)" }}>
         <div className="flex items-center gap-2">
           {isLive ? (
-            <Navigation className="h-5 w-5 text-emerald-500" />
+            <Navigation className="h-5 w-5" style={{ color: "hsl(var(--primary))" }} />
           ) : (
             <Compass className="h-5 w-5" style={{ color: "hsl(var(--primary))" }} />
           )}
@@ -29,8 +29,8 @@ function LocationViewerOverlayInner() {
               {label || (isLive ? "Live Location" : "Location")}
             </p>
             {isLive && (
-              <p className="text-[10px] text-emerald-500 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-[10px] font-medium flex items-center gap-1" style={{ color: "hsl(var(--primary))" }}>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--primary))" }} />
                 Sharing live
               </p>
             )}
