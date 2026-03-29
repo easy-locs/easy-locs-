@@ -28,6 +28,7 @@ interface Props {
   onBlockThread?: (thread: ConversationThread) => void;
   onClearThread?: (thread: ConversationThread) => void;
   onFavoriteThread?: (thread: ConversationThread) => void;
+  onMarkUnreadThread?: (thread: ConversationThread) => void;
   onContactInfo?: (thread: ConversationThread) => void;
   onStatusChange?: (thread: ConversationThread, status: string) => void;
   onSecurity?: (thread: ConversationThread) => void;
@@ -41,7 +42,7 @@ interface Props {
 export default function HudConversationList({
   threads, loading, selectedThread, onSelectThread,
   onDeleteThread, onArchiveThread, onMuteThread, onBlockThread, onClearThread,
-  onFavoriteThread, onContactInfo, onStatusChange, onSecurity, onSafetyNumber,
+  onFavoriteThread, onMarkUnreadThread, onContactInfo, onStatusChange, onSecurity, onSafetyNumber,
   onDetails, onSelectMessages,
   visible, multiSelectActive,
 }: Props) {
