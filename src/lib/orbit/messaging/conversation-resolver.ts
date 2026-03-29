@@ -11,8 +11,6 @@ const trace = (step: string, phase: "input" | "output" | "error", payload?: Reco
 };
 
 interface ResolveInput {
-  /** UI thread ID (used as last-resort fallback) */
-  threadId: string;
   /** Canonical conversation UUID — preferred */
   conversationId?: string | null;
   /** Legacy entity ID that might match a conversation */
@@ -29,6 +27,8 @@ interface ResolveInput {
   v2ConversationId?: string | null;
   /** @deprecated Use entityId */
   contextId?: string | null;
+  /** @deprecated Use conversationId or entityId */
+  threadId?: string | null;
 }
 
 interface ResolveResult {
@@ -38,11 +38,10 @@ interface ResolveResult {
 
 export async function resolveConversationId(input: ResolveInput): Promise<ResolveResult> {
   // Merge canonical + legacy
-  const convId = input.conversationId || input.v2ConversationId;
+  const convId = input.conversationId || input.v2ConversationId || input.threadId;
   const entId = input.entityId || input.contextId;
 
   trace("resolve", "input", {
-    threadId: input.threadId,
     conversationId: convId ?? null,
     entityId: entId ?? null,
     peerUserId: input.peerUserId ?? null,
@@ -67,11 +66,11 @@ export async function resolveConversationId(input: ResolveInput): Promise<Resolv
 
   // Strategy 3: threadDbId matches a conversation
   if (input.threadDbId) {
-    trace("resolve.threadId", "input", { candidate: input.threadDbId });
+    trace("resolve.threadDbId", "input", { candidate: input.threadDbId });
     const { data } = await (supabase as any)
       .from("conversations_v2").select("id").eq("id", input.threadDbId).maybeSingle();
     if (data?.id) {
-      trace("resolve.threadId", "output", { conversationId: data.id });
+      trace("resolve.threadDbId", "output", { conversationId: data.id });
       return { conversationId: data.id, wasCreated: false };
     }
   }

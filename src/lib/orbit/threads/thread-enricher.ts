@@ -12,7 +12,7 @@ const trace = (step: string, phase: "input" | "output" | "error", payload?: Reco
 
 /** Resolve canonical conversationId from thread (with legacy fallback) */
 function getConversationId(thread: ConversationThread): string | undefined {
-  return thread.conversationId || thread.v2ConversationId;
+  return thread.conversationId;
 }
 
 export async function enrichPeerProfiles(
@@ -98,7 +98,7 @@ export async function enrichLastMessages(
   userId: string
 ): Promise<void> {
   const allConvIds = Array.from(threadMap.values())
-    .map(t => getConversationId(t) || t.contextId)
+    .map(t => getConversationId(t) || t.id)
     .filter(Boolean) as string[];
 
   const uniqueConvIds = [...new Set(allConvIds)];
@@ -150,7 +150,7 @@ export async function enrichLastMessages(
   }
 
   for (const [, thread] of threadMap) {
-    const convId = getConversationId(thread) || thread.contextId;
+    const convId = getConversationId(thread) || thread.id;
     if (!convId) continue;
     const msgs = msgByConv.get(convId);
     if (!msgs?.length) continue;
@@ -175,7 +175,7 @@ export function applyPreferences(
   if (!prefs?.length) return;
   const prefMap = new Map(prefs.map((p: any) => [p.context_id, p]));
   for (const [, thread] of threadMap) {
-    const pref: any = prefMap.get(thread.contextId) || prefMap.get(thread.id);
+    const pref: any = prefMap.get(thread.id) || prefMap.get(thread.conversationId);
     if (pref) {
       thread.archived = !!pref.archived;
       thread.muted = !!pref.muted;

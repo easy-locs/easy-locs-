@@ -25,14 +25,6 @@ interface StartCallOpts {
   contextLabel?: string;
   peerName: string;
   isVideo?: boolean;
-
-  // ── Deprecated aliases ──
-  /** @deprecated Use conversationId */
-  threadId?: string;
-  /** @deprecated Use entityType */
-  contextType?: string;
-  /** @deprecated Use entityId */
-  contextId?: string;
 }
 
 export function useOutgoingCall(
@@ -85,9 +77,9 @@ export function useOutgoingCall(
       const rpcStep = addStep(flow, "db_write");
       const result = await createCallRpc({
         callerUserId: authData.user.id, receiverUserId,
-        conversationId: opts.conversationId || opts.threadId,
-        entityType: opts.entityType || opts.contextType,
-        entityId: opts.entityId || opts.contextId,
+        conversationId: opts.conversationId,
+        entityType: opts.entityType,
+        entityId: opts.entityId,
         contextLabel: opts.contextLabel,
         isVideo: opts.isVideo || false,
       });
@@ -102,11 +94,8 @@ export function useOutgoingCall(
       // Step 4: Create manager + media
       const manager = new CallManager({
         callId: result.callId, userId: authData.user.id, role: "caller",
-        onStateChange: () => {}, // Will be wired by parent
+        onStateChange: () => {},
       });
-
-      const resolvedConvId = opts.conversationId || opts.threadId;
-      const resolvedEntityId = opts.entityId || opts.contextId;
 
       onCallCreated({
         manager,
@@ -114,9 +103,9 @@ export function useOutgoingCall(
         contextLabel: opts.contextLabel || "",
         meta: {
           callId: result.callId,
-          conversationId: resolvedConvId,
+          conversationId: opts.conversationId,
           orgId: opts.targetId,
-          entityId: resolvedEntityId,
+          entityId: opts.entityId,
         },
         isVideo: opts.isVideo || false,
       });

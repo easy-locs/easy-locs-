@@ -19,8 +19,6 @@ export interface IncomingCallInfo {
   orgId: string;
   /** Canonical conversation UUID */
   conversationId: string | null;
-  /** @deprecated Use conversationId */
-  threadId: string | null;
 }
 
 export async function processIncomingInsert(
@@ -67,7 +65,6 @@ export async function processIncomingInsert(
     isVideo: callRow.call_type === "video",
     orgId: callRow.receiver_orbit_id || "",
     conversationId: convId,
-    threadId: convId, // deprecated compat
   };
 
   trace("incoming.insert", "output", { callId: info.callId, callerName: info.callerName });
