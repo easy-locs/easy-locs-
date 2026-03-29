@@ -7,6 +7,7 @@
 export { sendText } from "./send-text";
 export { sendVoice } from "./send-voice";
 export { sendMedia } from "./send-media";
+export { sendMediaOptimistic, retryMediaUpload } from "./send-media-optimistic";
 export { sendLocation } from "./send-location";
 export type { LocationPayload } from "./send-location";
 export { sendSystemEvent } from "./send-system-event";
