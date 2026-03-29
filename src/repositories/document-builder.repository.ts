@@ -27,7 +27,7 @@ export async function fetchTenantProfile(tenantUserId: string) {
 }
 
 export async function insertDocument(doc: Record<string, any>) {
-  const { error } = await supabase.from("documents").insert(doc);
+  const { error } = await supabase.from("documents").insert(doc as any);
   if (error) throw error;
 }
 
