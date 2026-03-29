@@ -458,24 +458,16 @@ function ChatMessageBubble({
           </button>
         )}
 
-        {/* Footer: time + status + security */}
-        <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5 select-none">
-          {(msg as any).edited_at && (
-            <span className="text-[9px] italic opacity-30 mr-0.5">edited</span>
-          )}
-          {hasSecurityLevel && (
-            <span className="text-[9px] mr-0.5" title={securityPolicy.label}>{securityPolicy.emoji}</span>
-          )}
-          <span className="text-[10px] opacity-35 font-medium tabular-nums">{format(new Date(msg.created_at), "HH:mm")}</span>
-          {isMe && isPendingOffline ? (
-            <WifiOff className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-danger) / 0.6)" }} />
-          ) : isMe && (
-            <span style={{ color: msg.read ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.35)" }}>
-              {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
-            </span>
-          )}
-          
-        </div>
+        {/* Footer — isolated micro-component */}
+        <BubbleMetaFooter
+          createdAt={msg.created_at}
+          isMe={isMe}
+          read={msg.read}
+          editedAt={(msg as any).edited_at}
+          isPendingOffline={isPendingOffline}
+          securityEmoji={hasSecurityLevel ? securityPolicy.emoji : undefined}
+          securityLabel={hasSecurityLevel ? securityPolicy.label : undefined}
+        />
       </div>
     </div>
   );
