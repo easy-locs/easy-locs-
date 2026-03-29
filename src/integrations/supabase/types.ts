@@ -32096,6 +32096,25 @@ export type Database = {
           subcategory: string
         }[]
       }
+      get_published_reviews: {
+        Args: {
+          p_limit?: number
+          p_provider_id?: string
+          p_service_id?: string
+        }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          provider_id: string
+          rating: number
+          reviewer_name: string
+          reviewer_user_id: string
+          service_id: string
+          status: string
+          updated_at: string
+        }[]
+      }
       get_real_estate_showcase: { Args: { p_slug: string }; Returns: Json }
       get_smart_picks: {
         Args: { _limit?: number; _user_id: string }
