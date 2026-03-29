@@ -122,7 +122,7 @@ export function useHudMediaSend(deps: MediaSendDeps) {
       await sendLocation(buildCtx(deps, conversationId, authUserId), {
         lat: loc.lat,
         lng: loc.lng,
-        mode: loc.type || "pin",
+        type: loc.type === "live" ? "live" : loc.type === "place" ? "place" : "static",
         label: loc.label,
         address: loc.address,
         duration: loc.duration,

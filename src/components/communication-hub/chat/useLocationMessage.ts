@@ -47,7 +47,7 @@ export function useLocationMessage(params: {
         await sendLocation(ctx, {
           lat: loc.lat,
           lng: loc.lng,
-          mode: loc.type || "pin",
+          type: loc.type === "live" ? "live" : loc.type === "place" ? "place" : "static",
           label: loc.label,
           address: loc.address,
           duration: loc.duration,
