@@ -1,10 +1,11 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadChatAttachment, signChatAttachmentUrl } from "@/repositories/communication.repository";
 import { Mic, X, Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { haptic } from "@/lib/haptics";
 
+import { supabase } from "@/integrations/supabase/client";
 const db = supabase as any;
 
 interface Props {
@@ -75,10 +76,8 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
           const ext = mime.includes("mp4") ? "m4a" : mime.includes("webm") ? "webm" : "ogg";
           const blob = new Blob(chunksRef.current, { type: mime });
           const path = `${orgId}/${contextId}/voice-${Date.now()}.${ext}`;
-          const { error } = await supabase.storage.from("chat-attachments").upload(path, blob);
-          if (error) throw error;
-          const { data: signed } = await supabase.storage.from("chat-attachments").createSignedUrl(path, 60 * 60 * 24 * 365);
-          const url = signed?.signedUrl || path;
+          await uploadChatAttachment(path, blob);
+          const url = await signChatAttachmentUrl(path);
 
           const { data: inserted } = await db.from("chat_messages_v2").insert({
             conversation_id: contextId,

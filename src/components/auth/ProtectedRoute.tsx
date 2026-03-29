@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { hasRole } from "@/repositories/auth-utils.repository";
 
 /** Dashboard paths that require an active subscription (pro features) */
 const PRO_DASHBOARD_PREFIXES = [
@@ -111,9 +111,9 @@ function AdminGate({ children }: { children: React.ReactNode }) {
     if (!user?.id) { setChecking(false); return; }
     let cancelled = false;
     (async () => {
-      const [{ data: admin }, { data: owner }] = await Promise.all([
-        supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
-        supabase.rpc("has_role", { _user_id: user.id, _role: "owner" }),
+      const [admin, owner] = await Promise.all([
+        hasRole(user.id, "admin"),
+        hasRole(user.id, "owner"),
       ]);
       if (!cancelled) {
         setIsAdmin(!!admin || !!owner);
