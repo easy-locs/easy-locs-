@@ -51,6 +51,10 @@ import { OrbitCallPermissionBanner } from "@/components/orbit/OrbitCallPermissio
 import { LocationViewerOverlay } from "@/components/communication-hub/chat/LocationViewerOverlay";
 import { OrbitUploadQueuePreview } from "@/components/orbit/OrbitUploadQueuePreview";
 import { OrbitAttachmentViewer } from "@/components/orbit/OrbitAttachmentViewer";
+import { MediaPreviewSheet } from "@/components/orbit/MediaPreviewSheet";
+import { FullscreenMediaViewer } from "@/components/orbit/FullscreenMediaViewer";
+import { useMediaPreviewState, type PreviewItem } from "@/families/media/media-preview-state";
+import { sendMediaOptimistic } from "@/families/send/send-media-optimistic";
 
 import { useSecurityDialogs } from "./chat/useSecurityDialogs";
 import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
@@ -352,8 +356,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           </div>
         )}
 
-        <input ref={attFamily.fileInputRef} type="file" multiple className="hidden" onChange={(e) => attFamily.handleFilesSelected(e.target.files)} />
-        <input ref={attFamily.cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => attFamily.handleFilesSelected(e.target.files)} />
+        <input ref={attFamily.fileInputRef} type="file" multiple className="hidden" onChange={(e) => {
+          const files = e.target.files;
+          if (files?.length) {
+            useMediaPreviewState.getState().openWithFiles(files);
+          }
+          e.target.value = "";
+        }} />
+        <input ref={attFamily.cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+          const files = e.target.files;
+          if (files?.length) {
+            useMediaPreviewState.getState().openWithFiles(files);
+          }
+          e.target.value = "";
+        }} />
       </div>
 
       {/* ── PAYMENT FAMILY DIALOGS ── */}
@@ -467,6 +483,55 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
       {/* ── LOCATION VIEWER OVERLAY ── */}
       <LocationViewerOverlay />
+
+      {/* ── MEDIA PREVIEW BEFORE SEND ── */}
+      <MediaPreviewSheet
+        onSend={(items: PreviewItem[], caption: string, viewOnce: boolean) => {
+          const sendCtx = attFamily.attachmentQueue.queue.length >= 0 ? (attFamily as any).sendContext || null : null;
+          // Use the sendContext from the attachment family
+          const ctx = (() => {
+            if (thread?.v2ConversationId && user?.id) {
+              return {
+                conversationId: thread.v2ConversationId,
+                senderUserId: user.id,
+                senderOrbitId: myOrbitId || `orbit_${user.id.slice(0, 12)}`,
+                receiverOrbitId: thread.peerOrbitId ?? null,
+                threadId: (thread as any)?.threadId || thread.id,
+                orgId,
+              };
+            }
+            return null;
+          })();
+
+          if (!ctx) {
+            toast.error("Cannot send: no conversation context");
+            return;
+          }
+
+          // Send each item through optimistic pipeline
+          for (const item of items) {
+            void sendMediaOptimistic(ctx, {
+              file: item.media.file,
+              caption: items.length === 1 ? caption : item.caption || caption,
+              viewOnce,
+              uploadFn: async (file, path, onProgress) => {
+                const result = await attFamily.attachments.uploadSingleFile({
+                  file,
+                  pathPrefix: orgId || "orbit-media",
+                  onProgress,
+                });
+                return result.publicUrl;
+              },
+              pathPrefix: orgId || "orbit-media",
+            });
+          }
+
+          useMediaPreviewState.getState().markSent();
+        }}
+      />
+
+      {/* ── FULLSCREEN MEDIA VIEWER ── */}
+      <FullscreenMediaViewer />
     </>
   );
 }
