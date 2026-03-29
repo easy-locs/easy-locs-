@@ -76,6 +76,7 @@ export function useLeaseWorkflow() {
   const generateRentSchedule = async (leaseId: string, options?: { due_day?: number }) => {
     try {
       const data = await invokeLeaseWorkflow({ action: "generate_rent_schedule", lease_id: leaseId, override: options });
+      if (data?.error === "lease_not_active") {
         toast.error("Lease must be fully signed (active) before generating rent schedule");
         return null;
       }

@@ -43,6 +43,8 @@ const TenantSignup = () => {
         setError(t("page.tsignup.expired_link"));
       }
       setValidating(false);
+    };
+    validate();
   }, [token]);
 
   const handleSignup = async (e: React.FormEvent) => {

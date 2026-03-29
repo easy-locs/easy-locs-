@@ -52,20 +52,19 @@ export function useRentalRealtimeBridge(tenantId: string | null, orgId: string |
     if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       const appUrl = buildAppUrl("/");
       await invokeSendEmail({
-          to: email,
-          subject: emailSubject ?? "New message",
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-            <h2 style="color:#1a1a1a;text-align:center;">${escapeEmailHtml(emailTitle ?? "New message")}</h2>
-            <p style="color:#555;font-size:15px;">${escapeEmailHtml(emailBody ?? "You have a new message")}</p>
-            <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-              <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(body)}</p>
-            </div>
-            <div style="text-align:center;margin:24px 0;">
-              <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(replyLabel ?? "Reply")}</a>
-            </div>
-            <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(footerLabel ?? "Automatic notification")}</p>
-          </div>`,
-        },
+        to: email,
+        subject: emailSubject ?? "New message",
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+          <h2 style="color:#1a1a1a;text-align:center;">${escapeEmailHtml(emailTitle ?? "New message")}</h2>
+          <p style="color:#555;font-size:15px;">${escapeEmailHtml(emailBody ?? "You have a new message")}</p>
+          <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
+            <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(body)}</p>
+          </div>
+          <div style="text-align:center;margin:24px 0;">
+            <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(replyLabel ?? "Reply")}</a>
+          </div>
+          <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(footerLabel ?? "Automatic notification")}</p>
+        </div>`,
       }).catch(() => {});
     }
   }, [orgId, user]);
