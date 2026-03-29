@@ -26,7 +26,7 @@ export async function signInWithPassword(email: string, password: string) {
   return supabase.auth.signInWithPassword({ email, password });
 }
 
-export async function hasRole(userId: string, role: string) {
+export async function hasRole(userId: string, role: "accountant" | "admin" | "agent" | "member" | "owner" | "staff") {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: role });
   return !!data;
 }

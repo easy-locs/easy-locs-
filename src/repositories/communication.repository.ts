@@ -570,35 +570,11 @@ export async function insertChatMessageV2(payload: Record<string, any>) {
   return data;
 }
 
-export async function updateConversationTimestamp(conversationId: string) {
-  await db.from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
-}
-
 export async function insertWalletTransaction(payload: Record<string, any>) {
   await db.from("unified_wallet_transactions").insert(payload);
 }
 
-// ── Chat media upload ──
-export async function uploadChatMedia(path: string, file: File | Blob) {
-  const { error } = await supabase.storage.from("chat-media").upload(path, file);
-  if (error) throw error;
-  const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
-  return signed?.signedUrl || path;
-}
-
-export async function uploadChatAttachment(path: string, blob: Blob) {
-  const { error } = await supabase.storage.from("chat-attachments").upload(path, blob);
-  if (error) throw error;
-  const { data: signed } = await supabase.storage.from("chat-attachments").createSignedUrl(path, 60 * 60 * 24 * 365);
-  return signed?.signedUrl || path;
-}
-
-// ── Group members ──
-export async function updateGroupMemberRole(memberId: string, role: string) {
-  const { error } = await db.from("group_members").update({ role }).eq("id", memberId);
-  if (error) throw error;
-}
-
+// ── Group extras ──
 export async function fetchGroupMembersById(groupId: string) {
   const { data } = await db.from("group_members").select("*").eq("group_id", groupId);
   return data || [];
@@ -612,10 +588,6 @@ export async function countGroupMembers(groupId: string) {
 export async function fetchLastGroupMessage(conversationId: string) {
   const { data } = await db.from("chat_messages_v2").select("body, created_at").eq("conversation_id", conversationId).order("created_at", { ascending: false }).limit(1);
   return data?.[0] || null;
-}
-
-export async function insertGroupMember(groupId: string, userId: string, role: string = "admin") {
-  await supabase.from("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
 }
 
 export async function fetchGroupsAndChannels() {
@@ -633,15 +605,6 @@ export async function createGroupConversation(payload: Record<string, any>) {
 export async function fetchOrbitProfile(userId: string) {
   const { data } = await db.from("orbit_profiles_v2").select("orbit_id, display_name, email, avatar_url").eq("id", userId).maybeSingle();
   return data;
-}
-
-// ── Notification preferences ──
-export async function upsertNotificationPreferences(userId: string, prefs: Record<string, any>) {
-  const { error } = await supabase.from("notification_preferences" as any).upsert(
-    { user_id: userId, ...prefs, updated_at: new Date().toISOString() } as any,
-    { onConflict: "user_id" }
-  );
-  if (error) throw error;
 }
 
 // ── Encryption key bundles ──

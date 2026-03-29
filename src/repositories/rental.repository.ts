@@ -338,3 +338,129 @@ export async function fetchPropertyIdsForCountry(orgId: string, country: string)
   const { data } = await supabase.from("properties").select("id").eq("org_id", orgId).eq("country", country);
   return (data || []).map((p: any) => p.id);
 }
+
+// ── Lease workflow edge function ──
+export async function invokeLeaseWorkflow(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("lease-workflow", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Send email edge function ──
+export async function invokeSendEmail(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("send-email", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Tenants & Properties for charges regularization ──
+export async function fetchTenantsForCharges(orgId: string) {
+  const { data } = await supabase.from("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
+  return data || [];
+}
+
+export async function fetchPropertiesForCharges(orgId: string) {
+  const { data } = await supabase.from("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
+  return data || [];
+}
+
+// ── Fiscal report queries ──
+export async function fetchPropertiesForFiscalReport(orgId: string, countryFilter?: string) {
+  let q = supabase.from("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
+  if (countryFilter) q = q.eq("country", countryFilter);
+  const { data } = await q;
+  return data || [];
+}
+
+export async function fetchRentCallsForOrg(orgId: string) {
+  const { data } = await supabase.from("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
+  return data || [];
+}
+
+// ── Leases by org ──
+export async function fetchLeasesByOrg(orgId: string) {
+  const { data } = await supabase.from("leases").select("*").eq("org_id", orgId);
+  return data || [];
+}
+
+// ── Reminders ──
+export async function dismissReminder(id: string) {
+  await supabase.from("reminders").update({ active: false } as any).eq("id", id);
+}
+
+// ── Inventory report full ──
+export async function fetchInventoryReportFull(reportId: string) {
+  const { data } = await supabase.from("inventory_reports").select("*").eq("id", reportId).single();
+  return data;
+}
+
+// ── Tenant user ID for notifications ──
+export async function fetchTenantUserId(tenantId: string) {
+  const { data } = await supabase.from("tenants").select("tenant_user_id").eq("id", tenantId).single();
+  return data?.tenant_user_id || null;
+}
+
+// ── Referrals ──
+export async function fetchReferralCode(userId: string) {
+  const { data } = await supabase.from("profiles").select("referral_code").eq("id", userId).single();
+  return data?.referral_code || "";
+}
+
+export async function fetchReferrals(userId: string) {
+  const { data } = await supabase.from("referrals").select("*").eq("referrer_user_id", userId).order("created_at", { ascending: false });
+  return data || [];
+}
+
+// ── Properties insert ──
+export async function insertProperty(payload: Record<string, any>) {
+  const { error } = await supabase.from("properties").insert(payload);
+  if (error) throw error;
+}
+
+// ── Booking requests ──
+export async function insertBookingRequest(payload: Record<string, any>) {
+  const { data, error } = await supabase.from("booking_requests").insert(payload as any).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function invokeNotifyBooking(bookingRequestId: string) {
+  await supabase.functions.invoke("notify-booking", { body: { booking_request_id: bookingRequestId } });
+}
+
+// ── Local services ──
+export async function fetchOrgLocalServicesEnabled(orgId: string) {
+  const { data } = await supabase.from("orgs").select("local_services_enabled").eq("id", orgId).single();
+  return data?.local_services_enabled || false;
+}
+
+export async function fetchLocalServices(orgId: string) {
+  const { data } = await supabase.from("local_services" as any).select("*").eq("org_id", orgId).eq("active", true).order("sort_order");
+  return data || [];
+}
+
+// ── Newsletter ──
+export async function insertNewsletterSubscriber(email: string) {
+  const { error } = await (supabase as any).from("newsletter_subscribers").insert({ email });
+  if (error) throw error;
+}
+
+// ── App notifications ──
+export async function insertNotification(payload: Record<string, any>) {
+  await supabase.from("app_notifications").insert(payload as any);
+}
+
+// ── Auth context helpers ──
+export async function checkTenantLink(userId: string) {
+  const { data } = await supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
+  return data;
+}
+
+export async function checkOrgLink(userId: string) {
+  const { data } = await supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
+  return data;
+}
+
+export async function markOnboardingComplete(userId: string) {
+  await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId);
+}
