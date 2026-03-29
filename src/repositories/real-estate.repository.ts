@@ -118,7 +118,7 @@ export async function incrementListingViews(slug: string) {
 }
 
 export async function insertLead(lead: Record<string, any>) {
-  const { data, error } = await supabase.from("real_estate_leads").insert(lead).select("id").single();
+  const { data, error } = await supabase.from("real_estate_leads").insert(lead as any).select("id").single();
   if (error) throw error;
   return data;
 }
