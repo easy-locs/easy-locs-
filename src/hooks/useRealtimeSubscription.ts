@@ -46,8 +46,7 @@ export function useRealtimeSubscription({
     };
     if (filter) channelConfig.filter = filter;
 
-    const channel = supabase
-      .channel(channelName)
+    const channel = createRealtimeChannel(channelName)
       .on("postgres_changes", channelConfig, (payload) => {
         // Invalidate specified query keys
         if (queryKeys?.length) {
