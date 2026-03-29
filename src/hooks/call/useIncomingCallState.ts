@@ -29,15 +29,17 @@ export function useIncomingCallState() {
     contextLabel: string;
     isVideo: boolean;
     orgId: string;
-    /** Canonical conversation ID (was threadId) */
-    threadId: string | null;
+    /** Canonical conversation UUID */
+    conversationId: string | null;
+    /** @deprecated Use conversationId */
+    threadId?: string | null;
   }) => {
     setIncomingCallId(info.callId);
     setIncomingCallerName(info.callerName);
     setIncomingContextLabel(info.contextLabel);
     setIncomingIsVideo(info.isVideo);
     setIncomingOrgId(info.orgId);
-    setIncomingConversationId(info.threadId); // map legacy name to canonical
+    setIncomingConversationId(info.conversationId ?? info.threadId ?? null);
     setShowIncoming(true);
   };
 
@@ -48,8 +50,6 @@ export function useIncomingCallState() {
     incomingIsVideo, incomingOrgId,
     /** Canonical conversation ID */
     incomingConversationId,
-    /** @deprecated Use incomingConversationId */
-    incomingThreadId: incomingConversationId,
     clearIncoming, setIncomingCall,
   };
 }

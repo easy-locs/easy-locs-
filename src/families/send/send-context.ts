@@ -14,8 +14,4 @@ export interface SendContext {
   receiverOrbitId?: string | null;
   /** Organization context (if applicable) */
   orgId?: string | null;
-
-  // ── Deprecated aliases — DO NOT USE in new code ──
-  /** @deprecated Use conversationId instead */
-  threadId?: string;
 }
