@@ -53,12 +53,12 @@ export default function CustomerProfilePage() {
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="text-base font-bold text-foreground truncate">
+            <p className="text-base font-bold text-foreground break-words leading-snug">
               {profile?.displayName || "User"}
             </p>
             <StatusPulse status="active" size="sm" />
           </div>
-          <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
+          <p className="text-[11px] text-muted-foreground break-words leading-snug">{user?.email}</p>
           {profile?.role && (
             <span className="inline-block mt-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-px rounded-full bg-accent/15 text-accent">
               {profile.role}
