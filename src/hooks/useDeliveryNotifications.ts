@@ -16,39 +16,25 @@ export function useDeliveryNotifications() {
   const permissionRef = useRef<NotificationPermission>("default");
 
   const requestPermission = useCallback(async () => {
-    if (!("Notification" in window)) return false;
-    try {
-      const result = await Notification.requestPermission();
-      permissionRef.current = result;
-      return result === "granted";
-    } catch {
-      return false;
-    }
+    const perm = await NotificationDeviceBridge.requestPermission();
+    permissionRef.current = perm;
+    return perm === "granted";
   }, []);
 
-  const sendPushNotification = useCallback((title: string, body: string, icon?: string) => {
-    if (permissionRef.current !== "granted") return;
-    try {
-      new Notification(title, {
-        body,
-        icon: icon || "/favicon.ico",
-        badge: "/favicon.ico",
-        tag: `mobility-${Date.now()}`,
-        requireInteraction: false,
-      });
-    } catch {
-      // Fallback: toast only
-    }
+  const sendPushNotification = useCallback((title: string, body: string) => {
+    NotificationDeviceBridge.send({
+      channel: "system",
+      priority: "normal",
+      title,
+      body,
+      sound: false,
+      vibrate: false,
+      tag: `mobility-${Date.now()}`,
+    });
   }, []);
 
-  const playSound = useCallback((type: keyof typeof NOTIFICATION_SOUNDS) => {
-    try {
-      const audio = new Audio(NOTIFICATION_SOUNDS[type]);
-      audio.volume = 0.3;
-      audio.play().catch(() => {});
-    } catch {
-      // Sound not available
-    }
+  const playSound = useCallback((_type: string) => {
+    NotificationSound.play("notification", 0.3);
   }, []);
 
   const handleJobChange = useCallback((payload: any) => {
