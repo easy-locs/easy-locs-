@@ -1,25 +1,15 @@
 /**
- * Ultra-fast performance hook — instant haptic + visual feedback.
- * Safe no-op on unsupported devices.
+ * Ultra-fast performance hook — delegates to canonical DeviceHaptics.
  */
+import { DeviceHaptics } from "@/families/device";
+
 export function useUltraFast() {
   const haptic = (type: "light" | "success" | "error" = "light") => {
-    try {
-      if (navigator.vibrate) {
-        const patterns: Record<string, number | number[]> = {
-          light: 8,
-          success: [10, 20, 10],
-          error: [30, 30, 30],
-        };
-        navigator.vibrate(patterns[type] ?? 8);
-      }
-    } catch {
-      // silent
-    }
+    DeviceHaptics.trigger(type);
   };
 
   const instantFeedback = (cb?: () => void) => {
-    haptic("light");
+    DeviceHaptics.trigger("light");
     cb?.();
   };
 
@@ -28,16 +18,5 @@ export function useUltraFast() {
 
 /** Standalone haptic (no hook needed) */
 export function ultraHaptic(type: "light" | "success" | "error" = "light") {
-  try {
-    if (typeof navigator !== "undefined" && navigator.vibrate) {
-      const p: Record<string, number | number[]> = {
-        light: 8,
-        success: [10, 20, 10],
-        error: [30, 30, 30],
-      };
-      navigator.vibrate(p[type] ?? 8);
-    }
-  } catch {
-    // silent
-  }
+  DeviceHaptics.trigger(type);
 }
