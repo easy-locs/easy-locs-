@@ -23,7 +23,7 @@ export async function sendPaymentRequest(
     metadata: { event_type: "payment_request", amount, currency, description: description || null, status: "pending" },
   });
   await updateConversationTimestamp(ctx.conversationId, body.slice(0, 120));
-  platformBus.emit("orbit:message_sent", { threadId: ctx.threadId, conversationId: ctx.conversationId, type: "payment" }, "orbit", { userId: ctx.senderUserId });
+  platformBus.emit("orbit:message_sent", { conversationId: ctx.conversationId, type: "payment" }, "orbit", { userId: ctx.senderUserId });
   return data;
 }
 

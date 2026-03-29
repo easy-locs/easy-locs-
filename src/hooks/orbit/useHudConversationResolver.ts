@@ -27,8 +27,7 @@ export function useHudConversationResolver({
 
   const resolveConversationId = useCallback(async (authUserId: string): Promise<string | null> => {
     if (!thread) return null;
-    const convId = thread.conversationId || thread.v2ConversationId;
-    if (convId) return convId;
+    if (thread.conversationId) return thread.conversationId;
     if (!thread.peerUserId) {
       toast.error("No conversation found. Open a thread first.");
       return null;
@@ -41,7 +40,7 @@ export function useHudConversationResolver({
         peerUserId: thread.peerUserId,
         peerOrbitId: thread.peerOrbitId,
       });
-      onThreadUpdate(thread.id, { conversationId: conv.id, v2ConversationId: conv.id });
+      onThreadUpdate(thread.id, { conversationId: conv.id });
       return conv.id;
     } catch (err: any) {
       console.error("[HudConversationResolver] auto-create failed", err);

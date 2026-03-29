@@ -31,7 +31,6 @@ export async function sendVoice(
 
   platformBus.emit("orbit:message_sent", {
     conversationId: ctx.conversationId,
-    threadId: ctx.threadId, // deprecated compat
     type: "voice",
   }, "orbit", { userId: ctx.senderUserId, orgId: ctx.orgId || undefined });
 

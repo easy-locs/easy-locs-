@@ -227,7 +227,7 @@ export default function CommContactsSection() {
         targetUserId: contact.contact_user_id,
         targetName: contact.name,
       });
-      const tid = result?.conversationId || result?.v2ConversationId || result?.threadId || result?.contextId;
+      const tid = result?.conversationId;
       if (tid) navigate(`/orbit?conversation=${tid}`);
     } catch {
       toast.error(t("orbit.contacts.open_error"));

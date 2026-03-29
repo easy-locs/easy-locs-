@@ -28,8 +28,9 @@ export function useHudCallSetup(
     }
     const micOk = devicePermissions.permissions.microphone === "granted" || await devicePermissions.requestMicrophone();
     if (!micOk) return;
+    const convId = thread!.conversationId || null;
     const session = await callActionsV2.createOutgoingCall({
-      conversationId: thread!.conversationId || thread!.v2ConversationId || null,
+      conversationId: convId,
       peerOrbitId: peerTarget,
       peerName: thread!.name || "Contact",
       mode: "audio",
@@ -37,7 +38,7 @@ export function useHudCallSetup(
     if (!session) return;
     callStateV2.startOutgoing({
       sessionId: session.id,
-      conversationId: thread!.conversationId || thread!.v2ConversationId || null,
+      conversationId: convId,
       peerOrbitId: peerTarget,
       peerUserId: thread!.peerUserId || null,
       peerName: thread!.name || "Contact",
@@ -54,8 +55,9 @@ export function useHudCallSetup(
     const micOk = devicePermissions.permissions.microphone === "granted" || await devicePermissions.requestMicrophone();
     const camOk = devicePermissions.permissions.camera === "granted" || await devicePermissions.requestCamera();
     if (!micOk || !camOk) return;
+    const convId2 = thread!.conversationId || null;
     const session = await callActionsV2.createOutgoingCall({
-      conversationId: thread!.conversationId || thread!.v2ConversationId || null,
+      conversationId: convId2,
       peerOrbitId: peerTarget,
       peerName: thread!.name || "Contact",
       mode: "video",
@@ -63,7 +65,7 @@ export function useHudCallSetup(
     if (!session) return;
     callStateV2.startOutgoing({
       sessionId: session.id,
-      conversationId: thread!.conversationId || thread!.v2ConversationId || null,
+      conversationId: convId2,
       peerOrbitId: peerTarget,
       peerUserId: thread!.peerUserId || null,
       peerName: thread!.name || "Contact",

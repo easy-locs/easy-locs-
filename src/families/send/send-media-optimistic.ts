@@ -111,7 +111,6 @@ export async function sendMediaOptimistic(
     await updateConversationTimestamp(ctx.conversationId, preview);
 
     platformBus.emit("orbit:message_sent", {
-      threadId: ctx.threadId,
       conversationId: ctx.conversationId,
       type: "media",
       optimistic: true,
