@@ -593,62 +593,45 @@ export default function OrbitAccountSection() {
     );
   }
 
-  // ═══ Main page ═══
+  // ═══ Main cockpit ═══
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin">
-      {/* Profile header */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center py-8 px-4">
-        <div className="relative">
-          <Avatar className="w-20 h-20 border-2 border-accent/30">
-            <AvatarImage src={avatarUrl} alt="Profile" />
-            <AvatarFallback className="text-2xl font-bold" style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border-2"
-            style={{ background: "hsl(var(--primary))", borderColor: "hsl(var(--background))" }} />
-        </div>
-
-        <p className="text-base font-semibold text-foreground mt-3">
-          {displayName || displayEmail}
-        </p>
-        {username && (
-          <p className="text-xs font-mono mt-0.5" style={{ color: "hsl(var(--primary))" }}>@{username}</p>
-        )}
-        {displayName && <p className="text-xs text-muted-foreground">{displayEmail}</p>}
-        <div className="flex items-center gap-1.5 mt-1">
-          <span className="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full"
-            style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}>
-            EL-{shortId}
-          </span>
-          <button onClick={copyId} className="p-0.5 rounded transition-colors hover:bg-muted">
-            {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3 text-muted-foreground" />}
-          </button>
-        </div>
-
-      </motion.div>
+      {/* Identity Card */}
+      <YouIdentityCard
+        avatarUrl={avatarUrl}
+        displayName={displayName}
+        email={displayEmail}
+        username={username}
+        shortId={shortId}
+        onEditProfile={() => setSubPage("edit-profile")}
+      />
 
       <Separator className="mx-4" />
 
-      {/* Menu items */}
-      <div className="px-3 py-3 space-y-0.5">
-        <MenuItem icon={Pencil} label="Edit Profile" desc="Name, photo, identity" onClick={() => setSubPage("edit-profile")} color="hsl(var(--primary))" />
-        <MenuItem icon={QrCode} label="Account ID" desc={`EL-${shortId}`} onClick={copyId} color="hsl(var(--accent))" />
+      {/* Orbit Quick Controls — Smart Summary Cards */}
+      <YouSectionBlock title="Communication">
+        <YouSmartSettingCard icon={Bell} label="Notifications" summary={summaries.notifSummary} onClick={() => setSubPage("notifications")} />
+        <YouSmartSettingCard icon={Phone} label="Calls" summary={summaries.callSummary} onClick={() => setSubPage("calls")} accentColor="hsl(var(--accent))" />
+        <YouSmartSettingCard icon={Eye} label="Privacy" summary={summaries.privacySummary} onClick={() => setSubPage("privacy")} />
+      </YouSectionBlock>
 
-        <Separator className="my-2 mx-3" />
+      <YouSectionBlock title="Chat Experience">
+        <YouSmartSettingCard icon={MessageSquare} label="Chat Defaults" summary={summaries.chatDefaultsSummary} onClick={() => setSubPage("chats")} />
+        <YouSmartSettingCard icon={Wallpaper} label="Background" summary={summaries.backgroundSummary} onClick={() => setSubPage("background")} accentColor="hsl(var(--accent))" />
+        <YouSmartSettingCard icon={ImageIcon} label="Media" summary={summaries.mediaSummary} onClick={() => setSubPage("media")} />
+      </YouSectionBlock>
 
-        <MenuItem icon={Eye} label="Privacy" desc="Last seen, read receipts, typing" onClick={() => setSubPage("privacy")} color="hsl(var(--primary))" />
-        <MenuItem icon={Shield} label="Security" desc="E2E encryption, 2FA" onClick={() => setSubPage("security")} color="hsl(var(--accent))" />
-        <MenuItem icon={MessageSquare} label="Chats" desc="Theme, export" onClick={() => setSubPage("chats")} color="hsl(var(--primary))" />
-        <MenuItem icon={Bell} label="Notifications" desc="Messages, calls, sounds" onClick={() => setSubPage("notifications")} color="hsl(var(--accent))" />
-        <MenuItem icon={Database} label="Storage & Data" desc="Media, downloads" onClick={() => setSubPage("storage")} color="hsl(var(--primary))" />
-        <MenuItem icon={Smartphone} label="Devices" desc="Active sessions" onClick={() => setSubPage("devices")} color="hsl(var(--accent))" />
+      <YouSectionBlock title="Sharing">
+        <YouSmartSettingCard icon={BookOpen} label="Stories" summary={summaries.storiesSummary} onClick={() => setSubPage("stories")} />
+        <YouSmartSettingCard icon={MapPin} label="Live Location" summary={summaries.locationSummary} onClick={() => setSubPage("location")} accentColor="hsl(var(--accent))" />
+      </YouSectionBlock>
 
-        <Separator className="my-2 mx-3" />
-
-        <MenuItem icon={HelpCircle} label="Help" desc="FAQ, support" onClick={() => navigate("/contact")} color="hsl(var(--muted-foreground))" />
-      </div>
+      <YouSectionBlock title="Account">
+        <YouSmartSettingCard icon={Shield} label="Security" summary="E2E encryption · 2FA" onClick={() => setSubPage("security")} />
+        <YouSmartSettingCard icon={Database} label="Storage & Data" summary="Media, downloads" onClick={() => setSubPage("storage")} accentColor="hsl(var(--accent))" />
+        <YouSmartSettingCard icon={Smartphone} label="Devices" summary="Active sessions" onClick={() => setSubPage("devices")} />
+        <YouSmartSettingCard icon={HelpCircle} label="Help" summary="FAQ, support" onClick={() => navigate("/contact")} accentColor="hsl(var(--muted-foreground))" />
+      </YouSectionBlock>
 
       <Separator className="mx-4" />
 
@@ -656,7 +639,7 @@ export default function OrbitAccountSection() {
       <div className="px-3 py-3">
         <button onClick={async () => { haptic("medium"); await signOut(); navigate("/login"); }}
           className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-destructive/5 transition-colors text-left">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--destructive) / 0.1)" }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-destructive/10">
             <LogOut className="h-4 w-4 text-destructive" />
           </div>
           <p className="text-sm font-medium text-destructive">{t("orbit.you.logout") || t("nav.logout") || "Log out"}</p>
