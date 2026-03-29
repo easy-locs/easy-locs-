@@ -106,3 +106,17 @@ export async function fetchWalletActivity(userId: string) {
   if (error) throw error;
   return (data ?? []) as any[];
 }
+
+// ── Concierge payment ──
+export async function createConciergePayment(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("create-concierge-payment", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Booking payment ──
+export async function createBookingPayment(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("create-booking-payment", { body });
+  if (error) throw error;
+  return data;
+}
