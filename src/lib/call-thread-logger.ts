@@ -19,6 +19,9 @@ const EVENT_CONTENT: Record<CallEvent, (duration?: number) => string> = {
   missed: () => `📞 Missed call`,
 };
 
+// Track recently logged call events to prevent duplicates
+const recentCallLogs = new Set<string>();
+
 export async function logCallEventToThread(opts: {
   callId: string;
   threadId: string;
@@ -28,14 +31,17 @@ export async function logCallEventToThread(opts: {
   durationSeconds?: number;
   contextId?: string;
 }) {
-  const content = EVENT_CONTENT[opts.event](opts.durationSeconds);
+  // Dedup guard: prevent duplicate system messages for the same call event
+  const dedupKey = `${opts.callId}:${opts.event}`;
+  if (recentCallLogs.has(dedupKey)) return;
+  recentCallLogs.add(dedupKey);
+  // Clean up after 10s to prevent memory leak
+  setTimeout(() => recentCallLogs.delete(dedupKey), 10000);
 
-  // Use context_type = "call" to identify call events in the thread
-  // Embed call metadata in the content tag for parsing
+  const content = EVENT_CONTENT[opts.event](opts.durationSeconds);
   const taggedContent = `${content} [call:${opts.event}:${opts.durationSeconds ?? 0}]`;
 
   // V2 CANONICAL — write call event as system message in chat_messages_v2
-  // threadId here maps to a conversations_v2.id
   await (supabase as any).from("chat_messages_v2").insert({
     conversation_id: opts.threadId,
     sender_user_id: opts.senderId,
