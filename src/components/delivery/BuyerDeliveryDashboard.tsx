@@ -76,9 +76,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
       await Promise.all(
         activeOrders.map(async (o) => {
           try {
-            const { data: escrowData } = await supabase.functions.invoke("dispatch-delivery", {
-              body: { action: "escrow_status", job_id: o.id },
-            });
+            const escrowData = await deliveryRepo.fetchEscrowStatus(o.id);
             if (escrowData?.escrow) {
               statuses[o.id] = escrowData.escrow.status;
             }

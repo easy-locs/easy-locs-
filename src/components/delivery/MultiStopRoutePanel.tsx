@@ -110,8 +110,7 @@ export default function MultiStopRoutePanel({ orgId, className }: Props) {
         });
       }
 
-      const { error } = await supabase.from("mobility_jobs").insert(jobs);
-      if (error) throw error;
+      await deliveryRepo.insertMobilityJobs(jobs);
 
       toast.success(`${jobs.length} missions créées !`);
       // Reset

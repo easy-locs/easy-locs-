@@ -32,13 +32,11 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
       since.setDate(since.getDate() - days);
 
       const [jobsRes, ratingsRes] = await Promise.all([
-        supabase.from("mobility_jobs").select("id, status, current_price, quoted_price, currency, created_at, completed_at, picked_up_at")
-          .eq("rider_user_id", user.id).gte("created_at", since.toISOString()).limit(500),
-        supabase.from("delivery_ratings").select("rating, created_at")
-          .eq("driver_id", user.id).gte("created_at", since.toISOString()).limit(200),
+        deliveryRepo.fetchDriverJobs(user.id, since.toISOString()),
+        deliveryRepo.fetchDriverRatings(user.id, since.toISOString()),
       ]);
-      setJobs(jobsRes.data || []);
-      setRatings(ratingsRes.data || []);
+      setJobs(jobsRes);
+      setRatings(ratingsRes);
       setLoading(false);
     };
     fetch();
