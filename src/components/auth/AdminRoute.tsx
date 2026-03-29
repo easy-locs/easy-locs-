@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { hasRole } from "@/repositories/auth-utils.repository";
 import { Loader2 } from "lucide-react";
 
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
@@ -23,10 +23,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 
     (async () => {
       // Check admin OR owner role
-      const { data: adminResult } = await supabase.rpc("has_role", {
-        _user_id: user.id,
-        _role: "admin",
-      });
+      const adminResult = await hasRole(user.id, "admin");
 
       if (cancelled) return;
 
@@ -36,10 +33,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      const { data: ownerResult } = await supabase.rpc("has_role", {
-        _user_id: user.id,
-        _role: "owner",
-      });
+      const ownerResult = await hasRole(user.id, "owner");
 
       if (cancelled) return;
       setIsAdmin(!!ownerResult);

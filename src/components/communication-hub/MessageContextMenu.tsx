@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthUser } from "@/repositories/auth-utils.repository";
 import {
   Trash2, Copy, Edit3, EyeOff, Timer, ShieldAlert,
   Reply, Forward, Star, StarOff, CheckSquare, Shield,
@@ -12,6 +12,7 @@ import { haptic } from "@/lib/haptics";
 import { isActionAllowed, getMessagePolicy } from "@/lib/message-security";
 import { useI18n } from "@/lib/i18n";
 
+import { supabase } from "@/integrations/supabase/client";
 const db = supabase as any;
 
 interface MessageAction {
@@ -78,7 +79,7 @@ export default function MessageContextMenu({
     setDeleting(true);
     haptic("medium");
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getAuthUser();
       const currentUserId = user?.id;
 
       if (type === "everyone" || type === "moderation") {

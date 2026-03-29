@@ -205,10 +205,9 @@ export default function NotificationPreferences() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from("notification_preferences").upsert(
-      { user_id: user.id, ...prefs, updated_at: new Date().toISOString() } as any,
-      { onConflict: "user_id" }
-    );
+    const { upsertNotificationPrefs } = await import("@/repositories/communication.repository");
+    let error: any = null;
+    try { await upsertNotificationPrefs(user.id, prefs); } catch (e) { error = e; }
     if (error) {
       toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" });
     } else {

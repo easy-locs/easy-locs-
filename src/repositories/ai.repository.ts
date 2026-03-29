@@ -26,3 +26,8 @@ export async function invokeTranslateMessage(body: Record<string, any>) {
   if (error) throw error;
   return data;
 }
+
+export async function invokeSendEmail(body: Record<string, any>) {
+  const { error } = await supabase.functions.invoke("send-email", { body });
+  if (error) throw error;
+}

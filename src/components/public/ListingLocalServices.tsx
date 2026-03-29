@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchOrgLocalServicesEnabled, fetchLocalServices } from "@/repositories/rental.repository";
 import { useI18n } from "@/lib/i18n";
 import { Phone, ExternalLink, MapPin } from "lucide-react";
 
@@ -26,25 +26,18 @@ const ListingLocalServices = ({ orgId, propertyId, propertyCity, propertyCountry
   useEffect(() => {
     const load = async () => {
       // Check if feature enabled for this org
-      const { data: org } = await supabase.from("orgs").select("local_services_enabled").eq("id", orgId).single();
-      if (!org?.local_services_enabled) return;
+      const isEnabled = await fetchOrgLocalServicesEnabled(orgId);
+      if (!isEnabled) return;
       setEnabled(true);
 
-      // Fetch services: property-specific + city-level (no property_id)
-      const { data } = await supabase
-        .from("local_services")
-        .select("*")
-        .eq("org_id", orgId)
-        .eq("active", true)
-        .order("sort_order");
-
-      if (!data) return;
+      const svcData = await fetchLocalServices(orgId) as any[];
+      if (!svcData) return;
 
       // Filter: property-specific OR matching city (with no property_id bound)
       const cityLower = (propertyCity || "").toLowerCase().trim();
       const countryLower = (propertyCountry || "").toLowerCase().trim();
 
-      const filtered = data.filter(s => {
+      const filtered = svcData.filter((s: any) => {
         if (s.property_id === propertyId) return true;
         if (!s.property_id) {
           const sCity = (s.city || "").toLowerCase().trim();
