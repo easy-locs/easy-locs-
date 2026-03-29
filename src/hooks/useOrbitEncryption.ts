@@ -90,12 +90,7 @@ export function useOrbitEncryption(userId: string | undefined): UseOrbitEncrypti
         const { publicKeyBase64, isNew } = await getOrCreateIdentityKeys(userId);
 
         if (isNew) {
-          await supabase.from("user_key_bundles" as any).upsert({
-            user_id: userId,
-            identity_public_key: publicKeyBase64,
-            device_id: deviceIdRef.current,
-            updated_at: new Date().toISOString(),
-          } as any, { onConflict: "user_id" });
+          await upsertKeyBundle(userId, publicKeyBase64, deviceIdRef.current);
         }
 
         setKeysPublished(true);

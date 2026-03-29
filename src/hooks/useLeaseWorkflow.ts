@@ -20,10 +20,7 @@ export function useLeaseWorkflow() {
     override?: { rent_amount?: number; charges_amount?: number; lease_type?: string; start_date?: string },
   ) => {
     try {
-      const { data, error } = await supabase.functions.invoke("lease-workflow", {
-        body: { action: "generate_lease", tenant_id: tenantId, property_id: propertyId, org_id: orgId, override },
-      });
-      if (error) throw error;
+      const data = await invokeLeaseWorkflow({ action: "generate_lease", tenant_id: tenantId, property_id: propertyId, org_id: orgId, override });
       if (data?.action === "existing") {
         toast.info("A lease already exists for this tenant");
       } else if (data?.success) {
@@ -78,11 +75,7 @@ export function useLeaseWorkflow() {
 
   const generateRentSchedule = async (leaseId: string, options?: { due_day?: number }) => {
     try {
-      const { data, error } = await supabase.functions.invoke("lease-workflow", {
-        body: { action: "generate_rent_schedule", lease_id: leaseId, override: options },
-      });
-      if (error) throw error;
-      if (data?.error === "lease_not_active") {
+      const data = await invokeLeaseWorkflow({ action: "generate_rent_schedule", lease_id: leaseId, override: options });
         toast.error("Lease must be fully signed (active) before generating rent schedule");
         return null;
       }

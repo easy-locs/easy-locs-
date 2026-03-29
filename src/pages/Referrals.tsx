@@ -17,18 +17,13 @@ const Referrals = () => {
 
   useEffect(() => {
     if (!user) return;
-    // Fetch referral code from profile
-    supabase.from("profiles").select("referral_code").eq("id", user.id).single()
-      .then(({ data }) => {
-        if (data?.referral_code) setReferralCode(data.referral_code);
-      });
-
-    // Fetch referrals
-    supabase.from("referrals").select("*").eq("referrer_user_id", user.id).order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setReferrals(data || []);
-        setLoading(false);
-      });
+    fetchReferralCode(user.id).then((code) => {
+      if (code) setReferralCode(code);
+    });
+    fetchReferralsList(user.id).then((data) => {
+      setReferrals(data);
+      setLoading(false);
+    });
   }, [user]);
 
   const referralLink = buildAppUrl(`/signup?ref=${referralCode}`);

@@ -32,8 +32,7 @@ export function useSubscriptionLoader(session: Session | null, userId: string | 
     if (!session?.access_token) return;
     setSubscription((prev) => ({ ...prev, loading: true }));
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (error) throw error;
+      const data = await invokeCheckSubscription();
       if (data) {
         const isTrial = data.plan === "trial";
         const trialDaysLeft = isTrial && data.subscription_end
