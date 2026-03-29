@@ -78,6 +78,11 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
     }).then(url => setQrDataUrl(url)).catch(() => {});
   }, [shareUrl, open]);
 
+  const stopScanner = useCallback(() => {
+    if (scanIntervalRef.current) { clearInterval(scanIntervalRef.current); scanIntervalRef.current = null; }
+    if (streamRef.current) { streamRef.current.getTracks().forEach(tr => tr.stop()); streamRef.current = null; }
+  }, []);
+
   // Reset on open
   useEffect(() => {
     if (open) {
@@ -92,32 +97,76 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
   useEffect(() => {
     if (!open || mode !== "scan") stopScanner();
     return () => stopScanner();
-  }, [open, mode]);
+  }, [open, mode, stopScanner]);
 
   // Auto-start scan if initialMode is scan
   useEffect(() => {
     if (open && initialMode === "scan") {
-      startScanner();
+      startScannerFn();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialMode]);
 
-  const stopScanner = useCallback(() => {
-    if (scanIntervalRef.current) { clearInterval(scanIntervalRef.current); scanIntervalRef.current = null; }
-    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
-  }, []);
+  const handleScannedData = useCallback(async (raw: string) => {
+    if (!user?.id) return;
+    setAdding(true);
+    try {
+      let contactData: string;
+      const trimmed = raw.trim();
+      if (trimmed.includes("/add-contact?data=") || /^https?:\/\//i.test(trimmed)) {
+        const url = new URL(trimmed);
+        const b64 = url.searchParams.get("data");
+        if (!b64) throw new Error("No data");
+        contactData = fromBase64Utf8(b64);
+      } else if (trimmed.startsWith("{")) {
+        contactData = trimmed;
+      } else {
+        contactData = fromBase64Utf8(trimmed);
+      }
+
+      const parsed = JSON.parse(contactData);
+      if (parsed.t !== "el-contact") throw new Error("Invalid");
+      if (parsed.userId === user.id) {
+        toast.info(t("orbit.qr.self_scan"));
+        setAdding(false);
+        setMode("show");
+        return;
+      }
+
+      const { upsertOrbitContact } = await import("@/lib/orbit/orbit-contacts-service");
+      await upsertOrbitContact({
+        ownerUserId: user.id,
+        peerUserId: parsed.userId || null,
+        peerOrbitId: parsed.orbitId || null,
+        displayName: parsed.name || "Contact",
+        email: parsed.email || null,
+        source: "qr_scan",
+        metadata: { qr: true },
+      });
+
+      haptic("success");
+      toast.success(`${parsed.name || "Contact"} ✓`);
+      onContactAdded?.();
+      onOpenChange(false);
+    } catch {
+      toast.error(t("orbit.qr.invalid_code"));
+    }
+    setAdding(false);
+    setMode("show");
+  }, [user?.id, onContactAdded, onOpenChange, t]);
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     haptic("success");
-    toast.success(t("orbit.qr.link_copied", "Contact link copied!"));
+    toast.success(t("orbit.qr.link_copied"));
     setTimeout(() => setCopied(false), 2000);
   }, [shareUrl, t]);
 
   const handleShare = useCallback(async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: t("orbit.qr.share_title", "Add me on Orbit"), url: shareUrl });
+        await navigator.share({ title: t("orbit.qr.share_title"), url: shareUrl });
         haptic("success");
       } catch {}
     } else {
@@ -125,7 +174,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
     }
   }, [shareUrl, handleCopy, t]);
 
-  const startScanner = useCallback(async () => {
+  const startScannerFn = useCallback(async () => {
     setMode("scan");
     setShowManualInput(false);
     haptic("medium");
@@ -157,7 +206,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
         const jsQRModule = await import("jsqr");
         const jsQR = jsQRModule.default;
         if (!jsQR) {
-          toast.error(t("orbit.qr.scanner_unavailable", "QR scanner unavailable"));
+          toast.error(t("orbit.qr.scanner_unavailable"));
           setMode("show");
           return;
         }
@@ -184,58 +233,10 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
 
       setTimeout(() => setShowManualInput(true), 3000);
     } catch {
-      toast.error(t("orbit.qr.camera_required", "Camera access required"));
+      toast.error(t("orbit.qr.camera_required"));
       setMode("show");
     }
-  }, [stopScanner, t]);
-
-  const handleScannedData = useCallback(async (raw: string) => {
-    if (!user?.id) return;
-    setAdding(true);
-    try {
-      let contactData: string;
-      const trimmed = raw.trim();
-      if (trimmed.includes("/add-contact?data=") || /^https?:\/\//i.test(trimmed)) {
-        const url = new URL(trimmed);
-        const b64 = url.searchParams.get("data");
-        if (!b64) throw new Error("No data");
-        contactData = fromBase64Utf8(b64);
-      } else if (trimmed.startsWith("{")) {
-        contactData = trimmed;
-      } else {
-        contactData = fromBase64Utf8(trimmed);
-      }
-
-      const parsed = JSON.parse(contactData);
-      if (parsed.t !== "el-contact") throw new Error("Invalid");
-      if (parsed.userId === user.id) {
-        toast.info(t("orbit.qr.self_scan", "That's your own QR code"));
-        setAdding(false);
-        setMode("show");
-        return;
-      }
-
-      const { upsertOrbitContact } = await import("@/lib/orbit/orbit-contacts-service");
-      await upsertOrbitContact({
-        ownerUserId: user.id,
-        peerUserId: parsed.userId || null,
-        peerOrbitId: parsed.orbitId || null,
-        displayName: parsed.name || "Contact",
-        email: parsed.email || null,
-        source: "qr_scan",
-        metadata: { qr: true },
-      });
-
-      haptic("success");
-      toast.success(t("orbit.qr.contact_added", "{{name}} added!", { name: parsed.name }));
-      onContactAdded?.();
-      onOpenChange(false);
-    } catch {
-      toast.error(t("orbit.qr.invalid_code", "Invalid QR code"));
-    }
-    setAdding(false);
-    setMode("show");
-  }, [user?.id, onContactAdded, onOpenChange, t]);
+  }, [stopScanner, handleScannedData, t]);
 
   const handleManualLinkSubmit = () => {
     if (!manualLink.trim()) return;
@@ -252,9 +253,9 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-foreground text-base">
             {mode === "show" ? (
-              <><QrCode className="h-4 w-4 text-primary" />{t("orbit.qr.my_code", "My Contact Code")}</>
+              <><QrCode className="h-4 w-4 text-primary" />{t("orbit.qr.my_code")}</>
             ) : (
-              <><ScanLine className="h-4 w-4 text-primary" />{t("orbit.qr.scan_title", "Scan Contact")}</>
+              <><ScanLine className="h-4 w-4 text-primary" />{t("orbit.qr.scan_title")}</>
             )}
           </DialogTitle>
         </DialogHeader>
@@ -272,27 +273,25 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
               )}
             </div>
 
-            {/* User info */}
             <p className="text-sm font-bold text-foreground mb-0.5">{userName}</p>
             <p className="text-[11px] text-muted-foreground/50 mb-5">
-              {t("orbit.qr.scan_to_add", "Scan to add me as a contact")}
+              {t("orbit.qr.scan_to_add")}
             </p>
 
-            {/* Actions */}
             <div className="flex gap-2 w-full">
               <Button variant="outline" className="flex-1 gap-1.5 text-xs h-10 rounded-xl" onClick={handleCopy}>
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                {copied ? t("orbit.qr.copied", "Copied") : t("orbit.qr.copy_link", "Copy Link")}
+                {copied ? t("orbit.qr.copied") : t("orbit.qr.copy_link")}
               </Button>
               <Button variant="outline" className="flex-1 gap-1.5 text-xs h-10 rounded-xl" onClick={handleShare}>
                 <Share2 className="h-3.5 w-3.5" />
-                {t("orbit.qr.share", "Share")}
+                {t("orbit.qr.share")}
               </Button>
             </div>
 
-            <Button className="w-full mt-3 gap-1.5 h-11 rounded-xl" onClick={startScanner}>
+            <Button className="w-full mt-3 gap-1.5 h-11 rounded-xl" onClick={startScannerFn}>
               <Camera className="h-4 w-4" />
-              {t("orbit.qr.scan_a_code", "Scan a Code")}
+              {t("orbit.qr.scan_a_code")}
             </Button>
           </div>
         ) : (
@@ -324,7 +323,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
                 <div className="absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-sm">
                   <div className="text-center">
                     <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                    <p className="text-xs text-foreground">{t("orbit.qr.adding", "Adding contact…")}</p>
+                    <p className="text-xs text-foreground">{t("orbit.qr.adding")}</p>
                   </div>
                 </div>
               )}
@@ -334,13 +333,13 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
             {showManualInput && (
               <div className="w-full mb-3 space-y-2">
                 <p className="text-[11px] text-center text-muted-foreground/60">
-                  {t("orbit.qr.or_paste", "Or paste a contact link")}
+                  {t("orbit.qr.or_paste")}
                 </p>
                 <div className="flex gap-2">
                   <Input
                     value={manualLink}
                     onChange={e => setManualLink(e.target.value)}
-                    placeholder={t("orbit.qr.paste_placeholder", "Paste link…")}
+                    placeholder={t("orbit.qr.paste_placeholder")}
                     className="flex-1 h-9 text-xs bg-muted/20"
                     onKeyDown={e => { if (e.key === "Enter") handleManualLinkSubmit(); }}
                   />
@@ -351,14 +350,14 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
                     disabled={!manualLink.trim() || adding}
                   >
                     <Link2 className="h-3.5 w-3.5" />
-                    {t("orbit.contacts.add", "Add")}
+                    {t("orbit.add_contact")}
                   </Button>
                 </div>
               </div>
             )}
 
             <p className="text-[11px] text-center text-muted-foreground/50 mb-3">
-              {t("orbit.qr.point_camera", "Point camera at a contact QR code")}
+              {t("orbit.qr.point_camera")}
             </p>
 
             <Button
@@ -367,7 +366,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
               onClick={() => { stopScanner(); onOpenChange(false); }}
             >
               <X className="h-3.5 w-3.5" />
-              {t("orbit.close", "Close")}
+              {t("orbit.close")}
             </Button>
           </div>
         )}

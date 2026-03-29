@@ -18,7 +18,7 @@ import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { listOrbitContacts, upsertOrbitContact } from "@/lib/orbit/orbit-contacts-service";
 import { useCall } from "@/components/call/CallProvider";
 import QRContactCard from "./QRContactCard";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 // ── Types ──
 interface Contact {
@@ -59,7 +59,7 @@ const ContactRow = memo(function ContactRow({
 
   return (
     <div
-      className="flex items-center gap-3 px-4 h-16 active:bg-muted/40 transition-colors cursor-pointer group"
+      className="flex items-center gap-3 px-4 h-16 active:bg-muted/40 transition-colors cursor-pointer"
       onClick={() => onMessage(contact)}
       role="button"
       tabIndex={0}
@@ -174,7 +174,7 @@ export default function CommContactsSection() {
       const rows = await listOrbitContacts(user.id);
       setContacts((rows || []).map((r: any) => ({
         id: r.id,
-        name: r.display_name || r.email || r.phone || t("orbit.contacts.unnamed", "Contact"),
+        name: r.display_name || r.email || r.phone || t("orbit.contacts.unnamed"),
         email: r.email,
         phone: r.phone,
         avatar_url: r.avatar_url,
@@ -182,7 +182,7 @@ export default function CommContactsSection() {
         contact_user_id: r.peer_user_id,
       })));
     } catch {
-      toast.error(t("orbit.contacts.load_error", "Failed to load contacts"));
+      toast.error(t("orbit.contacts.load_error"));
     } finally {
       setLoading(false);
     }
@@ -218,7 +218,7 @@ export default function CommContactsSection() {
   // ── Actions ──
   const handleMessage = useCallback(async (contact: Contact) => {
     if (!user || !contact.contact_user_id) {
-      toast.info(t("orbit.contacts.not_linked", "This contact is not on the platform yet"));
+      toast.info(t("orbit.contacts.not_linked"));
       return;
     }
     try {
@@ -230,17 +230,17 @@ export default function CommContactsSection() {
       const tid = result?.v2ConversationId || result?.threadId || result?.contextId;
       if (tid) navigate(`/orbit?thread=${tid}`);
     } catch {
-      toast.error(t("orbit.contacts.open_error", "Failed to open conversation"));
+      toast.error(t("orbit.contacts.open_error"));
     }
   }, [user, navigate, t]);
 
   const handleCall = useCallback(async (contact: Contact, isVideo: boolean) => {
     if (!contact.contact_user_id) {
-      toast.info(t("orbit.contacts.not_linked", "This contact is not on the platform yet"));
+      toast.info(t("orbit.contacts.not_linked"));
       return;
     }
     if (isInCall || isStartingCall) {
-      toast.info(t("orbit.contacts.already_in_call", "Already in a call"));
+      toast.info(t("orbit.contacts.already_in_call"));
       return;
     }
     haptic("medium");
@@ -253,7 +253,7 @@ export default function CommContactsSection() {
         isVideo,
       });
     } catch {
-      toast.error(t("orbit.contacts.call_error", "Failed to start call"));
+      toast.error(t("orbit.contacts.call_error"));
     }
   }, [startCall, isInCall, isStartingCall, t]);
 
@@ -264,7 +264,7 @@ export default function CommContactsSection() {
       c.name.toLowerCase() === trimName ||
       (newEmail && c.email?.toLowerCase() === newEmail.trim().toLowerCase()),
     )) {
-      toast.error(t("orbit.contacts.duplicate", "Contact already exists"));
+      toast.error(t("orbit.contacts.duplicate"));
       return;
     }
     setSaving(true);
@@ -276,46 +276,32 @@ export default function CommContactsSection() {
         phone: newPhone.trim() || null,
         source: "manual",
       });
-      toast.success(t("orbit.contacts.added", "Contact added"));
+      toast.success(t("orbit.contacts.added"));
       haptic("success");
       setShowAdd(false);
       setNewName(""); setNewEmail(""); setNewPhone("");
       loadContacts();
     } catch {
-      toast.error(t("orbit.contacts.add_error", "Failed to add contact"));
+      toast.error(t("orbit.contacts.add_error"));
     } finally {
       setSaving(false);
     }
   };
-
-  const contactCount = filtered.length;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-background">
       {/* ── Header ── */}
       <div className="px-4 pt-4 pb-1 shrink-0">
         <h2 className="text-lg font-bold text-foreground tracking-tight">
-          {t("orbit.contacts.title", "Contacts")}
+          {t("orbit.contacts.title")}
         </h2>
       </div>
 
       {/* ── 3 Actions: My QR · Scan · Add ── */}
       <div className="flex items-center justify-center gap-6 px-4 py-3 shrink-0">
-        <HeaderAction
-          icon={QrCode}
-          label={t("orbit.contacts.my_qr", "My QR")}
-          onClick={() => setShowQR(true)}
-        />
-        <HeaderAction
-          icon={ScanLine}
-          label={t("orbit.contacts.scan_qr", "Scan")}
-          onClick={() => setShowScan(true)}
-        />
-        <HeaderAction
-          icon={UserPlus}
-          label={t("orbit.contacts.add", "Add")}
-          onClick={() => setShowAdd(true)}
-        />
+        <HeaderAction icon={QrCode} label={t("orbit.contacts.my_qr")} onClick={() => setShowQR(true)} />
+        <HeaderAction icon={ScanLine} label={t("orbit.contacts.scan_qr")} onClick={() => setShowScan(true)} />
+        <HeaderAction icon={UserPlus} label={t("orbit.contacts.add")} onClick={() => setShowAdd(true)} />
       </div>
 
       {/* ── Search ── */}
@@ -325,7 +311,7 @@ export default function CommContactsSection() {
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder={t("orbit.contacts.search", "Search contacts…")}
+            placeholder={t("orbit.search_contacts")}
             className="pl-9 pr-8 h-10 text-sm rounded-xl bg-muted/30 border-border/20 placeholder:text-muted-foreground/50"
           />
           {search && (
@@ -343,8 +329,8 @@ export default function CommContactsSection() {
       {/* ── Tabs ── */}
       <div className="flex gap-1.5 px-4 pb-2 shrink-0">
         {([
-          { id: "all" as Tab, label: t("orbit.contacts.all", "All") },
-          { id: "favorites" as Tab, label: t("orbit.contacts.favorites", "Favorites") },
+          { id: "all" as Tab, label: t("orbit.contacts.all") },
+          { id: "favorites" as Tab, label: t("orbit.contacts.favorites") },
         ]).map(({ id, label }) => (
           <button
             key={id}
@@ -378,24 +364,20 @@ export default function CommContactsSection() {
               <User className="h-7 w-7 text-muted-foreground/40" />
             </div>
             <p className="text-sm font-semibold text-foreground mb-1">
-              {search
-                ? t("orbit.contacts.no_results", "No contacts found")
-                : t("orbit.contacts.empty", "No contacts yet")}
+              {search ? t("orbit.contacts.no_results") : t("orbit.contacts.empty")}
             </p>
             <p className="text-xs text-muted-foreground/60 max-w-[220px]">
-              {search
-                ? t("orbit.contacts.try_different", "Try a different search term")
-                : t("orbit.contacts.empty_hint", "Add friends via QR code or manually")}
+              {search ? t("orbit.contacts.try_different") : t("orbit.contacts.empty_hint")}
             </p>
             {!search && (
               <div className="flex gap-2 mt-5">
                 <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => setShowScan(true)}>
                   <ScanLine className="h-3.5 w-3.5" />
-                  {t("orbit.contacts.scan_qr", "Scan")}
+                  {t("orbit.contacts.scan_qr")}
                 </Button>
                 <Button size="sm" className="gap-1.5 text-xs" onClick={() => setShowAdd(true)}>
                   <UserPlus className="h-3.5 w-3.5" />
-                  {t("orbit.contacts.add", "Add")}
+                  {t("orbit.contacts.add")}
                 </Button>
               </div>
             )}
@@ -425,25 +407,25 @@ export default function CommContactsSection() {
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-foreground text-base">
-              {t("orbit.contacts.add_title", "Add Contact")}
+              {t("orbit.contacts.add_title")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-1">
             <div>
               <Label className="text-xs font-medium text-muted-foreground">
-                {t("orbit.contacts.name", "Name")} *
+                {t("orbit.contacts.name")} *
               </Label>
               <Input
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
-                placeholder={t("orbit.contacts.name_placeholder", "Contact name")}
+                placeholder={t("orbit.contacts.name_placeholder")}
                 className="mt-1.5 bg-muted/20"
                 autoFocus
               />
             </div>
             <div>
               <Label className="text-xs font-medium text-muted-foreground">
-                {t("orbit.contacts.email", "Email")}
+                {t("orbit.contacts.email")}
               </Label>
               <Input
                 value={newEmail}
@@ -455,7 +437,7 @@ export default function CommContactsSection() {
             </div>
             <div>
               <Label className="text-xs font-medium text-muted-foreground">
-                {t("orbit.contacts.phone", "Phone")}
+                {t("orbit.contacts.phone")}
               </Label>
               <Input
                 value={newPhone}
@@ -471,7 +453,7 @@ export default function CommContactsSection() {
               className="w-full gap-2 h-11 rounded-xl"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              {t("orbit.contacts.add", "Add Contact")}
+              {t("orbit.add_contact")}
             </Button>
           </div>
         </DialogContent>
