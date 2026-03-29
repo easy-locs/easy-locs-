@@ -19,6 +19,8 @@ export function usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId }: 
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDescription, setPaymentDescription] = useState("");
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
+  const [paymentLinkDialog, setPaymentLinkDialog] = useState(false);
+  const [requestMoneyDialog, setRequestMoneyDialog] = useState(false);
 
   const sendPaymentLink = useCallback(async () => {
     if (!thread) return;
@@ -103,5 +105,7 @@ export function usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId }: 
     paymentAmount, setPaymentAmount,
     paymentDescription, setPaymentDescription,
     sendingPaymentLink, sendPaymentLink,
+    paymentLinkDialog, setPaymentLinkDialog,
+    requestMoneyDialog, setRequestMoneyDialog,
   };
 }
