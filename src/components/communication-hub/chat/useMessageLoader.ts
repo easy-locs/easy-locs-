@@ -62,9 +62,9 @@ function safeString(val: unknown): string {
   try { return JSON.stringify(val); } catch { return "[unrenderable]"; }
 }
 
-/** Resolve canonical conversationId from thread (with legacy fallback) */
+/** Resolve canonical conversationId from thread */
 function resolveConversationId(thread: ThreadLike | null): string | null {
-  return thread?.conversationId || thread?.v2ConversationId || null;
+  return thread?.conversationId || null;
 }
 
 function mapV2ToChat(m: any, conversationId: string): ChatMessage {
