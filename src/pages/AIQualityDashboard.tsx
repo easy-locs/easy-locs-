@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { runFullAudit, runLightAudit, CATEGORY_LABELS, getTriggerIssues, subscribeTriggerAudit, autoFixIssue, autoFixAll } from "@/lib/ai-audit";
 import type { AuditReport, AuditIssue, ModuleScore, AuditCategory, AutoFixResult } from "@/lib/ai-audit";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeRunScheduledAudit, invokeAIAssistant } from "@/repositories/ai.repository";
+import { fetchAuditReportsHistory } from "@/repositories/rental.repository";
 import { toast } from "sonner";
 
 const CATEGORY_ICON_MAP: Record<AuditCategory, React.ElementType> = {
