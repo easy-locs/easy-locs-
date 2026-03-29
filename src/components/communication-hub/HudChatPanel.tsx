@@ -3,10 +3,8 @@
  * Thin assembly layer that composes canonical family hooks.
  * Contains NO business logic — only wiring.
  */
-import { useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -55,6 +53,7 @@ import { useSecurityDialogs } from "./chat/useSecurityDialogs";
 import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
 import { useHudConversationStatus } from "@/hooks/orbit/useHudConversationStatus";
 import { useHudBookingActions } from "@/hooks/orbit/useHudBookingActions";
+import { useHudConversationResolver } from "@/hooks/orbit/useHudConversationResolver";
 
 interface Props {
   thread: ConversationThread | null;
@@ -76,6 +75,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
   // ── Identity resolver (canonical family) ──
   const resolveAuthUserId = useResolveAuthUserId(t);
+  const { resolveConversationId } = useHudConversationResolver({
+    thread,
+    myOrbitId,
+    onThreadUpdate,
+    t,
+  });
 
   // ── FAMILY: Messages ──
   const msgFamily = useThreadMessageFamily({
