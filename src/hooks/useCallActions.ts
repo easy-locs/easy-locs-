@@ -5,21 +5,31 @@ type ThreadLike = {
   peerUserId?: string | null;
   peerOrbitId?: string | null;
   tenantId?: string | null;
-  v2ConversationId?: string | null;
-  threadId?: string | null;
+  /** Canonical conversation UUID */
+  conversationId?: string | null;
   conversationType?: string | null;
-  contextId?: string | null;
+  /** Business entity ID */
+  entityId?: string | null;
   name?: string | null;
+  // ── Deprecated compat ──
+  /** @deprecated Use conversationId */
+  v2ConversationId?: string | null;
+  /** @deprecated Use conversationId */
+  threadId?: string | null;
+  /** @deprecated Use entityId */
+  contextId?: string | null;
 };
 
 type StartCallFn = (opts: {
   targetId: string;
-  threadId?: string;
-  contextType?: string;
-  contextId?: string;
+  conversationId?: string;
+  entityType?: string;
+  entityId?: string;
   contextLabel?: string;
   peerName: string;
   isVideo?: boolean;
+  /** @deprecated Use conversationId */
+  threadId?: string;
 }) => Promise<void>;
 
 export function useCallActions(thread: ThreadLike | null, startCall: StartCallFn) {
@@ -31,11 +41,15 @@ export function useCallActions(thread: ThreadLike | null, startCall: StartCallFn
         return;
       }
 
+      const conversationId = thread?.conversationId || thread?.v2ConversationId || thread?.threadId || undefined;
+      const entityId = thread?.entityId || thread?.contextId || undefined;
+
       void startCall({
         targetId,
-        threadId: thread?.v2ConversationId || thread?.threadId || undefined,
-        contextType: thread?.conversationType || "direct",
-        contextId: thread?.v2ConversationId || thread?.contextId || undefined,
+        conversationId,
+        threadId: conversationId, // deprecated compat
+        entityType: thread?.conversationType || "direct",
+        entityId,
         contextLabel: thread?.name || "Conversation",
         peerName: thread?.name || "Contact",
         isVideo,

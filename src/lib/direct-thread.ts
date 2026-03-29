@@ -1,14 +1,25 @@
 /**
  * Direct user-to-user thread utilities.
  * CANONICAL V2 PATH: Uses createOrGetDirectConversation as single source of truth.
- *
- * FIXED: Removed duplicate .limit(200) scan that was already done inside
- * createOrGetDirectConversation, eliminating a redundant DB roundtrip.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 
-const pendingDirectThreadRequests = new Map<string, Promise<{ contextId: string; orgId: string; threadId?: string; v2ConversationId?: string; isV2?: boolean } | null>>();
+interface DirectThreadResult {
+  /** Canonical conversation UUID */
+  conversationId: string;
+  orgId: string;
+  isV2?: boolean;
+  // ── Deprecated compat ──
+  /** @deprecated Use conversationId */
+  contextId: string;
+  /** @deprecated Use conversationId */
+  threadId?: string;
+  /** @deprecated Use conversationId */
+  v2ConversationId?: string;
+}
+
+const pendingDirectThreadRequests = new Map<string, Promise<DirectThreadResult | null>>();
 
 /** Generate a deterministic direct-thread context_id from two user IDs */
 export function getDirectContextId(userA: string, userB: string): string {
@@ -35,7 +46,7 @@ export async function getOrCreateDirectThread(opts: {
   currentUserId: string;
   targetUserId: string;
   targetName: string;
-}): Promise<{ contextId: string; orgId: string; threadId?: string; v2ConversationId?: string; isV2?: boolean } | null> {
+}): Promise<DirectThreadResult | null> {
   assertNotSelf(opts.currentUserId, opts.targetUserId);
 
   const [userA, userB] = normalizeDirectPair(opts.currentUserId, opts.targetUserId);
@@ -67,10 +78,11 @@ export async function getOrCreateDirectThread(opts: {
 
       if (v2Conv?.id) {
         return {
-          contextId: v2Conv.id,
+          conversationId: v2Conv.id,
+          contextId: v2Conv.id,       // deprecated compat
           orgId: "",
-          threadId: v2Conv.id,
-          v2ConversationId: v2Conv.id,
+          threadId: v2Conv.id,        // deprecated compat
+          v2ConversationId: v2Conv.id, // deprecated compat
           isV2: true,
         };
       }

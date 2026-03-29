@@ -10,6 +10,11 @@ const trace = (step: string, phase: "input" | "output" | "error", payload?: Reco
   logger(`[THREADS][${step}] ${phase}:`, payload ?? {});
 };
 
+/** Resolve canonical conversationId from thread (with legacy fallback) */
+function getConversationId(thread: ConversationThread): string | undefined {
+  return thread.conversationId || thread.v2ConversationId;
+}
+
 export async function enrichPeerProfiles(
   threadMap: Map<string, ConversationThread>,
   allPeerIds: Set<string>
@@ -46,11 +51,11 @@ export async function enrichUnreadCounts(
   userId: string
 ): Promise<void> {
   const v2Ids = Array.from(threadMap.values())
-    .filter(t => t.isV2 && t.v2ConversationId)
-    .map(t => t.v2ConversationId!);
+    .filter(t => t.isV2 && getConversationId(t))
+    .map(t => getConversationId(t)!);
 
   if (v2Ids.length === 0) return;
-  trace("enrich.unread", "input", { v2ConversationCount: v2Ids.length });
+  trace("enrich.unread", "input", { conversationCount: v2Ids.length });
 
   const { data: v2Msgs } = await (supabase as any)
     .from("chat_messages_v2")
@@ -68,8 +73,9 @@ export async function enrichUnreadCounts(
 
   const convIdToThread = new Map<string, ConversationThread>();
   for (const thread of threadMap.values()) {
-    if (thread.isV2 && thread.v2ConversationId) {
-      convIdToThread.set(thread.v2ConversationId, thread);
+    const cid = getConversationId(thread);
+    if (thread.isV2 && cid) {
+      convIdToThread.set(cid, thread);
     }
   }
 
@@ -92,9 +98,8 @@ export async function enrichLastMessages(
   userId: string
 ): Promise<void> {
   const allConvIds = Array.from(threadMap.values())
-    .filter(t => t.v2ConversationId || t.contextId)
-    .map(t => t.v2ConversationId || t.contextId!)
-    .filter(Boolean);
+    .map(t => getConversationId(t) || t.contextId)
+    .filter(Boolean) as string[];
 
   const uniqueConvIds = [...new Set(allConvIds)];
   if (uniqueConvIds.length === 0) return;
@@ -145,7 +150,7 @@ export async function enrichLastMessages(
   }
 
   for (const [, thread] of threadMap) {
-    const convId = thread.v2ConversationId || thread.contextId;
+    const convId = getConversationId(thread) || thread.contextId;
     if (!convId) continue;
     const msgs = msgByConv.get(convId);
     if (!msgs?.length) continue;

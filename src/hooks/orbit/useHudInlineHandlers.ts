@@ -36,7 +36,6 @@ function buildSendContext(deps: HudInlineHandlersDeps, authUserId: string, conve
     senderUserId: authUserId,
     senderOrbitId: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
     receiverOrbitId: deps.thread?.peerOrbitId ?? null,
-    threadId: deps.thread?.threadId || deps.thread?.id,
     orgId: deps.orgId,
   };
 }
