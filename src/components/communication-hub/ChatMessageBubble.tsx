@@ -11,7 +11,7 @@ import { format } from "date-fns";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
 import ViewOnceMedia from "./ViewOnceMedia";
-import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
+
 import { haptic } from "@/lib/haptics";
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
 import { ChatPaymentRequestCard, ChatPaymentReceiptCard } from "@/components/chat/ChatPaymentCards";
@@ -505,7 +505,7 @@ function ChatMessageBubble({
               {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
             </span>
           )}
-          <OrbitEncryptedIndicator content={msg.content} encrypted={(msg as any).encrypted} />
+          
         </div>
       </div>
     </div>
