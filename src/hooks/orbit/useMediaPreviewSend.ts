@@ -1,9 +1,6 @@
 /**
  * useMediaPreviewSend — Canonical hook for sending media from the preview sheet.
  * Isolates transport + optimistic send logic from HudChatPanel.
- * 
- * Input: PreviewItem[], caption, viewOnce, thread context
- * Output: fires optimistic send pipeline per item
  */
 import { useCallback } from "react";
 import { sendMediaOptimistic } from "@/families/send/send-media-optimistic";
@@ -18,7 +15,6 @@ interface MediaPreviewSendDeps {
   userId: string | undefined;
   myOrbitId: string | null;
   peerOrbitId: string | null;
-  threadId: string | null;
   orgId: string | null;
 }
 
@@ -35,7 +31,6 @@ export function useMediaPreviewSend(deps: MediaPreviewSendDeps) {
         senderUserId: deps.userId,
         senderOrbitId: deps.myOrbitId || `orbit_${deps.userId.slice(0, 12)}`,
         receiverOrbitId: deps.peerOrbitId,
-        threadId: deps.threadId || undefined,
         orgId: deps.orgId,
       };
 
@@ -61,7 +56,7 @@ export function useMediaPreviewSend(deps: MediaPreviewSendDeps) {
 
       useMediaPreviewState.getState().markSent();
     },
-    [deps.conversationId, deps.userId, deps.myOrbitId, deps.peerOrbitId, deps.threadId, deps.orgId],
+    [deps.conversationId, deps.userId, deps.myOrbitId, deps.peerOrbitId, deps.orgId],
   );
 
   return { sendFromPreview };

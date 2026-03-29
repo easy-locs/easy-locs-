@@ -26,10 +26,10 @@ export function useHudPaymentCallbacks({
     setPaymentLinkDialog(false);
     const authUserId = await resolveAuthUserId();
     if (!authUserId || !orgId || !thread) return;
-    const peerId = thread.peerUserId || thread.tenantId || thread.contextId || thread.id;
+    const peerId = thread.peerUserId || thread.tenantId || thread.entityId || thread.contextId || thread.id;
     try {
       await sendPaymentReceiptToThread({
-        threadId: thread.threadId || thread.id,
+        threadId: thread.conversationId || thread.v2ConversationId || thread.id,
         senderId: authUserId,
         orgId,
         transactionId: conf.txnId,
@@ -37,8 +37,8 @@ export function useHudPaymentCallbacks({
         currency: conf.currency,
         recipientName: conf.recipientName || thread.name,
         title: conf.status === "completed" ? "Payment sent" : "Payment initiated",
-        contextType: thread.contextType,
-        contextId: thread.contextId,
+        contextType: thread.entityType || thread.contextType,
+        contextId: thread.entityId || thread.contextId,
         tenantId: thread.tenantId,
         bookingId: thread.bookingId,
         bookingType: thread.bookingType,
@@ -52,18 +52,18 @@ export function useHudPaymentCallbacks({
   const handlePaymentRequest = useCallback(async (req: any) => {
     const authUserId = await resolveAuthUserId();
     if (!authUserId || !orgId || !thread) return;
-    const peerId = thread.peerUserId || thread.tenantId || thread.contextId || thread.id;
+    const peerId = thread.peerUserId || thread.tenantId || thread.entityId || thread.contextId || thread.id;
     try {
       await sendPaymentRequestMessageToThread({
-        threadId: thread.threadId || thread.id,
+        threadId: thread.conversationId || thread.v2ConversationId || thread.id,
         senderId: authUserId,
         orgId,
         request: req,
         tenantId: thread.tenantId,
         bookingId: thread.bookingId,
         bookingType: thread.bookingType,
-        contextType: thread.contextType,
-        contextId: thread.contextId,
+        contextType: thread.entityType || thread.contextType,
+        contextId: thread.entityId || thread.contextId,
         encrypt: e2eReady ? encrypt : undefined,
         peerId: e2eReady ? peerId : null,
       });

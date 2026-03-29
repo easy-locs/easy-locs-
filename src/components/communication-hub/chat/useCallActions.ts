@@ -10,6 +10,11 @@ import { toast } from "sonner";
 import { runGuardedAction } from "@/lib/runtime/action-guard";
 import type { ConversationThread } from "../types";
 
+/** Resolve canonical conversationId from thread (with legacy fallback) */
+function getConversationId(thread: ConversationThread | null): string | undefined {
+  return thread?.conversationId || thread?.v2ConversationId || undefined;
+}
+
 export function useCallActions(thread: ConversationThread | null, workspaceId: string | null) {
   const { startCall, isInCall, isStartingCall } = useCall();
 
@@ -21,7 +26,10 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
   const handleStartCall = useCallback((isVideo: boolean) => {
     void runGuardedAction(
       async () => {
+        const conversationId = getConversationId(thread);
+
         trace("call.button.trigger", "input", {
+          conversationId: conversationId ?? null,
           threadId: thread?.id ?? null,
           isVideo,
           workspaceId,
@@ -33,11 +41,10 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
           : (thread?.peerUserId || thread?.peerOrbitId || thread?.tenantId);
 
         trace("call.target.resolve", "input", {
-          threadId: thread?.id,
-          v2ConversationId: thread?.v2ConversationId,
+          conversationId: conversationId ?? null,
           peerUserId: thread?.peerUserId,
           peerOrbitId: thread?.peerOrbitId,
-          contextId: thread?.v2ConversationId || thread?.contextId,
+          entityId: thread?.entityId || thread?.contextId,
           isDirect,
           resolvedTargetId: targetId,
           isVideo,
@@ -51,22 +58,23 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
 
         trace("call.target.resolve", "output", {
           targetId,
-          contextId: thread?.v2ConversationId || thread?.contextId || null,
+          entityId: thread?.entityId || thread?.contextId || null,
         });
 
         haptic("medium");
         trace("call.rpc.create", "input", {
           targetId,
-          threadId: thread?.v2ConversationId || thread?.threadId || null,
-          contextType: thread?.conversationType || "direct",
-          contextId: thread?.v2ConversationId || thread?.contextId || null,
+          conversationId: conversationId ?? null,
+          entityType: thread?.conversationType || "direct",
+          entityId: thread?.entityId || thread?.contextId || null,
           isVideo,
         });
         await startCall({
           targetId,
-          threadId: thread?.v2ConversationId || thread?.threadId,
+          conversationId,
+          threadId: conversationId, // deprecated compat
           contextType: thread?.conversationType || "direct",
-          contextId: thread?.v2ConversationId || thread?.contextId,
+          contextId: thread?.entityId || thread?.contextId,
           contextLabel: thread?.name,
           peerName: thread?.name || "Contact",
           isVideo,
