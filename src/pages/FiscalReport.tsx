@@ -63,17 +63,13 @@ const FiscalReport = () => {
 
   useEffect(() => {
     if (!orgId) return;
-    let propQuery = fetchFiscalProperties(orgId, countryFilter);
-
     Promise.all([
       fetchFiscalRentCallsRaw(orgId),
-      propQuery,
+      fetchFiscalProperties(orgId, countryFilter),
     ]).then(([rcData, propsData]) => {
-      const propsData = (p.data || []) as Property[];
-      setProperties(propsData);
-      // Filter rent calls to only include properties in the filtered set
-      const propIds = new Set(propsData.map(pr => pr.id));
-      let calls = (rc.data || []) as RentCall[];
+      setProperties(propsData as Property[]);
+      const propIds = new Set((propsData as Property[]).map(pr => pr.id));
+      let calls = rcData as RentCall[];
       if (countryFilter) {
         calls = calls.filter(r => r.property_id && propIds.has(r.property_id));
       }

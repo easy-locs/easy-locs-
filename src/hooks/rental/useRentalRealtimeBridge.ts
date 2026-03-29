@@ -51,8 +51,7 @@ export function useRentalRealtimeBridge(tenantId: string | null, orgId: string |
     const email = (tenant.email ?? "").trim().toLowerCase();
     if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       const appUrl = buildAppUrl("/");
-      await supabase.functions.invoke("send-email", {
-        body: {
+      await invokeSendEmail({
           to: email,
           subject: emailSubject ?? "New message",
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">

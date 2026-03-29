@@ -31,13 +31,8 @@ const AccountingEntries = () => {
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["accounting-entries", orgId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("accounting_entries")
-        .select("*, properties(label, city), tenants(name), leases(lease_type, start_date)")
-        .eq("org_id", orgId!)
-        .order("accounting_period", { ascending: false })
-        .limit(500);
-      return data || [];
+      const { fetchAccountingEntries } = await import("@/repositories/rental.repository");
+      return await fetchAccountingEntries(orgId!);
     },
     enabled: !!orgId,
   });

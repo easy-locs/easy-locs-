@@ -29,19 +29,20 @@ const TenantSignup = () => {
         setValidating(false);
         return;
       }
-      const { data, error: fetchErr } = await supabase.rpc("validate_tenant_invitation", { _token: token });
-
-      if (fetchErr || !data || !(data as any).valid) {
+      try {
+        const data = await validateTenantInvitation(token);
+        if (!data || !(data as any).valid) {
+          setError(t("page.tsignup.expired_link"));
+        } else {
+          const inv = data as any;
+          setInvitation(inv);
+          setEmail(inv.email);
+          setName(inv.tenant_name || "");
+        }
+      } catch {
         setError(t("page.tsignup.expired_link"));
-      } else {
-        const inv = data as any;
-        setInvitation(inv);
-        setEmail(inv.email);
-        setName(inv.tenant_name || "");
       }
       setValidating(false);
-    };
-    validate();
   }, [token]);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -54,17 +55,16 @@ const TenantSignup = () => {
     setLoading(true);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("tenant-signup", {
-        body: { email, password, name, token },
-      });
+      const data = await invokeTenantSignup({ email, password, name, token });
 
-      if (fnError || !data?.success) {
-        const msg = data?.error || fnError?.message || t("page.tsignup.activation_error");
+      if (!data?.success) {
+        const msg = data?.error || t("page.tsignup.activation_error");
         toast({ title: t("common.error") || "Error", description: msg, variant: "destructive" });
         return;
       }
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      const { signInWithPassword } = await import("@/repositories/auth-utils.repository");
+      const { error: signInError } = await signInWithPassword(email, password);
 
       if (signInError) {
         toast({

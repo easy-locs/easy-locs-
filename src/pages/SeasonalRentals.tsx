@@ -843,16 +843,14 @@ const SeasonalRentals = () => {
                     await updateSeasonalBookingDates(orgId, focusedRequest.guest_email, focusedRequest.check_in, editingRequestDates.check_in, editingRequestDates.check_out);
                   }
                   // Send modification email
-                  await supabase.functions.invoke("send-email", {
-                    body: {
-                      to: focusedRequest.guest_email,
-                      subject: `📅 ${t("page.seasonal.modified_email_subject")}`,
-                      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-                        <h2 style="color:#1a1a1a;text-align:center;">📅 ${t("page.seasonal.modified_email_heading")}</h2>
-                        <p style="color:#555;font-size:15px;text-align:center;">${t("page.seasonal.modified_email_body").replace("{name}", focusedRequest.guest_name).replace("{checkin}", editingRequestDates.check_in).replace("{checkout}", editingRequestDates.check_out)}</p>
-                        <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
-                      </div>`,
-                    },
+                  await invokeSendEmail({
+                    to: focusedRequest.guest_email,
+                    subject: `📅 ${t("page.seasonal.modified_email_subject")}`,
+                    html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+                      <h2 style="color:#1a1a1a;text-align:center;">📅 ${t("page.seasonal.modified_email_heading")}</h2>
+                      <p style="color:#555;font-size:15px;text-align:center;">${t("page.seasonal.modified_email_body").replace("{name}", focusedRequest.guest_name).replace("{checkin}", editingRequestDates.check_in).replace("{checkout}", editingRequestDates.check_out)}</p>
+                      <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
+                    </div>`,
                   });
                   toast({ title: t("page.seasonal.dates_modified") });
                   await load();
