@@ -16,12 +16,23 @@ import type { ActiveCallMeta } from "./useCallState";
 
 interface StartCallOpts {
   targetId: string;
-  threadId?: string;
-  contextType?: string;
-  contextId?: string;
+  /** Canonical conversation UUID */
+  conversationId?: string;
+  /** Business entity type */
+  entityType?: string;
+  /** Business entity ID */
+  entityId?: string;
   contextLabel?: string;
   peerName: string;
   isVideo?: boolean;
+
+  // ── Deprecated aliases ──
+  /** @deprecated Use conversationId */
+  threadId?: string;
+  /** @deprecated Use entityType */
+  contextType?: string;
+  /** @deprecated Use entityId */
+  contextId?: string;
 }
 
 export function useOutgoingCall(
