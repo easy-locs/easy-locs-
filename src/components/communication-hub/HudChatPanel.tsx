@@ -55,6 +55,8 @@ import { MediaPreviewSheet } from "@/components/orbit/MediaPreviewSheet";
 import { FullscreenMediaViewer } from "@/components/orbit/FullscreenMediaViewer";
 import { useMediaPreviewState, type PreviewItem } from "@/families/media/media-preview-state";
 import { sendMediaOptimistic } from "@/families/send/send-media-optimistic";
+import { transportUploadWithPrepare } from "@/families/media/transport/transport-engine";
+import { TransportPolicy } from "@/families/media/transport/transport-policy";
 
 import { useSecurityDialogs } from "./chat/useSecurityDialogs";
 import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
@@ -508,17 +510,22 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             return;
           }
 
-          // Send each item through optimistic pipeline
+          // Send each item through optimistic pipeline with transport engine
           for (const item of items) {
+            const decision = TransportPolicy.decide(item.media.file);
             void sendMediaOptimistic(ctx, {
               file: item.media.file,
               caption: items.length === 1 ? caption : item.caption || caption,
               viewOnce,
               uploadFn: async (file, path, onProgress) => {
-                const url = await attFamily.attachments.uploadToStorage(file, path);
-                if (!url) throw new Error("Upload failed");
-                onProgress(100);
-                return url;
+                const result = await transportUploadWithPrepare(file, {
+                  pathPrefix: orgId || "orbit-media",
+                  compress: decision.shouldCompress,
+                  maxDimension: decision.maxDimension || undefined,
+                  quality: decision.quality || undefined,
+                  callbacks: { onProgress },
+                });
+                return result.publicUrl;
               },
               pathPrefix: orgId || "orbit-media",
             });
