@@ -385,20 +385,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       <Sheet open={payment.paymentLinkDialog} onOpenChange={payment.setPaymentLinkDialog}>
         <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto p-0">
           <OrbitSmartPayment
-            recipientUserId={thread.peerUserId || thread.tenantId || thread.entityId || thread.contextId || null}
+            recipientUserId={thread.peerUserId || thread.tenantId || thread.entityId || null}
             recipientName={thread.name || "Recipient"}
-            context={thread.entityType ? { type: thread.entityType as any, id: thread.entityId || thread.contextId, label: thread.serviceTitle || thread.propertyLabel || thread.listingTitle } : undefined}
-            threadId={thread.conversationId || thread.v2ConversationId || thread.id}
+            context={thread.entityType ? { type: thread.entityType as any, id: thread.entityId, label: thread.serviceTitle || thread.propertyLabel || thread.listingTitle } : undefined}
+            threadId={thread.conversationId || thread.id}
             defaultCurrency={thread.currency?.toUpperCase()}
             onSuccess={(conf: PaymentConfirmation) => {
               payment.setPaymentLinkDialog(false);
               void (async () => {
                 const authUserId = await resolveAuthUserId();
                 if (!authUserId || !orgId) return;
-                const peerId = thread.peerUserId || thread.tenantId || thread.contextId || thread.id;
+                const peerId = thread.peerUserId || thread.tenantId || thread.entityId || thread.id;
                 try {
                   await sendPaymentReceiptToThread({
-                    threadId: thread.threadId || thread.id,
+                    threadId: thread.conversationId || thread.id,
                     senderId: authUserId,
                     orgId,
                     transactionId: conf.txnId,
@@ -406,8 +406,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
                     currency: conf.currency,
                     recipientName: conf.recipientName || thread.name,
                     title: conf.status === "completed" ? "Payment sent" : "Payment initiated",
-                    contextType: thread.contextType,
-                    contextId: thread.contextId,
+                    contextType: thread.entityType,
+                    contextId: thread.entityId,
                     tenantId: thread.tenantId,
                     bookingId: thread.bookingId,
                     bookingType: thread.bookingType,
@@ -426,23 +426,23 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       <RequestMoneyModal
         open={payment.requestMoneyDialog}
         onClose={() => payment.setRequestMoneyDialog(false)}
-        recipientId={thread.peerUserId || thread.tenantId || thread.contextId || null}
-        contextId={thread.threadId || thread.id || null}
+        recipientId={thread.peerUserId || thread.tenantId || thread.entityId || null}
+        contextId={thread.conversationId || thread.id || null}
         onCreated={async (req) => {
           const authUserId = await resolveAuthUserId();
           if (!authUserId || !orgId) return;
-          const peerId = thread.peerUserId || thread.tenantId || thread.contextId || thread.id;
+          const peerId = thread.peerUserId || thread.tenantId || thread.entityId || thread.id;
           try {
             await sendPaymentRequestMessageToThread({
-              threadId: thread.threadId || thread.id,
+              threadId: thread.conversationId || thread.id,
               senderId: authUserId,
               orgId,
               request: req,
               tenantId: thread.tenantId,
               bookingId: thread.bookingId,
               bookingType: thread.bookingType,
-              contextType: thread.contextType,
-              contextId: thread.contextId,
+              contextType: thread.entityType,
+              contextId: thread.entityId,
               encrypt: e2eReady ? encrypt : undefined,
               peerId: e2eReady ? peerId : null,
             });
@@ -468,8 +468,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       />
 
       <ChatLocationPicker open={security.showLocationPicker} onClose={() => security.setShowLocationPicker(false)} onSend={compFamily.handleLocationSend} />
-      <OrbitSafetyNumber peerId={thread.peerUserId || thread.tenantId || thread.contextId || thread.id || ""} peerName={thread.name || "Contact"} open={security.showSafetyNumber} onOpenChange={security.setShowSafetyNumber} />
-      <OrbitSecurityPanel peerId={thread.peerUserId || thread.tenantId || thread.contextId || thread.id || ""} peerName={thread.name || "Contact"} open={security.showSecurityPanel} onOpenChange={security.setShowSecurityPanel} />
+      <OrbitSafetyNumber peerId={thread.peerUserId || thread.tenantId || thread.entityId || thread.id || ""} peerName={thread.name || "Contact"} open={security.showSafetyNumber} onOpenChange={security.setShowSafetyNumber} />
+      <OrbitSecurityPanel peerId={thread.peerUserId || thread.tenantId || thread.entityId || thread.id || ""} peerName={thread.name || "Contact"} open={security.showSecurityPanel} onOpenChange={security.setShowSecurityPanel} />
 
       {selection.forwardData && (
         <ForwardMessageDialog
@@ -480,7 +480,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           userId={user?.id || ""}
           userEmail={user?.email || ""}
           userName={user?.user_metadata?.full_name || user?.email || "User"}
-          currentContextId={thread.contextId || ""}
+          currentContextId={thread.entityId || ""}
         />
       )}
 
