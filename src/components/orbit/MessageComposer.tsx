@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { haptic } from "@/lib/haptics";
+import { DeviceAudio } from "@/families/device/device-audio";
 
 export interface MessageComposerProps {
   value: string;
