@@ -316,16 +316,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           voiceDuration={compFamily.voiceRecorder.duration}
           replyTo={selection.replyTo ? { content: selection.replyTo.content, senderName: selection.replyTo.senderName } : null}
           onChange={messageSender.setNewMessage}
-          onSend={async () => {
-            if (compFamily.composer.editState) {
-              await messageActions.editMessage(compFamily.composer.editState.messageId, messageSender.newMessage.trim());
-              messageSender.setNewMessage("");
-              compFamily.composer.setEditState(null);
-              return;
-            }
-            await messageSender.handleSend();
-            compFamily.composer.setReplyState(null);
-          }}
+          onSend={stableHandleSend}
           onKeyDown={messageSender.handleKeyDown}
           onTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
           attachmentActions={{
