@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { updateStorefrontOrderStatus } from "@/lib/orders/orderEngine";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,7 +65,7 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
     const timer = setInterval(() => setTick((t) => t + 1), 1000);
 
     return () => {
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(channel);
       clearInterval(timer);
     };
   }, [shopId, fetchOrders]);

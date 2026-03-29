@@ -4,7 +4,7 @@
  * Responsibilities: orchestrate fetch → filter → map → enrich → sort → state.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { fetchThreadStats } from "@/repositories/communication.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import type { ConversationThread } from "./types";
@@ -118,7 +118,7 @@ export function useConversationThreads() {
   // Realtime subscriptions
   useEffect(() => {
     if (!user?.id) return;
-    const channel = supabase.channel("hub-live");
+    const channel = createRealtimeChannel("hub-live");
 
     if (orgId) {
       channel
@@ -135,7 +135,7 @@ export function useConversationThreads() {
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(channel);
     };
   }, [orgId, user?.id, debouncedReload]);
 

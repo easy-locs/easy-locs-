@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,7 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
       .on("postgres_changes", { event: "*", schema: "public", table: "storefront_auctions", filter: `shop_id=eq.${shopId}` },
         () => qc.invalidateQueries({ queryKey: ["shop-auctions", shopId] })
       ).subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [shopId, qc]);
 
   const createAuction = async () => {

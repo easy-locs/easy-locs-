@@ -3,7 +3,7 @@
  * Single responsibility: listen to call_logs inserts/updates and update incoming state.
  */
 import { useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { processIncomingInsert, processIncomingUpdate } from "@/lib/call/call-incoming-handler";
 import { registerChannel, unregisterChannel, recordEvent } from "@/lib/runtime/realtime-monitor";
 import { debugLog } from "@/lib/debug/runtime-debug-bus";
@@ -23,7 +23,7 @@ export function useIncomingCallListener(
   useEffect(() => {
     if (!userId) return;
     if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
+      removeRealtimeChannel(channelRef.current);
       channelRef.current = null;
     }
 
@@ -47,7 +47,7 @@ export function useIncomingCallListener(
       }
     };
 
-    let channel = supabase.channel(channelName);
+    let channel = createRealtimeChannel(channelName);
     for (const rid of receiverIds) {
       channel = channel
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "call_logs", filter: `receiver_orbit_id=eq.${rid}` }, handleInsert)
@@ -68,7 +68,7 @@ export function useIncomingCallListener(
     return () => {
       unregisterChannel(channelName);
       if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
+        removeRealtimeChannel(channelRef.current);
         channelRef.current = null;
       }
     };

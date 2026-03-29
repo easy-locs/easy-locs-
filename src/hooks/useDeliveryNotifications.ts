@@ -3,7 +3,7 @@
  * Canonical: reads mobility_jobs only.
  */
 import { useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 

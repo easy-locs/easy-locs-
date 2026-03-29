@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export function useAppHealthCheck() {
   const [health, setHealth] = useState({
@@ -69,7 +69,7 @@ export function useAppHealthCheck() {
 
       // ── Realtime check ──
       try {
-        const channel = supabase.channel("healthcheck-ping");
+        const channel = createRealtimeChannel("healthcheck-ping");
         const status = await new Promise<string>((resolve) => {
           const timeout = setTimeout(() => resolve("SUBSCRIBED"), 3000);
           channel.subscribe((st) => {
@@ -79,7 +79,7 @@ export function useAppHealthCheck() {
         });
         console.info("[RT_TEST]", status);
         next.realtime = status === "SUBSCRIBED" || status === "timeout";
-        supabase.removeChannel(channel);
+        removeRealtimeChannel(channel);
       } catch (e: any) {
         console.error("[RT_TEST] exception:", e?.message || e);
         next.realtime = true; // Don't block UI for RT failures

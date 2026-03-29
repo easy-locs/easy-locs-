@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { useFavoritesStore } from "@/stores/favoritesStore";
 
@@ -27,7 +27,7 @@ export function useFavoritesRealtime() {
       .subscribe();
 
     return () => {
-      void supabase.removeChannel(channel);
+      void removeRealtimeChannel(channel);
     };
   }, [user?.id]);
 }

@@ -2,7 +2,7 @@
  * useRealtimeDispatchBoard — Canonical: reads from mobility_jobs.
  */
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export function useRealtimeDispatchBoard() {
   const [state, setState] = useState({ rides: [] as any[], alerts: [] as any[], zones: [] as any[], loading: true });
@@ -18,11 +18,11 @@ export function useRealtimeDispatchBoard() {
 
   useEffect(() => {
     load();
-    const channel = supabase.channel("dispatch-board-live")
+    const channel = createRealtimeChannel("dispatch-board-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "admin_alerts" }, load)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [load]);
 
   return state;
