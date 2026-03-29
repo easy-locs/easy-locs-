@@ -42,3 +42,8 @@ export async function insertRealEstateLead(payload: Record<string, any>) {
   const { data } = await (supabase as any).from("real_estate_leads").insert(payload).select("id").single();
   return data;
 }
+
+export async function fetchPublicListingBySlug(slug: string) {
+  const { data } = await supabase.from("public_listings").select("*").eq("slug", slug).eq("active", true).maybeSingle();
+  return data;
+}
