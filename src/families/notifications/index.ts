@@ -16,9 +16,8 @@ export { sendInAppNotification } from "@/lib/notifications/notification-dispatch
 
 // ── Repository ──
 export {
-  fetchNotifications,
-  markNotificationRead,
-  dismissNotification,
+  createNotification,
+  type NotificationPayload,
 } from "@/repositories/notifications.repository";
 
 // Notifications family owns: in-app notifications, message/call/wallet/order/system
