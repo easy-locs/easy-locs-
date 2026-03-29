@@ -2,7 +2,7 @@
  * ChatHeader — Extracted from HudChatPanel.
  * Displays thread name, avatar, call buttons, actions menu.
  */
-import { Phone, Video, MoreVertical, ArrowLeft, Lock, ChevronRight, Shield, CheckCheck } from "lucide-react";
+import { Phone, Video, MoreVertical, ArrowLeft, ChevronRight, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { CONV_STATUSES, STATUS_COLORS, STATUS_LABELS, SOURCE_MODULE_CONFIG } from "../types";
@@ -68,9 +68,6 @@ export default function ChatHeader({
                 {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
               </span>
             )}
-            <span className="inline-flex items-center gap-0.5 text-[9px]" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
-              <Lock className="h-2 w-2" /> E2E
-            </span>
           </div>
         </div>
 
@@ -96,14 +93,6 @@ export default function ChatHeader({
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => { haptic("light"); onShowSecurityPanel(); }}>
-                <Shield className="h-3.5 w-3.5 mr-2" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))" }} />
-                {t("orbit.security") || "Security"}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { haptic("light"); onShowSafetyNumber(); }}>
-                <Lock className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
-                {t("orbit.safety_number") || "Safety Number"}
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={onToggleContext}>
                 <ChevronRight className="h-3.5 w-3.5 mr-2" /> {t("orbit.details") || "Details"}
               </DropdownMenuItem>
