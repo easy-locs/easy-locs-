@@ -1,6 +1,13 @@
+/**
+ * useOrbitMessageActions — Edit, soft-delete, pin messages.
+ * Uses canonical repository — zero inline supabase calls.
+ */
 import { useCallback, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { updateMessageFields } from "@/repositories/communication.repository";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+const db = supabase as any;
 
 export function useOrbitMessageActions(params: {
   conversationId?: string | null;
@@ -14,17 +21,10 @@ export function useOrbitMessageActions(params: {
     if (!conversationId || !currentUserId) return;
     setBusyMessageId(messageId);
     try {
-      const { error } = await (supabase as any)
-        .from("chat_messages_v2")
-        .update({
-          body,
-          edited_at: new Date().toISOString(),
-        })
-        .eq("id", messageId)
-        .eq("conversation_id", conversationId)
-        .eq("sender_user_id", currentUserId);
-
-      if (error) throw error;
+      await updateMessageFields(messageId, {
+        body,
+        edited_at: new Date().toISOString(),
+      });
       onAfterChange?.();
       toast.success("Message updated");
     } catch (err: any) {
@@ -38,18 +38,11 @@ export function useOrbitMessageActions(params: {
     if (!conversationId || !currentUserId) return;
     setBusyMessageId(messageId);
     try {
-      const { error } = await (supabase as any)
-        .from("chat_messages_v2")
-        .update({
-          deleted_at: new Date().toISOString(),
-          body: "",
-          metadata: { deleted: true },
-        })
-        .eq("id", messageId)
-        .eq("conversation_id", conversationId)
-        .eq("sender_user_id", currentUserId);
-
-      if (error) throw error;
+      await updateMessageFields(messageId, {
+        deleted_at: new Date().toISOString(),
+        body: "",
+        metadata: { deleted: true },
+      });
       onAfterChange?.();
       toast.success("Message deleted");
     } catch (err: any) {
@@ -63,16 +56,14 @@ export function useOrbitMessageActions(params: {
     if (!conversationId) return;
     setBusyMessageId(messageId);
     try {
-      const { data: row, error: readErr } = await (supabase as any)
+      const { data: row, error: readErr } = await db
         .from("conversations_v2")
         .select("metadata")
         .eq("id", conversationId)
         .single();
-
       if (readErr) throw readErr;
 
       const metadata = { ...(row?.metadata || {}) };
-
       if (pin) {
         metadata.pinned_message_id = messageId;
         metadata.pinned_at = new Date().toISOString();
@@ -81,15 +72,12 @@ export function useOrbitMessageActions(params: {
         delete metadata.pinned_at;
       }
 
-      const { error } = await (supabase as any)
+      const { error } = await db
         .from("conversations_v2")
-        .update({
-          metadata,
-          updated_at: new Date().toISOString(),
-        })
+        .update({ metadata, updated_at: new Date().toISOString() })
         .eq("id", conversationId);
-
       if (error) throw error;
+
       onAfterChange?.();
       toast.success(pin ? "Message pinned" : "Message unpinned");
     } catch (err: any) {
@@ -99,10 +87,5 @@ export function useOrbitMessageActions(params: {
     }
   }, [conversationId, onAfterChange]);
 
-  return {
-    busyMessageId,
-    editMessage,
-    softDeleteMessage,
-    togglePinMessage,
-  };
+  return { busyMessageId, editMessage, softDeleteMessage, togglePinMessage };
 }
