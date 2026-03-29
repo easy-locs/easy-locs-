@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthUser } from "@/repositories/auth-utils.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -106,12 +106,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const callActions = useCallActions(thread, orgId || null);
 
   const resolveAuthUserId = useCallback(async (): Promise<string | null> => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data?.user?.id) {
+    const { user, error } = await getAuthUser();
+    if (error || !user?.id) {
       toast.error(t("orbit.session_expired") || "Session expired");
       return null;
     }
-    return data.user.id;
+    return user.id;
   }, [t]);
 
   /** Resolve or auto-create V2 conversationId for this thread */

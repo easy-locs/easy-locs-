@@ -7,7 +7,8 @@
  *   - Notifications: After first order or relevant UX moment
  */
 import { useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthUser } from "@/repositories/auth-utils.repository";
+import { updateOrbitPermissions } from "@/repositories/communication.repository";
 
 async function probePermission(name: PermissionName): Promise<PermissionState> {
   try {
@@ -36,12 +37,9 @@ export function PermissionBootstrap() {
 
       // Sync to orbit profile if logged in
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { user } = await getAuthUser();
         if (user?.id) {
-          await (supabase as any)
-            .from("orbit_profiles_v2")
-            .update({ permissions: perms } as any)
-            .eq("id", user.id);
+          await updateOrbitPermissions(user.id, perms);
         }
       } catch {
         // Silent
