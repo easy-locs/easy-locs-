@@ -52,17 +52,15 @@ export default function SmartCatalogBuilder({ shopId, onCreated }: Props) {
     if (!title.trim()) { toast.error("Enter a product name first"); return; }
     setAiLoading(true);
     try {
-      const { data } = await supabase.functions.invoke("ai-proxy", {
-        body: {
-          model: "google/gemini-2.5-flash-lite",
-          messages: [{
-            role: "user",
-            content: `You are an e-commerce product listing expert. Generate optimized listing data. Return ONLY valid JSON.
+      const data = await storefrontRepo.invokeAIProxy({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [{
+          role: "user",
+          content: `You are an e-commerce product listing expert. Generate optimized listing data. Return ONLY valid JSON.
 Product: "${title}" — ${description || "no description"}, Type: ${itemType}, Price: ${price || "not set"}
 
 Return: {"title":"optimized product title","description":"compelling product description 2-3 sentences","category":"product category","tags":["tag1","tag2","tag3"],"seo_title":"SEO title under 60 chars","seo_description":"SEO meta under 155 chars"}`
-          }],
-        },
+        }],
       });
       const text = data?.choices?.[0]?.message?.content || data?.content || "";
       const jsonMatch = text.match(/\{[\s\S]*\}/);

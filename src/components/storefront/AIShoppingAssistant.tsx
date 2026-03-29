@@ -52,12 +52,10 @@ Help customers find products, compare options, and answer questions. Be concise 
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("ai-shopping-chat", {
-        body: {
-          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
-          system: buildContext(),
-          shop_id: shopId,
-        },
+      const data = await storefrontRepo.invokeAIShoppingChat({
+        messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+        system: buildContext(),
+        shop_id: shopId,
       });
 
       if (error) throw error;
