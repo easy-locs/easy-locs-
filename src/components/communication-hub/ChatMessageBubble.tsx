@@ -245,7 +245,7 @@ function ChatMessageBubble({
 
   return (
     <div
-      className={`flex ${isMe ? "justify-end" : "justify-start"} group transition-colors duration-150`}
+      className={`flex ${selectMode ? "items-center" : ""} ${isMe && !selectMode ? "justify-end" : "justify-start"} group transition-colors duration-150`}
       style={{
         marginTop: isConsecutive ? 2 : 8,
         ...(selected ? {
