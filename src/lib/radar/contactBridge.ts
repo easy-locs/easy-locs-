@@ -5,7 +5,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { sendText } from "@/families/send/send-text";
-import { notifyNewMessage } from "@/lib/notifications/notifyNewMessage";
+import { notifyNewMessage } from "@/lib/engines/notification-event-dispatcher";
 import type { SendContext } from "@/families/send/send-context";
 
 const db = supabase as any;
