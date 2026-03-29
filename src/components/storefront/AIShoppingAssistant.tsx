@@ -4,6 +4,7 @@
  */
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,15 +53,13 @@ Help customers find products, compare options, and answer questions. Be concise 
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("ai-shopping-chat", {
-        body: {
-          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
-          system: buildContext(),
-          shop_id: shopId,
-        },
+      const data = await storefrontRepo.invokeAIShoppingChat({
+        messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+        system: buildContext(),
+        shop_id: shopId,
       });
 
-      if (error) throw error;
+      
       const reply = data?.reply || "Sorry, I couldn't process that.";
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
     } catch {

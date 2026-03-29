@@ -37,14 +37,28 @@ export async function insertDeliveryRating(record: Record<string, any>) {
 }
 
 // ── Driver analytics ──
-export async function fetchDriverJobs(userId: string) {
-  const { data } = await (supabase as any).from("mobility_jobs").select("id, status, current_price, quoted_price, currency, created_at, completed_at").eq("rider_user_id", userId).order("created_at", { ascending: false }).limit(200);
+export async function fetchDriverJobs(userId: string, since?: string) {
+  let q = supabase.from("mobility_jobs")
+    .select("id, status, current_price, quoted_price, currency, created_at, completed_at, picked_up_at")
+    .eq("rider_user_id", userId);
+  if (since) q = q.gte("created_at", since);
+  const { data } = await q.order("created_at", { ascending: false }).limit(500);
   return data ?? [];
 }
 
-export async function fetchDriverRatings(userId: string) {
-  const { data } = await (supabase as any).from("delivery_ratings").select("rating, created_at").eq("driver_user_id", userId);
+export async function fetchDriverRatings(userId: string, since?: string) {
+  let q = supabase.from("delivery_ratings").select("rating, created_at").eq("driver_id", userId);
+  if (since) q = q.gte("created_at", since);
+  const { data } = await q.limit(200);
   return data ?? [];
+}
+
+// ── Escrow status (buyer dashboard) ──
+export async function fetchEscrowStatus(jobId: string) {
+  const { data } = await supabase.functions.invoke("dispatch-delivery", {
+    body: { action: "escrow_status", job_id: jobId },
+  });
+  return data;
 }
 
 // ── Offers ──

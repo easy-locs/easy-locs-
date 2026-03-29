@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createStripeIntent } from "@/repositories/payments.repository";
 import { Button } from "@/components/ui/button";
 import { Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
@@ -18,11 +18,7 @@ export default function CardPayment({ amount, currency = "AED", orderId, onSucce
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("create-stripe-intent", {
-        body: { amount, currency: currency.toLowerCase(), orderId },
-      });
-
-      if (error) throw error;
+      const data = await createStripeIntent({ amount, currency: currency.toLowerCase(), orderId });
 
       const { clientSecret } = data;
       if (!clientSecret) throw new Error("No client secret returned");

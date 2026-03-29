@@ -66,3 +66,9 @@ export async function fetchTenantName(tenantId: string) {
   const { data } = await supabase.from("tenants").select("name").eq("id", tenantId).single();
   return data?.name || null;
 }
+
+// ── Send email ──
+export async function invokeSendEmail(body: Record<string, any>) {
+  const { error } = await supabase.functions.invoke("send-email", { body });
+  if (error) throw error;
+}

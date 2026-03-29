@@ -3,7 +3,7 @@
  * PASS84-CC: Driver Onboarding Flow
  */
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Car, MapPin, FileText, CheckCircle2, Upload, ChevronRight, ChevronLeft, Shield } from "lucide-react";
@@ -69,22 +69,19 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
     setSubmitting(true);
     try {
       // Upsert rider presence with onboarding data
-      const { error } = await (supabase as any).from("rider_presence").upsert({
+      await deliveryRepo.upsertRiderPresence({
         user_id: user.id,
         vehicle_type: vehicle.vehicleType,
         is_online: false,
         is_available: false,
-      }, { onConflict: "user_id" });
+      });
 
-      if (error) throw error;
-
-      // Update profile with driver info
-      await supabase.from("profiles").update({
+      await deliveryRepo.updateDriverProfile(user.id, {
         name: profile.fullName,
         phone: profile.phone,
         city: profile.city,
         country: profile.country,
-      }).eq("id", user.id);
+      });
 
       toast.success("Inscription chauffeur terminée !");
       onComplete?.();

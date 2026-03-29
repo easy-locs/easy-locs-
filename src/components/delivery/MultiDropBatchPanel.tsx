@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Package, MapPin, Layers, Zap, CheckCircle2, Route } from "lucide-react";
@@ -106,8 +107,8 @@ export default function MultiDropBatchPanel({ orgId }: { orgId: string }) {
     try {
       // Invoke dispatch for each job in the cluster
       for (const job of cluster.jobs) {
-        await supabase.functions.invoke("dispatch-delivery", {
-          body: { action: "find_drivers", job_id: job.id },
+        await deliveryRepo.invokeDispatchDelivery({
+          action: "find_drivers", job_id: job.id,
         });
       }
       toast.success(`${cluster.jobs.length} missions envoyées au dispatch !`);

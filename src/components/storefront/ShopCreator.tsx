@@ -7,6 +7,7 @@ import { useState, useRef, useCallback } from "react";
 import { validateShop } from "@/lib/validation/marketplace-validators";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 import { checkStorefrontDuplicate } from "@/lib/geo/duplicateGuard";
@@ -82,10 +83,8 @@ export default function ShopCreator() {
     try {
       const ext = file.name.split(".").pop();
       const path = `${user.id}/logo-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("catalog-photos").upload(path, file);
-      if (error) { toast.error("Upload failed"); return; }
-      const { data } = supabase.storage.from("catalog-photos").getPublicUrl(path);
-      setLogoUrl(data.publicUrl);
+      const publicUrl = await storefrontRepo.uploadCatalogPhoto(path, file);
+      setLogoUrl(publicUrl);
       toast.success("Logo uploaded!");
     } finally {
       setUploading(false);

@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { walletTransfer } from "@/payments/wallet-hooks";
 import { supabase } from "@/integrations/supabase/client";
+import { markRentCallPaid } from "@/repositories/rent-payment.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatCurrency } from "@/lib/country-config";
@@ -60,7 +61,7 @@ export default function RentPaymentSheet({ rentCallId, onClose, onSuccess }: Ren
         contextId: rentCallId,
         title: `Rent - ${rentCall.properties?.title || "Property"}`,
       });
-      await supabase.from("rent_calls").update({ paid: true, paid_amount: rentCall.amount, paid_date: new Date().toISOString() } as any).eq("id", rentCallId);
+      await markRentCallPaid(rentCallId, rentCall.amount);
       await reloadBalance();
       queryClient.invalidateQueries({ queryKey: ["rent-calls"] });
       setStep("success");

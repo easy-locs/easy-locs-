@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Package, MapPin, Clock, CheckCircle2, Loader2, Eye, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import EscrowDeliveryValidator from "@/components/delivery/EscrowDeliveryValidator";
 
@@ -76,9 +77,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
       await Promise.all(
         activeOrders.map(async (o) => {
           try {
-            const { data: escrowData } = await supabase.functions.invoke("dispatch-delivery", {
-              body: { action: "escrow_status", job_id: o.id },
-            });
+            const escrowData = await deliveryRepo.fetchEscrowStatus(o.id);
             if (escrowData?.escrow) {
               statuses[o.id] = escrowData.escrow.status;
             }

@@ -4,7 +4,7 @@
  * Uses Supabase Storage bucket "products".
  */
 import { useState, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { ImagePlus, Video, X, Star, Loader2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
@@ -45,14 +45,8 @@ export default function ProductMediaUploader({
       const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
       const path = `${user.id}/${subfolder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
-      const { error } = await supabase.storage.from("products").upload(path, file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from("products").getPublicUrl(path);
-      return urlData.publicUrl;
+      const publicUrl = await storefrontRepo.uploadProductFile(path, file);
+      return publicUrl;
     },
     [user]
   );
