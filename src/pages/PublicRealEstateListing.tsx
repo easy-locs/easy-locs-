@@ -96,11 +96,10 @@ export default function PublicRealEstateListing() {
         phone: contactForm.phone, message: contactForm.message,
       });
     setSubmitting(false);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     setSubmitted(true);
     toast({ title: "✅ Message sent!", description: "The property owner will contact you shortly." });
 
-    // Sync engine: lead_created (replaces legacy direct email + DB trigger notification)
+    // Sync engine: lead_created
     if (inserted?.id) {
       dispatchSyncEvent({
         type: "lead_created",
@@ -109,7 +108,7 @@ export default function PublicRealEstateListing() {
           leadId: inserted.id,
           countryCode: listing.country || "",
         },
-        actorUserId: "", // public visitor, no auth
+        actorUserId: "",
         targetEmail: listing.contact_email || undefined,
         leadName: contactForm.name,
         leadEmail: contactForm.email,
@@ -117,6 +116,11 @@ export default function PublicRealEstateListing() {
         listingTitle: listing.title,
         listingId: listing.id,
       }).catch(() => {});
+    }
+    } catch (err: any) {
+      setSubmitting(false);
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+      return;
     }
   };
 
