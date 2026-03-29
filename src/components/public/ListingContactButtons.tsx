@@ -3,7 +3,7 @@ import { Mail, Phone, MessageSquare, Lock, LogIn, Eye, Loader2 } from "lucide-re
 import { PhoneCall } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as contactRepo from "@/repositories/listing-contact.repository";
 import { toast } from "sonner";
 import { emailLink, type ListingContext } from "@/lib/contact-utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -31,95 +31,44 @@ interface Props {
 }
 
 const trackClick = (channel: string, opts: { listingId?: string | null; serviceId?: string | null; orgId?: string | null }) => {
-  supabase.from("contact_clicks" as any).insert({
-    channel,
-    listing_id: opts.listingId || null,
-    service_id: opts.serviceId || null,
-    org_id: opts.orgId || null,
-    referrer: typeof document !== "undefined" ? document.referrer?.slice(0, 500) : null,
-  } as any).then(() => {});
+  contactRepo.trackContactClick(channel, opts);
 };
 
 async function getOrCreateV2Conversation(userId: string, orgId: string, opts: {
   contextType?: string; contextId?: string; listingTitle?: string; listingUrl?: string; providerName?: string;
 }): Promise<string | null> {
-  const db = supabase as any;
   try {
-    // Look up existing V2 conversation for this listing/service
-    const { data: existing } = await db
-      .from("conversations_v2")
-      .select("id")
-      .eq("listing_id", opts.contextId || "")
-      .eq("type", "inquiry")
-      .limit(1)
-      .maybeSingle();
-    if (existing) return existing.id;
+    const existingId = await contactRepo.findExistingConversation(opts.contextId || "");
+    if (existingId) return existingId;
 
-    // Resolve orbit_id for creator
-    let creatorOrbitId = `orbit_${userId.slice(0, 12)}`;
-    try {
-      const { data: profile } = await db
-        .from("orbit_profiles_v2")
-        .select("orbit_id")
-        .eq("id", userId)
-        .maybeSingle();
-      if (profile?.orbit_id) creatorOrbitId = profile.orbit_id;
-    } catch { /* fallback */ }
-
-    // Get org owner for participant list
-    const { data: org } = await supabase
-      .from("orgs")
-      .select("owner_user_id")
-      .eq("id", orgId)
-      .maybeSingle();
+    const creatorOrbitId = await contactRepo.resolveOrbitId(userId);
+    const org = await contactRepo.fetchOrgOwner(orgId);
 
     const participants = [
       { userId, orbitId: creatorOrbitId },
       ...(org?.owner_user_id ? [{ userId: org.owner_user_id, orbitId: `orbit_${org.owner_user_id.slice(0, 12)}` }] : []),
     ];
 
-    const { data: conv, error } = await db
-      .from("conversations_v2")
-      .insert({
-        type: "inquiry",
-        title: opts.listingTitle || null,
-        listing_id: opts.contextId || null,
-        created_by_orbit_id: creatorOrbitId,
-        participants,
-        metadata: {
-          org_id: orgId,
-          context_type: opts.contextType || "listing",
-          provider_name: opts.providerName || null,
-        },
-        last_message_at: new Date().toISOString(),
-      })
-      .select("id")
-      .single();
-    if (error) throw error;
-    return conv?.id || null;
+    return await contactRepo.createV2Conversation({
+      type: "inquiry",
+      title: opts.listingTitle || null,
+      listing_id: opts.contextId || null,
+      created_by_orbit_id: creatorOrbitId,
+      participants,
+      metadata: {
+        org_id: orgId,
+        context_type: opts.contextType || "listing",
+        provider_name: opts.providerName || null,
+      },
+      last_message_at: new Date().toISOString(),
+    });
   } catch { return null; }
 }
 
 async function secureReveal(revealType: string, opts: {
   orgId?: string | null; listingId?: string | null; serviceId?: string | null; source?: string;
 }): Promise<{ value: string | null; remaining: number }> {
-  const { data, error } = await supabase.functions.invoke("reveal-contact", {
-    body: {
-      reveal_type: revealType,
-      org_id: opts.orgId || null,
-      listing_id: opts.listingId || null,
-      service_id: opts.serviceId || null,
-      source: opts.source || "real_estate",
-    },
-  });
-  if (error) throw error;
-  if (data?.error) {
-    if (data.error === "Daily reveal limit reached") {
-      throw new Error(`Daily limit reached (${data.limit}/day). Try again tomorrow.`);
-    }
-    throw new Error(data.error);
-  }
-  return { value: data?.[revealType] || null, remaining: data?.remaining ?? 0 };
+  return contactRepo.secureRevealContact(revealType, opts);
 }
 
 const ListingContactButtons = ({
@@ -175,7 +124,7 @@ const ListingContactButtons = ({
     setMessageSending(true);
     trackClick("chat", trackOpts);
     try {
-      const { data: quota } = await supabase.rpc("check_inquiry_quota", { _user_id: user.id }) as { data: any };
+      const quota = await contactRepo.checkInquiryQuota(user.id);
       if (quota && !(quota as any).allowed) {
         toast.error(`Inquiry limit reached (${(quota as any).limit}/hour). Please wait.`);
         setMessageSending(false);
@@ -192,19 +141,10 @@ const ListingContactButtons = ({
 
       if (!convId) throw new Error("Failed to create conversation");
 
-      // Resolve sender orbit_id
-      let senderOrbitId = `orbit_${user.id.slice(0, 12)}`;
-      try {
-        const { data: profile } = await (supabase as any)
-          .from("orbit_profiles_v2")
-          .select("orbit_id")
-          .eq("id", user.id)
-          .maybeSingle();
-        if (profile?.orbit_id) senderOrbitId = profile.orbit_id;
-      } catch { /* fallback */ }
+      const senderOrbitId = await contactRepo.resolveOrbitId(user.id);
 
       const msgBody = `Hi, I'm interested in "${listingTitle}"`;
-      const { error } = await (supabase as any).from("chat_messages_v2").insert({
+      await contactRepo.insertV2ChatMessage({
         conversation_id: convId,
         sender_user_id: user.id,
         sender_orbit_id: senderOrbitId,
@@ -215,21 +155,10 @@ const ListingContactButtons = ({
           listing_id: listingId || serviceId || null,
         },
       });
-      if (error) throw error;
 
-      // Update conversation preview
-      await (supabase as any)
-        .from("conversations_v2")
-        .update({
-          last_message_at: new Date().toISOString(),
-          last_message_preview: msgBody.slice(0, 120),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", convId);
+      await contactRepo.updateV2ConversationPreview(convId, msgBody);
 
       toast.success(t("gate.message_sent") || "Message sent!");
-
-      // Navigate to the Orbit conversation
       navigate(`/orbit?conversation=${convId}`);
     } catch {
       toast.error(t("gate.message_failed") || "Failed to send message");

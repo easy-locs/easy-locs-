@@ -9,7 +9,7 @@ import { Shield, Lock, Eye, EyeOff, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import * as pinRepo from "@/repositories/security-pin.repository";
 import { toast } from "sonner";
 
 const SESSION_KEY = "security_gate_ts";
@@ -72,10 +72,7 @@ export default function SecurityGate({
 
   const checkPinStatus = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("wallet-pin", {
-        body: { action: "check_status" },
-      });
-      if (error) throw error;
+      const data = await pinRepo.checkPinStatus();
       setState(data.has_pin ? "enter" : "setup");
     } catch {
       // If edge function fails, check localStorage as fallback
@@ -125,10 +122,7 @@ export default function SecurityGate({
 
       // Save PIN server-side
       try {
-        const { data, error } = await supabase.functions.invoke("wallet-pin", {
-          body: { action: "set_pin", pin: enteredPin },
-        });
-        if (error) throw error;
+        await pinRepo.setPin(enteredPin);
         // Also store locally as cache indicator
         localStorage.setItem(`pin_${user?.id}`, "set");
         toast.success("PIN set successfully");
@@ -146,10 +140,7 @@ export default function SecurityGate({
     if (state === "enter") {
       // Verify PIN server-side
       try {
-        const { data, error } = await supabase.functions.invoke("wallet-pin", {
-          body: { action: "verify_pin", pin: enteredPin },
-        });
-        if (error) throw error;
+        const data = await pinRepo.verifyPin(enteredPin);
 
         if (data.verified) {
           unlock();

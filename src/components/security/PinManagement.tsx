@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { Shield, Lock, KeyRound, Check, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import * as pinRepo from "@/repositories/security-pin.repository";
 import { toast } from "sonner";
 
 type Step = "idle" | "verify_current" | "new_pin" | "confirm_new" | "processing";
@@ -22,8 +22,8 @@ export default function PinManagement() {
 
   // Check PIN status on first render
   useState(() => {
-    supabase.functions.invoke("wallet-pin", { body: { action: "check_status" } })
-      .then(({ data }) => setHasPin(data?.has_pin ?? false))
+    pinRepo.checkPinStatus()
+      .then((data) => setHasPin(data?.has_pin ?? false))
       .catch(() => setHasPin(false));
   });
 
@@ -59,9 +59,7 @@ export default function PinManagement() {
       // Verify existing PIN
       setStep("processing");
       try {
-        const { data } = await supabase.functions.invoke("wallet-pin", {
-          body: { action: "verify_pin", pin },
-        });
+        const data = await pinRepo.verifyPin(pin);
         if (data?.verified) {
           setStep("new_pin");
           setNewPin("");
@@ -96,10 +94,7 @@ export default function PinManagement() {
 
       setStep("processing");
       try {
-        const { data, error: fnError } = await supabase.functions.invoke("wallet-pin", {
-          body: { action: "set_pin", pin },
-        });
-        if (fnError) throw fnError;
+        await pinRepo.setPin(pin);
         toast.success("PIN updated successfully");
         resetAll();
       } catch {

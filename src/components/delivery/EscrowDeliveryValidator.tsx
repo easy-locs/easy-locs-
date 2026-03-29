@@ -9,7 +9,7 @@
  * - Server-side escrow release (no direct DB mutation)
  */
 import { useState, useCallback, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as escrowRepo from "@/repositories/escrow.repository";
 import { Shield, Lock, Unlock, CheckCircle, AlertTriangle, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,9 +61,7 @@ export default function EscrowDeliveryValidator({
   useEffect(() => {
     async function fetchEscrow() {
       try {
-        const { data } = await supabase.functions.invoke("dispatch-delivery", {
-          body: { action: "escrow_status", job_id: jobId },
-        });
+        const data = await escrowRepo.fetchEscrowStatus(jobId);
         if (data?.escrow) {
           setEscrowStatus(data.escrow.status);
         }
@@ -142,30 +140,14 @@ export default function EscrowDeliveryValidator({
     setLoading(true);
     try {
       // Step 1: Confirm delivery via edge function (server-side validation)
-      const { data: confirmData, error: confirmError } = await supabase.functions.invoke("dispatch-delivery", {
-        body: {
-          action: "confirm_delivery",
-          job_id: jobId,
-          confirmation_code: code,
-          gps_lat: currentCoords?.lat,
-          gps_lng: currentCoords?.lng,
-          gps_accuracy: currentCoords?.accuracy,
-        },
+      await escrowRepo.confirmDelivery(jobId, code, {
+        lat: currentCoords?.lat,
+        lng: currentCoords?.lng,
+        accuracy: currentCoords?.accuracy,
       });
-
-      if (confirmError) throw confirmError;
-      if (confirmData?.error) throw new Error(confirmData.error);
 
       // Step 2: Release escrow via edge function
-      const { data: escrowData, error: escrowError } = await supabase.functions.invoke("dispatch-delivery", {
-        body: {
-          action: "escrow_release",
-          job_id: jobId,
-          reason: "delivery_confirmed",
-        },
-      });
-
-      if (escrowError) throw escrowError;
+      const escrowData = await escrowRepo.releaseEscrow(jobId, "delivery_confirmed");
       if (escrowData?.error) {
         // Non-blocking: escrow may not exist for all jobs
         console.warn("[escrow] Release note:", escrowData.error);
@@ -184,16 +166,7 @@ export default function EscrowDeliveryValidator({
   const handleRefund = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
-        body: {
-          action: "escrow_refund",
-          job_id: jobId,
-          reason: "delivery_issue",
-        },
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      await escrowRepo.refundEscrow(jobId, "delivery_issue");
 
       setEscrowStatus("refunded");
       toast.success("Fonds remboursés.");

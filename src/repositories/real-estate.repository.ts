@@ -107,3 +107,18 @@ export async function updateLeadStatus(id: string, status: string) {
   const { error } = await supabase.from("real_estate_leads").update({ status } as any).eq("id", id);
   if (error) throw error;
 }
+
+export async function getPublicListing(slug: string) {
+  const { data } = await supabase.rpc("get_public_real_estate_listing", { p_slug: slug });
+  return data;
+}
+
+export async function incrementListingViews(slug: string) {
+  supabase.rpc("increment_listing_views", { p_slug: slug });
+}
+
+export async function insertLead(lead: Record<string, any>) {
+  const { data, error } = await supabase.from("real_estate_leads").insert(lead as any).select("id").single();
+  if (error) throw error;
+  return data;
+}

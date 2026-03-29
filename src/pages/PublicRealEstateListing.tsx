@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import * as realEstateRepo from "@/repositories/real-estate.repository";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { getShareLinks } from "@/lib/social-share";
 import { useAutoTranslateBatch } from "@/hooks/useAutoTranslate";
@@ -78,10 +78,10 @@ export default function PublicRealEstateListing() {
   useEffect(() => {
     if (!slug) return;
     const load = async () => {
-      const { data } = await supabase.rpc("get_public_real_estate_listing", { p_slug: slug });
+      const data = await realEstateRepo.getPublicListing(slug);
       setListing(data as any);
       setLoading(false);
-      supabase.rpc("increment_listing_views", { p_slug: slug });
+      realEstateRepo.incrementListingViews(slug);
     };
     load();
   }, [slug]);
@@ -89,17 +89,17 @@ export default function PublicRealEstateListing() {
   const handleSubmitContact = async () => {
     if (!contactForm.name || !contactForm.email || !listing) return;
     setSubmitting(true);
-    const { data: inserted, error } = await supabase.from("real_estate_leads").insert({
-      org_id: listing.org_id, listing_id: listing.id,
-      name: contactForm.name, email: contactForm.email,
-      phone: contactForm.phone, message: contactForm.message,
-    }).select("id").single();
+    try {
+      const inserted = await realEstateRepo.insertLead({
+        org_id: listing.org_id, listing_id: listing.id,
+        name: contactForm.name, email: contactForm.email,
+        phone: contactForm.phone, message: contactForm.message,
+      });
     setSubmitting(false);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     setSubmitted(true);
     toast({ title: "✅ Message sent!", description: "The property owner will contact you shortly." });
 
-    // Sync engine: lead_created (replaces legacy direct email + DB trigger notification)
+    // Sync engine: lead_created
     if (inserted?.id) {
       dispatchSyncEvent({
         type: "lead_created",
@@ -108,7 +108,7 @@ export default function PublicRealEstateListing() {
           leadId: inserted.id,
           countryCode: listing.country || "",
         },
-        actorUserId: "", // public visitor, no auth
+        actorUserId: "",
         targetEmail: listing.contact_email || undefined,
         leadName: contactForm.name,
         leadEmail: contactForm.email,
@@ -116,6 +116,11 @@ export default function PublicRealEstateListing() {
         listingTitle: listing.title,
         listingId: listing.id,
       }).catch(() => {});
+    }
+    } catch (err: any) {
+      setSubmitting(false);
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+      return;
     }
   };
 
