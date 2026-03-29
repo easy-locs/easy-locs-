@@ -5,17 +5,19 @@
  */
 import { useCallback } from "react";
 import { Loader2 } from "lucide-react";
-import { getAuthUser } from "@/repositories/auth-utils.repository";
-import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+
+// ── Canonical families ──
+import { useAuth } from "@/families/auth";
+import { useResolveAuthUserId } from "@/families/auth";
+import { useOrbitIdentity } from "@/families/identity";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
 import { useOfflineMessages } from "@/hooks/useOfflineMessages";
 import { usePrivacySettings } from "@/hooks/usePrivacySettings";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 import type { ConversationThread } from "./types";
 
