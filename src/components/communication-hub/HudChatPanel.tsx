@@ -48,6 +48,7 @@ import { OrbitIncomingCallBar } from "@/components/orbit/OrbitIncomingCallBar";
 import { OrbitCallControls } from "@/components/orbit/OrbitCallControls";
 import { OrbitCallMiniPlayer } from "@/components/orbit/OrbitCallMiniPlayer";
 import { OrbitCallPermissionBanner } from "@/components/orbit/OrbitCallPermissionBanner";
+import { LocationViewerOverlay } from "@/components/communication-hub/chat/LocationViewerOverlay";
 import { OrbitUploadQueuePreview } from "@/components/orbit/OrbitUploadQueuePreview";
 import { OrbitAttachmentViewer } from "@/components/orbit/OrbitAttachmentViewer";
 
