@@ -30,15 +30,14 @@ const ListingLocalServices = ({ orgId, propertyId, propertyCity, propertyCountry
       if (!isEnabled) return;
       setEnabled(true);
 
-      const svcData = data as any[];
-
-      if (!data) return;
+      const svcData = await fetchLocalServices(orgId) as any[];
+      if (!svcData) return;
 
       // Filter: property-specific OR matching city (with no property_id bound)
       const cityLower = (propertyCity || "").toLowerCase().trim();
       const countryLower = (propertyCountry || "").toLowerCase().trim();
 
-      const filtered = data.filter(s => {
+      const filtered = svcData.filter((s: any) => {
         if (s.property_id === propertyId) return true;
         if (!s.property_id) {
           const sCity = (s.city || "").toLowerCase().trim();

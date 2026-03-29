@@ -46,11 +46,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
   useEffect(() => {
     if (!property?.id) return;
     const loadBookings = async () => {
-      const bookings = await fetchExistingBookings(property.id);
-      const all = [
-        ...(seasonal || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
-        ...(requests || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
-      ];
+      const all = await fetchExistingBookings(property.id);
       const seen = new Set<string>();
       setBookedDates(all.filter(b => {
         const key = `${b.check_in}-${b.check_out}`;

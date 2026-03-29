@@ -103,21 +103,12 @@ export function QrResolvedCard({
     async function load() {
       if (!shopSlug) return;
       try {
-        const { data: shop } = await supabase
-          .from("storefront_pages")
-          .select("id, slug, name, user_id")
-          .eq("slug", shopSlug)
-          .maybeSingle();
+        const shop = await fetchShopBySlug(shopSlug);
         if (cancelled) return;
         if (shop) setShopRow(shop as ShopRow);
 
         if (currentUserId && shop?.id) {
-          const { data: follow } = await supabase
-            .from("shop_follows")
-            .select("user_id, shop_id")
-            .eq("user_id", currentUserId)
-            .eq("shop_id", shop.id)
-            .maybeSingle() as any;
+          const isFollowing = await fetchShopFollow(currentUserId, shop.id);
           if (!cancelled) setFollowed(!!follow);
         }
       } catch { /* no-op */ }
