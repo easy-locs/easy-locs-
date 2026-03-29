@@ -1,7 +1,7 @@
 /**
- * OrbitAccountSection — "YOU" section inside Orbit hub.
- * Signal/WhatsApp-level personal account control panel with profile editing.
- * Rewired: chat actions via useOrbitAccountActions hook.
+ * OrbitAccountSection — "YOU" cockpit inside Orbit hub.
+ * Smart, simple, futuristic personal control center.
+ * Micro-component based: identity card + smart summary cards + sub-pages.
  */
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
@@ -9,7 +9,8 @@ import {
   Copy, Check, QrCode, ChevronRight, Key, LogOut,
   Bell, Database, ShieldCheck, HelpCircle, Camera, Pencil,
   Image, ShieldAlert, Timer, Ban, UserX, Globe, ScanFace, KeyRound, Wifi, AtSign,
-  Store, MessageSquare, Palette, Film, Download, Archive, Trash2, Star
+  Store, MessageSquare, Palette, Film, Download, Archive, Trash2, Star,
+  Phone, MapPin, Wallpaper, ImageIcon, BookOpen
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
@@ -30,7 +31,12 @@ import {
 import { getNotifAlertPrefs, setNotifAlertPrefs, requestNotificationPermission, type NotifAlertPrefs } from "@/lib/notif-alert-prefs";
 import { useUsername } from "@/hooks/useUsername";
 import { useOrbitAccountActions } from "@/hooks/orbit/useOrbitAccountActions";
-type SubPage = "main" | "privacy" | "security" | "notifications" | "storage" | "devices" | "edit-profile" | "chats";
+import YouIdentityCard from "@/components/orbit/you/YouIdentityCard";
+import YouSmartSettingCard from "@/components/orbit/you/YouSmartSettingCard";
+import YouSectionBlock from "@/components/orbit/you/YouSectionBlock";
+import { useYouSummaries } from "@/hooks/orbit/useYouSummaries";
+
+type SubPage = "main" | "privacy" | "security" | "notifications" | "storage" | "devices" | "edit-profile" | "chats" | "calls" | "location" | "background" | "media" | "stories";
 
 export default function OrbitAccountSection() {
   const { user, signOut } = useAuth();
