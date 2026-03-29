@@ -260,19 +260,16 @@ export const CommunicationCenter = () => {
           overflow: "hidden",
         }}
       >
-        {/* Orbit header — clean canonical title per section */}
-        <div
-          className="flex items-center px-4 shrink-0"
-          style={{
-            height: 52,
-            borderBottom: "1px solid hsl(var(--border) / 0.08)",
-            background: "hsl(var(--background))",
-          }}
-        >
-          {isMobile && selectedThread ? (
-            /* Thread is open on mobile — header handled by ChatHeader */
-            null
-          ) : (
+        {/* Orbit header — hidden when thread is open (ChatHeader takes over) */}
+        {!(isMobile && selectedThread) && (
+          <div
+            className="flex items-center px-4 shrink-0"
+            style={{
+              height: 52,
+              borderBottom: "1px solid hsl(var(--border) / 0.08)",
+              background: "hsl(var(--background))",
+            }}
+          >
             <div className="flex items-center gap-2 flex-1">
               <button onClick={() => navigate("/")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm mr-1 shrink-0">
                 <ArrowLeft className="w-4.5 h-4.5" />
@@ -281,28 +278,28 @@ export const CommunicationCenter = () => {
                 {activeSection === "chats" ? "Chats" : activeSection === "calls" ? "Calls" : activeSection === "contacts" ? "Contacts" : activeSection === "groups" ? "Groups" : activeSection === "you" ? "You" : "Orbit"}
               </h1>
             </div>
-          )}
-          <div className="flex items-center gap-1.5">
-            {showChatArea && !selectedThread && (
-              <Button
-                size="sm" variant="ghost"
-                className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-0 rounded-full"
-                style={{ color: "hsl(var(--primary))" }}
-                onClick={() => setShowNewConversation(true)}
-              >
-                <Plus className="h-5 w-5" />
-              </Button>
-            )}
-            {stats.unread > 0 && !selectedThread && (
-              <span
-                className="inline-flex min-w-5 h-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold"
-                style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-              >
-                {stats.unread > 99 ? "99+" : stats.unread}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5">
+              {showChatArea && !selectedThread && (
+                <Button
+                  size="sm" variant="ghost"
+                  className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-0 rounded-full"
+                  style={{ color: "hsl(var(--primary))" }}
+                  onClick={() => setShowNewConversation(true)}
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
+              )}
+              {stats.unread > 0 && !selectedThread && (
+                <span
+                  className="inline-flex min-w-5 h-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold"
+                  style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+                >
+                  {stats.unread > 99 ? "99+" : stats.unread}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Main content — fills remaining space */}
         <div className="flex-1 flex min-h-0 overflow-hidden">

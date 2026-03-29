@@ -12,7 +12,8 @@ import {
   UserPlus, LogOut, Trash2, Crown, Users, Megaphone, Hash, Globe,
   ShieldCheck, Eye, ChevronDown, ChevronUp,
 } from "lucide-react";
-import { format, isToday, isYesterday } from "date-fns";
+import { format } from "date-fns";
+import { formatOrbitTimestamp } from "@/lib/orbit/canonical-helpers";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -30,10 +31,7 @@ type MemberRole = "admin" | "member" | "viewer";
 
 // ── Helpers ──
 function formatMsgTime(d: string): string {
-  const date = new Date(d);
-  if (isToday(date)) return format(date, "HH:mm");
-  if (isYesterday(date)) return "Yesterday";
-  return format(date, "dd/MM");
+  return formatOrbitTimestamp(d);
 }
 
 const TYPE_ICONS: Record<GroupType, typeof UsersRound> = {
