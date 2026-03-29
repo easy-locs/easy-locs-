@@ -3,7 +3,7 @@
  * Fully wired to useGroupData hook — zero inline DB logic.
  */
 import { useState, useEffect, useCallback } from "react";
-import { updateGroupMemberRole, fetchGroupMembersById } from "@/repositories/communication.repository";
+import { updateGroupMemberRole, fetchGroupMembersById, createRealtimeChannel, removeRealtimeChannel, fetchConversationParticipants, updateConversationParticipants } from "@/repositories/communication.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -115,12 +115,10 @@ export default function CommGroupsSection() {
     const member = members.find(m => m.id === memberId);
     await hookRemoveMember(memberId);
     if (member?.user_id && activeGroup) {
-      const { data: currentConv } = await (supabase as any)
-        .from("conversations_v2").select("participants").eq("id", activeGroup.id).single();
+      const currentConv = await fetchConversationParticipants(activeGroup.id);
       const participants = (Array.isArray(currentConv?.participants) ? currentConv.participants : [])
         .filter((p: any) => p?.userId !== member.user_id && p?.user_id !== member.user_id);
-      await (supabase as any).from("conversations_v2")
-        .update({ participants, updated_at: new Date().toISOString() }).eq("id", activeGroup.id);
+      await updateConversationParticipants(activeGroup.id, participants);
     }
     await loadGroups();
   };
@@ -153,8 +151,7 @@ export default function CommGroupsSection() {
   // Realtime for active group messages
   useEffect(() => {
     if (!activeGroup) return;
-    const channel = supabase
-      .channel(`group-${activeGroup.id}`)
+    const channel = createRealtimeChannel(`group-${activeGroup.id}`)
       .on("postgres_changes", {
         event: "INSERT", schema: "public", table: "chat_messages_v2",
         filter: `conversation_id=eq.${activeGroup.id}`,
@@ -169,7 +166,7 @@ export default function CommGroupsSection() {
         }
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [activeGroup?.id, user?.id, setMessages, messagesEndRef]);
 
   const filtered = groups.filter(g => !search || g.name.toLowerCase().includes(search.toLowerCase()));
