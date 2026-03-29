@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from "react";
 import { subscribeRentalMessages, fetchRentalMessages, sendRentalMessage, sendRentalNotification } from "@/lib/rental/rental-repository";
 import { emitRentalMessageSent } from "@/lib/rental/rental-event-bridge";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeSendEmail } from "@/repositories/ai.repository";
 import { buildAppUrl } from "@/lib/app-domain";
 
 const escapeEmailHtml = (v: string) =>

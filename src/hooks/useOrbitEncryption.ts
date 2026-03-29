@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { upsertKeyBundle } from "@/repositories/rental.repository";
 import {
   encryptMessage,
   decryptMessage,

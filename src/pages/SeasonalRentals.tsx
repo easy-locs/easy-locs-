@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSeasonalData } from "@/hooks/seasonal/useSeasonalData";
 import { fetchBookingRequest, deleteBookingRequest, updateBookingRequestDates, updateSeasonalBookingDates, insertSeasonalBookings } from "@/repositories/seasonal.repository";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeSendEmail } from "@/repositories/ai.repository";
 import { sendCommunicationEvent, createDeepLinkMeta } from "@/lib/shared";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useSeasonalRequestActions } from "@/hooks/seasonal/useSeasonalRequestActions";

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchReferralCode, fetchReferrals as fetchReferralsList } from "@/repositories/rental.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { Gift, Copy, Users, CheckCircle2, Share2, MessageCircle } from "lucide-react";

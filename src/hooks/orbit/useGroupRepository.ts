@@ -2,7 +2,7 @@
  * useGroupRepository — Atomic: CRUD for Orbit groups/channels/communities.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchGroupMemberCount, fetchGroupLastMessage, fetchOrbitProfile, createConversation, insertGroupMember } from "@/repositories/communication.repository";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";

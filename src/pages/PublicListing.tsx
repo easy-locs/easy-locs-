@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPublicListingBySlug, getListingProperty } from "@/repositories/explore.repository";
+import { invokeCreateBookingPayment } from "@/repositories/ai.repository";
 import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";

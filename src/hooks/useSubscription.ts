@@ -4,7 +4,7 @@
  * L2.6: Auth context split.
  */
 import { useState, useCallback, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckSubscription } from "@/repositories/ai.repository";
 import type { Session } from "@supabase/supabase-js";
 
 export interface SubscriptionState {

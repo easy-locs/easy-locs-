@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Sparkles, Download, Plus, Trash2, ArrowLeft, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeGenerateCV } from "@/repositories/ai.repository";
 import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
 import Navbar from "@/components/landing/Navbar";
@@ -62,12 +62,9 @@ export default function CVGenerator() {
     }
     setGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-cv", {
-        body: {
-          fullName, email, phone, city, country, summary, skills, languages, experiences, education,
-        },
+      const data = await invokeGenerateCV({
+        fullName, email, phone, city, country, summary, skills, languages, experiences, education,
       });
-      if (error) throw error;
       setGeneratedCV(data?.cv || "CV generation failed");
       toast.success("CV generated successfully!");
     } catch (err: any) {

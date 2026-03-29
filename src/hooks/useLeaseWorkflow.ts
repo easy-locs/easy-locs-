@@ -6,7 +6,7 @@ import * as rentalRepo from "@/repositories/rental.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeLeaseWorkflow } from "@/repositories/ai.repository";
 
 export type LeaseStatus = "draft" | "pending_signature" | "signed" | "active" | "archived" | "cancelled";
 export type RentCallStatus = "pending" | "overdue" | "paid" | "partial" | "cancelled";
