@@ -87,7 +87,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         onAccept={() => handleAcceptIncoming(
           incoming.incomingCallId!, incoming.incomingCallerName,
           incoming.incomingContextLabel, incoming.incomingIsVideo,
-          incoming.incomingOrgId, incoming.incomingThreadId,
+          incoming.incomingOrgId, incoming.incomingConversationId,
           (manager, pn, cl) => {
             manager.onStateChange = (state) => setCallState((prev) => ({ ...prev, ...state }));
             setCallManager(manager);
@@ -98,11 +98,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
           },
         )}
         onDecline={() => {
-          handleDeclineIncoming(incoming.incomingCallId, incoming.incomingThreadId, incoming.incomingOrgId);
+          handleDeclineIncoming(incoming.incomingCallId, incoming.incomingConversationId, incoming.incomingOrgId);
           incoming.clearIncoming();
         }}
         onMissed={() => {
-          handleMissedIncoming(incoming.incomingCallId, incoming.incomingThreadId, incoming.incomingOrgId);
+          handleMissedIncoming(incoming.incomingCallId, incoming.incomingConversationId, incoming.incomingOrgId);
           incoming.clearIncoming();
         }}
       />

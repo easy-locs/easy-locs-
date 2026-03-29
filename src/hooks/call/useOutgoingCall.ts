@@ -16,12 +16,23 @@ import type { ActiveCallMeta } from "./useCallState";
 
 interface StartCallOpts {
   targetId: string;
-  threadId?: string;
-  contextType?: string;
-  contextId?: string;
+  /** Canonical conversation UUID */
+  conversationId?: string;
+  /** Business entity type */
+  entityType?: string;
+  /** Business entity ID */
+  entityId?: string;
   contextLabel?: string;
   peerName: string;
   isVideo?: boolean;
+
+  // ── Deprecated aliases ──
+  /** @deprecated Use conversationId */
+  threadId?: string;
+  /** @deprecated Use entityType */
+  contextType?: string;
+  /** @deprecated Use entityId */
+  contextId?: string;
 }
 
 export function useOutgoingCall(
@@ -70,12 +81,16 @@ export function useOutgoingCall(
       }
       completeStep(flow, resolveStep, { receiverUserId });
 
-      // Step 3: RPC write
+      // Step 3: RPC write — resolve canonical names with fallback to deprecated
       const rpcStep = addStep(flow, "db_write");
+      const callConversationId = opts.conversationId || opts.threadId;
+      const callEntityType = opts.entityType || opts.contextType;
+      const callEntityId = opts.entityId || opts.contextId;
+
       const result = await createCallRpc({
         callerUserId: authData.user.id, receiverUserId,
-        threadId: opts.threadId, contextType: opts.contextType,
-        contextId: opts.contextId, contextLabel: opts.contextLabel,
+        threadId: callConversationId, contextType: callEntityType,
+        contextId: callEntityId, contextLabel: opts.contextLabel,
         isVideo: opts.isVideo || false,
       });
       if (!result.success || !result.callId) {
@@ -96,7 +111,15 @@ export function useOutgoingCall(
         manager,
         peerName: opts.peerName,
         contextLabel: opts.contextLabel || "",
-        meta: { callId: result.callId, threadId: opts.threadId, orgId: opts.targetId, contextId: opts.contextId },
+        meta: {
+          callId: result.callId,
+          conversationId: callConversationId,
+          orgId: opts.targetId,
+          entityId: callEntityId,
+          // deprecated compat
+          threadId: callConversationId,
+          contextId: callEntityId,
+        },
         isVideo: opts.isVideo || false,
       });
 
