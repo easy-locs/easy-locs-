@@ -260,7 +260,7 @@ export const CommunicationCenter = () => {
           overflow: "hidden",
         }}
       >
-        {/* Orbit header — E2EE++ Ghost branding */}
+        {/* Orbit header — clean WhatsApp-style */}
         <div
           className="flex items-center px-4 shrink-0"
           style={{
@@ -286,14 +286,6 @@ export const CommunicationCenter = () => {
               <h1 className="text-lg font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
                 Orbit
               </h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
-                style={{ background: "hsl(142 60% 45% / 0.1)", color: "hsl(142 60% 45%)" }}>
-                <ShieldCheck className="h-3 w-3" /> E2EE++
-              </span>
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold"
-                style={{ background: "hsl(270 60% 55% / 0.08)", color: "hsl(270 60% 55%)" }}>
-                👻 Ghost
-              </span>
             </div>
           )}
           <div className="flex items-center gap-1.5">
