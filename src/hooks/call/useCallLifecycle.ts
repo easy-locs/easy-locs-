@@ -23,14 +23,15 @@ export function useCallLifecycle(
     incomingContextLabel: string,
     incomingIsVideo: boolean,
     incomingOrgId: string,
-    incomingThreadId: string | null,
+    incomingConversationId: string | null,
     onAccepted: (manager: CallManager, peerName: string, contextLabel: string) => void,
   ) => {
     if (!userId || !incomingCallId) return;
 
     activeCallRef.current = {
       callId: incomingCallId,
-      threadId: incomingThreadId || undefined,
+      conversationId: incomingConversationId || undefined,
+      threadId: incomingConversationId || undefined, // deprecated compat
       orgId: incomingOrgId,
     };
 
