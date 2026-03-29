@@ -483,32 +483,7 @@ export default function CommContactsSection() {
     }
   };
 
-  // ── State badge helper ──
-  const getStateBadge = (contact: ResolvedContact) => {
-    switch (contact.appState) {
-      case "internal":
-        return (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{ background: "hsl(var(--hud-success) / 0.1)", color: "hsl(var(--hud-success))" }}>
-            App
-          </span>
-        );
-      case "external":
-        return (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{ background: "hsl(var(--hud-warning) / 0.1)", color: "hsl(var(--hud-warning))" }}>
-            Externe
-          </span>
-        );
-      case "unresolved":
-        return (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{ background: "hsl(var(--hud-error) / 0.1)", color: "hsl(var(--hud-error))" }}>
-            Incomplet
-          </span>
-        );
-    }
-  };
+  // State badge removed — contacts are now clean messenger-first rows
 
   const renderContact = (contact: ResolvedContact) => {
     const presence = contact.contact_user_id ? presenceMap[contact.contact_user_id] : null;
