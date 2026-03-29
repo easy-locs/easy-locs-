@@ -63,6 +63,16 @@ export function useThreadAttachmentFamily(params: {
 
   const viewOnceHook = useOrbitViewOnce({ currentUserId: userId ?? null });
 
+  // Build send context for optimistic pipeline
+  const sendContext = thread?.v2ConversationId && userId ? {
+    conversationId: thread.v2ConversationId,
+    senderUserId: userId,
+    senderOrbitId: myOrbitId || `orbit_${userId.slice(0, 12)}`,
+    receiverOrbitId: thread.peerOrbitId ?? null,
+    threadId: (thread as any)?.threadId || thread.id,
+    orgId,
+  } : null;
+
   const { handleUploadAndSendAttachments } = useHudAttachmentUpload({
     queue: attachmentQueue.queue,
     setItemProgress: attachmentQueue.setItemProgress,
@@ -74,6 +84,8 @@ export function useThreadAttachmentFamily(params: {
     sendingAttachments: attachmentSend.sendingAttachments,
     viewOnceEnabled,
     setViewOnceEnabled,
+    sendContext,
+    pathPrefix: orgId || "orbit-media",
   });
 
   const handlePickFiles = useCallback(() => fileInputRef.current?.click(), []);
