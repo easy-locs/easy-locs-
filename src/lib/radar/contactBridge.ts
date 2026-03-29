@@ -23,7 +23,7 @@ async function getOrCreateDirectThread(params: {
   currentUserId: string;
   targetUserId: string;
   targetName: string;
-}): Promise<any> {
+}): Promise<{ conversationId: string }> {
   const pairKey = [params.currentUserId, params.targetUserId].sort().join("_");
 
   const { data: existing } = await db
@@ -32,7 +32,7 @@ async function getOrCreateDirectThread(params: {
     .eq("pair_key", pairKey)
     .maybeSingle();
 
-  if (existing) return { v2ConversationId: existing.id, contextId: existing.id };
+  if (existing) return { conversationId: existing.id };
 
   const { data: created, error } = await db
     .from("conversations_v2")
@@ -46,7 +46,7 @@ async function getOrCreateDirectThread(params: {
     .single();
 
   if (error) throw error;
-  return { v2ConversationId: created.id, contextId: created.id };
+  return { conversationId: created.id };
 }
 
 export async function openContactThread(params: {
@@ -64,8 +64,8 @@ export async function openContactThread(params: {
       targetName,
     });
 
-    const convId = thread?.v2ConversationId || thread?.contextId;
-    if (!convId) {
+    const conversationId = thread.conversationId;
+    if (!conversationId) {
       toast.error("Could not open conversation");
       return null;
     }
@@ -73,16 +73,16 @@ export async function openContactThread(params: {
     // Send auto-message via canonical send family
     if (autoMessage) {
       const ctx: SendContext = {
-        conversationId: convId,
+        conversationId,
         senderUserId: currentUserId,
         senderOrbitId: `orbit_${currentUserId.slice(0, 8)}`,
       };
 
       await sendText(ctx, autoMessage);
-      notifyNewMessage(targetUserId, "Contact", autoMessage.slice(0, 80), convId).catch(console.error);
+      notifyNewMessage(targetUserId, "Contact", autoMessage.slice(0, 80), conversationId).catch(console.error);
     }
 
-    return convId;
+    return conversationId;
   } catch (err: any) {
     console.error("[contactBridge] openContactThread error:", err);
     toast.error("Failed to open conversation");
@@ -119,14 +119,14 @@ export async function contactFromDiscovery(params: {
       return;
     }
 
-    const convId = await openContactThread({
+    const conversationId = await openContactThread({
       currentUserId: params.currentUserId,
       targetUserId,
       autoMessage: params.autoMessage || `Hi, I'm interested in ${params.entityName}.`,
     });
 
-    if (convId) {
-      params.navigate(`/orbit?thread=${convId}`);
+    if (conversationId) {
+      params.navigate(`/orbit?conversation=${conversationId}`);
     }
   } catch (err: any) {
     console.error("[contactBridge] contactFromDiscovery error:", err);

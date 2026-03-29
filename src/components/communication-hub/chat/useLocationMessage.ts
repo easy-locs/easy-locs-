@@ -9,8 +9,11 @@ import type { SendContext } from "@/families/send/send-context";
 
 type ThreadLike = {
   id: string;
-  v2ConversationId?: string | null;
+  /** Canonical conversation UUID */
+  conversationId?: string | null;
   peerOrbitId?: string | null;
+  /** @deprecated Use conversationId */
+  v2ConversationId?: string | null;
 };
 
 export function useLocationMessage(params: {
@@ -28,7 +31,8 @@ export function useLocationMessage(params: {
       address?: string;
       duration?: number;
     }) => {
-      if (!params.thread?.v2ConversationId) return;
+      const conversationId = params.thread?.conversationId || params.thread?.v2ConversationId;
+      if (!conversationId) return;
 
       const authUserId = await params.resolveAuthUserId();
       if (!authUserId) {
@@ -37,10 +41,10 @@ export function useLocationMessage(params: {
       }
 
       const ctx: SendContext = {
-        conversationId: params.thread.v2ConversationId,
+        conversationId,
         senderUserId: authUserId,
         senderOrbitId: params.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiverOrbitId: params.thread.peerOrbitId ?? null,
+        receiverOrbitId: params.thread?.peerOrbitId ?? null,
       };
 
       try {
@@ -59,7 +63,7 @@ export function useLocationMessage(params: {
           ? `📍 ${loc.label || "Place"}`
           : "📍 Shared location";
 
-        params.onThreadUpdate(params.thread.id, {
+        params.onThreadUpdate(params.thread!.id, {
           lastMessage: body,
           lastMessageTime: new Date().toISOString(),
           lastMessagePreview: body,
