@@ -44,7 +44,7 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
           conversationId: conversationId ?? null,
           peerUserId: thread?.peerUserId,
           peerOrbitId: thread?.peerOrbitId,
-          entityId: thread?.entityId || thread?.contextId,
+          entityId: thread?.entityId,
           isDirect,
           resolvedTargetId: targetId,
           isVideo,
@@ -58,7 +58,7 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
 
         trace("call.target.resolve", "output", {
           targetId,
-          entityId: thread?.entityId || thread?.contextId || null,
+          entityId: thread?.entityId || null,
         });
 
         haptic("medium");
@@ -66,15 +66,14 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
           targetId,
           conversationId: conversationId ?? null,
           entityType: thread?.conversationType || "direct",
-          entityId: thread?.entityId || thread?.contextId || null,
+          entityId: thread?.entityId || null,
           isVideo,
         });
         await startCall({
           targetId,
           conversationId,
-          threadId: conversationId, // deprecated compat
           contextType: thread?.conversationType || "direct",
-          contextId: thread?.entityId || thread?.contextId,
+          contextId: thread?.entityId,
           contextLabel: thread?.name,
           peerName: thread?.name || "Contact",
           isVideo,
