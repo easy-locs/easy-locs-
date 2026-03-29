@@ -19,5 +19,5 @@ export async function sendSystemMessage(params: {
     senderOrbitId: params.senderOrbitId || `orbit_${params.senderUserId.slice(0, 12)}`,
   };
 
-  return sendSystemEvent(ctx, params.body, params.metadata || undefined);
+  return sendSystemEvent(ctx, "system", params.body, (params.metadata as Record<string, unknown>) || undefined);
 }
