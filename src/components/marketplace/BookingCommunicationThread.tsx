@@ -38,10 +38,13 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
       const content = `${prefix}${newMessage}\n\n[Booking: ${bookingId}]`;
 
       if (messageType === "internal_note") {
-        await (supabase as any).from("chat_messages_v2").insert({
-          org_id: orgId, sender_id: user?.id || null, content,
-          category: "booking", message_type: "system", read: false,
-        } as any);
+        await insertMessage({
+          conversationId: bookingId,
+          senderUserId: user?.id || "00000000-0000-0000-0000-000000000000",
+          type: "system",
+          body: content,
+          metadata: { category: "booking", internal: true },
+        });
       } else {
         const { sendCommunicationEvent, createDeepLinkMeta } = await import("@/lib/shared");
         const meta = createDeepLinkMeta({ targetType: "marketplace_booking", targetId: bookingId, module: "marketplace", bookingId, orgId });
