@@ -276,7 +276,7 @@ export async function deactivateReminder(id: string) {
 
 // ── Add property ──
 export async function insertProperty(payload: Record<string, any>) {
-  const { error } = await supabase.from("properties").insert(payload);
+  const { error } = await (supabase as any).from("properties").insert(payload);
   if (error) throw error;
 }
 
