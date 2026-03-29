@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from "react";
 import { RefreshCcw } from "lucide-react";
-import { fetchProfileName, fetchContactExists, fetchDirectThreads } from "@/repositories/rental.repository";
+import { fetchProfileName, fetchContactExists, fetchDirectThreads, fetchShopBySlug, fetchShopFollow } from "@/repositories/rental.repository";
 import { Button } from "@/components/ui/button";
 import UniversalEntityCard from "@/components/actions/UniversalEntityCard";
 import type { UniversalQrPayload } from "@/lib/qr-engine";
