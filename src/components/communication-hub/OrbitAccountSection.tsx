@@ -56,6 +56,7 @@ export default function OrbitAccountSection() {
   const [usernameStatus, setUsernameStatus] = useState<{ msg: string; ok: boolean } | null>(null);
   const [savingUsername, setSavingUsername] = useState(false);
   const actions = useOrbitAccountActions(user?.id);
+  const summaries = useYouSummaries();
 
   useEffect(() => { if (username) setUsernameInput(username); }, [username]);
 
