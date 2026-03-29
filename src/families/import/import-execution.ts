@@ -50,7 +50,6 @@ export const ImportExecution = {
     onProgress?: ProgressCallback,
   ): Promise<ExecutionSummary> {
     const start = Date.now();
-    const duplicateIds = new Set(dedupResult.duplicates.map((d) => d.row.rowIndex));
     const items: ExecutionItem[] = [];
 
     const progress: ExecutionProgress = {
@@ -72,7 +71,7 @@ export const ImportExecution = {
         continue;
       }
 
-      if (duplicateIds.has(row.rowIndex)) {
+      if (dedupResult.duplicateIndices.has(row.index)) {
         items.push({ row, status: "skipped", error: "Duplicate" });
         progress.skipped++;
         progress.processed++;
@@ -99,7 +98,7 @@ export const ImportExecution = {
       successCount: progress.succeeded,
       failedCount: progress.failed,
       skippedCount: progress.skipped,
-      duplicateCount: dedupResult.duplicates.length,
+      duplicateCount: dedupResult.duplicateIndices.size,
       items,
       durationMs: Date.now() - start,
     };
@@ -127,7 +126,7 @@ export const ImportExecution = {
 
     if (failedRows.length === 0) return summary;
 
-    const emptyDedup: DedupResult = { duplicates: [], unique: failedRows };
+    const emptyDedup: DedupResult = { duplicateIndices: new Set(), duplicateMapping: new Map(), uniqueCount: failedRows.length };
     return ImportExecution.execute(
       summary.sourceType,
       failedRows,
