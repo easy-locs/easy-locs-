@@ -554,14 +554,7 @@ export async function getCommAuthUser() {
   return data?.user || null;
 }
 
-// ── Realtime channel for groups ──
-export function createRealtimeChannel(name: string) {
-  return supabase.channel(name);
-}
-
-export function removeRealtimeChannel(channel: any) {
-  supabase.removeChannel(channel);
-}
+// Realtime channel helpers moved to src/lib/realtime.ts
 
 // ── Chat payment message bridge ──
 export async function insertChatMessageV2(payload: Record<string, any>) {
