@@ -184,8 +184,8 @@ export default function MeCommandCenter() {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-base font-bold text-foreground truncate">{displayName}</p>
-            <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
+            <p className="text-base font-bold text-foreground break-words leading-snug">{displayName}</p>
+            <p className="text-[11px] text-muted-foreground break-words leading-snug">{user?.email}</p>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               {isMerchant && (
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">

@@ -41,9 +41,9 @@ const MobileBottomNav = () => {
         p.startsWith("/super-map") || p.startsWith("/food") || p.startsWith("/grocery"),
     },
     {
-      icon: MessageCircle, labelKey: "nav.orbit", path: "/dashboard/communication",
+      icon: MessageCircle, labelKey: "nav.orbit", path: "/orbit",
       match: (p: string) =>
-        p.startsWith("/dashboard/communication") || p.startsWith("/ghost") || p.startsWith("/orbit"),
+        p.startsWith("/orbit") || p.startsWith("/dashboard/communication") || p.startsWith("/ghost"),
       isCenter: true,
     },
     {
@@ -53,11 +53,11 @@ const MobileBottomNav = () => {
         p.startsWith("/dashboard/wallet"),
     },
     {
-      icon: User, labelKey: "nav.me", path: "/dashboard/settings",
+      icon: User, labelKey: "nav.me", path: "/me",
       match: (p: string) =>
-        p.startsWith("/dashboard/settings") || p.startsWith("/business") ||
+        p === "/me" || p.startsWith("/dashboard/settings") || p.startsWith("/business") ||
         p.startsWith("/dashboard/my-shop") || p.startsWith("/dashboard/seller") ||
-        p.startsWith("/dashboard/driver") || p.startsWith("/property-hub"),
+        p.startsWith("/dashboard/driver") || p.startsWith("/property-hub") || p.startsWith("/settings"),
     },
   ];
 
