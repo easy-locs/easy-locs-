@@ -1,14 +1,12 @@
 /**
  * OrbitAccountSection — "YOU" cockpit inside Orbit hub.
- * Thin shell: identity card + Orbit-only smart summary cards + sub-page routing.
- * No mixed account/security/storage/devices clutter — Orbit communication only.
+ * Premium WhatsApp-style layout: large identity header + grouped settings cards.
  */
 import { useState } from "react";
 import {
   Bell, Eye, Phone, MessageSquare, Wallpaper, ImageIcon,
   BookOpen, MapPin, LogOut,
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { haptic } from "@/lib/haptics";
@@ -18,7 +16,7 @@ import YouSmartSettingCard from "@/components/orbit/you/YouSmartSettingCard";
 import YouSectionBlock from "@/components/orbit/you/YouSectionBlock";
 import { useYouSummaries } from "@/hooks/orbit/useYouSummaries";
 
-// Sub-pages — each owns its own logic
+// Sub-pages
 import YouEditProfilePage from "@/components/orbit/you/subpages/YouEditProfilePage";
 import YouNotificationsPage from "@/components/orbit/you/subpages/YouNotificationsPage";
 import YouCallsPage from "@/components/orbit/you/subpages/YouCallsPage";
@@ -45,7 +43,7 @@ export default function OrbitAccountSection() {
 
   const goBack = () => setSubPage("main");
 
-  // ── Sub-page routing ──
+  // Sub-page routing
   if (subPage === "edit-profile") return <YouEditProfilePage onBack={goBack} />;
   if (subPage === "notifications") return <YouNotificationsPage onBack={goBack} />;
   if (subPage === "calls") return <YouCallsPage onBack={goBack} />;
@@ -56,7 +54,6 @@ export default function OrbitAccountSection() {
   if (subPage === "media") return <YouMediaPage onBack={goBack} />;
   if (subPage === "stories") return <YouStoriesPage onBack={goBack} />;
 
-  // ═══ Main cockpit — Orbit-only ═══
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin">
       <YouIdentityCard
@@ -67,8 +64,6 @@ export default function OrbitAccountSection() {
         shortId={shortId}
         onEditProfile={() => setSubPage("edit-profile")}
       />
-
-      <Separator className="mx-4" />
 
       <YouSectionBlock title="Communication">
         <YouSmartSettingCard icon={Bell} label="Notifications" summary={summaries.notifSummary} onClick={() => setSubPage("notifications")} />
@@ -87,21 +82,28 @@ export default function OrbitAccountSection() {
         <YouSmartSettingCard icon={MapPin} label="Live Location" summary={summaries.locationSummary} onClick={() => setSubPage("location")} accentColor="hsl(var(--accent))" />
       </YouSectionBlock>
 
-      <Separator className="mx-4" />
-
       {/* Logout */}
-      <div className="px-3 py-3">
-        <button onClick={async () => { haptic("medium"); await signOut(); navigate("/login"); }}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-destructive/5 transition-colors text-left">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-destructive/10">
-            <LogOut className="h-4 w-4 text-destructive" />
+      <div className="px-3 pb-2">
+        <button
+          onClick={async () => { haptic("medium"); await signOut(); navigate("/login"); }}
+          className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-colors text-left hover:bg-destructive/5 active:scale-[0.99]"
+        >
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: "hsl(var(--destructive) / 0.1)" }}
+          >
+            <LogOut className="h-[18px] w-[18px]" style={{ color: "hsl(var(--destructive))" }} />
           </div>
-          <p className="text-sm font-medium text-destructive">Log out</p>
+          <p className="text-[14px] font-medium" style={{ color: "hsl(var(--destructive))" }}>
+            Log out
+          </p>
         </button>
       </div>
 
-      <div className="text-center pb-6">
-        <p className="text-[10px] text-muted-foreground/40">Orbit v1.0</p>
+      <div className="text-center pb-8 pt-2">
+        <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>
+          Orbit v1.0
+        </p>
       </div>
     </div>
   );
