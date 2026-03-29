@@ -2,6 +2,7 @@
  * useRealtimeDispatchBoard — Canonical: reads from mobility_jobs.
  */
 import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export function useRealtimeDispatchBoard() {

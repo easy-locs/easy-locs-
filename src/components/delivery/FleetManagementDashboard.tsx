@@ -3,6 +3,7 @@
  * PASS85-EE: Fleet Management Dashboard
  */
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Truck, MapPin, Activity, RefreshCw, Wifi, WifiOff, Clock, Star, TrendingUp } from "lucide-react";

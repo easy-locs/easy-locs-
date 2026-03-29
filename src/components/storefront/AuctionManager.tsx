@@ -3,6 +3,7 @@
  * Seller: create/manage auctions. Buyer: place bids in real-time.
  */
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { useActivityLogStore } from "@/stores/activityLogStore";

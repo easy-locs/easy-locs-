@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { platformBus } from "@/lib/shared/platform-bus";
