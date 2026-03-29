@@ -31827,6 +31827,68 @@ export type Database = {
           photo_urls: Json
         }[]
       }
+      get_public_listings: {
+        Args: never
+        Returns: {
+          address: string | null
+          agency_email: string | null
+          agency_logo_url: string | null
+          agency_name: string | null
+          agency_phone: string | null
+          agent_name: string | null
+          bathrooms: number | null
+          bedrooms: number | null
+          boost_tier: string | null
+          boost_until: string | null
+          city: string
+          company_registration: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          country: string
+          created_at: string
+          currency: string
+          description: string | null
+          elevator: boolean | null
+          energy_class: string | null
+          features: Json | null
+          floor_number: number | null
+          furnished: boolean | null
+          garden: boolean | null
+          heating_type: string | null
+          id: string
+          lat: number | null
+          latitude: number | null
+          license_number: string | null
+          listing_type: string
+          lng: number | null
+          longitude: number | null
+          org_id: string
+          parking: boolean | null
+          photo_urls: Json | null
+          postal_code: string | null
+          price: number
+          property_id: string | null
+          property_type: string | null
+          rooms: number | null
+          slug: string | null
+          status: string
+          surface_sqm: number | null
+          terrace: boolean | null
+          title: string
+          total_floors: number | null
+          updated_at: string
+          user_id: string
+          views_count: number | null
+          visibility: string
+          year_built: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "real_estate_listings"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_public_marketplace_providers: {
         Args: { p_active_only?: boolean; p_slug?: string }
         Returns: {
