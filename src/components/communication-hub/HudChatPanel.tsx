@@ -126,6 +126,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     thread, currentUserId: user?.id ?? null, currentOrbitId: myOrbitId,
   });
 
+  // ── FAMILY: Media Preview Send ──
+  const mediaPreviewSend = useMediaPreviewSend({
+    conversationId: thread?.v2ConversationId ?? null,
+    userId: user?.id,
+    myOrbitId,
+    peerOrbitId: thread?.peerOrbitId ?? null,
+    threadId: (thread as any)?.threadId || thread?.id || null,
+    orgId: orgId || null,
+  });
+
   // ── FAMILY: Payments ──
   const payment = usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId });
 
