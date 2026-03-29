@@ -5534,6 +5534,7 @@ export type Database = {
           created_at: string | null
           favorited: boolean | null
           id: string
+          marked_unread: boolean | null
           muted: boolean | null
           updated_at: string | null
           user_id: string
@@ -5545,6 +5546,7 @@ export type Database = {
           created_at?: string | null
           favorited?: boolean | null
           id?: string
+          marked_unread?: boolean | null
           muted?: boolean | null
           updated_at?: string | null
           user_id: string
@@ -5556,6 +5558,7 @@ export type Database = {
           created_at?: string | null
           favorited?: boolean | null
           id?: string
+          marked_unread?: boolean | null
           muted?: boolean | null
           updated_at?: string | null
           user_id?: string

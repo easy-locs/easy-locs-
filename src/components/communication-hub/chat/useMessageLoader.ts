@@ -11,6 +11,7 @@ const db = supabase as any;
 type ThreadLike = {
   id: string;
   v2ConversationId?: string | null;
+  contextId?: string | null;
 };
 
 type ChatMessage = {
@@ -191,6 +192,13 @@ export function useMessageLoader({
         .update({ read_at: new Date().toISOString() })
         .in("id", unreadIds)
         .then(() => onThreadUpdate(thread.id, { unreadCount: 0 }));
+      // Clear marked_unread preference when messages are read
+      const ctxId = thread.contextId || thread.id;
+      db.from("conversation_preferences")
+        .update({ marked_unread: false })
+        .eq("user_id", userId)
+        .eq("context_id", ctxId)
+        .then(() => {});
     }
   }, [thread, userId, readReceipts, onThreadUpdate, offline, trace]);
 
