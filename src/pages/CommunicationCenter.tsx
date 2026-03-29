@@ -355,8 +355,8 @@ export const CommunicationCenter = () => {
           )}
         </div>
 
-        {/* Mobile bottom nav */}
-        {isMobile && (
+        {/* Mobile bottom nav — hidden when thread is open to avoid overlapping composer */}
+        {isMobile && !selectedThread && (
           <CommNavBar active={activeSection} onChange={handleSectionChange} isMobile={true} unreadCount={stats.unread} />
         )}
       </div>
