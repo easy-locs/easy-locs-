@@ -273,14 +273,11 @@ const CreateListing = () => {
       return;
     }
 
-    // Check max listings for free accounts
-    const { count } = await supabase
-      .from("marketplace_services")
-      .select("id", { count: "exact", head: true })
-      .eq("org_id", orgId)
-      .eq("active", true);
 
-    if ((count ?? 0) >= MAX_LISTINGS_FREE) {
+    // Check max listings for free accounts
+    const activeCount = await countActiveListings(orgId);
+
+    if (activeCount >= MAX_LISTINGS_FREE) {
       toast({ title: "Limit reached", description: `Free accounts can publish up to ${MAX_LISTINGS_FREE} active listings. Upgrade to publish more.`, variant: "destructive" });
       return;
     }
@@ -296,27 +293,12 @@ const CreateListing = () => {
       }
 
       // First ensure provider exists
-      let { data: provider } = await supabase
-        .from("marketplace_providers")
-        .select("id")
-        .eq("org_id", orgId)
-        .maybeSingle();
-
-      if (!provider) {
-        const { data: newProvider, error: provErr } = await supabase
-          .from("marketplace_providers")
-          .insert({
-            org_id: orgId, user_id: user.id,
-            display_name: user.email?.split("@")[0] || "Provider",
-            slug: `provider-${orgId.slice(0, 8)}`,
-            city: form.city, country: form.country,
-            categories: [form.category],
-          })
-          .select("id")
-          .single();
-        if (provErr) throw provErr;
-        provider = newProvider;
-      }
+      const provider = await ensureMarketplaceProvider(orgId, user.id, {
+        display_name: user.email?.split("@")[0] || "Provider",
+        slug: `provider-${orgId.slice(0, 8)}`,
+        city: form.city, country: form.country,
+        categories: [form.category],
+      });
 
       const isSale = form.listing_type === "sale";
       const autoExpire = isSale;
