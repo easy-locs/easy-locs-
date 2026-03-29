@@ -1,6 +1,12 @@
 /**
  * call-rpc — Atomic unit: create a call via idempotent RPC.
  * Single responsibility: DB call creation only.
+ *
+ * IDENTITY RULE: The RPC stores caller_orbit_id / receiver_orbit_id
+ * in call_logs. We pass auth.uid (UUID strings) because the incoming
+ * call listener filters on both userId AND orbit_id. The RPC itself
+ * also resolves org_members by user_id. Keeping auth.uid ensures
+ * listeners always match.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
@@ -31,6 +37,10 @@ export async function createCallRpc(input: CreateCallInput): Promise<CreateCallR
   trace("rpc.create", "input", { ...input });
 
   const rpcStep = addStep(flow, "rpc_call");
+
+  // IDENTITY: pass auth.uid as orbit_id params — the RPC stores them as-is
+  // in call_logs. The incoming listener subscribes on BOTH userId and orbit_id,
+  // so using auth.uid guarantees the userId filter always matches.
   const { data: callId, error } = await supabase.rpc("create_call_idempotent" as any, {
     _caller_orbit_id: input.callerUserId,
     _receiver_orbit_id: input.receiverUserId,
