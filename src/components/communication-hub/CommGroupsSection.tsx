@@ -134,7 +134,7 @@ export default function CommGroupsSection() {
       if (activeGroup) {
         await fetchGroupMembersById(activeGroup.id);
       }
-    }
+    } catch (e) { console.error(e); }
   };
 
   const togglePin = async (_message: GroupMessage) => {

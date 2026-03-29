@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchOrgLocalServicesEnabled, fetchLocalServices } from "@/repositories/rental.repository";
 import { useI18n } from "@/lib/i18n";
 import { Phone, ExternalLink, MapPin } from "lucide-react";
 
@@ -26,17 +26,11 @@ const ListingLocalServices = ({ orgId, propertyId, propertyCity, propertyCountry
   useEffect(() => {
     const load = async () => {
       // Check if feature enabled for this org
-      const { data: org } = await supabase.from("orgs").select("local_services_enabled").eq("id", orgId).single();
-      if (!org?.local_services_enabled) return;
+      const isEnabled = await fetchOrgLocalServicesEnabled(orgId);
+      if (!isEnabled) return;
       setEnabled(true);
 
-      // Fetch services: property-specific + city-level (no property_id)
-      const { data } = await supabase
-        .from("local_services")
-        .select("*")
-        .eq("org_id", orgId)
-        .eq("active", true)
-        .order("sort_order");
+      const data = await fetchLocalServices(orgId);
 
       if (!data) return;
 

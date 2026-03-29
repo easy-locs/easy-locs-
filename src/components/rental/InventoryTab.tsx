@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchInventoryReportById } from "@/repositories/rental.repository";
+import { invokeSendEmail } from "@/repositories/ai.repository";
 import { ClipboardCheck, Home, Users, Calendar, Eye, Mail, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateInventoryPDF } from "@/lib/inventory-pdf-generator";
@@ -60,7 +61,7 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
           })),
         });
       }
-      const { data: reportData } = await supabase.from("inventory_reports").select("*").eq("id", report.id).single();
+      const reportData = await fetchInventoryReportById(report.id);
       if (!reportData) throw new Error(t("comp.inventory.report_not_found"));
 
       const doc = await generateInventoryPDF({
@@ -76,7 +77,7 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
       const subjectType = report.report_type === "entry" ? t("comp.inventory.email_subject_entry") : t("comp.inventory.email_subject_exit");
       const bodyText = report.report_type === "entry" ? t("comp.inventory.email_body_entry") : t("comp.inventory.email_body_exit");
 
-      await supabase.functions.invoke("send-email", {
+      await invokeSendEmail({
         body: {
           to: tenant.email,
           subject: `${subjectType} — ${property.label}`,
