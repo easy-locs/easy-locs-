@@ -103,7 +103,11 @@ export default function ConversationList({ threads, loading, selectedThread, onS
           <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
             {filteredThreads.map((thread) => {
               const isActive = selectedThread?.id === thread.id;
-              const initial = (typeof thread.name === "string" ? thread.name : "?")[0]?.toUpperCase() || "?";
+              const identity = resolveCanonicalDisplayIdentity({
+                display_name: thread.name,
+                email: thread.email,
+                avatar_url: thread.avatarUrl,
+              });
 
               return (
                 <button
@@ -114,10 +118,10 @@ export default function ConversationList({ threads, loading, selectedThread, onS
                 >
                   {/* Avatar */}
                   <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{
-                    background: thread.avatarUrl ? `url(${thread.avatarUrl}) center/cover` : "hsl(var(--hud-cyan) / 0.1)",
+                    background: identity.avatarUrl ? `url(${identity.avatarUrl}) center/cover` : "hsl(var(--hud-cyan) / 0.1)",
                   }}>
-                    {!thread.avatarUrl && (
-                      <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{initial}</span>
+                    {!identity.avatarUrl && (
+                      <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{identity.initials}</span>
                     )}
                   </div>
 
@@ -126,7 +130,7 @@ export default function ConversationList({ threads, loading, selectedThread, onS
                     <div className="flex items-center justify-between gap-2">
                       <p className={`text-[13px] line-clamp-1 break-words ${thread.unreadCount > 0 ? "font-bold" : "font-medium"}`}
                         style={{ color: "hsl(var(--hud-text))" }}>
-                        {thread.name}
+                        {identity.displayName}
                       </p>
                       {thread.lastMessageTime && (
                         <span className="text-[10px] shrink-0 tabular-nums" style={{
