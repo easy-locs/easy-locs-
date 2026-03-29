@@ -25,7 +25,7 @@ function generateDemoDrivers(userLat: number, userLng: number): Driver[] {
 export function useGeoDrivers(userLat?: number | null, userLng?: number | null) {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [connected, setConnected] = useState(false);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const channelRef = useRef<ReturnType<typeof createRealtimeChannel> | null>(null);
 
   // Initial fetch from concierge_services (live entities)
   const fetchDrivers = useCallback(async () => {

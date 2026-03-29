@@ -16,7 +16,7 @@ export interface DriverPosition {
 export function useDriverTracking(driverId: string | null) {
   const [position, setPosition] = useState<DriverPosition | null>(null);
   const [connected, setConnected] = useState(false);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const channelRef = useRef<ReturnType<typeof createRealtimeChannel> | null>(null);
   const prevPositionRef = useRef<DriverPosition | null>(null);
 
   // Interpolated position for smooth 60fps rendering
