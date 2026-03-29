@@ -7,6 +7,9 @@ import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
+import { sendText } from "@/families/send/send-text";
+import { fetchGroupMessages } from "@/repositories/communication.repository";
+import type { SendContext } from "@/families/send/send-context";
 
 export interface GroupMessage {
   id: string;
@@ -23,9 +26,7 @@ export function useGroupMessaging(activeGroupId: string | null, userId: string |
   const endRef = useRef<HTMLDivElement>(null);
 
   const loadMessages = useCallback(async (groupId: string) => {
-    const { data: msgs } = await (supabase as any)
-      .from("chat_messages_v2").select("*").eq("conversation_id", groupId)
-      .order("created_at", { ascending: true }).limit(200);
+    const msgs = await fetchGroupMessages(groupId, 200);
     const mapped = ((msgs as any[]) || []).map((m: any) => ({
       id: m.id, sender_id: m.sender_user_id || m.sender_id,
       content: m.body || m.content, created_at: m.created_at,
@@ -41,20 +42,24 @@ export function useGroupMessaging(activeGroupId: string | null, userId: string |
     setMsgInput("");
     haptic("light");
 
-    const { data: myOrbit } = await (supabase as any)
-      .from("orbit_profiles_v2").select("orbit_id").eq("id", userId).maybeSingle();
+    try {
+      const { data: myOrbit } = await (supabase as any)
+        .from("orbit_profiles_v2").select("orbit_id").eq("id", userId).maybeSingle();
 
-    const { data, error } = await (supabase as any).from("chat_messages_v2").insert({
-      conversation_id: groupId, sender_user_id: userId, sender_orbit_id: myOrbit?.orbit_id || null, type: "text", body: content,
-    } as any).select().single();
+      const ctx: SendContext = {
+        conversationId: groupId,
+        senderUserId: userId,
+        senderOrbitId: myOrbit?.orbit_id || `orbit_${userId.slice(0, 12)}`,
+      };
+      const data = await sendText(ctx, content);
 
-    if (!error && data) {
-      setMessages((prev) => prev.some((m) => m.id === data.id) ? prev : [...prev, {
-        id: data.id, sender_id: data.sender_user_id, content: data.body, created_at: data.created_at, sender_name: "You", is_pinned: false,
-      }]);
-      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", groupId);
-      setTimeout(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-    } else if (error) {
+      if (data) {
+        setMessages((prev) => prev.some((m) => m.id === data.id) ? prev : [...prev, {
+          id: data.id, sender_id: data.sender_user_id, content: data.body, created_at: data.created_at, sender_name: "You", is_pinned: false,
+        }]);
+        setTimeout(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+      }
+    } catch (error: any) {
       toast.error(error.message || "Failed to send message");
       setMsgInput(content);
     }
