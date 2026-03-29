@@ -3,18 +3,14 @@
  * Shows all conversations with type badges, search, and category filters.
  */
 import { useState, useMemo } from "react";
-import { Search, MessageCircle, User, Hash, Building, Handshake, Users, Loader2, MapPin } from "lucide-react";
+import { Search, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "@/lib/date-locales";
 import { motion } from "framer-motion";
-import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import type { ConversationThread, ConversationType } from "./types";
-import { CONV_TYPE_CONFIG, SOURCE_MODULE_CONFIG, STATUS_COLORS, STATUS_LABELS, CONVERSATION_FILTERS } from "./types";
+import { CONVERSATION_FILTERS } from "./types";
 
 interface Props {
   threads: ConversationThread[];
