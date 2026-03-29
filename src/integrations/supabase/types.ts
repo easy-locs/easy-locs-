@@ -32043,6 +32043,14 @@ export type Database = {
         Args: { p_workspace_id: string }
         Returns: boolean
       }
+      lookup_orbit_profile: {
+        Args: { _orbit_id: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          orbit_id: string
+        }[]
+      }
       mark_call_as_missed_v2: {
         Args: { p_reason?: string; p_session_id: string }
         Returns: undefined
