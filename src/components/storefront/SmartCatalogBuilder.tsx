@@ -4,7 +4,7 @@
  * AI-assisted title/description/tags still works.
  */
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
