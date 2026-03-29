@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from "react";
 import { RefreshCcw } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchProfileName, fetchContactExists, fetchDirectThreads } from "@/repositories/rental.repository";
 import { Button } from "@/components/ui/button";
 import UniversalEntityCard from "@/components/actions/UniversalEntityCard";
 import type { UniversalQrPayload } from "@/lib/qr-engine";
@@ -74,22 +74,16 @@ export function QrResolvedCard({
     async function load() {
       if (!currentUserId || !userId || userId === currentUserId) return;
       try {
-        const [{ data: profile }, { data: existingContact }] = await Promise.all([
-          supabase.from("profiles").select("name").eq("id", userId).maybeSingle(),
-          supabase.from("contacts").select("id").eq("owner_id", currentUserId).eq("contact_user_id", userId).maybeSingle(),
+        const [profileName, isContact] = await Promise.all([
+          fetchProfileName(userId),
+          fetchContactExists(currentUserId, userId),
         ]);
         if (cancelled) return;
-        if (profile?.name) setUserLoadedName(profile.name);
-        setContactAdded(!!existingContact);
+        if (profileName) setUserLoadedName(profileName);
+        setContactAdded(isContact);
 
-        const { data: threadRow } = await (supabase as any)
-          .from("conversations_v2")
-          .select("id, participants")
-          .eq("type", "direct")
-          .order("updated_at", { ascending: false })
-          .limit(100);
-
-        const match = (threadRow || []).find((t: any) =>
+        const threadRows = await fetchDirectThreads(100);
+        const match = (threadRows || []).find((t: any) =>
           Array.isArray(t.participants) &&
           t.participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === currentUserId) &&
           t.participants.some((p: any) => (p?.userId || p?.user_id || p?.id) === userId)

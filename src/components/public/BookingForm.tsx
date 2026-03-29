@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { insertBookingRequest, invokeNotifyBooking } from "@/repositories/rental.repository";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { auditBookingResult } from "@/lib/ai-audit";
 import { useI18n } from "@/lib/i18n";
@@ -106,7 +106,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
     if (!formReady || submitting) return;
 
     setSubmitting(true);
-    const { data: insertedRequest, error } = await supabase.from("booking_requests").insert({
+    const insertedRequest = await insertBookingRequest({
       listing_id: listing.id,
       property_id: property.id,
       org_id: listing.org_id,
@@ -117,18 +117,17 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
       check_out: form.check_out,
       guests_count: form.guests_count,
       message: form.message,
-    } as any).select().single();
+    }).catch((error: any) => {
 
-    if (error) {
-      console.error("Booking insert error:", error.message, error.details, error.hint);
-      auditBookingResult(false, { module: "seasonal", error: error.message || "Insert failed" });
+    if (!insertedRequest) {
+      auditBookingResult(false, { module: "seasonal", error: "Insert failed" });
       setSubmitting(false);
       toast.error(t("page.listing.error_submit") || "Booking request failed", {
-        description: error.message || "Please try again.",
+        description: "Please try again.",
         duration: 8000,
       });
       return;
-    }
+    });
 
     auditBookingResult(true, { bookingId: insertedRequest.id, module: "seasonal" });
 
@@ -149,9 +148,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
     }).catch(() => {});
 
     try {
-      await supabase.functions.invoke("notify-booking", {
-        body: { booking_request_id: insertedRequest.id },
-      });
+      await invokeNotifyBooking(insertedRequest.id);
     } catch (e) {
       console.error("Guest notification error:", e);
     }

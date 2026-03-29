@@ -81,7 +81,8 @@ export function DeliveryBookingForm() {
 
       // Insert parcel details if parcel delivery
       if (subMode === "parcel_delivery" && job?.id) {
-        await supabase.from("parcel_job_details" as any).insert({
+        const { insertParcelJobDetails } = await import("@/repositories/rental.repository");
+        await insertParcelJobDetails({
           job_id: job.id,
           parcel_type: parcel.parcelType,
           package_size: parcel.packageSize,

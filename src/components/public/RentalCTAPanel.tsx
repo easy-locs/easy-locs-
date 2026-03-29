@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { insertBookingRequest } from "@/repositories/rental.repository";
 import { useI18n } from "@/lib/i18n";
 import { CalendarCheck, FileText, Send, Loader2, CheckCircle, User, Mail, Phone, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ const RentalCTAPanel = ({ listing, property }: Props) => {
     }
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("booking_requests").insert({
+      await insertBookingRequest({
         listing_id: listing.id,
         property_id: listing.property_id || property?.id,
         org_id: listing.org_id,
@@ -49,8 +49,7 @@ const RentalCTAPanel = ({ listing, property }: Props) => {
         check_out: form.preferred_date || new Date().toISOString().slice(0, 10),
         status: action === "visit" ? "visit_requested" : action === "apply" ? "application" : "inquiry",
         guests_count: 1,
-      } as any);
-      if (error) throw error;
+      });
       setSubmitted(true);
       toast.success(t("page.rental.request_sent") || "Request sent successfully!");
     } catch (err: any) {
