@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { runFullAudit, runLightAudit, CATEGORY_LABELS, getTriggerIssues, subscribeTriggerAudit, autoFixIssue, autoFixAll } from "@/lib/ai-audit";
 import type { AuditReport, AuditIssue, ModuleScore, AuditCategory, AutoFixResult } from "@/lib/ai-audit";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeRunScheduledAudit, invokeAIAssistant } from "@/repositories/ai.repository";
+import { fetchAuditReportsHistory } from "@/repositories/rental.repository";
 import { toast } from "sonner";
 
 const CATEGORY_ICON_MAP: Record<AuditCategory, React.ElementType> = {
@@ -84,11 +85,7 @@ const AIQualityDashboard = () => {
   // Load audit history
   useEffect(() => {
     const loadHistory = async () => {
-      const { data } = await supabase
-        .from("audit_reports")
-        .select("created_at, global_score, total_issues, scan_type")
-        .order("created_at", { ascending: false })
-        .limit(30);
+      const data = await fetchAuditReportsHistory(30);
       if (data) setHistory(data);
     };
     loadHistory();
@@ -118,15 +115,9 @@ const AIQualityDashboard = () => {
     setScanning(true);
     toast.info("Running backend scheduled audit...");
     try {
-      const { data, error } = await supabase.functions.invoke("run-scheduled-audit", { body: {} });
-      if (error) throw error;
+      const data = await invokeRunScheduledAudit();
       toast.success(`Backend audit complete — Score: ${data.globalScore}/100 — ${data.totalIssues} issue(s)`);
-      // Reload history
-      const { data: hist } = await supabase
-        .from("audit_reports")
-        .select("created_at, global_score, total_issues, scan_type")
-        .order("created_at", { ascending: false })
-        .limit(30);
+      const hist = await fetchAuditReportsHistory(30);
       if (hist) setHistory(hist);
     } catch (err) {
       toast.error("Backend audit failed");
@@ -149,15 +140,12 @@ const AIQualityDashboard = () => {
     setCopilotLoading(true);
     setCopilotReply("");
     try {
-      const { data, error } = await supabase.functions.invoke("ai-assistant", {
-        body: {
-          message: `As the AI Quality Copilot for Easy-Locs, analyze this request in the context of the platform audit:\n\n${copilotInput}\n\nCurrent audit report:\n- Global Score: ${report?.globalScore || "N/A"}\n- Total Issues: ${report?.totalIssues || 0}\n- Critical: ${report?.criticalIssues || 0}`,
-          task: "chat",
-          locale: "en",
-          context: { auditReport: report ? { globalScore: report.globalScore, totalIssues: report.totalIssues, criticalIssues: report.criticalIssues } : null },
-        },
+      const data = await invokeAIAssistant({
+        message: `As the AI Quality Copilot for Easy-Locs, analyze this request in the context of the platform audit:\n\n${copilotInput}\n\nCurrent audit report:\n- Global Score: ${report?.globalScore || "N/A"}\n- Total Issues: ${report?.totalIssues || 0}\n- Critical: ${report?.criticalIssues || 0}`,
+        task: "chat",
+        locale: "en",
+        context: { auditReport: report ? { globalScore: report.globalScore, totalIssues: report.totalIssues, criticalIssues: report.criticalIssues } : null },
       });
-      if (error) throw error;
       setCopilotReply(data.reply || "No response.");
     } catch (err) {
       setCopilotReply("Copilot unavailable. Please try again later.");

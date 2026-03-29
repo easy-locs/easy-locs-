@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchRentCockpit } from "@/repositories/rental.repository";
 import { formatCurrency } from "@/lib/country-config";
 import RentStatusBadge from "@/components/rent/RentStatusBadge";
 import ReceiptStatusBadge from "@/components/rent/ReceiptStatusBadge";
@@ -64,21 +64,8 @@ const LandlordRentDashboard = () => {
   const { data: rentCalls = [], isLoading } = useQuery({
     queryKey: ["rent-cockpit", orgId, countryFilter],
     queryFn: async () => {
-      let query = supabase
-        .from("rent_calls")
-        .select("id, tenant_id, property_id, lease_id, month, rent_amount, charges_amount, total_amount, paid, paid_amount, paid_date, payment_status, payment_method, receipt_pdf_url, receipt_validated, tenants(name, email), properties(label, city, country)")
-        .eq("org_id", orgId!)
-        .order("month", { ascending: false });
-
-      if (countryFilter) {
-        const { data: props } = await supabase.from("properties").select("id").eq("org_id", orgId!).eq("country", countryFilter);
-        const ids = (props || []).map(p => p.id);
-        if (ids.length > 0) query = query.in("property_id", ids);
-        else return [];
-      }
-
-      const { data } = await query.limit(500);
-      return (data || []) as RentCallRow[];
+      const data = await fetchRentCockpit(orgId!, countryFilter || undefined);
+      return data as RentCallRow[];
     },
     enabled: !!orgId,
   });

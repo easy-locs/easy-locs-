@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Bell, Check, AlertTriangle, Clock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { dismissReminder } from "@/repositories/rental.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 
@@ -29,12 +29,8 @@ const Reminders = () => {
 
   const fetchReminders = async () => {
     if (!orgId) return;
-    const { data } = await supabase
-      .from("reminders")
-      .select("id, type, label, next_run_at, active")
-      .eq("org_id", orgId)
-      .eq("active", true)
-      .order("next_run_at", { ascending: true });
+    const { fetchRemindersForOrg } = await import("@/repositories/rental.repository");
+    const data = await fetchRemindersForOrg(orgId);
     setReminders((data as ReminderRow[]) ?? []);
     setLoading(false);
   };
@@ -42,7 +38,7 @@ const Reminders = () => {
   useEffect(() => { fetchReminders(); }, [orgId]);
 
   const handleDismiss = async (id: string) => {
-    await supabase.from("reminders").update({ active: false }).eq("id", id);
+    await dismissReminder(id);
     fetchReminders();
   };
 

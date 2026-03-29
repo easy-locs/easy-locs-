@@ -1,8 +1,13 @@
 /**
  * useGroupRepository — Atomic: CRUD for Orbit groups/channels/communities.
+ * MIGRATED: All DB ops via rental.repository.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  fetchGroupMemberIds, fetchGroupConversations, fetchGroupMemberCount,
+  fetchGroupLastMessage, createGroupConversation, insertGroupMember,
+} from "@/repositories/rental.repository";
+import { fetchOrbitProfile } from "@/repositories/communication.repository";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
@@ -28,16 +33,8 @@ export function useGroupRepository(userId: string | undefined) {
   const loadGroups = useCallback(async (): Promise<GroupRecord[]> => {
     if (!userId) return [];
 
-    const { data: memberRows, error: memberErr } = await supabase
-      .from("group_members").select("group_id").eq("user_id", userId);
-    if (memberErr) throw new Error(memberErr.message);
-    const memberGroupIds = (memberRows || []).map((r: any) => r.group_id).filter(Boolean);
-
-    const { data, error } = await (supabase as any)
-      .from("conversations_v2").select("*")
-      .in("type", ["group", "channel", "community"])
-      .order("updated_at", { ascending: false });
-    if (error) throw new Error(error.message);
+    const memberGroupIds = await fetchGroupMemberIds(userId);
+    const data = await fetchGroupConversations();
 
     const filtered = (data || []).filter((g: any) => {
       if (memberGroupIds.includes(g.id)) return true;
@@ -46,8 +43,8 @@ export function useGroupRepository(userId: string | undefined) {
     });
 
     return Promise.all(filtered.map(async (g: any) => {
-      const { count } = await supabase.from("group_members").select("*", { count: "exact", head: true }).eq("group_id", g.id);
-      const { data: lastMsg } = await (supabase as any).from("chat_messages_v2").select("body, created_at").eq("conversation_id", g.id).order("created_at", { ascending: false }).limit(1);
+      const count = await fetchGroupMemberCount(g.id);
+      const lastMsg = await fetchGroupLastMessage(g.id);
       return {
         id: g.id,
         name: g.title || "Untitled group",
@@ -58,8 +55,8 @@ export function useGroupRepository(userId: string | undefined) {
         group_type: (g.type || "group") as GroupType,
         posting_permission: g.type === "channel" ? "admins_only" : "everyone",
         member_count: count || 0,
-        last_message: lastMsg?.[0]?.body || null,
-        last_message_at: lastMsg?.[0]?.created_at || g.created_at,
+        last_message: lastMsg?.body || null,
+        last_message_at: lastMsg?.created_at || g.created_at,
       } as GroupRecord;
     }));
   }, [userId]);
@@ -67,18 +64,16 @@ export function useGroupRepository(userId: string | undefined) {
   const createGroup = useCallback(async (name: string, groupType: GroupType): Promise<GroupRecord | null> => {
     if (!userId || !name.trim()) return null;
 
-    const { data: myOrbit } = await (supabase as any)
-      .from("orbit_profiles_v2").select("orbit_id, display_name, email, avatar_url").eq("id", userId).maybeSingle();
-
+    const myOrbit = await fetchOrbitProfile(userId);
     const participants = [{ userId, orbitId: myOrbit?.orbit_id || null, displayName: myOrbit?.display_name || "You", email: myOrbit?.email || null, avatarUrl: myOrbit?.avatar_url || null }];
 
-    const { data: created, error } = await (supabase as any).from("conversations_v2").insert({
+    const created = await createGroupConversation({
       type: groupType, title: name.trim(), participants, created_by_orbit_id: myOrbit?.orbit_id || null, last_message_at: new Date().toISOString(),
-    } as any).select("id, type, title, created_at, created_by_orbit_id").single();
+    });
 
-    if (error || !created) { toast.error(error?.message || "Failed to create"); return null; }
+    if (!created) { toast.error("Failed to create"); return null; }
 
-    await supabase.from("group_members").insert({ group_id: created.id, user_id: userId, role: "admin" } as any);
+    await insertGroupMember(created.id, userId, "admin");
     haptic("success");
     toast.success(groupType === "channel" ? "Channel created" : groupType === "community" ? "Community created" : "Group created");
 

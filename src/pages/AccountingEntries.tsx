@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchAccountingProperties } from "@/repositories/rental.repository";
 import { formatCurrency } from "@/lib/country-config";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -31,13 +31,8 @@ const AccountingEntries = () => {
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["accounting-entries", orgId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("accounting_entries")
-        .select("*, properties(label, city), tenants(name), leases(lease_type, start_date)")
-        .eq("org_id", orgId!)
-        .order("accounting_period", { ascending: false })
-        .limit(500);
-      return data || [];
+      const { fetchAccountingEntries } = await import("@/repositories/rental.repository");
+      return await fetchAccountingEntries(orgId!);
     },
     enabled: !!orgId,
   });
@@ -45,8 +40,7 @@ const AccountingEntries = () => {
   const { data: properties = [] } = useQuery({
     queryKey: ["props-for-accounting", orgId],
     queryFn: async () => {
-      const { data } = await supabase.from("properties").select("id, label, country").eq("org_id", orgId!);
-      return data || [];
+      return await fetchAccountingProperties(orgId!);
     },
     enabled: !!orgId,
   });

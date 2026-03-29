@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadBookingDocumentFile } from "@/repositories/rental.repository";
 import { useParams, useSearchParams } from "react-router-dom";
 import {
   fetchServiceBySlug,
@@ -538,13 +538,8 @@ const PublicServiceBooking = () => {
                           try {
                             const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
                             const path = `${service.org_id}/id-docs/${crypto.randomUUID()}.${ext}`;
-                            const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
-
-                            if (error) {
-                              console.error("ID upload error:", error);
-                              toast.error("Upload failed: " + (error.message || "Unknown error"));
-                              return;
-                            }
+                            await uploadBookingDocumentFile(path, file);
+                            
 
                             setForm((f) => ({ ...f, id_document_url: path }));
                             toast.success(t("mp.document_uploaded") || "ID document uploaded");

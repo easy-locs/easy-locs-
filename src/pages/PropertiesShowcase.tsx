@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { getPublicRealEstateListingsFiltered } from "@/repositories/explore.repository";
 import SEOHead from "@/components/SEOHead";
 import AppLogo from "@/components/AppLogo";
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ export default function PropertiesShowcase() {
       if (minPrice) params.p_min_price = Number(minPrice);
       if (maxPrice) params.p_max_price = Number(maxPrice);
 
-      const { data, error } = await supabase.rpc("get_public_real_estate_listings", params);
+      const { data, error } = await getPublicRealEstateListingsFiltered(params);
       if (cancelled) return;
 
       if (error) {
