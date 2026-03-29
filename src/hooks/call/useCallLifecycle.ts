@@ -46,14 +46,14 @@ export function useCallLifecycle(
 
   const handleDeclineIncoming = useCallback(async (
     incomingCallId: string | null,
-    incomingThreadId: string | null,
+    incomingConversationId: string | null,
     incomingOrgId: string,
   ) => {
     if (!incomingCallId || !userId) return;
     await declineIncomingCall(incomingCallId, userId);
-    if (incomingThreadId) {
+    if (incomingConversationId) {
       logCallEventToThread({
-        callId: incomingCallId, threadId: incomingThreadId,
+        callId: incomingCallId, threadId: incomingConversationId,
         orgId: incomingOrgId, senderId: userId, event: "declined",
       });
     }
@@ -61,14 +61,14 @@ export function useCallLifecycle(
 
   const handleMissedIncoming = useCallback(async (
     incomingCallId: string | null,
-    incomingThreadId: string | null,
+    incomingConversationId: string | null,
     incomingOrgId: string,
   ) => {
     if (!incomingCallId || !userId) return;
     await markCallMissed(incomingCallId, userId);
-    if (incomingThreadId) {
+    if (incomingConversationId) {
       logCallEventToThread({
-        callId: incomingCallId, threadId: incomingThreadId,
+        callId: incomingCallId, threadId: incomingConversationId,
         orgId: incomingOrgId, senderId: userId, event: "missed",
       });
     }
