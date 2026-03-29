@@ -575,7 +575,70 @@ export async function fetchAccountingProperties(orgId: string) {
   return data || [];
 }
 
-// ── Leases by org (for AI assistant) ──
+// ── Reminders ──
+export async function fetchRemindersForOrg(orgId: string) {
+  const { data } = await supabase.from("reminders").select("id, type, label, next_run_at, active").eq("org_id", orgId).eq("active", true).order("next_run_at", { ascending: true });
+  return data || [];
+}
+
+// ── Accounting entries ──
+export async function fetchAccountingEntries(orgId: string) {
+  const { data } = await supabase.from("accounting_entries").select("*, properties(label, city), tenants(name), leases(lease_type, start_date)").eq("org_id", orgId).order("accounting_period", { ascending: false }).limit(500);
+  return data || [];
+}
+
+// ── Peer key bundles ──
+export async function fetchPeerKeyBundle(peerId: string) {
+  const { data } = await (supabase as any).from("user_key_bundles").select("identity_public_key").eq("user_id", peerId).maybeSingle();
+  return (data as any)?.identity_public_key as string | undefined;
+}
+
+// ── Group members ──
+export async function fetchGroupMemberIds(userId: string) {
+  const { data } = await supabase.from("group_members").select("group_id").eq("user_id", userId);
+  return (data || []).map((r: any) => r.group_id).filter(Boolean);
+}
+
+export async function fetchGroupConversations() {
+  const { data, error } = await (supabase as any).from("conversations_v2").select("*").in("type", ["group", "channel", "community"]).order("updated_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function fetchGroupMemberCount(groupId: string) {
+  const { count } = await supabase.from("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  return count || 0;
+}
+
+export async function fetchGroupLastMessage(groupId: string) {
+  const { data } = await (supabase as any).from("chat_messages_v2").select("body, created_at").eq("conversation_id", groupId).order("created_at", { ascending: false }).limit(1);
+  return data?.[0] || null;
+}
+
+export async function createGroupConversation(payload: Record<string, any>) {
+  const { data, error } = await (supabase as any).from("conversations_v2").insert(payload).select("id, type, title, created_at, created_by_orbit_id").single();
+  if (error) throw error;
+  return data;
+}
+
+export async function insertGroupMember(groupId: string, userId: string, role: string) {
+  await supabase.from("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
+}
+
+// ── Chat messages v2 (payment) ──
+export async function insertChatMessageV2(payload: Record<string, any>) {
+  const { error } = await (supabase as any).from("chat_messages_v2").insert(payload);
+  if (error) throw error;
+}
+
+export async function updateConversationTimestamp(conversationId: string) {
+  await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
+}
+
+export async function insertWalletTransaction(payload: Record<string, any>) {
+  await (supabase as any).from("unified_wallet_transactions").insert(payload);
+}
+
 export async function fetchLeasesByOrgSimple(orgId: string) {
   const { data } = await supabase.from("leases").select("*").eq("org_id", orgId);
   return data || [];

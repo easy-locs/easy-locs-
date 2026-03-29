@@ -106,13 +106,8 @@ export function useOrbitEncryption(userId: string | undefined): UseOrbitEncrypti
     const cached = peerKeyCache.get(peerId);
     if (cached) return cached;
 
-    const { data } = await supabase
-      .from("user_key_bundles" as any)
-      .select("identity_public_key")
-      .eq("user_id", peerId)
-      .maybeSingle();
-
-    const key = (data as any)?.identity_public_key as string | undefined;
+    const { fetchPeerKeyBundle } = await import("@/repositories/rental.repository");
+    const key = await fetchPeerKeyBundle(peerId);
     if (key) {
       // Detect key change
       const prev = peerKeyHistory.get(peerId);
