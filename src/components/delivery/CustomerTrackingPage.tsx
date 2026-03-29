@@ -3,6 +3,7 @@
  * PASS85-GG: Customer Notifications & Tracking Page
  */
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { motion, AnimatePresence } from "framer-motion";
 import { Package, MapPin, Clock, CheckCircle2, Truck, Phone, Star, Shield, Navigation } from "lucide-react";

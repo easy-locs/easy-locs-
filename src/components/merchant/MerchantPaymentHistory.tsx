@@ -3,6 +3,7 @@
  * Shows all incoming QR payments with split details.
  */
 import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { ArrowDownLeft, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { formatMoney } from "@/lib/format";

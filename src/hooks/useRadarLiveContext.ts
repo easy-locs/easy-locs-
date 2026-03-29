@@ -3,6 +3,7 @@
  * Subscribes to geo_live_context, rider_runtime_state, zone_events.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import type { GeoLiveContext, RiderRuntimeState } from "@/lib/mobility/live-context-engine";
 import type { ZoneEvent } from "@/lib/radar/predictive-demand-engine";

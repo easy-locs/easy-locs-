@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { format, isBefore, startOfDay, addDays, eachDayOfInterval, differenceInCalendarDays } from "date-fns";
 import { cn } from "@/lib/utils";
