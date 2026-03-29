@@ -68,16 +68,6 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
     } catch (error: any) {
       toast({ title: t("page.common.error"), description: error?.message, variant: "destructive" });
     }
-          user_id: tenant.tenant_user_id,
-          org_id: orgId,
-          type: "document",
-          title: t("comp.requests.doc_available_notif"),
-          message: t("comp.requests.doc_available_msg"),
-          link: "/tenant/documents",
-        });
-      }
-      await loadRequests();
-    }
     setResolvingId(null);
   };
 
