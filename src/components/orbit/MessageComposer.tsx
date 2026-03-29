@@ -147,8 +147,7 @@ export default function MessageComposer({
             <div className="flex-1 flex items-center gap-2 rounded-2xl px-3 py-2 bg-background border border-border min-w-0">
               <button
                 onClick={() => {
-                  const a = new Audio(voicePreview.url);
-                  void a.play();
+                  const a = DeviceAudio.playFile(voicePreview.url);
                 }}
                 className="h-8 w-8 rounded-full flex items-center justify-center bg-primary/15 text-primary shrink-0"
               >
