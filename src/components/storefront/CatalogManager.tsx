@@ -113,7 +113,11 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
       const path = `${user!.id}/${shopId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("catalog-photos").upload(path, file);
       if (error) { toast.error(`Upload failed: ${error.message}`); continue; }
-      const { data: urlData } = supabase.storage.from("catalog-photos").getPublicUrl(path);
+      const urlData = await storefrontRepo.uploadCatalogPhoto(path, file).catch(() => null);
+      if (!urlData) { toast.error(`Upload failed`); continue; }
+      // uploadCatalogPhoto already handles upload+getPublicUrl, but we need the pattern here:
+      // Since CatalogManager does upload then getPublicUrl separately, use the repo:
+
 
       if (isVideoFile(file)) {
         setVideoUrl(urlData.publicUrl);
