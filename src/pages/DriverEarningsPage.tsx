@@ -2,7 +2,8 @@
  * DriverEarningsPage — Canonical: reads from mobility_jobs + wallet.
  */
 import { useState, useEffect } from "react";
-import { fetchDriverEarningsData, createRealtimeChannel, removeRealtimeChannel } from "@/repositories/rental.repository";
+import { fetchDriverEarningsData } from "@/repositories/rental.repository";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
