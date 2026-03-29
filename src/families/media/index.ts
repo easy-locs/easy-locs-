@@ -1,16 +1,32 @@
 /**
  * FAMILY: MEDIA — Canonical media handling for Orbit.
- * Subfamilies: preview, viewer, send, meta, actions.
+ * Subfamilies: pick, upload, receive, preview, viewer, meta, actions.
  * Single source of truth for all media operations in messaging.
  */
 
-// ── Media Preview ──
+// ── Media Pick ──
+export { MediaPick } from "./media-pick";
+export type { PickedMedia, MediaPickSource, MediaPickKind } from "./media-pick";
+
+// ── Media Upload Queue ──
+export { MediaUpload, useMediaUploadQueue } from "./media-upload";
+export type { UploadItem, UploadStatus } from "./media-upload";
+
+// ── Media Receive ──
+export { MediaReceive } from "./media-receive";
+export type { ReceivedMedia } from "./media-receive";
+
+// ── Media Actions ──
+export { MediaActions } from "./media-actions";
+export type { MediaAction } from "./media-actions";
+
+// ── Media Preview (component) ──
 export { default as ChatMediaPreview } from "@/components/communication/ChatMediaPreview";
 
 // ── Media Viewer ──
 export { default as ViewOnceMedia } from "@/components/communication-hub/ViewOnceMedia";
 
-// ── Media Send ──
+// ── Media Send (hook) ──
 export { useThreadAttachmentFamily } from "@/hooks/orbit/families/useThreadAttachmentFamily";
 
 // ── Media Meta ──
@@ -59,3 +75,6 @@ export function getMediaType(url: string): "image" | "video" | "audio" | "file" 
   if (/\.(mp3|ogg|wav|webm|m4a|aac)(\?|$)/i.test(url)) return "audio";
   return "file";
 }
+
+// Media family owns: pick, upload queue, receive, preview, viewer, meta, actions, type detection.
+// No other module may handle media lifecycle independently.

@@ -20,5 +20,9 @@ export {
   type NotificationPayload,
 } from "@/repositories/notifications.repository";
 
+// ── Device Bridge ──
+export { NotificationDeviceBridge, useNotificationPreferences } from "./notification-device-bridge";
+export type { NotificationChannel, NotificationPriority } from "./notification-device-bridge";
+
 // Notifications family owns: in-app notifications, message/call/wallet/order/system
-// notifications, preference handling, badge counts
+// notifications, preference handling, badge counts, device bridge, quiet hours.
