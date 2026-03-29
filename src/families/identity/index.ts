@@ -29,6 +29,12 @@ export {
   type IdentityMode,
 } from "@/lib/canonical-identity";
 
+// ── Canonical UI components ──
+export { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
+
+// ── Canonical hooks ──
+export { useResolvedIdentity } from "@/hooks/useResolvedIdentity";
+
 /**
  * Canonical getCurrentUserId — SINGLE implementation for the entire app.
  * Returns the authenticated user ID or throws if not authenticated.
