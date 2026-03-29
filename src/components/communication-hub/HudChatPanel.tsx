@@ -62,7 +62,8 @@ import { useOrbitDevicePermissions } from "@/hooks/useOrbitDevicePermissions";
 import { useOrbitCallState } from "@/hooks/useOrbitCallState";
 import { useOrbitCallActions } from "@/hooks/useOrbitCallActions";
 import { useOrbitCallHistory } from "@/hooks/useOrbitCallHistory";
-import { useOrbitCallRealtime } from "@/hooks/useOrbitCallRealtime";
+// useOrbitCallRealtime REMOVED — it listened on call_sessions but RPC writes to call_logs.
+// CallProvider.useIncomingCallListener is the canonical incoming call listener.
 import { OrbitIncomingCallBar } from "@/components/orbit/OrbitIncomingCallBar";
 import { OrbitCallControls } from "@/components/orbit/OrbitCallControls";
 import { OrbitCallMiniPlayer } from "@/components/orbit/OrbitCallMiniPlayer";
@@ -247,33 +248,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
   const callHistory = useOrbitCallHistory(myOrbitId ?? null);
 
-  useOrbitCallRealtime({
-    currentOrbitId: myOrbitId ?? null,
-    onIncomingCall: (row: any) => {
-      callStateV2.startIncoming({
-        sessionId: row.id,
-        conversationId: row.conversation_id || null,
-        peerOrbitId: row.caller_orbit_id || null,
-        peerName: thread?.name || "Incoming call",
-        mode: row.call_type === "video" ? "video" : "audio",
-      });
-    },
-    onCallEnded: (row: any) => {
-      if (callStateV2.activeCall?.sessionId === row.id) {
-        callStateV2.endCall(row.status === "missed" ? "missed" : "ended");
-      }
-    },
-    onCallUpdated: (row: any) => {
-      if (callStateV2.activeCall?.sessionId === row.id) {
-        callStateV2.patchCall({
-          uiState: row.status === "active" ? "active" : callStateV2.activeCall?.uiState,
-          qualityState: row.quality_state || null,
-          reconnectCount: row.reconnect_count || 0,
-          answeredAt: row.answered_at || null,
-        });
-      }
-    },
-  });
+  // NOTE: Incoming calls are handled by CallProvider.useIncomingCallListener (on call_logs table).
+  // useOrbitCallRealtime was removed because it listened on call_sessions (wrong table).
 
   // Missed call timeout
   useEffect(() => {
