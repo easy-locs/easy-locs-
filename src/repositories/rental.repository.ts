@@ -574,3 +574,111 @@ export async function fetchAccountingProperties(orgId: string) {
   const { data } = await supabase.from("properties").select("id, label, country").eq("org_id", orgId);
   return data || [];
 }
+
+// ── Leases by org (for AI assistant) ──
+export async function fetchLeasesByOrgSimple(orgId: string) {
+  const { data } = await supabase.from("leases").select("*").eq("org_id", orgId);
+  return data || [];
+}
+
+// ── Charges Regularization ──
+export async function fetchTenantsForCharges(orgId: string) {
+  const { data } = await supabase.from("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
+  return data || [];
+}
+
+export async function fetchPropertiesForCharges(orgId: string) {
+  const { data } = await supabase.from("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
+  return data || [];
+}
+
+// ── Add property ──
+export async function insertProperty(payload: Record<string, any>) {
+  const { error } = await supabase.from("properties").insert(payload as any);
+  if (error) throw error;
+}
+
+// ── Fiscal report ──
+export async function fetchFiscalProperties(orgId: string, countryFilter?: string | null) {
+  let q = supabase.from("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
+  if (countryFilter) q = q.eq("country", countryFilter);
+  const { data } = await q;
+  return data || [];
+}
+
+export async function fetchFiscalRentCallsRaw(orgId: string) {
+  const { data } = await supabase.from("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
+  return data || [];
+}
+
+// ── Rent cockpit ──
+export async function fetchRentCockpit(orgId: string, countryFilter?: string | null) {
+  let query = supabase
+    .from("rent_calls")
+    .select("id, tenant_id, property_id, lease_id, month, rent_amount, charges_amount, total_amount, paid, paid_amount, paid_date, payment_status, payment_method, receipt_pdf_url, receipt_validated, tenants(name, email), properties(label, city, country)")
+    .eq("org_id", orgId)
+    .order("month", { ascending: false });
+
+  if (countryFilter) {
+    const { data: props } = await supabase.from("properties").select("id").eq("org_id", orgId).eq("country", countryFilter);
+    const ids = (props || []).map((p: any) => p.id);
+    if (ids.length > 0) query = query.in("property_id", ids);
+    else return [];
+  }
+
+  const { data } = await query.limit(500);
+  return data || [];
+}
+
+// ── Audit reports history ──
+export async function fetchAuditReportsHistory(limit = 30) {
+  const { data } = await supabase
+    .from("audit_reports")
+    .select("created_at, global_score, total_issues, scan_type")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data || [];
+}
+
+// ── Reminders ──
+export async function dismissReminder(id: string) {
+  await supabase.from("reminders").update({ active: false } as any).eq("id", id);
+}
+
+// ── Referrals ──
+export async function fetchReferralCode(userId: string) {
+  const { data } = await supabase.from("profiles").select("referral_code").eq("id", userId).single();
+  return data?.referral_code || null;
+}
+
+export async function fetchReferrals(userId: string) {
+  const { data } = await supabase.from("referrals").select("*").eq("referrer_user_id", userId).order("created_at", { ascending: false });
+  return data || [];
+}
+
+// ── Marketplace service insert ──
+export async function insertMarketplaceService(payload: Record<string, any>) {
+  const { error } = await supabase.from("marketplace_services").insert(payload as any);
+  if (error) throw error;
+}
+
+export async function fetchMarketplaceServiceBySlug(slug: string) {
+  const { data } = await supabase.from("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
+  return data;
+}
+
+// ── Booking document upload ──
+export async function uploadBookingDocumentFile(path: string, file: File) {
+  const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+  if (error) throw error;
+}
+
+// ── Key bundles ──
+export async function upsertKeyBundle(userId: string, publicKey: string, deviceId: string) {
+  await (supabase as any).from("user_key_bundles").upsert({
+    user_id: userId,
+    identity_public_key: publicKey,
+    device_id: deviceId,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "user_id" });
+}
