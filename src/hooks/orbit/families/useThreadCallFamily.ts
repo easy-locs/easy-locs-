@@ -1,6 +1,7 @@
 /**
  * FAMILY: CALL — Canonical call state, actions, history, permissions, and lifecycle.
  * Single source of truth for all call-related logic in a thread.
+ * Missed-call timeout + reconnect recovery are canonical here.
  */
 import { useEffect } from "react";
 import { useOrbitDevicePermissions } from "@/hooks/useOrbitDevicePermissions";
@@ -8,6 +9,7 @@ import { useOrbitCallState } from "@/hooks/useOrbitCallState";
 import { useOrbitCallActions } from "@/hooks/useOrbitCallActions";
 import { useOrbitCallHistory } from "@/hooks/useOrbitCallHistory";
 import { useHudCallSetup } from "@/hooks/orbit/useHudCallSetup";
+import { markCallAsMissedV2 } from "@/repositories/communication.repository";
 import type { ConversationThread } from "@/components/communication-hub/types";
 
 export function useThreadCallFamily(params: {
@@ -35,24 +37,19 @@ export function useThreadCallFamily(params: {
     thread, devicePermissions, callActions, callState
   );
 
-  // Missed call timeout
+  // Canonical missed call timeout (30s)
   useEffect(() => {
-    if (!callState.activeCall?.sessionId) return;
-    if (callState.activeCall.uiState !== "incoming") return;
+    if (!callState.activeCall?.sessionId || callState.activeCall.uiState !== "incoming") return;
+    const sessionId = callState.activeCall.sessionId;
     const timer = window.setTimeout(() => {
-      void (async () => {
-        const { markCallAsMissedV2 } = await import("@/repositories/communication.repository");
-        await markCallAsMissedV2(callState.activeCall?.sessionId!, "timeout");
-        callState.endCall("missed");
-      })();
+      void markCallAsMissedV2(sessionId, "timeout").then(() => callState.endCall("missed"));
     }, 30000);
     return () => window.clearTimeout(timer);
   }, [callState.activeCall?.sessionId, callState.activeCall?.uiState]);
 
-  // Reconnect recovery
+  // Canonical reconnect recovery (2.5s)
   useEffect(() => {
-    if (!callState.activeCall) return;
-    if (callState.activeCall.uiState !== "reconnecting") return;
+    if (!callState.activeCall || callState.activeCall.uiState !== "reconnecting") return;
     const timer = window.setTimeout(() => {
       callState.patchCall({ uiState: "active", qualityState: "stable" });
     }, 2500);

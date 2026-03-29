@@ -1,7 +1,17 @@
+/**
+ * useOrbitCallActions — Canonical call actions using repository layer.
+ * Zero inline supabase. All DB ops go through communication.repository.
+ */
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { OrbitCallUiState } from "@/lib/orbit/orbit-call-types";
+import {
+  acceptCallSession,
+  declineCallSession,
+  hangupCallSession,
+  markCallReconnecting,
+  createOutgoingCallSession,
+} from "@/repositories/communication.repository";
 
 export function useOrbitCallActions(params: {
   currentUserId?: string | null;
@@ -18,19 +28,8 @@ export function useOrbitCallActions(params: {
     if (!activeCall?.sessionId) return;
     setBusy(true);
     try {
-      const now = new Date().toISOString();
-      const { error: sessionErr } = await (supabase as any)
-        .from("call_sessions")
-        .update({ status: "active", answered_at: now, updated_at: now })
-        .eq("id", activeCall.sessionId);
-      if (sessionErr) throw sessionErr;
-
-      await (supabase as any)
-        .from("call_logs")
-        .update({ status: "answered", answered_at: now })
-        .eq("session_id", activeCall.sessionId);
-
-      patchCall({ uiState: "active", answeredAt: now });
+      await acceptCallSession(activeCall.sessionId);
+      patchCall({ uiState: "active", answeredAt: new Date().toISOString() });
     } catch (err: any) {
       toast.error(err?.message || "Failed to accept call");
       endCall("failed");
@@ -43,17 +42,7 @@ export function useOrbitCallActions(params: {
     if (!activeCall?.sessionId) return;
     setBusy(true);
     try {
-      const now = new Date().toISOString();
-      await (supabase as any)
-        .from("call_sessions")
-        .update({ status: "declined", ended_at: now, updated_at: now, metadata: { ended_reason: "declined" } })
-        .eq("id", activeCall.sessionId);
-
-      await (supabase as any)
-        .from("call_logs")
-        .update({ status: "declined", ended_at: now, ended_reason: "declined" })
-        .eq("session_id", activeCall.sessionId);
-
+      await declineCallSession(activeCall.sessionId);
       endCall("ended");
     } catch (err: any) {
       toast.error(err?.message || "Failed to decline call");
@@ -67,17 +56,7 @@ export function useOrbitCallActions(params: {
     if (!activeCall?.sessionId) return;
     setBusy(true);
     try {
-      const now = new Date().toISOString();
-      await (supabase as any)
-        .from("call_sessions")
-        .update({ status: "ended", ended_at: now, updated_at: now, metadata: { ended_reason: reason } })
-        .eq("id", activeCall.sessionId);
-
-      await (supabase as any)
-        .from("call_logs")
-        .update({ status: "ended", ended_at: now, ended_reason: reason })
-        .eq("session_id", activeCall.sessionId);
-
+      await hangupCallSession(activeCall.sessionId, reason);
       endCall("ended");
     } catch (err: any) {
       toast.error(err?.message || "Failed to end call");
@@ -91,11 +70,7 @@ export function useOrbitCallActions(params: {
     if (!activeCall?.sessionId) return;
     try {
       const nextCount = (activeCall.reconnectCount || 0) + 1;
-      await (supabase as any)
-        .from("call_sessions")
-        .update({ reconnect_count: nextCount, quality_state: "reconnecting", updated_at: new Date().toISOString() })
-        .eq("id", activeCall.sessionId);
-
+      await markCallReconnecting(activeCall.sessionId, nextCount);
       patchCall({ reconnectCount: nextCount, uiState: "reconnecting" as OrbitCallUiState, qualityState: "reconnecting" });
     } catch {
       // ignore
@@ -123,41 +98,12 @@ export function useOrbitCallActions(params: {
     if (!currentUserId || !currentOrbitId) return null;
     setBusy(true);
     try {
-      const now = new Date().toISOString();
-      const { data: session, error: sessionErr } = await (supabase as any)
-        .from("call_sessions")
-        .insert({
-          conversation_id: payload.conversationId || null,
-          caller_orbit_id: currentOrbitId,
-          receiver_orbit_id: payload.peerOrbitId,
-          call_type: payload.mode,
-          status: "ringing",
-          started_at: now,
-          created_at: now,
-          updated_at: now,
-          metadata: {},
-        })
-        .select("*")
-        .single();
-
-      if (sessionErr) throw sessionErr;
-
-      await (supabase as any)
-        .from("call_logs")
-        .insert({
-          conversation_id: payload.conversationId || null,
-          session_id: session.id,
-          caller_orbit_id: currentOrbitId,
-          receiver_orbit_id: payload.peerOrbitId,
-          call_type: payload.mode,
-          direction: "outgoing",
-          status: "ringing",
-          started_at: now,
-          created_at: now,
-          missed: false,
-          metadata: {},
-        });
-
+      const session = await createOutgoingCallSession({
+        conversationId: payload.conversationId,
+        callerOrbitId: currentOrbitId,
+        receiverOrbitId: payload.peerOrbitId,
+        mode: payload.mode,
+      });
       setUiState("outgoing");
       return session;
     } catch (err: any) {
