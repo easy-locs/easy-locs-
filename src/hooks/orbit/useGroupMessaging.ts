@@ -66,8 +66,7 @@ export function useGroupMessaging(activeGroupId: string | null, userId: string |
   // Realtime
   useEffect(() => {
     if (!activeGroupId) return;
-    const channel = supabase
-      .channel(`group-${activeGroupId}`)
+    const channel = createRealtimeChannel(`group-${activeGroupId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2", filter: `conversation_id=eq.${activeGroupId}` }, (payload) => {
         const msg = payload.new as any;
         if (msg.sender_user_id !== userId) {
