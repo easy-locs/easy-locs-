@@ -1,7 +1,6 @@
 /**
- * CommCallsSection — Call history with single direction icon per entry.
- * Uses HUD tokens. Functional redial. Swipe-to-delete. Fully i18n'd.
- * Resolves orbit IDs to display names — NEVER shows UUIDs.
+ * CommCallsSection — Canonical call history screen.
+ * Identity-first: every row shows name, direction, type, status, time.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,14 +13,14 @@ import { useI18n } from "@/lib/i18n";
 import {
   Phone, PhoneMissed, Video, Search, ArrowDownLeft, ArrowUpRight,
 } from "lucide-react";
-import { format, isToday, isYesterday } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import SwipeableCallItem from "./SwipeableCallItem";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCallStatus, safeDisplayName, isUUID } from "@/lib/orbit/message-formatter";
+import { isUUID } from "@/lib/orbit/message-formatter";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
+import { formatOrbitTimestamp, formatCallStatusLabel } from "@/lib/orbit/canonical-helpers";
 
 type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
@@ -42,10 +41,7 @@ interface CallLog {
 }
 
 function formatCallTime(dateStr: string): string {
-  const d = new Date(dateStr);
-  if (isToday(d)) return format(d, "HH:mm");
-  if (isYesterday(d)) return "Yesterday";
-  return format(d, "dd/MM");
+  return formatOrbitTimestamp(dateStr);
 }
 
 function formatDuration(s: number | null): string {
@@ -229,7 +225,7 @@ export default function CommCallsSection() {
 
   const getDisplayLabel = (call: CallLog) => {
     const peerId = call.direction === "outgoing" ? call.receiver_orbit_id : call.caller_orbit_id;
-    const resolvedName = nameCache[peerId] || safeDisplayName(peerId, "Contact");
+    const resolvedName = nameCache[peerId] || (isUUID(peerId) ? "Contact" : peerId);
     const dirLabel = call.direction === "outgoing" ? "Outgoing" : "Incoming";
     const typeLabel = call.call_type === "video" ? "Video" : "Audio";
     return resolvedName !== "Contact" ? [resolvedName, `${dirLabel} · ${typeLabel}`] : [`${dirLabel} ${typeLabel} Call`];
@@ -378,7 +374,7 @@ export default function CommCallsSection() {
                         )}
                         {secondaryLabel && <span className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }}>·</span>}
                         <span className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                          {formatCallStatus(call.status === "ended" ? `${formatDuration(call.duration_sec) || "Call ended"}` : call.status)}
+                          {formatCallStatusLabel(call.status === "ended" ? "ended" : call.status, call.status === "ended" ? call.duration_sec : null)}
                         </span>
                       </div>
                     </div>
