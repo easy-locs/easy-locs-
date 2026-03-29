@@ -6,6 +6,7 @@
 import { useState, useRef, useCallback } from "react";
 import { validateShop } from "@/lib/validation/marketplace-validators";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";

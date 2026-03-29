@@ -4,6 +4,7 @@
  */
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -58,10 +59,7 @@ export default function DeliveryDispatch({ shopId }: { shopId: string }) {
         merchant_id: orgMemberId,
       });
 
-      if (error) throw error;
-      const job = result?.job;
 
-      if (error) throw error;
 
       // Link job to order
       await (supabase as any)

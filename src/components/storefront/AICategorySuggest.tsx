@@ -61,7 +61,7 @@ export default function AICategorySuggest({ shopId, onAccept }: Props) {
         available_categories: categorySlugs,
       });
 
-      if (error) throw error;
+      
 
       const result = data?.suggestion || {
         vertical: "shops",

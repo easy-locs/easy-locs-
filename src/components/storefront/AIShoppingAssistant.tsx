@@ -3,6 +3,7 @@
  * Uses Lovable AI for product recommendations, search, FAQ.
  */
 import { useState, useRef, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -58,7 +59,7 @@ Help customers find products, compare options, and answer questions. Be concise 
         shop_id: shopId,
       });
 
-      if (error) throw error;
+      
       const reply = data?.reply || "Sorry, I couldn't process that.";
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
     } catch {
