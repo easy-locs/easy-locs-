@@ -462,6 +462,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         attachment={attFamily.viewerAttachment}
         onClose={() => { attFamily.setViewerOpen(false); attFamily.setViewerAttachment(null); }}
       />
+
+      {/* ── LOCATION VIEWER OVERLAY ── */}
+      <LocationViewerOverlay />
     </>
   );
 }
