@@ -22,7 +22,7 @@ export {
 } from "@/repositories/admin-ops.repository";
 
 // ── Notifications ──
-export { useNotificationCenter } from "@/hooks/useNotificationCenter";
+export { useNotificationsCenter } from "@/hooks/useNotificationsCenter";
 
 // Dashboard family owns: role-aware cards, summaries, counts, alerts,
 // tasks, quick actions, activity feed, decision cockpit

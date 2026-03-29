@@ -21,8 +21,8 @@ export {
 
 // ── Storefront ──
 export {
-  fetchStorefrontPage,
-} from "@/repositories/storefront.repository";
+  fetchStorefrontSlug,
+} from "@/repositories/merchant-dashboard.repository";
 
 // ── Discovery ──
 export {
