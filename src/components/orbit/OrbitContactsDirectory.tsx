@@ -222,16 +222,9 @@ export default function OrbitContactsDirectory() {
     if (isInCall || isStartingCall) { toast.info("Already in a call"); return; }
     haptic("medium");
     try {
-      // Resolve the contact's org membership for proper call routing
-      const { data: contactOrg } = await supabase
-        .from("org_members")
-        .select("org_id")
-        .eq("user_id", contact.contact_user_id)
-        .limit(1)
-        .maybeSingle();
-
+      const targetId = contact.contact_user_id;
       await startCall({
-        targetId: contactOrg?.org_id || orgId || contact.contact_user_id,
+        targetId,
         peerName: contact.name,
         contextType: "contact",
         contextId: contact.id,
@@ -240,16 +233,24 @@ export default function OrbitContactsDirectory() {
     } catch {
       toast.error("Failed to start call");
     }
-  }, [startCall, isInCall, isStartingCall, orgId]);
+  }, [startCall, isInCall, isStartingCall]);
 
-  const handlePay = useCallback((contact: OrbitContact) => {
-    if (!contact.contact_user_id) return;
-    navigate(`/wallet/hub?action=send&to=${contact.contact_user_id}&name=${encodeURIComponent(contact.name)}`);
-  }, [navigate]);
-
-  const handleShop = useCallback((contact: OrbitContact) => {
-    navigate(`/explore?merchant=${contact.contact_user_id || contact.id}`);
-  }, [navigate]);
+  const handleVideoCall = useCallback(async (contact: OrbitContact) => {
+    if (!contact.contact_user_id) { toast.info("Cannot call this contact yet"); return; }
+    if (isInCall || isStartingCall) { toast.info("Already in a call"); return; }
+    haptic("medium");
+    try {
+      await startCall({
+        targetId: contact.contact_user_id,
+        peerName: contact.name,
+        contextType: "contact",
+        contextId: contact.id,
+        isVideo: true,
+      });
+    } catch {
+      toast.error("Failed to start video call");
+    }
+  }, [startCall, isInCall, isStartingCall]);
 
   const TABS: { id: Tab; label: string; icon: typeof Clock }[] = [
     { id: "recent", label: "Recent", icon: Clock },
@@ -309,8 +310,7 @@ export default function OrbitContactsDirectory() {
               contact={c}
               onMessage={handleMessage}
               onCall={handleCall}
-              onPay={handlePay}
-              onShop={handleShop}
+              onVideoCall={handleVideoCall}
             />
           ))
         )}
