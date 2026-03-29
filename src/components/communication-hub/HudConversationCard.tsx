@@ -87,7 +87,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
                     : "hsl(var(--muted-foreground))",
                 }}
               >
-                {formatTime(thread.lastMessageTime)}
+                {formatOrbitTimestamp(thread.lastMessageTime)}
               </span>
             </div>
           )}
