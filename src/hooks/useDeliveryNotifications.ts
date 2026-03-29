@@ -7,12 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-
-const NOTIFICATION_SOUNDS = {
-  new_job: "/notification.mp3",
-  status_update: "/notification.mp3",
-  urgent: "/notification.mp3",
-};
+import { NotificationSound } from "@/families/notifications/notification-sound";
+import { NotificationDeviceBridge } from "@/families/notifications/notification-device-bridge";
 
 export function useDeliveryNotifications() {
   const { user } = useAuth();
