@@ -30,7 +30,7 @@ const ListingLocalServices = ({ orgId, propertyId, propertyCity, propertyCountry
       if (!isEnabled) return;
       setEnabled(true);
 
-      const data = await fetchLocalServices(orgId);
+      const svcData = data as any[];
 
       if (!data) return;
 
