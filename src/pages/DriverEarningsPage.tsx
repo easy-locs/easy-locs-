@@ -2,7 +2,7 @@
  * DriverEarningsPage — Canonical: reads from mobility_jobs + wallet.
  */
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchDriverEarningsData, createRealtimeChannel, removeRealtimeChannel } from "@/repositories/rental.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,42 +19,35 @@ export default function DriverEarningsPage() {
 
   useEffect(() => {
     if (user?.id) loadData();
-    const ch = supabase.channel("driver-earnings-live")
+    const ch = createRealtimeChannel("driver-earnings-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "wallet_order_splits" }, () => { if (user?.id) loadData(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs" }, () => { if (user?.id) loadData(); })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => { removeRealtimeChannel(ch); };
   }, [user?.id]);
 
   const loadData = async () => {
     if (!user?.id) return;
     setLoading(true);
 
-    const { data: wallet } = await (supabase as any).from("wallet_accounts").select("*").eq("owner_type", "driver").eq("owner_user_id", user.id).limit(1).maybeSingle();
+    const { wallet, allSplits, jobs, completedCount, cancelledCount } = await fetchDriverEarningsData(user.id);
     const currency = wallet?.currency ?? "";
-
-    const { data: allSplits } = await (supabase as any).from("wallet_order_splits").select("net_amount, split_status, created_at").eq("split_party_type", "driver").eq("wallet_account_id", wallet?.id ?? "none").order("created_at", { ascending: false }).limit(50);
-    const settled = (allSplits ?? []).filter((s: any) => s.split_status === "settled");
-    const pending = (allSplits ?? []).filter((s: any) => s.split_status === "pending");
-
+    const settled = allSplits.filter((s: any) => s.split_status === "settled");
+    const pending = allSplits.filter((s: any) => s.split_status === "pending");
     const today = new Date().toISOString().split("T")[0];
     const todayEarnings = settled.filter((s: any) => s.created_at?.startsWith(today)).reduce((sum: number, s: any) => sum + Number(s.net_amount ?? 0), 0);
-
-    const { data: jobs } = await (supabase as any).from("mobility_jobs").select("*").eq("rider_user_id", user.id).in("status", ["accepted", "rider_arriving_pickup", "rider_arrived_pickup", "picked_up", "in_progress", "rider_arriving_dropoff"]).order("created_at", { ascending: false });
-    const { count: completedCount } = await (supabase as any).from("mobility_jobs").select("id", { count: "exact", head: true }).eq("rider_user_id", user.id).eq("status", "completed");
-    const { count: cancelledCount } = await (supabase as any).from("mobility_jobs").select("id", { count: "exact", head: true }).eq("rider_user_id", user.id).eq("status", "cancelled");
 
     setStats({
       available: Number(wallet?.balance_cash ?? 0),
       pending: pending.reduce((sum: number, s: any) => sum + Number(s.net_amount ?? 0), 0),
       today: todayEarnings,
-      completed: completedCount ?? 0,
-      cancelled: cancelledCount ?? 0,
-      active: (jobs ?? []).length,
+      completed: completedCount,
+      cancelled: cancelledCount,
+      active: jobs.length,
       currency,
     });
     setRecentPayouts(settled.slice(0, 10));
-    setActiveJobs(jobs ?? []);
+    setActiveJobs(jobs);
     setLoading(false);
   };
 
