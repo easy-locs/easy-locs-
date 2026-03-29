@@ -495,53 +495,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       <LocationViewerOverlay />
 
       {/* ── MEDIA PREVIEW BEFORE SEND ── */}
-      <MediaPreviewSheet
-        onSend={(items: PreviewItem[], caption: string, viewOnce: boolean) => {
-          const sendCtx = attFamily.attachmentQueue.queue.length >= 0 ? (attFamily as any).sendContext || null : null;
-          // Use the sendContext from the attachment family
-          const ctx = (() => {
-            if (thread?.v2ConversationId && user?.id) {
-              return {
-                conversationId: thread.v2ConversationId,
-                senderUserId: user.id,
-                senderOrbitId: myOrbitId || `orbit_${user.id.slice(0, 12)}`,
-                receiverOrbitId: thread.peerOrbitId ?? null,
-                threadId: (thread as any)?.threadId || thread.id,
-                orgId,
-              };
-            }
-            return null;
-          })();
-
-          if (!ctx) {
-            toast.error("Cannot send: no conversation context");
-            return;
-          }
-
-          // Send each item through optimistic pipeline with transport engine
-          for (const item of items) {
-            const decision = TransportPolicy.decide(item.media.file);
-            void sendMediaOptimistic(ctx, {
-              file: item.media.file,
-              caption: items.length === 1 ? caption : item.caption || caption,
-              viewOnce,
-              uploadFn: async (file, path, onProgress) => {
-                const result = await transportUploadWithPrepare(file, {
-                  pathPrefix: orgId || "orbit-media",
-                  compress: decision.shouldCompress,
-                  maxDimension: decision.maxDimension || undefined,
-                  quality: decision.quality || undefined,
-                  callbacks: { onProgress },
-                });
-                return result.publicUrl;
-              },
-              pathPrefix: orgId || "orbit-media",
-            });
-          }
-
-          useMediaPreviewState.getState().markSent();
-        }}
-      />
+      <MediaPreviewSheet onSend={mediaPreviewSend.sendFromPreview} />
 
       {/* ── FULLSCREEN MEDIA VIEWER ── */}
       <FullscreenMediaViewer />
