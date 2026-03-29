@@ -3,7 +3,7 @@
  * Full-screen messaging experience — NO sidebar, standalone layout.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, Zap, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
@@ -300,15 +300,12 @@ export const CommunicationCenter = () => {
               </Button>
             )}
             {stats.unread > 0 && !selectedThread && (
-              <div
-                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px]"
-                style={{ background: "hsl(var(--primary) / 0.08)" }}
+              <span
+                className="inline-flex min-w-5 h-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold"
+                style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
               >
-                <Zap className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
-                <span className="font-semibold tabular-nums" style={{ color: "hsl(var(--primary))" }}>
-                  {stats.unread}
-                </span>
-              </div>
+                {stats.unread > 99 ? "99+" : stats.unread}
+              </span>
             )}
           </div>
         </div>
