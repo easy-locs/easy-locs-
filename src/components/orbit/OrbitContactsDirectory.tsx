@@ -48,14 +48,12 @@ const ContactRow = memo(function ContactRow({
   contact,
   onMessage,
   onCall,
-  onPay,
-  onShop,
+  onVideoCall,
 }: {
   contact: OrbitContact;
   onMessage: (c: OrbitContact) => void;
   onCall: (c: OrbitContact) => void;
-  onPay: (c: OrbitContact) => void;
-  onShop: (c: OrbitContact) => void;
+  onVideoCall: (c: OrbitContact) => void;
 }) {
   const initials = (contact.name || "?")
     .split(" ")
@@ -70,11 +68,12 @@ const ContactRow = memo(function ContactRow({
     : null;
 
   const avatarBg = getAvatarColor(contact.name || "?");
-  const hasShop = contact.category === "merchant" || contact.category === "business";
 
   return (
-    <div className="flex items-center gap-3 px-4 h-[64px] active:bg-muted/30 transition-colors cursor-pointer">
-      {/* Avatar — fixed 44x44 */}
+    <div className="flex items-center gap-3 px-4 h-[64px] active:bg-muted/30 transition-colors cursor-pointer"
+      onClick={() => onMessage(contact)}
+    >
+      {/* Avatar */}
       <div
         className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
         style={{ background: contact.avatar_url ? undefined : avatarBg }}
@@ -86,25 +85,24 @@ const ContactRow = memo(function ContactRow({
         )}
       </div>
 
-      {/* Info — min-w-0 for truncation */}
+      {/* Info */}
       <div className="flex-1 min-w-0 pr-1">
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-semibold text-foreground break-words line-clamp-1">
             {contact.name}
           </span>
-          {contact.is_favorite && <Star className="h-3 w-3 text-amber-400 fill-amber-400 shrink-0" />}
+          {contact.is_favorite && <Star className="h-3 w-3 fill-amber-400 shrink-0" style={{ color: "hsl(45 93% 58%)" }} />}
         </div>
         {subtitle && (
           <p className="text-xs text-muted-foreground break-words line-clamp-1">{subtitle}</p>
         )}
       </div>
 
-      {/* Time */}
       {timeStr && (
         <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">{timeStr}</span>
       )}
 
-      {/* Actions — consistent 44px touch targets */}
+      {/* Actions: Message, Audio Call, Video Call */}
       <div className="flex items-center gap-0.5 shrink-0">
         <Button
           variant="ghost"
@@ -120,32 +118,19 @@ const ContactRow = memo(function ContactRow({
           size="icon"
           className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
           onClick={(e) => { e.stopPropagation(); haptic("light"); onCall(contact); }}
-          aria-label="Call"
+          aria-label="Audio call"
         >
-          <Phone className="h-4 w-4 text-emerald-500" />
+          <Phone className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
         </Button>
-        {contact.contact_user_id && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
-            onClick={(e) => { e.stopPropagation(); haptic("light"); onPay(contact); }}
-            aria-label="Pay"
-          >
-            <CreditCard className="h-4 w-4 text-violet-500" />
-          </Button>
-        )}
-        {hasShop && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
-            onClick={(e) => { e.stopPropagation(); haptic("light"); onShop(contact); }}
-            aria-label="Shop"
-          >
-            <Store className="h-4 w-4 text-orange-500" />
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
+          onClick={(e) => { e.stopPropagation(); haptic("light"); onVideoCall(contact); }}
+          aria-label="Video call"
+        >
+          <Video className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
+        </Button>
       </div>
     </div>
   );
