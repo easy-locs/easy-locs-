@@ -182,7 +182,7 @@ export default function OrbitHome() {
             <MapPin className="w-4 h-4 shrink-0 text-primary" />
             <div className="min-w-0">
               <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground leading-none">Delivering to</p>
-              <p className="text-[13px] font-bold text-foreground leading-tight truncate">Dubai, UAE</p>
+              <p className="text-[13px] font-bold text-foreground leading-tight break-words line-clamp-1">Dubai, UAE</p>
             </div>
           </button>
           <div className="flex items-center gap-1.5 shrink-0">
