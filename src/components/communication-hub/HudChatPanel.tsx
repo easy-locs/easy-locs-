@@ -3,7 +3,6 @@
  * Thin assembly layer that composes canonical family hooks.
  * Contains NO business logic — only wiring.
  */
-import { useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -55,7 +54,7 @@ import { useSecurityDialogs } from "./chat/useSecurityDialogs";
 import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
 import { useHudConversationStatus } from "@/hooks/orbit/useHudConversationStatus";
 import { useHudBookingActions } from "@/hooks/orbit/useHudBookingActions";
-import { useCallActions } from "./chat/useCallActions";
+import { useHudConversationResolver } from "@/hooks/orbit/useHudConversationResolver";
 
 interface Props {
   thread: ConversationThread | null;
@@ -74,34 +73,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const { settings: privacySettings } = usePrivacySettings();
 
   const security = useSecurityDialogs();
-  const callActions = useCallActions(thread, orgId || null);
 
   // ── Identity resolver (canonical family) ──
   const resolveAuthUserId = useResolveAuthUserId(t);
-
-  const resolveConversationId = useCallback(async (authUserId: string): Promise<string | null> => {
-    if (!thread) return null;
-    if (thread.v2ConversationId) return thread.v2ConversationId;
-    if (!thread.peerUserId) {
-      toast.error("No conversation found. Open a thread first.");
-      return null;
-    }
-    try {
-      const { createOrGetDirectConversation } = await import("@/lib/orbit/createOrGetDirectConversation");
-      const conv = await createOrGetDirectConversation({
-        myUserId: authUserId,
-        myOrbitId,
-        peerUserId: thread.peerUserId,
-        peerOrbitId: thread.peerOrbitId,
-      });
-      onThreadUpdate(thread.id, { v2ConversationId: conv.id });
-      return conv.id;
-    } catch (err: any) {
-      console.error("[HudChatPanel] auto-create conversation failed", err);
-      toast.error("Failed to create conversation.");
-      return null;
-    }
-  }, [thread, myOrbitId, onThreadUpdate]);
+  const { resolveConversationId } = useHudConversationResolver({
+    thread,
+    myOrbitId,
+    onThreadUpdate,
+    t,
+  });
 
   // ── FAMILY: Messages ──
   const msgFamily = useThreadMessageFamily({
@@ -165,10 +145,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           thread={thread}
           convStatus={loader.convStatus}
           e2eReady={e2eReady}
-          isInCall={callActions.isInCall}
-          isStartingCall={callActions.isStartingCall}
+          isInCall={callFamily.callState.hasActiveCall}
+          isStartingCall={callFamily.callActions.busy}
           onBack={onBack}
-          onStartCall={callActions.handleStartCall}
+          onStartCall={(isVideo) => void (isVideo ? callFamily.handleStartVideoCall() : callFamily.handleStartAudioCall())}
           onUpdateStatus={updateConversationStatus}
           onToggleContext={onToggleContext}
           onShowSecurityPanel={() => security.setShowSecurityPanel(true)}
