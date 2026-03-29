@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import * as realEstateRepo from "@/repositories/real-estate.repository";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { getShareLinks } from "@/lib/social-share";
 import { useAutoTranslateBatch } from "@/hooks/useAutoTranslate";
