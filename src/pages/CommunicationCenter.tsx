@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
+
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useIsMobile } from "@/hooks/use-mobile";
