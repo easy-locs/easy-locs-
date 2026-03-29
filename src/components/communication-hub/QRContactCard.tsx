@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+
 import QRCodeLib from "qrcode";
 import { requestMediaStream } from "@/lib/device/permissions";
 
