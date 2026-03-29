@@ -15,6 +15,8 @@ import {
 import { subscribeNotifications, unsubscribeNotifications } from "@/lib/notifications-v2/notification-realtime";
 import { resolveDeliveryPolicy } from "@/lib/notifications-v2/notification-delivery-policy";
 import { toast } from "sonner";
+import { NotificationSound } from "@/families/notifications/notification-sound";
+import { NotificationVibration } from "@/families/notifications/notification-vibration";
 
 interface NotificationV2State {
   notifications: NotificationRow[];
@@ -66,17 +68,13 @@ export const useNotificationV2Store = create<NotificationV2State>((set, get) => 
               : undefined,
           });
         }
-        // Sound
+        // Sound — via canonical notification sound family
         if (policy.playSound) {
-          try {
-            const audio = new Audio("/notification.mp3");
-            audio.volume = 0.3;
-            audio.play().catch(() => {});
-          } catch {}
+          NotificationSound.play("notification", 0.3);
         }
-        // Vibrate
-        if (policy.vibrate && "vibrate" in navigator) {
-          navigator.vibrate([150, 80, 150]);
+        // Vibrate — via canonical notification vibration family
+        if (policy.vibrate) {
+          NotificationVibration.once([150, 80, 150]);
         }
 
         return {
