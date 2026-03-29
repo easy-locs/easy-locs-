@@ -29,16 +29,17 @@ export function useHudBookingActions(
       else if (thread.bookingType === "seasonal")
         await bookingRepo.updateBookingRequest(thread.bookingId, newStatus);
 
-      if (thread.v2ConversationId) {
+      const conversationId = thread.conversationId || thread.v2ConversationId;
+      if (conversationId) {
         const actionLabels = { confirm: "✅ Booking confirmed", cancel: "❌ Booking cancelled", complete: "🏁 Booking completed" };
         await bookingRepo.insertChatMessage(
-          thread.v2ConversationId,
+          conversationId,
           userId,
           myOrbitId || `orbit_${userId.slice(0, 12)}`,
           actionLabels[action],
           { booking_action: action, booking_id: thread.bookingId },
         );
-        await bookingRepo.updateConversationTimestamp(thread.v2ConversationId);
+        await bookingRepo.updateConversationTimestamp(conversationId);
       }
 
       onThreadUpdate(thread.id, { bookingStatus: newStatus });

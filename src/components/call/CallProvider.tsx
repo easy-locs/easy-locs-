@@ -17,8 +17,11 @@ import { useMyOrbitId } from "@/hooks/call/useMyOrbitId";
 
 interface CallContextType {
   startCall: (opts: {
-    targetId: string; threadId?: string; contextType?: string;
-    contextId?: string; contextLabel?: string; peerName: string; isVideo?: boolean;
+    targetId: string; conversationId?: string; entityType?: string;
+    entityId?: string; contextLabel?: string; peerName: string; isVideo?: boolean;
+    /** @deprecated Use conversationId */ threadId?: string;
+    /** @deprecated Use entityType */ contextType?: string;
+    /** @deprecated Use entityId */ contextId?: string;
   }) => Promise<void>;
   isInCall: boolean;
   isStartingCall: boolean;

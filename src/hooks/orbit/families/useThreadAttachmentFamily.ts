@@ -11,6 +11,11 @@ import { useHudAttachmentUpload } from "@/hooks/orbit/useHudAttachmentUpload";
 import { useAttachments } from "@/components/communication-hub/chat/useAttachments";
 import type { ConversationThread } from "@/components/communication-hub/types";
 
+/** Resolve canonical conversationId from thread (with legacy fallback) */
+function getConversationId(thread: ConversationThread | null): string | null {
+  return thread?.conversationId || thread?.v2ConversationId || null;
+}
+
 export function useThreadAttachmentFamily(params: {
   thread: ConversationThread | null;
   orgId: string | null;
@@ -49,27 +54,28 @@ export function useThreadAttachmentFamily(params: {
   const attachmentQueue = useOrbitAttachmentQueue();
   const uploadTransport = useOrbitUploadTransport();
 
+  const conversationId = getConversationId(thread);
+
   const attachmentSend = useOrbitAttachmentSend({
-    conversationId: thread?.v2ConversationId ?? null,
+    conversationId,
     currentUserId: userId ?? null,
     currentOrbitId: myOrbitId ?? null,
     peerUserId: thread?.peerUserId ?? null,
     peerOrbitId: thread?.peerOrbitId ?? null,
     onAfterSend,
     onConversationCreated: (convId) => {
-      if (thread) onThreadUpdate(thread.id, { v2ConversationId: convId });
+      if (thread) onThreadUpdate(thread.id, { conversationId: convId, v2ConversationId: convId });
     },
   });
 
   const viewOnceHook = useOrbitViewOnce({ currentUserId: userId ?? null });
 
   // Build send context for optimistic pipeline
-  const sendContext = thread?.v2ConversationId && userId ? {
-    conversationId: thread.v2ConversationId,
+  const sendContext = conversationId && userId ? {
+    conversationId,
     senderUserId: userId,
     senderOrbitId: myOrbitId || `orbit_${userId.slice(0, 12)}`,
-    receiverOrbitId: thread.peerOrbitId ?? null,
-    threadId: (thread as any)?.threadId || thread.id,
+    receiverOrbitId: thread?.peerOrbitId ?? null,
     orgId,
   } : null;
 
@@ -99,13 +105,13 @@ export function useThreadAttachmentFamily(params: {
   const handleOpenAttachment = useCallback(async (message: any, attachment: any) => {
     setViewerAttachment(attachment);
     setViewerOpen(true);
-    if (attachment.viewOnce && thread?.v2ConversationId) {
+    if (attachment.viewOnce && conversationId) {
       await viewOnceHook.markViewOnceOpened({
         messageId: message.id,
-        conversationId: thread.v2ConversationId,
+        conversationId,
       });
     }
-  }, [thread?.v2ConversationId, viewOnceHook]);
+  }, [conversationId, viewOnceHook]);
 
   return {
     fileInputRef,
