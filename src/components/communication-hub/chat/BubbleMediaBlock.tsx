@@ -39,8 +39,8 @@ function BubbleMediaBlockInner({
   }
 
   return (
-    <div className={`mb-1 -mx-1 rounded-lg overflow-hidden ${blurred ? "blur-lg transition-all" : ""}`}>
-      <ChatMediaPreview url={attachmentUrl} />
+    <div className={`mb-1 rounded-xl overflow-hidden ${blurred ? "blur-lg transition-all" : ""}`}>
+      <ChatMediaPreview url={attachmentUrl} isMe={isMe} />
     </div>
   );
 }
