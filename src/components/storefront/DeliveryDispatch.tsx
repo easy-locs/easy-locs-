@@ -58,14 +58,12 @@ export default function DeliveryDispatch({ shopId }: { shopId: string }) {
         order_id: order.id,
         merchant_id: orgMemberId,
       });
-
-
+      const job = result?.job;
 
       // Link job to order
-      await (supabase as any)
-        .from("storefront_orders")
-        .update({ delivery_job_id: job.id, delivery_requested: true, delivery_status: "pending" })
-        .eq("id", order.id);
+      await storefrontRepo.updateOrder(order.id, {
+        delivery_job_id: job?.id, delivery_requested: true, delivery_status: "pending",
+      });
 
       qc.invalidateQueries({ queryKey: ["dispatch-orders", shopId] });
       toast.success("Delivery requested!");
