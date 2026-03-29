@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Clock, MessageCircle, CreditCard, Edit, Bell, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { fetchBookingAuditLogs, fetchBookingNotifications } from "@/repositories/marketplace.repository";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthUser } from "@/repositories/auth-utils.repository";
 
 const ICON_MAP: Record<string, any> = {
   status_change: Edit, message: MessageCircle, payment: CreditCard,
@@ -21,7 +21,7 @@ export default function BookingActivityLog({ bookingId, orgId }: Props) {
   const { data: notifications = [] } = useQuery({
     queryKey: ["booking_notifications", bookingId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getAuthUser();
       if (!user) return [];
       return fetchBookingNotifications(user.id, bookingId);
     },

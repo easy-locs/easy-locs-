@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { insertBookingRequest, invokeNotifyBooking, fetchExistingBookings } from "@/repositories/rental.repository";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { auditBookingResult } from "@/lib/ai-audit";
 import { useI18n } from "@/lib/i18n";
@@ -46,22 +46,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
   useEffect(() => {
     if (!property?.id) return;
     const loadBookings = async () => {
-      const [{ data: seasonal }, { data: requests }] = await Promise.all([
-        supabase
-          .from("seasonal_bookings" as any)
-          .select("check_in, check_out, status")
-          .eq("property_id", property.id)
-          .neq("status", "cancelled"),
-        supabase
-          .from("booking_requests")
-          .select("check_in, check_out, status")
-          .eq("property_id", property.id)
-          .in("status", ["confirmed", "paid", "approved", "payment_pending"]),
-      ]);
-      const all = [
-        ...(seasonal || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
-        ...(requests || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
-      ];
+      const all = await fetchExistingBookings(property.id);
       const seen = new Set<string>();
       setBookedDates(all.filter(b => {
         const key = `${b.check_in}-${b.check_out}`;
@@ -106,25 +91,26 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
     if (!formReady || submitting) return;
 
     setSubmitting(true);
-    const { data: insertedRequest, error } = await supabase.from("booking_requests").insert({
-      listing_id: listing.id,
-      property_id: property.id,
-      org_id: listing.org_id,
-      guest_name: form.guest_name,
-      guest_email: form.guest_email,
-      guest_phone: form.guest_phone,
-      check_in: form.check_in,
-      check_out: form.check_out,
-      guests_count: form.guests_count,
-      message: form.message,
-    } as any).select().single();
-
-    if (error) {
-      console.error("Booking insert error:", error.message, error.details, error.hint);
-      auditBookingResult(false, { module: "seasonal", error: error.message || "Insert failed" });
+    let insertedRequest: any;
+    try {
+      insertedRequest = await insertBookingRequest({
+        listing_id: listing.id,
+        property_id: property.id,
+        org_id: listing.org_id,
+        guest_name: form.guest_name,
+        guest_email: form.guest_email,
+        guest_phone: form.guest_phone,
+        check_in: form.check_in,
+        check_out: form.check_out,
+        guests_count: form.guests_count,
+        message: form.message,
+      });
+    } catch (error: any) {
+      console.error("Booking insert error:", error?.message);
+      auditBookingResult(false, { module: "seasonal", error: error?.message || "Insert failed" });
       setSubmitting(false);
       toast.error(t("page.listing.error_submit") || "Booking request failed", {
-        description: error.message || "Please try again.",
+        description: error?.message || "Please try again.",
         duration: 8000,
       });
       return;
@@ -149,9 +135,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
     }).catch(() => {});
 
     try {
-      await supabase.functions.invoke("notify-booking", {
-        body: { booking_request_id: insertedRequest.id },
-      });
+      await invokeNotifyBooking(insertedRequest.id);
     } catch (e) {
       console.error("Guest notification error:", e);
     }

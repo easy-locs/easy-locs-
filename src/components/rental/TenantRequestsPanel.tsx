@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { resolveDocumentRequest, fetchTenantUserId, fetchDocumentRequests } from "@/repositories/rental.repository";
+import { insertAppNotification } from "@/repositories/communication.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -49,19 +50,13 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
 
   const handleResolve = async (requestId: string) => {
     setResolvingId(requestId);
-    const { error } = await supabase
-      .from("document_requests")
-      .update({ status: "resolved", resolved_at: new Date().toISOString() })
-      .eq("id", requestId);
-
-    if (error) {
-      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await resolveDocumentRequest(requestId);
       toast({ title: t("comp.requests.resolved") });
-      const { data: tenant } = await supabase.from("tenants").select("tenant_user_id").eq("id", tenantId).single();
-      if (tenant?.tenant_user_id) {
-        await supabase.from("app_notifications").insert({
-          user_id: tenant.tenant_user_id,
+      const tenantUserId = await fetchTenantUserId(tenantId);
+      if (tenantUserId) {
+        await insertAppNotification({
+          user_id: tenantUserId,
           org_id: orgId,
           type: "document",
           title: t("comp.requests.doc_available_notif"),
@@ -70,6 +65,8 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
         });
       }
       await loadRequests();
+    } catch (error: any) {
+      toast({ title: t("page.common.error"), description: error?.message, variant: "destructive" });
     }
     setResolvingId(null);
   };

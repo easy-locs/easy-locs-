@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BrainCircuit, Loader2, Check, Copy, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeAIAssistant } from "@/repositories/ai.repository";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
@@ -39,9 +39,8 @@ const AIGenerateButton = ({
           ? `Translate the following to ${targetLocale || "en"}:\n\n${taskContext}`
           : taskContext;
 
-      const { data, error } = await supabase.functions.invoke("ai-assistant", {
-        body: { message, locale, task, taskContext },
-      });
+      const data = await invokeAIAssistant({ message, locale, task, taskContext });
+      const error = null;
 
       if (error) throw error;
       setResult(data.reply || "");
