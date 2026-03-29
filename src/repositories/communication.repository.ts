@@ -163,10 +163,19 @@ export async function fetchGroupMembers(groupId: string) {
 // ═══ CALLS ═══
 
 export async function fetchCallLogs(userId: string, limit = 100) {
+  // Resolve orbit_id for the user — call_logs stores orbit_ids, not auth UUIDs
+  const { data: profile } = await db
+    .from("orbit_profiles_v2")
+    .select("orbit_id")
+    .eq("id", userId)
+    .maybeSingle();
+  const orbitId = profile?.orbit_id || `orbit_${userId.slice(0, 12)}`;
+
+  // Query by both auth UUID and orbit_id for backward compatibility
   const { data, error } = await supabase
     .from("call_logs")
     .select("*")
-    .or(`caller_orbit_id.eq.${userId},receiver_orbit_id.eq.${userId}`)
+    .or(`caller_orbit_id.eq.${userId},receiver_orbit_id.eq.${userId},caller_orbit_id.eq.${orbitId},receiver_orbit_id.eq.${orbitId}`)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
