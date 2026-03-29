@@ -154,7 +154,7 @@ export default function ThreadContextMenu({
             onMarkUnread && { icon: MailOpen, label: t("orbit.mark_unread") || "Mark as unread", action: onMarkUnread },
             onArchive && { icon: isArchived ? ArchiveRestore : Archive, label: isArchived ? (t("orbit.unarchive") || "Unarchive") : (t("orbit.archive") || "Archive"), action: onArchive },
             onMute && { icon: isMuted ? Bell : BellOff, label: isMuted ? (t("orbit.unmute") || "Unmute") : (t("orbit.mute") || "Mute"), action: onMute },
-            onLockChat && { icon: Lock, label: t("orbit.lock_chat") || "Lock chat", action: onLockChat },
+            // lockChat hidden — capability not production-ready
             onFavorite && { icon: isFavorite ? HeartOff : Heart, label: isFavorite ? (t("orbit.remove_favorite") || "Remove from Favorites") : (t("orbit.add_favorite") || "Add to Favorites"), action: onFavorite },
             onContactInfo && { icon: Info, label: t("orbit.contact_info") || "Contact info", action: onContactInfo },
           ] as Array<{ icon: any; label: string; action: () => void } | false>).filter(Boolean).map((item: any) => (
