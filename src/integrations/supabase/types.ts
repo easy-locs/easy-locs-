@@ -10628,6 +10628,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "leases_owner_profile_id_fkey"
+            columns: ["owner_profile_id"]
+            isOneToOne: false
+            referencedRelation: "owner_profiles_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "leases_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -31500,6 +31507,20 @@ export type Database = {
         }
         Relationships: []
       }
+      owner_profiles_safe: {
+        Row: {
+          bank_iban: string | null
+          city: string | null
+          company_name: string | null
+          country: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          phone: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       public_discovered_merchants: {
         Row: {
           category: string | null
@@ -32339,6 +32360,16 @@ export type Database = {
           stripe_account_id: string
         }[]
       }
+      get_safe_owner_financials: {
+        Args: { _user_id: string }
+        Returns: {
+          bank_holder_name: string
+          bic: string
+          iban: string
+          tax_id: string
+          user_id: string
+        }[]
+      }
       get_safe_owner_profile: {
         Args: { _profile_user_id: string }
         Returns: {
@@ -32350,6 +32381,15 @@ export type Database = {
           phone: string
           tax_id: string
           user_id: string
+        }[]
+      }
+      get_safe_tenant_contact: {
+        Args: { _tenant_id: string }
+        Returns: {
+          email: string
+          emergency_contact: string
+          phone: string
+          tenant_id: string
         }[]
       }
       get_safe_tenants: {
@@ -32415,6 +32455,16 @@ export type Database = {
       get_user_role: {
         Args: { _user_id: string; _workspace_id?: string }
         Returns: string
+      }
+      get_wallet_ledger_summary: {
+        Args: { _user_id?: string }
+        Returns: {
+          available: number
+          currency: string
+          escrow: number
+          pending: number
+          user_id: string
+        }[]
       }
       get_wallet_summary: {
         Args: never
