@@ -232,3 +232,30 @@ export async function fetchUserOrgId(userId: string) {
     .from("org_members").select("org_id").eq("user_id", userId).limit(1).single();
   return data?.org_id as string | null;
 }
+
+// ── Catalog items ──
+export async function fetchCatalogItems(shopId: string) {
+  const { data } = await (supabase as any)
+    .from("catalog_items").select("*, storefront_catalog_categories(name)")
+    .eq("shop_id", shopId).order("sort_order");
+  return data || [];
+}
+
+export async function fetchCatalogCategories(shopId: string) {
+  const { data } = await (supabase as any)
+    .from("storefront_catalog_categories").select("*")
+    .eq("shop_id", shopId).order("sort_order");
+  return data || [];
+}
+
+export async function insertCatalogItem(payload: Record<string, any>) {
+  await (supabase as any).from("catalog_items").insert(payload);
+}
+
+export async function updateCatalogItem(id: string, payload: Record<string, any>) {
+  await (supabase as any).from("catalog_items").update(payload).eq("id", id);
+}
+
+export async function deleteCatalogItem(id: string) {
+  await (supabase as any).from("catalog_items").delete().eq("id", id);
+}
