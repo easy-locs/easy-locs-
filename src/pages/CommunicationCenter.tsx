@@ -331,6 +331,7 @@ export const CommunicationCenter = () => {
                 onBlockThread={handleBlockThread}
                 onClearThread={handleClearThread}
                 onFavoriteThread={favoriteThread}
+                onMarkUnreadThread={markUnread}
                 onContactInfo={(thread) => {
                   handleSelectThread(thread);
                   if (isMobile) setMobileContextOpen(true);
