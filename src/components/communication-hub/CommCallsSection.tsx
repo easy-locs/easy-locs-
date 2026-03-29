@@ -233,9 +233,8 @@ export default function CommCallsSection() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
-      {/* Header */}
+      {/* Search & Filters */}
       <div className="px-4 pt-4 pb-2 shrink-0">
-        <h2 className="text-lg font-bold mb-3" style={{ color: "hsl(var(--hud-text))" }}>Calls</h2>
 
         {/* Search */}
         <div className="relative mb-3">
