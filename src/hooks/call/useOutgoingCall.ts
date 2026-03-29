@@ -105,18 +105,18 @@ export function useOutgoingCall(
         onStateChange: () => {}, // Will be wired by parent
       });
 
+      const resolvedConvId = opts.conversationId || opts.threadId;
+      const resolvedEntityId = opts.entityId || opts.contextId;
+
       onCallCreated({
         manager,
         peerName: opts.peerName,
         contextLabel: opts.contextLabel || "",
         meta: {
           callId: result.callId,
-          conversationId: callConversationId,
+          conversationId: resolvedConvId,
           orgId: opts.targetId,
-          entityId: callEntityId,
-          // deprecated compat
-          threadId: callConversationId,
-          contextId: callEntityId,
+          entityId: resolvedEntityId,
         },
         isVideo: opts.isVideo || false,
       });

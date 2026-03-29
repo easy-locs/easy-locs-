@@ -28,6 +28,8 @@ type ThreadLike = {
   contextId?: string | null;
   /** @deprecated Use conversationId */
   threadId?: string | null;
+  /** Business entity ID */
+  entityId?: string | null;
 };
 
 type ChatMessage = {
@@ -214,7 +216,6 @@ export function useMessageSender(params: Params) {
           senderUserId: authUserId,
           senderOrbitId,
           receiverOrbitId: thread.peerOrbitId,
-          threadId: thread.id,
           orgId: orgId || null,
         },
         storedContent,
