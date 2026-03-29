@@ -3,7 +3,7 @@
  * Used after dispatch: follows the assigned driver's position live.
  */
 import { useEffect, useState, useRef, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export interface DriverPosition {
   lat: number;
@@ -16,7 +16,7 @@ export interface DriverPosition {
 export function useDriverTracking(driverId: string | null) {
   const [position, setPosition] = useState<DriverPosition | null>(null);
   const [connected, setConnected] = useState(false);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const channelRef = useRef<ReturnType<typeof createRealtimeChannel> | null>(null);
   const prevPositionRef = useRef<DriverPosition | null>(null);
 
   // Interpolated position for smooth 60fps rendering
@@ -43,7 +43,7 @@ export function useDriverTracking(driverId: string | null) {
       return;
     }
 
-    const ch = supabase.channel(`driver-track:${driverId}`, {
+    const ch = createRealtimeChannel(`driver-track:${driverId}`, {
       config: { broadcast: { self: false } },
     });
 

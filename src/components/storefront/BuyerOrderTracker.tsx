@@ -4,7 +4,7 @@
  */
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -84,7 +84,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [user?.id, orderId, qc]);
 
   if (isLoading) {

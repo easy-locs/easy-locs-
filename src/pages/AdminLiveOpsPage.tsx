@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { fetchLiveOps } from "@/lib/admin/fetch-live-ops";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export default function AdminLiveOpsPage() {
   const [data, setData] = useState<{
@@ -27,7 +27,7 @@ export default function AdminLiveOpsPage() {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, []);
 
   const stats = useMemo(() => {

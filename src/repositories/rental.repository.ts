@@ -688,8 +688,51 @@ export async function fetchMarketplaceServiceBySlug(slug: string) {
   return data;
 }
 
+// ── Active listings count ──
+export async function countActiveListings(orgId: string) {
+  const { count } = await db.from("marketplace_services").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("active", true);
+  return count ?? 0;
+}
+
+// ── Ensure marketplace provider ──
+export async function ensureMarketplaceProvider(orgId: string, userId: string, defaults: Record<string, any>) {
+  let { data: provider } = await db.from("marketplace_providers").select("id").eq("org_id", orgId).maybeSingle();
+  if (!provider) {
+    const { data: newProvider, error } = await db.from("marketplace_providers").insert({ org_id: orgId, user_id: userId, ...defaults }).select("id").single();
+    if (error) throw error;
+    provider = newProvider;
+  }
+  return provider;
+}
+
 // ── Booking document upload ──
-export async function uploadBookingDocumentFile(path: string, file: File) {
-  const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+export async function uploadBookingDocumentFile(path: string, file: File, contentType?: string) {
+  const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true, ...(contentType ? { contentType } : {}) });
   if (error) throw error;
 }
+
+export function getBookingDocumentPublicUrl(path: string) {
+  return supabase.storage.from("booking-documents").getPublicUrl(path).data.publicUrl;
+}
+
+export async function signBookingDocumentUrl(path: string, expiresIn = 3600) {
+  const { data } = await supabase.storage.from("booking-documents").createSignedUrl(path, expiresIn);
+  return data?.signedUrl ?? null;
+}
+
+export async function updateDocumentUrls(tableName: string, bookingId: string, urls: string[]) {
+  await db.from(tableName).update({ document_urls: urls }).eq("id", bookingId);
+}
+
+// ── Driver earnings data ──
+export async function fetchDriverEarningsData(userId: string) {
+  const { data: wallet } = await db.from("wallet_accounts").select("*").eq("owner_type", "driver").eq("owner_user_id", userId).limit(1).maybeSingle();
+  const walletId = wallet?.id ?? "none";
+  const { data: allSplits } = await db.from("wallet_order_splits").select("net_amount, split_status, created_at").eq("split_party_type", "driver").eq("wallet_account_id", walletId).order("created_at", { ascending: false }).limit(50);
+  const { data: jobs } = await db.from("mobility_jobs").select("*").eq("rider_user_id", userId).in("status", ["accepted", "rider_arriving_pickup", "rider_arrived_pickup", "picked_up", "in_progress", "rider_arriving_dropoff"]).order("created_at", { ascending: false });
+  const { count: completedCount } = await db.from("mobility_jobs").select("id", { count: "exact", head: true }).eq("rider_user_id", userId).eq("status", "completed");
+  const { count: cancelledCount } = await db.from("mobility_jobs").select("id", { count: "exact", head: true }).eq("rider_user_id", userId).eq("status", "cancelled");
+  return { wallet, allSplits: allSplits ?? [], jobs: jobs ?? [], completedCount: completedCount ?? 0, cancelledCount: cancelledCount ?? 0 };
+}
+
+// Realtime channel helpers moved to src/lib/realtime.ts

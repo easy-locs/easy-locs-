@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export function useAppNotifications(userId?: string | null) {
   const [items, setItems] = useState<any[]>([]);
@@ -27,7 +27,7 @@ export function useAppNotifications(userId?: string | null) {
       .channel(`app-notifications-${userId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "app_notifications", filter: `user_id=eq.${userId}` }, () => { void load(); })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [userId, load]);
 
   const unreadCount = useMemo(() => items.filter((x) => !x.read_at && !x.dismissed_at).length, [items]);

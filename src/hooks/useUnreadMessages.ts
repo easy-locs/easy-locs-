@@ -4,7 +4,7 @@
  * Subscribes to realtime + platform bus for instant updates.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { fetchUnreadCount } from "@/repositories/communication.repository";
@@ -41,7 +41,7 @@ export function useUnreadMessages() {
     });
 
     return () => {
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(channel);
       unsub();
     };
   }, [fetchCount]);

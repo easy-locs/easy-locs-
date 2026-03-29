@@ -3,7 +3,7 @@
  * Canonical: reads mobility_jobs only.
  */
 import { useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -15,7 +15,7 @@ const NOTIFICATION_SOUNDS = {
 
 export function useDeliveryNotifications() {
   const { user } = useAuth();
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const channelRef = useRef<ReturnType<typeof createRealtimeChannel> | null>(null);
   const permissionRef = useRef<NotificationPermission>("default");
 
   const requestPermission = useCallback(async () => {
