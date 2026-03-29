@@ -109,7 +109,7 @@ export function QrResolvedCard({
 
         if (currentUserId && shop?.id) {
           const isFollowing = await fetchShopFollow(currentUserId, shop.id);
-          if (!cancelled) setFollowed(!!follow);
+          if (!cancelled) setFollowed(!!isFollowing);
         }
       } catch { /* no-op */ }
     }
