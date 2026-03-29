@@ -6,7 +6,7 @@
  * Behavior: fixed bottom, safe-area aware, keyboard stable.
  */
 import { useRef, useState } from "react";
-import { Send, Loader2, Paperclip, Camera, MapPin, Eye, Mic, Ban, Check, Smile } from "lucide-react";
+import { Send, Loader2, Paperclip, Camera, MapPin, Eye, Mic, Ban, Check, Smile, Zap } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger, DropdownMenuSeparator,
@@ -21,8 +21,14 @@ export interface MessageComposerProps {
   onAttach?: () => void;
   onEmoji?: () => void;
   onStartVoice?: () => void;
+  onStopVoice?: () => Promise<{ blob: Blob; duration: number; url: string }>;
+  onCancelVoice?: () => void;
+  onSendVoice?: () => void;
+  onDiscardVoice?: () => void;
+  onTyping?: () => void;
   disabled?: boolean;
   sending?: boolean;
+  uploading?: boolean;
   placeholder?: string;
   /** Extra attachment menu items beyond default file/camera */
   attachmentActions?: {
@@ -34,12 +40,16 @@ export interface MessageComposerProps {
   /** Reply-to banner */
   replyTo?: { content: string; senderName?: string } | null;
   onClearReply?: () => void;
+  voiceRecording?: boolean;
+  voicePreview?: { blob: Blob; duration: number; url: string } | null;
+  voiceDuration?: number;
 }
 
 export default function MessageComposer({
   value, onChange, onSend, onKeyDown, onAttach, onEmoji, onStartVoice,
-  disabled = false, sending = false, placeholder = "Message…",
-  attachmentActions, replyTo, onClearReply,
+  onStopVoice, onCancelVoice, onSendVoice, onDiscardVoice, onTyping,
+  disabled = false, sending = false, uploading = false, placeholder = "Message…",
+  attachmentActions, replyTo, onClearReply, voiceRecording = false, voicePreview = null, voiceDuration = 0,
 }: MessageComposerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
@@ -57,6 +67,13 @@ export default function MessageComposer({
       haptic("medium");
       onStartVoice();
     }
+  };
+
+  const formatVoiceDuration = (seconds: number) => {
+    if (!seconds) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -90,6 +107,68 @@ export default function MessageComposer({
           }}
         />
 
+        {voiceRecording ? (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                onCancelVoice?.();
+                haptic("light");
+              }}
+              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-destructive/15 text-destructive"
+            >
+              <Ban className="h-4 w-4" />
+            </button>
+            <div className="flex-1 flex items-center gap-2 min-w-0">
+              <div className="h-2.5 w-2.5 rounded-full animate-pulse bg-destructive" />
+              <span className="text-sm font-mono tabular-nums text-foreground">{formatVoiceDuration(voiceDuration)}</span>
+              <span className="text-[11px] text-muted-foreground truncate">Slide to cancel</span>
+            </div>
+            <button
+              onClick={async () => {
+                haptic("medium");
+                await onStopVoice?.();
+              }}
+              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-primary text-primary-foreground shadow-md"
+            >
+              <Check className="h-4 w-4" />
+            </button>
+          </div>
+        ) : voicePreview ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                onDiscardVoice?.();
+                haptic("light");
+              }}
+              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-destructive/15 text-destructive"
+            >
+              <Ban className="h-4 w-4" />
+            </button>
+            <div className="flex-1 flex items-center gap-2 rounded-2xl px-3 py-2 bg-background border border-border min-w-0">
+              <button
+                onClick={() => {
+                  const a = new Audio(voicePreview.url);
+                  void a.play();
+                }}
+                className="h-8 w-8 rounded-full flex items-center justify-center bg-primary/15 text-primary shrink-0"
+              >
+                <Zap className="h-4 w-4" />
+              </button>
+              <div className="flex-1 h-1 rounded-full bg-border" />
+              <span className="text-xs font-mono text-muted-foreground shrink-0">{formatVoiceDuration(voicePreview.duration)}</span>
+            </div>
+            <button
+              onClick={() => {
+                haptic("medium");
+                onSendVoice?.();
+              }}
+              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-primary text-primary-foreground shadow-md"
+              disabled={uploading || disabled}
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </button>
+          </div>
+        ) : (
         <div className="flex items-end gap-1.5">
           {/* Input area with emoji + attach inside */}
           <div className="flex-1 min-w-0 flex items-end rounded-2xl px-1.5 py-1 bg-background border border-border">
@@ -107,6 +186,7 @@ export default function MessageComposer({
             <DropdownMenu open={showAttachMenu} onOpenChange={setShowAttachMenu}>
               <DropdownMenuTrigger asChild>
                 <button
+                  onClick={onAttach}
                   className="shrink-0 h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-muted"
                   disabled={disabled}
                 >
@@ -155,7 +235,10 @@ export default function MessageComposer({
             {/* Text input */}
             <input
               value={value}
-              onChange={e => onChange(e.target.value)}
+              onChange={e => {
+                onChange(e.target.value);
+                onTyping?.();
+              }}
               onKeyDown={onKeyDown}
               placeholder={placeholder}
               disabled={disabled}
@@ -190,6 +273,7 @@ export default function MessageComposer({
             )}
           </button>
         </div>
+        )}
       </div>
     </>
   );
