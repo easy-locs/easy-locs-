@@ -632,3 +632,104 @@ export async function uploadBookingDocument(path: string, file: File) {
   const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
   if (error) throw error;
 }
+
+// ── Chat payment message insert ──
+export async function insertChatPaymentMessage(msgPayload: Record<string, any>) {
+  const { data, error } = await db.from("chat_messages_v2").insert(msgPayload).select("*").single();
+  if (error) throw error;
+  return data;
+}
+
+// ── Chat media upload ──
+export async function uploadChatMedia(path: string, file: File | Blob) {
+  const { error } = await supabase.storage.from("chat-media").upload(path, file);
+  if (error) throw error;
+}
+
+export async function signChatMediaUrl(path: string, expiresIn = 60 * 60 * 24 * 365) {
+  const { data } = await supabase.storage.from("chat-media").createSignedUrl(path, expiresIn);
+  return data?.signedUrl || path;
+}
+
+// ── Chat attachments upload (voice, files) ──
+export async function uploadChatAttachment(path: string, blob: Blob | File) {
+  const { error } = await supabase.storage.from("chat-attachments").upload(path, blob);
+  if (error) throw error;
+}
+
+export async function signChatAttachmentUrl(path: string, expiresIn = 60 * 60 * 24 * 365) {
+  const { data } = await supabase.storage.from("chat-attachments").createSignedUrl(path, expiresIn);
+  return data?.signedUrl || path;
+}
+
+// ── Group member role ──
+export async function updateGroupMemberRole(memberId: string, role: string) {
+  const { error } = await db.from("group_members").update({ role }).eq("id", memberId);
+  if (error) throw error;
+}
+
+export async function fetchGroupMembersById(groupId: string) {
+  const { data } = await db.from("group_members").select("*").eq("group_id", groupId);
+  return data || [];
+}
+
+// ── Notification preferences ──
+export async function fetchNotificationPrefs(userId: string) {
+  const { data } = await db.from("notification_preferences").select("*").eq("user_id", userId).maybeSingle();
+  return data;
+}
+
+export async function upsertNotificationPrefs(userId: string, prefs: Record<string, any>) {
+  const { error } = await db.from("notification_preferences").upsert(
+    { user_id: userId, ...prefs, updated_at: new Date().toISOString() },
+    { onConflict: "user_id" }
+  );
+  if (error) throw error;
+}
+
+// ── App notifications insert ──
+export async function insertAppNotification(payload: Record<string, any>) {
+  await db.from("app_notifications").insert(payload);
+}
+
+// ── Conversations update ──
+export async function updateConversationParticipants(convId: string, participants: any[]) {
+  await db.from("conversations_v2").update({ participants, updated_at: new Date().toISOString() }).eq("id", convId);
+}
+
+export async function fetchConversationParticipants(convId: string) {
+  const { data } = await db.from("conversations_v2").select("participants").eq("id", convId).single();
+  return data;
+}
+
+// ── Group member count ──
+export async function fetchGroupMemberCount(groupId: string) {
+  const { count } = await db.from("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  return count || 0;
+}
+
+// ── Realtime channel helpers ──
+export function createRealtimeChannel(name: string) {
+  return supabase.channel(name);
+}
+
+export function removeRealtimeChannel(channel: any) {
+  supabase.removeChannel(channel);
+}
+
+// ── Mark call as missed ──
+export async function markCallAsMissedV2(sessionId: string, reason: string) {
+  await db.rpc("mark_call_as_missed_v2", { p_session_id: sessionId, p_reason: reason });
+}
+
+// ── Wallet transaction insert ──
+export async function insertWalletTransaction(payload: Record<string, any>) {
+  await db.from("unified_wallet_transactions").insert(payload);
+}
+
+// ── Concierge payment ──
+export async function invokeCreateConciergePayment(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("create-concierge-payment", { body });
+  if (error) throw error;
+  return data;
+}
