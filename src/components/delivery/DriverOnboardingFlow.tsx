@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import * as driverRepo from "@/repositories/driver-onboarding.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -72,24 +72,8 @@ export default function DriverOnboardingFlow({ onComplete, className }: Props) {
     if (!user) return;
     setSubmitting(true);
     try {
-      // Upsert rider presence (canonical)
-      const { error } = await (supabase as any)
-        .from("rider_presence")
-        .upsert({
-          user_id: user.id,
-          vehicle_type: vehicleType,
-          is_online: false,
-          is_available: false,
-          rider_profile_id: user.id,
-          service_modes: [vehicleType === "car" ? "taxi" : "food_delivery", "parcel_delivery"],
-        }, { onConflict: "user_id" });
-
-      if (error) throw error;
-
-      // Update profile
-      await supabase.from("profiles").update({
-        onboarding_completed: true,
-      }).eq("id", user.id);
+      await driverRepo.upsertRiderPresence(user.id, vehicleType);
+      await driverRepo.markOnboardingComplete(user.id);
 
       toast.success("Inscription livreur terminée !");
       onComplete?.();
@@ -104,11 +88,11 @@ export default function DriverOnboardingFlow({ onComplete, className }: Props) {
     if (!user) return;
     const ext = file.name.split(".").pop();
     const path = `driver-docs/${user.id}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("documents").upload(path, file);
-    if (error) { toast.error("Échec upload"); return; }
-    const { data: { publicUrl } } = supabase.storage.from("documents").getPublicUrl(path);
-    setter(publicUrl);
-    toast.success("Document téléversé");
+    try {
+      const publicUrl = await driverRepo.uploadDriverDoc(path, file);
+      setter(publicUrl);
+      toast.success("Document téléversé");
+    } catch { toast.error("Échec upload"); }
   };
 
   return (

@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import * as orbitSecRepo from "@/repositories/orbit-security.repository";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import OrbitSessionManager from "./OrbitSessionManager";
@@ -79,18 +79,16 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
   useEffect(() => {
     if (!userId) return;
     (async () => {
-      const { data } = await supabase.from("profiles").select(
-        "privacy_read_receipts, privacy_typing_indicators, privacy_online_status, privacy_link_previews, orbit_notifications, orbit_message_preview, orbit_media_auto_download, default_disappear_ttl"
-      ).eq("id", userId).single();
+      const data = await orbitSecRepo.fetchOrbitPrivacySettings(userId);
       if (data) {
-        setReadReceipts((data as any).privacy_read_receipts ?? true);
-        setTypingIndicators((data as any).privacy_typing_indicators ?? true);
-        setOnlineStatus((data as any).privacy_online_status ?? true);
-        setLinkPreviews((data as any).privacy_link_previews ?? true);
-        setNotifications((data as any).orbit_notifications ?? true);
-        setMessagePreview((data as any).orbit_message_preview ?? true);
-        setMediaAutoDownload((data as any).orbit_media_auto_download ?? true);
-        setAutoDeletePeriod((data as any).default_disappear_ttl || "off");
+        setReadReceipts(data.privacy_read_receipts ?? true);
+        setTypingIndicators(data.privacy_typing_indicators ?? true);
+        setOnlineStatus(data.privacy_online_status ?? true);
+        setLinkPreviews(data.privacy_link_previews ?? true);
+        setNotifications(data.orbit_notifications ?? true);
+        setMessagePreview(data.orbit_message_preview ?? true);
+        setMediaAutoDownload(data.orbit_media_auto_download ?? true);
+        setAutoDeletePeriod(data.default_disappear_ttl || "off");
       }
       setLoaded(true);
     })();
@@ -99,13 +97,14 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
 
   // Persist a single setting to DB
   const persistSetting = useCallback(async (column: string, value: any) => {
-    const { error } = await supabase.from("profiles").update({ [column]: value } as any).eq("id", userId);
-    if (error) {
+    try {
+      await orbitSecRepo.updateProfileField(userId, column, value);
+      return true;
+    } catch (error) {
       console.error("[OrbitSettings] Failed to persist:", column, error);
       toast.error("Failed to save setting");
       return false;
     }
-    return true;
   }, [userId]);
 
   const handleToggle = useCallback((
@@ -130,7 +129,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
   const handle2FAEnroll = async () => {
     setEnrolling2FA(true);
     try {
-      const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+      const { data, error } = await orbitSecRepo.enrollMfa2FA();
       if (error) throw error;
       if (data?.totp?.qr_code) {
         setQrCode(data.totp.qr_code);

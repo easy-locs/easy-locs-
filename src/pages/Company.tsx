@@ -4,7 +4,7 @@ import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import { getTemplatesByCategory } from "@/lib/templates/registry";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { JAL_PUBLISHERS, getJALByDepartment, type JALPublisher } from "@/lib/jal-publishers";
-import { supabase } from "@/integrations/supabase/client";
+import * as companyRepo from "@/repositories/company.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
@@ -39,11 +39,8 @@ const Company = () => {
   // Load user's country from profile
   useEffect(() => {
     if (countryFilter) { setSelectedCountry(countryFilter); return; }
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user?.id) {
-        supabase.from("profiles").select("country").eq("id", data.user.id).single()
-          .then(({ data: p }) => { if (p?.country) setSelectedCountry(p.country); });
-      }
+    companyRepo.fetchUserCountry().then((country) => {
+      if (country) setSelectedCountry(country);
     });
   }, [countryFilter]);
 
@@ -139,10 +136,7 @@ const Company = () => {
     if (!selectedJAL) return;
     setPayingJAL(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-legal-notice-payment", {
-        body: { jalName: selectedJAL.name },
-      });
-      if (error) throw error;
+      const data = await companyRepo.createLegalNoticePayment(selectedJAL.name);
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       toast({ title: t("page.common.error"), description: err.message || t("page.common.error"), variant: "destructive" });
