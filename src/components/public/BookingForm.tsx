@@ -106,28 +106,30 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
     if (!formReady || submitting) return;
 
     setSubmitting(true);
-    const insertedRequest = await insertBookingRequest({
-      listing_id: listing.id,
-      property_id: property.id,
-      org_id: listing.org_id,
-      guest_name: form.guest_name,
-      guest_email: form.guest_email,
-      guest_phone: form.guest_phone,
-      check_in: form.check_in,
-      check_out: form.check_out,
-      guests_count: form.guests_count,
-      message: form.message,
-    }).catch((error: any) => {
-
-    if (!insertedRequest) {
-      auditBookingResult(false, { module: "seasonal", error: "Insert failed" });
+    let insertedRequest: any;
+    try {
+      insertedRequest = await insertBookingRequest({
+        listing_id: listing.id,
+        property_id: property.id,
+        org_id: listing.org_id,
+        guest_name: form.guest_name,
+        guest_email: form.guest_email,
+        guest_phone: form.guest_phone,
+        check_in: form.check_in,
+        check_out: form.check_out,
+        guests_count: form.guests_count,
+        message: form.message,
+      });
+    } catch (error: any) {
+      console.error("Booking insert error:", error?.message);
+      auditBookingResult(false, { module: "seasonal", error: error?.message || "Insert failed" });
       setSubmitting(false);
       toast.error(t("page.listing.error_submit") || "Booking request failed", {
-        description: "Please try again.",
+        description: error?.message || "Please try again.",
         duration: 8000,
       });
       return;
-    });
+    }
 
     auditBookingResult(true, { bookingId: insertedRequest.id, module: "seasonal" });
 
