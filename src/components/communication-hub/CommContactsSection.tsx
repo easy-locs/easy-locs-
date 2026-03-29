@@ -568,61 +568,42 @@ export default function CommContactsSection() {
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Actions — compact: message, call, video only */}
         <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-          <button onClick={() => toggleFavorite(contact)}
-            className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-            style={{ WebkitTapHighlightColor: "transparent" }}>
-            <Star className="h-4 w-4"
-              fill={contact.is_favorite ? "hsl(var(--hud-warning))" : "none"}
-              style={{ color: contact.is_favorite ? "hsl(var(--hud-warning))" : "hsl(var(--hud-text-dim) / 0.2)" }} />
-          </button>
-
-          {/* Message button — always visible, contextual behavior */}
+          {/* Message button */}
           <button onClick={() => startChat(contact)} disabled={anyLoading}
-            className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
             style={{
               background: contact.canMessage ? "hsl(var(--hud-cyan) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
               WebkitTapHighlightColor: "transparent",
             }}>
             {isMsgLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
-              : contact.canMessage
-                ? <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
-                : <Send className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />}
+              : <MessageCircle className="h-4 w-4" style={{ color: contact.canMessage ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }} />}
           </button>
 
           {/* Call button */}
           <button onClick={() => handleCall(contact, false)} disabled={anyLoading || isStartingCall || !contact.canCall}
-            className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
             style={{
-              background: contact.canCall ? "hsl(var(--hud-cyan) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
+              background: contact.canCall ? "hsl(var(--hud-success) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
               WebkitTapHighlightColor: "transparent",
               opacity: contact.canCall ? 1 : 0.4,
             }}>
-            {isCallLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
-              : <Phone className="h-4 w-4" style={{ color: contact.canCall ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }} />}
+            {isCallLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-success))" }} />
+              : <Phone className="h-4 w-4" style={{ color: contact.canCall ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim) / 0.3)" }} />}
           </button>
 
           {/* Video button */}
           <button onClick={() => handleCall(contact, true)} disabled={anyLoading || isStartingCall || !contact.canCall}
-            className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
             style={{
-              background: contact.canCall ? "hsl(var(--hud-cyan) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
+              background: contact.canCall ? "hsl(var(--hud-success) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
               WebkitTapHighlightColor: "transparent",
               opacity: contact.canCall ? 1 : 0.4,
             }}>
-            {isVideoLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
-              : <Video className="h-4 w-4" style={{ color: contact.canCall ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }} />}
+            {isVideoLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-success))" }} />
+              : <Video className="h-4 w-4" style={{ color: contact.canCall ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim) / 0.3)" }} />}
           </button>
-
-          {/* Invite button for external contacts */}
-          {contact.appState === "external" && (
-            <button onClick={() => handleInvite(contact)}
-              className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-              style={{ background: "hsl(var(--hud-warning) / 0.08)", WebkitTapHighlightColor: "transparent" }}>
-              <UserPlus className="h-4 w-4" style={{ color: "hsl(var(--hud-warning))" }} />
-            </button>
-          )}
         </div>
       </div>
     );
