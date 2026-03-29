@@ -1,10 +1,11 @@
 /**
  * MessageMultiSelect — Multi-select toolbar for bulk message actions.
  * Supports: bulk delete (for me), bulk delete (for everyone), bulk forward, copy all.
+ * Deduplicated icons: EyeOff for delete-for-me, Trash2 for delete-for-all.
  * Fully i18n-aware.
  */
 import { useState } from "react";
-import { Trash2, Copy, Forward, X, CheckSquare } from "lucide-react";
+import { Trash2, Copy, Forward, X, EyeOff } from "lucide-react";
 import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -97,31 +98,31 @@ export default function MessageMultiSelectToolbar({
   return (
     <>
       <div
-        className="flex items-center gap-2 px-3 py-2 shrink-0"
+        className="flex items-center gap-2 px-3 py-2.5 shrink-0"
         style={{
-          background: "hsl(var(--hud-surface) / 0.8)",
+          background: "hsl(var(--hud-surface) / 0.95)",
           borderBottom: "1px solid hsl(var(--hud-border) / 0.12)",
-          backdropFilter: "blur(8px)",
+          backdropFilter: "blur(12px)",
         }}
       >
-        <Button variant="ghost" size="icon" onClick={onClearSelection} className="h-8 w-8 rounded-full">
+        <Button variant="ghost" size="icon" onClick={onClearSelection} className="h-9 w-9 rounded-full">
           <X className="h-4 w-4" style={{ color: "hsl(var(--hud-text))" }} />
         </Button>
         <span className="text-sm font-semibold flex-1" style={{ color: "hsl(var(--hud-text))" }}>
           {count} {t("orbit.selected") || "selected"}
         </span>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={handleCopyAll} className="h-8 w-8 rounded-full" title={t("orbit.copy_text") || "Copy"}>
+        <div className="flex items-center gap-1.5">
+          <Button variant="ghost" size="icon" onClick={handleCopyAll} className="h-9 w-9 rounded-full" title={t("orbit.copy_text") || "Copy"}>
             <Copy className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setShowForward(true)} className="h-8 w-8 rounded-full" title={t("orbit.forward") || "Forward"}>
+          <Button variant="ghost" size="icon" onClick={() => setShowForward(true)} className="h-9 w-9 rounded-full" title={t("orbit.forward") || "Forward"}>
             <Forward className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setConfirmAction("deleteMe")} className="h-8 w-8 rounded-full" title={t("orbit.delete_for_me") || "Delete for me"}>
-            <Trash2 className="h-4 w-4" style={{ color: "hsl(var(--hud-danger))" }} />
+          <Button variant="ghost" size="icon" onClick={() => setConfirmAction("deleteMe")} className="h-9 w-9 rounded-full" title={t("orbit.delete_for_me") || "Hide for me"}>
+            <EyeOff className="h-4 w-4" style={{ color: "hsl(var(--hud-warning, 40 90% 60%))" }} />
           </Button>
           {allMine && (
-            <Button variant="ghost" size="icon" onClick={() => setConfirmAction("deleteAll")} className="h-8 w-8 rounded-full" title={t("orbit.delete_for_all") || "Delete for everyone"}>
+            <Button variant="ghost" size="icon" onClick={() => setConfirmAction("deleteAll")} className="h-9 w-9 rounded-full" title={t("orbit.delete_for_all") || "Delete for everyone"}>
               <Trash2 className="h-4 w-4" style={{ color: "hsl(var(--destructive))" }} />
             </Button>
           )}
@@ -133,7 +134,7 @@ export default function MessageMultiSelectToolbar({
           <DialogHeader>
             <DialogTitle>
               {confirmAction === "deleteMe"
-                ? (t("orbit.delete_for_me_q") || "Delete for me?")
+                ? (t("orbit.delete_for_me_q") || "Hide for me?")
                 : (t("orbit.delete_for_all_q") || "Delete for everyone?")}
             </DialogTitle>
             <DialogDescription>
@@ -149,7 +150,7 @@ export default function MessageMultiSelectToolbar({
               disabled={processing}
               onClick={confirmAction === "deleteMe" ? handleDeleteForMe : handleDeleteForAll}
             >
-              {processing ? (t("orbit.deleting") || "Deleting…") : (t("orbit.delete") || "Delete")}
+              {processing ? (t("orbit.deleting") || "Deleting…") : confirmAction === "deleteMe" ? (t("orbit.hide") || "Hide") : (t("orbit.delete") || "Delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
