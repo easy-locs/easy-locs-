@@ -42,9 +42,10 @@ export async function sendCommunicationEvent(event: CommunicationEvent): Promise
     if (event.recipientUserId) {
       await sendInAppNotification({
         userId: event.recipientUserId,
+        type: event.category || "general",
         title: event.subject,
         body: event.message,
-        metadata: event.meta as any,
+        data: event.meta as any,
       });
     }
     results.notification = true;
