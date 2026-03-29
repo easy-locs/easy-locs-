@@ -1,6 +1,6 @@
 /**
  * OrbitAccountSection — "YOU" cockpit inside Orbit hub.
- * Premium WhatsApp-style layout: large identity header + grouped settings cards.
+ * Uses canonical identity resolution for consistent profile display.
  */
 import { useState } from "react";
 import {
@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { haptic } from "@/lib/haptics";
 import { useUsername } from "@/hooks/useUsername";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import YouIdentityCard from "@/components/orbit/you/YouIdentityCard";
 import YouSmartSettingCard from "@/components/orbit/you/YouSmartSettingCard";
 import YouSectionBlock from "@/components/orbit/you/YouSectionBlock";
@@ -35,15 +36,21 @@ export default function OrbitAccountSection() {
   const [subPage, setSubPage] = useState<SubPage>("main");
   const { username } = useUsername();
   const summaries = useYouSummaries();
+  const orbitIdentity = useOrbitIdentity();
 
-  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.display_name || "";
-  const avatarUrl = user?.user_metadata?.avatar_url || "";
-  const displayEmail = user?.email || "—";
+  // Canonical identity chain: orbit profile → auth metadata → fallback
+  const displayName = orbitIdentity?.displayName
+    || user?.user_metadata?.full_name
+    || user?.user_metadata?.display_name
+    || "";
+  const avatarUrl = orbitIdentity?.avatarUrl
+    || user?.user_metadata?.avatar_url
+    || "";
+  const displayEmail = orbitIdentity?.email || user?.email || "—";
   const shortId = (user?.id || "").substring(0, 8).toUpperCase();
 
   const goBack = () => setSubPage("main");
 
-  // Sub-page routing
   if (subPage === "edit-profile") return <YouEditProfilePage onBack={goBack} />;
   if (subPage === "notifications") return <YouNotificationsPage onBack={goBack} />;
   if (subPage === "calls") return <YouCallsPage onBack={goBack} />;
@@ -82,28 +89,21 @@ export default function OrbitAccountSection() {
         <YouSmartSettingCard icon={MapPin} label="Live Location" summary={summaries.locationSummary} onClick={() => setSubPage("location")} accentColor="hsl(var(--accent))" />
       </YouSectionBlock>
 
-      {/* Logout */}
       <div className="px-3 pb-2">
         <button
           onClick={async () => { haptic("medium"); await signOut(); navigate("/login"); }}
           className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-colors text-left hover:bg-destructive/5 active:scale-[0.99]"
         >
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: "hsl(var(--destructive) / 0.1)" }}
-          >
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: "hsl(var(--destructive) / 0.1)" }}>
             <LogOut className="h-[18px] w-[18px]" style={{ color: "hsl(var(--destructive))" }} />
           </div>
-          <p className="text-[14px] font-medium" style={{ color: "hsl(var(--destructive))" }}>
-            Log out
-          </p>
+          <p className="text-[14px] font-medium" style={{ color: "hsl(var(--destructive))" }}>Log out</p>
         </button>
       </div>
 
       <div className="text-center pb-8 pt-2">
-        <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>
-          Orbit v1.0
-        </p>
+        <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>Orbit v1.0</p>
       </div>
     </div>
   );

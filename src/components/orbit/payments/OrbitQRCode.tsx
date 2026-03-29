@@ -41,7 +41,8 @@ export default function OrbitQRCode({
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
-  const displayName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Me";
+  // Canonical identity resolution: prefer orbit profile name
+  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "Me";
 
   const qrData = useMemo(() => {
     if (!user?.id) return null;
