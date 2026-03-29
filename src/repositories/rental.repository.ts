@@ -582,10 +582,7 @@ export async function fetchRemindersForOrg(orgId: string) {
 }
 
 // ── Accounting entries ──
-export async function fetchAccountingEntries(orgId: string) {
-  const { data } = await supabase.from("accounting_entries").select("*, properties(label, city), tenants(name), leases(lease_type, start_date)").eq("org_id", orgId).order("accounting_period", { ascending: false }).limit(500);
-  return data || [];
-}
+// (fetchAccountingEntries already defined above)
 
 // ── Peer key bundles ──
 export async function fetchPeerKeyBundle(peerId: string) {

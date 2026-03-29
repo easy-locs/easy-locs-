@@ -18,7 +18,7 @@ const Referrals = () => {
   useEffect(() => {
     if (!user) return;
     fetchReferralCode(user.id).then((code) => {
-      if (code) setReferralCode(code as string);
+      if (code) setReferralCode(String(code));
     });
     fetchReferralsList(user.id).then((data) => {
       setReferrals(data);
