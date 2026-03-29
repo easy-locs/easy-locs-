@@ -85,11 +85,7 @@ const AIQualityDashboard = () => {
   // Load audit history
   useEffect(() => {
     const loadHistory = async () => {
-      const { data } = await supabase
-        .from("audit_reports")
-        .select("created_at, global_score, total_issues, scan_type")
-        .order("created_at", { ascending: false })
-        .limit(30);
+      const data = await fetchAuditReportsHistory(30);
       if (data) setHistory(data);
     };
     loadHistory();
