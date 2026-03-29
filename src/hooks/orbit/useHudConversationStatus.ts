@@ -10,7 +10,7 @@ import type { ConversationThread } from "@/components/communication-hub/types";
 export function useHudConversationStatus(
   thread: ConversationThread | null,
   setConvStatus: (s: string) => void,
-  onThreadUpdate: (threadId: string, updates: Partial<ConversationThread>) => void,
+  onThreadUpdate: (conversationId: string, updates: Partial<ConversationThread>) => void,
 ) {
   const updateConversationStatus = useCallback(async (status: string) => {
     if (!thread) return;

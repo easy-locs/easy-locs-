@@ -33,7 +33,7 @@ export const BroadcastSend = {
     for (const recipientId of recipientIds) {
       try {
         const conv = await getOrCreateCanonicalDirectConversation(senderUserId, recipientId);
-        const conversationId = conv?.conversationId || conv?.v2ConversationId || conv?.contextId;
+        const conversationId = conv?.conversationId || conv?.id;
         if (!conversationId) throw new Error("Could not resolve conversation");
 
         const ctx: SendContext = {
