@@ -12,7 +12,8 @@ export function useIncomingCallState() {
   const [incomingContextLabel, setIncomingContextLabel] = useState("");
   const [incomingIsVideo, setIncomingIsVideo] = useState(false);
   const [incomingOrgId, setIncomingOrgId] = useState("");
-  const [incomingThreadId, setIncomingThreadId] = useState<string | null>(null);
+  /** Canonical conversation UUID for the incoming call */
+  const [incomingConversationId, setIncomingConversationId] = useState<string | null>(null);
 
   // Keep ref in sync
   incomingCallIdRef.current = incomingCallId;
@@ -28,6 +29,7 @@ export function useIncomingCallState() {
     contextLabel: string;
     isVideo: boolean;
     orgId: string;
+    /** Canonical conversation ID (was threadId) */
     threadId: string | null;
   }) => {
     setIncomingCallId(info.callId);
@@ -35,7 +37,7 @@ export function useIncomingCallState() {
     setIncomingContextLabel(info.contextLabel);
     setIncomingIsVideo(info.isVideo);
     setIncomingOrgId(info.orgId);
-    setIncomingThreadId(info.threadId);
+    setIncomingConversationId(info.threadId); // map legacy name to canonical
     setShowIncoming(true);
   };
 
@@ -43,7 +45,11 @@ export function useIncomingCallState() {
     showIncoming, setShowIncoming,
     incomingCallId, incomingCallIdRef,
     incomingCallerName, incomingContextLabel,
-    incomingIsVideo, incomingOrgId, incomingThreadId,
+    incomingIsVideo, incomingOrgId,
+    /** Canonical conversation ID */
+    incomingConversationId,
+    /** @deprecated Use incomingConversationId */
+    incomingThreadId: incomingConversationId,
     clearIncoming, setIncomingCall,
   };
 }
