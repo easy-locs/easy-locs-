@@ -2,12 +2,12 @@
  * HudConversationCard — WhatsApp-inspired dense conversation row.
  * Avatar + bold name + context + message preview + timestamp + unread badge.
  */
-import { User } from "lucide-react";
 import type { ConversationThread } from "./types";
 import { CONV_TYPE_CONFIG, CONV_STATUSES } from "./types";
 import { useI18n } from "@/lib/i18n";
 import { formatEventMessage } from "@/lib/orbit/message-formatter";
 import { formatOrbitTimestamp } from "@/families/time";
+import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 
 /** Clean raw call/event strings from message previews */
 function formatPreview(raw: string | undefined): string | undefined {
@@ -47,22 +47,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
       }}
     >
       {/* Avatar */}
-      {thread.avatarUrl ? (
-        <img
-          src={thread.avatarUrl}
-          alt={thread.name}
-          className="h-[50px] w-[50px] rounded-full object-cover shrink-0"
-        />
-      ) : (
-        <div
-          className="h-[50px] w-[50px] rounded-full flex items-center justify-center shrink-0"
-          style={{
-            background: "hsl(var(--muted))",
-          }}
-        >
-          <User className="h-6 w-6" style={{ color: "hsl(var(--muted-foreground))" }} />
-        </div>
-      )}
+      <IdentityAvatar avatarUrl={thread.avatarUrl} name={thread.name} size="lg" />
 
       {/* Content — constrained to prevent overflow */}
       <div className="flex-1 min-w-0">

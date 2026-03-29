@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { haptic } from "@/lib/haptics";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 import { resolveCanonicalDisplayIdentity } from "@/lib/orbit/canonical-helpers";
+import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 import type { ConversationThread } from "../types";
 
 interface Props {
@@ -52,14 +53,7 @@ export default function ChatHeader({
           <ArrowLeft className="h-4 w-4" style={{ color: "hsl(var(--hud-text))" }} />
         </button>
 
-        <div className="h-9 w-9 rounded-full flex items-center justify-center shrink-0" style={{
-          background: thread.avatarUrl ? `url(${thread.avatarUrl}) center/cover` : "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.15), hsl(var(--hud-cyan) / 0.05))",
-          border: "1px solid hsl(var(--hud-cyan) / 0.2)",
-        }}>
-          {!thread.avatarUrl && (
-            <span className="text-xs font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{initial}</span>
-          )}
-        </div>
+        <IdentityAvatar avatarUrl={identity.avatarUrl} name={displayName} size="sm" />
 
         <div className="min-w-0 flex-1" onClick={onToggleContext} style={{ cursor: "pointer" }}>
           <p className="text-[13px] font-semibold line-clamp-1 break-words leading-tight" style={{ color: "hsl(var(--hud-text))" }}>
