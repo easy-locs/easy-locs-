@@ -41,13 +41,13 @@ export function useCallActions(thread: ThreadLike | null, startCall: StartCallFn
         return;
       }
 
-      const conversationId = thread?.conversationId || thread?.v2ConversationId || thread?.threadId || undefined;
-      const entityId = thread?.entityId || thread?.contextId || undefined;
+      const conversationId = thread?.conversationId || undefined;
+      const entityId = thread?.entityId || undefined;
 
       void startCall({
         targetId,
         conversationId,
-        threadId: conversationId, // deprecated compat
+        threadId: conversationId, // deprecated compat for startCall signature
         entityType: thread?.conversationType || "direct",
         entityId,
         contextLabel: thread?.name || "Conversation",
