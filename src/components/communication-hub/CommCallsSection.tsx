@@ -89,16 +89,17 @@ export default function CommCallsSection() {
 
       setCalls(callData as unknown as CallLog[]);
 
-      // Resolve orbit IDs → display names
-      const orbitIds = new Set<string>();
+      // Resolve orbit IDs → display names (handles both UUID and orbit_id formats)
+      const allIds = new Set<string>();
       callData.forEach((c: any) => {
-        if (c.caller_orbit_id) orbitIds.add(c.caller_orbit_id);
-        if (c.receiver_orbit_id) orbitIds.add(c.receiver_orbit_id);
+        if (c.caller_orbit_id) allIds.add(c.caller_orbit_id);
+        if (c.receiver_orbit_id) allIds.add(c.receiver_orbit_id);
       });
-      if (orbitIds.size > 0) {
-        const ids = Array.from(orbitIds);
+      if (allIds.size > 0) {
+        const ids = Array.from(allIds);
         const cache: Record<string, string> = {};
 
+        // Resolve UUIDs from profiles table
         const uuidIds = ids.filter(id => isUUID(id));
         if (uuidIds.length > 0) {
           const profiles = await resolveProfilesByIds(uuidIds);
@@ -107,15 +108,35 @@ export default function CommCallsSection() {
           });
         }
 
-        const orbitProfiles = await resolveOrbitProfilesByUserIds(uuidIds.length > 0 ? uuidIds : ids);
-        orbitProfiles.forEach((op: any) => {
-          if (op.user_id && !cache[op.user_id]) {
-            cache[op.user_id] = op.display_name || op.email || "Contact";
-          }
-          if (op.orbit_id) {
-            cache[op.orbit_id] = op.display_name || op.email || "Contact";
-          }
-        });
+        // Resolve from orbit_profiles_v2 by user_id (UUIDs)
+        if (uuidIds.length > 0) {
+          const orbitProfiles = await resolveOrbitProfilesByUserIds(uuidIds);
+          orbitProfiles.forEach((op: any) => {
+            if (op.user_id && !cache[op.user_id]) {
+              cache[op.user_id] = op.display_name || op.email || "Contact";
+            }
+            if (op.orbit_id) {
+              cache[op.orbit_id] = op.display_name || op.email || "Contact";
+            }
+          });
+        }
+
+        // Also resolve non-UUID orbit_ids (e.g. "orbit_abc123") by orbit_id field
+        const nonUuidIds = ids.filter(id => !isUUID(id));
+        if (nonUuidIds.length > 0) {
+          const { data: orbitRows } = await (supabase as any)
+            .from("orbit_profiles_v2")
+            .select("orbit_id, display_name, email, id")
+            .in("orbit_id", nonUuidIds);
+          (orbitRows ?? []).forEach((op: any) => {
+            if (op.orbit_id) {
+              cache[op.orbit_id] = op.display_name || op.email || "Contact";
+            }
+            if (op.id) {
+              cache[op.id] = op.display_name || op.email || "Contact";
+            }
+          });
+        }
 
         setNameCache(cache);
       }

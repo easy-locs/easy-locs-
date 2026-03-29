@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
 import { useNavigate } from "react-router-dom";
-import { Search, MessageCircle, Phone, CreditCard, Store, Star, Clock, Users, User } from "lucide-react";
+import { Search, MessageCircle, Phone, Video, Star, Clock, Users, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
