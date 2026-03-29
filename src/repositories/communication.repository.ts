@@ -562,3 +562,73 @@ export function createRealtimeChannel(name: string) {
 export function removeRealtimeChannel(channel: any) {
   supabase.removeChannel(channel);
 }
+
+// ── Chat payment message bridge ──
+export async function insertChatMessageV2(payload: Record<string, any>) {
+  const { data, error } = await db.from("chat_messages_v2").insert(payload).select("*").single();
+  if (error) throw error;
+  return data;
+}
+
+export async function insertWalletTransaction(payload: Record<string, any>) {
+  await db.from("unified_wallet_transactions").insert(payload);
+}
+
+// ── Group extras ──
+export async function fetchGroupMembersById(groupId: string) {
+  const { data } = await db.from("group_members").select("*").eq("group_id", groupId);
+  return data || [];
+}
+
+export async function countGroupMembers(groupId: string) {
+  const { count } = await supabase.from("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  return count || 0;
+}
+
+export async function fetchLastGroupMessage(conversationId: string) {
+  const { data } = await db.from("chat_messages_v2").select("body, created_at").eq("conversation_id", conversationId).order("created_at", { ascending: false }).limit(1);
+  return data?.[0] || null;
+}
+
+export async function fetchGroupsAndChannels() {
+  const { data, error } = await db.from("conversations_v2").select("*").in("type", ["group", "channel", "community"]).order("updated_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createGroupConversation(payload: Record<string, any>) {
+  const { data, error } = await db.from("conversations_v2").insert(payload).select("id, type, title, created_at, created_by_orbit_id").single();
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchOrbitProfile(userId: string) {
+  const { data } = await db.from("orbit_profiles_v2").select("orbit_id, display_name, email, avatar_url").eq("id", userId).maybeSingle();
+  return data;
+}
+
+// ── Encryption key bundles ──
+export async function upsertKeyBundle(userId: string, publicKey: string, deviceId: string) {
+  await db.from("user_key_bundles").upsert({
+    user_id: userId,
+    identity_public_key: publicKey,
+    device_id: deviceId,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "user_id" });
+}
+
+export async function fetchPeerKeyBundle(peerId: string) {
+  const { data } = await db.from("user_key_bundles").select("identity_public_key").eq("user_id", peerId).maybeSingle();
+  return (data as any)?.identity_public_key as string | undefined;
+}
+
+// ── Orbit permissions sync ──
+export async function updateOrbitPermissions(userId: string, permissions: Record<string, boolean>) {
+  await db.from("orbit_profiles_v2").update({ permissions } as any).eq("id", userId);
+}
+
+// ── Upload booking document ──
+export async function uploadBookingDocument(path: string, file: File) {
+  const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+  if (error) throw error;
+}

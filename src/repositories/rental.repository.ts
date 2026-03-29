@@ -338,3 +338,71 @@ export async function fetchPropertyIdsForCountry(orgId: string, country: string)
   const { data } = await supabase.from("properties").select("id").eq("org_id", orgId).eq("country", country);
   return (data || []).map((p: any) => p.id);
 }
+
+// ── Fiscal report queries (extended) ──
+export async function fetchPropertiesForFiscalReport(orgId: string, countryFilter?: string) {
+  let q = supabase.from("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
+  if (countryFilter) q = q.eq("country", countryFilter);
+  const { data } = await q;
+  return data || [];
+}
+
+// ── Reminders ──
+export async function dismissReminder(id: string) {
+  await supabase.from("reminders").update({ active: false } as any).eq("id", id);
+}
+
+// ── Inventory report full ──
+export async function fetchInventoryReportFull(reportId: string) {
+  const { data } = await supabase.from("inventory_reports").select("*").eq("id", reportId).single();
+  return data;
+}
+
+// ── Booking requests ──
+export async function insertBookingRequest(payload: Record<string, any>) {
+  const { data, error } = await supabase.from("booking_requests").insert(payload as any).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function invokeNotifyBooking(bookingRequestId: string) {
+  await supabase.functions.invoke("notify-booking", { body: { booking_request_id: bookingRequestId } });
+}
+
+// ── Local services ──
+export async function fetchOrgLocalServicesEnabled(orgId: string) {
+  const { data } = await supabase.from("orgs").select("local_services_enabled").eq("id", orgId).single();
+  return data?.local_services_enabled || false;
+}
+
+export async function fetchLocalServices(orgId: string) {
+  const { data } = await supabase.from("local_services" as any).select("*").eq("org_id", orgId).eq("active", true).order("sort_order");
+  return data || [];
+}
+
+// ── Newsletter ──
+export async function insertNewsletterSubscriber(email: string) {
+  const { error } = await (supabase as any).from("newsletter_subscribers").insert({ email });
+  if (error) throw error;
+}
+
+// ── Auth context helpers ──
+export async function checkTenantLink(userId: string) {
+  const { data } = await supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
+  return data;
+}
+
+export async function checkOrgLink(userId: string) {
+  const { data } = await supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
+  return data;
+}
+
+export async function markOnboardingComplete(userId: string) {
+  await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId);
+}
+
+// ── Upload booking document ──
+export async function uploadBookingDocument(path: string, file: File) {
+  const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+  if (error) throw error;
+}

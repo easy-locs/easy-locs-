@@ -16,7 +16,7 @@ import { useI18n } from "@/lib/i18n";
 import {
   starMessage, deleteMessageForSender, deleteMessageForUser, deleteMessageForAll,
 } from "@/repositories/communication.repository";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthUser } from "@/repositories/auth-utils.repository";
 
 interface Props {
   children: ReactNode;
@@ -78,7 +78,7 @@ export default function MessageActionsMenu({
       if (isMe) {
         await deleteMessageForSender(messageId);
       } else {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { user } = await getAuthUser();
         if (user?.id) {
           await deleteMessageForUser(messageId, user.id);
         }
