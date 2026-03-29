@@ -2,6 +2,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { getAuthUser } from "@/repositories/auth-utils.repository";
 import {
+  deleteMessageForEveryone, moderateMessage, hideMessageForUser,
+  starMessage, editMessageContent,
+} from "@/repositories/communication.repository";
+import {
   Trash2, Copy, Edit3, EyeOff, Timer, ShieldAlert,
   Reply, Forward, Star, StarOff, CheckSquare, Shield,
 } from "lucide-react";
@@ -11,9 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { haptic } from "@/lib/haptics";
 import { isActionAllowed, getMessagePolicy } from "@/lib/message-security";
 import { useI18n } from "@/lib/i18n";
-
-import { supabase } from "@/integrations/supabase/client";
-const db = supabase as any;
 
 interface MessageAction {
   msgId: string;
@@ -82,28 +83,14 @@ export default function MessageContextMenu({
       const { user } = await getAuthUser();
       const currentUserId = user?.id;
 
-      if (type === "everyone" || type === "moderation") {
-        const updatePayload: Record<string, any> = {
-          deleted_at: new Date().toISOString(),
-          body: "🚫 This message was deleted",
-          metadata: {
-            deleted_by: currentUserId,
-            deletion_reason: type === "moderation" ? "moderation" : "user_action",
-          },
-        };
-        const { error } = await db.from("chat_messages_v2").update(updatePayload).eq("id", message.msgId);
-        if (error) { toast.error("Failed to delete message"); setDeleting(false); return; }
-        toast.success(type === "moderation"
-          ? (t("orbit.message_deleted_mod") || "Message removed by moderation")
-          : (t("orbit.message_deleted_all") || "Message deleted for everyone"));
+      if (type === "everyone") {
+        await deleteMessageForEveryone(message.msgId, currentUserId || "");
+        toast.success(t("orbit.message_deleted_all") || "Message deleted for everyone");
+      } else if (type === "moderation") {
+        await moderateMessage(message.msgId, currentUserId || "");
+        toast.success(t("orbit.message_deleted_mod") || "Message removed by moderation");
       } else {
-        // Delete for self — soft delete via metadata
-        const { error } = await db.from("chat_messages_v2").update({
-          metadata: {
-            hidden_for: [currentUserId],
-          },
-        }).eq("id", message.msgId);
-        if (error) { toast.error("Failed to hide message"); setDeleting(false); return; }
+        await hideMessageForUser(message.msgId, currentUserId || "");
         toast.success(t("orbit.message_hidden") || "Message hidden from your view");
       }
       onDeleted(message.msgId, type);
@@ -138,7 +125,7 @@ export default function MessageContextMenu({
   const handleStar = async () => {
     haptic("light");
     const newStarred = !message.isStarred;
-    await db.from("chat_messages_v2").update({ starred: newStarred } as any).eq("id", message.msgId);
+    await starMessage(message.msgId, newStarred);
     onStarToggle?.(message.msgId, newStarred);
     toast.success(newStarred
       ? (t("orbit.message_starred") || "Message starred")
@@ -161,13 +148,13 @@ export default function MessageContextMenu({
     if (!editText.trim() || editText === message.content) { setEditMode(false); return; }
     setSaving(true);
     haptic("medium");
-    const { error } = await db.from("chat_messages_v2").update({
-      body: editText.trim(),
-      edited_at: new Date().toISOString(),
-    }).eq("id", message.msgId);
-    if (error) { toast.error("Failed to edit message"); setSaving(false); return; }
-    toast.success(t("orbit.message_edited") || "Message edited");
-    onEdited?.(message.msgId, editText.trim());
+    try {
+      await editMessageContent(message.msgId, editText.trim());
+      toast.success(t("orbit.message_edited") || "Message edited");
+      onEdited?.(message.msgId, editText.trim());
+    } catch {
+      toast.error("Failed to edit message");
+    }
     setSaving(false);
     setEditMode(false);
     onClose();

@@ -2,13 +2,12 @@
  * useGroupMessaging — Atomic: load, send, realtime for group chat messages.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 import { sendText } from "@/families/send/send-text";
-import { fetchGroupMessages } from "@/repositories/communication.repository";
+import { fetchGroupMessages, resolveOrbitId } from "@/repositories/communication.repository";
 import type { SendContext } from "@/families/send/send-context";
 
 export interface GroupMessage {
@@ -43,13 +42,12 @@ export function useGroupMessaging(activeGroupId: string | null, userId: string |
     haptic("light");
 
     try {
-      const { data: myOrbit } = await (supabase as any)
-        .from("orbit_profiles_v2").select("orbit_id").eq("id", userId).maybeSingle();
+      const orbitId = await resolveOrbitId(userId);
 
       const ctx: SendContext = {
         conversationId: groupId,
         senderUserId: userId,
-        senderOrbitId: myOrbit?.orbit_id || `orbit_${userId.slice(0, 12)}`,
+        senderOrbitId: orbitId || `orbit_${userId.slice(0, 12)}`,
       };
       const data = await sendText(ctx, content);
 
@@ -68,8 +66,7 @@ export function useGroupMessaging(activeGroupId: string | null, userId: string |
   // Realtime
   useEffect(() => {
     if (!activeGroupId) return;
-    const channel = supabase
-      .channel(`group-${activeGroupId}`)
+    const channel = createRealtimeChannel(`group-${activeGroupId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2", filter: `conversation_id=eq.${activeGroupId}` }, (payload) => {
         const msg = payload.new as any;
         if (msg.sender_user_id !== userId) {

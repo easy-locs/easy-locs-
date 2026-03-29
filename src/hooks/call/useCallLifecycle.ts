@@ -1,13 +1,14 @@
 /**
  * useCallLifecycle — Accept, decline, missed, close call handlers.
  * Single responsibility: call lifecycle state transitions.
+ * PHASE 2: No direct Supabase — uses repository.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { CallManager } from "@/lib/call-manager";
 import { declineIncomingCall, markCallMissed } from "@/lib/call/call-incoming-handler";
 import { logCallEventToThread } from "@/lib/call-thread-logger";
+import { fetchCallLogStatus } from "@/repositories/communication.repository";
 import type { ActiveCallMeta } from "./useCallState";
 
 export function useCallLifecycle(
@@ -77,11 +78,7 @@ export function useCallLifecycle(
     const meta = activeCallRef.current;
     const convId = meta?.conversationId;
     if (convId && userId) {
-      const { data: log } = await supabase
-        .from("call_logs")
-        .select("status, duration_sec")
-        .eq("id", meta.callId)
-        .single();
+      const log = await fetchCallLogStatus(meta.callId);
       if ((log as any)?.status === "ended") {
         logCallEventToThread({
           callId: meta.callId, threadId: convId, orgId: meta.orgId,
