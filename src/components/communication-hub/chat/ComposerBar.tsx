@@ -1,12 +1,11 @@
 /**
- * ComposerBar — V2+ canonical composer with reply preview, attachments, voice, location, payment.
+ * ComposerBar — Canonical messenger composer: emoji, attach, input, send/mic.
  */
 import { useRef, useState } from "react";
 import {
-  Send, Loader2, Paperclip, Camera, MapPin, CreditCard, Eye, Mic, Ban, Check, Zap,
+  Send, Loader2, Paperclip, Camera, MapPin, Eye, Mic, Ban, Check, Zap,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import SecurityLevelPicker from "../SecurityLevelPicker";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import { haptic } from "@/lib/haptics";
 import { formatVoiceDuration } from "@/hooks/useVoiceRecorder";
@@ -124,8 +123,7 @@ export default function ComposerBar({
           </div>
         ) : (
           <div className="flex items-end gap-1.5">
-            <div className="flex-1 min-w-0 flex items-end rounded-2xl px-1.5 py-1 bg-background border border-border">
-              <SecurityLevelPicker value={securityLevel} onChange={onSecurityLevelChange} />
+          <div className="flex-1 min-w-0 flex items-end rounded-2xl px-1.5 py-1 bg-background border border-border">
               <DropdownMenu open={showAttachMenu} onOpenChange={setShowAttachMenu}>
                 <DropdownMenuTrigger asChild>
                   <button className="shrink-0 h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-muted" disabled={uploading}>
@@ -147,12 +145,6 @@ export default function ComposerBar({
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { setShowAttachMenu(false); haptic("light"); onShowLocation(); }}>
                     <MapPin className="h-4 w-4 mr-2 text-accent" /> Location
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setShowAttachMenu(false); onShowPayment(); }}>
-                    <CreditCard className="h-4 w-4 mr-2 text-primary" /> Payment
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setShowAttachMenu(false); onShowRequestMoney(); }}>
-                    <CreditCard className="h-4 w-4 mr-2 text-accent" /> Request Money
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => {
