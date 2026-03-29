@@ -61,10 +61,8 @@ function rowToAddress(row: any, source: ResolvedAddress["source"]): ResolvedAddr
   };
 }
 
-async function getCurrentUserId(): Promise<string | null> {
-  const { data } = await supabase.auth.getUser();
-  return data.user?.id ?? null;
-}
+// Canonical identity — use family import
+import { getCurrentUserIdOrNull as getCurrentUserId } from "@/families/identity";
 
 export async function getDefaultAddress(): Promise<ResolvedAddress | null> {
   const userId = await getCurrentUserId();
