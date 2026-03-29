@@ -179,3 +179,56 @@ export async function fetchShopsByUser(userId: string) {
   const { data } = await (supabase as any).from("storefront_pages").select("*").eq("owner_user_id", userId);
   return data ?? [];
 }
+
+// ── Storage: catalog-photos ──
+export async function uploadCatalogPhoto(path: string, file: File) {
+  const { error } = await supabase.storage.from("catalog-photos").upload(path, file);
+  if (error) throw error;
+  const { data } = supabase.storage.from("catalog-photos").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// ── Storage: products bucket ──
+export async function uploadProductFile(path: string, file: File) {
+  const { error } = await supabase.storage.from("products").upload(path, file, {
+    cacheControl: "3600", upsert: false,
+  });
+  if (error) throw error;
+  const { data } = supabase.storage.from("products").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// ── AI proxy (smart builders) ──
+export async function invokeAIProxy(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("ai-proxy", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── AI category suggest ──
+export async function invokeAICategorySuggest(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("ai-category-suggest", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── AI shopping chat ──
+export async function invokeAIShoppingChat(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("ai-shopping-chat", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Dispatch ride (storefront delivery) ──
+export async function invokeDispatchRide(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("dispatch-ride", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Org member lookup ──
+export async function fetchUserOrgId(userId: string) {
+  const { data } = await (supabase as any)
+    .from("org_members").select("org_id").eq("user_id", userId).limit(1).single();
+  return data?.org_id as string | null;
+}
