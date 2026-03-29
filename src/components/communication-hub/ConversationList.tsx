@@ -27,22 +27,16 @@ export default function ConversationList({ threads, loading, selectedThread, onS
     threads
       .filter(t => {
         if (activeFilter === "all") return true;
-        // Primary match on conversationType
         if (t.conversationType === activeFilter) return true;
-        // "team" threads also show under "direct" since there's no dedicated team tab
         if (activeFilter === "direct" && t.conversationType === "team") return true;
         return false;
       })
-      .filter(t => filterProperty === "all" || t.propertyId === filterProperty)
       .filter(t => !searchQuery ||
         t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.propertyLabel?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.serviceTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.listingTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.bookingId?.includes(searchQuery) ||
-        t.leadId?.includes(searchQuery)
+        t.listingTitle?.toLowerCase().includes(searchQuery.toLowerCase())
       ),
-    [threads, activeFilter, filterProperty, searchQuery]
+    [threads, activeFilter, searchQuery]
   );
 
   const filterCounts = useMemo(() => {
