@@ -20,8 +20,8 @@ export function useThreadComposerFamily(params: {
   resolveConversationId: (authUserId: string) => Promise<string | null>;
   uploadToStorage: any;
   setUploading: (v: boolean) => void;
-  disappearTTL: number;
-  defaultDisappearTtl: number;
+  disappearTTL: string;
+  defaultDisappearTtl: string;
   setSecurityLevel: (l: string) => void;
   setViewOnceNext: (v: boolean) => void;
   setShowLocationPicker: (v: boolean) => void;

@@ -24,7 +24,7 @@ export function useThreadMessageFamily(params: {
   decrypt: any;
   offline: any;
   privacySettings: any;
-  disappearTTL: number;
+  disappearTTL: string;
   securityLevel: string;
   setSecurityLevel: (l: string) => void;
   replyTo: any;
