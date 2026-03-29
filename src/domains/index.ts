@@ -32,3 +32,15 @@ export { orbitEvents } from "./orbit/events";
 // Delivery
 export type { DeliveryJob, Driver, TrackingUpdate, DeliveryUseCases, DeliveryJobRepository, DriverRepository as DeliveryDriverRepository, DispatchEnginePort, DeliveryEventPort, DispatchCommand, DriverEarnings } from "./delivery/ports";
 export { deliveryEvents } from "./delivery/events";
+
+// Admin
+export type { AuditEntry, AdminAlert, AdminUseCases, AuditFilters, AuditRepository, AlertRepository, AdminEventPort } from "./admin/ports";
+export { adminEvents } from "./admin/events";
+
+// Shared infrastructure
+export { createDomainLogger, registerLogSink, getLogBuffer } from "./shared/observability";
+export type { DomainLogEntry, LogLevel } from "./shared/observability";
+export { runWorkflow } from "./shared/workflow-orchestrator";
+export type { WorkflowStep, WorkflowResult, WorkflowConfig } from "./shared/workflow-orchestrator";
+export { requireAuth, requireOrg, requireRole, rateLimit, sanitize } from "./shared/security-guards";
+export type { SecurityContext } from "./shared/security-guards";
