@@ -31,15 +31,13 @@ export function useIncomingCallState() {
     orgId: string;
     /** Canonical conversation UUID */
     conversationId: string | null;
-    /** @deprecated Use conversationId */
-    threadId?: string | null;
   }) => {
     setIncomingCallId(info.callId);
     setIncomingCallerName(info.callerName);
     setIncomingContextLabel(info.contextLabel);
     setIncomingIsVideo(info.isVideo);
     setIncomingOrgId(info.orgId);
-    setIncomingConversationId(info.conversationId ?? info.threadId ?? null);
+    setIncomingConversationId(info.conversationId);
     setShowIncoming(true);
   };
 

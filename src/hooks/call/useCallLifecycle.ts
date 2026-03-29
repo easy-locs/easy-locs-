@@ -53,7 +53,7 @@ export function useCallLifecycle(
     await declineIncomingCall(incomingCallId, userId);
     if (incomingConversationId) {
       logCallEventToThread({
-        callId: incomingCallId, threadId: incomingConversationId,
+        callId: incomingCallId, conversationId: incomingConversationId,
         orgId: incomingOrgId, senderId: userId, event: "declined",
       });
     }
@@ -68,7 +68,7 @@ export function useCallLifecycle(
     await markCallMissed(incomingCallId, userId);
     if (incomingConversationId) {
       logCallEventToThread({
-        callId: incomingCallId, threadId: incomingConversationId,
+        callId: incomingCallId, conversationId: incomingConversationId,
         orgId: incomingOrgId, senderId: userId, event: "missed",
       });
     }
@@ -81,10 +81,10 @@ export function useCallLifecycle(
       const log = await fetchCallLogStatus(meta.callId);
       if ((log as any)?.status === "ended") {
         logCallEventToThread({
-          callId: meta.callId, threadId: convId, orgId: meta.orgId,
+          callId: meta.callId, conversationId: convId, orgId: meta.orgId,
           senderId: userId, event: "ended",
           durationSeconds: (log as any)?.duration_sec || 0,
-          contextId: meta.entityId,
+          entityId: meta.entityId,
         });
       }
     }
