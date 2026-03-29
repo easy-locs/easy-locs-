@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
-import { supabase } from "@/integrations/supabase/client";
+import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 
 const RATING_CATEGORIES = [

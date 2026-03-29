@@ -8,7 +8,7 @@ import { MapPin, Plus, Trash2, ArrowUpDown, Loader2, Route, CheckCircle2 } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
+import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 

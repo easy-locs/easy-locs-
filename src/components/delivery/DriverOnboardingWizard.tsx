@@ -3,7 +3,7 @@
  * PASS84-CC: Driver Onboarding Flow
  */
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Car, MapPin, FileText, CheckCircle2, Upload, ChevronRight, ChevronLeft, Shield } from "lucide-react";

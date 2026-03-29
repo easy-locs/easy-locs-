@@ -9,7 +9,7 @@ import {
   TrendingUp, DollarSign, Clock, Target, Award, Loader2,
   BarChart3, Star, Zap, CheckCircle2,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
