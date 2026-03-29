@@ -3,7 +3,7 @@
  * Handles per-message translation toggle and updates local message state canonically.
  */
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as commRepo from "@/repositories/communication.repository";
 import { toast } from "sonner";
 import type { ChatMessage } from "@/components/communication-hub/types";
 
@@ -24,14 +24,13 @@ export function useTranslation(
     if (!msg.translated_content) {
       setTranslatingMsgId(msg.id);
       try {
-        const { data } = await supabase.functions.invoke("translate-message", {
-          body: { text: msg.content, from_locale: msg.language_detected || "auto", to_locale: locale },
-        });
+        const { data } = await import("@/repositories/ai.repository").then(m => m.invokeTranslateMessage({
+          text: msg.content, from_locale: msg.language_detected || "auto", to_locale: locale,
+        }).then(d => ({ data: d })));
         if (data?.translated) {
-          await supabase.from("chat_messages_v2").update({
-            translated_content: data.translated,
-            translated_locale: locale,
-          } as any).eq("id", msg.id);
+          await commRepo.updateMessageFields(msg.id, {
+            translated_content: data.translated, translated_locale: locale,
+          });
 
           setRawMessages(prev => prev.map(m => m.id === msg.id ? {
             ...m,

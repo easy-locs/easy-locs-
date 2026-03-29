@@ -3,7 +3,7 @@
  */
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client"; // RPC calls — not migratable to standard repo
+import * as exploreRepo from "@/repositories/explore.repository";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
@@ -36,19 +36,19 @@ export default function ExplorePreview() {
 
     const load = async () => {
       const [reRes, seaRes, svcRes] = await Promise.allSettled([
-        supabase.rpc("get_public_real_estate_listings", { p_limit: 6 }),
-        supabase.from("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(6),
-        supabase.rpc("get_public_marketplace_services", {}).then(r => ({ ...r, data: (r.data || []).slice(0, 6) })),
+        exploreRepo.getPublicRealEstateListings(6),
+        exploreRepo.getPublicSeasonalListings(6),
+        exploreRepo.getPublicMarketplaceServices(),
       ]);
 
-      const realEstateData = reRes.status === "fulfilled" ? (reRes.value.data || []) as any[] : [];
-      const seasonalData = seaRes.status === "fulfilled" ? (seaRes.value.data || []) as any[] : [];
-      const servicesData = svcRes.status === "fulfilled" ? (svcRes.value.data || []) as any[] : [];
+      const realEstateData = reRes.status === "fulfilled" ? (reRes.value || []) as any[] : [];
+      const seasonalData = seaRes.status === "fulfilled" ? (seaRes.value || []) as any[] : [];
+      const servicesData = svcRes.status === "fulfilled" ? (svcRes.value || []) as any[] : [];
 
       let nextSeasonal = seasonalData;
       const propertyIds = [...new Set(seasonalData.map((l: any) => l.property_id).filter(Boolean))];
       if (propertyIds.length > 0) {
-        const { data: props } = await supabase.rpc("get_public_listing_properties", { p_property_ids: propertyIds });
+        const props = await exploreRepo.getListingProperties(propertyIds);
         const propMap: Record<string, any> = {};
         if (props) for (const p of props as any[]) propMap[p.id] = p;
         nextSeasonal = seasonalData.map((l: any) => {
