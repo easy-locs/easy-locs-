@@ -52,7 +52,7 @@ function formatDuration(s: number | null): string {
   return sec > 0 ? `${m}m ${sec}s` : `${m}m`;
 }
 
-export default function CommCallsSection() {
+export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (peerId: string, peerName: string) => void }) {
   const { user } = useAuth();
   const { startCall, isInCall, isStartingCall } = useCall();
   const { t } = useI18n();
@@ -336,7 +336,15 @@ export default function CommCallsSection() {
                 <SwipeableCallItem key={call.id} onDelete={handleDeleteCall}>
                   <button
                     type="button"
-                    onClick={() => void handleRedial(call)}
+                    onClick={() => {
+                      const peerId = call.direction === "outgoing" ? call.receiver_orbit_id : call.caller_orbit_id;
+                      const peerName = nameCache[peerId] || "Contact";
+                      if (onOpenThread) {
+                        onOpenThread(peerId, peerName);
+                      } else {
+                        void handleRedial(call);
+                      }
+                    }}
                     disabled={isInCall || isStartingCall}
                     className="w-full flex items-center gap-3 px-3 py-3 transition-colors text-left disabled:opacity-60"
                     style={{ background: "hsl(var(--hud-bg))" }}
@@ -378,10 +386,24 @@ export default function CommCallsSection() {
                       </div>
                     </div>
 
-                    {/* Time */}
-                    <span className="text-token-xs tabular-nums shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                      {formatCallTime(call.created_at)}
-                    </span>
+                    {/* Time + Redial */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-token-xs tabular-nums" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                        {formatCallTime(call.created_at)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void handleRedial(call);
+                        }}
+                        disabled={isInCall || isStartingCall}
+                        className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-muted/40 transition-colors"
+                        title={t("orbit.calls.redial") || "Call again"}
+                      >
+                        <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
+                      </button>
+                    </div>
                   </button>
                 </SwipeableCallItem>
               );
