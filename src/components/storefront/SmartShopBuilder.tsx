@@ -87,18 +87,16 @@ export default function SmartShopBuilder() {
     if (!name.trim()) { toast.error("Enter a shop name first"); return; }
     setAiLoading(true);
     try {
-      const { data } = await supabase.functions.invoke("ai-proxy", {
-        body: {
-          model: "google/gemini-2.5-flash-lite",
-          messages: [{
-            role: "user",
-            content: `Classify this business for an e-commerce platform. Return ONLY valid JSON.
+      const data = await storefrontRepo.invokeAIProxy({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [{
+          role: "user",
+          content: `Classify this business for an e-commerce platform. Return ONLY valid JSON.
 Business: "${name}" — ${description || "no description"}
 City: ${city || "unknown"}, Country: ${country || "unknown"}
 
 Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|experiences","category":"cluster_value","subcategory":"specific_subcategory","tags":["tag1","tag2","tag3"],"tagline":"catchy tagline under 60 chars","seo_description":"SEO meta description under 155 chars"}`
-          }],
-        },
+        }],
       });
       const text = data?.choices?.[0]?.message?.content || data?.content || "";
       const jsonMatch = text.match(/\{[\s\S]*\}/);

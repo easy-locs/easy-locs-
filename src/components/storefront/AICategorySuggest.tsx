@@ -54,12 +54,10 @@ export default function AICategorySuggest({ shopId, onAccept }: Props) {
       const categorySlugs = categories.map((c: any) => c.slug).join(", ");
 
       // Use edge function with Lovable AI
-      const { data, error } = await supabase.functions.invoke("ai-category-suggest", {
-        body: {
-          description: input.trim(),
-          available_verticals: verticalSlugs,
-          available_categories: categorySlugs,
-        },
+      const data = await storefrontRepo.invokeAICategorySuggest({
+        description: input.trim(),
+        available_verticals: verticalSlugs,
+        available_categories: categorySlugs,
       });
 
       if (error) throw error;
