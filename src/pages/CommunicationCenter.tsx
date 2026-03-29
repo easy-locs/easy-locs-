@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 import CommNavBar, { type CommSection } from "@/components/communication-hub/CommNavBar";
-import CommPlaceholderSection from "@/components/communication-hub/CommPlaceholderSection";
+
 import CommCallsSection from "@/components/communication-hub/CommCallsSection";
 import CommContactsSection from "@/components/communication-hub/CommContactsSection";
 import CommGroupsSection from "@/components/communication-hub/CommGroupsSection";
