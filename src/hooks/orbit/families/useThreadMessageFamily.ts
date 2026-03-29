@@ -78,7 +78,7 @@ export function useThreadMessageFamily(params: {
   });
 
   const messageActions = useOrbitMessageActions({
-    conversationId: thread?.v2ConversationId ?? null,
+    conversationId: thread?.conversationId || thread?.v2ConversationId ?? null,
     currentUserId: userId ?? null,
     onAfterChange: () => loader.loadMessages(),
   });

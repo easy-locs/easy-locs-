@@ -16,11 +16,17 @@ type SecurityLevel = "normal" | "high" | "ghost";
 type ThreadLike = {
   id: string;
   name?: string | null;
-  contextId?: string | null;
+  /** Canonical conversation UUID */
+  conversationId?: string | null;
   conversationType?: string | null;
-  v2ConversationId?: string | null;
   peerUserId?: string | null;
   peerOrbitId?: string | null;
+  // ── Deprecated compat ──
+  /** @deprecated Use conversationId */
+  v2ConversationId?: string | null;
+  /** @deprecated Use entityId */
+  contextId?: string | null;
+  /** @deprecated Use conversationId */
   threadId?: string | null;
 };
 
@@ -105,7 +111,7 @@ export function useMessageSender(params: Params) {
 
       const result = await resolveConversationId({
         threadId: thread.id,
-        v2ConversationId: thread.v2ConversationId,
+        v2ConversationId: thread.conversationId || thread.v2ConversationId,
         contextId: thread.contextId,
         threadDbId: thread.threadId,
         peerUserId: thread.peerUserId,
@@ -116,7 +122,7 @@ export function useMessageSender(params: Params) {
 
       conversationId = result.conversationId;
       if (result.wasCreated) {
-        onThreadUpdate(thread.id, { v2ConversationId: conversationId });
+        onThreadUpdate(thread.id, { conversationId, v2ConversationId: conversationId });
       }
       completeStep(flow, resolveStep, { conversationId, wasCreated: result.wasCreated });
     } catch (err: any) {

@@ -15,11 +15,12 @@ export function useHudConversationStatus(
     if (!thread) return;
     setConvStatus(status);
     onThreadUpdate(thread.id, { conversationStatus: status });
-    if (thread.v2ConversationId) {
+    const conversationId = thread.conversationId || thread.v2ConversationId;
+    if (conversationId) {
       await (supabase as any).from("conversations_v2").update({
         metadata: { conversation_status: status },
         updated_at: new Date().toISOString(),
-      }).eq("id", thread.v2ConversationId);
+      }).eq("id", conversationId);
     }
   }, [thread, setConvStatus, onThreadUpdate]);
 
