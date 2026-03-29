@@ -1057,27 +1057,48 @@ export type Database = {
       audit_logs: {
         Row: {
           action: string
+          actor_role: string | null
           created_at: string
+          domain: string | null
           id: string
+          ip_address: string | null
           metadata_json: Json | null
           org_id: string | null
+          record_id: string | null
+          request_id: string | null
+          table_name: string | null
           user_id: string | null
+          workspace_id: string | null
         }
         Insert: {
           action: string
+          actor_role?: string | null
           created_at?: string
+          domain?: string | null
           id?: string
+          ip_address?: string | null
           metadata_json?: Json | null
           org_id?: string | null
+          record_id?: string | null
+          request_id?: string | null
+          table_name?: string | null
           user_id?: string | null
+          workspace_id?: string | null
         }
         Update: {
           action?: string
+          actor_role?: string | null
           created_at?: string
+          domain?: string | null
           id?: string
+          ip_address?: string | null
           metadata_json?: Json | null
           org_id?: string | null
+          record_id?: string | null
+          request_id?: string | null
+          table_name?: string | null
           user_id?: string | null
+          workspace_id?: string | null
         }
         Relationships: []
       }
@@ -31726,6 +31747,10 @@ export type Database = {
         }
         Returns: Json
       }
+      can_view_sensitive_pii: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       check_inquiry_quota:
         | { Args: { _user_id: string }; Returns: Json }
         | { Args: { _hourly_limit?: number; _user_id: string }; Returns: Json }
@@ -32170,6 +32195,47 @@ export type Database = {
             }[]
           }
       get_real_estate_showcase: { Args: { p_slug: string }; Returns: Json }
+      get_safe_org: {
+        Args: { _org_id: string }
+        Returns: {
+          bank_bic: string
+          bank_holder_name: string
+          bank_iban: string
+          city: string
+          country: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          stripe_account_id: string
+        }[]
+      }
+      get_safe_owner_profile: {
+        Args: { _profile_user_id: string }
+        Returns: {
+          bank_iban: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string
+          tax_id: string
+          user_id: string
+        }[]
+      }
+      get_safe_tenants: {
+        Args: { _org_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          org_id: string
+          phone: string
+          status: string
+        }[]
+      }
       get_smart_picks: {
         Args: { _limit?: number; _user_id: string }
         Returns: {
@@ -32217,6 +32283,24 @@ export type Database = {
         }[]
       }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
+      get_user_role: {
+        Args: { _user_id: string; _workspace_id?: string }
+        Returns: string
+      }
+      get_wallet_summary: {
+        Args: never
+        Returns: {
+          available: number
+          currency: string
+          escrow: number
+          pending: number
+          wallet_id: string
+        }[]
+      }
+      has_min_org_role: {
+        Args: { _min_role: string; _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_min_role: {
         Args: { _min_role: string; _org_id: string; _user_id: string }
         Returns: boolean
@@ -32238,6 +32322,7 @@ export type Database = {
       }
       increment_listing_views: { Args: { p_slug: string }; Returns: undefined }
       increment_popularity: { Args: { place_id: string }; Returns: undefined }
+      is_admin: { Args: { _user_id?: string }; Returns: boolean }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
@@ -32272,6 +32357,9 @@ export type Database = {
         Args: { p_reason?: string; p_session_id: string }
         Returns: undefined
       }
+      mask_email: { Args: { _email: string }; Returns: string }
+      mask_iban: { Args: { _iban: string }; Returns: string }
+      mask_phone: { Args: { _phone: string }; Returns: string }
       purchase_boost: {
         Args: {
           _duration_days?: number
@@ -32308,6 +32396,7 @@ export type Database = {
         Args: { p_driver_id: string; p_ride_request_id: string }
         Returns: Json
       }
+      role_level: { Args: { _role: string }; Returns: number }
       search_available_rooms: {
         Args: {
           p_adults?: number
