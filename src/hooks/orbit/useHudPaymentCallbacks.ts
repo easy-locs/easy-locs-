@@ -29,7 +29,7 @@ export function useHudPaymentCallbacks({
     const peerId = thread.peerUserId || thread.tenantId || thread.entityId || thread.id;
     try {
       await sendPaymentReceiptToThread({
-        conversationId: thread.conversationId || thread.id,
+        threadId: thread.conversationId || thread.id,
         senderId: authUserId,
         orgId,
         transactionId: conf.txnId,
@@ -55,7 +55,7 @@ export function useHudPaymentCallbacks({
     const peerId = thread.peerUserId || thread.tenantId || thread.entityId || thread.id;
     try {
       await sendPaymentRequestMessageToThread({
-        conversationId: thread.conversationId || thread.id,
+        threadId: thread.conversationId || thread.id,
         senderId: authUserId,
         orgId,
         request: req,
