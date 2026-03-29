@@ -18,8 +18,8 @@ export interface OrbitPaymentRequest {
   amount: number;
   currency: string;
   note?: string;
-  contextType?: string;
-  contextId?: string;
+  entityType?: string;
+  entityId?: string;
 }
 
 /**
@@ -38,8 +38,8 @@ export async function requestPaymentInChat(params: OrbitPaymentRequest) {
       amount: params.amount,
       currency: params.currency,
       status: "pending",
-      context_type: params.contextType || "chat_payment",
-      context_id: params.contextId || params.conversationId,
+      context_type: params.entityType || "chat_payment",
+      context_id: params.entityId || params.conversationId,
       title: params.note || "Payment request",
       reference_code: `PAY-${Date.now().toString(36).toUpperCase()}`,
     })
