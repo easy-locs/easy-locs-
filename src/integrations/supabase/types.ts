@@ -10628,6 +10628,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "leases_owner_profile_id_fkey"
+            columns: ["owner_profile_id"]
+            isOneToOne: false
+            referencedRelation: "owner_profiles_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "leases_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -13025,6 +13032,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      merchant_private_contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          extra_private_fields: Json
+          id: string
+          merchant_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          extra_private_fields?: Json
+          id?: string
+          merchant_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          extra_private_fields?: Json
+          id?: string
+          merchant_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       merchant_profiles: {
         Row: {
@@ -16153,6 +16190,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      owner_private_financials: {
+        Row: {
+          bank_holder_name: string | null
+          bic: string | null
+          created_at: string
+          extra_financial_fields: Json
+          iban: string | null
+          id: string
+          tax_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bank_holder_name?: string | null
+          bic?: string | null
+          created_at?: string
+          extra_financial_fields?: Json
+          iban?: string | null
+          id?: string
+          tax_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bank_holder_name?: string | null
+          bic?: string | null
+          created_at?: string
+          extra_financial_fields?: Json
+          iban?: string | null
+          id?: string
+          tax_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       owner_profiles: {
         Row: {
@@ -28137,6 +28210,39 @@ export type Database = {
           },
         ]
       }
+      tenant_private_contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          emergency_contact: string | null
+          extra_private_fields: Json
+          id: string
+          phone: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          emergency_contact?: string | null
+          extra_private_fields?: Json
+          id?: string
+          phone?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          emergency_contact?: string | null
+          extra_private_fields?: Json
+          id?: string
+          phone?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tenants: {
         Row: {
           birth_date: string | null
@@ -29219,6 +29325,36 @@ export type Database = {
           verified?: boolean
           visible_on_nearby?: boolean
           who_can_see?: string
+        }
+        Relationships: []
+      }
+      user_private_data: {
+        Row: {
+          created_at: string
+          email: string | null
+          extra_sensitive_fields: Json
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          extra_sensitive_fields?: Json
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          extra_sensitive_fields?: Json
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -31371,6 +31507,20 @@ export type Database = {
         }
         Relationships: []
       }
+      owner_profiles_safe: {
+        Row: {
+          bank_iban: string | null
+          city: string | null
+          company_name: string | null
+          country: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          phone: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       public_discovered_merchants: {
         Row: {
           category: string | null
@@ -32210,6 +32360,16 @@ export type Database = {
           stripe_account_id: string
         }[]
       }
+      get_safe_owner_financials: {
+        Args: { _user_id: string }
+        Returns: {
+          bank_holder_name: string
+          bic: string
+          iban: string
+          tax_id: string
+          user_id: string
+        }[]
+      }
       get_safe_owner_profile: {
         Args: { _profile_user_id: string }
         Returns: {
@@ -32221,6 +32381,15 @@ export type Database = {
           phone: string
           tax_id: string
           user_id: string
+        }[]
+      }
+      get_safe_tenant_contact: {
+        Args: { _tenant_id: string }
+        Returns: {
+          email: string
+          emergency_contact: string
+          phone: string
+          tenant_id: string
         }[]
       }
       get_safe_tenants: {
@@ -32286,6 +32455,16 @@ export type Database = {
       get_user_role: {
         Args: { _user_id: string; _workspace_id?: string }
         Returns: string
+      }
+      get_wallet_ledger_summary: {
+        Args: { _user_id?: string }
+        Returns: {
+          available: number
+          currency: string
+          escrow: number
+          pending: number
+          user_id: string
+        }[]
       }
       get_wallet_summary: {
         Args: never
