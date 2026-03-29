@@ -32075,6 +32075,27 @@ export type Database = {
           status: string
         }[]
       }
+      get_public_storefronts: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          active: boolean
+          banner_url: string
+          category: string
+          city: string
+          country: string
+          description: string
+          id: string
+          latitude: number
+          logo_url: string
+          longitude: number
+          name: string
+          rating: number
+          reviews_count: number
+          shop_visibility: string
+          slug: string
+          subcategory: string
+        }[]
+      }
       get_real_estate_showcase: { Args: { p_slug: string }; Returns: Json }
       get_smart_picks: {
         Args: { _limit?: number; _user_id: string }
