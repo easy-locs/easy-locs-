@@ -53,10 +53,8 @@ import { OrbitUploadQueuePreview } from "@/components/orbit/OrbitUploadQueuePrev
 import { OrbitAttachmentViewer } from "@/components/orbit/OrbitAttachmentViewer";
 import { MediaPreviewSheet } from "@/components/orbit/MediaPreviewSheet";
 import { FullscreenMediaViewer } from "@/components/orbit/FullscreenMediaViewer";
-import { useMediaPreviewState, type PreviewItem } from "@/families/media/media-preview-state";
-import { sendMediaOptimistic } from "@/families/send/send-media-optimistic";
-import { transportUploadWithPrepare } from "@/families/media/transport/transport-engine";
-import { TransportPolicy } from "@/families/media/transport/transport-policy";
+import { useMediaPreviewState } from "@/families/media/media-preview-state";
+import { useMediaPreviewSend } from "@/hooks/orbit/useMediaPreviewSend";
 
 import { useSecurityDialogs } from "./chat/useSecurityDialogs";
 import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
