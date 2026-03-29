@@ -11,6 +11,7 @@ const db = supabase as any;
 type ThreadLike = {
   id: string;
   v2ConversationId?: string | null;
+  contextId?: string | null;
 };
 
 type ChatMessage = {
