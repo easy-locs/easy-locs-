@@ -1,8 +1,10 @@
 /**
  * call.ringtone — Canonical ringtone/alert family.
- * Handles: incoming ring, outgoing ring, stop, vibrate.
+ * Delegates vibration to DeviceHaptics, audio to DeviceAudio.
  */
 import { create } from "zustand";
+import { DeviceHaptics } from "@/families/device";
+import { DeviceAudio } from "@/families/device/device-audio";
 
 export type RingtoneType = "incoming" | "outgoing" | "busy" | "ended" | "none";
 
@@ -19,7 +21,7 @@ export const useRingtoneStore = create<RingtoneState>(() => ({
 }));
 
 let currentAudio: HTMLAudioElement | null = null;
-let vibrationInterval: ReturnType<typeof setInterval> | null = null;
+let stopVibrationFn: (() => void) | null = null;
 
 const RINGTONE_URLS: Record<Exclude<RingtoneType, "none">, string> = {
   incoming: "/sounds/ringtone-incoming.mp3",
@@ -32,49 +34,32 @@ export const CallRingtone = {
   /** Play a ringtone type */
   play(type: Exclude<RingtoneType, "none">, loop = true) {
     CallRingtone.stop();
-
-    try {
-      const audio = new Audio(RINGTONE_URLS[type]);
-      audio.loop = loop;
-      audio.volume = 0.8;
-      audio.play().catch(() => { /* browser autoplay policy */ });
-      currentAudio = audio;
+    currentAudio = DeviceAudio.playFile(RINGTONE_URLS[type], { loop, volume: 0.8 });
+    if (currentAudio) {
       useRingtoneStore.setState({ activeType: type, isPlaying: true });
-    } catch {
-      /* ignore audio errors */
     }
   },
 
   /** Stop all ringtone playback */
   stop() {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-      currentAudio = null;
-    }
+    DeviceAudio.stopFile(currentAudio);
+    currentAudio = null;
     CallRingtone.stopVibration();
     useRingtoneStore.setState({ activeType: "none", isPlaying: false, isVibrating: false });
   },
 
   /** Start device vibration pattern */
   startVibration() {
-    if (!("vibrate" in navigator)) return;
     CallRingtone.stopVibration();
-    // Vibrate pattern: 500ms on, 500ms off
-    vibrationInterval = setInterval(() => {
-      navigator.vibrate([500, 500]);
-    }, 1000);
+    stopVibrationFn = DeviceHaptics.startRepeating([500, 500], 1000);
     useRingtoneStore.setState({ isVibrating: true });
   },
 
   /** Stop device vibration */
   stopVibration() {
-    if (vibrationInterval) {
-      clearInterval(vibrationInterval);
-      vibrationInterval = null;
-    }
-    if ("vibrate" in navigator) {
-      navigator.vibrate(0);
+    if (stopVibrationFn) {
+      stopVibrationFn();
+      stopVibrationFn = null;
     }
     useRingtoneStore.setState({ isVibrating: false });
   },

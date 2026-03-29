@@ -1,7 +1,8 @@
 /**
  * Premium success audio + haptic feedback.
- * Use ONLY after a real confirmed payment.
+ * Delegates to canonical DeviceHaptics + DeviceAudio.
  */
+import { DeviceHaptics } from "@/families/device";
 
 export function playPremiumSuccessBeep() {
   try {
@@ -36,11 +37,7 @@ export function playPremiumSuccessBeep() {
 }
 
 export function hapticPremiumSuccess() {
-  try {
-    if ("vibrate" in navigator) navigator.vibrate?.([40, 30, 70]);
-  } catch {
-    // Silent fail
-  }
+  DeviceHaptics.trigger("success");
 }
 
 /** Alias for use in scan flows */
