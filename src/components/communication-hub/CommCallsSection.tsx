@@ -3,9 +3,9 @@
  * Identity-first: every row shows name, direction, type, status, time.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import {
   fetchCallLogs, deleteCallLog, resolveProfilesByIds, resolveOrbitProfilesByUserIds,
+  resolveOrbitProfilesByOrbitIds,
 } from "@/repositories/communication.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
@@ -120,11 +120,8 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
         // Also resolve non-UUID orbit_ids (e.g. "orbit_abc123") by orbit_id field
         const nonUuidIds = ids.filter(id => !isUUID(id));
         if (nonUuidIds.length > 0) {
-          const { data: orbitRows } = await (supabase as any)
-            .from("orbit_profiles_v2")
-            .select("orbit_id, display_name, email, id")
-            .in("orbit_id", nonUuidIds);
-          (orbitRows ?? []).forEach((op: any) => {
+          const orbitRows = await resolveOrbitProfilesByOrbitIds(nonUuidIds);
+          orbitRows.forEach((op: any) => {
             if (op.orbit_id) {
               cache[op.orbit_id] = op.display_name || op.email || "Contact";
             }
