@@ -1,8 +1,7 @@
 /**
- * OrbitContactsDirectory — Premium contacts with shop/pay actions.
+ * OrbitContactsDirectory — WhatsApp-like contacts with message/call/video actions.
  */
 import { useState, useEffect, useMemo, memo, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
 import { useNavigate } from "react-router-dom";
