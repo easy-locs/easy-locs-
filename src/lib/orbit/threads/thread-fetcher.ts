@@ -84,20 +84,22 @@ export async function fetchOrgThreadSources(orgId: string): Promise<ThreadRawSou
   return result;
 }
 
-export async function fetchV2Conversations(userId: string, hasOrg: boolean): Promise<any[]> {
-  trace("fetch.v2conversations", "input", { userId, hasOrg });
+export async function fetchV2Conversations(userId: string, _hasOrg: boolean): Promise<any[]> {
+  trace("fetch.v2conversations", "input", { userId });
 
-  const query = (supabase as any)
+  // RLS on conversations_v2 already filters by participant orbitId.
+  // No extra client-side filter needed — just fetch and let RLS do its job.
+  const { data, error } = await (supabase as any)
     .from("conversations_v2")
     .select("*")
-    .order("last_message_at", { ascending: false })
+    .order("last_message_at", { ascending: false, nullsFirst: false })
     .limit(300);
 
-  const result = hasOrg
-    ? await query.or(`created_by_orbit_id.ilike.orbit_${userId.slice(0, 12)}%,metadata->>direct_user_ids.cs.["${userId}"]`)
-    : await query;
+  if (error) {
+    trace("fetch.v2conversations", "error", { message: error.message });
+  }
 
-  const raw = result.data || [];
+  const raw = data || [];
   trace("fetch.v2conversations", "output", { rawCount: raw.length });
   return raw;
 }
