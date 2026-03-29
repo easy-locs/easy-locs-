@@ -3,7 +3,8 @@
  * Fully wired to useGroupData hook — zero inline DB logic.
  */
 import { useState, useEffect, useCallback } from "react";
-import { updateGroupMemberRole, fetchGroupMembersById, createRealtimeChannel, removeRealtimeChannel, fetchConversationParticipants, updateConversationParticipants } from "@/repositories/communication.repository";
+import { updateGroupMemberRole, fetchGroupMembersById, fetchConversationParticipants, updateConversationParticipants } from "@/repositories/communication.repository";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import {
