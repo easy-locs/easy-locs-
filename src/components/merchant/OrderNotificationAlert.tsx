@@ -27,7 +27,6 @@ interface Props {
 function OrderNotificationAlert({ order, onAccept, onReject }: Props) {
   const audioRef = useRef<AudioContext | null>(null);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
-  const vibrationRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const startAlert = useCallback(() => {
     // Sound — procedural two-tone alert
