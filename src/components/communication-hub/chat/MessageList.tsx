@@ -3,7 +3,7 @@
  * Renders messages with date separators, typing indicator, empty state.
  */
 import { forwardRef } from "react";
-import { MessageCircle, Lock } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, isToday, isYesterday } from "date-fns";
 import ChatMessageBubble, { DateSeparator } from "../ChatMessageBubble";
