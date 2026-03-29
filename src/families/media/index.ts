@@ -1,6 +1,6 @@
 /**
  * FAMILY: MEDIA — Canonical media handling for Orbit.
- * Subfamilies: pick, upload, receive, group, preview, viewer, meta, actions.
+ * Subfamilies: pick, upload, receive, group, preview, viewer, meta, actions, preview-state.
  * Single source of truth for all media operations in messaging.
  */
 
@@ -14,6 +14,10 @@ export type { UploadItem, UploadStatus } from "./media-upload";
 
 // ── Media Send (optimistic pipeline) ──
 export { sendMediaOptimistic, retryMediaUpload } from "@/families/send/send-media-optimistic";
+
+// ── Media Preview State (preview-before-send) ──
+export { useMediaPreviewState } from "./media-preview-state";
+export type { PreviewItem } from "./media-preview-state";
 
 // ── Media Receive ──
 export { MediaReceive } from "./media-receive";
@@ -38,8 +42,15 @@ export type { MediaGroupItem, GroupedMediaMeta, GroupedSendPayload } from "./med
 // ── Media Preview (component) ──
 export { default as ChatMediaPreview } from "@/components/communication/ChatMediaPreview";
 
-// ── Media Viewer ──
+// ── Media Viewer (fullscreen) ──
+export { FullscreenMediaViewer } from "@/components/orbit/FullscreenMediaViewer";
 export { default as ViewOnceMedia } from "@/components/communication-hub/ViewOnceMedia";
+
+// ── Media Preview Sheet (preview-before-send UI) ──
+export { MediaPreviewSheet } from "@/components/orbit/MediaPreviewSheet";
+
+// ── Grouped Media Bubble ──
+export { GroupedMediaBubble } from "@/components/communication-hub/chat/GroupedMediaBubble";
 
 // ── Media Send (hook) ──
 export { useThreadAttachmentFamily } from "@/hooks/orbit/families/useThreadAttachmentFamily";
@@ -92,4 +103,4 @@ export function getMediaType(url: string): "image" | "video" | "audio" | "file" 
 }
 
 // Media family owns: pick, upload queue, receive, group builder/viewer/actions,
-// preview, viewer, meta, type detection.
+// preview-state, preview sheet, fullscreen viewer, grouped bubble, meta, type detection.
