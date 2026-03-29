@@ -9,7 +9,7 @@ import {
   Package, MapPin, DollarSign, Clock, Filter, Loader2,
   ChevronRight, Zap, Star, Truck, ArrowUpDown,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
