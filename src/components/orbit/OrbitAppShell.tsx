@@ -8,7 +8,7 @@ import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useEffect, lazy, Suspense } from "react";
 import { startUnifiedNotificationDispatcher, stopUnifiedNotificationDispatcher } from "@/lib/notifications/dispatcher";
 
-const OrbitFAB = lazy(() => import("./OrbitFAB"));
+
 const CartSheet = lazy(() => import("@/components/cart/CartSheet"));
 
 export default function OrbitAppShell({ children }: { children?: React.ReactNode }) {
@@ -45,9 +45,6 @@ export default function OrbitAppShell({ children }: { children?: React.ReactNode
     <>
       {children}
       <Outlet />
-      <Suspense fallback={null}>
-        <OrbitFAB />
-      </Suspense>
       <Suspense fallback={null}>
         <CartSheet />
       </Suspense>
