@@ -150,17 +150,17 @@ export default function ThreadContextMenu({
 
         {/* ── Primary Actions ── */}
         <div className="px-2 py-1">
-          {[
-            onMarkUnread && { icon: MailOpen, label: t("orbit.mark_unread") || "Mark as unread" },
-            onArchive && { icon: isArchived ? ArchiveRestore : Archive, label: isArchived ? (t("orbit.unarchive") || "Unarchive") : (t("orbit.archive") || "Archive") },
-            onMute && { icon: isMuted ? Bell : BellOff, label: isMuted ? (t("orbit.unmute") || "Unmute") : (t("orbit.mute") || "Mute") },
-            onLockChat && { icon: Lock, label: t("orbit.lock_chat") || "Lock chat" },
-            onFavorite && { icon: isFavorite ? HeartOff : Heart, label: isFavorite ? (t("orbit.remove_favorite") || "Remove from Favorites") : (t("orbit.add_favorite") || "Add to Favorites") },
-            onContactInfo && { icon: Info, label: t("orbit.contact_info") || "Contact info" },
-          ].filter(Boolean).map((item: any) => (
+          {([
+            onMarkUnread && { icon: MailOpen, label: t("orbit.mark_unread") || "Mark as unread", action: onMarkUnread },
+            onArchive && { icon: isArchived ? ArchiveRestore : Archive, label: isArchived ? (t("orbit.unarchive") || "Unarchive") : (t("orbit.archive") || "Archive"), action: onArchive },
+            onMute && { icon: isMuted ? Bell : BellOff, label: isMuted ? (t("orbit.unmute") || "Unmute") : (t("orbit.mute") || "Mute"), action: onMute },
+            onLockChat && { icon: Lock, label: t("orbit.lock_chat") || "Lock chat", action: onLockChat },
+            onFavorite && { icon: isFavorite ? HeartOff : Heart, label: isFavorite ? (t("orbit.remove_favorite") || "Remove from Favorites") : (t("orbit.add_favorite") || "Add to Favorites"), action: onFavorite },
+            onContactInfo && { icon: Info, label: t("orbit.contact_info") || "Contact info", action: onContactInfo },
+          ] as Array<{ icon: any; label: string; action: () => void } | false>).filter(Boolean).map((item: any) => (
             <button
               key={item.label}
-              onClick={() => executeAndClose(item === (onMarkUnread && { icon: MailOpen }) ? onMarkUnread : item.icon === (isMuted ? Bell : BellOff) ? onMute : item.icon === (isArchived ? ArchiveRestore : Archive) ? onArchive : item.icon === Lock ? onLockChat : item.icon === (isFavorite ? HeartOff : Heart) ? onFavorite : onContactInfo)}
+              onClick={() => executeAndClose(item.action)}
               className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-muted/30 active:bg-muted/50"
             >
               <item.icon className="h-5 w-5" style={{ color: "hsl(var(--foreground))" }} />
@@ -173,15 +173,15 @@ export default function ThreadContextMenu({
 
         {/* ── Tools ── */}
         <div className="px-2 py-1">
-          {[
-            onSecurity && { icon: Shield, label: t("orbit.security") || "Security" },
-            onSafetyNumber && { icon: Lock, label: t("orbit.safety_number") || "Safety Number" },
-            onDetails && { icon: ChevronRight, label: t("orbit.details") || "Details" },
-            onSelectMessages && { icon: CheckCheck, label: t("orbit.select_messages") || "Select Messages" },
-          ].filter(Boolean).map((item: any) => (
+          {([
+            onSecurity && { icon: Shield, label: t("orbit.security") || "Security", action: onSecurity },
+            onSafetyNumber && { icon: Lock, label: t("orbit.safety_number") || "Safety Number", action: onSafetyNumber },
+            onDetails && { icon: ChevronRight, label: t("orbit.details") || "Details", action: onDetails },
+            onSelectMessages && { icon: CheckCheck, label: t("orbit.select_messages") || "Select Messages", action: onSelectMessages },
+          ] as Array<{ icon: any; label: string; action: () => void } | false>).filter(Boolean).map((item: any) => (
             <button
               key={item.label}
-              onClick={() => executeAndClose(item.icon === Shield ? onSecurity : item.icon === CheckCheck ? onSelectMessages : item.label === (t("orbit.safety_number") || "Safety Number") ? onSafetyNumber : onDetails)}
+              onClick={() => executeAndClose(item.action)}
               className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-muted/30 active:bg-muted/50"
             >
               <item.icon className="h-5 w-5" style={{ color: "hsl(var(--foreground))" }} />
