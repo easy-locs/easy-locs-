@@ -12,6 +12,8 @@ type ThreadLike = {
   id: string;
   /** Canonical conversation UUID */
   conversationId?: string | null;
+  /** Business entity ID */
+  entityId?: string | null;
   /** @deprecated Use conversationId */
   v2ConversationId?: string | null;
   /** @deprecated Use entityId */
