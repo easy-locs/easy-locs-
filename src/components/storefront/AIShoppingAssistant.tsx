@@ -3,7 +3,7 @@
  * Uses Lovable AI for product recommendations, search, FAQ.
  */
 import { useState, useRef, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
