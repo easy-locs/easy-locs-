@@ -136,6 +136,32 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   // ── Short aliases ──
   const { selection, messages, loader, messageSender, messageActions, threadUi, pinnedMessage } = msgFamily;
 
+  // ── Stable callbacks (prevent rerender cascade) ──
+  const stableContextMenu = useCallback((_: any, msg: any, isMe: boolean) => {
+    selection.setContextMessage({
+      msgId: msg.id,
+      content: msg.content,
+      isMe,
+      createdAt: msg.created_at,
+      hasAudio: !!(msg as any).audio_url,
+      hasAttachment: !!msg.attachment_url,
+      senderId: msg.sender_id,
+      canModerate: false,
+      isStarred: !!(msg as any).starred,
+    });
+  }, [selection.setContextMessage]);
+
+  const stableHandleSend = useCallback(async () => {
+    if (compFamily.composer.editState) {
+      await messageActions.editMessage(compFamily.composer.editState.messageId, messageSender.newMessage.trim());
+      messageSender.setNewMessage("");
+      compFamily.composer.setEditState(null);
+      return;
+    }
+    await messageSender.handleSend();
+    compFamily.composer.setReplyState(null);
+  }, [compFamily.composer.editState, messageActions, messageSender, compFamily.composer.setReplyState]);
+
   if (!thread) return <ChatEmptyState t={t} />;
 
   return (
