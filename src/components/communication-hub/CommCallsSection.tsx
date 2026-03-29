@@ -386,10 +386,24 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
                       </div>
                     </div>
 
-                    {/* Time */}
-                    <span className="text-token-xs tabular-nums shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                      {formatCallTime(call.created_at)}
-                    </span>
+                    {/* Time + Redial */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-token-xs tabular-nums" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                        {formatCallTime(call.created_at)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void handleRedial(call);
+                        }}
+                        disabled={isInCall || isStartingCall}
+                        className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-muted/40 transition-colors"
+                        title={t("orbit.calls.redial") || "Call again"}
+                      >
+                        <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
+                      </button>
+                    </div>
                   </button>
                 </SwipeableCallItem>
               );
