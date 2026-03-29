@@ -36,7 +36,7 @@ export function usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId }: 
       try {
         const data = await invokeConciergePayment({
           order_id: thread.bookingId || thread.id,
-          service_id: thread.contextId,
+          service_id: thread.entityId || thread.contextId,
           amount,
           currency: thread.currency || "eur",
           guest_email: thread.email || "",
@@ -53,9 +53,10 @@ export function usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId }: 
         ? `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}🔗 ${paymentUrl}`
         : `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}Please contact us for payment details.`;
 
-      if (thread.isV2 && thread.v2ConversationId) {
+      const conversationId = thread.conversationId || thread.v2ConversationId;
+      if (thread.isV2 && conversationId) {
         await insertChatMessageV2({
-          conversation_id: thread.v2ConversationId,
+          conversation_id: conversationId,
           sender_user_id: authUserId,
           sender_orbit_id: `orbit_${authUserId.slice(0, 12)}`,
           receiver_orbit_id: thread.peerOrbitId ?? null,
@@ -63,12 +64,12 @@ export function usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId }: 
           body: msgContent,
           metadata: { amount, currency: (thread.currency || "EUR").toUpperCase(), url: paymentUrl || null },
         });
-        await updateConversationTimestamp(thread.v2ConversationId);
+        await updateConversationTimestamp(conversationId);
       } else {
-        const conversationId = thread.v2ConversationId || thread.contextId;
-        if (conversationId) {
+        const fallbackId = conversationId || thread.entityId || thread.contextId;
+        if (fallbackId) {
           await insertChatMessageV2({
-            conversation_id: conversationId,
+            conversation_id: fallbackId,
             sender_user_id: authUserId,
             sender_orbit_id: `orbit_${authUserId.slice(0, 12)}`,
             type: "text",
@@ -86,8 +87,8 @@ export function usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId }: 
           currency: (thread.currency || "EUR").toUpperCase(),
           title: paymentDescription || `Payment request to ${thread.name}`,
           status: "pending",
-          context_type: thread.contextType || "payment_request",
-          context_id: thread.bookingId || thread.contextId || null,
+          context_type: thread.entityType || thread.contextType || "payment_request",
+          context_id: thread.bookingId || thread.entityId || thread.contextId || null,
         });
       } catch {}
 
