@@ -1,11 +1,12 @@
 /**
- * useHudVoiceSendV2 — Atomic: voice message recording + upload + DB insert.
+ * useHudVoiceSendV2 — Atomic: voice message recording + upload + send via canonical family.
+ * Zero inline Supabase.
  */
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { platformBus } from "@/lib/shared/platform-bus";
+import { sendVoice } from "@/families/send/send-voice";
 import { formatVoiceDuration } from "@/hooks/useVoiceRecorder";
 import { toast } from "sonner";
+import type { SendContext } from "@/families/send/send-context";
 
 interface VoicePreview {
   blob: Blob;
@@ -26,7 +27,7 @@ export function useHudVoiceSendV2(deps: {
 }) {
   const [voicePreview, setVoicePreview] = useState<VoicePreview | null>(null);
 
-  const sendVoice = useCallback(async () => {
+  const sendVoiceMsg = useCallback(async () => {
     if (!voicePreview || !deps.thread || !deps.orgId) return;
     const authUserId = await deps.resolveAuthUserId();
     if (!authUserId) return;
@@ -38,19 +39,19 @@ export function useHudVoiceSendV2(deps: {
       if (!audioUrl) throw new Error("Voice upload failed");
       const conversationId = await deps.resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
-      await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: conversationId,
-        sender_user_id: authUserId,
-        sender_orbit_id: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: deps.thread.peerOrbitId ?? null,
-        type: "voice",
-        body: `🎤 Voice message (${formatVoiceDuration(voicePreview.duration)})`,
-        metadata: { audio_url: audioUrl, audio_duration_seconds: voicePreview.duration, transcript_status: "pending" },
-      });
-      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
+
+      const ctx: SendContext = {
+        conversationId,
+        senderUserId: authUserId,
+        senderOrbitId: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        receiverOrbitId: deps.thread.peerOrbitId ?? null,
+        threadId: deps.thread.threadId || deps.thread.id,
+        orgId: deps.orgId,
+      };
+
+      await sendVoice(ctx, audioUrl, voicePreview.duration, formatVoiceDuration(voicePreview.duration));
       deps.setSecurityLevel("normal");
       toast.success(deps.t("orbit.voice_sent") || "Voice message sent");
-      platformBus.emit("orbit:message_sent", { threadId: deps.thread.threadId || deps.thread.id, contextId: deps.thread.contextId, type: "voice" }, "orbit", { userId: authUserId, orgId: deps.orgId });
     } catch (e: any) {
       toast.error(e?.message || "Failed to send voice message");
     } finally {
@@ -60,5 +61,5 @@ export function useHudVoiceSendV2(deps: {
     }
   }, [voicePreview, deps]);
 
-  return { voicePreview, setVoicePreview, sendVoice };
+  return { voicePreview, setVoicePreview, sendVoice: sendVoiceMsg };
 }
