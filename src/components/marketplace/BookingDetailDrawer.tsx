@@ -10,7 +10,7 @@ import {
   ClipboardList, History,
 } from "lucide-react";
 import { format } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
+import { signBookingDocumentUrl } from "@/repositories/rental.repository";
 import BookingStatusBadge from "./BookingStatusBadge";
 import BookingCommunicationThread from "./BookingCommunicationThread";
 import BookingActivityLog from "./BookingActivityLog";
