@@ -82,12 +82,12 @@ function AuthenticatedContact({
     try {
       // 1. Get or create conversation thread via canonical family
       const conv = await getOrCreateCanonicalDirectConversation(user.id, user.id);
-      const threadId = conv?.v2ConversationId || conv?.contextId;
-      if (!threadId) throw new Error("Could not resolve thread");
+      const conversationId = conv?.conversationId || conv?.v2ConversationId || conv?.contextId;
+      if (!conversationId) throw new Error("Could not resolve conversation");
 
       // 2. Send via canonical send family
       const ctx: SendContext = {
-        conversationId: threadId,
+        conversationId,
         senderUserId: user.id,
         senderOrbitId: `orbit_${user.id.slice(0, 12)}`,
       };

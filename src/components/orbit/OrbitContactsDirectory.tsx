@@ -157,8 +157,8 @@ export default function OrbitContactsDirectory() {
         targetUserId: contact.contact_user_id,
         targetName: contact.name,
       });
-      const threadId = result?.v2ConversationId || result?.threadId || result?.contextId;
-      if (threadId) navigate(`/dashboard/communication?thread=${threadId}`);
+      const conversationId = result?.conversationId || result?.v2ConversationId || result?.threadId || result?.contextId;
+      if (conversationId) navigate(`/dashboard/communication?thread=${conversationId}`);
     } catch {
       toast.error("Failed to open conversation");
     }

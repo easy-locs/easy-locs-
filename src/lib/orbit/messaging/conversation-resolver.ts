@@ -1,5 +1,5 @@
 /**
- * conversation-resolver — Atomic unit: resolve or auto-create a v2ConversationId.
+ * conversation-resolver — Atomic unit: resolve or auto-create a conversationId.
  * Single responsibility: given a thread, return a guaranteed conversationId or throw.
  */
 import { supabase } from "@/integrations/supabase/client";
