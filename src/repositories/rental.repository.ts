@@ -574,10 +574,6 @@ export async function fetchAccountingProperties(orgId: string) {
   const { data } = await supabase.from("properties").select("id, label, country").eq("org_id", orgId);
   return data || [];
 }
-  const { data, error } = await supabase.functions.invoke("dispatch-ride", { body });
-  if (error) throw error;
-  return data;
-}
 
 // ── Storefront orders ──
 export async function updateStorefrontOrder(orderId: string, updates: Record<string, any>) {
