@@ -7,8 +7,16 @@ import type { CallState } from "@/lib/call-manager";
 
 export interface ActiveCallMeta {
   callId: string;
-  threadId?: string;
+  /** Canonical conversation UUID */
+  conversationId?: string;
   orgId: string;
+  /** Business entity ID (listing, booking, etc.) */
+  entityId?: string;
+
+  // ── Deprecated aliases — kept for transitional compat ──
+  /** @deprecated Use conversationId */
+  threadId?: string;
+  /** @deprecated Use entityId */
   contextId?: string;
 }
 
