@@ -52,7 +52,7 @@ export async function softDeleteMessage(messageId: string, userId: string, exist
 
 // ── Insert raw chat message (payment cards, offline) ──
 export async function insertRawChatMessage(payload: Record<string, any>) {
-  const { data, error } = await supabase.from("chat_messages_v2").insert(payload).select("*").single();
+  const { data, error } = await (supabase as any).from("chat_messages_v2").insert(payload).select("*").single();
   if (error) throw error;
   return data;
 }
