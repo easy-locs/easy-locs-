@@ -1,7 +1,7 @@
 /**
- * OrbitAccountSection — "YOU" section inside Orbit hub.
- * Signal/WhatsApp-level personal account control panel with profile editing.
- * Rewired: chat actions via useOrbitAccountActions hook.
+ * OrbitAccountSection — "YOU" cockpit inside Orbit hub.
+ * Smart, simple, futuristic personal control center.
+ * Micro-component based: identity card + smart summary cards + sub-pages.
  */
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
@@ -9,7 +9,8 @@ import {
   Copy, Check, QrCode, ChevronRight, Key, LogOut,
   Bell, Database, ShieldCheck, HelpCircle, Camera, Pencil,
   Image, ShieldAlert, Timer, Ban, UserX, Globe, ScanFace, KeyRound, Wifi, AtSign,
-  Store, MessageSquare, Palette, Film, Download, Archive, Trash2, Star
+  Store, MessageSquare, Palette, Film, Download, Archive, Trash2, Star,
+  Phone, MapPin, Wallpaper, ImageIcon, BookOpen
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
@@ -30,7 +31,15 @@ import {
 import { getNotifAlertPrefs, setNotifAlertPrefs, requestNotificationPermission, type NotifAlertPrefs } from "@/lib/notif-alert-prefs";
 import { useUsername } from "@/hooks/useUsername";
 import { useOrbitAccountActions } from "@/hooks/orbit/useOrbitAccountActions";
-type SubPage = "main" | "privacy" | "security" | "notifications" | "storage" | "devices" | "edit-profile" | "chats";
+import YouIdentityCard from "@/components/orbit/you/YouIdentityCard";
+import YouSmartSettingCard from "@/components/orbit/you/YouSmartSettingCard";
+import YouSectionBlock from "@/components/orbit/you/YouSectionBlock";
+import { useYouSummaries } from "@/hooks/orbit/useYouSummaries";
+import { useCallSettingsStore } from "@/families/calls/call-settings";
+import { useCallPrivacyStore } from "@/families/calls/call-privacy";
+import { useOrbitSettingsStore } from "@/families/tabs/you-tab";
+
+type SubPage = "main" | "privacy" | "security" | "notifications" | "storage" | "devices" | "edit-profile" | "chats" | "calls" | "location" | "background" | "media" | "stories";
 
 export default function OrbitAccountSection() {
   const { user, signOut } = useAuth();
@@ -50,6 +59,7 @@ export default function OrbitAccountSection() {
   const [usernameStatus, setUsernameStatus] = useState<{ msg: string; ok: boolean } | null>(null);
   const [savingUsername, setSavingUsername] = useState(false);
   const actions = useOrbitAccountActions(user?.id);
+  const summaries = useYouSummaries();
 
   useEffect(() => { if (username) setUsernameInput(username); }, [username]);
 
@@ -586,62 +596,196 @@ export default function OrbitAccountSection() {
     );
   }
 
-  // ═══ Main page ═══
+  // ═══ Calls sub-page — wired to canonical families ═══
+  if (subPage === "calls") {
+    const callSettings = useCallSettingsStore();
+    const callPrivacy = useCallPrivacyStore();
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Calls" icon={Phone} />
+        <div className="space-y-1 mt-4">
+          <Row label="Ringtone" desc="Play ringtone for incoming calls">
+            <Switch checked={callSettings.ringtoneEnabled} onCheckedChange={callSettings.setRingtoneEnabled} />
+          </Row>
+          <Row label="Vibration" desc="Vibrate on incoming calls">
+            <Switch checked={callSettings.vibrationOnRing} onCheckedChange={callSettings.setVibrationOnRing} />
+          </Row>
+          <Row label="Show Call Duration" desc="Display timer during active calls">
+            <Switch checked={callSettings.showCallDuration} onCheckedChange={callSettings.setShowCallDuration} />
+          </Row>
+          <Separator className="my-3" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Default Audio Route</p>
+          <div className="grid grid-cols-2 gap-2">
+            {(["earpiece", "speaker"] as const).map(v => (
+              <button key={v} onClick={() => callSettings.setDefaultAudioOutput(v)}
+                className={`py-2.5 px-3 rounded-lg text-xs font-medium transition-colors capitalize ${callSettings.defaultAudioOutput === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {v}
+              </button>
+            ))}
+          </div>
+          <Separator className="my-3" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Incoming Call Privacy</p>
+          <Row label="Hidden Incoming Calls" desc="Mask caller identity on incoming calls">
+            <Switch checked={callPrivacy.incomingVisibility === "hidden"} onCheckedChange={(v) => callPrivacy.setIncomingVisibility(v ? "hidden" : "full")} />
+          </Row>
+          <Row label="Hide Caller Photo" desc="Don't show caller avatar">
+            <Switch checked={callPrivacy.hideCallerPhoto} onCheckedChange={callPrivacy.setHideCallerPhoto} />
+          </Row>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-3 mb-2">Lock Screen</p>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { v: "show_full" as const, label: "Full" },
+              { v: "show_notification_only" as const, label: "Notif Only" },
+              { v: "hide" as const, label: "Hide" },
+            ]).map(opt => (
+              <button key={opt.v} onClick={() => callPrivacy.setLockScreenPolicy(opt.v)}
+                className={`py-2 px-2 rounded-lg text-[11px] font-medium transition-colors ${callPrivacy.lockScreenPolicy === opt.v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══ Location sub-page ═══
+  if (subPage === "location") {
+    const orbitSettings = useOrbitSettingsStore();
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Live Location" icon={MapPin} />
+        <div className="space-y-1 mt-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Default Duration</p>
+          <div className="grid grid-cols-4 gap-2">
+            {[15, 30, 60, 120].map(mins => (
+              <button key={mins} onClick={() => orbitSettings.setDefaultLiveLocationDuration(mins)}
+                className={`py-2 px-2 rounded-lg text-xs font-medium transition-colors ${orbitSettings.defaultLiveLocationDuration === mins ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {mins >= 60 ? `${mins / 60}h` : `${mins}m`}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2">Duration used when starting live location sharing</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══ Background sub-page ═══
+  if (subPage === "background") {
+    const orbitSettings = useOrbitSettingsStore();
+    const presets = ["default", "dark-glass", "midnight", "ocean", "forest", "sunset"];
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Chat Background" icon={Wallpaper} />
+        <div className="mt-4">
+          <div className="grid grid-cols-3 gap-2">
+            {presets.map(preset => (
+              <button key={preset} onClick={() => orbitSettings.setChatBackground(preset)}
+                className={`py-3 px-2 rounded-xl text-xs font-medium transition-colors capitalize ${orbitSettings.chatBackground === preset ? "bg-primary text-primary-foreground ring-2 ring-primary/30" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {preset.replace("-", " ")}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-3">Applies to all conversation threads</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══ Media sub-page ═══
+  if (subPage === "media") {
+    const orbitSettings = useOrbitSettingsStore();
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Media" icon={ImageIcon} />
+        <div className="space-y-1 mt-4">
+          <Row label="Auto-Download Media" desc="Download photos and videos automatically">
+            <Switch checked={orbitSettings.autoDownloadMedia} onCheckedChange={orbitSettings.setAutoDownloadMedia} />
+          </Row>
+          <Separator className="my-3" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Quality</p>
+          <div className="grid grid-cols-3 gap-2">
+            {(["auto", "low", "high"] as const).map(q => (
+              <button key={q} onClick={() => orbitSettings.setMediaQuality(q)}
+                className={`py-2 px-2 rounded-lg text-xs font-medium transition-colors capitalize ${orbitSettings.mediaQuality === q ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══ Stories sub-page ═══
+  if (subPage === "stories") {
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Stories" icon={BookOpen} />
+        <div className="space-y-1 mt-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Default Audience</p>
+          <div className="grid grid-cols-3 gap-2">
+            {["contacts", "close_friends", "everyone"].map(a => (
+              <button key={a} className="py-2 px-2 rounded-lg text-xs font-medium bg-muted text-muted-foreground capitalize">
+                {a.replace("_", " ")}
+              </button>
+            ))}
+          </div>
+          <Separator className="my-3" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Expiry</p>
+          <div className="grid grid-cols-3 gap-2">
+            {["24h", "48h", "7d"].map(e => (
+              <button key={e} className="py-2 px-2 rounded-lg text-xs font-medium bg-muted text-muted-foreground">
+                {e}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2">Stories auto-expire after the selected period</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══ Main cockpit ═══
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin">
-      {/* Profile header */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center py-8 px-4">
-        <div className="relative">
-          <Avatar className="w-20 h-20 border-2 border-accent/30">
-            <AvatarImage src={avatarUrl} alt="Profile" />
-            <AvatarFallback className="text-2xl font-bold" style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border-2"
-            style={{ background: "hsl(var(--primary))", borderColor: "hsl(var(--background))" }} />
-        </div>
-
-        <p className="text-base font-semibold text-foreground mt-3">
-          {displayName || displayEmail}
-        </p>
-        {username && (
-          <p className="text-xs font-mono mt-0.5" style={{ color: "hsl(var(--primary))" }}>@{username}</p>
-        )}
-        {displayName && <p className="text-xs text-muted-foreground">{displayEmail}</p>}
-        <div className="flex items-center gap-1.5 mt-1">
-          <span className="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full"
-            style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}>
-            EL-{shortId}
-          </span>
-          <button onClick={copyId} className="p-0.5 rounded transition-colors hover:bg-muted">
-            {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3 text-muted-foreground" />}
-          </button>
-        </div>
-
-      </motion.div>
+      {/* Identity Card */}
+      <YouIdentityCard
+        avatarUrl={avatarUrl}
+        displayName={displayName}
+        email={displayEmail}
+        username={username}
+        shortId={shortId}
+        onEditProfile={() => setSubPage("edit-profile")}
+      />
 
       <Separator className="mx-4" />
 
-      {/* Menu items */}
-      <div className="px-3 py-3 space-y-0.5">
-        <MenuItem icon={Pencil} label="Edit Profile" desc="Name, photo, identity" onClick={() => setSubPage("edit-profile")} color="hsl(var(--primary))" />
-        <MenuItem icon={QrCode} label="Account ID" desc={`EL-${shortId}`} onClick={copyId} color="hsl(var(--accent))" />
+      {/* Orbit Quick Controls — Smart Summary Cards */}
+      <YouSectionBlock title="Communication">
+        <YouSmartSettingCard icon={Bell} label="Notifications" summary={summaries.notifSummary} onClick={() => setSubPage("notifications")} />
+        <YouSmartSettingCard icon={Phone} label="Calls" summary={summaries.callSummary} onClick={() => setSubPage("calls")} accentColor="hsl(var(--accent))" />
+        <YouSmartSettingCard icon={Eye} label="Privacy" summary={summaries.privacySummary} onClick={() => setSubPage("privacy")} />
+      </YouSectionBlock>
 
-        <Separator className="my-2 mx-3" />
+      <YouSectionBlock title="Chat Experience">
+        <YouSmartSettingCard icon={MessageSquare} label="Chat Defaults" summary={summaries.chatDefaultsSummary} onClick={() => setSubPage("chats")} />
+        <YouSmartSettingCard icon={Wallpaper} label="Background" summary={summaries.backgroundSummary} onClick={() => setSubPage("background")} accentColor="hsl(var(--accent))" />
+        <YouSmartSettingCard icon={ImageIcon} label="Media" summary={summaries.mediaSummary} onClick={() => setSubPage("media")} />
+      </YouSectionBlock>
 
-        <MenuItem icon={Eye} label="Privacy" desc="Last seen, read receipts, typing" onClick={() => setSubPage("privacy")} color="hsl(var(--primary))" />
-        <MenuItem icon={Shield} label="Security" desc="E2E encryption, 2FA" onClick={() => setSubPage("security")} color="hsl(var(--accent))" />
-        <MenuItem icon={MessageSquare} label="Chats" desc="Theme, export" onClick={() => setSubPage("chats")} color="hsl(var(--primary))" />
-        <MenuItem icon={Bell} label="Notifications" desc="Messages, calls, sounds" onClick={() => setSubPage("notifications")} color="hsl(var(--accent))" />
-        <MenuItem icon={Database} label="Storage & Data" desc="Media, downloads" onClick={() => setSubPage("storage")} color="hsl(var(--primary))" />
-        <MenuItem icon={Smartphone} label="Devices" desc="Active sessions" onClick={() => setSubPage("devices")} color="hsl(var(--accent))" />
+      <YouSectionBlock title="Sharing">
+        <YouSmartSettingCard icon={BookOpen} label="Stories" summary={summaries.storiesSummary} onClick={() => setSubPage("stories")} />
+        <YouSmartSettingCard icon={MapPin} label="Live Location" summary={summaries.locationSummary} onClick={() => setSubPage("location")} accentColor="hsl(var(--accent))" />
+      </YouSectionBlock>
 
-        <Separator className="my-2 mx-3" />
-
-        <MenuItem icon={HelpCircle} label="Help" desc="FAQ, support" onClick={() => navigate("/contact")} color="hsl(var(--muted-foreground))" />
-      </div>
+      <YouSectionBlock title="Account">
+        <YouSmartSettingCard icon={Shield} label="Security" summary="E2E encryption · 2FA" onClick={() => setSubPage("security")} />
+        <YouSmartSettingCard icon={Database} label="Storage & Data" summary="Media, downloads" onClick={() => setSubPage("storage")} accentColor="hsl(var(--accent))" />
+        <YouSmartSettingCard icon={Smartphone} label="Devices" summary="Active sessions" onClick={() => setSubPage("devices")} />
+        <YouSmartSettingCard icon={HelpCircle} label="Help" summary="FAQ, support" onClick={() => navigate("/contact")} accentColor="hsl(var(--muted-foreground))" />
+      </YouSectionBlock>
 
       <Separator className="mx-4" />
 
@@ -649,7 +793,7 @@ export default function OrbitAccountSection() {
       <div className="px-3 py-3">
         <button onClick={async () => { haptic("medium"); await signOut(); navigate("/login"); }}
           className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-destructive/5 transition-colors text-left">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--destructive) / 0.1)" }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-destructive/10">
             <LogOut className="h-4 w-4 text-destructive" />
           </div>
           <p className="text-sm font-medium text-destructive">{t("orbit.you.logout") || t("nav.logout") || "Log out"}</p>
