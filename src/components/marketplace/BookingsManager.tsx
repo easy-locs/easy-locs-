@@ -108,17 +108,12 @@ export async function uploadBookingInvoiceAttachment(params: {
   const fileName = `${sanitizeFileName(params.invoiceNumber)}-${safeName}.pdf`;
   const path = `${params.orgId}/invoices/${params.bookingId}/${crypto.randomUUID()}-${fileName}`;
 
-  await uploadBookingDocumentFile(path, params.blob, "application/pdf");
+  await uploadBookingDocumentFile(path, params.blob as File, "application/pdf");
 
   const signedUrl = await signBookingDocumentUrl(path);
 
   return {
     attachmentUrl: signedUrl || "",
-    attachmentName: fileName,
-  };
-
-  return {
-    attachmentUrl: signedData?.signedUrl || "",
     attachmentName: fileName,
   };
 }
