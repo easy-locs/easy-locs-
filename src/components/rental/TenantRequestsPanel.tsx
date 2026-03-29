@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { resolveDocumentRequest, fetchTenantUserId } from "@/repositories/rental.repository";
+import { resolveDocumentRequest, fetchTenantUserId, fetchDocumentRequests } from "@/repositories/rental.repository";
 import { insertAppNotification } from "@/repositories/communication.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";

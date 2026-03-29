@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { fetchInventoryReportById } from "@/repositories/rental.repository";
+import { fetchInventoryReportById, fetchInventoryReports, fetchInventoryRooms, fetchInventoryItems } from "@/repositories/rental.repository";
 import { invokeSendEmail } from "@/repositories/ai.repository";
 import { ClipboardCheck, Home, Users, Calendar, Eye, Mail, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
