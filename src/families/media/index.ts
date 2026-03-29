@@ -12,6 +12,9 @@ export type { PickedMedia, MediaPickSource, MediaPickKind } from "./media-pick";
 export { MediaUpload, useMediaUploadQueue } from "./media-upload";
 export type { UploadItem, UploadStatus } from "./media-upload";
 
+// ── Media Send (optimistic pipeline) ──
+export { sendMediaOptimistic, retryMediaUpload } from "@/families/send/send-media-optimistic";
+
 // ── Media Receive ──
 export { MediaReceive } from "./media-receive";
 export type { ReceivedMedia } from "./media-receive";

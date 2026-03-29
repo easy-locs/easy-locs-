@@ -1,8 +1,10 @@
 /**
- * useHudAttachmentUpload — Extracted from HudChatPanel.
- * Single responsibility: file queue → upload → send as attachment messages.
+ * useHudAttachmentUpload — Optimistic media send pipeline.
+ * Files are sent as optimistic messages immediately, uploaded in background.
  */
 import { useCallback } from "react";
+import { sendMediaOptimistic } from "@/families/send/send-media-optimistic";
+import type { SendContext } from "@/families/send/send-context";
 import { toast } from "sonner";
 
 interface AttachmentItem {
@@ -24,10 +26,57 @@ interface Deps {
   sendingAttachments: boolean;
   viewOnceEnabled: boolean;
   setViewOnceEnabled: (v: boolean) => void;
+  /** Send context for optimistic pipeline */
+  sendContext?: SendContext | null;
+  pathPrefix?: string;
 }
 
 export function useHudAttachmentUpload(deps: Deps) {
   const handleUploadAndSendAttachments = useCallback(async () => {
+    // If we have a send context, use the optimistic pipeline
+    if (deps.sendContext) {
+      const promises = deps.queue.map(async (item) => {
+        if (item.status === "uploaded" && item.uploadedUrl) {
+          // Already uploaded — use legacy send path
+          return { item, uploaded: true };
+        }
+        try {
+          await sendMediaOptimistic(deps.sendContext!, {
+            file: item.file,
+            caption: "",
+            viewOnce: deps.viewOnceEnabled,
+            uploadFn: async (file, path, onProgress) => {
+              const result = await deps.uploadSingleFile({
+                file,
+                pathPrefix: deps.pathPrefix || "orbit-media",
+                onProgress,
+              });
+              return result.publicUrl;
+            },
+            pathPrefix: deps.pathPrefix || "orbit-media",
+          });
+          return { item, uploaded: true };
+        } catch (err: any) {
+          deps.markFailed(item.localId, err?.message || "Upload failed");
+          return { item, uploaded: false };
+        }
+      });
+
+      const results = await Promise.allSettled(promises);
+      const succeeded = results.filter(
+        (r) => r.status === "fulfilled" && r.value?.uploaded,
+      ).length;
+
+      if (succeeded > 0) {
+        deps.clearQueue();
+        deps.setViewOnceEnabled(false);
+      } else {
+        toast.error("No files sent successfully");
+      }
+      return;
+    }
+
+    // Fallback: legacy sequential upload → send
     const uploadedItems: Array<{ localId: string; file: File; kind: string; url: string }> = [];
 
     for (const item of deps.queue) {
