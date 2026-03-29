@@ -7,9 +7,12 @@ import {
 
 type ThreadLike = {
   id: string;
-  v2ConversationId?: string | null;
+  /** Canonical conversation UUID */
+  conversationId?: string | null;
   peerOrbitId?: string | null;
   peerUserId?: string | null;
+  /** @deprecated Use conversationId */
+  v2ConversationId?: string | null;
 };
 
 export function useAttachments(params: {
@@ -49,12 +52,13 @@ export function useAttachments(params: {
     }
   };
 
-  /** Resolve or auto-create v2ConversationId */
+  /** Resolve or auto-create conversationId */
   const resolveConversationId = async (authUserId: string): Promise<string | null> => {
     const thread = params.thread;
+    const existingId = thread?.conversationId || thread?.v2ConversationId;
     trace("attachment.conversation.resolve", "input", {
       threadId: thread?.id ?? null,
-      v2ConversationId: thread?.v2ConversationId ?? null,
+      conversationId: existingId ?? null,
       peerUserId: thread?.peerUserId ?? null,
     });
     if (!thread) {
@@ -62,9 +66,9 @@ export function useAttachments(params: {
       return null;
     }
 
-    if (thread.v2ConversationId) {
-      trace("attachment.conversation.resolve", "output", { conversationId: thread.v2ConversationId, strategy: "existing_thread" });
-      return thread.v2ConversationId;
+    if (existingId) {
+      trace("attachment.conversation.resolve", "output", { conversationId: existingId, strategy: "existing_thread" });
+      return existingId;
     }
 
     if (thread.peerUserId) {
@@ -77,7 +81,7 @@ export function useAttachments(params: {
           peerUserId: thread.peerUserId,
           peerOrbitId: thread.peerOrbitId,
         });
-        params.onThreadUpdate?.(thread.id, { v2ConversationId: conv.id });
+        params.onThreadUpdate?.(thread.id, { conversationId: conv.id, v2ConversationId: conv.id });
         trace("attachment.conversation.resolve", "output", { conversationId: conv.id, strategy: "auto_create" });
         return conv.id;
       } catch (err: any) {
