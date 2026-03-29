@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -15,8 +15,7 @@ export function useOrbitCallRealtime(params: {
   useEffect(() => {
     if (!currentOrbitId) return;
 
-    const channel = supabase
-      .channel(`orbit-calls-${currentOrbitId}`)
+    const channel = createRealtimeChannel(`orbit-calls-${currentOrbitId}`)
       .on(
         "postgres_changes",
         {
