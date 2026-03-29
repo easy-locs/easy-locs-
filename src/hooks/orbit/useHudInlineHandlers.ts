@@ -4,11 +4,11 @@
  * Single responsibility: orchestrate media sends via chat.
  */
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { formatVoiceDuration } from "@/hooks/useVoiceRecorder";
 import { toast } from "sonner";
+import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
 
 interface HudInlineHandlersDeps {
   thread: any;
@@ -46,16 +46,16 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
       if (!audioUrl) throw new Error("Voice upload failed");
       const conversationId = await deps.resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
-      await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: conversationId,
-        sender_user_id: authUserId,
-        sender_orbit_id: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: deps.thread.peerOrbitId ?? null,
+      await insertMessage({
+        conversationId,
+        senderUserId: authUserId,
+        senderOrbitId: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        receiverOrbitId: deps.thread.peerOrbitId ?? null,
         type: "voice",
         body: `🎤 Voice message (${formatVoiceDuration(dur)})`,
         metadata: { audio_url: audioUrl, audio_duration_seconds: dur, transcript_status: "pending" },
       });
-      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
+      await updateConversationTimestamp(conversationId, `🎤 Voice message (${formatVoiceDuration(dur)})`);
       deps.setSecurityLevel("normal");
       toast.success(deps.t("orbit.voice_sent") || "Voice message sent");
       platformBus.emit("orbit:message_sent", { threadId: deps.thread.threadId || deps.thread.id, contextId: deps.thread.contextId, type: "voice" }, "orbit", { userId: authUserId, orgId: deps.orgId });
@@ -86,16 +86,16 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
     }
     const conversationId = await deps.resolveConversationId(authUserId);
     if (!conversationId) return;
-    await (supabase as any).from("chat_messages_v2").insert({
-      conversation_id: conversationId,
-      sender_user_id: authUserId,
-      sender_orbit_id: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-      receiver_orbit_id: deps.thread.peerOrbitId ?? null,
+    await insertMessage({
+      conversationId,
+      senderUserId: authUserId,
+      senderOrbitId: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+      receiverOrbitId: deps.thread.peerOrbitId ?? null,
       type: "location",
       body: storedContent,
       metadata: { lat: loc.lat, lng: loc.lng, mode: loc.type },
     });
-    await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
+    await updateConversationTimestamp(conversationId, locationMsg.slice(0, 120));
     platformBus.emit("orbit:message_sent", { threadId: deps.thread.threadId || deps.thread.id, contextId: deps.thread.contextId, type: "location" }, "orbit", { userId: deps.userId, orgId: deps.orgId });
     toast.success(deps.t("orbit.location_shared") || "Location shared");
     deps.setShowLocationPicker(false);
@@ -117,16 +117,16 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
       const disappearAt = computeDisappearAt(deps.disappearTTL !== "off" ? deps.disappearTTL : deps.defaultDisappearTtl);
       const conversationId = await deps.resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
-      await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: conversationId,
-        sender_user_id: authUserId,
-        sender_orbit_id: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: deps.thread.peerOrbitId ?? null,
+      await insertMessage({
+        conversationId,
+        senderUserId: authUserId,
+        senderOrbitId: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        receiverOrbitId: deps.thread.peerOrbitId ?? null,
         type: "media",
         body: "📷 View-once photo",
         metadata: { url: finalUrl, view_once: true, disappear_at: disappearAt },
       });
-      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
+      await updateConversationTimestamp(conversationId, "📷 View-once photo");
       toast.success(deps.t("orbit.view_once_sent") || "View-once photo sent");
     } catch (e: any) {
       toast.error(e?.message || "Upload failed");
