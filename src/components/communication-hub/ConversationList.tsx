@@ -20,23 +20,6 @@ interface Props {
   visible: boolean;
 }
 
-const CONV_TYPE_ICONS: Record<ConversationType, any> = {
-  direct: MessageCircle,
-  business: Building,
-  listing: Hash,
-  booking: Hash,
-  deal: Handshake,
-  property: User,
-  team: Users,
-  order: Hash,
-  rent_call: Building,
-  payment: Hash,
-  travel: Hash,
-  service: Hash,
-  delivery: Hash,
-  support: MessageCircle,
-};
-
 export default function ConversationList({ threads, loading, selectedThread, onSelectThread, visible }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
