@@ -1,9 +1,10 @@
 /**
  * useHudVoiceSend — Atomic hook: handle voice message recording, upload, and send.
  * Single responsibility: voice message lifecycle in HudChatPanel.
+ * Uses canonical repository for DB ops.
  */
 import { useCallback, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { toast } from "sonner";
 import { formatVoiceDuration } from "@/hooks/useVoiceRecorder";
@@ -40,20 +41,16 @@ export function useHudVoiceSend({
       if (!audioUrl) throw new Error("Voice upload failed");
       const conversationId = await resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
-      const { error } = await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: conversationId,
-        sender_user_id: authUserId,
-        sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: thread.peerOrbitId ?? null,
+      await insertMessage({
+        conversationId,
+        senderUserId: authUserId,
+        senderOrbitId: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        receiverOrbitId: thread.peerOrbitId ?? null,
         type: "voice",
         body: `🎤 Voice message (${formatVoiceDuration(dur)})`,
         metadata: { audio_url: audioUrl, audio_duration_seconds: dur, transcript_status: "pending" },
       });
-      if (error) throw error;
-      await (supabase as any).from("conversations_v2").update({
-        last_message_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }).eq("id", conversationId);
+      await updateConversationTimestamp(conversationId);
       setSecurityLevel("normal");
       toast.success(t("orbit.voice_sent") || "Voice message sent");
       platformBus.emit("orbit:message_sent", {

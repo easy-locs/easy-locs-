@@ -1,8 +1,10 @@
 /**
  * call-incoming-handler — Atomic unit: handle incoming call realtime events.
  * Single responsibility: process INSERT/UPDATE on call_logs for incoming calls.
+ * All DB ops go through canonical repository.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { markCallDeclined, markCallMissedByCallId, broadcastCallSignal } from "@/repositories/communication.repository";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -31,13 +33,9 @@ export async function processIncomingInsert(
 
   if (!callRow || callRow.status !== "ringing") return null;
 
-  // IDENTITY: caller_orbit_id stores auth.uid (from RPC).
-  // Skip if the caller is us (by auth.uid OR orbit_id).
   const callerField = callRow.caller_orbit_id;
   if (callerField === currentUserId || callerField === myOrbitId) return null;
 
-  // Resolve caller name: try profiles first (callerField is likely auth.uid),
-  // then orbit_profiles_v2 if it's an orbit_id format
   let callerName = "User";
   const { data: profile } = await supabase
     .from("profiles")
@@ -48,7 +46,6 @@ export async function processIncomingInsert(
   if (profile?.name || profile?.email) {
     callerName = profile.name || profile.email || "User";
   } else {
-    // Fallback: try orbit_profiles_v2
     const { data: orbitProfile } = await (supabase as any)
       .from("orbit_profiles_v2")
       .select("display_name, email")
@@ -79,51 +76,21 @@ export function processIncomingUpdate(
   if (!callRow) return false;
   if (callRow.status !== "ringing" && callRow.id === currentIncomingCallId) {
     trace("incoming.update", "output", { callId: callRow.id, dismiss: true });
-    return true; // should dismiss
+    return true;
   }
   return false;
 }
 
-export async function declineIncomingCall(
-  callId: string,
-  userId: string
-): Promise<void> {
+export async function declineIncomingCall(callId: string, userId: string): Promise<void> {
   trace("incoming.decline", "input", { callId, userId });
-
-  await supabase
-    .from("call_logs")
-    .update({ status: "declined", ended_at: new Date().toISOString() } as any)
-    .eq("id", callId);
-
-  const channel = supabase.channel(`call:${callId}`, { config: { broadcast: { self: false } } });
-  await channel.subscribe();
-  channel.send({
-    type: "broadcast", event: "signal",
-    payload: { type: "declined", data: "{}", from: userId },
-  });
-  setTimeout(() => supabase.removeChannel(channel), 1000);
-
+  await markCallDeclined(callId);
+  await broadcastCallSignal(callId, "declined", userId);
   trace("incoming.decline", "output", { callId });
 }
 
-export async function markCallMissed(
-  callId: string,
-  userId: string
-): Promise<void> {
+export async function markCallMissed(callId: string, userId: string): Promise<void> {
   trace("incoming.missed", "input", { callId, userId });
-
-  await supabase
-    .from("call_logs")
-    .update({ status: "missed", ended_at: new Date().toISOString() } as any)
-    .eq("id", callId);
-
-  const channel = supabase.channel(`call:${callId}`, { config: { broadcast: { self: false } } });
-  await channel.subscribe();
-  channel.send({
-    type: "broadcast", event: "signal",
-    payload: { type: "declined", data: "{}", from: userId },
-  });
-  setTimeout(() => supabase.removeChannel(channel), 1000);
-
+  await markCallMissedByCallId(callId);
+  await broadcastCallSignal(callId, "declined", userId);
   trace("incoming.missed", "output", { callId });
 }

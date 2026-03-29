@@ -677,9 +677,120 @@ export async function fetchGroupMemberCount(groupId: string) {
   return count || 0;
 }
 
-// ── Mark call as missed ──
+// ═══ CALL LIFECYCLE (canonical) ═══
+
 export async function markCallAsMissedV2(sessionId: string, reason: string) {
   await db.rpc("mark_call_as_missed_v2", { p_session_id: sessionId, p_reason: reason });
+}
+
+export async function markCallActive(callId: string) {
+  const now = new Date().toISOString();
+  return db.from("call_logs")
+    .update({ status: "active", started_at: now, answered_at: now })
+    .eq("id", callId)
+    .select("id,status,started_at")
+    .maybeSingle();
+}
+
+export async function markCallDeclined(callId: string) {
+  return db.from("call_logs")
+    .update({ status: "declined", ended_at: new Date().toISOString() })
+    .eq("id", callId)
+    .neq("status", "declined")
+    .select("id,status,ended_at")
+    .maybeSingle();
+}
+
+export async function markCallEnded(callId: string, durationSec: number) {
+  return db.from("call_logs")
+    .update({ status: "ended", ended_at: new Date().toISOString(), duration_sec: durationSec })
+    .eq("id", callId)
+    .neq("status", "ended")
+    .select("id,status,ended_at,duration_sec")
+    .maybeSingle();
+}
+
+export async function markCallMissedByCallId(callId: string) {
+  return db.from("call_logs")
+    .update({ status: "missed", ended_at: new Date().toISOString() })
+    .eq("id", callId);
+}
+
+export async function acceptCallSession(sessionId: string) {
+  const now = new Date().toISOString();
+  const { error } = await db.from("call_sessions")
+    .update({ status: "active", answered_at: now, updated_at: now })
+    .eq("id", sessionId);
+  if (error) throw error;
+  await db.from("call_logs")
+    .update({ status: "answered", answered_at: now })
+    .eq("session_id", sessionId);
+}
+
+export async function declineCallSession(sessionId: string) {
+  const now = new Date().toISOString();
+  await db.from("call_sessions")
+    .update({ status: "declined", ended_at: now, updated_at: now, metadata: { ended_reason: "declined" } })
+    .eq("id", sessionId);
+  await db.from("call_logs")
+    .update({ status: "declined", ended_at: now, ended_reason: "declined" })
+    .eq("session_id", sessionId);
+}
+
+export async function hangupCallSession(sessionId: string, reason = "hangup") {
+  const now = new Date().toISOString();
+  await db.from("call_sessions")
+    .update({ status: "ended", ended_at: now, updated_at: now, metadata: { ended_reason: reason } })
+    .eq("id", sessionId);
+  await db.from("call_logs")
+    .update({ status: "ended", ended_at: now, ended_reason: reason })
+    .eq("session_id", sessionId);
+}
+
+export async function markCallReconnecting(sessionId: string, reconnectCount: number) {
+  await db.from("call_sessions")
+    .update({ reconnect_count: reconnectCount, quality_state: "reconnecting", updated_at: new Date().toISOString() })
+    .eq("id", sessionId);
+}
+
+export async function createOutgoingCallSession(params: {
+  conversationId?: string | null;
+  callerOrbitId: string;
+  receiverOrbitId?: string | null;
+  mode: "audio" | "video";
+}) {
+  const now = new Date().toISOString();
+  const { data: session, error: sessionErr } = await db.from("call_sessions").insert({
+    conversation_id: params.conversationId || null,
+    caller_orbit_id: params.callerOrbitId,
+    receiver_orbit_id: params.receiverOrbitId,
+    call_type: params.mode,
+    status: "ringing",
+    started_at: now, created_at: now, updated_at: now,
+    metadata: {},
+  }).select("*").single();
+  if (sessionErr) throw sessionErr;
+
+  await db.from("call_logs").insert({
+    conversation_id: params.conversationId || null,
+    session_id: session.id,
+    caller_orbit_id: params.callerOrbitId,
+    receiver_orbit_id: params.receiverOrbitId,
+    call_type: params.mode,
+    direction: "outgoing",
+    status: "ringing",
+    started_at: now, created_at: now,
+    missed: false, metadata: {},
+  });
+
+  return session;
+}
+
+export async function broadcastCallSignal(callId: string, signalType: string, fromUserId: string) {
+  const channel = supabase.channel(`call:${callId}`, { config: { broadcast: { self: false } } });
+  await channel.subscribe();
+  channel.send({ type: "broadcast", event: "signal", payload: { type: signalType, data: "{}", from: fromUserId } });
+  setTimeout(() => supabase.removeChannel(channel), 1000);
 }
 
 // ── Concierge payment ──

@@ -79,14 +79,15 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
           await uploadChatAttachment(path, blob);
           const url = await signChatAttachmentUrl(path);
 
-          const { data: inserted } = await db.from("chat_messages_v2").insert({
-            conversation_id: contextId,
-            sender_user_id: userId,
-            sender_orbit_id: `orbit_${userId.slice(0, 12)}`,
+          const { insertMessage } = await import("@/repositories/communication.repository");
+          const inserted = await insertMessage({
+            conversationId: contextId,
+            senderUserId: userId,
+            senderOrbitId: `orbit_${userId.slice(0, 12)}`,
             type: "audio",
             body: `🎤 Voice message (${formatDur(duration)})`,
             metadata: { audio_url: url, audio_duration_seconds: duration },
-          }).select("*").single();
+          });
 
           if (inserted) onSent(inserted);
         } catch (e: any) {
