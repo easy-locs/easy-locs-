@@ -1,3 +1,8 @@
+/**
+ * OrbitThreadListV2 — Thread list with canonical identity rendering.
+ */
+import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
+
 type Thread = {
   id: string;
   name: string;
@@ -13,16 +18,11 @@ type Props = {
   onSelect: (thread: Thread) => void;
 };
 
-export function OrbitThreadListV2({
-  threads,
-  selectedThreadId,
-  onSelect,
-}: Props) {
+export function OrbitThreadListV2({ threads, selectedThreadId, onSelect }: Props) {
   return (
     <div className="space-y-1">
       {threads.map((thread) => {
         const active = selectedThreadId === thread.id;
-
         return (
           <button
             key={thread.id}
@@ -33,30 +33,20 @@ export function OrbitThreadListV2({
             ].join(" ")}
           >
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 shrink-0 rounded-full bg-muted overflow-hidden">
-                {thread.avatarUrl ? (
-                  <img src={thread.avatarUrl} alt="" className="h-full w-full object-cover" />
-                ) : null}
-              </div>
-
+              <IdentityAvatar avatarUrl={thread.avatarUrl} name={thread.name} size="md" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-medium text-foreground line-clamp-2 break-words">{thread.name}</p>
                   <span className="text-[11px] text-muted-foreground shrink-0">
                     {thread.lastMessageTime
-                      ? new Date(thread.lastMessageTime).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
+                      ? new Date(thread.lastMessageTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                       : ""}
                   </span>
                 </div>
-
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs text-muted-foreground line-clamp-1 break-words">
                     {thread.lastMessage || ""}
                   </p>
-
                   {!!thread.unreadCount && (
                     <span className="inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-primary text-primary-foreground px-1 text-[11px] font-semibold shrink-0">
                       {thread.unreadCount > 99 ? "99+" : thread.unreadCount}

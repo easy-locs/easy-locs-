@@ -1,5 +1,5 @@
 /**
- * OrbitContactsDirectory — WhatsApp-like contacts with message/call/video actions.
+ * OrbitContactsDirectory — WhatsApp-like contacts with canonical identity rendering.
  */
 import { useState, useEffect, useMemo, memo, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { haptic } from "@/lib/haptics";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { toast } from "sonner";
+import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 
 interface OrbitContact {
   id: string;
@@ -28,21 +29,6 @@ interface OrbitContact {
 
 type Tab = "recent" | "all" | "favorites";
 
-const AVATAR_COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--accent))",
-  "hsl(210 70% 50%)",
-  "hsl(280 60% 55%)",
-  "hsl(340 65% 50%)",
-  "hsl(160 60% 40%)",
-];
-
-function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
 const ContactRow = memo(function ContactRow({
   contact,
   onMessage,
@@ -54,37 +40,17 @@ const ContactRow = memo(function ContactRow({
   onCall: (c: OrbitContact) => void;
   onVideoCall: (c: OrbitContact) => void;
 }) {
-  const initials = (contact.name || "?")
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
   const subtitle = contact.company || contact.email || contact.phone || "";
   const timeStr = contact.last_contacted_at
     ? new Date(contact.last_contacted_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;
 
-  const avatarBg = getAvatarColor(contact.name || "?");
-
   return (
     <div className="flex items-center gap-3 px-4 h-[64px] active:bg-muted/30 transition-colors cursor-pointer"
       onClick={() => onMessage(contact)}
     >
-      {/* Avatar */}
-      <div
-        className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
-        style={{ background: contact.avatar_url ? undefined : avatarBg }}
-      >
-        {contact.avatar_url ? (
-          <img src={contact.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-        ) : (
-          <span className="text-sm font-bold text-white">{initials}</span>
-        )}
-      </div>
+      <IdentityAvatar avatarUrl={contact.avatar_url} name={contact.name} size="md" />
 
-      {/* Info */}
       <div className="flex-1 min-w-0 pr-1">
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-semibold text-foreground break-words line-clamp-1">
@@ -101,33 +67,17 @@ const ContactRow = memo(function ContactRow({
         <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">{timeStr}</span>
       )}
 
-      {/* Actions: Message, Audio Call, Video Call */}
       <div className="flex items-center gap-0.5 shrink-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
-          onClick={(e) => { e.stopPropagation(); haptic("light"); onMessage(contact); }}
-          aria-label="Message"
-        >
+        <Button variant="ghost" size="icon" className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
+          onClick={(e) => { e.stopPropagation(); haptic("light"); onMessage(contact); }} aria-label="Message">
           <MessageCircle className="h-4 w-4 text-primary" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
-          onClick={(e) => { e.stopPropagation(); haptic("light"); onCall(contact); }}
-          aria-label="Audio call"
-        >
+        <Button variant="ghost" size="icon" className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
+          onClick={(e) => { e.stopPropagation(); haptic("light"); onCall(contact); }} aria-label="Audio call">
           <Phone className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
-          onClick={(e) => { e.stopPropagation(); haptic("light"); onVideoCall(contact); }}
-          aria-label="Video call"
-        >
+        <Button variant="ghost" size="icon" className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
+          onClick={(e) => { e.stopPropagation(); haptic("light"); onVideoCall(contact); }} aria-label="Video call">
           <Video className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
         </Button>
       </div>
@@ -221,9 +171,8 @@ export default function OrbitContactsDirectory() {
     if (isInCall || isStartingCall) { toast.info("Already in a call"); return; }
     haptic("medium");
     try {
-      const targetId = contact.contact_user_id;
       await startCall({
-        targetId,
+        targetId: contact.contact_user_id,
         peerName: contact.name,
         contextType: "contact",
         contextId: contact.id,
@@ -259,30 +208,19 @@ export default function OrbitContactsDirectory() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header */}
       <div className="px-4 pt-4 pb-2 space-y-3">
         <h2 className="text-base font-bold text-foreground">Contacts</h2>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search contacts"
-            className="pl-9 h-9 text-sm rounded-xl bg-muted/30 border-border/20"
-          />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search contacts" className="pl-9 h-9 text-sm rounded-xl bg-muted/30 border-border/20" />
         </div>
-        {/* Tabs */}
         <div className="flex gap-1">
           {TABS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
+            <button key={id} onClick={() => setTab(id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors min-h-[36px] ${
-                tab === id
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground active:bg-muted/30"
-              }`}
-            >
+                tab === id ? "bg-primary/10 text-primary" : "text-muted-foreground active:bg-muted/30"
+              }`}>
               <Icon className="h-3.5 w-3.5" />
               {label}
             </button>
@@ -290,7 +228,6 @@ export default function OrbitContactsDirectory() {
         </div>
       </div>
 
-      {/* List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           Array.from({ length: 6 }).map((_, i) => <ContactSkeleton key={i} />)
@@ -304,13 +241,8 @@ export default function OrbitContactsDirectory() {
           </div>
         ) : (
           filtered.map((c) => (
-            <ContactRow
-              key={c.id}
-              contact={c}
-              onMessage={handleMessage}
-              onCall={handleCall}
-              onVideoCall={handleVideoCall}
-            />
+            <ContactRow key={c.id} contact={c}
+              onMessage={handleMessage} onCall={handleCall} onVideoCall={handleVideoCall} />
           ))
         )}
       </div>

@@ -6,9 +6,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Phone, PhoneOff, Video, Shield, User, MapPin } from "lucide-react";
+import { Phone, PhoneOff, Video, Shield, MapPin } from "lucide-react";
 import { startRingtone, stopRingtone } from "@/lib/ringtone";
 import { useI18n } from "@/lib/i18n";
+import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 
 interface IncomingCallDialogProps {
   open: boolean;
@@ -69,11 +70,7 @@ export default function IncomingCallDialog({
             <div className="absolute inset-[-12px] rounded-full bg-green-500/8 animate-pulse" />
             <div className="absolute inset-[-4px] rounded-full border border-green-500/20 animate-pulse" style={{ animationDelay: "0.5s" }} />
             <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-green-500/15 to-green-600/10 border-2 border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10">
-              {isVideo ? (
-                <Video className="h-9 w-9 text-green-500 animate-bounce" style={{ animationDuration: "1.5s" }} />
-              ) : (
-                <Phone className="h-9 w-9 text-green-500 animate-bounce" style={{ animationDuration: "1.5s" }} />
-              )}
+              <IdentityAvatar name={callerName} size="xl" />
             </div>
           </div>
 
@@ -82,10 +79,7 @@ export default function IncomingCallDialog({
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
               {titleLabel}
             </p>
-            <div className="flex items-center justify-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xl font-bold text-foreground">{callerName}</span>
-            </div>
+            <span className="text-xl font-bold text-foreground">{callerName}</span>
             {contextLabel && (
               <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
                 <MapPin className="h-3 w-3" />
