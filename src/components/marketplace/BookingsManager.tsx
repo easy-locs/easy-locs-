@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Clock, X, Send, CreditCard, FileText, MessageCircle, Mail, ShoppingCart } from "lucide-react";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadBookingDocumentFile, signBookingDocumentUrl } from "@/repositories/rental.repository";
 import { sendCommunicationEvent, createDeepLinkMeta, type CommunicationEvent, type DeepLinkMeta } from "@/lib/shared";
 import BookingStatusBadge from "./BookingStatusBadge";
 
@@ -108,23 +108,12 @@ export async function uploadBookingInvoiceAttachment(params: {
   const fileName = `${sanitizeFileName(params.invoiceNumber)}-${safeName}.pdf`;
   const path = `${params.orgId}/invoices/${params.bookingId}/${crypto.randomUUID()}-${fileName}`;
 
-  const { error } = await supabase.storage
-    .from("booking-documents")
-    .upload(path, params.blob, {
-      contentType: "application/pdf",
-      upsert: true,
-    });
+  await uploadBookingDocumentFile(path, params.blob as File, "application/pdf");
 
-  if (error) {
-    throw error;
-  }
-
-  const { data: signedData, error: signError } = await supabase.storage
-    .from("booking-documents")
-    .createSignedUrl(path, 3600);
+  const signedUrl = await signBookingDocumentUrl(path);
 
   return {
-    attachmentUrl: signedData?.signedUrl || "",
+    attachmentUrl: signedUrl || "",
     attachmentName: fileName,
   };
 }

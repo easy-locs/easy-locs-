@@ -3,7 +3,7 @@
  * Works with both seasonal booking_requests and concierge_orders.
  */
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadBookingDocumentFile, getBookingDocumentPublicUrl, updateDocumentUrls } from "@/repositories/rental.repository";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -41,20 +41,13 @@ export default function BookingDocumentsPanel({
       const newUrls = [...documentUrls];
       for (const file of Array.from(files)) {
         const path = `${orgId}/${bookingId}/${Date.now()}-${file.name}`;
-        const { error } = await supabase.storage
-          .from("booking-documents")
-          .upload(path, file, { upsert: true });
+        const { error } = await uploadBookingDocumentFile(path, file).then(() => ({ error: null })).catch(e => ({ error: e }));
         if (error) throw error;
-        const { data: urlData } = supabase.storage
-          .from("booking-documents")
-          .getPublicUrl(path);
-        newUrls.push(urlData.publicUrl);
+        const publicUrl = getBookingDocumentPublicUrl(path);
+        newUrls.push(publicUrl);
       }
 
-      await supabase
-        .from(tableName)
-        .update({ document_urls: newUrls } as any)
-        .eq("id", bookingId);
+      await updateDocumentUrls(tableName, bookingId, newUrls);
 
       toast.success(`${files.length} document(s) uploaded`);
       onUpdate();
@@ -69,10 +62,7 @@ export default function BookingDocumentsPanel({
 
   const removeDoc = useCallback(async (index: number) => {
     const updated = documentUrls.filter((_, i) => i !== index);
-    await supabase
-      .from(tableName)
-      .update({ document_urls: updated } as any)
-      .eq("id", bookingId);
+    await updateDocumentUrls(tableName, bookingId, updated);
     toast.success("Document removed");
     onUpdate();
   }, [bookingId, tableName, documentUrls, onUpdate]);

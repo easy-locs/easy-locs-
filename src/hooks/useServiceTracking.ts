@@ -9,7 +9,7 @@
  * - Status lifecycle: pending → en_route → nearby → arrived → completed
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { haversineKm } from "@/lib/geo/distance";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -72,7 +72,7 @@ export function useTrackingObserver(sessionId: string | null) {
         }
       )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [sessionId]);
 
   // Computed
@@ -261,7 +261,7 @@ export function useOrgTrackingSessions() {
         }
       )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [orgId]);
 
   return { sessions, loading };

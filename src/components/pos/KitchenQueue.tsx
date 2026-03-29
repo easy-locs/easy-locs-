@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +63,7 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [shopId, qc]);
 
   const updateStatus = async (orderId: string, newStatus: OrderStatus) => {

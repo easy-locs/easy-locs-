@@ -10,7 +10,7 @@ import {
   ClipboardList, History,
 } from "lucide-react";
 import { format } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
+import { signBookingDocumentUrl } from "@/repositories/rental.repository";
 import BookingStatusBadge from "./BookingStatusBadge";
 import BookingCommunicationThread from "./BookingCommunicationThread";
 import BookingActivityLog from "./BookingActivityLog";
@@ -27,11 +27,9 @@ function IdDocumentCard({ booking }: { booking: any }) {
       setSignedUrl(path);
       return;
     }
-    supabase.storage
-      .from("booking-documents")
-      .createSignedUrl(path, 3600)
-      .then(({ data }) => {
-        if (data?.signedUrl) setSignedUrl(data.signedUrl);
+    signBookingDocumentUrl(path)
+      .then((url) => {
+        if (url) setSignedUrl(url);
       });
   }, [booking.id_document_url]);
 

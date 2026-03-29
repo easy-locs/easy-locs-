@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 
@@ -56,7 +56,7 @@ export function useMeRealtimeSync() {
     });
 
     return () => {
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(channel);
       unsub1();
       unsub2();
     };

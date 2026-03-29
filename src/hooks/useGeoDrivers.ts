@@ -4,7 +4,7 @@
  * Falls back to polling if WebSocket fails.
  */
 import { useEffect, useState, useRef, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import type { Driver } from "@/lib/radar/radar-engine";
 
 const STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
@@ -25,7 +25,7 @@ function generateDemoDrivers(userLat: number, userLng: number): Driver[] {
 export function useGeoDrivers(userLat?: number | null, userLng?: number | null) {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [connected, setConnected] = useState(false);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const channelRef = useRef<ReturnType<typeof createRealtimeChannel> | null>(null);
 
   // Initial fetch from concierge_services (live entities)
   const fetchDrivers = useCallback(async () => {
@@ -78,7 +78,7 @@ export function useGeoDrivers(userLat?: number | null, userLng?: number | null) 
   useEffect(() => {
     fetchDrivers();
 
-    const ch = supabase.channel("drivers-live-radar", {
+    const ch = createRealtimeChannel("drivers-live-radar", {
       config: { broadcast: { self: false } },
     });
 

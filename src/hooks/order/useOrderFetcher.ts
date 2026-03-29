@@ -3,7 +3,7 @@
  * Single responsibility: data loading + realtime subscriptions for order detail.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export function useOrderFetcher(orderId: string | undefined) {
   const [order, setOrder] = useState<any>(null);
@@ -59,7 +59,7 @@ export function useOrderFetcher(orderId: string | undefined) {
       .channel(`unified-order-${orderId}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "storefront_orders", filter: `id=eq.${orderId}` }, () => fetchOrder())
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => { removeRealtimeChannel(ch); };
   }, [orderId, fetchOrder]);
 
   // Realtime: mobility job updates
@@ -69,7 +69,7 @@ export function useOrderFetcher(orderId: string | undefined) {
       .channel(`unified-mobility-${order.delivery_job_id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs", filter: `id=eq.${order.delivery_job_id}` }, () => fetchOrder())
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => { removeRealtimeChannel(ch); };
   }, [order?.delivery_job_id, fetchOrder]);
 
   return { order, deliveryJob, driverSession, loading, refetch: fetchOrder };

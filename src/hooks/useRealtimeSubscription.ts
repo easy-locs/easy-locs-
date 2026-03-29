@@ -4,7 +4,7 @@
  * Layer 3.3: Realtime subscriptions.
  */
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface RealtimeOptions {
@@ -58,7 +58,7 @@ export function useRealtimeSubscription({
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table, channelName, filter, event, enabled]);

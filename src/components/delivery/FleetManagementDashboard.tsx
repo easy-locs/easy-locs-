@@ -3,7 +3,7 @@
  * PASS85-EE: Fleet Management Dashboard
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Truck, MapPin, Activity, RefreshCw, Wifi, WifiOff, Clock, Star, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -97,7 +97,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
       .channel("fleet-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "rider_presence" }, () => fetchFleet())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [orgId, fetchFleet]);
 
   const getStatusConfig = (status: string) => {

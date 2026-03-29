@@ -3,7 +3,7 @@
  * DB calls delegated to communication.repository.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { haptic } from "@/lib/haptics";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
@@ -71,7 +71,7 @@ export function useGroupChat() {
         }
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [activeGroup?.id, user?.id, appendMessage]);
 
   const myMember = members.find(m => m.user_id === user?.id);

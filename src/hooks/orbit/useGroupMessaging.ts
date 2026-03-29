@@ -2,7 +2,7 @@
  * useGroupMessaging — Atomic: load, send, realtime for group chat messages.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
@@ -72,7 +72,7 @@ export function useGroupMessaging(activeGroupId: string | null, userId: string |
         }
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [activeGroupId, userId]);
 
   return { messages, msgInput, setMsgInput, loadMessages, sendMessage, endRef };

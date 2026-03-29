@@ -15,7 +15,7 @@ import {
   type ResolvedAddress,
 } from "@/lib/address/canonical-address-resolver";
 import type { CanonicalPlace, AddressContextType, AddressSourceType } from "@/lib/address/canonical-place";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 interface UseCanonicalAddressResult {
   activeContext: ActiveAddressContext | null;
@@ -59,7 +59,7 @@ export function useCanonicalAddress(contextType: AddressContextType = "global"):
         refresh();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [userId, contextType, refresh]);
 
   const activateAddress = useCallback(async (
