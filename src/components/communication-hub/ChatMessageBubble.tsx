@@ -1,16 +1,17 @@
 /**
  * ChatMessageBubble — Premium Signal-grade message bubble.
- * Handles text, voice, media, payment, email, system, view-once messages with unified HUD design.
+ * Decomposed into isolated micro-components: BubbleMediaBlock, BubbleMetaFooter, BubbleLocationBlock.
  */
 import { memo, useRef, useCallback, useEffect, useState, useMemo } from "react";
 import {
   Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock, CheckCircle2,
-  ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText, MapPin, ExternalLink,
+  ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText,
 } from "lucide-react";
 import { format } from "date-fns";
-import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
-import ViewOnceMedia from "./ViewOnceMedia";
+import { BubbleMediaBlock } from "./chat/BubbleMediaBlock";
+import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
+import { BubbleLocationBlock } from "./chat/BubbleLocationBlock";
 
 import { haptic } from "@/lib/haptics";
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
