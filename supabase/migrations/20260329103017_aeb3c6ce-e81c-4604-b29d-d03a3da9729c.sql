@@ -1,0 +1,1 @@
+UPDATE public.call_logs SET status = 'missed', ended_at = now() WHERE status = 'ringing' AND created_at < now() - interval '5 minutes'
