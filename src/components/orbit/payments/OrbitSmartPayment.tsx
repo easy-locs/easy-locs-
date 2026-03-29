@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { usePaymentFX } from "@/hooks/usePaymentFX";
 import { supabase } from "@/integrations/supabase/client";
+import * as paymentsRepo from "@/repositories/payments.repository";
 import {
   detectLocalCurrency,
   formatCurrency,
