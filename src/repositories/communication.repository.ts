@@ -900,20 +900,3 @@ export async function fetchGroupMemberIds(userId: string) {
   return (data || []).map((r: any) => r.group_id).filter(Boolean);
 }
 
-export async function fetchGroupMemberCount(groupId: string) {
-  const { count } = await supabase
-    .from("group_members")
-    .select("*", { count: "exact", head: true })
-    .eq("group_id", groupId);
-  return count || 0;
-}
-
-export async function fetchLastGroupMessage(groupId: string) {
-  const { data } = await db
-    .from("chat_messages_v2")
-    .select("body, created_at")
-    .eq("conversation_id", groupId)
-    .order("created_at", { ascending: false })
-    .limit(1);
-  return data?.[0] || null;
-}
