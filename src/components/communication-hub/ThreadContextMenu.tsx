@@ -8,6 +8,7 @@ import { useState } from "react";
 import { X, BellOff, Bell, Heart, HeartOff, Lock, Ban, Trash2, MailOpen, Archive, ArchiveRestore, Eraser, Shield, ChevronRight, CheckCheck, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 import type { ConversationThread } from "./types";
 import { useI18n } from "@/lib/i18n";
 
@@ -101,13 +102,7 @@ export default function ThreadContextMenu({
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b sticky top-0 z-10" style={{ borderColor: "hsl(var(--border) / 0.1)", background: "hsl(var(--card))" }}>
           <div className="flex items-center gap-3">
-            {thread.avatarUrl ? (
-              <img src={thread.avatarUrl} alt={thread.name} className="h-10 w-10 rounded-full object-cover" />
-            ) : (
-              <div className="h-10 w-10 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>
-                <span className="text-sm font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>{thread.name.charAt(0).toUpperCase()}</span>
-              </div>
-            )}
+            <IdentityAvatar avatarUrl={thread.avatarUrl} name={thread.name} size="sm" />
             <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>{thread.name}</span>
           </div>
           <button onClick={onClose} className="h-8 w-8 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>

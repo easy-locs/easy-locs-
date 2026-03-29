@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   formatOrbitTimestamp, formatConversationPreview, resolveCanonicalDisplayIdentity,
 } from "@/lib/orbit/canonical-helpers";
+import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 import type { ConversationThread } from "./types";
 
 interface Props {
@@ -117,13 +118,7 @@ export default function ConversationList({ threads, loading, selectedThread, onS
                   style={{ background: isActive ? "hsl(var(--primary) / 0.06)" : "transparent" }}
                 >
                   {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{
-                    background: identity.avatarUrl ? `url(${identity.avatarUrl}) center/cover` : "hsl(var(--hud-cyan) / 0.1)",
-                  }}>
-                    {!identity.avatarUrl && (
-                      <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{identity.initials}</span>
-                    )}
-                  </div>
+                  <IdentityAvatar avatarUrl={identity.avatarUrl} name={identity.displayName} size="md" />
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
