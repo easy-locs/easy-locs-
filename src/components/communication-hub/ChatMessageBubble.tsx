@@ -1,16 +1,17 @@
 /**
  * ChatMessageBubble — Premium Signal-grade message bubble.
- * Handles text, voice, media, payment, email, system, view-once messages with unified HUD design.
+ * Decomposed into isolated micro-components: BubbleMediaBlock, BubbleMetaFooter, BubbleLocationBlock.
  */
 import { memo, useRef, useCallback, useEffect, useState, useMemo } from "react";
 import {
   Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock, CheckCircle2,
-  ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText, MapPin, ExternalLink,
+  ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText,
 } from "lucide-react";
 import { format } from "date-fns";
-import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
-import ViewOnceMedia from "./ViewOnceMedia";
+import { BubbleMediaBlock } from "./chat/BubbleMediaBlock";
+import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
+import { BubbleLocationBlock } from "./chat/BubbleLocationBlock";
 
 import { haptic } from "@/lib/haptics";
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
@@ -364,56 +365,24 @@ function ChatMessageBubble({
           <span className="text-[10px] opacity-50 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
         )}
 
-        {/* Media — view-once or regular */}
-        {isViewOnce && msg.attachment_url ? (
-          <div className="mb-1">
-            <ViewOnceMedia
-              messageId={msg.id}
-              attachmentUrl={msg.attachment_url}
-              isMe={isMe}
-              viewOnceOpenedAt={(msg as any).view_once_opened_at}
-              viewOnceOpenedBy={(msg as any).view_once_opened_by}
-              currentUserId={currentUserId}
-            />
-          </div>
-        ) : msg.attachment_url ? (
-          <div className={`mb-1 -mx-1 rounded-lg overflow-hidden ${blurred ? "blur-lg transition-all" : ""}`}>
-            <ChatMediaPreview url={msg.attachment_url} />
-          </div>
-        ) : null}
+        {/* Media — isolated micro-component */}
+        <BubbleMediaBlock
+          messageId={msg.id}
+          attachmentUrl={msg.attachment_url}
+          isMe={isMe}
+          isViewOnce={isViewOnce}
+          viewOnceOpenedAt={(msg as any).view_once_opened_at}
+          viewOnceOpenedBy={(msg as any).view_once_opened_by}
+          currentUserId={currentUserId}
+          blurred={blurred}
+        />
 
         {isPaymentReceipt && paymentReceiptData ? (
           <ChatPaymentReceiptCard receipt={paymentReceiptData} />
         ) : isPaymentRequest && paymentRequestData ? (
           <ChatPaymentRequestCard request={paymentRequestData} />
         ) : isLocation && locLat && locLng ? (
-          <div className="space-y-1.5">
-            <div className="rounded-lg overflow-hidden -mx-1" style={{ border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
-              <iframe
-                src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(locLng) - 0.008},${parseFloat(locLat) - 0.006},${parseFloat(locLng) + 0.008},${parseFloat(locLat) + 0.006}&layer=mapnik&marker=${locLat},${locLng}`}
-                className="w-full border-0 pointer-events-none"
-                style={{ height: 120 }}
-                loading="lazy"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />
-              <span className="text-[12.5px] flex-1" style={{ color: "hsl(var(--foreground))" }}>
-                {locLabel || "📍 Location"}
-              </span>
-            </div>
-            <a
-              href={`https://www.openstreetmap.org/?mlat=${locLat}&mlon=${locLng}#map=16/${locLat}/${locLng}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-[11px] font-medium hover:opacity-80 transition-opacity"
-              style={{ color: "hsl(var(--hud-cyan))" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <ExternalLink className="h-3 w-3" />
-              Open in Maps
-            </a>
-          </div>
+          <BubbleLocationBlock lat={locLat} lng={locLng} label={locLabel} />
         ) : isVoice ? (
           <div>
             <VoiceMessageBubble
@@ -489,24 +458,16 @@ function ChatMessageBubble({
           </button>
         )}
 
-        {/* Footer: time + status + security */}
-        <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5 select-none">
-          {(msg as any).edited_at && (
-            <span className="text-[9px] italic opacity-30 mr-0.5">edited</span>
-          )}
-          {hasSecurityLevel && (
-            <span className="text-[9px] mr-0.5" title={securityPolicy.label}>{securityPolicy.emoji}</span>
-          )}
-          <span className="text-[10px] opacity-35 font-medium tabular-nums">{format(new Date(msg.created_at), "HH:mm")}</span>
-          {isMe && isPendingOffline ? (
-            <WifiOff className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-danger) / 0.6)" }} />
-          ) : isMe && (
-            <span style={{ color: msg.read ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.35)" }}>
-              {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
-            </span>
-          )}
-          
-        </div>
+        {/* Footer — isolated micro-component */}
+        <BubbleMetaFooter
+          createdAt={msg.created_at}
+          isMe={isMe}
+          read={msg.read}
+          editedAt={(msg as any).edited_at}
+          isPendingOffline={isPendingOffline}
+          securityEmoji={hasSecurityLevel ? securityPolicy.emoji : undefined}
+          securityLabel={hasSecurityLevel ? securityPolicy.label : undefined}
+        />
       </div>
     </div>
   );
