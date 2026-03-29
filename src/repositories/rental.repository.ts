@@ -409,7 +409,7 @@ export async function uploadBookingDocument(path: string, file: File) {
   if (error) throw error;
 }
 
-// ── Inventory reports ──
+// ── Inventory reports (detailed) ──
 export async function fetchInventoryReports(orgId: string) {
   const { data } = await supabase.from("inventory_reports").select("id, property_id, tenant_id, report_type, report_date, status").eq("org_id", orgId).order("report_date", { ascending: false });
   return data || [];
@@ -428,28 +428,6 @@ export async function fetchInventoryRooms(reportId: string) {
 export async function fetchInventoryItems(roomId: string) {
   const { data } = await supabase.from("inventory_items").select("*").eq("room_id", roomId).order("sort_order");
   return data || [];
-}
-
-// ── Send email ──
-export async function invokeSendEmail(body: Record<string, any>) {
-  const { error } = await supabase.functions.invoke("send-email", { body });
-  if (error) throw error;
-}
-
-// ── Document requests ──
-export async function fetchDocumentRequests(tenantId: string) {
-  const { data } = await supabase.from("document_requests").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false });
-  return data || [];
-}
-
-export async function resolveDocumentRequest(requestId: string) {
-  const { error } = await supabase.from("document_requests").update({ status: "resolved", resolved_at: new Date().toISOString() }).eq("id", requestId);
-  if (error) throw error;
-}
-
-export async function fetchTenantUserId(tenantId: string) {
-  const { data } = await supabase.from("tenants").select("tenant_user_id").eq("id", tenantId).single();
-  return data?.tenant_user_id || null;
 }
 
 // ── Charges regularization ──
@@ -482,77 +460,7 @@ export async function fetchPropertiesByCountry(orgId: string, country: string) {
   return data || [];
 }
 
-// ── Reminders ──
-export async function dismissReminder(id: string) {
-  await supabase.from("reminders").update({ active: false }).eq("id", id);
-}
-
-// ── Booking requests insert ──
-export async function insertBookingRequest(payload: Record<string, any>) {
-  const { data, error } = await supabase.from("booking_requests").insert(payload as any).select().single();
-  if (error) throw error;
-  return data;
-}
-
-export async function invokeNotifyBooking(bookingRequestId: string) {
-  await supabase.functions.invoke("notify-booking", { body: { booking_request_id: bookingRequestId } });
-}
-
-// ── Local services ──
-export async function fetchOrgLocalServicesEnabled(orgId: string) {
-  const { data } = await supabase.from("orgs").select("local_services_enabled").eq("id", orgId).single();
-  return !!data?.local_services_enabled;
-}
-
-export async function fetchLocalServices(orgId: string) {
-  const { data } = await supabase.from("local_services").select("*").eq("org_id", orgId).eq("active", true).order("sort_order");
-  return data || [];
-}
-
-// ── Leases for AI assistant ──
-export async function fetchLeasesByOrg(orgId: string) {
-  const { data } = await supabase.from("leases").select("*").eq("org_id", orgId);
-  return data || [];
-}
-
-// ── Lease workflow edge function ──
-export async function invokeLeaseWorkflow(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("lease-workflow", { body });
-  if (error) throw error;
-  return data;
-}
-
-// ── Booking payment ──
-export async function invokeCreateBookingPayment(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-booking-payment", { body });
-  if (error) throw error;
-  return data;
-}
-
-// ── Accounting entries properties ──
-export async function fetchAccountingProperties(orgId: string) {
-  const { data } = await supabase.from("properties").select("id, label, country").eq("org_id", orgId);
-  return data || [];
-}
-
-// ── Properties insert ──
-export async function insertProperty(payload: Record<string, any>) {
-  const { error } = await supabase.from("properties").insert(payload as any);
-  if (error) throw error;
-}
-
-// ── Referrals ──
-export async function fetchReferralCode(userId: string) {
-  const { data } = await supabase.from("profiles").select("referral_code").eq("id", userId).single();
-  return data?.referral_code || null;
-}
-
-export async function fetchReferrals(userId: string) {
-  const { data } = await supabase.from("referrals").select("*").eq("referrer_user_id", userId).order("created_at", { ascending: false });
-  return data || [];
-}
-
-// ── Seasonal bookings ──
+// ── Existing bookings for availability ──
 export async function fetchExistingBookings(propertyId: string) {
   const [{ data: seasonal }, { data: requests }] = await Promise.all([
     db.from("seasonal_bookings").select("check_in, check_out, status").eq("property_id", propertyId).neq("status", "cancelled"),
@@ -600,10 +508,7 @@ export async function fetchAuditHistory(limit = 30) {
 // ── Key bundles ──
 export async function upsertKeyBundle(userId: string, publicKey: string, deviceId: string) {
   await db.from("user_key_bundles").upsert({
-    user_id: userId,
-    identity_public_key: publicKey,
-    device_id: deviceId,
-    updated_at: new Date().toISOString(),
+    user_id: userId, identity_public_key: publicKey, device_id: deviceId, updated_at: new Date().toISOString(),
   }, { onConflict: "user_id" });
 }
 
@@ -617,6 +522,58 @@ export async function healthCheckDb() {
 
 // ── Dispatch ride ──
 export async function invokeDispatchRide(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("dispatch-ride", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Storefront orders ──
+export async function updateStorefrontOrder(orderId: string, updates: Record<string, any>) {
+  await db.from("storefront_orders").update(updates).eq("id", orderId);
+}
+
+// ── Shop follows ──
+export async function fetchShopFollow(userId: string, shopId: string) {
+  const { data } = await supabase.from("shop_follows").select("user_id, shop_id").eq("user_id", userId).eq("shop_id", shopId).maybeSingle() as any;
+  return !!data;
+}
+
+// ── Shop by slug ──
+export async function fetchShopBySlug(slug: string) {
+  const { data } = await supabase.from("storefront_pages").select("id, slug, name, user_id").eq("slug", slug).maybeSingle();
+  return data;
+}
+
+// ── Conversations v2 direct threads ──
+export async function fetchDirectThreads(limit = 100) {
+  const { data } = await db.from("conversations_v2").select("id, participants").eq("type", "direct").order("updated_at", { ascending: false }).limit(limit);
+  return data || [];
+}
+
+// ── Dual role check ──
+export async function checkTenantAndOrgLinks(userId: string) {
+  const t = await supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
+  const o = await supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
+  return { hasTenant: !!t.data, hasOrg: !!o.data };
+}
+
+// ── Mark onboarding (fire-and-forget) ──
+export async function markOnboardingCompleteFireAndForget(userId: string) {
+  supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
+}
+
+// ── Booking payment ──
+export async function invokeCreateBookingPayment(body: Record<string, any>) {
+  const { data, error } = await supabase.functions.invoke("create-booking-payment", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Accounting entries properties ──
+export async function fetchAccountingProperties(orgId: string) {
+  const { data } = await supabase.from("properties").select("id, label, country").eq("org_id", orgId);
+  return data || [];
+}
   const { data, error } = await supabase.functions.invoke("dispatch-ride", { body });
   if (error) throw error;
   return data;
