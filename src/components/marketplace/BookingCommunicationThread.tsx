@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { insertAuditLog } from "@/repositories/marketplace.repository";
+import { insertMessage } from "@/repositories/communication.repository";
 
 interface Props { bookingId: string; orgId: string; customerName: string; customerEmail?: string; }
 type MessageType = "message" | "internal_note" | "email" | "notification";
