@@ -25,7 +25,7 @@ export const listingAdapter: ListingRepository = {
 
   async findByOwner(ownerId: string): Promise<Listing[]> {
     const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("property_listings_v2")
       .select("*")
       .eq("owner_user_id", ownerId)
@@ -35,7 +35,7 @@ export const listingAdapter: ListingRepository = {
 
   async search(query: SearchQuery): Promise<Listing[]> {
     const { supabase } = await import("@/integrations/supabase/client");
-    let q = supabase.from("property_listings_v2").select("*").eq("status", "active");
+    let q = (supabase as any).from("property_listings_v2").select("*").eq("status", "active");
     if (query.category) q = q.eq("category", query.category);
     if (query.city) q = q.ilike("city", `%${query.city}%`);
     if (query.country) q = q.eq("country", query.country);
