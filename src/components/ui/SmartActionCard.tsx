@@ -57,7 +57,7 @@ const SmartActionCard = ({
           {label}
         </span>
         {sub && (
-          <span className="text-[11px] text-muted-foreground block mt-0.5 truncate">
+          <span className="text-[11px] text-muted-foreground block mt-0.5 break-words leading-snug">
             {sub}
           </span>
         )}
