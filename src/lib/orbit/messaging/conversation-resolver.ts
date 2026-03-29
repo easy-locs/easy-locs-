@@ -11,14 +11,24 @@ const trace = (step: string, phase: "input" | "output" | "error", payload?: Reco
 };
 
 interface ResolveInput {
+  /** UI thread ID (used as last-resort fallback) */
   threadId: string;
-  v2ConversationId?: string | null;
-  contextId?: string | null;
+  /** Canonical conversation UUID — preferred */
+  conversationId?: string | null;
+  /** Legacy entity ID that might match a conversation */
+  entityId?: string | null;
+  /** Legacy DB thread ID */
   threadDbId?: string | null;
   peerUserId?: string | null;
   peerOrbitId?: string | null;
   myUserId: string;
   myOrbitId?: string | null;
+
+  // ── Deprecated compat (callers still passing old names) ──
+  /** @deprecated Use conversationId */
+  v2ConversationId?: string | null;
+  /** @deprecated Use entityId */
+  contextId?: string | null;
 }
 
 interface ResolveResult {
@@ -27,26 +37,30 @@ interface ResolveResult {
 }
 
 export async function resolveConversationId(input: ResolveInput): Promise<ResolveResult> {
+  // Merge canonical + legacy
+  const convId = input.conversationId || input.v2ConversationId;
+  const entId = input.entityId || input.contextId;
+
   trace("resolve", "input", {
     threadId: input.threadId,
-    v2ConversationId: input.v2ConversationId ?? null,
-    contextId: input.contextId ?? null,
+    conversationId: convId ?? null,
+    entityId: entId ?? null,
     peerUserId: input.peerUserId ?? null,
   });
 
   // Strategy 1: Already have it
-  if (input.v2ConversationId) {
-    trace("resolve", "output", { strategy: "existing", conversationId: input.v2ConversationId });
-    return { conversationId: input.v2ConversationId, wasCreated: false };
+  if (convId) {
+    trace("resolve", "output", { strategy: "existing", conversationId: convId });
+    return { conversationId: convId, wasCreated: false };
   }
 
-  // Strategy 2: contextId matches a conversation
-  if (input.contextId) {
-    trace("resolve.contextId", "input", { candidate: input.contextId });
+  // Strategy 2: entityId matches a conversation
+  if (entId) {
+    trace("resolve.entityId", "input", { candidate: entId });
     const { data } = await (supabase as any)
-      .from("conversations_v2").select("id").eq("id", input.contextId).maybeSingle();
+      .from("conversations_v2").select("id").eq("id", entId).maybeSingle();
     if (data?.id) {
-      trace("resolve.contextId", "output", { conversationId: data.id });
+      trace("resolve.entityId", "output", { conversationId: data.id });
       return { conversationId: data.id, wasCreated: false };
     }
   }
@@ -80,5 +94,5 @@ export async function resolveConversationId(input: ResolveInput): Promise<Resolv
   }
 
   trace("resolve", "error", { reason: "all_strategies_exhausted" });
-  throw new Error("Cannot resolve conversation: no v2ConversationId, contextId, threadId, or peerUserId available.");
+  throw new Error("Cannot resolve conversation: no conversationId, entityId, threadDbId, or peerUserId available.");
 }

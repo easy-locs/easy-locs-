@@ -111,8 +111,8 @@ export function useMessageSender(params: Params) {
 
       const result = await resolveConversationId({
         threadId: thread.id,
-        v2ConversationId: thread.conversationId || thread.v2ConversationId,
-        contextId: thread.contextId,
+        conversationId: thread.conversationId || thread.v2ConversationId,
+        entityId: thread.entityId || thread.contextId,
         threadDbId: thread.threadId,
         peerUserId: thread.peerUserId,
         peerOrbitId: thread.peerOrbitId,
@@ -122,7 +122,7 @@ export function useMessageSender(params: Params) {
 
       conversationId = result.conversationId;
       if (result.wasCreated) {
-        onThreadUpdate(thread.id, { conversationId, v2ConversationId: conversationId });
+        onThreadUpdate(thread.id, { conversationId });
       }
       completeStep(flow, resolveStep, { conversationId, wasCreated: result.wasCreated });
     } catch (err: any) {

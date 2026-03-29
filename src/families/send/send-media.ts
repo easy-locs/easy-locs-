@@ -39,7 +39,6 @@ export async function sendMedia(
 
   platformBus.emit("orbit:message_sent", {
     conversationId: ctx.conversationId,
-    threadId: ctx.threadId, // deprecated compat
     type: "media",
   }, "orbit", { userId: ctx.senderUserId, orgId: ctx.orgId || undefined });
 
