@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { insertMarketplaceService, fetchMarketplaceServiceBySlug } from "@/repositories/rental.repository";
+import { insertMarketplaceService, fetchMarketplaceServiceBySlug, countActiveListings, ensureMarketplaceProvider } from "@/repositories/rental.repository";
 import { validateListing } from "@/lib/validation/marketplace-validators";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

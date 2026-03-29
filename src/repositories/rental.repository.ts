@@ -688,6 +688,23 @@ export async function fetchMarketplaceServiceBySlug(slug: string) {
   return data;
 }
 
+// ── Active listings count ──
+export async function countActiveListings(orgId: string) {
+  const { count } = await db.from("marketplace_services").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("active", true);
+  return count ?? 0;
+}
+
+// ── Ensure marketplace provider ──
+export async function ensureMarketplaceProvider(orgId: string, userId: string, defaults: Record<string, any>) {
+  let { data: provider } = await db.from("marketplace_providers").select("id").eq("org_id", orgId).maybeSingle();
+  if (!provider) {
+    const { data: newProvider, error } = await db.from("marketplace_providers").insert({ org_id: orgId, user_id: userId, ...defaults }).select("id").single();
+    if (error) throw error;
+    provider = newProvider;
+  }
+  return provider;
+}
+
 // ── Booking document upload ──
 export async function uploadBookingDocumentFile(path: string, file: File) {
   const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
