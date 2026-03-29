@@ -119,14 +119,16 @@ export async function runWorkflow<TCtx extends Record<string, any>>(
       );
 
       timer.fail(err);
+      runningWorkflows.delete(idKey);
 
-      return {
+      const failResult: WorkflowResult<TCtx> = {
         ok: false,
         context: ctx,
         completedSteps,
         failedStep: step.name,
         error: err instanceof Error ? err.message : String(err),
       };
+      return failResult;
     }
   }
 
@@ -142,6 +144,16 @@ export async function runWorkflow<TCtx extends Record<string, any>>(
   );
 
   timer.done();
+  runningWorkflows.delete(idKey);
 
-  return { ok: true, context: ctx, completedSteps };
+  const result: WorkflowResult<TCtx> = { ok: true, context: ctx, completedSteps };
+
+  // Cache successful result for idempotency
+  completedWorkflows.set(idKey, result);
+  if (completedWorkflows.size > MAX_COMPLETED) {
+    const first = completedWorkflows.keys().next().value;
+    if (first) completedWorkflows.delete(first);
+  }
+
+  return result;
 }
