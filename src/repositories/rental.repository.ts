@@ -574,38 +574,3 @@ export async function fetchAccountingProperties(orgId: string) {
   const { data } = await supabase.from("properties").select("id, label, country").eq("org_id", orgId);
   return data || [];
 }
-
-// ── Storefront orders ──
-export async function updateStorefrontOrder(orderId: string, updates: Record<string, any>) {
-  await db.from("storefront_orders").update(updates).eq("id", orderId);
-}
-
-// ── Shop follows ──
-export async function fetchShopFollow(userId: string, shopId: string) {
-  const { data } = await supabase.from("shop_follows").select("user_id, shop_id").eq("user_id", userId).eq("shop_id", shopId).maybeSingle() as any;
-  return !!data;
-}
-
-// ── Shop by slug ──
-export async function fetchShopBySlug(slug: string) {
-  const { data } = await supabase.from("storefront_pages").select("id, slug, name, user_id").eq("slug", slug).maybeSingle();
-  return data;
-}
-
-// ── Conversations v2 thread lookup ──
-export async function fetchDirectThreads(limit = 100) {
-  const { data } = await db.from("conversations_v2").select("id, participants").eq("type", "direct").order("updated_at", { ascending: false }).limit(limit);
-  return data || [];
-}
-
-// ── Dual role check ──
-export async function checkTenantAndOrgLinks(userId: string) {
-  const t = await supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
-  const o = await supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
-  return { hasTenant: !!t.data, hasOrg: !!o.data };
-}
-
-// ── Mark onboarding (fire-and-forget) ──
-export async function markOnboardingCompleteFireAndForget(userId: string) {
-  supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
-}
