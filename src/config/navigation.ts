@@ -45,10 +45,10 @@ export const NAV_TABS_CONFIG: NavTab[] = [
   {
     key: "orbit",
     label: "Orbit",
-    path: "/dashboard/communication",
+    path: "/orbit",
     icon: MessageCircle,
     match: (p) =>
-      p.startsWith("/dashboard/communication") || p.startsWith("/orbit") ||
+      p.startsWith("/orbit") || p.startsWith("/dashboard/communication") ||
       p.startsWith("/ghost"),
   },
   {
@@ -61,10 +61,10 @@ export const NAV_TABS_CONFIG: NavTab[] = [
   {
     key: "profile",
     label: "Me",
-    path: "/settings",
+    path: "/me",
     icon: User,
     match: (p) =>
-      p.startsWith("/settings") || p.startsWith("/me") || p.startsWith("/business") ||
+      p === "/me" || p.startsWith("/settings") || p.startsWith("/business") ||
       p.startsWith("/property-hub") || p.startsWith("/seller") || p.startsWith("/merchant") ||
       p.startsWith("/notifications") || p.startsWith("/dashboard/settings") ||
       p.startsWith("/dashboard/my-shop") || p.startsWith("/dashboard/seller") ||
@@ -83,9 +83,9 @@ export const HIDE_NAV_PREFIXES = [
 export const NAV_TABS = {
   dashboard: "/",
   radar: "/radar",
-  orbit: "/dashboard/communication",
+  orbit: "/orbit",
   wallet: "/wallet/hub",
-  profile: "/settings",
+  profile: "/me",
 } as const;
 
 export const PROFILE_SECTIONS = [
