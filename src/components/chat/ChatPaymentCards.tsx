@@ -88,9 +88,8 @@ export async function sendPaymentRequestMessageToThread(params: {
     thread_id: threadId,
   };
 
-  const { data, error } = await supabase.from("chat_messages_v2").insert(msgPayload).select("*").single();
-  if (error) throw error;
-  return data;
+  const { insertChatMessageV2 } = await import("@/repositories/communication.repository");
+  return insertChatMessageV2(msgPayload);
 }
 
 /** Insert a payment receipt card message into a chat thread */
@@ -158,9 +157,8 @@ export async function sendPaymentReceiptToThread(params: {
     thread_id: threadId,
   };
 
-  const { data, error } = await supabase.from("chat_messages_v2").insert(msgPayload).select("*").single();
-  if (error) throw error;
-  return data;
+  const { insertChatMessageV2 } = await import("@/repositories/communication.repository");
+  return insertChatMessageV2(msgPayload);
 }
 
 /* ═══════════════════════════════════════════════════════════════

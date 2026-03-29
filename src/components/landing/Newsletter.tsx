@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, ArrowRight, CheckCircle, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import * as newsletterRepo from "@/repositories/newsletter.repository";
 import { toast } from "sonner";
 
 const Newsletter = () => {
@@ -16,11 +16,9 @@ const Newsletter = () => {
     if (!email || loading) return;
     setLoading(true);
     try {
-      const { error } = await supabase.from("newsletter_subscribers" as any).insert({ email } as any);
-      if (error && error.code === "23505") {
+      const result = await newsletterRepo.subscribe(email);
+      if (result === "already_subscribed") {
         toast.info(t("newsletter.already_subscribed") || "You're already subscribed!");
-      } else if (error) {
-        throw error;
       }
       setSubmitted(true);
       setEmail("");

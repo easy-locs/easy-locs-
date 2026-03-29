@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadChatMedia, signChatMediaUrl } from "@/repositories/communication.repository";
 import { Paperclip, Image, Video, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -45,10 +45,9 @@ export default function ChatMediaUploader({ orgId, threadId, onUploaded, disable
       for (const { file } of previews) {
         const ext = file.name.split(".").pop() || "bin";
         const path = `${orgId}/${threadId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error } = await supabase.storage.from("chat-media").upload(path, file);
-        if (error) throw error;
-        const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
-        urls.push(signed?.signedUrl || path);
+        await uploadChatMedia(path, file);
+        const signedUrl = await signChatMediaUrl(path);
+        urls.push(signedUrl);
         names.push(file.name);
       }
       onUploaded(urls, names);

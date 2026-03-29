@@ -3,7 +3,7 @@
  * Fully wired to useGroupData hook — zero inline DB logic.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { updateGroupMemberRole, fetchGroupMembersById } from "@/repositories/communication.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -127,13 +127,12 @@ export default function CommGroupsSection() {
 
   const changeMemberRole = async (memberId: string, newRole: MemberRole) => {
     if (!isAdmin) return;
-    const { error } = await supabase.from("group_members").update({ role: newRole } as any).eq("id", memberId);
-    if (!error) {
+    try {
+      await updateGroupMemberRole(memberId, newRole);
       haptic("light");
       toast.success(`Role updated to ${ROLE_LABELS[newRole]}`);
       if (activeGroup) {
-        const { data: mems } = await supabase.from("group_members").select("*").eq("group_id", activeGroup.id);
-        // Force refresh handled by hook on next render
+        await fetchGroupMembersById(activeGroup.id);
       }
     }
   };
