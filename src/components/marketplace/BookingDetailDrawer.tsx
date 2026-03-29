@@ -27,11 +27,9 @@ function IdDocumentCard({ booking }: { booking: any }) {
       setSignedUrl(path);
       return;
     }
-    supabase.storage
-      .from("booking-documents")
-      .createSignedUrl(path, 3600)
-      .then(({ data }) => {
-        if (data?.signedUrl) setSignedUrl(data.signedUrl);
+    signBookingDocumentUrl(path)
+      .then((url) => {
+        if (url) setSignedUrl(url);
       });
   }, [booking.id_document_url]);
 

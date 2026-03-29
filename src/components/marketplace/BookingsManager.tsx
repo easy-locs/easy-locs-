@@ -108,20 +108,14 @@ export async function uploadBookingInvoiceAttachment(params: {
   const fileName = `${sanitizeFileName(params.invoiceNumber)}-${safeName}.pdf`;
   const path = `${params.orgId}/invoices/${params.bookingId}/${crypto.randomUUID()}-${fileName}`;
 
-  const { error } = await supabase.storage
-    .from("booking-documents")
-    .upload(path, params.blob, {
-      contentType: "application/pdf",
-      upsert: true,
-    });
+  await uploadBookingDocumentFile(path, params.blob, "application/pdf");
 
-  if (error) {
-    throw error;
-  }
+  const signedUrl = await signBookingDocumentUrl(path);
 
-  const { data: signedData, error: signError } = await supabase.storage
-    .from("booking-documents")
-    .createSignedUrl(path, 3600);
+  return {
+    attachmentUrl: signedUrl || "",
+    attachmentName: fileName,
+  };
 
   return {
     attachmentUrl: signedData?.signedUrl || "",
