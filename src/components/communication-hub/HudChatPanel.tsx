@@ -128,11 +128,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
   // ── FAMILY: Media Preview Send ──
   const mediaPreviewSend = useMediaPreviewSend({
-    conversationId: thread?.v2ConversationId ?? null,
+    conversationId: (thread?.conversationId || thread?.v2ConversationId) ?? null,
     userId: user?.id,
     myOrbitId,
     peerOrbitId: thread?.peerOrbitId ?? null,
-    threadId: (thread as any)?.threadId || thread?.id || null,
     orgId: orgId || null,
   });
 
@@ -386,10 +385,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       <Sheet open={payment.paymentLinkDialog} onOpenChange={payment.setPaymentLinkDialog}>
         <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto p-0">
           <OrbitSmartPayment
-            recipientUserId={thread.peerUserId || thread.tenantId || thread.contextId || null}
+            recipientUserId={thread.peerUserId || thread.tenantId || thread.entityId || thread.contextId || null}
             recipientName={thread.name || "Recipient"}
-            context={thread.contextType ? { type: thread.contextType as any, id: thread.contextId, label: thread.serviceTitle || thread.propertyLabel || thread.listingTitle } : undefined}
-            threadId={thread.v2ConversationId || thread.threadId || thread.id}
+            context={thread.entityType ? { type: thread.entityType as any, id: thread.entityId || thread.contextId, label: thread.serviceTitle || thread.propertyLabel || thread.listingTitle } : undefined}
+            threadId={thread.conversationId || thread.v2ConversationId || thread.id}
             defaultCurrency={thread.currency?.toUpperCase()}
             onSuccess={(conf: PaymentConfirmation) => {
               payment.setPaymentLinkDialog(false);
