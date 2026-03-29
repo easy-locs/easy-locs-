@@ -35,14 +35,39 @@ export interface WorkflowConfig {
   name: string;
   domain: string;
   maxRetries?: number;
+  retryDelayMs?: number;
   correlationId?: string;
+  /** Optional idempotency key — prevents double-execution */
+  idempotencyKey?: string;
 }
+
+// ── Idempotency tracking for workflows ──
+const runningWorkflows = new Set<string>();
+const completedWorkflows = new Map<string, WorkflowResult<any>>();
+const MAX_COMPLETED = 200;
 
 export async function runWorkflow<TCtx extends Record<string, any>>(
   config: WorkflowConfig,
   steps: WorkflowStep<TCtx>[],
   initialContext: TCtx
 ): Promise<WorkflowResult<TCtx>> {
+  const idKey = config.idempotencyKey ?? `${config.domain}:${config.name}:${JSON.stringify(initialContext).slice(0, 100)}`;
+
+  // Idempotency: return cached result if already completed
+  const cached = completedWorkflows.get(idKey);
+  if (cached) {
+    log.warn("workflow_idempotent_skip", { name: config.name, idKey });
+    return cached as WorkflowResult<TCtx>;
+  }
+
+  // Prevent concurrent duplicate runs
+  if (runningWorkflows.has(idKey)) {
+    log.warn("workflow_already_running", { name: config.name, idKey });
+    return { ok: false, context: initialContext, completedSteps: [], error: "Workflow already running" };
+  }
+
+  runningWorkflows.add(idKey);
+
   const correlationId = config.correlationId ?? crypto.randomUUID();
   const timer = log.timed(`workflow:${config.name}`, { correlationId });
   const completedSteps: string[] = [];
@@ -94,14 +119,16 @@ export async function runWorkflow<TCtx extends Record<string, any>>(
       );
 
       timer.fail(err);
+      runningWorkflows.delete(idKey);
 
-      return {
+      const failResult: WorkflowResult<TCtx> = {
         ok: false,
         context: ctx,
         completedSteps,
         failedStep: step.name,
         error: err instanceof Error ? err.message : String(err),
       };
+      return failResult;
     }
   }
 
@@ -117,6 +144,16 @@ export async function runWorkflow<TCtx extends Record<string, any>>(
   );
 
   timer.done();
+  runningWorkflows.delete(idKey);
 
-  return { ok: true, context: ctx, completedSteps };
+  const result: WorkflowResult<TCtx> = { ok: true, context: ctx, completedSteps };
+
+  // Cache successful result for idempotency
+  completedWorkflows.set(idKey, result);
+  if (completedWorkflows.size > MAX_COMPLETED) {
+    const first = completedWorkflows.keys().next().value;
+    if (first) completedWorkflows.delete(first);
+  }
+
+  return result;
 }
