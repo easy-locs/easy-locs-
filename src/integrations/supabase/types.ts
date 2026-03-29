@@ -29489,21 +29489,38 @@ export type Database = {
       }
       user_roles: {
         Row: {
+          created_at: string | null
           id: string
           role: Database["public"]["Enums"]["app_role"]
+          updated_at: string | null
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
+          created_at?: string | null
           id?: string
           role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
+          created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
           user_id?: string
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_saved_addresses: {
         Row: {
@@ -32420,7 +32437,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "owner" | "admin" | "member" | "agent" | "staff" | "accountant"
+      app_role:
+        | "owner"
+        | "admin"
+        | "member"
+        | "agent"
+        | "staff"
+        | "accountant"
+        | "super_admin"
       deal_status:
         | "inquiry"
         | "negotiation"
@@ -32574,7 +32598,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["owner", "admin", "member", "agent", "staff", "accountant"],
+      app_role: [
+        "owner",
+        "admin",
+        "member",
+        "agent",
+        "staff",
+        "accountant",
+        "super_admin",
+      ],
       deal_status: [
         "inquiry",
         "negotiation",
