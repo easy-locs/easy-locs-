@@ -475,36 +475,6 @@ export async function sendInviteEmail(recipientEmail: string, subject: string, m
   });
 }
 
-// ── Notification preferences ──
-export async function fetchNotificationPreferences(userId: string) {
-  const { data } = await db.from("notification_preferences").select("*").eq("user_id", userId).single();
-  return data;
-}
-
-export async function upsertNotificationPreferences(userId: string, prefs: Record<string, any>) {
-  const { error } = await db.from("notification_preferences").upsert(
-    { user_id: userId, ...prefs, updated_at: new Date().toISOString() },
-    { onConflict: "user_id" }
-  );
-  if (error) throw error;
-}
-
-// ── Group member role ──
-export async function updateGroupMemberRoleById(memberId: string, role: string) {
-  const { error } = await supabase.from("group_members").update({ role } as any).eq("id", memberId);
-  if (error) throw error;
-}
-
-export async function fetchGroupMembersByGroupId(groupId: string) {
-  const { data } = await supabase.from("group_members").select("*").eq("group_id", groupId);
-  return data || [];
-}
-
-// ── Group conversations ──
-export async function updateConversationParticipants(convId: string, participants: any[]) {
-  await db.from("conversations_v2").update({ participants, updated_at: new Date().toISOString() }).eq("id", convId);
-}
-
 // ── Chat message delete/edit ──
 export async function deleteChatMessageForEveryone(msgId: string, userId: string) {
   const { error } = await db.from("chat_messages_v2").update({
