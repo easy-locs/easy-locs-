@@ -12,6 +12,7 @@ import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
 import { BubbleMediaBlock } from "./chat/BubbleMediaBlock";
 import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
 import { BubbleLocationBlock } from "./chat/BubbleLocationBlock";
+import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
 
 import { haptic } from "@/lib/haptics";
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
