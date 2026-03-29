@@ -78,10 +78,10 @@ export default function PublicRealEstateListing() {
   useEffect(() => {
     if (!slug) return;
     const load = async () => {
-      const { data } = await supabase.rpc("get_public_real_estate_listing", { p_slug: slug });
+      const data = await realEstateRepo.getPublicListing(slug);
       setListing(data as any);
       setLoading(false);
-      supabase.rpc("increment_listing_views", { p_slug: slug });
+      realEstateRepo.incrementListingViews(slug);
     };
     load();
   }, [slug]);
@@ -89,11 +89,12 @@ export default function PublicRealEstateListing() {
   const handleSubmitContact = async () => {
     if (!contactForm.name || !contactForm.email || !listing) return;
     setSubmitting(true);
-    const { data: inserted, error } = await supabase.from("real_estate_leads").insert({
-      org_id: listing.org_id, listing_id: listing.id,
-      name: contactForm.name, email: contactForm.email,
-      phone: contactForm.phone, message: contactForm.message,
-    }).select("id").single();
+    try {
+      const inserted = await realEstateRepo.insertLead({
+        org_id: listing.org_id, listing_id: listing.id,
+        name: contactForm.name, email: contactForm.email,
+        phone: contactForm.phone, message: contactForm.message,
+      });
     setSubmitting(false);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     setSubmitted(true);
