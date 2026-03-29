@@ -1,23 +1,19 @@
 /**
  * useMyOrbitId — Resolves current user's orbit_id.
  * Single responsibility: fetch orbit profile identity.
+ * PHASE 2: No direct Supabase — uses repository.
  */
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { resolveOrbitId } from "@/repositories/communication.repository";
 
 export function useMyOrbitId(userId: string | undefined) {
   const [myOrbitId, setMyOrbitId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) return;
-    (supabase as any)
-      .from("orbit_profiles_v2")
-      .select("orbit_id")
-      .eq("id", userId)
-      .maybeSingle()
-      .then(({ data }: any) => {
-        if (data?.orbit_id) setMyOrbitId(data.orbit_id);
-      });
+    resolveOrbitId(userId).then((oid) => {
+      if (oid) setMyOrbitId(oid);
+    });
   }, [userId]);
 
   return myOrbitId;
