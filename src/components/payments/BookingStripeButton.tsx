@@ -2,7 +2,7 @@
  * BookingStripeButton — Canonical booking payment via create-stripe-intent.
  */
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createStripeIntent } from "@/repositories/payments.repository";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useCheckoutDiscountStore } from "@/stores/checkoutDiscountStore";
 import { computeDiscountedAmount } from "@/lib/payments/amounts";
@@ -30,22 +30,19 @@ export function BookingStripeButton(props: { bookingId: string }) {
             discountAmount,
           });
 
-          const { data, error } = await supabase.functions.invoke("create-stripe-intent", {
-            body: {
-              amount: finalAmount,
-              currency: booking.currency.toLowerCase(),
-              metadata: {
-                bookingId: booking.id,
-                listingId: booking.listingId,
-                flow: "booking_payment",
-                couponCode: appliedCode ?? "",
-                originalAmount: String(booking.amount),
-                discountAmount: String(discountAmount ?? 0),
-                finalAmount: String(finalAmount),
-              },
+          const data = await createStripeIntent({
+            amount: finalAmount,
+            currency: booking.currency.toLowerCase(),
+            metadata: {
+              bookingId: booking.id,
+              listingId: booking.listingId,
+              flow: "booking_payment",
+              couponCode: appliedCode ?? "",
+              originalAmount: String(booking.amount),
+              discountAmount: String(discountAmount ?? 0),
+              finalAmount: String(finalAmount),
             },
           });
-          if (error) throw error;
           const params = new URLSearchParams({
             client_secret: data.clientSecret,
             intent_id: data.paymentIntentId,

@@ -3,7 +3,7 @@
  * Uses PaymentIntent flow (not legacy Checkout Sessions).
  */
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createStripeIntent } from "@/repositories/payments.repository";
 import { toast } from "sonner";
 
 export function StripeCheckoutButton(props: {
@@ -19,14 +19,11 @@ export function StripeCheckoutButton(props: {
   const handlePay = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-stripe-intent", {
-        body: {
-          amount: props.amountMinor / 100,
-          currency: props.currency.toLowerCase(),
-          metadata: { ...props.metadata, item_name: props.name },
-        },
+      const data = await createStripeIntent({
+        amount: props.amountMinor / 100,
+        currency: props.currency.toLowerCase(),
+        metadata: { ...props.metadata, item_name: props.name },
       });
-      if (error) throw error;
       if (!data?.clientSecret) throw new Error("No payment intent created");
 
       // Navigate to unified payment confirmation page
