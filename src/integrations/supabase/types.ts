@@ -32065,6 +32065,25 @@ export type Database = {
           views_count: number
         }[]
       }
+      get_public_seed_merchants: {
+        Args: { p_city?: string; p_limit?: number }
+        Returns: {
+          category: string
+          city: string
+          country: string
+          cover_image: string
+          description: string
+          id: string
+          is_active: boolean
+          latitude: number
+          logo_image: string
+          longitude: number
+          name: string
+          rating: number
+          slug: string
+          subcategory: string
+        }[]
+      }
       get_public_service_availability: {
         Args: { p_service_id: string }
         Returns: {
