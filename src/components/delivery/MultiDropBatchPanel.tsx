@@ -106,8 +106,8 @@ export default function MultiDropBatchPanel({ orgId }: { orgId: string }) {
     try {
       // Invoke dispatch for each job in the cluster
       for (const job of cluster.jobs) {
-        await supabase.functions.invoke("dispatch-delivery", {
-          body: { action: "find_drivers", job_id: job.id },
+        await deliveryRepo.invokeDispatchDelivery({
+          action: "find_drivers", job_id: job.id,
         });
       }
       toast.success(`${cluster.jobs.length} missions envoyées au dispatch !`);

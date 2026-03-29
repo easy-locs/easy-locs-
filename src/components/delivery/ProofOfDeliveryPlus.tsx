@@ -198,7 +198,7 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
     try {
       // If we have a jobId, confirm delivery via edge function
       if (jobId) {
-        const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+        const { data, error } = await deliveryRepo.invokeProofOfDelivery({
           body: {
             action: "update_status",
             job_id: jobId,

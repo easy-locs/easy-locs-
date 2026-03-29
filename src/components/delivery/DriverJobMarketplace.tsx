@@ -87,7 +87,7 @@ export default function DriverJobMarketplace({ className }: Props) {
   const acceptJob = async (jobId: string) => {
     if (!user) return;
     haptic("success");
-    const { error } = await supabase.from("delivery_offers").insert({
+    const { error } = await deliveryRepo.insertDeliveryOffer({
       job_id: jobId, driver_id: user.id, status: "pending",
       proposed_fee: bidAmount ? parseFloat(bidAmount) : null,
       message: bidAmount ? `Proposition: ${bidAmount}€` : null,

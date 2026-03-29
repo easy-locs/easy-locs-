@@ -44,7 +44,7 @@ export default function EnhancedRatingPanel({ jobId, driverId, onDone, onCancel 
     if (!rating || !user) { toast.error("Sélectionnez une note"); return; }
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("delivery_ratings").insert({
+      await deliveryRepo.insertDeliveryRating({
         job_id: jobId,
         driver_id: driverId,
         rated_by: user.id,
@@ -52,7 +52,6 @@ export default function EnhancedRatingPanel({ jobId, driverId, onDone, onCancel 
         categories: selectedCategories.length > 0 ? selectedCategories : null,
         comment: comment.trim() || null,
       });
-      if (error) throw error;
       haptic("medium");
       toast.success("Merci pour votre avis !");
       onDone?.();

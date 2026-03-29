@@ -69,22 +69,19 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
     setSubmitting(true);
     try {
       // Upsert rider presence with onboarding data
-      const { error } = await (supabase as any).from("rider_presence").upsert({
+      await deliveryRepo.upsertRiderPresence({
         user_id: user.id,
         vehicle_type: vehicle.vehicleType,
         is_online: false,
         is_available: false,
-      }, { onConflict: "user_id" });
+      });
 
-      if (error) throw error;
-
-      // Update profile with driver info
-      await supabase.from("profiles").update({
+      await deliveryRepo.updateDriverProfile(user.id, {
         name: profile.fullName,
         phone: profile.phone,
         city: profile.city,
         country: profile.country,
-      }).eq("id", user.id);
+      });
 
       toast.success("Inscription chauffeur terminée !");
       onComplete?.();
