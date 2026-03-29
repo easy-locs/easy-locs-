@@ -1,13 +1,13 @@
 /**
  * YouIdentityCard — Large premium identity header for the You cockpit.
- * WhatsApp-style: big avatar, clear name, minimal controls.
+ * Uses canonical IdentityAvatar for consistent rendering.
  */
 import { useState, useCallback } from "react";
-import { Copy, Check, Pencil, QrCode } from "lucide-react";
+import { Copy, Check, Pencil } from "lucide-react";
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 
 interface YouIdentityCardProps {
   avatarUrl: string;
@@ -22,7 +22,6 @@ export default function YouIdentityCard({
   avatarUrl, displayName, email, username, shortId, onEditProfile,
 }: YouIdentityCardProps) {
   const [copied, setCopied] = useState(false);
-  const initials = (displayName || email).substring(0, 2).toUpperCase();
 
   const copyId = useCallback(() => {
     navigator.clipboard.writeText(`EL-${shortId}`);
@@ -39,24 +38,12 @@ export default function YouIdentityCard({
       transition={{ duration: 0.25 }}
       className="px-4 pt-8 pb-6"
     >
-      {/* Large avatar + edit */}
       <div className="flex items-center gap-4">
         <div className="relative">
-          <Avatar className="w-[72px] h-[72px] border-2" style={{ borderColor: "hsl(var(--accent) / 0.25)" }}>
-            <AvatarImage src={avatarUrl} alt="Profile" />
-            <AvatarFallback
-              className="text-xl font-bold"
-              style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}
-            >
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          <IdentityAvatar avatarUrl={avatarUrl} name={displayName || email} size="xl" />
           <div
             className="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center"
-            style={{
-              background: "hsl(var(--primary))",
-              borderColor: "hsl(var(--background))",
-            }}
+            style={{ background: "hsl(var(--primary))", borderColor: "hsl(var(--background))" }}
           >
             <div className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--primary-foreground))" }} />
           </div>
@@ -77,29 +64,18 @@ export default function YouIdentityCard({
         </div>
       </div>
 
-      {/* ID + actions row */}
       <div className="flex items-center gap-3 mt-4">
         <button onClick={copyId}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors"
-          style={{
-            background: "hsl(var(--accent) / 0.08)",
-            color: "hsl(var(--accent))",
-          }}
-        >
+          style={{ background: "hsl(var(--accent) / 0.08)", color: "hsl(var(--accent))" }}>
           <span className="text-[11px] font-mono font-bold tracking-wider">EL-{shortId}</span>
           {copied
             ? <Check className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
-            : <Copy className="h-3 w-3" />
-          }
+            : <Copy className="h-3 w-3" />}
         </button>
-
         <button onClick={onEditProfile}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors"
-          style={{
-            background: "hsl(var(--primary) / 0.08)",
-            color: "hsl(var(--primary))",
-          }}
-        >
+          style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}>
           <Pencil className="h-3 w-3" />
           <span className="text-[11px] font-semibold">Edit</span>
         </button>
