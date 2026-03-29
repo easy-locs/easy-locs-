@@ -252,12 +252,14 @@ export default function HudConversationList({
         <ThreadContextMenu
           thread={contextMenuThread}
           open={!!contextMenuThread}
-          onClose={() => setContextMenuThread(null)}
+           onClose={() => setContextMenuThread(null)}
           onMute={() => onMuteThread?.(contextMenuThread)}
           onDelete={() => onDeleteThread?.(contextMenuThread)}
           onBlock={() => onBlockThread?.(contextMenuThread)}
           onClearChat={() => onClearThread?.(contextMenuThread)}
           onFavorite={() => onFavoriteThread?.(contextMenuThread)}
+          onArchive={() => onArchiveThread?.(contextMenuThread)}
+          onMarkUnread={() => onMarkUnreadThread?.(contextMenuThread)}
           onContactInfo={() => onContactInfo?.(contextMenuThread)}
           onStatusChange={onStatusChange ? (status) => onStatusChange(contextMenuThread, status) : undefined}
           onSecurity={onSecurity ? () => onSecurity(contextMenuThread) : undefined}

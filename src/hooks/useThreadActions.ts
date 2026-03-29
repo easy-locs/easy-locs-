@@ -153,7 +153,22 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     }
   }, [userId, updateThreadLocally]);
 
-  return { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread, changeStatus };
+  const markUnread = useCallback(async (thread: ConversationThread) => {
+    if (!userId) return;
+    updateThreadLocally(thread.id, { unreadCount: Math.max(thread.unreadCount || 0, 1) });
+    try {
+      // Mark conversation as having unread via preference metadata
+      const contextId = thread.contextId || thread.id;
+      await commsRepo.upsertConversationPreference(userId, contextId, !!thread.muted, !!thread.archived);
+      toast.success(`"${thread.name}" marked as unread`);
+    } catch (e: any) {
+      console.error("[markUnread] Failed:", e);
+      updateThreadLocally(thread.id, { unreadCount: thread.unreadCount });
+      toast.error("Failed to mark as unread");
+    }
+  }, [userId, updateThreadLocally]);
+
+  return { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread, changeStatus, markUnread };
 }
 
 function resolveOtherUserId(thread: ConversationThread, currentUserId: string): string | null {
