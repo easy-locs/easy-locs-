@@ -1,8 +1,9 @@
 /**
  * useHudViewOnceUpload — Atomic: ephemeral view-once photo upload + DB insert.
+ * Uses canonical repository for DB ops.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
 import { computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { toast } from "sonner";
 
@@ -35,16 +36,16 @@ export function useHudViewOnceUpload(deps: {
       const disappearAt = computeDisappearAt(deps.disappearTTL !== "off" ? deps.disappearTTL : deps.defaultDisappearTtl);
       const conversationId = await deps.resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
-      await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: conversationId,
-        sender_user_id: authUserId,
-        sender_orbit_id: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiver_orbit_id: deps.thread.peerOrbitId ?? null,
+      await insertMessage({
+        conversationId,
+        senderUserId: authUserId,
+        senderOrbitId: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+        receiverOrbitId: deps.thread.peerOrbitId ?? null,
         type: "media",
         body: "📷 View-once photo",
         metadata: { url: finalUrl, view_once: true, disappear_at: disappearAt },
       });
-      await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
+      await updateConversationTimestamp(conversationId);
       toast.success(deps.t("orbit.view_once_sent") || "View-once photo sent");
     } catch (e: any) {
       toast.error(e?.message || "Upload failed");

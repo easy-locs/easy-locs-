@@ -90,20 +90,16 @@ export default function ForwardMessageDialog({
     setForwarding(true);
     setError(null);
     try {
-      const { error: insertErr } = await db.from("chat_messages_v2").insert({
-        conversation_id: selectedThread.context_id,
-        sender_user_id: userId,
-        sender_orbit_id: `orbit_${userId.slice(0, 12)}`,
+      const { insertMessage, updateConversationTimestamp } = await import("@/repositories/communication.repository");
+      await insertMessage({
+        conversationId: selectedThread.context_id,
+        senderUserId: userId,
+        senderOrbitId: `orbit_${userId.slice(0, 12)}`,
         type: "text",
         body: messageContent,
         metadata: { forwarded_from: messageId },
       });
-      if (insertErr) throw insertErr;
-
-      await db
-        .from("conversations_v2")
-        .update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-        .eq("id", selectedThread.context_id);
+      await updateConversationTimestamp(selectedThread.context_id);
 
       toast.success(
         (t("chat.forwarded_to") || "Forwarded to") + " " + (selectedThread.display_name || t("chat.conversation") || "conversation")
