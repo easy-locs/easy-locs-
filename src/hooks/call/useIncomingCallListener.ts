@@ -14,7 +14,8 @@ export function useIncomingCallListener(
   incomingCallIdRef: React.MutableRefObject<string | null>,
   onIncoming: (info: {
     callId: string; callerName: string; contextLabel: string;
-    isVideo: boolean; orgId: string; threadId: string | null;
+    isVideo: boolean; orgId: string;
+    conversationId: string | null; threadId?: string | null;
   }) => void,
   onDismissed: () => void,
 ) {

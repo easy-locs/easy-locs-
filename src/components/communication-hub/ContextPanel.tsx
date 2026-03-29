@@ -346,14 +346,14 @@ export default function ContextPanel({ thread, orgId }: Props) {
           )}
 
           {/* Deal Room Panel — only for threads with deal context */}
-          {showDealRoom && thread.contextId && orgId && (
+          {showDealRoom && thread.entityId && orgId && (
             <div className="pt-3 border-t border-border/30">
               <DealRoomPanel
-                contextType={thread.contextType}
-                contextId={thread.contextId}
+                contextType={thread.entityType}
+                contextId={thread.entityId}
                 contextTitle={thread.serviceTitle || thread.listingTitle || thread.propertyLabel}
                 targetOrgId={orgId}
-                threadId={thread.threadId || thread.id}
+                threadId={thread.conversationId || thread.id}
                 isOrgMember={true}
               />
             </div>
@@ -375,9 +375,9 @@ export default function ContextPanel({ thread, orgId }: Props) {
               "booking"
             }
             entityId={
-              thread.conversationType === "property" ? (thread.tenantId || thread.contextId) :
+              thread.conversationType === "property" ? (thread.tenantId || thread.entityId) :
               thread.propertyId ? thread.propertyId :
-              (thread.bookingId || thread.contextId)
+              (thread.bookingId || thread.entityId)
             }
             orgId={orgId}
             maxItems={20}

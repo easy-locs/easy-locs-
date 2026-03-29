@@ -12,6 +12,8 @@ type ThreadLike = {
   id: string;
   /** Canonical conversation UUID */
   conversationId?: string | null;
+  /** Business entity ID */
+  entityId?: string | null;
   /** @deprecated Use conversationId */
   v2ConversationId?: string | null;
   /** @deprecated Use entityId */
@@ -202,7 +204,7 @@ export function useMessageLoader({
         .in("id", unreadIds)
         .then(() => onThreadUpdate(thread!.id, { unreadCount: 0 }));
       // Clear marked_unread preference when messages are read
-      const ctxId = thread?.contextId || thread?.id;
+      const ctxId = thread?.entityId || thread?.id;
       db.from("conversation_preferences")
         .update({ marked_unread: false })
         .eq("user_id", userId)

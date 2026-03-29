@@ -81,16 +81,14 @@ export function useOutgoingCall(
       }
       completeStep(flow, resolveStep, { receiverUserId });
 
-      // Step 3: RPC write — resolve canonical names with fallback to deprecated
+      // Step 3: RPC write
       const rpcStep = addStep(flow, "db_write");
-      const callConversationId = opts.conversationId || opts.threadId;
-      const callEntityType = opts.entityType || opts.contextType;
-      const callEntityId = opts.entityId || opts.contextId;
-
       const result = await createCallRpc({
         callerUserId: authData.user.id, receiverUserId,
-        threadId: callConversationId, contextType: callEntityType,
-        contextId: callEntityId, contextLabel: opts.contextLabel,
+        conversationId: opts.conversationId || opts.threadId,
+        entityType: opts.entityType || opts.contextType,
+        entityId: opts.entityId || opts.contextId,
+        contextLabel: opts.contextLabel,
         isVideo: opts.isVideo || false,
       });
       if (!result.success || !result.callId) {
@@ -107,18 +105,18 @@ export function useOutgoingCall(
         onStateChange: () => {}, // Will be wired by parent
       });
 
+      const resolvedConvId = opts.conversationId || opts.threadId;
+      const resolvedEntityId = opts.entityId || opts.contextId;
+
       onCallCreated({
         manager,
         peerName: opts.peerName,
         contextLabel: opts.contextLabel || "",
         meta: {
           callId: result.callId,
-          conversationId: callConversationId,
+          conversationId: resolvedConvId,
           orgId: opts.targetId,
-          entityId: callEntityId,
-          // deprecated compat
-          threadId: callConversationId,
-          contextId: callEntityId,
+          entityId: resolvedEntityId,
         },
         isVideo: opts.isVideo || false,
       });

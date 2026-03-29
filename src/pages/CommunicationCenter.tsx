@@ -78,9 +78,8 @@ export const CommunicationCenter = () => {
       t.bookingId === threadParam || t.dealId === threadParam ||
       t.id === `deal-${threadParam}` || t.id === `tenant-${threadParam}` ||
       t.tenantId === threadParam || t.id === `lead-${threadParam}` ||
-      t.leadId === threadParam || t.contextId === threadParam ||
-      t.v2ConversationId === threadParam || t.id === `v2-direct-${threadParam}` ||
-      t.threadId === threadParam
+      t.leadId === threadParam || t.entityId === threadParam ||
+      t.conversationId === threadParam || t.id === `v2-direct-${threadParam}`
     );
     if (found) {
       setSelectedThread(found);
@@ -113,17 +112,17 @@ export const CommunicationCenter = () => {
     traceThreadOpen("onThreadClick", "input", {
       threadId: thread.id,
       name: thread.name,
-      v2ConversationId: thread.v2ConversationId,
+      conversationId: thread.conversationId,
       peerUserId: thread.peerUserId,
       peerOrbitId: thread.peerOrbitId,
       conversationType: thread.conversationType,
-      contextId: thread.contextId,
+      entityId: thread.entityId,
     });
 
     traceThreadOpen("selectedThread.guard", "input", {
       threadId: thread?.id,
       hasName: !!thread?.name,
-      hasConversationId: !!thread?.v2ConversationId,
+      hasConversationId: !!thread?.conversationId,
     });
 
     if (!thread?.id) {

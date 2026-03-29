@@ -38,7 +38,6 @@ export async function sendText(
 
   platformBus.emit("orbit:message_sent", {
     conversationId: ctx.conversationId,
-    threadId: ctx.threadId, // deprecated compat
     type: "text",
   }, "orbit", { userId: ctx.senderUserId, orgId: ctx.orgId || undefined });
 

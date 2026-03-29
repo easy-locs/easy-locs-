@@ -19,11 +19,20 @@ const trace = (step: string, phase: "input" | "output" | "error", payload?: Reco
 export interface CreateCallInput {
   callerUserId: string;
   receiverUserId: string;
-  threadId?: string | null;
-  contextType?: string;
-  contextId?: string | null;
+  /** Canonical conversation UUID */
+  conversationId?: string | null;
+  entityType?: string;
+  entityId?: string | null;
   contextLabel?: string | null;
   isVideo: boolean;
+
+  // ── Deprecated compat ──
+  /** @deprecated Use conversationId */
+  threadId?: string | null;
+  /** @deprecated Use entityType */
+  contextType?: string;
+  /** @deprecated Use entityId */
+  contextId?: string | null;
 }
 
 export interface CreateCallResult {
@@ -41,12 +50,16 @@ export async function createCallRpc(input: CreateCallInput): Promise<CreateCallR
   // IDENTITY: pass auth.uid as orbit_id params — the RPC stores them as-is
   // in call_logs. The incoming listener subscribes on BOTH userId and orbit_id,
   // so using auth.uid guarantees the userId filter always matches.
+  const rpcConversationId = input.conversationId || input.threadId || null;
+  const rpcEntityType = input.entityType || input.contextType || "listing";
+  const rpcEntityId = input.entityId || input.contextId || null;
+
   const { data: callId, error } = await supabase.rpc("create_call_idempotent" as any, {
     _caller_orbit_id: input.callerUserId,
     _receiver_orbit_id: input.receiverUserId,
-    _thread_id: input.threadId || null,
-    _context_type: input.contextType || "listing",
-    _context_id: input.contextId || null,
+    _thread_id: rpcConversationId,
+    _context_type: rpcEntityType,
+    _context_id: rpcEntityId,
     _context_label: input.contextLabel || null,
     _is_video: input.isVideo,
   });
