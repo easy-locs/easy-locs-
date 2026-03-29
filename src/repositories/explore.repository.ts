@@ -34,6 +34,6 @@ export async function getRealEstateShowcase(slug: string) {
 }
 
 export async function insertRealEstateLead(payload: Record<string, any>) {
-  const { data } = await supabase.from("real_estate_leads").insert(payload).select("id").single();
+  const { data } = await (supabase as any).from("real_estate_leads").insert(payload).select("id").single();
   return data;
 }
