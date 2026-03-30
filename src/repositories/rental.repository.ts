@@ -54,13 +54,14 @@ export async function insertRentalMessage(record: Record<string, any>) {
 }
 
 export function subscribeRentalMessages(orgId: string, onInsert: (msg: any) => void) {
-  const channel = supabase.channel(`rental-msgs-${orgId}`)
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, (payload) => {
+  const { createRealtimeChannel, removeRealtimeChannel } = require("@/lib/realtime");
+  const channel = createRealtimeChannel(`rental-msgs-${orgId}`)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, (payload: any) => {
       const msg = payload.new as any;
       if (msg?.conversation_id?.startsWith(`tenant_${orgId}_`)) onInsert(msg);
     })
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }
 
 // ── Notifications ──
@@ -79,17 +80,19 @@ export async function insertNotification(record: Record<string, any>) {
 
 // ── Realtime bridge ──
 export function subscribeRentCalls(orgId: string, onUpdate: (payload: any) => void) {
-  const channel = supabase.channel(`rent-calls-${orgId}`)
+  const { createRealtimeChannel, removeRealtimeChannel } = require("@/lib/realtime");
+  const channel = createRealtimeChannel(`rent-calls-${orgId}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "rent_calls", filter: `org_id=eq.${orgId}` }, onUpdate)
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }
 
 export function subscribeLeases(orgId: string, onUpdate: (payload: any) => void) {
-  const channel = supabase.channel(`leases-${orgId}`)
+  const { createRealtimeChannel, removeRealtimeChannel } = require("@/lib/realtime");
+  const channel = createRealtimeChannel(`leases-${orgId}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "leases", filter: `org_id=eq.${orgId}` }, onUpdate)
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }
 
 // ── Auto-generate lease ──
