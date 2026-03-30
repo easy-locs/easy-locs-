@@ -5,7 +5,7 @@
 import { useRef, useMemo, useCallback } from "react";
 import { useMessageLoader } from "@/components/communication-hub/chat/useMessageLoader";
 import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
-import { useMessageSender } from "@/hooks/useMessageSender";
+import { useOrbitDispatch } from "@/families/orbit-dispatch/useOrbitDispatch";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
 import { useOrbitScrollManager } from "@/hooks/useOrbitScrollManager";
@@ -55,24 +55,21 @@ export function useThreadMessageFamily(params: {
 
   const { showOriginal, translatingMsgId, handleTranslateMessage } = useTranslation(locale, loader.setRawMessages as any);
 
-  const messageSender = useMessageSender({
-    thread,
-    orgId,
-    locale,
-    myOrbitId,
-    e2eReady,
-    encrypt,
-    offline,
-    privacySettings,
-    disappearTTL,
-    securityLevel: securityLevel as "normal" | "high" | "ghost",
-    setSecurityLevel: setSecurityLevel as (l: "normal" | "high" | "ghost") => void,
-    selectedCategory: "general",
-    setRawMessages: loader.setRawMessages as any,
-    setPendingOffline: loader.setPendingOffline,
-    onThreadUpdate,
-    resolveAuthUserId,
-  });
+  const dispatch = useOrbitDispatch();
+
+  const messageSender = useMemo(() => ({
+    handleSend: async (explicitDraft: string) => {
+      const conversationId = thread?.conversationId || "";
+      if (!conversationId || !explicitDraft.trim()) return;
+      await dispatch({
+        type: "send_text",
+        conversationId,
+        body: explicitDraft,
+        locale,
+        category: "general",
+      });
+    },
+  }), [thread?.conversationId, locale, dispatch]);
 
   const messageActions = useOrbitMessageActions({
     conversationId: thread?.conversationId ?? null,
