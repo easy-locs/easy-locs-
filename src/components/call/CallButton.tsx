@@ -24,7 +24,6 @@ export function CallButton(props: {
           targetId: props.orbitId,
           peerName: props.peerName || "Contact",
           conversationId: props.conversationId,
-          threadId: props.conversationId, // deprecated compat for startCall API
           isVideo: callType === "video",
         });
       }}

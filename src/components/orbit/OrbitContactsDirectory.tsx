@@ -196,8 +196,8 @@ export default function OrbitContactsDirectory() {
       await startCall({
         targetId: contact.contact_user_id,
         peerName: contact.name,
-        contextType: "contact",
-        contextId: contact.id,
+        entityType: "contact",
+        entityId: contact.id,
         isVideo: true,
       });
     } catch {
