@@ -252,8 +252,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let latestSeq = 0;
     const safetyTimeout = window.setTimeout(() => {
       if (!mounted) return;
+      console.warn("[AuthContext] safety timeout reached — unblocking loading state");
       setLoading(false);
-    }, 2500);
+    }, 5000);
 
     markV1AuthActive();
 
