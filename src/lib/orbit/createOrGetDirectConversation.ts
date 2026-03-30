@@ -82,6 +82,12 @@ export async function createOrGetDirectConversation(params: Params): Promise<Con
     throw new Error("Cannot create a conversation with yourself");
   }
 
+  // Resolve canonical orbit IDs for both participants
+  const [myOrbitId, peerOrbitId] = await Promise.all([
+    resolveOrbitId(params.myUserId, params.myOrbitId),
+    resolveOrbitId(params.peerUserId, params.peerOrbitId),
+  ]);
+
   // Ensure both users have orbit_profiles_v2 entries (required for RLS)
   await ensureConversationParticipantProfile(params.myUserId, myOrbitId, params.myDisplayName, params.myEmail);
   await ensureConversationParticipantProfile(params.peerUserId, peerOrbitId, params.peerDisplayName, params.peerEmail);
