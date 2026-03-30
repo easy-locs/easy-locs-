@@ -38,35 +38,52 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      const LOGIN_TIMEOUT_MS = 15_000;
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("__TIMEOUT__")), LOGIN_TIMEOUT_MS)
-      );
-      const { data, error } = await Promise.race([
-        supabase.auth.signInWithPassword({ email, password }),
-        timeoutPromise,
-      ]);
-      setLoading(false);
-      if (error) {
-        const msg = error.message?.includes("timeout") || error.message?.includes("deadline")
-          ? "Le serveur met trop de temps à répondre. Réessayez dans quelques secondes."
-          : error.message;
-        toast({ title: t("auth.login.error"), description: msg, variant: "destructive" });
-      } else {
-        await redirectAfterLogin(data.user?.id);
+
+    const attemptLogin = async (attempt: number): Promise<void> => {
+      try {
+        const LOGIN_TIMEOUT_MS = 15_000;
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("__TIMEOUT__")), LOGIN_TIMEOUT_MS)
+        );
+        const { data, error } = await Promise.race([
+          supabase.auth.signInWithPassword({ email, password }),
+          timeoutPromise,
+        ]);
+        if (error) {
+          const isServerTimeout = error.message?.includes("timeout") || error.message?.includes("deadline") || error.message?.includes("504");
+          if (isServerTimeout && attempt < 2) {
+            console.warn(`[Login] server timeout on attempt ${attempt + 1}, retrying in 2s...`);
+            await new Promise((r) => setTimeout(r, 2000));
+            return attemptLogin(attempt + 1);
+          }
+          setLoading(false);
+          const msg = isServerTimeout
+            ? "Le serveur met trop de temps à répondre. Réessayez dans quelques secondes."
+            : error.message;
+          toast({ title: t("auth.login.error"), description: msg, variant: "destructive" });
+        } else {
+          setLoading(false);
+          await redirectAfterLogin(data.user?.id);
+        }
+      } catch (err: any) {
+        const isTimeout = err?.message === "__TIMEOUT__";
+        if (isTimeout && attempt < 2) {
+          console.warn(`[Login] client timeout on attempt ${attempt + 1}, retrying in 2s...`);
+          await new Promise((r) => setTimeout(r, 2000));
+          return attemptLogin(attempt + 1);
+        }
+        setLoading(false);
+        toast({
+          title: t("auth.login.error"),
+          description: isTimeout
+            ? "Connexion au serveur expirée. Réessayez dans quelques secondes."
+            : (err?.message || "Erreur inattendue"),
+          variant: "destructive",
+        });
       }
-    } catch (err: any) {
-      setLoading(false);
-      const isTimeout = err?.message === "__TIMEOUT__";
-      toast({
-        title: t("auth.login.error"),
-        description: isTimeout
-          ? "Connexion au serveur expirée (15s). Vérifiez votre réseau et réessayez."
-          : (err?.message || "Erreur inattendue"),
-        variant: "destructive",
-      });
-    }
+    };
+
+    await attemptLogin(0);
   };
 
   useEffect(() => {
