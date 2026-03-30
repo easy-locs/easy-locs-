@@ -47,25 +47,33 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
     if (!voicePreview || !deps.thread || !deps.orgId) return;
     const authUserId = await deps.resolveAuthUserId();
     if (!authUserId) return;
+
+    // Capture preview data before clearing UI (instant feedback)
+    const blob = voicePreview.blob;
+    const dur = voicePreview.duration;
+    const localUrl = voicePreview.url;
+
+    // ── INSTANT: clear voice preview UI immediately (user sees composer reset) ──
+    setVoicePreview(null);
     deps.setUploading(true);
+
     try {
-      const blob = voicePreview.blob;
-      const dur = voicePreview.duration;
       const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
       const path = `${deps.orgId}/${deps.thread.id}/voice-${Date.now()}.${ext}`;
+
+      // Upload + insert run together, but UI is already free
       const audioUrl = await uploadToStorage("chat-attachments", path, blob);
       if (!audioUrl) throw new Error("Voice upload failed");
+
       const conversationId = await deps.resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
       const ctx = buildSendContext(deps, authUserId, conversationId);
       await sendVoice(ctx, audioUrl, dur, formatVoiceDuration(dur));
       deps.setSecurityLevel("normal");
-      toast.success(deps.t("orbit.voice_sent") || "Voice message sent");
     } catch (e: any) {
       toast.error(e?.message || "Failed to send voice message");
     } finally {
-      URL.revokeObjectURL(voicePreview.url);
-      setVoicePreview(null);
+      URL.revokeObjectURL(localUrl);
       deps.setUploading(false);
     }
   }, [voicePreview, deps]);
