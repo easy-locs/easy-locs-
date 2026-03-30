@@ -1,11 +1,12 @@
 /**
  * Canonical notification realtime subscription — notifications_v2 only.
  * Actor-scoped: each user subscribes only to their own notifications.
+ * Uses canonical realtime channel factory.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import type { NotificationRow } from "./notification-service";
 
-let activeChannel: ReturnType<typeof supabase.channel> | null = null;
+let activeChannel: any | null = null;
 
 /** Subscribe to realtime notifications for a user */
 export function subscribeNotifications(
@@ -14,8 +15,7 @@ export function subscribeNotifications(
 ) {
   unsubscribeNotifications();
 
-  const channel = supabase
-    .channel(`notif-v2-${userId}`)
+  const channel = createRealtimeChannel(`notif-v2-${userId}`)
     .on(
       "postgres_changes",
       {
@@ -37,7 +37,7 @@ export function subscribeNotifications(
 /** Unsubscribe from realtime notifications */
 export function unsubscribeNotifications() {
   if (activeChannel) {
-    supabase.removeChannel(activeChannel);
+    removeRealtimeChannel(activeChannel);
     activeChannel = null;
   }
 }
