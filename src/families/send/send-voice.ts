@@ -3,6 +3,7 @@
  */
 import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { buildVoiceMeta } from "@/families/messages/build-metadata";
 import type { SendContext } from "./send-context";
 
 export async function sendVoice(
@@ -20,11 +21,7 @@ export async function sendVoice(
     receiverOrbitId: ctx.receiverOrbitId,
     type: "voice",
     body,
-    metadata: {
-      audio_url: audioUrl,
-      audio_duration_seconds: durationSeconds,
-      transcript_status: "pending",
-    },
+    metadata: buildVoiceMeta(audioUrl, durationSeconds),
   });
 
   await updateConversationTimestamp(ctx.conversationId, body);
