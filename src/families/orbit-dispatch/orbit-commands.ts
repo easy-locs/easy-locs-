@@ -100,6 +100,12 @@ export interface AcceptCallCommand extends BaseCommand {
   sessionId: string;
 }
 
+export interface DeclineCallCommand extends BaseCommand {
+  type: "decline_call";
+  sessionId: string;
+  reason?: string;
+}
+
 export interface EndCallCommand extends BaseCommand {
   type: "end_call";
   sessionId: string;
