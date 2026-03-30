@@ -22,6 +22,7 @@ import { checkIdempotencyGuard, issueRequestId, registerInflightRequest, release
 // ── Executors ──
 import { executeSendText } from "./pipeline/executeSendText";
 import { executeSendMedia } from "./pipeline/executeSendMedia";
+import { executeSendMediaBatch } from "./pipeline/executeSendMediaBatch";
 import { executeSendVoice } from "./pipeline/executeSendVoice";
 import { executeSendLocation } from "./pipeline/executeSendLocation";
 import { executeStartCall } from "./pipeline/executeStartCall";
