@@ -3,7 +3,7 @@
  * Thin assembly layer that composes canonical family hooks.
  * Contains NO business logic — only wiring.
  */
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -38,6 +38,9 @@ import DealContextHeader from "./DealContextHeader";
 import ChatLocationPicker from "./ChatLocationPicker";
 import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import OrbitSafetyNumber from "@/components/orbit/OrbitSafetyNumber";
+import OrbitSelectionToolbar from "@/components/orbit/OrbitSelectionToolbar";
+import { useOrbitComposerStore } from "@/stores/orbit/composer.store";
+import { useOrbitSelectionStore } from "@/stores/orbit/selection.store";
 import OrbitSecurityPanel from "@/components/orbit/OrbitSecurityPanel";
 import OrbitSmartPayment, { type PaymentConfirmation } from "@/components/orbit/payments/OrbitSmartPayment";
 import { RequestMoneyModal } from "@/components/chat/RequestMoneyModal";
