@@ -32,7 +32,7 @@ export function issueRequestId(): string {
 }
 
 export function isSendLikeCommand(cmd: OrbitCommand): boolean {
-  return ["send_text", "reply", "send_media", "send_voice", "send_location"].includes(cmd.type);
+  return ["send_text", "reply", "send_media", "send_media_batch", "send_voice", "send_location"].includes(cmd.type);
 }
 
 export function getSubmitLockKey(cmd: OrbitCommand): string | null {
