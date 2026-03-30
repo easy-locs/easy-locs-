@@ -565,6 +565,37 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
       {/* ── FULLSCREEN MEDIA VIEWER ── */}
       <FullscreenMediaViewer />
+
+      {/* ── CONTACT PROFILE SHEET ── */}
+      <ContactProfileSheet
+        open={showContactProfile}
+        onClose={() => setShowContactProfile(false)}
+        entity={thread ? {
+          display_name: thread.name,
+          email: thread.email,
+          avatar_url: thread.avatarUrl,
+          phone: (thread as any).phone || null,
+          user_id: thread.peerUserId || null,
+          orbit_id: thread.peerOrbitId || null,
+          created_at: (thread as any).createdAt || null,
+        } : null}
+        onMessage={() => setShowContactProfile(false)}
+        onAudioCall={() => { setShowContactProfile(false); void callFamily.handleStartAudioCall(); }}
+        onVideoCall={() => { setShowContactProfile(false); void callFamily.handleStartVideoCall(); }}
+      />
+
+      {/* ── MULTI PHOTO SELECT ── */}
+      <MultiPhotoSelect
+        open={showMultiPhoto}
+        onClose={() => setShowMultiPhoto(false)}
+        onSend={(attachments, caption) => {
+          // Send each attachment via the canonical attachment pipeline
+          for (const att of attachments) {
+            const file = att.file;
+            attFamily.attachments.handleFileUpload(file);
+          }
+        }}
+      />
     </>
   );
 }
