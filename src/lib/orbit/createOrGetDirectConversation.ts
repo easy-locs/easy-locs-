@@ -6,6 +6,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { orbitDb } from "@/lib/db/orbitDb";
+import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import type { ConversationParticipant, ConversationRow } from "@/lib/types/comms";
 
 type Params = {
@@ -19,12 +20,10 @@ type Params = {
   peerDisplayName?: string | null;
 };
 
-/** Generates deterministic orbit_id from user UUID */
 function toOrbitId(userId: string): string {
   return `orbit_${userId.slice(0, 12)}`;
 }
 
-/** Resolves the real orbit_id from orbit_profiles_v2, or generates one */
 async function resolveOrbitId(userId: string, fallback?: string | null): Promise<string> {
   if (fallback) return fallback;
   try {
@@ -40,28 +39,13 @@ async function resolveOrbitId(userId: string, fallback?: string | null): Promise
   return toOrbitId(userId);
 }
 
-/** Ensures the user has an orbit_profiles_v2 row (upsert) */
-async function ensureOrbitProfile(userId: string, orbitId: string, displayName?: string | null, email?: string | null) {
-  try {
-    const { data: existing } = await (supabase as any)
-      .from("orbit_profiles_v2")
-      .select("id")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (!existing) {
-      await (supabase as any)
-        .from("orbit_profiles_v2")
-        .insert({
-          id: userId,
-          orbit_id: orbitId,
-          display_name: displayName || null,
-          email: email || null,
-        });
-    }
-  } catch (err) {
-    console.warn("[createOrGetDirectConversation] ensureOrbitProfile warning:", err);
-  }
+async function ensureConversationParticipantProfile(userId: string, orbitId: string, displayName?: string | null, email?: string | null) {
+  await ensureOrbitProfile({
+    userId,
+    orbitId,
+    displayName: displayName ?? null,
+    email: email ?? null,
+  });
 }
 
 function normalizeParticipants(
@@ -98,13 +82,9 @@ export async function createOrGetDirectConversation(params: Params): Promise<Con
     throw new Error("Cannot create a conversation with yourself");
   }
 
-  // Resolve orbit IDs — MUST be non-null for RLS to work
-  const myOrbitId = await resolveOrbitId(params.myUserId, params.myOrbitId);
-  const peerOrbitId = await resolveOrbitId(params.peerUserId, params.peerOrbitId);
-
   // Ensure both users have orbit_profiles_v2 entries (required for RLS)
-  await ensureOrbitProfile(params.myUserId, myOrbitId, params.myDisplayName, params.myEmail);
-  await ensureOrbitProfile(params.peerUserId, peerOrbitId, params.peerDisplayName, params.peerEmail);
+  await ensureConversationParticipantProfile(params.myUserId, myOrbitId, params.myDisplayName, params.myEmail);
+  await ensureConversationParticipantProfile(params.peerUserId, peerOrbitId, params.peerDisplayName, params.peerEmail);
 
   const directUserIds = [params.myUserId, params.peerUserId].sort();
 
