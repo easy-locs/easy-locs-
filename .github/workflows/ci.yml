@@ -1,9 +1,8 @@
-# Forced sync – 2026-03-30
 name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
   pull_request:
 
 jobs:
@@ -19,7 +18,7 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install
+      - name: Install dependencies
         run: npm install --legacy-peer-deps
 
       - name: Type check
