@@ -158,7 +158,7 @@ export default function OrbitContactsDirectory() {
         targetName: contact.name,
       });
       const conversationId = result?.conversationId;
-      if (conversationId) navigate(`/dashboard/communication?thread=${conversationId}`);
+      if (conversationId) navigate(`/orbit/${conversationId}`);
     } catch {
       toast.error("Failed to open conversation");
     }
