@@ -8,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format, isToday, isYesterday } from "date-fns";
 import ChatMessageBubble, { DateSeparator } from "../ChatMessageBubble";
 import DealStatusBubble, { type DealEventType } from "../DealStatusBubble";
+import MessageCardRenderer from "@/components/communication/MessageCardRenderer";
+import { resolveMessageMode } from "@/families/messages/message-mode";
 import type { ChatMessage } from "../types";
 
 interface Props {
