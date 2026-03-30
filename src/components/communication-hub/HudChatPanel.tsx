@@ -89,13 +89,25 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const [showContactProfile, setShowContactProfile] = useState(false);
   const [showMultiPhoto, setShowMultiPhoto] = useState(false);
   const [peerProfileCreatedAt, setPeerProfileCreatedAt] = useState<string | null>(null);
+  const peerProfileCacheRef = useMemo(() => ({ lastPeerId: null as string | null }), []);
 
-  // ── Fetch peer profile created_at for "member since" ──
+  // ── Fetch peer profile created_at for "member since" (cached, error-safe) ──
   useEffect(() => {
     const peerId = thread?.peerUserId || null;
     if (!peerId) { setPeerProfileCreatedAt(null); return; }
+    // Skip refetch if same peer
+    if (peerProfileCacheRef.lastPeerId === peerId) return;
+    peerProfileCacheRef.lastPeerId = peerId;
+
     supabase.from("profiles").select("created_at").eq("id", peerId).maybeSingle()
-      .then(({ data }) => setPeerProfileCreatedAt(data?.created_at ?? null));
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn("[HudChatPanel] profile fetch error:", error.message);
+          setPeerProfileCreatedAt(null);
+          return;
+        }
+        setPeerProfileCreatedAt(data?.created_at ?? null);
+      });
   }, [thread?.peerUserId]);
 
   const contactProfileEntity = useMemo(() => {
