@@ -15,10 +15,12 @@ const IS_DEV = typeof import.meta !== "undefined" && (import.meta as any).env?.D
  */
 const VALID_TYPES = new Set([
   "text", "image", "video", "voice", "audio", "file",
+  "media", // DB-level type that maps to image/video/file at canonical level
   "location_static", "location_live",
   "call_audio", "call_video", "call_missed", "call_declined",
   "payment_request", "payment_receipt",
   "system_notice",
+  "system", // Legacy compat: some callers still write "system"
 ] as const);
 
 export type CanonicalMessageType = typeof VALID_TYPES extends Set<infer T> ? T : never;
