@@ -24,10 +24,10 @@ export async function saveProfile(userId: string, displayName: string, avatarUrl
   // Propagate to profiles table
   await supabase.from("profiles").update({ name: displayName }).eq("id", userId);
   // Propagate to orbit_profiles_v2 for canonical identity resolution across all surfaces
-  await supabase.from("orbit_profiles_v2").update({
+  await supabase.from("orbit_profiles_v2" as any).update({
     display_name: displayName,
     avatar_url: avatarUrl,
-  }).eq("user_id", userId);
+  } as any).eq("user_id", userId);
 }
 
 /** Archive all user conversations */
