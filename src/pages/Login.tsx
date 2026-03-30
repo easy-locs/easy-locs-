@@ -10,6 +10,10 @@ import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
 import { getPostLoginRoute, waitForAuthenticatedUser } from "@/lib/auth-redirect";
 import SEOHead from "@/components/SEOHead";
+import {
+  authLog, authWarn, authError, authTraceSummary,
+  setActiveTrace, clearActiveTrace,
+} from "@/lib/auth/auth-trace";
 
 type AuthMode = "password" | "otp";
 
@@ -25,23 +29,51 @@ const Login = () => {
   const { toast } = useToast();
   const { t } = useI18n();
   const hasRedirected = useRef(false);
+  const loginInFlight = useRef(false);
 
-  const redirectAfterLogin = useCallback(async (knownUserId?: string) => {
+  const redirectAfterLogin = useCallback(async (traceId: string, knownUserId?: string) => {
     if (hasRedirected.current) return;
     const userId = knownUserId ?? (await waitForAuthenticatedUser())?.id;
     if (!userId) return;
-    const route = await getPostLoginRoute(userId);
+
+    authLog("LOGIN_SESSION_DETECTED", { traceId, userId });
+
+    const destination = await getPostLoginRoute(userId);
+    authLog("LOGIN_REDIRECT_STARTED", { traceId, destination });
+
     hasRedirected.current = true;
-    navigate(route, { replace: true });
+    navigate(destination, { replace: true });
+
+    authLog("LOGIN_REDIRECT_COMPLETED", { traceId, destination });
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loginInFlight.current) return;
+    loginInFlight.current = true;
+
+    const traceId = crypto.randomUUID();
+    const flowStart = Date.now();
+    setActiveTrace(traceId, flowStart);
+
+    authLog("LOGIN_SUBMIT_STARTED", { traceId, email, timestamp: flowStart });
     setLoading(true);
 
+    let failedStep: string | null = null;
+
     const attemptLogin = async (attempt: number): Promise<void> => {
+      const LOGIN_TIMEOUT_MS = 15_000;
+
+      authLog("LOGIN_SUPABASE_REQUEST_STARTED", { traceId, attempt });
+      const reqStart = Date.now();
+
+      let timedOut = false;
+      const timeoutTimer = setTimeout(() => {
+        timedOut = true;
+        authWarn("LOGIN_TIMEOUT_TRIGGERED", { traceId, timeoutMs: LOGIN_TIMEOUT_MS, attempt });
+      }, LOGIN_TIMEOUT_MS);
+
       try {
-        const LOGIN_TIMEOUT_MS = 15_000;
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("__TIMEOUT__")), LOGIN_TIMEOUT_MS)
         );
@@ -49,30 +81,61 @@ const Login = () => {
           supabase.auth.signInWithPassword({ email, password }),
           timeoutPromise,
         ]);
+        clearTimeout(timeoutTimer);
+        const durationMs = Date.now() - reqStart;
+
         if (error) {
+          authError("LOGIN_SUPABASE_RESPONSE", {
+            traceId, success: false, error: error.message, durationMs, attempt,
+          });
           const isServerTimeout = error.message?.includes("timeout") || error.message?.includes("deadline") || error.message?.includes("504");
           if (isServerTimeout && attempt < 2) {
-            console.warn(`[Login] server timeout on attempt ${attempt + 1}, retrying in 2s...`);
             await new Promise((r) => setTimeout(r, 2000));
             return attemptLogin(attempt + 1);
           }
+          failedStep = "LOGIN_SUPABASE_RESPONSE";
           setLoading(false);
+          loginInFlight.current = false;
+          clearActiveTrace();
           const msg = isServerTimeout
             ? "Le serveur met trop de temps à répondre. Réessayez dans quelques secondes."
             : error.message;
           toast({ title: t("auth.login.error"), description: msg, variant: "destructive" });
+          authTraceSummary({ traceId, totalDurationMs: Date.now() - flowStart, finalStatus: "failed", failedStep });
         } else {
+          authLog("LOGIN_SUPABASE_RESPONSE", {
+            traceId, success: true, error: null, durationMs, attempt,
+          });
           setLoading(false);
-          await redirectAfterLogin(data.user?.id);
+          loginInFlight.current = false;
+          await redirectAfterLogin(traceId, data.user?.id);
+          authTraceSummary({ traceId, totalDurationMs: Date.now() - flowStart, finalStatus: "success", failedStep: null });
+          clearActiveTrace();
         }
       } catch (err: any) {
+        clearTimeout(timeoutTimer);
+        const durationMs = Date.now() - reqStart;
         const isTimeout = err?.message === "__TIMEOUT__";
+
+        if (isTimeout) {
+          authError("LOGIN_SUPABASE_RESPONSE", {
+            traceId, success: false, error: "CLIENT_TIMEOUT", durationMs, attempt,
+          });
+        } else {
+          authError("LOGIN_SUPABASE_RESPONSE", {
+            traceId, success: false, error: err?.message ?? "UNKNOWN", durationMs, attempt,
+          });
+        }
+
         if (isTimeout && attempt < 2) {
-          console.warn(`[Login] client timeout on attempt ${attempt + 1}, retrying in 2s...`);
           await new Promise((r) => setTimeout(r, 2000));
           return attemptLogin(attempt + 1);
         }
+
+        failedStep = isTimeout ? "LOGIN_TIMEOUT_TRIGGERED" : "LOGIN_SUPABASE_REQUEST_STARTED";
         setLoading(false);
+        loginInFlight.current = false;
+        clearActiveTrace();
         toast({
           title: t("auth.login.error"),
           description: isTimeout
@@ -80,6 +143,7 @@ const Login = () => {
             : (err?.message || "Erreur inattendue"),
           variant: "destructive",
         });
+        authTraceSummary({ traceId, totalDurationMs: Date.now() - flowStart, finalStatus: "failed", failedStep });
       }
     };
 
