@@ -7,6 +7,7 @@
 import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { buildLocationMeta } from "@/families/messages/build-metadata";
+import { orbitLabels } from "@/families/orbit-i18n/orbit-labels";
 import type { SendContext } from "./send-context";
 import type { LocationPayload } from "./send-location";
 
