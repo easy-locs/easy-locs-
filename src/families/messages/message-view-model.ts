@@ -49,7 +49,7 @@ export function toMessageViewModel(
   envelope: CanonicalMessageEnvelope,
   currentUserId: string | null,
 ): MessageViewModel {
-  const meta = envelope.metadata || {};
+  const meta = envelope.metadata || { schemaVersion: 1 as const };
   const cardType = meta.ui?.cardType || resolveCardType(envelope.type);
 
   return {
