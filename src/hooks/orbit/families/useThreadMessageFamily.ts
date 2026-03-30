@@ -11,6 +11,7 @@ import { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
 import { useOrbitScrollManager } from "@/hooks/useOrbitScrollManager";
 import { useOrbitThreadUiState } from "@/hooks/useOrbitThreadUiState";
 import { useMessageSelection } from "@/components/communication-hub/chat/useMessageSelection";
+import { toMessageViewModels } from "@/families/messages/message-view-model";
 import type { ConversationThread, ChatMessage } from "@/components/communication-hub/types";
 
 export function useThreadMessageFamily(params: {
@@ -52,6 +53,12 @@ export function useThreadMessageFamily(params: {
 
   const { messages: decryptedMessages } = useDecryptedMessages(loader.rawMessages, decrypt, userId);
   const messages = decryptedMessages as ChatMessage[];
+
+  // ── View Model layer: canonical transform for UI consumption ──
+  const viewModels = useMemo(
+    () => toMessageViewModels(messages as any, userId ?? null),
+    [messages, userId],
+  );
 
   const { showOriginal, translatingMsgId, handleTranslateMessage } = useTranslation(locale, loader.setRawMessages as any);
 
@@ -104,6 +111,7 @@ export function useThreadMessageFamily(params: {
     selection,
     loader,
     messages,
+    viewModels,
     messageSender,
     messageActions,
     showOriginal,
