@@ -99,6 +99,22 @@ export const CommunicationCenter = () => {
     }
   }, [threads, loading, searchParams, setSearchParams, loadThreads]);
 
+  // ── Route param: /orbit/:conversationId ──
+  useEffect(() => {
+    if (!routeConversationId || loading) return;
+    const found = threads.find(t =>
+      t.conversationId === routeConversationId || t.id === routeConversationId ||
+      t.id === `v2-direct-${routeConversationId}`
+    );
+    if (found) {
+      setSelectedThread(found);
+      setActiveSection("chats");
+    } else if (threads.length > 0) {
+      const timer = setTimeout(() => loadThreads(), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [routeConversationId, threads, loading, loadThreads]);
+
   useEffect(() => {
     const searchQ = searchParams.get("search");
     if (!searchQ || loading || threads.length === 0) return;
