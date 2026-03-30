@@ -1,6 +1,7 @@
 /**
  * ChatHeader — Compact messenger-first thread top bar.
  * Uses canonical identity resolution for consistent display.
+ * Tap on avatar/name opens ContactProfileSheet.
  */
 import { Phone, Video, MoreVertical, ArrowLeft } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -23,13 +24,14 @@ interface Props {
   onShowSecurityPanel: () => void;
   onShowSafetyNumber: () => void;
   onEnterSelectMode: () => void;
+  onAvatarTap?: () => void;
   t: (key: string) => string;
 }
 
 export default function ChatHeader({
   thread, isInCall, isStartingCall,
   onBack, onStartCall, onToggleContext,
-  onEnterSelectMode, t,
+  onEnterSelectMode, onAvatarTap, t,
 }: Props) {
   const identity = resolveCanonicalDisplayIdentity({
     display_name: thread.name,
@@ -39,8 +41,13 @@ export default function ChatHeader({
     company: thread.propertyLabel || undefined,
   });
   const displayName = identity.displayName;
-  const initial = identity.initials[0] || "?";
   const subtitle = identity.subtitle || "tap for info";
+
+  const handleIdentityTap = () => {
+    haptic("light");
+    if (onAvatarTap) onAvatarTap();
+    else onToggleContext();
+  };
 
   return (
     <div className="px-2 sm:px-3 py-1.5 shrink-0" style={{
@@ -53,9 +60,11 @@ export default function ChatHeader({
           <ArrowLeft className="h-4 w-4" style={{ color: "hsl(var(--hud-text))" }} />
         </button>
 
-        <IdentityAvatar avatarUrl={identity.avatarUrl} name={displayName} size="sm" />
+        <button onClick={handleIdentityTap} className="shrink-0">
+          <IdentityAvatar avatarUrl={identity.avatarUrl} name={displayName} size="sm" />
+        </button>
 
-        <div className="min-w-0 flex-1" onClick={onToggleContext} style={{ cursor: "pointer" }}>
+        <div className="min-w-0 flex-1" onClick={handleIdentityTap} style={{ cursor: "pointer" }}>
           <p className="text-[13px] font-semibold line-clamp-1 break-words leading-tight" style={{ color: "hsl(var(--hud-text))" }}>
             {displayName}
           </p>
