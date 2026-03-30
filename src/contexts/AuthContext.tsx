@@ -71,18 +71,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const bootstrapOrbitRef = useRef<string | null>(null);
 
   const fetchOrgId = useCallback(async (userId: string) => {
+    const QUERY_TIMEOUT = 8_000;
+    const withTimeout = <T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
+      Promise.race([
+        Promise.resolve(thenable),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out (${QUERY_TIMEOUT}ms)`)), QUERY_TIMEOUT)
+        ),
+      ]);
+
     try {
-      const { data: memberships } = await supabase
-        .from("org_members")
-        .select("org_id")
-        .eq("user_id", userId);
+      const { data: memberships } = await withTimeout(
+        supabase.from("org_members").select("org_id").eq("user_id", userId),
+        "fetchOrgId/memberships"
+      );
 
       if (memberships && memberships.length > 0) {
         const orgIds = memberships.map((m) => m.org_id);
-        const { data: orgsData } = await supabase
-          .from("orgs")
-          .select("id, name")
-          .in("id", orgIds);
+        const { data: orgsData } = await withTimeout(
+          supabase.from("orgs").select("id, name").in("id", orgIds),
+          "fetchOrgId/orgs"
+        );
 
         const orgs = (orgsData || []).map((o) => ({
           id: o.id,
@@ -113,21 +122,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const fetchUserType = useCallback(async (userId: string) => {
+    const QUERY_TIMEOUT = 8_000;
+    const withTimeout = <T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
+      Promise.race([
+        Promise.resolve(thenable),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out (${QUERY_TIMEOUT}ms)`)), QUERY_TIMEOUT)
+        ),
+      ]);
+
     try {
       let data: any = null;
-      const { data: d1, error: e1 } = await supabase
-        .from("profiles")
-        .select("user_type, onboarding_completed, country, currency")
-        .eq("id", userId)
-        .maybeSingle();
+      const { data: d1, error: e1 } = await withTimeout(
+        supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle(),
+        "fetchUserType/profiles"
+      );
 
       if (e1 || !d1) {
         await new Promise((r) => setTimeout(r, 300));
-        const { data: d2 } = await supabase
-          .from("profiles")
-          .select("user_type, onboarding_completed, country, currency")
-          .eq("id", userId)
-          .maybeSingle();
+        const { data: d2 } = await withTimeout(
+          supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle(),
+          "fetchUserType/profiles-retry"
+        );
         data = d2;
       } else {
         data = d1;
@@ -141,9 +157,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       let tenantLink: any = null;
       let orgLink: any = null;
       try {
-        const t = await supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
+        const [t, o] = await Promise.all([
+          withTimeout(supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(), "fetchUserType/tenants"),
+          withTimeout(supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(), "fetchUserType/org_members"),
+        ]);
         tenantLink = t.data;
-        const o = await supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
         orgLink = o.data;
       } catch (err) {
         console.warn("[AuthContext] dual-role check failed:", err);
@@ -234,8 +252,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let latestSeq = 0;
     const safetyTimeout = window.setTimeout(() => {
       if (!mounted) return;
+      console.warn("[AuthContext] safety timeout reached — unblocking loading state");
       setLoading(false);
-    }, 2500);
+    }, 5000);
 
     markV1AuthActive();
 
