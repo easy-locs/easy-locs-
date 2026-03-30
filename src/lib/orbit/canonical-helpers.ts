@@ -97,3 +97,53 @@ export function resolveCanonicalDisplayIdentity(entity: {
     canonicalOrbitId: entity.orbit_id || null,
   };
 }
+
+// ── Canonical Peer Identity (calls, headers, cards) ──
+export interface PeerIdentity {
+  userId: string | null;
+  orbitId: string | null;
+  displayName: string;
+  avatarUrl: string | null;
+  initials: string;
+  isMe: boolean;
+}
+
+/**
+ * resolvePeerIdentity — Single source of truth for the peer in a call or conversation.
+ * Fallback chain: thread.name → profile.display_name → contact.name → email → "Contact"
+ *
+ * Use EVERYWHERE: call cards, incoming call bar, call history, mini player, security panel.
+ */
+export function resolvePeerIdentity(
+  thread: {
+    name?: string | null;
+    email?: string | null;
+    avatarUrl?: string | null;
+    avatar_url?: string | null;
+    peerUserId?: string | null;
+    peerOrbitId?: string | null;
+  } | null | undefined,
+  currentUserId?: string | null,
+): PeerIdentity {
+  if (!thread) {
+    return { userId: null, orbitId: null, displayName: "Contact", avatarUrl: null, initials: "?", isMe: false };
+  }
+
+  const displayName = thread.name || thread.email || "Contact";
+  const avatarUrl = thread.avatarUrl || thread.avatar_url || null;
+  const initials = displayName
+    .split(" ")
+    .slice(0, 2)
+    .map((w: string) => w[0])
+    .join("")
+    .toUpperCase() || "?";
+
+  return {
+    userId: thread.peerUserId || null,
+    orbitId: thread.peerOrbitId || null,
+    displayName,
+    avatarUrl,
+    initials,
+    isMe: !!(currentUserId && thread.peerUserId === currentUserId),
+  };
+}
