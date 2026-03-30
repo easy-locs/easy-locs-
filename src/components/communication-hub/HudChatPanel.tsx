@@ -187,24 +187,25 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   }, [selection.setContextMessage]);
 
   const stableHandleSend = useCallback(async () => {
+    const draft = composerStore.getDraft(currentConversationId);
     if (compFamily.composer.editState) {
-      await messageActions.editMessage(compFamily.composer.editState.messageId, storeDraft.trim());
+      await messageActions.editMessage(compFamily.composer.editState.messageId, draft.trim());
       composerStore.clearDraft(currentConversationId);
       compFamily.composer.setEditState(null);
       return;
     }
-    // Sync store draft → messageSender before send (single source of truth = store)
-    messageSender.setNewMessage(storeDraft);
+    // Single source of truth: store → sender in one shot
+    messageSender.setNewMessage(draft);
     await messageSender.handleSend();
     composerStore.clearDraft(currentConversationId);
     compFamily.composer.setReplyState(null);
-  }, [compFamily.composer.editState, messageActions, messageSender, compFamily.composer.setReplyState, storeDraft, composerStore, currentConversationId]);
+  }, [compFamily.composer.editState, messageActions, messageSender, compFamily.composer.setReplyState, composerStore, currentConversationId]);
 
   if (!thread) return <ChatEmptyState t={t} />;
 
   return (
     <>
-      <div className="flex-1 min-h-0 flex flex-col" style={{ background: "hsl(var(--hud-bg))" }}>
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
         {/* ── HEADER FAMILY ── */}
         <ChatHeader
           thread={thread}
