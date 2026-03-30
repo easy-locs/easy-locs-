@@ -243,6 +243,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           onShowSecurityPanel={() => security.setShowSecurityPanel(true)}
           onShowSafetyNumber={() => security.setShowSafetyNumber(true)}
           onEnterSelectMode={() => { selection.clearSelection(); }}
+          onAvatarTap={() => setShowContactProfile(true)}
           t={t}
         />
 
