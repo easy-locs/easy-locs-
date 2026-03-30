@@ -53,7 +53,8 @@ export async function sendText(
       confirmed: true,
     });
 
-    await updateConversationTimestamp(ctx.conversationId, body.slice(0, 120));
+    // Fire-and-forget: don't block send return for a timestamp update
+    void updateConversationTimestamp(ctx.conversationId, body.slice(0, 120)).catch(() => {});
 
     platformBus.emit("orbit:message_sent", {
       conversationId: ctx.conversationId,
