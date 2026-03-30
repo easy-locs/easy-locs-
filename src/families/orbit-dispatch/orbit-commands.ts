@@ -47,6 +47,17 @@ export interface SendMediaCommand extends BaseCommand {
   pathPrefix: string;
 }
 
+export interface SendMediaBatchCommand extends BaseCommand {
+  type: "send_media_batch";
+  conversationId: string;
+  files: File[];
+  caption?: string;
+  viewOnce?: boolean;
+  /** Injected upload function */
+  uploadFn: (file: File, path: string, onProgress: (p: number) => void) => Promise<string>;
+  pathPrefix: string;
+}
+
 export interface SendVoiceCommand extends BaseCommand {
   type: "send_voice";
   conversationId: string;
