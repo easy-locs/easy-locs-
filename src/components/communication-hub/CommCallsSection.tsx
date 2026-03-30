@@ -156,7 +156,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
     const resolvedName = nameCache[peerId] || "Contact";
     await startCall({
       targetId: peerId,
-      contextType: "direct",
+      entityType: "direct",
       peerName: resolvedName,
       isVideo: call.call_type === "video",
     });
