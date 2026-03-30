@@ -396,6 +396,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
               onCameraCapture: attFamily.attachments.handleFileUpload,
               onLocation: () => security.setShowLocationPicker(true),
               onViewOnce: compFamily.handleViewOnceUpload,
+              onMultiPhoto: () => setShowMultiPhoto(true),
             }}
             onStartVoice={compFamily.startVoice}
             onStopVoice={compFamily.stopVoice}
