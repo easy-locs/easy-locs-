@@ -39,10 +39,14 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      clearTimeout(timeout);
+      const LOGIN_TIMEOUT_MS = 15_000;
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("__TIMEOUT__")), LOGIN_TIMEOUT_MS)
+      );
+      const { data, error } = await Promise.race([
+        supabase.auth.signInWithPassword({ email, password }),
+        timeoutPromise,
+      ]);
       setLoading(false);
       if (error) {
         const msg = error.message?.includes("timeout") || error.message?.includes("deadline")
@@ -54,10 +58,11 @@ const Login = () => {
       }
     } catch (err: any) {
       setLoading(false);
+      const isTimeout = err?.message === "__TIMEOUT__";
       toast({
         title: t("auth.login.error"),
-        description: err?.name === "AbortError"
-          ? "Connexion au serveur expirée. Réessayez."
+        description: isTimeout
+          ? "Connexion au serveur expirée (15s). Vérifiez votre réseau et réessayez."
           : (err?.message || "Erreur inattendue"),
         variant: "destructive",
       });
