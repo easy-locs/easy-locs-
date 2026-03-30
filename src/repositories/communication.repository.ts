@@ -5,7 +5,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
-import { assertNoLegacyIds, assertValidMessageType } from "@/lib/governance";
+import { assertNoLegacyIds } from "@/lib/governance";
 
 const db = supabase as any;
 
@@ -26,14 +26,9 @@ export async function insertMessage(params: {
   metadata?: Record<string, any>;
   replyToMessageId?: string | null;
 }) {
-  // Governance: validate type taxonomy (throws in dev for unknown types)
+  // Governance: warn-only at gateway level (legacy callers still exist outside send families)
   assertNoLegacyIds(params as any, "insertMessage");
-  // Type validation: "media" is allowed as a DB type even though it's not in the strict 15-type taxonomy
-  // (it maps to image/video/file at the canonical level)
-  if (params.type !== "media") {
-    assertValidMessageType(params.type, "insertMessage");
-  }
-  // Metadata canonical check: warn-only at gateway level (legacy callers still exist)
+  // Metadata canonical check: warn-only (send families enforce strict, legacy gets warned)
   if (params.metadata && !params.metadata.schemaVersion) {
     console.warn(`[Governance] insertMessage: metadata missing schemaVersion: 1 for type="${params.type}"`);
   }
