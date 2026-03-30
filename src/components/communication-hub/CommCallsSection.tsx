@@ -224,7 +224,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
 
   const getDisplayLabel = (call: CallLog) => {
     const peerId = call.direction === "outgoing" ? call.receiver_orbit_id : call.caller_orbit_id;
-    const resolvedName = nameCache[peerId] || (isUUID(peerId) ? "Contact" : peerId);
+    const resolvedName = nameCache[peerId] || "Contact";
     const dirLabel = call.direction === "outgoing" ? "Outgoing" : "Incoming";
     const typeLabel = call.call_type === "video" ? "Video" : "Audio";
     return resolvedName !== "Contact" ? [resolvedName, `${dirLabel} · ${typeLabel}`] : [`${dirLabel} ${typeLabel} Call`];
