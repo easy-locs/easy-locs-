@@ -9,7 +9,7 @@ import { CallManager } from "@/lib/call-manager";
 import { declineIncomingCall, markCallMissed } from "@/lib/call/call-incoming-handler";
 import { logCallEventToThread } from "@/lib/call-thread-logger";
 import { fetchCallLogStatus } from "@/repositories/communication.repository";
-import type { ActiveCallMeta } from "./useCallState";
+import type { ActiveCallMeta } from "@/stores/orbit/call.store";
 
 export function useCallLifecycle(
   userId: string | undefined,
