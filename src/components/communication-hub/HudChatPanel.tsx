@@ -194,9 +194,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       compFamily.composer.setEditState(null);
       return;
     }
-    // Single source of truth: store → sender in one shot
-    messageSender.setNewMessage(draft);
-    await messageSender.handleSend();
+    // Pass draft directly — no intermediate sync, no stale closure
+    await messageSender.handleSend(draft);
     composerStore.clearDraft(currentConversationId);
     compFamily.composer.setReplyState(null);
   }, [compFamily.composer.editState, messageActions, messageSender, compFamily.composer.setReplyState, composerStore, currentConversationId]);
