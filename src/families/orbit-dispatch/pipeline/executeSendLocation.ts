@@ -1,5 +1,5 @@
 /**
- * executeSendLocation — Strict pipeline: intent → canonical → optimistic → transport → reconcile
+ * executeSendLocation — Strict pipeline: intent → transport
  */
 import type { SendLocationCommand } from "../orbit-commands";
 import type { ResolvedContext, ExecutorResult } from "./pipeline-types";
@@ -12,19 +12,12 @@ export async function executeSendLocation(
   const trace = createTrace("sendLocation");
 
   try {
-    // ── Phase 1: Intent ──
     enterPhase(trace, "intent");
     if (cmd.lat == null || cmd.lng == null) return { ok: false, error: "no_coordinates", phase: "intent" };
     if (!ctx.conversationId) return { ok: false, error: "no_conversation", phase: "intent" };
     exitPhase(trace);
 
-    // ── Phase 2: Canonical ──
-    enterPhase(trace, "canonical");
-    // Location canonical form is built inside sendLocationOptimistic via buildLocationMeta
-    exitPhase(trace);
-
-    // ── Phase 3–5: Delegate to optimistic pipeline ──
-    enterPhase(trace, "optimistic");
+    enterPhase(trace, "transport");
     const { sendLocationOptimistic } = await import("@/families/send/send-location-optimistic");
     await sendLocationOptimistic(ctx, {
       lat: cmd.lat,
@@ -33,11 +26,6 @@ export async function executeSendLocation(
       label: cmd.label,
       address: cmd.address,
     });
-    exitPhase(trace);
-
-    enterPhase(trace, "transport");
-    exitPhase(trace);
-    enterPhase(trace, "reconcile");
     exitPhase(trace);
 
     completeExecutorTrace(trace);

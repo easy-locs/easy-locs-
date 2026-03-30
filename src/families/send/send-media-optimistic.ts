@@ -9,6 +9,7 @@ import { MediaUpload, useMediaUploadQueue } from "@/families/media/media-upload"
 import { insertMessage, updateConversationTimestamp, updateMessageFields } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { buildMediaMeta } from "@/families/messages/build-metadata";
+import { orbitLabels } from "@/families/orbit-i18n/orbit-labels";
 import type { SendContext } from "./send-context";
 
 export interface OptimisticMediaPayload {
@@ -78,7 +79,7 @@ export async function sendMediaOptimistic(
   }
 
   // Step 2: Create optimistic message in DB immediately with local preview
-  const preview = payload.caption || (payload.viewOnce ? "📷 View-once" : mediaKind === "video" ? "🎬 Video" : "📎 Attachment");
+  const preview = payload.caption || (payload.viewOnce ? orbitLabels.message.viewOnce : mediaKind === "video" ? orbitLabels.message.videoAttachment : orbitLabels.message.attachment);
 
   let messageData: any;
   try {

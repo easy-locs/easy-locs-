@@ -32,7 +32,10 @@ export function issueRequestId(): string {
 }
 
 export function isSendLikeCommand(cmd: OrbitCommand): boolean {
-  return ["send_text", "reply", "send_media", "send_media_batch", "send_voice", "send_location"].includes(cmd.type);
+  return [
+    "send_text", "reply", "send_media", "send_media_batch", "send_voice", "send_location",
+    "start_call", "accept_call", "decline_call",
+  ].includes(cmd.type);
 }
 
 export function getSubmitLockKey(cmd: OrbitCommand): string | null {
@@ -112,6 +115,11 @@ function buildIdempotencyKey(cmd: OrbitCommand): string | null {
       return `${cmd.type}:${cmd.conversationId}:${cmd.durationSeconds}:${cmd.blob.size}`;
     case "send_location":
       return `${cmd.type}:${cmd.conversationId}:${cmd.lat}:${cmd.lng}:${cmd.mode}`;
+    case "start_call":
+      return `start_call:${cmd.peerUserId}:${cmd.mode}`;
+    case "accept_call":
+    case "decline_call":
+      return `${cmd.type}:${cmd.sessionId}`;
     default:
       return null;
   }

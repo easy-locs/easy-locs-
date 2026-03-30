@@ -5,7 +5,7 @@
  * Structure: [emoji] [attach] [input] [send|mic]
  * Behavior: fixed bottom, safe-area aware, keyboard stable.
  */
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { Send, Loader2, Paperclip, Camera, MapPin, Eye, Mic, Ban, Check, Smile, Zap, Images } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { haptic } from "@/lib/haptics";
 import { DeviceAudio } from "@/families/device/device-audio";
+import { orbitLabels } from "@/families/orbit-i18n/orbit-labels";
 
 export interface MessageComposerProps {
   value: string;
@@ -31,7 +32,6 @@ export interface MessageComposerProps {
   sending?: boolean;
   uploading?: boolean;
   placeholder?: string;
-  /** Extra attachment menu items beyond default file/camera */
   attachmentActions?: {
     onFileUpload?: (file: File) => void;
     onCameraCapture?: (file: File) => void;
@@ -39,7 +39,6 @@ export interface MessageComposerProps {
     onViewOnce?: (file: File) => void;
     onMultiPhoto?: () => void;
   };
-  /** Reply-to banner */
   replyTo?: { content: string; senderName?: string } | null;
   onClearReply?: () => void;
   voiceRecording?: boolean;
@@ -50,27 +49,38 @@ export interface MessageComposerProps {
 export default function MessageComposer({
   value, onChange, onSend, onKeyDown, onAttach, onEmoji, onStartVoice,
   onStopVoice, onCancelVoice, onSendVoice, onDiscardVoice, onTyping,
-  disabled = false, sending = false, uploading = false, placeholder = "Message…",
+  disabled = false, sending = false, uploading = false, placeholder,
   attachmentActions, replyTo, onClearReply, voiceRecording = false, voicePreview = null, voiceDuration = 0,
 }: MessageComposerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hasText = value.trim().length > 0;
+  const resolvedPlaceholder = placeholder || orbitLabels.composer.placeholder;
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     if (!hasText || sending || disabled) return;
     haptic("light");
     onSend();
-  };
+  }, [hasText, sending, disabled, onSend]);
 
-  const handleMicStart = () => {
+  const handleMicStart = useCallback(() => {
     if (onStartVoice) {
       haptic("medium");
       onStartVoice();
     }
-  };
+  }, [onStartVoice]);
+
+  const handleTextareaInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value);
+    onTyping?.();
+    // Auto-resize
+    const el = e.target;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+  }, [onChange, onTyping]);
 
   const formatVoiceDuration = (seconds: number) => {
     if (!seconds) return "0:00";
@@ -85,7 +95,7 @@ export default function MessageComposer({
       {replyTo && (
         <div className="px-3 py-2 flex items-center gap-2 shrink-0 border-t border-border bg-accent/5 border-l-[3px] border-l-accent">
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-semibold text-accent">Reply</p>
+            <p className="text-[10px] font-semibold text-accent">{orbitLabels.composer.reply}</p>
             <p className="text-[11px] text-muted-foreground line-clamp-1">
               {replyTo.content.length > 80 ? replyTo.content.slice(0, 80) + "…" : replyTo.content}
             </p>
@@ -113,25 +123,19 @@ export default function MessageComposer({
         {voiceRecording ? (
           <div className="flex items-center gap-3">
             <button
-              onClick={() => {
-                onCancelVoice?.();
-                haptic("light");
-              }}
-              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-destructive/15 text-destructive"
+              onClick={() => { onCancelVoice?.(); haptic("light"); }}
+              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-destructive/15 text-destructive active:scale-90 transition-transform"
             >
               <Ban className="h-4 w-4" />
             </button>
             <div className="flex-1 flex items-center gap-2 min-w-0">
               <div className="h-2.5 w-2.5 rounded-full animate-pulse bg-destructive" />
               <span className="text-sm font-mono tabular-nums text-foreground">{formatVoiceDuration(voiceDuration)}</span>
-              <span className="text-[11px] text-muted-foreground truncate">Slide to cancel</span>
+              <span className="text-[11px] text-muted-foreground truncate">{orbitLabels.composer.slideToCancel}</span>
             </div>
             <button
-              onClick={async () => {
-                haptic("medium");
-                await onStopVoice?.();
-              }}
-              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-primary text-primary-foreground shadow-md"
+              onClick={async () => { haptic("medium"); await onStopVoice?.(); }}
+              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-primary text-primary-foreground shadow-md active:scale-90 transition-transform"
             >
               <Check className="h-4 w-4" />
             </button>
@@ -139,20 +143,15 @@ export default function MessageComposer({
         ) : voicePreview ? (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => {
-                onDiscardVoice?.();
-                haptic("light");
-              }}
-              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-destructive/15 text-destructive"
+              onClick={() => { onDiscardVoice?.(); haptic("light"); }}
+              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-destructive/15 text-destructive active:scale-90 transition-transform"
             >
               <Ban className="h-4 w-4" />
             </button>
             <div className="flex-1 flex items-center gap-2 rounded-2xl px-3 py-2 bg-background border border-border min-w-0">
               <button
-                onClick={() => {
-                  DeviceAudio.playFile(voicePreview.url);
-                }}
-                className="h-8 w-8 rounded-full flex items-center justify-center bg-primary/15 text-primary shrink-0"
+                onClick={() => DeviceAudio.playFile(voicePreview.url)}
+                className="h-8 w-8 rounded-full flex items-center justify-center bg-primary/15 text-primary shrink-0 active:scale-90 transition-transform"
               >
                 <Zap className="h-4 w-4" />
               </button>
@@ -160,11 +159,8 @@ export default function MessageComposer({
               <span className="text-xs font-mono text-muted-foreground shrink-0">{formatVoiceDuration(voicePreview.duration)}</span>
             </div>
             <button
-              onClick={() => {
-                haptic("medium");
-                onSendVoice?.();
-              }}
-              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-primary text-primary-foreground shadow-md"
+              onClick={() => { haptic("medium"); onSendVoice?.(); }}
+              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-primary text-primary-foreground shadow-md active:scale-90 transition-transform"
               disabled={uploading || disabled}
             >
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -178,7 +174,7 @@ export default function MessageComposer({
             {onEmoji && (
               <button
                 onClick={onEmoji}
-                className="shrink-0 h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-muted"
+                className="shrink-0 h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-muted active:scale-90 transition-transform"
               >
                 <Smile className="h-4 w-4 text-muted-foreground" />
               </button>
@@ -189,7 +185,7 @@ export default function MessageComposer({
               <DropdownMenuTrigger asChild>
                 <button
                   onClick={onAttach}
-                  className="shrink-0 h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-muted"
+                  className="shrink-0 h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-muted active:scale-90 transition-transform"
                   disabled={disabled}
                 >
                   <Paperclip className="h-4 w-4 text-muted-foreground" />
@@ -197,7 +193,7 @@ export default function MessageComposer({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" side="top" className="w-44">
                 <DropdownMenuItem onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}>
-                  <Paperclip className="h-4 w-4 mr-2 text-primary" /> File
+                  <Paperclip className="h-4 w-4 mr-2 text-primary" /> {orbitLabels.media.file}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => {
                   setShowAttachMenu(false);
@@ -210,16 +206,16 @@ export default function MessageComposer({
                   };
                   inp.click();
                 }}>
-                  <Camera className="h-4 w-4 mr-2 text-accent" /> Camera
+                  <Camera className="h-4 w-4 mr-2 text-accent" /> {orbitLabels.media.camera}
                 </DropdownMenuItem>
                 {attachmentActions?.onMultiPhoto && (
                   <DropdownMenuItem onClick={() => { setShowAttachMenu(false); attachmentActions.onMultiPhoto!(); }}>
-                    <Images className="h-4 w-4 mr-2 text-primary" /> Multi Photos
+                    <Images className="h-4 w-4 mr-2 text-primary" /> {orbitLabels.media.multiPhotos}
                   </DropdownMenuItem>
                 )}
                 {attachmentActions?.onLocation && (
                   <DropdownMenuItem onClick={() => { setShowAttachMenu(false); attachmentActions.onLocation!(); }}>
-                    <MapPin className="h-4 w-4 mr-2 text-accent" /> Location
+                    <MapPin className="h-4 w-4 mr-2 text-accent" /> {orbitLabels.media.location}
                   </DropdownMenuItem>
                 )}
                 {attachmentActions?.onViewOnce && (
@@ -232,24 +228,31 @@ export default function MessageComposer({
                       inp.onchange = () => { const f = inp.files?.[0]; if (f) attachmentActions.onViewOnce!(f); };
                       inp.click();
                     }}>
-                      <Eye className="h-4 w-4 mr-2 text-destructive" /> View Once
+                      <Eye className="h-4 w-4 mr-2 text-destructive" /> {orbitLabels.media.viewOnce}
                     </DropdownMenuItem>
                   </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Text input */}
-            <input
+            {/* Auto-resize textarea */}
+            <textarea
+              ref={textareaRef}
               value={value}
-              onChange={e => {
-                onChange(e.target.value);
-                onTyping?.();
+              onChange={handleTextareaInput}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                  return;
+                }
+                onKeyDown?.(e as any);
               }}
-              onKeyDown={onKeyDown}
-              placeholder={placeholder}
+              placeholder={resolvedPlaceholder}
               disabled={disabled}
-              className="flex-1 min-w-0 h-9 bg-transparent border-0 outline-none text-sm px-2 text-foreground placeholder:text-muted-foreground"
+              rows={1}
+              className="flex-1 min-w-0 bg-transparent border-0 outline-none text-sm px-2 py-2 text-foreground placeholder:text-muted-foreground resize-none overflow-hidden leading-5"
+              style={{ maxHeight: 120 }}
             />
           </div>
 
