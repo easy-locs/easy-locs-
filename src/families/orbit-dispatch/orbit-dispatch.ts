@@ -109,8 +109,16 @@ export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResu
         return { ...await executeReplyMessage(ctx, cmd), requestId };
       }
       case "group_create": {
-        const { createOrbitGroup } = await import("@/families/groups/group-create");
-        const result = await createOrbitGroup({ title: cmd.title, memberUserIds: cmd.memberUserIds, avatarUrl: cmd.avatarUrl });
+        const { GroupCreate } = await import("@/families/groups/group-create");
+        const orbit = getOrbitIdentity();
+        const userId = orbit?.userId || await resolveCurrentUserIdFromSession();
+        const result = await GroupCreate.execute({
+          title: cmd.title,
+          memberIds: cmd.memberUserIds,
+          avatarUrl: cmd.avatarUrl || undefined,
+          createdByUserId: userId,
+          createdByOrbitId: orbit?.orbitId,
+        });
         return { ok: !!result, groupId: result?.id, requestId };
       }
       case "group_update": {
