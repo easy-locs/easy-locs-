@@ -316,7 +316,6 @@ class RealtimeManager {
 
     this.presenceChannel = createRealtimeChannel(`rt:presence:${this.userId}`)
       .subscribe();
-      .subscribe();
 
     const deviceType = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "web";
 
