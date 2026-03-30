@@ -97,20 +97,6 @@ export default defineConfig(({ mode }) => ({
 
           // Orbit heavy components — lazy-split
           if (id.includes("/components/call/")) return "orbit-call-ui";
-
-          // Storefront/seller — split further by weight
-          if (id.includes("/components/storefront/")) return "domain-storefront";
-          if (id.includes("/components/seller/")) return "domain-seller";
-
-          // Admin pages
-          if (id.includes("/pages/Admin") || id.includes("/components/admin/")) return "domain-admin";
-
-          // Delivery — split heavy components
-          if (id.includes("/components/delivery/SellerLogistics")) return "domain-delivery-logistics";
-          if (id.includes("/components/delivery/")) return "domain-delivery";
-
-          // Canonical UI engine — shared but heavy
-          if (id.includes("/lib/engines/") || id.includes("/canonical-ui-engine")) return "app-engines";
         },
       },
     },
