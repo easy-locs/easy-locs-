@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { supabase } from "@/integrations/supabase/client";
 
 // ── Canonical families ──
 import { useAuth } from "@/families/auth";
