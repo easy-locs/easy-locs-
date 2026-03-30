@@ -1,34 +1,18 @@
 /**
  * VoiceMessageBubble — Premium voice message player with animated waveform.
  * Signal/WhatsApp-grade design with smooth progress, play/pause, seek.
- * Supports global audio isolation (only one voice plays at a time).
+ * Uses the global OrbitAudioStore for single-audio-at-a-time isolation.
  */
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useRef, useCallback } from "react";
 import { Play, Pause, Mic } from "lucide-react";
+import { useOrbitAudioPlayback } from "@/hooks/orbit/useOrbitAudioPlayback";
 
 interface Props {
   url: string;
   durationSeconds: number;
   isMe?: boolean;
   status?: "sending" | "sent" | "failed";
-}
-
-// Global audio manager — ensures only one voice message plays at a time
-let globalPlayingAudio: HTMLAudioElement | null = null;
-const globalListeners = new Set<() => void>();
-
-function registerAudio(audio: HTMLAudioElement, onPaused: () => void) {
-  globalListeners.add(onPaused);
-  return () => { globalListeners.delete(onPaused); };
-}
-
-function setGlobalPlaying(audio: HTMLAudioElement) {
-  if (globalPlayingAudio && globalPlayingAudio !== audio) {
-    globalPlayingAudio.pause();
-    // Notify the previous player it was paused
-    globalListeners.forEach(cb => cb());
-  }
-  globalPlayingAudio = audio;
+  messageId?: string;
 }
 
 // Generate deterministic waveform from url hash
@@ -43,86 +27,33 @@ function generateWaveform(seed: string, bars: number): number[] {
   });
 }
 
-export default function VoiceMessageBubble({ url, durationSeconds, isMe, status }: Props) {
-  const [playing, setPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const animRef = useRef<number | undefined>(undefined);
+export default function VoiceMessageBubble({ url, durationSeconds, isMe, status, messageId }: Props) {
+  const audioId = messageId || `voice-${url}`;
+  const audio = useOrbitAudioPlayback(audioId);
   const waveContainerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
 
   const bars = 36;
   const waveform = generateWaveform(url, bars);
 
-  const updateProgress = useCallback(() => {
-    const audio = audioRef.current;
-    if (audio && !audio.paused) {
-      const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
-      setProgress(pct);
-      setCurrentTime(audio.currentTime);
-      animRef.current = requestAnimationFrame(updateProgress);
-    }
-  }, []);
+  const playing = audio.status === "playing";
+  const progress = audio.progress * 100; // store uses 0-1, waveform uses 0-100
+  const currentTime = audio.duration > 0 ? audio.progress * audio.duration : 0;
 
-  // Register for global audio isolation
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const cleanup = registerAudio(audio, () => {
-      if (audio !== globalPlayingAudio) {
-        setPlaying(false);
-        if (animRef.current) cancelAnimationFrame(animRef.current);
-      }
-    });
-    return () => {
-      cleanup();
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-    };
-  }, []);
+  const toggle = useCallback(() => {
+    audio.togglePlayPause(url);
+  }, [audio, url]);
 
-  const toggle = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (playing) {
-      audio.pause();
-      setPlaying(false);
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-    } else {
-      setGlobalPlaying(audio);
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setPlaying(true);
-            animRef.current = requestAnimationFrame(updateProgress);
-          })
-          .catch(() => setPlaying(false));
-      }
-    }
-  };
-
-  const handleEnded = () => {
-    setPlaying(false);
-    setProgress(0);
-    setCurrentTime(0);
-    if (animRef.current) cancelAnimationFrame(animRef.current);
-  };
-
-  const seekFromPosition = (clientX: number) => {
-    const audio = audioRef.current;
+  const seekFromPosition = useCallback((clientX: number) => {
     const container = waveContainerRef.current;
-    if (!audio || !container || !audio.duration) return;
+    if (!container || audio.duration <= 0) return;
     const rect = container.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    audio.currentTime = x * audio.duration;
-    setProgress(x * 100);
-    setCurrentTime(audio.currentTime);
-  };
+    audio.seek(x);
+  }, [audio]);
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => seekFromPosition(e.clientX);
 
-  // Touch: tap to seek + drag to scrub
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     e.preventDefault();
     isDraggingRef.current = true;
@@ -148,14 +79,6 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
 
   return (
     <div className="flex items-center gap-3 py-1 min-w-[220px] max-w-[320px]">
-      <audio
-        ref={audioRef}
-        src={url}
-        preload="metadata"
-        onEnded={handleEnded}
-        playsInline
-      />
-
       {/* Play/Pause button — 40px touch target */}
       <button
         onClick={toggle}
