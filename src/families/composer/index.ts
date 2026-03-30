@@ -9,8 +9,9 @@ export { useOrbitComposerStore } from "@/stores/orbit/composer.store";
 // Hook — facade for store access
 export { useOrbitComposer } from "@/hooks/orbit/useOrbitComposer";
 
-// Legacy adapter (deprecated — migrate consumers to useOrbitComposer)
-export { useOrbitComposerState } from "@/hooks/useOrbitComposerState";
+// Legacy adapter — useOrbitComposerState is DEPRECATED (uses local useState).
+// All consumers MUST use composerStore directly.
+// export { useOrbitComposerState } from "@/hooks/useOrbitComposerState"; // REMOVED
 export { useThreadComposerFamily } from "@/hooks/orbit/families/useThreadComposerFamily";
 
 // Components

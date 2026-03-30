@@ -10,6 +10,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -220,8 +221,7 @@ class RealtimeManager {
       };
     }
 
-    const msgChannel = supabase
-      .channel(`rt:thread:${threadId}`)
+    const msgChannel = createRealtimeChannel(`rt:thread:${threadId}`)
       .on("postgres_changes", {
         event: "INSERT", schema: "public", table: "chat_messages_v2",
         filter: `conversation_id=eq.${threadId}`,
@@ -236,7 +236,7 @@ class RealtimeManager {
       }, (p) => opts.onDelete?.(p))
       .subscribe();
 
-    const typChannel = supabase.channel(`rt:typing:${threadId}`);
+    const typChannel = createRealtimeChannel(`rt:typing:${threadId}`);
     typChannel
       .on("presence", { event: "sync" }, () => {
         const state = typChannel.presenceState();
@@ -264,8 +264,8 @@ class RealtimeManager {
     if (!sub) return;
     sub.refCount--;
     if (sub.refCount <= 0) {
-      supabase.removeChannel(sub.channel);
-      supabase.removeChannel(sub.typingChannel);
+      removeRealtimeChannel(sub.channel);
+      removeRealtimeChannel(sub.typingChannel);
       this.threadSubs.delete(threadId);
     }
   }
@@ -290,7 +290,7 @@ class RealtimeManager {
       { table: "conversations_v2" },
     ];
 
-    let ch = supabase.channel(`rt:user:${this.userId}`);
+    let ch = createRealtimeChannel(`rt:user:${this.userId}`);
 
     for (const { table, filter } of tables) {
       const config: any = { event: "*", schema: "public", table };
@@ -313,8 +313,7 @@ class RealtimeManager {
   private initPresenceChannel() {
     if (!this.userId) return;
 
-    this.presenceChannel = supabase
-      .channel(`rt:presence:${this.userId}`)
+    this.presenceChannel = createRealtimeChannel(`rt:presence:${this.userId}`)
       .subscribe();
 
     const deviceType = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "web";

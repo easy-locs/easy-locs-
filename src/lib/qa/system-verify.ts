@@ -31,7 +31,8 @@ export async function verifyCurrentUserProfile() {
 
 export async function verifyRealtimeChannel() {
   try {
-    const channel = supabase.channel("audit-health-check");
+    const { createRealtimeChannel, removeRealtimeChannel } = require("@/lib/realtime");
+    const channel = createRealtimeChannel("audit-health-check");
     await channel.subscribe();
     channel.unsubscribe();
     return { ok: true, reason: "Realtime channel subscribed/unsubscribed" };

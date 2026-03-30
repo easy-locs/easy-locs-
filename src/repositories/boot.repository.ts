@@ -13,9 +13,11 @@ export async function healthCheckAuth() {
 }
 
 export function createHealthChannel(name: string) {
-  return supabase.channel(name);
+  const { createRealtimeChannel } = require("@/lib/realtime");
+  return createRealtimeChannel(name);
 }
 
 export function removeHealthChannel(channel: any) {
-  supabase.removeChannel(channel);
+  const { removeRealtimeChannel } = require("@/lib/realtime");
+  removeRealtimeChannel(channel);
 }
