@@ -3,6 +3,7 @@
  * Single responsibility: DB call creation only.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
@@ -27,15 +28,25 @@ export interface CreateCallResult {
   error?: string;
 }
 
+async function resolveOrbitId(userId: string) {
+  const profile = await ensureOrbitProfile({ userId });
+  return profile?.orbit_id || `orbit_${userId.slice(0, 12)}`;
+}
+
 export async function createCallRpc(input: CreateCallInput): Promise<CreateCallResult> {
   const flow = startFlow("orbit", "createCall");
   trace("rpc.create", "input", { ...input });
 
   const rpcStep = addStep(flow, "rpc_call");
 
+  const [callerOrbitId, receiverOrbitId] = await Promise.all([
+    resolveOrbitId(input.callerUserId),
+    resolveOrbitId(input.receiverUserId),
+  ]);
+
   const { data: callId, error } = await supabase.rpc("create_call_idempotent" as any, {
-    _caller_orbit_id: input.callerUserId,
-    _receiver_orbit_id: input.receiverUserId,
+    _caller_orbit_id: callerOrbitId,
+    _receiver_orbit_id: receiverOrbitId,
     _thread_id: input.conversationId || null,
     _context_type: input.entityType || "listing",
     _context_id: input.entityId || null,
@@ -46,12 +57,12 @@ export async function createCallRpc(input: CreateCallInput): Promise<CreateCallR
   if (error || !callId) {
     failStep(flow, rpcStep, error?.message || "no_call_id");
     endFlow(flow, "failed");
-    trace("rpc.create", "error", { message: error?.message });
+    trace("rpc.create", "error", { message: error?.message, callerOrbitId, receiverOrbitId });
     return { success: false, error: error?.message || "Failed to create call" };
   }
 
-  completeStep(flow, rpcStep, { callId });
+  completeStep(flow, rpcStep, { callId, callerOrbitId, receiverOrbitId });
   endFlow(flow, "success");
-  trace("rpc.create", "output", { callId });
+  trace("rpc.create", "output", { callId, callerOrbitId, receiverOrbitId });
   return { success: true, callId: callId as string };
 }

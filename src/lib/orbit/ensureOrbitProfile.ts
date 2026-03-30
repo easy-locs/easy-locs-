@@ -1,18 +1,35 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export async function ensureOrbitProfile() {
-  const { data: authData } = await supabase.auth.getUser();
-  const user = authData.user;
-  if (!user) return null;
+type EnsureOrbitProfileInput = {
+  userId?: string;
+  orbitId?: string | null;
+  email?: string | null;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+};
 
-  const email = user.email?.trim().toLowerCase() ?? null;
+export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
+  let userId = input.userId ?? null;
+  let email = input.email?.trim().toLowerCase() ?? null;
+  let displayName = input.displayName ?? null;
+  let avatarUrl = input.avatarUrl ?? null;
+
+  if (!userId) {
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (!user) return null;
+    userId = user.id;
+    email = email ?? user.email?.trim().toLowerCase() ?? null;
+    displayName = displayName ?? (user.user_metadata as any)?.display_name ?? null;
+    avatarUrl = avatarUrl ?? (user.user_metadata as any)?.avatar_url ?? null;
+  }
 
   const row = {
-    id: user.id,
-    orbit_id: `orbit_${user.id.slice(0, 12)}`,
+    id: userId,
+    orbit_id: input.orbitId || `orbit_${userId.slice(0, 12)}`,
     email,
-    display_name: (user.user_metadata as any)?.display_name ?? null,
-    avatar_url: (user.user_metadata as any)?.avatar_url ?? null,
+    display_name: displayName,
+    avatar_url: avatarUrl,
     updated_at: new Date().toISOString(),
   };
 
@@ -24,7 +41,7 @@ export async function ensureOrbitProfile() {
 
   if (error) {
     console.error("ensureOrbitProfile error", error);
-    throw error;
+    throw new Error(error.message || "Failed to ensure orbit profile");
   }
 
   return data;
