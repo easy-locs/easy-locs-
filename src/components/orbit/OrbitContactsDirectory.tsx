@@ -13,6 +13,7 @@ import { haptic } from "@/lib/haptics";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { toast } from "sonner";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
+import { useResolvedIdentity } from "@/hooks/useResolvedIdentity";
 
 interface OrbitContact {
   id: string;
