@@ -399,7 +399,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       window.clearTimeout(safetyTimeout);
       authSub.unsubscribe();
     };
-  }, [fetchOrgIdFast, fetchProfileCritical, fetchOrgDetails, fetchDualRoleDeferred, refreshSubRef, resetSubscription]);
+  }, [fetchOrgIdFast, fetchProfileCritical, fetchOrgDetails, fetchDualRoleDeferred, checkDbHealth, refreshSubRef, resetSubscription]);
 
   useEffect(() => {
     if (!user?.id || bootstrapOrbitRef.current === user.id) return;
