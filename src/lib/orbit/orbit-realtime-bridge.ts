@@ -1,8 +1,9 @@
 /**
  * orbit-realtime-bridge — Atomic unit: realtime subscriptions for Orbit messaging.
  * Single responsibility: live message and thread updates.
+ * Uses canonical realtime channel factory. Zero direct supabase imports.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerChannel, recordEvent, unregisterChannel } from "@/lib/runtime/realtime-monitor";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
@@ -12,8 +13,7 @@ export function subscribeOrbitMessages(conversationId: string, onMessage: (msg: 
   const channelName = `orbit-messages-${conversationId}`;
   registerChannel(channelName, "orbit");
 
-  const channel = supabase
-    .channel(channelName)
+  const channel = createRealtimeChannel(channelName)
     .on(
       "postgres_changes" as any,
       {
@@ -36,7 +36,7 @@ export function subscribeOrbitMessages(conversationId: string, onMessage: (msg: 
 
   return () => {
     unregisterChannel(channelName);
-    supabase.removeChannel(channel);
+    removeRealtimeChannel(channel);
   };
 }
 
@@ -44,8 +44,7 @@ export function subscribeOrbitThreadUpdates(userId: string, onUpdate: (thread: a
   const channelName = `orbit-threads-${userId}`;
   registerChannel(channelName, "orbit");
 
-  const channel = supabase
-    .channel(channelName)
+  const channel = createRealtimeChannel(channelName)
     .on(
       "postgres_changes" as any,
       { event: "UPDATE", schema: "public", table: "conversations_v2" },
@@ -61,6 +60,6 @@ export function subscribeOrbitThreadUpdates(userId: string, onUpdate: (thread: a
 
   return () => {
     unregisterChannel(channelName);
-    supabase.removeChannel(channel);
+    removeRealtimeChannel(channel);
   };
 }
