@@ -189,17 +189,35 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   }, [selection.setContextMessage]);
 
   const stableHandleSend = useCallback(async () => {
+    // ── ANTI-DOUBLE-TAP: check store lock FIRST ──
+    if (composerStore.sending[currentConversationId]) return;
+
     const draft = composerStore.getDraft(currentConversationId);
+
     if (compFamily.composer.editState) {
-      await messageActions.editMessage(compFamily.composer.editState.messageId, draft.trim());
-      composerStore.clearDraft(currentConversationId);
-      compFamily.composer.setEditState(null);
+      composerStore.setSending(currentConversationId, true);
+      try {
+        await messageActions.editMessage(compFamily.composer.editState.messageId, draft.trim());
+        composerStore.clearAfterSend(currentConversationId);
+        compFamily.composer.setEditState(null);
+      } finally {
+        composerStore.setSending(currentConversationId, false);
+      }
       return;
     }
-    // Pass draft directly — no intermediate sync, no stale closure
-    await messageSender.handleSend(draft);
+
+    if (!draft.trim()) return;
+
+    // ── LOCK + CLEAR immediately — before any async work ──
+    composerStore.setSending(currentConversationId, true);
     composerStore.clearDraft(currentConversationId);
     compFamily.composer.setReplyState(null);
+
+    try {
+      await messageSender.handleSend(draft);
+    } finally {
+      composerStore.setSending(currentConversationId, false);
+    }
   }, [compFamily.composer.editState, messageActions, messageSender, compFamily.composer.setReplyState, composerStore, currentConversationId]);
 
   if (!thread) return <ChatEmptyState t={t} />;
