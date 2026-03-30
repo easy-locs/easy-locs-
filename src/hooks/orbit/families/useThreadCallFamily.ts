@@ -1,7 +1,7 @@
 /**
  * FAMILY: CALL — Canonical call state, actions, history, permissions, and lifecycle.
  * Single source of truth for all call-related logic in a thread.
- * Missed-call timeout + reconnect recovery are canonical here.
+ * Missed-call timeout + reconnect recovery + ringtone are canonical here.
  */
 import { useEffect } from "react";
 import { useOrbitDevicePermissions } from "@/hooks/useOrbitDevicePermissions";
@@ -10,6 +10,7 @@ import { useOrbitCallActions } from "@/hooks/useOrbitCallActions";
 import { useOrbitCallHistory } from "@/hooks/useOrbitCallHistory";
 import { useHudCallSetup } from "@/hooks/orbit/useHudCallSetup";
 import { markCallAsMissedV2 } from "@/repositories/communication.repository";
+import { CallRingtone } from "@/families/calls/call-ringtone";
 import type { ConversationThread } from "@/components/communication-hub/types";
 
 export function useThreadCallFamily(params: {
@@ -36,6 +37,22 @@ export function useThreadCallFamily(params: {
   const { handleStartAudioCall, handleStartVideoCall } = useHudCallSetup(
     thread, devicePermissions, callActions, callState
   );
+
+  // ── Canonical ringtone lifecycle — driven by uiState ──
+  useEffect(() => {
+    const uiState = callState.activeCall?.uiState;
+    if (uiState === "incoming") {
+      CallRingtone.playIncoming();
+    } else if (uiState === "outgoing") {
+      CallRingtone.playOutgoing();
+    } else {
+      // Any other state (active, ended, missed, etc.) → stop ringtone
+      CallRingtone.stop();
+    }
+    return () => {
+      CallRingtone.stop();
+    };
+  }, [callState.activeCall?.uiState]);
 
   // Canonical missed call timeout (30s)
   useEffect(() => {
