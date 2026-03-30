@@ -48,6 +48,7 @@ import { FloatingCTAButton } from "@/components/engine/FloatingCTAButton";
 import { OrbitPromptOverlay } from "@/components/engine/OrbitPromptOverlay";
 
 // V2 test pages — removed (Batch B purge)
+const CallLoopbackTestPage = lazy(() => import("@/components/call/CallLoopbackTest").then(m => ({ default: m.CallLoopbackTest })));
 
 // V2 Suite 4 pages
 // V2 Suite 4 pages — all removed, routes redirect to canonical paths
@@ -383,6 +384,7 @@ const App = () => (
               <Route path="/admin/financial-recon" element={<FinancialReconPage />} />
               <Route path="/admin/recon-alerts" element={<ReconAlertsPage />} />
               {/* call-session route removed — calls go through CallProvider */}
+              <Route path="/dev/call-test" element={<Suspense fallback={<PageLoader />}><CallLoopbackTestPage /></Suspense>} />
               <Route path="/orbit/identity" element={<OrbitIdentityPage />} />
               <Route path="/wallet/hub" element={<WalletHubPage />} />
               <Route path="/merchant/onboarding" element={<MerchantOnboardingPage />} />
