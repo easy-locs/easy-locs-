@@ -3,7 +3,7 @@
  * Thin assembly layer that composes canonical family hooks.
  * Contains NO business logic — only wiring.
  */
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -38,6 +38,9 @@ import DealContextHeader from "./DealContextHeader";
 import ChatLocationPicker from "./ChatLocationPicker";
 import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import OrbitSafetyNumber from "@/components/orbit/OrbitSafetyNumber";
+import OrbitSelectionToolbar from "@/components/orbit/OrbitSelectionToolbar";
+import { useOrbitComposerStore } from "@/stores/orbit/composer.store";
+import { useOrbitSelectionStore } from "@/stores/orbit/selection.store";
 import OrbitSecurityPanel from "@/components/orbit/OrbitSecurityPanel";
 import OrbitSmartPayment, { type PaymentConfirmation } from "@/components/orbit/payments/OrbitSmartPayment";
 import { RequestMoneyModal } from "@/components/chat/RequestMoneyModal";
@@ -79,6 +82,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const { settings: privacySettings } = usePrivacySettings();
 
   const security = useSecurityDialogs();
+  const currentConversationId = thread?.conversationId || thread?.id || "";
+
+  // ── Sync stores to active conversation ──
+  const setActiveConversation = useOrbitComposerStore((s) => s.setActiveConversation);
+  const globalSelectionMode = useOrbitSelectionStore((s) => s.mode);
+  const globalSelectionConvId = useOrbitSelectionStore((s) => s.conversationId);
+  const clearGlobalSelection = useOrbitSelectionStore((s) => s.clearSelection);
+
+  useEffect(() => {
+    setActiveConversation(currentConversationId || null);
+    // Clear selection if switching to a different conversation
+    if (globalSelectionConvId && globalSelectionConvId !== currentConversationId) {
+      clearGlobalSelection();
+    }
+  }, [currentConversationId]);
 
   // ── Identity resolver (canonical family) ──
   const resolveAuthUserId = useResolveAuthUserId(t);
@@ -320,8 +338,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         )}
 
         {/* ── COMPOSER FAMILY UI — hidden during selection mode ── */}
-        {!selection.selectMode && (
+        {!selection.selectMode && globalSelectionMode !== "selecting" && (
           <MessageComposer
+            key={currentConversationId}
             value={messageSender.newMessage}
             sending={messageSender.sending}
             uploading={attFamily.attachments.uploading}
@@ -348,7 +367,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           />
         )}
 
-        {/* ── ATTACHMENT QUEUE ── */}
+        {/* ── SELECTION TOOLBAR — replaces composer during selection ── */}
+        {globalSelectionMode === "selecting" && (
+          <OrbitSelectionToolbar
+            onCopy={(ids) => { /* TODO: wire to message actions */ }}
+            onForward={(ids) => { /* TODO: wire to forward dialog */ }}
+            onDelete={(ids) => { ids.forEach((id) => messageActions.softDeleteMessage(id)); clearGlobalSelection(); }}
+          />
+        )}
+
         <OrbitUploadQueuePreview
           queue={attFamily.attachmentQueue.queue}
           onRemove={attFamily.attachmentQueue.removeQueueItem}
