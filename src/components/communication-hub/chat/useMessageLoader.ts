@@ -304,10 +304,20 @@ export function useMessageLoader({
               return prev;
             }
             // Reconcile: replace optimistic with confirmed
-            const withoutOptimistic = msg.sender_user_id === userId
-              ? prev.filter((m) => !(m.pending && m.sender_id === userId && m.content === mapped.content))
+            // Match by: (1) pending flag + content match, OR (2) opt- prefix ID + content match
+            // This handles the race where sender_id may still be "" on the optimistic msg
+            const isOwnMessage = msg.sender_user_id === userId;
+            const withoutOptimistic = isOwnMessage
+              ? prev.filter((m) => {
+                  if (!m.pending) return true;
+                  // Match by content + sender OR by optimistic ID prefix + content
+                  const contentMatch = m.content === mapped.content;
+                  const senderMatch = m.sender_id === userId || m.sender_id === "";
+                  const isOptimisticId = m.id.startsWith("opt-");
+                  return !(contentMatch && (senderMatch || isOptimisticId));
+                })
               : prev;
-            realtimeTrace("message.optimistic.reconcile", "output", { id: mapped.id, replacedOptimistic: msg.sender_user_id === userId });
+            realtimeTrace("message.optimistic.reconcile", "output", { id: mapped.id, replacedOptimistic: isOwnMessage });
             return [...withoutOptimistic, mapped];
           });
 
