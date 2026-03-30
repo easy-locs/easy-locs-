@@ -382,13 +382,13 @@ const ClientMessages = () => {
             ) : (
               visibleMessages.map((m) => {
                 const isMe = m.sender_user_id === user?.id;
-                const isSystem = m.type === "system";
+                const isSystem = m.type === "system" || m.type === "system_notice";
                 const meta = m.metadata || {};
                 const content = m.body || "";
-                const attachmentUrl = meta.attachment_url;
-                const audioUrl = meta.audio_url;
-                const audioDuration = meta.audio_duration_seconds || 0;
-                const isCallEvent = isSystem && meta.context_type === "call";
+                const attachmentUrl = meta.attachment_url || meta.media?.url;
+                const audioUrl = meta.audio_url || meta.media?.url;
+                const audioDuration = meta.audio_duration_seconds || meta.media?.durationSeconds || 0;
+                const isCallEvent = m.type?.startsWith("call_") || (isSystem && meta.context_type === "call") || meta.ui?.cardType === "call";
                 const isDeletedForAll = !!meta.deleted_for_all;
                 const isForwarded = !!meta.forwarded_from;
 
