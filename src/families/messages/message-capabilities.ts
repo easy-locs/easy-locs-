@@ -1,8 +1,7 @@
 /**
- * message.capabilities — Canonical action capability matrix per message mode.
- * Determines which actions are available for each message type.
+ * message.capabilities — Canonical action capability matrix per message type.
  */
-import type { MessageMode } from "./message-mode";
+import type { CanonicalMessageType } from "./canonical-envelope";
 
 export interface MessageCapabilities {
   canCopy: boolean;
@@ -30,51 +29,10 @@ const BASE: MessageCapabilities = {
   canSelect: false,
 };
 
-const CAPABILITIES: Record<MessageMode, Partial<MessageCapabilities>> = {
+const CAPABILITIES: Record<CanonicalMessageType, Partial<MessageCapabilities>> = {
   text: {
     canCopy: true, canForward: true, canReply: true,
     canDeleteSelf: true, canDeleteAll: true, canSelect: true, canShare: true,
-  },
-  media: {
-    canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
-    canOpenViewer: true, canDownload: true, canSelect: true, canShare: true,
-  },
-  grouped_media: {
-    canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
-    canOpenViewer: true, canDownload: true, canSelect: true, canShare: true,
-  },
-  voice: {
-    canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
-    canSelect: true,
-  },
-  static_location: {
-    canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
-    canOpenMap: true, canSelect: true, canShare: true,
-  },
-  live_location: {
-    canReply: true, canDeleteSelf: true,
-    canOpenMap: true, canSelect: true,
-  },
-  payment_request: {
-    canReply: true, canDeleteSelf: true, canSelect: true,
-  },
-  payment_receipt: {
-    canReply: true, canDeleteSelf: true, canSelect: true,
-  },
-  system_notice: {
-    canDeleteSelf: true,
-  },
-  call_audio: {
-    canReply: true, canDeleteSelf: true, canSelect: true,
-  },
-  call_video: {
-    canReply: true, canDeleteSelf: true, canSelect: true,
-  },
-  call_missed: {
-    canReply: true, canDeleteSelf: true, canSelect: true,
-  },
-  call_declined: {
-    canReply: true, canDeleteSelf: true, canSelect: true,
   },
   image: {
     canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
@@ -84,35 +42,43 @@ const CAPABILITIES: Record<MessageMode, Partial<MessageCapabilities>> = {
     canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
     canOpenViewer: true, canDownload: true, canSelect: true, canShare: true,
   },
+  voice: {
+    canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
+    canSelect: true,
+  },
+  audio: {
+    canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
+    canSelect: true, canDownload: true,
+  },
   file: {
     canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
     canDownload: true, canSelect: true, canShare: true,
   },
-  ephemeral: {
-    canReply: true, canDeleteSelf: true, canSelect: true,
+  location_static: {
+    canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
+    canOpenMap: true, canSelect: true, canShare: true,
   },
-  view_once: {
-    canDeleteSelf: true, canOpenViewer: true,
+  location_live: {
+    canReply: true, canDeleteSelf: true,
+    canOpenMap: true, canSelect: true,
   },
-  story_reference: {
-    canReply: true, canDeleteSelf: true, canSelect: true,
-  },
-  deleted: {},
-  forwarded: {
-    canCopy: true, canForward: true, canReply: true,
-    canDeleteSelf: true, canDeleteAll: true, canSelect: true,
-  },
+  call_audio: { canReply: true, canDeleteSelf: true, canSelect: true },
+  call_video: { canReply: true, canDeleteSelf: true, canSelect: true },
+  call_missed: { canReply: true, canDeleteSelf: true, canSelect: true },
+  call_declined: { canReply: true, canDeleteSelf: true, canSelect: true },
+  payment_request: { canReply: true, canDeleteSelf: true, canSelect: true },
+  payment_receipt: { canReply: true, canDeleteSelf: true, canSelect: true },
+  system_notice: { canDeleteSelf: true },
 };
 
-/** Get the full capability set for a message mode */
+/** Get the full capability set for a message type */
 export function getMessageCapabilities(
-  mode: MessageMode,
+  mode: CanonicalMessageType | string,
   opts?: { isOwner?: boolean; isAdmin?: boolean },
 ): MessageCapabilities {
-  const overrides = CAPABILITIES[mode] || {};
+  const overrides = CAPABILITIES[mode as CanonicalMessageType] || {};
   const caps = { ...BASE, ...overrides };
 
-  // Only the sender or admin can delete for all
   if (!opts?.isOwner && !opts?.isAdmin) {
     caps.canDeleteAll = false;
   }
@@ -122,7 +88,7 @@ export function getMessageCapabilities(
 
 /** Get a list of available action keys for a message */
 export function getAvailableActions(
-  mode: MessageMode,
+  mode: CanonicalMessageType | string,
   opts?: { isOwner?: boolean; isAdmin?: boolean },
 ): (keyof MessageCapabilities)[] {
   const caps = getMessageCapabilities(mode, opts);

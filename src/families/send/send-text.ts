@@ -3,6 +3,7 @@
  */
 import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { buildTextMeta } from "@/families/messages/build-metadata";
 import type { SendContext } from "./send-context";
 
 export async function sendText(
@@ -25,13 +26,7 @@ export async function sendText(
     type: "text",
     body,
     replyToMessageId: opts?.replyToMessageId,
-    metadata: {
-      encrypted: opts?.encrypted ?? false,
-      category: opts?.category || "general",
-      locale: opts?.locale || "en",
-      security_level: opts?.securityLevel || "normal",
-      disappear_ttl: opts?.disappearTTL ?? null,
-    },
+    metadata: buildTextMeta(opts),
   });
 
   await updateConversationTimestamp(ctx.conversationId, body.slice(0, 120));

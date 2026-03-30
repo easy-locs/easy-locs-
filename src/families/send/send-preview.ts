@@ -1,28 +1,57 @@
 /**
  * send.preview — Canonical preview formatting for conversation list.
- * Normalizes the last_message_preview for any message type.
+ * Uses CanonicalMessageType taxonomy.
  */
+import type { CanonicalMessageType } from "@/families/messages/canonical-envelope";
 
 export function formatSendPreview(type: string, body: string, metadata?: Record<string, any>): string {
-  switch (type) {
+  const t = type as CanonicalMessageType;
+
+  switch (t) {
     case "text":
       return body.slice(0, 120);
     case "voice":
       return "🎤 Voice message";
-    case "media":
-      if (metadata?.view_once) return "📷 View-once photo";
-      if (metadata?.media_kind === "video") return "🎥 Video";
-      return "📎 Attachment";
-    case "location":
-      if (metadata?.mode === "live") return "📡 Live location";
+    case "audio":
+      return "🎵 Audio";
+    case "image":
+      return metadata?.media?.viewOnce ? "📷 View-once photo" : "📸 Photo";
+    case "video":
+      return "🎥 Video";
+    case "file":
+      return "📎 File";
+    case "location_static":
       return "📍 Location";
-    case "payment":
-      if (metadata?.event_type === "payment_request") return `💳 Payment request: ${metadata.amount} ${metadata.currency}`;
-      if (metadata?.event_type === "payment_receipt") return `✅ Payment: ${metadata.amount} ${metadata.currency}`;
-      return "💳 Payment";
-    case "system":
+    case "location_live":
+      return "📡 Live location";
+    case "call_audio":
+      return "📞 Audio call";
+    case "call_video":
+      return "📹 Video call";
+    case "call_missed":
+      return "📵 Missed call";
+    case "call_declined":
+      return "⛔ Declined call";
+    case "payment_request":
+      return `💳 Payment request${metadata?.payment?.amount ? `: ${metadata.payment.amount} ${metadata.payment.currency || ""}` : ""}`;
+    case "payment_receipt":
+      return `✅ Payment${metadata?.payment?.amount ? `: ${metadata.payment.amount} ${metadata.payment.currency || ""}` : ""}`;
+    case "system_notice":
       return body.slice(0, 120) || "ℹ️ System message";
     default:
+      // Legacy fallback
+      if (type === "media") {
+        if (metadata?.view_once) return "📷 View-once photo";
+        if (metadata?.media_kind === "video") return "🎥 Video";
+        return "📎 Attachment";
+      }
+      if (type === "location") {
+        return metadata?.mode === "live" ? "📡 Live location" : "📍 Location";
+      }
+      if (type === "payment") {
+        if (metadata?.event_type === "payment_request") return `💳 Payment request: ${metadata.amount} ${metadata.currency}`;
+        return `✅ Payment: ${metadata?.amount} ${metadata?.currency}`;
+      }
       return body.slice(0, 120) || "Message";
   }
 }
