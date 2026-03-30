@@ -2,8 +2,9 @@
  * useMessageSender — THIN ORCHESTRATOR for message sending.
  * Delegates to canonical sendText() from the send family.
  * Keeps: optimistic UI, offline queue, encryption, event emission.
+ * Draft is isolated per conversationId to prevent cross-thread leaking.
  */
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolveConversationId } from "@/lib/orbit/messaging/conversation-resolver";
