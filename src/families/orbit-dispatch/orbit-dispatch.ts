@@ -113,30 +113,32 @@ async function handleSendMedia(cmd: SendMediaCommand): Promise<OrbitCommandResul
 async function handleSendVoice(cmd: SendVoiceCommand): Promise<OrbitCommandResult> {
   const { sendVoiceOptimistic } = await import("@/families/send/send-voice-optimistic");
   const ctx = await resolveContext(cmd.conversationId);
-  const file = new File([cmd.blob], "voice.webm", { type: cmd.blob.type || "audio/webm" });
-  const data = await sendVoiceOptimistic(ctx, {
+  const storagePath = `${cmd.pathPrefix}/${cmd.conversationId}/${Date.now()}.webm`;
+  const mins = Math.floor(cmd.durationSeconds / 60);
+  const secs = Math.round(cmd.durationSeconds % 60);
+  const durationLabel = `${mins}:${secs.toString().padStart(2, "0")}`;
+  await sendVoiceOptimistic(ctx, {
     blob: cmd.blob,
     localUrl: cmd.localUrl,
     durationSeconds: cmd.durationSeconds,
-    uploadFn: async () => {
-      const storagePath = `${cmd.pathPrefix}/${cmd.conversationId}/${Date.now()}.webm`;
-      return cmd.uploadFn(file, storagePath);
-    },
+    durationLabel,
+    uploadFn: cmd.uploadFn as any,
+    storagePath,
   });
-  return { ok: true, messageId: data?.id };
+  return { ok: true };
 }
 
 async function handleSendLocation(cmd: SendLocationCommand): Promise<OrbitCommandResult> {
   const { sendLocationOptimistic } = await import("@/families/send/send-location-optimistic");
   const ctx = await resolveContext(cmd.conversationId);
-  const data = await sendLocationOptimistic(ctx, {
+  await sendLocationOptimistic(ctx, {
     lat: cmd.lat,
     lng: cmd.lng,
     type: cmd.mode,
     label: cmd.label,
     address: cmd.address,
   });
-  return { ok: true, messageId: data?.id };
+  return { ok: true };
 }
 
 async function handleStartCall(cmd: StartCallCommand): Promise<OrbitCommandResult> {
