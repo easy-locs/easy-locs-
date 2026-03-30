@@ -117,7 +117,7 @@ export function initRideLifecycleHandler() {
 
 export function stopRideLifecycleHandler() {
   if (lifecycleChannel) {
-    supabase.removeChannel(lifecycleChannel);
+    removeRealtimeChannel(lifecycleChannel);
     lifecycleChannel = null;
   }
   previousStatus.clear();
