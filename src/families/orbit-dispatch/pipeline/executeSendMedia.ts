@@ -1,5 +1,5 @@
 /**
- * executeSendMedia — Strict pipeline: intent → canonical → optimistic → transport → reconcile
+ * executeSendMedia — Strict pipeline: intent → delegate to optimistic pipeline
  */
 import type { SendMediaCommand } from "../orbit-commands";
 import type { ResolvedContext, ExecutorResult } from "./pipeline-types";
@@ -12,18 +12,12 @@ export async function executeSendMedia(
   const trace = createTrace("sendMedia");
 
   try {
-    // ── Phase 1: Intent ──
     enterPhase(trace, "intent");
     if (!cmd.file) return { ok: false, error: "no_file", phase: "intent" };
     if (!ctx.conversationId) return { ok: false, error: "no_conversation", phase: "intent" };
     exitPhase(trace);
 
-    // ── Phase 2–5: Delegate to optimistic pipeline ──
-    // sendMediaOptimistic already implements canonical→optimistic→transport→reconcile internally
-    enterPhase(trace, "canonical");
-    exitPhase(trace);
-
-    enterPhase(trace, "optimistic");
+    enterPhase(trace, "transport");
     const { sendMediaOptimistic } = await import("@/families/send/send-media-optimistic");
     let resultId: string | undefined;
 
@@ -37,12 +31,6 @@ export async function executeSendMedia(
     }, {
       onOptimisticCreated: (id) => { resultId = id; },
     });
-    exitPhase(trace);
-
-    // Transport + Reconcile handled inside sendMediaOptimistic
-    enterPhase(trace, "transport");
-    exitPhase(trace);
-    enterPhase(trace, "reconcile");
     exitPhase(trace);
 
     completeExecutorTrace(trace);
