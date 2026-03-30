@@ -112,5 +112,6 @@ export interface OrbitCommandResult {
   ok: boolean;
   messageId?: string;
   sessionId?: string;
+  requestId?: string;
   error?: string;
 }
