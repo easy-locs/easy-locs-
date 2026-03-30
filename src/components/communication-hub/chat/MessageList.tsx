@@ -116,7 +116,7 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
       ) : (
         rowData.map(({ msg, showDateSep, dateLabel, isMe, isConsecutive }) => {
           const mode = resolveMessageMode(msg);
-          const isCallCard = mode.startsWith("call_");
+          const isSpecialCard = mode.startsWith("call_") || mode.startsWith("location_") || mode.startsWith("payment_") || mode === "system_notice";
           return (
             <div key={msg.id}>
               {showDateSep && <DateSeparator date={dateLabel} />}
@@ -127,7 +127,7 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
                   createdAt={msg.created_at}
                   actorRole={(msg as any).metadata_json?.actor_role}
                 />
-              ) : isCallCard ? (
+              ) : isSpecialCard ? (
                 <MessageCardRenderer
                   msg={msg}
                   isMe={isMe}
