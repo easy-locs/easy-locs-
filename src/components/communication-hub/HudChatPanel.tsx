@@ -372,7 +372,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           <OrbitSelectionToolbar
             onCopy={(ids) => { /* TODO: wire to message actions */ }}
             onForward={(ids) => { /* TODO: wire to forward dialog */ }}
-            onDelete={(ids) => { ids.forEach((id) => messageActions.deleteForEveryone(id)); clearGlobalSelection(); }}
+            onDelete={(ids) => { ids.forEach((id) => messageActions.softDeleteMessage(id)); clearGlobalSelection(); }}
           />
         )}
 
