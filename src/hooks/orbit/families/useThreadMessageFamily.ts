@@ -69,8 +69,6 @@ export function useThreadMessageFamily(params: {
     securityLevel: securityLevel as "normal" | "high" | "ghost",
     setSecurityLevel: setSecurityLevel as (l: "normal" | "high" | "ghost") => void,
     selectedCategory: "general",
-    replyTo: selection.replyTo,
-    setReplyTo: (r: any) => selection.setReplyTo(r),
     setRawMessages: loader.setRawMessages as any,
     setPendingOffline: loader.setPendingOffline,
     onThreadUpdate,
