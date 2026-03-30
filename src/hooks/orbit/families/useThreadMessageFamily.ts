@@ -11,6 +11,7 @@ import { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
 import { useOrbitScrollManager } from "@/hooks/useOrbitScrollManager";
 import { useOrbitThreadUiState } from "@/hooks/useOrbitThreadUiState";
 import { useMessageSelection } from "@/components/communication-hub/chat/useMessageSelection";
+import { toMessageViewModels } from "@/families/messages/message-view-model";
 import type { ConversationThread, ChatMessage } from "@/components/communication-hub/types";
 
 export function useThreadMessageFamily(params: {
