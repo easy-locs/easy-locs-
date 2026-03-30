@@ -72,17 +72,18 @@ async function checkSupabaseConnection(): Promise<RuntimeAuditCheck> {
 
 async function checkRealtimeChannels(): Promise<RuntimeAuditCheck> {
   try {
-    const channel = supabase.channel("runtime-audit-check");
+    const { createRealtimeChannel, removeRealtimeChannel } = require("@/lib/realtime");
+    const channel = createRealtimeChannel("runtime-audit-check");
     const result = await new Promise<"ok" | "timeout">((resolve) => {
       const timer = setTimeout(() => resolve("timeout"), 2500);
-      channel.subscribe((status) => {
+      channel.subscribe((status: string) => {
         if (status === "SUBSCRIBED") {
           clearTimeout(timer);
           resolve("ok");
         }
       });
     });
-    supabase.removeChannel(channel);
+    removeRealtimeChannel(channel);
     if (result === "ok") return pass("Realtime subscription", "realtime", "Realtime subscribed");
     return warn("Realtime subscription", "realtime", "Timeout while subscribing");
   } catch (e: any) {
