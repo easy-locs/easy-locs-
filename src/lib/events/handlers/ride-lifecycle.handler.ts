@@ -14,7 +14,7 @@
  * - ride.status.updated
  */
 import { eventBus } from "@/lib/core/event-bus";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // Status → canonical event mapping
 const STATUS_EVENT_MAP: Record<string, string> = {
