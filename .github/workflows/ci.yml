@@ -1,8 +1,9 @@
-name: CI — Build and Deploy
+name: CI
 
 on:
   push:
     branches: [main]
+  pull_request:
 
 jobs:
   build:
@@ -12,20 +13,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install dependencies
+      - name: Install
         run: npm install --legacy-peer-deps
 
       - name: Build
         run: npm run build
-
-      - name: Deploy
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: dist
