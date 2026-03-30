@@ -3,7 +3,7 @@
  * Zero inline supabase calls. All sends go through families/send.
  */
 import { useState, useCallback } from "react";
-import { sendVoice } from "@/families/send/send-voice";
+import { sendVoiceOptimistic } from "@/families/send/send-voice-optimistic";
 import { sendLocation, type LocationPayload } from "@/families/send/send-location";
 import { sendMedia } from "@/families/send/send-media";
 import { computeDisappearAt } from "@/hooks/usePrivacySettings";
@@ -48,33 +48,42 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
     const authUserId = await deps.resolveAuthUserId();
     if (!authUserId) return;
 
-    // Capture preview data before clearing UI (instant feedback)
+    // Capture preview data before clearing UI
     const blob = voicePreview.blob;
     const dur = voicePreview.duration;
     const localUrl = voicePreview.url;
 
-    // ── INSTANT: clear voice preview UI immediately (user sees composer reset) ──
+    // ── INSTANT: clear voice preview UI immediately ──
     setVoicePreview(null);
-    deps.setUploading(true);
 
     try {
-      const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
-      const path = `${deps.orgId}/${deps.thread.id}/voice-${Date.now()}.${ext}`;
-
-      // Upload + insert run together, but UI is already free
-      const audioUrl = await uploadToStorage("chat-attachments", path, blob);
-      if (!audioUrl) throw new Error("Voice upload failed");
-
       const conversationId = await deps.resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
       const ctx = buildSendContext(deps, authUserId, conversationId);
-      await sendVoice(ctx, audioUrl, dur, formatVoiceDuration(dur));
+
+      const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
+      const storagePath = `${deps.orgId}/${deps.thread.id}/voice-${Date.now()}.${ext}`;
+
+      // Optimistic: inserts message with local blob URL immediately,
+      // then uploads + reconciles in background
+      await sendVoiceOptimistic(ctx, {
+        blob,
+        localUrl,
+        durationSeconds: dur,
+        durationLabel: formatVoiceDuration(dur),
+        uploadFn: async (b, path) => {
+          const url = await uploadToStorage("chat-attachments", path, b);
+          if (!url) throw new Error("Voice upload failed");
+          return url;
+        },
+        storagePath,
+      });
+
       deps.setSecurityLevel("normal");
     } catch (e: any) {
       toast.error(e?.message || "Failed to send voice message");
     } finally {
       URL.revokeObjectURL(localUrl);
-      deps.setUploading(false);
     }
   }, [voicePreview, deps]);
 
