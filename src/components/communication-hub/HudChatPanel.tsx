@@ -369,7 +369,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           <MessageComposer
             key={currentConversationId}
             value={storeDraft}
-            sending={messageSender.sending}
+            sending={messageSender.sending || composerStore.sending[currentConversationId]}
             uploading={attFamily.attachments.uploading}
             voiceRecording={compFamily.voiceRecorder.recording}
             voicePreview={compFamily.voicePreview}
