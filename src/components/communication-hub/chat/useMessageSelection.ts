@@ -1,8 +1,10 @@
 /**
- * useMessageSelection — Message multi-select, context menu, and moderation logic.
- * Extracted from HudChatPanel monolith.
+ * useMessageSelection — Unified message selection + context menu.
+ * Selection state delegates to useOrbitSelectionStore (single source of truth).
+ * Context menu, forward, and hidden IDs are local ephemeral UI state.
  */
 import { useState, useCallback } from "react";
+import { useOrbitSelectionStore } from "@/stores/orbit/selection.store";
 
 export interface ContextMenuTarget {
   msgId: string;
@@ -17,38 +19,37 @@ export interface ContextMenuTarget {
 }
 
 export function useMessageSelection() {
-  const [selectMode, setSelectMode] = useState(false);
-  const [selectedMsgIds, setSelectedMsgIds] = useState<Set<string>>(new Set());
+  const store = useOrbitSelectionStore();
+
+  // Ephemeral UI-only state (not persisted in store)
   const [contextMessage, setContextMessage] = useState<ContextMenuTarget | null>(null);
-  // replyTo removed — single source of truth is composerStore.replies[cid]
   const [forwardData, setForwardData] = useState<{ messageId: string; content: string } | null>(null);
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
 
+  // Delegate selection to global store
+  const selectMode = store.mode === "selecting";
+
+  const setSelectMode = useCallback((value: boolean) => {
+    if (!value) store.clearSelection();
+  }, [store]);
+
   const toggleMsgSelect = useCallback((id: string) => {
-    setSelectedMsgIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      if (next.size === 0) setSelectMode(false);
-      return next;
-    });
-  }, []);
+    store.toggleSelection(id);
+  }, [store]);
 
   const enterSelectMode = useCallback((msgId: string) => {
-    setSelectMode(true);
-    setSelectedMsgIds(new Set([msgId]));
-  }, []);
+    store.enterSelectionMode("", msgId);
+  }, [store]);
 
   const clearSelection = useCallback(() => {
-    setSelectMode(false);
-    setSelectedMsgIds(new Set());
-  }, []);
+    store.clearSelection();
+  }, [store]);
 
   return {
     selectMode, setSelectMode,
-    selectedMsgIds, setSelectedMsgIds,
+    selectedMsgIds: store.selectedIds,
+    setSelectedMsgIds: () => {}, // no-op — store owns this
     contextMessage, setContextMessage,
-    // replyTo/setReplyTo removed — use composerStore
     forwardData, setForwardData,
     hiddenMsgIds, setHiddenMsgIds,
     toggleMsgSelect,

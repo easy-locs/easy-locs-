@@ -238,7 +238,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           onToggleContext={onToggleContext}
           onShowSecurityPanel={() => security.setShowSecurityPanel(true)}
           onShowSafetyNumber={() => security.setShowSafetyNumber(true)}
-          onEnterSelectMode={() => { selection.setSelectMode(true); selection.setSelectedMsgIds(new Set()); }}
+          onEnterSelectMode={() => { selection.clearSelection(); }}
           t={t}
         />
 
