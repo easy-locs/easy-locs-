@@ -71,17 +71,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [allOrgs, setAllOrgs] = useState<{ id: string; name: string; country: string; currency: string }[]>([]);
   const bootstrapOrbitRef = useRef<string | null>(null);
 
+  // ── Shared timeout helper ──
+  const AUTH_QUERY_TIMEOUT = 5_000;
+  const withTimeout = useCallback(<T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
+    Promise.race([
+      Promise.resolve(thenable),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`${label} timed out (${AUTH_QUERY_TIMEOUT}ms)`)), AUTH_QUERY_TIMEOUT)
+      ),
+    ]), []);
+
+  // ── DB Health Check — fire-and-forget probe ──
+  const checkDbHealth = useCallback(async (traceId: string) => {
+    try {
+      const start = Date.now();
+      await withTimeout(
+        supabase.from("profiles").select("id").limit(1),
+        "DB_HEALTH_CHECK"
+      );
+      authLog("LOGIN_PROFILE_HYDRATE_RESULT", {
+        traceId, step: "DB_HEALTH", status: "UP", durationMs: Date.now() - start,
+      });
+      return true;
+    } catch {
+      authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
+        traceId, step: "DB_HEALTH", status: "DOWN",
+      });
+      return false;
+    }
+  }, [withTimeout]);
+
   // ── Critical path: minimal query for fast hydration ──
   const fetchOrgIdFast = useCallback(async (userId: string) => {
-    const QUERY_TIMEOUT = 5_000;
-    const withTimeout = <T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
-      Promise.race([
-        Promise.resolve(thenable),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out`)), QUERY_TIMEOUT)
-        ),
-      ]);
-
     try {
       const { data: memberships } = await withTimeout(
         supabase.from("org_members").select("org_id").eq("user_id", userId).limit(5),
@@ -100,37 +121,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return [];
       }
     } catch (err) {
-      console.warn("[AuthContext] fetchOrgIdFast failed:", err);
+      console.warn("[AuthContext] DB slow → fetchOrgIdFast fallback safe:", err);
       setOrgId(null);
       return [];
     }
-  }, []);
+  }, [withTimeout]);
 
   // ── Deferred: full org details (names, etc.) ──
   const fetchOrgDetails = useCallback(async (orgIds: string[]) => {
     if (orgIds.length === 0) { setAllOrgs([]); return; }
     try {
-      const { data: orgsData } = await supabase.from("orgs").select("id, name").in("id", orgIds);
+      const { data: orgsData } = await withTimeout(
+        supabase.from("orgs").select("id, name").in("id", orgIds),
+        "fetchOrgDetails"
+      );
       setAllOrgs((orgsData || []).map((o) => ({
         id: o.id, name: o.name || "Unnamed", country: "", currency: "EUR",
       })));
     } catch (err) {
-      console.warn("[AuthContext] fetchOrgDetails deferred failed:", err);
+      console.warn("[AuthContext] DB slow → fetchOrgDetails fallback safe:", err);
       setAllOrgs([]);
     }
-  }, []);
+  }, [withTimeout]);
 
   // ── Critical: profile basics only (1 query) ──
   const fetchProfileCritical = useCallback(async (userId: string) => {
-    const QUERY_TIMEOUT = 5_000;
-    const withTimeout = <T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
-      Promise.race([
-        Promise.resolve(thenable),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out`)), QUERY_TIMEOUT)
-        ),
-      ]);
-
     try {
       const { data: d1, error: e1 } = await withTimeout(
         supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle(),
@@ -145,21 +160,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setOnboardingCompleted(data?.onboarding_completed ?? false);
       setProfileLoaded(true);
     } catch (err) {
-      console.warn("[AuthContext] fetchProfileCritical failed:", err);
-      setUserType("landlord");
+      console.warn("[AuthContext] DB slow → fetchProfileCritical fallback safe:", err);
+      setUserType("client");
       setUserCountry("FR");
       setUserCurrency("EUR");
       setOnboardingCompleted(false);
       setProfileLoaded(true);
     }
-  }, []);
+  }, [withTimeout]);
 
   // ── Deferred: dual-role detection + role resolution ──
   const fetchDualRoleDeferred = useCallback(async (userId: string) => {
     try {
       const [t, o] = await Promise.all([
-        supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
-        supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
+        withTimeout(supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(), "fetchDualRole/tenants"),
+        withTimeout(supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(), "fetchDualRole/org_members"),
       ]);
       const hasOrg = !!o.data;
       const hasTenant = !!t.data;
@@ -184,11 +199,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setActiveRole("client");
       }
     } catch (err) {
-      console.warn("[AuthContext] fetchDualRoleDeferred failed:", err);
+      console.warn("[AuthContext] DB slow → fetchDualRoleDeferred fallback safe:", err);
       setActiveRole("landlord");
       setHasDualRole(false);
     }
-  }, [onboardingCompleted]);
+  }, [onboardingCompleted, withTimeout]);
 
   const refreshProfile = useCallback(async () => {
     if (user) {
@@ -260,23 +275,66 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
         }).catch(() => null);
 
+        // DB health probe (non-blocking, just logs)
+        void checkDbHealth(hydrateTraceId);
+
         authLog("LOGIN_PROFILE_HYDRATE_STARTED", { traceId: hydrateTraceId, userId, phase: "critical" });
         const hydrateStart = Date.now();
 
+        // CRITICAL PATH: orgId + profile basics in parallel, with guaranteed fallback
+        let orgIds: string[] = [];
         try {
-          // CRITICAL PATH: only orgId + profile basics (2 fast queries in parallel)
-          const [orgIds] = await Promise.all([
+          const [fetchedOrgIds] = await Promise.all([
             fetchOrgIdFast(userId),
             fetchProfileCritical(userId),
           ]);
+          orgIds = fetchedOrgIds;
           if (seq !== latestSeq) return;
 
-          const hydrateDuration = Date.now() - hydrateStart;
           authLog("LOGIN_PROFILE_HYDRATE_RESULT", {
-            traceId: hydrateTraceId, success: true, error: null, durationMs: hydrateDuration, phase: "critical",
+            traceId: hydrateTraceId, success: true, error: null,
+            durationMs: Date.now() - hydrateStart, phase: "critical",
+          });
+        } catch (err: any) {
+          // DB is down — apply safe defaults, NEVER block navigation
+          console.warn("[AuthContext] DB slow → critical hydration fallback safe:", err);
+          setOrgId(null);
+          setUserType("client");
+          setUserCountry("FR");
+          setUserCurrency("EUR");
+          setOnboardingCompleted(false);
+          setProfileLoaded(true);
+          setActiveRole("client");
+          setHasDualRole(false);
+          setAllOrgs([]);
+
+          authError("LOGIN_PROFILE_HYDRATE_RESULT", {
+            traceId: hydrateTraceId, success: false,
+            error: err?.message ?? "UNKNOWN", durationMs: Date.now() - hydrateStart,
+            step: "CRITICAL_HYDRATION_FALLBACK",
           });
 
-          // DEFERRED: org details, dual-role, subscription — non-blocking background
+          // Schedule background retry
+          setTimeout(() => {
+            void (async () => {
+              try {
+                const retryOrgIds = await fetchOrgIdFast(userId);
+                await fetchProfileCritical(userId);
+                await fetchOrgDetails(retryOrgIds);
+                await fetchDualRoleDeferred(userId);
+              } catch (retryErr: any) {
+                authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
+                  traceId: hydrateTraceId, success: false,
+                  error: retryErr?.message ?? "RETRY_FAILED",
+                  retryAttempt: true,
+                });
+              }
+            })();
+          }, 3000);
+        }
+
+        // DEFERRED: org details, dual-role, subscription — always non-blocking
+        if (orgIds.length > 0 || seq === latestSeq) {
           setTimeout(() => {
             void (async () => {
               try {
@@ -291,29 +349,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               }
             })();
           }, 100);
-        } catch (err: any) {
-          const hydrateDuration = Date.now() - hydrateStart;
-          authError("LOGIN_PROFILE_HYDRATE_RESULT", {
-            traceId: hydrateTraceId, success: false,
-            error: err?.message ?? "UNKNOWN", durationMs: hydrateDuration,
-            step: "LOGIN_PROFILE_HYDRATE_RESULT",
-          });
-          // Non-blocking retry after 2s
-          setTimeout(() => {
-            void (async () => {
-              try {
-                await fetchOrgIdFast(userId);
-                await fetchProfileCritical(userId);
-              } catch (retryErr: any) {
-                authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
-                  traceId: hydrateTraceId, success: false,
-                  error: retryErr?.message ?? "RETRY_FAILED",
-                  durationMs: Date.now() - hydrateStart, retryAttempt: true,
-                });
-              }
-            })();
-          }, 2000);
         }
+
         setTimeout(() => {
           void refreshSubRef();
         }, 500);
@@ -331,6 +368,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         bootstrapOrbitRef.current = null;
       }
 
+      // GUARANTEE: loading ALWAYS set to false — navigation NEVER blocked
       if (mounted && seq === latestSeq) setLoading(false);
     };
 
@@ -361,7 +399,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       window.clearTimeout(safetyTimeout);
       authSub.unsubscribe();
     };
-  }, [fetchOrgIdFast, fetchProfileCritical, fetchOrgDetails, fetchDualRoleDeferred, refreshSubRef, resetSubscription]);
+  }, [fetchOrgIdFast, fetchProfileCritical, fetchOrgDetails, fetchDualRoleDeferred, checkDbHealth, refreshSubRef, resetSubscription]);
 
   useEffect(() => {
     if (!user?.id || bootstrapOrbitRef.current === user.id) return;
