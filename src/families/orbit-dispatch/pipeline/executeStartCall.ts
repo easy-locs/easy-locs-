@@ -18,30 +18,15 @@ export async function executeStartCall(
     if (!cmd.mode) return { ok: false, error: "no_mode", phase: "intent" };
     exitPhase(trace);
 
-    // ── Phase 2: Canonical ──
-    enterPhase(trace, "canonical");
-    const callerOrbitId = ctx.senderOrbitId;
-    exitPhase(trace);
-
-    // ── Phase 3: Optimistic ──
-    enterPhase(trace, "optimistic");
-    // Call UI state is updated locally-first by the call player
-    exitPhase(trace);
-
-    // ── Phase 4: Transport ──
+    // ── Phase 2: Transport ──
     enterPhase(trace, "transport");
     const { createOutgoingCallSession } = await import("@/repositories/communication.repository");
     const session = await createOutgoingCallSession({
       conversationId: cmd.conversationId,
-      callerOrbitId,
+      callerOrbitId: ctx.senderOrbitId,
       receiverOrbitId: cmd.peerOrbitId || null,
       mode: cmd.mode,
     });
-    exitPhase(trace);
-
-    // ── Phase 5: Reconcile ──
-    enterPhase(trace, "reconcile");
-    // Session is created; realtime will propagate to peer
     exitPhase(trace);
 
     completeExecutorTrace(trace);
