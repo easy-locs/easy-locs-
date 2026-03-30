@@ -374,6 +374,7 @@ const App = () => (
               <Route path="/refund/:rideRequestId" element={<RefundRequestPage />} />
               {/* Orbit — main messaging hub */}
               <Route path="/orbit" element={<CommunicationCenter />} />
+              <Route path="/orbit/:conversationId" element={<CommunicationCenter />} />
               <Route path="/orbit/contacts" element={<OrbitContactsPage />} />
               <Route path="/team/command-center" element={<TeamCommandCenterPage />} />
               <Route path="/admin/executive-kpi" element={<ExecutiveKPIBoardPage />} />
@@ -518,8 +519,8 @@ const App = () => (
               <Route path="/dashboard/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
               <Route path="/dashboard/interventions" element={<ProtectedRoute><Interventions /></ProtectedRoute>} />
               <Route path="/dashboard/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-              <Route path="/dashboard/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-              <Route path="/dashboard/communication" element={<ProtectedRoute><CommunicationCenter /></ProtectedRoute>} />
+              <Route path="/dashboard/messages" element={<Navigate to="/orbit" replace />} />
+              <Route path="/dashboard/communication" element={<Navigate to="/orbit" replace />} />
               <Route path="/dashboard/charges-regularization" element={<ProtectedRoute><ChargesRegularization /></ProtectedRoute>} />
               <Route path="/dashboard/fiscal-report" element={<ProtectedRoute><FiscalReport /></ProtectedRoute>} />
               <Route path="/dashboard/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
@@ -564,7 +565,7 @@ const App = () => (
               <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />
               <Route path="/tenant/receipts" element={<ProtectedRoute><TenantReceipts /></ProtectedRoute>} />
               <Route path="/tenant/documents" element={<ProtectedRoute><TenantDocuments /></ProtectedRoute>} />
-              <Route path="/tenant/messages" element={<ProtectedRoute><TenantMessages /></ProtectedRoute>} />
+              <Route path="/tenant/messages" element={<Navigate to="/orbit" replace />} />
               <Route path="/tenant/pay" element={<ProtectedRoute><TenantPay /></ProtectedRoute>} />
               <Route path="/tenant/settings" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
               <Route path="/tenant/reviews" element={<ProtectedRoute><TenantReviews /></ProtectedRoute>} />
@@ -573,7 +574,7 @@ const App = () => (
               {/* Client Portal */}
               <Route path="/client" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
               <Route path="/client/bookings" element={<ProtectedRoute><ClientBookings /></ProtectedRoute>} />
-              <Route path="/client/messages" element={<ProtectedRoute><ClientMessages /></ProtectedRoute>} />
+              <Route path="/client/messages" element={<Navigate to="/orbit" replace />} />
               <Route path="/client/documents" element={<ProtectedRoute><ClientDocuments /></ProtectedRoute>} />
               <Route path="/client/payments" element={<ProtectedRoute><ClientPayments /></ProtectedRoute>} />
               <Route path="/client/settings" element={<ProtectedRoute><ClientSettings /></ProtectedRoute>} />
@@ -815,7 +816,7 @@ const App = () => (
               <Route path="/v2-properties" element={<Navigate to="/dashboard/properties" replace />} />
               <Route path="/v2-search" element={<Navigate to="/radar" replace />} />
               <Route path="/v2-map" element={<Navigate to="/radar" replace />} />
-              <Route path="/v2-messages" element={<Navigate to="/dashboard/communication" replace />} />
+              <Route path="/v2-messages" element={<Navigate to="/orbit" replace />} />
               <Route path="/v2-notifications" element={<Navigate to="/notifications" replace />} />
               <Route path="/v2-payments" element={<Navigate to="/wallet" replace />} />
               <Route path="/v2-favorites" element={<Navigate to="/favorites" replace />} />
