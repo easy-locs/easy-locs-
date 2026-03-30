@@ -813,10 +813,11 @@ export async function createOutgoingCallSession(params: {
 }
 
 export async function broadcastCallSignal(callId: string, signalType: string, fromUserId: string) {
-  const channel = supabase.channel(`call:${callId}`, { config: { broadcast: { self: false } } });
+  const { createRealtimeChannel, removeRealtimeChannel } = require("@/lib/realtime");
+  const channel = createRealtimeChannel(`call:${callId}`, { config: { broadcast: { self: false } } });
   await channel.subscribe();
   channel.send({ type: "broadcast", event: "signal", payload: { type: signalType, data: "{}", from: fromUserId } });
-  setTimeout(() => supabase.removeChannel(channel), 1000);
+  setTimeout(() => removeRealtimeChannel(channel), 1000);
 }
 
 // ── Concierge payment ──
