@@ -8,6 +8,7 @@ import { Copy, Share2, Clock, Shield, Check, Loader2 } from "lucide-react";
 import BrandedQR from "@/components/qr/BrandedQR";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useResolvedIdentity } from "@/hooks/useResolvedIdentity";
 import { useToast } from "@/hooks/use-toast";
 import { encodeQr, toResolveUrl, qr } from "@/lib/qr-engine";
 import { formatMoney } from "@/lib/format";

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useResolvedIdentity } from "@/hooks/useResolvedIdentity";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { uploadAvatar, saveProfile } from "@/lib/orbit/orbit-account.repository";
