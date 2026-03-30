@@ -6,27 +6,23 @@
  *   const dispatch = useOrbitDispatch();
  *   dispatch({ type: "send_text", conversationId, body: "Hello" });
  */
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
 import { orbitDispatch } from "./orbit-dispatch";
 import type { OrbitCommand, OrbitCommandResult } from "./orbit-commands";
+import { acquireSubmitLock, releaseSubmitLock } from "./send-locks";
 
 export function useOrbitDispatch() {
-  const busyRef = useRef(false);
-
   const dispatch = useCallback(async (cmd: OrbitCommand): Promise<OrbitCommandResult> => {
-    // Per-type concurrency: allow parallel sends but not double-taps of same type
-    if (busyRef.current && ["send_text", "reply"].includes(cmd.type)) {
-      return { ok: false, error: "send_in_progress" };
-    }
+    const submitLock = acquireSubmitLock(cmd);
 
-    if (["send_text", "reply"].includes(cmd.type)) {
-      busyRef.current = true;
+    if (!submitLock) {
+      return { ok: false, error: "send_in_progress" };
     }
 
     try {
       const result = await orbitDispatch(cmd);
-      if (!result.ok && result.error && result.error !== "duplicate_command") {
+      if (!result.ok && result.error && !["duplicate_command", "send_in_progress"].includes(result.error)) {
         toast.error(result.error);
       }
       return result;
@@ -34,7 +30,7 @@ export function useOrbitDispatch() {
       toast.error(err?.message || "Action failed");
       return { ok: false, error: err?.message || "dispatch_error" };
     } finally {
-      busyRef.current = false;
+      releaseSubmitLock(submitLock);
     }
   }, []);
 
