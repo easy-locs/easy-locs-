@@ -71,128 +71,112 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [allOrgs, setAllOrgs] = useState<{ id: string; name: string; country: string; currency: string }[]>([]);
   const bootstrapOrbitRef = useRef<string | null>(null);
 
-  const fetchOrgId = useCallback(async (userId: string) => {
-    const QUERY_TIMEOUT = 8_000;
+  // ── Critical path: minimal query for fast hydration ──
+  const fetchOrgIdFast = useCallback(async (userId: string) => {
+    const QUERY_TIMEOUT = 5_000;
     const withTimeout = <T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
       Promise.race([
         Promise.resolve(thenable),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out (${QUERY_TIMEOUT}ms)`)), QUERY_TIMEOUT)
+          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out`)), QUERY_TIMEOUT)
         ),
       ]);
 
     try {
       const { data: memberships } = await withTimeout(
-        supabase.from("org_members").select("org_id").eq("user_id", userId),
-        "fetchOrgId/memberships"
+        supabase.from("org_members").select("org_id").eq("user_id", userId).limit(5),
+        "fetchOrgIdFast"
       );
 
       if (memberships && memberships.length > 0) {
-        const orgIds = memberships.map((m) => m.org_id);
-        const { data: orgsData } = await withTimeout(
-          supabase.from("orgs").select("id, name").in("id", orgIds),
-          "fetchOrgId/orgs"
-        );
-
-        const orgs = (orgsData || []).map((o) => ({
-          id: o.id,
-          name: o.name || "Unnamed",
-          country: "",
-          currency: "EUR",
-        }));
-        setAllOrgs(orgs);
-
         const savedOrg = (() => {
-          try {
-            return localStorage.getItem(`easylocs_active_org_${userId}`);
-          } catch {
-            return null;
-          }
+          try { return localStorage.getItem(`easylocs_active_org_${userId}`); } catch { return null; }
         })();
-        const selectedOrgId = savedOrg && orgs.some((o) => o.id === savedOrg) ? savedOrg : orgIds[0];
+        const selectedOrgId = savedOrg && memberships.some((m) => m.org_id === savedOrg) ? savedOrg : memberships[0].org_id;
         setOrgId(selectedOrgId);
+        return memberships.map((m) => m.org_id);
       } else {
         setOrgId(null);
-        setAllOrgs([]);
+        return [];
       }
     } catch (err) {
-      console.warn("[AuthContext] fetchOrgId failed:", err);
+      console.warn("[AuthContext] fetchOrgIdFast failed:", err);
       setOrgId(null);
+      return [];
+    }
+  }, []);
+
+  // ── Deferred: full org details (names, etc.) ──
+  const fetchOrgDetails = useCallback(async (orgIds: string[]) => {
+    if (orgIds.length === 0) { setAllOrgs([]); return; }
+    try {
+      const { data: orgsData } = await supabase.from("orgs").select("id, name").in("id", orgIds);
+      setAllOrgs((orgsData || []).map((o) => ({
+        id: o.id, name: o.name || "Unnamed", country: "", currency: "EUR",
+      })));
+    } catch (err) {
+      console.warn("[AuthContext] fetchOrgDetails deferred failed:", err);
       setAllOrgs([]);
     }
   }, []);
 
-  const fetchUserType = useCallback(async (userId: string) => {
-    const QUERY_TIMEOUT = 8_000;
+  // ── Critical: profile basics only (1 query) ──
+  const fetchProfileCritical = useCallback(async (userId: string) => {
+    const QUERY_TIMEOUT = 5_000;
     const withTimeout = <T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
       Promise.race([
         Promise.resolve(thenable),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out (${QUERY_TIMEOUT}ms)`)), QUERY_TIMEOUT)
+          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out`)), QUERY_TIMEOUT)
         ),
       ]);
 
     try {
-      let data: any = null;
       const { data: d1, error: e1 } = await withTimeout(
         supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle(),
-        "fetchUserType/profiles"
+        "fetchProfileCritical"
       );
 
-      if (e1 || !d1) {
-        await new Promise((r) => setTimeout(r, 300));
-        const { data: d2 } = await withTimeout(
-          supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle(),
-          "fetchUserType/profiles-retry"
-        );
-        data = d2;
-      } else {
-        data = d1;
-      }
-
+      const data = (e1 || !d1) ? null : d1;
       const ut = (data?.user_type as UserType) ?? "landlord";
       setUserType(ut);
       setUserCountry(data?.country ?? "FR");
       setUserCurrency(data?.currency ?? "EUR");
+      setOnboardingCompleted(data?.onboarding_completed ?? false);
+      setProfileLoaded(true);
+    } catch (err) {
+      console.warn("[AuthContext] fetchProfileCritical failed:", err);
+      setUserType("landlord");
+      setUserCountry("FR");
+      setUserCurrency("EUR");
+      setOnboardingCompleted(false);
+      setProfileLoaded(true);
+    }
+  }, []);
 
-      let tenantLink: any = null;
-      let orgLink: any = null;
-      try {
-        const [t, o] = await Promise.all([
-          withTimeout(supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(), "fetchUserType/tenants"),
-          withTimeout(supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(), "fetchUserType/org_members"),
-        ]);
-        tenantLink = t.data;
-        orgLink = o.data;
-      } catch (err) {
-        console.warn("[AuthContext] dual-role check failed:", err);
-      }
-
-      const hasOrg = !!orgLink;
-      const hasTenant = !!tenantLink;
+  // ── Deferred: dual-role detection + role resolution ──
+  const fetchDualRoleDeferred = useCallback(async (userId: string) => {
+    try {
+      const [t, o] = await Promise.all([
+        supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
+        supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
+      ]);
+      const hasOrg = !!o.data;
+      const hasTenant = !!t.data;
       const dual = hasTenant && hasOrg;
       setHasDualRole(dual);
 
-      let onboardingDone = data?.onboarding_completed ?? false;
-      if (!onboardingDone && (hasOrg || hasTenant)) {
-        onboardingDone = true;
-        supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
+      if (!onboardingCompleted && (hasOrg || hasTenant)) {
+        setOnboardingCompleted(true);
+        supabase.from("profiles").update({ onboarding_completed: true } as any).eq("id", userId).then(() => {});
       }
-      setOnboardingCompleted(onboardingDone);
-      setProfileLoaded(true);
 
       const savedRole = (() => {
-        try {
-          return localStorage.getItem(`easylocs_active_role_${userId}`);
-        } catch {
-          return null;
-        }
+        try { return localStorage.getItem(`easylocs_active_role_${userId}`); } catch { return null; }
       })();
       if (dual && savedRole && (savedRole === "landlord" || savedRole === "tenant")) {
         setActiveRole(savedRole);
-      } else if (dual) {
-        setActiveRole("landlord");
-      } else if (hasOrg) {
+      } else if (dual || hasOrg) {
         setActiveRole("landlord");
       } else if (hasTenant) {
         setActiveRole("tenant");
@@ -200,16 +184,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setActiveRole("client");
       }
     } catch (err) {
-      console.error("[AuthContext] fetchUserType failed:", err);
-      setUserType("landlord");
-      setUserCountry("FR");
-      setUserCurrency("EUR");
-      setOnboardingCompleted(false);
+      console.warn("[AuthContext] fetchDualRoleDeferred failed:", err);
       setActiveRole("landlord");
       setHasDualRole(false);
-      setProfileLoaded(true);
     }
-  }, []);
+  }, [onboardingCompleted]);
 
   const refreshProfile = useCallback(async () => {
     if (user) {
@@ -219,9 +198,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         displayName: (user.user_metadata as any)?.display_name ?? (user.user_metadata as any)?.full_name ?? null,
         avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
       });
-      await Promise.all([fetchUserType(user.id), fetchOrgId(user.id)]);
+      const orgIds = await fetchOrgIdFast(user.id);
+      await Promise.all([fetchProfileCritical(user.id), fetchOrgDetails(orgIds)]);
+      await fetchDualRoleDeferred(user.id);
     }
-  }, [user, fetchUserType, fetchOrgId]);
+  }, [user, fetchProfileCritical, fetchOrgIdFast, fetchOrgDetails, fetchDualRoleDeferred]);
 
   const switchRole = useCallback((role: ActiveRole) => {
     setActiveRole(role);
@@ -279,19 +260,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
         }).catch(() => null);
 
-        authLog("LOGIN_PROFILE_HYDRATE_STARTED", { traceId: hydrateTraceId, userId });
+        authLog("LOGIN_PROFILE_HYDRATE_STARTED", { traceId: hydrateTraceId, userId, phase: "critical" });
         const hydrateStart = Date.now();
 
         try {
-          await fetchOrgId(userId);
-          if (seq !== latestSeq) return;
-          await fetchUserType(userId);
+          // CRITICAL PATH: only orgId + profile basics (2 fast queries in parallel)
+          const [orgIds] = await Promise.all([
+            fetchOrgIdFast(userId),
+            fetchProfileCritical(userId),
+          ]);
           if (seq !== latestSeq) return;
 
           const hydrateDuration = Date.now() - hydrateStart;
           authLog("LOGIN_PROFILE_HYDRATE_RESULT", {
-            traceId: hydrateTraceId, success: true, error: null, durationMs: hydrateDuration,
+            traceId: hydrateTraceId, success: true, error: null, durationMs: hydrateDuration, phase: "critical",
           });
+
+          // DEFERRED: org details, dual-role, subscription — non-blocking background
+          setTimeout(() => {
+            void (async () => {
+              try {
+                await fetchOrgDetails(orgIds);
+                await fetchDualRoleDeferred(userId);
+              } catch (deferredErr: any) {
+                authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
+                  traceId: hydrateTraceId, success: false,
+                  error: deferredErr?.message ?? "DEFERRED_FAILED",
+                  phase: "deferred",
+                });
+              }
+            })();
+          }, 100);
         } catch (err: any) {
           const hydrateDuration = Date.now() - hydrateStart;
           authError("LOGIN_PROFILE_HYDRATE_RESULT", {
@@ -299,12 +298,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             error: err?.message ?? "UNKNOWN", durationMs: hydrateDuration,
             step: "LOGIN_PROFILE_HYDRATE_RESULT",
           });
-          // Non-blocking retry after 2s if profile load failed
+          // Non-blocking retry after 2s
           setTimeout(() => {
             void (async () => {
               try {
-                await fetchOrgId(userId);
-                await fetchUserType(userId);
+                await fetchOrgIdFast(userId);
+                await fetchProfileCritical(userId);
               } catch (retryErr: any) {
                 authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
                   traceId: hydrateTraceId, success: false,
@@ -362,7 +361,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       window.clearTimeout(safetyTimeout);
       authSub.unsubscribe();
     };
-  }, [fetchOrgId, fetchUserType, refreshSubRef, resetSubscription]);
+  }, [fetchOrgIdFast, fetchProfileCritical, fetchOrgDetails, fetchDualRoleDeferred, refreshSubRef, resetSubscription]);
 
   useEffect(() => {
     if (!user?.id || bootstrapOrbitRef.current === user.id) return;
