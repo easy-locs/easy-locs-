@@ -2,7 +2,8 @@
  * FAMILY: IDENTITY — Canonical identity resolution for the entire app.
  * Single source of truth. All modules must use this family for user/entity display.
  *
- * Re-exports canonical resolvers and adds app-wide identity utilities.
+ * Owns: avatar resolution, name resolution, member since, identity propagation,
+ * contact profile VM, conversation header VM, group profile VM.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -41,10 +42,26 @@ export { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 // ── Canonical hooks ──
 export { useResolvedIdentity } from "@/hooks/useResolvedIdentity";
 
+// ── Identity propagation (avatar/name updates → all surfaces) ──
+export { propagateIdentityChange, resolveAvatarUrl, formatMemberSince } from "./identity-propagation";
+export type { IdentityUpdate } from "./identity-propagation";
+
+// ── Identity cache ──
+export { getCachedIdentity, setCachedIdentity, invalidateIdentityCache as invalidateProfileCache } from "@/lib/cache/identity-cache";
+
+// ── Avatar store ──
+export { useAvatarStore } from "@/stores/avatarStore";
+
+// ── View Models ──
+export { buildContactProfileVM } from "./contact-profile-vm";
+export type { ContactProfileViewModel } from "./contact-profile-vm";
+export { buildConversationHeaderVM } from "./conversation-header-vm";
+export type { ConversationHeaderViewModel } from "./conversation-header-vm";
+export { buildGroupProfileVM } from "./group-profile-vm";
+export type { GroupProfileViewModel, GroupMemberViewModel } from "./group-profile-vm";
+
 /**
  * Canonical getCurrentUserId — SINGLE implementation for the entire app.
- * Returns the authenticated user ID or throws if not authenticated.
- * All modules MUST use this instead of inline auth.getUser() calls.
  */
 export async function getCurrentUserId(): Promise<string> {
   const { data } = await supabase.auth.getUser();
@@ -52,16 +69,9 @@ export async function getCurrentUserId(): Promise<string> {
   return data.user.id;
 }
 
-/**
- * Non-throwing variant — returns null if not authenticated.
- */
 export async function getCurrentUserIdOrNull(): Promise<string | null> {
   const { data } = await supabase.auth.getUser();
   return data.user?.id ?? null;
 }
 
-/**
- * Resolve a canonical display identity from any entity shape.
- * This is the ONLY allowed entry point for identity display.
- */
 export { resolveCanonicalDisplayIdentity as resolveIdentity } from "@/lib/orbit/canonical-helpers";
