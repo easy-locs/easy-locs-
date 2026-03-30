@@ -25,3 +25,16 @@ export type {
   EditMessageCommand,
   ReplyCommand,
 } from "./orbit-commands";
+
+// Pipeline executors — for direct use in advanced scenarios
+export {
+  executeSendText,
+  executeSendMedia,
+  executeSendVoice,
+  executeSendLocation,
+  executeStartCall,
+  executeEndCall,
+  executeEditMessage,
+  executeReplyMessage,
+} from "./pipeline";
+export type { ExecutorResult, ResolvedContext, PipelinePhase } from "./pipeline";
