@@ -222,7 +222,6 @@ class RealtimeManager {
     }
 
     const msgChannel = createRealtimeChannel(`rt:thread:${threadId}`)
-      .channel(`rt:thread:${threadId}`)
       .on("postgres_changes", {
         event: "INSERT", schema: "public", table: "chat_messages_v2",
         filter: `conversation_id=eq.${threadId}`,
