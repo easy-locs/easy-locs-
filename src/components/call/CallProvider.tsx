@@ -6,7 +6,6 @@ import { createContext, useContext, useState, useCallback, useEffect, useRef, ty
 import { useAuth } from "@/contexts/AuthContext";
 import { CallManager } from "@/lib/call-manager";
 import { OrbitCallScreen } from "./OrbitCallScreen";
-import { OrbitCallScreen } from "./OrbitCallScreen";
 import { useIncomingCallState } from "@/hooks/call/useIncomingCallState";
 import { useIncomingCallListener } from "@/hooks/call/useIncomingCallListener";
 import { useOutgoingCall } from "@/hooks/call/useOutgoingCall";
