@@ -28,6 +28,7 @@ interface HudInlineHandlersDeps {
   setSecurityLevel: (l: string) => void;
   setViewOnceNext: (v: boolean) => void;
   setShowLocationPicker: (v: boolean) => void;
+  setRawMessages: (updater: any) => void;
   t: (key: string) => string;
 }
 
