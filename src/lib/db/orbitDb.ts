@@ -32,8 +32,17 @@ export const orbitDb = {
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true });
     },
-    insert(payload: Record<string, unknown>) {
-      return db.from("chat_messages_v2").insert(payload).select("*").single();
+    async insert(payload: Record<string, unknown>) {
+      const { insertMessage } = await import("@/repositories/communication.repository");
+      const data = await insertMessage({
+        conversationId: payload.conversation_id as string,
+        senderUserId: payload.sender_user_id as string,
+        senderOrbitId: (payload.sender_orbit_id as string) || null,
+        type: (payload.type as string) || "text",
+        body: (payload.body as string) || "",
+        metadata: { schemaVersion: 1, ...(payload.metadata as Record<string, unknown> || {}) },
+      });
+      return { data, error: null };
     },
     update(id: string, payload: Record<string, unknown>) {
       return db.from("chat_messages_v2").update(payload).eq("id", id).select("*").single();

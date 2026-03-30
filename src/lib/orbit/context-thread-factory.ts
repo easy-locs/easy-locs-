@@ -223,13 +223,14 @@ export async function getOrCreateContextThread(
 
     // 3. Auto-seed system message in V2
     if (config.autoSystemMessages) {
-      await db.from("chat_messages_v2").insert({
-        conversation_id: newConv.id,
-        sender_user_id: initiatorId,
-        sender_orbit_id: `orbit_${initiatorId.slice(0, 12)}`,
+      const { insertMessage } = await import("@/repositories/communication.repository");
+      await insertMessage({
+        conversationId: newConv.id,
+        senderUserId: initiatorId,
+        senderOrbitId: `orbit_${initiatorId.slice(0, 12)}`,
         type: "system",
         body: `${config.emoji} ${config.label} thread created: ${title}`,
-        metadata: { context_type: contextType, context_id: entityId },
+        metadata: { schemaVersion: 1, context_type: contextType, context_id: entityId },
       });
     }
 
@@ -280,14 +281,15 @@ export async function injectThreadSystemMessage(opts: {
     ? JSON.stringify({ text: opts.content, action: opts.actionPayload })
     : opts.content;
 
-  const db = supabase as any;
-  return db.from("chat_messages_v2").insert({
-    conversation_id: opts.conversationId,
-    sender_user_id: "00000000-0000-0000-0000-000000000000",
-    sender_orbit_id: "system",
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  return insertMessage({
+    conversationId: opts.conversationId,
+    senderUserId: "00000000-0000-0000-0000-000000000000",
+    senderOrbitId: "system",
     type: "system",
     body: messageContent,
     metadata: {
+      schemaVersion: 1,
       context_type: opts.contextType,
       context_id: opts.entityId,
       category: opts.category || "general",

@@ -61,13 +61,14 @@ export function installCrossAppReactions(): () => void {
     if (!user) return;
 
     try {
-      await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: p.conversationId,
-        sender_user_id: user.id,
-        sender_orbit_id: p.senderOrbitId ?? null,
+      const { insertMessage } = await import("@/repositories/communication.repository");
+      await insertMessage({
+        conversationId: p.conversationId,
+        senderUserId: user.id,
+        senderOrbitId: p.senderOrbitId ?? null,
         type: "system",
         body: `📘 Booking created · ${p.reference ?? p.bookingId ?? ""}`,
-        metadata: { booking_id: p.bookingId, source: "booking" },
+        metadata: { schemaVersion: 1, booking_id: p.bookingId, source: "booking" },
       });
 
       await createAppNotification({
@@ -99,13 +100,14 @@ export function installCrossAppReactions(): () => void {
       if (!user) return;
 
       try {
-        await (supabase as any).from("chat_messages_v2").insert({
-          conversation_id: p.conversationId,
-          sender_user_id: user.id,
-          sender_orbit_id: p.senderOrbitId ?? null,
-          type: "location",
+        const { insertMessage } = await import("@/repositories/communication.repository");
+        await insertMessage({
+          conversationId: p.conversationId,
+          senderUserId: user.id,
+          senderOrbitId: p.senderOrbitId ?? null,
+          type: "location_static",
           body: `📍 Location shared`,
-          metadata: { lat: p.lat, lng: p.lng, source: "radar" },
+          metadata: { schemaVersion: 1, lat: p.lat, lng: p.lng, source: "radar" },
         });
       } catch (e) {
         console.error("[cross-app] radar→orbit message failed", e);
