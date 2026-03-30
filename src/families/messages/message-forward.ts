@@ -98,7 +98,15 @@ export const MessageForward = {
       voice: "↪ 🎤 Voice message",
       static_location: "↪ 📍 Location",
       live_location: "↪ 📍 Live location",
-      payment: "↪ 💳 Payment",
+      payment_request: "↪ 💳 Payment request",
+      payment_receipt: "↪ 💳 Payment",
+      image: "↪ 📷 Photo",
+      video: "↪ 🎬 Video",
+      file: "↪ 📎 File",
+      call_audio: "↪ 📞 Audio call",
+      call_video: "↪ 📹 Video call",
+      call_missed: "↪ 📞 Missed call",
+      call_declined: "↪ 📞 Declined call",
     };
     return labels[payload.mode] || "↪ Forwarded message";
   },

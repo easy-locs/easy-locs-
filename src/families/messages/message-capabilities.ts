@@ -55,11 +55,38 @@ const CAPABILITIES: Record<MessageMode, Partial<MessageCapabilities>> = {
     canReply: true, canDeleteSelf: true,
     canOpenMap: true, canSelect: true,
   },
-  payment: {
+  payment_request: {
     canReply: true, canDeleteSelf: true, canSelect: true,
   },
-  system_event: {
+  payment_receipt: {
+    canReply: true, canDeleteSelf: true, canSelect: true,
+  },
+  system_notice: {
     canDeleteSelf: true,
+  },
+  call_audio: {
+    canReply: true, canDeleteSelf: true, canSelect: true,
+  },
+  call_video: {
+    canReply: true, canDeleteSelf: true, canSelect: true,
+  },
+  call_missed: {
+    canReply: true, canDeleteSelf: true, canSelect: true,
+  },
+  call_declined: {
+    canReply: true, canDeleteSelf: true, canSelect: true,
+  },
+  image: {
+    canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
+    canOpenViewer: true, canDownload: true, canSelect: true, canShare: true,
+  },
+  video: {
+    canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
+    canOpenViewer: true, canDownload: true, canSelect: true, canShare: true,
+  },
+  file: {
+    canForward: true, canReply: true, canDeleteSelf: true, canDeleteAll: true,
+    canDownload: true, canSelect: true, canShare: true,
   },
   ephemeral: {
     canReply: true, canDeleteSelf: true, canSelect: true,
