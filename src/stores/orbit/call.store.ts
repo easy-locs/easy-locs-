@@ -3,6 +3,8 @@
  * Single source of truth for ALL call UI state.
  * States: idle → calling → ringing → connecting → active → ended
  * Also: missed, declined, failed
+ *
+ * PHASE 3: Stores media streams + exposes callManager ref for hardware control.
  */
 import { create } from "zustand";
 
@@ -45,6 +47,13 @@ interface CallStoreState {
   activeCall: ActiveCall | null;
   hasActiveCall: boolean;
 
+  /** Media streams — set by CallProvider when CallManager reports them */
+  remoteStream: MediaStream | null;
+  localStream: MediaStream | null;
+
+  /** CallManager ref — set by CallProvider for hardware control */
+  _callManagerRef: { current: any } | null;
+
   // ── Actions ──
   startOutgoing: (params: {
     callId: string;
@@ -63,6 +72,10 @@ interface CallStoreState {
   transition: (state: CallUIState) => void;
   setElapsed: (elapsed: number) => void;
   setError: (error: string | null) => void;
+  setRemoteStream: (stream: MediaStream | null) => void;
+  setLocalStream: (stream: MediaStream | null) => void;
+  setCallManagerRef: (ref: { current: any } | null) => void;
+
   toggleMute: () => void;
   toggleSpeaker: () => void;
   toggleCamera: () => void;
@@ -73,6 +86,9 @@ interface CallStoreState {
 export const useCallStore = create<CallStoreState>((set, get) => ({
   activeCall: null,
   hasActiveCall: false,
+  remoteStream: null,
+  localStream: null,
+  _callManagerRef: null,
 
   startOutgoing: (params) =>
     set({
@@ -131,19 +147,35 @@ export const useCallStore = create<CallStoreState>((set, get) => ({
     if (call) set({ activeCall: { ...call, error } });
   },
 
+  setRemoteStream: (stream) => set({ remoteStream: stream }),
+  setLocalStream: (stream) => set({ localStream: stream }),
+  setCallManagerRef: (ref) => set({ _callManagerRef: ref }),
+
   toggleMute: () => {
     const call = get().activeCall;
-    if (call) set({ activeCall: { ...call, muted: !call.muted } });
+    if (!call) return;
+    const newMuted = !call.muted;
+    // Delegate to actual CallManager
+    const mgr = get()._callManagerRef?.current;
+    if (mgr?.toggleMute) mgr.toggleMute();
+    set({ activeCall: { ...call, muted: newMuted } });
   },
 
   toggleSpeaker: () => {
     const call = get().activeCall;
-    if (call) set({ activeCall: { ...call, speakerOn: !call.speakerOn } });
+    if (!call) return;
+    const newSpeaker = !call.speakerOn;
+    set({ activeCall: { ...call, speakerOn: newSpeaker } });
+    // Note: Web Audio API doesn't support earpiece/speaker routing natively.
+    // On native (Capacitor), this would delegate to a native plugin.
   },
 
   toggleCamera: () => {
     const call = get().activeCall;
-    if (call) set({ activeCall: { ...call, cameraOn: !call.cameraOn } });
+    if (!call) return;
+    const mgr = get()._callManagerRef?.current;
+    if (mgr?.toggleVideo) mgr.toggleVideo();
+    set({ activeCall: { ...call, cameraOn: !call.cameraOn } });
   },
 
   endCall: (finalState = "ended") => {
@@ -156,5 +188,11 @@ export const useCallStore = create<CallStoreState>((set, get) => ({
     }
   },
 
-  reset: () => set({ activeCall: null, hasActiveCall: false }),
+  reset: () => set({
+    activeCall: null,
+    hasActiveCall: false,
+    remoteStream: null,
+    localStream: null,
+    _callManagerRef: null,
+  }),
 }));

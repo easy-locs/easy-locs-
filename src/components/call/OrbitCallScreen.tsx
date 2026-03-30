@@ -4,12 +4,12 @@
  * Displays: peer identity, call state, controls, elapsed time.
  * Handles: audio/video, mute, speaker, camera, hangup.
  *
- * This is NOT a dialog. It's a full-screen overlay that replaces the current view.
+ * PHASE 3: Wires remoteStream to <audio> element for actual audio playback.
  */
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import {
   Phone, PhoneOff, Mic, MicOff, Volume2, VolumeX,
-  VideoIcon, VideoOff, Loader2, Shield, X, RotateCcw,
+  VideoIcon, VideoOff, Loader2, Shield,
 } from "lucide-react";
 import { useCallStore, type CallUIState } from "@/stores/orbit/call.store";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export function OrbitCallScreen() {
   const { t } = useI18n();
   const call = useCallStore((s) => s.activeCall);
+  const remoteStream = useCallStore((s) => s.remoteStream);
   const toggleMute = useCallStore((s) => s.toggleMute);
   const toggleSpeaker = useCallStore((s) => s.toggleSpeaker);
   const toggleCamera = useCallStore((s) => s.toggleCamera);
@@ -27,6 +28,26 @@ export function OrbitCallScreen() {
 
   const [isEnding, setIsEnding] = useState(false);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
+
+  // ── CRITICAL: Attach remote stream to audio element for playback ──
+  useEffect(() => {
+    const audioEl = remoteAudioRef.current;
+    if (!audioEl) return;
+
+    if (remoteStream && remoteStream.getAudioTracks().length > 0) {
+      audioEl.srcObject = remoteStream;
+      // Force play (handle autoplay restrictions)
+      audioEl.play().catch((err) => {
+        console.warn("[OrbitCallScreen] autoplay blocked, retrying on user gesture:", err);
+      });
+    } else {
+      audioEl.srcObject = null;
+    }
+
+    return () => {
+      audioEl.srcObject = null;
+    };
+  }, [remoteStream]);
 
   // Auto-dismiss after terminal state
   useEffect(() => {
@@ -44,6 +65,16 @@ export function OrbitCallScreen() {
     endCall("ended");
     setTimeout(() => setIsEnding(false), 1000);
   }, [isEnding, endCall]);
+
+  const handleAccept = useCallback(() => {
+    // Accept is handled by CallProvider via the IncomingCallDialog
+    // When OrbitCallScreen shows "incoming", the accept action
+    // must be dispatched through the canonical pipeline.
+    // The CallProvider bridges the accept action.
+    const store = useCallStore.getState();
+    // Emit a custom event that CallProvider listens to
+    window.dispatchEvent(new CustomEvent("orbit:call:accept"));
+  }, []);
 
   if (!call) return null;
 
@@ -81,6 +112,7 @@ export function OrbitCallScreen() {
           background: "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%)",
         }}
       >
+        {/* Hidden audio element for remote stream playback */}
         <audio ref={remoteAudioRef} autoPlay playsInline />
 
         {/* ── Top bar ── */}
@@ -100,7 +132,6 @@ export function OrbitCallScreen() {
 
         {/* ── Central content ── */}
         <div className="flex-1 flex flex-col items-center justify-center px-8">
-          {/* Avatar with pulse animation during connecting */}
           <div className="relative mb-8">
             {isConnecting && (
               <>
@@ -131,12 +162,10 @@ export function OrbitCallScreen() {
             </div>
           </div>
 
-          {/* Peer name */}
           <h1 className="text-2xl font-bold mb-1" style={{ color: "hsl(var(--foreground))" }}>
             {call.peer.name}
           </h1>
 
-          {/* Status label */}
           <div className="flex items-center gap-2 mb-2">
             {isConnecting && <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--muted-foreground))" }} />}
             <span className={`text-sm ${isActive ? "font-mono font-bold text-lg tabular-nums" : ""}`}
@@ -145,7 +174,6 @@ export function OrbitCallScreen() {
             </span>
           </div>
 
-          {/* Error message */}
           {call.error && (
             <p className="text-xs px-4 py-2 rounded-lg mt-2 text-center"
               style={{ background: "hsl(var(--destructive) / 0.08)", color: "hsl(var(--destructive))" }}>
@@ -157,7 +185,6 @@ export function OrbitCallScreen() {
         {/* ── Controls ── */}
         <div className="pb-safe-area-bottom px-8" style={{ paddingBottom: "max(env(safe-area-inset-bottom, 32px), 32px)" }}>
           {isIncoming ? (
-            /* Incoming: Accept / Decline */
             <div className="flex items-center justify-center gap-16">
               <div className="flex flex-col items-center gap-2">
                 <button onClick={handleHangup}
@@ -171,6 +198,7 @@ export function OrbitCallScreen() {
               </div>
               <div className="flex flex-col items-center gap-2">
                 <button
+                  onClick={handleAccept}
                   className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95"
                   style={{ background: "hsl(142 70% 45%)", color: "white" }}>
                   <Phone className="h-6 w-6" />
@@ -181,7 +209,6 @@ export function OrbitCallScreen() {
               </div>
             </div>
           ) : isTerminal ? (
-            /* Terminal: Close button */
             <div className="flex justify-center">
               <button onClick={() => reset()}
                 className="px-8 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95"
@@ -190,7 +217,6 @@ export function OrbitCallScreen() {
               </button>
             </div>
           ) : (
-            /* Active/Connecting: Full controls */
             <div className="flex items-center justify-center gap-5">
               <ControlButton
                 onClick={toggleMute}
@@ -207,7 +233,6 @@ export function OrbitCallScreen() {
                 icon={call.speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
                 label={call.speakerOn ? (t("call.btn.speaker") || "Speaker") : (t("call.btn.earpiece") || "Earpiece")}
               />
-              {/* Hangup */}
               <div className="flex flex-col items-center gap-1.5">
                 <button onClick={handleHangup} disabled={isEnding}
                   className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg disabled:opacity-60 transition-transform active:scale-95"
