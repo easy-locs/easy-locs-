@@ -26,9 +26,13 @@ export async function insertMessage(params: {
   metadata?: Record<string, any>;
   replyToMessageId?: string | null;
 }) {
-  // Governance: warn-only at gateway level (legacy callers still exist outside send families)
-  assertNoLegacyIds(params as any, "insertMessage");
-  // Metadata canonical check: warn-only (send families enforce strict, legacy gets warned)
+  // Governance: warn-only at gateway level (send families enforce strict)
+  const legacyKeys = ["threadId", "v2ConversationId", "contextId"];
+  for (const key of legacyKeys) {
+    if (key in (params as any)) {
+      console.warn(`[Governance] insertMessage: legacy key "${key}" detected. Use canonical IDs.`);
+    }
+  }
   if (params.metadata && !params.metadata.schemaVersion) {
     console.warn(`[Governance] insertMessage: metadata missing schemaVersion: 1 for type="${params.type}"`);
   }
