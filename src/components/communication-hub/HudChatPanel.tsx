@@ -375,7 +375,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             voiceRecording={compFamily.voiceRecorder.recording}
             voicePreview={compFamily.voicePreview}
             voiceDuration={compFamily.voiceRecorder.duration}
-            replyTo={composerStore.replies[currentConversationId] ? { content: composerStore.replies[currentConversationId]!.content, senderName: composerStore.replies[currentConversationId]!.senderName } : (selection.replyTo ? { content: selection.replyTo.content, senderName: selection.replyTo.senderName } : null)}
+            replyTo={composerStore.replies[currentConversationId] ? { content: composerStore.replies[currentConversationId]!.content, senderName: composerStore.replies[currentConversationId]!.senderName } : null}
             onChange={(v: string) => {
               setStoreDraft(v);
             }}
@@ -398,7 +398,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             onCancelVoice={compFamily.cancelVoice}
             onSendVoice={compFamily.handleVoiceSend}
             onDiscardVoice={compFamily.discardVoice}
-            onClearReply={() => { composerStore.clearReply(currentConversationId); selection.setReplyTo(null); }}
+            onClearReply={() => { composerStore.clearReply(currentConversationId); }}
           />
         )}
 
@@ -523,7 +523,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         }}
         onCopy={() => {}}
         onEdited={(msgId, newContent) => loader.setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: newContent, edited_at: new Date().toISOString() } as any : m))}
-        onReply={(msgId, content, senderName) => { selection.setReplyTo({ msgId, content, senderName }); composerStore.setReply(currentConversationId, { msgId, content, senderName }); }}
+        onReply={(msgId, content, senderName) => { composerStore.setReply(currentConversationId, { msgId, content, senderName }); }}
         onForward={(msgId, content) => selection.setForwardData({ messageId: msgId, content })}
         onStarToggle={(msgId, starred) => loader.setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, starred } as any : m))}
         onEnterSelectMode={selection.enterSelectMode}
