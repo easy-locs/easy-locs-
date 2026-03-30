@@ -26,8 +26,6 @@ export async function executeSendText(
       encrypted: cmd.encrypted,
       category: cmd.category,
       locale: cmd.locale,
-      securityLevel: cmd.securityLevel,
-      disappearTTL: cmd.disappearTTL,
     });
     exitPhase(trace);
 
