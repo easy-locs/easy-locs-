@@ -60,6 +60,7 @@ export default function MessageComposer({
 
   const handleSend = () => {
     if (!hasText || sending || disabled) return;
+    haptic("light");
     onSend();
   };
 
