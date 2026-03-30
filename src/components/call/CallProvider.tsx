@@ -3,7 +3,7 @@
  * Composes atomic units: useCallState, useIncomingCallState, useIncomingCallListener,
  * useOutgoingCall, useCallLifecycle, useMyOrbitId.
  *
- * PHASE 2: Wires canonical call.store + CallAudioEngine for full state machine.
+ * PHASE 3: Bridges CallManager media streams to canonical store for audio playback.
  */
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,6 +46,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
   // Canonical call store
   const callStore = useCallStore();
   const prevUiStateRef = useRef<CallUIState | null>(null);
+  const callManagerRef = useRef<CallManager | null>(null);
+
+  // Keep callManager ref in sync with canonical store
+  useEffect(() => {
+    useCallStore.getState().setCallManagerRef(callManagerRef);
+  }, []);
 
   // Sync audio engine with call state transitions
   useEffect(() => {
@@ -75,36 +81,54 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const incoming = useIncomingCallState();
   const [callManager, setCallManager] = useState<CallManager | null>(null);
 
+  // Keep callManagerRef in sync
+  useEffect(() => {
+    callManagerRef.current = callManager;
+  }, [callManager]);
+
   // Wire incoming listener
   useIncomingCallListener(
     user?.id, myOrbitId, incoming.incomingCallIdRef,
     incoming.setIncomingCall, incoming.clearIncoming,
   );
 
-  // Wire outgoing call — also populate canonical store
+  // Helper: wire CallManager state changes to both legacy + canonical store
+  const wireManagerToStores = useCallback((manager: CallManager) => {
+    manager.onStateChange = (state) => {
+      setCallState((prev) => ({ ...prev, ...state }));
+
+      // Sync to canonical store
+      if (state.status) {
+        const stateMap: Record<string, CallUIState> = {
+          idle: "idle", ringing: "ringing", connecting: "connecting",
+          active: "active", ended: "ended", declined: "declined",
+          missed: "missed", failed: "failed", network_blocked: "failed",
+        };
+        const mapped = stateMap[state.status] || "calling";
+        callStore.transition(mapped);
+      }
+      if (state.elapsed !== undefined) {
+        callStore.setElapsed(state.elapsed);
+      }
+      if (state.error !== undefined) {
+        callStore.setError(state.error || null);
+      }
+
+      // ── CRITICAL: Bridge media streams to canonical store ──
+      if (state.remoteStream) {
+        useCallStore.getState().setRemoteStream(state.remoteStream as MediaStream);
+      }
+      if (state.localStream) {
+        useCallStore.getState().setLocalStream(state.localStream as MediaStream);
+      }
+    };
+  }, [callStore, setCallState]);
+
+  // Wire outgoing call
   const { startCall } = useOutgoingCall(
     user?.id, startingCallRef,
     useCallback(({ manager, peerName: pn, contextLabel: cl, meta, isVideo }) => {
-      manager.onStateChange = (state) => {
-        setCallState((prev) => ({ ...prev, ...state }));
-
-        // Sync to canonical store
-        if (state.status) {
-          const stateMap: Record<string, CallUIState> = {
-            idle: "idle", ringing: "ringing", connecting: "connecting",
-            active: "active", ended: "ended", declined: "declined",
-            missed: "missed", failed: "failed", network_blocked: "failed",
-          };
-          const mapped = stateMap[state.status] || "calling";
-          callStore.transition(mapped);
-        }
-        if (state.elapsed !== undefined) {
-          callStore.setElapsed(state.elapsed);
-        }
-        if (state.error !== undefined) {
-          callStore.setError(state.error || null);
-        }
-      };
+      wireManagerToStores(manager);
 
       setCallManager(manager);
       setPeerName(pn);
@@ -119,7 +143,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         peer: { userId: "", name: pn },
         mode: isVideo ? "video" : "audio",
       });
-    }, [callStore]),
+    }, [callStore, wireManagerToStores]),
     setIsStartingCall,
   );
 
@@ -134,27 +158,53 @@ export function CallProvider({ children }: { children: ReactNode }) {
     }, [resetCallState, callStore]),
   );
 
-  // Override canonical store endCall to also cleanup legacy
-  const handleCanonicalEnd = useCallback(() => {
-    callStore.endCall("ended");
-    handleCloseCall();
-  }, [callStore, handleCloseCall]);
+  // Accept incoming call handler (shared between IncomingCallDialog and OrbitCallScreen)
+  const doAcceptIncoming = useCallback(() => {
+    // Populate canonical store for incoming
+    callStore.setIncoming({
+      callId: incoming.incomingCallId || "",
+      conversationId: incoming.incomingConversationId || undefined,
+      peer: { userId: "", name: incoming.incomingCallerName },
+      mode: incoming.incomingIsVideo ? "video" : "audio",
+    });
+    callStore.transition("connecting");
+
+    handleAcceptIncoming(
+      incoming.incomingCallId!, incoming.incomingCallerName,
+      incoming.incomingContextLabel, incoming.incomingIsVideo,
+      incoming.incomingOrgId, incoming.incomingConversationId,
+      (manager, pn, cl) => {
+        wireManagerToStores(manager);
+        setCallManager(manager);
+        setPeerName(pn);
+        setContextLabel(cl);
+        setShowCallDialog(true);
+        incoming.clearIncoming();
+      },
+    );
+  }, [callStore, incoming, handleAcceptIncoming, wireManagerToStores]);
+
+  // Listen for accept event from OrbitCallScreen
+  useEffect(() => {
+    const handler = () => doAcceptIncoming();
+    window.addEventListener("orbit:call:accept", handler);
+    return () => window.removeEventListener("orbit:call:accept", handler);
+  }, [doAcceptIncoming]);
 
   // Wire canonical store's endCall to the actual call manager
   useEffect(() => {
     const unsub = useCallStore.subscribe((state, prevState) => {
       if (prevState.activeCall && !state.hasActiveCall && state.activeCall?.uiState === "ended") {
-        // User pressed hangup on canonical screen
-        if (callManager) {
+        if (callManagerRef.current) {
           const s = callState.status as string;
           if (!["ended", "declined", "missed", "failed"].includes(s || "")) {
-            callManager.endCall().catch(() => {});
+            callManagerRef.current.endCall().catch(() => {});
           }
         }
       }
     });
     return unsub;
-  }, [callManager, callState.status]);
+  }, [callState.status]);
 
   return (
     <CallContext.Provider value={{
@@ -173,42 +223,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         callerName={incoming.incomingCallerName}
         contextLabel={incoming.incomingContextLabel}
         isVideo={incoming.incomingIsVideo}
-        onAccept={() => {
-          // Populate canonical store for incoming
-          callStore.setIncoming({
-            callId: incoming.incomingCallId || "",
-            conversationId: incoming.incomingConversationId || undefined,
-            peer: { userId: "", name: incoming.incomingCallerName },
-            mode: incoming.incomingIsVideo ? "video" : "audio",
-          });
-          callStore.transition("connecting");
-
-          handleAcceptIncoming(
-            incoming.incomingCallId!, incoming.incomingCallerName,
-            incoming.incomingContextLabel, incoming.incomingIsVideo,
-            incoming.incomingOrgId, incoming.incomingConversationId,
-            (manager, pn, cl) => {
-              manager.onStateChange = (state) => {
-                setCallState((prev) => ({ ...prev, ...state }));
-                if (state.status) {
-                  const stateMap: Record<string, CallUIState> = {
-                    idle: "idle", ringing: "ringing", connecting: "connecting",
-                    active: "active", ended: "ended", declined: "declined",
-                    missed: "missed", failed: "failed",
-                  };
-                  callStore.transition(stateMap[state.status] || "connecting");
-                }
-                if (state.elapsed !== undefined) callStore.setElapsed(state.elapsed);
-                if (state.error !== undefined) callStore.setError(state.error || null);
-              };
-              setCallManager(manager);
-              setPeerName(pn);
-              setContextLabel(cl);
-              setShowCallDialog(true);
-              incoming.clearIncoming();
-            },
-          );
-        }}
+        onAccept={doAcceptIncoming}
         onDecline={() => {
           handleDeclineIncoming(incoming.incomingCallId, incoming.incomingConversationId, incoming.incomingOrgId);
           incoming.clearIncoming();
