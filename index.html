@@ -119,19 +119,41 @@
     </div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Crash recovery: if React hasn't rendered after 20s, show error + reload button.
-      // Mark boot success so timeout becomes a no-op once React mounts.
-      window.__EASYLOCS_BOOTED__=false;
-      setTimeout(function(){
-        if(window.__EASYLOCS_BOOTED__)return;
-        var root=document.getElementById('root');
-        var el=root&&root.querySelector('#app-loading');
-        if(!el&&root&&root.children.length>0)return; // React rendered something
-        var target=el||root;
-        if(target){
-          target.innerHTML='<div style="text-align:center;max-width:400px;padding:20px;"><p style="font-size:18px;color:#f8fafc;margin:0 0 8px;">Unable to load Easy-Locs</p><p style="font-size:13px;color:#94a3b8;margin:0 0 16px;">A network or cache error prevented the app from starting.</p><button onclick="try{caches.keys().then(function(n){n.forEach(function(k){caches.delete(k)})}).then(function(){location.reload()})}catch(e){location.reload()}" style="background:#D4A853;color:#0F1117;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Reload</button></div>';
+      window.__EASYLOCS_BOOTED__ = false;
+      window.__EASYLOCS_REACT_MOUNTED__ = false;
+      window.__EASYLOCS_BUNDLE_LOADED__ = false;
+
+      (function () {
+        var startedAt = Date.now();
+        var timeoutMs = 45000;
+
+        function hasVisibleApp(root) {
+          if (!root) return false;
+          if (window.__EASYLOCS_BOOTED__ || window.__EASYLOCS_REACT_MOUNTED__) return true;
+          var loading = root.querySelector('#app-loading');
+          if (!loading && root.children.length > 0) return true;
+          return false;
         }
-      },20000);
+
+        function showBootError() {
+          var root = document.getElementById('root');
+          if (!root || hasVisibleApp(root)) return;
+          var target = root.querySelector('#app-loading') || root;
+          target.innerHTML = '<div style="text-align:center;max-width:400px;padding:20px;"><p style="font-size:18px;color:#f8fafc;margin:0 0 8px;">Unable to load Easy-Locs</p><p style="font-size:13px;color:#94a3b8;margin:0 0 16px;">The app bundle did not mount correctly after a clean boot.</p><button onclick="try{caches.keys().then(function(n){return Promise.all(n.map(function(k){return caches.delete(k)}))}).then(function(){location.reload()})}catch(e){location.reload()}" style="background:#D4A853;color:#0F1117;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Reload</button></div>';
+        }
+
+        function checkBoot() {
+          var root = document.getElementById('root');
+          if (hasVisibleApp(root)) return;
+          if (Date.now() - startedAt < timeoutMs) {
+            window.requestAnimationFrame(checkBoot);
+            return;
+          }
+          showBootError();
+        }
+
+        window.requestAnimationFrame(checkBoot);
+      })();
     </script>
   </body>
 </html>

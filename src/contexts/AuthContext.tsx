@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/audit";
+import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import type { User, Session } from "@supabase/supabase-js";
 import { markV1AuthActive, useV2AuthStore } from "@/stores/v2AuthStore";
 import { useSubscriptionLoader, defaultSubscription, type SubscriptionState } from "@/hooks/useSubscription";
@@ -29,8 +30,6 @@ interface AuthContextType {
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
-
-// defaultSubscription imported from useSubscription
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -66,27 +65,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userCountry, setUserCountry] = useState("FR");
   const [userCurrency, setUserCurrency] = useState("EUR");
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
-  // Subscription state managed by extracted hook (L2.6)
   const [activeRole, setActiveRole] = useState<ActiveRole>("landlord");
   const [hasDualRole, setHasDualRole] = useState(false);
   const [allOrgs, setAllOrgs] = useState<{ id: string; name: string; country: string; currency: string }[]>([]);
+  const bootstrapOrbitRef = useRef<string | null>(null);
 
   const fetchOrgId = useCallback(async (userId: string) => {
     try {
-      // Fetch all orgs for this user
       const { data: memberships } = await supabase
         .from("org_members")
         .select("org_id")
         .eq("user_id", userId);
 
       if (memberships && memberships.length > 0) {
-        const orgIds = memberships.map(m => m.org_id);
+        const orgIds = memberships.map((m) => m.org_id);
         const { data: orgsData } = await supabase
           .from("orgs")
           .select("id, name")
           .in("id", orgIds);
 
-        const orgs = (orgsData || []).map(o => ({
+        const orgs = (orgsData || []).map((o) => ({
           id: o.id,
           name: o.name || "Unnamed",
           country: "",
@@ -101,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             return null;
           }
         })();
-        const selectedOrgId = savedOrg && orgs.some(o => o.id === savedOrg) ? savedOrg : orgIds[0];
+        const selectedOrgId = savedOrg && orgs.some((o) => o.id === savedOrg) ? savedOrg : orgIds[0];
         setOrgId(selectedOrgId);
       } else {
         setOrgId(null);
@@ -116,7 +114,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserType = useCallback(async (userId: string) => {
     try {
-      // Profile may not exist yet (trigger race) — retry with short backoff
       let data: any = null;
       const { data: d1, error: e1 } = await supabase
         .from("profiles")
@@ -125,8 +122,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
 
       if (e1 || !d1) {
-        // Quick retry (300ms instead of 1500ms) — profile trigger is fast
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise((r) => setTimeout(r, 300));
         const { data: d2 } = await supabase
           .from("profiles")
           .select("user_type, onboarding_completed, country, currency")
@@ -142,11 +138,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserCountry(data?.country ?? "FR");
       setUserCurrency(data?.currency ?? "EUR");
 
-      // Check dual-role: user has both org membership (landlord) and tenant link
       let tenantLink: any = null;
       let orgLink: any = null;
       try {
-        // Sequential to avoid auth lock contention
         const t = await supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
         tenantLink = t.data;
         const o = await supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
@@ -160,7 +154,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const dual = hasTenant && hasOrg;
       setHasDualRole(dual);
 
-      // Auto-complete onboarding for existing accounts that already have org data or tenant link
       let onboardingDone = data?.onboarding_completed ?? false;
       if (!onboardingDone && (hasOrg || hasTenant)) {
         onboardingDone = true;
@@ -185,12 +178,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else if (hasTenant) {
         setActiveRole("tenant");
       } else {
-        // No org, no tenant link → client account
         setActiveRole("client");
       }
     } catch (err) {
       console.error("[AuthContext] fetchUserType failed:", err);
-      // Safe defaults — app won't crash
       setUserType("landlord");
       setUserCountry("FR");
       setUserCurrency("EUR");
@@ -203,10 +194,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshProfile = useCallback(async () => {
     if (user) {
-      await Promise.all([
-        fetchUserType(user.id),
-        fetchOrgId(user.id),
-      ]);
+      await ensureOrbitProfile({
+        userId: user.id,
+        email: user.email ?? null,
+        displayName: (user.user_metadata as any)?.display_name ?? (user.user_metadata as any)?.full_name ?? null,
+        avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
+      });
+      await Promise.all([fetchUserType(user.id), fetchOrgId(user.id)]);
     }
   }, [user, fetchUserType, fetchOrgId]);
 
@@ -232,9 +226,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user]);
 
-  const { subscription, refreshSubscription, resetSubscription, setSubscription } = useSubscriptionLoader(session, user?.id);
-
-  // Store refreshSubscription in a ref to avoid re-triggering the auth effect
+  const { subscription, refreshSubscription, resetSubscription } = useSubscriptionLoader(session, user?.id);
   const refreshSubRef = useCallback(() => refreshSubscription(), [refreshSubscription]);
 
   useEffect(() => {
@@ -245,31 +237,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }, 2500);
 
-    // Mark V1 auth as active — prevents v2AuthStore from registering a second listener
     markV1AuthActive();
 
     const hydrateAuthState = async (nextSession: Session | null) => {
-      // Use a monotonic sequence so only the latest event wins (no dropped events)
       const seq = ++latestSeq;
-
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
-
-      // Sync v2AuthStore without triggering another onAuthStateChange
       useV2AuthStore.getState().syncFromV1(nextSession);
 
       if (nextSession?.user) {
         try {
-          // SEQUENTIAL — prevents auth token lock contention from parallel queries
+          await ensureOrbitProfile({
+            userId: nextSession.user.id,
+            email: nextSession.user.email ?? null,
+            displayName: (nextSession.user.user_metadata as any)?.display_name ?? (nextSession.user.user_metadata as any)?.full_name ?? null,
+            avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
+          });
+          if (seq !== latestSeq) return;
           await fetchOrgId(nextSession.user.id);
-          if (seq !== latestSeq) return; // superseded by newer event
+          if (seq !== latestSeq) return;
           await fetchUserType(nextSession.user.id);
           if (seq !== latestSeq) return;
         } catch (err) {
           console.error("[AuthContext] hydrateAuthState failed:", err);
         }
-        // Defer subscription check — don't block initial render
-        setTimeout(() => { void refreshSubRef(); }, 500);
+        setTimeout(() => {
+          void refreshSubRef();
+        }, 500);
       } else {
         setOrgId(null);
         setUserType("landlord");
@@ -281,50 +275,60 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setActiveRole("landlord");
         setHasDualRole(false);
         setAllOrgs([]);
+        bootstrapOrbitRef.current = null;
       }
 
       if (mounted && seq === latestSeq) setLoading(false);
     };
 
-    // Single source of truth: onAuthStateChange fires INITIAL_SESSION on setup,
-    // then SIGNED_IN / SIGNED_OUT / TOKEN_REFRESHED as needed.
-    // We do NOT call getSession() separately — that caused a race where
-    // getSession() resolved with null before onAuthStateChange delivered the
-    // restored session, leading to a premature redirect to /login.
-    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(
-      (_event, nextSession) => {
-        if (_event === "SIGNED_IN" && nextSession?.user) {
-          logAudit({ userId: nextSession.user.id, action: "user_login" });
-          void import("@/lib/auth/profile")
-            .then((m) => m.ensureUserProfile(nextSession.user.id, {
-              fullName: nextSession.user.user_metadata?.full_name,
-              phone: nextSession.user.phone ?? undefined,
-            }))
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (_event === "SIGNED_IN" && nextSession?.user) {
+        logAudit({ userId: nextSession.user.id, action: "user_login" });
+        void ensureOrbitProfile({
+          userId: nextSession.user.id,
+          email: nextSession.user.email ?? null,
+          displayName: (nextSession.user.user_metadata as any)?.display_name ?? (nextSession.user.user_metadata as any)?.full_name ?? null,
+          avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
+        }).catch(() => null);
+        void import("@/lib/auth/profile")
+          .then((m) => m.ensureUserProfile(nextSession.user.id, {
+            fullName: nextSession.user.user_metadata?.full_name,
+            phone: nextSession.user.phone ?? undefined,
+          }))
+          .catch(() => null);
+        setTimeout(() => {
+          void import("@/lib/notif-alert-prefs")
+            .then((m) => m?.requestNotificationPermission?.())
             .catch(() => null);
-          setTimeout(() => {
-            void import("@/lib/notif-alert-prefs")
-              .then((m) => m?.requestNotificationPermission?.())
-              .catch(() => null);
-          }, 3000);
-        }
-        if (_event === "SIGNED_OUT") {
-          logAudit({ action: "user_logout" });
-        }
-        void hydrateAuthState(nextSession);
+        }, 3000);
       }
-    );
+      if (_event === "SIGNED_OUT") {
+        logAudit({ action: "user_logout" });
+      }
+      void hydrateAuthState(nextSession);
+    });
 
     return () => {
       mounted = false;
       window.clearTimeout(safetyTimeout);
       authSub.unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchOrgId, fetchUserType]);
+  }, [fetchOrgId, fetchUserType, refreshSubRef, resetSubscription]);
 
-  // Keep session alive — Supabase SDK auto-refreshes tokens, so we only need
-  // a very gentle heartbeat (every 25 min) instead of aggressive 10-min refresh
-  // that caused additional lock contention
+  useEffect(() => {
+    if (!user?.id || bootstrapOrbitRef.current === user.id) return;
+    bootstrapOrbitRef.current = user.id;
+    void ensureOrbitProfile({
+      userId: user.id,
+      email: user.email ?? null,
+      displayName: (user.user_metadata as any)?.display_name ?? (user.user_metadata as any)?.full_name ?? null,
+      avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
+    }).catch((err) => {
+      console.error("[AuthContext] orbit bootstrap failed:", err);
+      bootstrapOrbitRef.current = null;
+    });
+  }, [user]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       supabase.auth.getSession();
@@ -350,7 +354,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, profileLoaded, emailVerified, orgId, allOrgs, switchOrg, userType, userCountry, userCurrency, onboardingCompleted, subscription, activeRole, hasDualRole, switchRole, refreshSubscription, refreshProfile, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        profileLoaded,
+        emailVerified,
+        orgId,
+        allOrgs,
+        switchOrg,
+        userType,
+        userCountry,
+        userCurrency,
+        onboardingCompleted,
+        subscription,
+        activeRole,
+        hasDualRole,
+        switchRole,
+        refreshSubscription,
+        refreshProfile,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
