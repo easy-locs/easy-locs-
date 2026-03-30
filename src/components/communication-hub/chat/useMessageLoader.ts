@@ -224,6 +224,47 @@ export function useMessageLoader({
     }
   }, [offline.isOnline, loadMessages]);
 
+  // ── Broadcast (fast path: ~10-50ms) ──
+  useEffect(() => {
+    const conversationId = resolveConversationId(thread);
+    if (!conversationId) return;
+
+    const cleanup = subscribeInstantMessages(conversationId, (broadcastMsg) => {
+      // Skip own messages — already handled by optimistic insert
+      if (broadcastMsg.senderUserId === userId) return;
+
+      realtimeTrace("message.broadcast.instant", "output", {
+        id: broadcastMsg.id,
+        sender: broadcastMsg.senderUserId,
+        conversationId,
+      });
+
+      const mapped = mapV2ToChat({
+        id: broadcastMsg.id,
+        sender_user_id: broadcastMsg.senderUserId,
+        sender_orbit_id: broadcastMsg.senderOrbitId,
+        body: broadcastMsg.body,
+        type: broadcastMsg.type,
+        metadata: broadcastMsg.metadata,
+        created_at: broadcastMsg.createdAt,
+        conversation_id: conversationId,
+      }, conversationId);
+
+      setRawMessages((prev) => {
+        if (prev.some((m) => m.id === mapped.id)) return prev;
+        return [...prev, mapped];
+      });
+
+      onThreadUpdate(thread!.id, {
+        lastMessageTime: broadcastMsg.createdAt,
+        lastMessagePreview: broadcastMsg.body?.slice?.(0, 120) ?? "",
+      });
+    });
+
+    return cleanup;
+  }, [thread, userId, onThreadUpdate, realtimeTrace]);
+
+  // ── Postgres Changes (slow path: ~200-500ms, authoritative) ──
   useEffect(() => {
     const conversationId = resolveConversationId(thread);
     if (!conversationId) return;
@@ -257,10 +298,12 @@ export function useMessageLoader({
           const mapped = mapV2ToChat(msg, conversationId);
 
           setRawMessages((prev) => {
+            // Deduplicate: already present from broadcast or optimistic
             if (prev.some((m) => m.id === mapped.id)) {
               realtimeTrace("message.realtime.echo", "output", { deduped: true, id: msg.id });
               return prev;
             }
+            // Reconcile: replace optimistic with confirmed
             const withoutOptimistic = msg.sender_user_id === userId
               ? prev.filter((m) => !(m.pending && m.sender_id === userId && m.content === mapped.content))
               : prev;
@@ -268,8 +311,8 @@ export function useMessageLoader({
             return [...withoutOptimistic, mapped];
           });
 
-          // Update message cache for instant re-open
-          messageCache.set(conversationId, []);  // invalidate — will refresh on next open
+          // Invalidate message cache
+          messageCache.set(conversationId, []);
 
           if (msg.sender_user_id !== userId && !msg.read_at && readReceipts) {
             await db
