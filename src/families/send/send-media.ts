@@ -1,5 +1,6 @@
 /**
  * send.media — Canonical media (image/video/file) send pipeline.
+ * Now writes schemaVersion: 1 canonical metadata.
  */
 import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -17,6 +18,7 @@ export async function sendMedia(
   },
 ) {
   const preview = opts.body || (opts.viewOnce ? "📷 View-once photo" : "📎 Attachment");
+  const kind = (opts.mediaKind || "image") as "image" | "video" | "voice" | "audio" | "file";
 
   const data = await insertMessage({
     conversationId: ctx.conversationId,
@@ -26,12 +28,19 @@ export async function sendMedia(
     type: "media",
     body: preview,
     metadata: {
-      url: opts.mediaUrl,
-      view_once: opts.viewOnce ?? false,
-      disappear_at: opts.disappearAt ?? null,
-      media_kind: opts.mediaKind || "image",
-      has_attachments: true,
-      ...(opts.attachments ? { attachments: opts.attachments } : {}),
+      schemaVersion: 1,
+      ui: {
+        cardType: kind === "voice" ? "voice" : "media",
+        clickable: true,
+        primaryAction: "open_media",
+      },
+      media: {
+        kind,
+        url: opts.mediaUrl,
+        viewOnce: opts.viewOnce ?? false,
+        ...(opts.attachments ? { attachments: opts.attachments } : {}),
+      },
+      transport: { source: "ui" as const },
     },
   });
 
