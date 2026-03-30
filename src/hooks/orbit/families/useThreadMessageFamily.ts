@@ -5,7 +5,7 @@
 import { useRef, useMemo, useCallback } from "react";
 import { useMessageLoader } from "@/components/communication-hub/chat/useMessageLoader";
 import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
-import { useMessageSender } from "@/hooks/useMessageSender";
+import { useOrbitDispatch } from "@/families/orbit-dispatch/useOrbitDispatch";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
 import { useOrbitScrollManager } from "@/hooks/useOrbitScrollManager";
