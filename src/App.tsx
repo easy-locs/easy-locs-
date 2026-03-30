@@ -383,6 +383,7 @@ const App = () => (
               <Route path="/admin/financial-recon" element={<FinancialReconPage />} />
               <Route path="/admin/recon-alerts" element={<ReconAlertsPage />} />
               {/* call-session route removed — calls go through CallProvider */}
+              <Route path="/dev/call-test" element={<Suspense fallback={<PageLoader />}><CallLoopbackTestPage /></Suspense>} />
               <Route path="/orbit/identity" element={<OrbitIdentityPage />} />
               <Route path="/wallet/hub" element={<WalletHubPage />} />
               <Route path="/merchant/onboarding" element={<MerchantOnboardingPage />} />
