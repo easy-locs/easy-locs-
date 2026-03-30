@@ -22,6 +22,7 @@ import { checkIdempotencyGuard, issueRequestId, registerInflightRequest, release
 // ── Executors ──
 import { executeSendText } from "./pipeline/executeSendText";
 import { executeSendMedia } from "./pipeline/executeSendMedia";
+import { executeSendMediaBatch } from "./pipeline/executeSendMediaBatch";
 import { executeSendVoice } from "./pipeline/executeSendVoice";
 import { executeSendLocation } from "./pipeline/executeSendLocation";
 import { executeStartCall } from "./pipeline/executeStartCall";
@@ -77,6 +78,10 @@ export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResu
       case "send_media": {
         const ctx = await resolveContext(cmd.conversationId);
         return { ...await executeSendMedia(ctx, cmd), requestId };
+      }
+      case "send_media_batch": {
+        const ctx = await resolveContext(cmd.conversationId);
+        return { ...await executeSendMediaBatch(ctx, cmd), requestId };
       }
       case "send_voice": {
         const ctx = await resolveContext(cmd.conversationId);

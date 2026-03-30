@@ -89,13 +89,25 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const [showContactProfile, setShowContactProfile] = useState(false);
   const [showMultiPhoto, setShowMultiPhoto] = useState(false);
   const [peerProfileCreatedAt, setPeerProfileCreatedAt] = useState<string | null>(null);
+  const peerProfileCacheRef = useMemo(() => ({ lastPeerId: null as string | null }), []);
 
-  // ── Fetch peer profile created_at for "member since" ──
+  // ── Fetch peer profile created_at for "member since" (cached, error-safe) ──
   useEffect(() => {
     const peerId = thread?.peerUserId || null;
     if (!peerId) { setPeerProfileCreatedAt(null); return; }
+    // Skip refetch if same peer
+    if (peerProfileCacheRef.lastPeerId === peerId) return;
+    peerProfileCacheRef.lastPeerId = peerId;
+
     supabase.from("profiles").select("created_at").eq("id", peerId).maybeSingle()
-      .then(({ data }) => setPeerProfileCreatedAt(data?.created_at ?? null));
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn("[HudChatPanel] profile fetch error:", error.message);
+          setPeerProfileCreatedAt(null);
+          return;
+        }
+        setPeerProfileCreatedAt(data?.created_at ?? null);
+      });
   }, [thread?.peerUserId]);
 
   const contactProfileEntity = useMemo(() => {
@@ -604,37 +616,35 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         open={showMultiPhoto}
         onClose={() => setShowMultiPhoto(false)}
         onSend={(attachments, caption) => {
-          // Sort by order, then send each via orbitDispatch sequentially
           const sorted = [...attachments].sort((a, b) => a.order - b.order);
+          const files = sorted.map(a => a.file);
+          const convId = thread?.conversationId || thread?.id;
+          if (!convId || !files.length) return;
+
           void (async () => {
             const { orbitDispatch } = await import("@/families/orbit-dispatch/orbit-dispatch");
             const { transportUploadWithPrepare } = await import("@/families/media/transport/transport-engine");
             const { TransportPolicy } = await import("@/families/media/transport/transport-policy");
-            const convId = thread?.conversationId || thread?.id;
-            if (!convId) return;
-            for (let i = 0; i < sorted.length; i++) {
-              const att = sorted[i];
-              const decision = TransportPolicy.decide(att.file);
-              await orbitDispatch({
-                type: "send_media",
-                conversationId: convId,
-                file: att.file,
-                caption: i === 0 ? caption : undefined,
-                viewOnce: false,
-                uploadFn: async (file, _path, onProgress) => {
-                  const result = await transportUploadWithPrepare(file, {
-                    pathPrefix: orgId || "orbit-media",
-                    compress: decision.shouldCompress,
-                    maxDimension: decision.maxDimension || undefined,
-                    quality: decision.quality || undefined,
-                    callbacks: { onProgress },
-                  });
-                  return result.publicUrl;
-                },
-                pathPrefix: orgId || "orbit-media",
-              });
-            }
-            msgFamily.loader.loadMessages();
+
+            await orbitDispatch({
+              type: "send_media_batch",
+              conversationId: convId,
+              files,
+              caption: caption || undefined,
+              viewOnce: false,
+              uploadFn: async (file, _path, onProgress) => {
+                const decision = TransportPolicy.decide(file);
+                const result = await transportUploadWithPrepare(file, {
+                  pathPrefix: orgId || "orbit-media",
+                  compress: decision.shouldCompress,
+                  maxDimension: decision.maxDimension || undefined,
+                  quality: decision.quality || undefined,
+                  callbacks: { onProgress },
+                });
+                return result.publicUrl;
+              },
+              pathPrefix: orgId || "orbit-media",
+            });
           })();
         }}
       />

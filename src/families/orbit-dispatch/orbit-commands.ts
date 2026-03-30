@@ -7,6 +7,7 @@
 export type OrbitCommand =
   | SendTextCommand
   | SendMediaCommand
+  | SendMediaBatchCommand
   | SendVoiceCommand
   | SendLocationCommand
   | StartCallCommand
@@ -41,6 +42,17 @@ export interface SendMediaCommand extends BaseCommand {
   caption?: string;
   viewOnce?: boolean;
   disappearAt?: string | null;
+  /** Injected upload function */
+  uploadFn: (file: File, path: string, onProgress: (p: number) => void) => Promise<string>;
+  pathPrefix: string;
+}
+
+export interface SendMediaBatchCommand extends BaseCommand {
+  type: "send_media_batch";
+  conversationId: string;
+  files: File[];
+  caption?: string;
+  viewOnce?: boolean;
   /** Injected upload function */
   uploadFn: (file: File, path: string, onProgress: (p: number) => void) => Promise<string>;
   pathPrefix: string;
