@@ -74,10 +74,26 @@ export function CallProvider({ children }: { children: ReactNode }) {
   // Keep callManagerRef in sync
   useEffect(() => { callManagerRef.current = callManager; }, [callManager]);
 
-  // Wire incoming listener
+  // Wire incoming listener — incoming calls show via OrbitCallScreen (full-screen)
   useIncomingCallListener(
     user?.id, myOrbitId, incoming.incomingCallIdRef,
-    incoming.setIncomingCall, incoming.clearIncoming,
+    useCallback((info) => {
+      incoming.setIncomingCall(info);
+      // Push to canonical store so OrbitCallScreen renders
+      callStore.setIncoming({
+        callId: info.callId,
+        conversationId: info.conversationId || undefined,
+        peer: { userId: "", name: info.callerName },
+        mode: info.isVideo ? "video" : "audio",
+      });
+    }, [callStore, incoming.setIncomingCall]),
+    useCallback(() => {
+      incoming.clearIncoming();
+      // If still in incoming state, reset
+      if (useCallStore.getState().activeCall?.uiState === "incoming") {
+        callStore.reset();
+      }
+    }, [callStore, incoming.clearIncoming]),
   );
 
   // Helper: wire CallManager state changes to canonical store (ONLY)
