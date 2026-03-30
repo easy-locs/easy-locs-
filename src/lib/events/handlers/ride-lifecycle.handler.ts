@@ -53,7 +53,7 @@ export function isValidTransition(from: string, to: string): boolean {
 // Track previous status per job to detect actual transitions
 const previousStatus = new Map<string, string>();
 
-let lifecycleChannel: ReturnType<typeof supabase.channel> | null = null;
+let lifecycleChannel: ReturnType<typeof createRealtimeChannel> | null = null;
 
 /**
  * Start listening to mobility_jobs changes globally.
