@@ -89,22 +89,30 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
 
   const handleLocationSend = useCallback(async (loc: any) => {
     if (!deps.thread) return;
-    const authUserId = await deps.resolveAuthUserId();
-    if (!authUserId) return;
-    const conversationId = await deps.resolveConversationId(authUserId);
-    if (!conversationId) return;
-    const ctx = buildSendContext(deps, authUserId, conversationId);
-    const payload: LocationPayload = {
-      lat: loc.lat,
-      lng: loc.lng,
-      type: loc.type === "live" ? "live" : loc.type === "place" ? "place" : "static",
-      label: loc.label,
-      address: loc.address,
-      duration: loc.duration,
-    };
-    await sendLocation(ctx, payload);
-    toast.success(deps.t("orbit.location_shared") || "Location shared");
+
+    // ── INSTANT: close picker + toast immediately ──
     deps.setShowLocationPicker(false);
+    toast.success(deps.t("orbit.location_shared") || "Location shared");
+
+    // ── Background: resolve + insert (no UI blocking) ──
+    try {
+      const authUserId = await deps.resolveAuthUserId();
+      if (!authUserId) return;
+      const conversationId = await deps.resolveConversationId(authUserId);
+      if (!conversationId) return;
+      const ctx = buildSendContext(deps, authUserId, conversationId);
+      const payload: LocationPayload = {
+        lat: loc.lat,
+        lng: loc.lng,
+        type: loc.type === "live" ? "live" : loc.type === "place" ? "place" : "static",
+        label: loc.label,
+        address: loc.address,
+        duration: loc.duration,
+      };
+      await sendLocation(ctx, payload);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to share location");
+    }
   }, [deps]);
 
   const handleViewOnceUpload = useCallback(async (file: File) => {
