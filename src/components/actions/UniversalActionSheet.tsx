@@ -65,7 +65,7 @@ function PayMode({ onClose }: { onClose?: () => void }) {
       icon: <Users className="h-6 w-6" />,
       label: "Choose Contact",
       desc: "Send to a saved contact",
-      onClick: () => navigate("/client/messages"),
+      onClick: () => navigate("/orbit"),
     },
   ];
 
