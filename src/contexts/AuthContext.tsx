@@ -5,6 +5,7 @@ import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import type { User, Session } from "@supabase/supabase-js";
 import { markV1AuthActive, useV2AuthStore } from "@/stores/v2AuthStore";
 import { useSubscriptionLoader, defaultSubscription, type SubscriptionState } from "@/hooks/useSubscription";
+import { authLog, authWarn, authError, getActiveTrace } from "@/lib/auth/auth-trace";
 
 type UserType = "landlord" | "tenant" | "client";
 type ActiveRole = "landlord" | "tenant" | "client";
