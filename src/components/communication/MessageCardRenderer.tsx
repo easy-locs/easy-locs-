@@ -6,6 +6,9 @@ import { memo, useMemo } from "react";
 import { normalizeMessage } from "@/families/messages/normalize-message";
 import type { CanonicalMessageEnvelope, CanonicalCardType } from "@/families/messages/canonical-envelope";
 import CallCard from "./CallCard";
+import LocationCard from "./LocationCard";
+import PaymentCard from "./PaymentCard";
+import SystemCard from "./SystemCard";
 
 interface Props {
   msg: any;
@@ -22,21 +25,21 @@ function MessageCardRenderer({ msg, isMe, currentUserId, onCallBack }: Props) {
   const envelope = useMemo(() => normalizeMessage(msg), [msg]);
   const cardType = envelope.metadata.ui?.cardType;
 
-  // Call cards
   if (cardType === "call") {
-    return (
-      <CallCard
-        envelope={envelope}
-        isMe={isMe}
-        onCallback={onCallBack}
-      />
-    );
+    return <CallCard envelope={envelope} isMe={isMe} onCallback={onCallBack} />;
   }
 
-  // Future: location, payment, system cards
-  // if (cardType === "location") return <LocationCard envelope={envelope} />;
-  // if (cardType === "payment") return <PaymentCard envelope={envelope} />;
-  // if (cardType === "system") return <SystemCard envelope={envelope} />;
+  if (cardType === "location") {
+    return <LocationCard envelope={envelope} isMe={isMe} />;
+  }
+
+  if (cardType === "payment") {
+    return <PaymentCard envelope={envelope} isMe={isMe} />;
+  }
+
+  if (cardType === "system") {
+    return <SystemCard envelope={envelope} />;
+  }
 
   return null;
 }
