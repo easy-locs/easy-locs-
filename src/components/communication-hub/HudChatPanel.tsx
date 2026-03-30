@@ -367,7 +367,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           />
         )}
 
-        {/* ── ATTACHMENT QUEUE ── */}
+        {/* ── SELECTION TOOLBAR — replaces composer during selection ── */}
+        {globalSelectionMode === "selecting" && (
+          <OrbitSelectionToolbar
+            onCopy={(ids) => { /* TODO: wire to message actions */ }}
+            onForward={(ids) => { /* TODO: wire to forward dialog */ }}
+            onDelete={(ids) => { ids.forEach((id) => messageActions.deleteForEveryone(id)); clearGlobalSelection(); }}
+          />
+        )}
+
         <OrbitUploadQueuePreview
           queue={attFamily.attachmentQueue.queue}
           onRemove={attFamily.attachmentQueue.removeQueueItem}
