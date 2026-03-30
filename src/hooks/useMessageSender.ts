@@ -122,14 +122,14 @@ export function useMessageSender(params: Params) {
     const idempotencyKey = generateIdempotencyKey(conversationIdForKey, msgText);
     if (!checkAndSetIdempotency(idempotencyKey)) {
       console.warn("[useMessageSender] Duplicate send blocked by idempotency guard");
-      endFlow(flow, "skipped");
+      endFlow(flow, "success");
       return;
     }
 
     // ── Ref guard (belt and suspenders with store lock) ──
     if (sendingRef.current) {
       console.warn("[useMessageSender] Send already in progress (ref guard)");
-      endFlow(flow, "skipped");
+      endFlow(flow, "success");
       return;
     }
     sendingRef.current = true;
