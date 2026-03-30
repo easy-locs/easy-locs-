@@ -22,6 +22,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [retryStatus, setRetryStatus] = useState<string | null>(null);
   const [mode, setMode] = useState<AuthMode>("password");
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
@@ -58,18 +59,22 @@ const Login = () => {
 
     authLog("LOGIN_SUBMIT_STARTED", { traceId, email, timestamp: flowStart });
     setLoading(true);
+    setRetryStatus(null);
 
     let failedStep: string | null = null;
+    const MAX_RETRIES = 2;
 
     const attemptLogin = async (attempt: number): Promise<void> => {
       const LOGIN_TIMEOUT_MS = 15_000;
 
+      if (attempt > 0) {
+        setRetryStatus(`Nouvelle tentative… (${attempt}/${MAX_RETRIES})`);
+      }
+
       authLog("LOGIN_SUPABASE_REQUEST_STARTED", { traceId, attempt });
       const reqStart = Date.now();
 
-      let timedOut = false;
       const timeoutTimer = setTimeout(() => {
-        timedOut = true;
         authWarn("LOGIN_TIMEOUT_TRIGGERED", { traceId, timeoutMs: LOGIN_TIMEOUT_MS, attempt });
       }, LOGIN_TIMEOUT_MS);
 
@@ -89,16 +94,17 @@ const Login = () => {
             traceId, success: false, error: error.message, durationMs, attempt,
           });
           const isServerTimeout = error.message?.includes("timeout") || error.message?.includes("deadline") || error.message?.includes("504");
-          if (isServerTimeout && attempt < 2) {
+          if (isServerTimeout && attempt < MAX_RETRIES) {
             await new Promise((r) => setTimeout(r, 2000));
             return attemptLogin(attempt + 1);
           }
           failedStep = "LOGIN_SUPABASE_RESPONSE";
           setLoading(false);
+          setRetryStatus(null);
           loginInFlight.current = false;
           clearActiveTrace();
           const msg = isServerTimeout
-            ? "Le serveur met trop de temps à répondre. Réessayez dans quelques secondes."
+            ? "Le serveur ne répond pas après plusieurs tentatives. Réessayez dans quelques instants."
             : error.message;
           toast({ title: t("auth.login.error"), description: msg, variant: "destructive" });
           authTraceSummary({ traceId, totalDurationMs: Date.now() - flowStart, finalStatus: "failed", failedStep });
@@ -106,9 +112,11 @@ const Login = () => {
           authLog("LOGIN_SUPABASE_RESPONSE", {
             traceId, success: true, error: null, durationMs, attempt,
           });
-          setLoading(false);
+          // Redirect immediately — hydration happens in AuthContext post-redirect
+          setRetryStatus(null);
           loginInFlight.current = false;
           await redirectAfterLogin(traceId, data.user?.id);
+          setLoading(false);
           authTraceSummary({ traceId, totalDurationMs: Date.now() - flowStart, finalStatus: "success", failedStep: null });
           clearActiveTrace();
         }
@@ -117,29 +125,24 @@ const Login = () => {
         const durationMs = Date.now() - reqStart;
         const isTimeout = err?.message === "__TIMEOUT__";
 
-        if (isTimeout) {
-          authError("LOGIN_SUPABASE_RESPONSE", {
-            traceId, success: false, error: "CLIENT_TIMEOUT", durationMs, attempt,
-          });
-        } else {
-          authError("LOGIN_SUPABASE_RESPONSE", {
-            traceId, success: false, error: err?.message ?? "UNKNOWN", durationMs, attempt,
-          });
-        }
+        authError("LOGIN_SUPABASE_RESPONSE", {
+          traceId, success: false, error: isTimeout ? "CLIENT_TIMEOUT" : (err?.message ?? "UNKNOWN"), durationMs, attempt,
+        });
 
-        if (isTimeout && attempt < 2) {
+        if (isTimeout && attempt < MAX_RETRIES) {
           await new Promise((r) => setTimeout(r, 2000));
           return attemptLogin(attempt + 1);
         }
 
         failedStep = isTimeout ? "LOGIN_TIMEOUT_TRIGGERED" : "LOGIN_SUPABASE_REQUEST_STARTED";
         setLoading(false);
+        setRetryStatus(null);
         loginInFlight.current = false;
         clearActiveTrace();
         toast({
           title: t("auth.login.error"),
           description: isTimeout
-            ? "Connexion au serveur expirée. Réessayez dans quelques secondes."
+            ? "Connexion au serveur expirée après plusieurs tentatives."
             : (err?.message || "Erreur inattendue"),
           variant: "destructive",
         });
@@ -204,7 +207,9 @@ const Login = () => {
     if (error) {
       toast({ title: t("auth.login.invalid_code"), description: error.message, variant: "destructive" });
     } else {
-      await redirectAfterLogin(data.user?.id);
+      const otpTraceId = crypto.randomUUID();
+      authLog("LOGIN_SESSION_DETECTED", { traceId: otpTraceId, userId: data.user?.id, source: "otp_verify" });
+      await redirectAfterLogin(otpTraceId, data.user?.id);
     }
   };
 
@@ -278,6 +283,16 @@ const Login = () => {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.login.submit")}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
             </motion.button>
+            {retryStatus && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-center text-amber-500 font-medium flex items-center justify-center gap-1.5"
+              >
+                <Loader2 className="h-3 w-3 animate-spin" />
+                {retryStatus}
+              </motion.p>
+            )}
           </form>
         )}
 
