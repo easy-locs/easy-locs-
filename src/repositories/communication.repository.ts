@@ -4,6 +4,7 @@
  * No UI component should import supabase directly for these domains.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 
 const db = supabase as any;
 
@@ -24,6 +25,11 @@ export async function insertMessage(params: {
   metadata?: Record<string, any>;
   replyToMessageId?: string | null;
 }) {
+  await ensureOrbitProfile({
+    userId: params.senderUserId,
+    orbitId: params.senderOrbitId || undefined,
+  });
+
   const { data, error } = await db.from("chat_messages_v2").insert({
     conversation_id: params.conversationId,
     sender_user_id: params.senderUserId,
