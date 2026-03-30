@@ -54,6 +54,12 @@ export function useThreadMessageFamily(params: {
   const { messages: decryptedMessages } = useDecryptedMessages(loader.rawMessages, decrypt, userId);
   const messages = decryptedMessages as ChatMessage[];
 
+  // ── View Model layer: canonical transform for UI consumption ──
+  const viewModels = useMemo(
+    () => toMessageViewModels(messages as any, userId ?? null),
+    [messages, userId],
+  );
+
   const { showOriginal, translatingMsgId, handleTranslateMessage } = useTranslation(locale, loader.setRawMessages as any);
 
   const dispatch = useOrbitDispatch();
