@@ -2,18 +2,22 @@
  * CallProvider — THIN ORCHESTRATOR for call state.
  * Composes atomic units: useCallState, useIncomingCallState, useIncomingCallListener,
  * useOutgoingCall, useCallLifecycle, useMyOrbitId.
+ *
+ * PHASE 2: Wires canonical call.store + CallAudioEngine for full state machine.
  */
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { CallManager } from "@/lib/call-manager";
-import InAppCallDialog from "./InAppCallDialog";
 import IncomingCallDialog from "./IncomingCallDialog";
+import { OrbitCallScreen } from "./OrbitCallScreen";
 import { useCallState } from "@/hooks/call/useCallState";
 import { useIncomingCallState } from "@/hooks/call/useIncomingCallState";
 import { useIncomingCallListener } from "@/hooks/call/useIncomingCallListener";
 import { useOutgoingCall } from "@/hooks/call/useOutgoingCall";
 import { useCallLifecycle } from "@/hooks/call/useCallLifecycle";
 import { useMyOrbitId } from "@/hooks/call/useMyOrbitId";
+import { useCallStore, type CallUIState } from "@/stores/orbit/call.store";
+import { CallAudioEngine } from "@/families/calls/call-audio-engine";
 
 interface CallContextType {
   startCall: (opts: {
@@ -39,7 +43,28 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const myOrbitId = useMyOrbitId(user?.id);
 
-  // Atomic state containers
+  // Canonical call store
+  const callStore = useCallStore();
+  const prevUiStateRef = useRef<CallUIState | null>(null);
+
+  // Sync audio engine with call state transitions
+  useEffect(() => {
+    const call = callStore.activeCall;
+    if (!call) {
+      if (prevUiStateRef.current !== null) {
+        CallAudioEngine.stopAll();
+        prevUiStateRef.current = null;
+      }
+      return;
+    }
+
+    if (prevUiStateRef.current !== call.uiState) {
+      CallAudioEngine.onStateChange(prevUiStateRef.current, call.uiState, call.direction);
+      prevUiStateRef.current = call.uiState;
+    }
+  }, [callStore.activeCall?.uiState]);
+
+  // Legacy state containers (kept for backward compat with HudChatPanel)
   const {
     callState, setCallState, peerName, setPeerName,
     contextLabel, setContextLabel, showCallDialog, setShowCallDialog,
@@ -56,17 +81,45 @@ export function CallProvider({ children }: { children: ReactNode }) {
     incoming.setIncomingCall, incoming.clearIncoming,
   );
 
-  // Wire outgoing call
+  // Wire outgoing call — also populate canonical store
   const { startCall } = useOutgoingCall(
     user?.id, startingCallRef,
     useCallback(({ manager, peerName: pn, contextLabel: cl, meta, isVideo }) => {
-      manager.onStateChange = (state) => setCallState((prev) => ({ ...prev, ...state }));
+      manager.onStateChange = (state) => {
+        setCallState((prev) => ({ ...prev, ...state }));
+
+        // Sync to canonical store
+        if (state.status) {
+          const stateMap: Record<string, CallUIState> = {
+            idle: "idle", ringing: "ringing", connecting: "connecting",
+            active: "active", ended: "ended", declined: "declined",
+            missed: "missed", failed: "failed", network_blocked: "failed",
+          };
+          const mapped = stateMap[state.status] || "calling";
+          callStore.transition(mapped);
+        }
+        if (state.elapsed !== undefined) {
+          callStore.setElapsed(state.elapsed);
+        }
+        if (state.error !== undefined) {
+          callStore.setError(state.error || null);
+        }
+      };
+
       setCallManager(manager);
       setPeerName(pn);
       setContextLabel(cl);
       activeCallRef.current = meta;
       setShowCallDialog(true);
-    }, []),
+
+      // Populate canonical store
+      callStore.startOutgoing({
+        callId: meta.callId,
+        conversationId: meta.conversationId,
+        peer: { userId: "", name: pn },
+        mode: isVideo ? "video" : "audio",
+      });
+    }, [callStore]),
     setIsStartingCall,
   );
 
@@ -76,30 +129,86 @@ export function CallProvider({ children }: { children: ReactNode }) {
     useCallback(() => {
       resetCallState();
       setCallManager(null);
-    }, [resetCallState]),
+      // Also reset canonical store after auto-dismiss
+      setTimeout(() => callStore.reset(), 3500);
+    }, [resetCallState, callStore]),
   );
 
+  // Override canonical store endCall to also cleanup legacy
+  const handleCanonicalEnd = useCallback(() => {
+    callStore.endCall("ended");
+    handleCloseCall();
+  }, [callStore, handleCloseCall]);
+
+  // Wire canonical store's endCall to the actual call manager
+  useEffect(() => {
+    const unsub = useCallStore.subscribe((state, prevState) => {
+      if (prevState.activeCall && !state.hasActiveCall && state.activeCall?.uiState === "ended") {
+        // User pressed hangup on canonical screen
+        if (callManager) {
+          const s = callState.status as string;
+          if (!["ended", "declined", "missed", "failed"].includes(s || "")) {
+            callManager.endCall().catch(() => {});
+          }
+        }
+      }
+    });
+    return unsub;
+  }, [callManager, callState.status]);
+
   return (
-    <CallContext.Provider value={{ startCall, isInCall: showCallDialog, isStartingCall }}>
+    <CallContext.Provider value={{
+      startCall,
+      isInCall: showCallDialog || callStore.hasActiveCall,
+      isStartingCall,
+    }}>
       {children}
+
+      {/* Canonical full-screen call page */}
+      <OrbitCallScreen />
+
+      {/* Legacy incoming call dialog (still used for notifications) */}
       <IncomingCallDialog
         open={incoming.showIncoming}
         callerName={incoming.incomingCallerName}
         contextLabel={incoming.incomingContextLabel}
         isVideo={incoming.incomingIsVideo}
-        onAccept={() => handleAcceptIncoming(
-          incoming.incomingCallId!, incoming.incomingCallerName,
-          incoming.incomingContextLabel, incoming.incomingIsVideo,
-          incoming.incomingOrgId, incoming.incomingConversationId,
-          (manager, pn, cl) => {
-            manager.onStateChange = (state) => setCallState((prev) => ({ ...prev, ...state }));
-            setCallManager(manager);
-            setPeerName(pn);
-            setContextLabel(cl);
-            setShowCallDialog(true);
-            incoming.clearIncoming();
-          },
-        )}
+        onAccept={() => {
+          // Populate canonical store for incoming
+          callStore.setIncoming({
+            callId: incoming.incomingCallId || "",
+            conversationId: incoming.incomingConversationId || undefined,
+            peer: { userId: "", name: incoming.incomingCallerName },
+            mode: incoming.incomingIsVideo ? "video" : "audio",
+          });
+          callStore.transition("connecting");
+
+          handleAcceptIncoming(
+            incoming.incomingCallId!, incoming.incomingCallerName,
+            incoming.incomingContextLabel, incoming.incomingIsVideo,
+            incoming.incomingOrgId, incoming.incomingConversationId,
+            (manager, pn, cl) => {
+              manager.onStateChange = (state) => {
+                setCallState((prev) => ({ ...prev, ...state }));
+                if (state.status) {
+                  const stateMap: Record<string, CallUIState> = {
+                    idle: "idle", ringing: "ringing", connecting: "connecting",
+                    active: "active", ended: "ended", declined: "declined",
+                    missed: "missed", failed: "failed",
+                  };
+                  callStore.transition(stateMap[state.status] || "connecting");
+                }
+                if (state.elapsed !== undefined) callStore.setElapsed(state.elapsed);
+                if (state.error !== undefined) callStore.setError(state.error || null);
+              };
+              setCallManager(manager);
+              setPeerName(pn);
+              setContextLabel(cl);
+              setShowCallDialog(true);
+              incoming.clearIncoming();
+            },
+          );
+        }}
         onDecline={() => {
           handleDeclineIncoming(incoming.incomingCallId, incoming.incomingConversationId, incoming.incomingOrgId);
           incoming.clearIncoming();
@@ -108,10 +217,6 @@ export function CallProvider({ children }: { children: ReactNode }) {
           handleMissedIncoming(incoming.incomingCallId, incoming.incomingConversationId, incoming.incomingOrgId);
           incoming.clearIncoming();
         }}
-      />
-      <InAppCallDialog
-        open={showCallDialog} onClose={handleCloseCall}
-        callManager={callManager} peerName={peerName} contextLabel={contextLabel}
       />
     </CallContext.Provider>
   );
