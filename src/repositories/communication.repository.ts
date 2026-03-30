@@ -554,21 +554,19 @@ export async function setDisappearTimer(msgId: string, seconds: number) {
   if (error) throw error;
 }
 
-// ── Voice message insert ──
+// ── Voice message insert — delegates to canonical insertMessage ──
 export async function insertVoiceMessage(params: {
   conversationId: string; senderUserId: string; senderOrbitId: string;
   body: string; audioUrl: string; duration: number;
 }) {
-  const { data, error } = await db.from("chat_messages_v2").insert({
-    conversation_id: params.conversationId,
-    sender_user_id: params.senderUserId,
-    sender_orbit_id: params.senderOrbitId,
+  return insertMessage({
+    conversationId: params.conversationId,
+    senderUserId: params.senderUserId,
+    senderOrbitId: params.senderOrbitId,
     type: "audio",
     body: params.body,
-    metadata: { audio_url: params.audioUrl, audio_duration_seconds: params.duration },
-  }).select("*").single();
-  if (error) throw error;
-  return data;
+    metadata: { schemaVersion: 1, audio_url: params.audioUrl, audio_duration_seconds: params.duration },
+  });
 }
 
 // ── Chat media/attachment upload ──
@@ -594,11 +592,16 @@ export async function getCommAuthUser() {
 
 // Realtime channel helpers moved to src/lib/realtime.ts
 
-// ── Chat payment message bridge ──
+// ── Chat payment message bridge — delegates to canonical insertMessage ──
 export async function insertChatMessageV2(payload: Record<string, any>) {
-  const { data, error } = await db.from("chat_messages_v2").insert(payload).select("*").single();
-  if (error) throw error;
-  return data;
+  return insertMessage({
+    conversationId: payload.conversation_id,
+    senderUserId: payload.sender_user_id,
+    senderOrbitId: payload.sender_orbit_id || null,
+    type: payload.type || "system",
+    body: payload.body || "",
+    metadata: { schemaVersion: 1, ...payload.metadata },
+  });
 }
 
 export async function insertWalletTransaction(payload: Record<string, any>) {

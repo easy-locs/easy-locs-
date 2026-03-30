@@ -136,9 +136,15 @@ export async function markNotificationsRead(userId: string) {
 }
 
 export async function insertChatMessage(record: Record<string, any>) {
-  const { data, error } = await (supabase as any).from("chat_messages_v2").insert(record).select("*").single();
-  if (error) throw error;
-  return data;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  return insertMessage({
+    conversationId: record.conversation_id,
+    senderUserId: record.sender_user_id,
+    senderOrbitId: record.sender_orbit_id || null,
+    type: record.type || "text",
+    body: record.body || "",
+    metadata: { schemaVersion: 1, ...record.metadata },
+  });
 }
 
 export async function uploadChatFile(orgId: string, tenantId: string, file: File) {

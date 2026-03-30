@@ -145,12 +145,16 @@ export async function fetchChatMessages(orgId: string, tenantId: string) {
 }
 
 export async function insertChatMessage(orgId: string, tenantId: string, userId: string, body: string) {
+  const { insertMessage } = await import("@/repositories/communication.repository");
   const contextId = `tenant_${orgId}_${tenantId}`;
-  const { error } = await (supabase as any).from("chat_messages_v2").insert({
-    conversation_id: contextId, sender_user_id: userId,
-    sender_orbit_id: `orbit_${userId.slice(0, 12)}`, type: "text", body,
+  await insertMessage({
+    conversationId: contextId,
+    senderUserId: userId,
+    senderOrbitId: `orbit_${userId.slice(0, 12)}`,
+    type: "text",
+    body,
+    metadata: { schemaVersion: 1 },
   });
-  if (error) throw error;
 }
 
 export function subscribeToRentalChat(tenantId: string, onInsert: (msg: any) => void, onUpdate: (msg: any) => void) {
