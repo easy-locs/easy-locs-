@@ -71,53 +71,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [allOrgs, setAllOrgs] = useState<{ id: string; name: string; country: string; currency: string }[]>([]);
   const bootstrapOrbitRef = useRef<string | null>(null);
 
-  const fetchOrgId = useCallback(async (userId: string) => {
-    const QUERY_TIMEOUT = 8_000;
+  // ── Critical path: minimal query for fast hydration ──
+  const fetchOrgIdFast = useCallback(async (userId: string) => {
+    const QUERY_TIMEOUT = 5_000;
     const withTimeout = <T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
       Promise.race([
         Promise.resolve(thenable),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out (${QUERY_TIMEOUT}ms)`)), QUERY_TIMEOUT)
+          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out`)), QUERY_TIMEOUT)
         ),
       ]);
 
     try {
       const { data: memberships } = await withTimeout(
-        supabase.from("org_members").select("org_id").eq("user_id", userId),
-        "fetchOrgId/memberships"
+        supabase.from("org_members").select("org_id").eq("user_id", userId).limit(5),
+        "fetchOrgIdFast"
       );
 
       if (memberships && memberships.length > 0) {
-        const orgIds = memberships.map((m) => m.org_id);
-        const { data: orgsData } = await withTimeout(
-          supabase.from("orgs").select("id, name").in("id", orgIds),
-          "fetchOrgId/orgs"
-        );
-
-        const orgs = (orgsData || []).map((o) => ({
-          id: o.id,
-          name: o.name || "Unnamed",
-          country: "",
-          currency: "EUR",
-        }));
-        setAllOrgs(orgs);
-
         const savedOrg = (() => {
-          try {
-            return localStorage.getItem(`easylocs_active_org_${userId}`);
-          } catch {
-            return null;
-          }
+          try { return localStorage.getItem(`easylocs_active_org_${userId}`); } catch { return null; }
         })();
-        const selectedOrgId = savedOrg && orgs.some((o) => o.id === savedOrg) ? savedOrg : orgIds[0];
+        const selectedOrgId = savedOrg && memberships.some((m) => m.org_id === savedOrg) ? savedOrg : memberships[0].org_id;
         setOrgId(selectedOrgId);
+        return memberships.map((m) => m.org_id);
       } else {
         setOrgId(null);
-        setAllOrgs([]);
+        return [];
       }
     } catch (err) {
-      console.warn("[AuthContext] fetchOrgId failed:", err);
+      console.warn("[AuthContext] fetchOrgIdFast failed:", err);
       setOrgId(null);
+      return [];
+    }
+  }, []);
+
+  // ── Deferred: full org details (names, etc.) ──
+  const fetchOrgDetails = useCallback(async (orgIds: string[]) => {
+    if (orgIds.length === 0) { setAllOrgs([]); return; }
+    try {
+      const { data: orgsData } = await supabase.from("orgs").select("id, name").in("id", orgIds);
+      setAllOrgs((orgsData || []).map((o) => ({
+        id: o.id, name: o.name || "Unnamed", country: "", currency: "EUR",
+      })));
+    } catch (err) {
+      console.warn("[AuthContext] fetchOrgDetails deferred failed:", err);
       setAllOrgs([]);
     }
   }, []);
