@@ -135,11 +135,3 @@ export async function uploadClientMedia(orgId: string, contextId: string, file: 
   return data?.signedUrl || path;
 }
 
-export function subscribeToThread(conversationId: string, onInsert: (msg: any) => void, onUpdate: (msg: any) => void) {
-  const channel = supabase
-    .channel(`client-thread-v2-${conversationId}`)
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2", filter: `conversation_id=eq.${conversationId}` }, (payload) => onInsert(payload.new))
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages_v2", filter: `conversation_id=eq.${conversationId}` }, (payload) => onUpdate(payload.new))
-    .subscribe();
-  return () => { supabase.removeChannel(channel); };
-}
