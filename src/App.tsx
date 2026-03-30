@@ -48,6 +48,7 @@ import { FloatingCTAButton } from "@/components/engine/FloatingCTAButton";
 import { OrbitPromptOverlay } from "@/components/engine/OrbitPromptOverlay";
 
 // V2 test pages — removed (Batch B purge)
+const CallLoopbackTestPage = lazy(() => import("@/components/call/CallLoopbackTest").then(m => ({ default: m.CallLoopbackTest })));
 
 // V2 Suite 4 pages
 // V2 Suite 4 pages — all removed, routes redirect to canonical paths
