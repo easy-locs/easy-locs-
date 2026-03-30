@@ -114,37 +114,47 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
           </div>
         </div>
       ) : (
-        rowData.map(({ msg, showDateSep, dateLabel, isMe, isConsecutive }) => (
-          <div key={msg.id}>
-            {showDateSep && <DateSeparator date={dateLabel} />}
-            {msg.message_type === "deal_event" && (msg as any).metadata_json ? (
-              <DealStatusBubble
-                eventType={((msg as any).metadata_json?.event_type || "status_change") as DealEventType}
-                data={(msg as any).metadata_json?.data || {}}
-                createdAt={msg.created_at}
-                actorRole={(msg as any).metadata_json?.actor_role}
-              />
-            ) : (
-              <ChatMessageBubble
-                msg={msg}
-                isMe={isMe}
-                isConsecutive={isConsecutive}
-                threadName={threadName}
-                locale={locale}
-                showOriginal={!!showOriginal[msg.id]}
-                translatingMsgId={translatingMsgId}
-                isPendingOffline={pendingSet.has(msg.id)}
-                selected={selectedMsgIds.has(msg.id)}
-                selectMode={selectMode}
-                currentUserId={userId}
-                onTranslate={onTranslate}
-                onContextMenu={handleContextMenu}
-                onToggleSelect={onToggleSelect}
-                getCategoryIcon={getCategoryIcon}
-              />
-            )}
-          </div>
-        ))
+        rowData.map(({ msg, showDateSep, dateLabel, isMe, isConsecutive }) => {
+          const mode = resolveMessageMode(msg);
+          const isCallCard = mode.startsWith("call_");
+          return (
+            <div key={msg.id}>
+              {showDateSep && <DateSeparator date={dateLabel} />}
+              {msg.message_type === "deal_event" && (msg as any).metadata_json ? (
+                <DealStatusBubble
+                  eventType={((msg as any).metadata_json?.event_type || "status_change") as DealEventType}
+                  data={(msg as any).metadata_json?.data || {}}
+                  createdAt={msg.created_at}
+                  actorRole={(msg as any).metadata_json?.actor_role}
+                />
+              ) : isCallCard ? (
+                <MessageCardRenderer
+                  msg={msg}
+                  isMe={isMe}
+                  currentUserId={userId}
+                />
+              ) : (
+                <ChatMessageBubble
+                  msg={msg}
+                  isMe={isMe}
+                  isConsecutive={isConsecutive}
+                  threadName={threadName}
+                  locale={locale}
+                  showOriginal={!!showOriginal[msg.id]}
+                  translatingMsgId={translatingMsgId}
+                  isPendingOffline={pendingSet.has(msg.id)}
+                  selected={selectedMsgIds.has(msg.id)}
+                  selectMode={selectMode}
+                  currentUserId={userId}
+                  onTranslate={onTranslate}
+                  onContextMenu={handleContextMenu}
+                  onToggleSelect={onToggleSelect}
+                  getCategoryIcon={getCategoryIcon}
+                />
+              )}
+            </div>
+          );
+        })
       )}
       {typingIndicator && (
         <div className="flex justify-start mt-1">
