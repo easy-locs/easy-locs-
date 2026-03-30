@@ -12,7 +12,7 @@ import { createCallRpc } from "@/lib/call/call-rpc";
 import { CallManager } from "@/lib/call-manager";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
-import type { ActiveCallMeta } from "./useCallState";
+import type { ActiveCallMeta } from "@/stores/orbit/call.store";
 
 interface StartCallOpts {
   targetId: string;

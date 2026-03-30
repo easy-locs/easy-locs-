@@ -43,6 +43,14 @@ export interface ActiveCall {
   error: string | null;
 }
 
+/** Legacy-compat type used by useOutgoingCall and useCallLifecycle */
+export interface ActiveCallMeta {
+  callId: string;
+  conversationId?: string;
+  orgId: string;
+  entityId?: string;
+}
+
 interface CallStoreState {
   activeCall: ActiveCall | null;
   hasActiveCall: boolean;
