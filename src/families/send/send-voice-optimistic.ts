@@ -7,6 +7,7 @@
 import { insertMessage, updateConversationTimestamp, updateMessageFields } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { buildVoiceMeta } from "@/families/messages/build-metadata";
+import { orbitLabels } from "@/families/orbit-i18n/orbit-labels";
 import type { SendContext } from "./send-context";
 
 export async function sendVoiceOptimistic(
