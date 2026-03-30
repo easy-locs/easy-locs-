@@ -51,8 +51,9 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
     .single();
 
   if (error) {
-    console.error("ensureOrbitProfile error", error);
-    throw new Error(error.message || "Failed to ensure orbit profile");
+    console.warn("[ensureOrbitProfile] non-blocking error:", error.message);
+    // Return a synthetic profile instead of throwing — login must never block on this
+    return { id: userId, orbit_id: row.orbit_id };
   }
 
   ensuredCache.add(userId);
