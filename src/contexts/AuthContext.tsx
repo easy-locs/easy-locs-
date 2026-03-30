@@ -82,14 +82,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
       const { data: memberships } = await withTimeout(
-        supabase.from("org_members").select("org_id").eq("user_id", userId),
+        supabase.from("org_members").select("org_id").eq("user_id", userId).then(r => r),
         "fetchOrgId/memberships"
       );
 
       if (memberships && memberships.length > 0) {
         const orgIds = memberships.map((m) => m.org_id);
         const { data: orgsData } = await withTimeout(
-          supabase.from("orgs").select("id, name").in("id", orgIds),
+          supabase.from("orgs").select("id, name").in("id", orgIds).then(r => r),
           "fetchOrgId/orgs"
         );
 
