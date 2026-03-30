@@ -20,7 +20,7 @@ export function useMessageSelection() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedMsgIds, setSelectedMsgIds] = useState<Set<string>>(new Set());
   const [contextMessage, setContextMessage] = useState<ContextMenuTarget | null>(null);
-  const [replyTo, setReplyTo] = useState<{ msgId: string; content: string; senderName?: string } | null>(null);
+  // replyTo removed — single source of truth is composerStore.replies[cid]
   const [forwardData, setForwardData] = useState<{ messageId: string; content: string } | null>(null);
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
 
@@ -48,7 +48,7 @@ export function useMessageSelection() {
     selectMode, setSelectMode,
     selectedMsgIds, setSelectedMsgIds,
     contextMessage, setContextMessage,
-    replyTo, setReplyTo,
+    // replyTo/setReplyTo removed — use composerStore
     forwardData, setForwardData,
     hiddenMsgIds, setHiddenMsgIds,
     toggleMsgSelect,
