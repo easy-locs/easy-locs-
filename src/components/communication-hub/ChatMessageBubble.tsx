@@ -2,9 +2,9 @@
  * ChatMessageBubble — Premium Signal-grade message bubble.
  * Decomposed into isolated micro-components: BubbleMediaBlock, BubbleMetaFooter, BubbleLocationBlock.
  */
-import { memo, useRef, useCallback, useEffect, useState, useMemo } from "react";
+import { memo, useEffect, useState, useMemo } from "react";
 import {
-  Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock, CheckCircle2,
+  CheckCheck, Globe, Loader2, Mail, WifiOff, Lock, CheckCircle2,
   ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -14,7 +14,7 @@ import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
 import { BubbleLocationBlock } from "./chat/BubbleLocationBlock";
 import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
 
-import { haptic } from "@/lib/haptics";
+// haptic removed — gestures handled by OrbitMessageInteractiveWrapper
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
 import { ChatPaymentRequestCard, ChatPaymentReceiptCard } from "@/components/chat/ChatPaymentCards";
 import ThreadActionCard, { parseActionFromMessage } from "@/components/orbit/ThreadActionCard";
@@ -32,7 +32,9 @@ interface Props {
   translatingMsgId: string | null;
   isPendingOffline: boolean;
   isConsecutive?: boolean;
+  /** @deprecated — selection visuals now handled by OrbitMessageInteractiveWrapper */
   selected?: boolean;
+  /** @deprecated — selection mode now handled by OrbitMessageInteractiveWrapper */
   selectMode?: boolean;
   currentUserId?: string;
   onTranslate: (msg: ChatMessage) => void;
@@ -62,40 +64,7 @@ function ChatMessageBubble({
     contact_name: safeStr(rawMsg.contact_name),
     translated_content: rawMsg.translated_content ? safeStr(rawMsg.translated_content) : rawMsg.translated_content,
   };
-  // Hooks MUST be called before any early returns
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTriggeredRef = useRef(false);
-
-  const handleTouchStart = useCallback(() => {
-    if (selectMode) return;
-    longPressTriggeredRef.current = false;
-    longPressTimerRef.current = setTimeout(() => {
-      longPressTriggeredRef.current = true;
-      haptic("medium");
-      onContextMenu({ preventDefault: () => {} } as React.MouseEvent, msg, isMe);
-    }, 500);
-  }, [selectMode, msg, isMe, onContextMenu]);
-
-  const handleTouchEnd = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-  }, []);
-
-  const handleTouchMove = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-  }, []);
-
-  const handleClick = useCallback(() => {
-    if (longPressTriggeredRef.current) return;
-    if (selectMode) {
-      onToggleSelect?.(msg.id);
-    }
-  }, [selectMode, msg.id, onToggleSelect]);
+  // Legacy gesture handlers removed — now handled by OrbitMessageInteractiveWrapper
 
   const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
   const isDeleted = !!(msg as any).deleted_for_all;
@@ -247,41 +216,9 @@ function ChatMessageBubble({
 
   return (
     <div
-      className={`flex ${selectMode ? "items-center" : ""} ${isMe && !selectMode ? "justify-end" : "justify-start"} group transition-colors duration-150`}
-      style={{
-        marginTop: isConsecutive ? 2 : 8,
-        ...(selected ? {
-          background: "hsl(var(--hud-cyan) / 0.08)",
-          borderRadius: 8,
-          margin: `${isConsecutive ? 2 : 8}px -8px 0`,
-          padding: "0 8px",
-        } : {}),
-      }}
-      onClick={handleClick}
-      onContextMenu={e => {
-        if (selectMode) return;
-        e.preventDefault();
-        haptic("medium");
-        onContextMenu(e, msg, isMe);
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
-      onTouchMove={handleTouchMove}
+      className={`flex ${isMe ? "justify-end" : "justify-start"} group transition-colors duration-150`}
+      style={{ marginTop: isConsecutive ? 2 : 8 }}
     >
-      {selectMode && (
-        <div className="flex items-center px-1.5 shrink-0">
-          <div
-            className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-150"
-            style={{
-              borderColor: selected ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)",
-              background: selected ? "hsl(var(--hud-cyan))" : "transparent",
-            }}
-          >
-            {selected && <Check className="h-3 w-3" style={{ color: "hsl(var(--hud-bg))" }} />}
-          </div>
-        </div>
-      )}
       <div
         className="relative max-w-[75%] sm:max-w-[60%]"
         style={{
