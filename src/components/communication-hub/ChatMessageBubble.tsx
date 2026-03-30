@@ -390,6 +390,7 @@ function ChatMessageBubble({
               url={(msg as any).audio_url}
               durationSeconds={(msg as any).audio_duration_seconds || 0}
               isMe={isMe}
+              messageId={msg.id}
             />
             {/* Transcript display */}
             {transcriptStatus === "processing" && (
