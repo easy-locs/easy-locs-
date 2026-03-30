@@ -108,4 +108,12 @@ export function getMediaType(url: string): "image" | "video" | "audio" | "file" 
 }
 
 // Media family owns: pick, upload queue, receive, group builder/viewer/actions,
-// preview-state, preview sheet, fullscreen viewer, grouped bubble, meta, type detection.
+// preview-state, preview sheet, fullscreen viewer, grouped bubble, meta, type detection, batch.
+
+// ── Media Batch (multi-photo pipeline) ──
+export { useBatchStore, issueBatchId, buildBatchViewModel, buildBatchStatusViewModel } from "./batch";
+export type {
+  BatchItemStatus, BatchStatus, BatchMediaItem, MediaBatchRecord,
+  MultiMediaBatchViewModel, MultiMediaBatchItemViewModel,
+  MultiMediaPreviewViewModel, MultiMediaStatusViewModel,
+} from "./batch";
