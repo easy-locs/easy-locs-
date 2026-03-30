@@ -114,7 +114,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     disappearTTL: security.disappearTTL,
     securityLevel: security.securityLevel as string,
     setSecurityLevel: security.setSecurityLevel as (l: string) => void,
-    replyTo: null, setReplyTo: () => {},
     resolveAuthUserId, onThreadUpdate,
   });
 
