@@ -1,11 +1,11 @@
 /**
  * CallProvider — THIN ORCHESTRATOR for call state.
- * PHASE 4: Single source of truth via useCallStore. Legacy useCallState eliminated.
+ * PHASE 5: Single source of truth via useCallStore. OrbitCallScreen handles ALL call UI (incoming + outgoing + active).
  */
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { CallManager } from "@/lib/call-manager";
-import IncomingCallDialog from "./IncomingCallDialog";
+import { OrbitCallScreen } from "./OrbitCallScreen";
 import { OrbitCallScreen } from "./OrbitCallScreen";
 import { useIncomingCallState } from "@/hooks/call/useIncomingCallState";
 import { useIncomingCallListener } from "@/hooks/call/useIncomingCallListener";
