@@ -293,7 +293,7 @@ const TenantMessages = () => {
             ) : (
               messages.map((m) => {
                 const isMe = m.sender_user_id === user?.id;
-                const isSystem = m.type === "system" || m.sender_user_id === SYSTEM_SENDER_ID;
+                const isSystem = m.type === "system" || m.type === "system_notice" || m.sender_user_id === SYSTEM_SENDER_ID;
                 const meta = m.metadata || {};
                 const content = m.body || "";
                 const attachmentUrl = meta.attachment_url;
