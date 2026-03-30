@@ -140,6 +140,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     setViewOnceNext: security.setViewOnceNext,
     setShowLocationPicker: security.setShowLocationPicker,
     setNewMessage: setStoreDraft,
+    setRawMessages: msgFamily.loader.setRawMessages as any,
     t,
   });
 
@@ -150,11 +151,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
   // ── FAMILY: Media Preview Send ──
   const mediaPreviewSend = useMediaPreviewSend({
-    conversationId: (thread?.conversationId || thread?.v2ConversationId) ?? null,
+    conversationId: thread?.conversationId ?? null,
     userId: user?.id,
     myOrbitId,
     peerOrbitId: thread?.peerOrbitId ?? null,
     orgId: orgId || null,
+    resolveConversationId,
   });
 
   // ── FAMILY: Payments ──
