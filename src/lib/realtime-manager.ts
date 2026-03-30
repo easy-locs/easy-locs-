@@ -10,6 +10,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
