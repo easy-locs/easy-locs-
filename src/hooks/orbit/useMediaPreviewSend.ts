@@ -1,14 +1,13 @@
 /**
- * useMediaPreviewSend — Canonical hook for sending media from the preview sheet.
- * Isolates transport + optimistic send logic from HudChatPanel.
+ * useMediaPreviewSend — THIN WRAPPER around orbitDispatch for media preview sends.
+ * No inline SendContext construction — delegated to orbit-dispatch.
  */
 import { useCallback } from "react";
-import { sendMediaOptimistic } from "@/families/send/send-media-optimistic";
+import { orbitDispatch } from "@/families/orbit-dispatch/orbit-dispatch";
 import { transportUploadWithPrepare } from "@/families/media/transport/transport-engine";
 import { TransportPolicy } from "@/families/media/transport/transport-policy";
 import { useMediaPreviewState, type PreviewItem } from "@/families/media/media-preview-state";
 import { toast } from "sonner";
-import type { SendContext } from "@/families/send/send-context";
 
 interface MediaPreviewSendDeps {
   conversationId: string | null;
@@ -38,17 +37,11 @@ export function useMediaPreviewSend(deps: MediaPreviewSendDeps) {
           return;
         }
 
-        const ctx: SendContext = {
-          conversationId,
-          senderUserId: deps.userId,
-          senderOrbitId: deps.myOrbitId || `orbit_${deps.userId.slice(0, 12)}`,
-          receiverOrbitId: deps.peerOrbitId,
-          orgId: deps.orgId,
-        };
-
         for (const item of items) {
           const decision = TransportPolicy.decide(item.media.file);
-          void sendMediaOptimistic(ctx, {
+          await orbitDispatch({
+            type: "send_media",
+            conversationId,
             file: item.media.file,
             caption: items.length === 1 ? caption : item.caption || caption,
             viewOnce,

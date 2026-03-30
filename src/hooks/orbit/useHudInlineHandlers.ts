@@ -1,17 +1,13 @@
 /**
- * useHudInlineHandlers — Atomic: voice/location/view-once send via canonical send family.
- * Zero inline supabase calls. All sends go through families/send.
+ * useHudInlineHandlers — THIN WRAPPER around orbitDispatch for voice/location/view-once.
+ * No inline send context, no inline auth resolution — delegated to orbit-dispatch.
  */
 import { useState, useCallback } from "react";
-import { sendVoiceOptimistic } from "@/families/send/send-voice-optimistic";
-import { sendLocationOptimistic } from "@/families/send/send-location-optimistic";
-import type { LocationPayload } from "@/families/send/send-location";
-import { sendMedia } from "@/families/send/send-media";
+import { orbitDispatch } from "@/families/orbit-dispatch/orbit-dispatch";
 import { computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { formatVoiceDuration } from "@/hooks/useVoiceRecorder";
 import { uploadToStorage } from "@/repositories/communication.repository";
 import { toast } from "sonner";
-import type { SendContext } from "@/families/send/send-context";
 
 interface HudInlineHandlersDeps {
   thread: any;
@@ -32,16 +28,6 @@ interface HudInlineHandlersDeps {
   t: (key: string) => string;
 }
 
-function buildSendContext(deps: HudInlineHandlersDeps, authUserId: string, conversationId: string): SendContext {
-  return {
-    conversationId,
-    senderUserId: authUserId,
-    senderOrbitId: deps.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-    receiverOrbitId: deps.thread?.peerOrbitId ?? null,
-    orgId: deps.orgId,
-  };
-}
-
 export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
   const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
 
@@ -50,37 +36,34 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
     const authUserId = await deps.resolveAuthUserId();
     if (!authUserId) return;
 
-    // Capture preview data before clearing UI
     const blob = voicePreview.blob;
     const dur = voicePreview.duration;
     const localUrl = voicePreview.url;
 
-    // ── INSTANT: clear voice preview UI immediately ──
+    // INSTANT: clear voice preview UI
     setVoicePreview(null);
 
     try {
       const conversationId = await deps.resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
-      const ctx = buildSendContext(deps, authUserId, conversationId);
 
       const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
-      const storagePath = `${deps.orgId}/${deps.thread.id}/voice-${Date.now()}.${ext}`;
 
-      // Optimistic: inserts message with local blob URL immediately,
-      // then uploads + reconciles in background
-      await sendVoiceOptimistic(ctx, {
+      const result = await orbitDispatch({
+        type: "send_voice",
+        conversationId,
         blob,
-        localUrl,
         durationSeconds: dur,
-        durationLabel: formatVoiceDuration(dur),
-        uploadFn: async (b, path) => {
-          const url = await uploadToStorage("chat-attachments", path, b);
+        localUrl,
+        uploadFn: async (file, path) => {
+          const url = await uploadToStorage("chat-attachments", path, file);
           if (!url) throw new Error("Voice upload failed");
           return url;
         },
-        storagePath,
+        pathPrefix: `${deps.orgId}/${deps.thread.id}`,
       });
 
+      if (!result.ok) throw new Error(result.error);
       deps.setSecurityLevel("normal");
     } catch (e: any) {
       toast.error(e?.message || "Failed to send voice message");
@@ -92,27 +75,28 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
   const handleLocationSend = useCallback(async (loc: any) => {
     if (!deps.thread) return;
 
-    // ── INSTANT: close picker + toast immediately ──
+    // INSTANT: close picker
     deps.setShowLocationPicker(false);
     toast.success(deps.t("orbit.location_shared") || "Location shared");
 
-    // ── Background: resolve + optimistic insert (card appears via realtime) ──
+    // Background: dispatch
     (async () => {
       try {
         const authUserId = await deps.resolveAuthUserId();
         if (!authUserId) return;
         const conversationId = await deps.resolveConversationId(authUserId);
         if (!conversationId) return;
-        const ctx = buildSendContext(deps, authUserId, conversationId);
-        const payload: LocationPayload = {
+
+        await orbitDispatch({
+          type: "send_location",
+          conversationId,
           lat: loc.lat,
           lng: loc.lng,
-          type: loc.type === "live" ? "live" : loc.type === "place" ? "place" : "static",
+          mode: loc.type === "live" ? "live" : "static",
           label: loc.label,
           address: loc.address,
-          duration: loc.duration,
-        };
-        await sendLocationOptimistic(ctx, payload);
+          liveDurationMinutes: loc.duration,
+        });
       } catch (e: any) {
         toast.error(e?.message || "Failed to share location");
       }
@@ -129,19 +113,25 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
     }
     deps.setUploading(true);
     try {
-      const path = `${deps.orgId}/${deps.thread.id}/viewonce-${Date.now()}.${file.name.split(".").pop() || "jpg"}`;
-      const finalUrl = await uploadToStorage("chat-attachments", path, file);
-      if (!finalUrl) throw new Error("Upload failed");
-      const disappearAt = computeDisappearAt(deps.disappearTTL !== "off" ? deps.disappearTTL : deps.defaultDisappearTtl);
       const conversationId = await deps.resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
-      const ctx = buildSendContext(deps, authUserId, conversationId);
-      await sendMedia(ctx, {
-        mediaUrl: finalUrl,
-        body: "📷 View-once photo",
+      const disappearAt = computeDisappearAt(deps.disappearTTL !== "off" ? deps.disappearTTL : deps.defaultDisappearTtl);
+
+      await orbitDispatch({
+        type: "send_media",
+        conversationId,
+        file,
+        caption: "📷 View-once photo",
         viewOnce: true,
         disappearAt,
+        uploadFn: async (f, path, onProgress) => {
+          const url = await uploadToStorage("chat-attachments", path, f);
+          if (!url) throw new Error("Upload failed");
+          return url;
+        },
+        pathPrefix: `${deps.orgId}/${deps.thread.id}`,
       });
+
       toast.success(deps.t("orbit.view_once_sent") || "View-once photo sent");
     } catch (e: any) {
       toast.error(e?.message || "Upload failed");
