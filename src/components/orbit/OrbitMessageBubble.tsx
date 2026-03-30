@@ -1,5 +1,7 @@
+import { memo } from "react";
 import { OrbitReadState } from "@/components/orbit/OrbitReadState";
 import { Reply, Pencil, Trash2, Pin } from "lucide-react";
+import { orbitLabels } from "@/families/orbit-i18n/orbit-labels";
 
 type Props = {
   id: string;
@@ -16,22 +18,13 @@ type Props = {
   onPin?: () => void;
 };
 
-export function OrbitMessageBubble(props: Props) {
+function OrbitMessageBubbleInner(props: Props) {
   const {
-    body,
-    createdAt,
-    deliveredAt,
-    readAt,
-    editedAt,
-    deletedAt,
-    isOwn,
-    onReply,
-    onEdit,
-    onDelete,
-    onPin,
+    body, createdAt, deliveredAt, readAt, editedAt, deletedAt,
+    isOwn, onReply, onEdit, onDelete, onPin,
   } = props;
 
-  const content = deletedAt ? "This message was deleted" : body;
+  const content = deletedAt ? orbitLabels.message.deleted : body;
 
   return (
     <div className={`flex ${isOwn ? "justify-end" : "justify-start"} group`}>
@@ -54,7 +47,7 @@ export function OrbitMessageBubble(props: Props) {
               hour: "2-digit",
               minute: "2-digit",
             })}
-            {editedAt && !deletedAt ? " · edited" : ""}
+            {editedAt && !deletedAt ? ` · ${orbitLabels.message.edited}` : ""}
           </span>
 
           <OrbitReadState deliveredAt={deliveredAt} readAt={readAt} isOwn={isOwn} />
@@ -64,8 +57,8 @@ export function OrbitMessageBubble(props: Props) {
           <div className="absolute -top-8 right-0 hidden group-hover:flex items-center gap-0.5 bg-popover border border-border rounded-lg shadow-md px-1 py-0.5">
             <button
               onClick={onReply}
-              className="p-1 rounded hover:bg-muted/60 transition-colors"
-              title="Reply"
+              className="p-1 rounded hover:bg-muted/60 transition-colors active:scale-90"
+              title={orbitLabels.actions.reply}
             >
               <Reply className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
@@ -73,15 +66,15 @@ export function OrbitMessageBubble(props: Props) {
               <>
                 <button
                   onClick={onEdit}
-                  className="p-1 rounded hover:bg-muted/60 transition-colors"
-                  title="Edit"
+                  className="p-1 rounded hover:bg-muted/60 transition-colors active:scale-90"
+                  title={orbitLabels.actions.edit}
                 >
                   <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
                 <button
                   onClick={onDelete}
-                  className="p-1 rounded hover:bg-muted/60 transition-colors"
-                  title="Delete"
+                  className="p-1 rounded hover:bg-muted/60 transition-colors active:scale-90"
+                  title={orbitLabels.actions.delete}
                 >
                   <Trash2 className="w-3.5 h-3.5 text-destructive" />
                 </button>
@@ -89,8 +82,8 @@ export function OrbitMessageBubble(props: Props) {
             )}
             <button
               onClick={onPin}
-              className="p-1 rounded hover:bg-muted/60 transition-colors"
-              title="Pin"
+              className="p-1 rounded hover:bg-muted/60 transition-colors active:scale-90"
+              title={orbitLabels.actions.pin}
             >
               <Pin className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
@@ -100,3 +93,5 @@ export function OrbitMessageBubble(props: Props) {
     </div>
   );
 }
+
+export const OrbitMessageBubble = memo(OrbitMessageBubbleInner);
