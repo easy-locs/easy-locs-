@@ -616,37 +616,35 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         open={showMultiPhoto}
         onClose={() => setShowMultiPhoto(false)}
         onSend={(attachments, caption) => {
-          // Sort by order, then send each via orbitDispatch sequentially
           const sorted = [...attachments].sort((a, b) => a.order - b.order);
+          const files = sorted.map(a => a.file);
+          const convId = thread?.conversationId || thread?.id;
+          if (!convId || !files.length) return;
+
           void (async () => {
             const { orbitDispatch } = await import("@/families/orbit-dispatch/orbit-dispatch");
             const { transportUploadWithPrepare } = await import("@/families/media/transport/transport-engine");
             const { TransportPolicy } = await import("@/families/media/transport/transport-policy");
-            const convId = thread?.conversationId || thread?.id;
-            if (!convId) return;
-            for (let i = 0; i < sorted.length; i++) {
-              const att = sorted[i];
-              const decision = TransportPolicy.decide(att.file);
-              await orbitDispatch({
-                type: "send_media",
-                conversationId: convId,
-                file: att.file,
-                caption: i === 0 ? caption : undefined,
-                viewOnce: false,
-                uploadFn: async (file, _path, onProgress) => {
-                  const result = await transportUploadWithPrepare(file, {
-                    pathPrefix: orgId || "orbit-media",
-                    compress: decision.shouldCompress,
-                    maxDimension: decision.maxDimension || undefined,
-                    quality: decision.quality || undefined,
-                    callbacks: { onProgress },
-                  });
-                  return result.publicUrl;
-                },
-                pathPrefix: orgId || "orbit-media",
-              });
-            }
-            msgFamily.loader.loadMessages();
+
+            await orbitDispatch({
+              type: "send_media_batch",
+              conversationId: convId,
+              files,
+              caption: caption || undefined,
+              viewOnce: false,
+              uploadFn: async (file, _path, onProgress) => {
+                const decision = TransportPolicy.decide(file);
+                const result = await transportUploadWithPrepare(file, {
+                  pathPrefix: orgId || "orbit-media",
+                  compress: decision.shouldCompress,
+                  maxDimension: decision.maxDimension || undefined,
+                  quality: decision.quality || undefined,
+                  callbacks: { onProgress },
+                });
+                return result.publicUrl;
+              },
+              pathPrefix: orgId || "orbit-media",
+            });
           })();
         }}
       />
