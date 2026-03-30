@@ -54,6 +54,7 @@ function formatDuration(s: number | null): string {
 
 export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (peerId: string, peerName: string) => void }) {
   const { user } = useAuth();
+  const myOrbitId = user?.id ? `orbit_${user.id.slice(0, 15)}` : null;
   const { startCall, isInCall, isStartingCall } = useCall();
   const { t } = useI18n();
   const [calls, setCalls] = useState<CallLog[]>([]);
@@ -149,7 +150,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
     }
 
     haptic("medium");
-    const peerId = call.caller_orbit_id === user?.id ? call.receiver_orbit_id : call.caller_orbit_id;
+    const peerId = call.caller_orbit_id === myOrbitId ? call.receiver_orbit_id : call.caller_orbit_id;
 
     trackOrbitEvent("orbit.call.started", { screen: "calls", component: "CommCallsSection", action: "redial", payload: { callType: call.call_type }, result: "success" });
     await startCall({
@@ -158,7 +159,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
       peerName: peerId,
       isVideo: call.call_type === "video",
     });
-  }, [startCall, isInCall, isStartingCall, user?.id]);
+  }, [startCall, isInCall, isStartingCall, myOrbitId]);
 
   const filtered = calls.filter(c => {
     if (filter === "missed" && c.status !== "missed") return false;
