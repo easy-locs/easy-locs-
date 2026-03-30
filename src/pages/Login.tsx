@@ -63,30 +63,31 @@ const Login = () => {
 
     let failedStep: string | null = null;
     const MAX_RETRIES = 2;
+    const abortController = new AbortController();
 
     const attemptLogin = async (attempt: number): Promise<void> => {
-      const LOGIN_TIMEOUT_MS = 15_000;
+      // Exponential backoff: 10s → 12s → 15s (give server more time on retries)
+      const LOGIN_TIMEOUT_MS = 10_000 + attempt * 2_000;
 
       if (attempt > 0) {
         setRetryStatus(`Nouvelle tentative… (${attempt}/${MAX_RETRIES})`);
       }
 
-      authLog("LOGIN_SUPABASE_REQUEST_STARTED", { traceId, attempt });
+      authLog("LOGIN_SUPABASE_REQUEST_STARTED", { traceId, attempt, timeoutMs: LOGIN_TIMEOUT_MS });
       const reqStart = Date.now();
 
-      const timeoutTimer = setTimeout(() => {
-        authWarn("LOGIN_TIMEOUT_TRIGGERED", { traceId, timeoutMs: LOGIN_TIMEOUT_MS, attempt });
-      }, LOGIN_TIMEOUT_MS);
-
       try {
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("__TIMEOUT__")), LOGIN_TIMEOUT_MS)
-        );
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          const timer = setTimeout(() => reject(new Error("__TIMEOUT__")), LOGIN_TIMEOUT_MS);
+          abortController.signal.addEventListener("abort", () => {
+            clearTimeout(timer);
+            reject(new Error("__ABORTED__"));
+          });
+        });
         const { data, error } = await Promise.race([
           supabase.auth.signInWithPassword({ email, password }),
           timeoutPromise,
         ]);
-        clearTimeout(timeoutTimer);
         const durationMs = Date.now() - reqStart;
 
         if (error) {
@@ -95,7 +96,8 @@ const Login = () => {
           });
           const isServerTimeout = error.message?.includes("timeout") || error.message?.includes("deadline") || error.message?.includes("504");
           if (isServerTimeout && attempt < MAX_RETRIES) {
-            await new Promise((r) => setTimeout(r, 2000));
+            // Exponential backoff: 1.5s, 3s
+            await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
             return attemptLogin(attempt + 1);
           }
           failedStep = "LOGIN_SUPABASE_RESPONSE";
@@ -112,7 +114,6 @@ const Login = () => {
           authLog("LOGIN_SUPABASE_RESPONSE", {
             traceId, success: true, error: null, durationMs, attempt,
           });
-          // Redirect immediately — hydration happens in AuthContext post-redirect
           setRetryStatus(null);
           loginInFlight.current = false;
           await redirectAfterLogin(traceId, data.user?.id);
@@ -121,16 +122,18 @@ const Login = () => {
           clearActiveTrace();
         }
       } catch (err: any) {
-        clearTimeout(timeoutTimer);
         const durationMs = Date.now() - reqStart;
         const isTimeout = err?.message === "__TIMEOUT__";
+        const isAborted = err?.message === "__ABORTED__";
+
+        if (isAborted) return; // User navigated away
 
         authError("LOGIN_SUPABASE_RESPONSE", {
           traceId, success: false, error: isTimeout ? "CLIENT_TIMEOUT" : (err?.message ?? "UNKNOWN"), durationMs, attempt,
         });
 
         if (isTimeout && attempt < MAX_RETRIES) {
-          await new Promise((r) => setTimeout(r, 2000));
+          await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
           return attemptLogin(attempt + 1);
         }
 

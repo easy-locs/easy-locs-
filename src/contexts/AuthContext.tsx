@@ -72,12 +72,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const bootstrapOrbitRef = useRef<string | null>(null);
 
   // ── Shared timeout helper ──
-  const AUTH_QUERY_TIMEOUT = 5_000;
-  const withTimeout = useCallback(<T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
+  const AUTH_QUERY_TIMEOUT = 4_000;
+  const withTimeout = useCallback(<T,>(thenable: PromiseLike<T>, label: string, customMs?: number): Promise<T> =>
     Promise.race([
       Promise.resolve(thenable),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`${label} timed out (${AUTH_QUERY_TIMEOUT}ms)`)), AUTH_QUERY_TIMEOUT)
+        setTimeout(() => reject(new Error(`${label} timed out (${customMs ?? AUTH_QUERY_TIMEOUT}ms)`)), customMs ?? AUTH_QUERY_TIMEOUT)
       ),
     ]), []);
 
@@ -251,7 +251,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!mounted) return;
       console.warn("[AuthContext] safety timeout reached — unblocking loading state");
       setLoading(false);
-    }, 5000);
+      setProfileLoaded(true); // Ensure downstream components unblock too
+    }, 3500);
 
     markV1AuthActive();
 
