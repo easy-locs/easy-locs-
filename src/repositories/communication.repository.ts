@@ -5,7 +5,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
-import { assertNoLegacyIds } from "@/lib/governance";
+// Governance: warn-only guards at repository gateway level
 
 const db = supabase as any;
 
