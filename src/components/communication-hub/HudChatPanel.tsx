@@ -82,6 +82,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const { settings: privacySettings } = usePrivacySettings();
 
   const security = useSecurityDialogs();
+  const currentConversationId = thread?.conversationId || thread?.id || "";
+
+  // ── Sync stores to active conversation ──
+  const setActiveConversation = useOrbitComposerStore((s) => s.setActiveConversation);
+  const globalSelectionMode = useOrbitSelectionStore((s) => s.mode);
+  const globalSelectionConvId = useOrbitSelectionStore((s) => s.conversationId);
+  const clearGlobalSelection = useOrbitSelectionStore((s) => s.clearSelection);
+
+  useEffect(() => {
+    setActiveConversation(currentConversationId || null);
+    // Clear selection if switching to a different conversation
+    if (globalSelectionConvId && globalSelectionConvId !== currentConversationId) {
+      clearGlobalSelection();
+    }
+  }, [currentConversationId]);
 
   // ── Identity resolver (canonical family) ──
   const resolveAuthUserId = useResolveAuthUserId(t);
