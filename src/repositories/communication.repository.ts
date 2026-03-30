@@ -5,7 +5,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
-// Governance: warn-only guards at repository gateway level
+import { assertNoLegacyIds, assertValidMessageType, assertCanonicalMetadata } from "@/lib/governance";
 
 const db = supabase as any;
 
@@ -26,15 +26,11 @@ export async function insertMessage(params: {
   metadata?: Record<string, any>;
   replyToMessageId?: string | null;
 }) {
-  // Governance: warn-only at gateway level (send families enforce strict)
-  const legacyKeys = ["threadId", "v2ConversationId", "contextId"];
-  for (const key of legacyKeys) {
-    if (key in (params as any)) {
-      console.warn(`[Governance] insertMessage: legacy key "${key}" detected. Use canonical IDs.`);
-    }
-  }
-  if (params.metadata && !params.metadata.schemaVersion) {
-    console.warn(`[Governance] insertMessage: metadata missing schemaVersion: 1 for type="${params.type}"`);
+  // Governance: STRICT MODE — all callers must comply
+  assertNoLegacyIds(params as any, "insertMessage");
+  assertValidMessageType(params.type, "insertMessage");
+  if (params.metadata) {
+    assertCanonicalMetadata(params.metadata, "insertMessage");
   }
 
   await ensureOrbitProfile({
