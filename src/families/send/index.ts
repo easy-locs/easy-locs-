@@ -10,12 +10,15 @@ export { sendMedia } from "./send-media";
 export { sendMediaOptimistic, retryMediaUpload } from "./send-media-optimistic";
 export { sendLocation } from "./send-location";
 export type { LocationPayload } from "./send-location";
-export { sendSystemEvent } from "./send-system-event";
+export { sendSystemEvent, sendCallEvent } from "./send-system-event";
 export { sendPaymentRequest, sendPaymentReceipt, sendPaymentEvent } from "./send-payment";
 export { formatSendPreview, previewFromMessage } from "./send-preview";
 export { reconcileOptimistic, markOptimisticFailed, removeOptimistic, deduplicateRealtimeMessage } from "./send-reconcile";
 export type { SendContext } from "./send-context";
 
-// Send family owns: text, voice, media, location, payment, system-event message insertion.
+// Re-export canonical types for convenience
+export type { CanonicalMessageType, CanonicalMetadata, CanonicalMessageEnvelope } from "@/families/messages/canonical-envelope";
+
+// Send family owns: text, voice, media, location, payment, call, system-event message insertion.
 // Plus: preview formatting, optimistic reconciliation, deduplication.
 // No other module may insert into chat_messages_v2 directly.
