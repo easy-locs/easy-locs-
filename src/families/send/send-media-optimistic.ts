@@ -79,7 +79,7 @@ export async function sendMediaOptimistic(
   }
 
   // Step 2: Create optimistic message in DB immediately with local preview
-  const preview = payload.caption || (payload.viewOnce ? "📷 View-once" : mediaKind === "video" ? "🎬 Video" : "📎 Attachment");
+  const preview = payload.caption || (payload.viewOnce ? orbitLabels.message.viewOnce : mediaKind === "video" ? orbitLabels.message.videoAttachment : orbitLabels.message.attachment);
 
   let messageData: any;
   try {

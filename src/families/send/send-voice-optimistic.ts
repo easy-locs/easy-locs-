@@ -21,7 +21,7 @@ export async function sendVoiceOptimistic(
     storagePath: string;
   },
 ): Promise<void> {
-  const body = `🎤 Voice message (${opts.durationLabel})`;
+  const body = orbitLabels.message.voiceMessage(opts.durationLabel);
   const optimisticMeta = buildVoiceMeta(opts.localUrl, opts.durationSeconds);
 
   // Step 1: Insert optimistic message with local blob URL → visible immediately
