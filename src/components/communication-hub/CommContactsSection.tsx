@@ -172,15 +172,18 @@ export default function CommContactsSection() {
     setLoading(true);
     try {
       const rows = await listOrbitContacts(user.id);
-      setContacts((rows || []).map((r: any) => ({
-        id: r.id,
-        name: r.display_name || r.email || r.phone || t("orbit.contacts.unnamed"),
-        email: r.email,
-        phone: r.phone,
-        avatar_url: r.avatar_url,
-        is_favorite: !!r.is_favorite,
-        contact_user_id: r.peer_user_id,
-      })));
+      setContacts((rows || []).map((r: any) => {
+        const identity = resolveCanonicalDisplayIdentity(r);
+        return {
+          id: r.id,
+          name: identity.displayName,
+          email: r.email,
+          phone: r.phone,
+          avatar_url: identity.avatarUrl,
+          is_favorite: !!r.is_favorite,
+          contact_user_id: r.peer_user_id,
+        };
+      }));
     } catch {
       toast.error(t("orbit.contacts.load_error"));
     } finally {
