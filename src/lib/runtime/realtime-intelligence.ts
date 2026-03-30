@@ -3,6 +3,7 @@
  * Replaces dumb "subscribe to everything" with intelligent channel management.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerChannel, recordEvent, unregisterChannel, checkStaleness } from "./realtime-monitor";
 import { reportHealth } from "./health-aggregator";
 
@@ -77,7 +78,7 @@ export function createSmartChannel(config: SmartChannelConfig): () => void {
   return () => {
     if (flushTimer) clearTimeout(flushTimer);
     unregisterChannel(channelName);
-    supabase.removeChannel(channel);
+    removeRealtimeChannel(channel);
   };
 }
 

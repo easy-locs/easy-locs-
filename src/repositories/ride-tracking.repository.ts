@@ -2,6 +2,7 @@
  * ride-tracking.repository — DB operations for TrackRidePage.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export async function fetchMobilityJob(jobId: string) {
   const { data } = await supabase.from("mobility_jobs").select("*").eq("id", jobId).single();
@@ -15,7 +16,7 @@ export function subscribeToJob(jobId: string, onUpdate: (payload: any) => void) 
       event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${jobId}`,
     }, (payload) => onUpdate(payload.new))
     .subscribe();
-  return { channel: ch, unsubscribe: () => supabase.removeChannel(ch) };
+  return { channel: ch, unsubscribe: () => removeRealtimeChannel(ch) };
 }
 
 export async function fetchRiderProfile(riderId: string) {

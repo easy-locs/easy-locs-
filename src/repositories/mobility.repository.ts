@@ -5,6 +5,7 @@
  *         trip_live_state, trip_location_points, merchant_profiles
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { getCurrentUserIdOrNull } from "@/families/identity";
 
 // Re-export for backward compatibility — consumers should migrate to @/families/identity
@@ -242,7 +243,7 @@ export function subscribeToTable(channelName: string, table: string, filter: str
 }
 
 export function unsubscribeChannel(channel: any) {
-  supabase.removeChannel(channel);
+  removeRealtimeChannel(channel);
 }
 
 // ─── Orders (legacy driver mission detail) ───

@@ -2,6 +2,7 @@
  * delivery.repository — All DB ops for delivery components.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // ── Disputes ──
 export async function fetchDisputes() {
@@ -119,7 +120,7 @@ export function subscribeLiveTracking(trackingId: string, onUpdate: (data: any) 
     .channel(`tracking-${trackingId}`)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "live_trackings", filter: `id=eq.${trackingId}` }, (payload) => onUpdate(payload.new))
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }
 
 export async function findActiveTracking(contextType: string, contextId: string): Promise<string | null> {
