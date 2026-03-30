@@ -129,11 +129,11 @@ class RealtimeManager {
     }
 
     if (this.userChannel) {
-      supabase.removeChannel(this.userChannel);
+      removeRealtimeChannel(this.userChannel);
       this.userChannel = null;
     }
     if (this.presenceChannel) {
-      supabase.removeChannel(this.presenceChannel);
+      removeRealtimeChannel(this.presenceChannel);
       this.presenceChannel = null;
     }
     if (this.presenceInterval) {
@@ -150,8 +150,8 @@ class RealtimeManager {
     }
 
     for (const [, sub] of this.threadSubs) {
-      supabase.removeChannel(sub.channel);
-      supabase.removeChannel(sub.typingChannel);
+      removeRealtimeChannel(sub.channel);
+      removeRealtimeChannel(sub.typingChannel);
     }
     this.threadSubs.clear();
     this.recentSignals.clear();
@@ -166,7 +166,7 @@ class RealtimeManager {
     this.orgId = orgId;
     if (this.started && this.userId) {
       if (this.userChannel) {
-        supabase.removeChannel(this.userChannel);
+        removeRealtimeChannel(this.userChannel);
         this.userChannel = null;
       }
       this.initUserChannel();

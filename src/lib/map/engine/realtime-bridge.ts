@@ -1,11 +1,11 @@
 /**
  * RealtimeBridge — Connects realtime data sources to map layers via platformBus.
  * Zero business logic. Pure data routing.
+ * Uses canonical realtime channel factory.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { shouldThrottleRealtimeUpdate } from "../engine/performance-engine";
-import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const MAP_RT_EVENTS = {
   DRIVERS_UPDATED: "map.rt.drivers.updated",
@@ -14,12 +14,10 @@ const MAP_RT_EVENTS = {
   WEATHER_UPDATED: "map.rt.weather.updated",
 } as const;
 
-let channels: RealtimeChannel[] = [];
+let channels: any[] = [];
 
 export function startMapRealtimeBridge() {
-  // Driver positions
-  const driverChannel = supabase
-    .channel("map-drivers-rt")
+  const driverChannel = createRealtimeChannel("map-drivers-rt")
     .on("postgres_changes", {
       event: "*", schema: "public", table: "rider_presence",
     }, (payload) => {
@@ -29,9 +27,7 @@ export function startMapRealtimeBridge() {
     .subscribe();
   channels.push(driverChannel);
 
-  // Order live state
-  const orderChannel = supabase
-    .channel("map-orders-rt")
+  const orderChannel = createRealtimeChannel("map-orders-rt")
     .on("postgres_changes", {
       event: "*", schema: "public", table: "trip_live_state",
     }, (payload) => {
@@ -43,6 +39,6 @@ export function startMapRealtimeBridge() {
 }
 
 export function stopMapRealtimeBridge() {
-  channels.forEach(ch => supabase.removeChannel(ch));
+  channels.forEach(ch => removeRealtimeChannel(ch));
   channels = [];
 }

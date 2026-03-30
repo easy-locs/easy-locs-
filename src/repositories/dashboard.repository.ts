@@ -2,6 +2,7 @@
  * dashboard.repository — All DB operations for dashboard pages (Buildings, Tasks, Interventions, etc.)
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // ── Org resolution ──
 export async function fetchUserOrg(userId: string) {
@@ -115,7 +116,7 @@ export function subscribeInterventions(orgId: string, onUpdate: () => void) {
     .channel("interventions-rt")
     .on("postgres_changes", { event: "*", schema: "public", table: "interventions", filter: `org_id=eq.${orgId}` }, onUpdate)
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }
 
 // ── Vault ──
@@ -316,7 +317,7 @@ export function subscribeMobilityJob(jobId: string, onUpdate: (data: any) => voi
     .channel(`track-job-${jobId}`)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${jobId}` }, (payload) => onUpdate(payload.new))
     .subscribe();
-  return { unsubscribe: () => supabase.removeChannel(ch), channel: ch };
+  return { unsubscribe: () => removeRealtimeChannel(ch), channel: ch };
 }
 
 // ── Onboarding ──

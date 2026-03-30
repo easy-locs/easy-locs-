@@ -1,8 +1,9 @@
 /**
  * radar-realtime-bridge — Atomic unit: subscribe to live driver/order position updates.
  * Single responsibility: realtime sync for radar map.
+ * Uses canonical realtime channel factory.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerChannel, recordEvent, unregisterChannel } from "@/lib/runtime/realtime-monitor";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 
@@ -11,8 +12,7 @@ const CHANNEL_NAME = "radar-presence";
 export function subscribeRadarPresence(onUpdate: (payload: any) => void): () => void {
   registerChannel(CHANNEL_NAME, "radar");
 
-  const channel = supabase
-    .channel("radar-driver-presence")
+  const channel = createRealtimeChannel("radar-driver-presence")
     .on(
       "postgres_changes" as any,
       { event: "*", schema: "public", table: "rider_presence" },
@@ -26,7 +26,7 @@ export function subscribeRadarPresence(onUpdate: (payload: any) => void): () => 
 
   return () => {
     unregisterChannel(CHANNEL_NAME);
-    supabase.removeChannel(channel);
+    removeRealtimeChannel(channel);
   };
 }
 
@@ -34,8 +34,7 @@ export function subscribeRadarJobs(onUpdate: (payload: any) => void): () => void
   const channelName = "radar-jobs";
   registerChannel(channelName, "radar");
 
-  const channel = supabase
-    .channel("radar-mobility-jobs")
+  const channel = createRealtimeChannel("radar-mobility-jobs")
     .on(
       "postgres_changes" as any,
       { event: "UPDATE", schema: "public", table: "mobility_jobs" },
@@ -48,6 +47,6 @@ export function subscribeRadarJobs(onUpdate: (payload: any) => void): () => void
 
   return () => {
     unregisterChannel(channelName);
-    supabase.removeChannel(channel);
+    removeRealtimeChannel(channel);
   };
 }

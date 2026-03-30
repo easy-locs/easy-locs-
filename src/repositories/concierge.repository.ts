@@ -2,6 +2,7 @@
  * concierge.repository — Single source of truth for all concierge DB operations.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // ── Services ──
 export async function fetchConciergeServices(orgId: string) {
@@ -103,7 +104,7 @@ export function subscribeConciergeOrders(orgId: string, onChange: () => void) {
     .channel('concierge-orders-sync')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'concierge_orders', filter: `org_id=eq.${orgId}` }, onChange)
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }
 
 // ── Dashboard Queries (ConciergeOperations) ──
@@ -153,5 +154,5 @@ export function subscribeMerchantOrders(onInsert: (payload: any) => void) {
     .channel("merchant-orders")
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "concierge_orders" }, (payload) => onInsert(payload.new))
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }

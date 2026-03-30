@@ -3,6 +3,7 @@
  * No component should call supabase directly for rental data.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // ── Property CRUD ──
 
@@ -165,7 +166,7 @@ export function subscribeRentalMessages(tenantId: string, onInsert: (msg: any) =
       onUpdate(payload.new as any);
     })
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }
 
 // ── Document insert ──

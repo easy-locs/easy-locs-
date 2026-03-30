@@ -5,6 +5,7 @@
  * useICalService, ListingManager, PropertyPhotos, SeasonalShowcase.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // ─── Seasonal Bookings ───
 export async function fetchSeasonalBookings(orgId: string) {
@@ -145,7 +146,7 @@ export function subscribeToBookingRequests(orgId: string, onEvent: () => void) {
     .channel("seasonal-rt")
     .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests", filter: `org_id=eq.${orgId}` }, onEvent)
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }
 
 // ─── Analytics ───

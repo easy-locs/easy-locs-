@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 type Callback = (payload: any) => void;
 
@@ -29,6 +30,6 @@ export function unsubscribeFromTable(key: string) {
   const channel = channels[key];
   if (!channel) return;
 
-  supabase.removeChannel(channel);
+  removeRealtimeChannel(channel);
   delete channels[key];
 }
