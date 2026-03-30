@@ -194,12 +194,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
     const draft = composerStore.getDraft(currentConversationId);
 
-    if (compFamily.composer.editState) {
+    // ── EDIT MODE: read from composerStore (single source of truth) ──
+    const activeEdit = composerStore.edits[currentConversationId];
+    if (activeEdit) {
       composerStore.setSending(currentConversationId, true);
       try {
-        await messageActions.editMessage(compFamily.composer.editState.messageId, draft.trim());
+        await messageActions.editMessage(activeEdit.messageId, draft.trim());
         composerStore.clearAfterSend(currentConversationId);
-        compFamily.composer.setEditState(null);
       } finally {
         composerStore.setSending(currentConversationId, false);
       }
@@ -211,14 +212,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     // ── LOCK + CLEAR immediately — before any async work ──
     composerStore.setSending(currentConversationId, true);
     composerStore.clearDraft(currentConversationId);
-    compFamily.composer.setReplyState(null);
+    composerStore.clearReply(currentConversationId);
 
     try {
       await messageSender.handleSend(draft);
     } finally {
       composerStore.setSending(currentConversationId, false);
     }
-  }, [compFamily.composer.editState, messageActions, messageSender, compFamily.composer.setReplyState, composerStore, currentConversationId]);
+  }, [messageActions, messageSender, composerStore, currentConversationId]);
 
   if (!thread) return <ChatEmptyState t={t} />;
 
