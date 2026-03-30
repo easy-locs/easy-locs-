@@ -3,7 +3,7 @@
  * Single responsibility: identity + conversation resolution for HudChatPanel.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getCurrentUserId } from "@/families/identity";
 import { toast } from "sonner";
 
 interface UseHudConversationResolverParams {
