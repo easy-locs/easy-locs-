@@ -108,6 +108,29 @@ export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResu
         const ctx = await resolveContext(cmd.conversationId);
         return { ...await executeReplyMessage(ctx, cmd), requestId };
       }
+      case "group_create": {
+        const { createOrbitGroup } = await import("@/families/groups/group-create");
+        const result = await createOrbitGroup({ title: cmd.title, memberUserIds: cmd.memberUserIds, avatarUrl: cmd.avatarUrl });
+        return { ok: !!result, groupId: result?.id, requestId };
+      }
+      case "group_update": {
+        // Delegate to group update pipeline
+        const { updateOrbitGroup } = await import("@/families/groups/group-update");
+        await updateOrbitGroup(cmd);
+        return { ok: true, requestId };
+      }
+      case "presence_update": {
+        const { PresencePipeline } = await import("@/families/presence");
+        const orbit = getOrbitIdentity();
+        if (orbit?.userId) PresencePipeline.sendPresence(orbit.userId, cmd.status);
+        return { ok: true, requestId };
+      }
+      case "typing_update": {
+        const { PresencePipeline } = await import("@/families/presence");
+        const orbit = getOrbitIdentity();
+        if (orbit?.userId) PresencePipeline.sendTyping(cmd.conversationId, orbit.userId, orbit.displayName || "", cmd.activity);
+        return { ok: true, requestId };
+      }
       default:
         return { ok: false, error: `Unknown command type: ${(cmd as any).type}`, requestId };
     }
