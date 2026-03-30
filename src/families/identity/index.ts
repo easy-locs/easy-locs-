@@ -10,8 +10,12 @@ import { supabase } from "@/integrations/supabase/client";
 export {
   resolveCanonicalDisplayIdentity,
   resolvePeerIdentity,
+  resolveCallablePeer,
+  resolveNotificationIdentity,
   type CanonicalDisplayIdentity,
   type PeerIdentity,
+  type CallablePeer,
+  type NotificationIdentity,
 } from "@/lib/orbit/canonical-helpers";
 
 // ── Re-export orbit identity hook (reactive) ──

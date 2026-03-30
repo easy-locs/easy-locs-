@@ -39,7 +39,6 @@ export function formatCallStatusLabel(status: string, duration?: number | null):
 // ── Canonical Conversation Preview ──
 export function formatConversationPreview(lastMessage?: string | null, fallbackEmail?: string | null): string {
   if (!lastMessage) return fallbackEmail || "—";
-  // Strip metadata tags like [system] etc
   const cleaned = lastMessage.replace(/\s*\[[^\]]+\]/g, "").trim();
   if (!cleaned) return fallbackEmail || "—";
   return cleaned.length > 60 ? cleaned.slice(0, 57) + "…" : cleaned;
@@ -51,7 +50,6 @@ export interface CanonicalDisplayIdentity {
   subtitle: string;
   avatarUrl: string | null;
   initials: string;
-  /** Pass-through canonical IDs when available */
   canonicalUserId?: string | null;
   canonicalOrbitId?: string | null;
 }
@@ -98,26 +96,40 @@ export function resolveCanonicalDisplayIdentity(entity: {
   };
 }
 
-// ── Canonical Peer Identity (calls, headers, cards) ──
+// ── Canonical Peer Identity (calls, headers, cards, notifications) ──
 export interface PeerIdentity {
   userId: string | null;
   orbitId: string | null;
   displayName: string;
   avatarUrl: string | null;
   initials: string;
+  email: string | null;
+  phone: string | null;
+  isKnownContact: boolean;
   isMe: boolean;
 }
 
+function buildInitials(name: string): string {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((w: string) => w[0])
+    .join("")
+    .toUpperCase() || "?";
+}
+
 /**
- * resolvePeerIdentity — Single source of truth for the peer in a call or conversation.
- * Fallback chain: thread.name → profile.display_name → contact.name → email → "Contact"
+ * resolvePeerIdentity — SINGLE source of truth for the peer in a call or conversation.
+ * Fallback chain: thread.name → email → "Contact"
  *
- * Use EVERYWHERE: call cards, incoming call bar, call history, mini player, security panel.
+ * Use EVERYWHERE: call cards, incoming call bar, call history, mini player,
+ * security panel, notifications, headers, avatars.
  */
 export function resolvePeerIdentity(
   thread: {
     name?: string | null;
     email?: string | null;
+    phone?: string | null;
     avatarUrl?: string | null;
     avatar_url?: string | null;
     peerUserId?: string | null;
@@ -126,24 +138,62 @@ export function resolvePeerIdentity(
   currentUserId?: string | null,
 ): PeerIdentity {
   if (!thread) {
-    return { userId: null, orbitId: null, displayName: "Contact", avatarUrl: null, initials: "?", isMe: false };
+    return { userId: null, orbitId: null, displayName: "Contact", avatarUrl: null, initials: "?", email: null, phone: null, isKnownContact: false, isMe: false };
   }
 
+  const hasName = !!thread.name && thread.name !== "Contact";
   const displayName = thread.name || thread.email || "Contact";
   const avatarUrl = thread.avatarUrl || thread.avatar_url || null;
-  const initials = displayName
-    .split(" ")
-    .slice(0, 2)
-    .map((w: string) => w[0])
-    .join("")
-    .toUpperCase() || "?";
 
   return {
     userId: thread.peerUserId || null,
     orbitId: thread.peerOrbitId || null,
     displayName,
     avatarUrl,
-    initials,
+    initials: buildInitials(displayName),
+    email: thread.email || null,
+    phone: thread.phone || null,
+    isKnownContact: hasName,
     isMe: !!(currentUserId && thread.peerUserId === currentUserId),
+  };
+}
+
+// ── Callable Peer (for call initiation) ──
+export interface CallablePeer extends PeerIdentity {
+  callTargetId: string | null;
+}
+
+/**
+ * resolveCallablePeer — extends PeerIdentity with the target ID for call signaling.
+ */
+export function resolveCallablePeer(
+  thread: Parameters<typeof resolvePeerIdentity>[0],
+  currentUserId?: string | null,
+): CallablePeer {
+  const peer = resolvePeerIdentity(thread, currentUserId);
+  return {
+    ...peer,
+    callTargetId: peer.orbitId || peer.userId || null,
+  };
+}
+
+// ── Notification Identity ──
+export interface NotificationIdentity {
+  displayName: string;
+  avatarUrl: string | null;
+  initials: string;
+}
+
+/**
+ * resolveNotificationIdentity — subset of PeerIdentity for notification rendering.
+ */
+export function resolveNotificationIdentity(
+  thread: Parameters<typeof resolvePeerIdentity>[0],
+): NotificationIdentity {
+  const peer = resolvePeerIdentity(thread);
+  return {
+    displayName: peer.displayName,
+    avatarUrl: peer.avatarUrl,
+    initials: peer.initials,
   };
 }
