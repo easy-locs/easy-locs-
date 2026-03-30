@@ -99,18 +99,50 @@ export function useMessageSender(params: Params) {
     }
     completeStep(flow, validateStep);
 
-    // ── Resolve conversation ──
-    const resolveStep = addStep(flow, "resolve_conversation");
-    let conversationId: string;
+    const msgText = newMessage.trim();
+    const optimisticId = `opt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const now = new Date().toISOString();
+
+    // ── IMMEDIATE optimistic insert — before ANY network call ──
+    const optimisticMsg: ChatMessage = {
+      id: optimisticId, content: msgText, sender_id: "", // filled below
+      created_at: now, read: false, message_type: "text",
+      category: selectedCategory || "general", pending: true, failed: false,
+      reply_to_message_id: replyTo?.msgId ?? null,
+    };
+    setRawMessages((prev) => [...prev, optimisticMsg]);
+    setNewMessage("");
+    const currentReply = replyTo;
+    setReplyTo(null);
+
+    // ── Resolve auth ONCE ──
+    const resolveStep = addStep(flow, "resolve");
+    let authUserId: string;
     try {
-      const authUserId = await resolveAuthUserId();
-      if (!authUserId) {
+      const uid = await resolveAuthUserId();
+      if (!uid) {
         failStep(flow, resolveStep, "missing_auth_user");
         endFlow(flow, "failed");
+        setRawMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+        setNewMessage(msgText);
         toast.error("Authentication required.");
         return;
       }
+      authUserId = uid;
+      // Patch optimistic message with real sender
+      setRawMessages((prev) => prev.map((m) => m.id === optimisticId ? { ...m, sender_id: authUserId } : m));
+    } catch (err: any) {
+      failStep(flow, resolveStep, err.message);
+      endFlow(flow, "failed");
+      setRawMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      setNewMessage(msgText);
+      toast.error("Authentication required.");
+      return;
+    }
 
+    // ── Resolve conversation ──
+    let conversationId: string;
+    try {
       const result = await resolveConversationId({
         conversationId: thread.conversationId,
         entityId: thread.entityId,
@@ -124,40 +156,15 @@ export function useMessageSender(params: Params) {
       if (result.wasCreated) {
         onThreadUpdate(thread.id, { conversationId });
       }
-      completeStep(flow, resolveStep, { conversationId, wasCreated: result.wasCreated });
     } catch (err: any) {
       failStep(flow, resolveStep, err.message);
       endFlow(flow, "failed");
+      setRawMessages((prev) => prev.map((m) => m.id === optimisticId ? { ...m, pending: false, failed: true } : m));
+      setNewMessage(msgText);
       toast.error("Failed to resolve conversation");
       return;
     }
-
-    // ── Auth (final) ──
-    const authStep = addStep(flow, "auth_final");
-    const authUserId = await resolveAuthUserId();
-    if (!authUserId) {
-      failStep(flow, authStep, "missing_auth_user");
-      endFlow(flow, "failed");
-      toast.error("Authentication required.");
-      return;
-    }
-    completeStep(flow, authStep);
-
-    const msgText = newMessage.trim();
-    const optimisticId = `opt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const now = new Date().toISOString();
-
-    // ── Optimistic insert ──
-    const optimisticMsg: ChatMessage = {
-      id: optimisticId, content: msgText, sender_id: authUserId,
-      created_at: now, read: false, message_type: "text",
-      category: selectedCategory || "general", pending: true, failed: false,
-      reply_to_message_id: replyTo?.msgId ?? null,
-    };
-    setRawMessages((prev) => [...prev, optimisticMsg]);
-    setNewMessage("");
-    const currentReply = replyTo;
-    setReplyTo(null);
+    completeStep(flow, resolveStep, { conversationId });
 
     // ── Encryption ──
     let storedContent = msgText;
