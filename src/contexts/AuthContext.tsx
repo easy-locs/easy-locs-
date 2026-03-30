@@ -261,33 +261,56 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const hydrateAuthState = async (nextSession: Session | null) => {
       const seq = ++latestSeq;
+      const { traceId } = getActiveTrace();
+      const hydrateTraceId = traceId || crypto.randomUUID();
+
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
       useV2AuthStore.getState().syncFromV1(nextSession);
 
       if (nextSession?.user) {
+        const userId = nextSession.user.id;
+
         // ensureOrbitProfile is fire-and-forget — must never block login
         void ensureOrbitProfile({
-          userId: nextSession.user.id,
+          userId,
           email: nextSession.user.email ?? null,
           displayName: (nextSession.user.user_metadata as any)?.display_name ?? (nextSession.user.user_metadata as any)?.full_name ?? null,
           avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
         }).catch(() => null);
+
+        authLog("LOGIN_PROFILE_HYDRATE_STARTED", { traceId: hydrateTraceId, userId });
+        const hydrateStart = Date.now();
+
         try {
-          await fetchOrgId(nextSession.user.id);
+          await fetchOrgId(userId);
           if (seq !== latestSeq) return;
-          await fetchUserType(nextSession.user.id);
+          await fetchUserType(userId);
           if (seq !== latestSeq) return;
-        } catch (err) {
-          console.error("[AuthContext] hydrateAuthState failed, scheduling retry:", err);
+
+          const hydrateDuration = Date.now() - hydrateStart;
+          authLog("LOGIN_PROFILE_HYDRATE_RESULT", {
+            traceId: hydrateTraceId, success: true, error: null, durationMs: hydrateDuration,
+          });
+        } catch (err: any) {
+          const hydrateDuration = Date.now() - hydrateStart;
+          authError("LOGIN_PROFILE_HYDRATE_RESULT", {
+            traceId: hydrateTraceId, success: false,
+            error: err?.message ?? "UNKNOWN", durationMs: hydrateDuration,
+            step: "LOGIN_PROFILE_HYDRATE_RESULT",
+          });
           // Non-blocking retry after 2s if profile load failed
           setTimeout(() => {
             void (async () => {
               try {
-                await fetchOrgId(nextSession.user.id);
-                await fetchUserType(nextSession.user.id);
-              } catch (retryErr) {
-                console.warn("[AuthContext] profile retry also failed:", retryErr);
+                await fetchOrgId(userId);
+                await fetchUserType(userId);
+              } catch (retryErr: any) {
+                authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
+                  traceId: hydrateTraceId, success: false,
+                  error: retryErr?.message ?? "RETRY_FAILED",
+                  durationMs: Date.now() - hydrateStart, retryAttempt: true,
+                });
               }
             })();
           }, 2000);
