@@ -90,22 +90,15 @@ export async function sendMediaOptimistic(
       type: "media",
       body: preview,
       metadata: {
-        schemaVersion: 1,
-        ui: {
-          cardType: mediaKind === "audio" ? "voice" : "media",
-          clickable: true,
-          primaryAction: "open_media",
-        },
-        media: {
-          kind: mediaKind as any,
+        ...buildMediaMeta(mediaKind === "audio" ? "file" : mediaKind as "image" | "video" | "file", {
           url: localPreviewUrl,
           mimeType: payload.file.type,
           fileName: payload.file.name,
           fileSize: payload.file.size,
-          durationSeconds: duration ?? null,
-          viewOnce: payload.viewOnce ?? false,
-          transcriptionStatus: "none",
-        },
+          duration: duration,
+          viewOnce: payload.viewOnce,
+          uploadId,
+        }),
         transport: {
           optimisticId: uploadId,
           source: "ui",
