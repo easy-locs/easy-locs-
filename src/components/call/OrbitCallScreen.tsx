@@ -12,6 +12,7 @@ import {
   VideoIcon, VideoOff, Loader2, Shield,
 } from "lucide-react";
 import { useCallStore, type CallUIState } from "@/stores/orbit/call.store";
+import { CallMediaEngine } from "@/families/device/call-media-engine";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
