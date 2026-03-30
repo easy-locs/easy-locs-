@@ -125,7 +125,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     onAfterSend: () => msgFamily.loader.loadMessages(),
   });
 
-  // ── FAMILY: Composer ──
+  // ── FAMILY: Composer (store-backed draft) ──
+  const composerStore = useOrbitComposerStore();
+  const storeDraft = composerStore.getDraft(currentConversationId);
+  const setStoreDraft = useCallback((v: string) => composerStore.setDraft(currentConversationId, v), [composerStore, currentConversationId]);
+
   const compFamily = useThreadComposerFamily({
     thread, orgId: orgId || null, userId: user?.id, myOrbitId,
     e2eReady, encrypt, resolveAuthUserId, resolveConversationId,
@@ -135,7 +139,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     setSecurityLevel: security.setSecurityLevel as (l: string) => void,
     setViewOnceNext: security.setViewOnceNext,
     setShowLocationPicker: security.setShowLocationPicker,
-    setNewMessage: msgFamily.messageSender.setNewMessage,
+    setNewMessage: setStoreDraft,
     t,
   });
 
@@ -184,14 +188,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
   const stableHandleSend = useCallback(async () => {
     if (compFamily.composer.editState) {
-      await messageActions.editMessage(compFamily.composer.editState.messageId, messageSender.newMessage.trim());
-      messageSender.setNewMessage("");
+      await messageActions.editMessage(compFamily.composer.editState.messageId, storeDraft.trim());
+      composerStore.clearDraft(currentConversationId);
       compFamily.composer.setEditState(null);
       return;
     }
     await messageSender.handleSend();
+    composerStore.clearDraft(currentConversationId);
     compFamily.composer.setReplyState(null);
-  }, [compFamily.composer.editState, messageActions, messageSender, compFamily.composer.setReplyState]);
+  }, [compFamily.composer.editState, messageActions, messageSender, compFamily.composer.setReplyState, storeDraft, composerStore, currentConversationId]);
 
   if (!thread) return <ChatEmptyState t={t} />;
 
@@ -314,10 +319,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
               translatingMsgId={msgFamily.translatingMsgId}
               onTranslate={msgFamily.handleTranslateMessage}
               onContextMenu={stableContextMenu}
-
               onToggleSelect={selection.toggleMsgSelect}
               getCategoryIcon={msgFamily.getCategoryIcon}
               t={t}
+              conversationId={currentConversationId}
             />
           )}
           <OrbitJumpToBottomButton visible={msgFamily.showJumpToBottom} onClick={msgFamily.jumpToBottom} />
@@ -341,14 +346,17 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         {!selection.selectMode && globalSelectionMode !== "selecting" && (
           <MessageComposer
             key={currentConversationId}
-            value={messageSender.newMessage}
+            value={storeDraft}
             sending={messageSender.sending}
             uploading={attFamily.attachments.uploading}
             voiceRecording={compFamily.voiceRecorder.recording}
             voicePreview={compFamily.voicePreview}
             voiceDuration={compFamily.voiceRecorder.duration}
             replyTo={selection.replyTo ? { content: selection.replyTo.content, senderName: selection.replyTo.senderName } : null}
-            onChange={messageSender.setNewMessage}
+            onChange={(v: string) => {
+              setStoreDraft(v);
+              messageSender.setNewMessage(v);
+            }}
             onSend={stableHandleSend}
             onKeyDown={messageSender.handleKeyDown}
             onTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}

@@ -1,6 +1,7 @@
 /**
  * MessageList — Memoized message list with isolated render boundaries.
  * Hot-path optimized: filters memoized, callbacks stable, rows isolated.
+ * Each message is wrapped in OrbitMessageInteractiveWrapper for gestures + selection.
  */
 import { forwardRef, memo, useMemo, useCallback } from "react";
 import { MessageCircle } from "lucide-react";
@@ -9,6 +10,8 @@ import { format, isToday, isYesterday } from "date-fns";
 import ChatMessageBubble, { DateSeparator } from "../ChatMessageBubble";
 import DealStatusBubble, { type DealEventType } from "../DealStatusBubble";
 import MessageCardRenderer from "@/components/communication/MessageCardRenderer";
+import OrbitMessageInteractiveWrapper from "@/components/orbit/OrbitMessageInteractiveWrapper";
+import { useOrbitSelectionStore } from "@/stores/orbit/selection.store";
 import { resolveMessageMode } from "@/families/messages/message-mode";
 import type { ChatMessage } from "../types";
 
@@ -31,6 +34,8 @@ interface Props {
   onToggleSelect: (id: string) => void;
   getCategoryIcon: (cat: string) => string;
   t: (key: string) => string;
+  /** Conversation ID for gesture/selection wiring */
+  conversationId?: string;
 }
 
 /** Stable pending-offline lookup set — avoids .some() per row */
@@ -42,9 +47,13 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
   messages, rawCount, isDecrypting, typingIndicator, hiddenMsgIds,
   selectedMsgIds, selectMode, pendingOffline, userId, threadName, locale,
   showOriginal, translatingMsgId, onTranslate, onContextMenu, onToggleSelect,
-  getCategoryIcon, t,
+  getCategoryIcon, t, conversationId,
 }, ref) => {
   const pendingSet = usePendingSet(pendingOffline);
+
+  // Global selection store for InteractiveWrapper
+  const globalSelectionMode = useOrbitSelectionStore((s) => s.mode);
+  const enterSelectionMode = useOrbitSelectionStore((s) => s.enterSelectionMode);
 
   // Memoize filtered messages — only recomputes when messages or hiddenMsgIds change
   const filtered = useMemo(() => {
@@ -81,9 +90,11 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
 
   // Stable context-menu handler that doesn't create new closures per row
   const handleContextMenu = useCallback((e: any, msg: ChatMessage, isMe: boolean) => {
-    if (selectMode) { onToggleSelect(msg.id); return; }
+    if (selectMode || globalSelectionMode === "selecting") { onToggleSelect(msg.id); return; }
     onContextMenu(e, msg, isMe);
-  }, [selectMode, onContextMenu, onToggleSelect]);
+  }, [selectMode, globalSelectionMode, onContextMenu, onToggleSelect]);
+
+  const cid = conversationId || "";
 
   return (
     <div ref={ref} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-3 pb-6" style={{ background: "hsl(var(--hud-bg))" }}>
@@ -117,41 +128,59 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
         rowData.map(({ msg, showDateSep, dateLabel, isMe, isConsecutive }) => {
           const mode = resolveMessageMode(msg);
           const isSpecialCard = mode.startsWith("call_") || mode.startsWith("location_") || mode.startsWith("payment_") || mode === "system_notice";
+          const isDealEvent = msg.message_type === "deal_event" && (msg as any).metadata_json;
+          const isSystem = msg.message_type === "system" || isDealEvent;
+
           return (
             <div key={msg.id}>
               {showDateSep && <DateSeparator date={dateLabel} />}
-              {msg.message_type === "deal_event" && (msg as any).metadata_json ? (
-                <DealStatusBubble
-                  eventType={((msg as any).metadata_json?.event_type || "status_change") as DealEventType}
-                  data={(msg as any).metadata_json?.data || {}}
-                  createdAt={msg.created_at}
-                  actorRole={(msg as any).metadata_json?.actor_role}
-                />
-              ) : isSpecialCard ? (
-                <MessageCardRenderer
-                  msg={msg}
-                  isMe={isMe}
-                  currentUserId={userId}
-                />
-              ) : (
-                <ChatMessageBubble
-                  msg={msg}
-                  isMe={isMe}
-                  isConsecutive={isConsecutive}
-                  threadName={threadName}
-                  locale={locale}
-                  showOriginal={!!showOriginal[msg.id]}
-                  translatingMsgId={translatingMsgId}
-                  isPendingOffline={pendingSet.has(msg.id)}
-                  selected={selectedMsgIds.has(msg.id)}
-                  selectMode={selectMode}
-                  currentUserId={userId}
-                  onTranslate={onTranslate}
-                  onContextMenu={handleContextMenu}
-                  onToggleSelect={onToggleSelect}
-                  getCategoryIcon={getCategoryIcon}
-                />
-              )}
+              <OrbitMessageInteractiveWrapper
+                messageId={msg.id}
+                conversationId={cid}
+                isMe={isMe}
+                disabled={isSystem}
+                onLongPress={() => {
+                  if (globalSelectionMode === "selecting") return;
+                  onContextMenu({ preventDefault: () => {} } as any, msg, isMe);
+                }}
+                onSwipeReply={() => {
+                  // Trigger reply via context menu flow
+                  onContextMenu({ preventDefault: () => {} } as any, msg, isMe);
+                }}
+              >
+                {isDealEvent ? (
+                  <DealStatusBubble
+                    eventType={((msg as any).metadata_json?.event_type || "status_change") as DealEventType}
+                    data={(msg as any).metadata_json?.data || {}}
+                    createdAt={msg.created_at}
+                    actorRole={(msg as any).metadata_json?.actor_role}
+                  />
+                ) : isSpecialCard ? (
+                  <MessageCardRenderer
+                    msg={msg}
+                    isMe={isMe}
+                    currentUserId={userId}
+                  />
+                ) : (
+                  <ChatMessageBubble
+                    msg={msg}
+                    isMe={isMe}
+                    isConsecutive={isConsecutive}
+                    threadName={threadName}
+                    locale={locale}
+                    showOriginal={!!showOriginal[msg.id]}
+                    translatingMsgId={translatingMsgId}
+                    isPendingOffline={pendingSet.has(msg.id)}
+                    selected={selectedMsgIds.has(msg.id)}
+                    selectMode={selectMode}
+                    currentUserId={userId}
+                    onTranslate={onTranslate}
+                    onContextMenu={handleContextMenu}
+                    onToggleSelect={onToggleSelect}
+                    getCategoryIcon={getCategoryIcon}
+                  />
+                )}
+              </OrbitMessageInteractiveWrapper>
             </div>
           );
         })
