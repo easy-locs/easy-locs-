@@ -120,77 +120,63 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  const fetchUserType = useCallback(async (userId: string) => {
-    const QUERY_TIMEOUT = 8_000;
+  // ── Critical: profile basics only (1 query) ──
+  const fetchProfileCritical = useCallback(async (userId: string) => {
+    const QUERY_TIMEOUT = 5_000;
     const withTimeout = <T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
       Promise.race([
         Promise.resolve(thenable),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out (${QUERY_TIMEOUT}ms)`)), QUERY_TIMEOUT)
+          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out`)), QUERY_TIMEOUT)
         ),
       ]);
 
     try {
-      let data: any = null;
       const { data: d1, error: e1 } = await withTimeout(
         supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle(),
-        "fetchUserType/profiles"
+        "fetchProfileCritical"
       );
 
-      if (e1 || !d1) {
-        await new Promise((r) => setTimeout(r, 300));
-        const { data: d2 } = await withTimeout(
-          supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle(),
-          "fetchUserType/profiles-retry"
-        );
-        data = d2;
-      } else {
-        data = d1;
-      }
-
+      const data = (e1 || !d1) ? null : d1;
       const ut = (data?.user_type as UserType) ?? "landlord";
       setUserType(ut);
       setUserCountry(data?.country ?? "FR");
       setUserCurrency(data?.currency ?? "EUR");
+      setOnboardingCompleted(data?.onboarding_completed ?? false);
+      setProfileLoaded(true);
+    } catch (err) {
+      console.warn("[AuthContext] fetchProfileCritical failed:", err);
+      setUserType("landlord");
+      setUserCountry("FR");
+      setUserCurrency("EUR");
+      setOnboardingCompleted(false);
+      setProfileLoaded(true);
+    }
+  }, []);
 
-      let tenantLink: any = null;
-      let orgLink: any = null;
-      try {
-        const [t, o] = await Promise.all([
-          withTimeout(supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(), "fetchUserType/tenants"),
-          withTimeout(supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(), "fetchUserType/org_members"),
-        ]);
-        tenantLink = t.data;
-        orgLink = o.data;
-      } catch (err) {
-        console.warn("[AuthContext] dual-role check failed:", err);
-      }
-
-      const hasOrg = !!orgLink;
-      const hasTenant = !!tenantLink;
+  // ── Deferred: dual-role detection + role resolution ──
+  const fetchDualRoleDeferred = useCallback(async (userId: string) => {
+    try {
+      const [t, o] = await Promise.all([
+        supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
+        supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
+      ]);
+      const hasOrg = !!o.data;
+      const hasTenant = !!t.data;
       const dual = hasTenant && hasOrg;
       setHasDualRole(dual);
 
-      let onboardingDone = data?.onboarding_completed ?? false;
-      if (!onboardingDone && (hasOrg || hasTenant)) {
-        onboardingDone = true;
-        supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
+      if (!onboardingCompleted && (hasOrg || hasTenant)) {
+        setOnboardingCompleted(true);
+        supabase.from("profiles").update({ onboarding_completed: true } as any).eq("id", userId).then(() => {});
       }
-      setOnboardingCompleted(onboardingDone);
-      setProfileLoaded(true);
 
       const savedRole = (() => {
-        try {
-          return localStorage.getItem(`easylocs_active_role_${userId}`);
-        } catch {
-          return null;
-        }
+        try { return localStorage.getItem(`easylocs_active_role_${userId}`); } catch { return null; }
       })();
       if (dual && savedRole && (savedRole === "landlord" || savedRole === "tenant")) {
         setActiveRole(savedRole);
-      } else if (dual) {
-        setActiveRole("landlord");
-      } else if (hasOrg) {
+      } else if (dual || hasOrg) {
         setActiveRole("landlord");
       } else if (hasTenant) {
         setActiveRole("tenant");
@@ -198,16 +184,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setActiveRole("client");
       }
     } catch (err) {
-      console.error("[AuthContext] fetchUserType failed:", err);
-      setUserType("landlord");
-      setUserCountry("FR");
-      setUserCurrency("EUR");
-      setOnboardingCompleted(false);
+      console.warn("[AuthContext] fetchDualRoleDeferred failed:", err);
       setActiveRole("landlord");
       setHasDualRole(false);
-      setProfileLoaded(true);
     }
-  }, []);
+  }, [onboardingCompleted]);
 
   const refreshProfile = useCallback(async () => {
     if (user) {
@@ -217,9 +198,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         displayName: (user.user_metadata as any)?.display_name ?? (user.user_metadata as any)?.full_name ?? null,
         avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
       });
-      await Promise.all([fetchUserType(user.id), fetchOrgId(user.id)]);
+      const orgIds = await fetchOrgIdFast(user.id);
+      await Promise.all([fetchProfileCritical(user.id), fetchOrgDetails(orgIds)]);
+      await fetchDualRoleDeferred(user.id);
     }
-  }, [user, fetchUserType, fetchOrgId]);
+  }, [user, fetchProfileCritical, fetchOrgIdFast, fetchOrgDetails, fetchDualRoleDeferred]);
 
   const switchRole = useCallback((role: ActiveRole) => {
     setActiveRole(role);
