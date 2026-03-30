@@ -1,9 +1,9 @@
 /**
  * send.payment — Canonical payment message pipeline for Orbit threads.
- * Covers: payment requests, receipts, and transaction events.
  */
 import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { buildPaymentMeta, buildSystemMeta } from "@/families/messages/build-metadata";
 import type { SendContext } from "./send-context";
 
 export async function sendPaymentRequest(
@@ -18,12 +18,12 @@ export async function sendPaymentRequest(
     senderUserId: ctx.senderUserId,
     senderOrbitId: ctx.senderOrbitId,
     receiverOrbitId: ctx.receiverOrbitId,
-    type: "payment",
+    type: "payment_request",
     body,
-    metadata: { event_type: "payment_request", amount, currency, description: description || null, status: "pending" },
+    metadata: buildPaymentMeta("request", amount, currency, { description }),
   });
   await updateConversationTimestamp(ctx.conversationId, body.slice(0, 120));
-  platformBus.emit("orbit:message_sent", { conversationId: ctx.conversationId, type: "payment" }, "orbit", { userId: ctx.senderUserId });
+  platformBus.emit("orbit:message_sent", { conversationId: ctx.conversationId, type: "payment_request" }, "orbit", { userId: ctx.senderUserId });
   return data;
 }
 
@@ -39,9 +39,9 @@ export async function sendPaymentReceipt(
     senderUserId: ctx.senderUserId,
     senderOrbitId: ctx.senderOrbitId,
     receiverOrbitId: ctx.receiverOrbitId,
-    type: "payment",
+    type: "payment_receipt",
     body,
-    metadata: { event_type: "payment_receipt", amount, currency, transaction_id: transactionId, status: "completed" },
+    metadata: buildPaymentMeta("receipt", amount, currency, { transactionId, status: "completed" }),
   });
   await updateConversationTimestamp(ctx.conversationId, body.slice(0, 120));
   platformBus.emit("orbit:payment_received", { conversationId: ctx.conversationId, transactionId, amount, currency }, "orbit", { userId: ctx.senderUserId });
@@ -68,9 +68,9 @@ export async function sendPaymentEvent(
     senderUserId: ctx.senderUserId,
     senderOrbitId: ctx.senderOrbitId,
     receiverOrbitId: ctx.receiverOrbitId,
-    type: "system",
+    type: "system_notice",
     body,
-    metadata: { event_type: `payment_${eventType}`, amount, currency, transaction_id: transactionId },
+    metadata: buildSystemMeta(`payment_${eventType}`, { amount, currency, transaction_id: transactionId }),
   });
   await updateConversationTimestamp(ctx.conversationId, body.slice(0, 120));
   return data;

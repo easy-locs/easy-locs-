@@ -1,19 +1,15 @@
 /**
  * CallCard — WhatsApp-style inline call event card for chat threads.
- * Renders audio/video, ended/missed/declined with duration, time, and callback.
+ * Reads from CanonicalMetadata.call + .timing — no body parsing.
  */
 import { memo } from "react";
 import { Phone, PhoneIncoming, PhoneMissed, PhoneOff, Video, PhoneOutgoing } from "lucide-react";
 import { format } from "date-fns";
-import type { MessageMode } from "@/families/messages/message-mode";
+import type { CanonicalMessageEnvelope } from "@/families/messages/canonical-envelope";
 
 export interface CallCardProps {
-  mode: MessageMode;
+  envelope: CanonicalMessageEnvelope;
   isMe: boolean;
-  createdAt: string;
-  durationSeconds?: number;
-  isVideo?: boolean;
-  callerName?: string;
   onCallback?: () => void;
 }
 
@@ -56,21 +52,29 @@ const CALL_CONFIG: Record<string, {
   },
 };
 
-function CallCard({ mode, isMe, createdAt, durationSeconds, isVideo, callerName, onCallback }: CallCardProps) {
-  const config = CALL_CONFIG[mode] || CALL_CONFIG.call_audio;
-  const isMissed = mode === "call_missed";
-  const isDeclined = mode === "call_declined";
-  const isEnded = mode === "call_audio" || mode === "call_video";
+function CallCard({ envelope, isMe, onCallback }: CallCardProps) {
+  const { type, metadata, createdAt } = envelope;
+  const callMeta = metadata.call;
+  const timing = metadata.timing;
+  const config = CALL_CONFIG[type] || CALL_CONFIG.call_audio;
 
-  const DirectionIcon = isMe ? PhoneOutgoing : PhoneIncoming;
+  const isMissed = type === "call_missed";
+  const isDeclined = type === "call_declined";
+  const isVideo = callMeta?.mode === "video" || type === "call_video";
+  const direction = callMeta?.direction || (isMe ? "outgoing" : "incoming");
+
+  const DirectionIcon = direction === "outgoing" ? PhoneOutgoing : PhoneIncoming;
   const StatusIcon = isMissed ? PhoneMissed : isDeclined ? PhoneOff : DirectionIcon;
   const MediaIcon = isVideo ? Video : Phone;
+
+  const durationSeconds = timing?.durationSeconds;
+  const showCallback = isMissed && callMeta?.callbackEnabled !== false;
 
   return (
     <div className="flex justify-center my-2">
       <button
-        onClick={onCallback}
-        disabled={!onCallback}
+        onClick={showCallback ? onCallback : undefined}
+        disabled={!showCallback}
         className="group inline-flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-150 hover:scale-[1.01] active:scale-[0.99] disabled:cursor-default"
         style={{
           background: config.bgToken,
@@ -82,7 +86,7 @@ function CallCard({ mode, isMe, createdAt, durationSeconds, isVideo, callerName,
         <div
           className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
           style={{
-            background: `${config.bgToken}`,
+            background: config.bgToken,
             border: `1px solid ${config.borderToken}`,
           }}
         >
@@ -96,14 +100,14 @@ function CallCard({ mode, isMe, createdAt, durationSeconds, isVideo, callerName,
           </span>
           <div className="flex items-center gap-1.5 mt-0.5">
             <MediaIcon className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }} />
-            {isEnded && durationSeconds != null && durationSeconds > 0 && (
-              <span className="text-[10px] font-medium" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+            {!isMissed && !isDeclined && durationSeconds != null && durationSeconds > 0 && (
+              <span className="text-2xs font-medium" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
                 {formatDuration(durationSeconds)}
               </span>
             )}
-            {(isMissed || isDeclined) && (
-              <span className="text-[10px]" style={{ color: config.iconColor }}>
-                {isMissed ? "Tap to call back" : ""}
+            {isMissed && showCallback && (
+              <span className="text-2xs" style={{ color: config.iconColor }}>
+                Tap to call back
               </span>
             )}
           </div>
@@ -111,10 +115,10 @@ function CallCard({ mode, isMe, createdAt, durationSeconds, isVideo, callerName,
 
         {/* Time */}
         <span
-          className="text-[10px] font-mono tabular-nums ml-2 shrink-0"
+          className="text-2xs font-mono tabular-nums ml-2 shrink-0"
           style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}
         >
-          {format(new Date(createdAt), "HH:mm")}
+          {timing?.localTime || format(new Date(createdAt), "HH:mm")}
         </span>
       </button>
     </div>
