@@ -123,9 +123,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserType = useCallback(async (userId: string) => {
     const QUERY_TIMEOUT = 8_000;
-    const withTimeout = <T,>(promise: Promise<T>, label: string): Promise<T> =>
+    const withTimeout = <T,>(thenable: PromiseLike<T>, label: string): Promise<T> =>
       Promise.race([
-        promise,
+        Promise.resolve(thenable),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out (${QUERY_TIMEOUT}ms)`)), QUERY_TIMEOUT)
         ),
