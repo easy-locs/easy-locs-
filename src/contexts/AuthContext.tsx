@@ -158,8 +158,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       let orgLink: any = null;
       try {
         const [t, o] = await Promise.all([
-          withTimeout(supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle().then(r => r), "fetchUserType/tenants"),
-          withTimeout(supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle().then(r => r), "fetchUserType/org_members"),
+          withTimeout(supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(), "fetchUserType/tenants"),
+          withTimeout(supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(), "fetchUserType/org_members"),
         ]);
         tenantLink = t.data;
         orgLink = o.data;
