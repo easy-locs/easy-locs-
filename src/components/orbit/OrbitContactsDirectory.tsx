@@ -13,6 +13,7 @@ import { haptic } from "@/lib/haptics";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { toast } from "sonner";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
+import { useResolvedIdentity } from "@/hooks/useResolvedIdentity";
 
 interface OrbitContact {
   id: string;
@@ -40,7 +41,7 @@ const ContactRow = memo(function ContactRow({
   onCall: (c: OrbitContact) => void;
   onVideoCall: (c: OrbitContact) => void;
 }) {
-  const subtitle = contact.company || contact.email || contact.phone || "";
+  const { displayName: _name, subtitle } = useResolvedIdentity(contact);
   const timeStr = contact.last_contacted_at
     ? new Date(contact.last_contacted_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;

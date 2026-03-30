@@ -8,6 +8,7 @@ import { Copy, Share2, Clock, Shield, Check, Loader2 } from "lucide-react";
 import BrandedQR from "@/components/qr/BrandedQR";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useResolvedIdentity } from "@/hooks/useResolvedIdentity";
 import { useToast } from "@/hooks/use-toast";
 import { encodeQr, toResolveUrl, qr } from "@/lib/qr-engine";
 import { formatMoney } from "@/lib/format";
@@ -42,7 +43,10 @@ export default function OrbitQRCode({
   const [copied, setCopied] = useState(false);
 
   // Canonical identity resolution: prefer orbit profile name
-  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "Me";
+  const { displayName } = useResolvedIdentity({
+    display_name: user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.user_metadata?.name,
+    email: user?.email,
+  });
 
   const qrData = useMemo(() => {
     if (!user?.id) return null;
