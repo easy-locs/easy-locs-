@@ -44,6 +44,8 @@ import { AppInit } from "@/components/system/AppInit";
 import { CanonicalShellRuntime } from "@/components/app/CanonicalShellRuntime";
 import { GlobalExperienceProvider } from "@/providers/GlobalExperienceProvider";
 import { UiQualityProvider } from "@/providers/UiQualityProvider";
+import { ChatProvider } from "@/contexts/ChatContext";
+import { RealtimeProvider } from "@/contexts/RealtimeContext";
 import { FloatingCTAButton } from "@/components/engine/FloatingCTAButton";
 import { OrbitPromptOverlay } from "@/components/engine/OrbitPromptOverlay";
 
