@@ -4,9 +4,14 @@
  */
 
 // ── Core hooks ──
+/** @deprecated Use useOrbitDispatch() instead */
 export { useMessageSender } from "@/hooks/useMessageSender";
 export { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
 export { useMessageSelection } from "@/components/communication-hub/chat/useMessageSelection";
+
+// ── View Model ──
+export { toMessageViewModel, toMessageViewModels } from "./message-view-model";
+export type { MessageViewModel } from "./message-view-model";
 
 // ── Message Mode ──
 export { resolveMessageMode, getModeLabelFr } from "./message-mode";
