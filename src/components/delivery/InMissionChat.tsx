@@ -72,8 +72,7 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
 
   // Realtime subscription
   useEffect(() => {
-    const channel = supabase
-      .channel(`mission-chat-${jobId}`)
+    const channel = createRealtimeChannel(`mission-chat-${jobId}`)
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
@@ -89,7 +88,7 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
       .subscribe();
 
     channelRef.current = channel;
-    return () => { channel.unsubscribe(); };
+    return () => { removeRealtimeChannel(channel); };
   }, [jobId, contextId]);
 
   const sendMessage = async () => {
