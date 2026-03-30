@@ -20,13 +20,14 @@ export async function updateBookingRequest(bookingId: string, status: string) {
 }
 
 export async function insertChatMessage(conversationId: string, senderUserId: string, senderOrbitId: string, body: string, metadata: Record<string, any>) {
-  await (supabase as any).from("chat_messages_v2").insert({
-    conversation_id: conversationId,
-    sender_user_id: senderUserId,
-    sender_orbit_id: senderOrbitId,
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  await insertMessage({
+    conversationId,
+    senderUserId,
+    senderOrbitId,
     type: "system",
     body,
-    metadata,
+    metadata: { schemaVersion: 1, ...metadata },
   });
 }
 

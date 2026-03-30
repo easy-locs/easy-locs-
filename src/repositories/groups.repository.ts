@@ -52,9 +52,15 @@ export async function insertGroupMember(groupId: string, userId: string, role: s
 }
 
 export async function insertChatMessage(payload: Record<string, any>) {
-  const { data, error } = await (supabase as any).from("chat_messages_v2").insert(payload).select().single();
-  if (error) throw error;
-  return data;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  return insertMessage({
+    conversationId: payload.conversation_id,
+    senderUserId: payload.sender_user_id,
+    senderOrbitId: payload.sender_orbit_id || null,
+    type: payload.type || "text",
+    body: payload.body || "",
+    metadata: { schemaVersion: 1, ...payload.metadata },
+  });
 }
 
 export async function updateConversation(id: string, payload: Record<string, any>) {

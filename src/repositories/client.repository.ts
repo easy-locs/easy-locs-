@@ -68,8 +68,15 @@ export async function fetchThreadMessages(conversationId: string) {
 }
 
 export async function sendClientMessage(record: Record<string, any>) {
-  const { error } = await (supabase as any).from("chat_messages_v2").insert(record);
-  if (error) throw error;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  await insertMessage({
+    conversationId: record.conversation_id,
+    senderUserId: record.sender_user_id,
+    senderOrbitId: record.sender_orbit_id || null,
+    type: record.type || "text",
+    body: record.body || record.content || "",
+    metadata: { schemaVersion: 1, ...record.metadata },
+  });
 }
 
 export async function uploadClientAttachment(bucket: string, path: string, file: File | Blob) {

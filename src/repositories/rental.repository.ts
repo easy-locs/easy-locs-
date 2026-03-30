@@ -42,9 +42,15 @@ export async function fetchRentalMessages(orgId: string) {
 }
 
 export async function insertRentalMessage(record: Record<string, any>) {
-  const { data, error } = await (supabase as any).from("chat_messages_v2").insert(record).select("*").single();
-  if (error) throw error;
-  return data;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  return insertMessage({
+    conversationId: record.conversation_id,
+    senderUserId: record.sender_user_id,
+    senderOrbitId: record.sender_orbit_id || null,
+    type: record.type || "text",
+    body: record.body || "",
+    metadata: { schemaVersion: 1, ...record.metadata },
+  });
 }
 
 export function subscribeRentalMessages(orgId: string, onInsert: (msg: any) => void) {
@@ -622,10 +628,17 @@ export async function insertGroupMember(groupId: string, userId: string, role: s
   await supabase.from("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
 }
 
-// ── Chat messages v2 (payment) ──
+// ── Chat messages v2 (payment) — delegates to canonical insertMessage ──
 export async function insertChatMessageV2(payload: Record<string, any>) {
-  const { error } = await (supabase as any).from("chat_messages_v2").insert(payload);
-  if (error) throw error;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  await insertMessage({
+    conversationId: payload.conversation_id,
+    senderUserId: payload.sender_user_id,
+    senderOrbitId: payload.sender_orbit_id || null,
+    type: payload.type || "system",
+    body: payload.body || "",
+    metadata: { schemaVersion: 1, ...payload.metadata },
+  });
 }
 
 export async function updateConversationTimestamp(conversationId: string) {

@@ -43,8 +43,15 @@ export async function deleteTenantDoc(docId: string) {
 }
 
 export async function insertChatMessageV2(record: Record<string, any>) {
-  const { error } = await (supabase as any).from("chat_messages_v2").insert(record);
-  if (error) throw error;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  await insertMessage({
+    conversationId: record.conversation_id,
+    senderUserId: record.sender_user_id,
+    senderOrbitId: record.sender_orbit_id || null,
+    type: record.type || "text",
+    body: record.body || "",
+    metadata: { schemaVersion: 1, ...record.metadata },
+  });
 }
 
 export async function insertAppNotificationForTenant(record: Record<string, any>) {

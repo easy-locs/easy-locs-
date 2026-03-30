@@ -11,15 +11,14 @@ export async function sendChatMessage(params: {
   messageType?: string;
   metadata?: any;
 }) {
-  const { data, error } = await (supabase as any).from("chat_messages_v2").insert({
-    conversation_id: params.conversationId,
-    sender_user_id: params.senderUserId,
-    content: params.content,
-    message_type: params.messageType || "text",
-    metadata: params.metadata || null,
-  }).select().single();
-  if (error) throw error;
-  return data;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  return insertMessage({
+    conversationId: params.conversationId,
+    senderUserId: params.senderUserId,
+    type: params.messageType || "text",
+    body: params.content,
+    metadata: { schemaVersion: 1, ...params.metadata },
+  });
 }
 
 export async function sendMediaMessage(params: {
@@ -30,15 +29,14 @@ export async function sendMediaMessage(params: {
   messageType: string;
   metadata?: any;
 }) {
-  const { data, error } = await (supabase as any).from("chat_messages_v2").insert({
-    conversation_id: params.conversationId,
-    sender_user_id: params.senderUserId,
-    content: params.content,
-    message_type: params.messageType,
-    metadata: { ...(params.metadata || {}), media_url: params.mediaUrl },
-  }).select().single();
-  if (error) throw error;
-  return data;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  return insertMessage({
+    conversationId: params.conversationId,
+    senderUserId: params.senderUserId,
+    type: params.messageType,
+    body: params.content,
+    metadata: { schemaVersion: 1, ...(params.metadata || {}), media_url: params.mediaUrl },
+  });
 }
 
 export async function softDeleteMessage(messageId: string, userId: string, existingMetadata: any) {
@@ -50,16 +48,29 @@ export async function softDeleteMessage(messageId: string, userId: string, exist
   }).eq("id", messageId);
 }
 
-// ── Insert raw chat message (payment cards, offline) ──
+// ── Insert raw chat message — delegates to canonical insertMessage ──
 export async function insertRawChatMessage(payload: Record<string, any>) {
-  const { data, error } = await (supabase as any).from("chat_messages_v2").insert(payload).select("*").single();
-  if (error) throw error;
-  return data;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  return insertMessage({
+    conversationId: payload.conversation_id,
+    senderUserId: payload.sender_user_id,
+    senderOrbitId: payload.sender_orbit_id || null,
+    type: payload.type || "text",
+    body: payload.body || payload.content || "",
+    metadata: { schemaVersion: 1, ...payload.metadata },
+  });
 }
 
 export async function insertOfflineChatMessage(payload: Record<string, any>) {
-  const { error } = await (supabase as any).from("chat_messages_v2").insert(payload);
-  if (error) throw error;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  await insertMessage({
+    conversationId: payload.conversation_id,
+    senderUserId: payload.sender_user_id,
+    senderOrbitId: payload.sender_orbit_id || null,
+    type: payload.type || "text",
+    body: payload.body || payload.content || "",
+    metadata: { schemaVersion: 1, ...payload.metadata },
+  });
 }
 
 // ── Translation ──
@@ -134,19 +145,18 @@ export async function fetchLastGroupMessage(conversationId: string) {
   return data?.[0] || null;
 }
 
-// ── Voice message insert ──
+// ── Voice message insert — delegates to canonical insertMessage ──
 export async function insertVoiceMessage(params: {
   conversationId: string; senderUserId: string; senderOrbitId: string;
   body: string; audioUrl: string; duration: number;
 }) {
-  const { data, error } = await (supabase as any).from("chat_messages_v2").insert({
-    conversation_id: params.conversationId,
-    sender_user_id: params.senderUserId,
-    sender_orbit_id: params.senderOrbitId,
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  return insertMessage({
+    conversationId: params.conversationId,
+    senderUserId: params.senderUserId,
+    senderOrbitId: params.senderOrbitId,
     type: "audio",
     body: params.body,
-    metadata: { audio_url: params.audioUrl, audio_duration_seconds: params.duration },
-  }).select("*").single();
-  if (error) throw error;
-  return data;
+    metadata: { schemaVersion: 1, audio_url: params.audioUrl, audio_duration_seconds: params.duration },
+  });
 }
