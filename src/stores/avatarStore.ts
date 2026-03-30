@@ -3,6 +3,7 @@ import { uploadFile, getPublicFileUrl } from "@/lib/storage/uploadFile";
 import { supabase } from "@/integrations/supabase/client";
 import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitStore } from "@/stores/orbitStore";
+import { propagateIdentityChange } from "@/families/identity/identity-propagation";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -42,6 +43,14 @@ export const useAvatarStore = create<AvatarStore>((set) => ({
     if (!error) {
       useOrbitStore.setState({
         profile: { ...fullProfile, avatarUrl: publicUrl },
+      });
+
+      // Propagate to ALL surfaces
+      propagateIdentityChange({
+        userId: orbit.userId,
+        orbitId: orbit.orbitId,
+        displayName: fullProfile.displayName,
+        avatarUrl: publicUrl,
       });
     }
 
