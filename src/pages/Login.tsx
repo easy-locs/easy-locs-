@@ -207,7 +207,9 @@ const Login = () => {
     if (error) {
       toast({ title: t("auth.login.invalid_code"), description: error.message, variant: "destructive" });
     } else {
-      await redirectAfterLogin(data.user?.id);
+      const otpTraceId = crypto.randomUUID();
+      authLog("LOGIN_SESSION_DETECTED", { traceId: otpTraceId, userId: data.user?.id, source: "otp_verify" });
+      await redirectAfterLogin(otpTraceId, data.user?.id);
     }
   };
 
