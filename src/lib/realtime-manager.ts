@@ -166,7 +166,7 @@ class RealtimeManager {
     this.orgId = orgId;
     if (this.started && this.userId) {
       if (this.userChannel) {
-        supabase.removeChannel(this.userChannel);
+        removeRealtimeChannel(this.userChannel);
         this.userChannel = null;
       }
       this.initUserChannel();
