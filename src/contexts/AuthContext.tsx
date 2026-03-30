@@ -134,14 +134,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       let data: any = null;
       const { data: d1, error: e1 } = await withTimeout(
-        supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle(),
+        supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle().then(r => r),
         "fetchUserType/profiles"
       );
 
       if (e1 || !d1) {
         await new Promise((r) => setTimeout(r, 300));
         const { data: d2 } = await withTimeout(
-          supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle(),
+          supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle().then(r => r),
           "fetchUserType/profiles-retry"
         );
         data = d2;
