@@ -97,11 +97,10 @@ export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResu
         const ctx = await resolveContext(cmd.conversationId || "");
         return { ...await executeStartCall(ctx, cmd), requestId };
       }
-      case "accept_call": {
-        const { acceptCallSession } = await import("@/repositories/communication.repository");
-        await acceptCallSession(cmd.sessionId);
-        return { ok: true, sessionId: cmd.sessionId, requestId };
-      }
+      case "accept_call":
+        return { ...await executeAcceptCall(cmd), requestId };
+      case "decline_call":
+        return { ...await executeDeclineCall(cmd), requestId };
       case "end_call":
         return { ...await executeEndCall(cmd), requestId };
       case "edit_message":
