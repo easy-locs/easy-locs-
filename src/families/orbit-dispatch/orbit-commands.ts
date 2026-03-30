@@ -14,7 +14,11 @@ export type OrbitCommand =
   | AcceptCallCommand
   | EndCallCommand
   | EditMessageCommand
-  | ReplyCommand;
+  | ReplyCommand
+  | GroupCreateCommand
+  | GroupUpdateCommand
+  | PresenceUpdateCommand
+  | TypingUpdateCommand;
 
 // ── Base ──
 interface BaseCommand {
