@@ -251,8 +251,9 @@ export const CommunicationCenter = () => {
   const showChatArea = activeSection === "chats";
 
   const renderSection = () => {
+    const fallback = <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">Loading…</div>;
     switch (activeSection) {
-      case "calls": return <CommCallsSection onOpenThread={async (peerId, peerName) => {
+      case "calls": return <Suspense fallback={fallback}><CommCallsSection onOpenThread={async (peerId, peerName) => {
           if (!userId) return;
           try {
             const { getOrCreateDirectThread } = await import("@/lib/direct-thread");
@@ -263,11 +264,11 @@ export const CommunicationCenter = () => {
               else { await loadThreads(); setSearchParams({ thread: result.v2ConversationId }); setActiveSection("chats"); }
             }
           } catch (e) { console.error("[calls→thread]", e); }
-        }} />;
-      case "contacts": return <CommContactsSection />;
-      case "groups": return <CommGroupsSection />;
+        }} /></Suspense>;
+      case "contacts": return <Suspense fallback={fallback}><CommContactsSection /></Suspense>;
+      case "groups": return <Suspense fallback={fallback}><CommGroupsSection /></Suspense>;
       case "you":
-        return <OrbitAccountSection />;
+        return <Suspense fallback={fallback}><OrbitAccountSection /></Suspense>;
       default: return null;
     }
   };
