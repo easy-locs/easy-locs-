@@ -1,10 +1,11 @@
 /**
  * FAMILY: COMPOSER — Canonical composer state, voice, inline handlers.
- * Single source of truth for all composer-related logic in a thread.
+ * Single source of truth: composerStore (Zustand).
+ * NO local useState for reply/edit/forward — all keyed by conversationId in store.
  */
 import { useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { useOrbitComposerState } from "@/hooks/useOrbitComposerState";
+import { useOrbitComposerStore } from "@/stores/orbit/composer.store";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { useHudInlineHandlers } from "@/hooks/orbit/useHudInlineHandlers";
 import type { ConversationThread } from "@/components/communication-hub/types";
@@ -35,7 +36,8 @@ export function useThreadComposerFamily(params: {
     setShowLocationPicker, setNewMessage, setRawMessages, t,
   } = params;
 
-  const composer = useOrbitComposerState();
+  const conversationId = thread?.conversationId || thread?.id || "";
+  const composerStore = useOrbitComposerStore();
   const voiceRecorder = useVoiceRecorder();
 
   const inlineHandlers = useHudInlineHandlers({
@@ -57,12 +59,13 @@ export function useThreadComposerFamily(params: {
     t,
   });
 
-  // Edit mode: inject original body into composer
+  // Edit mode: inject original body into composer — reads from composerStore (single source)
+  const activeEdit = composerStore.edits[conversationId];
   useEffect(() => {
-    if (composer.editState) {
-      setNewMessage(composer.editState.originalBody);
+    if (activeEdit) {
+      setNewMessage(activeEdit.originalBody);
     }
-  }, [composer.editState]);
+  }, [activeEdit?.messageId]);
 
   const startVoice = useCallback(async () => {
     try {
@@ -84,7 +87,12 @@ export function useThreadComposerFamily(params: {
   }, [inlineHandlers]);
 
   return {
-    composer,
+    /** @deprecated — use composerStore directly for mode/reply/edit */
+    composer: {
+      mode: composerStore.getMode(conversationId),
+      editState: activeEdit ?? null,
+      replyState: composerStore.replies[conversationId] ?? null,
+    },
     voiceRecorder,
     voicePreview: inlineHandlers.voicePreview,
     handleViewOnceUpload: inlineHandlers.handleViewOnceUpload,

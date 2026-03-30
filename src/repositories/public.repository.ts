@@ -114,8 +114,9 @@ export async function fetchTrackingData(jobId: string) {
 }
 
 export function subscribeToJob(jobId: string, onUpdate: (payload: any) => void) {
-  const channel = supabase.channel(`tracking-${jobId}`)
+  const { createRealtimeChannel, removeRealtimeChannel } = require("@/lib/realtime");
+  const channel = createRealtimeChannel(`tracking-${jobId}`)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${jobId}` }, onUpdate)
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }
