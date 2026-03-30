@@ -850,6 +850,8 @@ const App = () => (
         </AuthProvider>
     </TooltipProvider>
     </BrowserTelemetryProvider>
+    </ChatProvider>
+    </RealtimeProvider>
     </GlobalExperienceProvider>
     </I18nProvider>
   </QueryClientProvider>
