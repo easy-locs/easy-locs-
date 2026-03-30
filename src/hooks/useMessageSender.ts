@@ -117,7 +117,7 @@ export function useMessageSender(params: Params) {
     });
   }, [conversationId]);
 
-  const handleSend = useCallback(async () => {
+  const handleSend = useCallback(async (explicitDraft?: string) => {
     const {
       thread, orgId, locale, myOrbitId, e2eReady, encrypt,
       offline, securityLevel, setSecurityLevel, replyTo, setReplyTo,
@@ -135,7 +135,9 @@ export function useMessageSender(params: Params) {
       toast.error("No thread selected.");
       return;
     }
-    if (!newMessage.trim()) {
+    // Use explicit draft if provided, otherwise fall back to local state
+    const draftToSend = explicitDraft !== undefined ? explicitDraft : newMessage;
+    if (!draftToSend.trim()) {
       failStep(flow, validateStep, "empty_message");
       endFlow(flow, "failed");
       toast.error("Message is empty.");
@@ -143,7 +145,7 @@ export function useMessageSender(params: Params) {
     }
     completeStep(flow, validateStep);
 
-    const msgText = newMessage.trim();
+    const msgText = draftToSend.trim();
     const optimisticId = `opt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const now = new Date().toISOString();
 
