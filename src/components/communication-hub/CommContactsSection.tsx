@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { listOrbitContacts, upsertOrbitContact } from "@/lib/orbit/orbit-contacts-service";
+import { resolveCanonicalDisplayIdentity } from "@/lib/orbit/canonical-helpers";
 import { useCall } from "@/components/call/CallProvider";
 import QRContactCard from "./QRContactCard";
 import { motion } from "framer-motion";
