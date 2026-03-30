@@ -3,6 +3,7 @@
  * Single responsibility: realtime sync for wallet state.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { registerChannel, recordEvent, unregisterChannel } from "@/lib/runtime/realtime-monitor";
 import { APP_EVENTS } from "@/lib/platform/events";
@@ -29,6 +30,6 @@ export function subscribeWalletRealtime(walletId: string, onUpdate: () => void):
 
   return () => {
     unregisterChannel(CHANNEL_NAME);
-    supabase.removeChannel(channel);
+    removeRealtimeChannel(channel);
   };
 }
