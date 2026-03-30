@@ -260,19 +260,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
         }).catch(() => null);
 
-        authLog("LOGIN_PROFILE_HYDRATE_STARTED", { traceId: hydrateTraceId, userId });
+        authLog("LOGIN_PROFILE_HYDRATE_STARTED", { traceId: hydrateTraceId, userId, phase: "critical" });
         const hydrateStart = Date.now();
 
         try {
-          await fetchOrgId(userId);
-          if (seq !== latestSeq) return;
-          await fetchUserType(userId);
+          // CRITICAL PATH: only orgId + profile basics (2 fast queries in parallel)
+          const [orgIds] = await Promise.all([
+            fetchOrgIdFast(userId),
+            fetchProfileCritical(userId),
+          ]);
           if (seq !== latestSeq) return;
 
           const hydrateDuration = Date.now() - hydrateStart;
           authLog("LOGIN_PROFILE_HYDRATE_RESULT", {
-            traceId: hydrateTraceId, success: true, error: null, durationMs: hydrateDuration,
+            traceId: hydrateTraceId, success: true, error: null, durationMs: hydrateDuration, phase: "critical",
           });
+
+          // DEFERRED: org details, dual-role, subscription — non-blocking background
+          setTimeout(() => {
+            void (async () => {
+              try {
+                await fetchOrgDetails(orgIds);
+                await fetchDualRoleDeferred(userId);
+              } catch (deferredErr: any) {
+                authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
+                  traceId: hydrateTraceId, success: false,
+                  error: deferredErr?.message ?? "DEFERRED_FAILED",
+                  phase: "deferred",
+                });
+              }
+            })();
+          }, 100);
         } catch (err: any) {
           const hydrateDuration = Date.now() - hydrateStart;
           authError("LOGIN_PROFILE_HYDRATE_RESULT", {
@@ -280,12 +298,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             error: err?.message ?? "UNKNOWN", durationMs: hydrateDuration,
             step: "LOGIN_PROFILE_HYDRATE_RESULT",
           });
-          // Non-blocking retry after 2s if profile load failed
+          // Non-blocking retry after 2s
           setTimeout(() => {
             void (async () => {
               try {
-                await fetchOrgId(userId);
-                await fetchUserType(userId);
+                await fetchOrgIdFast(userId);
+                await fetchProfileCritical(userId);
               } catch (retryErr: any) {
                 authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
                   traceId: hydrateTraceId, success: false,
