@@ -246,14 +246,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       useV2AuthStore.getState().syncFromV1(nextSession);
 
       if (nextSession?.user) {
+        // ensureOrbitProfile is fire-and-forget — must never block login
+        void ensureOrbitProfile({
+          userId: nextSession.user.id,
+          email: nextSession.user.email ?? null,
+          displayName: (nextSession.user.user_metadata as any)?.display_name ?? (nextSession.user.user_metadata as any)?.full_name ?? null,
+          avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
+        }).catch(() => null);
         try {
-          await ensureOrbitProfile({
-            userId: nextSession.user.id,
-            email: nextSession.user.email ?? null,
-            displayName: (nextSession.user.user_metadata as any)?.display_name ?? (nextSession.user.user_metadata as any)?.full_name ?? null,
-            avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
-          });
-          if (seq !== latestSeq) return;
           await fetchOrgId(nextSession.user.id);
           if (seq !== latestSeq) return;
           await fetchUserType(nextSession.user.id);

@@ -38,12 +38,29 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      toast({ title: t("auth.login.error"), description: error.message, variant: "destructive" });
-    } else {
-      await redirectAfterLogin(data.user?.id);
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      clearTimeout(timeout);
+      setLoading(false);
+      if (error) {
+        const msg = error.message?.includes("timeout") || error.message?.includes("deadline")
+          ? "Le serveur met trop de temps à répondre. Réessayez dans quelques secondes."
+          : error.message;
+        toast({ title: t("auth.login.error"), description: msg, variant: "destructive" });
+      } else {
+        await redirectAfterLogin(data.user?.id);
+      }
+    } catch (err: any) {
+      setLoading(false);
+      toast({
+        title: t("auth.login.error"),
+        description: err?.name === "AbortError"
+          ? "Connexion au serveur expirée. Réessayez."
+          : (err?.message || "Erreur inattendue"),
+        variant: "destructive",
+      });
     }
   };
 
