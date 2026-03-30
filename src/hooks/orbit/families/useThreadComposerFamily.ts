@@ -25,13 +25,14 @@ export function useThreadComposerFamily(params: {
   setViewOnceNext: (v: boolean) => void;
   setShowLocationPicker: (v: boolean) => void;
   setNewMessage: (v: string) => void;
+  setRawMessages: (updater: any) => void;
   t: (k: string) => string;
 }) {
   const {
     thread, orgId, userId, myOrbitId, e2eReady, encrypt,
     resolveAuthUserId, resolveConversationId, setUploading,
     disappearTTL, defaultDisappearTtl, setSecurityLevel, setViewOnceNext,
-    setShowLocationPicker, setNewMessage, t,
+    setShowLocationPicker, setNewMessage, setRawMessages, t,
   } = params;
 
   const composer = useOrbitComposerState();
@@ -52,6 +53,7 @@ export function useThreadComposerFamily(params: {
     setSecurityLevel,
     setViewOnceNext,
     setShowLocationPicker,
+    setRawMessages,
     t,
   });
 
