@@ -58,6 +58,8 @@ import { MediaPreviewSheet } from "@/components/orbit/MediaPreviewSheet";
 import { FullscreenMediaViewer } from "@/components/orbit/FullscreenMediaViewer";
 import { useMediaPreviewState } from "@/families/media/media-preview-state";
 import { useMediaPreviewSend } from "@/hooks/orbit/useMediaPreviewSend";
+import { ContactProfileSheet } from "@/components/orbit/ContactProfileSheet";
+import { MultiPhotoSelect } from "@/components/orbit/MultiPhotoSelect";
 
 import { useSecurityDialogs } from "./chat/useSecurityDialogs";
 import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
