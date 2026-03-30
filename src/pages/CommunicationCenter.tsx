@@ -375,7 +375,9 @@ export const CommunicationCenter = () => {
                     onThreadUpdate={handleThreadUpdate}
                   />
                   {showContext && selectedThread && orgId && !isMobile && (
-                    <HudContextPanel thread={selectedThread} orgId={orgId} />
+                    <Suspense fallback={null}>
+                      <HudContextPanel thread={selectedThread} orgId={orgId} />
+                    </Suspense>
                   )}
                 </div>
               </div>
