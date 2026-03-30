@@ -5688,6 +5688,633 @@ export type Database = {
         }
         Relationships: []
       }
+      core_asset_policies: {
+        Row: {
+          asset_id: string
+          created_at: string
+          download_allowed: boolean
+          expires_at: string | null
+          id: string
+          metadata: Json
+          reshare_allowed: boolean
+          updated_at: string
+          view_once: boolean
+          visibility: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          download_allowed?: boolean
+          expires_at?: string | null
+          id?: string
+          metadata?: Json
+          reshare_allowed?: boolean
+          updated_at?: string
+          view_once?: boolean
+          visibility?: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          download_allowed?: boolean
+          expires_at?: string | null
+          id?: string
+          metadata?: Json
+          reshare_allowed?: boolean
+          updated_at?: string
+          view_once?: boolean
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "core_asset_policies_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "core_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      core_asset_variants: {
+        Row: {
+          asset_id: string
+          created_at: string
+          file_size_bytes: number | null
+          height: number | null
+          id: string
+          metadata: Json
+          storage_path: string
+          updated_at: string
+          url: string
+          variant_type: string
+          width: number | null
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          file_size_bytes?: number | null
+          height?: number | null
+          id?: string
+          metadata?: Json
+          storage_path: string
+          updated_at?: string
+          url: string
+          variant_type: string
+          width?: number | null
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          file_size_bytes?: number | null
+          height?: number | null
+          id?: string
+          metadata?: Json
+          storage_path?: string
+          updated_at?: string
+          url?: string
+          variant_type?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "core_asset_variants_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "core_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      core_assets: {
+        Row: {
+          asset_type: string
+          bucket: string
+          checksum: string | null
+          created_at: string
+          duration_seconds: number | null
+          file_name: string
+          file_size_bytes: number
+          height: number | null
+          id: string
+          metadata: Json
+          mime_type: string
+          owner_user_id: string | null
+          public_url: string | null
+          signed_url: string | null
+          status: string
+          storage_path: string
+          updated_at: string
+          width: number | null
+        }
+        Insert: {
+          asset_type: string
+          bucket: string
+          checksum?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          file_name: string
+          file_size_bytes?: number
+          height?: number | null
+          id?: string
+          metadata?: Json
+          mime_type: string
+          owner_user_id?: string | null
+          public_url?: string | null
+          signed_url?: string | null
+          status?: string
+          storage_path: string
+          updated_at?: string
+          width?: number | null
+        }
+        Update: {
+          asset_type?: string
+          bucket?: string
+          checksum?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          file_name?: string
+          file_size_bytes?: number
+          height?: number | null
+          id?: string
+          metadata?: Json
+          mime_type?: string
+          owner_user_id?: string | null
+          public_url?: string | null
+          signed_url?: string | null
+          status?: string
+          storage_path?: string
+          updated_at?: string
+          width?: number | null
+        }
+        Relationships: []
+      }
+      core_canonical_values: {
+        Row: {
+          color_token: string | null
+          created_at: string
+          description: string | null
+          display_name: string
+          display_order: number
+          family_code: string
+          icon_name: string | null
+          id: string
+          is_active: boolean
+          is_public: boolean
+          is_terminal: boolean
+          metadata: Json
+          module_code: string
+          parent_value_code: string | null
+          severity_rank: number | null
+          updated_at: string
+          value_code: string
+        }
+        Insert: {
+          color_token?: string | null
+          created_at?: string
+          description?: string | null
+          display_name: string
+          display_order?: number
+          family_code: string
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          is_terminal?: boolean
+          metadata?: Json
+          module_code: string
+          parent_value_code?: string | null
+          severity_rank?: number | null
+          updated_at?: string
+          value_code: string
+        }
+        Update: {
+          color_token?: string | null
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          display_order?: number
+          family_code?: string
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          is_terminal?: boolean
+          metadata?: Json
+          module_code?: string
+          parent_value_code?: string | null
+          severity_rank?: number | null
+          updated_at?: string
+          value_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "core_canonical_values_module_code_fkey"
+            columns: ["module_code"]
+            isOneToOne: false
+            referencedRelation: "core_modules_registry"
+            referencedColumns: ["module_code"]
+          },
+        ]
+      }
+      core_countries: {
+        Row: {
+          code: string
+          created_at: string
+          currency_code: string | null
+          name: string
+          phone_code: string | null
+          timezone_group: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          currency_code?: string | null
+          name: string
+          phone_code?: string | null
+          timezone_group?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          currency_code?: string | null
+          name?: string
+          phone_code?: string | null
+          timezone_group?: string | null
+        }
+        Relationships: []
+      }
+      core_currency_rates: {
+        Row: {
+          base_currency: string
+          captured_at: string
+          id: string
+          provider: string
+          quote_currency: string
+          rate: number
+        }
+        Insert: {
+          base_currency: string
+          captured_at?: string
+          id?: string
+          provider: string
+          quote_currency: string
+          rate: number
+        }
+        Update: {
+          base_currency?: string
+          captured_at?: string
+          id?: string
+          provider?: string
+          quote_currency?: string
+          rate?: number
+        }
+        Relationships: []
+      }
+      core_geo_points: {
+        Row: {
+          accuracy_m: number | null
+          altitude: number | null
+          captured_at: string
+          heading: number | null
+          id: string
+          lat: number
+          lng: number
+          metadata: Json
+          source: string
+          speed_mps: number | null
+          user_id: string | null
+        }
+        Insert: {
+          accuracy_m?: number | null
+          altitude?: number | null
+          captured_at?: string
+          heading?: number | null
+          id?: string
+          lat: number
+          lng: number
+          metadata?: Json
+          source?: string
+          speed_mps?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          accuracy_m?: number | null
+          altitude?: number | null
+          captured_at?: string
+          heading?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          metadata?: Json
+          source?: string
+          speed_mps?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      core_geo_session_points: {
+        Row: {
+          created_at: string
+          geo_point_id: string
+          id: string
+          sequence_no: number
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          geo_point_id: string
+          id?: string
+          sequence_no: number
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          geo_point_id?: string
+          id?: string
+          sequence_no?: number
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "core_geo_session_points_geo_point_id_fkey"
+            columns: ["geo_point_id"]
+            isOneToOne: false
+            referencedRelation: "core_geo_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "core_geo_session_points_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "core_geo_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      core_geo_sessions: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          metadata: Json
+          session_type: string
+          started_at: string
+          status: string
+          target_entity_id: string | null
+          target_entity_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          metadata?: Json
+          session_type: string
+          started_at?: string
+          status?: string
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          metadata?: Json
+          session_type?: string
+          started_at?: string
+          status?: string
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      core_identity_aliases: {
+        Row: {
+          alias_type: string
+          alias_value: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          metadata: Json
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alias_type: string
+          alias_value: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          metadata?: Json
+          source: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alias_type?: string
+          alias_value?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          metadata?: Json
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      core_locales: {
+        Row: {
+          code: string
+          country_code: string | null
+          created_at: string
+          currency_default: string | null
+          direction: string
+          name: string
+          timezone_default: string | null
+        }
+        Insert: {
+          code: string
+          country_code?: string | null
+          created_at?: string
+          currency_default?: string | null
+          direction?: string
+          name: string
+          timezone_default?: string | null
+        }
+        Update: {
+          code?: string
+          country_code?: string | null
+          created_at?: string
+          currency_default?: string | null
+          direction?: string
+          name?: string
+          timezone_default?: string | null
+        }
+        Relationships: []
+      }
+      core_modules_registry: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          metadata: Json
+          module_code: string
+          module_group: string | null
+          module_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          module_code: string
+          module_group?: string | null
+          module_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          module_code?: string
+          module_group?: string | null
+          module_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      core_profile_visibility: {
+        Row: {
+          avatar_visibility: string
+          created_at: string
+          display_name_visibility: string
+          email_visibility: string
+          id: string
+          last_seen_visibility: string
+          metadata: Json
+          online_status_visibility: string
+          phone_visibility: string
+          read_receipt_visibility: string
+          updated_at: string
+          user_id: string
+          username_visibility: string
+        }
+        Insert: {
+          avatar_visibility?: string
+          created_at?: string
+          display_name_visibility?: string
+          email_visibility?: string
+          id?: string
+          last_seen_visibility?: string
+          metadata?: Json
+          online_status_visibility?: string
+          phone_visibility?: string
+          read_receipt_visibility?: string
+          updated_at?: string
+          user_id: string
+          username_visibility?: string
+        }
+        Update: {
+          avatar_visibility?: string
+          created_at?: string
+          display_name_visibility?: string
+          email_visibility?: string
+          id?: string
+          last_seen_visibility?: string
+          metadata?: Json
+          online_status_visibility?: string
+          phone_visibility?: string
+          read_receipt_visibility?: string
+          updated_at?: string
+          user_id?: string
+          username_visibility?: string
+        }
+        Relationships: []
+      }
+      core_profiles: {
+        Row: {
+          avatar_asset_id: string | null
+          bio: string | null
+          city: string | null
+          country_code: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          is_active: boolean
+          locale: string | null
+          metadata: Json
+          timezone: string | null
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_asset_id?: string | null
+          bio?: string | null
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_active?: boolean
+          locale?: string | null
+          metadata?: Json
+          timezone?: string | null
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_asset_id?: string | null
+          bio?: string | null
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_active?: boolean
+          locale?: string | null
+          metadata?: Json
+          timezone?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      core_timezones_catalog: {
+        Row: {
+          code: string
+          created_at: string
+          region: string | null
+          utc_offset: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          region?: string | null
+          utc_offset: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          region?: string | null
+          utc_offset?: string
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           code: string
@@ -11470,6 +12097,950 @@ export type Database = {
           },
         ]
       }
+      marketplace_branches_core: {
+        Row: {
+          address_line_1: string | null
+          address_line_2: string | null
+          branch_name: string
+          branch_status: string
+          business_entity_id: string
+          city: string | null
+          country_code: string | null
+          created_at: string
+          delivery_enabled: boolean
+          delivery_radius_km: number | null
+          dine_in_enabled: boolean
+          email: string | null
+          geo_point_id: string | null
+          id: string
+          live_tracking_enabled: boolean
+          metadata: Json
+          phone: string | null
+          pickup_enabled: boolean
+          postal_code: string | null
+          state_region: string | null
+          timezone_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          branch_name: string
+          branch_status?: string
+          business_entity_id: string
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          delivery_enabled?: boolean
+          delivery_radius_km?: number | null
+          dine_in_enabled?: boolean
+          email?: string | null
+          geo_point_id?: string | null
+          id?: string
+          live_tracking_enabled?: boolean
+          metadata?: Json
+          phone?: string | null
+          pickup_enabled?: boolean
+          postal_code?: string | null
+          state_region?: string | null
+          timezone_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          branch_name?: string
+          branch_status?: string
+          business_entity_id?: string
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          delivery_enabled?: boolean
+          delivery_radius_km?: number | null
+          dine_in_enabled?: boolean
+          email?: string | null
+          geo_point_id?: string | null
+          id?: string
+          live_tracking_enabled?: boolean
+          metadata?: Json
+          phone?: string | null
+          pickup_enabled?: boolean
+          postal_code?: string | null
+          state_region?: string | null
+          timezone_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_branches_core_business_entity_id_fkey"
+            columns: ["business_entity_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_business_entities_core"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_branches_core_geo_point_id_fkey"
+            columns: ["geo_point_id"]
+            isOneToOne: false
+            referencedRelation: "core_geo_points"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_business_entities_core: {
+        Row: {
+          city: string | null
+          country_code: string | null
+          cover_asset_id: string | null
+          created_at: string
+          entity_name: string
+          entity_status: string
+          id: string
+          legal_name: string | null
+          logo_asset_id: string | null
+          metadata: Json
+          org_id: string | null
+          owner_user_id: string | null
+          price_tier: number | null
+          rating_avg: number | null
+          rating_count: number
+          slug: string | null
+          subvertical_code: string | null
+          support_email: string | null
+          support_phone: string | null
+          tax_country_code: string | null
+          tax_number: string | null
+          timezone_code: string | null
+          updated_at: string
+          verification_status: string
+          vertical_code: string
+          website_url: string | null
+        }
+        Insert: {
+          city?: string | null
+          country_code?: string | null
+          cover_asset_id?: string | null
+          created_at?: string
+          entity_name: string
+          entity_status?: string
+          id?: string
+          legal_name?: string | null
+          logo_asset_id?: string | null
+          metadata?: Json
+          org_id?: string | null
+          owner_user_id?: string | null
+          price_tier?: number | null
+          rating_avg?: number | null
+          rating_count?: number
+          slug?: string | null
+          subvertical_code?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          tax_country_code?: string | null
+          tax_number?: string | null
+          timezone_code?: string | null
+          updated_at?: string
+          verification_status?: string
+          vertical_code: string
+          website_url?: string | null
+        }
+        Update: {
+          city?: string | null
+          country_code?: string | null
+          cover_asset_id?: string | null
+          created_at?: string
+          entity_name?: string
+          entity_status?: string
+          id?: string
+          legal_name?: string | null
+          logo_asset_id?: string | null
+          metadata?: Json
+          org_id?: string | null
+          owner_user_id?: string | null
+          price_tier?: number | null
+          rating_avg?: number | null
+          rating_count?: number
+          slug?: string | null
+          subvertical_code?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          tax_country_code?: string | null
+          tax_number?: string | null
+          timezone_code?: string | null
+          updated_at?: string
+          verification_status?: string
+          vertical_code?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_business_entities_core_cover_asset_id_fkey"
+            columns: ["cover_asset_id"]
+            isOneToOne: false
+            referencedRelation: "core_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_business_entities_core_logo_asset_id_fkey"
+            columns: ["logo_asset_id"]
+            isOneToOne: false
+            referencedRelation: "core_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_catalog_categories_core: {
+        Row: {
+          catalog_id: string
+          category_code: string | null
+          category_name: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          image_asset_id: string | null
+          is_active: boolean
+          metadata: Json
+          parent_category_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          catalog_id: string
+          category_code?: string | null
+          category_name: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_asset_id?: string | null
+          is_active?: boolean
+          metadata?: Json
+          parent_category_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          catalog_id?: string
+          category_code?: string | null
+          category_name?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_asset_id?: string | null
+          is_active?: boolean
+          metadata?: Json
+          parent_category_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_catalog_categories_core_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_catalogs_core"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_catalog_categories_core_image_asset_id_fkey"
+            columns: ["image_asset_id"]
+            isOneToOne: false
+            referencedRelation: "core_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_catalog_categories_core_parent_category_id_fkey"
+            columns: ["parent_category_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_catalog_categories_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_catalog_items_core: {
+        Row: {
+          availability_status: string
+          base_price: number | null
+          catalog_id: string
+          category_id: string | null
+          compare_at_price: number | null
+          created_at: string
+          currency_code: string | null
+          display_order: number
+          id: string
+          item_name: string
+          item_type: string
+          long_description: string | null
+          metadata: Json
+          preparation_time_minutes: number | null
+          primary_asset_id: string | null
+          rating_avg: number | null
+          rating_count: number
+          search_vector: unknown
+          short_description: string | null
+          sku: string | null
+          stock_qty: number | null
+          tax_inclusive: boolean
+          unit_label: string | null
+          updated_at: string
+        }
+        Insert: {
+          availability_status?: string
+          base_price?: number | null
+          catalog_id: string
+          category_id?: string | null
+          compare_at_price?: number | null
+          created_at?: string
+          currency_code?: string | null
+          display_order?: number
+          id?: string
+          item_name: string
+          item_type: string
+          long_description?: string | null
+          metadata?: Json
+          preparation_time_minutes?: number | null
+          primary_asset_id?: string | null
+          rating_avg?: number | null
+          rating_count?: number
+          search_vector?: unknown
+          short_description?: string | null
+          sku?: string | null
+          stock_qty?: number | null
+          tax_inclusive?: boolean
+          unit_label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          availability_status?: string
+          base_price?: number | null
+          catalog_id?: string
+          category_id?: string | null
+          compare_at_price?: number | null
+          created_at?: string
+          currency_code?: string | null
+          display_order?: number
+          id?: string
+          item_name?: string
+          item_type?: string
+          long_description?: string | null
+          metadata?: Json
+          preparation_time_minutes?: number | null
+          primary_asset_id?: string | null
+          rating_avg?: number | null
+          rating_count?: number
+          search_vector?: unknown
+          short_description?: string | null
+          sku?: string | null
+          stock_qty?: number | null
+          tax_inclusive?: boolean
+          unit_label?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_catalog_items_core_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_catalogs_core"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_catalog_items_core_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_catalog_categories_core"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_catalog_items_core_primary_asset_id_fkey"
+            columns: ["primary_asset_id"]
+            isOneToOne: false
+            referencedRelation: "core_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_catalogs_core: {
+        Row: {
+          branch_id: string | null
+          business_entity_id: string
+          catalog_type: string
+          created_at: string
+          currency_code: string | null
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          is_default: boolean
+          locale_code: string | null
+          metadata: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          business_entity_id: string
+          catalog_type: string
+          created_at?: string
+          currency_code?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          locale_code?: string | null
+          metadata?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          business_entity_id?: string
+          catalog_type?: string
+          created_at?: string
+          currency_code?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          locale_code?: string | null
+          metadata?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_catalogs_core_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_branches_core"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_catalogs_core_business_entity_id_fkey"
+            columns: ["business_entity_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_business_entities_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_driver_profiles_core: {
+        Row: {
+          business_entity_id: string | null
+          created_at: string
+          geo_point_id: string | null
+          id: string
+          license_number: string | null
+          metadata: Json
+          rating_avg: number | null
+          rating_count: number
+          status: string
+          updated_at: string
+          user_id: string
+          vehicle_plate: string | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          business_entity_id?: string | null
+          created_at?: string
+          geo_point_id?: string | null
+          id?: string
+          license_number?: string | null
+          metadata?: Json
+          rating_avg?: number | null
+          rating_count?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+          vehicle_plate?: string | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          business_entity_id?: string | null
+          created_at?: string
+          geo_point_id?: string | null
+          id?: string
+          license_number?: string | null
+          metadata?: Json
+          rating_avg?: number | null
+          rating_count?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_plate?: string | null
+          vehicle_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_driver_profiles_core_business_entity_id_fkey"
+            columns: ["business_entity_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_business_entities_core"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_driver_profiles_core_geo_point_id_fkey"
+            columns: ["geo_point_id"]
+            isOneToOne: false
+            referencedRelation: "core_geo_points"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_favorites_core: {
+        Row: {
+          business_entity_id: string | null
+          created_at: string
+          id: string
+          item_id: string | null
+          user_id: string
+        }
+        Insert: {
+          business_entity_id?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          user_id: string
+        }
+        Update: {
+          business_entity_id?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_favorites_core_business_entity_id_fkey"
+            columns: ["business_entity_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_business_entities_core"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_favorites_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_fleet_units_core: {
+        Row: {
+          has_ac: boolean
+          item_id: string
+          max_luggage: number | null
+          max_passengers: number | null
+          metadata: Json
+          vehicle_class_code: string | null
+        }
+        Insert: {
+          has_ac?: boolean
+          item_id: string
+          max_luggage?: number | null
+          max_passengers?: number | null
+          metadata?: Json
+          vehicle_class_code?: string | null
+        }
+        Update: {
+          has_ac?: boolean
+          item_id?: string
+          max_luggage?: number | null
+          max_passengers?: number | null
+          metadata?: Json
+          vehicle_class_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_fleet_units_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_food_items_core: {
+        Row: {
+          allergens: Json
+          calories: number | null
+          cuisine_code: string | null
+          is_halal: boolean
+          is_vegan: boolean
+          is_vegetarian: boolean
+          item_id: string
+          metadata: Json
+          nutritional_info: Json
+          spice_level: number | null
+        }
+        Insert: {
+          allergens?: Json
+          calories?: number | null
+          cuisine_code?: string | null
+          is_halal?: boolean
+          is_vegan?: boolean
+          is_vegetarian?: boolean
+          item_id: string
+          metadata?: Json
+          nutritional_info?: Json
+          spice_level?: number | null
+        }
+        Update: {
+          allergens?: Json
+          calories?: number | null
+          cuisine_code?: string | null
+          is_halal?: boolean
+          is_vegan?: boolean
+          is_vegetarian?: boolean
+          item_id?: string
+          metadata?: Json
+          nutritional_info?: Json
+          spice_level?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_food_items_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_grocery_items_core: {
+        Row: {
+          aisle_code: string | null
+          barcode: string | null
+          brand_name: string | null
+          country_of_origin: string | null
+          item_id: string
+          metadata: Json
+          weight_unit: string | null
+          weight_value: number | null
+        }
+        Insert: {
+          aisle_code?: string | null
+          barcode?: string | null
+          brand_name?: string | null
+          country_of_origin?: string | null
+          item_id: string
+          metadata?: Json
+          weight_unit?: string | null
+          weight_value?: number | null
+        }
+        Update: {
+          aisle_code?: string | null
+          barcode?: string | null
+          brand_name?: string | null
+          country_of_origin?: string | null
+          item_id?: string
+          metadata?: Json
+          weight_unit?: string | null
+          weight_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_grocery_items_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_hotel_units_core: {
+        Row: {
+          bed_config: string | null
+          cancellation_policy_code: string | null
+          check_in_time: string | null
+          check_out_time: string | null
+          item_id: string
+          max_guests: number | null
+          metadata: Json
+          room_type_code: string | null
+        }
+        Insert: {
+          bed_config?: string | null
+          cancellation_policy_code?: string | null
+          check_in_time?: string | null
+          check_out_time?: string | null
+          item_id: string
+          max_guests?: number | null
+          metadata?: Json
+          room_type_code?: string | null
+        }
+        Update: {
+          bed_config?: string | null
+          cancellation_policy_code?: string | null
+          check_in_time?: string | null
+          check_out_time?: string | null
+          item_id?: string
+          max_guests?: number | null
+          metadata?: Json
+          room_type_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_hotel_units_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_item_assets_core: {
+        Row: {
+          asset_id: string
+          asset_role: string
+          created_at: string
+          display_order: number
+          id: string
+          item_id: string
+        }
+        Insert: {
+          asset_id: string
+          asset_role?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          item_id: string
+        }
+        Update: {
+          asset_id?: string
+          asset_role?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_item_assets_core_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "core_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_item_assets_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_item_option_groups_core: {
+        Row: {
+          created_at: string
+          display_order: number
+          group_name: string
+          id: string
+          is_required: boolean
+          item_id: string
+          max_select: number
+          metadata: Json
+          min_select: number
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          group_name: string
+          id?: string
+          is_required?: boolean
+          item_id: string
+          max_select?: number
+          metadata?: Json
+          min_select?: number
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          group_name?: string
+          id?: string
+          is_required?: boolean
+          item_id?: string
+          max_select?: number
+          metadata?: Json
+          min_select?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_item_option_groups_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_item_options_core: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_available: boolean
+          is_default: boolean
+          metadata: Json
+          option_group_id: string
+          option_name: string
+          price_delta: number
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_available?: boolean
+          is_default?: boolean
+          metadata?: Json
+          option_group_id: string
+          option_name: string
+          price_delta?: number
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_available?: boolean
+          is_default?: boolean
+          metadata?: Json
+          option_group_id?: string
+          option_name?: string
+          price_delta?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_item_options_core_option_group_id_fkey"
+            columns: ["option_group_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_item_option_groups_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_operating_hours_core: {
+        Row: {
+          branch_id: string
+          close_time: string | null
+          created_at: string
+          id: string
+          is_closed: boolean
+          metadata: Json
+          open_time: string | null
+          slot_label: string | null
+          weekday: number
+        }
+        Insert: {
+          branch_id: string
+          close_time?: string | null
+          created_at?: string
+          id?: string
+          is_closed?: boolean
+          metadata?: Json
+          open_time?: string | null
+          slot_label?: string | null
+          weekday: number
+        }
+        Update: {
+          branch_id?: string
+          close_time?: string | null
+          created_at?: string
+          id?: string
+          is_closed?: boolean
+          metadata?: Json
+          open_time?: string | null
+          slot_label?: string | null
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_operating_hours_core_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_branches_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_pharmacy_items_core: {
+        Row: {
+          active_ingredients: Json
+          dosage_text: string | null
+          item_id: string
+          metadata: Json
+          otc_only: boolean
+          prescription_required: boolean
+        }
+        Insert: {
+          active_ingredients?: Json
+          dosage_text?: string | null
+          item_id: string
+          metadata?: Json
+          otc_only?: boolean
+          prescription_required?: boolean
+        }
+        Update: {
+          active_ingredients?: Json
+          dosage_text?: string | null
+          item_id?: string
+          metadata?: Json
+          otc_only?: boolean
+          prescription_required?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_pharmacy_items_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_property_units_core: {
+        Row: {
+          bathroom_count: number | null
+          bedroom_count: number | null
+          furnished: boolean | null
+          item_id: string
+          metadata: Json
+          property_type_code: string | null
+          rent_period_code: string | null
+          size_sqm: number | null
+        }
+        Insert: {
+          bathroom_count?: number | null
+          bedroom_count?: number | null
+          furnished?: boolean | null
+          item_id: string
+          metadata?: Json
+          property_type_code?: string | null
+          rent_period_code?: string | null
+          size_sqm?: number | null
+        }
+        Update: {
+          bathroom_count?: number | null
+          bedroom_count?: number | null
+          furnished?: boolean | null
+          item_id?: string
+          metadata?: Json
+          property_type_code?: string | null
+          rent_period_code?: string | null
+          size_sqm?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_property_units_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_providers: {
         Row: {
           active: boolean | null
@@ -11718,6 +13289,101 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "public_marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_reviews_core: {
+        Row: {
+          business_entity_id: string | null
+          created_at: string
+          id: string
+          item_id: string | null
+          metadata: Json
+          rating: number
+          review_body: string | null
+          review_status: string
+          review_title: string | null
+          reviewer_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          business_entity_id?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          metadata?: Json
+          rating: number
+          review_body?: string | null
+          review_status?: string
+          review_title?: string | null
+          reviewer_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          business_entity_id?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          metadata?: Json
+          rating?: number
+          review_body?: string | null
+          review_status?: string
+          review_title?: string | null
+          reviewer_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_reviews_core_business_entity_id_fkey"
+            columns: ["business_entity_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_business_entities_core"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_service_offers_core: {
+        Row: {
+          booking_required: boolean
+          item_id: string
+          metadata: Json
+          onsite: boolean
+          remote: boolean
+          service_area_radius_km: number | null
+          service_duration_minutes: number | null
+        }
+        Insert: {
+          booking_required?: boolean
+          item_id: string
+          metadata?: Json
+          onsite?: boolean
+          remote?: boolean
+          service_area_radius_km?: number | null
+          service_duration_minutes?: number | null
+        }
+        Update: {
+          booking_required?: boolean
+          item_id?: string
+          metadata?: Json
+          onsite?: boolean
+          remote?: boolean
+          service_area_radius_km?: number | null
+          service_duration_minutes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_service_offers_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "marketplace_catalog_items_core"
             referencedColumns: ["id"]
           },
         ]
@@ -11997,6 +13663,122 @@ export type Database = {
           },
         ]
       }
+      marketplace_storefronts_core: {
+        Row: {
+          accent_color: string | null
+          accepts_bookings: boolean
+          accepts_calls: boolean
+          accepts_messages: boolean
+          accepts_orders: boolean
+          business_entity_id: string
+          created_at: string
+          description: string | null
+          hero_asset_id: string | null
+          id: string
+          is_featured: boolean
+          is_open_now: boolean
+          metadata: Json
+          public_subtitle: string | null
+          public_title: string
+          seo_description: string | null
+          seo_title: string | null
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string | null
+          accepts_bookings?: boolean
+          accepts_calls?: boolean
+          accepts_messages?: boolean
+          accepts_orders?: boolean
+          business_entity_id: string
+          created_at?: string
+          description?: string | null
+          hero_asset_id?: string | null
+          id?: string
+          is_featured?: boolean
+          is_open_now?: boolean
+          metadata?: Json
+          public_subtitle?: string | null
+          public_title: string
+          seo_description?: string | null
+          seo_title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string | null
+          accepts_bookings?: boolean
+          accepts_calls?: boolean
+          accepts_messages?: boolean
+          accepts_orders?: boolean
+          business_entity_id?: string
+          created_at?: string
+          description?: string | null
+          hero_asset_id?: string | null
+          id?: string
+          is_featured?: boolean
+          is_open_now?: boolean
+          metadata?: Json
+          public_subtitle?: string | null
+          public_title?: string
+          seo_description?: string | null
+          seo_title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_storefronts_core_business_entity_id_fkey"
+            columns: ["business_entity_id"]
+            isOneToOne: true
+            referencedRelation: "marketplace_business_entities_core"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_storefronts_core_hero_asset_id_fkey"
+            columns: ["hero_asset_id"]
+            isOneToOne: false
+            referencedRelation: "core_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_travel_offers_core: {
+        Row: {
+          arrival_country_code: string | null
+          departure_country_code: string | null
+          item_id: string
+          metadata: Json
+          offer_type_code: string | null
+          provider_name: string | null
+          refundable: boolean
+        }
+        Insert: {
+          arrival_country_code?: string | null
+          departure_country_code?: string | null
+          item_id: string
+          metadata?: Json
+          offer_type_code?: string | null
+          provider_name?: string | null
+          refundable?: boolean
+        }
+        Update: {
+          arrival_country_code?: string | null
+          departure_country_code?: string | null
+          item_id?: string
+          metadata?: Json
+          offer_type_code?: string | null
+          provider_name?: string | null
+          refundable?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_travel_offers_core_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "marketplace_catalog_items_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       media_assets: {
         Row: {
           asset_type: string
@@ -12036,6 +13818,87 @@ export type Database = {
           profile_name?: string | null
           status?: string
           width?: number | null
+        }
+        Relationships: []
+      }
+      media_upload_jobs_core: {
+        Row: {
+          asset_id: string | null
+          chunk_count: number | null
+          completed_at: string | null
+          compression_ratio: number | null
+          conversation_id: string | null
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          final_size_bytes: number | null
+          id: string
+          local_client_id: string | null
+          message_id: string | null
+          metadata: Json
+          original_file_name: string | null
+          original_mime_type: string | null
+          original_size_bytes: number | null
+          owner_user_id: string
+          progress_percent: number
+          retry_count: number
+          started_at: string | null
+          transport_status: string
+          updated_at: string
+          upload_kind: string
+          uploaded_chunk_count: number | null
+        }
+        Insert: {
+          asset_id?: string | null
+          chunk_count?: number | null
+          completed_at?: string | null
+          compression_ratio?: number | null
+          conversation_id?: string | null
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          final_size_bytes?: number | null
+          id?: string
+          local_client_id?: string | null
+          message_id?: string | null
+          metadata?: Json
+          original_file_name?: string | null
+          original_mime_type?: string | null
+          original_size_bytes?: number | null
+          owner_user_id: string
+          progress_percent?: number
+          retry_count?: number
+          started_at?: string | null
+          transport_status?: string
+          updated_at?: string
+          upload_kind?: string
+          uploaded_chunk_count?: number | null
+        }
+        Update: {
+          asset_id?: string | null
+          chunk_count?: number | null
+          completed_at?: string | null
+          compression_ratio?: number | null
+          conversation_id?: string | null
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          final_size_bytes?: number | null
+          id?: string
+          local_client_id?: string | null
+          message_id?: string | null
+          metadata?: Json
+          original_file_name?: string | null
+          original_mime_type?: string | null
+          original_size_bytes?: number | null
+          owner_user_id?: string
+          progress_percent?: number
+          retry_count?: number
+          started_at?: string | null
+          transport_status?: string
+          updated_at?: string
+          upload_kind?: string
+          uploaded_chunk_count?: number | null
         }
         Relationships: []
       }
@@ -13630,6 +15493,147 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      migration_conflicts_core: {
+        Row: {
+          conflict_type: string
+          created_at: string
+          current_value: Json | null
+          domain: string
+          id: string
+          incoming_value: Json | null
+          metadata: Json
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          source_id: string
+          source_table: string
+        }
+        Insert: {
+          conflict_type: string
+          created_at?: string
+          current_value?: Json | null
+          domain: string
+          id?: string
+          incoming_value?: Json | null
+          metadata?: Json
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source_id: string
+          source_table: string
+        }
+        Update: {
+          conflict_type?: string
+          created_at?: string
+          current_value?: Json | null
+          domain?: string
+          id?: string
+          incoming_value?: Json | null
+          metadata?: Json
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source_id?: string
+          source_table?: string
+        }
+        Relationships: []
+      }
+      migration_entity_map_core: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json
+          migration_batch: string | null
+          source_id: string
+          source_table: string
+          status: string
+          target_id: string
+          target_table: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          migration_batch?: string | null
+          source_id: string
+          source_table: string
+          status?: string
+          target_id: string
+          target_table: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          migration_batch?: string | null
+          source_id?: string
+          source_table?: string
+          status?: string
+          target_id?: string
+          target_table?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      migration_jobs_core: {
+        Row: {
+          created_at: string
+          domain: string
+          error_log: Json
+          failed_rows: number
+          finished_at: string | null
+          id: string
+          job_name: string
+          metadata: Json
+          processed_rows: number
+          source_table: string | null
+          started_at: string | null
+          status: string
+          success_rows: number
+          target_table: string | null
+          total_rows: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          error_log?: Json
+          failed_rows?: number
+          finished_at?: string | null
+          id?: string
+          job_name: string
+          metadata?: Json
+          processed_rows?: number
+          source_table?: string | null
+          started_at?: string | null
+          status?: string
+          success_rows?: number
+          target_table?: string | null
+          total_rows?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          error_log?: Json
+          failed_rows?: number
+          finished_at?: string | null
+          id?: string
+          job_name?: string
+          metadata?: Json
+          processed_rows?: number
+          source_table?: string | null
+          started_at?: string | null
+          status?: string
+          success_rows?: number
+          target_table?: string | null
+          total_rows?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       mobility_ai_logs: {
         Row: {
@@ -27920,6 +29924,38 @@ export type Database = {
           },
         ]
       }
+      taxonomy_assignments_core: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          taxonomy_node_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          taxonomy_node_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          taxonomy_node_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "taxonomy_assignments_core_taxonomy_node_id_fkey"
+            columns: ["taxonomy_node_id"]
+            isOneToOne: false
+            referencedRelation: "taxonomy_nodes_core"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       taxonomy_gap_candidates: {
         Row: {
           city_count: number | null
@@ -27969,6 +30005,59 @@ export type Database = {
             columns: ["proposed_parent_id"]
             isOneToOne: false
             referencedRelation: "canonical_taxonomy"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      taxonomy_nodes_core: {
+        Row: {
+          code: string
+          created_at: string
+          display_order: number
+          domain: string
+          id: string
+          is_active: boolean
+          metadata: Json
+          name: string
+          node_type: string
+          parent_id: string | null
+          slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          display_order?: number
+          domain: string
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          name: string
+          node_type: string
+          parent_id?: string | null
+          slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          display_order?: number
+          domain?: string
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          name?: string
+          node_type?: string
+          parent_id?: string | null
+          slug?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "taxonomy_nodes_core_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "taxonomy_nodes_core"
             referencedColumns: ["id"]
           },
         ]
@@ -31917,6 +34006,16 @@ export type Database = {
       }
       cleanup_expired_messages: { Args: never; Returns: number }
       cleanup_expired_nonces: { Args: never; Returns: number }
+      coalesce_display_name: {
+        Args: {
+          fallback_value?: string
+          p_display_name: string
+          p_email: string
+          p_phone: string
+          p_username: string
+        }
+        Returns: string
+      }
       compute_product_quality_scores: {
         Args: { p_product_id: string }
         Returns: undefined
@@ -32017,6 +34116,10 @@ export type Database = {
         }[]
       }
       get_listing_property: { Args: { p_listing_id: string }; Returns: Json }
+      get_or_create_direct_thread_core: {
+        Args: { p_user_a: string; p_user_b: string }
+        Returns: string
+      }
       get_order_by_session: { Args: { _session_id: string }; Returns: Json }
       get_org_role: {
         Args: { _org_id: string; _user_id: string }
@@ -32527,6 +34630,7 @@ export type Database = {
         Args: { p_workspace_id: string }
         Returns: boolean
       }
+      jsonb_merge_safe: { Args: { a: Json; b: Json }; Returns: Json }
       lookup_orbit_profile: {
         Args: { _orbit_id: string }
         Returns: {
@@ -32664,6 +34768,16 @@ export type Database = {
           vertical: string
         }[]
       }
+      send_message_core: {
+        Args: {
+          p_body?: string
+          p_conversation_id: string
+          p_metadata?: Json
+          p_sender: string
+          p_type: string
+        }
+        Returns: string
+      }
       suggest_onboarding_template: {
         Args: { p_city?: string; p_subcategory?: string; p_vertical: string }
         Returns: {
@@ -32672,6 +34786,7 @@ export type Database = {
           template_name: string
         }[]
       }
+      text_or_null: { Args: { v: string }; Returns: string }
       transfer_locs: {
         Args: {
           _amount: number
