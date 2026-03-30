@@ -89,18 +89,27 @@ export async function sendMediaOptimistic(
       type: "media",
       body: preview,
       metadata: {
-        url: localPreviewUrl,
-        view_once: payload.viewOnce ?? false,
-        disappear_at: payload.disappearAt ?? null,
-        media_kind: mediaKind,
-        has_attachments: true,
-        thumbnail_url: thumbnailUrl || (mediaKind === "image" ? localPreviewUrl : null),
-        duration,
-        file_size: payload.file.size,
-        file_name: payload.file.name,
-        mime_type: payload.file.type,
-        upload_status: "uploading",
-        upload_id: uploadId,
+        schemaVersion: 1,
+        ui: {
+          cardType: mediaKind === "voice" ? "voice" : "media",
+          clickable: true,
+          primaryAction: "open_media",
+        },
+        media: {
+          kind: mediaKind as any,
+          url: localPreviewUrl,
+          mimeType: payload.file.type,
+          fileName: payload.file.name,
+          fileSize: payload.file.size,
+          durationSeconds: duration ?? null,
+          viewOnce: payload.viewOnce ?? false,
+          transcriptionStatus: "none",
+        },
+        transport: {
+          optimisticId: uploadId,
+          source: "ui",
+          dedupeKey: `media_${uploadId}`,
+        },
       },
     });
 
@@ -138,13 +147,19 @@ export async function sendMediaOptimistic(
 
     // Step 4: Reconcile — update message with remote URL
     queue.updateStatus(uploadId, "processing");
+    const existingMeta = (messageData as any).metadata || {};
     await updateMessageFields(messageData.id, {
       metadata: {
-        ...((messageData as any).metadata || {}),
-        url: remoteUrl,
-        thumbnail_url: thumbnailUrl || (mediaKind === "image" ? remoteUrl : null),
-        upload_status: "completed",
-        upload_id: uploadId,
+        ...existingMeta,
+        media: {
+          ...(existingMeta.media || {}),
+          url: remoteUrl,
+        },
+        transport: {
+          ...(existingMeta.transport || {}),
+          optimisticId: uploadId,
+          source: "ui",
+        },
       },
     });
 
