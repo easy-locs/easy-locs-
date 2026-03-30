@@ -1,6 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useBatchStore } from "./batch-store";
 import { buildBatchViewModel, buildBatchStatusViewModel, issueBatchId } from "./batch-types";
+
+// Mock browser APIs not available in jsdom
+globalThis.URL.createObjectURL = vi.fn(() => "blob:mock");
+globalThis.URL.revokeObjectURL = vi.fn();
 
 function createMockFile(name: string, size: number = 1024, type: string = "image/jpeg"): File {
   const buffer = new ArrayBuffer(size);
