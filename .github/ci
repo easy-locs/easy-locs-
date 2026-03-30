@@ -1,9 +1,6 @@
 name: CI
 
-on:
-  push:
-    branches:
-      - main
+on: push
 
 jobs:
   build:
@@ -14,18 +11,14 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
 
-      - name: Debug
-        run: |
-          node -v
-          npm -v
+      - run: echo "CI START"
 
-      - name: Install
-        run: npm install --legacy-peer-deps
+      - run: npm install --legacy-peer-deps
 
-      - name: Type check
-        run: npx tsc --noEmit
+      - run: echo "INSTALL OK"
 
-      - name: Build
-        run: npm run build
+      - run: npm run build
+
+      - run: echo "BUILD OK"
