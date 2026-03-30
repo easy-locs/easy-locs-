@@ -143,14 +143,12 @@ async function handleSendLocation(cmd: SendLocationCommand): Promise<OrbitComman
 
 async function handleStartCall(cmd: StartCallCommand): Promise<OrbitCommandResult> {
   const { createOutgoingCallSession } = await import("@/repositories/communication.repository");
-  const userId = await getCurrentUserId();
   const orbit = getOrbitIdentity();
+  const callerOrbitId = orbit?.orbitId || `orbit_anon`;
   const session = await createOutgoingCallSession({
-    callerUserId: userId,
-    callerOrbitId: orbit?.orbitId || `orbit_${userId.slice(0, 12)}`,
-    receiverUserId: cmd.peerUserId,
+    conversationId: cmd.conversationId,
+    callerOrbitId,
     receiverOrbitId: cmd.peerOrbitId || null,
-    conversationId: cmd.conversationId || null,
     mode: cmd.mode,
   });
   return { ok: true, sessionId: session?.id };
