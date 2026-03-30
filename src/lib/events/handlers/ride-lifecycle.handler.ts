@@ -62,8 +62,7 @@ let lifecycleChannel: ReturnType<typeof createRealtimeChannel> | null = null;
 export function initRideLifecycleHandler() {
   if (lifecycleChannel) return; // already initialized
 
-  lifecycleChannel = supabase
-    .channel("ride-lifecycle-global")
+  lifecycleChannel = createRealtimeChannel("ride-lifecycle-global")
     .on(
       "postgres_changes",
       { event: "UPDATE", schema: "public", table: "mobility_jobs" },
