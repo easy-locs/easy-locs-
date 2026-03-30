@@ -26,6 +26,8 @@ import { executeSendMediaBatch } from "./pipeline/executeSendMediaBatch";
 import { executeSendVoice } from "./pipeline/executeSendVoice";
 import { executeSendLocation } from "./pipeline/executeSendLocation";
 import { executeStartCall } from "./pipeline/executeStartCall";
+import { executeAcceptCall } from "./pipeline/executeAcceptCall";
+import { executeDeclineCall } from "./pipeline/executeDeclineCall";
 import { executeEndCall } from "./pipeline/executeEndCall";
 import { executeEditMessage } from "./pipeline/executeEditMessage";
 import { executeReplyMessage } from "./pipeline/executeReplyMessage";
