@@ -3,7 +3,7 @@
  * Single responsibility: identity + conversation resolution for HudChatPanel.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getCurrentUserId } from "@/families/identity";
 import { toast } from "sonner";
 
 interface UseHudConversationResolverParams {
@@ -17,12 +17,12 @@ export function useHudConversationResolver({
   thread, myOrbitId, onThreadUpdate, t,
 }: UseHudConversationResolverParams) {
   const resolveAuthUserId = useCallback(async (): Promise<string | null> => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data?.user?.id) {
+    try {
+      return await getCurrentUserId();
+    } catch {
       toast.error(t("orbit.session_expired") || "Session expired");
       return null;
     }
-    return data.user.id;
   }, [t]);
 
   const resolveConversationId = useCallback(async (authUserId: string): Promise<string | null> => {
