@@ -338,8 +338,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         )}
 
         {/* ── COMPOSER FAMILY UI — hidden during selection mode ── */}
-        {!selection.selectMode && (
+        {!selection.selectMode && globalSelectionMode !== "selecting" && (
           <MessageComposer
+            key={currentConversationId}
             value={messageSender.newMessage}
             sending={messageSender.sending}
             uploading={attFamily.attachments.uploading}
