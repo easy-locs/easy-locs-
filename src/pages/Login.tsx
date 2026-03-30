@@ -281,6 +281,16 @@ const Login = () => {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.login.submit")}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
             </motion.button>
+            {retryStatus && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-center text-amber-500 font-medium flex items-center justify-center gap-1.5"
+              >
+                <Loader2 className="h-3 w-3 animate-spin" />
+                {retryStatus}
+              </motion.p>
+            )}
           </form>
         )}
 
