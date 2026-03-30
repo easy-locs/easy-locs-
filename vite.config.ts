@@ -52,26 +52,51 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: "es2020",
     cssCodeSplit: true,
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
+            // ── Core React — always loaded ──
             if (id.includes("/react-dom/") || id.includes("/react/")) return "vendor-react";
             if (id.includes("react-router")) return "vendor-router";
+
+            // ── Supabase — split realtime from core ──
+            if (id.includes("@supabase/realtime")) return "vendor-supabase-rt";
+            if (id.includes("@supabase")) return "vendor-supabase";
+
+            // ── UI framework ──
             if (id.includes("framer-motion")) return "vendor-motion";
+            if (id.includes("@radix-ui")) return "vendor-radix";
+            if (id.includes("lucide-react")) return "vendor-lucide";
+            if (id.includes("next-themes") || id.includes("sonner")) return "vendor-ui-core";
+            if (id.includes("@tanstack")) return "vendor-tanstack";
+
+            // ── Heavy — always lazy ──
             if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
             if (id.includes("three") || id.includes("@react-three")) return "vendor-3d";
-            if (id.includes("@supabase")) return "vendor-supabase";
-            if (id.includes("@radix-ui")) return "vendor-radix";
             if (id.includes("jspdf")) return "vendor-pdf";
-            if (id.includes("date-fns")) return "vendor-datefns";
             if (id.includes("leaflet")) return "vendor-leaflet";
             if (id.includes("mapbox-gl")) return "vendor-mapbox";
             if (id.includes("html2canvas")) return "vendor-html2canvas";
-            if (id.includes("@tanstack")) return "vendor-tanstack";
-            if (id.includes("next-themes") || id.includes("sonner") || id.includes("lucide")) return "vendor-ui";
+            if (id.includes("jsqr") || id.includes("html5-qrcode")) return "vendor-qr";
+            if (id.includes("date-fns")) return "vendor-datefns";
+            if (id.includes("qrcode")) return "vendor-qrgen";
+            if (id.includes("dompurify")) return "vendor-sanitize";
+            if (id.includes("posthog")) return "vendor-analytics";
+            if (id.includes("@sentry")) return "vendor-sentry";
+            if (id.includes("react-markdown")) return "vendor-markdown";
+            if (id.includes("zod")) return "vendor-zod";
           }
+
+          // ── App-level code splits ──
+
+          // Orbit families — isolate call/media/device from core messaging
+          if (id.includes("/families/calls/") || id.includes("/families/device/call-")) return "orbit-calls";
+          if (id.includes("/families/media/batch/") || id.includes("/families/media/transport/")) return "orbit-media";
+
+          // Orbit heavy components — lazy-split
+          if (id.includes("/components/call/")) return "orbit-call-ui";
         },
       },
     },
