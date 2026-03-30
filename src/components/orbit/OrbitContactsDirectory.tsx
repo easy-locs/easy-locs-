@@ -113,18 +113,22 @@ export default function OrbitContactsDirectory() {
       setLoading(true);
       const { listOrbitContacts } = await import("@/lib/orbit/orbit-contacts-service");
       const rows = await listOrbitContacts(user.id);
-      setContacts(((rows || []).map((row: any) => ({
-        id: row.id,
-        name: row.display_name || row.email || row.phone || "Contact",
-        email: row.email,
-        phone: row.phone,
-        avatar_url: row.avatar_url,
-        is_favorite: !!row.is_favorite,
-        last_contacted_at: row.metadata?.last_contacted_at || null,
-        category: row.source || "contact",
-        contact_user_id: row.peer_user_id,
-        company: row.metadata?.company || null,
-      })) as OrbitContact[]) || []);
+      const { resolveCanonicalDisplayIdentity } = await import("@/lib/orbit/canonical-helpers");
+      setContacts(((rows || []).map((row: any) => {
+        const identity = resolveCanonicalDisplayIdentity(row);
+        return {
+          id: row.id,
+          name: identity.displayName,
+          email: row.email,
+          phone: row.phone,
+          avatar_url: identity.avatarUrl,
+          is_favorite: !!row.is_favorite,
+          last_contacted_at: row.metadata?.last_contacted_at || null,
+          category: row.source || "contact",
+          contact_user_id: row.peer_user_id,
+          company: row.metadata?.company || null,
+        };
+      }) as OrbitContact[]) || []);
       setLoading(false);
     })();
   }, [user]);
