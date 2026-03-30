@@ -405,7 +405,9 @@ export const CommunicationCenter = () => {
               </SheetTitle>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto">
-              <HudContextPanel thread={selectedThread} orgId={orgId} />
+              <Suspense fallback={null}>
+                <HudContextPanel thread={selectedThread} orgId={orgId} />
+              </Suspense>
             </div>
           </SheetContent>
         </Sheet>
