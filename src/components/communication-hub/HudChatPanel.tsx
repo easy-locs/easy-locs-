@@ -194,12 +194,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
     const draft = composerStore.getDraft(currentConversationId);
 
-    if (compFamily.composer.editState) {
+    // ── EDIT MODE: read from composerStore (single source of truth) ──
+    const activeEdit = composerStore.edits[currentConversationId];
+    if (activeEdit) {
       composerStore.setSending(currentConversationId, true);
       try {
-        await messageActions.editMessage(compFamily.composer.editState.messageId, draft.trim());
+        await messageActions.editMessage(activeEdit.messageId, draft.trim());
         composerStore.clearAfterSend(currentConversationId);
-        compFamily.composer.setEditState(null);
       } finally {
         composerStore.setSending(currentConversationId, false);
       }
@@ -211,14 +212,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     // ── LOCK + CLEAR immediately — before any async work ──
     composerStore.setSending(currentConversationId, true);
     composerStore.clearDraft(currentConversationId);
-    compFamily.composer.setReplyState(null);
+    composerStore.clearReply(currentConversationId);
 
     try {
       await messageSender.handleSend(draft);
     } finally {
       composerStore.setSending(currentConversationId, false);
     }
-  }, [compFamily.composer.editState, messageActions, messageSender, compFamily.composer.setReplyState, composerStore, currentConversationId]);
+  }, [messageActions, messageSender, composerStore, currentConversationId]);
 
   if (!thread) return <ChatEmptyState t={t} />;
 
@@ -374,7 +375,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             voiceRecording={compFamily.voiceRecorder.recording}
             voicePreview={compFamily.voicePreview}
             voiceDuration={compFamily.voiceRecorder.duration}
-            replyTo={selection.replyTo ? { content: selection.replyTo.content, senderName: selection.replyTo.senderName } : null}
+            replyTo={composerStore.replies[currentConversationId] ? { content: composerStore.replies[currentConversationId]!.content, senderName: composerStore.replies[currentConversationId]!.senderName } : (selection.replyTo ? { content: selection.replyTo.content, senderName: selection.replyTo.senderName } : null)}
             onChange={(v: string) => {
               setStoreDraft(v);
             }}
@@ -397,7 +398,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             onCancelVoice={compFamily.cancelVoice}
             onSendVoice={compFamily.handleVoiceSend}
             onDiscardVoice={compFamily.discardVoice}
-            onClearReply={() => selection.setReplyTo(null)}
+            onClearReply={() => { composerStore.clearReply(currentConversationId); selection.setReplyTo(null); }}
           />
         )}
 
@@ -522,7 +523,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         }}
         onCopy={() => {}}
         onEdited={(msgId, newContent) => loader.setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: newContent, edited_at: new Date().toISOString() } as any : m))}
-        onReply={(msgId, content, senderName) => selection.setReplyTo({ msgId, content, senderName })}
+        onReply={(msgId, content, senderName) => { selection.setReplyTo({ msgId, content, senderName }); composerStore.setReply(currentConversationId, { msgId, content, senderName }); }}
         onForward={(msgId, content) => selection.setForwardData({ messageId: msgId, content })}
         onStarToggle={(msgId, starred) => loader.setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, starred } as any : m))}
         onEnterSelectMode={selection.enterSelectMode}
