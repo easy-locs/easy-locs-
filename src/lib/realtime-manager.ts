@@ -129,11 +129,11 @@ class RealtimeManager {
     }
 
     if (this.userChannel) {
-      supabase.removeChannel(this.userChannel);
+      removeRealtimeChannel(this.userChannel);
       this.userChannel = null;
     }
     if (this.presenceChannel) {
-      supabase.removeChannel(this.presenceChannel);
+      removeRealtimeChannel(this.presenceChannel);
       this.presenceChannel = null;
     }
     if (this.presenceInterval) {
