@@ -87,6 +87,28 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const currentConversationId = thread?.conversationId || thread?.id || "";
   const [showContactProfile, setShowContactProfile] = useState(false);
   const [showMultiPhoto, setShowMultiPhoto] = useState(false);
+  const [peerProfileCreatedAt, setPeerProfileCreatedAt] = useState<string | null>(null);
+
+  // ── Fetch peer profile created_at for "member since" ──
+  useEffect(() => {
+    const peerId = thread?.peerUserId || null;
+    if (!peerId) { setPeerProfileCreatedAt(null); return; }
+    supabase.from("profiles").select("created_at").eq("id", peerId).maybeSingle()
+      .then(({ data }) => setPeerProfileCreatedAt(data?.created_at ?? null));
+  }, [thread?.peerUserId]);
+
+  const contactProfileEntity = useMemo(() => {
+    if (!thread) return null;
+    return {
+      display_name: thread.name,
+      email: thread.email,
+      avatar_url: thread.avatarUrl,
+      phone: (thread as any).phone || null,
+      user_id: thread.peerUserId || null,
+      orbit_id: thread.peerOrbitId || null,
+      created_at: peerProfileCreatedAt,
+    };
+  }, [thread?.name, thread?.email, thread?.avatarUrl, thread?.peerUserId, thread?.peerOrbitId, peerProfileCreatedAt]);
 
   // ── Sync stores to active conversation ──
   const setActiveConversation = useOrbitComposerStore((s) => s.setActiveConversation);
