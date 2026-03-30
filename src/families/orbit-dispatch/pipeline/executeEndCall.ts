@@ -16,24 +16,11 @@ export async function executeEndCall(
     if (!cmd.sessionId) return { ok: false, error: "no_session", phase: "intent" };
     exitPhase(trace);
 
-    // ── Phase 2: Canonical ──
-    enterPhase(trace, "canonical");
-    const reason = cmd.reason || "hangup";
-    exitPhase(trace);
-
-    // ── Phase 3: Optimistic ──
-    enterPhase(trace, "optimistic");
-    // UI state cleared instantly by call player
-    exitPhase(trace);
-
-    // ── Phase 4: Transport ──
+    // ── Phase 2: Transport ──
     enterPhase(trace, "transport");
+    const reason = cmd.reason || "hangup";
     const { hangupCallSession } = await import("@/repositories/communication.repository");
     await hangupCallSession(cmd.sessionId, reason);
-    exitPhase(trace);
-
-    // ── Phase 5: Reconcile ──
-    enterPhase(trace, "reconcile");
     exitPhase(trace);
 
     completeExecutorTrace(trace);
