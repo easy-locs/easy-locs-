@@ -1,12 +1,13 @@
 /**
  * useHudInlineHandlers — THIN WRAPPER around orbitDispatch for voice/location/view-once.
  * No inline send context, no inline auth resolution — delegated to orbit-dispatch.
+ * Voice preview state delegates to composerStore.voiceDrafts (single source of truth).
  */
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { orbitDispatch } from "@/families/orbit-dispatch/orbit-dispatch";
 import { computeDisappearAt } from "@/hooks/usePrivacySettings";
-import { formatVoiceDuration } from "@/hooks/useVoiceRecorder";
 import { uploadToStorage } from "@/repositories/communication.repository";
+import { useOrbitComposerStore } from "@/stores/orbit/composer.store";
 import { toast } from "sonner";
 
 interface HudInlineHandlersDeps {
@@ -29,7 +30,26 @@ interface HudInlineHandlersDeps {
 }
 
 export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
-  const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
+  const composerStore = useOrbitComposerStore();
+  const conversationKey = deps.thread?.conversationId || deps.thread?.id || "";
+
+  // Voice preview reads from composer store (single source of truth)
+  const voiceDraftRaw = composerStore.voiceDrafts[conversationKey];
+  const voicePreview = voiceDraftRaw
+    ? { blob: voiceDraftRaw.blob, duration: voiceDraftRaw.durationSeconds, url: voiceDraftRaw.url }
+    : null;
+
+  const setVoicePreview = useCallback((preview: { blob: Blob; duration: number; url: string } | null) => {
+    if (preview) {
+      composerStore.setVoiceDraft(conversationKey, {
+        url: preview.url,
+        blob: preview.blob,
+        durationSeconds: preview.duration,
+      });
+    } else {
+      composerStore.clearVoiceDraft(conversationKey);
+    }
+  }, [composerStore, conversationKey]);
 
   const handleVoiceSend = useCallback(async () => {
     if (!voicePreview || !deps.thread || !deps.orgId) return;
@@ -40,14 +60,12 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
     const dur = voicePreview.duration;
     const localUrl = voicePreview.url;
 
-    // INSTANT: clear voice preview UI
-    setVoicePreview(null);
+    // INSTANT: clear voice preview UI via store
+    composerStore.clearVoiceDraft(conversationKey);
 
     try {
       const conversationId = await deps.resolveConversationId(authUserId);
       if (!conversationId) throw new Error("No conversation available");
-
-      const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
 
       const result = await orbitDispatch({
         type: "send_voice",
@@ -70,7 +88,7 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
     } finally {
       URL.revokeObjectURL(localUrl);
     }
-  }, [voicePreview, deps]);
+  }, [voicePreview, deps, composerStore, conversationKey]);
 
   const handleLocationSend = useCallback(async (loc: any) => {
     if (!deps.thread) return;
