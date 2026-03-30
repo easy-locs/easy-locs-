@@ -91,7 +91,7 @@ export async function sendMediaOptimistic(
       metadata: {
         schemaVersion: 1,
         ui: {
-          cardType: mediaKind === "voice" ? "voice" : "media",
+          cardType: mediaKind === "audio" ? "voice" : "media",
           clickable: true,
           primaryAction: "open_media",
         },
