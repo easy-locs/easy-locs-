@@ -14,7 +14,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Send, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -72,8 +71,7 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
 
   // Realtime subscription
   useEffect(() => {
-    const channel = supabase
-      .channel(`mission-chat-${jobId}`)
+    const channel = createRealtimeChannel(`mission-chat-${jobId}`)
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
@@ -89,7 +87,7 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
       .subscribe();
 
     channelRef.current = channel;
-    return () => { channel.unsubscribe(); };
+    return () => { removeRealtimeChannel(channel); };
   }, [jobId, contextId]);
 
   const sendMessage = async () => {

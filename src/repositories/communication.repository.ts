@@ -5,6 +5,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
+import { assertNoLegacyIds, assertValidMessageType, assertCanonicalMetadata } from "@/lib/governance";
 
 const db = supabase as any;
 
@@ -25,6 +26,13 @@ export async function insertMessage(params: {
   metadata?: Record<string, any>;
   replyToMessageId?: string | null;
 }) {
+  // ── Governance guards (throw in dev, log in prod) ──
+  assertNoLegacyIds(params as any, "insertMessage");
+  assertValidMessageType(params.type, "insertMessage");
+  if (params.metadata) {
+    assertCanonicalMetadata(params.metadata, "insertMessage");
+  }
+
   await ensureOrbitProfile({
     userId: params.senderUserId,
     orbitId: params.senderOrbitId || undefined,
