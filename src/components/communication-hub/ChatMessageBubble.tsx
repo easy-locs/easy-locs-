@@ -2,9 +2,9 @@
  * ChatMessageBubble — Premium Signal-grade message bubble.
  * Decomposed into isolated micro-components: BubbleMediaBlock, BubbleMetaFooter, BubbleLocationBlock.
  */
-import { memo, useRef, useCallback, useEffect, useState, useMemo } from "react";
+import { memo, useCallback, useEffect, useState, useMemo } from "react";
 import {
-  Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock, CheckCircle2,
+  CheckCheck, Globe, Loader2, Mail, WifiOff, Lock, CheckCircle2,
   ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText,
 } from "lucide-react";
 import { format } from "date-fns";
