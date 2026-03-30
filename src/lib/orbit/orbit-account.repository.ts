@@ -15,13 +15,19 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
   return publicUrl;
 }
 
-/** Save profile (auth metadata + profiles table) */
+/** Save profile (auth metadata + profiles + orbit_profiles_v2 for full propagation) */
 export async function saveProfile(userId: string, displayName: string, avatarUrl: string): Promise<void> {
   const { error } = await supabase.auth.updateUser({
     data: { full_name: displayName, display_name: displayName, avatar_url: avatarUrl },
   });
   if (error) throw error;
+  // Propagate to profiles table
   await supabase.from("profiles").update({ name: displayName }).eq("id", userId);
+  // Propagate to orbit_profiles_v2 for canonical identity resolution across all surfaces
+  await supabase.from("orbit_profiles_v2" as any).update({
+    display_name: displayName,
+    avatar_url: avatarUrl,
+  } as any).eq("user_id", userId);
 }
 
 /** Archive all user conversations */

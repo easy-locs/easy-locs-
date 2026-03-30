@@ -22,7 +22,7 @@ export function CallButton(props: {
         });
         void startCall({
           targetId: props.orbitId,
-          peerName: props.peerName || "User",
+          peerName: props.peerName || "Contact",
           conversationId: props.conversationId,
           threadId: props.conversationId, // deprecated compat for startCall API
           isVideo: callType === "video",
