@@ -111,6 +111,7 @@ export function useThreadMessageFamily(params: {
     selection,
     loader,
     messages,
+    viewModels,
     messageSender,
     messageActions,
     showOriginal,
