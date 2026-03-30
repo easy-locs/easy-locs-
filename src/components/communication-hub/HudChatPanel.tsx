@@ -3,13 +3,14 @@
  * Thin assembly layer that composes canonical family hooks.
  * Contains NO business logic — only wiring.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { supabase } from "@/integrations/supabase/client";
 
 // ── Canonical families ──
 import { useAuth } from "@/families/auth";
@@ -87,6 +88,28 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const currentConversationId = thread?.conversationId || thread?.id || "";
   const [showContactProfile, setShowContactProfile] = useState(false);
   const [showMultiPhoto, setShowMultiPhoto] = useState(false);
+  const [peerProfileCreatedAt, setPeerProfileCreatedAt] = useState<string | null>(null);
+
+  // ── Fetch peer profile created_at for "member since" ──
+  useEffect(() => {
+    const peerId = thread?.peerUserId || null;
+    if (!peerId) { setPeerProfileCreatedAt(null); return; }
+    supabase.from("profiles").select("created_at").eq("id", peerId).maybeSingle()
+      .then(({ data }) => setPeerProfileCreatedAt(data?.created_at ?? null));
+  }, [thread?.peerUserId]);
+
+  const contactProfileEntity = useMemo(() => {
+    if (!thread) return null;
+    return {
+      display_name: thread.name,
+      email: thread.email,
+      avatar_url: thread.avatarUrl,
+      phone: (thread as any).phone || null,
+      user_id: thread.peerUserId || null,
+      orbit_id: thread.peerOrbitId || null,
+      created_at: peerProfileCreatedAt,
+    };
+  }, [thread?.name, thread?.email, thread?.avatarUrl, thread?.peerUserId, thread?.peerOrbitId, peerProfileCreatedAt]);
 
   // ── Sync stores to active conversation ──
   const setActiveConversation = useOrbitComposerStore((s) => s.setActiveConversation);
@@ -570,15 +593,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       <ContactProfileSheet
         open={showContactProfile}
         onClose={() => setShowContactProfile(false)}
-        entity={thread ? {
-          display_name: thread.name,
-          email: thread.email,
-          avatar_url: thread.avatarUrl,
-          phone: (thread as any).phone || null,
-          user_id: thread.peerUserId || null,
-          orbit_id: thread.peerOrbitId || null,
-          created_at: (thread as any).createdAt || null,
-        } : null}
+        entity={contactProfileEntity}
         onMessage={() => setShowContactProfile(false)}
         onAudioCall={() => { setShowContactProfile(false); void callFamily.handleStartAudioCall(); }}
         onVideoCall={() => { setShowContactProfile(false); void callFamily.handleStartVideoCall(); }}
@@ -589,11 +604,38 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         open={showMultiPhoto}
         onClose={() => setShowMultiPhoto(false)}
         onSend={(attachments, caption) => {
-          // Send each attachment via the canonical attachment pipeline
-          for (const att of attachments) {
-            const file = att.file;
-            attFamily.attachments.handleFileUpload(file);
-          }
+          // Sort by order, then send each via orbitDispatch sequentially
+          const sorted = [...attachments].sort((a, b) => a.order - b.order);
+          void (async () => {
+            const { orbitDispatch } = await import("@/families/orbit-dispatch/orbit-dispatch");
+            const { transportUploadWithPrepare } = await import("@/families/media/transport/transport-engine");
+            const { TransportPolicy } = await import("@/families/media/transport/transport-policy");
+            const convId = thread?.conversationId || thread?.id;
+            if (!convId) return;
+            for (let i = 0; i < sorted.length; i++) {
+              const att = sorted[i];
+              const decision = TransportPolicy.decide(att.file);
+              await orbitDispatch({
+                type: "send_media",
+                conversationId: convId,
+                file: att.file,
+                caption: i === 0 ? caption : undefined,
+                viewOnce: false,
+                uploadFn: async (file, _path, onProgress) => {
+                  const result = await transportUploadWithPrepare(file, {
+                    pathPrefix: orgId || "orbit-media",
+                    compress: decision.shouldCompress,
+                    maxDimension: decision.maxDimension || undefined,
+                    quality: decision.quality || undefined,
+                    callbacks: { onProgress },
+                  });
+                  return result.publicUrl;
+                },
+                pathPrefix: orgId || "orbit-media",
+              });
+            }
+            msgFamily.loader.loadMessages();
+          })();
         }}
       />
     </>
