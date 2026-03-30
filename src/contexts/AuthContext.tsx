@@ -71,18 +71,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const bootstrapOrbitRef = useRef<string | null>(null);
 
   const fetchOrgId = useCallback(async (userId: string) => {
+    const QUERY_TIMEOUT = 8_000;
+    const withTimeout = <T,>(promise: Promise<T>, label: string): Promise<T> =>
+      Promise.race([
+        promise,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`[AuthContext] ${label} timed out (${QUERY_TIMEOUT}ms)`)), QUERY_TIMEOUT)
+        ),
+      ]);
+
     try {
-      const { data: memberships } = await supabase
-        .from("org_members")
-        .select("org_id")
-        .eq("user_id", userId);
+      const { data: memberships } = await withTimeout(
+        supabase.from("org_members").select("org_id").eq("user_id", userId),
+        "fetchOrgId/memberships"
+      );
 
       if (memberships && memberships.length > 0) {
         const orgIds = memberships.map((m) => m.org_id);
-        const { data: orgsData } = await supabase
-          .from("orgs")
-          .select("id, name")
-          .in("id", orgIds);
+        const { data: orgsData } = await withTimeout(
+          supabase.from("orgs").select("id, name").in("id", orgIds),
+          "fetchOrgId/orgs"
+        );
 
         const orgs = (orgsData || []).map((o) => ({
           id: o.id,
