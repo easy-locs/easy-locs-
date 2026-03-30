@@ -8,5 +8,11 @@ export { DeviceHaptics } from "./device-haptics";
 export { DevicePermissions } from "./device-permissions";
 export { DeviceAudio } from "./device-audio";
 
-// Device family owns: vibration, permissions, audio context, visibility, haptics.
-// No component should call navigator.vibrate, new Notification, or new Audio directly.
+// ── Call Media (canonical pipelines for call device/media) ──
+export { CallMediaEngine } from "./call-media-engine";
+export { useCallMediaStore } from "./call-media-store";
+export type { MicState, OutputState, CameraState, StreamState, CallMediaState } from "./call-media-store";
+
+// Device family owns: vibration, permissions, audio context, visibility, haptics,
+// call media pipelines (mic, output, camera, streams, cleanup).
+// No component should call navigator.vibrate, new Notification, getUserMedia, or new Audio directly.
