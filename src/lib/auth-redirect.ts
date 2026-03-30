@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const getPostLoginRoute = async (userId: string): Promise<string> => {
+export const getPostLoginRoute = async (userId: string, attempt = 0): Promise<string> => {
   try {
     const [{ data: tenantLink }, { data: orgLink }, { data: profile }] = await Promise.all([
       supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
@@ -15,16 +15,18 @@ export const getPostLoginRoute = async (userId: string): Promise<string> => {
     const hasOrg = !!orgLink;
     const onboardingDone = profile?.onboarding_completed ?? false;
 
-    // New user with no org/tenant and no onboarding → send to onboarding
     if (!hasOrg && !hasTenant && !onboardingDone) return "/onboarding";
-
     if (hasTenant && hasOrg) return "/dashboard";
     if (hasTenant && !hasOrg) return "/tenant";
     if (hasOrg) return "/dashboard";
-    // Client account (has onboarding but no org/tenant)
     return "/client";
   } catch (err) {
-    console.warn("[auth-redirect] getPostLoginRoute failed:", err);
+    console.warn(`[auth-redirect] getPostLoginRoute attempt ${attempt} failed:`, err);
+    // Retry once after 500ms backoff
+    if (attempt < 1) {
+      await sleep(500);
+      return getPostLoginRoute(userId, attempt + 1);
+    }
     return "/dashboard";
   }
 };

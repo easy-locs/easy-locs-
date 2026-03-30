@@ -259,7 +259,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           await fetchUserType(nextSession.user.id);
           if (seq !== latestSeq) return;
         } catch (err) {
-          console.error("[AuthContext] hydrateAuthState failed:", err);
+          console.error("[AuthContext] hydrateAuthState failed, scheduling retry:", err);
+          // Non-blocking retry after 2s if profile load failed
+          setTimeout(() => {
+            void (async () => {
+              try {
+                await fetchOrgId(nextSession.user.id);
+                await fetchUserType(nextSession.user.id);
+              } catch (retryErr) {
+                console.warn("[AuthContext] profile retry also failed:", retryErr);
+              }
+            })();
+          }, 2000);
         }
         setTimeout(() => {
           void refreshSubRef();
