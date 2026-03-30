@@ -369,7 +369,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           <MessageComposer
             key={currentConversationId}
             value={storeDraft}
-            sending={messageSender.sending || composerStore.sending[currentConversationId]}
+            sending={!!composerStore.sending[currentConversationId]}
             uploading={attFamily.attachments.uploading}
             voiceRecording={compFamily.voiceRecorder.recording}
             voicePreview={compFamily.voicePreview}
@@ -379,7 +379,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
               setStoreDraft(v);
             }}
             onSend={stableHandleSend}
-            onKeyDown={messageSender.handleKeyDown}
+            onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void stableHandleSend();
+              }
+            }}
             onTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
             attachmentActions={{
               onFileUpload: attFamily.attachments.handleFileUpload,
