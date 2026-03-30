@@ -68,8 +68,15 @@ export async function createV2Conversation(params: Record<string, any>) {
 }
 
 export async function insertV2ChatMessage(params: Record<string, any>) {
-  const { error } = await (supabase as any).from("chat_messages_v2").insert(params);
-  if (error) throw error;
+  const { insertMessage } = await import("@/repositories/communication.repository");
+  await insertMessage({
+    conversationId: params.conversation_id,
+    senderUserId: params.sender_user_id,
+    senderOrbitId: params.sender_orbit_id || null,
+    type: params.type || "text",
+    body: params.body || "",
+    metadata: { schemaVersion: 1, ...params.metadata },
+  });
 }
 
 export async function updateV2ConversationPreview(convId: string, preview: string) {
