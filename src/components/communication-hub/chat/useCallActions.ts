@@ -72,8 +72,8 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
         await startCall({
           targetId,
           conversationId,
-          contextType: thread?.conversationType || "direct",
-          contextId: thread?.entityId,
+          entityType: thread?.conversationType || "direct",
+          entityId: thread?.entityId,
           contextLabel: thread?.name,
           peerName: thread?.name || "Contact",
           isVideo,

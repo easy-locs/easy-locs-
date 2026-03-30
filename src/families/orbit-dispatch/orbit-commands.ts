@@ -14,7 +14,11 @@ export type OrbitCommand =
   | AcceptCallCommand
   | EndCallCommand
   | EditMessageCommand
-  | ReplyCommand;
+  | ReplyCommand
+  | GroupCreateCommand
+  | GroupUpdateCommand
+  | PresenceUpdateCommand
+  | TypingUpdateCommand;
 
 // ── Base ──
 interface BaseCommand {
@@ -119,11 +123,42 @@ export interface ReplyCommand extends BaseCommand {
   locale?: string;
 }
 
+// ── Groups ──
+export interface GroupCreateCommand extends BaseCommand {
+  type: "group_create";
+  title: string;
+  memberUserIds: string[];
+  avatarUrl?: string | null;
+}
+
+export interface GroupUpdateCommand extends BaseCommand {
+  type: "group_update";
+  groupId: string;
+  conversationId: string;
+  title?: string;
+  avatarUrl?: string | null;
+  addMembers?: string[];
+  removeMembers?: string[];
+}
+
+// ── Presence & Typing ──
+export interface PresenceUpdateCommand extends BaseCommand {
+  type: "presence_update";
+  status: "online" | "offline";
+}
+
+export interface TypingUpdateCommand extends BaseCommand {
+  type: "typing_update";
+  conversationId: string;
+  activity: "typing" | "recording" | "uploading" | "idle";
+}
+
 // ── Result ──
 export interface OrbitCommandResult {
   ok: boolean;
   messageId?: string;
   sessionId?: string;
+  groupId?: string;
   requestId?: string;
   error?: string;
 }
