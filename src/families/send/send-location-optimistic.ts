@@ -7,6 +7,7 @@
 import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { buildLocationMeta } from "@/families/messages/build-metadata";
+import { orbitLabels } from "@/families/orbit-i18n/orbit-labels";
 import type { SendContext } from "./send-context";
 import type { LocationPayload } from "./send-location";
 
@@ -20,10 +21,10 @@ export async function sendLocationOptimistic(
 
   const body =
     loc.type === "live"
-      ? `📡 Live location shared for ${loc.duration || 15}min\n📍 ${mapUrl}`
+      ? `${orbitLabels.location.liveShared(loc.duration || 15)}\n📍 ${mapUrl}`
       : loc.type === "place"
-      ? `📍 ${loc.label || "Location"}\n${loc.address || ""}\n${mapUrl}`
-      : `📍 My location\n${mapUrl}`;
+      ? `${orbitLabels.location.place(loc.label || "Location")}\n${loc.address || ""}\n${mapUrl}`
+      : `${orbitLabels.location.myLocation}\n${mapUrl}`;
 
   const meta = buildLocationMeta(loc.lat, loc.lng, mode, {
     label: loc.label,

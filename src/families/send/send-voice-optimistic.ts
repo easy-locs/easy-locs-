@@ -7,6 +7,7 @@
 import { insertMessage, updateConversationTimestamp, updateMessageFields } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { buildVoiceMeta } from "@/families/messages/build-metadata";
+import { orbitLabels } from "@/families/orbit-i18n/orbit-labels";
 import type { SendContext } from "./send-context";
 
 export async function sendVoiceOptimistic(
@@ -20,7 +21,7 @@ export async function sendVoiceOptimistic(
     storagePath: string;
   },
 ): Promise<void> {
-  const body = `🎤 Voice message (${opts.durationLabel})`;
+  const body = orbitLabels.message.voiceMessage(opts.durationLabel);
   const optimisticMeta = buildVoiceMeta(opts.localUrl, opts.durationSeconds);
 
   // Step 1: Insert optimistic message with local blob URL → visible immediately

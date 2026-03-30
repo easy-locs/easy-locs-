@@ -12,6 +12,7 @@ export type OrbitCommand =
   | SendLocationCommand
   | StartCallCommand
   | AcceptCallCommand
+  | DeclineCallCommand
   | EndCallCommand
   | EditMessageCommand
   | ReplyCommand
@@ -97,6 +98,12 @@ export interface StartCallCommand extends BaseCommand {
 export interface AcceptCallCommand extends BaseCommand {
   type: "accept_call";
   sessionId: string;
+}
+
+export interface DeclineCallCommand extends BaseCommand {
+  type: "decline_call";
+  sessionId: string;
+  reason?: string;
 }
 
 export interface EndCallCommand extends BaseCommand {
