@@ -7,6 +7,7 @@
 export type OrbitCommand =
   | SendTextCommand
   | SendMediaCommand
+  | SendMediaBatchCommand
   | SendVoiceCommand
   | SendLocationCommand
   | StartCallCommand
