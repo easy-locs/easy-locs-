@@ -1,5 +1,6 @@
 /**
- * executeEditMessage — Strict pipeline: intent → canonical → optimistic → transport → reconcile
+ * executeEditMessage — Strict pipeline: intent → optimistic → transport → reconcile
+ * Now includes optimistic local update for instant feedback.
  */
 import type { EditMessageCommand } from "../orbit-commands";
 import type { ExecutorResult } from "./pipeline-types";
@@ -11,32 +12,26 @@ export async function executeEditMessage(
   const trace = createTrace("editMessage");
 
   try {
-    // ── Phase 1: Intent ──
     enterPhase(trace, "intent");
     const newBody = cmd.newBody?.trim();
     if (!newBody) return { ok: false, error: "empty_body", phase: "intent" };
     if (!cmd.messageId) return { ok: false, error: "no_message_id", phase: "intent" };
     exitPhase(trace);
 
-    // ── Phase 2: Canonical ──
-    enterPhase(trace, "canonical");
-    // Edit is a simple body replacement — no metadata transform needed
-    exitPhase(trace);
-
-    // ── Phase 3: Optimistic ──
+    // ── Optimistic: emit event for instant UI update ──
     enterPhase(trace, "optimistic");
-    // Could update local store optimistically here in the future
+    const { platformBus } = await import("@/lib/shared/platform-bus");
+    platformBus.emit("orbit:message_edited_optimistic", {
+      messageId: cmd.messageId,
+      conversationId: cmd.conversationId,
+      newBody,
+    }, "orbit", {});
     exitPhase(trace);
 
-    // ── Phase 4: Transport ──
+    // ── Transport ──
     enterPhase(trace, "transport");
     const { updateMessageFields } = await import("@/repositories/communication.repository");
     await updateMessageFields(cmd.messageId, { body: newBody });
-    exitPhase(trace);
-
-    // ── Phase 5: Reconcile ──
-    enterPhase(trace, "reconcile");
-    // Realtime will propagate the update
     exitPhase(trace);
 
     completeExecutorTrace(trace);
