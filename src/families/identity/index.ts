@@ -9,7 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 // ── Re-export canonical identity resolver ──
 export {
   resolveCanonicalDisplayIdentity,
+  resolvePeerIdentity,
   type CanonicalDisplayIdentity,
+  type PeerIdentity,
 } from "@/lib/orbit/canonical-helpers";
 
 // ── Re-export orbit identity hook (reactive) ──
