@@ -3,7 +3,7 @@
  * Thin assembly layer that composes canonical family hooks.
  * Contains NO business logic — only wiring.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
