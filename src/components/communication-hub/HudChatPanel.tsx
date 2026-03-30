@@ -85,6 +85,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
   const security = useSecurityDialogs();
   const currentConversationId = thread?.conversationId || thread?.id || "";
+  const [showContactProfile, setShowContactProfile] = useState(false);
+  const [showMultiPhoto, setShowMultiPhoto] = useState(false);
 
   // ── Sync stores to active conversation ──
   const setActiveConversation = useOrbitComposerStore((s) => s.setActiveConversation);
