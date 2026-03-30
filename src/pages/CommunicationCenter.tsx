@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, ArrowLeft } from "lucide-react";
 
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "groups", "
 export const CommunicationCenter = () => {
   const { orgId, user } = useAuth();
   const navigate = useNavigate();
+  const { conversationId: routeConversationId } = useParams<{ conversationId?: string }>();
   const userId = user?.id;
   const { t } = useI18n();
   const isMobile = useIsMobile();
@@ -97,6 +98,22 @@ export const CommunicationCenter = () => {
       pendingThreadRetryRef.current = null;
     }
   }, [threads, loading, searchParams, setSearchParams, loadThreads]);
+
+  // ── Route param: /orbit/:conversationId ──
+  useEffect(() => {
+    if (!routeConversationId || loading) return;
+    const found = threads.find(t =>
+      t.conversationId === routeConversationId || t.id === routeConversationId ||
+      t.id === `v2-direct-${routeConversationId}`
+    );
+    if (found) {
+      setSelectedThread(found);
+      setActiveSection("chats");
+    } else if (threads.length > 0) {
+      const timer = setTimeout(() => loadThreads(), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [routeConversationId, threads, loading, loadThreads]);
 
   useEffect(() => {
     const searchQ = searchParams.get("search");

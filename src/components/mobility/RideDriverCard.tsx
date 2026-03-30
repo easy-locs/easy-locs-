@@ -68,8 +68,8 @@ export function RideDriverCard({ driver, conversationId, phone }: Props) {
             className="h-10 w-10 rounded-xl"
             aria-label={tc("orbit.call")}
             onClick={() => {
-              if (conversationId) navigate(`/messages/${conversationId}`);
-              else navigate("/messages");
+              if (conversationId) navigate(`/orbit/${conversationId}`);
+              else navigate("/orbit");
             }}
           >
             <MessageSquare className="w-4 h-4" />
