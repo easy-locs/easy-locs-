@@ -2,7 +2,7 @@
  * CommunicationCenter — Orbit Communication System.
  * Full-screen messaging experience — NO sidebar, standalone layout.
  */
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { Plus, ArrowLeft } from "lucide-react";
 
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
@@ -13,14 +13,17 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 
 import CommNavBar, { type CommSection } from "@/components/communication-hub/CommNavBar";
 
-import CommCallsSection from "@/components/communication-hub/CommCallsSection";
-import CommContactsSection from "@/components/communication-hub/CommContactsSection";
-import CommGroupsSection from "@/components/communication-hub/CommGroupsSection";
+// Lazy-split heavy tab sections — only the active tab loads
+const CommCallsSection = lazy(() => import("@/components/communication-hub/CommCallsSection"));
+const CommContactsSection = lazy(() => import("@/components/communication-hub/CommContactsSection"));
+const CommGroupsSection = lazy(() => import("@/components/communication-hub/CommGroupsSection"));
+const OrbitAccountSection = lazy(() => import("@/components/communication-hub/OrbitAccountSection"));
+const HudContextPanel = lazy(() => import("@/components/communication-hub/HudContextPanel"));
+
+// Core chat — always needed when a conversation is selected
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
-import HudContextPanel from "@/components/communication-hub/HudContextPanel";
 import { AddContactByEmail } from "@/components/chat/AddContactByEmail";
-import OrbitAccountSection from "@/components/communication-hub/OrbitAccountSection";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import { useThreadActions } from "@/hooks/useThreadActions";
 import type { ConversationThread } from "@/components/communication-hub/types";
@@ -248,8 +251,9 @@ export const CommunicationCenter = () => {
   const showChatArea = activeSection === "chats";
 
   const renderSection = () => {
+    const fallback = <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">Loading…</div>;
     switch (activeSection) {
-      case "calls": return <CommCallsSection onOpenThread={async (peerId, peerName) => {
+      case "calls": return <Suspense fallback={fallback}><CommCallsSection onOpenThread={async (peerId, peerName) => {
           if (!userId) return;
           try {
             const { getOrCreateDirectThread } = await import("@/lib/direct-thread");
@@ -260,11 +264,11 @@ export const CommunicationCenter = () => {
               else { await loadThreads(); setSearchParams({ thread: result.v2ConversationId }); setActiveSection("chats"); }
             }
           } catch (e) { console.error("[calls→thread]", e); }
-        }} />;
-      case "contacts": return <CommContactsSection />;
-      case "groups": return <CommGroupsSection />;
+        }} /></Suspense>;
+      case "contacts": return <Suspense fallback={fallback}><CommContactsSection /></Suspense>;
+      case "groups": return <Suspense fallback={fallback}><CommGroupsSection /></Suspense>;
       case "you":
-        return <OrbitAccountSection />;
+        return <Suspense fallback={fallback}><OrbitAccountSection /></Suspense>;
       default: return null;
     }
   };
@@ -371,7 +375,9 @@ export const CommunicationCenter = () => {
                     onThreadUpdate={handleThreadUpdate}
                   />
                   {showContext && selectedThread && orgId && !isMobile && (
-                    <HudContextPanel thread={selectedThread} orgId={orgId} />
+                    <Suspense fallback={null}>
+                      <HudContextPanel thread={selectedThread} orgId={orgId} />
+                    </Suspense>
                   )}
                 </div>
               </div>
@@ -399,7 +405,9 @@ export const CommunicationCenter = () => {
               </SheetTitle>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto">
-              <HudContextPanel thread={selectedThread} orgId={orgId} />
+              <Suspense fallback={null}>
+                <HudContextPanel thread={selectedThread} orgId={orgId} />
+              </Suspense>
             </div>
           </SheetContent>
         </Sheet>
