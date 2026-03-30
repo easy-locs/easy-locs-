@@ -211,43 +211,6 @@ export function CallProvider({ children }: { children: ReactNode }) {
     }}>
       {children}
       <OrbitCallScreen />
-      <IncomingCallDialog
-        open={incoming.showIncoming}
-        callerName={incoming.incomingCallerName}
-        contextLabel={incoming.incomingContextLabel}
-        isVideo={incoming.incomingIsVideo}
-        onAccept={doAcceptIncoming}
-        onDecline={() => {
-          if (incoming.incomingCallId && user?.id) {
-            declineIncomingCall(incoming.incomingCallId, user.id);
-            if (incoming.incomingConversationId) {
-              logCallEventToThread({
-                callId: incoming.incomingCallId,
-                conversationId: incoming.incomingConversationId,
-                orgId: incoming.incomingOrgId,
-                senderId: user.id,
-                event: "declined",
-              });
-            }
-          }
-          incoming.clearIncoming();
-        }}
-        onMissed={() => {
-          if (incoming.incomingCallId && user?.id) {
-            markCallMissed(incoming.incomingCallId, user.id);
-            if (incoming.incomingConversationId) {
-              logCallEventToThread({
-                callId: incoming.incomingCallId,
-                conversationId: incoming.incomingConversationId,
-                orgId: incoming.incomingOrgId,
-                senderId: user.id,
-                event: "missed",
-              });
-            }
-          }
-          incoming.clearIncoming();
-        }}
-      />
     </CallContext.Provider>
   );
 }
