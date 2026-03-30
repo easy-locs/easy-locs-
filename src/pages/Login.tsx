@@ -153,13 +153,19 @@ const Login = () => {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) await redirectAfterLogin(session.user.id);
+      if (session?.user) {
+        const resumeTraceId = crypto.randomUUID();
+        authLog("LOGIN_SESSION_DETECTED", { traceId: resumeTraceId, userId: session.user.id, source: "existing_session" });
+        await redirectAfterLogin(resumeTraceId, session.user.id);
+      }
     };
     void checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
       if (event === "SIGNED_IN" && nextSession?.user) {
-        await redirectAfterLogin(nextSession.user.id);
+        const eventTraceId = crypto.randomUUID();
+        authLog("LOGIN_SESSION_DETECTED", { traceId: eventTraceId, userId: nextSession.user.id, source: "auth_state_change" });
+        await redirectAfterLogin(eventTraceId, nextSession.user.id);
       }
     });
 
