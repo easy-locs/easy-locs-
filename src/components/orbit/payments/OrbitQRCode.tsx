@@ -42,7 +42,10 @@ export default function OrbitQRCode({
   const [copied, setCopied] = useState(false);
 
   // Canonical identity resolution: prefer orbit profile name
-  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "Me";
+  const { displayName } = useResolvedIdentity({
+    display_name: user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.user_metadata?.name,
+    email: user?.email,
+  });
 
   const qrData = useMemo(() => {
     if (!user?.id) return null;

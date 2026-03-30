@@ -16,7 +16,8 @@ interface Props { onBack: () => void; }
 
 export default function YouEditProfilePage({ onBack }: Props) {
   const { user } = useAuth();
-  const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.user_metadata?.display_name || "");
+  const resolved = useResolvedIdentity({ display_name: user?.user_metadata?.full_name || user?.user_metadata?.display_name, email: user?.email, avatar_url: user?.user_metadata?.avatar_url });
+  const [displayName, setDisplayName] = useState(resolved.displayName || "");
   const [avatarUrl, setAvatarUrl] = useState(user?.user_metadata?.avatar_url || "");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
