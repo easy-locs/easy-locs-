@@ -159,7 +159,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
       peerName: peerId,
       isVideo: call.call_type === "video",
     });
-  }, [startCall, isInCall, isStartingCall, user?.id]);
+  }, [startCall, isInCall, isStartingCall, myOrbitId]);
 
   const filtered = calls.filter(c => {
     if (filter === "missed" && c.status !== "missed") return false;
