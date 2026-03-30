@@ -1,10 +1,12 @@
 /**
  * useMessageSender — THIN ORCHESTRATOR for message sending.
  * Delegates to canonical sendText() from the send family.
- * Keeps: optimistic UI, offline queue, encryption, event emission.
- * Draft is isolated per conversationId to prevent cross-thread leaking.
+ * 
+ * BLOC 1 REFACTOR: This hook NO LONGER manages draft state.
+ * Draft is owned exclusively by composerStore (Zustand).
+ * This hook is a pure send executor — it receives the text to send.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolveConversationId } from "@/lib/orbit/messaging/conversation-resolver";
@@ -17,19 +19,16 @@ type SecurityLevel = "normal" | "high" | "ghost";
 type ThreadLike = {
   id: string;
   name?: string | null;
-  /** Canonical conversation UUID */
   conversationId?: string | null;
   conversationType?: string | null;
   peerUserId?: string | null;
   peerOrbitId?: string | null;
-  // ── Deprecated compat ──
   /** @deprecated Use conversationId */
   v2ConversationId?: string | null;
   /** @deprecated Use entityId */
   contextId?: string | null;
   /** @deprecated Use conversationId */
   threadId?: string | null;
-  /** Business entity ID */
   entityId?: string | null;
 };
 
@@ -71,53 +70,28 @@ type Params = {
 };
 
 /**
- * Per-conversation draft store — persists drafts across thread switches.
- * Module-level so drafts survive hook re-mounts within the same session.
+ * Idempotency guard — prevents duplicate DB inserts for the same send intent.
+ * Each send gets a unique key; if the same key is seen again, the send is skipped.
  */
-const draftsByConversation = new Map<string, string>();
+const recentSendKeys = new Set<string>();
+const IDEMPOTENCY_TTL = 5_000; // 5 seconds
+
+function generateIdempotencyKey(conversationId: string, body: string): string {
+  return `${conversationId}::${body.slice(0, 80)}::${Math.floor(Date.now() / 1000)}`;
+}
+
+function checkAndSetIdempotency(key: string): boolean {
+  if (recentSendKeys.has(key)) return false; // duplicate
+  recentSendKeys.add(key);
+  setTimeout(() => recentSendKeys.delete(key), IDEMPOTENCY_TTL);
+  return true; // allowed
+}
 
 export function useMessageSender(params: Params) {
-  const [sending, setSending] = useState(false);
+  // Ref to prevent concurrent sends within this hook instance
+  const sendingRef = useRef(false);
 
-  // Resolve the current conversationId for draft isolation
-  const conversationId = params.thread?.conversationId || params.thread?.id || "";
-  const prevConversationIdRef = useRef(conversationId);
-
-  // Draft state — initialized from per-conversation store
-  const [newMessage, setNewMessageRaw] = useState(() => draftsByConversation.get(conversationId) || "");
-
-  // When conversationId changes, swap to the correct draft
-  useEffect(() => {
-    if (conversationId !== prevConversationIdRef.current) {
-      // Save current draft for the old conversation
-      if (prevConversationIdRef.current) {
-        const currentDraft = newMessage;
-        if (currentDraft.trim()) {
-          draftsByConversation.set(prevConversationIdRef.current, currentDraft);
-        } else {
-          draftsByConversation.delete(prevConversationIdRef.current);
-        }
-      }
-      // Load draft for new conversation
-      setNewMessageRaw(draftsByConversation.get(conversationId) || "");
-      prevConversationIdRef.current = conversationId;
-    }
-  }, [conversationId]);
-
-  // Wrap setNewMessage to also sync to the draft store
-  const setNewMessage = useCallback((value: string | ((prev: string) => string)) => {
-    setNewMessageRaw((prev) => {
-      const next = typeof value === "function" ? value(prev) : value;
-      if (next.trim()) {
-        draftsByConversation.set(conversationId, next);
-      } else {
-        draftsByConversation.delete(conversationId);
-      }
-      return next;
-    });
-  }, [conversationId]);
-
-  const handleSend = useCallback(async (explicitDraft?: string) => {
+  const handleSend = useCallback(async (explicitDraft: string) => {
     const {
       thread, orgId, locale, myOrbitId, e2eReady, encrypt,
       offline, securityLevel, setSecurityLevel, replyTo, setReplyTo,
@@ -135,29 +109,44 @@ export function useMessageSender(params: Params) {
       toast.error("No thread selected.");
       return;
     }
-    // Use explicit draft if provided, otherwise fall back to local state
-    const draftToSend = explicitDraft !== undefined ? explicitDraft : newMessage;
-    if (!draftToSend.trim()) {
+
+    const msgText = explicitDraft.trim();
+    if (!msgText) {
       failStep(flow, validateStep, "empty_message");
       endFlow(flow, "failed");
-      toast.error("Message is empty.");
       return;
     }
+
+    // ── Idempotency guard ──
+    const conversationIdForKey = thread.conversationId || thread.id;
+    const idempotencyKey = generateIdempotencyKey(conversationIdForKey, msgText);
+    if (!checkAndSetIdempotency(idempotencyKey)) {
+      console.warn("[useMessageSender] Duplicate send blocked by idempotency guard");
+      endFlow(flow, "success");
+      return;
+    }
+
+    // ── Ref guard (belt and suspenders with store lock) ──
+    if (sendingRef.current) {
+      console.warn("[useMessageSender] Send already in progress (ref guard)");
+      endFlow(flow, "success");
+      return;
+    }
+    sendingRef.current = true;
+
     completeStep(flow, validateStep);
 
-    const msgText = draftToSend.trim();
     const optimisticId = `opt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const now = new Date().toISOString();
 
-    // ── IMMEDIATE optimistic insert — before ANY network call ──
+    // ── IMMEDIATE optimistic insert ──
     const optimisticMsg: ChatMessage = {
-      id: optimisticId, content: msgText, sender_id: "", // filled below
+      id: optimisticId, content: msgText, sender_id: "",
       created_at: now, read: false, message_type: "text",
       category: selectedCategory || "general", pending: true, failed: false,
       reply_to_message_id: replyTo?.msgId ?? null,
     };
     setRawMessages((prev) => [...prev, optimisticMsg]);
-    setNewMessage("");
     const currentReply = replyTo;
     setReplyTo(null);
 
@@ -170,19 +159,18 @@ export function useMessageSender(params: Params) {
         failStep(flow, resolveStep, "missing_auth_user");
         endFlow(flow, "failed");
         setRawMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-        setNewMessage(msgText);
         toast.error("Authentication required.");
+        sendingRef.current = false;
         return;
       }
       authUserId = uid;
-      // Patch optimistic message with real sender
       setRawMessages((prev) => prev.map((m) => m.id === optimisticId ? { ...m, sender_id: authUserId } : m));
     } catch (err: any) {
       failStep(flow, resolveStep, err.message);
       endFlow(flow, "failed");
       setRawMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      setNewMessage(msgText);
       toast.error("Authentication required.");
+      sendingRef.current = false;
       return;
     }
 
@@ -206,8 +194,8 @@ export function useMessageSender(params: Params) {
       failStep(flow, resolveStep, err.message);
       endFlow(flow, "failed");
       setRawMessages((prev) => prev.map((m) => m.id === optimisticId ? { ...m, pending: false, failed: true } : m));
-      setNewMessage(msgText);
       toast.error("Failed to resolve conversation");
+      sendingRef.current = false;
       return;
     }
     completeStep(flow, resolveStep, { conversationId });
@@ -245,19 +233,19 @@ export function useMessageSender(params: Params) {
         completeStep(flow, offlineStep);
         endFlow(flow, "success");
         toast("Queued — will send when connection returns.");
+        sendingRef.current = false;
         return;
       } catch (e: any) {
         failStep(flow, offlineStep, e.message);
         endFlow(flow, "failed");
         setRawMessages((prev) => prev.map((m) => m.id === optimisticId ? { ...m, pending: false, failed: true } : m));
-        setNewMessage(msgText);
         toast.error(e?.message || "Failed to queue message.");
+        sendingRef.current = false;
         return;
       }
     }
 
     // ── Canonical send via send family ──
-    setSending(true);
     const dbStep = addStep(flow, "canonical_send");
     try {
       const senderOrbitId = myOrbitId || `orbit_${authUserId.slice(0, 12)}`;
@@ -300,22 +288,11 @@ export function useMessageSender(params: Params) {
       reportHealth("orbit", "degraded", undefined, e?.message);
       endFlow(flow, "failed");
       setRawMessages((prev) => prev.map((m) => m.id === optimisticId ? { ...m, pending: false, failed: true } : m));
-      setNewMessage(msgText);
       toast.error(e?.message || "Failed to send message.");
     } finally {
-      setSending(false);
+      sendingRef.current = false;
     }
-  }, [newMessage, params]);
+  }, [params]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        void handleSend();
-      }
-    },
-    [handleSend]
-  );
-
-  return { sending, newMessage, setNewMessage, handleSend, handleKeyDown };
+  return { handleSend };
 }
