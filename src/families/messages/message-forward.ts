@@ -1,17 +1,16 @@
 /**
  * message.forward — Canonical message forwarding family.
- * Handles: single forward, bulk forward, payload building, target picking, execution.
  */
 import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolveMessageMode } from "./message-mode";
-import type { MessageMode } from "./message-mode";
+import type { CanonicalMessageType } from "./canonical-envelope";
 
 export interface ForwardPayload {
   originalMessageId: string;
   originalSenderId: string;
   originalTimestamp: string;
-  mode: MessageMode;
+  mode: CanonicalMessageType | string;
   body: string;
   metadata: Record<string, unknown>;
 }
@@ -53,11 +52,20 @@ export const MessageForward = {
       ? `↪ ${payload.body.slice(0, 80)}`
       : `↪ Forwarded ${payload.mode}`;
 
+    // Map forwarded type to a DB-safe type
+    const typeMap: Record<string, string> = {
+      voice: "voice",
+      image: "image",
+      video: "video",
+      file: "file",
+    };
+    const dbType = typeMap[payload.mode] || "text";
+
     const data = await insertMessage({
       conversationId: targetConversationId,
       senderUserId,
       senderOrbitId,
-      type: payload.mode === "voice" ? "voice" : payload.mode === "media" || payload.mode === "grouped_media" ? "media" : "text",
+      type: dbType,
       body: preview,
       metadata: payload.metadata,
     });
@@ -66,7 +74,7 @@ export const MessageForward = {
 
     platformBus.emit("orbit:message_sent", {
       conversationId: targetConversationId,
-      type: "forward",
+      type: "text",
     }, "orbit", { userId: senderUserId });
 
     return data;
@@ -92,17 +100,15 @@ export const MessageForward = {
   /** Get preview label for a forwarded message */
   getForwardPreview(payload: ForwardPayload): string {
     if (payload.body) return `↪ ${payload.body.slice(0, 60)}`;
-    const labels: Partial<Record<MessageMode, string>> = {
-      media: "↪ 📷 Photo",
-      grouped_media: "↪ 📷 Album",
-      voice: "↪ 🎤 Voice message",
-      static_location: "↪ 📍 Location",
-      live_location: "↪ 📍 Live location",
-      payment_request: "↪ 💳 Payment request",
-      payment_receipt: "↪ 💳 Payment",
+    const labels: Record<string, string> = {
       image: "↪ 📷 Photo",
       video: "↪ 🎬 Video",
+      voice: "↪ 🎤 Voice message",
       file: "↪ 📎 File",
+      location_static: "↪ 📍 Location",
+      location_live: "↪ 📍 Live location",
+      payment_request: "↪ 💳 Payment request",
+      payment_receipt: "↪ 💳 Payment",
       call_audio: "↪ 📞 Audio call",
       call_video: "↪ 📹 Video call",
       call_missed: "↪ 📞 Missed call",
