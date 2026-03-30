@@ -2,8 +2,9 @@
  * useMessageSender — THIN ORCHESTRATOR for message sending.
  * Delegates to canonical sendText() from the send family.
  * Keeps: optimistic UI, offline queue, encryption, event emission.
+ * Draft is isolated per conversationId to prevent cross-thread leaking.
  */
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolveConversationId } from "@/lib/orbit/messaging/conversation-resolver";
@@ -69,9 +70,52 @@ type Params = {
   resolveAuthUserId: () => Promise<string | null>;
 };
 
+/**
+ * Per-conversation draft store — persists drafts across thread switches.
+ * Module-level so drafts survive hook re-mounts within the same session.
+ */
+const draftsByConversation = new Map<string, string>();
+
 export function useMessageSender(params: Params) {
   const [sending, setSending] = useState(false);
-  const [newMessage, setNewMessage] = useState("");
+
+  // Resolve the current conversationId for draft isolation
+  const conversationId = params.thread?.conversationId || params.thread?.id || "";
+  const prevConversationIdRef = useRef(conversationId);
+
+  // Draft state — initialized from per-conversation store
+  const [newMessage, setNewMessageRaw] = useState(() => draftsByConversation.get(conversationId) || "");
+
+  // When conversationId changes, swap to the correct draft
+  useEffect(() => {
+    if (conversationId !== prevConversationIdRef.current) {
+      // Save current draft for the old conversation
+      if (prevConversationIdRef.current) {
+        const currentDraft = newMessage;
+        if (currentDraft.trim()) {
+          draftsByConversation.set(prevConversationIdRef.current, currentDraft);
+        } else {
+          draftsByConversation.delete(prevConversationIdRef.current);
+        }
+      }
+      // Load draft for new conversation
+      setNewMessageRaw(draftsByConversation.get(conversationId) || "");
+      prevConversationIdRef.current = conversationId;
+    }
+  }, [conversationId]);
+
+  // Wrap setNewMessage to also sync to the draft store
+  const setNewMessage = useCallback((value: string | ((prev: string) => string)) => {
+    setNewMessageRaw((prev) => {
+      const next = typeof value === "function" ? value(prev) : value;
+      if (next.trim()) {
+        draftsByConversation.set(conversationId, next);
+      } else {
+        draftsByConversation.delete(conversationId);
+      }
+      return next;
+    });
+  }, [conversationId]);
 
   const handleSend = useCallback(async () => {
     const {
