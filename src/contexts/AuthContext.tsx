@@ -275,23 +275,66 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
         }).catch(() => null);
 
+        // DB health probe (non-blocking, just logs)
+        void checkDbHealth(hydrateTraceId);
+
         authLog("LOGIN_PROFILE_HYDRATE_STARTED", { traceId: hydrateTraceId, userId, phase: "critical" });
         const hydrateStart = Date.now();
 
+        // CRITICAL PATH: orgId + profile basics in parallel, with guaranteed fallback
+        let orgIds: string[] = [];
         try {
-          // CRITICAL PATH: only orgId + profile basics (2 fast queries in parallel)
-          const [orgIds] = await Promise.all([
+          const [fetchedOrgIds] = await Promise.all([
             fetchOrgIdFast(userId),
             fetchProfileCritical(userId),
           ]);
+          orgIds = fetchedOrgIds;
           if (seq !== latestSeq) return;
 
-          const hydrateDuration = Date.now() - hydrateStart;
           authLog("LOGIN_PROFILE_HYDRATE_RESULT", {
-            traceId: hydrateTraceId, success: true, error: null, durationMs: hydrateDuration, phase: "critical",
+            traceId: hydrateTraceId, success: true, error: null,
+            durationMs: Date.now() - hydrateStart, phase: "critical",
+          });
+        } catch (err: any) {
+          // DB is down — apply safe defaults, NEVER block navigation
+          console.warn("[AuthContext] DB slow → critical hydration fallback safe:", err);
+          setOrgId(null);
+          setUserType("client");
+          setUserCountry("FR");
+          setUserCurrency("EUR");
+          setOnboardingCompleted(false);
+          setProfileLoaded(true);
+          setActiveRole("client");
+          setHasDualRole(false);
+          setAllOrgs([]);
+
+          authError("LOGIN_PROFILE_HYDRATE_RESULT", {
+            traceId: hydrateTraceId, success: false,
+            error: err?.message ?? "UNKNOWN", durationMs: Date.now() - hydrateStart,
+            step: "CRITICAL_HYDRATION_FALLBACK",
           });
 
-          // DEFERRED: org details, dual-role, subscription — non-blocking background
+          // Schedule background retry
+          setTimeout(() => {
+            void (async () => {
+              try {
+                const retryOrgIds = await fetchOrgIdFast(userId);
+                await fetchProfileCritical(userId);
+                await fetchOrgDetails(retryOrgIds);
+                await fetchDualRoleDeferred(userId);
+              } catch (retryErr: any) {
+                authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
+                  traceId: hydrateTraceId, success: false,
+                  error: retryErr?.message ?? "RETRY_FAILED",
+                  retryAttempt: true,
+                });
+              }
+            })();
+          }, 3000);
+        }
+
+        // DEFERRED: org details, dual-role, subscription — always non-blocking
+        if (orgIds.length > 0 || seq === latestSeq) {
           setTimeout(() => {
             void (async () => {
               try {
@@ -306,29 +349,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               }
             })();
           }, 100);
-        } catch (err: any) {
-          const hydrateDuration = Date.now() - hydrateStart;
-          authError("LOGIN_PROFILE_HYDRATE_RESULT", {
-            traceId: hydrateTraceId, success: false,
-            error: err?.message ?? "UNKNOWN", durationMs: hydrateDuration,
-            step: "LOGIN_PROFILE_HYDRATE_RESULT",
-          });
-          // Non-blocking retry after 2s
-          setTimeout(() => {
-            void (async () => {
-              try {
-                await fetchOrgIdFast(userId);
-                await fetchProfileCritical(userId);
-              } catch (retryErr: any) {
-                authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
-                  traceId: hydrateTraceId, success: false,
-                  error: retryErr?.message ?? "RETRY_FAILED",
-                  durationMs: Date.now() - hydrateStart, retryAttempt: true,
-                });
-              }
-            })();
-          }, 2000);
         }
+
         setTimeout(() => {
           void refreshSubRef();
         }, 500);
@@ -346,6 +368,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         bootstrapOrbitRef.current = null;
       }
 
+      // GUARANTEE: loading ALWAYS set to false — navigation NEVER blocked
       if (mounted && seq === latestSeq) setLoading(false);
     };
 
