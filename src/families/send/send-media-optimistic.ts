@@ -8,6 +8,7 @@
 import { MediaUpload, useMediaUploadQueue } from "@/families/media/media-upload";
 import { insertMessage, updateConversationTimestamp, updateMessageFields } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { buildMediaMeta } from "@/families/messages/build-metadata";
 import type { SendContext } from "./send-context";
 
 export interface OptimisticMediaPayload {
