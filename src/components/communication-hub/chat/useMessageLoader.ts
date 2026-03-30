@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { subscribeInstantMessages } from "@/lib/realtime-broadcast";
 
 const db = supabase as any;
 
