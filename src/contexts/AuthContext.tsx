@@ -284,12 +284,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (_event === "SIGNED_IN" && nextSession?.user) {
         logAudit({ userId: nextSession.user.id, action: "user_login" });
-        void ensureOrbitProfile({
-          userId: nextSession.user.id,
-          email: nextSession.user.email ?? null,
-          displayName: (nextSession.user.user_metadata as any)?.display_name ?? (nextSession.user.user_metadata as any)?.full_name ?? null,
-          avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
-        }).catch(() => null);
+        // ensureOrbitProfile is already called inside hydrateAuthState — no duplicate here
         void import("@/lib/auth/profile")
           .then((m) => m.ensureUserProfile(nextSession.user.id, {
             fullName: nextSession.user.user_metadata?.full_name,
