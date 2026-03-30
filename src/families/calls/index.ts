@@ -29,6 +29,13 @@ export type { AudioOutputDevice } from "./call-audio-route";
 export { useRingtoneStore, CallRingtone } from "./call-ringtone";
 export type { RingtoneType } from "./call-ringtone";
 
+// ── Call Audio Engine ──
+export { CallAudioEngine } from "./call-audio-engine";
+
+// ── Call Store (canonical state machine) ──
+export { useCallStore } from "@/stores/orbit/call.store";
+export type { CallUIState, ActiveCall, CallPeer } from "@/stores/orbit/call.store";
+
 // ── Call Privacy ──
 export { useCallPrivacyStore, CallPrivacy } from "./call-privacy";
 export type { IncomingCallVisibility, LockScreenPolicy } from "./call-privacy";
