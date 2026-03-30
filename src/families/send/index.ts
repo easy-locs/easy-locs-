@@ -10,6 +10,7 @@ export { sendVoiceOptimistic } from "./send-voice-optimistic";
 export { sendMedia } from "./send-media";
 export { sendMediaOptimistic, retryMediaUpload } from "./send-media-optimistic";
 export { sendLocation } from "./send-location";
+export { sendLocationOptimistic } from "./send-location-optimistic";
 export type { LocationPayload } from "./send-location";
 export { sendSystemEvent, sendCallEvent } from "./send-system-event";
 export { sendPaymentRequest, sendPaymentReceipt, sendPaymentEvent } from "./send-payment";
