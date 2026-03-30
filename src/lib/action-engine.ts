@@ -158,7 +158,7 @@ function handleOpen(input: UniversalActionInput, navigate: NavigateFunction): Ac
       if (slug) navigate(`/book/${slug}`);
       return { ok: !!slug };
     case "chat_thread":
-      if (entityId) navigate(`/client/messages?thread=${entityId}`);
+      if (entityId) navigate(`/orbit/${entityId}`);
       return { ok: !!entityId };
     case "map_pin":
       if (slug) navigate(`/s/${slug}`);
@@ -204,7 +204,7 @@ async function handleChat(
   });
 
   if (thread) {
-    navigate(`/client/messages?thread=${thread.contextId}`);
+    navigate(`/orbit/${thread.contextId}`);
     return { ok: true, data: thread };
   }
 

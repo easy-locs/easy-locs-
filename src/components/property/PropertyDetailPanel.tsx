@@ -8,7 +8,7 @@ export function PropertyDetailPanel() {
   const closeListing = usePropertyDetailStore((s) => s.closeListing);
   const navigate = useNavigate();
   const openContact = (input: { orbitId: string; listingId?: string }) => {
-    navigate(`/dashboard/communication?section=contacts&orbit=${input.orbitId}`);
+    navigate(`/orbit?section=contacts&orbit=${input.orbitId}`);
   };
   const { setListingInUrl } = usePropertyQuerySync();
 

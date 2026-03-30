@@ -234,7 +234,7 @@ export default function RealEstateListings() {
 
   const handleOpenConversation = (lead: Lead) => {
     const listing = listings.find(l => l.id === lead.listing_id);
-    navigate(`/dashboard/messages?contact=${encodeURIComponent(lead.email)}&name=${encodeURIComponent(lead.name)}&context=${encodeURIComponent(listing?.title || "Property inquiry")}`);
+    navigate(`/orbit?contact=${encodeURIComponent(lead.email)}&name=${encodeURIComponent(lead.name)}&context=${encodeURIComponent(listing?.title || "Property inquiry")}`);
   };
 
   const copyLink = (slug: string) => {
