@@ -12,6 +12,7 @@ export type OrbitCommand =
   | SendLocationCommand
   | StartCallCommand
   | AcceptCallCommand
+  | DeclineCallCommand
   | EndCallCommand
   | EditMessageCommand
   | ReplyCommand
