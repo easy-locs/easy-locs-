@@ -4,7 +4,7 @@
  *
  * UI components must use useOrbitDispatch() for:
  * - send_text, send_media, send_voice, send_location
- * - start_call, accept_call, end_call
+ * - start_call, accept_call, decline_call, end_call
  * - edit_message, reply
  *
  * No other module may bypass this pipeline for these actions.
@@ -21,6 +21,7 @@ export type {
   SendLocationCommand,
   StartCallCommand,
   AcceptCallCommand,
+  DeclineCallCommand,
   EndCallCommand,
   EditMessageCommand,
   ReplyCommand,
@@ -30,9 +31,12 @@ export type {
 export {
   executeSendText,
   executeSendMedia,
+  executeSendMediaBatch,
   executeSendVoice,
   executeSendLocation,
   executeStartCall,
+  executeAcceptCall,
+  executeDeclineCall,
   executeEndCall,
   executeEditMessage,
   executeReplyMessage,

@@ -4,9 +4,12 @@
  */
 export { executeSendText } from "./executeSendText";
 export { executeSendMedia } from "./executeSendMedia";
+export { executeSendMediaBatch } from "./executeSendMediaBatch";
 export { executeSendVoice } from "./executeSendVoice";
 export { executeSendLocation } from "./executeSendLocation";
 export { executeStartCall } from "./executeStartCall";
+export { executeAcceptCall } from "./executeAcceptCall";
+export { executeDeclineCall } from "./executeDeclineCall";
 export { executeEndCall } from "./executeEndCall";
 export { executeEditMessage } from "./executeEditMessage";
 export { executeReplyMessage } from "./executeReplyMessage";
