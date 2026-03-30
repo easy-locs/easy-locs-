@@ -150,8 +150,8 @@ class RealtimeManager {
     }
 
     for (const [, sub] of this.threadSubs) {
-      supabase.removeChannel(sub.channel);
-      supabase.removeChannel(sub.typingChannel);
+      removeRealtimeChannel(sub.channel);
+      removeRealtimeChannel(sub.typingChannel);
     }
     this.threadSubs.clear();
     this.recentSignals.clear();
