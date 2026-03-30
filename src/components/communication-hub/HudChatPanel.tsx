@@ -193,6 +193,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       compFamily.composer.setEditState(null);
       return;
     }
+    // Sync store draft → messageSender before send (single source of truth = store)
+    messageSender.setNewMessage(storeDraft);
     await messageSender.handleSend();
     composerStore.clearDraft(currentConversationId);
     compFamily.composer.setReplyState(null);
@@ -355,7 +357,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             replyTo={selection.replyTo ? { content: selection.replyTo.content, senderName: selection.replyTo.senderName } : null}
             onChange={(v: string) => {
               setStoreDraft(v);
-              messageSender.setNewMessage(v);
             }}
             onSend={stableHandleSend}
             onKeyDown={messageSender.handleKeyDown}
