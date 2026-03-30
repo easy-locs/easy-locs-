@@ -4,7 +4,8 @@
  */
 import { useState, useCallback } from "react";
 import { sendVoiceOptimistic } from "@/families/send/send-voice-optimistic";
-import { sendLocation, type LocationPayload } from "@/families/send/send-location";
+import { sendLocationOptimistic } from "@/families/send/send-location-optimistic";
+import type { LocationPayload } from "@/families/send/send-location";
 import { sendMedia } from "@/families/send/send-media";
 import { computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { formatVoiceDuration } from "@/hooks/useVoiceRecorder";
@@ -94,25 +95,27 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
     deps.setShowLocationPicker(false);
     toast.success(deps.t("orbit.location_shared") || "Location shared");
 
-    // ── Background: resolve + insert (no UI blocking) ──
-    try {
-      const authUserId = await deps.resolveAuthUserId();
-      if (!authUserId) return;
-      const conversationId = await deps.resolveConversationId(authUserId);
-      if (!conversationId) return;
-      const ctx = buildSendContext(deps, authUserId, conversationId);
-      const payload: LocationPayload = {
-        lat: loc.lat,
-        lng: loc.lng,
-        type: loc.type === "live" ? "live" : loc.type === "place" ? "place" : "static",
-        label: loc.label,
-        address: loc.address,
-        duration: loc.duration,
-      };
-      await sendLocation(ctx, payload);
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to share location");
-    }
+    // ── Background: resolve + optimistic insert (card appears via realtime) ──
+    (async () => {
+      try {
+        const authUserId = await deps.resolveAuthUserId();
+        if (!authUserId) return;
+        const conversationId = await deps.resolveConversationId(authUserId);
+        if (!conversationId) return;
+        const ctx = buildSendContext(deps, authUserId, conversationId);
+        const payload: LocationPayload = {
+          lat: loc.lat,
+          lng: loc.lng,
+          type: loc.type === "live" ? "live" : loc.type === "place" ? "place" : "static",
+          label: loc.label,
+          address: loc.address,
+          duration: loc.duration,
+        };
+        await sendLocationOptimistic(ctx, payload);
+      } catch (e: any) {
+        toast.error(e?.message || "Failed to share location");
+      }
+    })();
   }, [deps]);
 
   const handleViewOnceUpload = useCallback(async (file: File) => {
