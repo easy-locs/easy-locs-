@@ -589,11 +589,38 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         open={showMultiPhoto}
         onClose={() => setShowMultiPhoto(false)}
         onSend={(attachments, caption) => {
-          // Send each attachment via the canonical attachment pipeline
-          for (const att of attachments) {
-            const file = att.file;
-            attFamily.attachments.handleFileUpload(file);
-          }
+          // Sort by order, then send each via orbitDispatch sequentially
+          const sorted = [...attachments].sort((a, b) => a.order - b.order);
+          void (async () => {
+            const { orbitDispatch } = await import("@/families/orbit-dispatch/orbit-dispatch");
+            const { transportUploadWithPrepare } = await import("@/families/media/transport/transport-engine");
+            const { TransportPolicy } = await import("@/families/media/transport/transport-policy");
+            const convId = thread?.conversationId || thread?.id;
+            if (!convId) return;
+            for (let i = 0; i < sorted.length; i++) {
+              const att = sorted[i];
+              const decision = TransportPolicy.decide(att.file);
+              await orbitDispatch({
+                type: "send_media",
+                conversationId: convId,
+                file: att.file,
+                caption: i === 0 ? caption : undefined,
+                viewOnce: false,
+                uploadFn: async (file, _path, onProgress) => {
+                  const result = await transportUploadWithPrepare(file, {
+                    pathPrefix: orgId || "orbit-media",
+                    compress: decision.shouldCompress,
+                    maxDimension: decision.maxDimension || undefined,
+                    quality: decision.quality || undefined,
+                    callbacks: { onProgress },
+                  });
+                  return result.publicUrl;
+                },
+                pathPrefix: orgId || "orbit-media",
+              });
+            }
+            msgFamily.loader.loadMessages();
+          })();
         }}
       />
     </>
