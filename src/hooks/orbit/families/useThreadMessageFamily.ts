@@ -27,15 +27,14 @@ export function useThreadMessageFamily(params: {
   disappearTTL: string;
   securityLevel: string;
   setSecurityLevel: (l: string) => void;
-  replyTo: any;
-  setReplyTo: (r: any) => void;
+  // replyTo/setReplyTo removed — composerStore is single source of truth
   resolveAuthUserId: () => Promise<string | null>;
   onThreadUpdate: (conversationId: string, updates: any) => void;
 }) {
   const {
     thread, orgId, userId, myOrbitId, locale, e2eReady, encrypt, decrypt,
     offline, privacySettings, disappearTTL, securityLevel, setSecurityLevel,
-    replyTo, setReplyTo, resolveAuthUserId, onThreadUpdate,
+    resolveAuthUserId, onThreadUpdate,
   } = params;
 
   const scrollRef = useRef<HTMLDivElement>(null);
