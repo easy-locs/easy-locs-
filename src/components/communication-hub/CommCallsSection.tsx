@@ -153,10 +153,11 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
     const peerId = call.caller_orbit_id === myOrbitId ? call.receiver_orbit_id : call.caller_orbit_id;
 
     trackOrbitEvent("orbit.call.started", { screen: "calls", component: "CommCallsSection", action: "redial", payload: { callType: call.call_type }, result: "success" });
+    const resolvedName = nameCache[peerId] || "Contact";
     await startCall({
       targetId: peerId,
       contextType: "direct",
-      peerName: peerId,
+      peerName: resolvedName,
       isVideo: call.call_type === "video",
     });
   }, [startCall, isInCall, isStartingCall, myOrbitId]);
