@@ -79,6 +79,10 @@ export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResu
         const ctx = await resolveContext(cmd.conversationId);
         return { ...await executeSendMedia(ctx, cmd), requestId };
       }
+      case "send_media_batch": {
+        const ctx = await resolveContext(cmd.conversationId);
+        return { ...await executeSendMediaBatch(ctx, cmd), requestId };
+      }
       case "send_voice": {
         const ctx = await resolveContext(cmd.conversationId);
         return { ...await executeSendVoice(ctx, cmd), requestId };
