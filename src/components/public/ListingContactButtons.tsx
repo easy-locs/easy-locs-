@@ -188,8 +188,8 @@ const ListingContactButtons = ({
     trackClick("free_call", trackOpts);
     startCall({
       targetId: orgId,
-      contextType: serviceId ? "service" : "listing",
-      contextId: serviceId || listingId || undefined,
+      entityType: serviceId ? "service" : "listing",
+      entityId: serviceId || listingId || undefined,
       contextLabel: listingTitle,
       peerName: providerName || "Provider",
       isVideo: false,
