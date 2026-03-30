@@ -12,6 +12,7 @@ import {
   VideoIcon, VideoOff, Loader2, Shield,
 } from "lucide-react";
 import { useCallStore, type CallUIState } from "@/stores/orbit/call.store";
+import { CallMediaEngine } from "@/families/device/call-media-engine";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,24 +30,10 @@ export function OrbitCallScreen() {
   const [isEnding, setIsEnding] = useState(false);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
 
-  // ── CRITICAL: Attach remote stream to audio element for playback ──
+  // ── CRITICAL: Attach remote stream via canonical CallMediaEngine ──
   useEffect(() => {
-    const audioEl = remoteAudioRef.current;
-    if (!audioEl) return;
-
-    if (remoteStream && remoteStream.getAudioTracks().length > 0) {
-      audioEl.srcObject = remoteStream;
-      // Force play (handle autoplay restrictions)
-      audioEl.play().catch((err) => {
-        console.warn("[OrbitCallScreen] autoplay blocked, retrying on user gesture:", err);
-      });
-    } else {
-      audioEl.srcObject = null;
-    }
-
-    return () => {
-      audioEl.srcObject = null;
-    };
+    CallMediaEngine.attachRemoteAudio(remoteAudioRef.current, remoteStream || null);
+    return () => CallMediaEngine.detachRemoteAudio(remoteAudioRef.current);
   }, [remoteStream]);
 
   // Auto-dismiss after terminal state
