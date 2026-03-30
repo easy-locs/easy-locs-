@@ -2,6 +2,7 @@
  * interventions.repository — DB operations for Interventions page.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export async function fetchPropertiesForOrg(orgId: string, countryFilter?: string | null) {
   let q = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
@@ -43,5 +44,5 @@ export function subscribeInterventions(orgId: string, onUpdate: () => void) {
     .channel("interventions-rt")
     .on("postgres_changes", { event: "*", schema: "public", table: "interventions", filter: `org_id=eq.${orgId}` }, onUpdate)
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }

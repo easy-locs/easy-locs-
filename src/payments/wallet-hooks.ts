@@ -5,6 +5,7 @@
  */
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 
 /* ── Balance hook (reads wallet_accounts) ──────────────────── */
@@ -53,7 +54,7 @@ export function useWalletBalance() {
         filter: `user_id=eq.${user.id}`,
       }, () => load())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [user?.id, load]);
 
   const optimisticAdjust = useCallback((delta: number) => {
@@ -109,7 +110,7 @@ export function useWalletTransactions(limit = 50) {
         table: "unified_wallet_transactions",
       }, () => load())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [user?.id, load]);
 
   /** Today's outgoing transfer total */

@@ -5,6 +5,7 @@
  * useLeaseAutoGenerator, useRentalLeaseGenerator, useRentalModeBadges, useRentalRealtimeBridge.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // ─── Properties ───
 export async function fetchProperties(orgId: string, countryFilter?: string | null) {
@@ -166,7 +167,7 @@ export function subscribeToRentalChat(tenantId: string, onInsert: (msg: any) => 
     })
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages_v2" }, (p) => onUpdate(p.new as any))
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { removeRealtimeChannel(channel); };
 }
 
 // ─── Stripe Rent Payment ───

@@ -6,6 +6,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { walletTransfer } from "@/payments/wallet-hooks";
 
@@ -122,7 +123,7 @@ export function useMyPaymentRequests(limit = 20) {
       .channel(`pr-${user?.id || "anon"}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "payment_requests" }, () => load())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(channel); };
   }, [load, user?.id]);
 
   return { items, loading, reload: load };

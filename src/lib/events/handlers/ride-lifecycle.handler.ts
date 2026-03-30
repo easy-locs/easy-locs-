@@ -14,7 +14,7 @@
  * - ride.status.updated
  */
 import { eventBus } from "@/lib/core/event-bus";
-import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // Status → canonical event mapping
 const STATUS_EVENT_MAP: Record<string, string> = {
@@ -53,7 +53,7 @@ export function isValidTransition(from: string, to: string): boolean {
 // Track previous status per job to detect actual transitions
 const previousStatus = new Map<string, string>();
 
-let lifecycleChannel: ReturnType<typeof supabase.channel> | null = null;
+let lifecycleChannel: ReturnType<typeof createRealtimeChannel> | null = null;
 
 /**
  * Start listening to mobility_jobs changes globally.
@@ -62,8 +62,7 @@ let lifecycleChannel: ReturnType<typeof supabase.channel> | null = null;
 export function initRideLifecycleHandler() {
   if (lifecycleChannel) return; // already initialized
 
-  lifecycleChannel = supabase
-    .channel("ride-lifecycle-global")
+  lifecycleChannel = createRealtimeChannel("ride-lifecycle-global")
     .on(
       "postgres_changes",
       { event: "UPDATE", schema: "public", table: "mobility_jobs" },
@@ -118,7 +117,7 @@ export function initRideLifecycleHandler() {
 
 export function stopRideLifecycleHandler() {
   if (lifecycleChannel) {
-    supabase.removeChannel(lifecycleChannel);
+    removeRealtimeChannel(lifecycleChannel);
     lifecycleChannel = null;
   }
   previousStatus.clear();
