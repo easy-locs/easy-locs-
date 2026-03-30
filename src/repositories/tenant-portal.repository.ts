@@ -180,16 +180,7 @@ export async function fetchProfileEmail(userId: string) {
   return data?.email ?? null;
 }
 
-export function subscribeTenantMessages(tenantId: string, orgId: string, onInsert: (msg: any) => void) {
-  const contextId = `tenant_${orgId}_${tenantId}`;
-  const channel = supabase
-    .channel(`tenant-messages-v2-${tenantId}`)
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2", filter: `conversation_id=eq.${contextId}` }, (payload) => {
-      onInsert(payload.new);
-    })
-    .subscribe();
-  return () => { supabase.removeChannel(channel); };
-}
+// subscribeTenantMessages removed — TenantMessages absorbed into Orbit shell
 
 // Re-export canonical identity helper
 export { getCurrentUserIdOrNull as getAuthUser } from "@/families/identity";
