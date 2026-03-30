@@ -54,6 +54,7 @@ function formatDuration(s: number | null): string {
 
 export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (peerId: string, peerName: string) => void }) {
   const { user } = useAuth();
+  const myOrbitId = user?.id ? `orbit_${user.id.slice(0, 15)}` : null;
   const { startCall, isInCall, isStartingCall } = useCall();
   const { t } = useI18n();
   const [calls, setCalls] = useState<CallLog[]>([]);
