@@ -14,7 +14,7 @@ import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
 import { BubbleLocationBlock } from "./chat/BubbleLocationBlock";
 import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
 
-import { haptic } from "@/lib/haptics";
+// haptic removed — gestures handled by OrbitMessageInteractiveWrapper
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
 import { ChatPaymentRequestCard, ChatPaymentReceiptCard } from "@/components/chat/ChatPaymentCards";
 import ThreadActionCard, { parseActionFromMessage } from "@/components/orbit/ThreadActionCard";
