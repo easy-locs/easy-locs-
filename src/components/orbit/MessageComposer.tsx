@@ -6,7 +6,7 @@
  * Behavior: fixed bottom, safe-area aware, keyboard stable.
  */
 import { useRef, useState } from "react";
-import { Send, Loader2, Paperclip, Camera, MapPin, Eye, Mic, Ban, Check, Smile, Zap } from "lucide-react";
+import { Send, Loader2, Paperclip, Camera, MapPin, Eye, Mic, Ban, Check, Smile, Zap, Images } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger, DropdownMenuSeparator,
@@ -37,6 +37,7 @@ export interface MessageComposerProps {
     onCameraCapture?: (file: File) => void;
     onLocation?: () => void;
     onViewOnce?: (file: File) => void;
+    onMultiPhoto?: () => void;
   };
   /** Reply-to banner */
   replyTo?: { content: string; senderName?: string } | null;
@@ -149,7 +150,7 @@ export default function MessageComposer({
             <div className="flex-1 flex items-center gap-2 rounded-2xl px-3 py-2 bg-background border border-border min-w-0">
               <button
                 onClick={() => {
-                  const a = DeviceAudio.playFile(voicePreview.url);
+                  DeviceAudio.playFile(voicePreview.url);
                 }}
                 className="h-8 w-8 rounded-full flex items-center justify-center bg-primary/15 text-primary shrink-0"
               >
@@ -211,6 +212,11 @@ export default function MessageComposer({
                 }}>
                   <Camera className="h-4 w-4 mr-2 text-accent" /> Camera
                 </DropdownMenuItem>
+                {attachmentActions?.onMultiPhoto && (
+                  <DropdownMenuItem onClick={() => { setShowAttachMenu(false); attachmentActions.onMultiPhoto!(); }}>
+                    <Images className="h-4 w-4 mr-2 text-primary" /> Multi Photos
+                  </DropdownMenuItem>
+                )}
                 {attachmentActions?.onLocation && (
                   <DropdownMenuItem onClick={() => { setShowAttachMenu(false); attachmentActions.onLocation!(); }}>
                     <MapPin className="h-4 w-4 mr-2 text-accent" /> Location
@@ -250,7 +256,7 @@ export default function MessageComposer({
           {/* Send / Mic button */}
           <button
             onClick={hasText ? handleSend : undefined}
-            onTouchStart={!hasText && onStartVoice ? (e) => {
+            onTouchStart={!hasText && onStartVoice ? () => {
               holdTimerRef.current = setTimeout(handleMicStart, 200);
             } : undefined}
             onTouchEnd={!hasText && onStartVoice ? () => {
