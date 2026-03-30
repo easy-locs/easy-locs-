@@ -181,12 +181,32 @@ export function CallProvider({ children }: { children: ReactNode }) {
     await manager.acceptCall(incoming.incomingIsVideo);
   }, [callStore, incoming, user?.id, wireManagerToStore]);
 
-  // Listen for accept event from OrbitCallScreen
+  // Listen for accept/decline events from OrbitCallScreen
   useEffect(() => {
-    const handler = () => doAcceptIncoming();
-    window.addEventListener("orbit:call:accept", handler);
-    return () => window.removeEventListener("orbit:call:accept", handler);
-  }, [doAcceptIncoming]);
+    const handleAccept = () => doAcceptIncoming();
+    const handleDecline = () => {
+      if (incoming.incomingCallId && user?.id) {
+        declineIncomingCall(incoming.incomingCallId, user.id);
+        if (incoming.incomingConversationId) {
+          logCallEventToThread({
+            callId: incoming.incomingCallId,
+            conversationId: incoming.incomingConversationId,
+            orgId: incoming.incomingOrgId,
+            senderId: user.id,
+            event: "declined",
+          });
+        }
+      }
+      incoming.clearIncoming();
+      callStore.endCall("declined");
+    };
+    window.addEventListener("orbit:call:accept", handleAccept);
+    window.addEventListener("orbit:call:decline", handleDecline);
+    return () => {
+      window.removeEventListener("orbit:call:accept", handleAccept);
+      window.removeEventListener("orbit:call:decline", handleDecline);
+    };
+  }, [doAcceptIncoming, incoming, user?.id, callStore]);
 
   // Wire canonical store's endCall to the actual call manager
   useEffect(() => {

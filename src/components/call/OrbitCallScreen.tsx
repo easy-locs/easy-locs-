@@ -62,7 +62,12 @@ export function OrbitCallScreen() {
   const handleHangup = useCallback(async () => {
     if (isEnding) return;
     setIsEnding(true);
-    endCall("ended");
+    // For incoming calls, decline rather than end
+    if (useCallStore.getState().activeCall?.uiState === "incoming") {
+      window.dispatchEvent(new CustomEvent("orbit:call:decline"));
+    } else {
+      endCall("ended");
+    }
     setTimeout(() => setIsEnding(false), 1000);
   }, [isEnding, endCall]);
 
