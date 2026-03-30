@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolveConversationId } from "@/lib/orbit/messaging/conversation-resolver";
 import { sendText } from "@/families/send";
+import { useOrbitComposerStore } from "@/stores/orbit/composer.store";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 
@@ -61,8 +62,10 @@ type Params = {
   securityLevel: SecurityLevel;
   setSecurityLevel: (l: SecurityLevel) => void;
   selectedCategory?: string;
-  replyTo: { msgId: string; content: string; senderName?: string } | null;
-  setReplyTo: (r: { msgId: string; content: string; senderName?: string } | null) => void;
+  /** @deprecated — reply state now read from composerStore internally */
+  replyTo?: never;
+  /** @deprecated — reply state now cleared from composerStore internally */
+  setReplyTo?: never;
   setRawMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setPendingOffline: React.Dispatch<React.SetStateAction<any[]>>;
   onThreadUpdate: (threadId: string, updates: Record<string, unknown>) => void;
@@ -90,14 +93,19 @@ function checkAndSetIdempotency(key: string): boolean {
 export function useMessageSender(params: Params) {
   // Ref to prevent concurrent sends within this hook instance
   const sendingRef = useRef(false);
+  const composerStore = useOrbitComposerStore();
 
   const handleSend = useCallback(async (explicitDraft: string) => {
     const {
       thread, orgId, locale, myOrbitId, e2eReady, encrypt,
-      offline, securityLevel, setSecurityLevel, replyTo, setReplyTo,
+      offline, securityLevel, setSecurityLevel,
       setRawMessages, setPendingOffline, onThreadUpdate,
       resolveAuthUserId, selectedCategory, disappearTTL,
     } = params;
+
+    // ── Reply state: single source of truth from composerStore ──
+    const conversationKey = thread?.conversationId || thread?.id || "";
+    const replyTo = composerStore.replies[conversationKey] ?? null;
 
     const flow = startFlow("orbit", "sendMessage");
 
@@ -148,7 +156,7 @@ export function useMessageSender(params: Params) {
     };
     setRawMessages((prev) => [...prev, optimisticMsg]);
     const currentReply = replyTo;
-    setReplyTo(null);
+    composerStore.clearReply(conversationKey);
 
     // ── Resolve auth ONCE ──
     const resolveStep = addStep(flow, "resolve");
