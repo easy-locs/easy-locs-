@@ -16,47 +16,60 @@ interface MediaPreviewSendDeps {
   myOrbitId: string | null;
   peerOrbitId: string | null;
   orgId: string | null;
+  resolveConversationId?: (authUserId: string) => Promise<string | null>;
 }
 
 export function useMediaPreviewSend(deps: MediaPreviewSendDeps) {
   const sendFromPreview = useCallback(
     (items: PreviewItem[], caption: string, viewOnce: boolean) => {
-      if (!deps.conversationId || !deps.userId) {
-        toast.error("Cannot send: no conversation context");
-        return;
-      }
+      void (async () => {
+        if (!deps.userId) {
+          toast.error("Cannot send: authentication required");
+          return;
+        }
 
-      const ctx: SendContext = {
-        conversationId: deps.conversationId,
-        senderUserId: deps.userId,
-        senderOrbitId: deps.myOrbitId || `orbit_${deps.userId.slice(0, 12)}`,
-        receiverOrbitId: deps.peerOrbitId,
-        orgId: deps.orgId,
-      };
+        let conversationId = deps.conversationId;
+        if (!conversationId && deps.resolveConversationId) {
+          conversationId = await deps.resolveConversationId(deps.userId);
+        }
 
-      for (const item of items) {
-        const decision = TransportPolicy.decide(item.media.file);
-        void sendMediaOptimistic(ctx, {
-          file: item.media.file,
-          caption: items.length === 1 ? caption : item.caption || caption,
-          viewOnce,
-          uploadFn: async (file, _path, onProgress) => {
-            const result = await transportUploadWithPrepare(file, {
-              pathPrefix: deps.orgId || "orbit-media",
-              compress: decision.shouldCompress,
-              maxDimension: decision.maxDimension || undefined,
-              quality: decision.quality || undefined,
-              callbacks: { onProgress },
-            });
-            return result.publicUrl;
-          },
-          pathPrefix: deps.orgId || "orbit-media",
-        });
-      }
+        if (!conversationId) {
+          toast.error("Cannot send: no conversation context");
+          return;
+        }
 
-      useMediaPreviewState.getState().markSent();
+        const ctx: SendContext = {
+          conversationId,
+          senderUserId: deps.userId,
+          senderOrbitId: deps.myOrbitId || `orbit_${deps.userId.slice(0, 12)}`,
+          receiverOrbitId: deps.peerOrbitId,
+          orgId: deps.orgId,
+        };
+
+        for (const item of items) {
+          const decision = TransportPolicy.decide(item.media.file);
+          void sendMediaOptimistic(ctx, {
+            file: item.media.file,
+            caption: items.length === 1 ? caption : item.caption || caption,
+            viewOnce,
+            uploadFn: async (file, _path, onProgress) => {
+              const result = await transportUploadWithPrepare(file, {
+                pathPrefix: deps.orgId || "orbit-media",
+                compress: decision.shouldCompress,
+                maxDimension: decision.maxDimension || undefined,
+                quality: decision.quality || undefined,
+                callbacks: { onProgress },
+              });
+              return result.publicUrl;
+            },
+            pathPrefix: deps.orgId || "orbit-media",
+          });
+        }
+
+        useMediaPreviewState.getState().markSent();
+      })();
     },
-    [deps.conversationId, deps.userId, deps.myOrbitId, deps.peerOrbitId, deps.orgId],
+    [deps.conversationId, deps.userId, deps.myOrbitId, deps.peerOrbitId, deps.orgId, deps.resolveConversationId],
   );
 
   return { sendFromPreview };
