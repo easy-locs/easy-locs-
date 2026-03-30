@@ -21,10 +21,10 @@ export async function sendLocationOptimistic(
 
   const body =
     loc.type === "live"
-      ? `📡 Live location shared for ${loc.duration || 15}min\n📍 ${mapUrl}`
+      ? `${orbitLabels.location.liveShared(loc.duration || 15)}\n📍 ${mapUrl}`
       : loc.type === "place"
-      ? `📍 ${loc.label || "Location"}\n${loc.address || ""}\n${mapUrl}`
-      : `📍 My location\n${mapUrl}`;
+      ? `${orbitLabels.location.place(loc.label || "Location")}\n${loc.address || ""}\n${mapUrl}`
+      : `${orbitLabels.location.myLocation}\n${mapUrl}`;
 
   const meta = buildLocationMeta(loc.lat, loc.lng, mode, {
     label: loc.label,
