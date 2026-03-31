@@ -301,9 +301,34 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
   // ── ATTACHMENTS ──
 
   mergeAttachment: (att) =>
-    set((s) => ({
-      attachments: { ...s.attachments, [att.id]: att },
-    })),
+    set((s) => {
+      // ══ HARD GUARD: conversationId REQUIRED ══
+      if (!att.conversationId) {
+        console.error("[orbitStore.mergeAttachment] REJECTED — missing conversationId", { id: att.id, kind: att.kind });
+        return s;
+      }
+
+      // ══ KIND STABILITY: never downgrade attachment kind ══
+      const existing = s.attachments[att.id];
+      if (existing && existing.kind !== att.kind) {
+        if (import.meta.env.DEV) {
+          console.error("[orbitStore.mergeAttachment] KIND MUTATION", {
+            id: att.id, from: existing.kind, to: att.kind,
+          });
+        }
+        // Preserve original kind
+        att = { ...att, kind: existing.kind };
+      }
+
+      if (import.meta.env.DEV) {
+        console.debug("[orbitStore.mergeAttachment]", {
+          id: att.id, kind: att.kind, conversationId: att.conversationId,
+          uploadStatus: att.uploadStatus, hasLocal: !!att.localUri, hasRemote: !!att.remoteUrl,
+        });
+      }
+
+      return { attachments: { ...s.attachments, [att.id]: att } };
+    }),
 
   updateAttachmentUpload: (id, partial) =>
     set((s) => {
