@@ -43,17 +43,19 @@ interface Props {
 }
 
 /**
- * Resolve the effective media URL: prefer local preview, then remote.
+ * Resolve the effective media URL: prefer local preview, then remote, then metadata.
  */
 function resolveMediaUrl(
-  attachmentUrl: string | undefined | null,
+  msg: ChatMessage,
   attachment?: AttachmentInfo | null,
 ): string | null {
-  // Priority: local preview → local URI → remote URL → legacy attachment_url
+  // Priority: local preview → local URI → remote URL → legacy attachment_url → metadata.media.url
   if (attachment?.previewDataUrl) return attachment.previewDataUrl;
   if (attachment?.localUri) return attachment.localUri;
   if (attachment?.remoteUrl) return attachment.remoteUrl;
-  if (attachmentUrl) return attachmentUrl;
+  if (msg.attachment_url) return msg.attachment_url;
+  const meta = (msg as any).metadata_json ?? (msg as any).metadata;
+  if (meta?.media?.url) return meta.media.url;
   return null;
 }
 
