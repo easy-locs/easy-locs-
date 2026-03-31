@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
-import type { AppRole } from "@/lib/types/domain";
+import type { AppRole } from "@/domains/shared/canonical-types";
 
 // V2 OrbitProfile aligned with orbit_profiles_v2 table
 export interface OrbitProfileV2 {
