@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { initSessionLifecycle, teardownSession } from "@/lib/lifecycle/session-lifecycle";
 import {
   probeDbHealth,
   fetchUserOrgIds,
@@ -65,6 +66,9 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  // ── Initialize session lifecycle hooks (online recovery, etc.) ──
+  useEffect(() => { initSessionLifecycle(); }, []);
+
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -432,6 +436,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const emailVerified = !!user?.email_confirmed_at;
 
   const signOut = async () => {
+    // ── Full session teardown: subscriptions, queues, logs ──
+    teardownSession();
+
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
