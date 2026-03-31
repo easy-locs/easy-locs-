@@ -156,6 +156,22 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
         }
       }
 
+      // ══ BUBBLE TYPE STABILITY: never downgrade media type ══
+      if (existing && existing.type !== msg.type) {
+        const mediaTypes = ["image", "video", "voice", "audio", "file", "location_static", "location_live"];
+        if (mediaTypes.includes(existing.type) && !mediaTypes.includes(msg.type)) {
+          if (import.meta.env.DEV) {
+            console.error("[orbitStore.mergeMessage] TYPE DOWNGRADE blocked", {
+              id: msg.id, from: existing.type, to: msg.type,
+            });
+          }
+          msg = { ...msg, type: existing.type }; // preserve original media type
+        } else if (import.meta.env.DEV && existing.type !== "text") {
+          console.warn("[orbitStore.mergeMessage] TYPE CHANGE", {
+            id: msg.id, from: existing.type, to: msg.type,
+          });
+        }
+      }
       // ══ CROSS-CONVERSATION GUARD: tempId must belong to same conversation ══
       if (msg.tempId && msg.id !== msg.tempId) {
         const tempMsg = s.messages[msg.tempId];
