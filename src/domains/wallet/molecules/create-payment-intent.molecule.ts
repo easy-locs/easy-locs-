@@ -15,7 +15,7 @@ export interface PaymentIntentDraft {
 
 export function createPaymentIntentDraft(input: PaymentInput): PaymentIntentDraft {
   const validation = validatePaymentInput(input);
-  if (!validation.ok) throw new Error(validation.reason);
+  if (!validation.ok) throw new Error((validation as { ok: false; reason: string }).reason);
 
   return {
     userId: input.userId,

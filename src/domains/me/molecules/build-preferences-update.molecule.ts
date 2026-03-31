@@ -12,7 +12,7 @@ export interface PreferencesUpdate {
 
 export function buildPreferencesUpdate(input: PreferencesInput & { timezone: string }): PreferencesUpdate {
   const validation = validatePreferences(input);
-  if (!validation.ok) throw new Error(validation.reason);
+  if (!validation.ok) throw new Error((validation as { ok: false; reason: string }).reason);
 
   return {
     language: input.language,
