@@ -12,6 +12,7 @@
  */
 import type { OrbitMessage } from "../../types";
 import { generateIdempotencyKey, markMessageSeen, reconcileTempToServer } from "@/lib/dedup/message-dedup";
+import { normalizeTextInput, validateTextInput as validateTextRaw } from "../../resolvers/text.resolver";
 
 export interface SendTextInput {
   conversationId: string;
