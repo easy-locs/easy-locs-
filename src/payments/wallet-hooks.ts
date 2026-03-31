@@ -46,16 +46,19 @@ export function useWalletBalance() {
   useEffect(() => {
     load();
     if (!user?.id) return;
-    const channel = supabase
-      .channel(`wb-${user.id}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "wallet_balances_v2",
-        filter: `user_id=eq.${user.id}`,
-      }, () => load())
-      .subscribe();
-    return () => { removeRealtimeChannel(channel); };
+    const unsubRegistry = registerSubscription(`wallet.balances_v2:${user.id}`, () => {
+      const channel = supabase
+        .channel(`wb-${user.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "wallet_balances_v2",
+          filter: `user_id=eq.${user.id}`,
+        }, () => load())
+        .subscribe();
+      return () => removeRealtimeChannel(channel);
+    });
+    return () => { unsubRegistry(); };
   }, [user?.id, load]);
 
   const optimisticAdjust = useCallback((delta: number) => {
