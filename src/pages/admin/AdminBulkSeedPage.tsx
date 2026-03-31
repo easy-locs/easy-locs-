@@ -64,7 +64,7 @@ export default function AdminBulkSeedPage() {
             ranking_score: 50 + Math.floor(Math.random() * 45),
             rating: Number((3.5 + Math.random() * 1.5).toFixed(1)),
             reviews_count: Math.floor(Math.random() * 300),
-            org_id: orgMember.org_id,
+            org_id: orgId,
             user_id: user.id,
           })
           .select("id")
