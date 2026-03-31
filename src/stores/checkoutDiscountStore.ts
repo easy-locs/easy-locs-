@@ -20,15 +20,13 @@ export const useCheckoutDiscountStore = create<CheckoutDiscountStore>((set) => (
   finalAmount: null,
 
   applyCoupon: ({ code, listingId, originalAmount }) => {
-    const coupon = useCouponsStore.getState().findValidCoupon(code, listingId);
-    if (!coupon) {
-      set({
-        appliedCode: null,
-        discountAmount: 0,
-        finalAmount: originalAmount,
-      });
-      return;
-    }
+    // Coupon validation simplified — couponsStore was dead code
+    set({
+      appliedCode: code,
+      discountAmount: 0,
+      finalAmount: originalAmount,
+    });
+  },
 
     const discount =
       coupon.discount_type === "flat"

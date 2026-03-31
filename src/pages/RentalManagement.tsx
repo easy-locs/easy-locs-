@@ -20,7 +20,7 @@ import type { DocumentTemplate } from "@/lib/templates/types";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 // ── Extracted hooks (wired) ──
-import { useRentalMessages } from "@/hooks/rental/useRentalMessages";
+import { useRentalMessaging as useRentalMessages } from "@/hooks/rental/useRentalMessaging";
 import { useRentalPropertyDetail } from "@/hooks/rental/useRentalPropertyDetail";
 import { useRentalReceipts } from "@/hooks/rental/useRentalReceipts";
 import { useRentalLeaseGenerator } from "@/hooks/rental/useRentalLeaseGenerator";
