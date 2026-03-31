@@ -44,7 +44,7 @@ export async function cardBuildPipeline(
   const table = tableMap[entityType];
   if (!table) return { ok: false, error: `unknown_entity_type:${entityType}` };
 
-  const { data, error } = await supabase.from(table).select("*").eq("id", entityId).maybeSingle();
+  const { data, error } = await (supabase.from as any)(table).select("*").eq("id", entityId).maybeSingle();
   if (error || !data) return { ok: false, error: error?.message || "not_found" };
 
   // Normalize → ViewModel → Store
