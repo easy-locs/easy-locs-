@@ -3,6 +3,7 @@
  * Single responsibility: post-processing enrichment, no structural mapping.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { resolveDisplayName, resolveAvatar } from "@/domains/orbit/resolvers";
 import type { ConversationThread } from "@/components/communication-hub/types";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {

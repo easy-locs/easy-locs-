@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
+import { resolveDisplayName } from "@/domains/orbit/resolvers";
 
 interface YouIdentityCardProps {
   avatarUrl: string;
