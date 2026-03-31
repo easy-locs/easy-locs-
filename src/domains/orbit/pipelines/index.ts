@@ -25,6 +25,12 @@ export {
   resolveCanonicalMessageType,
   assertBubbleTypeStable,
 } from "./message/resolve-canonical-type";
+
+export {
+  canTransitionMessageStatus,
+  assertMessageStatusTransition,
+  resolveNextStatus,
+} from "./message/message-status.machine";
 export type { ResolveTypeInput } from "./message/resolve-canonical-type";
 
 export {
