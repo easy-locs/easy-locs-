@@ -5,7 +5,7 @@
  */
 
 /** Phase markers for tracing and debugging */
-export type PipelinePhase = "intent" | "canonical" | "optimistic" | "transport" | "reconcile";
+export type PipelinePhase = "intent" | "canonical" | "optimistic" | "transport" | "reconcile" | "preview" | "instant_insert" | "background_transport";
 
 /** Canonical result returned by every executor */
 export interface ExecutorResult {
