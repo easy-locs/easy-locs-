@@ -153,6 +153,17 @@ type PlatformEventType =
   | "qr.payment.completed"
   | "qr.payment.failed"
   | "qr.navigation"
+  // Attachment / Gallery (dot-notation — emitted by gallery-save.service)
+  | "attachment.event.gallery_saved"
+  | "attachment.event.gallery_failed"
+  | "attachment.event.preview_ready"
+  | "attachment.event.uploaded"
+  | "attachment.event.reconciled"
+  // Message lifecycle (dot-notation — emitted by command-bus)
+  | "message.event.created_optimistic"
+  | "message.event.persisted"
+  | "message.event.reconciled"
+  | "message.event.failed"
   // Radar (dot-notation — V2 cross-app)
   | "radar.location.shared"
   | "radar.pin.selected"
