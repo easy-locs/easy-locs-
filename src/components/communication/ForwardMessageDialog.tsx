@@ -90,16 +90,17 @@ export default function ForwardMessageDialog({
     setForwarding(true);
     setError(null);
     try {
-      const { insertMessage, updateConversationTimestamp } = await import("@/repositories/communication.repository");
-      await insertMessage({
+      const { orbitDispatch } = await import("@/families/orbit-dispatch/orbit-dispatch");
+      const result = await orbitDispatch({
+        type: "send_text",
         conversationId: selectedThread.conversationId,
-        senderUserId: userId,
-        senderOrbitId: `orbit_${userId.slice(0, 12)}`,
-        type: "text",
         body: messageContent,
+        locale: "en",
+        category: "general",
         metadata: { forwarded_from: messageId },
       });
-      await updateConversationTimestamp(selectedThread.conversationId);
+
+      if (!result.ok) throw new Error(result.error || "Forward failed");
 
       toast.success(
         (t("chat.forwarded_to") || "Forwarded to") + " " + (selectedThread.displayName || t("chat.conversation") || "conversation")
