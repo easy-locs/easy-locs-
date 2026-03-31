@@ -139,6 +139,35 @@ export const useCallStore = create<CallStoreState>((set, get) => ({
   transition: (state) => {
     const call = get().activeCall;
     if (!call) return;
+
+    // ══ CALL STATE MACHINE GUARD ══
+    const CALL_TRANSITIONS: Record<string, string[]> = {
+      idle: ["calling", "incoming"],
+      calling: ["ringing", "failed", "ended", "missed"],
+      ringing: ["connecting", "declined", "missed", "ended"],
+      incoming: ["connecting", "declined", "missed"],
+      connecting: ["active", "failed"],
+      active: ["ended", "reconnecting", "failed"],
+      reconnecting: ["active", "failed", "ended"],
+      ended: [],
+      missed: [],
+      declined: [],
+      failed: ["calling"],
+    };
+    const allowed = CALL_TRANSITIONS[call.uiState] || [];
+    if (!allowed.includes(state)) {
+      if (import.meta.env.DEV) {
+        console.error("[callStore.transition] BLOCKED", {
+          from: call.uiState, to: state, callId: call.callId,
+        });
+      }
+      return; // illegal transition — ignore
+    }
+
+    if (import.meta.env.DEV) {
+      console.debug("[callStore.transition]", { from: call.uiState, to: state, callId: call.callId });
+    }
+
     set({
       activeCall: { ...call, uiState: state },
       hasActiveCall: !["idle", "ended", "missed", "declined", "failed"].includes(state),
