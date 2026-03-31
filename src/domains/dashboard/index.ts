@@ -4,16 +4,14 @@
  * Dashboard ne crée AUCUNE vérité métier.
  * Dashboard lit UNIQUEMENT des vérités existantes via selectors.
  *
- * INTERDIT:
- * - recalculer Wallet
- * - recalculer Orbit
- * - recalculer Radar
- * - recalculer Me
- * - lancer des écritures métier
+ * INTERDIT: recalculer Wallet, Orbit, Radar, Me. Lancer des écritures métier.
  */
 
-// ── Types ──
+// ── Canonical Types ──
 export type { CanonicalDashboardSummary, DashboardActivityItem } from "../shared/canonical-types";
+
+// ── Atoms ──
+export { formatKpiValue, formatActivityTimestamp } from "./atoms/dashboard-format.atom";
 
 // ── Selectors (read-only projections) ──
 export { selectDashboardSummary } from "./selectors";
