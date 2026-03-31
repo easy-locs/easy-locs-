@@ -99,14 +99,14 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
             failed++;
             continue;
           }
-          await commRepo.insertMessage({
+          // Route through canonical dispatch pipeline
+          const { orbitDispatch } = await import("@/families/orbit-dispatch");
+          const result = await orbitDispatch({
+            type: "send_text",
             conversationId,
-            senderUserId: meta.userId || authUserId || "",
-            senderOrbitId: meta.orbitId || `orbit_${(meta.userId || authUserId || "").slice(0, 12)}`,
-            type: "text",
             body: msg.content,
-            metadata: msg.encrypted ? { encrypted: true } : undefined,
           });
+          if (!result.ok) throw new Error(result.error || "dispatch_failed");
 
           await dequeueMessage(msg.id);
           sent++;

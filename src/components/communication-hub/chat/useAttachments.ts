@@ -141,24 +141,20 @@ export function useAttachments(params: {
         throw new Error("File upload failed. Please try again.");
       }
 
-      const content = isMedia ? `📷 ${file.name}` : `📎 ${file.name}`;
-
-      trace("attachment.message.insert", "input", { conversationId, type: isMedia ? "media" : "file", fileName: file.name });
-      await insertMessage({
+      trace("attachment.dispatch", "input", { conversationId, type: isMedia ? "media" : "file", fileName: file.name });
+      const result = await orbitDispatch({
+        type: "send_media",
         conversationId,
-        senderUserId: authUserId,
-        senderOrbitId: params.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiverOrbitId: params.thread?.peerOrbitId ?? null,
-        type: isMedia ? "media" : "file",
-        body: content,
-        metadata: { url: finalUrl },
+        file,
+        mediaType: isMedia ? (file.type.startsWith("video/") ? "video" : "image") : "file",
+        url: finalUrl,
+        fileName: file.name,
+        mimeType: file.type,
       });
-      trace("attachment.message.insert", "output", { conversationId, inserted: true, fileName: file.name });
-
-      await updateConversationTimestamp(conversationId, content);
-      trace("attachment.preview.update", "output", { conversationId, preview: content, threadId: params.thread?.id ?? null });
-      trace("attachment.realtime.reconcile", "output", { expectedViaRealtime: true, conversationId });
-      toast.success("File sent");
+      if (!result.ok) {
+        throw new Error(result.error || "Send failed");
+      }
+      trace("attachment.dispatch", "output", { conversationId, dispatched: true, fileName: file.name });
     } catch (e: any) {
       trace("attachment.message.insert", "error", { message: e?.message || "attachment_failed" });
       toast.error(e?.message || "Upload failed");
