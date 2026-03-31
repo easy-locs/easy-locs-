@@ -7,7 +7,11 @@ export type CardCommand =
   | { type: "load_entity"; entityId: string; entityType: string }
   | { type: "load_batch"; entityIds: string[]; entityType: string }
   | { type: "refresh_entity"; entityId: string }
-  | { type: "clear_cache" };
+  | { type: "clear_cache" }
+  | { type: "contact_entity"; entityId: string; entityType: string; channel?: string }
+  | { type: "navigate_entity"; entityId: string; entityType: string }
+  | { type: "save_entity"; entityId: string; entityType: string }
+  | { type: "share_entity"; entityId: string; entityType: string };
 
 export interface CardCommandResult {
   ok: boolean;
@@ -34,6 +38,26 @@ export async function cardDispatch(cmd: CardCommand): Promise<CardCommandResult>
       case "clear_cache": {
         const { useCardStore } = await import("./card.store");
         useCardStore.getState().clear();
+        return { ok: true };
+      }
+      case "contact_entity": {
+        const { platformBus } = await import("@/lib/shared/platform-bus");
+        platformBus.emit("card:contact", { entityId: cmd.entityId, entityType: cmd.entityType, channel: cmd.channel || "chat" }, "cardDispatch");
+        return { ok: true };
+      }
+      case "navigate_entity": {
+        const { platformBus } = await import("@/lib/shared/platform-bus");
+        platformBus.emit("card:navigate", { entityId: cmd.entityId, entityType: cmd.entityType }, "cardDispatch");
+        return { ok: true };
+      }
+      case "save_entity": {
+        const { platformBus } = await import("@/lib/shared/platform-bus");
+        platformBus.emit("card:save", { entityId: cmd.entityId, entityType: cmd.entityType }, "cardDispatch");
+        return { ok: true };
+      }
+      case "share_entity": {
+        const { platformBus } = await import("@/lib/shared/platform-bus");
+        platformBus.emit("card:share", { entityId: cmd.entityId, entityType: cmd.entityType }, "cardDispatch");
         return { ok: true };
       }
       default:
