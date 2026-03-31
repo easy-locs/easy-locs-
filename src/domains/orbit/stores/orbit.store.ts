@@ -156,6 +156,22 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
         }
       }
 
+      // ══ BUBBLE TYPE STABILITY: never downgrade media type ══
+      if (existing && existing.type !== msg.type) {
+        const mediaTypes = ["image", "video", "voice", "audio", "file", "location_static", "location_live"];
+        if (mediaTypes.includes(existing.type) && !mediaTypes.includes(msg.type)) {
+          if (import.meta.env.DEV) {
+            console.error("[orbitStore.mergeMessage] TYPE DOWNGRADE blocked", {
+              id: msg.id, from: existing.type, to: msg.type,
+            });
+          }
+          msg = { ...msg, type: existing.type }; // preserve original media type
+        } else if (import.meta.env.DEV && existing.type !== "text") {
+          console.warn("[orbitStore.mergeMessage] TYPE CHANGE", {
+            id: msg.id, from: existing.type, to: msg.type,
+          });
+        }
+      }
       // ══ CROSS-CONVERSATION GUARD: tempId must belong to same conversation ══
       if (msg.tempId && msg.id !== msg.tempId) {
         const tempMsg = s.messages[msg.tempId];
@@ -248,6 +264,24 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
 
   reconcileMessage: (tempId, serverMsg) =>
     set((s) => {
+      // ══ HARD GUARD: conversationId REQUIRED ══
+      if (!serverMsg.conversationId) {
+        console.error("[orbitStore.reconcileMessage] REJECTED — missing conversationId", { tempId, id: serverMsg.id });
+        return s;
+      }
+
+      // ══ BUBBLE TYPE STABILITY: type must not change ══
+      const tempMsg = s.messages[tempId];
+      if (tempMsg && tempMsg.type !== serverMsg.type) {
+        if (import.meta.env.DEV) {
+          console.error("[orbitStore.reconcileMessage] TYPE MUTATION", {
+            tempId, from: tempMsg.type, to: serverMsg.type,
+          });
+        }
+        // Preserve original type — never downgrade media → text
+        serverMsg = { ...serverMsg, type: tempMsg.type };
+      }
+
       // Remove temp message, insert server message
       const { [tempId]: removed, ...restMessages } = s.messages;
       restMessages[serverMsg.id] = serverMsg;
@@ -283,14 +317,49 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
   // ── ATTACHMENTS ──
 
   mergeAttachment: (att) =>
-    set((s) => ({
-      attachments: { ...s.attachments, [att.id]: att },
-    })),
+    set((s) => {
+      // ══ HARD GUARD: conversationId REQUIRED ══
+      if (!att.conversationId) {
+        console.error("[orbitStore.mergeAttachment] REJECTED — missing conversationId", { id: att.id, kind: att.kind });
+        return s;
+      }
+
+      // ══ KIND STABILITY: never downgrade attachment kind ══
+      const existing = s.attachments[att.id];
+      if (existing && existing.kind !== att.kind) {
+        if (import.meta.env.DEV) {
+          console.error("[orbitStore.mergeAttachment] KIND MUTATION", {
+            id: att.id, from: existing.kind, to: att.kind,
+          });
+        }
+        // Preserve original kind
+        att = { ...att, kind: existing.kind };
+      }
+
+      if (import.meta.env.DEV) {
+        console.debug("[orbitStore.mergeAttachment]", {
+          id: att.id, kind: att.kind, conversationId: att.conversationId,
+          uploadStatus: att.uploadStatus, hasLocal: !!att.localUri, hasRemote: !!att.remoteUrl,
+        });
+      }
+
+      return { attachments: { ...s.attachments, [att.id]: att } };
+    }),
 
   updateAttachmentUpload: (id, partial) =>
     set((s) => {
       const att = s.attachments[id];
       if (!att) return s;
+      // ══ KIND STABILITY: never allow kind change through partial update ══
+      if ('kind' in partial && partial.kind !== att.kind) {
+        if (import.meta.env.DEV) {
+          console.error("[orbitStore.updateAttachmentUpload] KIND MUTATION blocked", {
+            id, from: att.kind, to: partial.kind,
+          });
+        }
+        const { kind: _, ...safePartial } = partial as any;
+        return { attachments: { ...s.attachments, [id]: { ...att, ...safePartial } } };
+      }
       return { attachments: { ...s.attachments, [id]: { ...att, ...partial } } };
     }),
 
