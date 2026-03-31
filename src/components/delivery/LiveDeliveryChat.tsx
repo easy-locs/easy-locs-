@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
+import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { sendText } from "@/families/send/send-text";
 import { sendLocation } from "@/families/send/send-location";
