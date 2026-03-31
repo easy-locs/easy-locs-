@@ -13,6 +13,7 @@ import { MessageBubbleRouter } from "./chat/bubbles/MessageBubbleRouter";
 import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
 import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
 import { useScopedMessageAttachment } from "@/domains/orbit/selectors/useScopedMessageAttachment";
+import { resolveSenderDisplay, isSystemMessage } from "@/domains/orbit/resolvers";
 
 // haptic removed — gestures handled by OrbitMessageInteractiveWrapper
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
@@ -21,7 +22,7 @@ import ThreadActionCard, { parseActionFromMessage } from "@/components/orbit/Thr
 import type { ChatMessage } from "./types";
 import { MESSAGE_CATEGORIES } from "./types";
 
-const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
+// SYSTEM_SENDER_ID moved to canonical resolver — isSystemMessage()
 
 interface Props {
   msg: ChatMessage;
@@ -75,7 +76,7 @@ function ChatMessageBubble({
     attachmentIds,
   );
 
-  const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
+  const isSystem = isSystemMessage(msg);
   const isDeleted = !!(msg as any).deleted_for_all;
   const isInboundEmail = msg.message_type === "inbound_email";
   const isPayment = !isDeleted && msg.content?.startsWith("💳");
@@ -269,12 +270,15 @@ function ChatMessageBubble({
           </div>
         )}
 
-        {/* Sender name for received messages (first in group only) */}
-        {!isMe && !isConsecutive && (
-          <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
-            {msg.contact_name || threadName || "Contact"}
-          </p>
-        )}
+        {/* Sender name — resolved via canonical identity resolver */}
+        {!isMe && !isConsecutive && (() => {
+          const senderInfo = resolveSenderDisplay(msg, currentUserId, { name: threadName });
+          return (
+            <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
+              {senderInfo.displayName}
+            </p>
+          );
+        })()}
 
         {/* Email indicator */}
         {isInboundEmail && (

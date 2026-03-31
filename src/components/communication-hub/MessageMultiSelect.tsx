@@ -6,6 +6,7 @@
  */
 import { useState } from "react";
 import { Trash2, Copy, Forward, X, EyeOff } from "lucide-react";
+import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -41,7 +42,7 @@ export default function MessageMultiSelectToolbar({
   if (count === 0) return null;
 
   const selectedMessages = messages.filter(m => selectedIds.has(m.id));
-  const allMine = selectedMessages.every(m => m.sender_id === currentUserId);
+  const allMine = selectedMessages.every(m => isOutgoingMessage(m, currentUserId));
 
   const handleCopyAll = () => {
     const text = selectedMessages.map(m => m.content).join("\n\n");
@@ -58,7 +59,7 @@ export default function MessageMultiSelectToolbar({
     try {
       for (const id of ids) {
         const msg = messages.find(m => m.id === id);
-        if (msg && msg.sender_id === currentUserId) {
+        if (msg && isOutgoingMessage(msg, currentUserId)) {
           await deleteMessageForSender(id);
         } else if (currentUserId) {
           await deleteMessageForUser(id, currentUserId);
