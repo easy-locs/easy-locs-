@@ -33,6 +33,6 @@ export function useChatAutoScroll(
         });
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, deps);
 }

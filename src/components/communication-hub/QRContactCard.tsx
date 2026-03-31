@@ -104,7 +104,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, init
     if (open && initialMode === "scan") {
       startScannerFn();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [open, initialMode]);
 
   const handleScannedData = useCallback(async (raw: string) => {
