@@ -20,7 +20,7 @@ import type { DocumentTemplate } from "@/lib/templates/types";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 // ── Extracted hooks (wired) ──
-import { useRentalMessages } from "@/hooks/rental/useRentalMessages";
+import { useRentalMessaging as useRentalMessages } from "@/hooks/rental/useRentalMessaging";
 import { useRentalPropertyDetail } from "@/hooks/rental/useRentalPropertyDetail";
 import { useRentalReceipts } from "@/hooks/rental/useRentalReceipts";
 import { useRentalLeaseGenerator } from "@/hooks/rental/useRentalLeaseGenerator";
@@ -160,7 +160,7 @@ const RentalManagement = () => {
   const tenantFormConfig = useMemo(() => getCountryConfig(tenantFormCountry), [tenantFormCountry]);
 
   // ── Wired extracted hooks ──
-  const { messages, newMessage, setNewMessage, loadMessages, sendMessage } = useRentalMessages(selectedTenant?.id ?? null);
+  const { messages, newMessage, setNewMessage, loadMessages, sendMessage } = useRentalMessages(orgId ?? null, selectedTenant?.id ?? null, user?.id);
   const { payingRentId, generateReceiptForPayment, handlePayRent } = useRentalReceipts(properties, tenants, userCountry);
   const { autoGenerateLease, autoGenerateFirstRentCall } = useRentalLeaseGenerator(properties, userCountry);
   const { notifyingRentId, invitingTenantId, setInvitingTenantId, handleNotifyRentCall } = useRentalNotifications(tenants, userCountry);
@@ -286,7 +286,7 @@ const RentalManagement = () => {
   /* ─── Message handler (delegates to extracted hook) ─── */
   const handleSendMessage = async () => {
     if (!selectedTenant) return;
-    await sendMessage(selectedTenant);
+    await sendMessage();
   };
 
   const handleInviteTenant = async (tenant: Tenant) => { setInvitingTenantId(tenant.id); await sendTenantInvite(tenant); setInvitingTenantId(null); };
