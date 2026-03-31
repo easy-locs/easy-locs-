@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
+import { resolveDisplayName } from "@/domains/orbit/resolvers";
 
 interface YouIdentityCardProps {
   avatarUrl: string;
@@ -40,7 +41,7 @@ export default function YouIdentityCard({
     >
       <div className="flex items-center gap-4">
         <div className="relative">
-          <IdentityAvatar avatarUrl={avatarUrl} name={displayName || email} size="xl" />
+          <IdentityAvatar avatarUrl={avatarUrl} name={resolveDisplayName({ displayName, email })} size="xl" />
           <div
             className="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center"
             style={{ background: "hsl(var(--primary))", borderColor: "hsl(var(--background))" }}
@@ -51,7 +52,7 @@ export default function YouIdentityCard({
 
         <div className="flex-1 min-w-0">
           <p className="text-lg font-semibold leading-tight" style={{ color: "hsl(var(--foreground))" }}>
-            {displayName || email}
+            {resolveDisplayName({ displayName, email })}
           </p>
           {username && (
             <p className="text-sm font-mono mt-0.5" style={{ color: "hsl(var(--primary))" }}>

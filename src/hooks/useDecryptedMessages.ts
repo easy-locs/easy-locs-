@@ -4,6 +4,7 @@
  * Non-encrypted messages pass through unchanged.
  */
 import { useState, useEffect, useRef } from "react";
+import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 import { decompressMessage } from "@/lib/orbit-message-compress";
 interface DecryptableMessage {
   id: string;
@@ -63,7 +64,7 @@ export function useDecryptedMessages(
         }
 
         try {
-          const peerId = msg.sender_id === userId ? userId : msg.sender_id;
+          const peerId = isOutgoingMessage(msg, userId) ? userId : msg.sender_id;
           const plain = await decrypt(msg.content, peerId);
           let finalContent = plain || "🔒 [Encrypted message]";
           // Decompress if compressed
