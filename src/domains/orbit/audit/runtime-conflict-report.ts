@@ -1,0 +1,292 @@
+/**
+ * ORBIT RUNTIME CONFLICT REPORT — Post-Canonical Audit
+ * Generated: 2026-03-31
+ * 
+ * This file documents ALL identified conflicts, their status, and resolution.
+ * It serves as the living audit record for the "0 Conflit" governance.
+ */
+
+// ══════════════════════════════════════════════
+// 1. BLOCKS STILL TOO LARGE
+// ══════════════════════════════════════════════
+
+export const LARGE_BLOCKS = [
+  {
+    file: "src/components/communication-hub/HudChatPanel.tsx",
+    lines: 640,
+    issue: "Orchestrates messages, calls, attachments, payments, media, contacts, security, selection — too many responsibilities",
+    severity: "medium",
+    status: "accepted_transitional",
+    reason: "Each responsibility is delegated to a family hook. The file is a THIN ASSEMBLER, not a monolith. Splitting further would create prop-drilling chaos.",
+  },
+  {
+    file: "src/components/communication-hub/chat/useMessageLoader.ts",
+    lines: 435,
+    issue: "Owns realtime subscription + message loading + markRead + typing + cache",
+    severity: "high",
+    status: "partially_resolved",
+    reason: "markRead extracted to receipt.controller. Realtime is per-conversation (correct). Typing is co-located with presence channel.",
+  },
+  {
+    file: "src/components/communication-hub/useConversationThreads.ts",
+    lines: 166,
+    issue: "Owns local thread state + realtime inbox listener",
+    severity: "medium",
+    status: "accepted_transitional",
+    reason: "Inbox realtime uses debounced reload pattern, not raw injection. Thread state is view-local. Will migrate to orbitStore when full local-first is implemented.",
+  },
+  {
+    file: "src/hooks/useMessageSender.ts",
+    lines: 306,
+    issue: "Competing write path alongside orbitDispatch",
+    severity: "high",
+    status: "deprecated",
+    reason: "Marked @deprecated. Runtime still uses it via HudChatPanel but will be migrated to orbitDispatch exclusively.",
+  },
+] as const;
+
+// ══════════════════════════════════════════════
+// 2. COMPETING WRITE PATHS (PORTES CONCURRENTES)
+// ══════════════════════════════════════════════
+
+export const COMPETING_WRITE_PATHS = [
+  {
+    name: "useMessageSender.handleSend",
+    file: "src/hooks/useMessageSender.ts",
+    flow: "text_message_send",
+    mutates: "rawMessages local state via setRawMessages",
+    bypasses: "orbitStore (does not inject into canonical store)",
+    danger: "P2",
+    status: "deprecated_in_progress",
+    resolution: "Will be replaced by orbitDispatch.send_text which goes through families/send/sendText",
+  },
+  {
+    name: "createOrGetDirectConversation",
+    file: "src/lib/orbit/createOrGetDirectConversation.ts",
+    flow: "direct_conversation_create",
+    mutates: "conversations_v2 directly",
+    bypasses: "domains/orbit/services/createDirectConversation",
+    danger: "P2",
+    status: "legacy_active",
+    resolution: "Used by conversation-resolver. Should delegate to canonical pipeline but functionally equivalent.",
+  },
+  {
+    name: "sendPaymentReceiptToThread / sendPaymentRequestMessageToThread",
+    file: "src/components/chat/ChatPaymentCards.tsx",
+    flow: "payment_message_send",
+    mutates: "chat_messages_v2 via insertMessage",
+    bypasses: "orbitDispatch (no send_payment command exists yet)",
+    danger: "P3",
+    status: "accepted_specialized",
+    resolution: "Payment messages are a specialized domain. Will add send_payment command to orbitDispatch later.",
+  },
+  {
+    name: "useMessageLoader inline markRead",
+    file: "src/components/communication-hub/chat/useMessageLoader.ts",
+    flow: "read_receipts",
+    mutates: "chat_messages_v2.read_at directly",
+    bypasses: "receipt.controller (newly created)",
+    danger: "P1",
+    status: "resolved",
+    resolution: "Extracted to receipt.controller.ts. useMessageLoader now delegates.",
+  },
+  {
+    name: "LiveDeliveryChat.sendMessage",
+    file: "src/components/delivery/LiveDeliveryChat.tsx",
+    flow: "delivery_chat_send",
+    mutates: "chat_messages_v2 via insertMessage",
+    bypasses: "Not Orbit domain — delivery-specific chat",
+    danger: "P3",
+    status: "accepted_external",
+    resolution: "Delivery chat is a separate domain. Not part of Orbit scope.",
+  },
+  {
+    name: "useRentalMessaging.sendMessage",
+    file: "src/hooks/rental/useRentalMessaging.ts",
+    flow: "rental_chat_send",
+    mutates: "chat_messages_v2",
+    bypasses: "Not Orbit domain — rental-specific chat",
+    danger: "P3",
+    status: "accepted_external",
+    resolution: "Rental messaging is a separate domain.",
+  },
+] as const;
+
+// ══════════════════════════════════════════════
+// 3. COMPETING REALTIME LISTENERS
+// ══════════════════════════════════════════════
+
+export const COMPETING_LISTENERS = [
+  {
+    name: "useMessageLoader per-conversation listener",
+    file: "src/components/communication-hub/chat/useMessageLoader.ts",
+    table: "chat_messages_v2",
+    filter: "conversation_id=eq.{id}",
+    mutates: "rawMessages local state",
+    status: "active_primary",
+    note: "This IS the runtime message listener. orbit-realtime-owner.ts is the CANONICAL but not yet wired to runtime.",
+  },
+  {
+    name: "orbit-realtime-owner subscribeConversationMessages",
+    file: "src/domains/orbit/realtime/orbit-realtime-owner.ts",
+    table: "chat_messages_v2",
+    filter: "conversation_id=eq.{id}",
+    mutates: "orbitStore",
+    status: "canonical_not_active",
+    note: "Created as canonical layer but not mounted in runtime. Will replace useMessageLoader listener when orbitStore becomes primary.",
+  },
+  {
+    name: "useConversationThreads inbox listener",
+    file: "src/components/communication-hub/useConversationThreads.ts",
+    table: "conversations_v2, call_logs, conversation_preferences",
+    filter: "various",
+    mutates: "local threads state",
+    status: "active_primary",
+    note: "Legitimate inbox-level listener. Does debounced full reload. NOT conflicting with message-level listeners.",
+  },
+  {
+    name: "rental-data realtime listener",
+    file: "src/repositories/rental-data.repository.ts",
+    table: "chat_messages_v2",
+    filter: "tenant-specific",
+    mutates: "rental UI state",
+    status: "accepted_external",
+    note: "Rental domain owns this. Not Orbit scope.",
+  },
+] as const;
+
+// ══════════════════════════════════════════════
+// 4. COMPETING STORES / FAMILIES
+// ══════════════════════════════════════════════
+
+export const COMPETING_STORES = [
+  {
+    name: "useMessageLoader rawMessages state",
+    file: "src/components/communication-hub/chat/useMessageLoader.ts",
+    owns: "messages for active conversation",
+    competing_with: "orbitStore.messages",
+    status: "active_primary",
+    resolution: "This is the RUNTIME truth for messages. orbitStore is the CANONICAL truth not yet wired. Transition in progress.",
+  },
+  {
+    name: "useConversationThreads threads state",
+    file: "src/components/communication-hub/useConversationThreads.ts",
+    owns: "inbox thread list",
+    competing_with: "orbitStore.conversations",
+    status: "active_primary",
+    resolution: "Inbox uses enriched ConversationThread type with business metadata. orbitStore uses OrbitConversation. Will converge when view-model layer bridges them.",
+  },
+  {
+    name: "orbitStore (domains/orbit)",
+    file: "src/domains/orbit/stores/orbit.store.ts",
+    owns: "conversations, messages, attachments, receipts canonical",
+    competing_with: "runtime local states above",
+    status: "canonical_not_primary",
+    resolution: "Will become primary when runtime migration completes.",
+  },
+  {
+    name: "composerStore",
+    file: "src/stores/orbit/composer.store.ts",
+    owns: "drafts, replies, edits, sending locks",
+    competing_with: "nothing — single owner",
+    status: "canonical_active",
+    resolution: "No conflict. Sole owner of composer state.",
+  },
+  {
+    name: "callStore",
+    file: "src/stores/orbit/call.store.ts",
+    owns: "call sessions, active call, streams",
+    competing_with: "nothing — single owner",
+    status: "canonical_active",
+    resolution: "No conflict. Sole owner of call state.",
+  },
+] as const;
+
+// ══════════════════════════════════════════════
+// 5. PAGES / COMPONENTS TOO RESPONSIBLE
+// ══════════════════════════════════════════════
+
+export const OVERSIZED_COMPONENTS = [
+  {
+    file: "src/components/communication-hub/HudChatPanel.tsx",
+    responsibilities: ["messages", "calls", "attachments", "payments", "media", "contacts", "security", "selection", "deals"],
+    status: "thin_assembler",
+    note: "Each responsibility is a family hook. No business logic in the file itself. Acceptable as assembler.",
+  },
+  {
+    file: "src/pages/CommunicationCenter.tsx",
+    responsibilities: ["thread list", "thread selection", "tab navigation", "search"],
+    status: "acceptable",
+    note: "Page-level orchestration. Normal scope.",
+  },
+] as const;
+
+// ══════════════════════════════════════════════
+// 6. EXTRACTIONS MADE
+// ══════════════════════════════════════════════
+
+export const EXTRACTIONS = [
+  "receipt.controller.ts — centralized markRead replacing inline DB calls",
+  "ChatProvider removed from App.tsx (was empty shell)",
+  "useMessageLoader markRead delegated to receipt.controller",
+  "runtime-conflict-report.ts — living audit document",
+] as const;
+
+// ══════════════════════════════════════════════
+// 7. SUPPRESSIONS MADE
+// ══════════════════════════════════════════════
+
+export const SUPPRESSIONS = [
+  "ChatProvider import removed from App.tsx",
+  "ChatProvider wrapper removed from App.tsx render tree",
+  "Inline markRead DB calls in useMessageLoader replaced with receipt.controller",
+] as const;
+
+// ══════════════════════════════════════════════
+// 8. FLUX REDIRECTIONS
+// ══════════════════════════════════════════════
+
+export const REDIRECTIONS = [
+  {
+    from: "useMessageLoader inline read_at update",
+    to: "receipt.controller.markConversationMessagesRead",
+    status: "done",
+  },
+  {
+    from: "useMessageLoader inline read_at on realtime INSERT",
+    to: "receipt.controller.markSingleMessageRead",
+    status: "done",
+  },
+] as const;
+
+// ══════════════════════════════════════════════
+// 9. REMAINING POINTS (KEPT TEMPORARILY)
+// ══════════════════════════════════════════════
+
+export const REMAINING_TEMPORARY = [
+  {
+    item: "useMessageSender still used as runtime write path",
+    reason: "Full migration to orbitDispatch requires wiring optimistic UI through orbitStore, which is the next phase.",
+    risk: "low — useMessageSender delegates to families/send which is canonical DB layer",
+  },
+  {
+    item: "createOrGetDirectConversation still used by conversation-resolver",
+    reason: "Functionally equivalent to canonical pipeline. Migration is cosmetic at this point.",
+    risk: "low",
+  },
+  {
+    item: "useConversationThreads owns inbox state locally",
+    reason: "Thread list uses enriched types not yet in orbitStore. Will converge with view-model migration.",
+    risk: "low",
+  },
+  {
+    item: "useMessageLoader owns message state locally",
+    reason: "Runtime primary. orbitStore is canonical but not yet primary. Phase 2 migration.",
+    risk: "medium — two sources of truth exist but don't conflict because they serve different consumers",
+  },
+  {
+    item: "orbit-realtime-owner not mounted in runtime",
+    reason: "Canonical realtime layer ready but not wired. useMessageLoader handles runtime. Will switch when orbitStore becomes primary.",
+    risk: "low",
+  },
+] as const;
