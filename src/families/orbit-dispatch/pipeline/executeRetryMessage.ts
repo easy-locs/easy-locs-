@@ -42,9 +42,13 @@ export async function executeRetryMessage(
       }
       return { ok: false, error: `retry_blocked_status_${msg.status}`, phase: "canonical" };
     }
-    exitPhase(trace);
 
-    // ── Phase 3: Optimistic — transition to retrying ──
+    const messageType = msg.type;
+    if (import.meta.env.DEV) {
+      console.debug("[executeRetryMessage] Message eligible for retry", {
+        messageId: cmd.messageId, type: messageType,
+      });
+    }
     enterPhase(trace, "optimistic");
     store.updateMessageStatus(cmd.messageId, "retrying");
 
