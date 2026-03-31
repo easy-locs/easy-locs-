@@ -108,3 +108,32 @@ export {
   markSingleMessageRead,
   clearMarkedUnread,
 } from "./controllers";
+
+// ── Domain Services ──
+export { sendMedia, reconcileMediaUpload, failMediaUpload, retryMediaUpload } from "./media";
+export { sendVoice, reconcileVoiceUpload, failVoiceUpload } from "./voice";
+export { sendLocation } from "./location";
+
+// ── Domain Sub-modules ──
+export { normalizeAttachment as normalizeAttachmentFromRaw } from "./attachments";
+export { canTransitionUpload, canTransitionDownload, isUploadTerminal, isUploadRetryable } from "./attachments";
+export { canTransitionVoice, assertVoiceTransition, isVoiceActive, isVoiceTerminal } from "./voice";
+export { isValidCoords, isAccuracySufficient } from "./location";
+
+// ── Location pipeline ──
+export {
+  validateLocationInput,
+  buildLocationPayload,
+  buildOptimisticLocationMessage,
+} from "./pipelines/message/send-location.pipeline";
+
+// ── Media selectors ──
+export {
+  selectAttachmentsForMessage,
+  selectAttachment,
+  selectPendingUploads,
+  selectFailedUploads,
+  hasActiveUploads,
+  selectUploadProgress,
+  selectAttachmentDisplayUrl,
+} from "./media";
