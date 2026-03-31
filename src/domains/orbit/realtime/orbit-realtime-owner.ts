@@ -22,6 +22,40 @@ import {
 const activeChannels = new Map<string, any>();
 
 // ══════════════════════════════════════════════
+// RECEIPT-ONLY UPDATE DETECTION
+// ══════════════════════════════════════════════
+
+/** Fields that indicate a receipt-only update (no business content change) */
+const RECEIPT_FIELDS = ["delivered_at", "read_at", "status"];
+const CONTENT_FIELDS = [
+  "body", "type", "attachment_url", "metadata",
+  "edited_at", "edited_body", "reply_to_message_id",
+  "deleted_for_all", "deleted_for_sender", "deleted_at",
+  "starred", "pinned_at",
+];
+
+/**
+ * Detect if a realtime UPDATE only changed receipt-related fields.
+ * If true, the update must route exclusively through the receipt handler.
+ */
+function isReceiptOnlyUpdate(oldRow: any, newRow: any): boolean {
+  if (!oldRow || !newRow) return false;
+
+  // Check if any receipt field actually changed
+  const hasReceiptChange = RECEIPT_FIELDS.some(
+    (f) => oldRow[f] !== newRow[f]
+  );
+  if (!hasReceiptChange) return false;
+
+  // Check if any content field also changed — if so, it's a mixed update
+  const hasContentChange = CONTENT_FIELDS.some(
+    (f) => oldRow[f] !== newRow[f]
+  );
+
+  return !hasContentChange;
+}
+
+// ══════════════════════════════════════════════
 // MESSAGE SUBSCRIPTION (per conversation)
 // ══════════════════════════════════════════════
 
