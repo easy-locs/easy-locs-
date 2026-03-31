@@ -34608,6 +34608,7 @@ export type Database = {
       increment_listing_views: { Args: { p_slug: string }; Returns: undefined }
       increment_popularity: { Args: { place_id: string }; Returns: undefined }
       is_admin: { Args: { _user_id?: string }; Returns: boolean }
+      is_admin_user: { Args: { _user_id: string }; Returns: boolean }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean

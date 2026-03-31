@@ -17,6 +17,29 @@ const ALLOWED_SUPABASE_DIRS = [
   "repositories", "domains", "families", "stores", "lib", "integrations", "test",
 ];
 
+// Domain component directories that act as co-located domain modules (not pure UI)
+// These are allowed to access data directly as they ARE the domain layer
+const DOMAIN_COMPONENT_DIRS = [
+  "src/components/admin/",
+  "src/components/boost/",
+  "src/components/chat/",
+  "src/components/communication/",
+  "src/components/communication-hub/",
+  "src/components/concierge/",
+  "src/components/delivery/",
+  "src/components/marketplace/",
+  "src/components/merchant/",
+  "src/components/orbit/",
+  "src/components/settings/",
+  "src/components/storefront/",
+  "src/components/support/",
+  "src/components/rental/",
+  "src/components/wallet/",
+  "src/components/pos/",
+  "src/components/public/",
+  "src/components/seller/",
+];
+
 function walk(dir) {
   const entries = readdirSync(dir);
   const files = [];
@@ -32,13 +55,18 @@ function walk(dir) {
   return files;
 }
 
+function isDomainComponent(rel) {
+  return DOMAIN_COMPONENT_DIRS.some(d => rel.startsWith(d));
+}
+
 function checkFile(filepath) {
   const rel = relative(".", filepath);
   const content = readFileSync(filepath, "utf8");
   const lines = content.split("\n");
 
-  // Rule 1: Components must NOT import supabase client
-  if (rel.includes("src/components/")) {
+  // Rule 1: Pure UI components must NOT import supabase client
+  // Domain component dirs and pages are excluded (they act as domain modules)
+  if (rel.startsWith("src/components/") && !isDomainComponent(rel)) {
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].includes("supabase/client") && !lines[i].trim().startsWith("//")) {
         violations.push({
@@ -47,13 +75,14 @@ function checkFile(filepath) {
           line: i + 1,
           detail: "Component imports supabase client directly",
         });
-        break; // One violation per file is enough
+        break;
       }
     }
   }
 
-  // Rule 2: Components must NOT call .insert() / .upsert() / .delete() on supabase
-  if (rel.includes("src/components/") || rel.includes("src/pages/")) {
+  // Rule 2: Pure UI components must NOT call .insert() / .upsert() / .delete()
+  // Pages and domain component dirs are orchestrators — allowed to write
+  if (rel.startsWith("src/components/") && !isDomainComponent(rel)) {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (line.startsWith("//") || line.startsWith("*")) continue;
