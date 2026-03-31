@@ -59,4 +59,5 @@ export const OrbitEntry = {
 } as const;
 
 /** Flat union of all entry keys */
-export type OrbitEntryKey = typeof OrbitEntry[keyof typeof OrbitEntry][keyof any];
+type EntryValues<T> = T extends Record<string, infer V> ? V : never;
+export type OrbitEntryKey = EntryValues<typeof OrbitEntry[keyof typeof OrbitEntry]>;
