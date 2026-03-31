@@ -38,11 +38,11 @@ export function useComposerViewModel(conversationId: string | null): ComposerVie
       draftText: draft,
       hasReply: !!reply,
       replyToMessageId: reply?.msgId ?? null,
-      replyPreview: reply?.preview ?? null,
+      replyPreview: reply?.content ?? null,
       hasEdit: !!edit,
-      editMessageId: edit?.msgId ?? null,
-      editContent: edit?.content ?? null,
-      isSending: !!sendingLock[key],
+      editMessageId: edit?.messageId ?? null,
+      editContent: edit?.originalBody ?? null,
+      isSending: !!sending[key],
     };
-  }, [conversationId, drafts, replies, edits, sendingLock]);
+  }, [conversationId, drafts, replies, edits, sending]);
 }
