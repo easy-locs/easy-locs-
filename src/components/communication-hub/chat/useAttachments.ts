@@ -142,14 +142,20 @@ export function useAttachments(params: {
       }
 
       trace("attachment.dispatch", "input", { conversationId, type: isMedia ? "media" : "file", fileName: file.name });
+      const orgId = params.orgId || "orbit";
       const result = await orbitDispatch({
         type: "send_media",
         conversationId,
         file,
-        mediaType: isMedia ? (file.type.startsWith("video/") ? "video" : "image") : "file",
-        url: finalUrl,
-        fileName: file.name,
-        mimeType: file.type,
+        caption: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
+        uploadFn: async (f, p, onProgress) => {
+          onProgress(0);
+          const url = await uploadFile(f, p);
+          onProgress(100);
+          if (!url) throw new Error("Upload failed");
+          return url;
+        },
+        pathPrefix: `${orgId}/${params.thread!.id}`,
       });
       if (!result.ok) {
         throw new Error(result.error || "Send failed");
