@@ -14,6 +14,7 @@ import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
 import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
 import { useScopedMessageAttachment } from "@/domains/orbit/selectors/useScopedMessageAttachment";
 import { resolveSenderDisplay, isSystemMessage } from "@/domains/orbit/resolvers";
+import { useBubbleReadModel } from "@/domains/orbit/read-models/useBubbleReadModel";
 
 // haptic removed — gestures handled by OrbitMessageInteractiveWrapper
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
