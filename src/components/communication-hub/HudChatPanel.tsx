@@ -400,25 +400,19 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
         {/* ── COMPOSER FAMILY UI — hidden during selection mode ── */}
         {!selection.selectMode && globalSelectionMode !== "selecting" && (
-          <MessageComposer
+          <ComposerShell
             key={currentConversationId}
+            conversationId={currentConversationId}
             value={storeDraft}
             sending={!!composerStore.sending[currentConversationId]}
             uploading={attFamily.attachments.uploading}
             voiceRecording={compFamily.voiceRecorder.recording}
             voicePreview={compFamily.voicePreview}
             voiceDuration={compFamily.voiceRecorder.duration}
-            replyTo={composerStore.replies[currentConversationId] ? { content: composerStore.replies[currentConversationId]!.content, senderName: composerStore.replies[currentConversationId]!.senderName } : null}
             onChange={(v: string) => {
               setStoreDraft(v);
             }}
             onSend={stableHandleSend}
-            onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void stableHandleSend();
-              }
-            }}
             onTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
             attachmentActions={{
               onFileUpload: attFamily.attachments.handleFileUpload,
@@ -432,7 +426,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             onCancelVoice={compFamily.cancelVoice}
             onSendVoice={compFamily.handleVoiceSend}
             onDiscardVoice={compFamily.discardVoice}
-            onClearReply={() => { composerStore.clearReply(currentConversationId); }}
           />
         )}
 
