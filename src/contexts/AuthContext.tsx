@@ -93,14 +93,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkDbHealth = useCallback(async (traceId: string) => {
     try {
       const start = Date.now();
-      await withTimeout(
-        supabase.from("profiles").select("id").limit(1),
-        "DB_HEALTH_CHECK"
-      );
+      const isUp = await withTimeout(probeDbHealth(), "DB_HEALTH_CHECK");
       authLog("LOGIN_PROFILE_HYDRATE_RESULT", {
-        traceId, step: "DB_HEALTH", status: "UP", durationMs: Date.now() - start,
+        traceId, step: "DB_HEALTH", status: isUp ? "UP" : "DOWN", durationMs: Date.now() - start,
       });
-      return true;
+      return isUp;
     } catch {
       authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
         traceId, step: "DB_HEALTH", status: "DOWN",
