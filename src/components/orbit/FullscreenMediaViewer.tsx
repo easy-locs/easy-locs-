@@ -4,8 +4,10 @@
  * Isolated from thread state. Mobile-safe with safe-area layout.
  */
 import { memo, useCallback, useEffect, useState } from "react";
-import { X, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Download, ChevronLeft, ChevronRight, Save } from "lucide-react";
 import { useGroupedMediaViewer } from "@/families/media/media-group";
+import { saveMediaToGallery } from "@/domains/orbit/services/gallery-save.service";
+import { toast } from "sonner";
 
 function FullscreenMediaViewerInner() {
   const { isOpen, items, currentIndex, close, next, prev, goTo } = useGroupedMediaViewer();
@@ -39,17 +41,21 @@ function FullscreenMediaViewerInner() {
     }
   }, [isOpen]);
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     if (!currentItem) return;
-    const a = document.createElement("a");
-    a.href = currentItem.url;
-    a.download = currentItem.url.split("/").pop() || "download";
-    a.target = "_blank";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }, [currentItem]);
+    const result = await saveMediaToGallery({
+      conversationId: "",
+      attachmentId: `viewer_${currentIndex}`,
+      mediaType: (currentItem.kind as any) || "image",
+      source: { remoteUrl: currentItem.url },
+      actorId: "viewer",
+    });
+    if (result.success) {
+      toast.success("Saved to gallery");
+    } else if (result.error !== "idempotent_skip") {
+      toast.error("Save failed");
+    }
+  }, [currentItem, currentIndex]);
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
