@@ -418,6 +418,8 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
   getMessagesForConversation: (conversationId) => {
     const s = get();
     const ids = s.messagesByConversation[conversationId] || [];
-    return ids.map((id) => s.messages[id]).filter(Boolean);
+    return ids
+      .map((id) => s.messages[id])
+      .filter((m): m is OrbitMessage => !!m && m.conversationId === conversationId);
   },
 }));
