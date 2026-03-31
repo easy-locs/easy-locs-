@@ -40,10 +40,15 @@ export async function fetchOrbitProfile(userId: string) {
   return data;
 }
 
+/** @deprecated Delegates to canonical createConversation */
 export async function createConversation(payload: Record<string, any>) {
-  const { data, error } = await (supabase as any).from("conversations_v2").insert(payload).select("id, type, title, created_at, created_by_orbit_id").single();
-  if (error) throw error;
-  return data;
+  const { createConversation: canonical } = await import("@/repositories/communication.repository");
+  return canonical({
+    type: payload.type ?? "group",
+    title: payload.title ?? "",
+    participants: payload.participants ?? [],
+    createdByOrbitId: payload.created_by_orbit_id ?? null,
+  });
 }
 
 export async function insertGroupMember(groupId: string, userId: string, role: string) {
