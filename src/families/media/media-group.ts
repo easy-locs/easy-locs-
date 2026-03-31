@@ -152,10 +152,20 @@ export const useGroupedMediaViewer = create<GroupViewerState>((set, get) => ({
   items: [],
   currentIndex: 0,
 
-  open: (items, startIndex = 0) =>
-    set({ isOpen: true, items, currentIndex: startIndex }),
+  open: (items, startIndex = 0) => {
+    set({ isOpen: true, items, currentIndex: startIndex });
+    // Sync to global overlay store (SSOT bridge)
+    import("@/stores/overlay.store").then(({ useOverlayStore }) => {
+      useOverlayStore.getState().openOverlay("mediaViewer", { items, currentIndex: startIndex });
+    });
+  },
 
-  close: () => set({ isOpen: false, items: [], currentIndex: 0 }),
+  close: () => {
+    set({ isOpen: false, items: [], currentIndex: 0 });
+    import("@/stores/overlay.store").then(({ useOverlayStore }) => {
+      useOverlayStore.getState().closeOverlay("mediaViewer");
+    });
+  },
 
   goTo: (index) => {
     const { items } = get();
