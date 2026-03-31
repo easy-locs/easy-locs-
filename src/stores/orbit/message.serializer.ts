@@ -1,8 +1,11 @@
 /**
  * orbit.message.serializer — Message formatting and serialization.
  * Pure functions, zero state, zero side effects.
+ *
+ * NOTE: buildMessagePreview delegates to canonical preview.resolver.
  */
 import type { ChatMessageRecord } from "@/lib/types/comms";
+import { buildMessagePreview as canonicalPreview } from "@/domains/orbit/resolvers/preview.resolver";
 
 /** Serialize a raw DB row into a ChatMessageRecord */
 export function serializeMessage(data: any): ChatMessageRecord {
@@ -18,11 +21,9 @@ export function serializeMessage(data: any): ChatMessageRecord {
   };
 }
 
-/** Build a message preview for conversation list */
+/** Build a message preview — delegates to canonical resolver */
 export function buildMessagePreview(body: string, maxLen = 80): string {
-  if (!body) return "";
-  if (body.startsWith("e2e-file:")) return "📎 Encrypted file";
-  return body.length > maxLen ? body.slice(0, maxLen) + "…" : body;
+  return canonicalPreview({ type: "text", text: body }, maxLen);
 }
 
 /** Sort messages by creation time ascending */
