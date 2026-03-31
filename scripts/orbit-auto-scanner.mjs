@@ -15,6 +15,7 @@ const SCAN_DIRS = [
 ];
 
 const ALLOWED_WRITE_ZONES = [
+  // Orbit domain internals
   "src/domains/orbit/flows/",
   "src/domains/orbit/pipelines/",
   "src/domains/orbit/repositories/",
@@ -26,11 +27,30 @@ const ALLOWED_WRITE_ZONES = [
   "src/domains/orbit/realtime/",
   "src/domains/orbit/bridges/",
   "src/domains/orbit/machines/",
+  // Canonical repositories & families
   "src/repositories/",
   "src/families/orbit-dispatch/",
   "src/stores/",
   "src/lib/support/",
   "src/providers/",
+  // Domain services & infrastructure (permitted orchestrators)
+  "src/lib/engines/",
+  "src/lib/orbit/",
+  "src/lib/wallet/",
+  "src/lib/tracking/",
+  "src/lib/rental/",
+  "src/lib/realtime",
+  "src/lib/notifications/",
+  // Domain module components (co-located orchestrators per governance)
+  "src/components/pos/",
+  "src/components/storefront/",
+  "src/components/marketplace/",
+  "src/components/public/",
+  // Page-level orchestrators
+  "src/pages/",
+  // Domain hooks acting as service layers
+  "src/hooks/useListingSync",
+  "src/hooks/useServiceTracking",
 ];
 
 const FILE_EXT = [".ts", ".tsx", ".js", ".jsx"];
