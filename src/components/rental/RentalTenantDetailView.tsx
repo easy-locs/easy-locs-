@@ -208,11 +208,13 @@ export default function RentalTenantDetailView({
         <div className="bg-card rounded-xl shadow-card border border-border/50 flex flex-col" style={{ minHeight: 400 }}>
           <div className="flex-1 p-4 space-y-3 overflow-y-auto max-h-80">
             {messages.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">{L.noExchange}</p>}
-            {messages.map((msg: any) => (
-              <div key={msg.id} className={`flex ${msg.sender_id === userId ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[70%] rounded-xl px-4 py-2 text-sm ${msg.sender_id === userId ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
+            {messages.map((msg: any) => {
+              const outgoing = isOutgoingMessage(msg, userId);
+              return (
+              <div key={msg.id} className={`flex ${outgoing ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[70%] rounded-xl px-4 py-2 text-sm ${outgoing ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
                   {msg.content}
-                  <div className={`text-xs mt-1 ${msg.sender_id === userId ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+                  <div className={`text-xs mt-1 ${outgoing ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                     {new Date(msg.created_at).toLocaleString("fr-FR")}
                   </div>
                 </div>
