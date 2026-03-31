@@ -274,15 +274,12 @@ function ChatMessageBubble({
           </div>
         )}
 
-        {/* Sender name — resolved via canonical identity resolver */}
-        {!isMe && !isConsecutive && (() => {
-          const senderInfo = resolveSenderDisplay(msg, currentUserId, { name: threadName });
-          return (
-            <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
-              {senderInfo.displayName}
-            </p>
-          );
-        })()}
+        {/* Sender name — resolved via canonical read model */}
+        {!isMe && !isConsecutive && !bubbleModel.isSystem && (
+          <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
+            {bubbleModel.senderDisplay.displayName}
+          </p>
+        )}
 
         {/* Email indicator */}
         {isInboundEmail && (
