@@ -230,6 +230,8 @@ export const EXTRACTIONS = [
   "ChatProvider removed from App.tsx (was empty shell)",
   "useMessageLoader markRead delegated to receipt.controller",
   "runtime-conflict-report.ts — living audit document",
+  "useHudMessageMutationBridge — centralizes all inline setRawMessages mutations (delete/edit/star) from HudChatPanel",
+  "useMessageSender dead export removed from families/messages/index.ts",
 ] as const;
 
 // ══════════════════════════════════════════════
@@ -240,6 +242,8 @@ export const SUPPRESSIONS = [
   "ChatProvider import removed from App.tsx",
   "ChatProvider wrapper removed from App.tsx render tree",
   "Inline markRead DB calls in useMessageLoader replaced with receipt.controller",
+  "useMessageSender re-export removed from families/messages/index.ts (dead code — no consumers)",
+  "6 inline setRawMessages mutation lambdas removed from HudChatPanel (replaced by useHudMessageMutationBridge)",
 ] as const;
 
 // ══════════════════════════════════════════════
@@ -255,6 +259,11 @@ export const REDIRECTIONS = [
   {
     from: "useMessageLoader inline read_at on realtime INSERT",
     to: "receipt.controller.markSingleMessageRead",
+    status: "done",
+  },
+  {
+    from: "HudChatPanel inline onDeletedForAll / onDeletedForMe / onEdited / onStarToggle lambdas",
+    to: "useHudMessageMutationBridge stable callbacks",
     status: "done",
   },
 ] as const;
