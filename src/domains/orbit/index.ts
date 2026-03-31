@@ -145,3 +145,21 @@ export type { InboxItemViewModel, ConversationViewModel, CallViewModel, Composer
 // ── Flow Registry ──
 export { ALL_OFFICIAL_ENTRIES } from "./orbit-flow-registry";
 export type { OfficialEntry } from "./orbit-flow-registry";
+
+// ── Flow Gate System ──
+export {
+  OrbitEntry,
+  OrbitOutput,
+  emitOutput,
+  onOutput,
+  assertSingleFlow,
+  enterFlow,
+  exitFlow,
+  isFlowActive,
+  assertCrossFlow,
+  preventDuplicateExecution,
+  guardedWrite,
+  withFlowGate,
+  withFlowGateSync,
+  FlowGateError,
+} from "./flow-gate";
