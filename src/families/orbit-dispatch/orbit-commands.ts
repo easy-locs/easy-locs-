@@ -16,6 +16,7 @@ export type OrbitCommand =
   | EndCallCommand
   | EditMessageCommand
   | ReplyCommand
+  | RetryMessageCommand
   | GroupCreateCommand
   | GroupUpdateCommand
   | PresenceUpdateCommand
