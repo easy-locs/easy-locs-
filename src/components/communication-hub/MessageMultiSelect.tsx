@@ -42,7 +42,7 @@ export default function MessageMultiSelectToolbar({
   if (count === 0) return null;
 
   const selectedMessages = messages.filter(m => selectedIds.has(m.id));
-  const allMine = selectedMessages.every(m => m.sender_id === currentUserId);
+  const allMine = selectedMessages.every(m => isOutgoingMessage(m, currentUserId));
 
   const handleCopyAll = () => {
     const text = selectedMessages.map(m => m.content).join("\n\n");
