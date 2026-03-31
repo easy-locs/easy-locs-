@@ -84,7 +84,7 @@ export type MessageType =
   | "location_static" | "location_live"
   | "payment_request" | "payment_receipt";
 
-export type MessageStatus = "sending" | "sent" | "delivered" | "read" | "failed";
+export type MessageStatus = "sending" | "sent" | "delivered" | "read" | "failed" | "retrying";
 
 export interface OrbitMessage {
   id: string;
