@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { registerSubscription } from "@/lib/realtime/subscription-registry";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 
@@ -34,19 +35,22 @@ export function useMeRealtimeSync() {
 
     if (!user?.id) return;
 
-    const channel = supabase
-      .channel(`me-profile:${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "profiles",
-          filter: `id=eq.${user.id}`,
-        },
-        () => void loadProfile()
-      )
-      .subscribe();
+    const unsubRegistry = registerSubscription(`me.profile:${user.id}`, () => {
+      const channel = supabase
+        .channel(`me-profile:${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "profiles",
+            filter: `id=eq.${user.id}`,
+          },
+          () => void loadProfile()
+        )
+        .subscribe();
+      return () => removeRealtimeChannel(channel);
+    });
 
     const unsub1 = platformBus.on(APP_EVENTS.ME_REFRESH, () => {
       void loadProfile();
@@ -57,7 +61,7 @@ export function useMeRealtimeSync() {
     });
 
     return () => {
-      removeRealtimeChannel(channel);
+      unsubRegistry();
       unsub1();
       unsub2();
     };

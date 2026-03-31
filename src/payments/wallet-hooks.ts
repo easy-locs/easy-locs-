@@ -6,6 +6,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { registerSubscription } from "@/lib/realtime/subscription-registry";
 import { useAuth } from "@/contexts/AuthContext";
 
 /* ── Balance hook (reads wallet_accounts) ──────────────────── */
@@ -45,16 +46,19 @@ export function useWalletBalance() {
   useEffect(() => {
     load();
     if (!user?.id) return;
-    const channel = supabase
-      .channel(`wb-${user.id}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "wallet_balances_v2",
-        filter: `user_id=eq.${user.id}`,
-      }, () => load())
-      .subscribe();
-    return () => { removeRealtimeChannel(channel); };
+    const unsubRegistry = registerSubscription(`wallet.balances_v2:${user.id}`, () => {
+      const channel = supabase
+        .channel(`wb-${user.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "wallet_balances_v2",
+          filter: `user_id=eq.${user.id}`,
+        }, () => load())
+        .subscribe();
+      return () => removeRealtimeChannel(channel);
+    });
+    return () => { unsubRegistry(); };
   }, [user?.id, load]);
 
   const optimisticAdjust = useCallback((delta: number) => {
@@ -102,15 +106,18 @@ export function useWalletTransactions(limit = 50) {
   useEffect(() => {
     if (!user?.id) { setLoading(false); return; }
     load();
-    const channel = supabase
-      .channel(`wtx-${user.id}`)
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "unified_wallet_transactions",
-      }, () => load())
-      .subscribe();
-    return () => { removeRealtimeChannel(channel); };
+    const unsubRegistry = registerSubscription(`wallet.unified_tx:${user.id}`, () => {
+      const channel = supabase
+        .channel(`wtx-${user.id}`)
+        .on("postgres_changes", {
+          event: "INSERT",
+          schema: "public",
+          table: "unified_wallet_transactions",
+        }, () => load())
+        .subscribe();
+      return () => removeRealtimeChannel(channel);
+    });
+    return () => { unsubRegistry(); };
   }, [user?.id, load]);
 
   /** Today's outgoing transfer total */

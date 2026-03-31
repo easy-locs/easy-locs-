@@ -1,7 +1,9 @@
 /**
  * Orbit WebRTC signaling via Supabase Realtime — with self-filter + dedupe.
+ * Migrated to registerSubscription for anti-duplication.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { registerSubscription } from "@/lib/realtime/subscription-registry";
 
 const handledSignalIds = new Set<string>();
 
@@ -25,25 +27,28 @@ export function subscribeToSignals(params: {
   callSessionId: string;
   selfUserId?: string;
   onMessage: (msg: any) => void;
-}) {
-  return supabase
-    .channel(`rtc:${params.callSessionId}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "rtc_signaling_messages",
-        filter: `call_session_id=eq.${params.callSessionId}`,
-      },
-      (payload) => {
-        const msg = payload.new as any;
-        if (!msg?.id) return;
-        if (handledSignalIds.has(msg.id)) return;
-        handledSignalIds.add(msg.id);
-        if (params.selfUserId && msg.sender_id === params.selfUserId) return;
-        params.onMessage(msg);
-      }
-    )
-    .subscribe();
+}): () => void {
+  return registerSubscription(`orbit.call.signal:${params.callSessionId}`, () => {
+    const channel = supabase
+      .channel(`rtc:${params.callSessionId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "rtc_signaling_messages",
+          filter: `call_session_id=eq.${params.callSessionId}`,
+        },
+        (payload) => {
+          const msg = payload.new as any;
+          if (!msg?.id) return;
+          if (handledSignalIds.has(msg.id)) return;
+          handledSignalIds.add(msg.id);
+          if (params.selfUserId && msg.sender_id === params.selfUserId) return;
+          params.onMessage(msg);
+        }
+      )
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  });
 }

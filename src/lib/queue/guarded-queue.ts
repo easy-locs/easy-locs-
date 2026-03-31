@@ -1,8 +1,8 @@
 /**
  * GUARDED QUEUE — Combines ActionGuard + SinglePath + Queue for ultimate safety.
+ * FULL PROD HARDENED v2.
  *
- * This is the canonical entry point for ALL critical write flows.
- * Pattern: UI → guardedEnqueue → Queue(priority) → SinglePath(lock) → ActionGuard(dedup) → execute
+ * Pattern: UI → guardedEnqueue → Queue(priority) → SinglePath(lock) → ActionGuard(dedup) → execute(ctx)
  *
  * Guarantees:
  * 1. Sequential execution per queue key (no race conditions)
@@ -11,8 +11,10 @@
  * 4. Concurrency lock via single-path
  * 5. Offline persistence for retryable tasks
  * 6. Structured logging at every step
+ * 7. Full context propagation (requestId + correlationId) to execute(ctx)
+ * 8. Non-retryable errors (flow_locked, invalid_state) skip retry
  */
-import { enqueue, QUEUE_PRIORITY, type QueueTask, type QueueResult } from "./action-queue";
+import { enqueue, QUEUE_PRIORITY, type QueueTask, type QueueResult, type QueueExecutionContext } from "./action-queue";
 import { createActionGuard, acquireSinglePath } from "@/lib/guards/action-guard";
 
 // ── Pre-built guards (module singletons) ──
@@ -47,13 +49,15 @@ export interface GuardedEnqueueInput<T> {
   priority: number;
   /** Request ID for idempotency dedup (optional — auto-generated if omitted) */
   requestId?: string;
-  /** The actual business logic to execute */
-  execute: () => Promise<T>;
+  /** Correlation ID for tracing (optional — auto-generated if omitted) */
+  correlationId?: string;
+  /** The actual business logic to execute — receives full context */
+  execute: (ctx: QueueExecutionContext) => Promise<T>;
   /** Max retries with exponential backoff */
   maxRetries?: number;
   /** Can this task be saved offline for replay? */
   offlineCapable?: boolean;
-  /** Serialized payload for offline replay */
+  /** Serialized payload for offline replay — MUST contain enough data to reconstruct the action */
   offlinePayload?: Record<string, unknown>;
   /** Single-path flow key (optional — if set, prevents concurrent execution) */
   singlePathKey?: string;
@@ -61,6 +65,7 @@ export interface GuardedEnqueueInput<T> {
 
 /**
  * The ultimate guarded enqueue — combines queue + guard + single-path.
+ * FIX #3: requestId + correlationId propagated all the way to execute(ctx).
  */
 export async function guardedEnqueue<T>(
   input: GuardedEnqueueInput<T>,
@@ -77,22 +82,27 @@ export async function guardedEnqueue<T>(
     maxRetries: input.maxRetries,
     offlineCapable: input.offlineCapable,
     offlinePayload: input.offlinePayload,
+    requestId: input.requestId,
+    correlationId: input.correlationId,
 
-    execute: async () => {
+    execute: async (queueCtx: QueueExecutionContext) => {
       // Layer 1: Single-path lock (if configured)
       let release: (() => void) | null = null;
       if (input.singlePathKey) {
         release = acquireSinglePath(input.singlePathKey);
         if (!release) {
-          throw new Error("flow_locked");
+          throw new Error("flow_locked"); // Non-retryable — won't waste retries
         }
       }
 
       try {
         // Layer 2: Action guard (idempotency + structured logging)
         const result = await guard.execute(
-          async () => input.execute(),
-          { requestId: input.requestId },
+          async () => input.execute(queueCtx), // FIX #3: Pass queue context through
+          {
+            requestId: queueCtx.requestId,
+            correlationId: queueCtx.correlationId,
+          },
         );
 
         if (!result.ok) {
@@ -112,8 +122,8 @@ export async function guardedEnqueue<T>(
 export function enqueueSendMessage<T>(
   conversationId: string,
   clientMessageId: string,
-  execute: () => Promise<T>,
-  opts?: { requestId?: string; maxRetries?: number },
+  execute: (ctx: QueueExecutionContext) => Promise<T>,
+  opts?: { requestId?: string; correlationId?: string; maxRetries?: number },
 ): Promise<QueueResult<T>> {
   return guardedEnqueue({
     queueKey: `orbit:${conversationId}`,
@@ -122,6 +132,7 @@ export function enqueueSendMessage<T>(
     priority: QUEUE_PRIORITY.MESSAGE_SEND,
     singlePathKey: `orbit.message.send:${conversationId}:${clientMessageId}`,
     requestId: opts?.requestId,
+    correlationId: opts?.correlationId,
     maxRetries: opts?.maxRetries ?? 2,
     offlineCapable: true,
     offlinePayload: { conversationId, clientMessageId },
@@ -131,8 +142,8 @@ export function enqueueSendMessage<T>(
 
 export function enqueueCapturePayment<T>(
   paymentId: string,
-  execute: () => Promise<T>,
-  opts?: { requestId?: string },
+  execute: (ctx: QueueExecutionContext) => Promise<T>,
+  opts?: { requestId?: string; correlationId?: string; amount?: number; currency?: string },
 ): Promise<QueueResult<T>> {
   return guardedEnqueue({
     queueKey: `wallet:${paymentId}`,
@@ -141,14 +152,18 @@ export function enqueueCapturePayment<T>(
     priority: QUEUE_PRIORITY.PAYMENT_CAPTURE,
     singlePathKey: `wallet.capture:${paymentId}`,
     requestId: opts?.requestId ?? paymentId,
+    correlationId: opts?.correlationId,
+    // FIX #6: Full offline payload for real replay
+    offlinePayload: opts?.amount ? { paymentId, amount: opts.amount, currency: opts.currency } : undefined,
+    offlineCapable: !!opts?.amount,
     execute,
   });
 }
 
 export function enqueueQrPayment<T>(
   qrSessionId: string,
-  execute: () => Promise<T>,
-  opts?: { requestId?: string },
+  execute: (ctx: QueueExecutionContext) => Promise<T>,
+  opts?: { requestId?: string; correlationId?: string; amount?: number; recipientId?: string },
 ): Promise<QueueResult<T>> {
   return guardedEnqueue({
     queueKey: `wallet.qr:${qrSessionId}`,
@@ -157,14 +172,17 @@ export function enqueueQrPayment<T>(
     priority: QUEUE_PRIORITY.QR_PAYMENT,
     singlePathKey: `wallet.qr:${qrSessionId}`,
     requestId: opts?.requestId ?? qrSessionId,
+    correlationId: opts?.correlationId,
+    offlinePayload: opts?.amount ? { qrSessionId, amount: opts.amount, recipientId: opts.recipientId } : undefined,
+    offlineCapable: !!opts?.amount,
     execute,
   });
 }
 
 export function enqueueCreateOrder<T>(
   draftId: string,
-  execute: () => Promise<T>,
-  opts?: { requestId?: string },
+  execute: (ctx: QueueExecutionContext) => Promise<T>,
+  opts?: { requestId?: string; correlationId?: string; orderData?: Record<string, unknown> },
 ): Promise<QueueResult<T>> {
   return guardedEnqueue({
     queueKey: `order:${draftId}`,
@@ -173,14 +191,17 @@ export function enqueueCreateOrder<T>(
     priority: QUEUE_PRIORITY.ORDER_SUBMIT,
     singlePathKey: `order.create:${draftId}`,
     requestId: opts?.requestId ?? draftId,
+    correlationId: opts?.correlationId,
+    offlinePayload: opts?.orderData ? { draftId, ...opts.orderData } : undefined,
+    offlineCapable: !!opts?.orderData,
     execute,
   });
 }
 
 export function enqueueAssignDriver<T>(
   orderId: string,
-  execute: () => Promise<T>,
-  opts?: { requestId?: string },
+  execute: (ctx: QueueExecutionContext) => Promise<T>,
+  opts?: { requestId?: string; correlationId?: string; driverId?: string },
 ): Promise<QueueResult<T>> {
   return guardedEnqueue({
     queueKey: `driver:${orderId}`,
@@ -189,14 +210,17 @@ export function enqueueAssignDriver<T>(
     priority: QUEUE_PRIORITY.ASSIGN_DRIVER,
     singlePathKey: `driver.assign:${orderId}`,
     requestId: opts?.requestId ?? orderId,
+    correlationId: opts?.correlationId,
+    offlinePayload: opts?.driverId ? { orderId, driverId: opts.driverId } : undefined,
+    offlineCapable: !!opts?.driverId,
     execute,
   });
 }
 
 export function enqueueWalletTransfer<T>(
   transferId: string,
-  execute: () => Promise<T>,
-  opts?: { requestId?: string },
+  execute: (ctx: QueueExecutionContext) => Promise<T>,
+  opts?: { requestId?: string; correlationId?: string; amount?: number; toUserId?: string },
 ): Promise<QueueResult<T>> {
   return guardedEnqueue({
     queueKey: `wallet.transfer:${transferId}`,
@@ -205,6 +229,9 @@ export function enqueueWalletTransfer<T>(
     priority: QUEUE_PRIORITY.PAYMENT_CAPTURE,
     singlePathKey: `wallet.transfer:${transferId}`,
     requestId: opts?.requestId ?? transferId,
+    correlationId: opts?.correlationId,
+    offlinePayload: opts?.amount ? { transferId, amount: opts.amount, toUserId: opts.toUserId } : undefined,
+    offlineCapable: !!opts?.amount,
     execute,
   });
 }
@@ -212,8 +239,8 @@ export function enqueueWalletTransfer<T>(
 export function enqueueUpload<T>(
   conversationId: string,
   uploadId: string,
-  execute: () => Promise<T>,
-  opts?: { maxRetries?: number },
+  execute: (ctx: QueueExecutionContext) => Promise<T>,
+  opts?: { maxRetries?: number; correlationId?: string; fileName?: string; fileSize?: number },
 ): Promise<QueueResult<T>> {
   return guardedEnqueue({
     queueKey: `upload:${conversationId}`,
@@ -221,8 +248,10 @@ export function enqueueUpload<T>(
     guardKey: "upload.attachment",
     priority: QUEUE_PRIORITY.UPLOAD,
     maxRetries: opts?.maxRetries ?? 3,
+    correlationId: opts?.correlationId,
     offlineCapable: true,
-    offlinePayload: { conversationId, uploadId },
+    // FIX #6: Full payload for offline replay
+    offlinePayload: { conversationId, uploadId, fileName: opts?.fileName, fileSize: opts?.fileSize },
     execute,
   });
 }
