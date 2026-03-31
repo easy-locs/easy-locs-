@@ -57,6 +57,7 @@ const COMMAND_TO_ENTRY: Record<string, EntryKey> = {
   decline_call: "call.decline",
   end_call: "call.end",
   edit_message: "message.edit",
+  retry_message: "message.retry",
   group_create: "conversation.createGroup",
   group_update: "conversation.updateGroup",
   presence_update: "presence.update",
