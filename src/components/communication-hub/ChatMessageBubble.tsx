@@ -76,7 +76,7 @@ function ChatMessageBubble({
     attachmentIds,
   );
 
-  const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
+  const isSystem = isSystemMessage(msg);
   const isDeleted = !!(msg as any).deleted_for_all;
   const isInboundEmail = msg.message_type === "inbound_email";
   const isPayment = !isDeleted && msg.content?.startsWith("💳");
