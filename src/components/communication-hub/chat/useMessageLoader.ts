@@ -75,30 +75,61 @@ function resolveConversationId(thread: ThreadLike | null): string | null {
 }
 
 function mapV2ToChat(m: any, conversationId: string): ChatMessage {
+  // Resolve attachment_url from metadata.media.url or raw attachments
+  const meta = m.metadata ?? {};
+  const mediaUrl = meta.media?.url ?? meta.media?.remote_url ?? null;
+  const rawAtts = Array.isArray(m.attachments) ? m.attachments : [];
+  const firstAttUrl = rawAtts[0]?.url ?? rawAtts[0]?.remote_url ?? null;
+  const resolvedAttachmentUrl = mediaUrl || firstAttUrl || null;
+
+  // Resolve canonical message_type: "media" → specific kind from metadata
+  let msgType = m.type || "text";
+  if (msgType === "media" && meta.media) {
+    const mk = meta.media.media_kind || meta.media.kind || meta.media_kind || null;
+    if (mk === "image") msgType = "image";
+    else if (mk === "video") msgType = "video";
+    else if (mk === "audio" || mk === "voice") msgType = "voice";
+    else if (mk === "file") msgType = "file";
+    else {
+      // Fallback: detect from mimeType
+      const mime = (meta.media.mimeType || meta.media.mime_type || "").toLowerCase();
+      if (mime.startsWith("image/")) msgType = "image";
+      else if (mime.startsWith("video/")) msgType = "video";
+      else if (mime.startsWith("audio/")) msgType = "voice";
+      else if (resolvedAttachmentUrl) msgType = "file";
+    }
+  }
+
   return {
     id: m.id,
     sender_id: m.sender_user_id,
     content: safeString(m.body),
     created_at: m.created_at,
     read: !!m.read_at,
-    category: (m.metadata?.category as string) || "general",
+    category: (meta.category as string) || "general",
     tenant_id: null,
     translated_content: null,
     translated_locale: null,
     language_detected: null,
-    message_type: m.type || "text",
+    message_type: msgType,
     context_type: "direct",
     context_id: conversationId,
     pending: false,
     failed: !!m.failed_at,
     reply_to_message_id: m.reply_to_message_id ?? null,
-    metadata: m.metadata ?? {},
-    contact_name: safeString(m.metadata?.contact_name || m.sender_display_name),
-    attachments: Array.isArray(m.attachments) ? m.attachments : [],
-    view_once: !!m.view_once,
-    media_kind: m.media_kind || null,
+    metadata: meta,
+    metadata_json: meta,
+    contact_name: safeString(meta.contact_name || m.sender_display_name),
+    attachment_url: resolvedAttachmentUrl,
+    attachments: rawAtts,
+    audio_url: msgType === "voice" ? resolvedAttachmentUrl : (m.audio_url || null),
+    audio_duration_seconds: meta.media?.duration ?? meta.duration ?? null,
+    video_duration_seconds: meta.media?.duration ?? meta.duration ?? null,
+    view_once: !!m.view_once || !!meta.media?.viewOnce,
+    media_kind: meta.media?.media_kind || meta.media?.kind || m.media_kind || null,
     media_count: m.media_count || 0,
     attachment_summary: m.attachment_summary || null,
+    conversation_id: conversationId,
   } as any;
 }
 
