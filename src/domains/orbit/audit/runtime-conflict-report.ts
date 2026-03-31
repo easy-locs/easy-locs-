@@ -379,3 +379,26 @@ export const VIEWMODEL_LAYER = {
   status: "ready",
   note: "Read-only projection layer. Does not own data. UI can consume these instead of reading stores directly.",
 } as const;
+
+// ══════════════════════════════════════════════
+// 12. FLOW GATE INTEGRATION STATUS
+// ══════════════════════════════════════════════
+
+export const FLOW_GATE_STATUS = {
+  file: "src/domains/orbit/flow-gate/orbit-flow-gate.ts",
+  registries: {
+    PipelineRegistry: "31 entries → versioned pipeline keys",
+    OwnerRegistry: "6 canonical owners (messages, attachments, conversations, receipts, drafts, callSessions)",
+    SignalRegistry: "10 realtime signals mapped to owners",
+    SerialRegistry: "unique ID issuance with TTL auto-cleanup",
+    BatchRegistry: "grouped operations (receipt.read, upload.multipart, location.live)",
+  },
+  integration: {
+    orbitDispatch: "✅ Every command passes through executeFlow(entryKey)",
+    receiptController: "✅ markRead/markSingleRead/clearMarkedUnread flow-gated",
+    orbitServices: "✅ sendText/sendMedia/sendVoice/createDirect flow-gated",
+    createOrGetDirectConversation: "✅ Pair-keyed flow-gate prevents duplicate creation",
+    voiceRecorder: "✅ Redirected through orbitDispatch (no direct insertMessage)",
+  },
+  note: "Architecture: UI → OrbitEntry → executeFlow → pipeline → guardedWrite → owner → emitOutput → UI",
+} as const;
