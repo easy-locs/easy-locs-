@@ -1,7 +1,15 @@
+/**
+ * @deprecated — Use CanonicalOrbitProfile from @/domains/shared/canonical-types
+ * This file is kept ONLY for backward compatibility.
+ */
+export type { AppRole } from "@/domains/shared/canonical-types";
+
+/** @deprecated Use CanonicalOrbitProfile */
 export type OrbitRole = "owner" | "tenant" | "buyer" | "seller" | "admin";
 
+/** @deprecated Use CanonicalOrbitProfile from @/domains/shared/canonical-types */
 export interface OrbitProfile {
-  id: string; // auth user id
+  id: string;
   orbit_id: string;
   role: OrbitRole;
   display_name: string | null;
