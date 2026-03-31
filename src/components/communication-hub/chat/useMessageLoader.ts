@@ -339,13 +339,12 @@ export function useMessageLoader({
             // Reconcile: replace optimistic with confirmed
             // Match by: (1) pending flag + content match, OR (2) opt- prefix ID + content match
             // This handles the race where sender_id may still be "" on the optimistic msg
-            const isOwnMessage = msg.sender_user_id === userId;
+            const isOwnMessage = isOutgoingMessage({ sender_id: msg.sender_user_id }, userId);
             const withoutOptimistic = isOwnMessage
               ? prev.filter((m) => {
                   if (!m.pending) return true;
-                  // Match by content + sender OR by optimistic ID prefix + content
                   const contentMatch = m.content === mapped.content;
-                  const senderMatch = m.sender_id === userId || m.sender_id === "";
+                  const senderMatch = isOutgoingMessage(m, userId) || m.sender_id === "";
                   const isOptimisticId = m.id.startsWith("opt-");
                   return !(contentMatch && (senderMatch || isOptimisticId));
                 })

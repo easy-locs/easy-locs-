@@ -3,6 +3,7 @@
  * Pure UI. All data/actions via props.
  */
 import { useState } from "react";
+import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 import {
   FileText, Euro, ArrowLeft, Edit, MessageSquare, Upload,
   Send, CheckCircle, Link2, ClipboardCheck, Download, X,
