@@ -26,7 +26,7 @@ export default function RealtimeMessageToast() {
         (payload) => {
           const msg = payload.new as any;
           // Don't notify for own messages
-          if (msg.sender_user_id === user.id) return;
+          if (isOutgoingMessage(msg, user.id)) return;
           // Deduplicate
           if (msg.id === lastNotified.current) return;
           lastNotified.current = msg.id;
