@@ -1,175 +1,145 @@
 # Orbit Auto Scan Summary
 
-Generated: 2026-03-31T09:59:56.705Z
+Generated: 2026-03-31T10:01:24.062Z
 
 ## Totals
 
-- Total findings: 14499
-- Writes: 7322
-- High risk writes: 5246
-- Events: 789
-- Actions: 2604
-- I18N findings: 3203
-- SEO findings: 241
-- Card findings: 8
-- ID findings: 332
-- Total conflicts: 5596
-- HIGH conflicts: 5596
-- MEDIUM conflicts: 0
+| Metric | Count |
+|--------|-------|
+| Total findings | 690 |
+| Writes | 501 |
+| HIGH writes | 4 |
+| Events | 100 |
+| Actions | 51 |
+| ID findings | 38 |
+| **Total conflicts** | **100** |
+| **HIGH conflicts** | **15** |
+| MEDIUM conflicts | 85 |
 
-## High Severity Conflicts
+## ❌ High Severity Conflicts
 
-- **DUPLICATE_ENTRY** — `location.send` — Multiple files write for entry "location.send": src/components/communication-hub/HudChatPanel.tsx
-- **DUPLICATE_ENTRY** — `call.startAudio` — Multiple files write for entry "call.startAudio": src/components/communication-hub/HudChatPanel.tsx
-- **DUPLICATE_ENTRY** — `call.startVideo` — Multiple files write for entry "call.startVideo": src/components/communication-hub/HudChatPanel.tsx
-- **DUPLICATE_ENTRY** — `receipt.markRead` — Multiple files write for entry "receipt.markRead": src/components/delivery/DeliveryNotificationCenter.tsx, src/lib/db/orbitDb.ts, src/lib/monitoring.ts, src/lib/runtime/smart-prefetch.ts, src/repositories/rental.repository.ts
-- **DUPLICATE_ENTRY** — `message.sendText` — Multiple files write for entry "message.sendText": src/components/rental/RentalTenantDetailView.tsx
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ErrorBoundary.tsx`:41 — Direct write (setState) in src/components/ErrorBoundary.tsx:41
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:31 — Direct write (setState) in src/components/SEOHead.tsx:31
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:34 — Direct write (setState) in src/components/SEOHead.tsx:34
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:37 — Direct write (setState) in src/components/SEOHead.tsx:37
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:38 — Direct write (setState) in src/components/SEOHead.tsx:38
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:39 — Direct write (setState) in src/components/SEOHead.tsx:39
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:40 — Direct write (setState) in src/components/SEOHead.tsx:40
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:41 — Direct write (setState) in src/components/SEOHead.tsx:41
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:42 — Direct write (setState) in src/components/SEOHead.tsx:42
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:43 — Direct write (setState) in src/components/SEOHead.tsx:43
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:44 — Direct write (setState) in src/components/SEOHead.tsx:44
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:45 — Direct write (setState) in src/components/SEOHead.tsx:45
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:46 — Direct write (setState) in src/components/SEOHead.tsx:46
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:47 — Direct write (setState) in src/components/SEOHead.tsx:47
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:48 — Direct write (setState) in src/components/SEOHead.tsx:48
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:50 — Direct write (setState) in src/components/SEOHead.tsx:50
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:60 — Direct write (setState) in src/components/SEOHead.tsx:60
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:69 — Direct write (setState) in src/components/SEOHead.tsx:69
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/SEOHead.tsx`:71 — Direct write (setState) in src/components/SEOHead.tsx:71
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:16 — Direct write (setState) in src/components/ThemeSwitcher.tsx:16
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:20 — Direct write (setState) in src/components/ThemeSwitcher.tsx:20
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:30 — Direct write (setState) in src/components/ThemeSwitcher.tsx:30
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:31 — Direct write (setState) in src/components/ThemeSwitcher.tsx:31
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:35 — Direct write (setState) in src/components/ThemeSwitcher.tsx:35
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:36 — Direct write (setState) in src/components/ThemeSwitcher.tsx:36
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:37 — Direct write (setState) in src/components/ThemeSwitcher.tsx:37
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:59 — Direct write (setState) in src/components/ThemeSwitcher.tsx:59
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:74 — Direct write (setState) in src/components/ThemeSwitcher.tsx:74
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:75 — Direct write (setState) in src/components/ThemeSwitcher.tsx:75
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:100 — Direct write (setState) in src/components/ThemeSwitcher.tsx:100
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/ThemeSwitcher.tsx`:101 — Direct write (setState) in src/components/ThemeSwitcher.tsx:101
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/UpdateNotification.tsx`:21 — Direct write (setState) in src/components/UpdateNotification.tsx:21
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/UpdateNotification.tsx`:46 — Direct write (setState) in src/components/UpdateNotification.tsx:46
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/actions/UniversalActionButtons.tsx`:90 — Direct write (setState) in src/components/actions/UniversalActionButtons.tsx:90
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/actions/UniversalActionButtons.tsx`:113 — Direct write (setState) in src/components/actions/UniversalActionButtons.tsx:113
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/address/AddressSelectorSheet.tsx`:30 — Direct write (setState) in src/components/address/AddressSelectorSheet.tsx:30
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/address/AddressSelectorSheet.tsx`:31 — Direct write (setState) in src/components/address/AddressSelectorSheet.tsx:31
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/address/AddressSelectorSheet.tsx`:44 — Direct write (setState) in src/components/address/AddressSelectorSheet.tsx:44
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/address/CanonicalAddressInput.tsx`:85 — Direct write (setState) in src/components/address/CanonicalAddressInput.tsx:85
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/address/CanonicalAddressInput.tsx`:95 — Direct write (setState) in src/components/address/CanonicalAddressInput.tsx:95
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/address/CanonicalAddressInput.tsx`:96 — Direct write (setState) in src/components/address/CanonicalAddressInput.tsx:96
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/address/CanonicalAddressInput.tsx`:126 — Direct write (setState) in src/components/address/CanonicalAddressInput.tsx:126
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/address/CanonicalAddressInput.tsx`:151 — Direct write (setState) in src/components/address/CanonicalAddressInput.tsx:151
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/address/CanonicalAddressInput.tsx`:153 — Direct write (setState) in src/components/address/CanonicalAddressInput.tsx:153
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:55 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:55
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:72 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:72
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:73 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:73
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:74 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:74
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:102 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:102
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:103 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:103
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:120 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:120
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:121 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:121
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:152 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:152
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:179 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:179
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:201 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:201
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:239 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:239
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/AdminModerationPanel.tsx`:267 — Direct write (setState) in src/components/admin/AdminModerationPanel.tsx:267
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/BrowserRepairLivePanel.tsx`:49 — Direct write (setState) in src/components/admin/BrowserRepairLivePanel.tsx:49
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/BrowserRepairLivePanel.tsx`:50 — Direct write (setState) in src/components/admin/BrowserRepairLivePanel.tsx:50
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/BrowserRepairLivePanel.tsx`:51 — Direct write (setState) in src/components/admin/BrowserRepairLivePanel.tsx:51
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/BrowserRepairLivePanel.tsx`:56 — Direct write (setState) in src/components/admin/BrowserRepairLivePanel.tsx:56
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/BrowserRepairLivePanel.tsx`:98 — Direct write (setState) in src/components/admin/BrowserRepairLivePanel.tsx:98
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/BrowserRepairRunButton.tsx`:14 — Direct write (setState) in src/components/admin/BrowserRepairRunButton.tsx:14
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/BrowserRepairRunButton.tsx`:22 — Direct write (setState) in src/components/admin/BrowserRepairRunButton.tsx:22
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/HealthDashboard.tsx`:35 — Direct write (setState) in src/components/admin/HealthDashboard.tsx:35
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/HealthDashboard.tsx`:36 — Direct write (setState) in src/components/admin/HealthDashboard.tsx:36
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/HealthDashboard.tsx`:40 — Direct write (setState) in src/components/admin/HealthDashboard.tsx:40
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/HealthDashboard.tsx`:42 — Direct write (setState) in src/components/admin/HealthDashboard.tsx:42
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/HealthDashboard.tsx`:43 — Direct write (setState) in src/components/admin/HealthDashboard.tsx:43
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/HealthDashboard.tsx`:154 — Direct write (setState) in src/components/admin/HealthDashboard.tsx:154
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/ModerationPanel.tsx`:44 — Direct write (setState) in src/components/admin/ModerationPanel.tsx:44
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/ModerationPanel.tsx`:48 — Direct write (setState) in src/components/admin/ModerationPanel.tsx:48
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/ModerationPanel.tsx`:49 — Direct write (setState) in src/components/admin/ModerationPanel.tsx:49
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/ModerationPanel.tsx`:53 — Direct write (setState) in src/components/admin/ModerationPanel.tsx:53
-- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/admin/ModerationPanel.tsx`:54 — Direct write (setState) in src/components/admin/ModerationPanel.tsx:54
+- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/communication-hub/chat/useAttachments.ts`:148 — Direct write (insertMessage) in src/components/communication-hub/chat/useAttachments.ts:148
+- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/marketplace/BookingCommunicationThread.tsx`:44 — Direct write (insertMessage) in src/components/marketplace/BookingCommunicationThread.tsx:44
+- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/components/public/GuestBookingReply.tsx`:75 — Direct write (insertMessage) in src/components/public/GuestBookingReply.tsx:75
+- **DIRECT_WRITE_OUTSIDE_PIPELINE** — `src/hooks/useOfflineMessages.ts`:102 — Direct write (insertMessage) in src/hooks/useOfflineMessages.ts:102
+- **REALTIME_DIRECT_WRITE** — `src/components/pos/KitchenQueue.tsx` — Realtime listener + direct write in same file outside owner zone
+- **REALTIME_DIRECT_WRITE** — `src/components/storefront/AuctionManager.tsx` — Realtime listener + direct write in same file outside owner zone
+- **REALTIME_DIRECT_WRITE** — `src/components/storefront/OrdersManager.tsx` — Realtime listener + direct write in same file outside owner zone
+- **REALTIME_DIRECT_WRITE** — `src/hooks/useListingSync.ts` — Realtime listener + direct write in same file outside owner zone
+- **REALTIME_DIRECT_WRITE** — `src/hooks/useServiceTracking.ts` — Realtime listener + direct write in same file outside owner zone
+- **REALTIME_DIRECT_WRITE** — `src/lib/engines/notification-engine.ts` — Realtime listener + direct write in same file outside owner zone
+- **REALTIME_DIRECT_WRITE** — `src/lib/orbit/signaling.ts` — Realtime listener + direct write in same file outside owner zone
+- **REALTIME_DIRECT_WRITE** — `src/lib/realtime-manager.ts` — Realtime listener + direct write in same file outside owner zone
+- **REALTIME_DIRECT_WRITE** — `src/lib/rental/rental-repository.ts` — Realtime listener + direct write in same file outside owner zone
+- **REALTIME_DIRECT_WRITE** — `src/lib/tracking/live-tracking.ts` — Realtime listener + direct write in same file outside owner zone
+- **REALTIME_DIRECT_WRITE** — `src/pages/MerchantPosPage.tsx` — Realtime listener + direct write in same file outside owner zone
 
-## Duplicate Entries
+## ⚠️ Realtime Conflicts
 
-- **location.send** → src/components/communication-hub/HudChatPanel.tsx
-- **call.startAudio** → src/components/communication-hub/HudChatPanel.tsx
-- **call.startVideo** → src/components/communication-hub/HudChatPanel.tsx
-- **receipt.markRead** → src/components/delivery/DeliveryNotificationCenter.tsx, src/lib/db/orbitDb.ts, src/lib/monitoring.ts, src/lib/runtime/smart-prefetch.ts, src/repositories/rental.repository.ts
-- **message.sendText** → src/components/rental/RentalTenantDetailView.tsx
+- `src/components/pos/KitchenQueue.tsx` — Realtime listener + direct write in same file outside owner zone
+- `src/components/storefront/AuctionManager.tsx` — Realtime listener + direct write in same file outside owner zone
+- `src/components/storefront/OrdersManager.tsx` — Realtime listener + direct write in same file outside owner zone
+- `src/hooks/useListingSync.ts` — Realtime listener + direct write in same file outside owner zone
+- `src/hooks/useServiceTracking.ts` — Realtime listener + direct write in same file outside owner zone
+- `src/lib/engines/notification-engine.ts` — Realtime listener + direct write in same file outside owner zone
+- `src/lib/orbit/signaling.ts` — Realtime listener + direct write in same file outside owner zone
+- `src/lib/realtime-manager.ts` — Realtime listener + direct write in same file outside owner zone
+- `src/lib/rental/rental-repository.ts` — Realtime listener + direct write in same file outside owner zone
+- `src/lib/tracking/live-tracking.ts` — Realtime listener + direct write in same file outside owner zone
+- `src/pages/MerchantPosPage.tsx` — Realtime listener + direct write in same file outside owner zone
 
-## Realtime Conflicts
+## 🔀 ID Mixing
 
-- `src/components/pos/KitchenQueue.tsx` — Realtime listener + direct write detected outside owner flow
-- `src/components/storefront/AuctionManager.tsx` — Realtime listener + direct write detected outside owner flow
-- `src/components/storefront/OrdersManager.tsx` — Realtime listener + direct write detected outside owner flow
-- `src/hooks/useListingSync.ts` — Realtime listener + direct write detected outside owner flow
-- `src/hooks/useRadarLiveContext.ts` — Realtime listener + direct write detected outside owner flow
-- `src/hooks/useRealtimeDispatchBoard.ts` — Realtime listener + direct write detected outside owner flow
-- `src/hooks/useServiceTracking.ts` — Realtime listener + direct write detected outside owner flow
-- `src/lib/engines/notification-engine.ts` — Realtime listener + direct write detected outside owner flow
-- `src/lib/orbit/signaling.ts` — Realtime listener + direct write detected outside owner flow
-- `src/lib/rental/rental-repository.ts` — Realtime listener + direct write detected outside owner flow
-- `src/lib/tracking/live-tracking.ts` — Realtime listener + direct write detected outside owner flow
-- `src/domains/orbit/realtime/orbit-realtime-owner.ts` — Realtime listener + direct write detected outside owner flow
-- `src/pages/MerchantPosPage.tsx` — Realtime listener + direct write detected outside owner flow
+- `src/components/communication-hub/ContextPanel.tsx`:356 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/components/communication-hub/HudChatPanel.tsx`:386 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/components/communication-hub/HudChatPanel.tsx`:396 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/components/communication-hub/HudChatPanel.tsx`:425 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/components/communication-hub/HudContextPanel.tsx`:358 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/components/communication-hub/chat/useAttachments.ts`:160 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/components/communication-hub/chat/useMessageLoader.ts`:143 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/components/public/ListingContactButtons.tsx`:48 — Potential ID mixing: orbitId vs userId
+- `src/components/public/ListingContactButtons.tsx`:49 — Potential ID mixing: orbitId vs userId
+- `src/hooks/groups/useGroupData.ts`:99 — Potential ID mixing: orbitId vs userId
+- `src/hooks/groups/useGroupData.ts`:141 — Potential ID mixing: orbitId vs userId
+- `src/hooks/orbit/useHudCallSetup.ts`:27 — Potential ID mixing: orbitId vs userId
+- `src/hooks/orbit/useHudCallSetup.ts`:54 — Potential ID mixing: orbitId vs userId
+- `src/hooks/useMessageSender.ts`:240 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/hooks/useOfflineMessages.ts`:105 — Potential ID mixing: orbitId vs userId
+- `src/lib/cache/identity-cache.ts`:19 — Potential ID mixing: orbitId vs userId
+- `src/lib/governance/canonical-architecture.ts`:42 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/lib/orbit/canonical-helpers.ts`:141 — Potential ID mixing: orbitId vs userId
+- `src/lib/orbit/canonical-helpers.ts`:176 — Potential ID mixing: orbitId vs userId
+- `src/lib/orbit/createOrGetDirectConversation.ts`:44 — Potential ID mixing: orbitId vs userId
+- `src/lib/orbit/ensureOrbitProfile.ts`:35 — Potential ID mixing: orbitId vs userId
+- `src/lib/orbit/ensureOrbitProfile.ts`:40 — Potential ID mixing: orbitId vs userId
+- `src/lib/orbit/messaging/conversation-resolver.ts`:41 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/lib/orbit/threads/thread-mapper.ts`:169 — Potential ID mixing: orbitId vs userId
+- `src/lib/orbit/threads/thread-mapper.ts`:188 — Potential ID mixing: orbitId vs userId
+- `src/lib/supabase/chat-repo-extended.ts`:36 — Potential ID mixing: orbitId vs userId
+- `src/lib/supabase/repositories.ts`:210 — Potential ID mixing: orbitId vs userId
+- `src/lib/sync/background-sync.ts`:70 — Potential ID mixing: conversationId vs threadId/chatId
+- `src/stores/orbit/event.adapter.ts`:28 — Potential ID mixing: orbitId vs userId
+- `src/stores/orbit/event.adapter.ts`:29 — Potential ID mixing: orbitId vs userId
 
-## ID Mixing Conflicts
+## 📋 Duplicate Table Writers
 
-- `src/components/call/CallButton.tsx`:18 — ID mixing detected: orbitId: props.orbitId,
-- `src/components/call/CallButton.tsx`:20 — ID mixing detected: conversationId: props.conversationId,
-- `src/components/call/CallButton.tsx`:26 — ID mixing detected: conversationId: props.conversationId,
-- `src/components/call/CallProvider.tsx`:84 — ID mixing detected: conversationId: info.conversationId || undefined,
-- `src/components/call/CallProvider.tsx`:126 — ID mixing detected: conversationId: meta.conversationId,
-- `src/components/chat/AddContactByEmail.tsx`:57 — ID mixing detected: if (myOrbit?.orbitId && foundUser.orbit_id === myOrbit.orbitId) {
-- `src/components/chat/ChatPaymentCards.tsx`:356 — ID mixing detected: threadId: threadId || "",
-- `src/components/chat/ChatPaymentCards.tsx`:573 — ID mixing detected: threadId={threadId}
-- `src/components/communication/ForwardMessageDialog.tsx`:67 — ID mixing detected: const peerName = participants.find((p: any) => p.userId !== userId)?.displayName
-- `src/components/communication/ForwardMessageDialog.tsx`:96 — ID mixing detected: conversationId: selectedThread.conversationId,
-- `src/components/communication/ForwardMessageDialog.tsx`:108 — ID mixing detected: conversationId: selectedThread.conversationId,
-- `src/components/communication/ForwardMessageDialog.tsx`:160 — ID mixing detected: const isSelected = selectedThread?.conversationId === thread.conversationId;
-- `src/components/communication-hub/ContextPanel.tsx`:356 — ID mixing detected: threadId={thread.conversationId || thread.id}
-- `src/components/communication-hub/HudChatPanel.tsx`:149 — ID mixing detected: conversationId: thread?.conversationId ?? null,
-- `src/components/communication-hub/HudChatPanel.tsx`:386 — ID mixing detected: threadId={thread.conversationId || thread.id}
-- `src/components/communication-hub/HudChatPanel.tsx`:396 — ID mixing detected: threadId: thread.conversationId || thread.id,
-- `src/components/communication-hub/HudChatPanel.tsx`:425 — ID mixing detected: threadId: thread.conversationId || thread.id,
-- `src/components/communication-hub/HudContextPanel.tsx`:358 — ID mixing detected: threadId={thread.conversationId || thread.id}
-- `src/components/communication-hub/chat/MessageList.tsx`:63 — ID mixing detected: if (userId && ((msg as any).deleted_for_user_ids as string[] | null)?.includes(u
-- `src/components/communication-hub/chat/bridges/useHudComposerBridge.ts`:58 — ID mixing detected: conversationId: deps.conversationId,
-- `src/components/communication-hub/chat/useAttachments.ts`:160 — ID mixing detected: trace("attachment.preview.update", "output", { conversationId, preview: content,
-- `src/components/communication-hub/chat/useCallActions.ts`:32 — ID mixing detected: conversationId: conversationId ?? null,
-- `src/components/communication-hub/chat/useCallActions.ts`:44 — ID mixing detected: conversationId: conversationId ?? null,
-- `src/components/communication-hub/chat/useCallActions.ts`:67 — ID mixing detected: conversationId: conversationId ?? null,
-- `src/components/communication-hub/chat/useLocationMessage.ts`:32 — ID mixing detected: const conversationId = params.thread?.conversationId;
-- `src/components/communication-hub/chat/useMessageLoader.ts`:143 — ID mixing detected: trace("messages.load.request", "error", { reason: "missing_conversationId", thre
-- `src/components/communication-hub/chat/useMessageLoader.ts`:274 — ID mixing detected: realtimeTrace("message.realtime.echo", "input", { conversationId, channel: `rt:v
-- `src/components/mobility/RideDriverCard.tsx`:71 — ID mixing detected: if (conversationId) navigate(`/orbit/${conversationId}`);
-- `src/components/orbit/OrbitContactsDirectory.tsx`:165 — ID mixing detected: const conversationId = result?.conversationId;
-- `src/components/orbit/OrbitContactsDirectory.tsx`:166 — ID mixing detected: if (conversationId) navigate(`/orbit/${conversationId}`);
+- **marketplace_providers** → src/components/marketplace/LiveCommerceToggle.tsx, src/repositories/marketplace.repository.ts
+- **marketplace_services** → src/components/marketplace/MyListingsPanel.tsx, src/hooks/useListingSync.ts, src/repositories/marketplace.repository.ts, src/repositories/rental.repository.ts
+- **marketplace_reviews** → src/components/marketplace/ReviewReplyDialog.tsx, src/repositories/admin.repository.ts
+- **profiles** → src/components/settings/WalletCurrencySettings.tsx, src/hooks/useUsername.ts, src/lib/action-engine.ts, src/lib/i18n.tsx, src/lib/orbit/orbit-account.repository.ts, src/repositories/auth-utils.repository.ts, src/repositories/concierge.repository.ts, src/repositories/dashboard.repository.ts, src/repositories/delivery.repository.ts, src/repositories/driver-onboarding.repository.ts, src/repositories/mobility.repository.ts, src/repositories/onboarding.repository.ts, src/repositories/orbit-security.repository.ts, src/repositories/orbit.repository.ts, src/repositories/profile-settings.repository.ts, src/repositories/profile.repository.ts, src/repositories/rental.repository.ts, src/repositories/settings.repository.ts, src/pages/client/ClientSettings.tsx
+- **live_trackings** → src/hooks/useDeliveryTracking.ts, src/repositories/delivery.repository.ts
+- **tracking_sessions** → src/hooks/useServiceTracking.ts
+- **tracking_positions** → src/hooks/useServiceTracking.ts
+- **shop_follows** → src/lib/action-engine.ts
+- **contacts** → src/lib/action-engine.ts
+- **audit_logs** → src/lib/audit.ts, src/lib/monitoring.ts, src/domains/admin/adapters/supabase.adapter.ts, src/repositories/document-builder.repository.ts, src/repositories/moderation.repository.ts, src/repositories/settings.repository.ts
+- **concierge_services** → src/lib/concierge/concierge-repository.ts, src/repositories/concierge.repository.ts
+- **orders** → src/lib/core/orderEscrowEngine.ts, src/lib/orchestration/handlers/delivery-handlers.ts, src/lib/orchestration/orchestration-utils.ts, src/lib/orders/orderActions.ts, src/lib/payments/paymentLiveConnector.ts, src/lib/payments/paymentService.ts, src/lib/settlement/orderSettlement.ts
+- **seed_merchant_promos** → src/lib/coupons/couponEngine.ts, src/lib/promo/promoEngine.ts
+- **auto_discovered_merchants** → src/lib/engines/auto-acquisition-engine.ts
+- **user_radar_profiles** → src/lib/engines/personal-radar/personal-profile-engine.ts
+- **user_radar_events** → src/lib/engines/personal-radar/personal-profile-engine.ts
+- **conversations_v2** → src/lib/events/handlers/ride-bridge.handler.ts
+- **mobility_jobs** → src/lib/events/handlers/ride-dispatch.handler.ts, src/lib/mobility/dispatch-reassign-engine.ts, src/lib/mobility/offer-accept-guard.ts, src/lib/mobility/ride-ai-orchestrator.ts, src/lib/mobility/unified-mobility-orchestrator.ts, src/repositories/mobility.repository.ts
+- **mobility_job_offers** → src/lib/events/handlers/ride-dispatch.handler.ts, src/lib/mobility/dispatch-expiry-cron.ts, src/lib/mobility/dispatch-wave-engine.ts, src/lib/mobility/offer-accept-guard.ts, src/lib/mobility/unified-mobility-orchestrator.ts
+- **approval_queues** → src/lib/finance/treasury.ts
+- **seed_merchants** → src/lib/merchant/availabilityEngine.ts, src/lib/merchant/onboarding.ts
+- **seed_products** → src/lib/merchant/onboarding.ts, src/repositories/merchant.repository.ts
+- **mobility_dispatch_runs** → src/lib/mobility/dispatch-reassign-engine.ts, src/lib/mobility/dispatch-wave-engine.ts
+- **mobility_driver_scores** → src/lib/mobility/driver-ai-scorer.ts, src/lib/mobility/unified-driver-scorer.ts
+- **trip_live_state** → src/lib/mobility/driver-gps-pusher.ts, src/lib/mobility/gps-scheduler.ts
+- **trip_location_points** → src/lib/mobility/driver-gps-pusher.ts, src/lib/mobility/gps-scheduler.ts
+- **mobility_ai_logs** → src/lib/mobility/mobility-ai-logger.ts
+- **mobility_pricing_snapshots** → src/lib/mobility/ride-ai-orchestrator.ts, src/lib/mobility/unified-mobility-orchestrator.ts
+- **app_notifications** → src/lib/notifications/notification-reader.ts, src/lib/notifications/notification-writer.ts, src/lib/system/engineConnectorHub.ts
+- **orbit_profiles_v2** → src/lib/orbit/ensureOrbitProfile.ts
+- **conversation_preferences** → src/lib/orbit/orbit-account.repository.ts, src/repositories/communication.repository.ts
+- **user_sessions** → src/lib/orbit-session-manager.ts
+- **login_events** → src/lib/orbit-session-manager.ts
+- **support_tickets** → src/lib/orchestration/handlers/support-handlers.ts
+- **radar_opportunities** → src/lib/radar/opportunity-scorer.ts
+- **radar_signals** → src/lib/radar/signal-ingestor.ts
+- **user_presence** → src/lib/realtime-manager.ts, src/repositories/communication.repository.ts
+- **properties** → src/lib/rental/rental-repository.ts, src/repositories/rental-data.repository.ts
+- **tenants** → src/lib/rental/rental-repository.ts, src/repositories/rental-data.repository.ts
+- **rent_calls** → src/lib/rental/rental-repository.ts, src/repositories/payment-notices.repository.ts, src/repositories/rent-payment.repository.ts, src/repositories/rental-data.repository.ts, src/repositories/rental.repository.ts, src/repositories/tenant.repository.ts
+- **documents** → src/lib/rental/rental-repository.ts, src/repositories/document-builder.repository.ts, src/repositories/documents.repository.ts, src/repositories/rental-data.repository.ts, src/repositories/rental.repository.ts
+- **stay_bookings** → src/lib/seasonal/seasonal-repository.ts
+- **wallet_accounts** → src/lib/wallet/ensureWalletAccount.ts, src/lib/wallet/ledger.ts, src/lib/wallet/wallet-account.ts
+- **wallet_ledger_entries** → src/lib/wallet/ledger.ts, src/domains/wallet/adapters/supabase.adapter.ts
+- **admin_alerts** → src/domains/admin/adapters/supabase.adapter.ts
+- **property_listings_v2** → src/domains/marketplace/adapters/supabase.adapter.ts
+- **bookings_v2** → src/domains/marketplace/adapters/supabase.adapter.ts
 
-## Fix Priority Order
+## 🔧 Fix Priority Order
 
 ### P1 — Immediate
 1. Direct writes in UI/hooks → redirect to orbitDispatch
-2. Duplicate entry points → consolidate to single pipeline
-3. Realtime direct merge → route through owner
-4. ID mixing → normalize identifiers
+2. Realtime direct merge → route through owner
 
 ### P2 — Soon
-5. Duplicate pipeline logic → merge
-6. Duplicate card builders → centralize
-7. SEO/i18n duplication → single owner
+3. Duplicate table writers → consolidate to single repository
+4. ID mixing → normalize identifiers
 
 ### P3 — Later
-8. Legacy wrappers → deprecate
-9. Dead passive layers → remove
+5. Legacy wrappers → deprecate
