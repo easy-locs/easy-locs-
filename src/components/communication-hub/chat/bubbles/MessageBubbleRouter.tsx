@@ -119,7 +119,7 @@ function MessageBubbleRouterInner({ msg, isMe, attachment, currentUserId, blurre
   const kind = detectMediaKind(msg, attachment);
   if (!kind) return null; // Not a media message — caller handles text
 
-  const url = resolveMediaUrl(msg.attachment_url, attachment);
+  const url = resolveMediaUrl(msg, attachment);
 
   // Location: extract coordinates from canonical metadata first, then fallback to content regex
   if (kind === "location") {
