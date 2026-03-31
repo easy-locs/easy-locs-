@@ -48,15 +48,15 @@ export function selectMessageBubbleModel(
     failed?: boolean;
     reply_to?: string | null;
     edited_at?: string | null;
-    metadata?: Record<string, any> | null;
+    contact_name?: string | null;
   },
   currentUserId: string | null | undefined,
-  participants?: Array<{ userId: string; displayName?: string }>,
+  threadPeer?: { displayName?: string; name?: string; email?: string; avatarUrl?: string; avatar_url?: string } | null,
 ): MessageBubbleReadModel {
   const conversationId = msg.conversation_id || msg.conversationId || "";
   const isOutgoing = isOutgoingMessage(msg, currentUserId);
   const isSystem = isSystemMessage(msg);
-  const senderDisplay = resolveSenderDisplay(msg, currentUserId ?? "", participants);
+  const senderDisplay = resolveSenderDisplay(msg, currentUserId ?? "", threadPeer);
 
   return {
     id: msg.id,
