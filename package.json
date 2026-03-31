@@ -22,6 +22,7 @@
   "dependencies": {
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
+    "@capacitor/filesystem": "^8.1.2",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.31",
     "@lovable.dev/cloud-auth-js": "^0.0.3",
