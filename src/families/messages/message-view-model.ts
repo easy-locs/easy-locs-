@@ -21,6 +21,8 @@ export interface MessageViewModel {
   isEdited: boolean;
   isDeleted: boolean;
   isRead: boolean;
+  /** WhatsApp-style delivery status for UI ticks */
+  deliveryStatus: "sending" | "sent" | "delivered" | "read" | "failed";
 
   // UI hints
   clickable: boolean;
@@ -37,6 +39,9 @@ export interface MessageViewModel {
 
   // Reply
   replyToMessageId: string | null;
+
+  /** Upload progress (0-100) for media messages */
+  progress: number | null;
 
   // Raw envelope (escape hatch — discouraged)
   _envelope: CanonicalMessageEnvelope;
@@ -67,6 +72,7 @@ export function toMessageViewModel(
     isEdited: !!envelope.editedAt,
     isDeleted: !!envelope.deletedAt,
     isRead: !!envelope.readAt,
+    deliveryStatus: (envelope.status as MessageViewModel["deliveryStatus"]) || "sent",
     clickable: meta.ui?.clickable ?? false,
     primaryAction: meta.ui?.primaryAction ?? null,
     variant: meta.ui?.variant ?? "default",
@@ -110,6 +116,7 @@ export function toMessageViewModel(
     } : null,
 
     replyToMessageId: (meta.transport as any)?.replyToMessageId ?? null,
+    progress: null,
     _envelope: envelope,
   };
 }
