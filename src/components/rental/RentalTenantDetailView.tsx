@@ -219,7 +219,7 @@ export default function RentalTenantDetailView({
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
           <div className="border-t border-border/50 p-3 flex gap-2">
             <input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => e.key === "Enter" && onSendMessage()}
