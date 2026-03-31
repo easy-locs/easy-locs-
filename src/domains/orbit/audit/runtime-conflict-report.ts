@@ -289,6 +289,31 @@ export const REDIRECTIONS = [
     to: "useHudMessageMutationBridge stable callbacks",
     status: "done",
   },
+  {
+    from: "orbitDispatch raw switch/case (no flow-gate)",
+    to: "orbitDispatch → executeFlow(entryKey) → executor",
+    status: "done",
+  },
+  {
+    from: "receipt.controller direct DB calls (no flow-gate)",
+    to: "receipt.controller → enterFlow/exitFlow per operation",
+    status: "done",
+  },
+  {
+    from: "orbit.services.ts direct pipeline calls (no flow-gate)",
+    to: "orbit.services.ts → enterFlow/exitFlow per sendText/sendMedia/sendVoice/createDirect",
+    status: "done",
+  },
+  {
+    from: "VoiceRecorder.tsx direct insertMessage",
+    to: "VoiceRecorder.tsx → orbitDispatch({ type: 'send_voice' })",
+    status: "done",
+  },
+  {
+    from: "createOrGetDirectConversation direct DB (no dedup)",
+    to: "createOrGetDirectConversation → enterFlow/exitFlow with pair-keyed lock",
+    status: "done",
+  },
 ] as const;
 
 // ══════════════════════════════════════════════
