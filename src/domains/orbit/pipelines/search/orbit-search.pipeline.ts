@@ -1,8 +1,9 @@
 /**
  * orbitSearchPipeline — Canonical search across conversations and messages.
- * Implements debounce-ready, local-first search.
+ * Uses normalizeSearchableText as the SINGLE search normalizer.
  */
 import type { OrbitConversation, OrbitMessage } from "../../types";
+import { normalizeSearchableText } from "../../resolvers/text.resolver";
 
 export interface OrbitSearchResult {
   conversations: OrbitConversation[];
@@ -17,11 +18,11 @@ export function searchConversationsLocal(
   conversations: OrbitConversation[],
   query: string,
 ): OrbitConversation[] {
-  if (!query.trim()) return conversations;
-  const q = query.toLowerCase().trim();
+  const q = normalizeSearchableText(query);
+  if (!q) return conversations;
   return conversations.filter((c) => {
-    if (c.title?.toLowerCase().includes(q)) return true;
-    if (c.lastMessagePreview?.toLowerCase().includes(q)) return true;
+    if (normalizeSearchableText(c.title).includes(q)) return true;
+    if (normalizeSearchableText(c.lastMessagePreview).includes(q)) return true;
     return false;
   });
 }
@@ -33,7 +34,7 @@ export function searchMessagesLocal(
   messages: OrbitMessage[],
   query: string,
 ): OrbitMessage[] {
-  if (!query.trim()) return [];
-  const q = query.toLowerCase().trim();
-  return messages.filter((m) => m.text?.toLowerCase().includes(q));
+  const q = normalizeSearchableText(query);
+  if (!q) return [];
+  return messages.filter((m) => normalizeSearchableText(m.text).includes(q));
 }
