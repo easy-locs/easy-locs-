@@ -34,6 +34,9 @@ interface OrbitStoreState {
   /** Attachments keyed by ID */
   attachments: Record<string, OrbitAttachment>;
 
+  /** Attachment IDs per conversation (index) */
+  attachmentsByConversation: Record<string, string[]>;
+
   /** Receipts keyed by `${messageId}:${userId}:${kind}` */
   receipts: Record<string, OrbitReceipt>;
 
@@ -64,6 +67,7 @@ interface OrbitStoreState {
   // ── ATTACHMENT ACTIONS ──
   mergeAttachment: (att: OrbitAttachment) => void;
   updateAttachmentUpload: (id: string, partial: Partial<OrbitAttachment>) => void;
+  reconcileAttachment: (localId: string, serverAtt: OrbitAttachment) => void;
 
   // ── RECEIPT ACTIONS ──
   mergeReceipt: (receipt: OrbitReceipt) => void;
@@ -75,6 +79,9 @@ interface OrbitStoreState {
   getConversation: (id: string) => OrbitConversation | undefined;
   getMessage: (id: string) => OrbitMessage | undefined;
   getMessagesForConversation: (conversationId: string) => OrbitMessage[];
+  getAttachmentsForConversation: (conversationId: string) => OrbitAttachment[];
+  getAttachmentsForMessage: (conversationId: string, message: OrbitMessage) => OrbitAttachment[];
+  getAttachmentScoped: (conversationId: string, attachmentId: string) => OrbitAttachment | null;
 }
 
 // ══════════════════════════════════════════════
