@@ -1,6 +1,7 @@
 /**
- * OnboardingChecklist — Dashboard widget showing setup progress
- * Appears for landlord users who haven't completed all setup steps.
+ * OnboardingChecklist — Dashboard widget showing setup progress.
+ * Pure shell — all projection logic in dashboard.read-model.ts,
+ * all actions in dashboard.actions.ts.
  */
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,103 +14,41 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import * as checklistRepo from "@/repositories/onboarding-checklist.repository";
-import { useI18n } from "@/lib/i18n";
+import { projectChecklist } from "@/families/dashboard/dashboard.read-model";
+import { dismissChecklist, isChecklistDismissed } from "@/families/dashboard/dashboard.actions";
 
-interface ChecklistItem {
-  id: string;
-  label: string;
-  description: string;
-  icon: React.ElementType;
-  route: string;
-  done: boolean;
-}
+const ICON_MAP: Record<string, React.ElementType> = {
+  Building, Users, FileText, CreditCard, MessageSquare,
+};
 
 const OnboardingChecklist = () => {
   const { orgId, user } = useAuth();
-  const { t } = useI18n();
   const [collapsed, setCollapsed] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [counts, setCounts] = useState({
-    properties: 0,
-    tenants: 0,
-    documents: 0,
-    ownerProfile: false,
-    payments: 0,
-    messages: 0,
+    properties: 0, tenants: 0, documents: 0,
+    ownerProfile: false, payments: 0, messages: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!orgId || !user) { setLoading(false); return; }
-
-    // Check if dismissed via localStorage
-    const key = `easylocs_checklist_dismissed_${user.id}`;
-    if (localStorage.getItem(key) === "true") {
+    if (isChecklistDismissed(user.id)) {
       setDismissed(true);
       setLoading(false);
       return;
     }
-
     checklistRepo.fetchChecklistCounts(orgId).then(setCounts).catch(() => {}).finally(() => setLoading(false));
   }, [orgId, user]);
 
-  const items: ChecklistItem[] = useMemo(() => [
-    {
-      id: "property",
-      label: "Ajouter un bien",
-      description: "Créez votre premier bien immobilier",
-      icon: Building,
-      route: "/dashboard/property-management",
-      done: counts.properties > 0,
-    },
-    {
-      id: "tenant",
-      label: "Ajouter un locataire",
-      description: "Enregistrez votre premier locataire",
-      icon: Users,
-      route: "/dashboard/rental?tab=tenants",
-      done: counts.tenants > 0,
-    },
-    {
-      id: "document",
-      label: "Générer un document",
-      description: "Bail, quittance, état des lieux…",
-      icon: FileText,
-      route: "/dashboard/documents",
-      done: counts.documents > 0,
-    },
-    {
-      id: "payment",
-      label: "Configurer les loyers",
-      description: "Appels de loyer automatiques",
-      icon: CreditCard,
-      route: "/dashboard/rental?tab=payments",
-      done: counts.payments > 0,
-    },
-    {
-      id: "communication",
-      label: "Envoyer un message",
-      description: "Utilisez le centre de communication",
-      icon: MessageSquare,
-      route: "/dashboard/communication",
-      done: counts.messages > 0,
-    },
-  ], [counts]);
-
-  const doneCount = items.filter(i => i.done).length;
-  const progress = Math.round((doneCount / items.length) * 100);
-  const allDone = doneCount === items.length;
+  const model = useMemo(() => projectChecklist(counts), [counts]);
 
   const handleDismiss = () => {
-    if (user) {
-      localStorage.setItem(`easylocs_checklist_dismissed_${user.id}`, "true");
-    }
+    if (user) dismissChecklist(user.id);
     setDismissed(true);
   };
 
-  if (loading || dismissed || !orgId) return null;
-  // Auto-dismiss if all steps done
-  if (allDone) return null;
+  if (loading || dismissed || !orgId || model.allDone) return null;
 
   return (
     <motion.div
@@ -125,7 +64,7 @@ const OnboardingChecklist = () => {
           </div>
           <div className="min-w-0">
             <h3 className="line-clamp-1 text-sm font-bold text-foreground">Configuration</h3>
-            <p className="line-clamp-2 text-xs text-muted-foreground">{doneCount}/{items.length} étapes complétées</p>
+            <p className="line-clamp-2 text-xs text-muted-foreground">{model.doneCount}/{model.totalCount} étapes complétées</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -139,7 +78,7 @@ const OnboardingChecklist = () => {
       </div>
 
       <div className="px-4 pb-2">
-        <Progress value={progress} className="h-1.5" />
+        <Progress value={model.progress} className="h-1.5" />
       </div>
 
       <AnimatePresence>
@@ -152,16 +91,14 @@ const OnboardingChecklist = () => {
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 space-y-1">
-              {items.map((item) => {
-                const Icon = item.icon;
+              {model.items.map((item) => {
+                const Icon = ICON_MAP[item.iconKey] || Building;
                 return (
                   <Link
                     key={item.id}
                     to={item.route}
                     className={`flex items-center gap-3 p-2.5 rounded-lg transition-all group ${
-                      item.done
-                        ? "opacity-60"
-                        : "hover:bg-muted"
+                      item.done ? "opacity-60" : "hover:bg-muted"
                     }`}
                   >
                     {item.done ? (
