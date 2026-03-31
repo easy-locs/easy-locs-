@@ -334,6 +334,16 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
     set((s) => {
       const att = s.attachments[id];
       if (!att) return s;
+      // ══ KIND STABILITY: never allow kind change through partial update ══
+      if ('kind' in partial && partial.kind !== att.kind) {
+        if (import.meta.env.DEV) {
+          console.error("[orbitStore.updateAttachmentUpload] KIND MUTATION blocked", {
+            id, from: att.kind, to: partial.kind,
+          });
+        }
+        const { kind: _, ...safePartial } = partial as any;
+        return { attachments: { ...s.attachments, [id]: { ...att, ...safePartial } } };
+      }
       return { attachments: { ...s.attachments, [id]: { ...att, ...partial } } };
     }),
 
