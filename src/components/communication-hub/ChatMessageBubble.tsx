@@ -270,12 +270,15 @@ function ChatMessageBubble({
           </div>
         )}
 
-        {/* Sender name for received messages (first in group only) */}
-        {!isMe && !isConsecutive && (
-          <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
-            {msg.contact_name || threadName || "Contact"}
-          </p>
-        )}
+        {/* Sender name — resolved via canonical identity resolver */}
+        {!isMe && !isConsecutive && (() => {
+          const senderInfo = resolveSenderDisplay(msg, currentUserId, { name: threadName });
+          return (
+            <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
+              {senderInfo.displayName}
+            </p>
+          );
+        })()}
 
         {/* Email indicator */}
         {isInboundEmail && (
