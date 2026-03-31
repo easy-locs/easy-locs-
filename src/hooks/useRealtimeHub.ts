@@ -13,6 +13,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
 import React from "react";
+import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 
 // V3: Map V2 canonical tables to orbit modules
 const TABLE_TO_MODULE: Record<string, OrbitModule> = {
