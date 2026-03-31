@@ -2,6 +2,7 @@
  * MessageList — Memoized message list with isolated render boundaries.
  * Hot-path optimized: filters memoized, callbacks stable, rows isolated.
  * Each message is wrapped in OrbitMessageInteractiveWrapper for gestures + selection.
+ * Identity resolution uses CANONICAL resolvers — no inline sender checks.
  */
 import { forwardRef, memo, useMemo, useCallback } from "react";
 import { MessageCircle } from "lucide-react";
@@ -13,6 +14,7 @@ import MessageCardRenderer from "@/components/communication/MessageCardRenderer"
 import OrbitMessageInteractiveWrapper from "@/components/orbit/OrbitMessageInteractiveWrapper";
 import { useOrbitSelectionStore } from "@/stores/orbit/selection.store";
 import { resolveMessageMode } from "@/families/messages/message-mode";
+import { isOutgoingMessage, isConsecutiveMessage, isSystemMessage } from "@/domains/orbit/resolvers";
 import type { ChatMessage } from "../types";
 
 interface Props {
