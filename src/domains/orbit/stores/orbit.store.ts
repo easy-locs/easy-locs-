@@ -97,6 +97,7 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
   receipts: {},
   tempIdMap: {},
   activeConversationId: null,
+  hydrating: false,
 
   // ── CONVERSATION ──
 
