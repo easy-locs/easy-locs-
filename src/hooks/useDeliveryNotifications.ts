@@ -5,6 +5,7 @@
 import { useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { registerSubscription } from "@/lib/realtime/subscription-registry";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { NotificationSound } from "@/families/notifications/notification-sound";
@@ -73,21 +74,26 @@ export function useDeliveryNotifications() {
     if (!user) return;
     requestPermission();
 
-    // Subscribe to mobility_jobs changes for this user
-    const channel = supabase
-      .channel(`mobility-notifs-${user.id}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "mobility_jobs",
-      }, handleJobChange)
-      .subscribe();
+    const unsubRegistry = registerSubscription(`delivery.notifications:${user.id}`, () => {
+      const channel = supabase
+        .channel(`mobility-notifs-${user.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "mobility_jobs",
+        }, handleJobChange)
+        .subscribe();
 
-    channelRef.current = channel;
+      channelRef.current = channel;
+
+      return () => {
+        removeRealtimeChannel(channel);
+        channelRef.current = null;
+      };
+    });
 
     return () => {
-      channel.unsubscribe();
-      channelRef.current = null;
+      unsubRegistry();
     };
   }, [user, handleJobChange, requestPermission]);
 

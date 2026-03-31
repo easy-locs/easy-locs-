@@ -6,6 +6,7 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { registerSubscription } from "@/lib/realtime/subscription-registry";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
@@ -18,38 +19,39 @@ export default function RealtimeMessageToast() {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
-      .channel("msg-toast-listener")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "chat_messages_v2" },
-        (payload) => {
-          const msg = payload.new as any;
-          // Don't notify for own messages
-          if (isOutgoingMessage(msg, user.id)) return;
-          // Deduplicate
-          if (msg.id === lastNotified.current) return;
-          lastNotified.current = msg.id;
+    const unsub = registerSubscription(`orbit.toast:${user.id}`, () => {
+      const channel = supabase
+        .channel("msg-toast-listener")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "chat_messages_v2" },
+          (payload) => {
+            const msg = payload.new as any;
+            if (isOutgoingMessage(msg, user.id)) return;
+            if (msg.id === lastNotified.current) return;
+            lastNotified.current = msg.id;
 
-          const senderName = msg.metadata?.sender_name || "Someone";
-          const preview = (msg.body || "").slice(0, 80);
+            const senderName = msg.metadata?.sender_name || "Someone";
+            const preview = (msg.body || "").slice(0, 80);
 
-          toast(senderName, {
-            description: preview || "New message",
-            icon: <MessageSquare className="h-4 w-4" />,
-            duration: 5000,
-            action: {
-              label: "View",
-              onClick: () => {
-                window.location.href = `/orbit?conversation=${msg.conversation_id}`;
+            toast(senderName, {
+              description: preview || "New message",
+              icon: <MessageSquare className="h-4 w-4" />,
+              duration: 5000,
+              action: {
+                label: "View",
+                onClick: () => {
+                  window.location.href = `/orbit?conversation=${msg.conversation_id}`;
+                },
               },
-            },
-          });
-        }
-      )
-      .subscribe();
+            });
+          }
+        )
+        .subscribe();
+      return () => removeRealtimeChannel(channel);
+    });
 
-    return () => { removeRealtimeChannel(channel); };
+    return () => { unsub(); };
   }, [user]);
 
   return null;
