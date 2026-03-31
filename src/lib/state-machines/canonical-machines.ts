@@ -3,7 +3,15 @@
  * No state transition outside these definitions is allowed.
  */
 
-import { createStateMachine, type StateMachineDefinition } from "@/lib/state-machine";
+/** Lightweight machine definition for canonical entities */
+interface StateNode<S extends string> {
+  on?: Record<string, S>;
+}
+
+interface CanonicalMachineDef<S extends string> {
+  initial: S;
+  states: Record<S, StateNode<S>>;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // MESSAGE STATE MACHINE
