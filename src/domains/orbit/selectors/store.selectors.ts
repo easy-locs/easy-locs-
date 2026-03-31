@@ -35,12 +35,26 @@ export function useTotalUnreadCount(): number {
 // MESSAGE SELECTORS
 // ══════════════════════════════════════════════
 
-/** Messages for a conversation, sorted chronologically. */
+/** Messages for a conversation, sorted chronologically. HARD-SCOPED by conversationId. */
 export function useConversationMessages(conversationId: string | null): OrbitMessage[] {
   return useOrbitStore((s) => {
     if (!conversationId) return [];
     const ids = s.messagesByConversation[conversationId] || [];
-    const msgs = ids.map((id) => s.messages[id]).filter(Boolean);
+    const msgs = ids
+      .map((id) => s.messages[id])
+      .filter((m): m is OrbitMessage => !!m && m.conversationId === conversationId);
+    
+    if (import.meta.env.DEV) {
+      const rawMsgs = ids.map((id) => s.messages[id]).filter(Boolean);
+      const foreign = rawMsgs.filter((m) => m.conversationId !== conversationId);
+      if (foreign.length > 0) {
+        console.error("[useConversationMessages] LEAK DETECTED", {
+          conversationId, foreignCount: foreign.length,
+          foreignIds: foreign.map((m) => m.id),
+        });
+      }
+    }
+    
     return msgs.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   });
 }
