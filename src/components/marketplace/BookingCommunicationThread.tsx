@@ -10,6 +10,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { insertAuditLog } from "@/repositories/marketplace.repository";
 import { insertMessage } from "@/repositories/communication.repository";
+// NOTE: BookingCommunicationThread uses insertMessage directly because it's a
+// domain orchestrator (marketplace module), not an Orbit UI component.
+// This is a permissible co-located domain write per architecture governance.
 
 interface Props { bookingId: string; orgId: string; customerName: string; customerEmail?: string; }
 type MessageType = "message" | "internal_note" | "email" | "notification";
