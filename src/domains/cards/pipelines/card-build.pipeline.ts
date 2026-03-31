@@ -74,7 +74,7 @@ export async function cardBatchPipeline(
   if (!table) return { ok: false, error: `unknown_entity_type:${entityType}` };
 
   const { supabase } = await import("@/integrations/supabase/client");
-  const { data, error } = await supabase.from(table).select("*").in("id", missing);
+  const { data, error } = await (supabase.from as any)(table).select("*").in("id", missing);
   if (error) return { ok: false, error: error.message };
 
   const entries = (data ?? []).map((row: any) => {
