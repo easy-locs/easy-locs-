@@ -68,6 +68,13 @@ function ChatMessageBubble({
   };
   // Legacy gesture handlers removed — now handled by OrbitMessageInteractiveWrapper
 
+  // ══ SCOPED ATTACHMENT RESOLUTION ══
+  const attachmentIds = (rawMsg as any).attachmentIds ?? (rawMsg as any).attachment_ids ?? null;
+  const scopedAttachment = useScopedMessageAttachment(
+    conversationId || (rawMsg as any).conversationId || (rawMsg as any).conversation_id,
+    attachmentIds,
+  );
+
   const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
   const isDeleted = !!(msg as any).deleted_for_all;
   const isInboundEmail = msg.message_type === "inbound_email";
