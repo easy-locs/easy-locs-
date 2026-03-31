@@ -9,7 +9,7 @@
  */
 
 import { useMemo } from "react";
-import { selectMessageBubbleModel, type MessageBubbleReadModel } from "@/domains/orbit/read-models";
+import { selectMessageBubbleModel, type MessageBubbleReadModel } from "./message-bubble.read-model";
 
 interface RawMsg {
   id: string;
