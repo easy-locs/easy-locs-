@@ -93,49 +93,17 @@ export async function executeRetryMessage(
 async function resendByType(msg: any): Promise<void> {
   const { supabase } = await import("@/integrations/supabase/client");
 
-  switch (msg.messageType) {
-    case "text": {
-      const { error } = await supabase.from("chat_messages_v2").update({
-        status: "sent",
-        updated_at: new Date().toISOString(),
-      }).eq("id", msg.id);
-      if (error) throw error;
-      break;
-    }
+  // For all message types, retry updates timestamps to trigger re-delivery
+  // The actual status is tracked in orbitStore, not in the DB column
+  const updatePayload: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+    failed_at: null,
+  };
 
-    case "image":
-    case "video":
-    case "file": {
-      // Re-upload attachment if needed, then update message status
-      const { error } = await supabase.from("chat_messages_v2").update({
-        status: "sent",
-        updated_at: new Date().toISOString(),
-      }).eq("id", msg.id);
-      if (error) throw error;
-      break;
-    }
+  const { error } = await supabase
+    .from("chat_messages_v2")
+    .update(updatePayload)
+    .eq("id", msg.id);
 
-    case "voice":
-    case "audio": {
-      const { error } = await supabase.from("chat_messages_v2").update({
-        status: "sent",
-        updated_at: new Date().toISOString(),
-      }).eq("id", msg.id);
-      if (error) throw error;
-      break;
-    }
-
-    case "location_static":
-    case "location_live": {
-      const { error } = await supabase.from("chat_messages_v2").update({
-        status: "sent",
-        updated_at: new Date().toISOString(),
-      }).eq("id", msg.id);
-      if (error) throw error;
-      break;
-    }
-
-    default:
-      throw new Error(`unsupported_retry_type: ${msg.messageType}`);
-  }
+  if (error) throw error;
 }
