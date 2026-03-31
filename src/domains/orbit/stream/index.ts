@@ -30,6 +30,18 @@ export type { VoiceStreamHandle } from "./voice-stream";
 export { offlineQueue } from "./offline-queue";
 export type { OfflineTask } from "./offline-queue";
 
+// ── Instant Delivery System ──
+export {
+  createInstantMessage,
+  onServerAck,
+  onDelivered,
+  onRead,
+  onFailed,
+  onProgress,
+  canTransitionStatus,
+} from "./instant-delivery";
+export type { InstantMessage, StatusUpdate, ProgressUpdate } from "./instant-delivery";
+
 // ── Multi-Device Sync ──
 export { installMultiDeviceSync, broadcastToDevices, getDeviceId } from "./multi-device-sync";
 
