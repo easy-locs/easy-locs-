@@ -35,9 +35,10 @@ export interface SendTextResult {
 export function validateTextInput(input: SendTextInput): string | null {
   if (!input.conversationId) return "missing_conversation_id";
   if (!input.senderId) return "missing_sender_id";
-  const trimmed = (input.body || "").trim();
-  if (!trimmed) return "empty_body";
-  if (trimmed.length > 10_000) return "body_too_long";
+  // Delegate text validation to canonical resolver
+  const normalized = normalizeTextInput(input.body);
+  if (!normalized) return "empty_body";
+  if (normalized.length > 10_000) return "body_too_long";
   return null;
 }
 
