@@ -67,7 +67,7 @@ export function createMeService(ctx: SecurityContext | null): MeUseCases {
       // Input validation via micron
       const validation = validatePreferences({ language: prefs.language });
       if (!validation.ok) {
-        return { ok: false as const, error: validation.reason };
+        return { ok: false as const, error: (validation as { ok: false; reason: string }).reason };
       }
 
       const flowKey = `me.preferences.update:${userId}`;
