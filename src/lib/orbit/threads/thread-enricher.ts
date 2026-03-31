@@ -36,10 +36,9 @@ export async function enrichPeerProfiles(
     const base: any = profileMap.get(thread.peerUserId);
     const orbit: any = orbitMap.get(thread.peerUserId);
     if (!base && !orbit) continue;
-    const fullName = [base?.first_name, base?.last_name].filter(Boolean).join(" ").trim();
-    thread.name = orbit?.display_name || fullName || base?.name || thread.name || "Contact";
+    thread.name = resolveDisplayName({ displayName: orbit?.display_name, name: base?.name, firstName: base?.first_name, lastName: base?.last_name }) || thread.name || "Contact";
     thread.email = orbit?.email || base?.email || thread.email || null;
-    thread.avatarUrl = orbit?.avatar_url || thread.avatarUrl || null;
+    thread.avatarUrl = resolveAvatar({ avatarUrl: orbit?.avatar_url }) || thread.avatarUrl || null;
     thread.peerOrbitId = orbit?.orbit_id || thread.peerOrbitId || null;
   }
 

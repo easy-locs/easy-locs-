@@ -51,7 +51,7 @@ export default function YouIdentityCard({
 
         <div className="flex-1 min-w-0">
           <p className="text-lg font-semibold leading-tight" style={{ color: "hsl(var(--foreground))" }}>
-            {displayName || email}
+            {resolveDisplayName({ displayName, email })}
           </p>
           {username && (
             <p className="text-sm font-mono mt-0.5" style={{ color: "hsl(var(--primary))" }}>

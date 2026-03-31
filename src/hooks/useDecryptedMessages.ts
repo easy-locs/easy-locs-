@@ -63,7 +63,7 @@ export function useDecryptedMessages(
         }
 
         try {
-          const peerId = msg.sender_id === userId ? userId : msg.sender_id;
+          const peerId = isOutgoingMessage(msg, userId) ? userId : msg.sender_id;
           const plain = await decrypt(msg.content, peerId);
           let finalContent = plain || "🔒 [Encrypted message]";
           // Decompress if compressed
