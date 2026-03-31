@@ -121,6 +121,11 @@ export interface EditMessageCommand extends BaseCommand {
   newBody: string;
 }
 
+export interface RetryMessageCommand extends BaseCommand {
+  type: "retry_message";
+  messageId: string;
+}
+
 export interface ReplyCommand extends BaseCommand {
   type: "reply";
   conversationId: string;
