@@ -41,12 +41,27 @@ export function useConversationViewModel(conversationId: string | null): Convers
     if (!conversationId || !conversation) return null;
 
     const ids = messageIds || [];
-    const all = ids.map((id) => messagesMap[id]).filter(Boolean);
-    const sorted = [...all].sort((a, b) => {
-      const ta = new Date(a.createdAt).getTime();
-      const tb = new Date(b.createdAt).getTime();
-      return ta - tb;
-    });
+    const all = ids.map((id) => scopedMessages[id]).filter(Boolean);
+    
+    // DEV assertion: verify every message belongs to this conversation
+    if (import.meta.env.DEV) {
+      const foreign = all.filter((m) => m.conversationId !== conversationId);
+      if (foreign.length > 0) {
+        console.error("[ConversationViewModel] FOREIGN MESSAGES DETECTED in conversation", {
+          conversationId,
+          foreignIds: foreign.map((m) => m.id),
+          foreignConvIds: foreign.map((m) => m.conversationId),
+        });
+      }
+    }
+    
+    const sorted = [...all]
+      .filter((m) => m.conversationId === conversationId) // hard filter — never leak
+      .sort((a, b) => {
+        const ta = new Date(a.createdAt).getTime();
+        const tb = new Date(b.createdAt).getTime();
+        return ta - tb;
+      });
 
     return {
       conversationId,
@@ -58,5 +73,5 @@ export function useConversationViewModel(conversationId: string | null): Convers
       failedMessages: sorted.filter((m) => m.status === "failed"),
       hasMessages: sorted.length > 0,
     };
-  }, [conversationId, conversation, messageIds, messagesMap]);
+  }, [conversationId, conversation, messageIds, scopedMessages]);
 }
