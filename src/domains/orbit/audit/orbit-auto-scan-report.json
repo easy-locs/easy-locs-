@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-03-31T10:03:47.154Z",
-  "auditCount": 690,
-  "conflictCount": 100,
-  "highCount": 15,
-  "mediumCount": 85,
+  "generatedAt": "2026-03-31T10:11:36.961Z",
+  "auditCount": 686,
+  "conflictCount": 67,
+  "highCount": 0,
+  "mediumCount": 67,
   "audit": [
     {
       "file": "src/components/booking/BookingDocumentsPanel.tsx",
@@ -225,32 +225,6 @@
       "message": "Action handler \"handleSend\" in UI",
       "fix": "Ensure it delegates to orbitDispatch, not direct write.",
       "code": "await messageSender.handleSend(draft);"
-    },
-    {
-      "file": "src/components/communication-hub/chat/useAttachments.ts",
-      "line": 148,
-      "type": "write",
-      "pattern": "insertMessage",
-      "severity": "HIGH",
-      "entry": "UNMAPPED",
-      "pipeline": "UNMAPPED",
-      "owner": "UNMAPPED",
-      "message": "insertMessage in UI",
-      "fix": "Redirect through orbitDispatch / pipeline.",
-      "code": "await insertMessage({"
-    },
-    {
-      "file": "src/components/communication-hub/chat/useAttachments.ts",
-      "line": 160,
-      "type": "id",
-      "pattern": "id_mixing",
-      "severity": "MEDIUM",
-      "entry": "UNMAPPED",
-      "pipeline": "UNMAPPED",
-      "owner": "UNMAPPED",
-      "message": "Potential ID mixing: conversationId vs threadId/chatId",
-      "fix": "Normalize to single canonical ID type per context.",
-      "code": "trace(\"attachment.preview.update\", \"output\", { conversationId, preview: content, threadId: params.thread?.id ?? null });"
     },
     {
       "file": "src/components/communication-hub/chat/useMessageLoader.ts",
@@ -504,12 +478,12 @@
       "line": 44,
       "type": "write",
       "pattern": "insertMessage",
-      "severity": "HIGH",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
       "message": "insertMessage in UI",
-      "fix": "Redirect through orbitDispatch / pipeline.",
+      "fix": "Review placement.",
       "code": "await insertMessage({"
     },
     {
@@ -751,12 +725,12 @@
       "line": 75,
       "type": "write",
       "pattern": "insertMessage",
-      "severity": "HIGH",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
       "message": "insertMessage in UI",
-      "fix": "Redirect through orbitDispatch / pipeline.",
+      "fix": "Review placement.",
       "code": "await insertMessage({"
     },
     {
@@ -1280,32 +1254,6 @@
       "code": "markAsRead: store.markAsRead,"
     },
     {
-      "file": "src/hooks/useOfflineMessages.ts",
-      "line": 102,
-      "type": "write",
-      "pattern": "insertMessage",
-      "severity": "HIGH",
-      "entry": "UNMAPPED",
-      "pipeline": "UNMAPPED",
-      "owner": "UNMAPPED",
-      "message": "insertMessage in hook",
-      "fix": "Redirect through orbitDispatch / pipeline.",
-      "code": "await commRepo.insertMessage({"
-    },
-    {
-      "file": "src/hooks/useOfflineMessages.ts",
-      "line": 105,
-      "type": "id",
-      "pattern": "id_mixing",
-      "severity": "MEDIUM",
-      "entry": "UNMAPPED",
-      "pipeline": "UNMAPPED",
-      "owner": "UNMAPPED",
-      "message": "Potential ID mixing: orbitId vs userId",
-      "fix": "Normalize to single canonical ID type per context.",
-      "code": "senderOrbitId: meta.orbitId || `orbit_${(meta.userId || authUserId || \"\").slice(0, 12)}`,"
-    },
-    {
       "file": "src/hooks/useRadarLiveContext.ts",
       "line": 57,
       "type": "event",
@@ -1752,7 +1700,7 @@
       "line": 115,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -1765,7 +1713,7 @@
       "line": 135,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2116,7 +2064,7 @@
       "line": 227,
       "type": "write",
       "pattern": "insertMessage",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2129,7 +2077,7 @@
       "line": 285,
       "type": "write",
       "pattern": "insertMessage",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2181,7 +2129,7 @@
       "line": 13,
       "type": "write",
       "pattern": "supabase_functions",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2207,7 +2155,7 @@
       "line": 25,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2220,7 +2168,7 @@
       "line": 27,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2233,7 +2181,7 @@
       "line": 37,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2246,7 +2194,7 @@
       "line": 49,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2259,7 +2207,7 @@
       "line": 61,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2298,7 +2246,7 @@
       "line": 15,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2350,7 +2298,7 @@
       "line": 32,
       "type": "write",
       "pattern": "supabase_functions",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2675,7 +2623,7 @@
       "line": 117,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2740,7 +2688,7 @@
       "line": 332,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2753,7 +2701,7 @@
       "line": 358,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2766,7 +2714,7 @@
       "line": 17,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2779,7 +2727,7 @@
       "line": 23,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2792,7 +2740,7 @@
       "line": 28,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2805,7 +2753,7 @@
       "line": 41,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2818,7 +2766,7 @@
       "line": 47,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2831,7 +2779,7 @@
       "line": 52,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2844,7 +2792,7 @@
       "line": 65,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2857,7 +2805,7 @@
       "line": 71,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2870,7 +2818,7 @@
       "line": 139,
       "type": "write",
       "pattern": "insertMessage",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -2909,7 +2857,7 @@
       "line": 175,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -3260,7 +3208,7 @@
       "line": 29,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -3273,7 +3221,7 @@
       "line": 36,
       "type": "write",
       "pattern": "supabase_from",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -3286,7 +3234,7 @@
       "line": 12,
       "type": "write",
       "pattern": "supabase_functions",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -3312,7 +3260,7 @@
       "line": 34,
       "type": "write",
       "pattern": "supabase_functions",
-      "severity": "MEDIUM",
+      "severity": "LOW",
       "entry": "UNMAPPED",
       "pipeline": "UNMAPPED",
       "owner": "UNMAPPED",
@@ -8978,158 +8926,6 @@
   ],
   "conflicts": [
     {
-      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
-      "severity": "HIGH",
-      "file": "src/components/communication-hub/chat/useAttachments.ts",
-      "line": 148,
-      "pattern": "insertMessage",
-      "entry": "UNMAPPED",
-      "message": "Direct write (insertMessage) in src/components/communication-hub/chat/useAttachments.ts:148",
-      "fix": "Move behind orbitDispatch / pipeline / repository."
-    },
-    {
-      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
-      "severity": "HIGH",
-      "file": "src/components/marketplace/BookingCommunicationThread.tsx",
-      "line": 44,
-      "pattern": "insertMessage",
-      "entry": "UNMAPPED",
-      "message": "Direct write (insertMessage) in src/components/marketplace/BookingCommunicationThread.tsx:44",
-      "fix": "Move behind orbitDispatch / pipeline / repository."
-    },
-    {
-      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
-      "severity": "HIGH",
-      "file": "src/components/public/GuestBookingReply.tsx",
-      "line": 75,
-      "pattern": "insertMessage",
-      "entry": "UNMAPPED",
-      "message": "Direct write (insertMessage) in src/components/public/GuestBookingReply.tsx:75",
-      "fix": "Move behind orbitDispatch / pipeline / repository."
-    },
-    {
-      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
-      "severity": "HIGH",
-      "file": "src/hooks/useOfflineMessages.ts",
-      "line": 102,
-      "pattern": "insertMessage",
-      "entry": "UNMAPPED",
-      "message": "Direct write (insertMessage) in src/hooks/useOfflineMessages.ts:102",
-      "fix": "Move behind orbitDispatch / pipeline / repository."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/components/pos/KitchenQueue.tsx",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/components/storefront/AuctionManager.tsx",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/components/storefront/OrdersManager.tsx",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/hooks/useListingSync.ts",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/hooks/useServiceTracking.ts",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/lib/engines/notification-engine.ts",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/lib/orbit/signaling.ts",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/lib/realtime-manager.ts",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/lib/rental/rental-repository.ts",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/lib/tracking/live-tracking.ts",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "REALTIME_DIRECT_WRITE",
-      "severity": "HIGH",
-      "file": "src/pages/MerchantPosPage.tsx",
-      "message": "Realtime listener + direct write in same file outside owner zone",
-      "fix": "Route through handleRealtime / owner merge pipeline."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "marketplace_providers",
-      "files": [
-        "src/components/marketplace/LiveCommerceToggle.tsx",
-        "src/repositories/marketplace.repository.ts"
-      ],
-      "message": "Table \"marketplace_providers\" written from 2 files: src/components/marketplace/LiveCommerceToggle.tsx, src/repositories/marketplace.repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "marketplace_services",
-      "files": [
-        "src/components/marketplace/MyListingsPanel.tsx",
-        "src/hooks/useListingSync.ts",
-        "src/repositories/marketplace.repository.ts",
-        "src/repositories/rental.repository.ts"
-      ],
-      "message": "Table \"marketplace_services\" written from 4 files: src/components/marketplace/MyListingsPanel.tsx, src/hooks/useListingSync.ts, src/repositories/marketplace.repository.ts, src/repositories/rental.repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "marketplace_reviews",
-      "files": [
-        "src/components/marketplace/ReviewReplyDialog.tsx",
-        "src/repositories/admin.repository.ts"
-      ],
-      "message": "Table \"marketplace_reviews\" written from 2 files: src/components/marketplace/ReviewReplyDialog.tsx, src/repositories/admin.repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
       "type": "DUPLICATE_TABLE_WRITER",
       "severity": "MEDIUM",
       "table": "profiles",
@@ -9166,26 +8962,6 @@
         "src/repositories/delivery.repository.ts"
       ],
       "message": "Table \"live_trackings\" written from 2 files: src/hooks/useDeliveryTracking.ts, src/repositories/delivery.repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "tracking_sessions",
-      "files": [
-        "src/hooks/useServiceTracking.ts"
-      ],
-      "message": "Table \"tracking_sessions\" written from 1 files: src/hooks/useServiceTracking.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "tracking_positions",
-      "files": [
-        "src/hooks/useServiceTracking.ts"
-      ],
-      "message": "Table \"tracking_positions\" written from 1 files: src/hooks/useServiceTracking.ts",
       "fix": "Consolidate writes to single repository."
     },
     {
@@ -9259,36 +9035,6 @@
         "src/lib/promo/promoEngine.ts"
       ],
       "message": "Table \"seed_merchant_promos\" written from 2 files: src/lib/coupons/couponEngine.ts, src/lib/promo/promoEngine.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "auto_discovered_merchants",
-      "files": [
-        "src/lib/engines/auto-acquisition-engine.ts"
-      ],
-      "message": "Table \"auto_discovered_merchants\" written from 1 files: src/lib/engines/auto-acquisition-engine.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "user_radar_profiles",
-      "files": [
-        "src/lib/engines/personal-radar/personal-profile-engine.ts"
-      ],
-      "message": "Table \"user_radar_profiles\" written from 1 files: src/lib/engines/personal-radar/personal-profile-engine.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "user_radar_events",
-      "files": [
-        "src/lib/engines/personal-radar/personal-profile-engine.ts"
-      ],
-      "message": "Table \"user_radar_events\" written from 1 files: src/lib/engines/personal-radar/personal-profile-engine.ts",
       "fix": "Consolidate writes to single repository."
     },
     {
@@ -9442,27 +9188,6 @@
     {
       "type": "DUPLICATE_TABLE_WRITER",
       "severity": "MEDIUM",
-      "table": "orbit_profiles_v2",
-      "files": [
-        "src/lib/orbit/ensureOrbitProfile.ts"
-      ],
-      "message": "Table \"orbit_profiles_v2\" written from 1 files: src/lib/orbit/ensureOrbitProfile.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "conversation_preferences",
-      "files": [
-        "src/lib/orbit/orbit-account.repository.ts",
-        "src/repositories/communication.repository.ts"
-      ],
-      "message": "Table \"conversation_preferences\" written from 2 files: src/lib/orbit/orbit-account.repository.ts, src/repositories/communication.repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
       "table": "user_sessions",
       "files": [
         "src/lib/orbit-session-manager.ts"
@@ -9513,85 +9238,11 @@
     {
       "type": "DUPLICATE_TABLE_WRITER",
       "severity": "MEDIUM",
-      "table": "user_presence",
-      "files": [
-        "src/lib/realtime-manager.ts",
-        "src/repositories/communication.repository.ts"
-      ],
-      "message": "Table \"user_presence\" written from 2 files: src/lib/realtime-manager.ts, src/repositories/communication.repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "properties",
-      "files": [
-        "src/lib/rental/rental-repository.ts",
-        "src/repositories/rental-data.repository.ts"
-      ],
-      "message": "Table \"properties\" written from 2 files: src/lib/rental/rental-repository.ts, src/repositories/rental-data.repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "tenants",
-      "files": [
-        "src/lib/rental/rental-repository.ts",
-        "src/repositories/rental-data.repository.ts"
-      ],
-      "message": "Table \"tenants\" written from 2 files: src/lib/rental/rental-repository.ts, src/repositories/rental-data.repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "rent_calls",
-      "files": [
-        "src/lib/rental/rental-repository.ts",
-        "src/repositories/payment-notices.repository.ts",
-        "src/repositories/rent-payment.repository.ts",
-        "src/repositories/rental-data.repository.ts",
-        "src/repositories/rental.repository.ts",
-        "src/repositories/tenant.repository.ts"
-      ],
-      "message": "Table \"rent_calls\" written from 6 files: src/lib/rental/rental-repository.ts, src/repositories/payment-notices.repository.ts, src/repositories/rent-payment.repository.ts, src/repositories/rental-data.repository.ts, src/repositories/rental.repository.ts, src/repositories/tenant.repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "documents",
-      "files": [
-        "src/lib/rental/rental-repository.ts",
-        "src/repositories/document-builder.repository.ts",
-        "src/repositories/documents.repository.ts",
-        "src/repositories/rental-data.repository.ts",
-        "src/repositories/rental.repository.ts"
-      ],
-      "message": "Table \"documents\" written from 5 files: src/lib/rental/rental-repository.ts, src/repositories/document-builder.repository.ts, src/repositories/documents.repository.ts, src/repositories/rental-data.repository.ts, src/repositories/rental.repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
       "table": "stay_bookings",
       "files": [
         "src/lib/seasonal/seasonal-repository.ts"
       ],
       "message": "Table \"stay_bookings\" written from 1 files: src/lib/seasonal/seasonal-repository.ts",
-      "fix": "Consolidate writes to single repository."
-    },
-    {
-      "type": "DUPLICATE_TABLE_WRITER",
-      "severity": "MEDIUM",
-      "table": "wallet_accounts",
-      "files": [
-        "src/lib/wallet/ensureWalletAccount.ts",
-        "src/lib/wallet/ledger.ts",
-        "src/lib/wallet/wallet-account.ts"
-      ],
-      "message": "Table \"wallet_accounts\" written from 3 files: src/lib/wallet/ensureWalletAccount.ts, src/lib/wallet/ledger.ts, src/lib/wallet/wallet-account.ts",
       "fix": "Consolidate writes to single repository."
     },
     {
@@ -9678,14 +9329,6 @@
     {
       "type": "ID_MIXING",
       "severity": "MEDIUM",
-      "file": "src/components/communication-hub/chat/useAttachments.ts",
-      "line": 160,
-      "message": "Potential ID mixing: conversationId vs threadId/chatId",
-      "fix": "Normalize to single canonical ID type per context."
-    },
-    {
-      "type": "ID_MIXING",
-      "severity": "MEDIUM",
       "file": "src/components/communication-hub/chat/useMessageLoader.ts",
       "line": 143,
       "message": "Potential ID mixing: conversationId vs threadId/chatId",
@@ -9745,14 +9388,6 @@
       "file": "src/hooks/useMessageSender.ts",
       "line": 240,
       "message": "Potential ID mixing: conversationId vs threadId/chatId",
-      "fix": "Normalize to single canonical ID type per context."
-    },
-    {
-      "type": "ID_MIXING",
-      "severity": "MEDIUM",
-      "file": "src/hooks/useOfflineMessages.ts",
-      "line": 105,
-      "message": "Potential ID mixing: orbitId vs userId",
       "fix": "Normalize to single canonical ID type per context."
     },
     {
