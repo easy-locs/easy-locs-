@@ -31,17 +31,18 @@ export function transition<S extends string>(
 // MESSAGE STATE MACHINE
 // ═══════════════════════════════════════════════════════════════
 
-export type MessageState = "draft" | "sending" | "sent" | "delivered" | "read" | "failed";
+export type MessageState = "draft" | "sending" | "sent" | "delivered" | "read" | "failed" | "retrying";
 
 export const MESSAGE_MACHINE: CanonicalMachineDef<MessageState> = {
   initial: "draft",
   states: {
     draft: { on: { SEND: "sending" } },
     sending: { on: { ACK: "sent", FAIL: "failed" } },
-    sent: { on: { DELIVER: "delivered" } },
+    sent: { on: { DELIVER: "delivered", READ: "read" } },
     delivered: { on: { READ: "read" } },
     read: {},     // terminal
-    failed: { on: { RETRY: "sending" } },
+    failed: { on: { RETRY: "retrying" } },
+    retrying: { on: { ACK: "sent", FAIL: "failed" } },
   },
 };
 
