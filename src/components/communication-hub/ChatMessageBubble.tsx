@@ -1,6 +1,7 @@
 /**
  * ChatMessageBubble — Premium Signal-grade message bubble.
- * Decomposed into isolated micro-components: BubbleMediaBlock, BubbleMetaFooter, BubbleLocationBlock.
+ * Uses MessageBubbleRouter for type-based media rendering (WhatsApp-grade).
+ * Decomposed into isolated micro-components: MessageBubbleRouter, BubbleMetaFooter, BubbleLinkPreview.
  */
 import { memo, useEffect, useState, useMemo } from "react";
 import {
@@ -8,10 +9,8 @@ import {
   ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText,
 } from "lucide-react";
 import { format } from "date-fns";
-import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
-import { BubbleMediaBlock } from "./chat/BubbleMediaBlock";
+import { MessageBubbleRouter } from "./chat/bubbles/MessageBubbleRouter";
 import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
-import { BubbleLocationBlock } from "./chat/BubbleLocationBlock";
 import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
 
 // haptic removed — gestures handled by OrbitMessageInteractiveWrapper
