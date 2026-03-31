@@ -1,9 +1,22 @@
 /**
- * executeSendText — Strict pipeline: intent → canonical → optimistic → transport → reconcile
+ * executeSendText — Strict pipeline: intent → optimistic STORE INSERT → background DB → reconcile
+ *
+ * FLOW: intent → canonical → store insert (INSTANT) → DB persist → broadcast → reconcile
+ * The text bubble appears at T0+0ms. Network happens after.
  */
 import type { SendTextCommand } from "../orbit-commands";
 import type { ResolvedContext, ExecutorResult } from "./pipeline-types";
 import { createTrace, enterPhase, exitPhase, completeExecutorTrace, failExecutorTrace } from "./pipeline-types";
+import { useOrbitStore } from "@/domains/orbit/stores/orbit.store";
+import { buildTextMeta } from "@/families/messages/build-metadata";
+import { insertMessage, updateConversationTimestamp } from "@/repositories/communication.repository";
+import { broadcastInstantMessage } from "@/lib/realtime-broadcast";
+import { platformBus } from "@/lib/shared/platform-bus";
+import {
+  buildOptimisticTextMessage,
+  validateTextInput,
+  type SendTextInput,
+} from "@/domains/orbit/pipelines/message/send-text.pipeline";
 
 export async function executeSendText(
   ctx: ResolvedContext,
@@ -17,11 +30,22 @@ export async function executeSendText(
     const body = cmd.body?.trim();
     if (!body) return { ok: false, error: "empty_body", phase: "intent" };
     if (!ctx.conversationId) return { ok: false, error: "no_conversation", phase: "intent" };
+
+    const input: SendTextInput = {
+      conversationId: ctx.conversationId,
+      senderId: ctx.senderUserId,
+      senderOrbitId: ctx.senderOrbitId,
+      body,
+      replyToId: cmd.replyToMessageId,
+      encrypted: cmd.encrypted,
+    };
+
+    const validationError = validateTextInput(input);
+    if (validationError) return { ok: false, error: validationError, phase: "intent" };
     exitPhase(trace);
 
-    // ── Phase 2: Canonical ──
+    // ── Phase 2: Canonical metadata ──
     enterPhase(trace, "canonical");
-    const { buildTextMeta } = await import("@/families/messages/build-metadata");
     const metadata = buildTextMeta({
       encrypted: cmd.encrypted,
       category: cmd.category,
@@ -29,54 +53,72 @@ export async function executeSendText(
     });
     exitPhase(trace);
 
-    // ── Phase 3: Optimistic ──
-    // Text uses DB-first optimistic (insert is the optimistic step)
-    enterPhase(trace, "optimistic");
+    // ── Phase 3: INSTANT STORE INSERT — bubble visible NOW (T0+0ms) ──
+    enterPhase(trace, "instant_insert");
+    const optimistic = buildOptimisticTextMessage(input);
+    const store = useOrbitStore.getState();
+    store.mergeMessage(optimistic);
+    const tempId = optimistic.tempId ?? optimistic.id;
+
+    if (import.meta.env.DEV) {
+      console.debug("[executeSendText] Optimistic text merged", {
+        tempId, conversationId: ctx.conversationId, bodyLen: body.length,
+      });
+    }
     exitPhase(trace);
 
-    // ── Phase 4: Transport ──
-    enterPhase(trace, "transport");
-    const { insertMessage, updateConversationTimestamp } = await import("@/repositories/communication.repository");
-    const { broadcastInstantMessage } = await import("@/lib/realtime-broadcast");
-    const { platformBus } = await import("@/lib/shared/platform-bus");
+    // ── Phase 4: Background DB persist + broadcast (non-blocking) ──
+    enterPhase(trace, "background_transport");
+    void (async () => {
+      try {
+        const data = await insertMessage({
+          conversationId: ctx.conversationId,
+          senderUserId: ctx.senderUserId,
+          senderOrbitId: ctx.senderOrbitId,
+          receiverOrbitId: ctx.receiverOrbitId,
+          type: "text",
+          body,
+          replyToMessageId: cmd.replyToMessageId,
+          metadata,
+        });
 
-    const data = await insertMessage({
-      conversationId: ctx.conversationId,
-      senderUserId: ctx.senderUserId,
-      senderOrbitId: ctx.senderOrbitId,
-      receiverOrbitId: ctx.receiverOrbitId,
-      type: "text",
-      body,
-      replyToMessageId: cmd.replyToMessageId,
-      metadata,
-    });
+        // Reconcile: tempId → serverId
+        const serverId = data?.id;
+        if (serverId && serverId !== tempId) {
+          store.reconcileMessage(tempId, { ...optimistic, id: serverId, status: "sent" });
+        } else {
+          store.updateMessageStatus(tempId, "sent");
+        }
 
-    // Sub-50ms peer broadcast
-    broadcastInstantMessage(ctx.conversationId, {
-      id: data.id,
-      conversationId: ctx.conversationId,
-      senderUserId: ctx.senderUserId,
-      senderOrbitId: ctx.senderOrbitId,
-      type: "text",
-      body,
-      metadata: data.metadata,
-      createdAt: data.created_at,
-      confirmed: true,
-    });
-    exitPhase(trace);
+        // Sub-50ms peer broadcast
+        broadcastInstantMessage(ctx.conversationId, {
+          id: serverId || tempId,
+          conversationId: ctx.conversationId,
+          senderUserId: ctx.senderUserId,
+          senderOrbitId: ctx.senderOrbitId,
+          type: "text",
+          body,
+          metadata: data?.metadata || metadata,
+          createdAt: data?.created_at || optimistic.createdAt,
+          confirmed: true,
+        });
 
-    // ── Phase 5: Reconcile ──
-    enterPhase(trace, "reconcile");
-    // Fire-and-forget: timestamp + domain event
-    void updateConversationTimestamp(ctx.conversationId, body.slice(0, 120)).catch(() => {});
-    platformBus.emit("orbit:message_sent", {
-      conversationId: ctx.conversationId,
-      type: "text",
-    }, "orbit", { userId: ctx.senderUserId, orgId: ctx.orgId || undefined });
+        // Fire-and-forget: timestamp + domain event
+        void updateConversationTimestamp(ctx.conversationId, body.slice(0, 120)).catch(() => {});
+        platformBus.emit("orbit:message_sent", {
+          conversationId: ctx.conversationId,
+          type: "text",
+        }, "orbit", { userId: ctx.senderUserId, orgId: ctx.orgId || undefined });
+      } catch (err: any) {
+        // Mark as failed in store so user can retry
+        store.updateMessageStatus(tempId, "failed" as any);
+        console.error("[executeSendText] Background persist failed:", err?.message);
+      }
+    })();
     exitPhase(trace);
 
     completeExecutorTrace(trace);
-    return { ok: true, messageId: data?.id };
+    return { ok: true, messageId: tempId };
   } catch (err: any) {
     failExecutorTrace(trace, err?.message || "unknown");
     return { ok: false, error: err?.message || "send_text_failed", phase: trace.phases[trace.phases.length - 1]?.phase };
