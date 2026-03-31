@@ -69,18 +69,14 @@ export const messageAdapter: MessageRepository = {
 // ── Call Adapter ──
 export const callAdapter: CallRepository = {
   async findById(id: string): Promise<CallSession | null> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await (supabase as any)
-      .from("ghost_call_sessions")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
+    const { callRepo } = await import("@/repositories/call.repository");
+    const { data } = await callRepo.findById(id);
     return data ? mapCallSession(data) : null;
   },
 
   async save(session: CallSession): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await (supabase as any).from("ghost_call_sessions").upsert({
+    const { callRepo } = await import("@/repositories/call.repository");
+    await callRepo.upsert({
       id: session.id,
       caller_id: session.callerId,
       callee_id: session.calleeId,
@@ -90,8 +86,8 @@ export const callAdapter: CallRepository = {
   },
 
   async updateStatus(id: string, status: CallSession["status"]): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await (supabase as any).from("ghost_call_sessions").update({ status }).eq("id", id);
+    const { callRepo } = await import("@/repositories/call.repository");
+    await callRepo.updateStatus(id, status);
     log.info("call_status_updated", { callId: id, status });
   },
 };
