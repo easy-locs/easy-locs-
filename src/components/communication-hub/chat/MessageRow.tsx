@@ -1,7 +1,9 @@
 /**
  * MessageRow — Canonical V2+ message bubble component.
  * WhatsApp-style with pending/failed/read states.
+ * Uses canonical isOutgoingMessage — no inline sender checks.
  */
+import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 
 type Props = {
   message: {
@@ -17,7 +19,7 @@ type Props = {
 };
 
 export function MessageRow({ message, myUserId }: Props) {
-  const mine = message.sender_id === myUserId;
+  const mine = isOutgoingMessage(message, myUserId);
 
   return (
     <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
