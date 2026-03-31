@@ -41,17 +41,21 @@ function FullscreenMediaViewerInner() {
     }
   }, [isOpen]);
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     if (!currentItem) return;
-    const a = document.createElement("a");
-    a.href = currentItem.url;
-    a.download = currentItem.url.split("/").pop() || "download";
-    a.target = "_blank";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }, [currentItem]);
+    const result = await saveMediaToGallery({
+      conversationId: "",
+      attachmentId: `viewer_${currentIndex}`,
+      mediaType: (currentItem.kind as any) || "image",
+      source: { remoteUrl: currentItem.url },
+      actorId: "viewer",
+    });
+    if (result.success) {
+      toast.success("Saved to gallery");
+    } else if (result.error !== "idempotent_skip") {
+      toast.error("Save failed");
+    }
+  }, [currentItem, currentIndex]);
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
