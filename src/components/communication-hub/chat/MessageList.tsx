@@ -174,6 +174,7 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
                     selected={selectedMsgIds.has(msg.id)}
                     selectMode={selectMode}
                     currentUserId={userId}
+                    conversationId={cid}
                     onTranslate={onTranslate}
                     onContextMenu={handleContextMenu}
                     onToggleSelect={onToggleSelect}
