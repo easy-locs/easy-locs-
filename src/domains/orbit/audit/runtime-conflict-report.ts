@@ -248,6 +248,12 @@ export const EXTRACTIONS = [
   "call.viewmodel.ts — read-only projection for call overlay UI",
   "composer.viewmodel.ts — read-only projection for composer state",
   "store.selectors.ts — Zustand selector hooks for optimized reads",
+  "orbit-flow-gate.ts — Full typed registries: PipelineRegistry, OwnerRegistry, SerialRegistry, BatchRegistry, SignalRegistry, executeFlow",
+  "orbitDispatch wired through executeFlow — every command passes through flow-gate anti-duplication",
+  "receipt.controller wired through flow-gate — markRead/markSingleRead/clearMarkedUnread protected",
+  "orbit.services.ts wired through flow-gate — sendTextMessage/sendMediaMessage/sendVoiceMessage/createDirectConversation protected",
+  "VoiceRecorder.tsx redirected through orbitDispatch — no more direct insertMessage",
+  "createOrGetDirectConversation flow-gated — duplicate concurrent creation prevented",
 ] as const;
 
 // ══════════════════════════════════════════════
@@ -260,6 +266,7 @@ export const SUPPRESSIONS = [
   "Inline markRead DB calls in useMessageLoader replaced with receipt.controller",
   "useMessageSender re-export removed from families/messages/index.ts (dead code — no consumers)",
   "6 inline setRawMessages mutation lambdas removed from HudChatPanel (replaced by useHudMessageMutationBridge)",
+  "VoiceRecorder direct insertMessage replaced with orbitDispatch send_voice",
 ] as const;
 
 // ══════════════════════════════════════════════
