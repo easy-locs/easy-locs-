@@ -30,21 +30,30 @@ function resolveStatus(props: Props): DeliveryStatus {
   return "sent";
 }
 
+/**
+ * DeliveryTick — Fixed-width container prevents layout shift on status change.
+ * Transition is opacity-only (no size/position change).
+ */
 function DeliveryTick({ status }: { status: DeliveryStatus }) {
-  switch (status) {
-    case "sending":
-      return <Clock className="h-2.5 w-2.5 animate-pulse" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />;
-    case "sent":
-      return <Check className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }} />;
-    case "delivered":
-      return <CheckCheck className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }} />;
-    case "read":
-      return <CheckCheck className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} />;
-    case "failed":
-      return <AlertCircle className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-danger) / 0.8)" }} />;
-    default:
-      return null;
-  }
+  return (
+    <span className="inline-flex items-center justify-center w-3.5 h-3.5">
+      {status === "sending" && (
+        <Clock className="h-2.5 w-2.5 animate-pulse" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
+      )}
+      {status === "sent" && (
+        <Check className="h-3 w-3 animate-[fade-in_120ms_ease-out]" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }} />
+      )}
+      {status === "delivered" && (
+        <CheckCheck className="h-3 w-3 animate-[fade-in_120ms_ease-out]" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }} />
+      )}
+      {status === "read" && (
+        <CheckCheck className="h-3 w-3 animate-[fade-in_120ms_ease-out]" style={{ color: "hsl(var(--hud-cyan))" }} />
+      )}
+      {status === "failed" && (
+        <AlertCircle className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-danger) / 0.8)" }} />
+      )}
+    </span>
+  );
 }
 
 function BubbleMetaFooterInner(props: Props) {
