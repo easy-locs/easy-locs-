@@ -95,7 +95,8 @@ async function resolveContext(conversationId: string): Promise<ResolvedContext> 
  * orbitDispatch — Execute a canonical Orbit command.
  * This is the ONLY function the UI layer should call for actions.
  *
- * FLOW: idempotency guard → executeFlow(entryKey) → executor → result
+ * FLOW: idempotency → serial queue (per conversation) → flow gate → executor → result
+ * OFFLINE: if offline, queue for later auto-flush.
  */
 export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResult> {
   if (!cmd?.type) return { ok: false, error: "no_command_type" };
