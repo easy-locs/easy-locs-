@@ -72,6 +72,7 @@ export function toMessageViewModel(
     isEdited: !!envelope.editedAt,
     isDeleted: !!envelope.deletedAt,
     isRead: !!envelope.readAt,
+    deliveryStatus: (envelope.status as MessageViewModel["deliveryStatus"]) || "sent",
     clickable: meta.ui?.clickable ?? false,
     primaryAction: meta.ui?.primaryAction ?? null,
     variant: meta.ui?.variant ?? "default",
