@@ -98,52 +98,39 @@ async function executeQrAction(
   targetId: string | null,
   metadata: Record<string, unknown>,
 ): Promise<void> {
+  const { platformBus } = await import("@/lib/shared/platform-bus");
+
   switch (actionType) {
-    case "open_conversation": {
-      // Navigate to orbit conversation
-      const { default: navigate } = await import("@/lib/navigation");
-      navigate(`/orbit/${targetId}`);
+    case "open_conversation":
+      platformBus.emit("navigate", { path: `/orbit/${targetId}` }, "qr");
       break;
-    }
 
-    case "pay": {
-      const { default: navigate } = await import("@/lib/navigation");
-      navigate(`/pay/${targetId}`);
+    case "pay":
+      platformBus.emit("navigate", { path: `/pay/${targetId}` }, "qr");
       break;
-    }
 
-    case "add_contact": {
-      // Delegate to orbit contact pipeline
-      const { default: navigate } = await import("@/lib/navigation");
-      navigate(`/orbit/contacts?add=${targetId}`);
+    case "add_contact":
+      platformBus.emit("navigate", { path: `/orbit/contacts?add=${targetId}` }, "qr");
       break;
-    }
 
-    case "join_group": {
-      const { default: navigate } = await import("@/lib/navigation");
-      navigate(`/orbit/groups/join/${targetId}`);
+    case "join_group":
+      platformBus.emit("navigate", { path: `/orbit/groups/join/${targetId}` }, "qr");
       break;
-    }
 
-    case "open_menu": {
-      const { default: navigate } = await import("@/lib/navigation");
-      navigate(`/menu/${targetId}`);
+    case "open_menu":
+      platformBus.emit("navigate", { path: `/menu/${targetId}` }, "qr");
       break;
-    }
 
     case "open_entity": {
-      // Delegate to card domain
       const { cardDispatch } = await import("@/domains/cards/card-dispatch");
       await cardDispatch({ type: "load_entity", entityId: targetId!, entityType: "auto" });
-      const { default: navigate } = await import("@/lib/navigation");
-      navigate(`/entity/${targetId}`);
+      platformBus.emit("navigate", { path: `/entity/${targetId}` }, "qr");
       break;
     }
 
     case "open_location": {
       const [lat, lng] = (targetId || "").split(",");
-      const { default: navigate } = await import("@/lib/navigation");
-      navigate(`/map?lat=${lat}&lng=${lng}`);
+      platformBus.emit("navigate", { path: `/map?lat=${lat}&lng=${lng}` }, "qr");
       break;
     }
 
