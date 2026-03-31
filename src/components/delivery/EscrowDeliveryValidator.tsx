@@ -74,13 +74,10 @@ export default function EscrowDeliveryValidator({
   const StatusIcon = statusCfg.icon;
 
   // GPS proximity check
-  const checkGpsProximity = useCallback((): Promise<boolean> => {
-    return new Promise(async (resolve) => {
-      // If no dropoff coordinates, skip GPS check
+  const checkGpsProximity = useCallback(async (): Promise<boolean> => {
       if (!dropoffLat || !dropoffLng) {
         setGpsStatus("ok");
-        resolve(true);
-        return;
+        return true;
       }
 
       setGpsStatus("checking");
@@ -96,26 +93,23 @@ export default function EscrowDeliveryValidator({
         if (pos.accuracy > MAX_GPS_ACCURACY_M) {
           setGpsStatus("low_accuracy");
           toast.error(`Précision GPS insuffisante (${Math.round(pos.accuracy)}m). Minimum requis : ${MAX_GPS_ACCURACY_M}m`);
-          resolve(false);
-          return;
+          return false;
         }
 
         const distKm = haversineKm(pos.lat, pos.lng, dropoffLat, dropoffLng);
         if (distKm > MAX_PROXIMITY_KM) {
           setGpsStatus("too_far");
           toast.error(`Vous êtes à ${(distKm * 1000).toFixed(0)}m du point de livraison. Maximum autorisé : ${MAX_PROXIMITY_KM * 1000}m`);
-          resolve(false);
-          return;
+          return false;
         }
 
         setGpsStatus("ok");
-        resolve(true);
+        return true;
       } catch {
         setGpsStatus("unavailable");
         toast.error("Impossible d'obtenir la position GPS");
-        resolve(false);
+        return false;
       }
-    });
   }, [dropoffLat, dropoffLng]);
 
   const handleValidateDelivery = useCallback(async () => {
