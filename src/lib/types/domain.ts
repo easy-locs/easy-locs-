@@ -1,15 +1,86 @@
-export type AppRole =
-  | "guest"
-  | "buyer"
-  | "seller"
-  | "driver"
-  | "owner"
-  | "tenant"
-  | "admin";
+/**
+ * domain.ts — LEGACY type barrel. Types are progressively migrating
+ * to @/domains/shared/canonical-types.ts (SSOT).
+ *
+ * New code should import from canonical-types.ts directly.
+ * This file re-exports canonical types for backward compatibility.
+ */
 
-export type PermissionStateValue = "prompt" | "granted" | "denied";
+// ── Re-export canonical types as primary source ──
+export type {
+  AppRole,
+  CurrencyCode,
+  PermissionStateValue,
+  DevicePermissions,
+  ServiceLinks,
+  CanonicalOrbitProfile,
+  CanonicalWalletState,
+  CanonicalWalletTransaction,
+  CanonicalGeoPosition,
+  PaymentStatus,
+  OrderStatus,
+  DriverStatus,
+  CommunicationContextType,
+  CommunicationContext,
+  IdempotencyHeader,
+} from "@/domains/shared/canonical-types";
 
-export type CurrencyCode = "AED" | "USD" | "EUR" | "SAR" | "GBP";
+// ── Legacy aliases (backward compat — DO NOT USE in new code) ──
+
+import type { CanonicalOrbitProfile, CanonicalWalletState, CanonicalWalletTransaction, CanonicalGeoPosition, CurrencyCode, AppRole } from "@/domains/shared/canonical-types";
+
+/** @deprecated Use CanonicalOrbitProfile */
+export type OrbitProfile = {
+  userId: string;
+  orbitId: string;
+  role: AppRole;
+  deviceId: string;
+  verificationLevel: number;
+  permissions: {
+    camera: boolean;
+    microphone: boolean;
+    geolocation: boolean;
+    contacts: boolean;
+    notifications: boolean;
+  };
+  serviceLinks: {
+    walletLinked: boolean;
+    bookingEnabled: boolean;
+    deliveryEnabled: boolean;
+    propertyEnabled: boolean;
+    messagingEnabled: boolean;
+  };
+};
+
+/** @deprecated Use CanonicalWalletState */
+export type WalletStateModel = {
+  walletId: string;
+  ownerOrbitId: string;
+  currency: CurrencyCode;
+  availableBalance: number;
+  lockedBalance: number;
+  pendingBalance: number;
+  lastUpdatedAt: string | null;
+};
+
+/** @deprecated Use CanonicalWalletTransaction */
+export type WalletTransaction = {
+  id: string;
+  type: "payment" | "refund" | "topup" | "withdrawal" | "escrow_lock" | "escrow_release" | "payout";
+  status: "pending" | "success" | "failed" | "cancelled";
+  amount: number;
+  currency: CurrencyCode;
+  reference?: string;
+  createdAt: string;
+};
+
+/** @deprecated Use CanonicalGeoPosition */
+export type GeoPosition = {
+  lat: number;
+  lng: number;
+  accuracy: number | null;
+  updatedAt: string | null;
+};
 
 export type ServiceMode =
   | "direct_booking"
@@ -54,62 +125,6 @@ export type RentPaymentStatus =
   | "late"
   | "partial"
   | "cancelled";
-
-export interface GeoPosition {
-  lat: number;
-  lng: number;
-  accuracy: number | null;
-  updatedAt: string | null;
-}
-
-export interface OrbitProfile {
-  userId: string;
-  orbitId: string;
-  role: AppRole;
-  deviceId: string;
-  verificationLevel: number;
-  permissions: {
-    camera: boolean;
-    microphone: boolean;
-    geolocation: boolean;
-    contacts: boolean;
-    notifications: boolean;
-  };
-  serviceLinks: {
-    walletLinked: boolean;
-    bookingEnabled: boolean;
-    deliveryEnabled: boolean;
-    propertyEnabled: boolean;
-    messagingEnabled: boolean;
-  };
-}
-
-export interface WalletStateModel {
-  walletId: string;
-  ownerOrbitId: string;
-  currency: CurrencyCode;
-  availableBalance: number;
-  lockedBalance: number;
-  pendingBalance: number;
-  lastUpdatedAt: string | null;
-}
-
-export interface WalletTransaction {
-  id: string;
-  type:
-    | "payment"
-    | "refund"
-    | "topup"
-    | "withdrawal"
-    | "escrow_lock"
-    | "escrow_release"
-    | "payout";
-  status: "pending" | "success" | "failed" | "cancelled";
-  amount: number;
-  currency: CurrencyCode;
-  reference?: string;
-  createdAt: string;
-}
 
 export interface ListingAvailabilityRange {
   startDate: string;
@@ -209,8 +224,6 @@ export interface BookingRecordV2 {
   createdAt: string;
   updatedAt: string;
 }
-
-// ConversationParticipant, ConversationRecord, ChatMessageRecord are all re-exported from comms.ts (line 36).
 
 export interface PropertyUnitManagement {
   id: string;

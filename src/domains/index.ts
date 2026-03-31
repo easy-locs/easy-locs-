@@ -9,9 +9,56 @@
  *   Domain Events flow: Adapter → domain-event-bus → platformBus/eventBus
  */
 
+// ══════════════════════════════════════════════════
+// CANONICAL TYPES (SSOT)
+// ══════════════════════════════════════════════════
+export type {
+  AppRole,
+  CurrencyCode,
+  PermissionStateValue,
+  DevicePermissions,
+  ServiceLinks,
+  CanonicalOrbitProfile,
+  CanonicalUserProfile,
+  CanonicalWalletState,
+  CanonicalWalletTransaction,
+  CanonicalGeoPosition,
+  CanonicalRadarEntity,
+  CanonicalDashboardSummary,
+  DashboardActivityItem,
+  PaymentStatus,
+  OrderStatus,
+  DriverStatus,
+  CommunicationContextType,
+  CommunicationContext,
+  IdempotencyHeader,
+} from "./shared/canonical-types";
+
+// ══════════════════════════════════════════════════
+// CANONICAL STATE MACHINES
+// ══════════════════════════════════════════════════
+export {
+  PAYMENT_MACHINE, transitionPayment,
+  ORDER_MACHINE, transitionOrder,
+  DRIVER_MACHINE, transitionDriver,
+  transition, MESSAGE_MACHINE, CALL_MACHINE, UPLOAD_MACHINE, CONNECTION_MACHINE,
+} from "./shared/state-machines";
+
+// ══════════════════════════════════════════════════
+// CANONICAL EVENTS
+// ══════════════════════════════════════════════════
+export { CANONICAL_EVENTS } from "./shared/canonical-events";
+export type { CanonicalEventType } from "./shared/canonical-events";
+
+// ══════════════════════════════════════════════════
 // Shared
+// ══════════════════════════════════════════════════
 export type { DomainEntity, DomainEvent, DomainResult, Money, DateRange, GeoPoint, Address, PersonName, Repository, EventPublisher } from "./shared/types";
 export { publishDomainEvent, createDomainEvent, getDomainEventLog } from "./shared/domain-event-bus";
+
+// ══════════════════════════════════════════════════
+// Domain Ports & Events
+// ══════════════════════════════════════════════════
 
 // Rental
 export type { Lease, RentCall, Property, RentalUseCases, LeaseRepository, RentCallRepository, PropertyRepository, RentalEventPort, CreateLeaseCommand, CollectRentCommand, RentCockpitView } from "./rental/ports";
