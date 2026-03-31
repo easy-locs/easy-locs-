@@ -110,7 +110,7 @@ if (offenders.length > 0) {
   console.error(`\nTotal: ${offenders.length} files, ${total} inline calls.`);
   // Exit 1 to fail CI when enforced
   // process.exit(1);
-  process.exit(0); // Soft mode during migration
+  process.exit(1); // Strict mode — fail CI on violations
 }
 
 console.log("[INLINE AUDIT] ✅ PASS — 0 inline supabase calls in UI layer.");
