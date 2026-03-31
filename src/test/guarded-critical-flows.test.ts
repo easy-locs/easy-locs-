@@ -359,7 +359,7 @@ describe("Subscription Registry", () => {
   it("getSubscriptionHealth reports correctly", () => {
     registerSubscription("orbit.msg:1", () => () => {});
     registerSubscription("orbit.msg:2", () => () => {});
-    registerSubscription("wallet:user1", () => () => {});
+    registerSubscription("wallet.balance:user1", () => () => {});
 
     const health = getSubscriptionHealth();
     expect(health.count).toBe(3);
