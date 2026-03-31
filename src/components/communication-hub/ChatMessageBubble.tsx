@@ -338,8 +338,9 @@ function ChatMessageBubble({
           const hasMedia = msg.attachment_url || (msg as any).audio_url ||
             msg.message_type === "image" || msg.message_type === "video" ||
             msg.message_type === "voice" || msg.message_type === "audio" ||
-            msg.message_type === "file" || msg.message_type === "location_static" ||
-            msg.message_type === "location_live" ||
+            msg.message_type === "file" || msg.message_type === "media" ||
+            msg.message_type === "location_static" || msg.message_type === "location_live" ||
+            isLocation ||
             !!scopedAttachment;
 
           if (hasMedia) {
