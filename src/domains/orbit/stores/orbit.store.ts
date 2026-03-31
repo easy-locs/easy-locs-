@@ -34,6 +34,9 @@ interface OrbitStoreState {
   /** Attachments keyed by ID */
   attachments: Record<string, OrbitAttachment>;
 
+  /** Attachment IDs per conversation (index) */
+  attachmentsByConversation: Record<string, string[]>;
+
   /** Receipts keyed by `${messageId}:${userId}:${kind}` */
   receipts: Record<string, OrbitReceipt>;
 
@@ -64,6 +67,7 @@ interface OrbitStoreState {
   // ── ATTACHMENT ACTIONS ──
   mergeAttachment: (att: OrbitAttachment) => void;
   updateAttachmentUpload: (id: string, partial: Partial<OrbitAttachment>) => void;
+  reconcileAttachment: (localId: string, serverAtt: OrbitAttachment) => void;
 
   // ── RECEIPT ACTIONS ──
   mergeReceipt: (receipt: OrbitReceipt) => void;
@@ -75,6 +79,9 @@ interface OrbitStoreState {
   getConversation: (id: string) => OrbitConversation | undefined;
   getMessage: (id: string) => OrbitMessage | undefined;
   getMessagesForConversation: (conversationId: string) => OrbitMessage[];
+  getAttachmentsForConversation: (conversationId: string) => OrbitAttachment[];
+  getAttachmentsForMessage: (conversationId: string, message: OrbitMessage) => OrbitAttachment[];
+  getAttachmentScoped: (conversationId: string, attachmentId: string) => OrbitAttachment | null;
 }
 
 // ══════════════════════════════════════════════
@@ -86,6 +93,7 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
   messages: {},
   messagesByConversation: {},
   attachments: {},
+  attachmentsByConversation: {},
   receipts: {},
   tempIdMap: {},
   activeConversationId: null,
@@ -358,15 +366,37 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
         return s;
       }
 
-      // ══ KIND STABILITY: never downgrade attachment kind ══
+      // ══ CROSS-CONVERSATION GUARD: if existing, conversationId must not change ══
       const existing = s.attachments[att.id];
+      if (existing && existing.conversationId !== att.conversationId) {
+        if (import.meta.env.DEV) {
+          console.error("[orbitStore.mergeAttachment] CROSS-CONVERSATION BLOCKED", {
+            id: att.id, existingConv: existing.conversationId, incomingConv: att.conversationId,
+          });
+        }
+        return s;
+      }
+
+      // ══ MESSAGE CROSS-CONVERSATION GUARD ══
+      if (att.messageId) {
+        const linkedMsg = s.messages[att.messageId];
+        if (linkedMsg && linkedMsg.conversationId !== att.conversationId) {
+          if (import.meta.env.DEV) {
+            console.error("[orbitStore.mergeAttachment] MESSAGE CROSS-CONVERSATION BLOCKED", {
+              attachmentId: att.id, attConv: att.conversationId, msgConv: linkedMsg.conversationId,
+            });
+          }
+          return s;
+        }
+      }
+
+      // ══ KIND STABILITY: never downgrade attachment kind ══
       if (existing && existing.kind !== att.kind) {
         if (import.meta.env.DEV) {
           console.error("[orbitStore.mergeAttachment] KIND MUTATION", {
             id: att.id, from: existing.kind, to: att.kind,
           });
         }
-        // Preserve original kind
         att = { ...att, kind: existing.kind };
       }
 
@@ -377,13 +407,35 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
         });
       }
 
-      return { attachments: { ...s.attachments, [att.id]: att } };
+      // Update attachmentsByConversation index
+      const convAtts = s.attachmentsByConversation[att.conversationId] || [];
+      const nextConvAtts = convAtts.includes(att.id) ? convAtts : [...convAtts, att.id];
+
+      return {
+        attachments: { ...s.attachments, [att.id]: att },
+        attachmentsByConversation: {
+          ...s.attachmentsByConversation,
+          [att.conversationId]: nextConvAtts,
+        },
+      };
     }),
 
   updateAttachmentUpload: (id, partial) =>
     set((s) => {
       const att = s.attachments[id];
       if (!att) return s;
+
+      // ══ IMMUTABLE: conversationId cannot change ══
+      if ('conversationId' in partial && partial.conversationId !== att.conversationId) {
+        if (import.meta.env.DEV) {
+          console.error("[orbitStore.updateAttachmentUpload] CONVERSATION CHANGE blocked", {
+            id, from: att.conversationId, to: partial.conversationId,
+          });
+        }
+        const { conversationId: _, ...safePartial } = partial as any;
+        return { attachments: { ...s.attachments, [id]: { ...att, ...safePartial } } };
+      }
+
       // ══ KIND STABILITY: never allow kind change through partial update ══
       if ('kind' in partial && partial.kind !== att.kind) {
         if (import.meta.env.DEV) {
@@ -395,6 +447,46 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
         return { attachments: { ...s.attachments, [id]: { ...att, ...safePartial } } };
       }
       return { attachments: { ...s.attachments, [id]: { ...att, ...partial } } };
+    }),
+
+  reconcileAttachment: (localId, serverAtt) =>
+    set((s) => {
+      const localAtt = s.attachments[localId];
+
+      // ══ HARD GUARD: both must have conversationId ══
+      if (!serverAtt.conversationId) {
+        console.error("[orbitStore.reconcileAttachment] REJECTED — server missing conversationId", { localId, serverId: serverAtt.id });
+        return s;
+      }
+      if (localAtt && !localAtt.conversationId) {
+        console.error("[orbitStore.reconcileAttachment] REJECTED — local missing conversationId", { localId });
+        return s;
+      }
+
+      // ══ CROSS-CONVERSATION GUARD ══
+      if (localAtt && localAtt.conversationId !== serverAtt.conversationId) {
+        if (import.meta.env.DEV) {
+          console.error("[orbitStore.reconcileAttachment] CROSS-CONVERSATION BLOCKED", {
+            localId, localConv: localAtt.conversationId, serverConv: serverAtt.conversationId,
+          });
+        }
+        return s;
+      }
+
+      // Remove local, insert server
+      const { [localId]: _, ...restAtts } = s.attachments;
+      restAtts[serverAtt.id] = serverAtt;
+
+      // Update index
+      const convId = serverAtt.conversationId;
+      const convAtts = (s.attachmentsByConversation[convId] || [])
+        .filter((id) => id !== localId);
+      if (!convAtts.includes(serverAtt.id)) convAtts.push(serverAtt.id);
+
+      return {
+        attachments: restAtts,
+        attachmentsByConversation: { ...s.attachmentsByConversation, [convId]: convAtts },
+      };
     }),
 
   // ── RECEIPTS ──
@@ -421,5 +513,45 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
     return ids
       .map((id) => s.messages[id])
       .filter((m): m is OrbitMessage => !!m && m.conversationId === conversationId);
+  },
+
+  getAttachmentsForConversation: (conversationId) => {
+    const s = get();
+    const ids = s.attachmentsByConversation[conversationId] || [];
+    return ids
+      .map((id) => s.attachments[id])
+      .filter((a): a is OrbitAttachment => !!a && a.conversationId === conversationId);
+  },
+
+  getAttachmentsForMessage: (conversationId, message) => {
+    const s = get();
+    return message.attachmentIds
+      .map((id) => s.attachments[id])
+      .filter((a): a is OrbitAttachment => {
+        if (!a) return false;
+        if (a.conversationId !== conversationId) {
+          if (import.meta.env.DEV) {
+            console.error("[orbitStore.getAttachmentsForMessage] SCOPE LEAK", {
+              attachmentId: a.id, attachmentConv: a.conversationId, requestedConv: conversationId,
+            });
+          }
+          return false;
+        }
+        return true;
+      });
+  },
+
+  getAttachmentScoped: (conversationId, attachmentId) => {
+    const att = get().attachments[attachmentId];
+    if (!att) return null;
+    if (att.conversationId !== conversationId) {
+      if (import.meta.env.DEV) {
+        console.error("[orbitStore.getAttachmentScoped] SCOPE LEAK", {
+          attachmentId, attachmentConv: att.conversationId, requestedConv: conversationId,
+        });
+      }
+      return null;
+    }
+    return att;
   },
 }));
