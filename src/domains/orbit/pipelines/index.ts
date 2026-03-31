@@ -22,6 +22,19 @@ export {
 export type { SendMediaInput } from "./message/send-media.pipeline";
 
 export {
+  resolveCanonicalMessageType,
+  assertBubbleTypeStable,
+} from "./message/resolve-canonical-type";
+export type { ResolveTypeInput } from "./message/resolve-canonical-type";
+
+export {
+  validateLocationInput,
+  buildLocationPayload,
+  buildOptimisticLocationMessage,
+} from "./message/send-location.pipeline";
+export type { SendLocationInput } from "./message/send-location.pipeline";
+
+export {
   validateVoiceInput,
   buildLocalVoiceAttachment,
   buildOptimisticVoiceMessage,
