@@ -369,11 +369,19 @@ function ChatMessageBubble({
           </button>
         )}
 
-        {/* Footer — isolated micro-component */}
+        {/* Footer — isolated micro-component with WhatsApp delivery status */}
         <BubbleMetaFooter
           createdAt={msg.created_at}
           isMe={isMe}
           read={msg.read}
+          deliveryStatus={
+            (msg as any).status === "sending" ? "sending"
+            : (msg as any).status === "failed" ? "failed"
+            : (msg as any).status === "delivered" ? "delivered"
+            : (msg as any).status === "read" ? "read"
+            : msg.read ? "read"
+            : "sent"
+          }
           editedAt={(msg as any).edited_at}
           isPendingOffline={isPendingOffline}
           securityEmoji={hasSecurityLevel ? securityPolicy.emoji : undefined}

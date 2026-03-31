@@ -12,6 +12,7 @@
  */
 import type { OrbitMessage, OrbitAttachment, AttachmentKind } from "../../types";
 import { markMessageSeen, generateIdempotencyKey } from "@/lib/dedup/message-dedup";
+import { resolveCanonicalMessageType } from "./resolve-canonical-type";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_IMAGE = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -88,8 +89,7 @@ export function buildOptimisticMediaMessage(
   const idempotencyKey = generateIdempotencyKey(input.senderId, input.conversationId, tempId);
   markMessageSeen({ tempId, idempotencyKey });
 
-  const kind = attachment.kind;
-  const type = kind === "image" ? "image" : kind === "video" ? "video" : kind === "audio" ? "audio" : "file";
+  const type = resolveCanonicalMessageType({ attachmentKind: attachment.kind, mimeType: attachment.mimeType || undefined });
 
   return {
     id: tempId,
