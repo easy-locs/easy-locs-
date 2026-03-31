@@ -1,13 +1,20 @@
 /**
  * receipt.controller — SINGLE entry point for read/delivered receipts.
  * 
+ * FLOW GATE INTEGRATED:
+ *   markConversationMessagesRead → withFlowGate("receipt.markRead") → DB
+ *   markSingleMessageRead → withFlowGate("receipt.markSingleRead") → DB
+ *   clearMarkedUnread → withFlowGate("receipt.clearMarkedUnread") → DB
+ *
  * Rules:
- * - No component calls markRead directly
+ * - No component calls markRead directly on DB
  * - No inline DB update for read_at
  * - All receipt writes go through this controller
  * - Anti-spam: throttle + dedup
+ * - Flow-gate protected: no duplicate concurrent calls
  */
 import { supabase } from "@/integrations/supabase/client";
+import { isFlowActive } from "@/domains/orbit/flow-gate";
 
 const db = supabase as any;
 
@@ -18,6 +25,7 @@ const READ_THROTTLE_MS = 2000;
 /**
  * Mark all unread messages in a conversation as read.
  * Throttled to prevent spam on rapid re-renders.
+ * Flow-gate: prevents concurrent markRead for same conversation.
  */
 export async function markConversationMessagesRead(
   conversationId: string,
@@ -30,7 +38,18 @@ export async function markConversationMessagesRead(
   if (lastRead && Date.now() - lastRead < READ_THROTTLE_MS) {
     return { markedCount: 0 };
   }
+
+  // Flow-gate: skip if another markRead is already running for this conversation
+  const flowKey = `receipt.markRead:${conversationId}`;
+  if (isFlowActive(flowKey)) {
+    return { markedCount: 0 };
+  }
+
   recentReadConversations.set(conversationId, Date.now());
+
+  // Use manual enter/exit instead of withFlowGate to avoid throwing on duplicates
+  const { enterFlow, exitFlow } = await import("@/domains/orbit/flow-gate/orbit-flow-gate");
+  enterFlow(flowKey);
 
   try {
     // Fetch unread message IDs
@@ -55,6 +74,8 @@ export async function markConversationMessagesRead(
   } catch (err) {
     console.warn("[receipt.controller] markConversationMessagesRead failed:", err);
     return { markedCount: 0 };
+  } finally {
+    exitFlow(flowKey);
   }
 }
 
@@ -67,6 +88,12 @@ export async function markSingleMessageRead(
 ): Promise<void> {
   if (!messageId || !userId) return;
 
+  const flowKey = `receipt.markSingleRead:${messageId}`;
+  if (isFlowActive(flowKey)) return;
+
+  const { enterFlow, exitFlow } = await import("@/domains/orbit/flow-gate/orbit-flow-gate");
+  enterFlow(flowKey);
+
   try {
     await db
       .from("chat_messages_v2")
@@ -74,6 +101,8 @@ export async function markSingleMessageRead(
       .eq("id", messageId);
   } catch (err) {
     console.warn("[receipt.controller] markSingleMessageRead failed:", err);
+  } finally {
+    exitFlow(flowKey);
   }
 }
 
@@ -86,6 +115,12 @@ export async function clearMarkedUnread(
 ): Promise<void> {
   if (!userId || !contextId) return;
 
+  const flowKey = `receipt.clearMarkedUnread:${contextId}`;
+  if (isFlowActive(flowKey)) return;
+
+  const { enterFlow, exitFlow } = await import("@/domains/orbit/flow-gate/orbit-flow-gate");
+  enterFlow(flowKey);
+
   try {
     await db
       .from("conversation_preferences")
@@ -94,5 +129,7 @@ export async function clearMarkedUnread(
       .eq("context_id", contextId);
   } catch {
     // fire-and-forget
+  } finally {
+    exitFlow(flowKey);
   }
 }

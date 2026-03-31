@@ -2,13 +2,16 @@
  * OrbitDispatch — Canonical Action Pipeline.
  * Single entry point for ALL Orbit user actions.
  *
+ * FLOW GATE INTEGRATED:
+ *   UI → useOrbitDispatch → orbitDispatch → executeFlow(entryKey) → executor → guardedWrite → owner → output
+ *
  * Responsibilities:
- * 1. Validate command type
- * 2. Idempotency guard
- * 3. Resolve identity context (ONCE)
- * 4. Register inflight request
- * 5. Delegate to typed executor (intent→canonical→optimistic→transport→reconcile)
- * 6. Release inflight request
+ * 1. Map command type → EntryKey
+ * 2. Idempotency guard (send-locks)
+ * 3. Flow gate lock (executeFlow — prevents double-tap at domain level)
+ * 4. Resolve identity context (ONCE)
+ * 5. Delegate to typed executor
+ * 6. Release locks
  *
  * This dispatcher does NOT contain business logic.
  * All logic lives in the executor layer (src/families/orbit-dispatch/pipeline/).
@@ -18,6 +21,12 @@ import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { supabase } from "@/integrations/supabase/client";
 import type { ResolvedContext } from "./pipeline/pipeline-types";
 import { checkIdempotencyGuard, issueRequestId, registerInflightRequest, releaseInflightRequest } from "./send-locks";
+import {
+  executeFlow,
+  withFlowGate,
+  FlowGateError,
+  type EntryKey,
+} from "@/domains/orbit/flow-gate";
 
 // ── Executors ──
 import { executeSendText } from "./pipeline/executeSendText";
@@ -31,6 +40,32 @@ import { executeDeclineCall } from "./pipeline/executeDeclineCall";
 import { executeEndCall } from "./pipeline/executeEndCall";
 import { executeEditMessage } from "./pipeline/executeEditMessage";
 import { executeReplyMessage } from "./pipeline/executeReplyMessage";
+
+// ── Command type → EntryKey mapping ──
+const COMMAND_TO_ENTRY: Record<string, EntryKey> = {
+  send_text: "message.sendText",
+  reply: "message.sendText", // reply reuses text pipeline
+  send_media: "media.send",
+  send_media_batch: "media.sendBatch",
+  send_voice: "voice.send",
+  send_location: "location.send",
+  start_call: "call.startAudio", // resolved below based on mode
+  accept_call: "call.accept",
+  decline_call: "call.decline",
+  end_call: "call.end",
+  edit_message: "message.edit",
+  group_create: "conversation.createGroup",
+  group_update: "conversation.updateGroup",
+  presence_update: "presence.update",
+  typing_update: "presence.typing",
+};
+
+function resolveEntryKey(cmd: OrbitCommand): EntryKey {
+  if (cmd.type === "start_call") {
+    return cmd.mode === "video" ? "call.startVideo" : "call.startAudio";
+  }
+  return COMMAND_TO_ENTRY[cmd.type] || ("message.sendText" as EntryKey);
+}
 
 async function resolveCurrentUserIdFromSession(): Promise<string> {
   const { data, error } = await supabase.auth.getSession();
@@ -57,6 +92,8 @@ async function resolveContext(conversationId: string): Promise<ResolvedContext> 
 /**
  * orbitDispatch — Execute a canonical Orbit command.
  * This is the ONLY function the UI layer should call for actions.
+ *
+ * FLOW: idempotency guard → executeFlow(entryKey) → executor → result
  */
 export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResult> {
   if (!cmd?.type) return { ok: false, error: "no_command_type" };
@@ -70,80 +107,96 @@ export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResu
 
   const requestId = issueRequestId();
   registerInflightRequest(requestId, cmd);
+  const entryKey = resolveEntryKey(cmd);
 
   try {
-    switch (cmd.type) {
-      case "send_text": {
-        const ctx = await resolveContext(cmd.conversationId);
-        return { ...await executeSendText(ctx, cmd), requestId };
+    // ═══ FLOW GATE: every command passes through executeFlow ═══
+    const result = await executeFlow(entryKey, async (flowCtx) => {
+      if (import.meta.env.DEV) {
+        console.debug(`[orbitDispatch] ${cmd.type} → ${flowCtx.entry} → ${flowCtx.pipeline}`);
       }
-      case "send_media": {
-        const ctx = await resolveContext(cmd.conversationId);
-        return { ...await executeSendMedia(ctx, cmd), requestId };
+
+      switch (cmd.type) {
+        case "send_text": {
+          const ctx = await resolveContext(cmd.conversationId);
+          return { ...await executeSendText(ctx, cmd), requestId };
+        }
+        case "send_media": {
+          const ctx = await resolveContext(cmd.conversationId);
+          return { ...await executeSendMedia(ctx, cmd), requestId };
+        }
+        case "send_media_batch": {
+          const ctx = await resolveContext(cmd.conversationId);
+          return { ...await executeSendMediaBatch(ctx, cmd), requestId };
+        }
+        case "send_voice": {
+          const ctx = await resolveContext(cmd.conversationId);
+          return { ...await executeSendVoice(ctx, cmd), requestId };
+        }
+        case "send_location": {
+          const ctx = await resolveContext(cmd.conversationId);
+          return { ...await executeSendLocation(ctx, cmd), requestId };
+        }
+        case "start_call": {
+          const ctx = await resolveContext(cmd.conversationId || "");
+          return { ...await executeStartCall(ctx, cmd), requestId };
+        }
+        case "accept_call":
+          return { ...await executeAcceptCall(cmd), requestId };
+        case "decline_call":
+          return { ...await executeDeclineCall(cmd), requestId };
+        case "end_call":
+          return { ...await executeEndCall(cmd), requestId };
+        case "edit_message":
+          return { ...await executeEditMessage(cmd), requestId };
+        case "reply": {
+          const ctx = await resolveContext(cmd.conversationId);
+          return { ...await executeReplyMessage(ctx, cmd), requestId };
+        }
+        case "group_create": {
+          const { GroupCreate } = await import("@/families/groups/group-create");
+          const orbit = getOrbitIdentity();
+          const userId = orbit?.userId || await resolveCurrentUserIdFromSession();
+          const result = await GroupCreate.execute({
+            title: cmd.title,
+            memberIds: cmd.memberUserIds,
+            avatarUrl: cmd.avatarUrl || undefined,
+            createdByUserId: userId,
+            createdByOrbitId: orbit?.orbitId,
+          });
+          return { ok: !!result, groupId: result?.id, requestId };
+        }
+        case "group_update": {
+          const { updateOrbitGroup } = await import("@/families/groups/group-update");
+          await updateOrbitGroup(cmd);
+          return { ok: true, requestId };
+        }
+        case "presence_update": {
+          const { PresencePipeline } = await import("@/families/presence");
+          const orbit = getOrbitIdentity();
+          if (orbit?.userId) PresencePipeline.sendPresence(orbit.userId, cmd.status);
+          return { ok: true, requestId };
+        }
+        case "typing_update": {
+          const { PresencePipeline } = await import("@/families/presence");
+          const orbit = getOrbitIdentity();
+          if (orbit?.userId) PresencePipeline.sendTyping(cmd.conversationId, orbit.userId, orbit.displayName || "", cmd.activity);
+          return { ok: true, requestId };
+        }
+        default:
+          return { ok: false, error: `Unknown command type: ${(cmd as any).type}`, requestId };
       }
-      case "send_media_batch": {
-        const ctx = await resolveContext(cmd.conversationId);
-        return { ...await executeSendMediaBatch(ctx, cmd), requestId };
-      }
-      case "send_voice": {
-        const ctx = await resolveContext(cmd.conversationId);
-        return { ...await executeSendVoice(ctx, cmd), requestId };
-      }
-      case "send_location": {
-        const ctx = await resolveContext(cmd.conversationId);
-        return { ...await executeSendLocation(ctx, cmd), requestId };
-      }
-      case "start_call": {
-        const ctx = await resolveContext(cmd.conversationId || "");
-        return { ...await executeStartCall(ctx, cmd), requestId };
-      }
-      case "accept_call":
-        return { ...await executeAcceptCall(cmd), requestId };
-      case "decline_call":
-        return { ...await executeDeclineCall(cmd), requestId };
-      case "end_call":
-        return { ...await executeEndCall(cmd), requestId };
-      case "edit_message":
-        return { ...await executeEditMessage(cmd), requestId };
-      case "reply": {
-        const ctx = await resolveContext(cmd.conversationId);
-        return { ...await executeReplyMessage(ctx, cmd), requestId };
-      }
-      case "group_create": {
-        const { GroupCreate } = await import("@/families/groups/group-create");
-        const orbit = getOrbitIdentity();
-        const userId = orbit?.userId || await resolveCurrentUserIdFromSession();
-        const result = await GroupCreate.execute({
-          title: cmd.title,
-          memberIds: cmd.memberUserIds,
-          avatarUrl: cmd.avatarUrl || undefined,
-          createdByUserId: userId,
-          createdByOrbitId: orbit?.orbitId,
-        });
-        return { ok: !!result, groupId: result?.id, requestId };
-      }
-      case "group_update": {
-        // Delegate to group update pipeline
-        const { updateOrbitGroup } = await import("@/families/groups/group-update");
-        await updateOrbitGroup(cmd);
-        return { ok: true, requestId };
-      }
-      case "presence_update": {
-        const { PresencePipeline } = await import("@/families/presence");
-        const orbit = getOrbitIdentity();
-        if (orbit?.userId) PresencePipeline.sendPresence(orbit.userId, cmd.status);
-        return { ok: true, requestId };
-      }
-      case "typing_update": {
-        const { PresencePipeline } = await import("@/families/presence");
-        const orbit = getOrbitIdentity();
-        if (orbit?.userId) PresencePipeline.sendTyping(cmd.conversationId, orbit.userId, orbit.displayName || "", cmd.activity);
-        return { ok: true, requestId };
-      }
-      default:
-        return { ok: false, error: `Unknown command type: ${(cmd as any).type}`, requestId };
-    }
+    });
+
+    return result;
   } catch (err: any) {
+    // FlowGateError means duplicate flow was blocked — not a real error
+    if (err instanceof FlowGateError && err.code === "duplicate_flow") {
+      if (import.meta.env.DEV) {
+        console.warn(`[orbitDispatch] Flow gate blocked duplicate: ${cmd.type}`);
+      }
+      return { ok: false, error: "flow_gate_blocked", requestId };
+    }
     console.error(`[orbitDispatch] ${cmd.type} failed:`, err);
     return { ok: false, error: err?.message || "Command failed", requestId };
   } finally {
