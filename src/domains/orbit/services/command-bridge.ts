@@ -86,12 +86,7 @@ export function registerOrbitCommands() {
       encrypted: cmd.encrypted,
       replyToMessageId: cmd.replyToMessageId,
     });
-    if (result.ok) {
-      platformBus.emit("orbit:message_sent", {
-        conversationId: cmd.conversationId,
-        type: "text",
-      }, "orbit", { userId: cmd.actorId });
-    }
+    // NOTE: orbitDispatch executors already emit orbit:message_sent — do NOT re-emit here
     return {
       success: result.ok,
       data: { messageId: result.messageId },
