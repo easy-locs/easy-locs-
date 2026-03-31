@@ -25,7 +25,9 @@ const CANONICAL_ALLOWED = new Set([
   "src/domains/orbit/resolvers/id-resolver.ts",
   "src/stores/orbit/message.serializer.ts", // delegates to canonical
   "src/lib/onboarding/micro/text.normalizer.ts", // onboarding-specific, different domain
+  "src/lib/onboarding/pipeline/output/output.preview.build.ts", // onboarding pipeline preview, different domain
   "src/lib/import/shop-import-pipeline.ts", // import-specific, different domain
+  "src/lib/search/search-intent-resolver.ts", // search brain, not orbit text
 ]);
 
 const TEST_DIRS = ["test", "e2e", "__test", "__tests", "spec"];
