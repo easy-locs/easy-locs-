@@ -32,18 +32,21 @@ export function useUnreadMessages() {
   useEffect(() => {
     fetchCount();
 
-    const channel = supabase
-      .channel("unread-v2-only")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, fetchCount)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages_v2" }, fetchCount)
-      .subscribe();
+    const unsubRegistry = registerSubscription(`orbit.unread:${user?.id ?? "global"}`, () => {
+      const channel = supabase
+        .channel("unread-v2-only")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, fetchCount)
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages_v2" }, fetchCount)
+        .subscribe();
+      return () => removeRealtimeChannel(channel);
+    });
 
     const unsub = platformBus.on("orbit:message_sent", () => {
       setTimeout(fetchCount, 300);
     });
 
     return () => {
-      removeRealtimeChannel(channel);
+      unsubRegistry();
       unsub();
     };
   }, [fetchCount]);
