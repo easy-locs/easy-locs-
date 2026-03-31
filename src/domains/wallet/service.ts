@@ -50,7 +50,7 @@ export function createWalletService(ctx: SecurityContext | null): WalletUseCases
         userId,
       });
       if (!validation.ok) {
-        return { ok: false as const, error: validation.reason };
+        return { ok: false as const, error: (validation as { ok: false; reason: string }).reason };
       }
 
       // ── Single-path: prevent double top-up ──
