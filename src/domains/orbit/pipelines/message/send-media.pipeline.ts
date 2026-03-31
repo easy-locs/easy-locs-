@@ -89,8 +89,7 @@ export function buildOptimisticMediaMessage(
   const idempotencyKey = generateIdempotencyKey(input.senderId, input.conversationId, tempId);
   markMessageSeen({ tempId, idempotencyKey });
 
-  const kind = attachment.kind;
-  const type = kind === "image" ? "image" : kind === "video" ? "video" : kind === "audio" ? "audio" : "file";
+  const type = resolveCanonicalMessageType({ attachmentKind: attachment.kind, mimeType: attachment.mimeType || undefined });
 
   return {
     id: tempId,
