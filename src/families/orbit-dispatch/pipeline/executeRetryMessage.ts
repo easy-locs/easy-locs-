@@ -53,7 +53,7 @@ export async function executeRetryMessage(
     store.updateMessageStatus(cmd.messageId, "retrying");
 
     if (import.meta.env.DEV) {
-      console.debug("[executeRetryMessage] Transition failed→retrying", { messageId: cmd.messageId, type: msg.messageType });
+      console.debug("[executeRetryMessage] Transition failed→retrying", { messageId: cmd.messageId, type: messageType });
     }
     exitPhase(trace);
 
