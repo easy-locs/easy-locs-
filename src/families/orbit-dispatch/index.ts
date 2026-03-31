@@ -24,6 +24,7 @@ export type {
   DeclineCallCommand,
   EndCallCommand,
   EditMessageCommand,
+  RetryMessageCommand,
   ReplyCommand,
 } from "./orbit-commands";
 
