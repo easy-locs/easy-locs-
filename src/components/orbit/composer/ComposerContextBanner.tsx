@@ -38,7 +38,7 @@ function ComposerContextBanner({ conversationId }: Props) {
 
   if (replyState) {
     return (
-      <div className="px-3 py-2 flex items-center gap-2 shrink-0 border-l-[3px] border-l-accent bg-accent/5">
+      <div className="px-3 py-2 flex items-center gap-2 shrink-0 border-l-[3px] border-l-accent bg-accent/5 animate-[slideDown_120ms_ease-out]">
         <div className="flex-1 min-w-0">
           {replyState.senderName && (
             <p className="text-[10px] font-semibold text-accent">{replyState.senderName}</p>

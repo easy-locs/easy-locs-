@@ -40,7 +40,7 @@ function ComposerSendButton({ hasText, sending, disabled, onSend, onStartVoice }
       } : undefined}
       onMouseDown={!hasText && onStartVoice ? handleMicStart : undefined}
       disabled={sending || disabled}
-      className={`shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-90 ${
+      className={`shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-150 active:scale-[0.88] ${
         hasText
           ? "bg-primary text-primary-foreground shadow-md"
           : "bg-muted text-muted-foreground border border-border"
@@ -50,9 +50,9 @@ function ComposerSendButton({ hasText, sending, disabled, onSend, onStartVoice }
       {sending ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : hasText ? (
-        <Send className="h-4 w-4" />
+        <Send className="h-4 w-4 transition-transform duration-100" />
       ) : (
-        <Mic className="h-4 w-4" />
+        <Mic className="h-4 w-4 transition-transform duration-100" />
       )}
     </button>
   );

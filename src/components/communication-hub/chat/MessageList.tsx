@@ -132,7 +132,7 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
           const isSystem = msg.message_type === "system" || isDealEvent;
 
           return (
-            <div key={msg.id}>
+            <div key={msg.id} className="animate-[bubbleIn_140ms_ease-out_both]">
               {showDateSep && <DateSeparator date={dateLabel} />}
               <OrbitMessageInteractiveWrapper
                 messageId={msg.id}
