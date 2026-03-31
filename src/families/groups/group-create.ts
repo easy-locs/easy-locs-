@@ -1,10 +1,10 @@
 /**
  * group.create — Canonical group creation pipeline.
+ * Routes through orbitDb + flow gate.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { orbitDb } from "@/lib/db/orbitDb";
 import { platformBus } from "@/lib/shared/platform-bus";
-
-const db = supabase as any;
+import { withFlowGate } from "@/domains/orbit/flow-gate";
 
 export interface GroupPayload {
   title: string;
@@ -24,36 +24,38 @@ export const GroupCreate = {
     return { valid: true };
   },
 
-  /** Create a group conversation */
+  /** Create a group conversation via flow gate */
   async execute(payload: GroupPayload): Promise<{ id: string } | null> {
-    const validation = GroupCreate.validate(payload);
-    if (!validation.valid) throw new Error(validation.error);
+    return withFlowGate("conversation.createGroup", async () => {
+      const validation = GroupCreate.validate(payload);
+      if (!validation.valid) throw new Error(validation.error);
 
-    const participants = [
-      { userId: payload.createdByUserId, role: "admin" },
-      ...payload.memberIds
-        .filter((id) => id !== payload.createdByUserId)
-        .map((id) => ({ userId: id, role: "member" })),
-    ];
+      const participants = [
+        { userId: payload.createdByUserId, role: "admin" },
+        ...payload.memberIds
+          .filter((id) => id !== payload.createdByUserId)
+          .map((id) => ({ userId: id, role: "member" })),
+      ];
 
-    const { data, error } = await db.from("conversations_v2").insert({
-      type: "group",
-      title: payload.title,
-      description: payload.description || null,
-      avatar_url: payload.avatarUrl || null,
-      participants,
-      created_by_user_id: payload.createdByUserId,
-      created_by_orbit_id: payload.createdByOrbitId || null,
-    }).select("id").single();
+      const { data, error } = await orbitDb.conversations.insert({
+        type: "group",
+        title: payload.title,
+        description: payload.description || null,
+        avatar_url: payload.avatarUrl || null,
+        participants,
+        created_by_user_id: payload.createdByUserId,
+        created_by_orbit_id: payload.createdByOrbitId || null,
+      });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    platformBus.emit("orbit:group_created", {
-      groupId: data.id,
-      title: payload.title,
-      memberCount: participants.length,
-    }, "orbit", { userId: payload.createdByUserId });
+      platformBus.emit("orbit:group_created", {
+        groupId: data.id,
+        title: payload.title,
+        memberCount: participants.length,
+      }, "orbit", { userId: payload.createdByUserId });
 
-    return data;
+      return data;
+    });
   },
 };
