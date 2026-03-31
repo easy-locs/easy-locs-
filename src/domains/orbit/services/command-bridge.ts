@@ -13,7 +13,6 @@
  */
 
 import { commandBus, type CommandBase, type CommandResult } from "@/lib/core/command-bus";
-import { platformBus } from "@/lib/shared/platform-bus";
 
 // ── Command Types ──
 
