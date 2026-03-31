@@ -50,7 +50,16 @@ export { fallbackSystem } from "@/lib/network/fallback-system";
 export { startClockSync, getCorrectedTimestamp } from "@/lib/sync/time-sync";
 export { backgroundSync } from "@/lib/sync/background-sync";
 
-// ── 9. Memory ──
+// ── 9. Dedup ──
+export {
+  isMessageDuplicate,
+  markMessageSeen,
+  generateIdempotencyKey,
+  reconcileTempToServer,
+  deduplicateMessages,
+} from "@/lib/dedup/message-dedup";
+
+// ── 10. Memory ──
 export { memoryManager } from "@/lib/performance/memory-manager";
 export { prefetchEngine } from "@/lib/performance/prefetch-engine";
 
