@@ -1,5 +1,5 @@
 /**
- * Tests for state machines — message, call, upload transitions.
+ * Tests for state machines — message, call, upload, payment, order, driver transitions.
  */
 import { describe, it, expect } from "vitest";
 import {
@@ -8,6 +8,7 @@ import {
   UPLOAD_MACHINE,
   transition,
 } from "@/lib/state-machines/canonical-machines";
+import { transitionPayment, transitionOrder, transitionDriver } from "@/domains/shared/state-machines";
 
 describe("Message State Machine", () => {
   it("allows sending → sent", () => {
@@ -37,6 +38,10 @@ describe("Message State Machine", () => {
   it("blocks delivered → sent (invalid regression)", () => {
     expect(transition(MESSAGE_MACHINE, "delivered", "ACK")).toBeNull();
   });
+
+  it("read is terminal", () => {
+    expect(transition(MESSAGE_MACHINE, "read", "DELIVER")).toBeNull();
+  });
 });
 
 describe("Call State Machine", () => {
@@ -63,6 +68,14 @@ describe("Call State Machine", () => {
   it("allows reconnecting → active", () => {
     expect(transition(CALL_MACHINE, "reconnecting", "RECONNECTED")).toBe("active");
   });
+
+  it("missed is terminal", () => {
+    expect(transition(CALL_MACHINE, "missed", "ACCEPT")).toBeNull();
+  });
+
+  it("declined is terminal", () => {
+    expect(transition(CALL_MACHINE, "declined", "ACCEPT")).toBeNull();
+  });
 });
 
 describe("Upload State Machine", () => {
@@ -81,5 +94,105 @@ describe("Upload State Machine", () => {
 
   it("blocks completed → uploading (terminal)", () => {
     expect(transition(UPLOAD_MACHINE, "completed", "START")).toBeNull();
+  });
+});
+
+describe("Payment State Machine", () => {
+  it("follows happy path: created → pending → authorized → captured", () => {
+    let s = transitionPayment("created", "CONFIRM");
+    expect(s).toBe("pending_confirmation");
+    s = transitionPayment(s!, "AUTHORIZE");
+    expect(s).toBe("authorized");
+    s = transitionPayment(s!, "CAPTURE");
+    expect(s).toBe("captured");
+  });
+
+  it("allows refund from captured", () => {
+    expect(transitionPayment("captured", "REFUND")).toBe("refunded");
+  });
+
+  it("blocks backward: captured → authorized", () => {
+    expect(transitionPayment("captured", "AUTHORIZE")).toBeNull();
+  });
+
+  it("failed is terminal", () => {
+    expect(transitionPayment("failed", "CAPTURE")).toBeNull();
+  });
+
+  it("refunded is terminal — no double refund", () => {
+    expect(transitionPayment("refunded", "REFUND")).toBeNull();
+  });
+
+  it("cancelled is terminal", () => {
+    expect(transitionPayment("cancelled", "CONFIRM")).toBeNull();
+  });
+
+  it("can cancel at authorization stage", () => {
+    expect(transitionPayment("authorized", "CANCEL")).toBe("cancelled");
+  });
+});
+
+describe("Order State Machine", () => {
+  it("follows full lifecycle", () => {
+    let s = transitionOrder("draft", "SUBMIT");
+    expect(s).toBe("submitted");
+    s = transitionOrder(s!, "ACCEPT");
+    expect(s).toBe("accepted");
+    s = transitionOrder(s!, "PREPARE");
+    expect(s).toBe("preparing");
+    s = transitionOrder(s!, "READY");
+    expect(s).toBe("ready");
+    s = transitionOrder(s!, "ASSIGN");
+    expect(s).toBe("assigned");
+    s = transitionOrder(s!, "PICKUP");
+    expect(s).toBe("picked_up");
+    s = transitionOrder(s!, "DELIVER");
+    expect(s).toBe("delivered");
+  });
+
+  it("can cancel at most stages", () => {
+    expect(transitionOrder("draft", "CANCEL")).toBe("cancelled");
+    expect(transitionOrder("submitted", "CANCEL")).toBe("cancelled");
+    expect(transitionOrder("accepted", "CANCEL")).toBe("cancelled");
+    expect(transitionOrder("ready", "CANCEL")).toBe("cancelled");
+  });
+
+  it("cannot cancel delivered", () => {
+    expect(transitionOrder("delivered", "CANCEL")).toBeNull();
+  });
+
+  it("delivered is terminal", () => {
+    expect(transitionOrder("delivered", "SUBMIT")).toBeNull();
+  });
+});
+
+describe("Driver State Machine", () => {
+  it("follows assignment lifecycle", () => {
+    let s = transitionDriver("available", "ASSIGN");
+    expect(s).toBe("assigned");
+    s = transitionDriver(s!, "EN_ROUTE");
+    expect(s).toBe("on_route_to_pickup");
+    s = transitionDriver(s!, "ARRIVE_PICKUP");
+    expect(s).toBe("waiting_pickup");
+    s = transitionDriver(s!, "START_DELIVERY");
+    expect(s).toBe("on_delivery");
+    s = transitionDriver(s!, "COMPLETE");
+    expect(s).toBe("completed");
+  });
+
+  it("can go offline from available", () => {
+    expect(transitionDriver("available", "GO_OFFLINE")).toBe("offline");
+  });
+
+  it("can go online from offline", () => {
+    expect(transitionDriver("offline", "GO_ONLINE")).toBe("available");
+  });
+
+  it("blocks offline → assign (must go online first)", () => {
+    expect(transitionDriver("offline", "ASSIGN")).toBeNull();
+  });
+
+  it("blocks backward: on_delivery → available", () => {
+    expect(transitionDriver("on_delivery", "GO_ONLINE")).toBeNull();
   });
 });
