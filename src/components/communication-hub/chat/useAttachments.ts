@@ -1,9 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
-import {
-  uploadToStorage, insertMessage, updateConversationTimestamp,
-} from "@/repositories/communication.repository";
+import { uploadToStorage } from "@/repositories/communication.repository";
+import { orbitDispatch } from "@/families/orbit-dispatch";
 
 type ThreadLike = {
   id: string;
