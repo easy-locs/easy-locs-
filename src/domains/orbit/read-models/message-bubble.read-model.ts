@@ -48,6 +48,7 @@ export function selectMessageBubbleModel(
     failed?: boolean;
     reply_to?: string | null;
     edited_at?: string | null;
+    metadata?: Record<string, any> | null;
     contact_name?: string | null;
   },
   currentUserId: string | null | undefined,
