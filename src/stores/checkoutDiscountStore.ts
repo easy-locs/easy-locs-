@@ -19,26 +19,12 @@ export const useCheckoutDiscountStore = create<CheckoutDiscountStore>((set) => (
   discountAmount: 0,
   finalAmount: null,
 
-  applyCoupon: ({ code, listingId, originalAmount }) => {
-    // Coupon validation simplified — couponsStore was dead code
+  applyCoupon: ({ code, originalAmount }) => {
+    // Simplified — coupon validation to be re-implemented via repository layer
     set({
       appliedCode: code,
       discountAmount: 0,
       finalAmount: originalAmount,
-    });
-  },
-
-    const discount =
-      coupon.discount_type === "flat"
-        ? Number(coupon.discount_value)
-        : (originalAmount * Number(coupon.discount_value)) / 100;
-
-    const finalAmount = Math.max(0, originalAmount - discount);
-
-    set({
-      appliedCode: coupon.code,
-      discountAmount: discount,
-      finalAmount,
     });
   },
 
