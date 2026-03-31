@@ -12,7 +12,7 @@ import type { OrbitConversation } from "@/domains/orbit/types";
 
 export interface InboxItemViewModel {
   id: string;
-  type: string;
+  kind: string;
   title: string;
   avatarUrl: string | null;
   lastMessagePreview: string | null;
@@ -20,8 +20,6 @@ export interface InboxItemViewModel {
   unreadCount: number;
   isMuted: boolean;
   isArchived: boolean;
-  isPinned: boolean;
-  isMarkedUnread: boolean;
   participantCount: number;
 }
 
