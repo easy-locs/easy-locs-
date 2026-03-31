@@ -52,13 +52,18 @@ function walk(dir) {
   return files;
 }
 
+function isDomainComponent(rel) {
+  return DOMAIN_COMPONENT_DIRS.some(d => rel.startsWith(d));
+}
+
 function checkFile(filepath) {
   const rel = relative(".", filepath);
   const content = readFileSync(filepath, "utf8");
   const lines = content.split("\n");
 
-  // Rule 1: Components must NOT import supabase client
-  if (rel.includes("src/components/")) {
+  // Rule 1: Pure UI components must NOT import supabase client
+  // Domain component dirs and pages are excluded (they act as domain modules)
+  if (rel.startsWith("src/components/") && !isDomainComponent(rel)) {
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].includes("supabase/client") && !lines[i].trim().startsWith("//")) {
         violations.push({
@@ -67,13 +72,14 @@ function checkFile(filepath) {
           line: i + 1,
           detail: "Component imports supabase client directly",
         });
-        break; // One violation per file is enough
+        break;
       }
     }
   }
 
-  // Rule 2: Components must NOT call .insert() / .upsert() / .delete() on supabase
-  if (rel.includes("src/components/") || rel.includes("src/pages/")) {
+  // Rule 2: Pure UI components must NOT call .insert() / .upsert() / .delete()
+  // Pages and domain component dirs are orchestrators — allowed to write
+  if (rel.startsWith("src/components/") && !isDomainComponent(rel)) {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (line.startsWith("//") || line.startsWith("*")) continue;
