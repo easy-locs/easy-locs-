@@ -33,6 +33,7 @@ import {
   useHudSelectionBridge,
   useHudContextMenuBridge,
   useHudMultiPhotoSendBridge,
+  useHudMessageMutationBridge,
 } from "./chat/bridges";
 
 // ── Canonical UI components ──
@@ -161,6 +162,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   // ── Short aliases ──
   const { selection, messages, loader, messageSender, messageActions, threadUi, pinnedMessage } = msgFamily;
 
+  // ── Bridge: Message mutations (delete/edit/star local state) ──
+  const mutations = useHudMessageMutationBridge({
+    setRawMessages: loader.setRawMessages as any,
+    setHiddenMsgIds: selection.setHiddenMsgIds,
+  });
+
   // ── Bridge: Send ──
   const { stableHandleSend } = useHudSendBridge(currentConversationId, messageSender, messageActions);
 
@@ -271,8 +278,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             userEmail={user?.email}
             userName={user?.user_metadata?.full_name || user?.email || "User"}
             onClearSelection={selection.clearSelection}
-            onDeletedForMe={(ids) => selection.setHiddenMsgIds(prev => new Set([...prev, ...ids]))}
-            onDeletedForAll={(ids) => loader.setRawMessages(prev => prev.map(m => ids.includes(m.id) ? { ...m, content: "🚫 This message was deleted", deleted_for_all: true, attachment_url: null, audio_url: null, audio_duration_seconds: null } as any : m))}
+            onDeletedForMe={mutations.applyBatchDeleteForMe}
+            onDeletedForAll={mutations.applyBatchDeleteForAll}
           />
         )}
 
@@ -430,15 +437,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       <MessageContextMenu
         message={selection.contextMessage}
         onClose={() => selection.setContextMessage(null)}
-        onDeleted={(msgId, type) => {
-          if (type === "self") selection.setHiddenMsgIds(prev => new Set([...prev, msgId]));
-          else loader.setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system", attachment_url: null, audio_url: undefined, audio_duration_seconds: undefined, deleted_for_all: true } as any : m));
-        }}
+        onDeleted={mutations.handleContextMenuDeleted}
         onCopy={() => {}}
-        onEdited={(msgId, newContent) => loader.setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: newContent, edited_at: new Date().toISOString() } as any : m))}
+        onEdited={mutations.applyEdit}
         onReply={(msgId, content, senderName) => { composerStore.setReply(currentConversationId, { msgId, content, senderName }); }}
         onForward={(msgId, content) => selection.setForwardData({ messageId: msgId, content })}
-        onStarToggle={(msgId, starred) => loader.setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, starred } as any : m))}
+        onStarToggle={mutations.applyStar}
         onEnterSelectMode={selection.enterSelectMode}
       />
 

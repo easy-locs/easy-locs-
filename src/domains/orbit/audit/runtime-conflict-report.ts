@@ -230,6 +230,8 @@ export const EXTRACTIONS = [
   "ChatProvider removed from App.tsx (was empty shell)",
   "useMessageLoader markRead delegated to receipt.controller",
   "runtime-conflict-report.ts — living audit document",
+  "useHudMessageMutationBridge — centralizes all inline setRawMessages mutations (delete/edit/star) from HudChatPanel",
+  "useMessageSender dead export removed from families/messages/index.ts",
 ] as const;
 
 // ══════════════════════════════════════════════
@@ -240,6 +242,8 @@ export const SUPPRESSIONS = [
   "ChatProvider import removed from App.tsx",
   "ChatProvider wrapper removed from App.tsx render tree",
   "Inline markRead DB calls in useMessageLoader replaced with receipt.controller",
+  "useMessageSender re-export removed from families/messages/index.ts (dead code — no consumers)",
+  "6 inline setRawMessages mutation lambdas removed from HudChatPanel (replaced by useHudMessageMutationBridge)",
 ] as const;
 
 // ══════════════════════════════════════════════
@@ -257,6 +261,11 @@ export const REDIRECTIONS = [
     to: "receipt.controller.markSingleMessageRead",
     status: "done",
   },
+  {
+    from: "HudChatPanel inline onDeletedForAll / onDeletedForMe / onEdited / onStarToggle lambdas",
+    to: "useHudMessageMutationBridge stable callbacks",
+    status: "done",
+  },
 ] as const;
 
 // ══════════════════════════════════════════════
@@ -265,9 +274,9 @@ export const REDIRECTIONS = [
 
 export const REMAINING_TEMPORARY = [
   {
-    item: "useMessageSender still used as runtime write path",
-    reason: "Full migration to orbitDispatch requires wiring optimistic UI through orbitStore, which is the next phase.",
-    risk: "low — useMessageSender delegates to families/send which is canonical DB layer",
+    item: "useMessageSender.ts file still exists on disk",
+    reason: "No longer exported or imported. Can be deleted in cleanup phase. Kept as reference.",
+    risk: "none — dead code",
   },
   {
     item: "createOrGetDirectConversation still used by conversation-resolver",
