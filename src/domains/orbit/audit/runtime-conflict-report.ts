@@ -399,6 +399,21 @@ export const FLOW_GATE_STATUS = {
     orbitServices: "✅ sendText/sendMedia/sendVoice/createDirect flow-gated",
     createOrGetDirectConversation: "✅ Pair-keyed flow-gate prevents duplicate creation",
     voiceRecorder: "✅ Redirected through orbitDispatch (no direct insertMessage)",
+    groupCreate: "✅ Routes through orbitDb + withFlowGate (no inline supabase)",
+    supabaseAdapter: "✅ Routes through orbitDb + callRepo (no inline supabase)",
+    opsChatAI: "✅ Routes through aiChatRepo (no inline supabase)",
+    globalSupportEngine: "✅ Routes through supportRepo (no inline supabase)",
+    customerSupport: "✅ Routes through storefrontSupportRepo (no inline supabase)",
+  },
+  ciGuards: {
+    auditInlineSupabase: "✅ PASS — 0 inline supabase calls in UI layer",
+    auditOrbitFlowGate: "✅ PASS — 0 orbit DB writes outside allowed zones",
+  },
+  repositories: {
+    "support.repository.ts": "supportRepo + storefrontSupportRepo (tickets, messages, faq)",
+    "ai-chat.repository.ts": "aiChatRepo (threads, messages, usage, invoke)",
+    "call.repository.ts": "callRepo (ghost_call_sessions)",
+    "orbitDb.ts": "conversations_v2 + chat_messages_v2",
   },
   note: "Architecture: UI → OrbitEntry → executeFlow → pipeline → guardedWrite → owner → emitOutput → UI",
 } as const;

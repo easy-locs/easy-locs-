@@ -1,0 +1,838 @@
+{
+  "generated": "2026-03-31T09:13:46.499Z",
+  "total": 53,
+  "items": [
+    {
+      "type": "DUPLICATE_ENTRY",
+      "entry": "location.send",
+      "files": [
+        "src/app/app-route-registry.tsx",
+        "src/app/safe-lazy.tsx",
+        "src/components/address/CanonicalAddressInput.tsx",
+        "src/components/app/AppRouters.tsx",
+        "src/components/communication-hub/OrbitAccountSection.tsx",
+        "src/components/delivery/LiveDeliveryChat.tsx",
+        "src/components/orbit/composer/ComposerAttachMenu.tsx",
+        "src/components/orbit/you/subpages/YouLocationPage.tsx",
+        "src/components/storefront/SmartHome.tsx",
+        "src/components/system/AppCrashBoundary.tsx",
+        "src/lib/mobility/driver-gps-pusher.ts",
+        "src/lib/mobility/gps-scheduler.ts",
+        "src/pages/deep-link/GuestPaymentSuccess.tsx"
+      ],
+      "severity": "HIGH",
+      "fix": "All location.send calls must route through orbitDispatch or executeFlow"
+    },
+    {
+      "type": "DUPLICATE_ENTRY",
+      "entry": "media.send",
+      "files": [
+        "src/components/booking/BookingDocumentsPanel.tsx",
+        "src/components/communication/DealRoomPanel.tsx",
+        "src/components/communication-hub/HudChatPanel.tsx",
+        "src/components/communication-hub/OrbitAccountSection.tsx",
+        "src/components/delivery/DriverOnboardingComplete.tsx",
+        "src/components/delivery/DriverOnboardingRegistration.tsx",
+        "src/components/delivery/DriverOnboardingWizard.tsx",
+        "src/components/orbit/MessageComposer.tsx",
+        "src/components/orbit/composer/ComposerAttachMenu.tsx",
+        "src/components/orbit/you/YouIdentityCard.tsx",
+        "src/components/orbit/you/subpages/YouEditProfilePage.tsx",
+        "src/components/orbit/you/subpages/YouMediaPage.tsx",
+        "src/components/rental/TenantDocuments.tsx",
+        "src/components/seasonal/PropertyPhotos.tsx",
+        "src/components/settings/ProSettingsSection.tsx",
+        "src/components/storefront/BulkProductManager.tsx",
+        "src/components/storefront/CatalogManager.tsx",
+        "src/components/storefront/DigitalProducts.tsx",
+        "src/hooks/orbit/families/useThreadAttachmentFamily.ts",
+        "src/hooks/orbit/useHudAttachmentUpload.ts",
+        "src/lib/admin/kpis.ts",
+        "src/lib/auth-redirect.ts",
+        "src/lib/cache/identity-cache.ts",
+        "src/lib/engines/personal-radar/personal-profile-engine.ts",
+        "src/lib/i18n.tsx",
+        "src/lib/merchant/storefront-repair.ts",
+        "src/lib/onboarding/onboarding-validator.ts",
+        "src/lib/pay/unifiedResolver.ts",
+        "src/lib/rental/rental-repository.ts",
+        "src/pages/AdminRestaurantTestSeederPage.tsx",
+        "src/pages/DataImport.tsx",
+        "src/pages/FurnitureInventory.tsx",
+        "src/pages/PublicServiceBooking.tsx",
+        "src/pages/Settings.tsx",
+        "src/pages/Vault.tsx",
+        "src/pages/payments/QrScannerPage.tsx",
+        "src/pages/tenant/TenantDocuments.tsx"
+      ],
+      "severity": "HIGH",
+      "fix": "All media.send calls must route through orbitDispatch or executeFlow"
+    },
+    {
+      "type": "DUPLICATE_ENTRY",
+      "entry": "call.startAudio",
+      "files": [
+        "src/components/communication/CallCard.tsx",
+        "src/components/communication-hub/ChatLocationPicker.tsx",
+        "src/components/communication-hub/CommCallsSection.tsx",
+        "src/components/communication-hub/CommContactsSection.tsx",
+        "src/components/communication-hub/HudConversationList.tsx",
+        "src/components/communication-hub/OrbitAccountSection.tsx",
+        "src/components/communication-hub/SwipeableCallItem.tsx",
+        "src/components/communication-hub/chat/ChatHeader.tsx",
+        "src/components/orbit/ContactProfileSheet.tsx",
+        "src/components/orbit/MediaPreviewSheet.tsx",
+        "src/components/orbit/MessageComposer.tsx",
+        "src/components/orbit/MultiPhotoSelect.tsx",
+        "src/components/orbit/OrbitContactsDirectory.tsx",
+        "src/components/orbit/composer/ComposerSendButton.tsx",
+        "src/components/orbit/you/subpages/YouCallsPage.tsx",
+        "src/components/rental/RentalPaymentsTab.tsx",
+        "src/components/search/UnifiedSearchBar.tsx",
+        "src/components/security/AppLockScreen.tsx",
+        "src/components/tenant/SepaPaymentFlow.tsx",
+        "src/domains/orbit/adapters/supabase.adapter.ts",
+        "src/hooks/useMessageSender.ts",
+        "src/lib/call/call-rpc.ts",
+        "src/lib/call-thread-logger.ts",
+        "src/lib/canonical-chain/index.ts",
+        "src/lib/rental/rental-repository.ts",
+        "src/pages/CommunicationCenter.tsx",
+        "src/pages/DunningLetters.tsx",
+        "src/pages/PaymentNotices.tsx",
+        "src/pages/RealEstateListings.tsx",
+        "src/pages/RentalManagement.tsx",
+        "src/pages/customer/CustomerDeliveryNotesPage.tsx",
+        "src/pages/tenant/TenantPay.tsx"
+      ],
+      "severity": "HIGH",
+      "fix": "All call.startAudio calls must route through orbitDispatch or executeFlow"
+    },
+    {
+      "type": "DUPLICATE_ENTRY",
+      "entry": "voice.send",
+      "files": [
+        "src/components/communication/VoiceRecorder.tsx",
+        "src/components/concierge/BookingDetailDrawer.tsx",
+        "src/components/delivery/AutomatedInvoicingEngine.tsx",
+        "src/components/delivery/DeliveryInvoicePanel.tsx",
+        "src/components/marketplace/BookingDetailDrawer.tsx",
+        "src/components/marketplace/BookingsManager.tsx",
+        "src/components/orbit/MessageComposer.tsx",
+        "src/components/orbit/OrbitVoiceDraftPreview.tsx",
+        "src/components/orbit/composer/ComposerVoicePreview.tsx",
+        "src/lib/onboarding/pipeline/repository/onboarding.repository.ts",
+        "src/pages/RentalManagement.tsx"
+      ],
+      "severity": "HIGH",
+      "fix": "All voice.send calls must route through orbitDispatch or executeFlow"
+    },
+    {
+      "type": "DUPLICATE_ENTRY",
+      "entry": "message.sendText",
+      "files": [
+        "src/components/communication-hub/CommContactsSection.tsx",
+        "src/components/communication-hub/MessageContextMenu.tsx",
+        "src/components/communication-hub/OrbitAccountSection.tsx",
+        "src/components/communication-hub/chat/bridges/useHudSendBridge.ts",
+        "src/components/delivery/CustomerLiveTracking.tsx",
+        "src/components/delivery/DeliverySupportBot.tsx",
+        "src/components/delivery/LiveDeliveryChat.tsx",
+        "src/components/marketplace/BookingCommunicationThread.tsx",
+        "src/components/marketplace/BookingQuoteDialog.tsx",
+        "src/components/orbit/ContactProfileSheet.tsx",
+        "src/components/orbit/OrbitContactsDirectory.tsx",
+        "src/components/rental/RentalTenantDetailView.tsx",
+        "src/components/storefront/CustomerSupport.tsx",
+        "src/components/storefront/MerchantCRM.tsx",
+        "src/domains/orbit/audit/runtime-conflict-report.ts",
+        "src/lib/ai/ops-chat.ts",
+        "src/lib/onboarding/recrawl-runner.ts",
+        "src/lib/support/global-support-engine.ts",
+        "src/pages/AIAssistant.tsx",
+        "src/pages/GuestPortal.tsx",
+        "src/pages/RentalManagement.tsx",
+        "src/pages/mobility/RiderLivePage.tsx"
+      ],
+      "severity": "HIGH",
+      "fix": "All message.sendText calls must route through orbitDispatch or executeFlow"
+    },
+    {
+      "type": "DUPLICATE_ENTRY",
+      "entry": "conversation.openDirect",
+      "files": [
+        "src/components/communication-hub/HudConversationList.tsx",
+        "src/components/storefront/MultiStoreManager.tsx",
+        "src/domains/orbit/adapters/supabase.adapter.ts",
+        "src/domains/orbit/guards/send-guard.ts",
+        "src/families/groups/group-create.ts",
+        "src/lib/local-cache/conversation-cache.ts",
+        "src/pages/CommunicationCenter.tsx",
+        "src/pages/RealEstateListings.tsx"
+      ],
+      "severity": "HIGH",
+      "fix": "All conversation.openDirect calls must route through orbitDispatch or executeFlow"
+    },
+    {
+      "type": "DUPLICATE_ENTRY",
+      "entry": "receipt.markRead",
+      "files": [
+        "src/components/delivery/DeliveryNotificationCenter.tsx",
+        "src/components/delivery/DeliveryNotificationHub.tsx",
+        "src/components/mobility/RideCompletedCard.tsx",
+        "src/components/rental/RentalPaymentsTab.tsx",
+        "src/components/rental/RentalTenantDetailView.tsx",
+        "src/lib/chat/messageService.ts",
+        "src/lib/engines/notification-engine.ts",
+        "src/lib/monitoring.ts",
+        "src/lib/notifications/app-notification-service.ts",
+        "src/lib/notifications/notification-dispatcher.ts",
+        "src/lib/notifications/notification-reader.ts",
+        "src/lib/notifications-v2/notification-service.ts",
+        "src/lib/shared/notification-engine.ts"
+      ],
+      "severity": "HIGH",
+      "fix": "All receipt.markRead calls must route through orbitDispatch or executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/components/storefront/CustomerSupport.tsx",
+      "writes": [
+        {
+          "line": 90,
+          "code": "const { data } = await (supabase as any).from(\"storefront_support_tickets\").insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 97,
+          "code": "await (supabase as any).from(\"storefront_ticket_messages\").insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 114,
+          "code": "await (supabase as any).from(\"storefront_ticket_messages\").insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 121,
+          "code": "await (supabase as any).from(\"storefront_support_tickets\").update({",
+          "pattern": "update"
+        },
+        {
+          "line": 135,
+          "code": "await (supabase as any).from(\"storefront_support_tickets\").update({",
+          "pattern": "update"
+        },
+        {
+          "line": 147,
+          "code": "await (supabase as any).from(\"storefront_faq\").insert({",
+          "pattern": "insert"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/domains/orbit/adapters/supabase.adapter.ts",
+      "writes": [
+        {
+          "line": 38,
+          "code": "await (supabase as any).from(\"conversations_v2\").upsert({",
+          "pattern": "upsert"
+        },
+        {
+          "line": 88,
+          "code": "await (supabase as any).from(\"ghost_call_sessions\").upsert({",
+          "pattern": "upsert"
+        },
+        {
+          "line": 99,
+          "code": "await (supabase as any).from(\"ghost_call_sessions\").update({ status }).eq(\"id\", id);",
+          "pattern": "update"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/domains/orbit/guards/send-guard.ts",
+      "writes": [
+        {
+          "line": 41,
+          "code": "if (ts < cutoff) contentHashes.delete(k);",
+          "pattern": "delete"
+        },
+        {
+          "line": 52,
+          "code": "submitLocks.delete(conversationId);",
+          "pattern": "delete"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/families/groups/group-create.ts",
+      "writes": [
+        {
+          "line": 39,
+          "code": "const { data, error } = await db.from(\"conversations_v2\").insert({",
+          "pattern": "insert"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/lib/ai/ops-chat.ts",
+      "writes": [
+        {
+          "line": 15,
+          "code": ".insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 36,
+          "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 36,
+          "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 59,
+          "code": "const { data, error } = await supabase.functions.invoke(\"ops-ai-chat\", {",
+          "pattern": "functions.invoke"
+        },
+        {
+          "line": 64,
+          "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 64,
+          "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 77,
+          "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 77,
+          "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 87,
+          "code": "await supabase.from(\"ai_chat_usage\" as any).insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 87,
+          "code": "await supabase.from(\"ai_chat_usage\" as any).insert({",
+          "pattern": "supabase.from"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/lib/call/call-rpc.ts",
+      "writes": [
+        {
+          "line": 47,
+          "code": "const { data: callId, error } = await supabase.rpc(\"create_call_idempotent\" as any, {",
+          "pattern": "rpc"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/lib/call-thread-logger.ts",
+      "writes": [
+        {
+          "line": 37,
+          "code": "setTimeout(() => recentCallLogs.delete(dedupKey), 10000);",
+          "pattern": "delete"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/lib/canonical-chain/index.ts",
+      "writes": [
+        {
+          "line": 93,
+          "code": "* 2. Components NEVER call .insert() / .update() / .upsert() / .delete()",
+          "pattern": "insert"
+        },
+        {
+          "line": 93,
+          "code": "* 2. Components NEVER call .insert() / .update() / .upsert() / .delete()",
+          "pattern": "update"
+        },
+        {
+          "line": 93,
+          "code": "* 2. Components NEVER call .insert() / .update() / .upsert() / .delete()",
+          "pattern": "upsert"
+        },
+        {
+          "line": 93,
+          "code": "* 2. Components NEVER call .insert() / .update() / .upsert() / .delete()",
+          "pattern": "delete"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/lib/local-cache/conversation-cache.ts",
+      "writes": [
+        {
+          "line": 75,
+          "code": "tx.objectStore(CONVERSATIONS_STORE).delete(id);",
+          "pattern": "delete"
+        },
+        {
+          "line": 132,
+          "code": "store.delete(msg.id);",
+          "pattern": "delete"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/lib/onboarding/recrawl-runner.ts",
+      "writes": [
+        {
+          "line": 10,
+          "code": "await db.from(\"onboarding_recrawl_jobs\").update({ status: \"running\", started_at: new Date().toISOString() }).eq(\"id\", jo",
+          "pattern": "update"
+        },
+        {
+          "line": 13,
+          "code": "await db.from(\"onboarding_recrawl_jobs\").update({ status: \"completed\", finished_at: new Date().toISOString(), result_jso",
+          "pattern": "update"
+        },
+        {
+          "line": 15,
+          "code": "await db.from(\"onboarding_recrawl_jobs\").update({ status: \"failed\", finished_at: new Date().toISOString(), error_message",
+          "pattern": "update"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/lib/rental/rental-repository.ts",
+      "writes": [
+        {
+          "line": 11,
+          "code": "const { data, error } = await supabase.from(\"properties\").select(\"*\").eq(\"org_id\", orgId).order(\"created_at\", { ascendin",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 17,
+          "code": "const { data, error } = await supabase.from(\"properties\").insert({ ...form, org_id: orgId, user_id: userId } as any).sel",
+          "pattern": "insert"
+        },
+        {
+          "line": 17,
+          "code": "const { data, error } = await supabase.from(\"properties\").insert({ ...form, org_id: orgId, user_id: userId } as any).sel",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 23,
+          "code": "const { error } = await supabase.from(\"properties\").update(updates as any).eq(\"id\", id);",
+          "pattern": "update"
+        },
+        {
+          "line": 23,
+          "code": "const { error } = await supabase.from(\"properties\").update(updates as any).eq(\"id\", id);",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 28,
+          "code": "const { error } = await supabase.from(\"properties\").delete().eq(\"id\", id);",
+          "pattern": "delete"
+        },
+        {
+          "line": 28,
+          "code": "const { error } = await supabase.from(\"properties\").delete().eq(\"id\", id);",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 35,
+          "code": "const { data, error } = await supabase.from(\"tenants\").select(\"*\").eq(\"org_id\", orgId).order(\"created_at\", { ascending: ",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 41,
+          "code": "const { data, error } = await supabase.from(\"tenants\").insert({ ...form, org_id: orgId, user_id: userId } as any).select",
+          "pattern": "insert"
+        },
+        {
+          "line": 41,
+          "code": "const { data, error } = await supabase.from(\"tenants\").insert({ ...form, org_id: orgId, user_id: userId } as any).select",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 47,
+          "code": "const { error } = await supabase.from(\"tenants\").update(updates as any).eq(\"id\", id);",
+          "pattern": "update"
+        },
+        {
+          "line": 47,
+          "code": "const { error } = await supabase.from(\"tenants\").update(updates as any).eq(\"id\", id);",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 52,
+          "code": "const { error } = await supabase.from(\"tenants\").delete().eq(\"id\", id);",
+          "pattern": "delete"
+        },
+        {
+          "line": 52,
+          "code": "const { error } = await supabase.from(\"tenants\").delete().eq(\"id\", id);",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 59,
+          "code": "const { data, error } = await supabase.from(\"rent_calls\").select(\"*\").eq(\"org_id\", orgId).order(\"due_date\", { ascending:",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 65,
+          "code": "const { data, error } = await supabase.from(\"rent_calls\").insert({ ...call, org_id: orgId } as any).select().single();",
+          "pattern": "insert"
+        },
+        {
+          "line": 65,
+          "code": "const { data, error } = await supabase.from(\"rent_calls\").insert({ ...call, org_id: orgId } as any).select().single();",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 71,
+          "code": "const { error } = await supabase.from(\"rent_calls\").update(updates as any).eq(\"id\", id);",
+          "pattern": "update"
+        },
+        {
+          "line": 71,
+          "code": "const { error } = await supabase.from(\"rent_calls\").update(updates as any).eq(\"id\", id);",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 76,
+          "code": "const { data, error } = await supabase.from(\"leases\").select(\"*\").eq(\"org_id\", orgId).order(\"created_at\", { ascending: f",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 85,
+          "code": "supabase.from(\"expenses\").select(\"*\").eq(\"org_id\", orgId).eq(\"property_id\", propertyId).order(\"expense_date\", { ascendin",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 86,
+          "code": "supabase.from(\"furniture_items\").select(\"*\").eq(\"org_id\", orgId).eq(\"property_id\", propertyId),",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 87,
+          "code": "supabase.from(\"inventory_reports\").select(\"*\").eq(\"org_id\", orgId).eq(\"property_id\", propertyId).order(\"report_date\", { ",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 96,
+          "code": "supabase.from(\"public_listings\").select(\"property_id\").eq(\"org_id\", orgId).eq(\"active\", true),",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 110,
+          "code": "const { data: profile } = await supabase.from(\"profiles\").select(\"name, email, signature_url\").eq(\"id\", userId).single()",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 117,
+          "code": "const { data: op } = await supabase.from(\"owner_profiles\").select(\"full_name, address, postal_code, city\").eq(\"org_id\", ",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 121,
+          "code": "const { data: org } = await supabase.from(\"orgs\").select(\"name, address, postal_code, city, stamp_url\").eq(\"id\", orgId).",
+          "pattern": "supabase.from"
+        },
+        {
+          "line": 150,
+          "code": "await (supabase as any).from(\"app_notifications\").insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 175,
+          "code": "await supabase.from(\"documents\").insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 175,
+          "code": "await supabase.from(\"documents\").insert({",
+          "pattern": "supabase.from"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "DIRECT_WRITE_OUTSIDE_PIPELINE",
+      "file": "src/lib/support/global-support-engine.ts",
+      "writes": [
+        {
+          "line": 99,
+          "code": ".insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 116,
+          "code": "await (supabase as any).from(\"support_ticket_messages\").insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 155,
+          "code": ".insert({",
+          "pattern": "insert"
+        },
+        {
+          "line": 173,
+          "code": ".update({",
+          "pattern": "update"
+        },
+        {
+          "line": 183,
+          "code": "await (supabase as any).from(\"support_ticket_messages\").insert({",
+          "pattern": "insert"
+        }
+      ],
+      "severity": "HIGH",
+      "fix": "Move write into canonical pipeline via executeFlow"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/communication-hub/chat/useMessageLoader.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/communication-hub/chat/useMessageLoader.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/communication-hub/useConversationThreads.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/communication-hub/useConversationThreads.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/communication-hub/useConversationThreads.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/communication-hub/useConversationThreads.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/communication-hub/useConversationThreads.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/communication-hub/useConversationThreads.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/delivery/CustomerTrackingPage.tsx",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/pos/KitchenQueue.tsx",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/storefront/AuctionManager.tsx",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/components/storefront/OrdersManager.tsx",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/call/useIncomingCallListener.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/call/useIncomingCallListener.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/useListingSync.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/useListingSync.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/useListingSync.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/useRadarLiveContext.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/useRadarLiveContext.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/useRadarLiveContext.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/useRealtimeDispatchBoard.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/useRealtimeDispatchBoard.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/useServiceTracking.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/hooks/useServiceTracking.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/lib/engines/notification-engine.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/lib/engines/notification-engine.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/lib/events/handlers/ride-lifecycle.handler.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/lib/map/engine/realtime-bridge.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/lib/map/engine/realtime-bridge.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/lib/rental/rental-repository.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/lib/rental/rental-repository.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/lib/tracking/live-tracking.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/pages/MerchantPosPage.tsx",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    },
+    {
+      "type": "REALTIME_DIRECT_WRITE",
+      "file": "src/payments/payment-request-hooks.ts",
+      "severity": "MEDIUM",
+      "fix": "Realtime handler must route through handleRealtime/pipeline, not write directly"
+    }
+  ]
+}
