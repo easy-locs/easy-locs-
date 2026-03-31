@@ -274,9 +274,9 @@ export const REDIRECTIONS = [
 
 export const REMAINING_TEMPORARY = [
   {
-    item: "useMessageSender still used as runtime write path",
-    reason: "Full migration to orbitDispatch requires wiring optimistic UI through orbitStore, which is the next phase.",
-    risk: "low — useMessageSender delegates to families/send which is canonical DB layer",
+    item: "useMessageSender.ts file still exists on disk",
+    reason: "No longer exported or imported. Can be deleted in cleanup phase. Kept as reference.",
+    risk: "none — dead code",
   },
   {
     item: "createOrGetDirectConversation still used by conversation-resolver",
