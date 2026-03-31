@@ -1,13 +1,23 @@
-import { supabase } from "@/integrations/supabase/client";
+/**
+ * messageService — LEGACY message service.
+ * 
+ * ⚠️ sendTextMessage is DEPRECATED — use orbitDispatch({ type: 'send_text' }) instead.
+ * Only sendSystemMessage and createCallSystemMessage remain as they serve
+ * non-user-initiated flows (system events, call cards).
+ * 
+ * All DB access through repositories.
+ */
 import DOMPurify from "dompurify";
 import type { ChatMessageRow } from "@/lib/types/comms";
 import { sendInAppNotification } from "@/lib/notifications/notification-dispatcher";
 import { getCurrentUserId } from "@/families/identity";
+import { insertMessage, fetchGroupMessages, updateMessageFields } from "@/repositories/communication.repository";
 
 /**
  * Resolves orbit_id for a user. Falls back to deterministic format.
  */
 async function resolveOrbitId(userId: string): Promise<string> {
+  const { supabase } = await import("@/integrations/supabase/client");
   const { data } = await (supabase as any)
     .from("orbit_profiles_v2")
     .select("orbit_id")
@@ -16,6 +26,10 @@ async function resolveOrbitId(userId: string): Promise<string> {
   return data?.orbit_id || `orbit_${userId.slice(0, 12)}`;
 }
 
+/**
+ * @deprecated Use orbitDispatch({ type: 'send_text', conversationId, body }) instead.
+ * This function bypasses the Flow Gate system and will be removed.
+ */
 export async function sendTextMessage(input: {
   conversationId: string;
   senderOrbitId?: string;
@@ -23,47 +37,27 @@ export async function sendTextMessage(input: {
   receiverOrbitId?: string;
   body: string;
 }): Promise<ChatMessageRow> {
-  const userId = await getCurrentUserId();
+  if (import.meta.env.DEV) {
+    console.warn("[DEPRECATED] sendTextMessage called directly — use orbitDispatch instead", new Error().stack);
+  }
 
-  // Always resolve a valid orbit_id — never send null
+  const userId = await getCurrentUserId();
   const senderOrbitId = input.senderOrbitId || await resolveOrbitId(userId);
 
-  // GUARD: prevent sending message to self
   if (input.receiverOrbitId && senderOrbitId === input.receiverOrbitId) {
     throw new Error("Cannot send a message to yourself");
   }
 
-  const safeBody = DOMPurify.sanitize(input.body, {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
+  const safeBody = DOMPurify.sanitize(input.body, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+
+  const data = await insertMessage({
+    conversationId: input.conversationId,
+    senderUserId: userId,
+    senderOrbitId,
+    type: "text",
+    body: safeBody,
+    metadata: { schemaVersion: 1 },
   });
-
-  const { data, error } = await (supabase as any)
-    .from("chat_messages_v2")
-    .insert({
-      conversation_id: input.conversationId,
-      sender_user_id: userId,
-      sender_orbit_id: senderOrbitId,
-      receiver_orbit_id: input.receiverOrbitId ?? null,
-      type: "text",
-      body: safeBody,
-    })
-    .select("*")
-    .single();
-
-  if (error) {
-    console.error("sendTextMessage error", error);
-    throw error;
-  }
-
-  // Update conversation last_message_at
-  await (supabase as any)
-    .from("conversations_v2")
-    .update({
-      last_message_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", input.conversationId);
 
   // Notify other participants (non-blocking)
   void notifyConversationParticipants({
@@ -78,6 +72,72 @@ export async function sendTextMessage(input: {
 }
 
 /**
+ * Send a system-type message (booking created, lease started, etc.)
+ * This is NOT a user action — it's a platform event, so it bypasses orbitDispatch.
+ */
+export async function sendSystemMessage(input: {
+  conversationId: string;
+  senderOrbitId?: string | null;
+  body: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const userId = await getCurrentUserId();
+  const senderOrbitId = input.senderOrbitId || await resolveOrbitId(userId);
+
+  try {
+    await insertMessage({
+      conversationId: input.conversationId,
+      senderUserId: userId,
+      senderOrbitId,
+      type: "system",
+      body: input.body,
+      metadata: { schemaVersion: 1, ...(input.metadata ?? {}) },
+    });
+  } catch (error) {
+    console.error("sendSystemMessage error", error);
+  }
+}
+
+export async function createCallSystemMessage(input: {
+  conversationId: string;
+  senderOrbitId?: string | null;
+  receiverOrbitId?: string | null;
+  body: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const userId = await getCurrentUserId();
+  const senderOrbitId = input.senderOrbitId || await resolveOrbitId(userId);
+
+  try {
+    await insertMessage({
+      conversationId: input.conversationId,
+      senderUserId: userId,
+      senderOrbitId,
+      type: "call",
+      body: input.body,
+      metadata: { schemaVersion: 1, ...(input.metadata ?? {}) },
+    });
+  } catch (error) {
+    console.error("createCallSystemMessage error", error);
+  }
+}
+
+export async function loadConversationMessages(
+  conversationId: string
+): Promise<ChatMessageRow[]> {
+  const rows = await fetchGroupMessages(conversationId);
+  return rows as ChatMessageRow[];
+}
+
+export async function markMessageRead(messageId: string) {
+  try {
+    await updateMessageFields(messageId, { read_at: new Date().toISOString() });
+  } catch (error) {
+    console.error("markMessageRead error", error);
+  }
+}
+
+/**
  * Notify all conversation participants (except sender) about a new message.
  */
 async function notifyConversationParticipants(ctx: {
@@ -88,6 +148,7 @@ async function notifyConversationParticipants(ctx: {
   bodyPreview: string;
 }) {
   try {
+    const { supabase } = await import("@/integrations/supabase/client");
     const { data: conv } = await (supabase as any)
       .from("conversations_v2")
       .select("participants")
@@ -123,88 +184,5 @@ async function notifyConversationParticipants(ctx: {
     );
   } catch (err) {
     console.error("[notifyConversationParticipants] error:", err);
-  }
-}
-
-/**
- * Send a system-type message (booking created, lease started, etc.)
- */
-export async function sendSystemMessage(input: {
-  conversationId: string;
-  senderOrbitId?: string | null;
-  body: string;
-  metadata?: Record<string, unknown>;
-}) {
-  const userId = await getCurrentUserId();
-  const senderOrbitId = input.senderOrbitId || await resolveOrbitId(userId);
-
-  const { error } = await (supabase as any)
-    .from("chat_messages_v2")
-    .insert({
-      conversation_id: input.conversationId,
-      sender_user_id: userId,
-      sender_orbit_id: senderOrbitId,
-      type: "system",
-      body: input.body,
-      metadata: input.metadata ?? null,
-    });
-
-  if (error) {
-    console.error("sendSystemMessage error", error);
-  }
-}
-
-export async function createCallSystemMessage(input: {
-  conversationId: string;
-  senderOrbitId?: string | null;
-  receiverOrbitId?: string | null;
-  body: string;
-  metadata?: Record<string, unknown>;
-}) {
-  const userId = await getCurrentUserId();
-  const senderOrbitId = input.senderOrbitId || await resolveOrbitId(userId);
-
-  const { error } = await (supabase as any)
-    .from("chat_messages_v2")
-    .insert({
-      conversation_id: input.conversationId,
-      sender_user_id: userId,
-      sender_orbit_id: senderOrbitId,
-      receiver_orbit_id: input.receiverOrbitId ?? null,
-      type: "call",
-      body: input.body,
-      metadata: input.metadata ?? null,
-    });
-
-  if (error) {
-    console.error("createCallSystemMessage error", error);
-  }
-}
-
-export async function loadConversationMessages(
-  conversationId: string
-): Promise<ChatMessageRow[]> {
-  const { data, error } = await (supabase as any)
-    .from("chat_messages_v2")
-    .select("*")
-    .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    console.error("loadConversationMessages error", error);
-    throw error;
-  }
-
-  return (data ?? []) as ChatMessageRow[];
-}
-
-export async function markMessageRead(messageId: string) {
-  const { error } = await (supabase as any)
-    .from("chat_messages_v2")
-    .update({ read_at: new Date().toISOString() })
-    .eq("id", messageId);
-
-  if (error) {
-    console.error("markMessageRead error", error);
   }
 }

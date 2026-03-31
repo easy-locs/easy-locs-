@@ -381,11 +381,12 @@ export const VIEWMODEL_LAYER = {
 } as const;
 
 // ══════════════════════════════════════════════
-// 12. FLOW GATE INTEGRATION STATUS
+// 12. FLOW GATE INTEGRATION STATUS — HARD LOCKED
 // ══════════════════════════════════════════════
 
 export const FLOW_GATE_STATUS = {
   file: "src/domains/orbit/flow-gate/orbit-flow-gate.ts",
+  status: "HARD_LOCKED",
   registries: {
     PipelineRegistry: "31 entries → versioned pipeline keys",
     OwnerRegistry: "6 canonical owners (messages, attachments, conversations, receipts, drafts, callSessions)",
@@ -393,10 +394,17 @@ export const FLOW_GATE_STATUS = {
     SerialRegistry: "unique ID issuance with TTL auto-cleanup",
     BatchRegistry: "grouped operations (receipt.read, upload.multipart, location.live)",
   },
+  singleEntry: {
+    publicEntry: "orbitDispatch (ONLY public entry point for user actions)",
+    internalServices: "orbit.services exports prefixed with _ (internal only)",
+    messageService: "sendTextMessage marked @deprecated — warns in DEV, routes through repository",
+    contactBridge: "Routes conversation creation through orbitDb (no inline insert)",
+    useMessageSender: "DEAD CODE — zero importers, safe to delete",
+  },
   integration: {
     orbitDispatch: "✅ Every command passes through executeFlow(entryKey)",
     receiptController: "✅ markRead/markSingleRead/clearMarkedUnread flow-gated",
-    orbitServices: "✅ sendText/sendMedia/sendVoice/createDirect flow-gated",
+    orbitServices: "✅ INTERNAL — sendText/sendMedia/sendVoice prefixed with _",
     createOrGetDirectConversation: "✅ Pair-keyed flow-gate prevents duplicate creation",
     voiceRecorder: "✅ Redirected through orbitDispatch (no direct insertMessage)",
     groupCreate: "✅ Routes through orbitDb + withFlowGate (no inline supabase)",
@@ -408,6 +416,7 @@ export const FLOW_GATE_STATUS = {
   ciGuards: {
     auditInlineSupabase: "✅ PASS — 0 inline supabase calls in UI layer",
     auditOrbitFlowGate: "✅ PASS — 0 orbit DB writes outside allowed zones",
+    auditOrbitSingleEntry: "✅ PASS — all orbit actions route through orbitDispatch",
   },
   repositories: {
     "support.repository.ts": "supportRepo + storefrontSupportRepo (tickets, messages, faq)",
@@ -415,5 +424,6 @@ export const FLOW_GATE_STATUS = {
     "call.repository.ts": "callRepo (ghost_call_sessions)",
     "orbitDb.ts": "conversations_v2 + chat_messages_v2",
   },
-  note: "Architecture: UI → OrbitEntry → executeFlow → pipeline → guardedWrite → owner → emitOutput → UI",
+  architecture: "UI → orbitDispatch → executeFlow(entryKey) → executor → families/send transport → repository → DB → emitOutput → UI",
+  note: "MONO-ENTRY / MONO-FLOW / MONO-OWNER — WhatsApp/Signal level lock",
 } as const;
