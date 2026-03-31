@@ -59,7 +59,7 @@ export function buildOptimisticTextMessage(input: SendTextInput): OrbitMessage {
     senderId: input.senderId,
     senderOrbitId: input.senderOrbitId,
     type: "text",
-    text: input.body.trim(),
+    text: normalizeTextInput(input.body) || "",
     attachmentIds: [],
     replyToId: input.replyToId || null,
     reactionSummary: null,
