@@ -59,101 +59,94 @@ const Login = () => {
 
     authLog("LOGIN_SUBMIT_STARTED", { traceId, email, timestamp: flowStart });
     setLoading(true);
-    setRetryStatus(null);
+    setRetryStatus("Connexion…");
 
     let failedStep: string | null = null;
-    const MAX_RETRIES = 2;
-    const abortController = new AbortController();
 
-    const attemptLogin = async (attempt: number): Promise<void> => {
-      // Exponential backoff: 10s → 12s → 15s (give server more time on retries)
-      const LOGIN_TIMEOUT_MS = 10_000 + attempt * 2_000;
-
-      if (attempt > 0) {
-        setRetryStatus(`Nouvelle tentative… (${attempt}/${MAX_RETRIES})`);
-      }
-
-      authLog("LOGIN_SUPABASE_REQUEST_STARTED", { traceId, attempt, timeoutMs: LOGIN_TIMEOUT_MS });
+    try {
+      authLog("LOGIN_SUPABASE_REQUEST_STARTED", { traceId, attempt: 0 });
       const reqStart = Date.now();
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const durationMs = Date.now() - reqStart;
 
-      try {
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          const timer = setTimeout(() => reject(new Error("__TIMEOUT__")), LOGIN_TIMEOUT_MS);
-          abortController.signal.addEventListener("abort", () => {
-            clearTimeout(timer);
-            reject(new Error("__ABORTED__"));
-          });
-        });
-        const { data, error } = await Promise.race([
-          supabase.auth.signInWithPassword({ email, password }),
-          timeoutPromise,
-        ]);
-        const durationMs = Date.now() - reqStart;
-
-        if (error) {
-          authError("LOGIN_SUPABASE_RESPONSE", {
-            traceId, success: false, error: error.message, durationMs, attempt,
-          });
-          const isServerTimeout = error.message?.includes("timeout") || error.message?.includes("deadline") || error.message?.includes("504");
-          if (isServerTimeout && attempt < MAX_RETRIES) {
-            // Exponential backoff: 1.5s, 3s
-            await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
-            return attemptLogin(attempt + 1);
-          }
-          failedStep = "LOGIN_SUPABASE_RESPONSE";
-          setLoading(false);
-          setRetryStatus(null);
-          loginInFlight.current = false;
-          clearActiveTrace();
-          const msg = isServerTimeout
-            ? "Le serveur ne répond pas après plusieurs tentatives. Réessayez dans quelques instants."
-            : error.message;
-          toast({ title: t("auth.login.error"), description: msg, variant: "destructive" });
-          authTraceSummary({ traceId, totalDurationMs: Date.now() - flowStart, finalStatus: "failed", failedStep });
-        } else {
-          authLog("LOGIN_SUPABASE_RESPONSE", {
-            traceId, success: true, error: null, durationMs, attempt,
-          });
-          setRetryStatus(null);
-          loginInFlight.current = false;
-          await redirectAfterLogin(traceId, data.user?.id);
-          setLoading(false);
-          authTraceSummary({ traceId, totalDurationMs: Date.now() - flowStart, finalStatus: "success", failedStep: null });
-          clearActiveTrace();
-        }
-      } catch (err: any) {
-        const durationMs = Date.now() - reqStart;
-        const isTimeout = err?.message === "__TIMEOUT__";
-        const isAborted = err?.message === "__ABORTED__";
-
-        if (isAborted) return; // User navigated away
-
+      if (error) {
         authError("LOGIN_SUPABASE_RESPONSE", {
-          traceId, success: false, error: isTimeout ? "CLIENT_TIMEOUT" : (err?.message ?? "UNKNOWN"), durationMs, attempt,
+          traceId,
+          success: false,
+          error: error.message,
+          durationMs,
+          attempt: 0,
         });
 
-        if (isTimeout && attempt < MAX_RETRIES) {
-          await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
-          return attemptLogin(attempt + 1);
-        }
+        failedStep = "LOGIN_SUPABASE_RESPONSE";
+        const normalizedMessage = error.message.toLowerCase();
+        const isInfraError =
+          normalizedMessage.includes("timeout") ||
+          normalizedMessage.includes("deadline") ||
+          normalizedMessage.includes("504") ||
+          normalizedMessage.includes("500") ||
+          normalizedMessage.includes("database error querying schema") ||
+          normalizedMessage.includes("failed to fetch");
 
-        failedStep = isTimeout ? "LOGIN_TIMEOUT_TRIGGERED" : "LOGIN_SUPABASE_REQUEST_STARTED";
-        setLoading(false);
-        setRetryStatus(null);
-        loginInFlight.current = false;
-        clearActiveTrace();
         toast({
           title: t("auth.login.error"),
-          description: isTimeout
-            ? "Connexion au serveur expirée après plusieurs tentatives."
-            : (err?.message || "Erreur inattendue"),
+          description: isInfraError
+            ? "Le service de connexion est temporairement indisponible. Réessayez dans quelques instants."
+            : error.message,
           variant: "destructive",
         });
-        authTraceSummary({ traceId, totalDurationMs: Date.now() - flowStart, finalStatus: "failed", failedStep });
-      }
-    };
 
-    await attemptLogin(0);
+        authTraceSummary({
+          traceId,
+          totalDurationMs: Date.now() - flowStart,
+          finalStatus: "failed",
+          failedStep,
+        });
+        return;
+      }
+
+      authLog("LOGIN_SUPABASE_RESPONSE", {
+        traceId,
+        success: true,
+        error: null,
+        durationMs,
+        attempt: 0,
+      });
+
+      await redirectAfterLogin(traceId, data.user?.id);
+      authTraceSummary({
+        traceId,
+        totalDurationMs: Date.now() - flowStart,
+        finalStatus: "success",
+        failedStep: null,
+      });
+    } catch (err: any) {
+      failedStep = "LOGIN_SUPABASE_REQUEST_STARTED";
+      authError("LOGIN_SUPABASE_RESPONSE", {
+        traceId,
+        success: false,
+        error: err?.message ?? "UNKNOWN",
+        attempt: 0,
+      });
+
+      toast({
+        title: t("auth.login.error"),
+        description: "Le service de connexion est temporairement indisponible. Réessayez dans quelques instants.",
+        variant: "destructive",
+      });
+
+      authTraceSummary({
+        traceId,
+        totalDurationMs: Date.now() - flowStart,
+        finalStatus: "failed",
+        failedStep,
+      });
+    } finally {
+      loginInFlight.current = false;
+      setLoading(false);
+      setRetryStatus(null);
+      clearActiveTrace();
+    }
   };
 
   useEffect(() => {
