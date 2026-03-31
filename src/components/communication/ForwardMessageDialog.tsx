@@ -3,7 +3,7 @@
  * Backward-compatible with both old (messageContent/messageId) and new (message/threads) APIs.
  */
 import { useState, useEffect } from "react";
-import { getPeerUserId } from "@/domains/orbit/resolvers";
+import { getPeerUserId, resolveDisplayName } from "@/domains/orbit/resolvers";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
