@@ -56,7 +56,7 @@ function safeStr(val: unknown): string {
 function ChatMessageBubble({
   msg: rawMsg, isMe, threadName, locale, showOriginal,
   translatingMsgId, isPendingOffline, isConsecutive,
-  selected, selectMode, currentUserId,
+  selected, selectMode, currentUserId, conversationId,
   onTranslate, onContextMenu, onToggleSelect, getCategoryIcon,
 }: Props) {
   // Guard: ensure content and contact_name are always strings
