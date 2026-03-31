@@ -7,7 +7,11 @@ export type CardCommand =
   | { type: "load_entity"; entityId: string; entityType: string }
   | { type: "load_batch"; entityIds: string[]; entityType: string }
   | { type: "refresh_entity"; entityId: string }
-  | { type: "clear_cache" };
+  | { type: "clear_cache" }
+  | { type: "contact_entity"; entityId: string; entityType: string; channel?: string }
+  | { type: "navigate_entity"; entityId: string; entityType: string }
+  | { type: "save_entity"; entityId: string; entityType: string }
+  | { type: "share_entity"; entityId: string; entityType: string };
 
 export interface CardCommandResult {
   ok: boolean;
