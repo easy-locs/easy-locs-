@@ -98,6 +98,7 @@ describe("normalizeCallSession", () => {
       caller_id: "user-1",
       callee_id: "user-2",
       type: "video",
+      call_type: "video",
       status: "active",
       started_at: "2026-01-01T00:00:00Z",
     };
