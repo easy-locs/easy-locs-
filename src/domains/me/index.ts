@@ -1,20 +1,24 @@
 /**
  * DOMAIN: ME — Personal account, preferences, permissions, security.
  *
- * Me is the back office personnel simplifié de l'utilisateur.
- * Me contient uniquement:
- * - profile
- * - account
- * - preferences
- * - permissions
- * - security
- * - sessions / devices
- *
- * INTERDIT: mettre du business wallet / orbit / radar à l'intérieur.
+ * SOLE source of truth for: profile, account, preferences, permissions, security, sessions.
+ * INTERDIT: wallet / orbit / radar business logic inside.
  */
 
-// ── Types ──
+// ── Canonical Types ──
 export type { CanonicalUserProfile, DevicePermissions, AppRole, PermissionStateValue } from "../shared/canonical-types";
+
+// ── Atoms ──
+export { isValidLanguage, normalizeEmail, isValidPhone } from "./atoms/is-valid-language.atom";
+export type { SupportedLanguage } from "./atoms/is-valid-language.atom";
+
+// ── Microns ──
+export { validatePreferences } from "./microns/validate-preferences.micron";
+export type { PreferencesInput, PreferencesValidation } from "./microns/validate-preferences.micron";
+
+// ── Molecules ──
+export { buildPreferencesUpdate } from "./molecules/build-preferences-update.molecule";
+export type { PreferencesUpdate } from "./molecules/build-preferences-update.molecule";
 
 // ── Hooks (canonical entry points) ──
 export { useGlobalProfile } from "@/hooks/useGlobalProfile";
