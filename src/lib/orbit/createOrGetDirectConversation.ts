@@ -1,6 +1,7 @@
 /**
  * createOrGetDirectConversation — Canonical V2+ direct conversation creator.
  * Uses orbitDb for all DB access.
+ * FLOW GATE INTEGRATED: prevents duplicate concurrent creation for same pair.
  * IMPORTANT: sets created_by_orbit_id and ensures orbitId is always populated
  * in participants to satisfy RLS policies on conversations_v2.
  */
@@ -8,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { orbitDb } from "@/lib/db/orbitDb";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import type { ConversationParticipant, ConversationRow } from "@/lib/types/comms";
+import { isFlowActive, enterFlow, exitFlow } from "@/domains/orbit/flow-gate/orbit-flow-gate";
 
 type Params = {
   myUserId: string;
