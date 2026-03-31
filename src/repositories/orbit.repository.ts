@@ -8,9 +8,8 @@ export async function fetchUserConversations(limit = 500) {
   return data || [];
 }
 
-export async function upsertConversationPreference(userId: string, contextId: string, prefs: Record<string, any>) {
-  await supabase.from("conversation_preferences").upsert({ user_id: userId, context_id: contextId, ...prefs }, { onConflict: "user_id,context_id" });
-}
+/** @deprecated Use communication.repository.upsertConversationPreference instead */
+export { upsertConversationPreference } from "@/repositories/communication.repository";
 
 export async function fetchUserChatMessages(userId: string, limit = 1000) {
   const { data } = await supabase.from("chat_messages_v2").select("body, created_at, sender_user_id").or(`sender_user_id.eq.${userId}`).order("created_at", { ascending: true }).limit(limit);
