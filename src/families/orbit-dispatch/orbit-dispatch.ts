@@ -42,6 +42,7 @@ import { executeDeclineCall } from "./pipeline/executeDeclineCall";
 import { executeEndCall } from "./pipeline/executeEndCall";
 import { executeEditMessage } from "./pipeline/executeEditMessage";
 import { executeReplyMessage } from "./pipeline/executeReplyMessage";
+import { executeRetryMessage } from "./pipeline/executeRetryMessage";
 
 // ── Command type → EntryKey mapping ──
 const COMMAND_TO_ENTRY: Record<string, EntryKey> = {
@@ -56,6 +57,7 @@ const COMMAND_TO_ENTRY: Record<string, EntryKey> = {
   decline_call: "call.decline",
   end_call: "call.end",
   edit_message: "message.edit",
+  retry_message: "message.retry",
   group_create: "conversation.createGroup",
   group_update: "conversation.updateGroup",
   presence_update: "presence.update",
@@ -165,6 +167,8 @@ export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResu
             return { ...await executeEndCall(cmd), requestId };
           case "edit_message":
             return { ...await executeEditMessage(cmd), requestId };
+          case "retry_message":
+            return { ...await executeRetryMessage(cmd), requestId };
           case "reply": {
             const ctx = await resolveContext(cmd.conversationId);
             return { ...await executeReplyMessage(ctx, cmd), requestId };

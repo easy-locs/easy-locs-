@@ -13,4 +13,6 @@ export { executeDeclineCall } from "./executeDeclineCall";
 export { executeEndCall } from "./executeEndCall";
 export { executeEditMessage } from "./executeEditMessage";
 export { executeReplyMessage } from "./executeReplyMessage";
+export { executeRetryMessage } from "./executeRetryMessage";
+export type { RetryMessageCommand } from "./executeRetryMessage";
 export type { ExecutorResult, ResolvedContext, PipelinePhase, PipelineTrace } from "./pipeline-types";
