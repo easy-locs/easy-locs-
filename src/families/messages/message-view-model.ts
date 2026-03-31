@@ -21,6 +21,8 @@ export interface MessageViewModel {
   isEdited: boolean;
   isDeleted: boolean;
   isRead: boolean;
+  /** WhatsApp-style delivery status for UI ticks */
+  deliveryStatus: "sending" | "sent" | "delivered" | "read" | "failed";
 
   // UI hints
   clickable: boolean;
