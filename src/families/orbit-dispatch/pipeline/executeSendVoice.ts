@@ -52,6 +52,22 @@ export async function executeSendVoice(
     store.mergeAttachment(attachment);
     store.mergeMessage(optimistic);
     const tempId = optimistic.tempId ?? optimistic.id;
+
+    if (import.meta.env.DEV) {
+      const { assertPreviewBeforeUpload } = await import(
+        "@/domains/orbit/pipelines/message/pipeline-assertions"
+      );
+      assertPreviewBeforeUpload({
+        attachmentId: attachment.id,
+        hasLocalUri: !!attachment.localUri,
+        hasPreview: !!attachment.previewDataUrl,
+        uploadStatus: attachment.uploadStatus,
+      });
+      console.debug("[executeSendVoice] Optimistic voice merged", {
+        tempId, conversationId: ctx.conversationId,
+        type: optimistic.type, duration: cmd.durationSeconds,
+      });
+    }
     exitPhase(trace);
 
     // ── Phase 4: Background DB persist + upload (non-blocking) ──
