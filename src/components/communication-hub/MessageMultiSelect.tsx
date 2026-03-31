@@ -59,7 +59,7 @@ export default function MessageMultiSelectToolbar({
     try {
       for (const id of ids) {
         const msg = messages.find(m => m.id === id);
-        if (msg && msg.sender_id === currentUserId) {
+        if (msg && isOutgoingMessage(msg, currentUserId)) {
           await deleteMessageForSender(id);
         } else if (currentUserId) {
           await deleteMessageForUser(id, currentUserId);
