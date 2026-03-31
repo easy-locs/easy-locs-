@@ -1,11 +1,17 @@
 /**
  * useMessageLoader — V2-ONLY canonical message loader.
  * Reads from chat_messages_v2 exclusively. No legacy path.
+ * Read receipts delegated to receipt.controller (single write path).
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { subscribeInstantMessages } from "@/lib/realtime-broadcast";
+import {
+  markConversationMessagesRead,
+  markSingleMessageRead,
+  clearMarkedUnread,
+} from "@/domains/orbit/controllers/receipt.controller";
 
 const db = supabase as any;
 
@@ -200,17 +206,13 @@ export function useMessageLoader({
 
     if (readReceipts && unreadIds.length > 0) {
       trace("messages.load.render", "input", { action: "mark_read", unreadCount: unreadIds.length, conversationId });
-      db.from("chat_messages_v2")
-        .update({ read_at: new Date().toISOString() })
-        .in("id", unreadIds)
-        .then(() => onThreadUpdate(thread!.id, { unreadCount: 0 }));
-      // Clear marked_unread preference when messages are read
+      // Delegate to canonical receipt controller (single write path)
+      markConversationMessagesRead(conversationId, userId!).then(({ markedCount }) => {
+        if (markedCount > 0) onThreadUpdate(thread!.id, { unreadCount: 0 });
+      });
+      // Clear marked_unread preference
       const ctxId = thread?.entityId || thread?.id;
-      db.from("conversation_preferences")
-        .update({ marked_unread: false })
-        .eq("user_id", userId)
-        .eq("context_id", ctxId)
-        .then(() => {});
+      if (ctxId) clearMarkedUnread(userId!, ctxId);
     }
   }, [thread, userId, readReceipts, onThreadUpdate, offline, trace]);
 
@@ -325,11 +327,8 @@ export function useMessageLoader({
           messageCache.set(conversationId, []);
 
           if (msg.sender_user_id !== userId && !msg.read_at && readReceipts) {
-            await db
-              .from("chat_messages_v2")
-              .update({ read_at: new Date().toISOString() })
-              .eq("id", msg.id);
-
+            // Delegate to canonical receipt controller
+            markSingleMessageRead(msg.id, userId!);
             onThreadUpdate(thread!.id, { unreadCount: 0 });
           }
 
