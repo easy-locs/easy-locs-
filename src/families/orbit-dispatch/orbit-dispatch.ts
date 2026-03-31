@@ -27,6 +27,8 @@ import {
   FlowGateError,
   type EntryKey,
 } from "@/domains/orbit/flow-gate";
+import { enqueue, createFlowId } from "@/domains/orbit/stream/flow-core";
+import { offlineQueue } from "@/domains/orbit/stream/offline-queue";
 
 // ── Executors ──
 import { executeSendText } from "./pipeline/executeSendText";
