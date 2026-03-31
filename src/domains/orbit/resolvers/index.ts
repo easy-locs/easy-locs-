@@ -36,3 +36,10 @@ export {
   buildMessagePreview,
 } from "./preview.resolver";
 export type { PreviewableMessage } from "./preview.resolver";
+
+export {
+  resolveMediaRenderableSource,
+  resolveMediaViewerSource,
+  buildMediaSourceInput,
+} from "./media-source.resolver";
+export type { MediaSourceInput } from "./media-source.resolver";
