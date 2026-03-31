@@ -9,6 +9,7 @@ import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
+import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 
 export default function RealtimeMessageToast() {
   const { user } = useAuth();
