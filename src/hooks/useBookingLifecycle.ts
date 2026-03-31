@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { syncPaymentRequest } from "@/lib/shared/sync-engine";
 import { platformBus } from "@/lib/shared/platform-bus";
-import * as dealRepo from "@/repositories/deal.repository";
+import * as dealRepo from "@/repositories/deals.repository";
 
 export type BookingStatus =
   | "pending" | "new" | "awaiting_payment"
