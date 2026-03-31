@@ -11,7 +11,11 @@ import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { normalizeOrbitMessage, normalizeConversation } from "@/domains/orbit/normalizers";
 import { isMessageDuplicate, markMessageSeen } from "@/lib/dedup/message-dedup";
 import { useOrbitStore } from "@/domains/orbit/stores/orbit.store";
-import { logRealtimeEventReceived, logRealtimeEventDeduped, logMessageReconciled } from "@/lib/observability/orbit-observability";
+import {
+  logRealtimeEventReceived,
+  logRealtimeEventDeduped,
+  logMessageReconciled,
+} from "@/lib/observability/orbit-observability";
 
 const activeChannels = new Map<string, any>();
 
@@ -39,7 +43,7 @@ export function subscribeConversationMessages(conversationId: string): () => voi
         // Layer 1: Dedup
         const { isDuplicate } = isMessageDuplicate({ id: raw.id });
         if (isDuplicate) {
-          logOrbit("realtime_event_deduped", { id: raw.id });
+          logRealtimeEventDeduped(raw.id, "already_seen");
           return;
         }
 
@@ -52,7 +56,6 @@ export function subscribeConversationMessages(conversationId: string): () => voi
         // Layer 4: Check if this is a reconciliation
         const store = useOrbitStore.getState();
         if (normalized.tempId && store.tempIdMap[normalized.tempId]) {
-          // Already reconciled via optimistic path
           return;
         }
 
@@ -61,14 +64,14 @@ export function subscribeConversationMessages(conversationId: string): () => voi
           const existingTemp = store.messages[normalized.tempId];
           if (existingTemp) {
             store.reconcileMessage(normalized.tempId, normalized);
-            logOrbit("message_reconciled", { tempId: normalized.tempId, serverId: normalized.id });
+            logMessageReconciled(normalized.tempId, normalized.id);
             return;
           }
         }
 
         // Layer 5: Merge into store
         store.mergeMessage(normalized);
-        logOrbit("realtime_event_received", { id: normalized.id, conversationId });
+        logRealtimeEventReceived("chat_messages_v2", "INSERT", normalized.id);
       }
     )
     .on(
@@ -114,7 +117,7 @@ export function subscribeUserConversations(orbitId: string): () => void {
 
         const normalized = normalizeConversation(raw);
         useOrbitStore.getState().mergeConversation(normalized);
-        logOrbit("realtime_event_received", { id: normalized.id, type: "conversation" });
+        logRealtimeEventReceived("conversations_v2", "UPDATE", normalized.id);
       }
     )
     .subscribe();
