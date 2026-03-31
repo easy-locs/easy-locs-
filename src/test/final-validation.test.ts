@@ -274,9 +274,9 @@ describe("Subscription Health", () => {
     registerSubscription("wallet.balance:u1", () => () => {});
 
     const health = getSubscriptionHealth();
-    expect(health.total).toBe(4);
-    expect(health.byPrefix["orbit"]).toBe(3);
-    expect(health.byPrefix["wallet"]).toBe(1);
+    expect(health.count).toBe(4);
+    expect(health.byDomain["orbit"]).toBe(3);
+    expect(health.byDomain["wallet"]).toBe(1);
   });
 
   it("health is zero after clearAll", () => {
@@ -285,7 +285,7 @@ describe("Subscription Health", () => {
     clearAllSubscriptions();
 
     const health = getSubscriptionHealth();
-    expect(health.total).toBe(0);
+    expect(health.count).toBe(0);
   });
 });
 
