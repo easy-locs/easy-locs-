@@ -99,15 +99,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     if (peerProfileCacheRef.lastPeerId === peerId) return;
     peerProfileCacheRef.lastPeerId = peerId;
 
-    supabase.from("profiles").select("created_at").eq("id", peerId).maybeSingle()
-      .then(({ data, error }) => {
-        if (error) {
-          console.warn("[HudChatPanel] profile fetch error:", error.message);
-          setPeerProfileCreatedAt(null);
-          return;
-        }
-        setPeerProfileCreatedAt(data?.created_at ?? null);
-      });
+    fetchPeerProfileCreatedAt(peerId).then((createdAt) => {
+      setPeerProfileCreatedAt(createdAt);
+    });
   }, [thread?.peerUserId]);
 
   const contactProfileEntity = useMemo(() => {
