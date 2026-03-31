@@ -1,5 +1,6 @@
 /**
  * Orbit Domain — Concrete adapters wiring existing repositories to DDD ports.
+ * All writes route through orbitDb / repositories. No inline supabase.
  */
 import type {
   ConversationRepository, MessageRepository, CallRepository,
@@ -10,6 +11,7 @@ import { orbitEvents } from "../events";
 import { createDomainLogger } from "../../shared/observability";
 import * as commRepo from "@/repositories/communication.repository";
 import * as orbitRepo from "@/repositories/orbit.repository";
+import { orbitDb } from "@/lib/db/orbitDb";
 
 const log = createDomainLogger("orbit");
 
