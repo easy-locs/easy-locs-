@@ -26,7 +26,7 @@ export interface InboxItemViewModel {
 function projectConversation(conv: OrbitConversation): InboxItemViewModel {
   return {
     id: conv.id,
-    type: conv.type,
+    kind: conv.kind,
     title: conv.title || "Conversation",
     avatarUrl: conv.avatarUrl ?? null,
     lastMessagePreview: conv.lastMessagePreview ?? null,
@@ -34,8 +34,6 @@ function projectConversation(conv: OrbitConversation): InboxItemViewModel {
     unreadCount: conv.unreadCount ?? 0,
     isMuted: conv.isMuted ?? false,
     isArchived: conv.isArchived ?? false,
-    isPinned: conv.isPinned ?? false,
-    isMarkedUnread: conv.isMarkedUnread ?? false,
     participantCount: conv.participantIds?.length ?? 0,
   };
 }
