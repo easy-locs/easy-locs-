@@ -71,7 +71,7 @@ export function subscribeToConversations(
         table: "conversations_v2",
       },
       (payload) => {
-        const raw = payload.new ?? payload.old;
+        const raw = (payload.new ?? payload.old) as any;
         if (!raw?.id) return;
 
         // Normalize before delivering
