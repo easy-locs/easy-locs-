@@ -33,6 +33,7 @@ import {
   useHudSelectionBridge,
   useHudContextMenuBridge,
   useHudMultiPhotoSendBridge,
+  useHudMessageMutationBridge,
 } from "./chat/bridges";
 
 // ── Canonical UI components ──
