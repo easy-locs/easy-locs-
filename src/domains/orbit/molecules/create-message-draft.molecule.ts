@@ -13,7 +13,7 @@ export function createMessageDraft(input: {
   mediaUrl?: string;
 }): MessagePayload {
   const validation = validateMessageBody(input.body);
-  if (!validation.ok) throw new Error(validation.reason);
+  if (!validation.ok) throw new Error((validation as { ok: false; reason: string }).reason);
 
   return buildMessagePayload({
     ...input,
