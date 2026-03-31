@@ -52,10 +52,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ["support-tickets", shopId, mode],
     queryFn: async () => {
-      const query = (supabase as any).from("storefront_support_tickets")
-        .select("*").eq("shop_id", shopId).order("created_at", { ascending: false });
-      if (mode === "buyer") query.eq("customer_id", user!.id);
-      const { data } = await query;
+      const { data } = await storefrontSupportRepo.tickets.list(shopId, mode === "buyer" ? user!.id : undefined);
       return data || [];
     },
     enabled: !!user,
@@ -65,8 +62,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   const { data: messages = [] } = useQuery({
     queryKey: ["ticket-messages", selectedTicket],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("storefront_ticket_messages")
-        .select("*").eq("ticket_id", selectedTicket).order("created_at", { ascending: true });
+      const { data } = await storefrontSupportRepo.messages.list(selectedTicket!);
       return data || [];
     },
     enabled: !!selectedTicket,
@@ -76,10 +72,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   const { data: faqs = [] } = useQuery({
     queryKey: ["shop-faq", shopId],
     queryFn: async () => {
-      const query = (supabase as any).from("storefront_faq")
-        .select("*").eq("shop_id", shopId).order("sort_order");
-      if (mode === "buyer") query.eq("published", true);
-      const { data } = await query;
+      const { data } = await storefrontSupportRepo.faq.list(shopId);
       return data || [];
     },
   });
@@ -87,14 +80,14 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   // Create ticket
   const createTicket = useMutation({
     mutationFn: async () => {
-      const { data } = await (supabase as any).from("storefront_support_tickets").insert({
+      const { data } = await storefrontSupportRepo.tickets.insert({
         shop_id: shopId, customer_id: user!.id,
         subject: ticketForm.subject, description: ticketForm.description,
         category: ticketForm.category, priority: ticketForm.priority,
-      }).select().single();
+      });
       // Add initial message
       if (ticketForm.description) {
-        await (supabase as any).from("storefront_ticket_messages").insert({
+        await storefrontSupportRepo.messages.insert({
           ticket_id: data.id, sender_id: user!.id, sender_role: "customer", message: ticketForm.description,
         });
       }
@@ -111,16 +104,16 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   // Send message
   const sendMessage = useMutation({
     mutationFn: async () => {
-      await (supabase as any).from("storefront_ticket_messages").insert({
+      await storefrontSupportRepo.messages.insert({
         ticket_id: selectedTicket, sender_id: user!.id,
         sender_role: mode === "seller" ? "seller" : "customer",
         message: newMessage,
       });
       // Update ticket status
       const newStatus = mode === "seller" ? "waiting_customer" : "waiting_seller";
-      await (supabase as any).from("storefront_support_tickets").update({
+      await storefrontSupportRepo.tickets.update(selectedTicket!, {
         status: newStatus, updated_at: new Date().toISOString(),
-      }).eq("id", selectedTicket);
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-messages"] });
@@ -132,10 +125,10 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   // Update ticket status
   const updateStatus = useMutation({
     mutationFn: async ({ ticketId, status }: { ticketId: string; status: string }) => {
-      await (supabase as any).from("storefront_support_tickets").update({
+      await storefrontSupportRepo.tickets.update(ticketId, {
         status, updated_at: new Date().toISOString(),
         ...(status === "resolved" ? { resolved_at: new Date().toISOString() } : {}),
-      }).eq("id", ticketId);
+      });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["support-tickets"] }); toast.success("Status updated"); },
   });
@@ -144,7 +137,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   const [faqForm, setFaqForm] = useState({ question: "", answer: "", category: "general" });
   const createFaq = useMutation({
     mutationFn: async () => {
-      await (supabase as any).from("storefront_faq").insert({
+      await storefrontSupportRepo.faq.insert({
         shop_id: shopId, user_id: user!.id, ...faqForm,
       });
     },
