@@ -160,6 +160,7 @@ function MessageBubbleRouterInner({ msg, isMe, attachment, currentUserId, blurre
         <div className={`mb-1 ${blurred ? "blur-lg transition-all" : ""}`}>
           <VideoBubble
             src={renderUrl}
+            viewerSrc={viewerUrl || renderUrl}
             isMe={isMe}
             fileName={extractFileName(renderUrl)}
             duration={attachment?.duration ?? (msg as any).video_duration_seconds}
