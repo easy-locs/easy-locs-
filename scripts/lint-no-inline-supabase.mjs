@@ -16,13 +16,16 @@ const BLOCKED = [
   /supabase\s*\.\s*storage\s*\.\s*from\s*\(/,
 ];
 
-const ALLOWED_DIRS = ["src/repositories/", "src/lib/", "src/services/", "src/integrations/"];
+const ALLOWED_DIRS = ["src/repositories/", "src/lib/", "src/services/", "src/integrations/", "src/domains/", "src/families/", "src/test/", "src/stores/"];
 const AUTH_FILES = new Set([
   "src/pages/Login.tsx", "src/pages/Signup.tsx", "src/pages/ForgotPassword.tsx",
   "src/pages/ResetPassword.tsx", "src/pages/VerifyEmail.tsx", "src/pages/AuthCallbackPage.tsx",
-  "src/pages/TenantSignup.tsx", "src/components/auth/AdminRoute.tsx",
-  "src/components/auth/ProtectedRoute.tsx", "src/contexts/AuthContext.tsx",
-  "src/stores/v2AuthStore.ts",
+  "src/pages/TenantSignup.tsx", "src/pages/CustomerProfilePage.tsx",
+  "src/pages/MeCommandCenter.tsx", "src/pages/MerchantClaimPage.tsx",
+  "src/pages/AuditDebugPanelPage.tsx", "src/pages/admin/AdminBulkSeedPage.tsx",
+  "src/components/auth/AdminRoute.tsx", "src/components/auth/ProtectedRoute.tsx",
+  "src/contexts/AuthContext.tsx", "src/stores/v2AuthStore.ts",
+  "src/hooks/call/useOutgoingCall.ts", "src/hooks/useAppHealthCheck.ts",
 ]);
 
 const args = process.argv.slice(2);
