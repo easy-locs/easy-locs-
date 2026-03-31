@@ -278,8 +278,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
             userEmail={user?.email}
             userName={user?.user_metadata?.full_name || user?.email || "User"}
             onClearSelection={selection.clearSelection}
-            onDeletedForMe={(ids) => selection.setHiddenMsgIds(prev => new Set([...prev, ...ids]))}
-            onDeletedForAll={(ids) => loader.setRawMessages(prev => prev.map(m => ids.includes(m.id) ? { ...m, content: "🚫 This message was deleted", deleted_for_all: true, attachment_url: null, audio_url: null, audio_duration_seconds: null } as any : m))}
+            onDeletedForMe={mutations.applyBatchDeleteForMe}
+            onDeletedForAll={mutations.applyBatchDeleteForAll}
           />
         )}
 
