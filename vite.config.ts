@@ -54,6 +54,7 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     chunkSizeWarningLimit: 500,
     rollupOptions: {
+      external: ["@capacitor/filesystem"],
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
