@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { MessageBubbleRouter } from "./chat/bubbles/MessageBubbleRouter";
 import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
 import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
+import { useScopedMessageAttachment } from "@/domains/orbit/selectors/useScopedMessageAttachment";
 
 // haptic removed — gestures handled by OrbitMessageInteractiveWrapper
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
@@ -36,6 +37,8 @@ interface Props {
   /** @deprecated — selection mode now handled by OrbitMessageInteractiveWrapper */
   selectMode?: boolean;
   currentUserId?: string;
+  /** Conversation ID for scoped attachment resolution */
+  conversationId?: string;
   onTranslate: (msg: ChatMessage) => void;
   onContextMenu: (e: React.MouseEvent, msg: ChatMessage, isMe: boolean) => void;
   onToggleSelect?: (id: string) => void;
@@ -53,7 +56,7 @@ function safeStr(val: unknown): string {
 function ChatMessageBubble({
   msg: rawMsg, isMe, threadName, locale, showOriginal,
   translatingMsgId, isPendingOffline, isConsecutive,
-  selected, selectMode, currentUserId,
+  selected, selectMode, currentUserId, conversationId,
   onTranslate, onContextMenu, onToggleSelect, getCategoryIcon,
 }: Props) {
   // Guard: ensure content and contact_name are always strings
@@ -64,6 +67,13 @@ function ChatMessageBubble({
     translated_content: rawMsg.translated_content ? safeStr(rawMsg.translated_content) : rawMsg.translated_content,
   };
   // Legacy gesture handlers removed — now handled by OrbitMessageInteractiveWrapper
+
+  // ══ SCOPED ATTACHMENT RESOLUTION ══
+  const attachmentIds = (rawMsg as any).attachmentIds ?? (rawMsg as any).attachment_ids ?? null;
+  const scopedAttachment = useScopedMessageAttachment(
+    conversationId || (rawMsg as any).conversationId || (rawMsg as any).conversation_id,
+    attachmentIds,
+  );
 
   const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
   const isDeleted = !!(msg as any).deleted_for_all;
@@ -309,6 +319,17 @@ function ChatMessageBubble({
             <MessageBubbleRouter
               msg={msg}
               isMe={isMe}
+              attachment={scopedAttachment ? {
+                kind: scopedAttachment.kind,
+                localUri: scopedAttachment.localUri,
+                remoteUrl: scopedAttachment.remoteUrl,
+                previewDataUrl: scopedAttachment.previewDataUrl,
+                mimeType: scopedAttachment.mimeType,
+                size: scopedAttachment.size,
+                duration: scopedAttachment.duration,
+                uploadStatus: scopedAttachment.uploadStatus,
+                uploadProgress: scopedAttachment.uploadProgress,
+              } : undefined}
               currentUserId={currentUserId}
               blurred={blurred}
             />
@@ -319,7 +340,8 @@ function ChatMessageBubble({
             msg.message_type === "image" || msg.message_type === "video" ||
             msg.message_type === "voice" || msg.message_type === "audio" ||
             msg.message_type === "file" || msg.message_type === "location_static" ||
-            msg.message_type === "location_live";
+            msg.message_type === "location_live" ||
+            !!scopedAttachment;
 
           if (hasMedia) {
             return mediaRendered;
