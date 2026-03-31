@@ -84,6 +84,28 @@ export async function createOrGetDirectConversation(params: Params): Promise<Con
     throw new Error("Cannot create a conversation with yourself");
   }
 
+  // ── FLOW GATE: prevent duplicate concurrent creation for same pair ──
+  const pairKey = [params.myUserId, params.peerUserId].sort().join(":");
+  const flowKey = `conversation.openDirect:${pairKey}`;
+  if (isFlowActive(flowKey)) {
+    // Wait briefly for in-flight creation, then retry lookup
+    await new Promise(r => setTimeout(r, 500));
+    // If still active, throw to prevent stacking
+    if (isFlowActive(flowKey)) {
+      throw new Error("Duplicate direct conversation creation in progress");
+    }
+  }
+
+  enterFlow(flowKey);
+  try {
+    return await _createOrGetDirectConversationInternal(params);
+  } finally {
+    exitFlow(flowKey);
+  }
+}
+
+async function _createOrGetDirectConversationInternal(params: Params): Promise<ConversationRow> {
+
   // Resolve canonical orbit IDs for both participants
   const [myOrbitId, peerOrbitId] = await Promise.all([
     resolveOrbitId(params.myUserId, params.myOrbitId),
