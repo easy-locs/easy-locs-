@@ -24,6 +24,15 @@ export {
 export type { IdentitySource } from "./identity.resolver";
 
 export {
+  isOutgoingMessage,
+  isSystemMessage,
+  resolveSenderDisplay,
+  getPeerUserId,
+  isConsecutiveMessage,
+} from "./message-identity.resolver";
+export type { SenderDisplayInfo } from "./message-identity.resolver";
+
+export {
   buildMessagePreview,
 } from "./preview.resolver";
 export type { PreviewableMessage } from "./preview.resolver";
