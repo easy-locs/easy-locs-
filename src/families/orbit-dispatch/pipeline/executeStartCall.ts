@@ -38,7 +38,7 @@ export async function executeStartCall(
         userId: cmd.peerUserId,
         orbitId: cmd.peerOrbitId,
         name: cmd.peerName || "Contact",
-        avatarUrl: cmd.peerAvatarUrl || null,
+        avatarUrl: null,
       },
       mode: cmd.mode,
     });
