@@ -42,7 +42,7 @@ export function useConversationViewModel(conversationId: string | null): Convers
     return {
       conversationId,
       title: conversation.title || "Conversation",
-      type: conversation.type,
+      type: conversation.kind,
       participantIds: conversation.participantIds || [],
       messages: sorted,
       pendingMessages: sorted.filter((m) => m.status === "sending"),

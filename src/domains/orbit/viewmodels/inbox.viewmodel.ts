@@ -51,7 +51,6 @@ export function useInboxViewModel() {
       .filter((c) => !c.isArchived)
       .map(projectConversation)
       .sort((a, b) => {
-        if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
         const ta = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
         const tb = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
         return tb - ta;

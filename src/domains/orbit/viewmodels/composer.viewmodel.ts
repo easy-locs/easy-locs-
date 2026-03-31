@@ -26,7 +26,7 @@ export function useComposerViewModel(conversationId: string | null): ComposerVie
   const drafts = useOrbitComposerStore((s) => s.drafts);
   const replies = useOrbitComposerStore((s) => s.replies);
   const edits = useOrbitComposerStore((s) => s.edits);
-  const sendingLock = useOrbitComposerStore((s) => s.sendingLock);
+  const sending = useOrbitComposerStore((s) => s.sending);
 
   return useMemo((): ComposerViewModel => {
     const key = conversationId || "";
