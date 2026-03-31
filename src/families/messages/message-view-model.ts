@@ -40,6 +40,9 @@ export interface MessageViewModel {
   // Reply
   replyToMessageId: string | null;
 
+  /** Upload progress (0-100) for media messages */
+  progress: number | null;
+
   // Raw envelope (escape hatch — discouraged)
   _envelope: CanonicalMessageEnvelope;
 }
