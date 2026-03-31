@@ -40,6 +40,26 @@ export async function cardDispatch(cmd: CardCommand): Promise<CardCommandResult>
         useCardStore.getState().clear();
         return { ok: true };
       }
+      case "contact_entity": {
+        const { platformBus } = await import("@/lib/shared/platform-bus");
+        platformBus.emit("card:contact", { entityId: cmd.entityId, entityType: cmd.entityType, channel: cmd.channel || "chat" }, "cardDispatch");
+        return { ok: true };
+      }
+      case "navigate_entity": {
+        const { platformBus } = await import("@/lib/shared/platform-bus");
+        platformBus.emit("card:navigate", { entityId: cmd.entityId, entityType: cmd.entityType }, "cardDispatch");
+        return { ok: true };
+      }
+      case "save_entity": {
+        const { platformBus } = await import("@/lib/shared/platform-bus");
+        platformBus.emit("card:save", { entityId: cmd.entityId, entityType: cmd.entityType }, "cardDispatch");
+        return { ok: true };
+      }
+      case "share_entity": {
+        const { platformBus } = await import("@/lib/shared/platform-bus");
+        platformBus.emit("card:share", { entityId: cmd.entityId, entityType: cmd.entityType }, "cardDispatch");
+        return { ok: true };
+      }
       default:
         return { ok: false, error: "unknown_card_command" };
     }
