@@ -327,11 +327,8 @@ export function useMessageLoader({
           messageCache.set(conversationId, []);
 
           if (msg.sender_user_id !== userId && !msg.read_at && readReceipts) {
-            await db
-              .from("chat_messages_v2")
-              .update({ read_at: new Date().toISOString() })
-              .eq("id", msg.id);
-
+            // Delegate to canonical receipt controller
+            markSingleMessageRead(msg.id, userId!);
             onThreadUpdate(thread!.id, { unreadCount: 0 });
           }
 
