@@ -101,3 +101,10 @@ export {
   isContentDuplicate,
   releaseSubmitLock,
 } from "./guards/send-guard";
+
+// ── Controllers ──
+export {
+  markConversationMessagesRead,
+  markSingleMessageRead,
+  clearMarkedUnread,
+} from "./controllers";
