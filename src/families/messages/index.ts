@@ -4,8 +4,7 @@
  */
 
 // ── Core hooks ──
-/** @deprecated Use useOrbitDispatch() instead */
-export { useMessageSender } from "@/hooks/useMessageSender";
+// useMessageSender removed — dead export, orbitDispatch is the canonical entry
 export { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
 export { useMessageSelection } from "@/components/communication-hub/chat/useMessageSelection";
 
