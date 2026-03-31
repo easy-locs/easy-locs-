@@ -32,7 +32,7 @@ import { useThreadMessageFamily } from "@/hooks/orbit/families/useThreadMessageF
 import ChatHeader from "./chat/ChatHeader";
 import ChatEmptyState from "./chat/ChatEmptyState";
 import MessageList from "./chat/MessageList";
-import MessageComposer from "@/components/orbit/MessageComposer";
+import { ComposerShell } from "@/components/orbit/composer";
 import MessageContextMenu from "./MessageContextMenu";
 import MessageMultiSelectToolbar from "./MessageMultiSelect";
 import DealContextHeader from "./DealContextHeader";
