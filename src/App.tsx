@@ -240,7 +240,7 @@ const App = () => (
     <I18nProvider>
     <GlobalExperienceProvider>
     <RealtimeProvider>
-    <ChatProvider>
+    
     <BrowserTelemetryProvider>
     <TooltipProvider>
       <Toaster />
