@@ -10,8 +10,8 @@
  *   location_static / location_live → BubbleLocationBlock
  *   text (default) → null (caller renders text content)
  *
- * RULE: No message type should ever fall through to a text bubble
- *       when it has media content. This router is the single switch.
+ * RULE: Uses canonical resolveMediaRenderableSource / resolveMediaViewerSource.
+ *       No inline URL resolution allowed.
  */
 import { memo } from "react";
 import { ImageBubble } from "./ImageBubble";
@@ -19,6 +19,11 @@ import { VideoBubble } from "./VideoBubble";
 import { VoiceBubble } from "./VoiceBubble";
 import { FileBubble } from "./FileBubble";
 import { BubbleLocationBlock } from "../BubbleLocationBlock";
+import {
+  resolveMediaRenderableSource,
+  resolveMediaViewerSource,
+  buildMediaSourceInput,
+} from "@/domains/orbit/resolvers/media-source.resolver";
 import type { ChatMessage } from "../../types";
 
 interface AttachmentInfo {
@@ -40,23 +45,6 @@ interface Props {
   attachment?: AttachmentInfo | null;
   currentUserId?: string;
   blurred?: boolean;
-}
-
-/**
- * Resolve the effective media URL: prefer local preview, then remote, then metadata.
- */
-function resolveMediaUrl(
-  msg: ChatMessage,
-  attachment?: AttachmentInfo | null,
-): string | null {
-  // Priority: local preview → local URI → remote URL → legacy attachment_url → metadata.media.url
-  if (attachment?.previewDataUrl) return attachment.previewDataUrl;
-  if (attachment?.localUri) return attachment.localUri;
-  if (attachment?.remoteUrl) return attachment.remoteUrl;
-  if (msg.attachment_url) return msg.attachment_url;
-  const meta = (msg as any).metadata_json ?? (msg as any).metadata;
-  if (meta?.media?.url) return meta.media.url;
-  return null;
 }
 
 /**
@@ -92,7 +80,7 @@ function detectMediaKind(
     if (meta?.media?.url || msg.attachment_url) return "file";
   }
 
-  // Attachment kind-based routing (for legacy messages with type="text" but real attachments)
+  // Attachment kind-based routing
   if (attachment) {
     if (attachment.kind === "image") return "image";
     if (attachment.kind === "video") return "video";
@@ -100,7 +88,7 @@ function detectMediaKind(
     if (attachment.kind === "file") return "file";
   }
 
-  // Legacy heuristic fallbacks (for messages without proper type set)
+  // Legacy heuristic fallbacks
   if ((msg as any).audio_url) return "voice";
 
   const url = msg.attachment_url;
@@ -118,8 +106,6 @@ function detectMediaKind(
 function MessageBubbleRouterInner({ msg, isMe, attachment, currentUserId, blurred }: Props) {
   const kind = detectMediaKind(msg, attachment);
   if (!kind) return null; // Not a media message — caller handles text
-
-  const url = resolveMediaUrl(msg, attachment);
 
   // Location: extract coordinates from canonical metadata first, then fallback to content regex
   if (kind === "location") {
@@ -145,18 +131,26 @@ function MessageBubbleRouterInner({ msg, isMe, attachment, currentUserId, blurre
     return null;
   }
 
-  if (!url) return null;
+  // ══ CANONICAL MEDIA SOURCE RESOLUTION ══
+  const meta = (msg as any).metadata_json ?? (msg as any).metadata;
+  const sourceInput = buildMediaSourceInput(attachment, msg.attachment_url, meta);
+  const renderUrl = resolveMediaRenderableSource(sourceInput);
+  const viewerUrl = resolveMediaViewerSource(sourceInput);
+
+  if (!renderUrl) return null;
 
   switch (kind) {
     case "image":
       return (
         <div className={`mb-1 ${blurred ? "blur-lg transition-all" : ""}`}>
           <ImageBubble
-            src={url}
+            renderSrc={renderUrl}
+            viewerSrc={viewerUrl || renderUrl}
             isMe={isMe}
-            fileName={extractFileName(url)}
+            fileName={extractFileName(renderUrl)}
             uploadProgress={attachment?.uploadProgress}
             uploadStatus={attachment?.uploadStatus}
+            mediaKind="image"
           />
         </div>
       );
@@ -165,9 +159,9 @@ function MessageBubbleRouterInner({ msg, isMe, attachment, currentUserId, blurre
       return (
         <div className={`mb-1 ${blurred ? "blur-lg transition-all" : ""}`}>
           <VideoBubble
-            src={url}
+            src={renderUrl}
             isMe={isMe}
-            fileName={extractFileName(url)}
+            fileName={extractFileName(renderUrl)}
             duration={attachment?.duration ?? (msg as any).video_duration_seconds}
             thumbnailUrl={attachment?.previewDataUrl ?? undefined}
             uploadProgress={attachment?.uploadProgress}
@@ -179,7 +173,7 @@ function MessageBubbleRouterInner({ msg, isMe, attachment, currentUserId, blurre
     case "voice":
       return (
         <VoiceBubble
-          src={(msg as any).audio_url || url}
+          src={(msg as any).audio_url || renderUrl}
           durationSeconds={attachment?.duration ?? (msg as any).audio_duration_seconds ?? 0}
           isMe={isMe}
           messageId={msg.id}
@@ -192,9 +186,9 @@ function MessageBubbleRouterInner({ msg, isMe, attachment, currentUserId, blurre
       return (
         <div className="mb-1">
           <FileBubble
-            src={url}
+            src={renderUrl}
             isMe={isMe}
-            fileName={extractFileName(url)}
+            fileName={extractFileName(renderUrl)}
             fileSize={attachment?.size ?? undefined}
             mimeType={attachment?.mimeType ?? undefined}
             uploadProgress={attachment?.uploadProgress}
