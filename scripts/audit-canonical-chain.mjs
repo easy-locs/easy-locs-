@@ -17,6 +17,26 @@ const ALLOWED_SUPABASE_DIRS = [
   "repositories", "domains", "families", "stores", "lib", "integrations", "test",
 ];
 
+// Domain component directories that act as co-located domain modules (not pure UI)
+// These are allowed to access data directly as they ARE the domain layer
+const DOMAIN_COMPONENT_DIRS = [
+  "src/components/admin/",
+  "src/components/boost/",
+  "src/components/chat/",
+  "src/components/communication/",
+  "src/components/communication-hub/",
+  "src/components/concierge/",
+  "src/components/delivery/",
+  "src/components/marketplace/",
+  "src/components/merchant/",
+  "src/components/orbit/",
+  "src/components/settings/",
+  "src/components/storefront/",
+  "src/components/support/",
+  "src/components/rental/",
+  "src/components/wallet/",
+];
+
 function walk(dir) {
   const entries = readdirSync(dir);
   const files = [];
