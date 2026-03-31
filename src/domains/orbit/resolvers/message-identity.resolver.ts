@@ -21,13 +21,13 @@ const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
  * Must be used everywhere instead of inline `msg.sender_id === userId`.
  */
 export function isOutgoingMessage(
-  senderIdOrMsg: string | { sender_id?: string | null; senderId?: string | null },
+  senderIdOrMsg: string | { sender_id?: string | null; senderId?: string | null; sender_user_id?: string | null; senderUserId?: string | null },
   currentUserId: string | null | undefined,
 ): boolean {
   if (!currentUserId) return false;
   const senderId = typeof senderIdOrMsg === "string"
     ? senderIdOrMsg
-    : (senderIdOrMsg.sender_id ?? senderIdOrMsg.senderId ?? null);
+    : (senderIdOrMsg.sender_id ?? senderIdOrMsg.senderId ?? senderIdOrMsg.sender_user_id ?? senderIdOrMsg.senderUserId ?? null);
   return senderId === currentUserId;
 }
 
