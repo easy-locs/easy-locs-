@@ -232,6 +232,12 @@ export const EXTRACTIONS = [
   "runtime-conflict-report.ts — living audit document",
   "useHudMessageMutationBridge — centralizes all inline setRawMessages mutations (delete/edit/star) from HudChatPanel",
   "useMessageSender dead export removed from families/messages/index.ts",
+  "orbit-flow-registry.ts — single registry of ALL official Orbit entries",
+  "inbox.viewmodel.ts — read-only projection for inbox UI",
+  "conversation.viewmodel.ts — read-only projection for chat thread UI",
+  "call.viewmodel.ts — read-only projection for call overlay UI",
+  "composer.viewmodel.ts — read-only projection for composer state",
+  "store.selectors.ts — Zustand selector hooks for optimized reads",
 ] as const;
 
 // ══════════════════════════════════════════════
@@ -275,8 +281,8 @@ export const REDIRECTIONS = [
 export const REMAINING_TEMPORARY = [
   {
     item: "useMessageSender.ts file still exists on disk",
-    reason: "No longer exported or imported. Can be deleted in cleanup phase. Kept as reference.",
-    risk: "none — dead code",
+    reason: "Still used by HudChatPanel runtime. Will be migrated to orbitDispatch exclusively.",
+    risk: "medium — competing write path, documented in flow registry as deprecated",
   },
   {
     item: "createOrGetDirectConversation still used by conversation-resolver",
@@ -286,7 +292,7 @@ export const REMAINING_TEMPORARY = [
   {
     item: "useConversationThreads owns inbox state locally",
     reason: "Thread list uses enriched types not yet in orbitStore. Will converge with view-model migration.",
-    risk: "low",
+    risk: "low — inbox.viewmodel.ts ready as replacement consumer",
   },
   {
     item: "useMessageLoader owns message state locally",
@@ -298,4 +304,36 @@ export const REMAINING_TEMPORARY = [
     reason: "Canonical realtime layer ready but not wired. useMessageLoader handles runtime. Will switch when orbitStore becomes primary.",
     risk: "low",
   },
+  {
+    item: "families/send/send-text.ts still does direct DB insert",
+    reason: "Used by useMessageSender (legacy). orbitDispatch executors use same pattern. Will converge when useMessageSender is retired.",
+    risk: "medium — documented in flow registry",
+  },
 ] as const;
+
+// ══════════════════════════════════════════════
+// 10. FLOW REGISTRY STATUS
+// ══════════════════════════════════════════════
+
+export const FLOW_REGISTRY_STATUS = {
+  file: "src/domains/orbit/orbit-flow-registry.ts",
+  officialEntries: 27,
+  legacyBridges: 5,
+  status: "active",
+  note: "All official entries documented. Legacy bridges contained and documented. No new bypass allowed.",
+} as const;
+
+// ══════════════════════════════════════════════
+// 11. VIEWMODEL LAYER STATUS
+// ══════════════════════════════════════════════
+
+export const VIEWMODEL_LAYER = {
+  files: [
+    "src/domains/orbit/viewmodels/inbox.viewmodel.ts",
+    "src/domains/orbit/viewmodels/conversation.viewmodel.ts",
+    "src/domains/orbit/viewmodels/call.viewmodel.ts",
+    "src/domains/orbit/viewmodels/composer.viewmodel.ts",
+  ],
+  status: "ready",
+  note: "Read-only projection layer. Does not own data. UI can consume these instead of reading stores directly.",
+} as const;
