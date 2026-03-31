@@ -437,15 +437,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       <MessageContextMenu
         message={selection.contextMessage}
         onClose={() => selection.setContextMessage(null)}
-        onDeleted={(msgId, type) => {
-          if (type === "self") selection.setHiddenMsgIds(prev => new Set([...prev, msgId]));
-          else loader.setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system", attachment_url: null, audio_url: undefined, audio_duration_seconds: undefined, deleted_for_all: true } as any : m));
-        }}
+        onDeleted={mutations.handleContextMenuDeleted}
         onCopy={() => {}}
-        onEdited={(msgId, newContent) => loader.setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: newContent, edited_at: new Date().toISOString() } as any : m))}
+        onEdited={mutations.applyEdit}
         onReply={(msgId, content, senderName) => { composerStore.setReply(currentConversationId, { msgId, content, senderName }); }}
         onForward={(msgId, content) => selection.setForwardData({ messageId: msgId, content })}
-        onStarToggle={(msgId, starred) => loader.setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, starred } as any : m))}
+        onStarToggle={mutations.applyStar}
         onEnterSelectMode={selection.enterSelectMode}
       />
 
