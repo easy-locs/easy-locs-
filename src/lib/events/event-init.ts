@@ -130,4 +130,7 @@ initUnifiedMobilityRequestHandler();
 initMobilityCompatBridgeHandler();
 initCloseFlowEngine();
 
-console.log("[event-init] V3 — All handlers registered + wallet events SPLIT + platformBus bridge active");
+// ── Command Bus Registration ──
+import("@/domains/orbit/services/command-init");
+
+console.log("[event-init] V3 — All handlers registered + wallet events SPLIT + platformBus bridge active + commandBus wired");
