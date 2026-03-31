@@ -116,6 +116,7 @@ export function toMessageViewModel(
     } : null,
 
     replyToMessageId: (meta.transport as any)?.replyToMessageId ?? null,
+    progress: null,
     _envelope: envelope,
   };
 }
