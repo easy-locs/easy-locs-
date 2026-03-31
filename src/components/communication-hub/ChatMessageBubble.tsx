@@ -22,7 +22,7 @@ import ThreadActionCard, { parseActionFromMessage } from "@/components/orbit/Thr
 import type { ChatMessage } from "./types";
 import { MESSAGE_CATEGORIES } from "./types";
 
-const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
+// SYSTEM_SENDER_ID moved to canonical resolver — isSystemMessage()
 
 interface Props {
   msg: ChatMessage;
