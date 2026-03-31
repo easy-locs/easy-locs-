@@ -63,6 +63,8 @@ export { findOrCreateDirect, buildDirectPairKey } from "./conversation/find-or-c
 
 // ── Receipts ──
 export { queueReadReceipt, shouldSendReadReceipt } from "./receipts/receipt.pipeline";
+export { handleRealtimeReceipt, handleRealtimeReceiptBatch, normalizeReceiptEvent } from "./receipts/receipt-realtime.handler";
+export type { NormalizedReceipt, ReceiptType } from "./receipts/receipt-realtime.handler";
 
 // ── Calls ──
 export { attemptCallTransition, isCallTerminal, shouldTimeoutRinging } from "./call/call-lifecycle.pipeline";
