@@ -286,7 +286,7 @@ const RentalManagement = () => {
   /* ─── Message handler (delegates to extracted hook) ─── */
   const handleSendMessage = async () => {
     if (!selectedTenant) return;
-    await sendMessage(selectedTenant);
+    await sendMessage();
   };
 
   const handleInviteTenant = async (tenant: Tenant) => { setInvitingTenantId(tenant.id); await sendTenantInvite(tenant); setInvitingTenantId(null); };
