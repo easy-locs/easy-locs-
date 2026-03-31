@@ -16,6 +16,7 @@ export type OrbitCommand =
   | EndCallCommand
   | EditMessageCommand
   | ReplyCommand
+  | RetryMessageCommand
   | GroupCreateCommand
   | GroupUpdateCommand
   | PresenceUpdateCommand
@@ -118,6 +119,11 @@ export interface EditMessageCommand extends BaseCommand {
   messageId: string;
   conversationId: string;
   newBody: string;
+}
+
+export interface RetryMessageCommand extends BaseCommand {
+  type: "retry_message";
+  messageId: string;
 }
 
 export interface ReplyCommand extends BaseCommand {

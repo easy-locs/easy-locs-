@@ -25,6 +25,9 @@ export {
 export { useAudioRouteStore, CallAudioRoute } from "./call-audio-route";
 export type { AudioOutputDevice } from "./call-audio-route";
 
+// ── Device Controller (canonical) ──
+export { callDeviceController } from "./call-device-controller";
+
 // ── Ringtone ──
 export { useRingtoneStore, CallRingtone } from "./call-ringtone";
 export type { RingtoneType } from "./call-ringtone";

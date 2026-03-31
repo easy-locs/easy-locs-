@@ -85,6 +85,13 @@ export function subscribeConversationMessages(conversationId: string): () => voi
       (payload) => {
         const raw = payload.new;
         if (!raw?.id) return;
+
+        // Route status updates through canonical receipt handler
+        const { handleRealtimeReceipt } = require("@/domains/orbit/pipelines/receipts/receipt-realtime.handler");
+        if (raw.delivered_at || raw.read_at) {
+          handleRealtimeReceipt(raw);
+        }
+
         const normalized = normalizeOrbitMessage(raw);
         useOrbitStore.getState().mergeMessage(normalized);
       }

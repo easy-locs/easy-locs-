@@ -24,6 +24,7 @@ export type {
   DeclineCallCommand,
   EndCallCommand,
   EditMessageCommand,
+  RetryMessageCommand,
   ReplyCommand,
 } from "./orbit-commands";
 
@@ -40,5 +41,6 @@ export {
   executeEndCall,
   executeEditMessage,
   executeReplyMessage,
+  executeRetryMessage,
 } from "./pipeline";
 export type { ExecutorResult, ResolvedContext, PipelinePhase } from "./pipeline";
