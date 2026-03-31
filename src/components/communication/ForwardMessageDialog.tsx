@@ -11,7 +11,7 @@ import { MessageCircle, Loader2, Forward, Send, Check, AlertCircle } from "lucid
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
-import { platformBus } from "@/lib/shared/platform-bus";
+
 
 const db = supabase as any;
 
@@ -104,11 +104,7 @@ export default function ForwardMessageDialog({
       toast.success(
         (t("chat.forwarded_to") || "Forwarded to") + " " + (selectedThread.displayName || t("chat.conversation") || "conversation")
       );
-      platformBus.emit("orbit:message_sent", {
-        conversationId: selectedThread.conversationId,
-        type: "forward",
-        originalMessageId: messageId,
-      }, "orbit", { userId });
+      // Event emission moved to pipeline — UI must not emit business events
       onClose();
     } catch (e: any) {
       console.error("[Forward] Insert failed:", e);

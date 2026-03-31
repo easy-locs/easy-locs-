@@ -129,24 +129,52 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
 
   mergeMessage: (msg) =>
     set((s) => {
-      // Dedup: if tempId already mapped, skip
+      // Dedup: if tempId already reconciled to a different serverId, skip
       if (msg.tempId && s.tempIdMap[msg.tempId] && s.tempIdMap[msg.tempId] !== msg.id) {
         return s;
       }
 
-      // Version guard: never overwrite with older version
+      // Version guard: never overwrite with older or equal version
       const existing = s.messages[msg.id];
       if (existing) {
         const existingVersion = (existing as any).version ?? 0;
         const incomingVersion = (msg as any).version ?? 0;
-        if (incomingVersion > 0 && existingVersion > 0 && incomingVersion <= existingVersion) {
+        if (incomingVersion <= existingVersion) {
           return s; // stale update — skip
+        }
+        // Skip duplicate server echo (same serverId already exists)
+        if ((existing as any).serverId && (msg as any).serverId && (existing as any).serverId === (msg as any).serverId) {
+          return s;
         }
       }
 
-      const next = { ...s.messages, [msg.id]: msg };
-      const convMsgs = s.messagesByConversation[msg.conversationId] || [];
-      const msgIds = convMsgs.includes(msg.id) ? convMsgs : [...convMsgs, msg.id];
+      const next = { ...s.messages };
+
+      // If this message has a tempId, map it and clean up the temp entry
+      if (msg.tempId && msg.id !== msg.tempId) {
+        next[msg.id] = msg;
+        if (next[msg.tempId]) {
+          delete next[msg.tempId];
+        }
+      } else {
+        next[msg.id] = msg;
+      }
+
+      // Rebuild conversation index — remove stale tempId, ensure serverId present, keep sorted
+      const convMsgs = (s.messagesByConversation[msg.conversationId] || [])
+        .filter((id) => !(msg.tempId && id === msg.tempId && msg.id !== msg.tempId));
+      const msgIds = convMsgs.includes(msg.id)
+        ? convMsgs
+        : [...convMsgs, msg.id].sort((a, b) => {
+            const tA = next[a]?.createdAt ?? "";
+            const tB = next[b]?.createdAt ?? "";
+            return tA < tB ? -1 : tA > tB ? 1 : 0;
+          });
+
+      // Update tempIdMap
+      const nextTempIdMap = msg.tempId && msg.id !== msg.tempId
+        ? { ...s.tempIdMap, [msg.tempId]: msg.id }
+        : s.tempIdMap;
 
       return {
         messages: next,
@@ -154,6 +182,7 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
           ...s.messagesByConversation,
           [msg.conversationId]: msgIds,
         },
+        tempIdMap: nextTempIdMap,
       };
     }),
 
