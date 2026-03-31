@@ -88,16 +88,46 @@ export function subscribeConversationMessages(conversationId: string): () => voi
         const raw = payload.new;
         if (!raw?.id) return;
 
-        // ══ RECEIPT ROUTING ══
-        // If this update contains delivered_at or read_at changes,
-        // route through the canonical receipt handler → status machine.
-        // The handler validates transition legality and updates store.
-        if (raw.delivered_at || raw.read_at) {
+        // ══ RECEIPT-ONLY UPDATE DETECTION ══
+        // If this update ONLY changes delivered_at/read_at,
+        // route exclusively through the receipt handler → status machine.
+        // Do NOT also merge the full message (would bypass the machine).
+        if (isReceiptOnlyUpdate(payload.old, raw)) {
+          if (import.meta.env.DEV) {
+            console.debug("[orbitRealtime] receipt_only_update_routed", { id: raw.id });
+          }
           handleRealtimeReceipt(raw);
+          return; // ← CRITICAL: stop here, no mergeMessage
         }
 
-        // Always merge full normalized message for other field updates
+        // ══ MIXED UPDATE (receipt + other fields) ══
+        // Route receipt through handler first, then merge non-status fields.
+        if (raw.delivered_at || raw.read_at) {
+          handleRealtimeReceipt(raw);
+          if (import.meta.env.DEV) {
+            console.debug("[orbitRealtime] mixed_update_receipt_handled", { id: raw.id });
+          }
+        }
+
+        // Merge the full message but preserve status if receipt was just applied
         const normalized = normalizeOrbitMessage(raw);
+
+        // Guard: strip status from normalized if receipt handler already applied it
+        // to prevent mergeMessage from overwriting the machine-decided status
+        if (raw.delivered_at || raw.read_at) {
+          const store = useOrbitStore.getState();
+          const existing = store.messages[normalized.id];
+          if (existing) {
+            // Keep the status that the receipt handler just set via the machine
+            normalized.status = existing.status;
+            if (import.meta.env.DEV) {
+              console.debug("[orbitRealtime] status_preserved_after_receipt", {
+                id: normalized.id, preservedStatus: existing.status,
+              });
+            }
+          }
+        }
+
         useOrbitStore.getState().mergeMessage(normalized);
       }
     )

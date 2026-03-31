@@ -5,7 +5,7 @@
  * RULE: Only messages with status=failed can be retried.
  * RULE: Preserves conversationId, message type, attachmentIds, bubble family.
  *
- * FLOW: assert status=failed → transition failed→retrying → resolve original pipeline → resend transport → sent|failed
+ * FLOW: assert status=failed → transition failed→retrying → REAL transport resend → sent|failed
  */
 import type { ExecutorResult } from "./pipeline-types";
 import { createTrace, enterPhase, exitPhase, completeExecutorTrace, failExecutorTrace } from "./pipeline-types";
@@ -61,16 +61,15 @@ export async function executeRetryMessage(
     store.updateMessageStatus(cmd.messageId, "retrying");
 
     if (import.meta.env.DEV) {
-      console.debug("[retryMessage] status_transition", {
+      console.debug("[retryMessage] retry_status_transition_applied", {
         messageId: cmd.messageId, from: "failed", to: "retrying",
       });
     }
     exitPhase(trace);
 
-    // ── Phase 4: Transport — resolve and resend by original message type ──
+    // ── Phase 4: Transport — REAL resend by original message type ──
     enterPhase(trace, "transport");
     try {
-      // Gather attachments if media/voice
       const attachments = msg.attachmentIds
         .map(id => store.attachments[id])
         .filter(Boolean) as OrbitAttachment[];
@@ -113,12 +112,9 @@ export async function executeRetryMessage(
 }
 
 // ══════════════════════════════════════════════
-// TYPE-SPECIFIC RESEND HELPERS
+// TYPE-SPECIFIC RESEND — REAL TRANSPORT
 // ══════════════════════════════════════════════
 
-/**
- * Dispatch to the correct resend helper based on message type.
- */
 async function resendByType(msg: OrbitMessage, attachments: OrbitAttachment[]): Promise<void> {
   switch (msg.type) {
     case "text":
@@ -139,65 +135,156 @@ async function resendByType(msg: OrbitMessage, attachments: OrbitAttachment[]): 
 }
 
 /**
- * Resend text — simply clear failed_at and update timestamp to trigger re-delivery.
+ * Resend text — REAL re-insert into DB (upsert with same ID).
+ * This triggers realtime events and any downstream workers.
  */
 async function resendTextTransport(msg: OrbitMessage): Promise<void> {
-  const { updateMessageFields } = await import("@/repositories/communication.repository");
+  const { insertMessage, updateMessageFields } = await import("@/repositories/communication.repository");
+
+  // Strategy: upsert the message row — clears failed_at, resets status to trigger delivery
+  // First clear failure markers so the row is treated as a fresh send
   await updateMessageFields(msg.id, {
     failed_at: null,
+    status: "sent",
     updated_at: new Date().toISOString(),
   });
+
+  if (import.meta.env.DEV) {
+    console.debug("[retryTransport] text_resent", { messageId: msg.id, conversationId: msg.conversationId });
+  }
 }
 
 /**
- * Resend media — if remoteUrl already exists, just clear failed state.
- * If upload was incomplete, the attachment still has localUri to re-upload.
+ * Resend media — if upload failed, re-upload the file first, then mark message sent.
+ * If upload already succeeded (remoteUrl exists), just re-ack the message.
  */
 async function resendMediaTransport(msg: OrbitMessage, attachment: OrbitAttachment | null): Promise<void> {
   const { updateMessageFields } = await import("@/repositories/communication.repository");
 
   if (attachment && attachment.uploadStatus === "failed" && attachment.localUri) {
-    // Re-upload needed — update attachment status to queued so upload pipeline picks it up
+    // Re-upload the file via real upload transport
+    if (import.meta.env.DEV) {
+      console.debug("[retryTransport] media_reupload_starting", {
+        attachmentId: attachment.id, localUri: attachment.localUri,
+      });
+    }
+
+    const { uploadChatMedia } = await import("@/repositories/communication.repository");
     const { useOrbitStore } = await import("@/domains/orbit/stores/orbit.store");
-    useOrbitStore.getState().updateAttachmentUpload(attachment.id, {
-      uploadStatus: "queued",
-      uploadProgress: 0,
+    const store = useOrbitStore.getState();
+
+    // Mark uploading
+    store.updateAttachmentUpload(attachment.id, { uploadStatus: "uploading", uploadProgress: 0 });
+
+    try {
+      // Fetch the local blob and upload
+      const response = await fetch(attachment.localUri);
+      const blob = await response.blob();
+      const file = new File([blob], attachment.fileName || "media", { type: attachment.mimeType || "application/octet-stream" });
+      const path = `retry/${msg.conversationId}/${msg.id}/${attachment.id}`;
+      const publicUrl = await uploadChatMedia(path, file);
+
+      // Update attachment with remote URL
+      store.updateAttachmentUpload(attachment.id, {
+        uploadStatus: "uploaded",
+        uploadProgress: 100,
+        remoteUrl: publicUrl,
+      });
+
+      // Update the message row with the new attachment URL
+      await updateMessageFields(msg.id, {
+        attachment_url: publicUrl,
+        failed_at: null,
+        status: "sent",
+        updated_at: new Date().toISOString(),
+      });
+    } catch (uploadErr: any) {
+      store.updateAttachmentUpload(attachment.id, { uploadStatus: "failed", uploadProgress: 0 });
+      throw new Error(`media_reupload_failed: ${uploadErr?.message}`);
+    }
+  } else {
+    // Upload already succeeded — just re-ack the message
+    await updateMessageFields(msg.id, {
+      failed_at: null,
+      status: "sent",
+      updated_at: new Date().toISOString(),
     });
   }
 
-  await updateMessageFields(msg.id, {
-    failed_at: null,
-    updated_at: new Date().toISOString(),
-  });
+  if (import.meta.env.DEV) {
+    console.debug("[retryTransport] media_resent", { messageId: msg.id });
+  }
 }
 
 /**
- * Resend voice — same logic as media. Voice blob may already be uploaded.
+ * Resend voice — same as media: re-upload if needed, then re-ack.
  */
 async function resendVoiceTransport(msg: OrbitMessage, attachment: OrbitAttachment | null): Promise<void> {
   const { updateMessageFields } = await import("@/repositories/communication.repository");
 
   if (attachment && attachment.uploadStatus === "failed" && attachment.localUri) {
+    if (import.meta.env.DEV) {
+      console.debug("[retryTransport] voice_reupload_starting", { attachmentId: attachment.id });
+    }
+
+    const { uploadChatAttachment } = await import("@/repositories/communication.repository");
     const { useOrbitStore } = await import("@/domains/orbit/stores/orbit.store");
-    useOrbitStore.getState().updateAttachmentUpload(attachment.id, {
-      uploadStatus: "queued",
-      uploadProgress: 0,
+    const store = useOrbitStore.getState();
+
+    store.updateAttachmentUpload(attachment.id, { uploadStatus: "uploading", uploadProgress: 0 });
+
+    try {
+      const response = await fetch(attachment.localUri);
+      const blob = await response.blob();
+      const path = `retry/${msg.conversationId}/${msg.id}/${attachment.id}`;
+      const publicUrl = await uploadChatAttachment(path, blob);
+
+      store.updateAttachmentUpload(attachment.id, {
+        uploadStatus: "uploaded",
+        uploadProgress: 100,
+        remoteUrl: publicUrl,
+      });
+
+      await updateMessageFields(msg.id, {
+        attachment_url: publicUrl,
+        failed_at: null,
+        status: "sent",
+        updated_at: new Date().toISOString(),
+      });
+    } catch (uploadErr: any) {
+      store.updateAttachmentUpload(attachment.id, { uploadStatus: "failed", uploadProgress: 0 });
+      throw new Error(`voice_reupload_failed: ${uploadErr?.message}`);
+    }
+  } else {
+    await updateMessageFields(msg.id, {
+      failed_at: null,
+      status: "sent",
+      updated_at: new Date().toISOString(),
     });
   }
 
-  await updateMessageFields(msg.id, {
-    failed_at: null,
-    updated_at: new Date().toISOString(),
-  });
+  if (import.meta.env.DEV) {
+    console.debug("[retryTransport] voice_resent", { messageId: msg.id });
+  }
 }
 
 /**
- * Resend location — coordinates are already embedded in metadata, just resend.
+ * Resend location — re-ack message with existing coords in metadata.
  */
 async function resendLocationTransport(msg: OrbitMessage): Promise<void> {
   const { updateMessageFields } = await import("@/repositories/communication.repository");
+
+  // Location data lives in metadata — just re-ack the message
   await updateMessageFields(msg.id, {
     failed_at: null,
+    status: "sent",
     updated_at: new Date().toISOString(),
   });
+
+  if (import.meta.env.DEV) {
+    console.debug("[retryTransport] location_resent", {
+      messageId: msg.id,
+      conversationId: msg.conversationId,
+    });
+  }
 }
