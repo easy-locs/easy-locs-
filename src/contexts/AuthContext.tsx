@@ -433,6 +433,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const emailVerified = !!user?.email_confirmed_at;
 
   const signOut = async () => {
+    // ── Full session teardown: subscriptions, queues, logs ──
+    teardownSession();
+
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
