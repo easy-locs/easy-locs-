@@ -137,7 +137,7 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
     : "Driver";
 
   const getSenderType = (senderId: string) => {
-    if (senderId === user?.id) return "customer";
+    if (isOutgoingMessage(senderId, user?.id)) return "customer";
     if (senderId === job?.driver_id) return "driver";
     return "system";
   };

@@ -265,7 +265,7 @@ export function useMessageLoader({
 
     const cleanup = subscribeInstantMessages(conversationId, (broadcastMsg) => {
       // Skip own messages — already handled by optimistic insert
-      if (broadcastMsg.senderUserId === userId) return;
+      if (isOutgoingMessage(broadcastMsg, userId)) return;
 
       realtimeTrace("message.broadcast.instant", "output", {
         id: broadcastMsg.id,
