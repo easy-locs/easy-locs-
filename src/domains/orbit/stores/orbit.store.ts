@@ -129,6 +129,14 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
 
   mergeMessage: (msg) =>
     set((s) => {
+      // ══ HARD GUARD: conversationId REQUIRED ══
+      if (!msg.conversationId) {
+        console.error("[orbitStore.mergeMessage] REJECTED — missing conversationId", {
+          id: msg.id, tempId: msg.tempId, type: msg.type,
+        });
+        return s;
+      }
+
       // Dedup: if tempId already reconciled to a different serverId, skip
       if (msg.tempId && s.tempIdMap[msg.tempId] && s.tempIdMap[msg.tempId] !== msg.id) {
         return s;
@@ -148,19 +156,33 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
         }
       }
 
+      // ══ CROSS-CONVERSATION GUARD: tempId must belong to same conversation ══
+      if (msg.tempId && msg.id !== msg.tempId) {
+        const tempMsg = s.messages[msg.tempId];
+        if (tempMsg && tempMsg.conversationId !== msg.conversationId) {
+          console.error("[orbitStore.mergeMessage] CROSS-CONVERSATION tempId conflict", {
+            tempId: msg.tempId,
+            tempConvId: tempMsg.conversationId,
+            incomingConvId: msg.conversationId,
+          });
+          return s; // refuse cross-conversation reconciliation
+        }
+      }
+
       const next = { ...s.messages };
 
       // If this message has a tempId, map it and clean up the temp entry
       if (msg.tempId && msg.id !== msg.tempId) {
         next[msg.id] = msg;
         if (next[msg.tempId]) {
+          // Also remove from OLD conversation bucket
           delete next[msg.tempId];
         }
       } else {
         next[msg.id] = msg;
       }
 
-      // Rebuild conversation index — remove stale tempId, ensure serverId present, keep sorted
+      // Rebuild conversation index — ONLY for msg.conversationId bucket
       const convMsgs = (s.messagesByConversation[msg.conversationId] || [])
         .filter((id) => !(msg.tempId && id === msg.tempId && msg.id !== msg.tempId));
       const msgIds = convMsgs.includes(msg.id)
@@ -175,6 +197,13 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
       const nextTempIdMap = msg.tempId && msg.id !== msg.tempId
         ? { ...s.tempIdMap, [msg.tempId]: msg.id }
         : s.tempIdMap;
+
+      if (import.meta.env.DEV) {
+        console.debug("[orbitStore.mergeMessage]", {
+          id: msg.id, tempId: msg.tempId, conversationId: msg.conversationId,
+          bucketSize: msgIds.length,
+        });
+      }
 
       return {
         messages: next,
@@ -192,6 +221,11 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
       const nextByConv = { ...s.messagesByConversation };
 
       for (const msg of msgs) {
+        // HARD GUARD: skip messages without conversationId
+        if (!msg.conversationId) {
+          console.error("[orbitStore.mergeMessages] REJECTED — missing conversationId", { id: msg.id });
+          continue;
+        }
         if (msg.tempId && s.tempIdMap[msg.tempId] && s.tempIdMap[msg.tempId] !== msg.id) {
           continue;
         }
