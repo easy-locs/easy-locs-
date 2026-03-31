@@ -43,22 +43,24 @@ interface Props {
 }
 
 /**
- * Resolve the effective media URL: prefer local preview, then remote.
+ * Resolve the effective media URL: prefer local preview, then remote, then metadata.
  */
 function resolveMediaUrl(
-  attachmentUrl: string | undefined | null,
+  msg: ChatMessage,
   attachment?: AttachmentInfo | null,
 ): string | null {
-  // Priority: local preview → local URI → remote URL → legacy attachment_url
+  // Priority: local preview → local URI → remote URL → legacy attachment_url → metadata.media.url
   if (attachment?.previewDataUrl) return attachment.previewDataUrl;
   if (attachment?.localUri) return attachment.localUri;
   if (attachment?.remoteUrl) return attachment.remoteUrl;
-  if (attachmentUrl) return attachmentUrl;
+  if (msg.attachment_url) return msg.attachment_url;
+  const meta = (msg as any).metadata_json ?? (msg as any).metadata;
+  if (meta?.media?.url) return meta.media.url;
   return null;
 }
 
 /**
- * Detect media type from message_type, attachment kind, or URL heuristics.
+ * Detect media type from message_type, attachment kind, metadata, or URL heuristics.
  * Returns a canonical media kind or null if this is a text message.
  */
 function detectMediaKind(
@@ -73,6 +75,22 @@ function detectMediaKind(
   if (msgType === "voice" || msgType === "audio") return "voice";
   if (msgType === "file") return "file";
   if (msgType === "location_static" || msgType === "location_live") return "location";
+
+  // Handle generic "media" type from DB — resolve from metadata
+  if (msgType === "media") {
+    const meta = (msg as any).metadata_json ?? (msg as any).metadata;
+    const mk = meta?.media?.media_kind || meta?.media?.kind || meta?.media_kind;
+    if (mk === "image") return "image";
+    if (mk === "video") return "video";
+    if (mk === "audio" || mk === "voice") return "voice";
+    if (mk === "file") return "file";
+    // Fallback: detect from mime
+    const mime = (meta?.media?.mimeType || meta?.media?.mime_type || "").toLowerCase();
+    if (mime.startsWith("image/")) return "image";
+    if (mime.startsWith("video/")) return "video";
+    if (mime.startsWith("audio/")) return "voice";
+    if (meta?.media?.url || msg.attachment_url) return "file";
+  }
 
   // Attachment kind-based routing (for legacy messages with type="text" but real attachments)
   if (attachment) {
@@ -91,7 +109,6 @@ function detectMediaKind(
     if (/\.(jpg|jpeg|png|gif|webp|heic|avif)$/.test(clean)) return "image";
     if (/\.(mp4|mov|webm|avi|mkv)$/.test(clean)) return "video";
     if (/\.(mp3|ogg|wav|m4a|aac|opus|flac)$/.test(clean)) return "voice";
-    // Any other attachment = file
     return "file";
   }
 
@@ -102,7 +119,7 @@ function MessageBubbleRouterInner({ msg, isMe, attachment, currentUserId, blurre
   const kind = detectMediaKind(msg, attachment);
   if (!kind) return null; // Not a media message — caller handles text
 
-  const url = resolveMediaUrl(msg.attachment_url, attachment);
+  const url = resolveMediaUrl(msg, attachment);
 
   // Location: extract coordinates from canonical metadata first, then fallback to content regex
   if (kind === "location") {
