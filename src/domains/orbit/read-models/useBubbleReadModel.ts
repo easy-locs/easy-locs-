@@ -9,7 +9,7 @@
  */
 
 import { useMemo } from "react";
-import { selectMessageBubbleModel, type MessageBubbleReadModel } from "@/domains/orbit/read-models";
+import { selectMessageBubbleModel, type MessageBubbleReadModel } from "./message-bubble.read-model";
 
 interface RawMsg {
   id: string;
@@ -40,6 +40,7 @@ export function useBubbleReadModel(
 ): MessageBubbleReadModel {
   return useMemo(
     () => selectMessageBubbleModel(msg, currentUserId, threadPeer),
-    [msg.id, msg.status, msg.pending, msg.failed, msg.edited_at, currentUserId],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [msg.id, msg.status, msg.pending, msg.failed, msg.edited_at, currentUserId, threadPeer?.name, threadPeer?.displayName],
   );
 }
