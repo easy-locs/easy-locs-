@@ -248,6 +248,24 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
 
   reconcileMessage: (tempId, serverMsg) =>
     set((s) => {
+      // ══ HARD GUARD: conversationId REQUIRED ══
+      if (!serverMsg.conversationId) {
+        console.error("[orbitStore.reconcileMessage] REJECTED — missing conversationId", { tempId, id: serverMsg.id });
+        return s;
+      }
+
+      // ══ BUBBLE TYPE STABILITY: type must not change ══
+      const tempMsg = s.messages[tempId];
+      if (tempMsg && tempMsg.type !== serverMsg.type) {
+        if (import.meta.env.DEV) {
+          console.error("[orbitStore.reconcileMessage] TYPE MUTATION", {
+            tempId, from: tempMsg.type, to: serverMsg.type,
+          });
+        }
+        // Preserve original type — never downgrade media → text
+        serverMsg = { ...serverMsg, type: tempMsg.type };
+      }
+
       // Remove temp message, insert server message
       const { [tempId]: removed, ...restMessages } = s.messages;
       restMessages[serverMsg.id] = serverMsg;
