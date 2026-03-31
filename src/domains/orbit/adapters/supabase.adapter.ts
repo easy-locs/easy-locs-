@@ -18,12 +18,7 @@ const log = createDomainLogger("orbit");
 // ── Conversation Adapter ──
 export const conversationAdapter: ConversationRepository = {
   async findById(id: string): Promise<Conversation | null> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase
-      .from("conversations_v2")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
+    const { data } = await orbitDb.conversations.byId(id);
     return data ? mapConversation(data) : null;
   },
 
@@ -36,9 +31,7 @@ export const conversationAdapter: ConversationRepository = {
   },
 
   async save(conversation: Conversation): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await (supabase as any).from("conversations_v2").upsert({
-      id: conversation.id,
+    await orbitDb.conversations.update(conversation.id, {
       participants: conversation.participants,
       type: conversation.type,
       group_name: conversation.groupName,
