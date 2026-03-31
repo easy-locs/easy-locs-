@@ -265,7 +265,7 @@ export function useMessageLoader({
 
     const cleanup = subscribeInstantMessages(conversationId, (broadcastMsg) => {
       // Skip own messages — already handled by optimistic insert
-      if (broadcastMsg.senderUserId === userId) return;
+      if (isOutgoingMessage(broadcastMsg, userId)) return;
 
       realtimeTrace("message.broadcast.instant", "output", {
         id: broadcastMsg.id,
@@ -357,7 +357,7 @@ export function useMessageLoader({
           // Invalidate message cache
           messageCache.set(conversationId, []);
 
-          if (msg.sender_user_id !== userId && !msg.read_at && readReceipts) {
+          if (!isOutgoingMessage(msg, userId) && !msg.read_at && readReceipts) {
             // Delegate to canonical receipt controller
             markSingleMessageRead(msg.id, userId!);
             onThreadUpdate(thread!.id, { unreadCount: 0 });

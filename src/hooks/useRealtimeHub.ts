@@ -13,6 +13,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
 import React from "react";
+import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 
 // V3: Map V2 canonical tables to orbit modules
 const TABLE_TO_MODULE: Record<string, OrbitModule> = {
@@ -112,7 +113,7 @@ export function useRealtimeHub() {
         queryClient.invalidateQueries({ queryKey: ["conversations-v2"] });
 
         if (eventType === "INSERT" && row) {
-          if (row.sender_user_id === user?.id) break;
+          if (isOutgoingMessage(row, user?.id)) break;
           if (row.id === lastMsgToast.current) break;
           lastMsgToast.current = row.id;
 
