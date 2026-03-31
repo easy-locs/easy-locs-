@@ -26,6 +26,10 @@ export async function executeSendMedia(
     enterPhase(trace, "intent");
     if (!cmd.file) return { ok: false, error: "no_file", phase: "intent" };
     if (!ctx.conversationId) return { ok: false, error: "no_conversation", phase: "intent" };
+    if (import.meta.env.DEV) {
+      const { markLatencyStart } = await import("@/domains/orbit/pipelines/message/pipeline-assertions");
+      markLatencyStart("tap_to_preview");
+    }
     exitPhase(trace);
 
     // ── Phase 2: Build local preview + optimistic message ──
