@@ -14,8 +14,14 @@ export { useOrbitComposer } from "@/hooks/orbit/useOrbitComposer";
 // export { useOrbitComposerState } from "@/hooks/useOrbitComposerState"; // REMOVED
 export { useThreadComposerFamily } from "@/hooks/orbit/families/useThreadComposerFamily";
 
-// Components
+// Components — Canonical ComposerShell (micro-decomposed)
+export { ComposerShell } from "@/components/orbit/composer";
+export type { ComposerShellProps } from "@/components/orbit/composer";
+
+// Legacy monolithic composer — DEPRECATED, use ComposerShell instead
 export { default as MessageComposer } from "@/components/orbit/MessageComposer";
+
+// Standalone store-connected banners (subsumed by ComposerContextBanner inside ComposerShell)
 export { default as OrbitReplyBanner } from "@/components/orbit/OrbitReplyBanner";
 export { default as OrbitEditBanner } from "@/components/orbit/OrbitEditBanner";
 export { default as OrbitAttachmentTray } from "@/components/orbit/OrbitAttachmentTray";
