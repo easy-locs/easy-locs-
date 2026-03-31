@@ -27,7 +27,7 @@ export function GlobalExperienceProvider({ children }: { children: React.ReactNo
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
 
   return <>{children}</>;
 }

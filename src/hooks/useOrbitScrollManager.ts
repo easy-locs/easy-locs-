@@ -41,7 +41,7 @@ export function useOrbitScrollManager(
         });
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, deps);
 
   const jumpToBottom = () => {

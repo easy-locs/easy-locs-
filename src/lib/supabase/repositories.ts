@@ -13,7 +13,7 @@ import type {
 } from "@/lib/types/domain";
 
 // Use untyped client for V2 domain tables not yet in the auto-generated schema
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const db = supabase as any;
 
 export const orbitRepo = {

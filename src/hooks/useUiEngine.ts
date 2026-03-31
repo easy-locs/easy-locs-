@@ -40,7 +40,7 @@ export function useUiEngine(options: UseUiEngineOptions = {}) {
     if (!enabled || !autoRun) return;
     const t = window.setTimeout(() => execute(), delayMs);
     return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [enabled, autoRun, delayMs, route]);
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export function useUiEngine(options: UseUiEngineOptions = {}) {
       if (timeout) window.clearTimeout(timeout);
       obs.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [enabled, observeDom, route]);
 
   return { report, running, execute };
