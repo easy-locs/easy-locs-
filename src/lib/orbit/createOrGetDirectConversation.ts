@@ -1,6 +1,7 @@
 /**
  * createOrGetDirectConversation — Canonical V2+ direct conversation creator.
  * Uses orbitDb for all DB access.
+ * FLOW GATE INTEGRATED: prevents duplicate concurrent creation for same pair.
  * IMPORTANT: sets created_by_orbit_id and ensures orbitId is always populated
  * in participants to satisfy RLS policies on conversations_v2.
  */
@@ -8,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { orbitDb } from "@/lib/db/orbitDb";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import type { ConversationParticipant, ConversationRow } from "@/lib/types/comms";
+import { isFlowActive, enterFlow, exitFlow } from "@/domains/orbit/flow-gate/orbit-flow-gate";
 
 type Params = {
   myUserId: string;
@@ -81,6 +83,28 @@ export async function createOrGetDirectConversation(params: Params): Promise<Con
   if (params.myUserId === params.peerUserId) {
     throw new Error("Cannot create a conversation with yourself");
   }
+
+  // ── FLOW GATE: prevent duplicate concurrent creation for same pair ──
+  const pairKey = [params.myUserId, params.peerUserId].sort().join(":");
+  const flowKey = `conversation.openDirect:${pairKey}`;
+  if (isFlowActive(flowKey)) {
+    // Wait briefly for in-flight creation, then retry lookup
+    await new Promise(r => setTimeout(r, 500));
+    // If still active, throw to prevent stacking
+    if (isFlowActive(flowKey)) {
+      throw new Error("Duplicate direct conversation creation in progress");
+    }
+  }
+
+  enterFlow(flowKey);
+  try {
+    return await _createOrGetDirectConversationInternal(params);
+  } finally {
+    exitFlow(flowKey);
+  }
+}
+
+async function _createOrGetDirectConversationInternal(params: Params): Promise<ConversationRow> {
 
   // Resolve canonical orbit IDs for both participants
   const [myOrbitId, peerOrbitId] = await Promise.all([

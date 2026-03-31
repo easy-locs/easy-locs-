@@ -66,9 +66,19 @@ export const COMPETING_WRITE_PATHS = [
     flow: "direct_conversation_create",
     mutates: "conversations_v2 directly",
     bypasses: "domains/orbit/services/createDirectConversation",
-    danger: "P2",
-    status: "legacy_active",
-    resolution: "Used by conversation-resolver. Should delegate to canonical pipeline but functionally equivalent.",
+    danger: "P3",
+    status: "flow_gated",
+    resolution: "Now flow-gate protected: prevents duplicate concurrent creation for same user pair. enterFlow/exitFlow wrapping added.",
+  },
+  {
+    name: "VoiceRecorder direct insertMessage",
+    file: "src/components/communication/VoiceRecorder.tsx",
+    flow: "voice_message_send",
+    mutates: "chat_messages_v2 via insertMessage",
+    bypasses: "orbitDispatch",
+    danger: "P1",
+    status: "resolved",
+    resolution: "Redirected through orbitDispatch({ type: 'send_voice' }). No more direct insertMessage.",
   },
   {
     name: "sendPaymentReceiptToThread / sendPaymentRequestMessageToThread",
@@ -238,6 +248,12 @@ export const EXTRACTIONS = [
   "call.viewmodel.ts — read-only projection for call overlay UI",
   "composer.viewmodel.ts — read-only projection for composer state",
   "store.selectors.ts — Zustand selector hooks for optimized reads",
+  "orbit-flow-gate.ts — Full typed registries: PipelineRegistry, OwnerRegistry, SerialRegistry, BatchRegistry, SignalRegistry, executeFlow",
+  "orbitDispatch wired through executeFlow — every command passes through flow-gate anti-duplication",
+  "receipt.controller wired through flow-gate — markRead/markSingleRead/clearMarkedUnread protected",
+  "orbit.services.ts wired through flow-gate — sendTextMessage/sendMediaMessage/sendVoiceMessage/createDirectConversation protected",
+  "VoiceRecorder.tsx redirected through orbitDispatch — no more direct insertMessage",
+  "createOrGetDirectConversation flow-gated — duplicate concurrent creation prevented",
 ] as const;
 
 // ══════════════════════════════════════════════
@@ -250,6 +266,7 @@ export const SUPPRESSIONS = [
   "Inline markRead DB calls in useMessageLoader replaced with receipt.controller",
   "useMessageSender re-export removed from families/messages/index.ts (dead code — no consumers)",
   "6 inline setRawMessages mutation lambdas removed from HudChatPanel (replaced by useHudMessageMutationBridge)",
+  "VoiceRecorder direct insertMessage replaced with orbitDispatch send_voice",
 ] as const;
 
 // ══════════════════════════════════════════════
@@ -270,6 +287,31 @@ export const REDIRECTIONS = [
   {
     from: "HudChatPanel inline onDeletedForAll / onDeletedForMe / onEdited / onStarToggle lambdas",
     to: "useHudMessageMutationBridge stable callbacks",
+    status: "done",
+  },
+  {
+    from: "orbitDispatch raw switch/case (no flow-gate)",
+    to: "orbitDispatch → executeFlow(entryKey) → executor",
+    status: "done",
+  },
+  {
+    from: "receipt.controller direct DB calls (no flow-gate)",
+    to: "receipt.controller → enterFlow/exitFlow per operation",
+    status: "done",
+  },
+  {
+    from: "orbit.services.ts direct pipeline calls (no flow-gate)",
+    to: "orbit.services.ts → enterFlow/exitFlow per sendText/sendMedia/sendVoice/createDirect",
+    status: "done",
+  },
+  {
+    from: "VoiceRecorder.tsx direct insertMessage",
+    to: "VoiceRecorder.tsx → orbitDispatch({ type: 'send_voice' })",
+    status: "done",
+  },
+  {
+    from: "createOrGetDirectConversation direct DB (no dedup)",
+    to: "createOrGetDirectConversation → enterFlow/exitFlow with pair-keyed lock",
     status: "done",
   },
 ] as const;
@@ -336,4 +378,27 @@ export const VIEWMODEL_LAYER = {
   ],
   status: "ready",
   note: "Read-only projection layer. Does not own data. UI can consume these instead of reading stores directly.",
+} as const;
+
+// ══════════════════════════════════════════════
+// 12. FLOW GATE INTEGRATION STATUS
+// ══════════════════════════════════════════════
+
+export const FLOW_GATE_STATUS = {
+  file: "src/domains/orbit/flow-gate/orbit-flow-gate.ts",
+  registries: {
+    PipelineRegistry: "31 entries → versioned pipeline keys",
+    OwnerRegistry: "6 canonical owners (messages, attachments, conversations, receipts, drafts, callSessions)",
+    SignalRegistry: "10 realtime signals mapped to owners",
+    SerialRegistry: "unique ID issuance with TTL auto-cleanup",
+    BatchRegistry: "grouped operations (receipt.read, upload.multipart, location.live)",
+  },
+  integration: {
+    orbitDispatch: "✅ Every command passes through executeFlow(entryKey)",
+    receiptController: "✅ markRead/markSingleRead/clearMarkedUnread flow-gated",
+    orbitServices: "✅ sendText/sendMedia/sendVoice/createDirect flow-gated",
+    createOrGetDirectConversation: "✅ Pair-keyed flow-gate prevents duplicate creation",
+    voiceRecorder: "✅ Redirected through orbitDispatch (no direct insertMessage)",
+  },
+  note: "Architecture: UI → OrbitEntry → executeFlow → pipeline → guardedWrite → owner → emitOutput → UI",
 } as const;
