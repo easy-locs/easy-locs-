@@ -134,6 +134,16 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
         return s;
       }
 
+      // Version guard: never overwrite with older version
+      const existing = s.messages[msg.id];
+      if (existing) {
+        const existingVersion = (existing as any).version ?? 0;
+        const incomingVersion = (msg as any).version ?? 0;
+        if (incomingVersion > 0 && existingVersion > 0 && incomingVersion <= existingVersion) {
+          return s; // stale update — skip
+        }
+      }
+
       const next = { ...s.messages, [msg.id]: msg };
       const convMsgs = s.messagesByConversation[msg.conversationId] || [];
       const msgIds = convMsgs.includes(msg.id) ? convMsgs : [...convMsgs, msg.id];
