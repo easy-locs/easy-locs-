@@ -4,7 +4,14 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import type { AppRole } from "@/domains/shared/canonical-types";
 
 // V2 OrbitProfile aligned with orbit_profiles_v2 table
-export interface OrbitProfileV2 {
+// CANONICAL: Re-exports CanonicalOrbitProfile from shared types
+import type { CanonicalOrbitProfile } from "@/domains/shared/canonical-types";
+
+/** @deprecated Use CanonicalOrbitProfile from @/domains/shared/canonical-types */
+export type OrbitProfileV2 = CanonicalOrbitProfile;
+
+/** Backward-compat shape kept for existing consumers */
+interface OrbitProfileV2Shape {
   id: string; // auth user id
   orbitId: string;
   email: string | null;
