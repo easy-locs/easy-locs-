@@ -10,9 +10,10 @@ export {
   clearOfflineTasks,
   replayOffline,
   drainAllQueues,
+  isNonRetryableError,
   QUEUE_PRIORITY,
 } from "./action-queue";
-export type { QueueTask, QueueResult, QueueHealth } from "./action-queue";
+export type { QueueTask, QueueResult, QueueHealth, QueueExecutionContext, OfflineTask } from "./action-queue";
 
 export {
   guardedEnqueue,
