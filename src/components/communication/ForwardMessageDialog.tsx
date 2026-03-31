@@ -97,7 +97,6 @@ export default function ForwardMessageDialog({
         body: messageContent,
         locale: "en",
         category: "general",
-        metadata: { forwarded_from: messageId },
       });
 
       if (!result.ok) throw new Error(result.error || "Forward failed");
