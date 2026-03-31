@@ -57,7 +57,7 @@ export default function SupportThread({
       {!isLoading && messages.length > 0 && (
         <div className="space-y-3 max-h-64 overflow-y-auto">
           {messages.map((row: any) => {
-            const mine = row.sender_user_id && row.sender_user_id === user?.id;
+            const mine = isOutgoingMessage(row, user?.id);
             const systemLike = row.sender_role === "admin" || row.sender_role === "system";
 
             return (

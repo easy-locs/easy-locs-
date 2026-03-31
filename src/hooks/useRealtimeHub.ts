@@ -113,7 +113,7 @@ export function useRealtimeHub() {
         queryClient.invalidateQueries({ queryKey: ["conversations-v2"] });
 
         if (eventType === "INSERT" && row) {
-          if (row.sender_user_id === user?.id) break;
+          if (isOutgoingMessage(row, user?.id)) break;
           if (row.id === lastMsgToast.current) break;
           lastMsgToast.current = row.id;
 
