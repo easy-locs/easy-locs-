@@ -180,7 +180,7 @@ async function resendMediaTransport(msg: OrbitMessage, attachment: OrbitAttachme
       // Fetch the local blob and upload
       const response = await fetch(attachment.localUri);
       const blob = await response.blob();
-      const file = new File([blob], attachment.fileName || "media", { type: attachment.mimeType || "application/octet-stream" });
+      const file = new File([blob], `media-${attachment.id}`, { type: attachment.mimeType || "application/octet-stream" });
       const path = `retry/${msg.conversationId}/${msg.id}/${attachment.id}`;
       const publicUrl = await uploadChatMedia(path, file);
 
