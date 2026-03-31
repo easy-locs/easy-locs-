@@ -4,9 +4,7 @@ import { uploadChatAttachment, signChatAttachmentUrl } from "@/repositories/comm
 import { Mic, X, Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { haptic } from "@/lib/haptics";
-
-import { supabase } from "@/integrations/supabase/client";
-const db = supabase as any;
+import { orbitDispatch } from "@/families/orbit-dispatch/orbit-dispatch";
 
 interface Props {
   orgId: string;
