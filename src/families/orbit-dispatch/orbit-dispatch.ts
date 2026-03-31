@@ -112,83 +112,97 @@ export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResu
   registerInflightRequest(requestId, cmd);
   const entryKey = resolveEntryKey(cmd);
 
-  try {
-    // ═══ FLOW GATE: every command passes through executeFlow ═══
-    const result = await executeFlow(entryKey, async (flowCtx) => {
-      if (import.meta.env.DEV) {
-        console.debug(`[orbitDispatch] ${cmd.type} → ${flowCtx.entry} → ${flowCtx.pipeline}`);
-      }
+  // ── Resolve conversation key for serial queue ──
+  const queueKey = (cmd as any).conversationId || "global";
+  const flowId = createFlowId(entryKey, queueKey);
 
-      switch (cmd.type) {
-        case "send_text": {
-          const ctx = await resolveContext(cmd.conversationId);
-          return { ...await executeSendText(ctx, cmd), requestId };
+  try {
+    // ═══ OFFLINE GATE: if offline, queue write commands for later ═══
+    const isWriteCmd = ["send_text", "send_media", "send_media_batch", "send_voice", "send_location", "edit_message", "reply"].includes(cmd.type);
+    if (isWriteCmd && typeof navigator !== "undefined" && !navigator.onLine) {
+      offlineQueue.enqueue(cmd.type, cmd);
+      return { ok: true, error: "queued_offline", requestId };
+    }
+
+    // ═══ SERIAL QUEUE: 1 conversation = 1 serial pipeline ═══
+    const result = await enqueue(queueKey, async () => {
+      // ═══ FLOW GATE: every command passes through executeFlow ═══
+      return executeFlow(entryKey, async (flowCtx) => {
+        if (import.meta.env.DEV) {
+          console.debug(`[orbitDispatch] ${cmd.type} → ${flowCtx.entry} [flow:${flowId}]`);
         }
-        case "send_media": {
-          const ctx = await resolveContext(cmd.conversationId);
-          return { ...await executeSendMedia(ctx, cmd), requestId };
+
+        switch (cmd.type) {
+          case "send_text": {
+            const ctx = await resolveContext(cmd.conversationId);
+            return { ...await executeSendText(ctx, cmd), requestId };
+          }
+          case "send_media": {
+            const ctx = await resolveContext(cmd.conversationId);
+            return { ...await executeSendMedia(ctx, cmd), requestId };
+          }
+          case "send_media_batch": {
+            const ctx = await resolveContext(cmd.conversationId);
+            return { ...await executeSendMediaBatch(ctx, cmd), requestId };
+          }
+          case "send_voice": {
+            const ctx = await resolveContext(cmd.conversationId);
+            return { ...await executeSendVoice(ctx, cmd), requestId };
+          }
+          case "send_location": {
+            const ctx = await resolveContext(cmd.conversationId);
+            return { ...await executeSendLocation(ctx, cmd), requestId };
+          }
+          case "start_call": {
+            const ctx = await resolveContext(cmd.conversationId || "");
+            return { ...await executeStartCall(ctx, cmd), requestId };
+          }
+          case "accept_call":
+            return { ...await executeAcceptCall(cmd), requestId };
+          case "decline_call":
+            return { ...await executeDeclineCall(cmd), requestId };
+          case "end_call":
+            return { ...await executeEndCall(cmd), requestId };
+          case "edit_message":
+            return { ...await executeEditMessage(cmd), requestId };
+          case "reply": {
+            const ctx = await resolveContext(cmd.conversationId);
+            return { ...await executeReplyMessage(ctx, cmd), requestId };
+          }
+          case "group_create": {
+            const { GroupCreate } = await import("@/families/groups/group-create");
+            const orbit = getOrbitIdentity();
+            const userId = orbit?.userId || await resolveCurrentUserIdFromSession();
+            const result = await GroupCreate.execute({
+              title: cmd.title,
+              memberIds: cmd.memberUserIds,
+              avatarUrl: cmd.avatarUrl || undefined,
+              createdByUserId: userId,
+              createdByOrbitId: orbit?.orbitId,
+            });
+            return { ok: !!result, groupId: result?.id, requestId };
+          }
+          case "group_update": {
+            const { updateOrbitGroup } = await import("@/families/groups/group-update");
+            await updateOrbitGroup(cmd);
+            return { ok: true, requestId };
+          }
+          case "presence_update": {
+            const { PresencePipeline } = await import("@/families/presence");
+            const orbit = getOrbitIdentity();
+            if (orbit?.userId) PresencePipeline.sendPresence(orbit.userId, cmd.status);
+            return { ok: true, requestId };
+          }
+          case "typing_update": {
+            const { PresencePipeline } = await import("@/families/presence");
+            const orbit = getOrbitIdentity();
+            if (orbit?.userId) PresencePipeline.sendTyping(cmd.conversationId, orbit.userId, orbit.displayName || "", cmd.activity);
+            return { ok: true, requestId };
+          }
+          default:
+            return { ok: false, error: `Unknown command type: ${(cmd as any).type}`, requestId };
         }
-        case "send_media_batch": {
-          const ctx = await resolveContext(cmd.conversationId);
-          return { ...await executeSendMediaBatch(ctx, cmd), requestId };
-        }
-        case "send_voice": {
-          const ctx = await resolveContext(cmd.conversationId);
-          return { ...await executeSendVoice(ctx, cmd), requestId };
-        }
-        case "send_location": {
-          const ctx = await resolveContext(cmd.conversationId);
-          return { ...await executeSendLocation(ctx, cmd), requestId };
-        }
-        case "start_call": {
-          const ctx = await resolveContext(cmd.conversationId || "");
-          return { ...await executeStartCall(ctx, cmd), requestId };
-        }
-        case "accept_call":
-          return { ...await executeAcceptCall(cmd), requestId };
-        case "decline_call":
-          return { ...await executeDeclineCall(cmd), requestId };
-        case "end_call":
-          return { ...await executeEndCall(cmd), requestId };
-        case "edit_message":
-          return { ...await executeEditMessage(cmd), requestId };
-        case "reply": {
-          const ctx = await resolveContext(cmd.conversationId);
-          return { ...await executeReplyMessage(ctx, cmd), requestId };
-        }
-        case "group_create": {
-          const { GroupCreate } = await import("@/families/groups/group-create");
-          const orbit = getOrbitIdentity();
-          const userId = orbit?.userId || await resolveCurrentUserIdFromSession();
-          const result = await GroupCreate.execute({
-            title: cmd.title,
-            memberIds: cmd.memberUserIds,
-            avatarUrl: cmd.avatarUrl || undefined,
-            createdByUserId: userId,
-            createdByOrbitId: orbit?.orbitId,
-          });
-          return { ok: !!result, groupId: result?.id, requestId };
-        }
-        case "group_update": {
-          const { updateOrbitGroup } = await import("@/families/groups/group-update");
-          await updateOrbitGroup(cmd);
-          return { ok: true, requestId };
-        }
-        case "presence_update": {
-          const { PresencePipeline } = await import("@/families/presence");
-          const orbit = getOrbitIdentity();
-          if (orbit?.userId) PresencePipeline.sendPresence(orbit.userId, cmd.status);
-          return { ok: true, requestId };
-        }
-        case "typing_update": {
-          const { PresencePipeline } = await import("@/families/presence");
-          const orbit = getOrbitIdentity();
-          if (orbit?.userId) PresencePipeline.sendTyping(cmd.conversationId, orbit.userId, orbit.displayName || "", cmd.activity);
-          return { ok: true, requestId };
-        }
-        default:
-          return { ok: false, error: `Unknown command type: ${(cmd as any).type}`, requestId };
-      }
+      });
     });
 
     return result;
