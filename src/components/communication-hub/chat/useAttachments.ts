@@ -131,23 +131,16 @@ export function useAttachments(params: {
 
     setUploading(true);
     try {
-      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
       const orgId = params.orgId || "orbit";
-      const path = `${orgId}/${params.thread!.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${file.name.split(".").pop() || "bin"}`;
-      
-      const finalUrl = await uploadFile(file, path);
-      if (!finalUrl) {
-        trace("attachment.storage.upload", "error", { reason: "upload_returned_null", path });
-        throw new Error("File upload failed. Please try again.");
-      }
+      const pathPrefix = `${orgId}/${params.thread!.id}`;
 
-      trace("attachment.dispatch", "input", { conversationId, type: isMedia ? "media" : "file", fileName: file.name });
-      const orgId = params.orgId || "orbit";
+      trace("attachment.dispatch", "input", { conversationId, fileName: file.name });
       const result = await orbitDispatch({
         type: "send_media",
         conversationId,
         file,
-        caption: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
+        caption: file.type.startsWith("image/") || file.type.startsWith("video/")
+          ? `📷 ${file.name}` : `📎 ${file.name}`,
         uploadFn: async (f, p, onProgress) => {
           onProgress(0);
           const url = await uploadFile(f, p);
@@ -155,7 +148,7 @@ export function useAttachments(params: {
           if (!url) throw new Error("Upload failed");
           return url;
         },
-        pathPrefix: `${orgId}/${params.thread!.id}`,
+        pathPrefix,
       });
       if (!result.ok) {
         throw new Error(result.error || "Send failed");
