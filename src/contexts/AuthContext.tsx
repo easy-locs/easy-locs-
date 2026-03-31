@@ -241,7 +241,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!mounted) return;
       console.warn("[AuthContext] safety timeout reached — unblocking loading state");
       setLoading(false);
-      setProfileLoaded(true); // Ensure downstream components unblock too
+      setProfileLoaded(true);
     }, 3500);
 
     markV1AuthActive();
@@ -363,10 +363,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (mounted && seq === latestSeq) setLoading(false);
     };
 
+    // ── CRITICAL FIX: Restore session from storage BEFORE setting up listener ──
+    // Without this, INITIAL_SESSION fires before session is restored → auth.uid() is null → RLS fails
+    supabase.auth.getSession().then(({ data: { session: restoredSession } }) => {
+      if (!mounted) return;
+      void hydrateAuthState(restoredSession);
+    }).catch((err) => {
+      console.warn("[AuthContext] getSession failed — will rely on onAuthStateChange:", err);
+      if (mounted) {
+        setLoading(false);
+        setProfileLoaded(true);
+      }
+    });
+
+    // Listen for subsequent auth changes (login, logout, token refresh)
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      // Skip INITIAL_SESSION — already handled by getSession above
+      if (_event === "INITIAL_SESSION") return;
+
       if (_event === "SIGNED_IN" && nextSession?.user) {
         logAudit({ userId: nextSession.user.id, action: "user_login" });
-        // ensureOrbitProfile is already called inside hydrateAuthState — no duplicate here
         void import("@/lib/auth/profile")
           .then((m) => m.ensureUserProfile(nextSession.user.id, {
             fullName: nextSession.user.user_metadata?.full_name,
