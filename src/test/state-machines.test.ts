@@ -26,8 +26,8 @@ describe("Message State Machine", () => {
     expect(transition(MESSAGE_MACHINE, "delivered", "READ")).toBe("read");
   });
 
-  it("allows failed → sending (retry)", () => {
-    expect(transition(MESSAGE_MACHINE, "failed", "RETRY")).toBe("sending");
+  it("allows failed → retrying (retry)", () => {
+    expect(transition(MESSAGE_MACHINE, "failed", "RETRY")).toBe("retrying");
   });
 
   it("blocks read → sending (invalid)", () => {
