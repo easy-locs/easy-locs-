@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { useCouponsStore } from "@/stores/couponsStore";
 
 type CheckoutDiscountStore = {
   appliedCode: string | null;
