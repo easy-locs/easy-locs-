@@ -162,6 +162,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   // ── Short aliases ──
   const { selection, messages, loader, messageSender, messageActions, threadUi, pinnedMessage } = msgFamily;
 
+  // ── Bridge: Message mutations (delete/edit/star local state) ──
+  const mutations = useHudMessageMutationBridge({
+    setRawMessages: loader.setRawMessages as any,
+    setHiddenMsgIds: selection.setHiddenMsgIds,
+  });
+
   // ── Bridge: Send ──
   const { stableHandleSend } = useHudSendBridge(currentConversationId, messageSender, messageActions);
 
