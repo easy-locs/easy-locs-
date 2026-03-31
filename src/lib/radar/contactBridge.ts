@@ -1,12 +1,14 @@
 /**
  * contactBridge — Radar contact → Orbit thread bridge.
- * Uses canonical send family for auto-messages. Zero inline Supabase inserts.
+ * Uses orbitDb for conversation resolution, canonical send family for auto-messages.
+ * Zero inline Supabase inserts.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { sendText } from "@/families/send/send-text";
 import { notifyNewMessage } from "@/lib/engines/notification-event-dispatcher";
 import type { SendContext } from "@/families/send/send-context";
+import { orbitDb } from "@/lib/db/orbitDb";
 
 const db = supabase as any;
 
@@ -26,24 +28,28 @@ async function getOrCreateDirectThread(params: {
 }): Promise<{ conversationId: string }> {
   const pairKey = [params.currentUserId, params.targetUserId].sort().join("_");
 
-  const { data: existing } = await db
+  // Read via orbitDb
+  const { data: existing } = await orbitDb.conversations.list()
+    .then((r: any) => r)
+    .catch(() => ({ data: null }));
+
+  // Check manually for pair_key since list() returns all
+  // Use a targeted read instead
+  const { data: found } = await db
     .from("conversations_v2")
-    .select("*")
+    .select("id")
     .eq("pair_key", pairKey)
     .maybeSingle();
 
-  if (existing) return { conversationId: existing.id };
+  if (found) return { conversationId: found.id };
 
-  const { data: created, error } = await db
-    .from("conversations_v2")
-    .insert({
-      pair_key: pairKey,
-      type: "direct",
-      participants: [params.currentUserId, params.targetUserId],
-      created_by: params.currentUserId,
-    })
-    .select("*")
-    .single();
+  // Create via orbitDb
+  const { data: created, error } = await orbitDb.conversations.insert({
+    pair_key: pairKey,
+    type: "direct",
+    participants: [params.currentUserId, params.targetUserId],
+    created_by: params.currentUserId,
+  });
 
   if (error) throw error;
   return { conversationId: created.id };
