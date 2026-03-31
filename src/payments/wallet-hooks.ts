@@ -106,15 +106,18 @@ export function useWalletTransactions(limit = 50) {
   useEffect(() => {
     if (!user?.id) { setLoading(false); return; }
     load();
-    const channel = supabase
-      .channel(`wtx-${user.id}`)
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "unified_wallet_transactions",
-      }, () => load())
-      .subscribe();
-    return () => { removeRealtimeChannel(channel); };
+    const unsubRegistry = registerSubscription(`wallet.unified_tx:${user.id}`, () => {
+      const channel = supabase
+        .channel(`wtx-${user.id}`)
+        .on("postgres_changes", {
+          event: "INSERT",
+          schema: "public",
+          table: "unified_wallet_transactions",
+        }, () => load())
+        .subscribe();
+      return () => removeRealtimeChannel(channel);
+    });
+    return () => { unsubRegistry(); };
   }, [user?.id, load]);
 
   /** Today's outgoing transfer total */

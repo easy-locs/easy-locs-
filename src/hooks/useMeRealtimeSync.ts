@@ -35,19 +35,22 @@ export function useMeRealtimeSync() {
 
     if (!user?.id) return;
 
-    const channel = supabase
-      .channel(`me-profile:${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "profiles",
-          filter: `id=eq.${user.id}`,
-        },
-        () => void loadProfile()
-      )
-      .subscribe();
+    const unsubRegistry = registerSubscription(`me.profile:${user.id}`, () => {
+      const channel = supabase
+        .channel(`me-profile:${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "profiles",
+            filter: `id=eq.${user.id}`,
+          },
+          () => void loadProfile()
+        )
+        .subscribe();
+      return () => removeRealtimeChannel(channel);
+    });
 
     const unsub1 = platformBus.on(APP_EVENTS.ME_REFRESH, () => {
       void loadProfile();
@@ -58,7 +61,7 @@ export function useMeRealtimeSync() {
     });
 
     return () => {
-      removeRealtimeChannel(channel);
+      unsubRegistry();
       unsub1();
       unsub2();
     };

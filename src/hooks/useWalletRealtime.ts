@@ -37,24 +37,27 @@ export function useWalletRealtime() {
 
     if (!user?.id) return;
 
-    const walletChannel = supabase
-      .channel(`wallet:${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "wallet_transactions_v2",
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          void refresh();
-          platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, { userId: user.id }, "wallet");
-          platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { userId: user.id }, "wallet");
-          platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, { userId: user.id }, "wallet");
-        }
-      )
-      .subscribe();
+    const unsubRegistry = registerSubscription(`wallet.transactions:${user.id}`, () => {
+      const walletChannel = supabase
+        .channel(`wallet:${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "wallet_transactions_v2",
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            void refresh();
+            platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, { userId: user.id }, "wallet");
+            platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { userId: user.id }, "wallet");
+            platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, { userId: user.id }, "wallet");
+          }
+        )
+        .subscribe();
+      return () => removeRealtimeChannel(walletChannel);
+    });
 
     const unsubs = [
       platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS, () => void refresh()),
@@ -63,7 +66,7 @@ export function useWalletRealtime() {
     ];
 
     return () => {
-      removeRealtimeChannel(walletChannel);
+      unsubRegistry();
       unsubs.forEach((u) => u());
     };
   }, [refresh, user?.id]);
