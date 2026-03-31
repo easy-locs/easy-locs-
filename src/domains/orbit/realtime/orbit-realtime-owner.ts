@@ -11,7 +11,7 @@ import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { normalizeOrbitMessage, normalizeConversation } from "@/domains/orbit/normalizers";
 import { isMessageDuplicate, markMessageSeen } from "@/lib/dedup/message-dedup";
 import { useOrbitStore } from "@/domains/orbit/stores/orbit.store";
-import { logOrbit } from "@/lib/observability/orbit-observability";
+import { logRealtimeEventReceived, logRealtimeEventDeduped, logMessageReconciled } from "@/lib/observability/orbit-observability";
 
 const activeChannels = new Map<string, any>();
 

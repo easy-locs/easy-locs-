@@ -8,8 +8,6 @@
  */
 import type {
   OrbitMessage,
-  OrbitConversation,
-  OrbitAttachment,
   MessageStatus,
 } from "@/domains/orbit/types";
 import { useOrbitStore } from "@/domains/orbit/stores/orbit.store";
@@ -17,20 +15,23 @@ import {
   validateTextInput,
   buildOptimisticTextMessage,
   reconcileTextMessage,
+  type SendTextInput,
 } from "@/domains/orbit/pipelines/message/send-text.pipeline";
 import {
   validateMediaInput,
   buildLocalAttachment,
   buildOptimisticMediaMessage,
+  type SendMediaInput,
 } from "@/domains/orbit/pipelines/message/send-media.pipeline";
 import {
   validateVoiceInput,
   buildLocalVoiceAttachment,
   buildOptimisticVoiceMessage,
+  type SendVoiceInput,
 } from "@/domains/orbit/pipelines/message/send-voice.pipeline";
 import { findOrCreateDirect } from "@/domains/orbit/pipelines/conversation/find-or-create-direct.pipeline";
 import { acquireSubmitLock, isContentDuplicate } from "@/domains/orbit/guards/send-guard";
-import { logOrbit } from "@/lib/observability/orbit-observability";
+import { logMessageSendStarted, logMessageReconciled } from "@/lib/observability/orbit-observability";
 
 // ══════════════════════════════════════════════
 // TEXT MESSAGE
@@ -39,38 +40,33 @@ import { logOrbit } from "@/lib/observability/orbit-observability";
 export async function sendTextMessage(input: {
   conversationId: string;
   senderId: string;
-  senderOrbitId: string | null;
+  senderOrbitId: string;
   text: string;
   replyToId?: string | null;
 }): Promise<{ ok: boolean; tempId?: string; error?: string }> {
-  // Guard: anti-double-tap
   if (!acquireSubmitLock(input.conversationId)) {
     return { ok: false, error: "submit_locked" };
   }
-
-  // Guard: content dedup
   if (isContentDuplicate(input.conversationId, input.text)) {
     return { ok: false, error: "content_duplicate" };
   }
 
-  // Validate
-  const validation = validateTextInput({ text: input.text, conversationId: input.conversationId });
-  if (!validation.valid) {
-    return { ok: false, error: validation.reason };
-  }
-
-  // Build optimistic
-  const optimistic = buildOptimisticTextMessage({
+  const pipelineInput: SendTextInput = {
     conversationId: input.conversationId,
     senderId: input.senderId,
     senderOrbitId: input.senderOrbitId,
-    text: input.text.trim(),
+    body: input.text,
     replyToId: input.replyToId ?? null,
-  });
+  };
 
-  // Insert into store immediately (optimistic UI)
+  const validationError = validateTextInput(pipelineInput);
+  if (validationError) {
+    return { ok: false, error: validationError };
+  }
+
+  const optimistic = buildOptimisticTextMessage(pipelineInput);
   useOrbitStore.getState().mergeMessage(optimistic);
-  logOrbit("message_send_started", { tempId: optimistic.tempId, conversationId: input.conversationId });
+  logMessageSendStarted(input.conversationId, optimistic.tempId ?? optimistic.id);
 
   return { ok: true, tempId: optimistic.tempId ?? optimistic.id };
 }
@@ -82,7 +78,7 @@ export async function sendTextMessage(input: {
 export async function sendMediaMessage(input: {
   conversationId: string;
   senderId: string;
-  senderOrbitId: string | null;
+  senderOrbitId: string;
   file: File;
   caption?: string;
 }): Promise<{ ok: boolean; tempId?: string; attachmentId?: string; error?: string }> {
@@ -90,32 +86,27 @@ export async function sendMediaMessage(input: {
     return { ok: false, error: "submit_locked" };
   }
 
-  const validation = validateMediaInput({ file: input.file });
-  if (!validation.valid) {
-    return { ok: false, error: validation.reason };
-  }
-
-  // Build local attachment
-  const attachment = buildLocalAttachment({
-    file: input.file,
-    conversationId: input.conversationId,
-  });
-
-  // Build optimistic message
-  const optimistic = buildOptimisticMediaMessage({
+  const pipelineInput: SendMediaInput = {
     conversationId: input.conversationId,
     senderId: input.senderId,
     senderOrbitId: input.senderOrbitId,
-    attachmentId: attachment.id,
-    caption: input.caption ?? null,
-  });
+    file: input.file,
+    caption: input.caption,
+  };
 
-  // Insert both into store
+  const validationError = validateMediaInput(pipelineInput);
+  if (validationError) {
+    return { ok: false, error: validationError };
+  }
+
+  const previewUrl = input.file.type.startsWith("image/") ? URL.createObjectURL(input.file) : null;
+  const attachment = buildLocalAttachment(pipelineInput, previewUrl);
+  const optimistic = buildOptimisticMediaMessage(pipelineInput, attachment);
+
   const store = useOrbitStore.getState();
   store.mergeAttachment(attachment);
   store.mergeMessage(optimistic);
-
-  logOrbit("message_send_started", { tempId: optimistic.tempId, type: "media" });
+  logMessageSendStarted(input.conversationId, optimistic.tempId ?? optimistic.id);
 
   return { ok: true, tempId: optimistic.tempId ?? optimistic.id, attachmentId: attachment.id };
 }
@@ -127,41 +118,36 @@ export async function sendMediaMessage(input: {
 export async function sendVoiceMessage(input: {
   conversationId: string;
   senderId: string;
-  senderOrbitId: string | null;
+  senderOrbitId: string;
   blob: Blob;
   durationSeconds: number;
+  localUrl: string;
 }): Promise<{ ok: boolean; tempId?: string; error?: string }> {
   if (!acquireSubmitLock(input.conversationId)) {
     return { ok: false, error: "submit_locked" };
   }
 
-  const validation = validateVoiceInput({
-    blob: input.blob,
-    durationSeconds: input.durationSeconds,
-  });
-  if (!validation.valid) {
-    return { ok: false, error: validation.reason };
-  }
-
-  const attachment = buildLocalVoiceAttachment({
-    blob: input.blob,
-    durationSeconds: input.durationSeconds,
-    conversationId: input.conversationId,
-  });
-
-  const optimistic = buildOptimisticVoiceMessage({
+  const pipelineInput: SendVoiceInput = {
     conversationId: input.conversationId,
     senderId: input.senderId,
     senderOrbitId: input.senderOrbitId,
-    attachmentId: attachment.id,
+    blob: input.blob,
     durationSeconds: input.durationSeconds,
-  });
+    localUrl: input.localUrl,
+  };
+
+  const validationError = validateVoiceInput(pipelineInput);
+  if (validationError) {
+    return { ok: false, error: validationError };
+  }
+
+  const attachment = buildLocalVoiceAttachment(pipelineInput);
+  const optimistic = buildOptimisticVoiceMessage(pipelineInput, attachment);
 
   const store = useOrbitStore.getState();
   store.mergeAttachment(attachment);
   store.mergeMessage(optimistic);
-
-  logOrbit("message_send_started", { tempId: optimistic.tempId, type: "voice" });
+  logMessageSendStarted(input.conversationId, optimistic.tempId ?? optimistic.id);
 
   return { ok: true, tempId: optimistic.tempId ?? optimistic.id };
 }
@@ -172,24 +158,18 @@ export async function sendVoiceMessage(input: {
 
 export async function createDirectConversation(input: {
   myUserId: string;
-  myOrbitId: string;
   peerUserId: string;
-  peerOrbitId: string;
-}): Promise<{ ok: boolean; conversationId?: string; error?: string }> {
+  searchFn: (pair: string[]) => Promise<any | null>;
+  createFn: (pair: string[]) => Promise<any>;
+}): Promise<{ ok: boolean; conversation?: any; error?: string }> {
   try {
-    const result = await findOrCreateDirect({
-      myUserId: input.myUserId,
-      myOrbitId: input.myOrbitId,
-      peerUserId: input.peerUserId,
-      peerOrbitId: input.peerOrbitId,
-    });
-
-    if (result.conversation) {
-      useOrbitStore.getState().mergeConversation(result.conversation);
-      return { ok: true, conversationId: result.conversation.id };
-    }
-
-    return { ok: false, error: "create_failed" };
+    const result = await findOrCreateDirect(
+      input.myUserId,
+      input.peerUserId,
+      input.searchFn,
+      input.createFn,
+    );
+    return { ok: true, conversation: result };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "unknown" };
   }
@@ -201,7 +181,6 @@ export async function createDirectConversation(input: {
 
 export function markConversationRead(conversationId: string): void {
   useOrbitStore.getState().updateUnreadCount(conversationId, 0);
-  logOrbit("mark_read", { conversationId });
 }
 
 // ══════════════════════════════════════════════
@@ -210,7 +189,7 @@ export function markConversationRead(conversationId: string): void {
 
 export function reconcileServerMessage(tempId: string, serverMsg: OrbitMessage): void {
   useOrbitStore.getState().reconcileMessage(tempId, serverMsg);
-  logOrbit("message_reconciled", { tempId, serverId: serverMsg.id });
+  logMessageReconciled(tempId, serverMsg.id);
 }
 
 // ══════════════════════════════════════════════
