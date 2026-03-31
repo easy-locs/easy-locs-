@@ -13,6 +13,7 @@ import { MessageBubbleRouter } from "./chat/bubbles/MessageBubbleRouter";
 import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
 import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
 import { useScopedMessageAttachment } from "@/domains/orbit/selectors/useScopedMessageAttachment";
+import { resolveSenderDisplay, isSystemMessage } from "@/domains/orbit/resolvers";
 
 // haptic removed — gestures handled by OrbitMessageInteractiveWrapper
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
