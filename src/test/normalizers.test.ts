@@ -103,8 +103,8 @@ describe("normalizeCallSession", () => {
     };
     const session = normalizeCallSession(raw);
     expect(session.id).toBe("call-1");
-    expect(session.status).toBe("active");
-    expect(session.mode).toBe("video");
+    expect(session.state).toBe("active");
+    expect(session.callType).toBe("video");
   });
 });
 
