@@ -104,14 +104,26 @@ function MessageBubbleRouterInner({ msg, isMe, attachment, currentUserId, blurre
 
   const url = resolveMediaUrl(msg.attachment_url, attachment);
 
-  // Location: extract coordinates from content or metadata
+  // Location: extract coordinates from canonical metadata first, then fallback to content regex
   if (kind === "location") {
+    const meta = (msg as any).metadata_json ?? (msg as any).metadata;
+    const locPayload = meta?.location;
+    const metaLat = locPayload?.lat ?? meta?.lat;
+    const metaLng = locPayload?.lng ?? meta?.lng;
+    const metaLabel = locPayload?.label ?? locPayload?.address ?? null;
+    const metaMode = locPayload?.mode ?? (msg.message_type === "location_live" ? "live" : "static");
+
+    if (metaLat != null && metaLng != null) {
+      return <BubbleLocationBlock lat={String(metaLat)} lng={String(metaLng)} label={metaLabel || msg.content?.split("\n")[0] || null} mode={metaMode} messageId={msg.id} />;
+    }
+
+    // Fallback: parse OSM link from content
     const osmMatch = msg.content?.match(/openstreetmap\.org\/\?mlat=([\d.-]+)&mlon=([\d.-]+)/);
-    const lat = osmMatch?.[1] || (msg as any).metadata_json?.lat;
-    const lng = osmMatch?.[2] || (msg as any).metadata_json?.lng;
+    const lat = osmMatch?.[1];
+    const lng = osmMatch?.[2];
     const label = msg.content?.split("\n")[0] || null;
     if (lat && lng) {
-      return <BubbleLocationBlock lat={String(lat)} lng={String(lng)} label={label} />;
+      return <BubbleLocationBlock lat={lat} lng={lng} label={label} mode={metaMode} messageId={msg.id} />;
     }
     return null;
   }
