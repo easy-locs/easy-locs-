@@ -77,17 +77,19 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
           await uploadChatAttachment(path, blob);
           const url = await signChatAttachmentUrl(path);
 
-          const { insertMessage } = await import("@/repositories/communication.repository");
-          const inserted = await insertMessage({
+          // ── CANONICAL: route through orbitDispatch instead of direct insertMessage ──
+          const file = new File([blob], `voice-${Date.now()}.${ext}`, { type: mime });
+          const result = await orbitDispatch({
+            type: "send_voice",
             conversationId: contextId,
-            senderUserId: userId,
-            senderOrbitId: `orbit_${userId.slice(0, 12)}`,
-            type: "audio",
-            body: `🎤 Voice message (${formatDur(duration)})`,
-            metadata: { audio_url: url, audio_duration_seconds: duration },
+            blob,
+            durationSeconds: duration,
+            localUrl: url,
+            uploadFn: async () => url, // already uploaded
+            pathPrefix: `${orgId}/${contextId}`,
           });
 
-          if (inserted) onSent(inserted);
+          if (result.ok) onSent({ id: result.messageId });
         } catch (e: any) {
           toast.error(e.message || "Failed to send voice message");
         }
