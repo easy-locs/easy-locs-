@@ -66,7 +66,8 @@ export default function ForwardMessageDialog({
             if (row.id !== currentContextId) {
               const participants = Array.isArray(row.participants) ? row.participants : [];
               const peerId = getPeerUserId(participants.map((p: any) => p.userId), userId);
-              const peerName = participants.find((p: any) => p.userId === peerId)?.displayName;
+              const peer = participants.find((p: any) => p.userId === peerId);
+              const peerName = resolveDisplayName(peer);
               result.push({
                 id: row.id,
                 conversationId: row.id,
