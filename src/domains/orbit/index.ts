@@ -137,3 +137,11 @@ export {
   selectUploadProgress,
   selectAttachmentDisplayUrl,
 } from "./media";
+
+// ── ViewModels (read-only projection layer) ──
+export { useInboxViewModel, useConversationViewModel, useCallViewModel, useComposerViewModel } from "./viewmodels";
+export type { InboxItemViewModel, ConversationViewModel, CallViewModel, ComposerViewModel } from "./viewmodels";
+
+// ── Flow Registry ──
+export { ALL_OFFICIAL_ENTRIES } from "./orbit-flow-registry";
+export type { OfficialEntry } from "./orbit-flow-registry";
