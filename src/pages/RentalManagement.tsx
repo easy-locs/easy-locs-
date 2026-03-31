@@ -160,7 +160,7 @@ const RentalManagement = () => {
   const tenantFormConfig = useMemo(() => getCountryConfig(tenantFormCountry), [tenantFormCountry]);
 
   // ── Wired extracted hooks ──
-  const { messages, newMessage, setNewMessage, loadMessages, sendMessage } = useRentalMessages(selectedTenant?.id ?? null);
+  const { messages, newMessage, setNewMessage, loadMessages, sendMessage } = useRentalMessages(orgId ?? null, selectedTenant?.id ?? null, user?.id);
   const { payingRentId, generateReceiptForPayment, handlePayRent } = useRentalReceipts(properties, tenants, userCountry);
   const { autoGenerateLease, autoGenerateFirstRentCall } = useRentalLeaseGenerator(properties, userCountry);
   const { notifyingRentId, invitingTenantId, setInvitingTenantId, handleNotifyRentCall } = useRentalNotifications(tenants, userCountry);
