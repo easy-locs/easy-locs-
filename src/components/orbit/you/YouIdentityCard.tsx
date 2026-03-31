@@ -40,7 +40,7 @@ export default function YouIdentityCard({
     >
       <div className="flex items-center gap-4">
         <div className="relative">
-          <IdentityAvatar avatarUrl={avatarUrl} name={displayName || email} size="xl" />
+          <IdentityAvatar avatarUrl={avatarUrl} name={resolveDisplayName({ displayName, email })} size="xl" />
           <div
             className="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center"
             style={{ background: "hsl(var(--primary))", borderColor: "hsl(var(--background))" }}
