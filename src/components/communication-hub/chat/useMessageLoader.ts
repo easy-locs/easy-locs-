@@ -1,11 +1,17 @@
 /**
  * useMessageLoader — V2-ONLY canonical message loader.
  * Reads from chat_messages_v2 exclusively. No legacy path.
+ * Read receipts delegated to receipt.controller (single write path).
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { subscribeInstantMessages } from "@/lib/realtime-broadcast";
+import {
+  markConversationMessagesRead,
+  markSingleMessageRead,
+  clearMarkedUnread,
+} from "@/domains/orbit/controllers/receipt.controller";
 
 const db = supabase as any;
 
