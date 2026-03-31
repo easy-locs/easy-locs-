@@ -848,6 +848,7 @@ const App = () => (
            </AppLockGuard>
           </UnifiedPaymentProvider>
            </CallProvider>
+        <GlobalOverlayRenderer />
         </AuthProvider>
     </TooltipProvider>
     </BrowserTelemetryProvider>
