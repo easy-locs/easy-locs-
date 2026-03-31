@@ -302,93 +302,57 @@ function ChatMessageBubble({
           <span className="text-[10px] opacity-50 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
         )}
 
-        {/* Media — isolated micro-component */}
-        <BubbleMediaBlock
-          messageId={msg.id}
-          attachmentUrl={msg.attachment_url}
-          isMe={isMe}
-          isViewOnce={isViewOnce}
-          viewOnceOpenedAt={(msg as any).view_once_opened_at}
-          viewOnceOpenedBy={(msg as any).view_once_opened_by}
-          currentUserId={currentUserId}
-          blurred={blurred}
-        />
-
-        {isPaymentReceipt && paymentReceiptData ? (
-          <ChatPaymentReceiptCard receipt={paymentReceiptData} />
-        ) : isPaymentRequest && paymentRequestData ? (
-          <ChatPaymentRequestCard request={paymentRequestData} />
-        ) : isLocation && locLat && locLng ? (
-          <BubbleLocationBlock lat={locLat} lng={locLng} label={locLabel} />
-        ) : isVoice ? (
-          <div>
-            <VoiceMessageBubble
-              url={(msg as any).audio_url}
-              durationSeconds={(msg as any).audio_duration_seconds || 0}
+        {/* Media routing — canonical type-based via MessageBubbleRouter */}
+        {(() => {
+          const isVoice = !!(msg as any).audio_url;
+          const mediaRendered = (
+            <MessageBubbleRouter
+              msg={msg}
               isMe={isMe}
-              messageId={msg.id}
+              currentUserId={currentUserId}
+              blurred={blurred}
             />
-            {/* Transcript display */}
-            {transcriptStatus === "processing" && (
-              <div className="flex items-center gap-1 mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
-                <Loader2 className="h-2.5 w-2.5 animate-spin" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }} />
-                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Transcribing...</span>
-              </div>
-            )}
-            {transcriptStatus === "error" && (
-              <div className="flex items-center gap-1 mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
-                <span className="text-[10px]" style={{ color: "hsl(var(--hud-danger) / 0.6)" }}>⚠️ Transcription failed</span>
-              </div>
-            )}
-            {transcriptText && transcriptStatus === "completed" && (
-              <div className="mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
-                <button
-                  onClick={() => setShowTranscript(!showTranscript)}
-                  className="flex items-center gap-1 text-[10px] mb-0.5 hover:opacity-80 min-h-[44px] sm:min-h-0 py-1"
-                  style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}
-                >
-                  <FileText className="h-3 w-3 sm:h-2.5 sm:w-2.5" />
-                  {showTranscript ? "Hide transcript" : "Show transcript"}
-                </button>
-                {showTranscript && (
-                  <p className={`text-[12px] leading-[1.4] whitespace-pre-wrap ${blurred ? "blur-lg" : ""}`} style={{
-                    color: "hsl(var(--hud-text) / 0.8)",
-                  }}>
-                    {showTranslatedTranscript && translatedTranscript ? translatedTranscript : transcriptText}
-                  </p>
-                )}
-                {showTranscript && translatedTranscript && (
-                  <button
-                    onClick={() => setShowTranslatedTranscript(!showTranslatedTranscript)}
-                    className="mt-0.5 inline-flex items-center gap-1 text-[10px] hover:opacity-80 min-h-[44px] sm:min-h-0 py-1"
-                    style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}
-                  >
-                    <Globe className="h-3 w-3 sm:h-2.5 sm:w-2.5" />
-                    {showTranslatedTranscript ? "Original" : "Translated"}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        ) : (
-          /* Message content + link preview */
-          <>
-            <p className={`text-[13.5px] leading-[1.45] whitespace-pre-wrap ${blurred ? "blur-lg transition-all" : ""}`} style={{
-              color: "hsl(var(--foreground))",
-              overflowWrap: "anywhere",
-              ...(securityPolicy.antiScreenshot ? { userSelect: "none" as const, WebkitUserSelect: "none" as const } : {}),
-            }}>
-              {isMe ? msg.content : (showOriginal ? msg.content : (msg.translated_content || msg.content))}
-            </p>
-            {(() => {
-              const urlMatch = msg.content?.match(/https?:\/\/[^\s]+/);
-              if (urlMatch && !msg.attachment_url) {
-                return <BubbleLinkPreview url={urlMatch[0]} isMe={isMe} />;
-              }
-              return null;
-            })()}
-          </>
-        )}
+          );
+          // If MessageBubbleRouter handled it (returns non-null for media types), show it
+          // Otherwise fall through to text content
+          const hasMedia = msg.attachment_url || (msg as any).audio_url ||
+            msg.message_type === "image" || msg.message_type === "video" ||
+            msg.message_type === "voice" || msg.message_type === "audio" ||
+            msg.message_type === "file" || msg.message_type === "location_static" ||
+            msg.message_type === "location_live";
+
+          if (hasMedia) {
+            return mediaRendered;
+          }
+
+          // Payment cards
+          if (isPaymentReceipt && paymentReceiptData) {
+            return <ChatPaymentReceiptCard receipt={paymentReceiptData} />;
+          }
+          if (isPaymentRequest && paymentRequestData) {
+            return <ChatPaymentRequestCard request={paymentRequestData} />;
+          }
+
+          // Text content + link preview
+          return (
+            <>
+              <p className={`text-[13.5px] leading-[1.45] whitespace-pre-wrap ${blurred ? "blur-lg transition-all" : ""}`} style={{
+                color: "hsl(var(--foreground))",
+                overflowWrap: "anywhere",
+                ...(securityPolicy.antiScreenshot ? { userSelect: "none" as const, WebkitUserSelect: "none" as const } : {}),
+              }}>
+                {isMe ? msg.content : (showOriginal ? msg.content : (msg.translated_content || msg.content))}
+              </p>
+              {(() => {
+                const urlMatch = msg.content?.match(/https?:\/\/[^\s]+/);
+                if (urlMatch && !msg.attachment_url) {
+                  return <BubbleLinkPreview url={urlMatch[0]} isMe={isMe} />;
+                }
+                return null;
+              })()}
+            </>
+          );
+        })()}
 
         {/* Original text preview for translated messages */}
         {!isMe && msg.translated_content && !showOriginal && !isVoice && (
