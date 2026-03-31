@@ -1,20 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { fetchOpsDashboardData } from "@/repositories/admin-ops.repository";
+import { projectOpsDashboard } from "@/families/dashboard/dashboard.read-model";
+import { useMemo } from "react";
 
 export default function AdminOpsDashboardPage() {
   const navigate = useNavigate();
 
   const { data } = useQuery({ queryKey: ["admin-ops-dashboard"], queryFn: fetchOpsDashboardData, staleTime: 15_000 });
-  const orders = data?.orders ?? [];
-  const merchants = data?.merchants ?? [];
-  const tickets = data?.tickets ?? [];
 
-  const activeMerchants = merchants.filter((m: any) => m.is_active).length;
-  const openTickets = tickets.filter((t: any) => t.status === "open").length;
-  const activeOrders = orders.filter((o: any) => ["paid", "confirmed", "preparing", "driver_search", "driver_assigned", "on_the_way"].includes(o.status)).length;
-  const failedOrders = orders.filter((o: any) => ["cancelled", "disputed"].includes(o.status)).length;
-  const gross = orders.reduce((sum: number, o: any) => sum + Number(o.total_amount ?? 0), 0);
+  const model = useMemo(
+    () => projectOpsDashboard(data?.orders ?? [], data?.merchants ?? [], data?.tickets ?? []),
+    [data],
+  );
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
@@ -26,12 +24,9 @@ export default function AdminOpsDashboardPage() {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <Metric title="Active Merchants" value={String(activeMerchants)} />
-        <Metric title="Active Orders" value={String(activeOrders)} />
-        <Metric title="Failed Orders" value={String(failedOrders)} />
-        <Metric title="Open Tickets" value={String(openTickets)} />
-        <Metric title="Gross Volume" value={`${gross.toFixed(0)} AED`} />
-        <Metric title="Total Orders" value={String(orders.length)} />
+        {model.metrics.map((m) => (
+          <Metric key={m.title} title={m.title} value={m.value} />
+        ))}
       </div>
     </div>
   );

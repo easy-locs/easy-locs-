@@ -1,40 +1,33 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDriverLive } from "@/hooks/useDriverLive";
-import { setDriverLiveStatus } from "@/lib/driver/driverLive";
+import { projectDriverDashboard } from "@/families/dashboard/dashboard.read-model";
+import { toggleDriverOnline, toggleDriverAvailability } from "@/families/dashboard/dashboard.actions";
 import { ArrowLeft, Navigation, Power, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { useMemo } from "react";
 
 export default function DriverDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile, refetch } = useDriverLive(user?.id);
 
-  const online = !!profile?.is_online;
-  const available = !!profile?.is_available;
+  const model = useMemo(() => projectDriverDashboard(profile), [profile]);
 
-  const toggleOnline = async () => {
+  const handleToggleOnline = async () => {
     if (!user?.id) return;
     try {
-      await setDriverLiveStatus({
-        userId: user.id,
-        isOnline: !online,
-        currentStatus: !online ? "online" : "offline",
-      });
+      await toggleDriverOnline(user.id, model.isOnline);
       refetch();
     } catch (err: any) {
       toast.error(err.message || "Could not update online status");
     }
   };
 
-  const toggleAvailable = async () => {
+  const handleToggleAvailable = async () => {
     if (!user?.id) return;
     try {
-      await setDriverLiveStatus({
-        userId: user.id,
-        isAvailable: !available,
-        currentStatus: !available ? "available" : "busy",
-      });
+      await toggleDriverAvailability(user.id, model.isAvailable);
       refetch();
     } catch (err: any) {
       toast.error(err.message || "Could not update availability");
@@ -62,12 +55,12 @@ export default function DriverDashboardPage() {
               <span className="text-sm font-semibold text-foreground">Online</span>
             </div>
             <button
-              onClick={toggleOnline}
+              onClick={handleToggleOnline}
               className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                online ? "bg-emerald-500/10 text-emerald-400" : "bg-muted text-muted-foreground"
+                model.isOnline ? "bg-emerald-500/10 text-emerald-400" : "bg-muted text-muted-foreground"
               }`}
             >
-              {online ? "Online" : "Offline"}
+              {model.isOnline ? "Online" : "Offline"}
             </button>
           </div>
           <div className="flex items-center justify-between">
@@ -76,12 +69,12 @@ export default function DriverDashboardPage() {
               <span className="text-sm font-semibold text-foreground">Availability</span>
             </div>
             <button
-              onClick={toggleAvailable}
+              onClick={handleToggleAvailable}
               className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                available ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                model.isAvailable ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
               }`}
             >
-              {available ? "Available" : "Busy"}
+              {model.isAvailable ? "Available" : "Busy"}
             </button>
           </div>
         </div>
@@ -90,7 +83,7 @@ export default function DriverDashboardPage() {
         <div className="rounded-2xl border border-border/20 bg-card p-4">
           <p className="text-sm font-bold text-foreground">Profile Status</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            current: {(profile as any)?.current_status || "unknown"}
+            current: {model.currentStatus}
           </p>
         </div>
 
