@@ -2,6 +2,7 @@
  * MessageList — Memoized message list with isolated render boundaries.
  * Hot-path optimized: filters memoized, callbacks stable, rows isolated.
  * Each message is wrapped in OrbitMessageInteractiveWrapper for gestures + selection.
+ * Identity resolution uses CANONICAL resolvers — no inline sender checks.
  */
 import { forwardRef, memo, useMemo, useCallback } from "react";
 import { MessageCircle } from "lucide-react";
@@ -13,6 +14,7 @@ import MessageCardRenderer from "@/components/communication/MessageCardRenderer"
 import OrbitMessageInteractiveWrapper from "@/components/orbit/OrbitMessageInteractiveWrapper";
 import { useOrbitSelectionStore } from "@/stores/orbit/selection.store";
 import { resolveMessageMode } from "@/families/messages/message-mode";
+import { isOutgoingMessage, isConsecutiveMessage, isSystemMessage } from "@/domains/orbit/resolvers";
 import type { ChatMessage } from "../types";
 
 interface Props {
@@ -59,13 +61,13 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
   const filtered = useMemo(() => {
     return messages.filter(msg => {
       if (hiddenMsgIds.has(msg.id)) return false;
-      if ((msg as any).deleted_for_sender && msg.sender_id === userId) return false;
+      if ((msg as any).deleted_for_sender && isOutgoingMessage(msg, userId)) return false;
       if (userId && ((msg as any).deleted_for_user_ids as string[] | null)?.includes(userId)) return false;
       return true;
     });
   }, [messages, hiddenMsgIds, userId]);
 
-  // Precompute date labels once per filtered set
+  // Precompute date labels once per filtered set — uses canonical resolvers
   const rowData = useMemo(() => {
     let lastDateStr = "";
     return filtered.map((msg, idx) => {
@@ -76,15 +78,10 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
       const dateLabel = showDateSep
         ? (isToday(msgDate) ? "Today" : isYesterday(msgDate) ? "Yesterday" : format(msgDate, "dd/MM/yyyy"))
         : "";
-      const isMe = msg.sender_id === userId;
+      const isMe = isOutgoingMessage(msg, userId);
       const prevMsg = idx > 0 ? filtered[idx - 1] : null;
-      const isConsecutive = !!(prevMsg
-        && prevMsg.sender_id === msg.sender_id
-        && !showDateSep
-        && prevMsg.message_type !== "system"
-        && msg.message_type !== "system"
-        && (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime()) < 120000);
-      return { msg, showDateSep, dateLabel, isMe, isConsecutive };
+      const consecutive = !showDateSep && isConsecutiveMessage(msg, prevMsg);
+      return { msg, showDateSep, dateLabel, isMe, isConsecutive: consecutive };
     });
   }, [filtered, userId]);
 
