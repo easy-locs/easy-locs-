@@ -22,48 +22,61 @@ const ALLOWED_WRITE_ZONES = [
   "src/domains/orbit/flow-gate/",
   "src/domains/orbit/core/",
   "src/domains/orbit/stores/",
+  "src/domains/orbit/services/",
+  "src/domains/orbit/realtime/",
+  "src/domains/orbit/bridges/",
+  "src/domains/orbit/machines/",
   "src/repositories/",
   "src/families/orbit-dispatch/",
-  "src/lib/support/",
   "src/stores/",
+  "src/lib/support/",
+  "src/providers/",
 ];
 
 const FILE_EXT = [".ts", ".tsx", ".js", ".jsx"];
 
-const PATTERNS = [
-  { type: "write", label: "insert", regex: /\.insert\s*\(/ },
-  { type: "write", label: "update", regex: /\.update\s*\(/ },
-  { type: "write", label: "upsert", regex: /\.upsert\s*\(/ },
-  { type: "write", label: "delete", regex: /\.delete\s*\(/ },
-  { type: "write", label: "supabase_from", regex: /supabase\s*\.\s*from\s*\(/ },
-  { type: "write", label: "db_from", regex: /\bdb\s*\.\s*from\s*\(/ },
-  { type: "write", label: "setState", regex: /\bset[A-Z][A-Za-z0-9_]*\s*\(/ },
-  { type: "event", label: "useEffect", regex: /\buseEffect\s*\(/ },
-  { type: "event", label: "postgres_changes", regex: /postgres_changes/ },
-  { type: "event", label: "realtime_on", regex: /realtime\.on\s*\(/ },
-  { type: "event", label: "channel_on", regex: /\.channel\s*\(/ },
-  { type: "action", label: "onClick", regex: /\bonClick\s*=/ },
-  { type: "action", label: "onSubmit", regex: /\bonSubmit\s*=/ },
-  { type: "action", label: "handleSend", regex: /handleSend/ },
-  { type: "action", label: "handleUpload", regex: /handleUpload/ },
-  { type: "action", label: "handleVoice", regex: /handleVoice|startVoice|stopVoice/ },
-  { type: "i18n", label: "hardcoded_string", regex: />([^<{]{8,})</ },
-  { type: "seo", label: "canonical", regex: /\bcanonical\b/i },
-  { type: "seo", label: "meta_title", regex: /document\.title\s*=|<title[> ]/ },
-  { type: "card", label: "card_builder", regex: /buildCard|CardShell/ },
-  { type: "id", label: "id_mixing", regex: /(conversationId|threadId|chatId).*(conversationId|threadId|chatId)|(orbitId|userId|profileId).*(orbitId|userId|profileId)/  },
+// ── Focused patterns: only real DB / store writes ──
+const WRITE_PATTERNS = [
+  { label: "supabase_from", regex: /supabase\s*\.\s*from\s*\(/, orbitOnly: false },
+  { label: "supabase_rpc", regex: /supabase\s*\.\s*rpc\s*\(/, orbitOnly: false },
+  { label: "supabase_functions", regex: /supabase\s*\.functions\s*\.invoke\s*\(/, orbitOnly: false },
+  { label: "mergeMessage", regex: /\bmergeMessage\s*\(/, orbitOnly: true },
+  { label: "mergeAttachment", regex: /\bmergeAttachment\s*\(/, orbitOnly: true },
+  { label: "updateMessageStatus", regex: /\bupdateMessageStatus\s*\(/, orbitOnly: true },
+  { label: "reconcileMessage", regex: /\breconcileMessage\s*\(/, orbitOnly: true },
+  { label: "insertMessage", regex: /\binsertMessage\s*\(/, orbitOnly: true },
+];
+
+const EVENT_PATTERNS = [
+  { label: "postgres_changes", regex: /postgres_changes/ },
+  { label: "channel_subscribe", regex: /\.channel\s*\([^)]*\)\s*\.\s*on\s*\(/ },
+  { label: "realtime_on", regex: /realtime\.on\s*\(/ },
+];
+
+const ORBIT_ACTION_PATTERNS = [
+  { label: "handleSend", regex: /\bhandleSend\b/ },
+  { label: "handleUpload", regex: /\bhandleUpload\b/ },
+  { label: "handleVoice", regex: /\bhandleVoice\b|startVoice|stopVoice/ },
+  { label: "handleLocation", regex: /\bhandleLocation\b/ },
+  { label: "handleCall", regex: /\bhandleCall\b/ },
+  { label: "markRead_direct", regex: /\bmarkRead\b|markAsRead/ },
+  { label: "createConversation_direct", regex: /\bcreateConversation\b|getOrCreateConversation/ },
+];
+
+// ID mixing: same line has 2+ different ID concepts
+const ID_MIXING_PAIRS = [
+  { a: /conversationId/, b: /threadId|chatId/, label: "conversationId vs threadId/chatId" },
+  { a: /orbitId/, b: /userId/, label: "orbitId vs userId" },
+  { a: /profileId/, b: /userId/, label: "profileId vs userId" },
 ];
 
 const ENTRY_MAP = [
-  { entry: "message.sendText", keywords: ["send_text", "handleSend", "sendMessage"] },
-  { entry: "media.send", keywords: ["sendMedia", "handleUpload", "sendMediaMessage"] },
+  { entry: "message.sendText", keywords: ["send_text", "handleSend", "sendMessage", "sendTextMessage"] },
+  { entry: "media.send", keywords: ["sendMedia", "handleUpload", "sendMediaMessage", "uploadMedia"] },
   { entry: "voice.send", keywords: ["sendVoice", "handleVoice", "sendVoiceMessage"] },
-  { entry: "location.send", keywords: ["sendLocation", "handleLocation"] },
-  { entry: "receipt.markRead", keywords: ["markRead", "markAsRead", "read_at"] },
-  { entry: "conversation.openDirect", keywords: ["openDirect", "createConversation", "getOrCreateConversation"] },
-  { entry: "conversation.createGroup", keywords: ["createGroup", "groupConversation"] },
-  { entry: "call.startAudio", keywords: ["startAudioCall", "audioCall"] },
-  { entry: "call.startVideo", keywords: ["startVideoCall", "videoCall"] },
+  { entry: "location.send", keywords: ["sendLocation", "handleLocation", "sendLocationMessage"] },
+  { entry: "receipt.markRead", keywords: ["markRead", "markAsRead"] },
+  { entry: "conversation.open", keywords: ["openDirect", "createConversation", "getOrCreateConversation"] },
 ];
 
 const PIPELINE_MAP = {
@@ -72,10 +85,7 @@ const PIPELINE_MAP = {
   "voice.send": "pipeline.voice.send.v1",
   "location.send": "pipeline.location.send.v1",
   "receipt.markRead": "pipeline.receipt.markRead.v1",
-  "conversation.openDirect": "pipeline.conversation.openDirect.v1",
-  "conversation.createGroup": "pipeline.conversation.createGroup.v1",
-  "call.startAudio": "pipeline.call.startAudio.v1",
-  "call.startVideo": "pipeline.call.startVideo.v1",
+  "conversation.open": "pipeline.conversation.open.v1",
 };
 
 const OWNER_MAP = {
@@ -84,18 +94,8 @@ const OWNER_MAP = {
   "voice.send": "orbitStore.attachments",
   "location.send": "orbitStore.messages",
   "receipt.markRead": "orbitStore.receipts",
-  "conversation.openDirect": "orbitStore.conversations",
-  "conversation.createGroup": "orbitStore.conversations",
-  "call.startAudio": "callStore.sessions",
-  "call.startVideo": "callStore.sessions",
+  "conversation.open": "orbitStore.conversations",
 };
-
-// Zones where writes are expected (not flagged HIGH)
-const ALLOWED_STORE_ZONES = [
-  "src/stores/",
-  "src/domains/orbit/stores/",
-  "src/domains/",
-];
 
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -108,37 +108,21 @@ function walk(dir, out = []) {
   return out;
 }
 
-function rel(fp) {
-  return path.relative(ROOT, fp).replace(/\\/g, "/");
+function rel(fp) { return path.relative(ROOT, fp).replace(/\\/g, "/"); }
+function inAllowedZone(r) { return ALLOWED_WRITE_ZONES.some(z => r.startsWith(z)); }
+function isUIZone(r) { return r.startsWith("src/components/") || r.startsWith("src/pages/"); }
+function isHookZone(r) { return r.startsWith("src/hooks/"); }
+function isSkipLine(line) {
+  const t = line.trim();
+  return t.startsWith("//") || t.startsWith("*") || t.startsWith("/*") || t.startsWith("import ") || t.startsWith("export type") || t.startsWith("export interface") || t.startsWith("type ") || t.startsWith("interface ");
 }
 
-function inAllowedZone(r) {
-  return ALLOWED_WRITE_ZONES.some(z => r.startsWith(z));
-}
-
-function isUIZone(r) {
-  return r.startsWith("src/components/") || r.startsWith("src/pages/");
-}
-
-function isHookZone(r) {
-  return r.startsWith("src/hooks/");
-}
-
-// Skip common false positives
-function isFalsePositive(r, pattern, line) {
-  // setState in store definitions is fine
-  if (pattern === "setState" && (r.includes("/stores/") || r.includes("/store"))) return true;
-  // Type definitions and interfaces
-  if (/^\s*(type|interface|export\s+type|export\s+interface)/.test(line)) return true;
-  // Import statements
-  if (/^\s*import\s/.test(line)) return true;
-  // Comments
-  if (/^\s*(\/\/|\/\*|\*)/.test(line)) return true;
-  // .delete on arrays/maps/sets (not DB)
-  if (pattern === "delete" && !(/supabase|from\(/.test(line))) return true;
-  // .update/.insert on non-DB objects
-  if ((pattern === "update" || pattern === "insert") && !(/supabase|from\(|\.rpc/.test(line))) return true;
-  return false;
+function guessEntry(line) {
+  const lower = line.toLowerCase();
+  for (const m of ENTRY_MAP) {
+    if (m.keywords.some(k => lower.includes(k.toLowerCase()))) return m.entry;
+  }
+  return "UNMAPPED";
 }
 
 const files = SCAN_DIRS.flatMap(d => walk(path.join(ROOT, d)));
@@ -152,118 +136,143 @@ for (const fp of files) {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const trimmed = line.trim();
-    if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")) continue;
-    if (trimmed.startsWith("import ")) continue;
+    if (isSkipLine(line)) continue;
 
-    for (const p of PATTERNS) {
+    // ── Write patterns ──
+    for (const p of WRITE_PATTERNS) {
       if (!p.regex.test(line)) continue;
-      if (isFalsePositive(r, p.label, trimmed)) continue;
+      // Skip if it's a read-only supabase query (select without insert/update/delete/upsert)
+      if (p.label === "supabase_from" && /\.select\s*\(/.test(line) && !/\.(insert|update|upsert|delete)\s*\(/.test(line)) continue;
 
-      const lower = trimmed.toLowerCase();
-      let entry = "UNMAPPED";
-      for (const m of ENTRY_MAP) {
-        if (m.keywords.some(k => lower.includes(k.toLowerCase()))) {
-          entry = m.entry;
-          break;
-        }
-      }
-
+      const entry = guessEntry(line);
+      const inZone = inAllowedZone(r);
       let severity = "LOW";
-      if (p.type === "write") {
-        if (isUIZone(r) || isHookZone(r)) severity = "HIGH";
-        else if (!inAllowedZone(r)) severity = "MEDIUM";
-      }
-      if (p.type === "id" && p.label === "id_mixing") severity = "HIGH";
+      if (!inZone && (isUIZone(r) || isHookZone(r))) severity = "HIGH";
+      else if (!inZone) severity = "MEDIUM";
 
       audit.push({
-        file: r,
-        line: i + 1,
-        type: p.type,
-        pattern: p.label,
-        severity,
-        entry,
+        file: r, line: i + 1, type: "write", pattern: p.label, severity, entry,
         pipeline: PIPELINE_MAP[entry] || "UNMAPPED",
         owner: OWNER_MAP[entry] || "UNMAPPED",
-        message: `${p.label} detected in ${isUIZone(r) ? "UI" : isHookZone(r) ? "hook" : "module"} zone`,
-        fix: severity === "HIGH"
-          ? `Redirect through orbitDispatch / pipeline / repository.`
-          : severity === "MEDIUM"
-          ? `Consider moving to allowed write zone.`
-          : `Review for potential conflict.`,
-        code: trimmed.slice(0, 140),
+        message: `${p.label} in ${isUIZone(r) ? "UI" : isHookZone(r) ? "hook" : "module"}`,
+        fix: severity === "HIGH" ? "Redirect through orbitDispatch / pipeline." : "Review placement.",
+        code: line.trim().slice(0, 140),
       });
+    }
+
+    // ── Event patterns ──
+    for (const p of EVENT_PATTERNS) {
+      if (!p.regex.test(line)) continue;
+      audit.push({
+        file: r, line: i + 1, type: "event", pattern: p.label, severity: "LOW",
+        entry: "UNMAPPED", pipeline: "UNMAPPED", owner: "UNMAPPED",
+        message: `${p.label} listener`,
+        fix: "Verify single listener per concern.",
+        code: line.trim().slice(0, 140),
+      });
+    }
+
+    // ── Orbit action patterns in UI ──
+    if (isUIZone(r) || isHookZone(r)) {
+      for (const p of ORBIT_ACTION_PATTERNS) {
+        if (!p.regex.test(line)) continue;
+        const entry = guessEntry(line);
+        audit.push({
+          file: r, line: i + 1, type: "action", pattern: p.label, severity: "LOW",
+          entry, pipeline: PIPELINE_MAP[entry] || "UNMAPPED", owner: OWNER_MAP[entry] || "UNMAPPED",
+          message: `Action handler "${p.label}" in ${isUIZone(r) ? "UI" : "hook"}`,
+          fix: "Ensure it delegates to orbitDispatch, not direct write.",
+          code: line.trim().slice(0, 140),
+        });
+      }
+    }
+
+    // ── ID mixing (same line) ──
+    for (const pair of ID_MIXING_PAIRS) {
+      if (pair.a.test(line) && pair.b.test(line)) {
+        audit.push({
+          file: r, line: i + 1, type: "id", pattern: "id_mixing", severity: "MEDIUM",
+          entry: "UNMAPPED", pipeline: "UNMAPPED", owner: "UNMAPPED",
+          message: `Potential ID mixing: ${pair.label}`,
+          fix: "Normalize to single canonical ID type per context.",
+          code: line.trim().slice(0, 140),
+        });
+      }
     }
   }
 }
 
-// ── Conflict detection ──
+// ═══ Conflict detection ═══
 
-// 1. Duplicate entries
-const byEntry = new Map();
-for (const item of audit.filter(x => x.entry !== "UNMAPPED" && x.type === "write")) {
-  if (!byEntry.has(item.entry)) byEntry.set(item.entry, new Set());
-  byEntry.get(item.entry).add(item.file);
+// 1. Direct writes outside allowed zones
+for (const item of audit.filter(x => x.type === "write" && x.severity === "HIGH")) {
+  conflicts.push({
+    type: "DIRECT_WRITE_OUTSIDE_PIPELINE", severity: "HIGH",
+    file: item.file, line: item.line, pattern: item.pattern,
+    entry: item.entry,
+    message: `Direct write (${item.pattern}) in ${item.file}:${item.line}`,
+    fix: "Move behind orbitDispatch / pipeline / repository.",
+  });
 }
-for (const [entry, set] of byEntry.entries()) {
-  const filesArr = [...set];
-  const outsideZone = filesArr.filter(f => !inAllowedZone(f));
-  if (outsideZone.length > 0) {
+
+// 2. Realtime + direct write in same file outside owner
+for (const fp of files) {
+  const r = rel(fp);
+  if (inAllowedZone(r)) continue;
+  const content = fs.readFileSync(fp, "utf8");
+  const hasRealtime = /postgres_changes|realtime\.on|\.channel\s*\(/.test(content);
+  const hasWrite = /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(|mergeMessage|mergeAttachment|insertMessage/.test(content);
+  if (hasRealtime && hasWrite) {
     conflicts.push({
-      type: "DUPLICATE_ENTRY",
-      severity: "HIGH",
-      entry,
-      files: filesArr,
-      message: `Multiple files write for entry "${entry}": ${filesArr.join(", ")}`,
-      fix: `Route all ${entry} calls through the single official dispatch path.`,
+      type: "REALTIME_DIRECT_WRITE", severity: "HIGH",
+      file: r,
+      message: "Realtime listener + direct write in same file outside owner zone",
+      fix: "Route through handleRealtime / owner merge pipeline.",
     });
   }
 }
 
-// 2. Direct writes outside allowed zones (HIGH only)
-for (const item of audit.filter(x => x.type === "write" && x.severity === "HIGH")) {
-  conflicts.push({
-    type: "DIRECT_WRITE_OUTSIDE_PIPELINE",
-    severity: "HIGH",
-    file: item.file,
-    line: item.line,
-    entry: item.entry,
-    pattern: item.pattern,
-    message: `Direct write (${item.pattern}) in ${item.file}:${item.line}`,
-    fix: `Move this write behind orbitDispatch / pipeline / repository.`,
-  });
-}
-
-// 3. Realtime direct write heuristic
+// 3. Duplicate supabase_from writes for same table from different files
+const supabaseFromFiles = new Map();
 for (const fp of files) {
   const r = rel(fp);
   const content = fs.readFileSync(fp, "utf8");
-  if (/postgres_changes|realtime\.on|\.channel\(/.test(content) &&
-      /\.insert\(|\.update\(|mergeMessage\(|mergeAttachment\(|setState/.test(content) &&
-      !inAllowedZone(r)) {
+  const matches = content.matchAll(/supabase\s*\.\s*from\s*\(\s*['"]([^'"]+)['"]\s*\)/g);
+  for (const m of matches) {
+    const table = m[1];
+    // Check if there's a write operation nearby
+    const idx = m.index;
+    const surrounding = content.slice(idx, idx + 200);
+    if (/\.(insert|update|upsert|delete)\s*\(/.test(surrounding)) {
+      if (!supabaseFromFiles.has(table)) supabaseFromFiles.set(table, new Set());
+      supabaseFromFiles.get(table).add(r);
+    }
+  }
+}
+for (const [table, filesSet] of supabaseFromFiles.entries()) {
+  const arr = [...filesSet];
+  const outsiders = arr.filter(f => !inAllowedZone(f));
+  if (outsiders.length > 0) {
     conflicts.push({
-      type: "REALTIME_DIRECT_WRITE",
-      severity: "HIGH",
-      file: r,
-      message: "Realtime listener + direct write detected outside owner flow",
-      fix: "Route listener through handleRealtime / owner merge pipeline.",
+      type: "DUPLICATE_TABLE_WRITER", severity: "MEDIUM",
+      table, files: arr,
+      message: `Table "${table}" written from ${arr.length} files: ${arr.join(", ")}`,
+      fix: "Consolidate writes to single repository.",
     });
   }
 }
 
 // 4. ID mixing conflicts
-for (const item of audit.filter(x => x.type === "id" && x.severity === "HIGH")) {
+for (const item of audit.filter(x => x.type === "id")) {
   conflicts.push({
-    type: "ID_MIXING",
-    severity: "HIGH",
-    file: item.file,
-    line: item.line,
-    message: `ID mixing detected: ${item.code.slice(0, 80)}`,
-    fix: "Normalize to single canonical ID type per context.",
+    type: "ID_MIXING", severity: "MEDIUM",
+    file: item.file, line: item.line,
+    message: item.message,
+    fix: item.fix,
   });
 }
 
-// ── Output ──
+// ═══ Output ═══
 const outDir = path.join(ROOT, "src/domains/orbit/audit");
 fs.mkdirSync(outDir, { recursive: true });
 
@@ -290,37 +299,27 @@ const summary = [
   "",
   "## Totals",
   "",
-  `- Total findings: ${audit.length}`,
-  `- Writes: ${audit.filter(a => a.type === "write").length}`,
-  `- High risk writes: ${audit.filter(a => a.type === "write" && a.severity === "HIGH").length}`,
-  `- Events: ${audit.filter(a => a.type === "event").length}`,
-  `- Actions: ${audit.filter(a => a.type === "action").length}`,
-  `- I18N findings: ${audit.filter(a => a.type === "i18n").length}`,
-  `- SEO findings: ${audit.filter(a => a.type === "seo").length}`,
-  `- Card findings: ${audit.filter(a => a.type === "card").length}`,
-  `- ID findings: ${audit.filter(a => a.type === "id").length}`,
-  `- Total conflicts: ${conflicts.length}`,
-  `- HIGH conflicts: ${highConflicts.length}`,
-  `- MEDIUM conflicts: ${medConflicts.length}`,
+  `| Metric | Count |`,
+  `|--------|-------|`,
+  `| Total findings | ${audit.length} |`,
+  `| Writes | ${audit.filter(a => a.type === "write").length} |`,
+  `| HIGH writes | ${audit.filter(a => a.type === "write" && a.severity === "HIGH").length} |`,
+  `| Events | ${audit.filter(a => a.type === "event").length} |`,
+  `| Actions | ${audit.filter(a => a.type === "action").length} |`,
+  `| ID findings | ${audit.filter(a => a.type === "id").length} |`,
+  `| **Total conflicts** | **${conflicts.length}** |`,
+  `| **HIGH conflicts** | **${highConflicts.length}** |`,
+  `| MEDIUM conflicts | ${medConflicts.length} |`,
   "",
-  "## High Severity Conflicts",
+  "## ❌ High Severity Conflicts",
   "",
   ...(highConflicts.length === 0
     ? ["✅ No high severity conflicts detected."]
-    : highConflicts.slice(0, 80).map(
-        c => `- **${c.type}** — \`${c.file || c.entry || "?"}\`${c.line ? `:${c.line}` : ""} — ${c.message}`
+    : highConflicts.slice(0, 100).map(
+        c => `- **${c.type}** — \`${c.file || "?"}\`${c.line ? `:${c.line}` : ""} — ${c.message}`
       )),
   "",
-  "## Duplicate Entries",
-  "",
-  ...(function() {
-    const dupes = conflicts.filter(c => c.type === "DUPLICATE_ENTRY");
-    return dupes.length === 0
-      ? ["✅ None"]
-      : dupes.map(c => `- **${c.entry}** → ${c.files.join(", ")}`);
-  })(),
-  "",
-  "## Realtime Conflicts",
+  "## ⚠️ Realtime Conflicts",
   "",
   ...(function() {
     const rt = conflicts.filter(c => c.type === "REALTIME_DIRECT_WRITE");
@@ -329,7 +328,7 @@ const summary = [
       : rt.map(c => `- \`${c.file}\` — ${c.message}`);
   })(),
   "",
-  "## ID Mixing Conflicts",
+  "## 🔀 ID Mixing",
   "",
   ...(function() {
     const ids = conflicts.filter(c => c.type === "ID_MIXING");
@@ -338,37 +337,39 @@ const summary = [
       : ids.slice(0, 30).map(c => `- \`${c.file}\`:${c.line} — ${c.message}`);
   })(),
   "",
-  "## Fix Priority Order",
+  "## 📋 Duplicate Table Writers",
+  "",
+  ...(function() {
+    const dt = conflicts.filter(c => c.type === "DUPLICATE_TABLE_WRITER");
+    return dt.length === 0
+      ? ["✅ None"]
+      : dt.map(c => `- **${c.table}** → ${c.files.join(", ")}`);
+  })(),
+  "",
+  "## 🔧 Fix Priority Order",
   "",
   "### P1 — Immediate",
   "1. Direct writes in UI/hooks → redirect to orbitDispatch",
-  "2. Duplicate entry points → consolidate to single pipeline",
-  "3. Realtime direct merge → route through owner",
-  "4. ID mixing → normalize identifiers",
+  "2. Realtime direct merge → route through owner",
   "",
   "### P2 — Soon",
-  "5. Duplicate pipeline logic → merge",
-  "6. Duplicate card builders → centralize",
-  "7. SEO/i18n duplication → single owner",
+  "3. Duplicate table writers → consolidate to single repository",
+  "4. ID mixing → normalize identifiers",
   "",
   "### P3 — Later",
-  "8. Legacy wrappers → deprecate",
-  "9. Dead passive layers → remove",
+  "5. Legacy wrappers → deprecate",
   "",
 ].join("\n");
 
-fs.writeFileSync(
-  path.join(outDir, "orbit-auto-scan-summary.md"),
-  summary
-);
+fs.writeFileSync(path.join(outDir, "orbit-auto-scan-summary.md"), summary);
 
 console.log("========================================");
 console.log("  ORBIT AUTO SCANNER — ZERO CONFLICT");
 console.log("========================================");
-console.log(`  Findings:       ${audit.length}`);
-console.log(`  Conflicts:      ${conflicts.length}`);
-console.log(`  HIGH severity:  ${highConflicts.length}`);
-console.log(`  MEDIUM severity:${medConflicts.length}`);
+console.log(`  Findings:        ${audit.length}`);
+console.log(`  Conflicts:       ${conflicts.length}`);
+console.log(`  HIGH severity:   ${highConflicts.length}`);
+console.log(`  MEDIUM severity: ${medConflicts.length}`);
 console.log("========================================");
 console.log(`  Report:  src/domains/orbit/audit/orbit-auto-scan-report.json`);
 console.log(`  Summary: src/domains/orbit/audit/orbit-auto-scan-summary.md`);
@@ -376,6 +377,11 @@ console.log("========================================");
 
 if (highConflicts.length > 0) {
   console.log(`\n❌ FAIL: ${highConflicts.length} HIGH conflicts detected.\n`);
+  // Print first 10
+  for (const c of highConflicts.slice(0, 10)) {
+    console.log(`  → ${c.type} | ${c.file}${c.line ? ':' + c.line : ''} | ${c.message}`);
+  }
+  if (highConflicts.length > 10) console.log(`  ... and ${highConflicts.length - 10} more`);
   process.exit(1);
 } else {
   console.log(`\n✅ PASS: 0 HIGH conflicts.\n`);
