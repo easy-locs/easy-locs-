@@ -26,7 +26,16 @@ export interface ConversationViewModel {
 export function useConversationViewModel(conversationId: string | null): ConversationViewModel | null {
   const conversation = useOrbitStore((s) => conversationId ? s.conversations[conversationId] : undefined);
   const messageIds = useOrbitStore((s) => conversationId ? s.messagesByConversation[conversationId] : undefined);
-  const messagesMap = useOrbitStore((s) => s.messages);
+  // SCOPED read: only messages referenced by this conversation's bucket — NOT the full map
+  const scopedMessages = useOrbitStore((s) => {
+    if (!conversationId) return {};
+    const ids = s.messagesByConversation[conversationId] || [];
+    const scoped: Record<string, OrbitMessage> = {};
+    for (const id of ids) {
+      if (s.messages[id]) scoped[id] = s.messages[id];
+    }
+    return scoped;
+  });
 
   return useMemo(() => {
     if (!conversationId || !conversation) return null;
