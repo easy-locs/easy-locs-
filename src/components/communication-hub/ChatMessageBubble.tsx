@@ -37,6 +37,8 @@ interface Props {
   /** @deprecated — selection mode now handled by OrbitMessageInteractiveWrapper */
   selectMode?: boolean;
   currentUserId?: string;
+  /** Conversation ID for scoped attachment resolution */
+  conversationId?: string;
   onTranslate: (msg: ChatMessage) => void;
   onContextMenu: (e: React.MouseEvent, msg: ChatMessage, isMe: boolean) => void;
   onToggleSelect?: (id: string) => void;
