@@ -5,7 +5,7 @@
 import { memo, useState } from "react";
 import { X, Download, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { BubbleProgressRing } from "./BubbleProgressRing";
+import { BubbleProgressRing } from "../BubbleProgressRing";
 
 interface Props {
   /** Local blob URL or remote URL */
