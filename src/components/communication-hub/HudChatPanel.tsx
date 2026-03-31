@@ -1,20 +1,17 @@
 /**
- * HudChatPanel — Thread Shell.
- * Thin assembly layer that composes canonical family hooks.
- * Contains NO business logic — only wiring.
+ * HudChatPanel — Thread Shell (Thin Facade).
+ * Composes canonical family hooks via micro-bridges.
+ * Contains NO business logic — only wiring + layout.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
-import { toast } from "sonner";
+import { useCallback } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { fetchPeerProfileCreatedAt } from "@/repositories/profile.repository";
+import { useI18n } from "@/lib/i18n";
+import { toast } from "sonner";
 
-// ── Canonical families ──
-import { useAuth } from "@/families/auth";
-import { useResolveAuthUserId } from "@/families/auth";
+// ── Auth / Identity ──
+import { useAuth, useResolveAuthUserId } from "@/families/auth";
 import { useOrbitIdentity } from "@/families/identity";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
 import { useOfflineMessages } from "@/hooks/useOfflineMessages";
@@ -22,13 +19,23 @@ import { usePrivacySettings } from "@/hooks/usePrivacySettings";
 
 import type { ConversationThread } from "./types";
 
-// Canonical family hooks
+// ── Canonical family hooks ──
 import { useThreadCallFamily } from "@/hooks/orbit/families/useThreadCallFamily";
 import { useThreadAttachmentFamily } from "@/hooks/orbit/families/useThreadAttachmentFamily";
 import { useThreadComposerFamily } from "@/hooks/orbit/families/useThreadComposerFamily";
 import { useThreadMessageFamily } from "@/hooks/orbit/families/useThreadMessageFamily";
 
-// Canonical UI components (presentational)
+// ── Micro-bridges ──
+import {
+  useHudSendBridge,
+  useHudComposerBridge,
+  useHudOverlayBridge,
+  useHudSelectionBridge,
+  useHudContextMenuBridge,
+  useHudMultiPhotoSendBridge,
+} from "./chat/bridges";
+
+// ── Canonical UI components ──
 import ChatHeader from "./chat/ChatHeader";
 import ChatEmptyState from "./chat/ChatEmptyState";
 import MessageList from "./chat/MessageList";
@@ -40,8 +47,6 @@ import ChatLocationPicker from "./ChatLocationPicker";
 import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import OrbitSafetyNumber from "@/components/orbit/OrbitSafetyNumber";
 import OrbitSelectionToolbar from "@/components/orbit/OrbitSelectionToolbar";
-import { useOrbitComposerStore } from "@/stores/orbit/composer.store";
-import { useOrbitSelectionStore } from "@/stores/orbit/selection.store";
 import OrbitSecurityPanel from "@/components/orbit/OrbitSecurityPanel";
 import OrbitSmartPayment, { type PaymentConfirmation } from "@/components/orbit/payments/OrbitSmartPayment";
 import { RequestMoneyModal } from "@/components/chat/RequestMoneyModal";
@@ -67,6 +72,7 @@ import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
 import { useHudConversationStatus } from "@/hooks/orbit/useHudConversationStatus";
 import { useHudBookingActions } from "@/hooks/orbit/useHudBookingActions";
 import { useHudConversationResolver } from "@/hooks/orbit/useHudConversationResolver";
+import { useOrbitComposerStore } from "@/stores/orbit/composer.store";
 
 interface Props {
   thread: ConversationThread | null;
@@ -77,6 +83,7 @@ interface Props {
 }
 
 export default function HudChatPanel({ thread, onBack, onToggleContext, onThreadUpdate }: Props) {
+  // ── Core identity ──
   const { user, orgId } = useAuth();
   const { t, locale } = useI18n();
   const myOrbitId = useOrbitIdentity()?.orbitId ?? null;
@@ -86,59 +93,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
   const security = useSecurityDialogs();
   const currentConversationId = thread?.conversationId || thread?.id || "";
-  const [showContactProfile, setShowContactProfile] = useState(false);
-  const [showMultiPhoto, setShowMultiPhoto] = useState(false);
-  const [peerProfileCreatedAt, setPeerProfileCreatedAt] = useState<string | null>(null);
-  const peerProfileCacheRef = useMemo(() => ({ lastPeerId: null as string | null }), []);
+  const composerStore = useOrbitComposerStore();
 
-  // ── Fetch peer profile created_at for "member since" (cached, error-safe) ──
-  useEffect(() => {
-    const peerId = thread?.peerUserId || null;
-    if (!peerId) { setPeerProfileCreatedAt(null); return; }
-    // Skip refetch if same peer
-    if (peerProfileCacheRef.lastPeerId === peerId) return;
-    peerProfileCacheRef.lastPeerId = peerId;
+  // ── Micro-bridges ──
+  const overlayBridge = useHudOverlayBridge(thread);
+  const selectionBridge = useHudSelectionBridge(currentConversationId);
 
-    fetchPeerProfileCreatedAt(peerId).then((createdAt) => {
-      setPeerProfileCreatedAt(createdAt);
-    });
-  }, [thread?.peerUserId]);
-
-  const contactProfileEntity = useMemo(() => {
-    if (!thread) return null;
-    return {
-      display_name: thread.name,
-      email: thread.email,
-      avatar_url: thread.avatarUrl,
-      phone: (thread as any).phone || null,
-      user_id: thread.peerUserId || null,
-      orbit_id: thread.peerOrbitId || null,
-      created_at: peerProfileCreatedAt,
-    };
-  }, [thread?.name, thread?.email, thread?.avatarUrl, thread?.peerUserId, thread?.peerOrbitId, peerProfileCreatedAt]);
-
-  // ── Sync stores to active conversation ──
-  const setActiveConversation = useOrbitComposerStore((s) => s.setActiveConversation);
-  const globalSelectionMode = useOrbitSelectionStore((s) => s.mode);
-  const globalSelectionConvId = useOrbitSelectionStore((s) => s.conversationId);
-  const clearGlobalSelection = useOrbitSelectionStore((s) => s.clearSelection);
-
-  useEffect(() => {
-    setActiveConversation(currentConversationId || null);
-    // Clear selection if switching to a different conversation
-    if (globalSelectionConvId && globalSelectionConvId !== currentConversationId) {
-      clearGlobalSelection();
-    }
-  }, [currentConversationId]);
-
-  // ── Identity resolver (canonical family) ──
+  // ── Identity resolver ──
   const resolveAuthUserId = useResolveAuthUserId(t);
-  const { resolveConversationId } = useHudConversationResolver({
-    thread,
-    myOrbitId,
-    onThreadUpdate,
-    t,
-  });
+  const { resolveConversationId } = useHudConversationResolver({ thread, myOrbitId, onThreadUpdate, t });
 
   // ── FAMILY: Messages ──
   const msgFamily = useThreadMessageFamily({
@@ -157,8 +120,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     onAfterSend: () => msgFamily.loader.loadMessages(),
   });
 
-  // ── FAMILY: Composer (store-backed draft) ──
-  const composerStore = useOrbitComposerStore();
+  // ── FAMILY: Composer ──
   const storeDraft = composerStore.getDraft(currentConversationId);
   const setStoreDraft = useCallback((v: string) => composerStore.setDraft(currentConversationId, v), [composerStore, currentConversationId]);
 
@@ -181,84 +143,55 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     thread, currentUserId: user?.id ?? null, currentOrbitId: myOrbitId,
   });
 
-  // ── FAMILY: Media Preview Send ──
+  // ── FAMILY: Media Preview ──
   const mediaPreviewSend = useMediaPreviewSend({
     conversationId: thread?.conversationId ?? null,
-    userId: user?.id,
-    myOrbitId,
+    userId: user?.id, myOrbitId,
     peerOrbitId: thread?.peerOrbitId ?? null,
-    orgId: orgId || null,
-    resolveConversationId,
+    orgId: orgId || null, resolveConversationId,
   });
 
   // ── FAMILY: Payments ──
   const payment = usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId });
 
   // ── Thread-level helpers ──
-  const { updateConversationStatus } = useHudConversationStatus(
-    thread, msgFamily.loader.setConvStatus, onThreadUpdate
-  );
-  const { handleBookingAction } = useHudBookingActions(
-    thread, orgId, user?.id, myOrbitId, onThreadUpdate
-  );
+  const { updateConversationStatus } = useHudConversationStatus(thread, msgFamily.loader.setConvStatus, onThreadUpdate);
+  const { handleBookingAction } = useHudBookingActions(thread, orgId, user?.id, myOrbitId, onThreadUpdate);
 
   // ── Short aliases ──
   const { selection, messages, loader, messageSender, messageActions, threadUi, pinnedMessage } = msgFamily;
 
-  // ── Stable callbacks (prevent rerender cascade) ──
-  const stableContextMenu = useCallback((_: any, msg: any, isMe: boolean) => {
-    selection.setContextMessage({
-      msgId: msg.id,
-      content: msg.content,
-      isMe,
-      createdAt: msg.created_at,
-      hasAudio: !!(msg as any).audio_url,
-      hasAttachment: !!msg.attachment_url,
-      senderId: msg.sender_id,
-      canModerate: false,
-      isStarred: !!(msg as any).starred,
-    });
-  }, [selection.setContextMessage]);
+  // ── Bridge: Send ──
+  const { stableHandleSend } = useHudSendBridge(currentConversationId, messageSender, messageActions);
 
-  const stableHandleSend = useCallback(async () => {
-    // ── ANTI-DOUBLE-TAP: check store lock FIRST ──
-    if (composerStore.sending[currentConversationId]) return;
+  // ── Bridge: Context menu ──
+  const { stableContextMenu } = useHudContextMenuBridge(selection.setContextMessage);
 
-    const draft = composerStore.getDraft(currentConversationId);
+  // ── Bridge: Typing ──
+  const handleTyping = useCallback(
+    () => loader.broadcastTyping(privacySettings.typingIndicators),
+    [loader.broadcastTyping, privacySettings.typingIndicators],
+  );
 
-    // ── EDIT MODE: read from composerStore (single source of truth) ──
-    const activeEdit = composerStore.edits[currentConversationId];
-    if (activeEdit) {
-      composerStore.setSending(currentConversationId, true);
-      try {
-        await messageActions.editMessage(activeEdit.messageId, draft.trim());
-        composerStore.clearAfterSend(currentConversationId);
-      } finally {
-        composerStore.setSending(currentConversationId, false);
-      }
-      return;
-    }
+  // ── Bridge: Composer props ──
+  const composerProps = useHudComposerBridge({
+    conversationId: currentConversationId,
+    compFamily, attFamily, security,
+    stableHandleSend,
+    onTyping: handleTyping,
+    onOpenMultiPhoto: () => overlayBridge.setShowMultiPhoto(true),
+  });
 
-    if (!draft.trim()) return;
+  // ── Bridge: Multi-photo send ──
+  const { handleMultiPhotoSend } = useHudMultiPhotoSendBridge(thread, orgId);
 
-    // ── LOCK + CLEAR immediately — before any async work ──
-    composerStore.setSending(currentConversationId, true);
-    composerStore.clearDraft(currentConversationId);
-    composerStore.clearReply(currentConversationId);
-
-    try {
-      await messageSender.handleSend(draft);
-    } finally {
-      composerStore.setSending(currentConversationId, false);
-    }
-  }, [messageActions, messageSender, composerStore, currentConversationId]);
-
+  // ── Early return ──
   if (!thread) return <ChatEmptyState t={t} />;
 
   return (
     <>
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
-        {/* ── HEADER FAMILY ── */}
+        {/* ── HEADER ── */}
         <ChatHeader
           thread={thread}
           convStatus={loader.convStatus}
@@ -272,13 +205,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           onShowSecurityPanel={() => security.setShowSecurityPanel(true)}
           onShowSafetyNumber={() => security.setShowSafetyNumber(true)}
           onEnterSelectMode={() => { selection.clearSelection(); }}
-          onAvatarTap={() => setShowContactProfile(true)}
+          onAvatarTap={() => overlayBridge.setShowContactProfile(true)}
           t={t}
         />
-
         <DealContextHeader dealId={thread.dealId} contextType={thread.conversationType} contextId={thread.entityId} onToggleContext={onToggleContext} />
 
-        {/* ── CALL FAMILY UI ── */}
+        {/* ── CALL UI ── */}
         <OrbitCallPermissionBanner
           mic={callFamily.devicePermissions.permissions.microphone}
           cam={callFamily.devicePermissions.permissions.camera}
@@ -316,7 +248,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           onHangup={() => void callFamily.callActions.hangupCall()}
         />
 
-        {/* ── PINNED MESSAGE ── */}
+        {/* ── PINNED ── */}
         <OrbitPinnedBanner
           pinnedBody={(pinnedMessage as any)?.content || null}
           onClick={() => {
@@ -329,7 +261,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           }}
         />
 
-        {/* ── SELECTION FAMILY UI ── */}
+        {/* ── SELECTION TOOLBAR ── */}
         {selection.selectMode && (
           <MessageMultiSelectToolbar
             selectedIds={selection.selectedMsgIds}
@@ -344,7 +276,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           />
         )}
 
-        {/* ── MESSAGE LIST FAMILY UI ── */}
+        {/* ── MESSAGE LIST ── */}
         <div className="relative flex-1 min-h-0 flex flex-col">
           {msgFamily.isLoadingMessages ? (
             <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 pb-6 space-y-4" style={{ background: "hsl(var(--hud-bg))" }}>
@@ -398,50 +330,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           </div>
         )}
 
-        {/* ── COMPOSER FAMILY UI — hidden during selection mode ── */}
-        {!selection.selectMode && globalSelectionMode !== "selecting" && (
-          <ComposerShell
-            key={currentConversationId}
-            conversationId={currentConversationId}
-            value={storeDraft}
-            sending={!!composerStore.sending[currentConversationId]}
-            uploading={attFamily.attachments.uploading}
-            voiceRecording={compFamily.voiceRecorder.recording}
-            voicePreview={compFamily.voicePreview}
-            voiceDuration={compFamily.voiceRecorder.duration}
-            onChange={(v: string) => {
-              setStoreDraft(v);
-            }}
-            onSend={stableHandleSend}
-            onTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
-            attachmentActions={{
-              onFileUpload: attFamily.attachments.handleFileUpload,
-              onCameraCapture: attFamily.attachments.handleFileUpload,
-              onLocation: () => security.setShowLocationPicker(true),
-              onViewOnce: compFamily.handleViewOnceUpload,
-              onMultiPhoto: () => setShowMultiPhoto(true),
-            }}
-            onStartVoice={compFamily.startVoice}
-            onStopVoice={compFamily.stopVoice}
-            onCancelVoice={compFamily.cancelVoice}
-            onSendVoice={compFamily.handleVoiceSend}
-            onDiscardVoice={compFamily.discardVoice}
-          />
+        {/* ── COMPOSER (hidden during selection) ── */}
+        {!selection.selectMode && selectionBridge.composerVisible && (
+          <ComposerShell key={currentConversationId} {...composerProps} />
         )}
 
-        {/* ── SELECTION TOOLBAR — replaces composer during selection ── */}
-        {globalSelectionMode === "selecting" && (
+        {/* ── SELECTION TOOLBAR (replaces composer) ── */}
+        {selectionBridge.globalSelectionMode === "selecting" && (
           <OrbitSelectionToolbar
-            onCopy={(ids) => { /* TODO: wire to message actions */ }}
-            onForward={(ids) => { /* TODO: wire to forward dialog */ }}
-            onDelete={(ids) => { ids.forEach((id) => messageActions.softDeleteMessage(id)); clearGlobalSelection(); }}
+            onCopy={(ids) => {}}
+            onForward={(ids) => {}}
+            onDelete={(ids) => { ids.forEach((id) => messageActions.softDeleteMessage(id)); selectionBridge.clearGlobalSelection(); }}
           />
         )}
 
-        <OrbitUploadQueuePreview
-          queue={attFamily.attachmentQueue.queue}
-          onRemove={attFamily.attachmentQueue.removeQueueItem}
-        />
+        <OrbitUploadQueuePreview queue={attFamily.attachmentQueue.queue} onRemove={attFamily.attachmentQueue.removeQueueItem} />
         {attFamily.attachmentQueue.queue.length > 0 && (
           <div className="px-3 py-2 flex justify-end" style={{ borderTop: "1px solid hsl(var(--border) / 0.08)" }}>
             <button
@@ -456,21 +359,17 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
 
         <input ref={attFamily.fileInputRef} type="file" multiple className="hidden" onChange={(e) => {
           const files = e.target.files;
-          if (files?.length) {
-            useMediaPreviewState.getState().openWithFiles(files);
-          }
+          if (files?.length) useMediaPreviewState.getState().openWithFiles(files);
           e.target.value = "";
         }} />
         <input ref={attFamily.cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
           const files = e.target.files;
-          if (files?.length) {
-            useMediaPreviewState.getState().openWithFiles(files);
-          }
+          if (files?.length) useMediaPreviewState.getState().openWithFiles(files);
           e.target.value = "";
         }} />
       </div>
 
-      {/* ── PAYMENT FAMILY DIALOGS ── */}
+      {/* ── PAYMENT DIALOGS ── */}
       <Sheet open={payment.paymentLinkDialog} onOpenChange={payment.setPaymentLinkDialog}>
         <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto p-0">
           <OrbitSmartPayment
@@ -488,20 +387,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
                 try {
                   await sendPaymentReceiptToThread({
                     threadId: thread.conversationId || thread.id,
-                    senderId: authUserId,
-                    orgId,
-                    transactionId: conf.txnId,
-                    amount: conf.amount,
-                    currency: conf.currency,
+                    senderId: authUserId, orgId,
+                    transactionId: conf.txnId, amount: conf.amount, currency: conf.currency,
                     recipientName: conf.recipientName || thread.name,
                     title: conf.status === "completed" ? "Payment sent" : "Payment initiated",
-                    contextType: thread.entityType,
-                    contextId: thread.entityId,
-                    tenantId: thread.tenantId,
-                    bookingId: thread.bookingId,
-                    bookingType: thread.bookingType,
-                    encrypt: e2eReady ? encrypt : undefined,
-                    peerId: e2eReady ? peerId : null,
+                    contextType: thread.entityType, contextId: thread.entityId,
+                    tenantId: thread.tenantId, bookingId: thread.bookingId, bookingType: thread.bookingType,
+                    encrypt: e2eReady ? encrypt : undefined, peerId: e2eReady ? peerId : null,
                   });
                 } catch {}
               })();
@@ -524,23 +416,17 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           try {
             await sendPaymentRequestMessageToThread({
               threadId: thread.conversationId || thread.id,
-              senderId: authUserId,
-              orgId,
-              request: req,
-              tenantId: thread.tenantId,
-              bookingId: thread.bookingId,
-              bookingType: thread.bookingType,
-              contextType: thread.entityType,
-              contextId: thread.entityId,
-              encrypt: e2eReady ? encrypt : undefined,
-              peerId: e2eReady ? peerId : null,
+              senderId: authUserId, orgId, request: req,
+              tenantId: thread.tenantId, bookingId: thread.bookingId, bookingType: thread.bookingType,
+              contextType: thread.entityType, contextId: thread.entityId,
+              encrypt: e2eReady ? encrypt : undefined, peerId: e2eReady ? peerId : null,
             });
           } catch {}
           toast.success(t("orbit.payment_request_sent") || "Payment request sent in chat");
         }}
       />
 
-      {/* ── CONTEXT MENU / FORWARD / SECURITY DIALOGS ── */}
+      {/* ── CONTEXT MENU / DIALOGS ── */}
       <MessageContextMenu
         message={selection.contextMessage}
         onClose={() => selection.setContextMessage(null)}
@@ -579,61 +465,23 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         onClose={() => { attFamily.setViewerOpen(false); attFamily.setViewerAttachment(null); }}
       />
 
-      {/* ── LOCATION VIEWER OVERLAY ── */}
       <LocationViewerOverlay />
-
-      {/* ── MEDIA PREVIEW BEFORE SEND ── */}
       <MediaPreviewSheet onSend={mediaPreviewSend.sendFromPreview} />
-
-      {/* ── FULLSCREEN MEDIA VIEWER ── */}
       <FullscreenMediaViewer />
 
-      {/* ── CONTACT PROFILE SHEET ── */}
       <ContactProfileSheet
-        open={showContactProfile}
-        onClose={() => setShowContactProfile(false)}
-        entity={contactProfileEntity}
-        onMessage={() => setShowContactProfile(false)}
-        onAudioCall={() => { setShowContactProfile(false); void callFamily.handleStartAudioCall(); }}
-        onVideoCall={() => { setShowContactProfile(false); void callFamily.handleStartVideoCall(); }}
+        open={overlayBridge.showContactProfile}
+        onClose={() => overlayBridge.setShowContactProfile(false)}
+        entity={overlayBridge.contactProfileEntity}
+        onMessage={() => overlayBridge.setShowContactProfile(false)}
+        onAudioCall={() => { overlayBridge.setShowContactProfile(false); void callFamily.handleStartAudioCall(); }}
+        onVideoCall={() => { overlayBridge.setShowContactProfile(false); void callFamily.handleStartVideoCall(); }}
       />
 
-      {/* ── MULTI PHOTO SELECT ── */}
       <MultiPhotoSelect
-        open={showMultiPhoto}
-        onClose={() => setShowMultiPhoto(false)}
-        onSend={(attachments, caption) => {
-          const sorted = [...attachments].sort((a, b) => a.order - b.order);
-          const files = sorted.map(a => a.file);
-          const convId = thread?.conversationId || thread?.id;
-          if (!convId || !files.length) return;
-
-          void (async () => {
-            const { orbitDispatch } = await import("@/families/orbit-dispatch/orbit-dispatch");
-            const { transportUploadWithPrepare } = await import("@/families/media/transport/transport-engine");
-            const { TransportPolicy } = await import("@/families/media/transport/transport-policy");
-
-            await orbitDispatch({
-              type: "send_media_batch",
-              conversationId: convId,
-              files,
-              caption: caption || undefined,
-              viewOnce: false,
-              uploadFn: async (file, _path, onProgress) => {
-                const decision = TransportPolicy.decide(file);
-                const result = await transportUploadWithPrepare(file, {
-                  pathPrefix: orgId || "orbit-media",
-                  compress: decision.shouldCompress,
-                  maxDimension: decision.maxDimension || undefined,
-                  quality: decision.quality || undefined,
-                  callbacks: { onProgress },
-                });
-                return result.publicUrl;
-              },
-              pathPrefix: orgId || "orbit-media",
-            });
-          })();
-        }}
+        open={overlayBridge.showMultiPhoto}
+        onClose={() => overlayBridge.setShowMultiPhoto(false)}
+        onSend={(attachments, caption) => handleMultiPhotoSend(attachments, caption)}
       />
     </>
   );
