@@ -4,8 +4,10 @@
  * Isolated from thread state. Mobile-safe with safe-area layout.
  */
 import { memo, useCallback, useEffect, useState } from "react";
-import { X, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Download, ChevronLeft, ChevronRight, Save } from "lucide-react";
 import { useGroupedMediaViewer } from "@/families/media/media-group";
+import { saveMediaToGallery } from "@/domains/orbit/services/gallery-save.service";
+import { toast } from "sonner";
 
 function FullscreenMediaViewerInner() {
   const { isOpen, items, currentIndex, close, next, prev, goTo } = useGroupedMediaViewer();
