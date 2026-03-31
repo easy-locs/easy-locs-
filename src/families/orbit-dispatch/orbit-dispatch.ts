@@ -167,6 +167,8 @@ export async function orbitDispatch(cmd: OrbitCommand): Promise<OrbitCommandResu
             return { ...await executeEndCall(cmd), requestId };
           case "edit_message":
             return { ...await executeEditMessage(cmd), requestId };
+          case "retry_message":
+            return { ...await executeRetryMessage(cmd), requestId };
           case "reply": {
             const ctx = await resolveContext(cmd.conversationId);
             return { ...await executeReplyMessage(ctx, cmd), requestId };
