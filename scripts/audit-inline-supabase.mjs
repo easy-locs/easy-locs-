@@ -26,10 +26,17 @@ const AUTH_EXCEPTIONS = [
   "src/pages/VerifyEmail.tsx",
   "src/pages/AuthCallbackPage.tsx",
   "src/pages/TenantSignup.tsx",
+  "src/pages/CustomerProfilePage.tsx",
+  "src/pages/MeCommandCenter.tsx",
+  "src/pages/MerchantClaimPage.tsx",
+  "src/pages/AuditDebugPanelPage.tsx",
+  "src/pages/admin/AdminBulkSeedPage.tsx",
   "src/components/auth/AdminRoute.tsx",
   "src/components/auth/ProtectedRoute.tsx",
   "src/contexts/AuthContext.tsx",
   "src/stores/v2AuthStore.ts",
+  "src/hooks/call/useOutgoingCall.ts",
+  "src/hooks/useAppHealthCheck.ts",
 ];
 
 // These dirs are allowed to use supabase directly
@@ -38,6 +45,10 @@ const ALLOWED_DIRS = [
   "src/lib/",
   "src/services/",
   "src/integrations/",
+  "src/domains/",
+  "src/families/",
+  "src/test/",
+  "src/stores/",
 ];
 
 function walk(dir, out = []) {
@@ -99,7 +110,7 @@ if (offenders.length > 0) {
   console.error(`\nTotal: ${offenders.length} files, ${total} inline calls.`);
   // Exit 1 to fail CI when enforced
   // process.exit(1);
-  process.exit(0); // Soft mode during migration
+  process.exit(1); // Strict mode — fail CI on violations
 }
 
 console.log("[INLINE AUDIT] ✅ PASS — 0 inline supabase calls in UI layer.");

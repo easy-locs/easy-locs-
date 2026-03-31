@@ -1,5 +1,13 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  probeDbHealth,
+  fetchUserOrgIds,
+  fetchOrgsByIds,
+  fetchProfileCriticalFields,
+  fetchDualRoleData,
+  markOnboardingCompleted,
+} from "@/repositories/profile.repository";
 import { logAudit } from "@/lib/audit";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import type { User, Session } from "@supabase/supabase-js";
@@ -85,14 +93,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkDbHealth = useCallback(async (traceId: string) => {
     try {
       const start = Date.now();
-      await withTimeout(
-        supabase.from("profiles").select("id").limit(1),
-        "DB_HEALTH_CHECK"
-      );
+      const isUp = await withTimeout(probeDbHealth(), "DB_HEALTH_CHECK");
       authLog("LOGIN_PROFILE_HYDRATE_RESULT", {
-        traceId, step: "DB_HEALTH", status: "UP", durationMs: Date.now() - start,
+        traceId, step: "DB_HEALTH", status: isUp ? "UP" : "DOWN", durationMs: Date.now() - start,
       });
-      return true;
+      return isUp;
     } catch {
       authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
         traceId, step: "DB_HEALTH", status: "DOWN",
@@ -104,18 +109,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // ── Critical path: minimal query for fast hydration ──
   const fetchOrgIdFast = useCallback(async (userId: string) => {
     try {
-      const { data: memberships } = await withTimeout(
-        supabase.from("org_members").select("org_id").eq("user_id", userId).limit(5),
-        "fetchOrgIdFast"
-      );
+      const orgIds = await withTimeout(fetchUserOrgIds(userId), "fetchOrgIdFast");
 
-      if (memberships && memberships.length > 0) {
+      if (orgIds.length > 0) {
         const savedOrg = (() => {
           try { return localStorage.getItem(`easylocs_active_org_${userId}`); } catch { return null; }
         })();
-        const selectedOrgId = savedOrg && memberships.some((m) => m.org_id === savedOrg) ? savedOrg : memberships[0].org_id;
+        const selectedOrgId = savedOrg && orgIds.includes(savedOrg) ? savedOrg : orgIds[0];
         setOrgId(selectedOrgId);
-        return memberships.map((m) => m.org_id);
+        return orgIds;
       } else {
         setOrgId(null);
         return [];
@@ -131,10 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchOrgDetails = useCallback(async (orgIds: string[]) => {
     if (orgIds.length === 0) { setAllOrgs([]); return; }
     try {
-      const { data: orgsData } = await withTimeout(
-        supabase.from("orgs").select("id, name").in("id", orgIds),
-        "fetchOrgDetails"
-      );
+      const orgsData = await withTimeout(fetchOrgsByIds(orgIds), "fetchOrgDetails");
       setAllOrgs((orgsData || []).map((o) => ({
         id: o.id, name: o.name || "Unnamed", country: "", currency: "EUR",
       })));
@@ -147,12 +146,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // ── Critical: profile basics only (1 query) ──
   const fetchProfileCritical = useCallback(async (userId: string) => {
     try {
-      const { data: d1, error: e1 } = await withTimeout(
-        supabase.from("profiles").select("user_type, onboarding_completed, country, currency").eq("id", userId).maybeSingle(),
-        "fetchProfileCritical"
-      );
+      const data = await withTimeout(fetchProfileCriticalFields(userId), "fetchProfileCritical");
 
-      const data = (e1 || !d1) ? null : d1;
       const ut = (data?.user_type as UserType) ?? "landlord";
       setUserType(ut);
       setUserCountry(data?.country ?? "FR");
@@ -172,18 +167,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // ── Deferred: dual-role detection + role resolution ──
   const fetchDualRoleDeferred = useCallback(async (userId: string) => {
     try {
-      const [t, o] = await Promise.all([
-        withTimeout(supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(), "fetchDualRole/tenants"),
-        withTimeout(supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(), "fetchDualRole/org_members"),
-      ]);
-      const hasOrg = !!o.data;
-      const hasTenant = !!t.data;
+      const { hasTenant, hasOrg } = await withTimeout(fetchDualRoleData(userId), "fetchDualRole");
       const dual = hasTenant && hasOrg;
       setHasDualRole(dual);
 
       if (!onboardingCompleted && (hasOrg || hasTenant)) {
         setOnboardingCompleted(true);
-        supabase.from("profiles").update({ onboarding_completed: true } as any).eq("id", userId).then(() => {});
+        markOnboardingCompleted(userId);
       }
 
       const savedRole = (() => {

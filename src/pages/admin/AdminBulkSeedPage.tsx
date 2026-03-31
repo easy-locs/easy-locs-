@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchUserFirstOrgId } from "@/repositories/profile.repository";
 import { generateAllCategorySeeds, type ShopSeed } from "@/lib/autofill/allCategorySeeder";
 import { toast } from "sonner";
 
@@ -25,14 +26,9 @@ export default function AdminBulkSeedPage() {
       return;
     }
 
-    const { data: orgMember } = await supabase
-      .from("org_members")
-      .select("org_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
+    const orgId = await fetchUserFirstOrgId(user.id);
 
-    if (!orgMember?.org_id) {
+    if (!orgId) {
       toast.error("No organization found for your account.");
       setLoading(false);
       return;
@@ -68,7 +64,7 @@ export default function AdminBulkSeedPage() {
             ranking_score: 50 + Math.floor(Math.random() * 45),
             rating: Number((3.5 + Math.random() * 1.5).toFixed(1)),
             reviews_count: Math.floor(Math.random() * 300),
-            org_id: orgMember.org_id,
+            org_id: orgId,
             user_id: user.id,
           })
           .select("id")
