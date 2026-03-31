@@ -35,6 +35,9 @@ const DOMAIN_COMPONENT_DIRS = [
   "src/components/support/",
   "src/components/rental/",
   "src/components/wallet/",
+  "src/components/pos/",
+  "src/components/public/",
+  "src/components/seller/",
 ];
 
 function walk(dir) {
