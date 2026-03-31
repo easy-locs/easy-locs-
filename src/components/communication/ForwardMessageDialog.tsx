@@ -104,11 +104,7 @@ export default function ForwardMessageDialog({
       toast.success(
         (t("chat.forwarded_to") || "Forwarded to") + " " + (selectedThread.displayName || t("chat.conversation") || "conversation")
       );
-      platformBus.emit("orbit:message_sent", {
-        conversationId: selectedThread.conversationId,
-        type: "forward",
-        originalMessageId: messageId,
-      }, "orbit", { userId });
+      // Event emission moved to pipeline — UI must not emit business events
       onClose();
     } catch (e: any) {
       console.error("[Forward] Insert failed:", e);
