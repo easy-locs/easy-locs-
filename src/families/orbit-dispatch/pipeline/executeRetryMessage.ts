@@ -2,11 +2,14 @@
  * executeRetryMessage — Canonical retry pipeline.
  *
  * RULE: Retry reuses the existing logical message. It does NOT create a duplicate.
+ * RULE: Only messages with status=failed can be retried.
+ * RULE: Preserves conversationId, message type, attachmentIds, bubble family.
  *
  * FLOW: assert status=failed → transition failed→retrying → resolve original pipeline → resend transport → sent|failed
  */
 import type { ExecutorResult } from "./pipeline-types";
 import { createTrace, enterPhase, exitPhase, completeExecutorTrace, failExecutorTrace } from "./pipeline-types";
+import type { OrbitMessage, OrbitAttachment } from "@/domains/orbit/types";
 
 export interface RetryMessageCommand {
   type: "retry_message";
@@ -31,50 +34,73 @@ export async function executeRetryMessage(
     const msg = store.messages[cmd.messageId];
 
     if (!msg) {
+      if (import.meta.env.DEV) {
+        console.error("[retryMessage] retry_blocked — message_not_found", { messageId: cmd.messageId });
+      }
       return { ok: false, error: "message_not_found", phase: "canonical" };
     }
 
     if (msg.status !== "failed") {
       if (import.meta.env.DEV) {
-        console.error("[executeRetryMessage] BLOCKED — message is not in failed state", {
+        console.error("[retryMessage] retry_blocked_invalid_status", {
           messageId: cmd.messageId, currentStatus: msg.status,
         });
       }
       return { ok: false, error: `retry_blocked_status_${msg.status}`, phase: "canonical" };
     }
 
-    const messageType = msg.type;
     if (import.meta.env.DEV) {
-      console.debug("[executeRetryMessage] Message eligible for retry", {
-        messageId: cmd.messageId, type: messageType,
+      console.debug("[retryMessage] retry_requested", {
+        messageId: cmd.messageId, type: msg.type, conversationId: msg.conversationId,
       });
     }
+    exitPhase(trace);
+
+    // ── Phase 3: Optimistic — transition failed → retrying via status machine ──
     enterPhase(trace, "optimistic");
     store.updateMessageStatus(cmd.messageId, "retrying");
 
     if (import.meta.env.DEV) {
-      console.debug("[executeRetryMessage] Transition failed→retrying", { messageId: cmd.messageId, type: messageType });
+      console.debug("[retryMessage] status_transition", {
+        messageId: cmd.messageId, from: "failed", to: "retrying",
+      });
     }
     exitPhase(trace);
 
-    // ── Phase 4: Transport — resolve and resend by original message_type ──
+    // ── Phase 4: Transport — resolve and resend by original message type ──
     enterPhase(trace, "transport");
     try {
-      await resendByType(msg);
+      // Gather attachments if media/voice
+      const attachments = msg.attachmentIds
+        .map(id => store.attachments[id])
+        .filter(Boolean) as OrbitAttachment[];
 
-      // ── Phase 5: Reconcile — mark as sent ──
+      await resendByType(msg, attachments);
+
+      if (import.meta.env.DEV) {
+        console.debug("[retryMessage] retry_pipeline_resolved", { messageId: cmd.messageId, type: msg.type });
+      }
+      exitPhase(trace);
+
+      // ── Phase 5: Reconcile — retrying → sent ──
       enterPhase(trace, "reconcile");
       useOrbitStore.getState().updateMessageStatus(cmd.messageId, "sent");
+
+      if (import.meta.env.DEV) {
+        console.debug("[retryMessage] retry_success", { messageId: cmd.messageId });
+      }
       exitPhase(trace);
 
       completeExecutorTrace(trace);
       return { ok: true, messageId: cmd.messageId };
     } catch (err: any) {
-      // Transport failed again — back to failed
+      // Transport failed again — retrying → failed
       useOrbitStore.getState().updateMessageStatus(cmd.messageId, "failed");
 
       if (import.meta.env.DEV) {
-        console.warn("[executeRetryMessage] Transport failed again", { messageId: cmd.messageId, error: err?.message });
+        console.warn("[retryMessage] retry_failed", {
+          messageId: cmd.messageId, error: err?.message,
+        });
       }
 
       failExecutorTrace(trace, err?.message || "resend_failed");
@@ -86,24 +112,92 @@ export async function executeRetryMessage(
   }
 }
 
+// ══════════════════════════════════════════════
+// TYPE-SPECIFIC RESEND HELPERS
+// ══════════════════════════════════════════════
+
 /**
- * Resolve original pipeline by message type and resend.
- * Preserves conversationId, message_type, attachmentIds, bubble family.
+ * Dispatch to the correct resend helper based on message type.
  */
-async function resendByType(msg: any): Promise<void> {
-  const { supabase } = await import("@/integrations/supabase/client");
+async function resendByType(msg: OrbitMessage, attachments: OrbitAttachment[]): Promise<void> {
+  switch (msg.type) {
+    case "text":
+      return resendTextTransport(msg);
+    case "image":
+    case "video":
+    case "file":
+      return resendMediaTransport(msg, attachments[0] || null);
+    case "voice":
+    case "audio":
+      return resendVoiceTransport(msg, attachments[0] || null);
+    case "location_static":
+    case "location_live":
+      return resendLocationTransport(msg);
+    default:
+      throw new Error(`unsupported_retry_type: ${msg.type}`);
+  }
+}
 
-  // For all message types, retry updates timestamps to trigger re-delivery
-  // The actual status is tracked in orbitStore, not in the DB column
-  const updatePayload: Record<string, unknown> = {
-    updated_at: new Date().toISOString(),
+/**
+ * Resend text — simply clear failed_at and update timestamp to trigger re-delivery.
+ */
+async function resendTextTransport(msg: OrbitMessage): Promise<void> {
+  const { updateMessageFields } = await import("@/repositories/communication.repository");
+  await updateMessageFields(msg.id, {
     failed_at: null,
-  };
+    updated_at: new Date().toISOString(),
+  });
+}
 
-  const { error } = await supabase
-    .from("chat_messages_v2")
-    .update(updatePayload)
-    .eq("id", msg.id);
+/**
+ * Resend media — if remoteUrl already exists, just clear failed state.
+ * If upload was incomplete, the attachment still has localUri to re-upload.
+ */
+async function resendMediaTransport(msg: OrbitMessage, attachment: OrbitAttachment | null): Promise<void> {
+  const { updateMessageFields } = await import("@/repositories/communication.repository");
 
-  if (error) throw error;
+  if (attachment && attachment.uploadStatus === "failed" && attachment.localUri) {
+    // Re-upload needed — update attachment status to queued so upload pipeline picks it up
+    const { useOrbitStore } = await import("@/domains/orbit/stores/orbit.store");
+    useOrbitStore.getState().updateAttachmentUpload(attachment.id, {
+      uploadStatus: "queued",
+      uploadProgress: 0,
+    });
+  }
+
+  await updateMessageFields(msg.id, {
+    failed_at: null,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+/**
+ * Resend voice — same logic as media. Voice blob may already be uploaded.
+ */
+async function resendVoiceTransport(msg: OrbitMessage, attachment: OrbitAttachment | null): Promise<void> {
+  const { updateMessageFields } = await import("@/repositories/communication.repository");
+
+  if (attachment && attachment.uploadStatus === "failed" && attachment.localUri) {
+    const { useOrbitStore } = await import("@/domains/orbit/stores/orbit.store");
+    useOrbitStore.getState().updateAttachmentUpload(attachment.id, {
+      uploadStatus: "queued",
+      uploadProgress: 0,
+    });
+  }
+
+  await updateMessageFields(msg.id, {
+    failed_at: null,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+/**
+ * Resend location — coordinates are already embedded in metadata, just resend.
+ */
+async function resendLocationTransport(msg: OrbitMessage): Promise<void> {
+  const { updateMessageFields } = await import("@/repositories/communication.repository");
+  await updateMessageFields(msg.id, {
+    failed_at: null,
+    updated_at: new Date().toISOString(),
+  });
 }
