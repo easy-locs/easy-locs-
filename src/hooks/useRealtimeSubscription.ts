@@ -60,6 +60,6 @@ export function useRealtimeSubscription({
     return () => {
       removeRealtimeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [table, channelName, filter, event, enabled]);
 }

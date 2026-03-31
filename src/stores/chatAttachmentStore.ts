@@ -22,7 +22,7 @@ type ChatAttachmentStore = {
   hydrateConversationAttachments: (conversationId: string) => Promise<void>;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const db = supabase as any;
 
 export const useChatAttachmentStore = create<ChatAttachmentStore>((set) => ({

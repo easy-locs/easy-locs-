@@ -5,7 +5,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { ConversationRecord, ChatMessageRecord } from "@/lib/types/domain";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const db = supabase as any;
 
 export const chatRepoExtended = {

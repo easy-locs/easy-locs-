@@ -5,7 +5,7 @@ import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { propagateIdentityChange } from "@/families/identity/identity-propagation";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const db = supabase as any;
 
 type AvatarStore = {

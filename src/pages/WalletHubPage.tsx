@@ -119,7 +119,7 @@ export default function WalletHubPage() {
 
   useEffect(() => {
     if (!loading && rows.length === 0 && user?.id) createDefaultWallet();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [loading, rows.length, user?.id]);
 
   const TABS: { key: WalletTab; icon: typeof Wallet; label: string }[] = [

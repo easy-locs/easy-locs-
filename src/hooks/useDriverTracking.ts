@@ -68,7 +68,7 @@ export function useDriverTracking(driverId: string | null) {
       ch.unsubscribe();
       channelRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [driverId]);
 
   return { position, connected, getInterpolated };

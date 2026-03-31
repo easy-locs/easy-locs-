@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const db = supabase as any;
 
 type ListingViewRow = {

@@ -19,7 +19,7 @@ export function useNotificationsCenter() {
     return () => {
       store.stopRealtime();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [user?.id]);
 
   return {

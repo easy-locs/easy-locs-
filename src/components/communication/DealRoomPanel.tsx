@@ -105,7 +105,7 @@ export default function DealRoomPanel({
       const dd = deal as any;
       if (dd?.status === "payment_pending") mutations.verifyPayment.mutate();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [deal?.id]);
 
   const statusConfig = dealStatus ? STATUS_CONFIG[dealStatus] : null;
