@@ -111,8 +111,8 @@ export async function sendMediaOptimistic(
     queue.bindOptimisticId(uploadId, messageData.id);
     callbacks?.onOptimisticCreated?.(messageData.id, localPreviewUrl);
 
-    // Update conversation timestamp immediately
-    await updateConversationTimestamp(ctx.conversationId, preview);
+    // Fire-and-forget: don't block send for timestamp
+    void updateConversationTimestamp(ctx.conversationId, preview).catch(() => {});
 
     platformBus.emit("orbit:message_sent", {
       conversationId: ctx.conversationId,

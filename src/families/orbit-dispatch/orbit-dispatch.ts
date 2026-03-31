@@ -71,26 +71,50 @@ function resolveEntryKey(cmd: OrbitCommand): EntryKey {
   return COMMAND_TO_ENTRY[cmd.type] || ("message.sendText" as EntryKey);
 }
 
+// ── Cached session resolver (avoid getSession() on every dispatch) ──
+let _cachedUserId: string | null = null;
+let _cacheExpiry = 0;
+const CACHE_TTL = 30_000; // 30s
+
 async function resolveCurrentUserIdFromSession(): Promise<string> {
+  const now = Date.now();
+  if (_cachedUserId && now < _cacheExpiry) return _cachedUserId;
   const { data, error } = await supabase.auth.getSession();
   if (error) throw error;
   const userId = data.session?.user?.id;
   if (!userId) throw new Error("Not authenticated");
+  _cachedUserId = userId;
+  _cacheExpiry = now + CACHE_TTL;
   return userId;
 }
 
-// ── Context resolution (ONCE per dispatch) ──
-async function resolveContext(conversationId: string): Promise<ResolvedContext> {
-  const orbit = getOrbitIdentity();
-  const senderUserId = orbit?.userId || await resolveCurrentUserIdFromSession();
+// Clear cache on auth state change
+supabase.auth.onAuthStateChange(() => {
+  _cachedUserId = null;
+  _cacheExpiry = 0;
+});
 
-  return {
+// ── Context resolution (ONCE per dispatch) ──
+function resolveContext(conversationId: string): ResolvedContext | Promise<ResolvedContext> {
+  const orbit = getOrbitIdentity();
+  // Fast path: identity already available (no await needed)
+  if (orbit?.userId) {
+    return {
+      conversationId,
+      senderUserId: orbit.userId,
+      senderOrbitId: orbit.orbitId || `orbit_${orbit.userId.slice(0, 12)}`,
+      receiverOrbitId: null,
+      orgId: null,
+    };
+  }
+  // Slow path: resolve from session (cached)
+  return resolveCurrentUserIdFromSession().then(userId => ({
     conversationId,
-    senderUserId,
-    senderOrbitId: orbit?.orbitId || `orbit_${senderUserId.slice(0, 12)}`,
+    senderUserId: userId,
+    senderOrbitId: `orbit_${userId.slice(0, 12)}`,
     receiverOrbitId: null,
     orgId: null,
-  };
+  }));
 }
 
 /**
