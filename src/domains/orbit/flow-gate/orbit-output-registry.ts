@@ -40,7 +40,8 @@ export const OrbitOutput = {
   },
 } as const;
 
-export type OrbitOutputType = typeof OrbitOutput[keyof typeof OrbitOutput][keyof any];
+type OutputValues<T> = T extends Record<string, infer V> ? V : never;
+export type OrbitOutputType = OutputValues<typeof OrbitOutput[keyof typeof OrbitOutput]>;
 
 // ── Listener system ──
 
