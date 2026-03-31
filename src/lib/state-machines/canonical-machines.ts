@@ -19,7 +19,7 @@ interface CanonicalMachineDef<S extends string> {
 
 export type MessageState = "draft" | "sending" | "sent" | "delivered" | "read" | "failed";
 
-export const MESSAGE_MACHINE: StateMachineDefinition<MessageState> = {
+export const MESSAGE_MACHINE: CanonicalMachineDef<MessageState> = {
   initial: "draft",
   states: {
     draft: { on: { SEND: "sending" } },
@@ -40,7 +40,7 @@ export type CallState =
   | "connecting" | "active" | "reconnecting"
   | "ended" | "missed" | "declined" | "failed";
 
-export const CALL_MACHINE: StateMachineDefinition<CallState> = {
+export const CALL_MACHINE: CanonicalMachineDef<CallState> = {
   initial: "idle",
   states: {
     idle: { on: { INITIATE: "calling", INCOMING: "incoming" } },
@@ -63,7 +63,7 @@ export const CALL_MACHINE: StateMachineDefinition<CallState> = {
 
 export type UploadState = "idle" | "preparing" | "uploading" | "processing" | "completed" | "failed" | "cancelled";
 
-export const UPLOAD_MACHINE: StateMachineDefinition<UploadState> = {
+export const UPLOAD_MACHINE: CanonicalMachineDef<UploadState> = {
   initial: "idle",
   states: {
     idle: { on: { START: "preparing" } },
@@ -82,7 +82,7 @@ export const UPLOAD_MACHINE: StateMachineDefinition<UploadState> = {
 
 export type ConnectionState = "disconnected" | "connecting" | "connected" | "reconnecting" | "failed";
 
-export const CONNECTION_MACHINE: StateMachineDefinition<ConnectionState> = {
+export const CONNECTION_MACHINE: CanonicalMachineDef<ConnectionState> = {
   initial: "disconnected",
   states: {
     disconnected: { on: { CONNECT: "connecting" } },
@@ -99,7 +99,7 @@ export const CONNECTION_MACHINE: StateMachineDefinition<ConnectionState> = {
 
 export type NotificationState = "pending" | "sent" | "delivered" | "read" | "dismissed" | "failed";
 
-export const NOTIFICATION_MACHINE: StateMachineDefinition<NotificationState> = {
+export const NOTIFICATION_MACHINE: CanonicalMachineDef<NotificationState> = {
   initial: "pending",
   states: {
     pending: { on: { SEND: "sent", FAIL: "failed" } },
