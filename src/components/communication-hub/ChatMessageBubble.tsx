@@ -14,6 +14,7 @@ import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
 import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
 import { useScopedMessageAttachment } from "@/domains/orbit/selectors/useScopedMessageAttachment";
 import { resolveSenderDisplay, isSystemMessage } from "@/domains/orbit/resolvers";
+import { useBubbleReadModel } from "@/domains/orbit/read-models/useBubbleReadModel";
 
 // haptic removed — gestures handled by OrbitMessageInteractiveWrapper
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
@@ -75,6 +76,9 @@ function ChatMessageBubble({
     conversationId || (rawMsg as any).conversationId || (rawMsg as any).conversation_id,
     attachmentIds,
   );
+
+  // ══ CQRS READ MODEL ══
+  const bubbleModel = useBubbleReadModel(msg, currentUserId, { name: threadName });
 
   const isSystem = isSystemMessage(msg);
   const isDeleted = !!(msg as any).deleted_for_all;
@@ -270,15 +274,12 @@ function ChatMessageBubble({
           </div>
         )}
 
-        {/* Sender name — resolved via canonical identity resolver */}
-        {!isMe && !isConsecutive && (() => {
-          const senderInfo = resolveSenderDisplay(msg, currentUserId, { name: threadName });
-          return (
-            <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
-              {senderInfo.displayName}
-            </p>
-          );
-        })()}
+        {/* Sender name — resolved via canonical read model */}
+        {!isMe && !isConsecutive && !bubbleModel.isSystem && (
+          <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
+            {bubbleModel.senderDisplay.displayName}
+          </p>
+        )}
 
         {/* Email indicator */}
         {isInboundEmail && (
