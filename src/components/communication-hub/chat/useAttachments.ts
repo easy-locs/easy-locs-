@@ -1,9 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
-import {
-  uploadToStorage, insertMessage, updateConversationTimestamp,
-} from "@/repositories/communication.repository";
+import { uploadToStorage } from "@/repositories/communication.repository";
+import { orbitDispatch } from "@/families/orbit-dispatch";
 
 type ThreadLike = {
   id: string;
@@ -132,34 +131,29 @@ export function useAttachments(params: {
 
     setUploading(true);
     try {
-      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
       const orgId = params.orgId || "orbit";
-      const path = `${orgId}/${params.thread!.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${file.name.split(".").pop() || "bin"}`;
-      
-      const finalUrl = await uploadFile(file, path);
-      if (!finalUrl) {
-        trace("attachment.storage.upload", "error", { reason: "upload_returned_null", path });
-        throw new Error("File upload failed. Please try again.");
-      }
+      const pathPrefix = `${orgId}/${params.thread!.id}`;
 
-      const content = isMedia ? `📷 ${file.name}` : `📎 ${file.name}`;
-
-      trace("attachment.message.insert", "input", { conversationId, type: isMedia ? "media" : "file", fileName: file.name });
-      await insertMessage({
+      trace("attachment.dispatch", "input", { conversationId, fileName: file.name });
+      const result = await orbitDispatch({
+        type: "send_media",
         conversationId,
-        senderUserId: authUserId,
-        senderOrbitId: params.myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-        receiverOrbitId: params.thread?.peerOrbitId ?? null,
-        type: isMedia ? "media" : "file",
-        body: content,
-        metadata: { url: finalUrl },
+        file,
+        caption: file.type.startsWith("image/") || file.type.startsWith("video/")
+          ? `📷 ${file.name}` : `📎 ${file.name}`,
+        uploadFn: async (f, p, onProgress) => {
+          onProgress(0);
+          const url = await uploadFile(f, p);
+          onProgress(100);
+          if (!url) throw new Error("Upload failed");
+          return url;
+        },
+        pathPrefix,
       });
-      trace("attachment.message.insert", "output", { conversationId, inserted: true, fileName: file.name });
-
-      await updateConversationTimestamp(conversationId, content);
-      trace("attachment.preview.update", "output", { conversationId, preview: content, threadId: params.thread?.id ?? null });
-      trace("attachment.realtime.reconcile", "output", { expectedViaRealtime: true, conversationId });
-      toast.success("File sent");
+      if (!result.ok) {
+        throw new Error(result.error || "Send failed");
+      }
+      trace("attachment.dispatch", "output", { conversationId, dispatched: true, fileName: file.name });
     } catch (e: any) {
       trace("attachment.message.insert", "error", { message: e?.message || "attachment_failed" });
       toast.error(e?.message || "Upload failed");
