@@ -221,6 +221,11 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
       const nextByConv = { ...s.messagesByConversation };
 
       for (const msg of msgs) {
+        // HARD GUARD: skip messages without conversationId
+        if (!msg.conversationId) {
+          console.error("[orbitStore.mergeMessages] REJECTED — missing conversationId", { id: msg.id });
+          continue;
+        }
         if (msg.tempId && s.tempIdMap[msg.tempId] && s.tempIdMap[msg.tempId] !== msg.id) {
           continue;
         }
