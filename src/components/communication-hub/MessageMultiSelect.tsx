@@ -6,6 +6,7 @@
  */
 import { useState } from "react";
 import { Trash2, Copy, Forward, X, EyeOff } from "lucide-react";
+import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
