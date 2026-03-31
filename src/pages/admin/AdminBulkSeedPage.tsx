@@ -27,7 +27,7 @@ export default function AdminBulkSeedPage() {
 
     const orgId = await fetchUserFirstOrgId(user.id);
 
-    if (!orgMember?.org_id) {
+    if (!orgId) {
       toast.error("No organization found for your account.");
       setLoading(false);
       return;
