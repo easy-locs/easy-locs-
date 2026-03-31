@@ -259,6 +259,30 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
     set((s) => {
       const msg = s.messages[id];
       if (!msg) return s;
+
+      // ══ STATUS MACHINE GUARD ══
+      // Inline transition check to avoid circular import; mirrors message-status.machine.ts
+      const TRANSITIONS: Record<string, string[]> = {
+        sending: ["sent", "failed"],
+        sent: ["delivered", "read"],
+        delivered: ["read"],
+        read: [],
+        failed: ["retrying"],
+        retrying: ["sent", "failed"],
+      };
+      const allowed = TRANSITIONS[msg.status] || [];
+      if (!allowed.includes(status)) {
+        if (import.meta.env.DEV) {
+          console.error("[orbitStore.updateMessageStatus] BLOCKED", {
+            id, from: msg.status, to: status,
+          });
+        }
+        return s;
+      }
+
+      if (import.meta.env.DEV) {
+        console.debug("[orbitStore.updateMessageStatus]", { id, from: msg.status, to: status });
+      }
       return { messages: { ...s.messages, [id]: { ...msg, status } } };
     }),
 
