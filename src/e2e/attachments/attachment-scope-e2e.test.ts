@@ -29,15 +29,19 @@ function makeAttachment(overrides: Partial<OrbitAttachment> & { id: string; conv
 function makeMessage(overrides: Partial<OrbitMessage> & { id: string; conversationId: string }): OrbitMessage {
   return {
     tempId: null,
-    type: "image",
-    body: "",
-    senderUserId: "user-1",
+    senderId: "user-1",
     senderOrbitId: "orbit-1",
-    status: "sent" as any,
-    createdAt: new Date().toISOString(),
+    type: "image",
+    text: null,
     attachmentIds: [],
-    metadata: {},
+    replyToId: null,
+    reactionSummary: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: null,
+    status: "sent" as any,
     isDeleted: false,
+    isEdited: false,
+    metadata: {},
     ...overrides,
   };
 }
