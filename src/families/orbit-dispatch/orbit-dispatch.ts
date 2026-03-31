@@ -42,6 +42,7 @@ import { executeDeclineCall } from "./pipeline/executeDeclineCall";
 import { executeEndCall } from "./pipeline/executeEndCall";
 import { executeEditMessage } from "./pipeline/executeEditMessage";
 import { executeReplyMessage } from "./pipeline/executeReplyMessage";
+import { executeRetryMessage } from "./pipeline/executeRetryMessage";
 
 // ── Command type → EntryKey mapping ──
 const COMMAND_TO_ENTRY: Record<string, EntryKey> = {
