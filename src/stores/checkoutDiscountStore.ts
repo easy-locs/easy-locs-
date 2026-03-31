@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { useCouponsStore } from "@/stores/couponsStore";
 
 type CheckoutDiscountStore = {
   appliedCode: string | null;
@@ -20,28 +19,12 @@ export const useCheckoutDiscountStore = create<CheckoutDiscountStore>((set) => (
   discountAmount: 0,
   finalAmount: null,
 
-  applyCoupon: ({ code, listingId, originalAmount }) => {
-    const coupon = useCouponsStore.getState().findValidCoupon(code, listingId);
-    if (!coupon) {
-      set({
-        appliedCode: null,
-        discountAmount: 0,
-        finalAmount: originalAmount,
-      });
-      return;
-    }
-
-    const discount =
-      coupon.discount_type === "flat"
-        ? Number(coupon.discount_value)
-        : (originalAmount * Number(coupon.discount_value)) / 100;
-
-    const finalAmount = Math.max(0, originalAmount - discount);
-
+  applyCoupon: ({ code, originalAmount }) => {
+    // Simplified — coupon validation to be re-implemented via repository layer
     set({
-      appliedCode: coupon.code,
-      discountAmount: discount,
-      finalAmount,
+      appliedCode: code,
+      discountAmount: 0,
+      finalAmount: originalAmount,
     });
   },
 
