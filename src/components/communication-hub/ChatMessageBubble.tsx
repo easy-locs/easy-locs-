@@ -77,6 +77,9 @@ function ChatMessageBubble({
     attachmentIds,
   );
 
+  // ══ CQRS READ MODEL ══
+  const bubbleModel = useBubbleReadModel(msg, currentUserId, { name: threadName });
+
   const isSystem = isSystemMessage(msg);
   const isDeleted = !!(msg as any).deleted_for_all;
   const isInboundEmail = msg.message_type === "inbound_email";
