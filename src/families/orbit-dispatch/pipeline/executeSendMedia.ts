@@ -55,6 +55,18 @@ export async function executeSendMedia(
     store.mergeAttachment(attachment);
     store.mergeMessage(optimistic);
     const tempId = optimistic.tempId ?? optimistic.id;
+
+    if (import.meta.env.DEV) {
+      console.debug("[executeSendMedia] Optimistic media merged", {
+        tempId,
+        conversationId: ctx.conversationId,
+        type: optimistic.type,
+        attachmentKind: attachment.kind,
+        attachmentId: attachment.id,
+        hasPreview: !!previewUrl,
+        fileSize: cmd.file.size,
+      });
+    }
     exitPhase(trace);
 
     // ── Phase 4: Background DB persist + upload (non-blocking) ──
