@@ -31,6 +31,17 @@ export {
   assertMessageStatusTransition,
   resolveNextStatus,
 } from "./message/message-status.machine";
+
+export {
+  assertPreviewBeforeUpload,
+  assertBubbleFamilyStable,
+  assertAttachmentKindStable,
+  assertSingleActiveFlow,
+  releaseFlow,
+  markLatencyStart,
+  markLatencyEnd,
+  assertConversationScoped,
+} from "./message/pipeline-assertions";
 export type { ResolveTypeInput } from "./message/resolve-canonical-type";
 
 export {

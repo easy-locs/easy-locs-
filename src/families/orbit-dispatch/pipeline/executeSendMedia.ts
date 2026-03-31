@@ -26,6 +26,10 @@ export async function executeSendMedia(
     enterPhase(trace, "intent");
     if (!cmd.file) return { ok: false, error: "no_file", phase: "intent" };
     if (!ctx.conversationId) return { ok: false, error: "no_conversation", phase: "intent" };
+    if (import.meta.env.DEV) {
+      const { markLatencyStart } = await import("@/domains/orbit/pipelines/message/pipeline-assertions");
+      markLatencyStart("tap_to_preview");
+    }
     exitPhase(trace);
 
     // ── Phase 2: Build local preview + optimistic message ──
@@ -57,14 +61,20 @@ export async function executeSendMedia(
     const tempId = optimistic.tempId ?? optimistic.id;
 
     if (import.meta.env.DEV) {
-      console.debug("[executeSendMedia] Optimistic media merged", {
-        tempId,
-        conversationId: ctx.conversationId,
-        type: optimistic.type,
-        attachmentKind: attachment.kind,
+      const { assertPreviewBeforeUpload, markLatencyEnd } = await import(
+        "@/domains/orbit/pipelines/message/pipeline-assertions"
+      );
+      assertPreviewBeforeUpload({
         attachmentId: attachment.id,
+        hasLocalUri: !!attachment.localUri,
         hasPreview: !!previewUrl,
-        fileSize: cmd.file.size,
+        uploadStatus: attachment.uploadStatus,
+      });
+      markLatencyEnd("tap_to_preview");
+      console.debug("[executeSendMedia] Optimistic media merged", {
+        tempId, conversationId: ctx.conversationId,
+        type: optimistic.type, attachmentKind: attachment.kind,
+        attachmentId: attachment.id, hasPreview: !!previewUrl, fileSize: cmd.file.size,
       });
     }
     exitPhase(trace);
