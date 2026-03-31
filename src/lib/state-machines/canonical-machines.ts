@@ -13,6 +13,20 @@ interface CanonicalMachineDef<S extends string> {
   states: Record<S, StateNode<S>>;
 }
 
+/**
+ * Attempt a state transition. Returns new state or null if transition is invalid.
+ */
+export function transition<S extends string>(
+  machine: CanonicalMachineDef<S>,
+  currentState: S,
+  event: string,
+): S | null {
+  const node = machine.states[currentState];
+  if (!node?.on) return null;
+  const next = node.on[event];
+  return next !== undefined ? next : null;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // MESSAGE STATE MACHINE
 // ═══════════════════════════════════════════════════════════════
