@@ -3,6 +3,7 @@
  * Backward-compatible with both old (messageContent/messageId) and new (message/threads) APIs.
  */
 import { useState, useEffect } from "react";
+import { getPeerUserId } from "@/domains/orbit/resolvers";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
@@ -64,7 +65,8 @@ export default function ForwardMessageDialog({
           for (const row of convRows) {
             if (row.id !== currentContextId) {
               const participants = Array.isArray(row.participants) ? row.participants : [];
-              const peerName = participants.find((p: any) => p.userId !== userId)?.displayName;
+              const peerId = getPeerUserId(participants.map((p: any) => p.userId), userId);
+              const peerName = participants.find((p: any) => p.userId === peerId)?.displayName;
               result.push({
                 id: row.id,
                 conversationId: row.id,
