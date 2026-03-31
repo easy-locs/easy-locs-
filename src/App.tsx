@@ -1,4 +1,4 @@
-// EmergencyRenderTestPage removed (Batch A purge)
+// App root — v2
 import { GlobalOverlayRenderer } from "@/components/overlays/GlobalOverlayRenderer";
 import MainBottomNav from "@/components/navigation/MainBottomNav";
 import SwipeableMain from "@/components/navigation/SwipeableMain";
