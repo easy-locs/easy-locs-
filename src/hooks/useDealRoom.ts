@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRealtimeSubscription } from "./useRealtimeSubscription";
 import { toast } from "sonner";
-import * as dealRepo from "@/repositories/deal.repository";
+import * as dealRepo from "@/repositories/deals.repository";
 
 export type DealStatus =
   | "inquiry" | "negotiation" | "offer_sent" | "counter_offer"
