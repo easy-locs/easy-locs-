@@ -99,12 +99,11 @@ function ChatMessageBubble({
   const isVoice = !isDeleted && !!(msg as any).audio_url;
   const isViewOnce = !isDeleted && !!(msg as any).view_once;
   
-  // Detect location messages (contain OSM link with coordinates)
-  const osmMatch = !isDeleted && msg.content?.match(/openstreetmap\.org\/\?mlat=([\d.-]+)&mlon=([\d.-]+)/);
-  const isLocation = !!osmMatch;
-  const locLat = osmMatch ? osmMatch[1] : null;
-  const locLng = osmMatch ? osmMatch[2] : null;
-  const locLabel = isLocation ? msg.content.split("\n")[0] : null;
+  // Detect location messages — canonical type first, fallback to OSM link
+  const isLocation = !isDeleted && (
+    msg.message_type === "location_static" || msg.message_type === "location_live" ||
+    !!msg.content?.match(/openstreetmap\.org\/\?mlat=([\d.-]+)&mlon=([\d.-]+)/)
+  );
   
   const securityPolicy = getMessagePolicy(msg);
   const hasSecurityLevel = securityPolicy.level !== "normal";
