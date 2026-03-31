@@ -5,12 +5,14 @@
  * - One subscription for messages per conversation
  * - One subscription for conversation updates per user
  * - All events pass through: normalize → dedup → merge into orbitStore
+ * - Receipt events (delivered_at/read_at updates) route through canonical receipt handler
  * - No raw data leaks to consumers
  */
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { normalizeOrbitMessage, normalizeConversation } from "@/domains/orbit/normalizers";
 import { isMessageDuplicate, markMessageSeen } from "@/lib/dedup/message-dedup";
 import { useOrbitStore } from "@/domains/orbit/stores/orbit.store";
+import { handleRealtimeReceipt } from "@/domains/orbit/pipelines/receipts/receipt-realtime.handler";
 import {
   logRealtimeEventReceived,
   logRealtimeEventDeduped,
@@ -86,12 +88,15 @@ export function subscribeConversationMessages(conversationId: string): () => voi
         const raw = payload.new;
         if (!raw?.id) return;
 
-        // Route status updates through canonical receipt handler
-        const { handleRealtimeReceipt } = require("@/domains/orbit/pipelines/receipts/receipt-realtime.handler");
+        // ══ RECEIPT ROUTING ══
+        // If this update contains delivered_at or read_at changes,
+        // route through the canonical receipt handler → status machine.
+        // The handler validates transition legality and updates store.
         if (raw.delivered_at || raw.read_at) {
           handleRealtimeReceipt(raw);
         }
 
+        // Always merge full normalized message for other field updates
         const normalized = normalizeOrbitMessage(raw);
         useOrbitStore.getState().mergeMessage(normalized);
       }
