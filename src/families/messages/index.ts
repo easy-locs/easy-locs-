@@ -4,8 +4,9 @@
  */
 
 // ── Core hooks ──
-/** @deprecated Use useOrbitDispatch() instead */
-export { useMessageSender } from "@/hooks/useMessageSender";
+/** @deprecated Use useOrbitDispatch() instead — dead export kept for compat only */
+// export { useMessageSender } from "@/hooks/useMessageSender";
+export { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
 export { useOrbitMessageActions } from "@/hooks/useOrbitMessageActions";
 export { useMessageSelection } from "@/components/communication-hub/chat/useMessageSelection";
 
