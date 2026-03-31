@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { MessageBubbleRouter } from "./chat/bubbles/MessageBubbleRouter";
 import { BubbleMetaFooter } from "./chat/BubbleMetaFooter";
 import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
+import { useScopedMessageAttachment } from "@/domains/orbit/selectors/useScopedMessageAttachment";
 
 // haptic removed — gestures handled by OrbitMessageInteractiveWrapper
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
