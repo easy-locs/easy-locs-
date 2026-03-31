@@ -1,4 +1,5 @@
 // EmergencyRenderTestPage removed (Batch A purge)
+import { GlobalOverlayRenderer } from "@/components/overlays/GlobalOverlayRenderer";
 import MainBottomNav from "@/components/navigation/MainBottomNav";
 import SwipeableMain from "@/components/navigation/SwipeableMain";
 import { Toaster } from "@/components/ui/toaster";
