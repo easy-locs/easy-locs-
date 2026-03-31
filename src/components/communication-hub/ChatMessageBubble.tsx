@@ -312,6 +312,17 @@ function ChatMessageBubble({
             <MessageBubbleRouter
               msg={msg}
               isMe={isMe}
+              attachment={scopedAttachment ? {
+                kind: scopedAttachment.kind,
+                localUri: scopedAttachment.localUri,
+                remoteUrl: scopedAttachment.remoteUrl,
+                previewDataUrl: scopedAttachment.previewDataUrl,
+                mimeType: scopedAttachment.mimeType,
+                size: scopedAttachment.size,
+                duration: scopedAttachment.duration,
+                uploadStatus: scopedAttachment.uploadStatus,
+                uploadProgress: scopedAttachment.uploadProgress,
+              } : undefined}
               currentUserId={currentUserId}
               blurred={blurred}
             />
@@ -322,7 +333,8 @@ function ChatMessageBubble({
             msg.message_type === "image" || msg.message_type === "video" ||
             msg.message_type === "voice" || msg.message_type === "audio" ||
             msg.message_type === "file" || msg.message_type === "location_static" ||
-            msg.message_type === "location_live";
+            msg.message_type === "location_live" ||
+            !!scopedAttachment;
 
           if (hasMedia) {
             return mediaRendered;
