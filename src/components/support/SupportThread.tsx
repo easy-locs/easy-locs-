@@ -4,6 +4,7 @@ import { listTicketMessages, sendTicketMessage } from "@/lib/support/supportThre
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 
 export default function SupportThread({
   ticketId,
