@@ -6,6 +6,7 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { registerSubscription } from "@/lib/realtime/subscription-registry";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
