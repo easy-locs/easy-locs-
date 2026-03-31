@@ -25,12 +25,7 @@ export default function AdminBulkSeedPage() {
       return;
     }
 
-    const { data: orgMember } = await supabase
-      .from("org_members")
-      .select("org_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
+    const orgId = await fetchUserFirstOrgId(user.id);
 
     if (!orgMember?.org_id) {
       toast.error("No organization found for your account.");
