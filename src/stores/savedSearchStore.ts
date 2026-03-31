@@ -4,7 +4,7 @@ import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import type { ListingSearchFilters } from "@/lib/types/search";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const db = supabase as any;
 
 type SavedSearchRow = {

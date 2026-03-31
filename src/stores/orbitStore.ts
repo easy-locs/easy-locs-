@@ -39,7 +39,7 @@ type OrbitStore = {
 };
 
 // Use untyped client for V2 tables not yet in auto-generated types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const db = supabase as any;
 
 export const useOrbitStore = create<OrbitStore>((set, get) => ({
