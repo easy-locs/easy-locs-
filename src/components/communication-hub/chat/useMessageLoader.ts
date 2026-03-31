@@ -206,17 +206,13 @@ export function useMessageLoader({
 
     if (readReceipts && unreadIds.length > 0) {
       trace("messages.load.render", "input", { action: "mark_read", unreadCount: unreadIds.length, conversationId });
-      db.from("chat_messages_v2")
-        .update({ read_at: new Date().toISOString() })
-        .in("id", unreadIds)
-        .then(() => onThreadUpdate(thread!.id, { unreadCount: 0 }));
-      // Clear marked_unread preference when messages are read
+      // Delegate to canonical receipt controller (single write path)
+      markConversationMessagesRead(conversationId, userId!).then(({ markedCount }) => {
+        if (markedCount > 0) onThreadUpdate(thread!.id, { unreadCount: 0 });
+      });
+      // Clear marked_unread preference
       const ctxId = thread?.entityId || thread?.id;
-      db.from("conversation_preferences")
-        .update({ marked_unread: false })
-        .eq("user_id", userId)
-        .eq("context_id", ctxId)
-        .then(() => {});
+      if (ctxId) clearMarkedUnread(userId!, ctxId);
     }
   }, [thread, userId, readReceipts, onThreadUpdate, offline, trace]);
 
