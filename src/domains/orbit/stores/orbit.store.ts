@@ -294,15 +294,25 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
         return s;
       }
 
-      // ══ BUBBLE TYPE STABILITY: type must not change ══
+      // ══ CROSS-CONVERSATION GUARD: tempId must belong to same conversation ══
       const tempMsg = s.messages[tempId];
+      if (tempMsg && tempMsg.conversationId !== serverMsg.conversationId) {
+        console.error("[orbitStore.reconcileMessage] CROSS-CONVERSATION BLOCKED", {
+          tempId,
+          tempConversationId: tempMsg.conversationId,
+          serverConversationId: serverMsg.conversationId,
+          serverId: serverMsg.id,
+        });
+        return s; // refuse — never reconcile across conversations
+      }
+
+      // ══ BUBBLE TYPE STABILITY: type must not change ══
       if (tempMsg && tempMsg.type !== serverMsg.type) {
         if (import.meta.env.DEV) {
           console.error("[orbitStore.reconcileMessage] TYPE MUTATION", {
             tempId, from: tempMsg.type, to: serverMsg.type,
           });
         }
-        // Preserve original type — never downgrade media → text
         serverMsg = { ...serverMsg, type: tempMsg.type };
       }
 
@@ -310,7 +320,7 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
       const { [tempId]: removed, ...restMessages } = s.messages;
       restMessages[serverMsg.id] = serverMsg;
 
-      // Update conversation index
+      // Update conversation index — ONLY in serverMsg.conversationId bucket
       const convMsgs = (s.messagesByConversation[serverMsg.conversationId] || [])
         .filter((id) => id !== tempId);
       if (!convMsgs.includes(serverMsg.id)) convMsgs.push(serverMsg.id);
