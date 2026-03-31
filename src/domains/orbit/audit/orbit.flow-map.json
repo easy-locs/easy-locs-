@@ -1,0 +1,5356 @@
+{
+  "generated": "2026-03-31T09:13:46.496Z",
+  "total": 535,
+  "items": [
+    {
+      "file": "src/app/app-route-registry.tsx",
+      "line": 18,
+      "code": "Failed to load {name}. <button onClick={() => window.location.reload()} className=\"underline ml-2\">Reload</button>",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/app/safe-lazy.tsx",
+      "line": 24,
+      "code": "<button onClick={() => window.location.reload()} className=\"underline ml-2\">",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/address/CanonicalAddressInput.tsx",
+      "line": 181,
+      "code": "onClick={() => selectSaved(currentLocation)}",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/app/AppRouters.tsx",
+      "line": 23,
+      "code": "Failed to load {name}. <button onClick={() => window.location.reload()} className=\"underline ml-2\">Reload</button>",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/booking/BookingDocumentsPanel.tsx",
+      "line": 35,
+      "code": "const handleUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/booking/BookingDocumentsPanel.tsx",
+      "line": 121,
+      "code": "<input type=\"file\" className=\"hidden\" multiple accept=\"image/*,.pdf,.doc,.docx\" onChange={handleUpload} disabled={upload",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication/CallCard.tsx",
+      "line": 76,
+      "code": "onClick={showCallback ? onCallback : undefined}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication/DealRoomPanel.tsx",
+      "line": 387,
+      "code": "<Button variant=\"ghost\" onClick={() => { setShowDocDialog(false); setDocFile(null); }}>Cancel</Button>",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication/DealRoomPanel.tsx",
+      "line": 388,
+      "code": "<Button onClick={() => { if (docFile) { setUploadingDoc(true); mutations.uploadDocument.mutate(docFile, { onSettled: () ",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication/VoiceRecorder.tsx",
+      "line": 139,
+      "code": "onClick={cancelRecording}",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication/VoiceRecorder.tsx",
+      "line": 166,
+      "code": "onClick={startRecording}",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/ChatLocationPicker.tsx",
+      "line": 50,
+      "code": "const handleSendCurrent = useCallback(async () => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/ChatLocationPicker.tsx",
+      "line": 72,
+      "code": "const handleSendLive = useCallback(async () => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/ChatLocationPicker.tsx",
+      "line": 114,
+      "code": "const handleSendPlace = useCallback((place: { name: string; lat: number; lng: number; address: string }) => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/CommCallsSection.tsx",
+      "line": 302,
+      "code": "onClick={loadCalls}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/CommCallsSection.tsx",
+      "line": 326,
+      "code": "const handleDeleteCall = async () => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/CommCallsSection.tsx",
+      "line": 335,
+      "code": "<SwipeableCallItem key={call.id} onDelete={handleDeleteCall}>",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/CommContactsSection.tsx",
+      "line": 64,
+      "code": "onClick={() => onMessage(contact)}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/CommContactsSection.tsx",
+      "line": 102,
+      "code": "onClick={() => { haptic(\"light\"); onCall(contact); }}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/CommContactsSection.tsx",
+      "line": 110,
+      "code": "onClick={() => { haptic(\"light\"); onVideoCall(contact); }}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/CommContactsSection.tsx",
+      "line": 241,
+      "code": "const handleCall = useCallback(async (contact: Contact, isVideo: boolean) => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/CommContactsSection.tsx",
+      "line": 400,
+      "code": "onCall={c => handleCall(c, false)}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/CommContactsSection.tsx",
+      "line": 401,
+      "code": "onVideoCall={c => handleCall(c, true)}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/HudChatPanel.tsx",
+      "line": 358,
+      "code": "onClick={() => void attFamily.handleUploadAndSendAttachments()}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/HudChatPanel.tsx",
+      "line": 358,
+      "code": "onClick={() => void attFamily.handleUploadAndSendAttachments()}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/HudConversationList.tsx",
+      "line": 106,
+      "code": "const handleDelete = useCallback((thread: ConversationThread) => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/HudConversationList.tsx",
+      "line": 241,
+      "code": "onClick={() => { trackOrbitEvent(\"orbit.conversation.opened\", { screen: \"conversation_list\", component: \"HudConversation",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/MessageContextMenu.tsx",
+      "line": 254,
+      "code": "<ActionItem icon={<Edit3 className=\"h-4 w-4\" />} label={t(\"orbit.edit_message\") || \"Edit message\"} onClick={handleStartE",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/OrbitAccountSection.tsx",
+      "line": 77,
+      "code": "<YouSmartSettingCard icon={Phone} label=\"Calls\" summary={summaries.callSummary} onClick={() => setSubPage(\"calls\")} acce",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/OrbitAccountSection.tsx",
+      "line": 82,
+      "code": "<YouSmartSettingCard icon={MessageSquare} label=\"Chat Defaults\" summary={summaries.chatDefaultsSummary} onClick={() => s",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/OrbitAccountSection.tsx",
+      "line": 84,
+      "code": "<YouSmartSettingCard icon={ImageIcon} label=\"Media\" summary={summaries.mediaSummary} onClick={() => setSubPage(\"media\")}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/OrbitAccountSection.tsx",
+      "line": 89,
+      "code": "<YouSmartSettingCard icon={MapPin} label=\"Live Location\" summary={summaries.locationSummary} onClick={() => setSubPage(\"",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/SwipeableCallItem.tsx",
+      "line": 79,
+      "code": "const handleDeleteClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/chat/ChatHeader.tsx",
+      "line": 77,
+      "code": "<button disabled={isInCall || isStartingCall} onClick={() => { trackOrbitEvent(\"orbit.call.started\", { screen: \"chat\", c",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/chat/ChatHeader.tsx",
+      "line": 81,
+      "code": "<button disabled={isInCall || isStartingCall} onClick={() => { trackOrbitEvent(\"orbit.call.started\", { screen: \"chat\", c",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/chat/bridges/useHudSendBridge.ts",
+      "line": 10,
+      "code": "messageSender: { handleSend: (text: string) => Promise<void> },",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/communication-hub/chat/bridges/useHudSendBridge.ts",
+      "line": 40,
+      "code": "await messageSender.handleSend(draft);",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/concierge/BookingDetailDrawer.tsx",
+      "line": 379,
+      "code": "<Button onClick={handleGenerateInvoice} disabled={generatingInvoice} className=\"w-full text-xs\">",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/AutomatedInvoicingEngine.tsx",
+      "line": 122,
+      "code": "<Button size=\"sm\" className=\"text-[9px] h-7\" onClick={generateBatchInvoices} disabled={generating}",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/CustomerLiveTracking.tsx",
+      "line": 246,
+      "code": "<Button size=\"sm\" className=\"h-8 w-8 p-0\" onClick={sendMessage}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/DeliveryInvoicePanel.tsx",
+      "line": 189,
+      "code": "<Button size=\"sm\" variant=\"outline\" onClick={printInvoice} className=\"text-[9px] h-7 px-2\">",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/DeliveryNotificationCenter.tsx",
+      "line": 85,
+      "code": "await (supabase as any).from(\"app_notifications\").update({ read_at: new Date().toISOString(), updated_at: new Date().toI",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/components/delivery/DeliveryNotificationCenter.tsx",
+      "line": 93,
+      "code": "await (supabase as any).from(\"app_notifications\").update({ read_at: new Date().toISOString(), updated_at: new Date().toI",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/components/delivery/DeliveryNotificationCenter.tsx",
+      "line": 195,
+      "code": "onClick={() => isNew && markRead(n.id)}",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/DeliveryNotificationHub.tsx",
+      "line": 156,
+      "code": "onClick={() => markRead(n.id)}",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/DeliverySupportBot.tsx",
+      "line": 141,
+      "code": "<button key={qa.label} onClick={() => sendMessage(qa.prompt)}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/DeliverySupportBot.tsx",
+      "line": 156,
+      "code": "<Button size=\"sm\" className=\"h-9 w-9 p-0\" onClick={() => sendMessage(input)} disabled={!input.trim() || isTyping}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/DriverOnboardingComplete.tsx",
+      "line": 99,
+      "code": "onClick={() => !uploaded && simulateUpload(field)}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/DriverOnboardingRegistration.tsx",
+      "line": 203,
+      "code": "<Button size=\"sm\" className=\"text-[9px] h-7\" onClick={() => simulateUpload(doc.key)}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/DriverOnboardingWizard.tsx",
+      "line": 270,
+      "code": "onClick={() => handleDocUpload(doc.type)}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/LiveDeliveryChat.tsx",
+      "line": 241,
+      "code": "<button onClick={() => setShowLocation(!showLocation)} className=\"p-2 rounded-lg\"",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/LiveDeliveryChat.tsx",
+      "line": 248,
+      "code": "<Button size=\"sm\" className=\"h-9 w-9 p-0\" onClick={sendMessage}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/delivery/LiveDeliveryChat.tsx",
+      "line": 258,
+      "code": "<Button size=\"sm\" className=\"w-full text-xs h-8\" onClick={shareLocation}",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/marketplace/BookingCommunicationThread.tsx",
+      "line": 102,
+      "code": "<Button key={type} size=\"sm\" variant={messageType === type ? \"default\" : \"ghost\"} onClick={() => setMessageType(type)} c",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/marketplace/BookingCommunicationThread.tsx",
+      "line": 109,
+      "code": "<Button size=\"sm\" disabled={!newMessage.trim() || sendMessage.isPending} onClick={() => sendMessage.mutate()}>",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/marketplace/BookingDetailDrawer.tsx",
+      "line": 292,
+      "code": "<Button size=\"sm\" variant=\"outline\" onClick={() => onGenerateInvoice(booking)} className=\"w-full\">",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/marketplace/BookingQuoteDialog.tsx",
+      "line": 90,
+      "code": "onClick={() => onSubmit({ quoted_price: quotedPrice, quote_message: quoteMessage })}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/marketplace/BookingsManager.tsx",
+      "line": 274,
+      "code": "<Button size=\"sm\" variant=\"outline\" onClick={() => handleInvoice(b, svc, provider)}>",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/marketplace/BookingsManager.tsx",
+      "line": 277,
+      "code": "<Button size=\"sm\" variant=\"ghost\" onClick={() => shareInvoiceEmail(b, svc, provider)} title=\"Email\">",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/marketplace/BookingsManager.tsx",
+      "line": 280,
+      "code": "<Button size=\"sm\" variant=\"ghost\" onClick={() => shareInvoiceWhatsApp(b, svc, provider)} title=\"WhatsApp\">",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/marketplace/BookingsManager.tsx",
+      "line": 283,
+      "code": "<Button size=\"sm\" variant=\"ghost\" onClick={() => shareInvoiceTelegram(b, svc, provider)} title=\"Telegram\">",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/mobility/RideCompletedCard.tsx",
+      "line": 30,
+      "code": "<Button variant=\"outline\" className=\"flex-1 rounded-xl h-11\" onClick={() => navigate(`/mobility/receipt/${jobId}`)}>",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/ContactProfileSheet.tsx",
+      "line": 115,
+      "code": "onClick={onMessage}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/ContactProfileSheet.tsx",
+      "line": 122,
+      "code": "onClick={onAudioCall}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/ContactProfileSheet.tsx",
+      "line": 129,
+      "code": "onClick={onVideoCall}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MediaPreviewSheet.tsx",
+      "line": 20,
+      "code": "const handleSend = useCallback(() => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MessageComposer.tsx",
+      "line": 63,
+      "code": "const handleSend = useCallback(() => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MessageComposer.tsx",
+      "line": 126,
+      "code": "onClick={() => { onCancelVoice?.(); haptic(\"light\"); }}",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MessageComposer.tsx",
+      "line": 137,
+      "code": "onClick={async () => { haptic(\"medium\"); await onStopVoice?.(); }}",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MessageComposer.tsx",
+      "line": 146,
+      "code": "onClick={() => { onDiscardVoice?.(); haptic(\"light\"); }}",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MessageComposer.tsx",
+      "line": 153,
+      "code": "onClick={() => DeviceAudio.playFile(voicePreview.url)}",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MessageComposer.tsx",
+      "line": 162,
+      "code": "onClick={() => { haptic(\"medium\"); onSendVoice?.(); }}",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MessageComposer.tsx",
+      "line": 195,
+      "code": "<DropdownMenuItem onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}>",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MessageComposer.tsx",
+      "line": 212,
+      "code": "<DropdownMenuItem onClick={() => { setShowAttachMenu(false); attachmentActions.onMultiPhoto!(); }}>",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MessageComposer.tsx",
+      "line": 217,
+      "code": "<DropdownMenuItem onClick={() => { setShowAttachMenu(false); attachmentActions.onLocation!(); }}>",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/MultiPhotoSelect.tsx",
+      "line": 43,
+      "code": "const handleSend = useCallback(() => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/OrbitContactsDirectory.tsx",
+      "line": 51,
+      "code": "onClick={() => onMessage(contact)}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/OrbitContactsDirectory.tsx",
+      "line": 73,
+      "code": "onClick={(e) => { e.stopPropagation(); haptic(\"light\"); onMessage(contact); }} aria-label=\"Message\">",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/OrbitContactsDirectory.tsx",
+      "line": 77,
+      "code": "onClick={(e) => { e.stopPropagation(); haptic(\"light\"); onCall(contact); }} aria-label=\"Audio call\">",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/OrbitContactsDirectory.tsx",
+      "line": 81,
+      "code": "onClick={(e) => { e.stopPropagation(); haptic(\"light\"); onVideoCall(contact); }} aria-label=\"Video call\">",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/OrbitContactsDirectory.tsx",
+      "line": 174,
+      "code": "const handleCall = useCallback(async (contact: OrbitContact) => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/OrbitContactsDirectory.tsx",
+      "line": 250,
+      "code": "onMessage={handleMessage} onCall={handleCall} onVideoCall={handleVideoCall} />",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/OrbitVoiceDraftPreview.tsx",
+      "line": 43,
+      "code": "onClick={() => audio.togglePlayPause(voiceDraft.url)}",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/composer/ComposerAttachMenu.tsx",
+      "line": 48,
+      "code": "<DropdownMenuItem onClick={() => { fileInputRef.current?.click(); setOpen(false); }}>",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/composer/ComposerAttachMenu.tsx",
+      "line": 70,
+      "code": "<DropdownMenuItem onClick={() => { setOpen(false); actions.onLocation!(); }}>",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/composer/ComposerSendButton.tsx",
+      "line": 26,
+      "code": "const handleSend = useCallback(() => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/composer/ComposerVoicePreview.tsx",
+      "line": 35,
+      "code": "onClick={() => DeviceAudio.playFile(voicePreview.url)}",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/you/YouIdentityCard.tsx",
+      "line": 76,
+      "code": "<button onClick={onEditProfile}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/you/subpages/YouCallsPage.tsx",
+      "line": 45,
+      "code": "<button key={v} onClick={() => callSettings.setDefaultAudioOutput(v)}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/you/subpages/YouCallsPage.tsx",
+      "line": 64,
+      "code": "<button key={opt.v} onClick={() => callPrivacy.setLockScreenPolicy(opt.v)}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/you/subpages/YouEditProfilePage.tsx",
+      "line": 79,
+      "code": "<button onClick={() => fileInputRef.current?.click()} disabled={uploading}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/you/subpages/YouEditProfilePage.tsx",
+      "line": 86,
+      "code": "<button onClick={() => fileInputRef.current?.click()} className=\"text-[11px] font-medium px-3 py-1 rounded-full border b",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/you/subpages/YouLocationPage.tsx",
+      "line": 25,
+      "code": "<button key={mins} onClick={() => orbitSettings.setDefaultLiveLocationDuration(mins)}",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/orbit/you/subpages/YouMediaPage.tsx",
+      "line": 35,
+      "code": "<button key={q} onClick={() => orbitSettings.setMediaQuality(q)}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/rental/RentalPaymentsTab.tsx",
+      "line": 65,
+      "code": "<button onClick={onGenerateMonthlyRentCalls} className=\"flex items-center gap-2 bg-gradient-gold text-accent-foreground ",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/rental/RentalPaymentsTab.tsx",
+      "line": 149,
+      "code": "<button onClick={() => onNotifyRentCall(p)} disabled={notifyingRentId === p.id}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/rental/RentalPaymentsTab.tsx",
+      "line": 213,
+      "code": "{!p.receipt_validated && <button onClick={() => onValidateReceipt(p.id)} className=\"text-xs text-accent hover:underline\"",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/rental/RentalPaymentsTab.tsx",
+      "line": 215,
+      "code": "<button onClick={() => onGenerateReceipt(p)} className=\"text-muted-foreground hover:text-foreground\"><Download className",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/rental/RentalTenantDetailView.tsx",
+      "line": 112,
+      "code": "<button key={tb.key} onClick={() => { setTab(tb.key); if (tb.key === \"messages\") onLoadMessages(tenant.id); }}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/rental/RentalTenantDetailView.tsx",
+      "line": 196,
+      "code": "{p.paid && !p.receipt_validated && <button onClick={() => onValidateReceipt(p.id)} className=\"text-xs text-accent hover:",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/rental/RentalTenantDetailView.tsx",
+      "line": 198,
+      "code": "{p.paid && <button onClick={() => onGenerateReceipt(p)} className=\"text-muted-foreground hover:text-foreground\"><Downloa",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/rental/RentalTenantDetailView.tsx",
+      "line": 225,
+      "code": "<button onClick={onSendMessage} className=\"bg-primary text-primary-foreground px-3 py-2 rounded-lg hover:opacity-90 tran",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/rental/TenantDocuments.tsx",
+      "line": 130,
+      "code": "const handleUpload = async (docType: string, label: string, file: File) => {",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/rental/TenantDocuments.tsx",
+      "line": 302,
+      "code": "<input type=\"file\" className=\"hidden\" accept=\"image/*,.pdf\" onChange={e => { if (e.target.files?.[0]) handleUpload(dt.ty",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/search/UnifiedSearchBar.tsx",
+      "line": 113,
+      "code": "const handleSuggestionClick = useCallback((suggestion: SearchSuggestion) => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/seasonal/PropertyPhotos.tsx",
+      "line": 23,
+      "code": "const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/seasonal/PropertyPhotos.tsx",
+      "line": 104,
+      "code": "onClick={() => fileRef.current?.click()}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/seasonal/PropertyPhotos.tsx",
+      "line": 111,
+      "code": "<input ref={fileRef} type=\"file\" accept={allowVideo ? MEDIA_ACCEPT : IMAGE_ONLY_ACCEPT} multiple onChange={handleUpload}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/seasonal/PropertyPhotos.tsx",
+      "line": 116,
+      "code": "onClick={() => fileRef.current?.click()}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/seasonal/PropertyPhotos.tsx",
+      "line": 127,
+      "code": "onClick={() => fileRef.current?.click()}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/security/AppLockScreen.tsx",
+      "line": 43,
+      "code": "const handleDelete = useCallback(() => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/settings/ProSettingsSection.tsx",
+      "line": 444,
+      "code": "onClick={() => update(\"mediaAutoDownload\", opt.value)}>",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/storefront/BulkProductManager.tsx",
+      "line": 144,
+      "code": "<Button size=\"sm\" variant=\"outline\" className=\"h-7 text-[10px]\" onClick={() => fileRef.current?.click()} disabled={impor",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/storefront/CatalogManager.tsx",
+      "line": 240,
+      "code": "onClick={() => fileRef.current?.click()}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/storefront/CatalogManager.tsx",
+      "line": 252,
+      "code": "onClick={() => fileRef.current?.click()}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/storefront/CatalogManager.tsx",
+      "line": 293,
+      "code": "onClick={() => fileRef.current?.click()}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/storefront/CustomerSupport.tsx",
+      "line": 97,
+      "code": "await (supabase as any).from(\"storefront_ticket_messages\").insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/components/storefront/CustomerSupport.tsx",
+      "line": 114,
+      "code": "await (supabase as any).from(\"storefront_ticket_messages\").insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/components/storefront/CustomerSupport.tsx",
+      "line": 200,
+      "code": "<Button size=\"sm\" className=\"h-8\" onClick={() => sendMessage.mutate()}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/storefront/DigitalProducts.tsx",
+      "line": 166,
+      "code": "onClick={() => downloadFile(myPurchase)}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/storefront/MerchantCRM.tsx",
+      "line": 232,
+      "code": "<Button size=\"sm\" variant=\"outline\" className=\"flex-1 h-7 text-[10px] gap-1\" onClick={() => onSendMessage(c)}>",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/storefront/MultiStoreManager.tsx",
+      "line": 162,
+      "code": "<Button size=\"sm\" className=\"h-8 text-xs\" onClick={() => createGroup.mutate()}",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/storefront/SmartHome.tsx",
+      "line": 81,
+      "code": "<button onClick={onLocationTap} className=\"flex min-w-0 max-w-[78%] items-center gap-2 active:scale-95 transition-transf",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/system/AppCrashBoundary.tsx",
+      "line": 30,
+      "code": "onClick={() => window.location.reload()}",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/components/tenant/SepaPaymentFlow.tsx",
+      "line": 144,
+      "code": "onClick={() => onPayStripe(rentCall.id)}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/domains/orbit/adapters/supabase.adapter.ts",
+      "line": 38,
+      "code": "await (supabase as any).from(\"conversations_v2\").upsert({",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/domains/orbit/adapters/supabase.adapter.ts",
+      "line": 88,
+      "code": "await (supabase as any).from(\"ghost_call_sessions\").upsert({",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/domains/orbit/adapters/supabase.adapter.ts",
+      "line": 99,
+      "code": "await (supabase as any).from(\"ghost_call_sessions\").update({ status }).eq(\"id\", id);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/domains/orbit/audit/runtime-conflict-report.ts",
+      "line": 54,
+      "code": "name: \"useMessageSender.handleSend\",",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/domains/orbit/controllers/receipt.controller.ts",
+      "line": 70,
+      "code": ".update({ read_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/domains/orbit/controllers/receipt.controller.ts",
+      "line": 100,
+      "code": ".update({ read_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/domains/orbit/guards/send-guard.ts",
+      "line": 52,
+      "code": "submitLocks.delete(conversationId);",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/domains/orbit/pipelines/drafts/draft.pipeline.ts",
+      "line": 12,
+      "code": "drafts.delete(conversationId);",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/domains/orbit/pipelines/drafts/draft.pipeline.ts",
+      "line": 29,
+      "code": "drafts.delete(conversationId);",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/domains/orbit/pipelines/receipts/receipt.pipeline.ts",
+      "line": 46,
+      "code": "pendingBatch.delete(conversationId);",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/families/groups/group-create.ts",
+      "line": 39,
+      "code": "const { data, error } = await db.from(\"conversations_v2\").insert({",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/hooks/orbit/families/useThreadAttachmentFamily.ts",
+      "line": 82,
+      "code": "const { handleUploadAndSendAttachments } = useHudAttachmentUpload({",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/hooks/orbit/families/useThreadAttachmentFamily.ts",
+      "line": 129,
+      "code": "handleUploadAndSendAttachments,",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/hooks/orbit/useHudAttachmentUpload.ts",
+      "line": 35,
+      "code": "const handleUploadAndSendAttachments = useCallback(async () => {",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/hooks/orbit/useHudAttachmentUpload.ts",
+      "line": 122,
+      "code": "return { handleUploadAndSendAttachments };",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/hooks/useMessageSender.ts",
+      "line": 98,
+      "code": "const handleSend = useCallback(async (explicitDraft: string) => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/admin/kpis.ts",
+      "line": 5,
+      "code": "supabase.from(\"merchant_onboarding_profiles\").select(\"*\", { count: \"exact\", head: true }).eq(\"workspace_id\", workspaceId",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/ai/ops-chat.ts",
+      "line": 36,
+      "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/ai/ops-chat.ts",
+      "line": 36,
+      "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/ai/ops-chat.ts",
+      "line": 64,
+      "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/ai/ops-chat.ts",
+      "line": 64,
+      "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/ai/ops-chat.ts",
+      "line": 77,
+      "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/ai/ops-chat.ts",
+      "line": 77,
+      "code": "await supabase.from(\"ai_chat_messages\" as any).insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/auth-redirect.ts",
+      "line": 11,
+      "code": "supabase.from(\"profiles\").select(\"onboarding_completed\").eq(\"id\", userId).maybeSingle(),",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/cache/identity-cache.ts",
+      "line": 13,
+      "code": "profileCache.delete(userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/cache/identity-cache.ts",
+      "line": 25,
+      "code": "profileCache.delete(userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/call/call-rpc.ts",
+      "line": 47,
+      "code": "const { data: callId, error } = await supabase.rpc(\"create_call_idempotent\" as any, {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/call-thread-logger.ts",
+      "line": 37,
+      "code": "setTimeout(() => recentCallLogs.delete(dedupKey), 10000);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/canonical-chain/index.ts",
+      "line": 93,
+      "code": "* 2. Components NEVER call .insert() / .update() / .upsert() / .delete()",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/canonical-chain/index.ts",
+      "line": 93,
+      "code": "* 2. Components NEVER call .insert() / .update() / .upsert() / .delete()",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/canonical-chain/index.ts",
+      "line": 93,
+      "code": "* 2. Components NEVER call .insert() / .update() / .upsert() / .delete()",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/canonical-chain/index.ts",
+      "line": 93,
+      "code": "* 2. Components NEVER call .insert() / .update() / .upsert() / .delete()",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/chat/messageService.ts",
+      "line": 204,
+      "code": ".update({ read_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/db/orbitDb.ts",
+      "line": 20,
+      "code": "return db.from(\"conversations_v2\").insert(payload).select(\"*\").single();",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/db/orbitDb.ts",
+      "line": 23,
+      "code": "return db.from(\"conversations_v2\").update(payload).eq(\"id\", id).select(\"*\").single();",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/db/orbitDb.ts",
+      "line": 48,
+      "code": "return db.from(\"chat_messages_v2\").update(payload).eq(\"id\", id).select(\"*\").single();",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/db/orbitDb.ts",
+      "line": 52,
+      "code": "return db.from(\"chat_messages_v2\").update({ read_at: new Date().toISOString() }).in(\"id\", ids);",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/engines/notification-engine.ts",
+      "line": 306,
+      "code": ".update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/engines/notification-engine.ts",
+      "line": 314,
+      "code": ".update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/engines/personal-radar/personal-profile-engine.ts",
+      "line": 115,
+      "code": "await supabase.from(\"user_radar_profiles\").upsert({",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/engines/personal-radar/personal-profile-engine.ts",
+      "line": 115,
+      "code": "await supabase.from(\"user_radar_profiles\").upsert({",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/i18n.tsx",
+      "line": 1502,
+      "code": "await supabase.from(\"profiles\").update({ locale: l }).eq(\"id\", session.user.id);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/i18n.tsx",
+      "line": 1502,
+      "code": "await supabase.from(\"profiles\").update({ locale: l }).eq(\"id\", session.user.id);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/local-cache/conversation-cache.ts",
+      "line": 75,
+      "code": "tx.objectStore(CONVERSATIONS_STORE).delete(id);",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/merchant/storefront-repair.ts",
+      "line": 53,
+      "code": ".update({ merchant_profile_id: matches[0].id })",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/mobility/driver-gps-pusher.ts",
+      "line": 27,
+      "code": "await supabase.from(\"trip_location_points\").insert({",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/mobility/driver-gps-pusher.ts",
+      "line": 27,
+      "code": "await supabase.from(\"trip_location_points\").insert({",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/mobility/gps-scheduler.ts",
+      "line": 106,
+      "code": "await supabase.from(\"trip_location_points\").insert({",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/mobility/gps-scheduler.ts",
+      "line": 106,
+      "code": "await supabase.from(\"trip_location_points\").insert({",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/monitoring.ts",
+      "line": 299,
+      "code": "const { count } = await supabase.from(\"app_notifications\").select(\"id\", { count: \"exact\", head: true }).is(\"read_at\", nu",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/notifications/app-notification-service.ts",
+      "line": 37,
+      "code": ".update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/notifications/notification-dispatcher.ts",
+      "line": 64,
+      "code": ".update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/notifications/notification-dispatcher.ts",
+      "line": 72,
+      "code": ".update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/notifications/notification-reader.ts",
+      "line": 42,
+      "code": ".update({ read_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/notifications/notification-reader.ts",
+      "line": 71,
+      "code": ".update({ read_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/notifications-v2/notification-service.ts",
+      "line": 93,
+      "code": ".update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/notifications-v2/notification-service.ts",
+      "line": 102,
+      "code": ".update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/notifications-v2/notification-service.ts",
+      "line": 165,
+      "code": ".update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/onboarding/onboarding-validator.ts",
+      "line": 27,
+      "code": "supabase.from(\"profiles\").select(\"id, first_name, last_name, email\").eq(\"id\", userId).maybeSingle(),",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/onboarding/pipeline/repository/onboarding.repository.ts",
+      "line": 24,
+      "code": "return (supabase as any).from(\"auto_discovered_merchants\").upsert(record, { onConflict: \"id\" });",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/onboarding/recrawl-runner.ts",
+      "line": 15,
+      "code": "await db.from(\"onboarding_recrawl_jobs\").update({ status: \"failed\", finished_at: new Date().toISOString(), error_message",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/orbit/createOrGetDirectConversation.ts",
+      "line": 154,
+      "code": "orbitDb.conversations.update(fallbackExisting.id, {",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/createOrGetDirectConversation.ts",
+      "line": 165,
+      "code": "const { data, error } = await orbitDb.conversations.insert({",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-account.repository.ts",
+      "line": 25,
+      "code": "await supabase.from(\"profiles\").update({ name: displayName }).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-account.repository.ts",
+      "line": 25,
+      "code": "await supabase.from(\"profiles\").update({ name: displayName }).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-account.repository.ts",
+      "line": 27,
+      "code": "await supabase.from(\"orbit_profiles_v2\" as any).update({",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-account.repository.ts",
+      "line": 27,
+      "code": "await supabase.from(\"orbit_profiles_v2\" as any).update({",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-account.repository.ts",
+      "line": 37,
+      "code": "await supabase.from(\"conversation_preferences\").upsert(",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-account.repository.ts",
+      "line": 37,
+      "code": "await supabase.from(\"conversation_preferences\").upsert(",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-account.repository.ts",
+      "line": 49,
+      "code": "await supabase.from(\"conversation_preferences\").upsert(",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-account.repository.ts",
+      "line": 49,
+      "code": "await supabase.from(\"conversation_preferences\").upsert(",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-account.repository.ts",
+      "line": 61,
+      "code": "await supabase.from(\"conversation_preferences\").upsert(",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-account.repository.ts",
+      "line": 61,
+      "code": "await supabase.from(\"conversation_preferences\").upsert(",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/orbit-unread-counter.ts",
+      "line": 23,
+      "code": ".update({ unread_count: 0, last_read_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/signaling.ts",
+      "line": 15,
+      "code": "await supabase.from(\"rtc_signaling_messages\" as any).insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/signaling.ts",
+      "line": 15,
+      "code": "await supabase.from(\"rtc_signaling_messages\" as any).insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/threads/thread-enricher.ts",
+      "line": 27,
+      "code": "supabase.from(\"profiles\").select(\"id, email, first_name, last_name, name\").in(\"id\", peerIdArr),",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/threads/thread-fetcher.ts",
+      "line": 35,
+      "code": "supabase.from(\"real_estate_leads\").select(\"id, name, email, phone, status, message, listing_id, created_at\").eq(\"org_id\"",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/orbit/translate-message.ts",
+      "line": 32,
+      "code": "const { data, error } = await supabase.functions.invoke(\"translate-message\", {",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/lib/pay/unifiedResolver.ts",
+      "line": 162,
+      "code": ".rpc(\"ensure_wallet_account\", { target_user_id: profile.id, target_currency: currency });",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/pay/unifiedResolver.ts",
+      "line": 213,
+      "code": ".rpc(\"ensure_wallet_account\", { target_user_id: profile.id, target_currency: currency });",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/rental/rental-repository.ts",
+      "line": 59,
+      "code": "const { data, error } = await supabase.from(\"rent_calls\").select(\"*\").eq(\"org_id\", orgId).order(\"due_date\", { ascending:",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/rental/rental-repository.ts",
+      "line": 65,
+      "code": "const { data, error } = await supabase.from(\"rent_calls\").insert({ ...call, org_id: orgId } as any).select().single();",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/rental/rental-repository.ts",
+      "line": 65,
+      "code": "const { data, error } = await supabase.from(\"rent_calls\").insert({ ...call, org_id: orgId } as any).select().single();",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/rental/rental-repository.ts",
+      "line": 71,
+      "code": "const { error } = await supabase.from(\"rent_calls\").update(updates as any).eq(\"id\", id);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/rental/rental-repository.ts",
+      "line": 71,
+      "code": "const { error } = await supabase.from(\"rent_calls\").update(updates as any).eq(\"id\", id);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/rental/rental-repository.ts",
+      "line": 110,
+      "code": "const { data: profile } = await supabase.from(\"profiles\").select(\"name, email, signature_url\").eq(\"id\", userId).single()",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/rental/rental-repository.ts",
+      "line": 117,
+      "code": "const { data: op } = await supabase.from(\"owner_profiles\").select(\"full_name, address, postal_code, city\").eq(\"org_id\", ",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/shared/notification-engine.ts",
+      "line": 76,
+      "code": ".update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/support/global-support-engine.ts",
+      "line": 116,
+      "code": "await (supabase as any).from(\"support_ticket_messages\").insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/lib/support/global-support-engine.ts",
+      "line": 183,
+      "code": "await (supabase as any).from(\"support_ticket_messages\").insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/pages/AIAssistant.tsx",
+      "line": 402,
+      "code": "onClick={() => sendMessage(qa.prompt)}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/AdminRestaurantTestSeederPage.tsx",
+      "line": 131,
+      "code": "await (supabase as any).from(\"merchant_onboarding_profiles\").delete().eq(\"test_batch_id\", batchId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/pages/AdminRestaurantTestSeederPage.tsx",
+      "line": 155,
+      "code": "await (supabase as any).from(\"merchant_onboarding_profiles\").delete().ilike(\"business_name\", \"TEST %\");",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/pages/CommunicationCenter.tsx",
+      "line": 207,
+      "code": "const handleDeleteThread = useCallback((thread: ConversationThread) => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/CommunicationCenter.tsx",
+      "line": 318,
+      "code": "onClick={() => setShowNewConversation(true)}",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/DataImport.tsx",
+      "line": 145,
+      "code": "<button onClick={reset} className=\"text-sm text-muted-foreground hover:text-foreground\">{t(\"page.import.change_file\")}</",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/DunningLetters.tsx",
+      "line": 157,
+      "code": "<button onClick={() => createLetter(call.tenant_id, call.month, call.total_amount, nextLevel)} className=\"btn-destructiv",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/FurnitureInventory.tsx",
+      "line": 304,
+      "code": "<button onClick={downloadPDFFile} disabled={uploading} className=\"btn-secondary btn-sm disabled:opacity-50\">",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/FurnitureInventory.tsx",
+      "line": 387,
+      "code": "<button onClick={() => { setPhotoFile(null); setPhotoPreview(null); }} className=\"absolute -top-2 -right-2 bg-destructiv",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/FurnitureInventory.tsx",
+      "line": 392,
+      "code": "<button type=\"button\" onClick={() => fileInputRef.current?.click()}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/FurnitureInventory.tsx",
+      "line": 400,
+      "code": "<button onClick={save} disabled={uploading} className=\"bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/GuestPortal.tsx",
+      "line": 388,
+      "code": "<button onClick={sendGuestMessage} disabled={!message.trim() || sendingMessage}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/PaymentNotices.tsx",
+      "line": 341,
+      "code": "<button onClick={() => regularize(matchingRentCall!)} className=\"inline-flex items-center gap-1.5 px-3 py-1.5 text-xs fo",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/PaymentNotices.tsx",
+      "line": 345,
+      "code": "<button onClick={() => { setPartialDialog(matchingRentCall!); setPartialAmount(remaining); }} className=\"inline-flex ite",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/PublicServiceBooking.tsx",
+      "line": 588,
+      "code": "<Button onClick={() => setStep(3)} disabled={idDocUploading || !form.name || !form.email || (service.requires_id_documen",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/RealEstateListings.tsx",
+      "line": 231,
+      "code": "const handleCallLead = (lead: Lead) => {",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/RealEstateListings.tsx",
+      "line": 402,
+      "code": "<Button size=\"sm\" variant=\"outline\" className=\"h-8 w-8 p-0\" onClick={() => handleCallLead(lead)}>",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/RealEstateListings.tsx",
+      "line": 402,
+      "code": "<Button size=\"sm\" variant=\"outline\" className=\"h-8 w-8 p-0\" onClick={() => handleCallLead(lead)}>",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/RealEstateListings.tsx",
+      "line": 411,
+      "code": "<Button size=\"sm\" variant=\"outline\" className=\"h-8 w-8 p-0\" onClick={() => handleOpenConversation(lead)}>",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/RentalManagement.tsx",
+      "line": 127,
+      "code": "next.delete(\"record\");",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/pages/RentalManagement.tsx",
+      "line": 139,
+      "code": "next.delete(\"record\");",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "high"
+    },
+    {
+      "file": "src/pages/RentalManagement.tsx",
+      "line": 287,
+      "code": "const handleSendMessage = async () => {",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/RentalManagement.tsx",
+      "line": 399,
+      "code": "onSendMessage={handleSendMessage}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/RentalManagement.tsx",
+      "line": 673,
+      "code": "<button onClick={generateMonthlyRentCalls} className=\"flex items-center gap-3 bg-muted/30 rounded-lg p-3 hover:bg-muted/",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/Settings.tsx",
+      "line": 137,
+      "code": "<button onClick={saveProfile} disabled={saving} className=\"btn-primary w-full\">",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/Vault.tsx",
+      "line": 54,
+      "code": "const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/Vault.tsx",
+      "line": 91,
+      "code": "const handleDelete = async (file: VaultFile) => {",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/Vault.tsx",
+      "line": 124,
+      "code": "<input type=\"file\" multiple className=\"hidden\" onChange={handleUpload} disabled={uploading} />",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/Vault.tsx",
+      "line": 176,
+      "code": "onClick={() => handleDownload(file)}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/Vault.tsx",
+      "line": 183,
+      "code": "onClick={() => handleDelete(file)}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/Vault.tsx",
+      "line": 183,
+      "code": "onClick={() => handleDelete(file)}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/customer/CustomerDeliveryNotesPage.tsx",
+      "line": 51,
+      "code": "onClick={() => setCallOnArrival((v) => !v)}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/deep-link/GuestPaymentSuccess.tsx",
+      "line": 95,
+      "code": "<Button variant=\"outline\" size=\"sm\" onClick={() => window.location.reload()}>",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/mobility/RiderLivePage.tsx",
+      "line": 248,
+      "code": "onClick={() => acceptOffer(offer.id).catch((e: any) => toast.error(e.message))}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/mobility/RiderLivePage.tsx",
+      "line": 256,
+      "code": "onClick={() => rejectOffer(offer.id).catch((e: any) => toast.error(e.message))}",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/payments/QrScannerPage.tsx",
+      "line": 804,
+      "code": "<button type=\"button\" onClick={() => fileInputRef.current?.click()}",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/tenant/TenantDocuments.tsx",
+      "line": 188,
+      "code": "const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/tenant/TenantDocuments.tsx",
+      "line": 366,
+      "code": "<input type=\"file\" className=\"hidden\" onChange={handleUpload} disabled={uploading} accept=\".pdf,.jpg,.jpeg,.png\" />",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/tenant/TenantPay.tsx",
+      "line": 268,
+      "code": "onClick={() => handleDeclareTransfer(call.id, call.month)}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/pages/tenant/TenantPay.tsx",
+      "line": 280,
+      "code": "onClick={() => handlePay(call.id)}",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "action",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/accounting.repository.ts",
+      "line": 27,
+      "code": "const { data } = await supabase.from(\"rent_calls\").select(\"*\").eq(\"org_id\", orgId).eq(\"paid\", true);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/activity-log.repository.ts",
+      "line": 16,
+      "code": "let q = supabase.from(\"rent_calls\").select(\"id, month, total_amount, paid, paid_date\").eq(\"org_id\", orgId);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/admin-ops.repository.ts",
+      "line": 57,
+      "code": "supabase.from(\"profiles\").select(\"*\", { count: \"exact\", head: true }),",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/admin-ops.repository.ts",
+      "line": 68,
+      "code": "supabase.from(\"profiles\").select(\"*\", { count: \"exact\", head: true }),",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/admin.repository.ts",
+      "line": 13,
+      "code": "supabase.from(\"profiles\").select(\"id, email, name, created_at, user_type\", { count: \"exact\" }),",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/admin.repository.ts",
+      "line": 19,
+      "code": "supabase.from(\"rent_calls\").select(\"id, paid, total_amount, paid_date, month\").eq(\"paid\", true),",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/admin.repository.ts",
+      "line": 69,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"id, name, email, first_name, last_name\").in(\"id\", ids);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/admin.repository.ts",
+      "line": 84,
+      "code": "const { error } = await supabase.from(\"collaboration_invitations\").insert(record as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/admin.repository.ts",
+      "line": 84,
+      "code": "const { error } = await supabase.from(\"collaboration_invitations\").insert(record as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/admin.repository.ts",
+      "line": 99,
+      "code": "await (supabase as any).from(\"app_notifications\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/admin.repository.ts",
+      "line": 114,
+      "code": "const { data, error } = await (supabase as any).from(\"storefront_pages\").insert(record).select(\"id\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/admin.repository.ts",
+      "line": 120,
+      "code": "await (supabase as any).from(\"products\").insert(records);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/ai.repository.ts",
+      "line": 25,
+      "code": "const { data, error } = await supabase.functions.invoke(\"translate-message\", { body });",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/auth-utils.repository.ts",
+      "line": 52,
+      "code": "const { data } = await supabase.from(\"profiles\").select(columns).eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/auth-utils.repository.ts",
+      "line": 57,
+      "code": "const { error } = await supabase.from(\"profiles\").update({ [field]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/auth-utils.repository.ts",
+      "line": 57,
+      "code": "const { error } = await supabase.from(\"profiles\").update({ [field]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/booking-actions.repository.ts",
+      "line": 35,
+      "code": "await (supabase as any).from(\"conversations_v2\").update({",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/boot.repository.ts",
+      "line": 7,
+      "code": "await (supabase as any).from(\"orbit_profiles_v2\").update({ permissions: perms } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/buildings.repository.ts",
+      "line": 51,
+      "code": "const { error } = await supabase.from(\"buildings\").update(record).eq(\"id\", id);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/buildings.repository.ts",
+      "line": 51,
+      "code": "const { error } = await supabase.from(\"buildings\").update(record).eq(\"id\", id);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/candidates.repository.ts",
+      "line": 15,
+      "code": "const { error } = await (supabase as any).from(\"candidates\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/client-portal.repository.ts",
+      "line": 100,
+      "code": "const { data } = await supabase.from(\"conversation_preferences\").select(\"context_id, muted, archived\").eq(\"user_id\", use",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/collaboration.repository.ts",
+      "line": 18,
+      "code": "const { data: p } = await supabase.from(\"profiles\").select(\"email, name\").eq(\"id\", m.user_id).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication-context.repository.ts",
+      "line": 9,
+      "code": "supabase.from(\"rent_calls\").select(\"id, month, total_amount, paid, paid_amount, paid_date\").eq(\"org_id\", orgId).eq(\"tena",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 15,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update(fields).eq(\"id\", messageId);",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 41,
+      "code": "const { data, error } = await db.from(\"chat_messages_v2\").insert({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 67,
+      "code": "await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 74,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update({ starred }).eq(\"id\", messageId);",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 79,
+      "code": "await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 91,
+      "code": "await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 98,
+      "code": "await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 118,
+      "code": "await db.from(\"conversations_v2\").update(update).eq(\"id\", conversationId);",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 127,
+      "code": "const { data, error } = await db.from(\"conversations_v2\").insert({",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 144,
+      "code": "await db.from(\"conversations_v2\").update({",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 202,
+      "code": "const { error } = await supabase.from(\"call_logs\").delete().eq(\"id\", callId);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 202,
+      "code": "const { error } = await supabase.from(\"call_logs\").delete().eq(\"id\", callId);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 219,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"id, full_name, email, phone\").in(\"id\", ids);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 231,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"id, email\").in(\"email\", emails);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 236,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"id\").eq(\"email\", email).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 241,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"id, phone, whatsapp_number\").not(\"phone\", \"is\", null);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 260,
+      "code": "await supabase.from(\"conversation_preferences\").upsert({",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 260,
+      "code": "await supabase.from(\"conversation_preferences\").upsert({",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 328,
+      "code": "const { data } = await supabase.from(\"user_presence\").select(\"visible_on_nearby, location_sharing, who_can_see\").eq(\"use",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 374,
+      "code": "supabase.from(\"rent_calls\").select(\"id, month, total_amount, paid, paid_amount, paid_date\")",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 420,
+      "code": "supabase.from(\"rent_calls\").select(\"id\", { count: \"exact\", head: true }).eq(\"org_id\", orgId).eq(\"paid\", false),",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 442,
+      "code": "let query = supabase.from(\"rent_calls\").select(\"id, month, total_amount, paid, paid_date\").eq(\"org_id\", orgId);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 514,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 523,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 532,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 539,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 547,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 630,
+      "code": "const { data, error } = await db.from(\"conversations_v2\").insert(payload).select(\"id, type, title, created_at, created_b",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 657,
+      "code": "await db.from(\"orbit_profiles_v2\").update({ permissions } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 709,
+      "code": "await db.rpc(\"mark_call_as_missed_v2\", { p_session_id: sessionId, p_reason: reason });",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 789,
+      "code": "const { data: session, error: sessionErr } = await db.from(\"call_sessions\").insert({",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 800,
+      "code": "await db.from(\"call_logs\").insert({",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 833,
+      "code": "await db.from(\"conversations_v2\").update({",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 856,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 864,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 871,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/communication.repository.ts",
+      "line": 883,
+      "code": "const { error } = await db.from(\"chat_messages_v2\").update({",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/company.repository.ts",
+      "line": 9,
+      "code": "const { data: p } = await supabase.from(\"profiles\").select(\"country\").eq(\"id\", authData.user.id).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/concierge.repository.ts",
+      "line": 16,
+      "code": "const { error } = await (supabase as any).from(\"concierge_services\").update(record).eq(\"id\", editingId);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/concierge.repository.ts",
+      "line": 19,
+      "code": "const { error } = await (supabase as any).from(\"concierge_services\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/concierge.repository.ts",
+      "line": 88,
+      "code": "const { data } = await supabase.from(\"landlord_profiles\").select(\"slug\").eq(\"org_id\", orgId).eq(\"active\", true).limit(1)",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/concierge.repository.ts",
+      "line": 93,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"preferred_currency\").eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/concierge.repository.ts",
+      "line": 98,
+      "code": "await supabase.from(\"profiles\").update({ preferred_currency: currency } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/concierge.repository.ts",
+      "line": 98,
+      "code": "await supabase.from(\"profiles\").update({ preferred_currency: currency } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 19,
+      "code": "const { data: p } = await supabase.from(\"profiles\").select(\"email, name\").eq(\"id\", m.user_id).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 32,
+      "code": "const { error } = await (supabase as any).from(\"buildings\").update(record).eq(\"id\", editId);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 35,
+      "code": "const { error } = await (supabase as any).from(\"buildings\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 57,
+      "code": "const { error } = await (supabase as any).from(\"tasks\").update(record).eq(\"id\", editId);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 60,
+      "code": "const { error } = await (supabase as any).from(\"tasks\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 99,
+      "code": "const { data, error } = await (supabase as any).from(\"interventions\").update(record).eq(\"id\", editId).select().single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 103,
+      "code": "const { data, error } = await (supabase as any).from(\"interventions\").insert(record).select().single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 124,
+      "code": "const { data } = await supabase.from(\"vault_files\").select(\"*\").eq(\"org_id\", orgId).order(\"created_at\", { ascending: fal",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 132,
+      "code": "await supabase.from(\"vault_files\").insert({ org_id: orgId, user_id: userId, filename: file.name, file_url: path, size: f",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 132,
+      "code": "await supabase.from(\"vault_files\").insert({ org_id: orgId, user_id: userId, filename: file.name, file_url: path, size: f",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 143,
+      "code": "const { error } = await supabase.from(\"vault_files\").delete().eq(\"id\", id);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 143,
+      "code": "const { error } = await supabase.from(\"vault_files\").delete().eq(\"id\", id);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 157,
+      "code": "const { error } = await (supabase as any).from(\"collaboration_invitations\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 186,
+      "code": "const { error } = await (supabase as any).from(\"candidates\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 213,
+      "code": "if (editId) await (supabase as any).from(\"local_services\").update(record).eq(\"id\", editId);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 214,
+      "code": "else await (supabase as any).from(\"local_services\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 278,
+      "code": "supabase.from(\"profiles\").select(\"signature_url, name\").eq(\"id\", userId).single(),",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 280,
+      "code": "supabase.from(\"owner_profiles\").select(\"full_name, address, postal_code, city\").eq(\"org_id\", orgId).limit(1).single(),",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 325,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"onboarding_step, country, user_type\").eq(\"id\", userId).single()",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 330,
+      "code": "await supabase.from(\"profiles\").update(updates as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 330,
+      "code": "await supabase.from(\"profiles\").update(updates as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 345,
+      "code": "const { error } = await (supabase as any).from(\"owner_profiles\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 350,
+      "code": "const { data, error } = await (supabase as any).from(\"properties\").insert(record).select(\"id\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 356,
+      "code": "const { error } = await (supabase as any).from(\"tenants\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dashboard.repository.ts",
+      "line": 361,
+      "code": "await (supabase as any).from(\"ota_connections\").upsert(record, { onConflict: \"id\" });",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/data-import.repository.ts",
+      "line": 7,
+      "code": "const { error } = await (supabase as any).from(\"properties\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/data-import.repository.ts",
+      "line": 12,
+      "code": "const { error } = await (supabase as any).from(\"tenants\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/data-import.repository.ts",
+      "line": 22,
+      "code": "const { error } = await (supabase as any).from(\"rent_calls\").upsert(record, { onConflict: \"org_id,tenant_id,month\", igno",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/deals.repository.ts",
+      "line": 54,
+      "code": "const { data, error } = await supabase.from(\"deal_rooms\").insert(record as any).select().single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/deals.repository.ts",
+      "line": 54,
+      "code": "const { data, error } = await supabase.from(\"deal_rooms\").insert(record as any).select().single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/deals.repository.ts",
+      "line": 65,
+      "code": "await supabase.from(\"deal_events\").insert(record as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/deals.repository.ts",
+      "line": 65,
+      "code": "await supabase.from(\"deal_events\").insert(record as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/deals.repository.ts",
+      "line": 69,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"email, name\").eq(\"id\", buyerId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/delivery.repository.ts",
+      "line": 19,
+      "code": "await (supabase as any).from(\"audit_logs\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/delivery.repository.ts",
+      "line": 23,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"id, name, first_name, last_name\").in(\"id\", ids);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/delivery.repository.ts",
+      "line": 36,
+      "code": "const { error } = await (supabase as any).from(\"delivery_ratings\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/delivery.repository.ts",
+      "line": 67,
+      "code": "const { error } = await (supabase as any).from(\"delivery_offers\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/delivery.repository.ts",
+      "line": 73,
+      "code": "const { error } = await supabase.from(\"profiles\").update(updates as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/delivery.repository.ts",
+      "line": 73,
+      "code": "const { error } = await supabase.from(\"profiles\").update(updates as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/delivery.repository.ts",
+      "line": 92,
+      "code": "await (supabase as any).from(\"parcel_job_details\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/delivery.repository.ts",
+      "line": 104,
+      "code": "const { data, error } = await supabase.from(\"live_trackings\").insert(record as any).select().single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/delivery.repository.ts",
+      "line": 104,
+      "code": "const { data, error } = await supabase.from(\"live_trackings\").insert(record as any).select().single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/delivery.repository.ts",
+      "line": 171,
+      "code": "const { error } = await (supabase as any).from(\"rider_presence\").upsert(record, { onConflict: \"user_id\" });",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/discovery.repository.ts",
+      "line": 17,
+      "code": "await (supabase as any).from(\"saved_listings\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/discovery.repository.ts",
+      "line": 39,
+      "code": "await (supabase as any).from(\"category_subscriptions\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/document-builder.repository.ts",
+      "line": 8,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"signature_url, name, email\").eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/document-builder.repository.ts",
+      "line": 13,
+      "code": "const { data } = await supabase.from(\"owner_profiles\").select(\"*\").eq(\"org_id\", orgId).limit(1).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/document-builder.repository.ts",
+      "line": 25,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"signature_url, id_number\").eq(\"id\", tenantUserId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/documents.repository.ts",
+      "line": 8,
+      "code": "const { error } = await (supabase as any).from(\"documents\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/documents.repository.ts",
+      "line": 23,
+      "code": "await (supabase as any).from(\"audit_logs\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/documents.repository.ts",
+      "line": 49,
+      "code": "await (supabase as any).from(\"app_notifications\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/documents.repository.ts",
+      "line": 87,
+      "code": "const { data, error } = await (supabase as any).from(\"leases\").insert(record).select(\"id\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/documents.repository.ts",
+      "line": 99,
+      "code": "const { data, error } = await (supabase as any).from(\"inventory_items\").insert(record).select(\"*\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/driver-onboarding.repository.ts",
+      "line": 19,
+      "code": "await supabase.from(\"profiles\").update({ onboarding_completed: true }).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/driver-onboarding.repository.ts",
+      "line": 19,
+      "code": "await supabase.from(\"profiles\").update({ onboarding_completed: true }).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dunning.repository.ts",
+      "line": 27,
+      "code": "supabase.from(\"rent_calls\").select(\"id, tenant_id, month, total_amount, paid\").eq(\"org_id\", orgId).eq(\"paid\", false).in(",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/dunning.repository.ts",
+      "line": 34,
+      "code": "supabase.from(\"rent_calls\").select(\"id, tenant_id, month, total_amount, paid\").eq(\"org_id\", orgId).eq(\"paid\", false),",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/finances.repository.ts",
+      "line": 33,
+      "code": "supabase.from(\"rent_calls\").select(\"id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, pr",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/finances.repository.ts",
+      "line": 40,
+      "code": "supabase.from(\"rent_calls\").select(\"id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, pr",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/groups.repository.ts",
+      "line": 72,
+      "code": "const { error } = await (supabase as any).from(\"conversations_v2\").update(payload).eq(\"id\", id);",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/groups.repository.ts",
+      "line": 95,
+      "code": "await (supabase as any).from(\"conversations_v2\").delete().eq(\"id\", id);",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/groups.repository.ts",
+      "line": 103,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"id\").eq(\"email\", email).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/interventions.repository.ts",
+      "line": 27,
+      "code": "const { data, error } = await (supabase as any).from(\"interventions\").insert(record).select().single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/interventions.repository.ts",
+      "line": 33,
+      "code": "const { error } = await supabase.from(\"interventions\").update(record).eq(\"id\", id);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/interventions.repository.ts",
+      "line": 33,
+      "code": "const { error } = await supabase.from(\"interventions\").update(record).eq(\"id\", id);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/inventory.repository.ts",
+      "line": 22,
+      "code": "const { data, error } = await (supabase as any).from(\"inventory_reports\").insert(record).select(\"id\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/inventory.repository.ts",
+      "line": 36,
+      "code": "const { data, error } = await (supabase as any).from(\"inventory_rooms\").insert(record).select(\"id\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/inventory.repository.ts",
+      "line": 56,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"signature_url\").eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/listing-contact.repository.ts",
+      "line": 65,
+      "code": "const { data, error } = await db.from(\"conversations_v2\").insert(params).select(\"id\").single();",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/listing-contact.repository.ts",
+      "line": 83,
+      "code": "await (supabase as any).from(\"conversations_v2\").update({",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/marketplace.repository.ts",
+      "line": 13,
+      "code": "const { error } = await (supabase as any).from(\"marketplace_providers\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/marketplace.repository.ts",
+      "line": 18,
+      "code": "const { error } = await supabase.from(\"marketplace_providers\").update(record).eq(\"id\", providerId);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/marketplace.repository.ts",
+      "line": 18,
+      "code": "const { error } = await supabase.from(\"marketplace_providers\").update(record).eq(\"id\", providerId);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/marketplace.repository.ts",
+      "line": 41,
+      "code": "const { data, error } = await supabase.from(\"marketplace_services\").insert(record as any).select(\"id, lat, lng\").single(",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/marketplace.repository.ts",
+      "line": 41,
+      "code": "const { data, error } = await supabase.from(\"marketplace_services\").insert(record as any).select(\"id, lat, lng\").single(",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/marketplace.repository.ts",
+      "line": 47,
+      "code": "const { error } = await supabase.from(\"marketplace_services\").update(record as any).eq(\"id\", id);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/marketplace.repository.ts",
+      "line": 47,
+      "code": "const { error } = await supabase.from(\"marketplace_services\").update(record as any).eq(\"id\", id);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/marketplace.repository.ts",
+      "line": 63,
+      "code": "const { data, error } = await (supabase as any).from(\"marketplace_bookings\").insert(record).select().single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/marketplace.repository.ts",
+      "line": 94,
+      "code": "const { error } = await (supabase as any).from(\"marketplace_reviews\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/marketplace.repository.ts",
+      "line": 110,
+      "code": "await (supabase as any).from(\"audit_logs\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/merchant-dashboard.repository.ts",
+      "line": 51,
+      "code": "const { data } = await supabase.functions.invoke(\"translate-message\", {",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/mobility.repository.ts",
+      "line": 101,
+      "code": "await (supabase as any).from(\"rider_profiles\").update(updates).eq(\"id\", profileId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/mobility.repository.ts",
+      "line": 187,
+      "code": "await (supabase as any).from(\"trip_location_points\").insert(payload);",
+      "entry": "location.send",
+      "pipeline": "pipeline.location.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/mobility.repository.ts",
+      "line": 226,
+      "code": "await supabase.from(\"profiles\").update(updates as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/mobility.repository.ts",
+      "line": 226,
+      "code": "await supabase.from(\"profiles\").update(updates as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/moderation.repository.ts",
+      "line": 16,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"id, name, first_name, last_name\").in(\"id\", userIds);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding-checklist.repository.ts",
+      "line": 11,
+      "code": "supabase.from(\"owner_profiles\").select(\"id\").eq(\"org_id\", orgId).limit(1).maybeSingle(),",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding-checklist.repository.ts",
+      "line": 12,
+      "code": "supabase.from(\"rent_calls\").select(\"id\", { count: \"exact\", head: true }).eq(\"org_id\", orgId),",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding.repository.ts",
+      "line": 7,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"onboarding_step, country, user_type\").eq(\"id\", userId).single()",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding.repository.ts",
+      "line": 12,
+      "code": "await supabase.from(\"profiles\").update({ onboarding_step: step }).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding.repository.ts",
+      "line": 12,
+      "code": "await supabase.from(\"profiles\").update({ onboarding_step: step }).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding.repository.ts",
+      "line": 16,
+      "code": "await supabase.from(\"profiles\").update(fields).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding.repository.ts",
+      "line": 16,
+      "code": "await supabase.from(\"profiles\").update(fields).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding.repository.ts",
+      "line": 20,
+      "code": "await supabase.from(\"profiles\").update({ onboarding_completed: true, onboarding_step: 7 }).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding.repository.ts",
+      "line": 20,
+      "code": "await supabase.from(\"profiles\").update({ onboarding_completed: true, onboarding_step: 7 }).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding.repository.ts",
+      "line": 40,
+      "code": "const { error } = await supabase.from(\"owner_profiles\").insert({",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/onboarding.repository.ts",
+      "line": 40,
+      "code": "const { error } = await supabase.from(\"owner_profiles\").insert({",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/orbit-security.repository.ts",
+      "line": 7,
+      "code": "const { data } = await supabase.from(\"profiles\").select(",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/orbit-security.repository.ts",
+      "line": 14,
+      "code": "const { error } = await supabase.from(\"profiles\").update({ [column]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/orbit-security.repository.ts",
+      "line": 14,
+      "code": "const { error } = await supabase.from(\"profiles\").update({ [column]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/orbit.repository.ts",
+      "line": 7,
+      "code": "const { data } = await supabase.from(\"conversations_v2\").select(\"id, participants\").order(\"updated_at\", { ascending: fal",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/orbit.repository.ts",
+      "line": 15,
+      "code": "const { data } = await supabase.from(\"chat_messages_v2\").select(\"body, created_at, sender_user_id\").or(`sender_user_id.e",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/orbit.repository.ts",
+      "line": 34,
+      "code": "await supabase.from(\"profiles\").update({ name } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/orbit.repository.ts",
+      "line": 34,
+      "code": "await supabase.from(\"profiles\").update({ name } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/payment-notices.repository.ts",
+      "line": 11,
+      "code": "supabase.from(\"rent_calls\").select(\"id, tenant_id, month, total_amount, paid, paid_amount\").eq(\"org_id\", orgId).eq(\"paid",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/payment-notices.repository.ts",
+      "line": 31,
+      "code": "await supabase.from(\"rent_calls\").update({",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/payment-notices.repository.ts",
+      "line": 31,
+      "code": "await supabase.from(\"rent_calls\").update({",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/payment-notices.repository.ts",
+      "line": 39,
+      "code": "await supabase.from(\"rent_calls\").update({",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/payment-notices.repository.ts",
+      "line": 39,
+      "code": "await supabase.from(\"rent_calls\").update({",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile-settings.repository.ts",
+      "line": 7,
+      "code": "const { data } = await supabase.from(\"profiles\").select(columns).eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile-settings.repository.ts",
+      "line": 12,
+      "code": "const { error } = await supabase.from(\"profiles\").update({ [column]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile-settings.repository.ts",
+      "line": 12,
+      "code": "const { error } = await supabase.from(\"profiles\").update({ [column]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile.repository.ts",
+      "line": 7,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"*\").eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile.repository.ts",
+      "line": 12,
+      "code": "const { data } = await supabase.from(\"owner_profiles\").select(\"*\").eq(\"org_id\", orgId).limit(1).maybeSingle();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile.repository.ts",
+      "line": 22,
+      "code": "await supabase.from(\"profiles\").update(updates as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile.repository.ts",
+      "line": 22,
+      "code": "await supabase.from(\"profiles\").update(updates as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile.repository.ts",
+      "line": 26,
+      "code": "await (supabase as any).from(\"owner_profiles\").upsert(payload, { onConflict: \"org_id\" });",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile.repository.ts",
+      "line": 41,
+      "code": "const { data, error } = await supabase.from(\"profiles\").select(\"created_at\").eq(\"id\", peerId).maybeSingle();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile.repository.ts",
+      "line": 51,
+      "code": "const { error } = await supabase.from(\"profiles\").select(\"id\").limit(1);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile.repository.ts",
+      "line": 90,
+      "code": "await supabase.from(\"profiles\").update({ onboarding_completed: true } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/profile.repository.ts",
+      "line": 90,
+      "code": "await supabase.from(\"profiles\").update({ onboarding_completed: true } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/property-hub.repository.ts",
+      "line": 13,
+      "code": "supabase.from(\"rent_calls\").select(\"*\").eq(\"org_id\", orgId).eq(\"property_id\", propertyId).order(\"month\", { ascending: fa",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/property-management-hub.repository.ts",
+      "line": 7,
+      "code": "supabase.from(\"rent_calls\").select(\"month, paid, total_amount\").eq(\"org_id\", orgId),",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/public.repository.ts",
+      "line": 37,
+      "code": "const { error } = await (supabase as any).from(\"booking_requests\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/public.repository.ts",
+      "line": 68,
+      "code": "const { error } = await (supabase as any).from(\"saved_listings\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/public.repository.ts",
+      "line": 79,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"referral_code\").eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/qr.repository.ts",
+      "line": 8,
+      "code": "supabase.from(\"profiles\").select(\"name\").eq(\"id\", userId).maybeSingle(),",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/receipts.repository.ts",
+      "line": 18,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"signature_url, name\").eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/receipts.repository.ts",
+      "line": 28,
+      "code": "const { data } = await supabase.from(\"owner_profiles\").select(\"full_name, address, postal_code, city\").eq(\"org_id\", orgI",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rent-payment.repository.ts",
+      "line": 7,
+      "code": "const { error } = await supabase.from(\"rent_calls\").update({",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rent-payment.repository.ts",
+      "line": 7,
+      "code": "const { error } = await supabase.from(\"rent_calls\").update({",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 60,
+      "code": "const { data } = await supabase.from(\"rent_calls\").select(\"*\").eq(\"org_id\", orgId).order(\"month\", { ascending: false });",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 65,
+      "code": "const { data } = await supabase.from(\"rent_calls\").select(\"tenant_id\").eq(\"org_id\", orgId).eq(\"month\", month);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 70,
+      "code": "const { error } = await supabase.from(\"rent_calls\").upsert(calls as any, { onConflict: \"org_id,tenant_id,month\", ignoreD",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 70,
+      "code": "const { error } = await supabase.from(\"rent_calls\").upsert(calls as any, { onConflict: \"org_id,tenant_id,month\", ignoreD",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 75,
+      "code": "const { error } = await supabase.from(\"rent_calls\").update(update).eq(\"id\", id);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 75,
+      "code": "const { error } = await supabase.from(\"rent_calls\").update(update).eq(\"id\", id);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 80,
+      "code": "const { data, error } = await supabase.from(\"rent_calls\").insert(record as any).select(\"id\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 80,
+      "code": "const { data, error } = await supabase.from(\"rent_calls\").insert(record as any).select(\"id\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 87,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"name, email, signature_url\").eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 92,
+      "code": "const { data } = await supabase.from(\"owner_profiles\").select(\"full_name, address, postal_code, city\").eq(\"org_id\", orgI",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 103,
+      "code": "const { error } = await supabase.from(\"documents\").insert(record as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 103,
+      "code": "const { error } = await supabase.from(\"documents\").insert(record as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 116,
+      "code": "await (supabase as any).from(\"app_notifications\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 183,
+      "code": "const { error } = await supabase.from(\"tenant_invitations\").insert(record as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental-data.repository.ts",
+      "line": 183,
+      "code": "const { error } = await supabase.from(\"tenant_invitations\").insert(record as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 26,
+      "code": "let q = supabase.from(\"rent_calls\").select(\"*\").eq(\"org_id\", orgId);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 34,
+      "code": "const { error } = await supabase.from(\"rent_calls\").update(updates as any).eq(\"id\", id);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 34,
+      "code": "const { error } = await supabase.from(\"rent_calls\").update(updates as any).eq(\"id\", id);",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 74,
+      "code": "await (supabase as any).from(\"app_notifications\").update({ read_at: new Date().toISOString() }).in(\"id\", ids);",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 78,
+      "code": "await (supabase as any).from(\"app_notifications\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 122,
+      "code": "const { data, error } = await (supabase as any).from(\"reminders\").insert(record).select(\"*\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 139,
+      "code": "const { data } = await supabase.from(\"vault_files\").select(\"*\").eq(\"org_id\", orgId).order(\"created_at\", { ascending: fal",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 144,
+      "code": "const { error } = await (supabase as any).from(\"vault_files\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 150,
+      "code": "const { error } = await supabase.from(\"vault_files\").delete().eq(\"id\", fileId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 150,
+      "code": "const { error } = await supabase.from(\"vault_files\").delete().eq(\"id\", fileId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 164,
+      "code": "const { data: rentCalls } = await supabase.from(\"rent_calls\").select(\"id, tenant_id, month, charges_amount, paid\").eq(\"o",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 172,
+      "code": "const { data: rentCalls } = await supabase.from(\"rent_calls\").select(\"*\").eq(\"org_id\", orgId).gte(\"month\", startMonth).l",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 184,
+      "code": "const { error } = await (supabase as any).from(\"accounting_entries\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 268,
+      "code": "const { data } = await supabase.from(\"rent_calls\").select(\"month, rent_amount, charges_amount, total_amount, paid, prope",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 296,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"referral_code\").eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 307,
+      "code": "const { data } = await supabase.from(\"profiles\").select(columns).eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 312,
+      "code": "await supabase.from(\"profiles\").update({ [column]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 312,
+      "code": "await supabase.from(\"profiles\").update({ [column]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 412,
+      "code": "await supabase.from(\"profiles\").update({ onboarding_completed: true }).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 412,
+      "code": "await supabase.from(\"profiles\").update({ onboarding_completed: true }).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 462,
+      "code": "const { data } = await supabase.from(\"rent_calls\").select(\"month, rent_amount, charges_amount, total_amount, paid, prope",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 486,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"name\").eq(\"id\", userId).maybeSingle();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 571,
+      "code": "supabase.from(\"profiles\").update({ onboarding_completed: true }).eq(\"id\", userId).then(() => {});",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 571,
+      "code": "supabase.from(\"profiles\").update({ onboarding_completed: true }).eq(\"id\", userId).then(() => {});",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 625,
+      "code": "const { data, error } = await (supabase as any).from(\"conversations_v2\").insert(payload).select(\"id, type, title, create",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 648,
+      "code": "await (supabase as any).from(\"conversations_v2\").update({ last_message_at: new Date().toISOString(), updated_at: new Dat",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/rental.repository.ts",
+      "line": 668,
+      "code": "const { data } = await supabase.from(\"rent_calls\").select(\"month, rent_amount, charges_amount, total_amount, paid, prope",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/reporting.repository.ts",
+      "line": 8,
+      "code": "supabase.from(\"rent_calls\").select(\"month, rent_amount, charges_amount, total_amount, paid, property_id\").eq(\"org_id\", o",
+      "entry": "call.startAudio",
+      "pipeline": "pipeline.call.startAudio.v1",
+      "owner": "callStore.sessions",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/ride-tracking.repository.ts",
+      "line": 23,
+      "code": "const { data } = await supabase.from(\"rider_profiles\")",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/ride-tracking.repository.ts",
+      "line": 30,
+      "code": "const { data } = await supabase.from(\"conversations_v2\").select(\"id\")",
+      "entry": "conversation.openDirect",
+      "pipeline": "pipeline.conversation.openDirect.v1",
+      "owner": "orbitStore.conversations",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/seasonal.repository.ts",
+      "line": 29,
+      "code": "const { error } = await supabase.from(\"seasonal_bookings\").update(record as any).eq(\"id\", editingId);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/seasonal.repository.ts",
+      "line": 29,
+      "code": "const { error } = await supabase.from(\"seasonal_bookings\").update(record as any).eq(\"id\", editingId);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/seasonal.repository.ts",
+      "line": 32,
+      "code": "const { error } = await supabase.from(\"seasonal_bookings\").insert({ ...record, status: \"confirmed\" } as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/seasonal.repository.ts",
+      "line": 32,
+      "code": "const { error } = await supabase.from(\"seasonal_bookings\").insert({ ...record, status: \"confirmed\" } as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/seasonal.repository.ts",
+      "line": 42,
+      "code": "const { error } = await supabase.from(\"seasonal_bookings\").insert(records as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/seasonal.repository.ts",
+      "line": 42,
+      "code": "const { error } = await supabase.from(\"seasonal_bookings\").insert(records as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/seasonal.repository.ts",
+      "line": 90,
+      "code": "const { error } = await supabase.from(\"public_listings\").update(record as any).eq(\"id\", existingId);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/seasonal.repository.ts",
+      "line": 90,
+      "code": "const { error } = await supabase.from(\"public_listings\").update(record as any).eq(\"id\", existingId);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/seasonal.repository.ts",
+      "line": 93,
+      "code": "const { error } = await supabase.from(\"public_listings\").insert(record as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/seasonal.repository.ts",
+      "line": 93,
+      "code": "const { error } = await supabase.from(\"public_listings\").insert(record as any);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/settings.repository.ts",
+      "line": 7,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"name, email, country, locale, signature_url\").eq(\"id\", userId).",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/settings.repository.ts",
+      "line": 12,
+      "code": "await supabase.from(\"profiles\").update(updates as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/settings.repository.ts",
+      "line": 12,
+      "code": "await supabase.from(\"profiles\").update(updates as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/settings.repository.ts",
+      "line": 55,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"locale, currency\").eq(\"id\", userId).single();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/settings.repository.ts",
+      "line": 60,
+      "code": "await supabase.from(\"profiles\").update({ [field]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/settings.repository.ts",
+      "line": 60,
+      "code": "await supabase.from(\"profiles\").update({ [field]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/settings.repository.ts",
+      "line": 112,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"wallet_pin_hash, face_id_enabled, login_2fa_enabled, biometric_",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/settings.repository.ts",
+      "line": 117,
+      "code": "const { error } = await supabase.from(\"profiles\").update({ [column]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/settings.repository.ts",
+      "line": 117,
+      "code": "const { error } = await supabase.from(\"profiles\").update({ [column]: value } as any).eq(\"id\", userId);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/storefront.repository.ts",
+      "line": 120,
+      "code": "const { data, error } = await (supabase as any).from(\"storefront_products\").insert(record).select(\"*\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/storefront.repository.ts",
+      "line": 137,
+      "code": "const { data, error } = await (supabase as any).from(\"storefront_pages\").insert(record).select(\"*\").single();",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/storefront.repository.ts",
+      "line": 163,
+      "code": "await (supabase as any).from(\"ai_category_suggestions\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/tenant-docs.repository.ts",
+      "line": 58,
+      "code": "await (supabase as any).from(\"app_notifications\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/tenant-portal.repository.ts",
+      "line": 90,
+      "code": "await (supabase as any).from(\"app_notifications\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/tenant-portal.repository.ts",
+      "line": 109,
+      "code": "const { error } = await (supabase as any).from(\"reviews\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/tenant-portal.repository.ts",
+      "line": 134,
+      "code": ".update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })",
+      "entry": "receipt.markRead",
+      "pipeline": "pipeline.receipt.markRead.v1",
+      "owner": "orbitStore.receipts",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/tenant-portal.repository.ts",
+      "line": 159,
+      "code": "const { data } = await supabase.functions.invoke(\"translate-message\", {",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/tenant-portal.repository.ts",
+      "line": 166,
+      "code": "await (supabase as any).from(\"chat_messages_v2\").update({ metadata }).eq(\"id\", msgId);",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/tenant-portal.repository.ts",
+      "line": 170,
+      "code": "await (supabase as any).from(\"audit_logs\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/tenant-portal.repository.ts",
+      "line": 179,
+      "code": "const { data } = await supabase.from(\"profiles\").select(\"email\").eq(\"id\", userId).maybeSingle();",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/vault.repository.ts",
+      "line": 7,
+      "code": "const { data } = await supabase.from(\"vault_files\").select(\"*\").eq(\"org_id\", orgId).order(\"created_at\", { ascending: fal",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/vault.repository.ts",
+      "line": 17,
+      "code": "await (supabase as any).from(\"vault_files\").insert(record);",
+      "entry": "voice.send",
+      "pipeline": "pipeline.voice.send.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/repositories/vault.repository.ts",
+      "line": 28,
+      "code": "const { error } = await (supabase as any).from(\"vault_files\").delete().eq(\"id\", id);",
+      "entry": "media.send",
+      "pipeline": "pipeline.media.send.v1",
+      "owner": "orbitStore.attachments",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/stores/orbit/selection.store.ts",
+      "line": 42,
+      "code": "next.delete(messageId);",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    },
+    {
+      "file": "src/stores/orbit/selection.store.ts",
+      "line": 62,
+      "code": "next.delete(messageId);",
+      "entry": "message.sendText",
+      "pipeline": "pipeline.message.sendText.v1",
+      "owner": "orbitStore.messages",
+      "type": "write",
+      "riskLevel": "low"
+    }
+  ]
+}

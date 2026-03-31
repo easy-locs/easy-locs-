@@ -1,5 +1,6 @@
 /**
  * Orbit Domain — Concrete adapters wiring existing repositories to DDD ports.
+ * All writes route through orbitDb / repositories. No inline supabase.
  */
 import type {
   ConversationRepository, MessageRepository, CallRepository,
@@ -10,18 +11,14 @@ import { orbitEvents } from "../events";
 import { createDomainLogger } from "../../shared/observability";
 import * as commRepo from "@/repositories/communication.repository";
 import * as orbitRepo from "@/repositories/orbit.repository";
+import { orbitDb } from "@/lib/db/orbitDb";
 
 const log = createDomainLogger("orbit");
 
 // ── Conversation Adapter ──
 export const conversationAdapter: ConversationRepository = {
   async findById(id: string): Promise<Conversation | null> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase
-      .from("conversations_v2")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
+    const { data } = await orbitDb.conversations.byId(id);
     return data ? mapConversation(data) : null;
   },
 
@@ -34,9 +31,7 @@ export const conversationAdapter: ConversationRepository = {
   },
 
   async save(conversation: Conversation): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await (supabase as any).from("conversations_v2").upsert({
-      id: conversation.id,
+    await orbitDb.conversations.update(conversation.id, {
       participants: conversation.participants,
       type: conversation.type,
       group_name: conversation.groupName,
@@ -74,18 +69,14 @@ export const messageAdapter: MessageRepository = {
 // ── Call Adapter ──
 export const callAdapter: CallRepository = {
   async findById(id: string): Promise<CallSession | null> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await (supabase as any)
-      .from("ghost_call_sessions")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
+    const { callRepo } = await import("@/repositories/call.repository");
+    const { data } = await callRepo.findById(id);
     return data ? mapCallSession(data) : null;
   },
 
   async save(session: CallSession): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await (supabase as any).from("ghost_call_sessions").upsert({
+    const { callRepo } = await import("@/repositories/call.repository");
+    await callRepo.upsert({
       id: session.id,
       caller_id: session.callerId,
       callee_id: session.calleeId,
@@ -95,8 +86,8 @@ export const callAdapter: CallRepository = {
   },
 
   async updateStatus(id: string, status: CallSession["status"]): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await (supabase as any).from("ghost_call_sessions").update({ status }).eq("id", id);
+    const { callRepo } = await import("@/repositories/call.repository");
+    await callRepo.updateStatus(id, status);
     log.info("call_status_updated", { callId: id, status });
   },
 };

@@ -1,8 +1,9 @@
 /**
  * Global Support / SAV Engine
  * Multi-party dispute resolution with auto-detection, proof, SLA, and smart routing.
+ * All DB access via supportRepo.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { supportRepo } from "@/repositories/support.repository";
 import { eventBus } from "@/lib/core/event-bus";
 import { sendNotification } from "@/lib/engines/notification-engine";
 
@@ -94,26 +95,22 @@ export async function createDisputeTicket(params: {
   const slaDeadline = new Date(Date.now() + slaMinutes * 60_000).toISOString();
   const assignedTo = routeTicket(params.issueType);
 
-  const { data: ticket, error } = await (supabase as any)
-    .from("support_tickets")
-    .insert({
-      context_id: params.orderId,
-      context_type: "order",
-      ticket_type: params.issueType,
-      priority: severity,
-      subject: `${params.issueType.replace(/_/g, " ")} — Order ${params.orderId.slice(0, 8)}`,
-      status: "open",
-      requester_user_id: params.reporterUserId,
-      reporter_user_id: params.reporterUserId,
-      sla_deadline: slaDeadline,
-    })
-    .select("*")
-    .single();
+  const { data: ticket, error } = await supportRepo.tickets.insert({
+    context_id: params.orderId,
+    context_type: "order",
+    ticket_type: params.issueType,
+    priority: severity,
+    subject: `${params.issueType.replace(/_/g, " ")} — Order ${params.orderId.slice(0, 8)}`,
+    status: "open",
+    requester_user_id: params.reporterUserId,
+    reporter_user_id: params.reporterUserId,
+    sla_deadline: slaDeadline,
+  });
 
   if (error) throw error;
 
   // Add first message
-  await (supabase as any).from("support_ticket_messages").insert({
+  await supportRepo.messages.insert({
     ticket_id: ticket.id,
     sender_user_id: params.reporterUserId,
     sender_role: params.reportedBy,
@@ -149,38 +146,32 @@ export async function addProofToTicket(params: {
   fileUrl: string;
   description?: string;
 }) {
-  // Store proof as a message with metadata
-  const { error } = await (supabase as any)
-    .from("support_ticket_messages")
-    .insert({
-      ticket_id: params.ticketId,
-      sender_user_id: params.uploaderUserId,
-      sender_role: params.uploadedBy,
-      body: params.description || `${params.proofType} proof uploaded`,
-      metadata: {
-        proof_type: params.proofType,
-        file_url: params.fileUrl,
-        uploaded_at: new Date().toISOString(),
-      },
-    });
+  const { error } = await supportRepo.messages.insert({
+    ticket_id: params.ticketId,
+    sender_user_id: params.uploaderUserId,
+    sender_role: params.uploadedBy,
+    body: params.description || `${params.proofType} proof uploaded`,
+    metadata: {
+      proof_type: params.proofType,
+      file_url: params.fileUrl,
+      uploaded_at: new Date().toISOString(),
+    },
+  });
 
   if (error) throw error;
 }
 
 export async function escalateTicket(ticketId: string, reason: string) {
-  const { error } = await (supabase as any)
-    .from("support_tickets")
-    .update({
-      status: "escalated",
-      priority: "critical",
-      escalated_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", ticketId);
+  const { error } = await supportRepo.tickets.update(ticketId, {
+    status: "escalated",
+    priority: "critical",
+    escalated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  });
 
   if (error) throw error;
 
-  await (supabase as any).from("support_ticket_messages").insert({
+  await supportRepo.messages.insert({
     ticket_id: ticketId,
     sender_role: "system",
     body: `⚠️ Ticket escalated: ${reason}`,
@@ -214,12 +205,7 @@ export async function autoDetectIssues(ctx: OrderContext) {
 }
 
 export async function checkSlaBreaches() {
-  const { data: openTickets } = await (supabase as any)
-    .from("support_tickets")
-    .select("id, sla_deadline, status, priority")
-    .in("status", ["open", "in_progress"])
-    .not("sla_deadline", "is", null)
-    .limit(200);
+  const { data: openTickets } = await supportRepo.tickets.listOpen();
 
   let breached = 0;
   for (const t of openTickets ?? []) {
