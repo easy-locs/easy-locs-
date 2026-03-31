@@ -30,6 +30,15 @@ export const UNIVERSAL_DOMAIN_REGISTRY: DomainEntry[] = [
   { domain: "orbit", intent: "decline_call", entry: "orbitDispatch", pipeline: "callDeclinePipeline", owner: "callStore.sessions", selector: "selectActiveCall" },
   { domain: "orbit", intent: "end_call", entry: "orbitDispatch", pipeline: "callEndPipeline", owner: "callStore.sessions", selector: "selectActiveCall" },
 
+  // ── Orbit Groups ──
+  { domain: "orbit", intent: "group_create", entry: "orbitDispatch", pipeline: "groupCreatePipeline", owner: "orbitStore.conversations", selector: "selectConversation" },
+  { domain: "orbit", intent: "group_update", entry: "orbitDispatch", pipeline: "groupUpdatePipeline", owner: "orbitStore.conversations", selector: "selectConversation" },
+
+  // ── QR ──
+  { domain: "qr", intent: "scan_start", entry: "qrDispatch", pipeline: "qrScanPipeline", owner: "qrStore.status", selector: "selectQrState" },
+  { domain: "qr", intent: "scan_result", entry: "qrDispatch", pipeline: "qrParsePipeline", owner: "qrStore.payload", selector: "selectQrPayload" },
+  { domain: "qr", intent: "execute", entry: "qrDispatch", pipeline: "qrExecutePipeline", owner: "qrStore.status", selector: "selectQrState" },
+
   // ── Cards ──
   { domain: "cards", intent: "load_entity", entry: "cardDispatch", pipeline: "cardBuildPipeline", owner: "cardStore.entities", selector: "selectCardModel" },
   { domain: "cards", intent: "load_batch", entry: "cardDispatch", pipeline: "cardBatchPipeline", owner: "cardStore.entities", selector: "selectCardsByCategory" },
