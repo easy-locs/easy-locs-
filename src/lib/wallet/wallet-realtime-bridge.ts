@@ -4,6 +4,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { registerSubscription } from "@/lib/realtime/subscription-registry";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { registerChannel, recordEvent, unregisterChannel } from "@/lib/runtime/realtime-monitor";
 import { APP_EVENTS } from "@/lib/platform/events";
