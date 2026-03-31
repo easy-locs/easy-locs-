@@ -1,20 +1,20 @@
 /**
  * BubbleMetaFooter — WhatsApp-grade message footer.
- * Shows: time + edit badge + security + delivery status (⏳ → ✓ → ✓✓ → ✓✓ blue)
+ * Shows: time + edit badge + security + delivery status via unified MessageStatusBadge.
  * Memoized: only rerenders when status/time changes.
  */
 import { memo } from "react";
-import { Check, CheckCheck, WifiOff, Clock, AlertCircle } from "lucide-react";
+import { WifiOff } from "lucide-react";
 import { format } from "date-fns";
-
-type DeliveryStatus = "sending" | "sent" | "delivered" | "read" | "failed";
+import { MessageStatusBadge } from "@/components/orbit/MessageStatusBadge";
+import type { MessageStatus } from "@/domains/orbit/types";
 
 interface Props {
   createdAt: string;
   isMe: boolean;
   read?: boolean;
-  /** WhatsApp-style delivery status (overrides `read` if provided) */
-  deliveryStatus?: DeliveryStatus;
+  /** Canonical delivery status from status machine */
+  deliveryStatus?: MessageStatus;
   editedAt?: string | null;
   isPendingOffline?: boolean;
   /** Upload progress 0-100 (shown during media send) */
@@ -23,37 +23,11 @@ interface Props {
   securityLabel?: string;
 }
 
-function resolveStatus(props: Props): DeliveryStatus {
+function resolveStatus(props: Props): MessageStatus {
   if (props.deliveryStatus) return props.deliveryStatus;
   if (props.isPendingOffline) return "sending";
   if (props.read) return "read";
   return "sent";
-}
-
-/**
- * DeliveryTick — Fixed-width container prevents layout shift on status change.
- * Transition is opacity-only (no size/position change).
- */
-function DeliveryTick({ status }: { status: DeliveryStatus }) {
-  return (
-    <span className="inline-flex items-center justify-center w-3.5 h-3.5">
-      {status === "sending" && (
-        <Clock className="h-2.5 w-2.5 animate-pulse" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
-      )}
-      {status === "sent" && (
-        <Check className="h-3 w-3 animate-[fade-in_120ms_ease-out]" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }} />
-      )}
-      {status === "delivered" && (
-        <CheckCheck className="h-3 w-3 animate-[fade-in_120ms_ease-out]" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }} />
-      )}
-      {status === "read" && (
-        <CheckCheck className="h-3 w-3 animate-[fade-in_120ms_ease-out]" style={{ color: "hsl(var(--hud-cyan))" }} />
-      )}
-      {status === "failed" && (
-        <AlertCircle className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-danger) / 0.8)" }} />
-      )}
-    </span>
-  );
 }
 
 function BubbleMetaFooterInner(props: Props) {
@@ -73,7 +47,7 @@ function BubbleMetaFooterInner(props: Props) {
       {isMe && isPendingOffline ? (
         <WifiOff className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-danger) / 0.6)" }} />
       ) : isMe && (
-        <DeliveryTick status={status} />
+        <MessageStatusBadge status={status} isMe={isMe} progress={progress} />
       )}
     </div>
   );
