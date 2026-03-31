@@ -97,14 +97,6 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
   receipts: {},
   tempIdMap: {},
   activeConversationId: null,
-  hydrating: false,
-  messages: {},
-  messagesByConversation: {},
-  attachments: {},
-  receipts: {},
-  tempIdMap: {},
-  activeConversationId: null,
-  hydrating: false,
 
   // ── CONVERSATION ──
 
