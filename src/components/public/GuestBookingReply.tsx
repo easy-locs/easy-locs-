@@ -8,6 +8,8 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { createAppNotification } from "@/lib/notifications/app-notification-service";
 import { insertMessage, updateConversationTimestamp, fetchGroupMessages } from "@/repositories/communication.repository";
+// NOTE: GuestBookingReply is a PUBLIC page (no auth context) — cannot use orbitDispatch.
+// Direct repository access is permissible for public/guest domain orchestrators.
 
 const db = supabase as any;
 
