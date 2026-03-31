@@ -24,5 +24,10 @@ export {
 // ── Notifications ──
 export { useNotificationsCenter } from "@/hooks/useNotificationsCenter";
 
+// ── SSOT Layer ──
+export { selectCachedGeo, selectTimezone, selectUserLocation, useLocationSelectors, persistGeoCache } from "./dashboard.selectors";
+export { projectHeroBanner, projectCategories, projectContextBanners } from "./dashboard.read-model";
+export { useDashboardViewModel } from "./dashboard.view-model";
+
 // Dashboard family owns: role-aware cards, summaries, counts, alerts,
 // tasks, quick actions, activity feed, decision cockpit
