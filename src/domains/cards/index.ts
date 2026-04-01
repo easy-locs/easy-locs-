@@ -10,7 +10,7 @@ export { buildCardContract } from "./card-contract";
 export type { CardContract, CardStatus, CardDomain, CardAction, CardRegistryEntry } from "./card-contract";
 
 // ── Registry (central manifest) ──
-export { CARD_REGISTRY, getRegistryForSurface, getRegistryForDomain, getCardsByConnectionStatus, getCardAuditSummary } from "./card-registry";
+export { CARD_REGISTRY, getRegistryForSurface, getRegistryForDomain, getCardsByConnectionStatus, getCardAuditSummary, computeConnectionStatus, hasKnownAdapter } from "./card-registry";
 
 // ── Shell (uniform rendering) ──
 export { CardShell } from "./CardShell";
@@ -32,12 +32,44 @@ export type { CardViewModel } from "./selectors";
 // ── Pipeline ──
 export { cardBuildPipeline } from "./pipelines/card-build.pipeline";
 
-// ── Adapters (per-domain hooks) ──
+// ── Adapters: Home ──
 export {
   useHeroBannerCard,
+  useQuickActionsCard,
   useCategoryGridCard,
+  useContextBannersCard,
+  useBoostSlotHeroCard,
+  useLiveMapCard,
   useTrendingSectionCard,
   useBestRatedSectionCard,
-  useContextBannersCard,
-  useLiveMapCard,
+  useNewestSectionCard,
+  useNearYouSectionCard,
+  useOnboardingChecklistCard,
+  useSmartRecommendationsCard,
 } from "./adapters/home-card-adapters";
+
+// ── Adapters: Driver ──
+export {
+  useDriverStatusCard,
+  useDriverPositioningCard,
+  useDriverEarningsCard,
+} from "./adapters/driver-card-adapters";
+
+// ── Adapters: Seller ──
+export {
+  useSellerBusinessesCard,
+  useSellerListingLifecycleCard,
+} from "./adapters/seller-card-adapters";
+
+// ── Adapters: Admin ──
+export {
+  useOpsMetricsCard,
+  useSuperMetricsCard,
+} from "./adapters/admin-card-adapters";
+
+// ── Adapters: Global ──
+export {
+  useWalletBalanceCard,
+  useOrbitRecentChatsCard,
+  useNotificationsBadgeCard,
+} from "./adapters/global-card-adapters";
