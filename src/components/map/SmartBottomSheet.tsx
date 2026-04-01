@@ -1,11 +1,12 @@
 /**
  * SmartBottomSheet — Premium draggable results sheet for the SuperMap.
  * Shows search results with brand logos, service icons, distance, and actions.
+ * Uses unified mapStore.
  */
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import { ChevronRight, Navigation, Phone, MapPin, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSmartMapStore, type SheetSnapPoint } from "@/stores/smartMapStore";
+import { useUnifiedMapStore, type SheetSnapPoint } from "@/stores/mapStore";
 import type { MapSearchResult } from "@/lib/map/smart-map-search";
 
 function ResultItem({ result, selected, onSelect }: {
@@ -73,11 +74,11 @@ function ResultItem({ result, selected, onSelect }: {
 }
 
 function SheetContent() {
-  const results = useSmartMapStore(s => s.search.results);
-  const intent = useSmartMapStore(s => s.search.intent);
-  const selectedId = useSmartMapStore(s => s.selectedResultId);
-  const selectResult = useSmartMapStore(s => s.selectResult);
-  const sheetSnap = useSmartMapStore(s => s.sheetSnap);
+  const results = useUnifiedMapStore(s => s.search.results);
+  const intent = useUnifiedMapStore(s => s.search.intent);
+  const selectedId = useUnifiedMapStore(s => s.selectedEntityId);
+  const selectEntity = useUnifiedMapStore(s => s.selectEntity);
+  const sheetSnap = useUnifiedMapStore(s => s.sheetSnap);
 
   const selected = results.find(r => r.id === selectedId);
 
@@ -162,7 +163,7 @@ function SheetContent() {
             key={r.id}
             result={r}
             selected={r.id === selectedId}
-            onSelect={() => selectResult(r.id)}
+            onSelect={() => selectEntity(r.id)}
           />
         ))}
       </div>
@@ -171,9 +172,9 @@ function SheetContent() {
 }
 
 export default memo(function SmartBottomSheet() {
-  const sheetSnap = useSmartMapStore(s => s.sheetSnap);
-  const setSheetSnap = useSmartMapStore(s => s.setSheetSnap);
-  const clearSearch = useSmartMapStore(s => s.clearSearch);
+  const sheetSnap = useUnifiedMapStore(s => s.sheetSnap);
+  const setSheetSnap = useUnifiedMapStore(s => s.setSheetSnap);
+  const clearSearch = useUnifiedMapStore(s => s.clearSearch);
 
   if (sheetSnap === "closed") return null;
 

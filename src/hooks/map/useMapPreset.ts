@@ -1,9 +1,9 @@
 /**
- * useMapPreset — Resolves the active map preset from SuperMap mode.
+ * useMapPreset — Resolves the active map preset from unified mapStore mode.
  * Weather display is governed by weatherDisplayStore, not here.
  */
 import { useMemo } from "react";
-import { useSuperMapStore } from "@/stores/superMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { MAP_PRESETS, type MapScreenPreset } from "@/lib/map/presets/map-screen-presets";
 import type { SuperMapMode } from "@/lib/map/superMapLayers";
@@ -21,8 +21,8 @@ const MODE_TO_PRESET: Record<SuperMapMode, string> = {
 };
 
 export function useMapPreset(): MapScreenPreset {
-  const mode = useSuperMapStore(s => s.mode);
-  const showHeatmap = useSuperMapStore(s => s.showHeatmap);
+  const mode = useUnifiedMapStore(s => s.mapMode);
+  const showHeatmap = useUnifiedMapStore(s => s.showHeatmap);
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
 
   return useMemo(() => {

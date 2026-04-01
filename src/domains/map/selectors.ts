@@ -1,10 +1,10 @@
 /**
- * Map Selectors — Read-only projections from superMapStore.
+ * Map Selectors — Read-only projections from unified mapStore.
  */
-import { useSuperMapStore } from "@/stores/superMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 
 export function selectVisiblePins() {
-  const { entities, selectedEntityId } = useSuperMapStore.getState();
+  const { entities, selectedEntityId } = useUnifiedMapStore.getState();
   return entities.map((e) => ({
     ...e,
     selected: e.id === selectedEntityId,
@@ -12,6 +12,6 @@ export function selectVisiblePins() {
 }
 
 export function selectMapViewport() {
-  const { centerLat, centerLng, zoom } = useSuperMapStore.getState();
-  return { centerLat, centerLng, zoom };
+  const { viewport } = useUnifiedMapStore.getState();
+  return { centerLat: viewport.centerLat, centerLng: viewport.centerLng, zoom: viewport.zoom };
 }

@@ -1,9 +1,10 @@
 /**
  * SuperMap — Thin UI shell. All logic delegated to hooks.
  * Zero business logic. Zero inline animations. Zero inline data sync.
+ * Uses unified mapStore.
  */
 import { useRef, memo } from "react";
-import { useSuperMapStore } from "@/stores/superMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useMapCore } from "@/hooks/map/useMapCore";
 import { useMapDataSync } from "@/hooks/map/useMapDataSync";
@@ -34,10 +35,10 @@ export default memo(function SuperMap({
 }: SuperMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const centerLat = useSuperMapStore(s => s.centerLat);
-  const centerLng = useSuperMapStore(s => s.centerLng);
-  const zoom = useSuperMapStore(s => s.zoom);
-  const entities = useSuperMapStore(s => s.entities);
+  const centerLat = useUnifiedMapStore(s => s.viewport.centerLat);
+  const centerLng = useUnifiedMapStore(s => s.viewport.centerLng);
+  const zoom = useUnifiedMapStore(s => s.viewport.zoom);
+  const entities = useUnifiedMapStore(s => s.entities);
 
   const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
 
@@ -97,7 +98,7 @@ export default memo(function SuperMap({
         </>
       )}
 
-      {/* Controls — self-contained, reads from weatherDisplayStore + superMapStore */}
+      {/* Controls */}
       <div className="absolute bottom-3 right-3 z-30 flex max-w-[calc(100%-1.5rem)] justify-end">
         <MapControls onRecenter={recenter} />
       </div>
