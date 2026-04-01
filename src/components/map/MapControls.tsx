@@ -1,73 +1,84 @@
-import { CloudRain, LocateFixed, Radio, CarFront, Sparkles, Zap } from "lucide-react";
+/**
+ * MapControls — Premium vertical control stack (Uber/Apple style).
+ * Compact 44x44 buttons with glass effect.
+ */
+import { LocateFixed, Plus, Minus, Layers, CloudRain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 
-function Chip({ active, label, icon: Icon, onClick }: { active: boolean; label: string; icon: React.ElementType; onClick: () => void }) {
+function ControlButton({
+  icon: Icon,
+  active,
+  onClick,
+  label,
+}: {
+  icon: React.ElementType;
+  active?: boolean;
+  onClick: () => void;
+  label: string;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-label={label}
       className={cn(
-        "inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-[10px] font-semibold shadow-sm backdrop-blur-md transition-all active:scale-95",
-        active ? "border-primary/20 bg-primary text-primary-foreground" : "border-border/25 bg-card/85 text-foreground",
+        "flex h-11 w-11 items-center justify-center rounded-[14px] border shadow-lg backdrop-blur-xl transition-all active:scale-[0.93]",
+        active
+          ? "border-primary/25 bg-primary/15 text-primary"
+          : "border-white/[0.06] bg-[rgba(12,18,32,0.82)] text-white/60 hover:text-white/80"
       )}
     >
-      <Icon className="h-3.5 w-3.5 shrink-0" />
-      <span>{label}</span>
+      <Icon className="h-[18px] w-[18px]" />
     </button>
   );
 }
 
 export default function MapControls({
   onRecenter,
+  onZoomIn,
+  onZoomOut,
   className,
 }: {
   onRecenter?: () => void;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
   className?: string;
 }) {
-  // Weather display controls (overlay, not data)
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
   const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
-  const showStations = useWeatherDisplayStore(s => s.showStations);
-  const toggleStations = useWeatherDisplayStore(s => s.toggleStations);
-  const autoMode = useWeatherDisplayStore(s => s.autoMode);
-  const toggleAutoMode = useWeatherDisplayStore(s => s.toggleAutoMode);
-
-  // Map store controls
-  const showMobility = useUnifiedMapStore(s => s.showMobility);
-  const toggleMobility = useUnifiedMapStore(s => s.toggleMobility);
   const showHeatmap = useUnifiedMapStore(s => s.showHeatmap);
   const toggleHeatmap = useUnifiedMapStore(s => s.toggleHeatmap);
 
   const toggleRadar = () => {
-    // Cycle: off → minimal → full → off
-    const next = radarOverlay === "off" ? "full" : radarOverlay === "full" ? "minimal" : "off";
+    const next = radarOverlay === "off" ? "full" : "off";
     setRadarOverlay(next);
   };
 
   return (
-    <div className={cn("pointer-events-auto flex flex-wrap items-center gap-2", className)}>
-      <Chip
-        active={radarOverlay !== "off"}
-        label={radarOverlay === "minimal" ? "Radar ·" : "Radar"}
+    <div className={cn("pointer-events-auto flex flex-col gap-2.5", className)}>
+      {onRecenter && (
+        <ControlButton icon={LocateFixed} onClick={onRecenter} label="Recenter" />
+      )}
+      {onZoomIn && (
+        <ControlButton icon={Plus} onClick={onZoomIn} label="Zoom in" />
+      )}
+      {onZoomOut && (
+        <ControlButton icon={Minus} onClick={onZoomOut} label="Zoom out" />
+      )}
+      <ControlButton
         icon={CloudRain}
+        active={radarOverlay !== "off"}
         onClick={toggleRadar}
+        label="Toggle radar"
       />
-      <Chip active={showStations} label="Stations" icon={Radio} onClick={toggleStations} />
-      <Chip active={showMobility} label="Live" icon={CarFront} onClick={toggleMobility} />
-      <Chip active={showHeatmap} label="Zones" icon={Sparkles} onClick={toggleHeatmap} />
-      <Chip active={autoMode} label="Auto" icon={Zap} onClick={toggleAutoMode} />
-      {onRecenter ? (
-        <button
-          type="button"
-          onClick={onRecenter}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/25 bg-card/85 text-foreground shadow-sm backdrop-blur-md transition-all active:scale-95"
-          aria-label="Recenter"
-        >
-          <LocateFixed className="h-3.5 w-3.5" />
-        </button>
-      ) : null}
+      <ControlButton
+        icon={Layers}
+        active={showHeatmap}
+        onClick={toggleHeatmap}
+        label="Toggle layers"
+      />
     </div>
   );
 }
