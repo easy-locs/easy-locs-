@@ -190,49 +190,42 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
   );
 }
 
-/* ═══ Data-Driven Section ═══ */
-function DynamicSection({ section, shops, index }: { section: { key: string; title: string; icon: string }; shops: any[]; index: number }) {
-  if (shops.length === 0) return null;
+/* ═══ Data-Driven Section — Now uses LifecycleCardShell + UniverseCard ═══ */
+function AdapterSection({ title, icon, cardStatus, shops, seeAllTo }: {
+  title: string;
+  icon: string;
+  cardStatus: import("@/domains/cards/card-contract").CardStatus;
+  shops: any[];
+  seeAllTo: string;
+}) {
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + index * 0.04 }} className="mb-4">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
       <div className="flex items-center justify-between mb-2 px-1">
         <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-          <span>{section.icon}</span> {section.title}
+          <span>{icon}</span> {title}
         </h3>
-        <Link to="/radar" className="text-[11px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
+        <Link to={seeAllTo} className="text-[11px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
           See all <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none px-1">
-        {shops.map((shop: any) => (
-          <Link
-            key={shop.id}
-            to={`/s/${shop.slug}`}
-            className="shrink-0 w-[170px] rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.96] transition-transform flex flex-col"
-          >
-            <div className="relative aspect-[16/10] flex items-center justify-center overflow-hidden rounded-t-2xl bg-muted/20 shrink-0">
-              {(shop.banner_url || shop.logo_url) ? (
-                <img src={shop.banner_url || shop.logo_url!} alt={shop.name} className="w-full h-full object-cover" loading="lazy" />
-              ) : (
-                <Star className="h-6 w-6 text-muted-foreground/20" />
-              )}
-            </div>
-            <div className="min-w-0 space-y-1.5 p-3 flex-1 flex flex-col">
-              <p className="text-xs font-bold leading-snug text-foreground line-clamp-2 break-words">{shop.name}</p>
-              <div className="flex items-start gap-1.5 mt-auto">
-                {shop.rating != null && shop.rating > 0 && (
-                  <span className="text-[10px] text-amber-500 font-semibold shrink-0">★ {Number(shop.rating).toFixed(1)}</span>
-                )}
-                <p className="line-clamp-2 min-w-0 text-[10px] leading-relaxed text-muted-foreground break-words">{shop.address || shop.vertical || "Dubai"}</p>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+      <LifecycleCardShell state={cardStatus} title={title} skeletonCount={3}>
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none px-1">
+          {shops.map((shop: any) => (
+            <UniverseCard
+              key={shop.id}
+              id={shop.id}
+              title={shop.name}
+              subtitle={shop.address || shop.vertical || "Dubai"}
+              image={shop.banner_url || shop.logo_url}
+              rating={shop.rating}
+              to={`/s/${shop.slug}`}
+            />
+          ))}
+        </div>
+      </LifecycleCardShell>
     </motion.div>
   );
 }
-
 /* ═══ Main Component — PURE SHELL ═══ */
 export default function SmartHome() {
   const vm = useDashboardViewModel();
