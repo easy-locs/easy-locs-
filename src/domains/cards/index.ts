@@ -32,33 +32,42 @@ export type { CardViewModel } from "./selectors";
 // ── Pipeline ──
 export { cardBuildPipeline } from "./pipelines/card-build.pipeline";
 
-// ── Adapters (per-surface hooks) ──
+// ── Adapters: Home ──
 export {
   useHeroBannerCard,
+  useQuickActionsCard,
   useCategoryGridCard,
+  useContextBannersCard,
+  useBoostSlotHeroCard,
+  useLiveMapCard,
   useTrendingSectionCard,
   useBestRatedSectionCard,
-  useContextBannersCard,
-  useLiveMapCard,
+  useNewestSectionCard,
+  useNearYouSectionCard,
+  useOnboardingChecklistCard,
   useSmartRecommendationsCard,
 } from "./adapters/home-card-adapters";
 
+// ── Adapters: Driver ──
 export {
   useDriverStatusCard,
   useDriverPositioningCard,
   useDriverEarningsCard,
 } from "./adapters/driver-card-adapters";
 
+// ── Adapters: Seller ──
 export {
   useSellerBusinessesCard,
   useSellerListingLifecycleCard,
 } from "./adapters/seller-card-adapters";
 
+// ── Adapters: Admin ──
 export {
   useOpsMetricsCard,
   useSuperMetricsCard,
 } from "./adapters/admin-card-adapters";
 
+// ── Adapters: Global ──
 export {
   useWalletBalanceCard,
   useOrbitRecentChatsCard,

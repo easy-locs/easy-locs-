@@ -1,6 +1,5 @@
 /**
  * Card Adapters — Seller Surface
- * Canonical adapters for seller-specific cards.
  */
 import { useMemo } from "react";
 import { buildCardContract, type CardContract } from "../card-contract";
@@ -16,7 +15,7 @@ export function useSellerBusinessesCard(): CardContract<{ count: number }> {
         id: "seller_businesses",
         domain: "marketplace",
         title: "My Businesses",
-        data: null, // populated by seller query pipeline
+        data: null,
         disabled: !user?.id,
         disabledReason: !user?.id ? "Not authenticated" : undefined,
         deepLink: "/seller",
@@ -42,10 +41,14 @@ export function useSellerListingLifecycleCard(): CardContract<{ activeCount: num
         id: "seller_listing_lifecycle",
         domain: "marketplace",
         title: "Listing Lifecycle",
-        data: null, // populated by seller pipeline
+        data: null,
         disabled: !user?.id,
         disabledReason: !user?.id ? "Not authenticated" : undefined,
         deepLink: "/seller",
+        primaryAction: {
+          label: "Manage Listings",
+          run: () => { window.location.href = "/seller"; },
+        },
       }),
     [user?.id],
   );

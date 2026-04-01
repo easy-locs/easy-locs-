@@ -14,7 +14,7 @@ export function useDriverStatusCard(): CardContract<{
   currentStatus: string;
 }> {
   const { user } = useAuth();
-  const { data: profile, isLoading, error } = useDriverLive(user?.id ?? null);
+  const { data: profile, error } = useDriverLive(user?.id ?? null);
 
   return useMemo(() => {
     const p = profile as any;
@@ -43,12 +43,11 @@ export function useDriverStatusCard(): CardContract<{
           }
         : undefined,
     });
-  }, [profile, isLoading, error, user?.id]);
+  }, [profile, error, user?.id]);
 }
 
 // ── Driver Positioning Card ──
 export function useDriverPositioningCard(): CardContract<{ zone: string | null }> {
-  // Reads from the same canonical pipeline as driver status
   const { user } = useAuth();
 
   return useMemo(
@@ -57,7 +56,7 @@ export function useDriverPositioningCard(): CardContract<{ zone: string | null }
         id: "driver_positioning",
         domain: "delivery",
         title: "Smart Positioning",
-        data: { zone: null }, // zone is populated on-demand via action
+        data: { zone: null },
         disabled: !user?.id,
         disabledReason: !user?.id ? "Not authenticated" : undefined,
         deepLink: "/driver",
@@ -83,10 +82,14 @@ export function useDriverEarningsCard(): CardContract<{ totalEarnings: number; c
         id: "driver_earnings",
         domain: "wallet",
         title: "Earnings",
-        data: null, // populated by wallet pipeline
+        data: null,
         disabled: !user?.id,
         disabledReason: !user?.id ? "Not authenticated" : undefined,
         deepLink: "/driver/earnings",
+        primaryAction: {
+          label: "View Earnings",
+          run: () => { window.location.href = "/driver/earnings"; },
+        },
       }),
     [user?.id],
   );
