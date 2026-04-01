@@ -1,10 +1,11 @@
 /**
  * GiftCardManager — Digital gift cards, store credit, promo codes.
  * Seller: create & manage. Buyer: purchase, redeem, transfer.
+ *
+ * ALL data access via gift-card.repository — zero direct supabase calls.
  */
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Gift, CreditCard, Send, Loader2, Plus, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+import { fetchGiftCards, createGiftCard, redeemGiftCard } from "@/repositories/gift-card.repository";
 
 interface Props {
   shopId: string;
@@ -50,30 +52,23 @@ export default function GiftCardManager({ shopId, mode }: Props) {
 
   const { data: cards = [], isLoading } = useQuery({
     queryKey: ["storefront-gift-cards", shopId, mode],
-    queryFn: async () => {
-      let q = (supabase as any).from("storefront_gift_cards").select("*").eq("shop_id", shopId);
-      if (mode === "buyer") q = q.or(`purchaser_id.eq.${user!.id},recipient_id.eq.${user!.id}`);
-      const { data } = await q.order("created_at", { ascending: false });
-      return data || [];
-    },
+    queryFn: () => fetchGiftCards(shopId, mode, user!.id),
     enabled: !!shopId && !!user,
   });
 
-  const createCard = useMutation({
+  const createCardMutation = useMutation({
     mutationFn: async () => {
       const code = generateCode();
       const num = parseFloat(amount);
       if (!num || num < 1) throw new Error("Invalid amount");
-      await (supabase as any).from("storefront_gift_cards").insert({
-        shop_id: shopId,
+      await createGiftCard({
+        shopId,
         code,
         type,
-        initial_amount: num,
-        remaining_amount: num,
-        purchaser_id: user!.id,
-        recipient_email: recipientEmail || null,
+        amount: num,
+        purchaserId: user!.id,
+        recipientEmail: recipientEmail || null,
         message: message || null,
-        expires_at: new Date(Date.now() + 365 * 86400000).toISOString(),
       });
     },
     onSuccess: () => {
@@ -87,27 +82,10 @@ export default function GiftCardManager({ shopId, mode }: Props) {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const redeemCard = useMutation({
+  const redeemCardMutation = useMutation({
     mutationFn: async () => {
       if (!redeemCode.trim()) throw new Error("Enter a code");
-      const { data: card } = await (supabase as any)
-        .from("storefront_gift_cards")
-        .select("*")
-        .eq("code", redeemCode.trim().toUpperCase())
-        .eq("shop_id", shopId)
-        .eq("status", "active")
-        .maybeSingle();
-      if (!card) throw new Error("Invalid or expired code");
-      await (supabase as any).from("storefront_gift_cards").update({
-        recipient_id: user!.id,
-        updated_at: new Date().toISOString(),
-      }).eq("id", card.id);
-      await (supabase as any).from("storefront_gift_card_transactions").insert({
-        gift_card_id: card.id,
-        amount: 0,
-        type: "purchase",
-        user_id: user!.id,
-      });
+      await redeemGiftCard(redeemCode, shopId, user!.id);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["storefront-gift-cards"] });
@@ -151,8 +129,8 @@ export default function GiftCardManager({ shopId, mode }: Props) {
               placeholder="Enter gift card code..."
               className="h-8 text-xs flex-1 uppercase font-mono"
             />
-            <Button size="sm" className="h-8 text-xs" disabled={!redeemCode.trim() || redeemCard.isPending} onClick={() => redeemCard.mutate()}>
-              {redeemCard.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Redeem"}
+            <Button size="sm" className="h-8 text-xs" disabled={!redeemCode.trim() || redeemCardMutation.isPending} onClick={() => redeemCardMutation.mutate()}>
+              {redeemCardMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Redeem"}
             </Button>
           </div>
         )}
@@ -186,8 +164,8 @@ export default function GiftCardManager({ shopId, mode }: Props) {
               <Input value={message} onChange={e => setMessage(e.target.value)} className="h-8 text-xs mt-1" placeholder="Happy birthday!" />
             </div>
             <div className="flex gap-2">
-              <Button size="sm" className="h-8 text-xs flex-1" disabled={createCard.isPending} onClick={() => createCard.mutate()}>
-                {createCard.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Gift className="h-3 w-3 mr-1" />}
+              <Button size="sm" className="h-8 text-xs flex-1" disabled={createCardMutation.isPending} onClick={() => createCardMutation.mutate()}>
+                {createCardMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Gift className="h-3 w-3 mr-1" />}
                 Create Gift Card
               </Button>
               <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setCreating(false)}>Cancel</Button>
