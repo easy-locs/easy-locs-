@@ -8,6 +8,7 @@ import SuperMap from "@/components/map/SuperMap";
 import SmartSearchBar from "@/components/map/SmartSearchBar";
 import SmartBottomSheet from "@/components/map/SmartBottomSheet";
 import WeatherHUD from "@/components/map/WeatherHUD";
+import MapControls from "@/components/map/MapControls";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useLocationStore } from "@/stores/locationStore";
 import { useQuery } from "@tanstack/react-query";
@@ -95,18 +96,22 @@ export default function SuperMapPage() {
     setZoom(16);
   }, [selectedEntityId, searchResults, setCenter, setZoom]);
 
+  const handleRecenter = () => {
+    if (currentLocation?.lat && currentLocation?.lng) {
+      setCenter(currentLocation.lat, currentLocation.lng);
+      setZoom(14);
+      useUnifiedMapStore.getState().setFollowUser();
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-0 bg-background">
       {/* Map canvas */}
       <SuperMap
         className="w-full h-full"
         showModeBar={false}
-        onSelectEntity={(entity) => {
-          selectEntity(entity.id);
-        }}
-        onZoneClick={() => {
-          selectEntity(null);
-        }}
+        onSelectEntity={(entity) => selectEntity(entity.id)}
+        onZoneClick={() => selectEntity(null)}
       />
 
       {/* TOP: Weather HUD + Search bar */}
@@ -128,24 +133,13 @@ export default function SuperMapPage() {
         </div>
       </div>
 
+      {/* RIGHT: Quick controls stack */}
+      <div className="absolute bottom-28 right-4 z-30 pointer-events-auto">
+        <MapControls onRecenter={handleRecenter} />
+      </div>
+
       {/* BOTTOM: Smart sheet */}
       <SmartBottomSheet />
-
-      {/* Mode bar at bottom-right, above sheet */}
-      <div className="absolute bottom-3 right-3 z-30 pointer-events-auto">
-        <SuperMapModeBarInline />
-      </div>
-    </div>
-  );
-}
-
-// Inline mode bar for layer controls
-import MapControls from "@/components/map/MapControls";
-
-function SuperMapModeBarInline() {
-  return (
-    <div className="flex flex-col gap-2">
-      <MapControls />
     </div>
   );
 }

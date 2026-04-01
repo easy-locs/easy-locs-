@@ -1,11 +1,12 @@
 /**
- * SmartBottomSheet — Premium draggable results sheet for the SuperMap.
- * Shows search results with brand logos, service icons, distance, and actions.
- * Uses unified mapStore.
+ * SmartBottomSheet — Premium Uber-style draggable results sheet.
+ * 3 snap points: collapsed (104px), half (45vh), expanded (82vh).
+ * Glass dark design with spring-like transitions.
  */
 import { memo } from "react";
 import { ChevronRight, Navigation, Phone, MapPin, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 import { useUnifiedMapStore, type SheetSnapPoint } from "@/stores/mapStore";
 import type { MapSearchResult } from "@/lib/map/smart-map-search";
 
@@ -29,14 +30,15 @@ function ResultItem({ result, selected, onSelect }: {
         selected ? "bg-white/[0.06]" : "hover:bg-white/[0.03]"
       )}
     >
-      {/* Icon/Logo */}
-      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl overflow-hidden"
-        style={{ backgroundColor: result.primaryColor + "15", border: `1px solid ${result.primaryColor}25` }}
+      {/* Icon/Logo — 48x48 */}
+      <div
+        className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl overflow-hidden"
+        style={{ backgroundColor: (result.primaryColor || "#666") + "15", border: `1px solid ${result.primaryColor || "#666"}25` }}
       >
         {result.logoUrl ? (
           <img src={result.logoUrl} alt="" className="h-8 w-8 object-contain" />
         ) : (
-          <span className="text-xl">{result.iconEmoji}</span>
+          <span className="text-xl">{result.iconEmoji || "📍"}</span>
         )}
       </div>
 
@@ -44,7 +46,7 @@ function ResultItem({ result, selected, onSelect }: {
       <div className="min-w-0 flex-1">
         <div className="text-[14px] font-semibold text-white/95 line-clamp-1">{result.displayName}</div>
         <div className="mt-0.5 flex items-center gap-2 text-[11px] text-white/40">
-          <span className="capitalize">{result.category.replace(/_/g, " ")}</span>
+          <span className="capitalize">{(result.category || "").replace(/_/g, " ")}</span>
           {distLabel && (
             <>
               <span className="text-white/15">·</span>
@@ -65,10 +67,7 @@ function ResultItem({ result, selected, onSelect }: {
         </div>
       </div>
 
-      {/* Distance badge */}
-      <div className="shrink-0">
-        <ChevronRight className="h-4 w-4 text-white/20" />
-      </div>
+      <ChevronRight className="h-4 w-4 shrink-0 text-white/20" />
     </button>
   );
 }
@@ -88,8 +87,8 @@ function SheetContent() {
       ? intent.token.iconLabel
       : "Résultats";
 
-  // If a result is selected and sheet is half, show detail
-  if (selected && sheetSnap === "half") {
+  // Detail view when entity selected
+  if (selected && (sheetSnap === "half" || sheetSnap === "expanded")) {
     const distLabel = selected.distanceM != null
       ? selected.distanceM < 1000
         ? `${Math.round(selected.distanceM)}m`
@@ -100,20 +99,21 @@ function SheetContent() {
 
     return (
       <div className="space-y-4">
-        {/* Header */}
         <div className="flex items-center gap-3">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl overflow-hidden"
-            style={{ backgroundColor: selected.primaryColor + "15", border: `1px solid ${selected.primaryColor}25` }}>
+          <div
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl overflow-hidden"
+            style={{ backgroundColor: (selected.primaryColor || "#666") + "15", border: `1px solid ${selected.primaryColor || "#666"}25` }}
+          >
             {selected.logoUrl ? (
               <img src={selected.logoUrl} alt="" className="h-10 w-10 object-contain" />
             ) : (
-              <span className="text-2xl">{selected.iconEmoji}</span>
+              <span className="text-2xl">{selected.iconEmoji || "📍"}</span>
             )}
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-[16px] font-bold text-white/95 line-clamp-1">{selected.displayName}</h3>
             <div className="mt-0.5 flex items-center gap-2 text-[12px] text-white/40">
-              <span className="capitalize">{selected.category.replace(/_/g, " ")}</span>
+              <span className="capitalize">{(selected.category || "").replace(/_/g, " ")}</span>
               {distLabel && (
                 <>
                   <span className="text-white/15">·</span>
@@ -124,7 +124,6 @@ function SheetContent() {
           </div>
         </div>
 
-        {/* Address if available */}
         {(selected.tags?.["addr:street"] || selected.tags?.["addr:city"]) && (
           <div className="flex items-start gap-2 rounded-xl bg-white/[0.03] px-3 py-2.5">
             <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/30" />
@@ -134,7 +133,6 @@ function SheetContent() {
           </div>
         )}
 
-        {/* CTA row */}
         <div className="flex gap-2">
           <button className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-[13px] font-semibold text-primary-foreground active:scale-[0.97] transition-transform">
             <Navigation className="h-4 w-4" />
@@ -157,7 +155,7 @@ function SheetContent() {
         <h3 className="text-[14px] font-semibold text-white/80">{intentLabel}</h3>
         <span className="text-[11px] text-white/30">{results.length} résultats</span>
       </div>
-      <div className="space-y-0.5 max-h-[50vh] overflow-y-auto">
+      <div className="space-y-0.5 max-h-[50vh] overflow-y-auto scrollbar-none">
         {results.map(r => (
           <ResultItem
             key={r.id}
@@ -171,6 +169,13 @@ function SheetContent() {
   );
 }
 
+const SNAP_HEIGHTS: Record<SheetSnapPoint, string> = {
+  closed: "0px",
+  collapsed: "104px",
+  half: "45vh",
+  expanded: "82vh",
+};
+
 export default memo(function SmartBottomSheet() {
   const sheetSnap = useUnifiedMapStore(s => s.sheetSnap);
   const setSheetSnap = useUnifiedMapStore(s => s.setSheetSnap);
@@ -178,54 +183,53 @@ export default memo(function SmartBottomSheet() {
 
   if (sheetSnap === "closed") return null;
 
-  const heightClass = sheetSnap === "expanded"
-    ? "max-h-[82vh]"
-    : sheetSnap === "half"
-      ? "max-h-[45vh]"
-      : "max-h-[104px]";
-
   return (
-    <div
-      className={cn(
-        "absolute bottom-0 left-0 right-0 z-40 transition-all duration-300 ease-out",
-        heightClass,
-      )}
-    >
-      <div
-        className="h-full rounded-t-[28px] border-t border-white/[0.06] overflow-hidden"
-        style={{
-          background: "rgba(8,12,24,0.96)",
-          boxShadow: "0 -20px 60px rgba(0,0,0,0.5)",
-          backdropFilter: "blur(24px)",
-        }}
+    <AnimatePresence>
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 z-40"
+        initial={{ y: "100%" }}
+        animate={{ y: 0, height: SNAP_HEIGHTS[sheetSnap] }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 28, stiffness: 300 }}
       >
-        {/* Grip + close */}
-        <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <button
-            type="button"
-            onClick={() => {
-              if (sheetSnap === "collapsed") setSheetSnap("half");
-              else if (sheetSnap === "half") setSheetSnap("expanded");
-              else setSheetSnap("half");
-            }}
-            className="mx-auto"
-          >
-            <div className="h-1 w-9 rounded-full bg-white/20" />
-          </button>
-          <button
-            type="button"
-            onClick={() => clearSearch()}
-            className="absolute right-4 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.06] active:scale-95"
-          >
-            <X className="h-3.5 w-3.5 text-white/40" />
-          </button>
-        </div>
+        <div
+          className="h-full rounded-t-[28px] border-t border-white/[0.06] overflow-hidden"
+          style={{
+            background: "rgba(8,12,24,0.96)",
+            boxShadow: "0 -20px 60px rgba(0,0,0,0.5)",
+            backdropFilter: "blur(24px)",
+          }}
+        >
+          {/* Grip + close */}
+          <div className="relative flex items-center justify-center px-4 pt-3 pb-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (sheetSnap === "collapsed") setSheetSnap("half");
+                else if (sheetSnap === "half") setSheetSnap("expanded");
+                else setSheetSnap("half");
+              }}
+              className="p-2"
+              aria-label="Expand sheet"
+            >
+              <div className="h-1 w-9 rounded-full bg-white/20" />
+            </button>
+            <button
+              type="button"
+              onClick={() => clearSearch()}
+              className="absolute right-4 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.06] active:scale-95 transition-transform"
+              aria-label="Close"
+            >
+              <X className="h-3.5 w-3.5 text-white/40" />
+            </button>
+          </div>
 
-        {/* Content */}
-        <div className="px-4 pb-4 overflow-y-auto" style={{ maxHeight: "calc(100% - 44px)" }}>
-          <SheetContent />
+          {/* Content */}
+          <div className="px-4 pb-4 overflow-y-auto scrollbar-none" style={{ maxHeight: "calc(100% - 44px)" }}>
+            <SheetContent />
+          </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 });
