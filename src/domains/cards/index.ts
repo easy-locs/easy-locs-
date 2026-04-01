@@ -7,7 +7,7 @@
 
 // ── Contract (strict uniform interface) ──
 export { buildCardContract } from "./card-contract";
-export type { CardContract, CardStatus, CardDomain, CardAction, CardRegistryEntry } from "./card-contract";
+export type { CardContract, CardStatus, CardDomain, CardAction, CardRegistryEntry, CardClassification, CardActionType } from "./card-contract";
 
 // ── Registry (central manifest) ──
 export { CARD_REGISTRY, getRegistryForSurface, getRegistryForDomain, getCardsByConnectionStatus, getCardAuditSummary, computeConnectionStatus, hasKnownAdapter } from "./card-registry";
