@@ -7,6 +7,14 @@
 /** Card lifecycle states — no card may render without one of these */
 export type CardStatus = "live" | "loading" | "empty" | "error" | "disabled";
 
+/** Card classification — separates real business cards from utility/navigation */
+export type CardClassification =
+  | "business_data_card"         // Real business data with live pipeline
+  | "utility_navigation_card"    // Navigation shortcuts, no deep business data
+  | "on_demand_orchestration_card" // Triggers an action on demand, not continuous
+  | "local_only_temporary_card"  // State is local/ephemeral, not persisted
+  | "delegated_pipeline_card";   // Data pipeline owned by another renderer
+
 /** Action classification — distinguishes navigation from real business actions */
 export type CardActionType = "navigation" | "business" | "mutation" | "orchestration";
 
