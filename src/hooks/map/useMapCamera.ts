@@ -1,17 +1,20 @@
 /**
  * useMapCamera — Fit bounds + recenter logic, extracted from SuperMap.
+ * Uses unified mapStore. GPS from locationStore.
  */
 import { useEffect } from "react";
 import mapboxgl from "mapbox-gl";
-import { useSuperMapStore } from "@/stores/superMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
+import { useLocationStore } from "@/stores/locationStore";
 
 export function useMapCamera(
   mapRef: React.RefObject<mapboxgl.Map | null>,
   ready: boolean
 ) {
-  const entities = useSuperMapStore(s => s.entities);
-  const userLat = useSuperMapStore(s => s.userLat);
-  const userLng = useSuperMapStore(s => s.userLng);
+  const entities = useUnifiedMapStore(s => s.entities);
+  const currentLocation = useLocationStore(s => s.currentLocation);
+  const userLat = currentLocation?.lat ?? null;
+  const userLng = currentLocation?.lng ?? null;
 
   // Fit bounds on entity change
   useEffect(() => {

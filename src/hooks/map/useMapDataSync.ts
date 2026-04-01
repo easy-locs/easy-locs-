@@ -1,5 +1,6 @@
 /**
  * useMapDataSync — Syncs store data to map layers. Pure data pipeline, no UI.
+ * Uses unified mapStore. GPS read from locationStore.
  */
 import { useEffect } from "react";
 import type mapboxgl from "mapbox-gl";
@@ -11,29 +12,32 @@ import {
   SOURCES,
   VERTICAL_COLORS,
 } from "@/lib/map/superMapLayers";
-import { useSuperMapStore } from "@/stores/superMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
+import { useLocationStore } from "@/stores/locationStore";
 import {
   ensureLiveStationLayers,
   buildStationGeoJSON,
   STATION_SOURCE,
 } from "@/lib/map/live-stations-engine";
-import type { SuperMapMode } from "@/lib/map/superMapLayers";
 
 /**
  * Sets up legacy layers and syncs all store data to Mapbox sources.
  * Call once after map is ready.
  */
 export function useMapDataSync(mapRef: React.RefObject<mapboxgl.Map | null>, ready: boolean) {
-  const mode = useSuperMapStore(s => s.mode);
-  const entities = useSuperMapStore(s => s.entities);
-  const mobilityPoints = useSuperMapStore(s => s.mobilityPoints);
-  const zones = useSuperMapStore(s => s.zones);
-  const selectedEntityId = useSuperMapStore(s => s.selectedEntityId);
-  const showHeatmap = useSuperMapStore(s => s.showHeatmap);
-  const showRadius = useSuperMapStore(s => s.showRadius);
-  const radiusKm = useSuperMapStore(s => s.radiusKm);
-  const userLat = useSuperMapStore(s => s.userLat);
-  const userLng = useSuperMapStore(s => s.userLng);
+  const mapMode = useUnifiedMapStore(s => s.mapMode);
+  const entities = useUnifiedMapStore(s => s.entities);
+  const mobilityPoints = useUnifiedMapStore(s => s.mobilityPoints);
+  const zones = useUnifiedMapStore(s => s.zones);
+  const selectedEntityId = useUnifiedMapStore(s => s.selectedEntityId);
+  const showHeatmap = useUnifiedMapStore(s => s.showHeatmap);
+  const showRadius = useUnifiedMapStore(s => s.showRadius);
+  const radiusKm = useUnifiedMapStore(s => s.radiusKm);
+
+  // GPS from locationStore (canonical source)
+  const currentLocation = useLocationStore(s => s.currentLocation);
+  const userLat = currentLocation?.lat ?? null;
+  const userLng = currentLocation?.lng ?? null;
 
   // Setup legacy layers on first ready
   useEffect(() => {
@@ -46,8 +50,8 @@ export function useMapDataSync(mapRef: React.RefObject<mapboxgl.Map | null>, rea
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    applyMapMode(map, showHeatmap ? "radar" : mode);
-  }, [mode, showHeatmap, ready]);
+    applyMapMode(map, showHeatmap ? "radar" : mapMode);
+  }, [mapMode, showHeatmap, ready]);
 
   // Places
   useEffect(() => {

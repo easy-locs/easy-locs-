@@ -1,10 +1,12 @@
 /**
  * useMapWeather — Weather data (always-on) + display (user/auto controlled).
  * Separated: data layer vs overlay vs effects vs alerts.
+ * Uses unified mapStore. GPS from locationStore.
  */
 import { useEffect, useRef } from "react";
 import type mapboxgl from "mapbox-gl";
-import { useSuperMapStore } from "@/stores/superMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useRainRadar } from "@/hooks/useRainRadar";
@@ -27,11 +29,14 @@ export function useMapWeather(
   mapRef: React.RefObject<mapboxgl.Map | null>,
   ready: boolean
 ) {
-  const centerLat = useSuperMapStore(s => s.centerLat);
-  const centerLng = useSuperMapStore(s => s.centerLng);
-  const userLat = useSuperMapStore(s => s.userLat);
-  const userLng = useSuperMapStore(s => s.userLng);
-  const showMobility = useSuperMapStore(s => s.showMobility);
+  const centerLat = useUnifiedMapStore(s => s.viewport.centerLat);
+  const centerLng = useUnifiedMapStore(s => s.viewport.centerLng);
+  const showMobility = useUnifiedMapStore(s => s.showMobility);
+
+  // GPS from locationStore (canonical)
+  const currentLocation = useLocationStore(s => s.currentLocation);
+  const userLat = currentLocation?.lat ?? null;
+  const userLng = currentLocation?.lng ?? null;
 
   // Display controls (user/auto managed)
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);

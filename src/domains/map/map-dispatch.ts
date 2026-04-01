@@ -1,6 +1,9 @@
 /**
  * mapDispatch — Single entry for all map intents.
+ * Uses unified mapStore.
  */
+import { useUnifiedMapStore } from "@/stores/mapStore";
+import type { SuperMapMode } from "@/lib/map/superMapLayers";
 
 export type MapCommand =
   | { type: "update_viewport"; lat: number; lng: number; zoom?: number }
@@ -16,8 +19,7 @@ export interface MapCommandResult {
 
 export async function mapDispatch(cmd: MapCommand): Promise<MapCommandResult> {
   try {
-    const { useSuperMapStore } = await import("@/stores/superMapStore");
-    const store = useSuperMapStore.getState();
+    const store = useUnifiedMapStore.getState();
 
     switch (cmd.type) {
       case "update_viewport":
@@ -40,7 +42,7 @@ export async function mapDispatch(cmd: MapCommand): Promise<MapCommandResult> {
         return { ok: true };
 
       case "set_mode":
-        store.setMode(cmd.mode as any);
+        store.setMode(cmd.mode as SuperMapMode);
         return { ok: true };
 
       default:
