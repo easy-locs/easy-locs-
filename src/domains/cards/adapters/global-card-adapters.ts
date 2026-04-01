@@ -1,6 +1,5 @@
 /**
  * Card Adapters — Global (cross-surface)
- * These cards appear across multiple surfaces.
  */
 import { useMemo } from "react";
 import { buildCardContract, type CardContract } from "../card-contract";
@@ -11,7 +10,6 @@ export function useWalletBalanceCard(): CardContract<{ balance: number; currency
   const { user } = useAuth();
 
   return useMemo(() => {
-    // Read from canonical wallet store
     let walletData: { balance: number; currency: string } | null = null;
     try {
       const { useWalletStore } = require("@/stores/walletStore");
@@ -67,6 +65,10 @@ export function useOrbitRecentChatsCard(): CardContract<{ unreadCount: number }>
       disabled: !user?.id,
       disabledReason: !user?.id ? "Not authenticated" : undefined,
       deepLink: "/orbit",
+      primaryAction: {
+        label: "Open Messages",
+        run: () => { window.location.href = "/orbit"; },
+      },
     });
   }, [user?.id]);
 }
@@ -81,10 +83,14 @@ export function useNotificationsBadgeCard(): CardContract<{ count: number }> {
         id: "notifications_badge",
         domain: "notifications",
         title: "Notifications",
-        data: null, // populated by notifications query
+        data: null,
         disabled: !user?.id,
         disabledReason: !user?.id ? "Not authenticated" : undefined,
         deepLink: "/notifications",
+        primaryAction: {
+          label: "View All",
+          run: () => { window.location.href = "/notifications"; },
+        },
       }),
     [user?.id],
   );

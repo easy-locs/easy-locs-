@@ -1,6 +1,5 @@
 /**
  * Card Adapters — Admin Surface
- * Canonical adapters for admin ops/super cards.
  */
 import { useMemo } from "react";
 import { buildCardContract, type CardContract } from "../card-contract";
@@ -13,8 +12,12 @@ export function useOpsMetricsCard(): CardContract<Record<string, number>> {
         id: "ops_metrics",
         domain: "analytics",
         title: "Operations Metrics",
-        data: null, // populated by admin ops query pipeline
+        data: null,
         deepLink: "/admin/ops",
+        primaryAction: {
+          label: "View Dashboard",
+          run: () => { window.location.href = "/admin/ops"; },
+        },
       }),
     [],
   );
@@ -28,8 +31,12 @@ export function useSuperMetricsCard(): CardContract<Record<string, number>> {
         id: "super_metrics",
         domain: "analytics",
         title: "Super Admin Metrics",
-        data: null, // populated by super admin query pipeline
+        data: null,
         deepLink: "/admin/super",
+        primaryAction: {
+          label: "View Dashboard",
+          run: () => { window.location.href = "/admin/super"; },
+        },
       }),
     [],
   );
