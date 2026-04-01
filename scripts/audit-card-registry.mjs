@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /**
- * CARD AUDIT — Full matrix validation for every card in the registry.
+ * CARD AUDIT v2 — Strict validation with functional proof.
  *
- * Produces columns:
- * - card id | domain | source | adapter present | CardShell used
- * - action primaire réelle | route valide | fetch direct | mock détecté
- * - synchro mutation | statut final
+ * Enforces:
+ * - LIVE only if adapter has real non-null data pipeline
+ * - Action type classification (navigation / business / mutation / orchestration)
+ * - CardShell adoption tracking
+ * - Direct fetch violation detection
+ * - Mock/fake detection
  *
  * Run: node scripts/audit-card-registry.mjs
  */
@@ -14,7 +16,6 @@ import { join, relative } from "path";
 
 const SRC = "src";
 
-// ── Walk all TS/TSX files ──
 function walk(dir) {
   const entries = readdirSync(dir);
   const files = [];
@@ -38,34 +39,65 @@ function parseRegistry() {
   const re = /(\w+):\s*\{[^}]*key:\s*"([^"]+)"[^}]*domain:\s*"([^"]+)"[^}]*route:\s*"([^"]+)"[^}]*sourceType:\s*"([^"]+)"[^}]*sourceKey:\s*"([^"]+)"[^}]*surface:\s*"([^"]+)"/gs;
   let m;
   while ((m = re.exec(content))) {
-    entries[m[2]] = {
-      key: m[2],
-      domain: m[3],
-      route: m[4],
-      sourceType: m[5],
-      sourceKey: m[6],
-      surface: m[7],
-    };
+    entries[m[2]] = { key: m[2], domain: m[3], route: m[4], sourceType: m[5], sourceKey: m[6], surface: m[7] };
   }
   return entries;
 }
 
-// ── Scan adapters ──
-function findAdapters() {
+// ── Scan adapters with action type + data pipeline detection ──
+function analyzeAdapters() {
   const adapterDir = "src/domains/cards/adapters";
-  const adapters = new Map(); // cardId -> adapterName
-  if (!existsSync(adapterDir)) return adapters;
+  const result = new Map(); // cardId -> { adapterName, actionType, hasRealData, hasReactiveSource }
+  if (!existsSync(adapterDir)) return result;
 
   const files = readdirSync(adapterDir).filter((f) => f.endsWith(".ts"));
   for (const f of files) {
     const content = readFileSync(join(adapterDir, f), "utf8");
-    const re = /export function (use\w+Card)\(\).*?id:\s*"([^"]+)"/gs;
-    let m;
-    while ((m = re.exec(content))) {
-      adapters.set(m[2], m[1]);
+    const blocks = content.split(/export function /);
+    for (const block of blocks) {
+      const idMatch = block.match(/id:\s*"([^"]+)"/);
+      if (!idMatch) continue;
+      const cardId = idMatch[1];
+      const nameMatch = block.match(/^(use\w+Card)/);
+      const adapterName = nameMatch ? nameMatch[1] : "unknown";
+
+      // Action type detection
+      let actionType = "none";
+      if (block.includes('actionType: "mutation"')) actionType = "mutation";
+      else if (block.includes('actionType: "orchestration"')) actionType = "orchestration";
+      else if (block.includes('actionType: "business"')) actionType = "business";
+      else if (block.includes('actionType: "navigation"')) actionType = "navigation";
+      else if (block.includes("primaryAction")) actionType = "navigation"; // fallback
+
+      // Real data pipeline detection
+      const hasRealData = (
+        block.includes("useQuery") ||
+        block.includes("useDriverLive") ||
+        block.includes("useDashboardViewModel") ||
+        block.includes("useWalletStore") ||
+        block.includes("useOrbitStore") ||
+        block.includes("useNotificationV2Store") ||
+        // Has data that's computed from a real source (not just hardcoded)
+        (block.includes("data:") && !block.match(/data:\s*null\s*[,}]/) && !block.match(/data:\s*\{[^}]*\}\s*[,}]/))
+      );
+
+      // Check if data is always null (no pipeline)
+      const alwaysNull = block.includes("data: null") && !block.includes("useQuery") && !block.includes("vm.") && !block.includes("Store");
+
+      // Reactive source (zustand selector hook, not getState())
+      const hasReactiveSource = (
+        block.includes("useWalletStore(") ||
+        block.includes("useOrbitStore(") ||
+        block.includes("useNotificationV2Store(") ||
+        block.includes("useDashboardViewModel") ||
+        block.includes("useQuery") ||
+        block.includes("useDriverLive")
+      );
+
+      result.set(cardId, { adapterName, actionType, hasRealData, alwaysNull, hasReactiveSource });
     }
   }
-  return adapters;
+  return result;
 }
 
 // ── Scan for CardShell usage ──
@@ -74,7 +106,6 @@ function findCardShellUsage(files) {
   for (const f of files) {
     const content = readFileSync(f, "utf8");
     if (content.includes("CardShell") && content.includes("contract")) {
-      // try to find which card ids are referenced
       const ids = content.match(/id:\s*"([^"]+)"/g);
       if (ids) ids.forEach((id) => usage.add(id.replace(/id:\s*"/, "").replace(/"/, "")));
     }
@@ -82,13 +113,12 @@ function findCardShellUsage(files) {
   return usage;
 }
 
-// ── Scan for direct fetches in card-related files ──
+// ── Direct fetch violations ──
 function findDirectFetches(files) {
   const violations = [];
   for (const f of files) {
     const rel = relative(".", f);
     if (!rel.includes("Card") && !rel.includes("card") && !rel.includes("Section")) continue;
-    // Skip adapter files — they are canonical
     if (rel.includes("domains/cards/")) continue;
 
     const content = readFileSync(f, "utf8");
@@ -104,13 +134,14 @@ function findDirectFetches(files) {
   return violations;
 }
 
-// ── Scan for mock/fake data ──
+// ── Mock violations ──
 function findMocks(files) {
   const violations = [];
   for (const f of files) {
     const rel = relative(".", f);
     if (!rel.includes("Card") && !rel.includes("card") && !rel.includes("Section")) continue;
     if (rel.includes("domains/cards/")) continue;
+    if (rel.includes("e2e") || rel.includes("test")) continue; // tests allowed
 
     const content = readFileSync(f, "utf8");
     const lines = content.split("\n");
@@ -125,107 +156,93 @@ function findMocks(files) {
   return violations;
 }
 
-// ── Scan for real actions (primaryAction with run) ──
-function findRealActions(adapters) {
-  const adapterDir = "src/domains/cards/adapters";
-  const withActions = new Set();
-  if (!existsSync(adapterDir)) return withActions;
-
-  const files = readdirSync(adapterDir).filter((f) => f.endsWith(".ts"));
-  for (const f of files) {
-    const content = readFileSync(join(adapterDir, f), "utf8");
-    // find card ids that have primaryAction
-    const blocks = content.split(/export function /);
-    for (const block of blocks) {
-      const idMatch = block.match(/id:\s*"([^"]+)"/);
-      if (idMatch && block.includes("primaryAction")) {
-        withActions.add(idMatch[1]);
-      }
-    }
-  }
-  return withActions;
-}
-
 // ── MAIN ──
 const allFiles = walk(SRC);
 const registry = parseRegistry();
-const adapters = findAdapters();
+const adapters = analyzeAdapters();
 const cardShellUsage = findCardShellUsage(allFiles);
 const directFetches = findDirectFetches(allFiles);
 const mocks = findMocks(allFiles);
-const realActions = findRealActions(adapters);
 
-const directFetchFiles = new Set(directFetches.map((v) => v.file));
+const ACTION_ICONS = { mutation: "🔧", orchestration: "⚙️", business: "💼", navigation: "🔗", none: "❌" };
 
-console.log("\n╔══════════════════════════════════════════════════════════════════╗");
-console.log("║              🃏 CARD AUDIT MATRIX — FULL REPORT                ║");
-console.log("╚══════════════════════════════════════════════════════════════════╝\n");
+console.log("\n╔══════════════════════════════════════════════════════════════════════════════════╗");
+console.log("║                🃏 CARD AUDIT v2 — STRICT FUNCTIONAL PROOF                      ║");
+console.log("╚══════════════════════════════════════════════════════════════════════════════════╝\n");
+
+console.log("┌─────────────────────────┬────────────┬──────────┬───────┬──────────┬──────────┬──────────┐");
+console.log("│ Card ID                 │ Domain     │ Adapter  │ Shell │ Action   │ DataPipe │ Status   │");
+console.log("├─────────────────────────┼────────────┼──────────┼───────┼──────────┼──────────┼──────────┤");
 
 const results = [];
 const registryKeys = Object.keys(registry);
 
-console.log("┌─────────────────────────┬────────────┬──────────┬─────────┬───────────┬────────┬───────┬──────────┐");
-console.log("│ Card ID                 │ Domain     │ Adapter  │ Shell   │ Action    │ Route  │ Fetch │ Status   │");
-console.log("├─────────────────────────┼────────────┼──────────┼─────────┼───────────┼────────┼───────┼──────────┤");
-
 for (const key of registryKeys) {
   const entry = registry[key];
-  const hasAdapter = adapters.has(key);
+  const adapter = adapters.get(key);
+  const hasAdapter = !!adapter;
   const hasShell = cardShellUsage.has(key);
-  const hasAction = realActions.has(key);
+  const actionType = adapter?.actionType || "none";
+  const hasRealData = adapter?.hasRealData ?? false;
+  const hasReactiveSource = adapter?.hasReactiveSource ?? false;
+  const alwaysNull = adapter?.alwaysNull ?? true;
   const hasRoute = !!entry.route && entry.route.length >= 1;
-  const hasFetch = false; // adapters don't have direct fetches by definition
-  const hasMock = false;
 
-  // Compute status
+  // STRICT status computation
   let status;
   if (!hasAdapter) {
     status = "ORPHAN";
-  } else if (hasAdapter && hasAction && hasRoute) {
+  } else if (alwaysNull && !hasRealData) {
+    status = "LOADING"; // adapter exists but no real data pipeline
+  } else if (hasAdapter && hasRealData && hasRoute && hasReactiveSource) {
     status = "LIVE";
+  } else if (hasAdapter && hasRealData && hasRoute) {
+    status = "PARTIAL"; // has data but not reactive
   } else if (hasAdapter && hasRoute) {
     status = "PARTIAL";
   } else {
     status = "BROKEN";
   }
 
-  const row = {
-    key,
-    domain: entry.domain,
-    hasAdapter,
-    hasShell,
-    hasAction,
-    hasRoute,
-    hasFetch,
-    hasMock,
-    status,
-  };
-  results.push(row);
+  results.push({ key, domain: entry.domain, hasAdapter, hasShell, actionType, hasRealData, hasReactiveSource, alwaysNull, status, surface: entry.surface });
 
   const pad = (s, n) => String(s).padEnd(n);
   const icon = (b) => (b ? "✅" : "❌");
-  const statusColor = { LIVE: "🟢", PARTIAL: "🟡", ORPHAN: "🔴", BROKEN: "🔴" };
+  const statusIcon = { LIVE: "🟢", PARTIAL: "🟡", LOADING: "🔵", ORPHAN: "🔴", BROKEN: "🔴" };
+  const actionIcon = ACTION_ICONS[actionType] || "❌";
 
   console.log(
-    `│ ${pad(key, 23)} │ ${pad(entry.domain, 10)} │ ${icon(hasAdapter)}       │ ${icon(hasShell)}      │ ${icon(hasAction)}        │ ${icon(hasRoute)}     │ ${icon(!hasFetch)}    │ ${statusColor[status] || "⚪"} ${pad(status, 6)} │`,
+    `│ ${pad(key, 23)} │ ${pad(entry.domain, 10)} │ ${icon(hasAdapter)}       │ ${icon(hasShell)}    │ ${actionIcon} ${pad(actionType, 5)} │ ${icon(hasRealData)}       │ ${(statusIcon[status] || "⚪")} ${pad(status, 6)} │`,
   );
 }
 
-console.log("└─────────────────────────┴────────────┴──────────┴─────────┴───────────┴────────┴───────┴──────────┘\n");
+console.log("└─────────────────────────┴────────────┴──────────┴───────┴──────────┴──────────┴──────────┘\n");
 
 // ── Summary ──
 const live = results.filter((r) => r.status === "LIVE").length;
 const partial = results.filter((r) => r.status === "PARTIAL").length;
+const loading = results.filter((r) => r.status === "LOADING").length;
 const orphan = results.filter((r) => r.status === "ORPHAN").length;
 const broken = results.filter((r) => r.status === "BROKEN").length;
 
-console.log("📊 SUMMARY");
-console.log(`   Total cards:     ${results.length}`);
-console.log(`   🟢 LIVE:         ${live}`);
-console.log(`   🟡 PARTIAL:      ${partial}`);
-console.log(`   🔴 ORPHAN:       ${orphan}`);
-console.log(`   🔴 BROKEN:       ${broken}`);
-console.log(`   Coverage:        ${((live / results.length) * 100).toFixed(1)}%`);
+console.log("📊 STRICT SUMMARY");
+console.log(`   Total cards:          ${results.length}`);
+console.log(`   🟢 LIVE (proven):     ${live}`);
+console.log(`   🟡 PARTIAL:           ${partial}`);
+console.log(`   🔵 LOADING (no data): ${loading}`);
+console.log(`   🔴 ORPHAN:            ${orphan}`);
+console.log(`   🔴 BROKEN:            ${broken}`);
+console.log(`   Real coverage:        ${((live / results.length) * 100).toFixed(1)}%`);
+
+// ── Action Type Breakdown ──
+const actionBreakdown = {};
+for (const r of results) {
+  actionBreakdown[r.actionType] = (actionBreakdown[r.actionType] || 0) + 1;
+}
+console.log(`\n🎯 ACTION TYPE BREAKDOWN:`);
+for (const [type, count] of Object.entries(actionBreakdown)) {
+  console.log(`   ${ACTION_ICONS[type] || "?"} ${type}: ${count}`);
+}
 
 // ── Direct Fetch Violations ──
 if (directFetches.length > 0) {
@@ -234,18 +251,21 @@ if (directFetches.length > 0) {
     console.log(`   ❌ ${v.file}:${v.line}`);
     console.log(`      ${v.detail}`);
   }
+} else {
+  console.log(`\n✅ ZERO direct fetch violations in card components`);
 }
 
 // ── Mock Violations ──
 if (mocks.length > 0) {
-  console.log(`\n⚠️  MOCK/FAKE DATA VIOLATIONS (${mocks.length}):`);
+  console.log(`\n⚠️  MOCK VIOLATIONS (${mocks.length}):`);
   for (const v of mocks) {
     console.log(`   ❌ ${v.file}:${v.line}`);
-    console.log(`      ${v.detail}`);
   }
+} else {
+  console.log(`✅ ZERO mock violations`);
 }
 
-// ── Duplicate Sources ──
+// ── Shared Sources ──
 const sourceMap = {};
 for (const key of registryKeys) {
   const src = registry[key].sourceKey;
@@ -254,22 +274,33 @@ for (const key of registryKeys) {
 }
 const dupes = Object.entries(sourceMap).filter(([, v]) => v.length > 1);
 if (dupes.length > 0) {
-  console.log(`\n📋 SHARED SOURCES (${dupes.length} sources shared by multiple cards):`);
+  console.log(`\n📋 SHARED SOURCES (${dupes.length}):`);
   for (const [src, cards] of dupes) {
     console.log(`   ${src}: ${cards.join(", ")}`);
   }
 }
 
-// ── Cards by Surface ──
+// ── Surfaces ──
 const surfaces = {};
-for (const key of registryKeys) {
-  const s = registry[key].surface;
-  if (!surfaces[s]) surfaces[s] = [];
-  surfaces[s].push(key);
+for (const r of results) {
+  if (!surfaces[r.surface]) surfaces[r.surface] = { total: 0, live: 0 };
+  surfaces[r.surface].total++;
+  if (r.status === "LIVE") surfaces[r.surface].live++;
 }
-console.log(`\n🖥️  CARDS BY SURFACE:`);
-for (const [surface, cards] of Object.entries(surfaces)) {
-  console.log(`   ${surface}: ${cards.length} cards`);
+console.log(`\n🖥️  SURFACE COVERAGE:`);
+for (const [surface, s] of Object.entries(surfaces)) {
+  console.log(`   ${surface}: ${s.live}/${s.total} LIVE`);
+}
+
+// ── Reactive Source Check ──
+const nonReactive = results.filter((r) => r.hasAdapter && !r.hasReactiveSource);
+if (nonReactive.length > 0) {
+  console.log(`\n⚠️  NON-REACTIVE ADAPTERS (${nonReactive.length}):`);
+  for (const r of nonReactive) {
+    console.log(`   ⚠️  ${r.key} — uses snapshot, not reactive subscription`);
+  }
+} else {
+  console.log(`\n✅ All adapters use reactive subscriptions`);
 }
 
 console.log("\n");
