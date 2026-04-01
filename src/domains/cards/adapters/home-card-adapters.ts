@@ -1,5 +1,5 @@
 /**
- * Card Adapters — Per-domain hooks that produce CardContract instances.
+ * Card Adapters — Home Surface
  * Each adapter is the SINGLE bridge between a domain's canonical pipeline and the UI.
  * No card component may fetch data directly — it MUST use an adapter.
  */
@@ -103,5 +103,21 @@ export function useLiveMapCard(): CardContract<{ lat: number; lng: number } | nu
         disabledReason: !vm.currentLocation ? "Location not available" : undefined,
       }),
     [vm.currentLocation],
+  );
+}
+
+// ── Smart Recommendations Card ──
+export function useSmartRecommendationsCard(): CardContract<any[]> {
+  const vm = useDashboardViewModel();
+  return useMemo(
+    () =>
+      buildCardContract({
+        id: "smart_recommendations",
+        domain: "marketplace",
+        title: "Recommended For You",
+        data: vm.sections.nearYou, // uses canonical pipeline, not direct query
+        deepLink: "/radar",
+      }),
+    [vm.sections.nearYou],
   );
 }
