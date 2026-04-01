@@ -4,7 +4,7 @@
  * No card component may fetch data directly — it MUST use an adapter.
  */
 import { useMemo } from "react";
-import { buildCardContract, type CardContract } from "./card-contract";
+import { buildCardContract, type CardContract } from "../card-contract";
 import { useDashboardViewModel } from "@/families/dashboard/dashboard.view-model";
 
 // ── Home Hero Card ──
