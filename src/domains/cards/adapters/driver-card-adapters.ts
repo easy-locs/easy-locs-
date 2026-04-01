@@ -1,13 +1,15 @@
 /**
  * Card Adapters — Driver Surface
- * Canonical adapters for driver-specific cards.
+ * Real data from canonical sources: useDriverLive + getDriverEarnings.
  */
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { buildCardContract, type CardContract } from "../card-contract";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDriverLive } from "@/hooks/useDriverLive";
+import { getDriverEarnings, type DriverEarningsSummary } from "@/lib/driver/earnings";
 
-// ── Driver Status Card ──
+// ── Driver Status Card — REAL data from useDriverLive ──
 export function useDriverStatusCard(): CardContract<{
   isOnline: boolean;
   isAvailable: boolean;
@@ -36,6 +38,7 @@ export function useDriverStatusCard(): CardContract<{
       primaryAction: p
         ? {
             label: p.is_online ? "Go Offline" : "Go Online",
+            actionType: "mutation" as const,
             run: async () => {
               const { platformBus } = await import("@/lib/shared/platform-bus");
               platformBus.emit("driver:toggle_online", { driverId: user!.id }, "driverStatusCard");
@@ -62,6 +65,7 @@ export function useDriverPositioningCard(): CardContract<{ zone: string | null }
         deepLink: "/driver",
         primaryAction: {
           label: "Find Best Zone",
+          actionType: "orchestration" as const,
           run: async () => {
             const { suggestDriverPosition } = await import("@/lib/ai/driver-positioning");
             await suggestDriverPosition(user?.id ?? "");
@@ -72,9 +76,16 @@ export function useDriverPositioningCard(): CardContract<{ zone: string | null }
   );
 }
 
-// ── Driver Earnings Card ──
-export function useDriverEarningsCard(): CardContract<{ totalEarnings: number; currency: string }> {
+// ── Driver Earnings Card — REAL data from getDriverEarnings ──
+export function useDriverEarningsCard(): CardContract<DriverEarningsSummary> {
   const { user } = useAuth();
+
+  const { data: earnings, error, isLoading } = useQuery({
+    queryKey: ["driver-earnings", user?.id],
+    queryFn: () => getDriverEarnings(user!.id),
+    enabled: !!user?.id,
+    staleTime: 30_000,
+  });
 
   return useMemo(
     () =>
@@ -82,15 +93,17 @@ export function useDriverEarningsCard(): CardContract<{ totalEarnings: number; c
         id: "driver_earnings",
         domain: "wallet",
         title: "Earnings",
-        data: null,
+        data: earnings ?? null,
+        error: error?.message,
         disabled: !user?.id,
         disabledReason: !user?.id ? "Not authenticated" : undefined,
         deepLink: "/driver/earnings",
         primaryAction: {
           label: "View Earnings",
+          actionType: "navigation" as const,
           run: () => { window.location.href = "/driver/earnings"; },
         },
       }),
-    [user?.id],
+    [earnings, error, user?.id],
   );
 }

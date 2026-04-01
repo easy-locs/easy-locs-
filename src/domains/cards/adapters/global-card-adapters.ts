@@ -1,28 +1,25 @@
 /**
  * Card Adapters — Global (cross-surface)
+ * REACTIVE: uses zustand subscriptions via hooks, not getState() snapshots.
  */
 import { useMemo } from "react";
 import { buildCardContract, type CardContract } from "../card-contract";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWalletStore } from "@/stores/walletStore";
+import { useOrbitStore } from "@/stores/orbitStore";
+import { useNotificationV2Store } from "@/stores/notificationV2Store";
 
-// ── Wallet Balance Card ──
+// ── Wallet Balance Card — REACTIVE via zustand hook selector ──
 export function useWalletBalanceCard(): CardContract<{ balance: number; currency: string }> {
   const { user } = useAuth();
+  // Reactive subscription — re-renders when wallet changes
+  const wallet = useWalletStore((s) => s.wallet);
+  const loading = useWalletStore((s) => s.loading);
 
   return useMemo(() => {
-    let walletData: { balance: number; currency: string } | null = null;
-    try {
-      const { useWalletStore } = require("@/stores/walletStore");
-      const wallet = useWalletStore.getState().wallet;
-      if (wallet) {
-        walletData = {
-          balance: wallet.availableBalance ?? 0,
-          currency: wallet.currency ?? "AED",
-        };
-      }
-    } catch {
-      // store not yet initialized
-    }
+    const walletData = wallet
+      ? { balance: wallet.availableBalance ?? 0, currency: wallet.currency ?? "AED" }
+      : null;
 
     return buildCardContract({
       id: "wallet_balance",
@@ -34,48 +31,54 @@ export function useWalletBalanceCard(): CardContract<{ balance: number; currency
       deepLink: "/wallet/hub",
       primaryAction: {
         label: "Top Up",
+        actionType: "business" as const,
         run: async () => {
           const { platformBus } = await import("@/lib/shared/platform-bus");
           platformBus.emit("wallet:top_up", { userId: user!.id }, "walletBalanceCard");
         },
       },
     });
-  }, [user?.id]);
+  }, [wallet, loading, user?.id]);
 }
 
-// ── Orbit Recent Chats Card ──
-export function useOrbitRecentChatsCard(): CardContract<{ unreadCount: number }> {
+// ── Orbit Recent Chats Card — REACTIVE via zustand hook selector ──
+export function useOrbitRecentChatsCard(): CardContract<{
+  hasProfile: boolean;
+  displayName: string | null;
+}> {
   const { user } = useAuth();
+  // Reactive subscription — re-renders when orbit profile changes
+  const profile = useOrbitStore((s) => s.profile);
+  const loading = useOrbitStore((s) => s.loading);
 
   return useMemo(() => {
-    let orbitData: { unreadCount: number } | null = null;
-    try {
-      const { useOrbitStore } = require("@/stores/orbitStore");
-      const state = useOrbitStore.getState();
-      orbitData = { unreadCount: state.unreadCount ?? 0 };
-    } catch {
-      // store not yet initialized
-    }
+    const data = profile
+      ? { hasProfile: true, displayName: (profile as any).displayName || (profile as any).display_name || null }
+      : null;
 
     return buildCardContract({
       id: "orbit_recent_chats",
       domain: "orbit",
       title: "Messages",
-      data: orbitData,
+      data,
       disabled: !user?.id,
       disabledReason: !user?.id ? "Not authenticated" : undefined,
       deepLink: "/orbit",
       primaryAction: {
         label: "Open Messages",
+        actionType: "navigation" as const,
         run: () => { window.location.href = "/orbit"; },
       },
     });
-  }, [user?.id]);
+  }, [profile, loading, user?.id]);
 }
 
-// ── Notifications Badge Card ──
+// ── Notifications Badge Card — REACTIVE via zustand hook selector ──
 export function useNotificationsBadgeCard(): CardContract<{ count: number }> {
   const { user } = useAuth();
+  // Reactive subscription — re-renders when unreadCount changes
+  const unreadCount = useNotificationV2Store((s) => s.unreadCount);
+  const hydrated = useNotificationV2Store((s) => s.hydrated);
 
   return useMemo(
     () =>
@@ -83,15 +86,16 @@ export function useNotificationsBadgeCard(): CardContract<{ count: number }> {
         id: "notifications_badge",
         domain: "notifications",
         title: "Notifications",
-        data: null,
+        data: hydrated ? { count: unreadCount } : null,
         disabled: !user?.id,
         disabledReason: !user?.id ? "Not authenticated" : undefined,
         deepLink: "/notifications",
         primaryAction: {
           label: "View All",
+          actionType: "navigation" as const,
           run: () => { window.location.href = "/notifications"; },
         },
       }),
-    [user?.id],
+    [unreadCount, hydrated, user?.id],
   );
 }

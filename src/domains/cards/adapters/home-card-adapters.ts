@@ -18,7 +18,11 @@ export function useHeroBannerCard(): CardContract<{ title: string; subtitle: str
         title: "Hero Banner",
         data: { title: vm.hero.title, subtitle: vm.hero.subtitle, route: vm.hero.route },
         deepLink: vm.hero.route,
-        primaryAction: { label: vm.hero.cta, run: () => { window.location.href = vm.hero.route; } },
+        primaryAction: {
+          label: vm.hero.cta,
+          actionType: "navigation",
+          run: () => { window.location.href = vm.hero.route; },
+        },
       }),
     [vm.hero],
   );
@@ -26,7 +30,6 @@ export function useHeroBannerCard(): CardContract<{ title: string; subtitle: str
 
 // ── Quick Actions Card ──
 export function useQuickActionsCard(): CardContract<{ actions: Array<{ label: string; route: string }> }> {
-  const vm = useDashboardViewModel();
   return useMemo(
     () =>
       buildCardContract({
@@ -41,7 +44,11 @@ export function useQuickActionsCard(): CardContract<{ actions: Array<{ label: st
           ],
         },
         deepLink: "/wallet/hub",
-        primaryAction: { label: "Open Wallet", run: () => { window.location.href = "/wallet/hub"; } },
+        primaryAction: {
+          label: "Open Wallet",
+          actionType: "navigation",
+          run: () => { window.location.href = "/wallet/hub"; },
+        },
       }),
     [],
   );
@@ -58,7 +65,11 @@ export function useCategoryGridCard(): CardContract<{ count: number }> {
         title: "Categories",
         data: vm.categories.length > 0 ? { count: vm.categories.length } : null,
         deepLink: "/radar",
-        primaryAction: { label: "Browse All", run: () => { window.location.href = "/radar"; } },
+        primaryAction: {
+          label: "Browse All",
+          actionType: "navigation",
+          run: () => { window.location.href = "/radar"; },
+        },
       }),
     [vm.categories],
   );
@@ -76,7 +87,7 @@ export function useContextBannersCard(): CardContract<{ banners: any[]; activeId
         data: vm.contextBanners.length > 0 ? { banners: vm.contextBanners, activeIdx: vm.activeBannerIdx } : null,
         deepLink: "/radar",
         primaryAction: vm.contextBanners.length > 0
-          ? { label: "Explore", run: () => { window.location.href = "/radar"; } }
+          ? { label: "Explore", actionType: "navigation", run: () => { window.location.href = "/radar"; } }
           : undefined,
       }),
     [vm.contextBanners, vm.activeBannerIdx],
@@ -91,9 +102,13 @@ export function useBoostSlotHeroCard(): CardContract<{ slotActive: boolean }> {
         id: "boost_slot_hero",
         domain: "boost",
         title: "Boost Slot",
-        data: { slotActive: true }, // BoostSlotRenderer self-manages via query
+        data: { slotActive: true },
         deepLink: "/boost",
-        primaryAction: { label: "Boost Now", run: () => { window.location.href = "/boost"; } },
+        primaryAction: {
+          label: "Boost Now",
+          actionType: "business",
+          run: () => { window.location.href = "/boost"; },
+        },
       }),
     [],
   );
@@ -113,7 +128,7 @@ export function useLiveMapCard(): CardContract<{ lat: number; lng: number } | nu
         disabled: !vm.currentLocation,
         disabledReason: !vm.currentLocation ? "Location not available" : undefined,
         primaryAction: vm.currentLocation
-          ? { label: "Book Ride", run: () => { window.location.href = "/mobility/taxi"; } }
+          ? { label: "Book Ride", actionType: "business", run: () => { window.location.href = "/mobility/taxi"; } }
           : undefined,
       }),
     [vm.currentLocation],
@@ -131,7 +146,11 @@ export function useTrendingSectionCard(): CardContract<any[]> {
         title: "Trending",
         data: vm.sections.trending,
         deepLink: "/radar",
-        primaryAction: { label: "See All", run: () => { window.location.href = "/radar?sort=trending"; } },
+        primaryAction: {
+          label: "See All",
+          actionType: "navigation",
+          run: () => { window.location.href = "/radar?sort=trending"; },
+        },
       }),
     [vm.sections.trending],
   );
@@ -148,7 +167,11 @@ export function useBestRatedSectionCard(): CardContract<any[]> {
         title: "Best Rated",
         data: vm.sections.bestRated,
         deepLink: "/radar",
-        primaryAction: { label: "See All", run: () => { window.location.href = "/radar?sort=rating"; } },
+        primaryAction: {
+          label: "See All",
+          actionType: "navigation",
+          run: () => { window.location.href = "/radar?sort=rating"; },
+        },
       }),
     [vm.sections.bestRated],
   );
@@ -165,7 +188,11 @@ export function useNewestSectionCard(): CardContract<any[]> {
         title: "New on Easy Locs",
         data: vm.sections.newest,
         deepLink: "/radar",
-        primaryAction: { label: "See All", run: () => { window.location.href = "/radar?sort=newest"; } },
+        primaryAction: {
+          label: "See All",
+          actionType: "navigation",
+          run: () => { window.location.href = "/radar?sort=newest"; },
+        },
       }),
     [vm.sections.newest],
   );
@@ -182,7 +209,11 @@ export function useNearYouSectionCard(): CardContract<any[]> {
         title: "Near You",
         data: vm.sections.nearYou,
         deepLink: "/radar",
-        primaryAction: { label: "See All", run: () => { window.location.href = "/radar?sort=distance"; } },
+        primaryAction: {
+          label: "See All",
+          actionType: "navigation",
+          run: () => { window.location.href = "/radar?sort=distance"; },
+        },
       }),
     [vm.sections.nearYou],
   );
@@ -196,9 +227,13 @@ export function useOnboardingChecklistCard(): CardContract<{ completed: boolean 
         id: "onboarding_checklist",
         domain: "onboarding",
         title: "Getting Started",
-        data: { completed: false }, // managed by OnboardingChecklist component state
+        data: { completed: false },
         deepLink: "/",
-        primaryAction: { label: "Continue Setup", run: () => { /* handled by OnboardingChecklist */ } },
+        primaryAction: {
+          label: "Continue Setup",
+          actionType: "business",
+          run: () => { /* managed by OnboardingChecklist component */ },
+        },
       }),
     [],
   );
@@ -215,7 +250,11 @@ export function useSmartRecommendationsCard(): CardContract<any[]> {
         title: "Recommended For You",
         data: vm.sections.nearYou,
         deepLink: "/radar",
-        primaryAction: { label: "Explore", run: () => { window.location.href = "/radar"; } },
+        primaryAction: {
+          label: "Explore",
+          actionType: "navigation",
+          run: () => { window.location.href = "/radar"; },
+        },
       }),
     [vm.sections.nearYou],
   );
