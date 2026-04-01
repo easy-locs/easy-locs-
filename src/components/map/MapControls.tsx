@@ -1,7 +1,7 @@
 import { CloudRain, LocateFixed, Radio, CarFront, Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
-import { useSuperMapStore } from "@/stores/superMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 
 function Chip({ active, label, icon: Icon, onClick }: { active: boolean; label: string; icon: React.ElementType; onClick: () => void }) {
   return (
@@ -35,10 +35,10 @@ export default function MapControls({
   const toggleAutoMode = useWeatherDisplayStore(s => s.toggleAutoMode);
 
   // Map store controls
-  const showMobility = useSuperMapStore(s => s.showMobility);
-  const toggleMobility = useSuperMapStore(s => s.toggleMobility);
-  const showHeatmap = useSuperMapStore(s => s.showHeatmap);
-  const toggleHeatmap = useSuperMapStore(s => s.toggleHeatmap);
+  const showMobility = useUnifiedMapStore(s => s.showMobility);
+  const toggleMobility = useUnifiedMapStore(s => s.toggleMobility);
+  const showHeatmap = useUnifiedMapStore(s => s.showHeatmap);
+  const toggleHeatmap = useUnifiedMapStore(s => s.toggleHeatmap);
 
   const toggleRadar = () => {
     // Cycle: off → minimal → full → off

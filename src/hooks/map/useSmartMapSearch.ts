@@ -1,9 +1,11 @@
 /**
  * useSmartMapSearch — Orchestrates map search with brand/service detection + OSM.
  * Single entry point for all map search interactions.
+ * Uses unified mapStore.
  */
 import { useCallback, useRef } from "react";
-import { useSmartMapStore } from "@/stores/smartMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { detectMapSearchIntent, filterAndRankResults } from "@/lib/map/smart-map-search";
 
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
@@ -36,7 +38,6 @@ async function fetchOSMData(lat: number, lng: number): Promise<any[]> {
       body: `data=${encodeURIComponent(buildOverpassQuery(lat, lng))}`,
     });
     if (!res.ok) {
-      // Rate limited or error — return cached if available
       return cached?.data || [];
     }
     const json = await res.json();
@@ -49,12 +50,11 @@ async function fetchOSMData(lat: number, lng: number): Promise<any[]> {
 }
 
 export function useSmartMapSearch() {
-  const store = useSmartMapStore;
+  const store = useUnifiedMapStore;
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const runSearch = useCallback(async (query: string) => {
     const q = query.trim();
-    const state = store.getState();
 
     store.getState().setSearchQuery(q);
 
@@ -68,10 +68,12 @@ export function useSmartMapSearch() {
     store.getState().setSearchIntent(intent);
     store.getState().setSearchStatus("searching");
 
-    // Get origin
-    const origin = state.userLat != null && state.userLng != null
-      ? { lat: state.userLat, lng: state.userLng }
-      : { lat: state.viewport.centerLat, lng: state.viewport.centerLng };
+    // Get origin — read from locationStore (canonical GPS source)
+    const loc = useLocationStore.getState().currentLocation;
+    const viewport = store.getState().viewport;
+    const origin = loc?.lat != null && loc?.lng != null
+      ? { lat: loc.lat, lng: loc.lng }
+      : { lat: viewport.centerLat, lng: viewport.centerLng };
 
     try {
       const elements = await fetchOSMData(origin.lat, origin.lng);
