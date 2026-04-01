@@ -1,21 +1,22 @@
 /**
  * SmartSearchBar — Premium glass search bar for the SuperMap.
  * Handles input, suggestions, brand/service intent display.
+ * Uses unified mapStore.
  */
 import { useState, useRef, useEffect } from "react";
 import { Search, X, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSmartMapStore } from "@/stores/smartMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useSmartMapSearch } from "@/hooks/map/useSmartMapSearch";
 import { detectMapSearchIntent } from "@/lib/map/smart-map-search";
 
 export default function SmartSearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const rawQuery = useSmartMapStore(s => s.search.rawQuery);
-  const intent = useSmartMapStore(s => s.search.intent);
-  const status = useSmartMapStore(s => s.search.status);
-  const searchFocused = useSmartMapStore(s => s.searchFocused);
-  const setSearchFocused = useSmartMapStore(s => s.setSearchFocused);
+  const rawQuery = useUnifiedMapStore(s => s.search.rawQuery);
+  const intent = useUnifiedMapStore(s => s.search.intent);
+  const status = useUnifiedMapStore(s => s.search.status);
+  const searchFocused = useUnifiedMapStore(s => s.searchFocused);
+  const setSearchFocused = useUnifiedMapStore(s => s.setSearchFocused);
   const { debouncedSearch, clearSearch } = useSmartMapSearch();
   const [localValue, setLocalValue] = useState("");
 

@@ -1,11 +1,12 @@
 /**
  * SellerDashboard — Shows all seller businesses (all lifecycle statuses).
- * Uses businessLifecycle for authoritative status resolution.
+ * Uses canonical repository + businessLifecycle for status resolution.
+ * ZERO direct Supabase imports.
  */
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { fetchSellerServices, fetchSellerShops } from "@/repositories/seller-repository";
 import SellerBusinessCard from "./SellerBusinessCard";
 import SellerListingLifecycleCard from "./SellerListingLifecycleCard";
 import { SectionBlock } from "@/components/ui/system";
@@ -23,40 +24,23 @@ export default function SellerDashboard() {
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
 
-  // Fetch marketplace services with lifecycle fields
+  // Fetch via canonical repository
   const { data: services = [], isLoading: loadingServices, refetch: refetchServices } = useQuery({
     queryKey: ["seller-services", orgId],
-    queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("marketplace_services")
-        .select("id, title, category, city, photo_url, status, active, listing_expires_at, auto_renew_enabled, boost_enabled, boost_multiplier, boost_expires_at, renewal_count, listing_type, user_id")
-        .eq("org_id", orgId!)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      return data ?? [];
-    },
+    queryFn: () => fetchSellerServices(orgId!),
     enabled: !!orgId,
   });
 
-  // Fetch storefronts
   const { data: shops = [], isLoading: loadingShops } = useQuery({
     queryKey: ["seller-shops", user?.id],
-    queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("storefront_pages")
-        .select("id, name, slug, vertical, city, logo_url, active, shop_visibility, onboarding_completed, status, phone, latitude, longitude")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(20);
-      return data ?? [];
-    },
+    queryFn: () => fetchSellerShops(user!.id),
     enabled: !!user?.id,
   });
 
   const isLoading = loadingServices || loadingShops;
 
   const allBusinesses = [
-    ...shops.map((s: any) => {
+    ...shops.map((s) => {
       const status = resolveBusinessStatus(s);
       const { requirements } = validateBusinessReadiness(s);
       return {
@@ -72,7 +56,7 @@ export default function SellerDashboard() {
         requirements,
       };
     }),
-    ...services.filter((s: any) => s.listing_type !== "sale").map((s: any) => ({
+    ...services.filter((s) => s.listing_type !== "sale").map((s) => ({
       id: s.id,
       name: s.title,
       category: s.category,
@@ -85,7 +69,7 @@ export default function SellerDashboard() {
   ];
 
   // Real estate / seasonal listings get lifecycle cards
-  const seasonalListings = services.filter((s: any) =>
+  const seasonalListings = services.filter((s) =>
     s.listing_type === "sale" || s.listing_expires_at
   );
 
@@ -162,7 +146,7 @@ export default function SellerDashboard() {
           {seasonalListings.length > 0 && (
             <div className="space-y-3 mt-4">
               <h3 className="text-sm font-bold text-foreground px-1">Listings ({seasonalListings.length})</h3>
-              {seasonalListings.map((s: any) => (
+              {seasonalListings.map((s) => (
                 <SellerListingLifecycleCard
                   key={s.id}
                   id={s.id}

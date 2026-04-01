@@ -1,9 +1,10 @@
 /**
  * SuperMapModeBar — Floating mode switcher for SuperMap.
  * Radar overlay toggle uses weatherDisplayStore (never "disables weather").
+ * Uses unified mapStore.
  */
 import { cn } from "@/lib/utils";
-import { useSuperMapStore } from "@/stores/superMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import type { SuperMapMode } from "@/lib/map/superMapLayers";
 import {
@@ -24,8 +25,8 @@ const MODES: { value: SuperMapMode; label: string; icon: React.ElementType }[] =
 ];
 
 export default function SuperMapModeBar() {
-  const mode = useSuperMapStore((s) => s.mode);
-  const setMode = useSuperMapStore((s) => s.setMode);
+  const mode = useUnifiedMapStore((s) => s.mapMode);
+  const setMode = useUnifiedMapStore((s) => s.setMode);
   const radarOverlay = useWeatherDisplayStore((s) => s.radarOverlay);
   const setRadarOverlay = useWeatherDisplayStore((s) => s.setRadarOverlay);
 

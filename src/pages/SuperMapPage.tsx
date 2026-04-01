@@ -1,14 +1,14 @@
 /**
  * SuperMapPage — Full-screen premium intelligent map experience.
  * Glass search bar, weather HUD, smart bottom sheet, brand markers.
+ * Uses unified mapStore as single source of truth.
  */
 import { useEffect } from "react";
 import SuperMap from "@/components/map/SuperMap";
 import SmartSearchBar from "@/components/map/SmartSearchBar";
 import SmartBottomSheet from "@/components/map/SmartBottomSheet";
 import WeatherHUD from "@/components/map/WeatherHUD";
-import { useSuperMapStore } from "@/stores/superMapStore";
-import { useSmartMapStore } from "@/stores/smartMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useLocationStore } from "@/stores/locationStore";
 import { useQuery } from "@tanstack/react-query";
 import { getMapMerchantPins } from "@/lib/map/mapEngine";
@@ -16,19 +16,18 @@ import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
 export default function SuperMapPage() {
-  const setEntities = useSuperMapStore((s) => s.setEntities);
-  const setUserLocation = useSuperMapStore((s) => s.setUserLocation);
-  const setMobilityPoints = useSuperMapStore((s) => s.setMobilityPoints);
+  const setEntities = useUnifiedMapStore((s) => s.setEntities);
+  const setMobilityPoints = useUnifiedMapStore((s) => s.setMobilityPoints);
+  const setCenter = useUnifiedMapStore((s) => s.setCenter);
+  const setZoom = useUnifiedMapStore((s) => s.setZoom);
+  const setViewport = useUnifiedMapStore((s) => s.setViewport);
+  const searchResults = useUnifiedMapStore((s) => s.search.results);
+  const selectedEntityId = useUnifiedMapStore((s) => s.selectedEntityId);
+  const selectEntity = useUnifiedMapStore((s) => s.selectEntity);
+
   const currentLocation = useLocationStore((s) => s.currentLocation);
 
-  // Smart map store
-  const setSmartUserLocation = useSmartMapStore((s) => s.setUserLocation);
-  const setSmartViewport = useSmartMapStore((s) => s.setViewport);
-  const searchResults = useSmartMapStore((s) => s.search.results);
-  const selectedResultId = useSmartMapStore((s) => s.selectedResultId);
-  const selectResult = useSmartMapStore((s) => s.selectResult);
-
-  // Weather
+  // Weather — read GPS from locationStore (no duplication)
   const lat = currentLocation?.lat ?? 25.2048;
   const lng = currentLocation?.lng ?? 55.2708;
   const weather = useLiveWeatherStation({ lat, lng });
@@ -61,14 +60,12 @@ export default function SuperMapPage() {
     setEntities(entities);
   }, [pins, setEntities]);
 
-  // Sync user location to both stores
+  // Sync user location to viewport (single source — locationStore)
   useEffect(() => {
     if (currentLocation?.lat && currentLocation?.lng) {
-      setUserLocation(currentLocation.lat, currentLocation.lng);
-      setSmartUserLocation(currentLocation.lat, currentLocation.lng);
-      setSmartViewport({ centerLat: currentLocation.lat, centerLng: currentLocation.lng });
+      setViewport({ centerLat: currentLocation.lat, centerLng: currentLocation.lng });
     }
-  }, [currentLocation, setUserLocation, setSmartUserLocation, setSmartViewport]);
+  }, [currentLocation, setViewport]);
 
   // Generate mock nearby drivers
   useEffect(() => {
@@ -91,13 +88,12 @@ export default function SuperMapPage() {
 
   // When search result selected, fly to it on map
   useEffect(() => {
-    if (!selectedResultId) return;
-    const result = searchResults.find(r => r.id === selectedResultId);
+    if (!selectedEntityId) return;
+    const result = searchResults.find(r => r.id === selectedEntityId);
     if (!result) return;
-    const store = useSuperMapStore.getState();
-    store.setCenter(result.lat, result.lng);
-    store.setZoom(16);
-  }, [selectedResultId, searchResults]);
+    setCenter(result.lat, result.lng);
+    setZoom(16);
+  }, [selectedEntityId, searchResults, setCenter, setZoom]);
 
   return (
     <div className="fixed inset-0 z-0 bg-background">
@@ -106,10 +102,10 @@ export default function SuperMapPage() {
         className="w-full h-full"
         showModeBar={false}
         onSelectEntity={(entity) => {
-          selectResult(entity.id);
+          selectEntity(entity.id);
         }}
         onZoneClick={() => {
-          selectResult(null);
+          selectEntity(null);
         }}
       />
 
