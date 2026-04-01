@@ -6,6 +6,7 @@
  *
  * ALL business logic is delegated to useDashboardViewModel.
  * This component is a PURE SHELL — render only.
+ * Card system adoption: sections use LifecycleCardShell + UniverseCard via adapters.
  */
 import { memo } from "react";
 import { GeoStatusIndicator } from "@/components/geo/GeoStatusIndicator";
@@ -20,6 +21,14 @@ import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet"
 import { MobilityLiveMap } from "@/components/mobility/MobilityLiveMap";
 import NotificationBell from "@/components/storefront/NotificationBell";
 import { useDashboardViewModel } from "@/families/dashboard/dashboard.view-model";
+import { LifecycleCardShell } from "@/components/cards/LifecycleCardShell";
+import { UniverseCard } from "@/components/cards/UniverseCard";
+import {
+  useTrendingSectionCard,
+  useBestRatedSectionCard,
+  useNewestSectionCard,
+  useNearYouSectionCard,
+} from "@/domains/cards/adapters/home-card-adapters";
 import type { SmartCategory, SmartHero } from "@/lib/smart-home-engine";
 
 import foodImg from "@/assets/categories/food.png";
