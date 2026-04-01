@@ -74,6 +74,8 @@ export interface CardRegistryEntry {
   key: string;
   /** Domain ownership */
   domain: CardDomain;
+  /** Card classification — what kind of card this is */
+  classification: CardClassification;
   /** Route this card links to */
   route: string;
   /** Required capability for this card to be active */
@@ -86,6 +88,10 @@ export interface CardRegistryEntry {
   surface: "home" | "admin-ops" | "admin-super" | "driver" | "seller" | "global";
   /** Connection status — NEVER set manually, computed by audit */
   connectionStatus?: "connected" | "partial" | "broken" | "orphan" | "mocked";
+  /** Delegation target — who owns the real pipeline when classification=delegated */
+  delegationOwner?: string;
+  /** Justification for non-business classification */
+  classificationJustification?: string;
 }
 
 /**
