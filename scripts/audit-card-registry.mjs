@@ -173,7 +173,7 @@ for (const key of registryKeys) {
   const hasAdapter = adapters.has(key);
   const hasShell = cardShellUsage.has(key);
   const hasAction = realActions.has(key);
-  const hasRoute = !!entry.route && entry.route.length > 1;
+  const hasRoute = !!entry.route && entry.route.length >= 1;
   const hasFetch = false; // adapters don't have direct fetches by definition
   const hasMock = false;
 
