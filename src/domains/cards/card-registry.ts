@@ -6,8 +6,9 @@
  * - Every visible card MUST have an entry here
  * - connectionStatus is NEVER set manually — computed by computeConnectionStatus()
  * - No decorative/mock/orphan cards allowed
+ * - Every card MUST have an explicit classification
  */
-import type { CardRegistryEntry } from "./card-contract";
+import type { CardRegistryEntry, CardClassification } from "./card-contract";
 
 /** Map of adapter hook names that exist in the codebase — used for auto-detection */
 const KNOWN_ADAPTERS = new Set([
@@ -40,6 +41,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   hero_banner: {
     key: "hero_banner",
     domain: "geo",
+    classification: "business_data_card",
     route: "/",
     requiredCapability: "geo.read",
     sourceType: "view-model",
@@ -49,6 +51,8 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   quick_actions: {
     key: "quick_actions",
     domain: "wallet",
+    classification: "utility_navigation_card",
+    classificationJustification: "Pure navigation shortcuts (Wallet/QR/Send) — no deep business data, no live pipeline",
     route: "/wallet/hub",
     requiredCapability: "wallet.read",
     sourceType: "view-model",
@@ -58,6 +62,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   category_grid: {
     key: "category_grid",
     domain: "marketplace",
+    classification: "business_data_card",
     route: "/radar",
     requiredCapability: "marketplace.read",
     sourceType: "view-model",
@@ -67,6 +72,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   context_banners: {
     key: "context_banners",
     domain: "geo",
+    classification: "business_data_card",
     route: "/radar",
     requiredCapability: "geo.read",
     sourceType: "view-model",
@@ -76,6 +82,9 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   boost_slot_hero: {
     key: "boost_slot_hero",
     domain: "boost",
+    classification: "delegated_pipeline_card",
+    delegationOwner: "BoostSlotRenderer",
+    classificationJustification: "Data pipeline owned by BoostSlotRenderer which fetches active campaigns via boost_campaigns query internally",
     route: "/boost",
     requiredCapability: "boost.read",
     sourceType: "query",
@@ -85,6 +94,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   live_map: {
     key: "live_map",
     domain: "geo",
+    classification: "business_data_card",
     route: "/mobility/taxi",
     requiredCapability: "geo.read",
     sourceType: "view-model",
@@ -94,6 +104,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   trending_section: {
     key: "trending_section",
     domain: "marketplace",
+    classification: "business_data_card",
     route: "/radar",
     requiredCapability: "marketplace.read",
     sourceType: "query",
@@ -103,6 +114,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   best_rated_section: {
     key: "best_rated_section",
     domain: "marketplace",
+    classification: "business_data_card",
     route: "/radar",
     requiredCapability: "marketplace.read",
     sourceType: "query",
@@ -112,6 +124,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   newest_section: {
     key: "newest_section",
     domain: "marketplace",
+    classification: "business_data_card",
     route: "/radar",
     requiredCapability: "marketplace.read",
     sourceType: "query",
@@ -121,6 +134,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   near_you_section: {
     key: "near_you_section",
     domain: "marketplace",
+    classification: "business_data_card",
     route: "/radar",
     requiredCapability: "marketplace.read",
     sourceType: "query",
@@ -130,6 +144,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   smart_recommendations: {
     key: "smart_recommendations",
     domain: "marketplace",
+    classification: "business_data_card",
     route: "/radar",
     requiredCapability: "marketplace.read",
     sourceType: "query",
@@ -139,6 +154,8 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   onboarding_checklist: {
     key: "onboarding_checklist",
     domain: "onboarding",
+    classification: "local_only_temporary_card",
+    classificationJustification: "Onboarding progress is ephemeral session state — not persisted to DB, dismissed on completion, no cross-surface sync needed",
     route: "/",
     requiredCapability: "onboarding.read",
     sourceType: "query",
@@ -150,6 +167,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   driver_status: {
     key: "driver_status",
     domain: "delivery",
+    classification: "business_data_card",
     route: "/driver",
     requiredCapability: "driver.status.write",
     sourceType: "query",
@@ -159,6 +177,8 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   driver_positioning: {
     key: "driver_positioning",
     domain: "delivery",
+    classification: "on_demand_orchestration_card",
+    classificationJustification: "Triggers AI zone suggestion on user tap — not a continuous live stream, result is ephemeral",
     route: "/driver",
     requiredCapability: "driver.read",
     sourceType: "query",
@@ -168,6 +188,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   driver_earnings: {
     key: "driver_earnings",
     domain: "wallet",
+    classification: "business_data_card",
     route: "/driver/earnings",
     requiredCapability: "driver.earnings.read",
     sourceType: "query",
@@ -179,6 +200,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   seller_businesses: {
     key: "seller_businesses",
     domain: "marketplace",
+    classification: "business_data_card",
     route: "/seller",
     requiredCapability: "seller.read",
     sourceType: "query",
@@ -188,6 +210,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   seller_listing_lifecycle: {
     key: "seller_listing_lifecycle",
     domain: "marketplace",
+    classification: "business_data_card",
     route: "/seller",
     requiredCapability: "seller.read",
     sourceType: "query",
@@ -199,6 +222,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   ops_metrics: {
     key: "ops_metrics",
     domain: "analytics",
+    classification: "business_data_card",
     route: "/admin/ops",
     requiredCapability: "admin.ops.read",
     sourceType: "query",
@@ -210,6 +234,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   super_metrics: {
     key: "super_metrics",
     domain: "analytics",
+    classification: "business_data_card",
     route: "/admin/super",
     requiredCapability: "admin.super.read",
     sourceType: "query",
@@ -221,6 +246,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   wallet_balance: {
     key: "wallet_balance",
     domain: "wallet",
+    classification: "business_data_card",
     route: "/wallet/hub",
     requiredCapability: "wallet.read",
     sourceType: "store",
@@ -230,6 +256,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   orbit_recent_chats: {
     key: "orbit_recent_chats",
     domain: "orbit",
+    classification: "business_data_card",
     route: "/orbit",
     requiredCapability: "messages.read",
     sourceType: "store",
@@ -239,6 +266,7 @@ export const CARD_REGISTRY: Record<string, CardRegistryEntry> = {
   notifications_badge: {
     key: "notifications_badge",
     domain: "notifications",
+    classification: "business_data_card",
     route: "/notifications",
     requiredCapability: "notifications.read",
     sourceType: "query",
@@ -288,6 +316,11 @@ export function hasKnownAdapter(cardKey: string): boolean {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join("")}Card`;
   return KNOWN_ADAPTERS.has(adapterName);
+}
+
+/** Get cards by classification */
+export function getCardsByClassification(classification: CardClassification): CardRegistryEntry[] {
+  return Object.values(CARD_REGISTRY).filter((e) => e.classification === classification);
 }
 
 /** Audit: find entries with a given connection status */
