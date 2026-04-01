@@ -7,6 +7,9 @@
 /** Card lifecycle states — no card may render without one of these */
 export type CardStatus = "live" | "loading" | "empty" | "error" | "disabled";
 
+/** Action classification — distinguishes navigation from real business actions */
+export type CardActionType = "navigation" | "business" | "mutation" | "orchestration";
+
 /** Strict contract every card adapter must produce */
 export interface CardContract<T = unknown> {
   /** Unique card identifier matching CARD_REGISTRY key */
@@ -35,6 +38,8 @@ export interface CardContract<T = unknown> {
 
 export interface CardAction {
   label: string;
+  /** What kind of action this is — for audit truth */
+  actionType: CardActionType;
   run: () => void | Promise<void>;
 }
 
@@ -71,16 +76,24 @@ export interface CardRegistryEntry {
   sourceKey: string;
   /** Surface where this card renders */
   surface: "home" | "admin-ops" | "admin-super" | "driver" | "seller" | "global";
-  /** Connection status — updated by audit */
+  /** Connection status — NEVER set manually, computed by audit */
   connectionStatus?: "connected" | "partial" | "broken" | "orphan" | "mocked";
 }
 
 /**
  * Helper to build a CardContract from raw data + status logic.
  * Enforces that no field is fabricated.
+ *
+ * STRICT: data:null + no error + no disabled = "loading", NOT "live".
+ * A card cannot be LIVE without real non-null data.
  */
 export function buildCardContract<T>(
-  partial: Omit<CardContract<T>, "status"> & { data: T | null; error?: string | null; disabled?: boolean; disabledReason?: string },
+  partial: Omit<CardContract<T>, "status"> & {
+    data: T | null;
+    error?: string | null;
+    disabled?: boolean;
+    disabledReason?: string;
+  },
 ): CardContract<T> {
   let status: CardStatus;
   if (partial.disabled) {
@@ -88,6 +101,7 @@ export function buildCardContract<T>(
   } else if (partial.error) {
     status = "error";
   } else if (partial.data === null || partial.data === undefined) {
+    // STRICT: null data is ALWAYS loading, never live
     status = "loading";
   } else if (
     (Array.isArray(partial.data) && partial.data.length === 0) ||
