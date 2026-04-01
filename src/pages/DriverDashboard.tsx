@@ -1,8 +1,9 @@
 /**
  * DriverDashboard — Canonical driver dashboard.
- * Uses useDriverMissions (mobility_jobs) + rider_presence for online status.
+ * Uses useDriverMissions (mobility_jobs) + useDriverLive for online status.
+ * NO direct supabase fetch — all reads go through canonical hooks.
  */
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import DeliveryHeatmapPanel from "@/components/delivery/DeliveryHeatmapPanel";
 import DriverStatusQuickCard from "@/components/driver/DriverStatusQuickCard";
 import DriverPositioningCard from "@/components/driver/DriverPositioningCard";
@@ -11,13 +12,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Power, Navigation, Package, Clock, CheckCircle2,
   XCircle, MapPin, ChevronRight, TrendingUp, Star,
-  Truck, AlertCircle,
+  Truck,
 } from "lucide-react";
 import { useDriverMissions, type DeliveryJob } from "@/hooks/useDriverMissions";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useDriverLive } from "@/hooks/useDriverLive";
+import { setDriverLiveStatus } from "@/lib/driver/driverLive";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 
@@ -99,30 +100,30 @@ function MissionCard({ mission, onAccept, onPickup, onDeliver, onCancel }: {
 
 export default function DriverDashboard() {
   const { user } = useAuth();
-  const { activeMissions, completedMissions, stats, loading: missionsLoading, acceptMission, updateStatus, confirmDelivery } = useDriverMissions();
+  const { activeMissions, completedMissions, stats, loading: missionsLoading, acceptMission, updateStatus } = useDriverMissions();
+  const { data: driverProfile, isLoading: profileLoading, refetch: refetchProfile } = useDriverLive(user?.id);
   const [tab, setTab] = useState<"active" | "history" | "heatmap">("active");
-  const [isOnline, setIsOnline] = useState(false);
-  const [sessionLoading, setSessionLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user?.id) return;
-    (supabase as any).from("rider_presence").select("is_online").eq("user_id", user.id).maybeSingle()
-      .then(({ data }: any) => { setIsOnline(data?.is_online ?? false); setSessionLoading(false); });
-  }, [user?.id]);
+  const isOnline = driverProfile?.is_online ?? false;
+  const loading = profileLoading || missionsLoading;
 
   const handleToggleOnline = async () => {
     if (!user?.id) return;
     haptic("medium");
     const newStatus = !isOnline;
-    await (supabase as any).from("rider_presence").upsert({
-      user_id: user.id, is_online: newStatus, is_available: newStatus,
-      current_status: newStatus ? "online" : "offline", last_seen_at: new Date().toISOString(),
-    }, { onConflict: "user_id" });
-    setIsOnline(newStatus);
-    toast.success(newStatus ? "Vous êtes en ligne !" : "Vous êtes hors ligne");
+    try {
+      await setDriverLiveStatus({
+        userId: user.id,
+        isOnline: newStatus,
+        isAvailable: newStatus,
+        currentStatus: newStatus ? "online" : "offline",
+      });
+      refetchProfile();
+      toast.success(newStatus ? "Vous êtes en ligne !" : "Vous êtes hors ligne");
+    } catch {
+      toast.error("Impossible de changer le statut");
+    }
   };
-
-  const loading = sessionLoading || missionsLoading;
 
   return (
     <div className="app-mobile-page pb-20 bg-background">
