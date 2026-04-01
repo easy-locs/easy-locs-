@@ -226,10 +226,16 @@ function AdapterSection({ title, icon, cardStatus, shops, seeAllTo }: {
     </motion.div>
   );
 }
-/* ═══ Main Component — PURE SHELL ═══ */
+/* ═══ Main Component — PURE SHELL with Card System Adoption ═══ */
 export default function SmartHome() {
   const vm = useDashboardViewModel();
   const navigate = useNavigate();
+
+  // ── Card adapters — bridge ViewModel to card contracts ──
+  const trendingCard = useTrendingSectionCard();
+  const bestRatedCard = useBestRatedSectionCard();
+  const newestCard = useNewestSectionCard();
+  const nearYouCard = useNearYouSectionCard();
 
   return (
     <div className="w-full min-w-0 pb-6">
@@ -342,10 +348,35 @@ export default function SmartHome() {
           </Link>
         </motion.div>
 
-        {/* ═══ Data Sections ═══ */}
-        {SECTION_DEFS.map((sec, i) => (
-          <DynamicSection key={sec.key} section={sec} shops={vm.sections[sec.key as keyof typeof vm.sections]} index={i} />
-        ))}
+        {/* ═══ Data Sections — Card System Adoption ═══ */}
+        <AdapterSection
+          title="Trending"
+          icon="🔥"
+          cardStatus={trendingCard.status}
+          shops={vm.sections.trending}
+          seeAllTo="/radar?sort=trending"
+        />
+        <AdapterSection
+          title="Best Rated"
+          icon="⭐"
+          cardStatus={bestRatedCard.status}
+          shops={vm.sections.bestRated}
+          seeAllTo="/radar?sort=rating"
+        />
+        <AdapterSection
+          title="New on Easy Locs"
+          icon="✨"
+          cardStatus={newestCard.status}
+          shops={vm.sections.newest}
+          seeAllTo="/radar?sort=newest"
+        />
+        <AdapterSection
+          title="Near You"
+          icon="📍"
+          cardStatus={nearYouCard.status}
+          shops={vm.sections.nearYou}
+          seeAllTo="/radar?sort=distance"
+        />
 
         {/* ═══ BOOST SLOT — Inline ═══ */}
         <div className="pb-4">
