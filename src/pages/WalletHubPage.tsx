@@ -300,12 +300,9 @@ export default function WalletHubPage() {
                 </div>
               )}
 
-              {loading && (
-                <div className="flex flex-col items-center gap-3 py-8">
-                  <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                  <p className="text-xs text-muted-foreground">Loading wallet...</p>
-                </div>
-              )}
+              <LifecycleCardShell state={loading ? "loading" : rows.length === 0 ? "empty" : "live"} title="Wallet" skeletonCount={2}>
+                <span />
+              </LifecycleCardShell>
 
               {/* ── Transaction History ── */}
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
