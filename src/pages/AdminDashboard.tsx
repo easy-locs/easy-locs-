@@ -424,7 +424,7 @@ const AdminDashboard = () => {
               </Suspense>
             )}
           </>
-        )}
+        </LifecycleCardShell>
       </div>
     </DashboardLayout>
   );
