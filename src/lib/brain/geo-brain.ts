@@ -115,7 +115,6 @@ export function setAddressFromPlace(place: CanonicalPlace): void {
     country: place.country_name ?? undefined,
   });
   // Update unified map store viewport (SSOT for map UI)
-  const { useUnifiedMapStore } = await import("@/stores/mapStore");
   useUnifiedMapStore.getState().setCenter(place.lat, place.lng);
   useUnifiedMapStore.getState().setZoom(14);
   useLocationStore.getState().addRecentPlace({
