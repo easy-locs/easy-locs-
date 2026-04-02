@@ -3,11 +3,12 @@
  * Single authoritative wallet page. Route: /wallet/hub + /wallet
  */
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
 import { useWalletTransactions } from "@/payments/wallet-hooks";
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
+import { LifecycleCardShell } from "@/components/cards/LifecycleCardShell";
+import { fetchCounterpartyNames } from "@/repositories/wallet-repository";
 
 import {
   ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
