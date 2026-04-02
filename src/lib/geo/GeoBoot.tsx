@@ -41,7 +41,6 @@ export function GeoBoot() {
       resolveCanonicalGeo({ lat, lng, source: "gps", precision: "gps" });
 
       // Update map viewport to user location if in follow_user mode
-      const { useUnifiedMapStore } = await import("@/stores/mapStore");
       const mapState = useUnifiedMapStore.getState();
       if (mapState.viewport.mode === "follow_user") {
         mapState.setCenter(lat, lng);
