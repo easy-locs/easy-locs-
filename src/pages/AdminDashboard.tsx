@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { checkAdminRole, fetchAdminStats } from "@/repositories/admin.repository";
 import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar, DollarSign, ArrowUpRight, ArrowDownRight, HeartPulse, UserCog, ShieldAlert } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { LifecycleCardShell } from "@/components/cards/LifecycleCardShell";
 
 const HealthDashboard = lazy(() => import("@/components/admin/HealthDashboard"));
 const OrgMemberManager = lazy(() => import("@/components/admin/OrgMemberManager"));
