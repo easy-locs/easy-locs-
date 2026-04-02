@@ -3,11 +3,12 @@
  * Single authoritative wallet page. Route: /wallet/hub + /wallet
  */
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
 import { useWalletTransactions } from "@/payments/wallet-hooks";
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
+import { LifecycleCardShell } from "@/components/cards/LifecycleCardShell";
+import { fetchCounterpartyNames } from "@/repositories/wallet-repository";
 
 import {
   ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
@@ -70,17 +71,7 @@ export default function WalletHubPage() {
       if (tx.recipient_id && tx.recipient_id !== user.id) ids.add(tx.recipient_id);
     });
     if (ids.size === 0) return;
-    (supabase as any)
-      .from("profiles")
-      .select("id, name, first_name, last_name, username")
-      .in("id", Array.from(ids))
-      .then(({ data }: any) => {
-        const map: Record<string, string> = {};
-        (data ?? []).forEach((p: any) => {
-          map[p.id] = p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || p.username || "User";
-        });
-        setCounterpartyNames(map);
-      });
+    fetchCounterpartyNames(Array.from(ids)).then(setCounterpartyNames);
   }, [txHistory, user?.id]);
 
   const getTxTitle = useCallback((tx: any) => {
@@ -309,12 +300,9 @@ export default function WalletHubPage() {
                 </div>
               )}
 
-              {loading && (
-                <div className="flex flex-col items-center gap-3 py-8">
-                  <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                  <p className="text-xs text-muted-foreground">Loading wallet...</p>
-                </div>
-              )}
+              <LifecycleCardShell state={loading ? "loading" : rows.length === 0 ? "empty" : "live"} title="Wallet" skeletonCount={2}>
+                <span />
+              </LifecycleCardShell>
 
               {/* ── Transaction History ── */}
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
