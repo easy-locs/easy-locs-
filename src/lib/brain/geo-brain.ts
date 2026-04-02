@@ -114,7 +114,10 @@ export function setAddressFromPlace(place: CanonicalPlace): void {
     area: place.district ?? undefined,
     country: place.country_name ?? undefined,
   });
-  useLocationStore.getState().setMapViewport({ lat: place.lat, lng: place.lng }, 14);
+  // Update unified map store viewport (SSOT for map UI)
+  const { useUnifiedMapStore } = await import("@/stores/mapStore");
+  useUnifiedMapStore.getState().setCenter(place.lat, place.lng);
+  useUnifiedMapStore.getState().setZoom(14);
   useLocationStore.getState().addRecentPlace({
     lat: place.lat, lng: place.lng, label,
     city: place.city ?? undefined,
