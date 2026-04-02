@@ -184,9 +184,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div className="text-center py-20 text-muted-foreground">Loading...</div>
-        ) : (
+        <LifecycleCardShell state={loading ? "loading" : stats.totalUsers === 0 ? "empty" : "live"} title="Admin Stats" skeletonCount={4}>
           <>
             {/* Stats Grid */}
             {activeTab !== "revenue" && (
