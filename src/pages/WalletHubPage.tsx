@@ -71,17 +71,7 @@ export default function WalletHubPage() {
       if (tx.recipient_id && tx.recipient_id !== user.id) ids.add(tx.recipient_id);
     });
     if (ids.size === 0) return;
-    (supabase as any)
-      .from("profiles")
-      .select("id, name, first_name, last_name, username")
-      .in("id", Array.from(ids))
-      .then(({ data }: any) => {
-        const map: Record<string, string> = {};
-        (data ?? []).forEach((p: any) => {
-          map[p.id] = p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || p.username || "User";
-        });
-        setCounterpartyNames(map);
-      });
+    fetchCounterpartyNames(Array.from(ids)).then(setCounterpartyNames);
   }, [txHistory, user?.id]);
 
   const getTxTitle = useCallback((tx: any) => {
