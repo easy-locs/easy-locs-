@@ -7,6 +7,7 @@ import { useEffect, useRef } from "react";
 import { geoService } from "./geo-service";
 import { useGeoStore } from "./geo-store";
 import { useLocationStore } from "@/stores/locationStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 import { reverseGeocode } from "@/lib/location/geocode";
 import { fromGPS } from "@/lib/address/canonical-place";
 import { setAddressFromPlace } from "@/lib/brain/geo-brain";
