@@ -51,9 +51,9 @@ export const UNIVERSAL_DOMAIN_REGISTRY: DomainEntry[] = [
   { domain: "seo", intent: "render_page", entry: "seoDispatch", pipeline: "seoMetaPipeline", owner: "seoStore.currentPageMeta", selector: "selectSeoMeta" },
 
   // ── Map ──
-  { domain: "map", intent: "update_viewport", entry: "mapDispatch", pipeline: "mapViewportPipeline", owner: "superMapStore.viewport", selector: "selectMapViewport" },
-  { domain: "map", intent: "select_entity", entry: "mapDispatch", pipeline: "mapSelectPipeline", owner: "superMapStore.selectedEntityId", selector: "selectVisiblePins" },
-  { domain: "map", intent: "toggle_layer", entry: "mapDispatch", pipeline: "mapLayerPipeline", owner: "superMapStore.layers", selector: "selectVisiblePins" },
+  { domain: "map", intent: "update_viewport", entry: "mapDispatch", pipeline: "mapViewportPipeline", owner: "unifiedMapStore.viewport", selector: "selectMapViewport" },
+  { domain: "map", intent: "select_entity", entry: "mapDispatch", pipeline: "mapSelectPipeline", owner: "unifiedMapStore.selectedEntityId", selector: "selectVisiblePins" },
+  { domain: "map", intent: "toggle_layer", entry: "mapDispatch", pipeline: "mapLayerPipeline", owner: "unifiedMapStore.layers", selector: "selectVisiblePins" },
 
   // ── Radar ──
   { domain: "radar", intent: "refresh_feed", entry: "radarDispatch", pipeline: "radarFeedPipeline", owner: "radarStore.feeds", selector: "selectRadarFeed" },

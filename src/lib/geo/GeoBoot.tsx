@@ -40,10 +40,11 @@ export function GeoBoot() {
       // Resolve canonical geo for quality tracking
       resolveCanonicalGeo({ lat, lng, source: "gps", precision: "gps" });
 
-      // Update map viewport to user location if no custom viewport set
-      const locStore = useLocationStore.getState();
-      if (!locStore.mapCenter) {
-        locStore.setMapViewport({ lat, lng }, 14);
+      // Update map viewport to user location if in follow_user mode
+      const { useUnifiedMapStore } = await import("@/stores/mapStore");
+      const mapState = useUnifiedMapStore.getState();
+      if (mapState.viewport.mode === "follow_user") {
+        mapState.setCenter(lat, lng);
       }
 
       // Update city/country on geoStore from reverse geocode
