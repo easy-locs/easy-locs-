@@ -12,6 +12,7 @@
  */
 import { useGeoStore, type GeoPoint } from "@/lib/geo/geo-store";
 import { useLocationStore, type ResolvedPlace } from "@/stores/locationStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import { computeZoneKey, type CanonicalPlace } from "@/lib/address/canonical-place";
 import { eventBus } from "@/lib/core/event-bus";
