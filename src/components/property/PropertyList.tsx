@@ -1,6 +1,6 @@
 import { useListingStore } from "@/stores/listingStore";
 import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
-import { useMapStore } from "@/stores/propertyMapStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useAnalyticsStore } from "@/stores/analyticsStore";
 import { usePropertyQuerySync } from "@/hooks/usePropertyQuerySync";
 
