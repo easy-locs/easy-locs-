@@ -56,12 +56,7 @@ interface LocationState {
   pickupLocation: ResolvedPlace | null;
   dropoffLocation: ResolvedPlace | null;
 
-  // Map viewport — DEPRECATED: use useUnifiedMapStore for map viewport
-  // Kept as read-through to useUnifiedMapStore for backward compat
-  /** @deprecated Use useUnifiedMapStore.viewport */
-  mapCenter: { lat: number; lng: number } | null;
-  /** @deprecated Use useUnifiedMapStore.viewport */
-  mapZoom: number;
+  // Map viewport fully managed by useUnifiedMapStore — removed from locationStore
   searchRadiusKm: number;
 
   // Saved places
