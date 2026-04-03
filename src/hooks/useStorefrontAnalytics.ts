@@ -1,10 +1,10 @@
 /**
  * useStorefrontAnalytics — Tracks real buyer events to storefront_analytics_events.
- * Events: page_view, product_view, add_to_cart, checkout, purchase
+ * DB calls delegated to storefront-repository.
  */
 import { useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { insertAnalyticsEvent } from "@/repositories/storefront-repository";
 
 const SESSION_KEY = "sf_session_id";
 
@@ -34,21 +34,19 @@ export function useStorefrontAnalytics(shopId: string | undefined) {
       opts?: { itemId?: string; revenue?: number; currency?: string; meta?: Record<string, any> }
     ) => {
       if (!shopId) return;
-
-      // Deduplicate page_view per session
       const dedupeKey = `${eventType}:${opts?.itemId || ""}`;
       if (eventType === "page_view" && tracked.current.has(dedupeKey)) return;
       tracked.current.add(dedupeKey);
 
       try {
-        await (supabase as any).from("storefront_analytics_events").insert({
+        await insertAnalyticsEvent({
           shop_id: shopId,
           event_type: eventType,
           item_id: opts?.itemId || null,
           user_id: user?.id || null,
           session_id: getSessionId(),
           referrer: document.referrer || null,
-          country: null, // could use geo later
+          country: null,
           device_type: getDeviceType(),
           metadata_json: opts?.meta || null,
           revenue: opts?.revenue || null,

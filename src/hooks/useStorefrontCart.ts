@@ -1,11 +1,14 @@
 /**
  * useStorefrontCart — Universal cart hook for storefront shops.
- * Manages add/remove/update/clear with Supabase persistence.
+ * DB calls delegated to storefront-repository.
  */
 import { useState, useCallback, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import {
+  findActiveCart, createCart, fetchCartItems, fetchItemStock,
+  upsertCartItem, deleteCartItem, updateCartItemQuantity, clearCartItems,
+} from "@/repositories/storefront-repository";
 
 export interface CartItem {
   id: string;
@@ -23,67 +26,31 @@ export function useStorefrontCart(shopId: string | undefined) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Load or create cart
   const ensureCart = useCallback(async (): Promise<string | null> => {
     if (!shopId || !user) return null;
     if (cartId) return cartId;
 
-    const { data: existing } = await (supabase as any)
-      .from("storefront_carts")
-      .select("id")
-      .eq("shop_id", shopId)
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .maybeSingle();
+    const existing = await findActiveCart(shopId, user.id);
+    if (existing) { setCartId(existing.id); return existing.id; }
 
-    if (existing) {
-      setCartId(existing.id);
-      return existing.id;
-    }
-
-    const { data: newCart } = await (supabase as any)
-      .from("storefront_carts")
-      .insert({ shop_id: shopId, user_id: user.id, currency: "EUR" })
-      .select("id")
-      .single();
-
-    if (newCart) {
-      setCartId(newCart.id);
-      return newCart.id;
-    }
+    const newCart = await createCart(shopId, user.id);
+    if (newCart) { setCartId(newCart.id); return newCart.id; }
     return null;
   }, [shopId, user, cartId]);
 
-  // Load items
   const loadItems = useCallback(async (cId: string) => {
-    const { data } = await (supabase as any)
-      .from("storefront_cart_items")
-      .select("*, catalog_items(title, photo_url)")
-      .eq("cart_id", cId);
-
+    const data = await fetchCartItems(cId);
     setItems(
-      (data || []).map((d: any) => ({
-        id: d.id,
-        item_id: d.item_id,
-        variant_id: d.variant_id,
-        quantity: d.quantity,
-        unit_price: d.unit_price,
-        title: d.catalog_items?.title,
-        photo_url: d.catalog_items?.photo_url,
+      data.map((d: any) => ({
+        id: d.id, item_id: d.item_id, variant_id: d.variant_id,
+        quantity: d.quantity, unit_price: d.unit_price,
+        title: d.catalog_items?.title, photo_url: d.catalog_items?.photo_url,
       }))
     );
   }, []);
 
-  useEffect(() => {
-    if (cartId) loadItems(cartId);
-  }, [cartId, loadItems]);
-
-  // Init cart on mount
-  useEffect(() => {
-    if (shopId && user) {
-      ensureCart();
-    }
-  }, [shopId, user, ensureCart]);
+  useEffect(() => { if (cartId) loadItems(cartId); }, [cartId, loadItems]);
+  useEffect(() => { if (shopId && user) ensureCart(); }, [shopId, user, ensureCart]);
 
   const addItem = useCallback(async (itemId: string, price: number, variantId?: string) => {
     setLoading(true);
@@ -91,43 +58,15 @@ export function useStorefrontCart(shopId: string | undefined) {
       const cId = await ensureCart();
       if (!cId) return;
 
-      // PASS104: Stock validation before adding
-      const { data: stockInfo } = await (supabase as any)
-        .from("catalog_items")
-        .select("track_inventory, stock_quantity, available")
-        .eq("id", itemId)
-        .single();
-
-      if (stockInfo && !stockInfo.available) {
-        toast.error("This item is currently unavailable");
-        return;
-      }
+      const stockInfo = await fetchItemStock(itemId);
+      if (stockInfo && !stockInfo.available) { toast.error("This item is currently unavailable"); return; }
       if (stockInfo?.track_inventory && stockInfo.stock_quantity != null) {
         const existingQty = items.find(i => i.item_id === itemId)?.quantity || 0;
-        if (existingQty + 1 > stockInfo.stock_quantity) {
-          toast.error(`Only ${stockInfo.stock_quantity} left in stock`);
-          return;
-        }
+        if (existingQty + 1 > stockInfo.stock_quantity) { toast.error(`Only ${stockInfo.stock_quantity} left in stock`); return; }
       }
 
-      // Check existing
       const existing = items.find(i => i.item_id === itemId && i.variant_id === (variantId || null));
-      if (existing) {
-        await (supabase as any)
-          .from("storefront_cart_items")
-          .update({ quantity: existing.quantity + 1 })
-          .eq("id", existing.id);
-      } else {
-        await (supabase as any)
-          .from("storefront_cart_items")
-          .insert({
-            cart_id: cId,
-            item_id: itemId,
-            variant_id: variantId || null,
-            quantity: 1,
-            unit_price: price,
-          });
-      }
+      await upsertCartItem(cId, itemId, variantId || null, existing ? existing.quantity + 1 : 1, price, existing?.id);
       await loadItems(cId);
       toast.success("Added to cart");
     } catch (e: any) {
@@ -138,22 +77,18 @@ export function useStorefrontCart(shopId: string | undefined) {
   }, [ensureCart, items, loadItems]);
 
   const updateQuantity = useCallback(async (cartItemId: string, quantity: number) => {
-    if (quantity <= 0) {
-      await (supabase as any).from("storefront_cart_items").delete().eq("id", cartItemId);
-    } else {
-      await (supabase as any).from("storefront_cart_items").update({ quantity }).eq("id", cartItemId);
-    }
+    await updateCartItemQuantity(cartItemId, quantity);
     if (cartId) loadItems(cartId);
   }, [cartId, loadItems]);
 
   const removeItem = useCallback(async (cartItemId: string) => {
-    await (supabase as any).from("storefront_cart_items").delete().eq("id", cartItemId);
+    await deleteCartItem(cartItemId);
     if (cartId) loadItems(cartId);
   }, [cartId, loadItems]);
 
   const clearCart = useCallback(async () => {
     if (!cartId) return;
-    await (supabase as any).from("storefront_cart_items").delete().eq("cart_id", cartId);
+    await clearCartItems(cartId);
     setItems([]);
   }, [cartId]);
 
