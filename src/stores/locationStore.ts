@@ -73,6 +73,7 @@ interface LocationState {
   setSelectedLocation: (place: ResolvedPlace | null) => void;
   setPickupLocation: (place: ResolvedPlace | null) => void;
   setDropoffLocation: (place: ResolvedPlace | null) => void;
+  /** @deprecated Use useUnifiedMapStore.setViewport */
   setMapViewport: (center: { lat: number; lng: number }, zoom?: number) => void;
   setSearchRadiusKm: (km: number) => void;
   addRecentPlace: (place: Omit<SavedPlace, "id" | "type">) => void;
