@@ -118,12 +118,9 @@ export function useQrPayment(
       if (!payload.shopSlug?.trim()) { setE("Invalid QR"); setS("error"); return; }
       setPayStepLabel("Loading merchant…"); setS("paying");
       try {
-        const shopResult: any = await withTimeout(
-          Promise.resolve((supabase as any).from("storefront_pages").select("user_id, name, route_status").eq("slug", payload.shopSlug).neq("route_status", "broken").maybeSingle()),
-          5000, "Timeout"
-        );
-        const shopOwnerId = shopResult?.data?.user_id as string | undefined;
-        const shopName = shopResult?.data?.name?.trim() as string | undefined;
+        const shopData = await withTimeout(resolveShopBySlug(payload.shopSlug!), 5000, "Timeout");
+        const shopOwnerId = shopData?.user_id as string | undefined;
+        const shopName = (shopData?.name as string | undefined)?.trim();
         if (!shopOwnerId) { setE("Merchant not found"); setS("error"); return; }
         if (!shopName) { setE("Merchant name unavailable"); setS("error"); return; }
         const resolved = await withTimeout(resolvePayTarget({ userId: shopOwnerId, currency: payload.currency || "AED" }), 6000, "Timeout");
