@@ -134,7 +134,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   setSelectedLocation: (place) => set({ selectedLocation: place }),
   setPickupLocation: (place) => set({ pickupLocation: place }),
   setDropoffLocation: (place) => set({ dropoffLocation: place }),
-  setMapViewport: (center, zoom) => set({ mapCenter: center, ...(zoom != null ? { mapZoom: zoom } : {}) }),
+  setMapViewport: () => { /* no-op: use useUnifiedMapStore.setViewport */ },
   setSearchRadiusKm: (km) => set({ searchRadiusKm: km }),
 
   addRecentPlace: (place) => {
