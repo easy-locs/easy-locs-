@@ -8,7 +8,7 @@ import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 import { decodeQr, resolveRoute, isExpired, type UniversalQrPayload } from "@/lib/qr-engine";
 import { resolvePayTarget } from "@/lib/wallet/resolvePayTarget";
 import { generateIdempotencyKey, isDuplicatePayment, recordPaymentAttempt } from "@/lib/merchant-qr/merchant-qr-engine";
-import { supabase } from "@/integrations/supabase/client";
+import { resolveShopBySlug } from "@/repositories/storefront-repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { playPremiumSuccessBeep, hapticPremiumSuccess } from "@/lib/scan/feedback";
 import type { ScanState } from "./useQrScanner";
