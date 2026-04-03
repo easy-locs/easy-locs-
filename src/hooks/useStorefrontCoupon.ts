@@ -1,10 +1,10 @@
 /**
  * useStorefrontCoupon — Buyer-side coupon validation and application hook.
- * Validates code, checks eligibility, calculates discount.
+ * DB calls delegated to storefront-repository.
  */
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { fetchCouponByCode, countCouponUsage, recordCouponUsage } from "@/repositories/storefront-repository";
 
 export interface AppliedCoupon {
   id: string;
@@ -26,78 +26,29 @@ export function useStorefrontCoupon(shopId: string | undefined) {
     setError(null);
 
     try {
-      // Fetch coupon
-      const { data: coupon } = await (supabase as any)
-        .from("storefront_coupons")
-        .select("*")
-        .eq("shop_id", shopId)
-        .eq("code", code.trim().toUpperCase())
-        .eq("active", true)
-        .maybeSingle();
+      const coupon = await fetchCouponByCode(shopId, code);
+      if (!coupon) { setError("Invalid coupon code"); setAppliedCoupon(null); return null; }
+      if (coupon.valid_to && new Date(coupon.valid_to) < new Date()) { setError("Coupon expired"); setAppliedCoupon(null); return null; }
+      if (coupon.usage_count >= coupon.usage_limit) { setError("Coupon usage limit reached"); setAppliedCoupon(null); return null; }
+      if (subtotal < (coupon.min_order || 0)) { setError(`Minimum order: ${coupon.min_order} ${coupon.currency || "EUR"}`); setAppliedCoupon(null); return null; }
 
-      if (!coupon) {
-        setError("Invalid coupon code");
-        setAppliedCoupon(null);
-        return null;
-      }
-
-      // Check validity period
-      if (coupon.valid_to && new Date(coupon.valid_to) < new Date()) {
-        setError("Coupon expired");
-        setAppliedCoupon(null);
-        return null;
-      }
-
-      // Check global usage limit
-      if (coupon.usage_count >= coupon.usage_limit) {
-        setError("Coupon usage limit reached");
-        setAppliedCoupon(null);
-        return null;
-      }
-
-      // Check min order
-      if (subtotal < (coupon.min_order || 0)) {
-        setError(`Minimum order: ${coupon.min_order} ${coupon.currency || "EUR"}`);
-        setAppliedCoupon(null);
-        return null;
-      }
-
-      // Check per-user limit
       if (user && coupon.per_user_limit > 0) {
-        const { count } = await (supabase as any)
-          .from("storefront_coupon_usage")
-          .select("id", { count: "exact", head: true })
-          .eq("coupon_id", coupon.id)
-          .eq("user_id", user.id);
-
-        if ((count || 0) >= coupon.per_user_limit) {
-          setError("You've already used this coupon");
-          setAppliedCoupon(null);
-          return null;
-        }
+        const count = await countCouponUsage(coupon.id, user.id);
+        if (count >= coupon.per_user_limit) { setError("You've already used this coupon"); setAppliedCoupon(null); return null; }
       }
 
-      // Calculate discount
       let discountAmount = 0;
       if (coupon.type === "percentage") {
         discountAmount = subtotal * (coupon.value / 100);
         if (coupon.max_discount) discountAmount = Math.min(discountAmount, coupon.max_discount);
       } else if (coupon.type === "fixed") {
         discountAmount = Math.min(coupon.value, subtotal);
-      } else if (coupon.type === "free_delivery") {
-        discountAmount = 0; // handled at checkout level
       }
-
       discountAmount = Math.round(discountAmount * 100) / 100;
 
       const applied: AppliedCoupon = {
-        id: coupon.id,
-        code: coupon.code,
-        type: coupon.type,
-        value: coupon.value,
-        discountAmount,
+        id: coupon.id, code: coupon.code, type: coupon.type, value: coupon.value, discountAmount,
       };
-
       setAppliedCoupon(applied);
       return applied;
     } catch {
@@ -109,20 +60,11 @@ export function useStorefrontCoupon(shopId: string | undefined) {
     }
   }, [shopId, user]);
 
-  const removeCoupon = useCallback(() => {
-    setAppliedCoupon(null);
-    setError(null);
-  }, []);
+  const removeCoupon = useCallback(() => { setAppliedCoupon(null); setError(null); }, []);
 
-  // Record usage after successful order
   const recordUsage = useCallback(async (orderId?: string) => {
     if (!appliedCoupon || !user) return;
-    await (supabase as any).from("storefront_coupon_usage").insert({
-      coupon_id: appliedCoupon.id,
-      user_id: user.id,
-      order_id: orderId || null,
-      discount_amount: appliedCoupon.discountAmount,
-    });
+    await recordCouponUsage(appliedCoupon.id, user.id, orderId || null, appliedCoupon.discountAmount);
   }, [appliedCoupon, user]);
 
   return { appliedCoupon, validating, error, applyCoupon, removeCoupon, recordUsage };
