@@ -1,20 +1,18 @@
 /**
  * useRealtimeDispatchBoard — Canonical: reads from mobility_jobs.
+ * DB calls delegated to dispatch-repository.
  */
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { fetchDispatchBoardData } from "@/repositories/dispatch-repository";
 
 export function useRealtimeDispatchBoard() {
   const [state, setState] = useState({ rides: [] as any[], alerts: [] as any[], zones: [] as any[], loading: true });
 
   const load = useCallback(async () => {
-    const [rides, alerts, zones] = await Promise.all([
-      (supabase as any).from("mobility_jobs").select("*").order("updated_at", { ascending: false }).limit(100),
-      (supabase as any).from("admin_alerts").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(50),
-      (supabase as any).from("geo_live_zone_overlays").select("*").order("surge_multiplier", { ascending: false }).limit(50),
-    ]);
-    setState({ rides: (rides.data ?? []), alerts: (alerts.data ?? []), zones: (zones.data ?? []), loading: false });
+    const data = await fetchDispatchBoardData();
+    setState({ ...data, loading: false });
   }, []);
 
   useEffect(() => {

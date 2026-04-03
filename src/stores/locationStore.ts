@@ -56,12 +56,7 @@ interface LocationState {
   pickupLocation: ResolvedPlace | null;
   dropoffLocation: ResolvedPlace | null;
 
-  // Map viewport — DEPRECATED: use useUnifiedMapStore for map viewport
-  // Kept as read-through to useUnifiedMapStore for backward compat
-  /** @deprecated Use useUnifiedMapStore.viewport */
-  mapCenter: { lat: number; lng: number } | null;
-  /** @deprecated Use useUnifiedMapStore.viewport */
-  mapZoom: number;
+  // Map viewport fully managed by useUnifiedMapStore — removed from locationStore
   searchRadiusKm: number;
 
   // Saved places
@@ -78,6 +73,7 @@ interface LocationState {
   setSelectedLocation: (place: ResolvedPlace | null) => void;
   setPickupLocation: (place: ResolvedPlace | null) => void;
   setDropoffLocation: (place: ResolvedPlace | null) => void;
+  /** @deprecated Use useUnifiedMapStore.setViewport */
   setMapViewport: (center: { lat: number; lng: number }, zoom?: number) => void;
   setSearchRadiusKm: (km: number) => void;
   addRecentPlace: (place: Omit<SavedPlace, "id" | "type">) => void;
@@ -118,8 +114,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   selectedLocation: null,
   pickupLocation: null,
   dropoffLocation: null,
-  mapCenter: null,
-  mapZoom: 13,
+  // mapCenter/mapZoom removed — use useUnifiedMapStore
   searchRadiusKm: 5,
   savedPlaces: loadSaved(),
   recentPlaces: loadRecent(),
@@ -139,7 +134,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   setSelectedLocation: (place) => set({ selectedLocation: place }),
   setPickupLocation: (place) => set({ pickupLocation: place }),
   setDropoffLocation: (place) => set({ dropoffLocation: place }),
-  setMapViewport: (center, zoom) => set({ mapCenter: center, ...(zoom != null ? { mapZoom: zoom } : {}) }),
+  setMapViewport: () => { /* no-op: use useUnifiedMapStore.setViewport */ },
   setSearchRadiusKm: (km) => set({ searchRadiusKm: km }),
 
   addRecentPlace: (place) => {
