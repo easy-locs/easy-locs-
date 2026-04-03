@@ -114,8 +114,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   selectedLocation: null,
   pickupLocation: null,
   dropoffLocation: null,
-  mapCenter: null,
-  mapZoom: 13,
+  // mapCenter/mapZoom removed — use useUnifiedMapStore
   searchRadiusKm: 5,
   savedPlaces: loadSaved(),
   recentPlaces: loadRecent(),
