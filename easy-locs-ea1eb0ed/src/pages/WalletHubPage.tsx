@@ -15,7 +15,7 @@ import {
   Brain, AlertCircle, RefreshCw, Zap,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
@@ -116,20 +116,22 @@ export default function WalletHubPage() {
   const paginatedTx = useMemo(() => filteredTx.slice(0, txPage * TX_PER_PAGE), [filteredTx, txPage]);
   const hasMoreTx = paginatedTx.length < filteredTx.length;
 
-  const createDefaultWallet = async () => {
-    if (!user?.id) return;
+  const walletCreateAttempted = useRef(false);
+  const createDefaultWallet = useCallback(async () => {
+    if (!user?.id || walletCreateAttempted.current) return;
+    walletCreateAttempted.current = true;
     try {
       await createWalletAccount({ ownerUserId: user.id, ownerType: "user", currency: getWalletDefaultCurrency(), accountType: "fiat" });
       toast.success(t("wallet.walletCreated"));
     } catch {
+      walletCreateAttempted.current = false;
       toast.error(t("wallet.walletCreateError"));
     }
-  };
+  }, [user?.id, createWalletAccount, t]);
 
   useEffect(() => {
     if (!loading && rows.length === 0 && user?.id) createDefaultWallet();
-     
-  }, [loading, rows.length, user?.id]);
+  }, [loading, rows.length, user?.id, createDefaultWallet]);
 
   const TABS: { key: WalletTab; icon: typeof Wallet; label: string }[] = [
     { key: "fiat", icon: Wallet, label: t("wallet.walletTitle") },

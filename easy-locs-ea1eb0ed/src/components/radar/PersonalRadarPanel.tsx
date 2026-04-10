@@ -3,7 +3,7 @@
  * For You Now, Best Now, Trending Nearby, Hidden Gems.
  * Wired to real engines: context-awareness, hyper-personalization, profile, session intelligence.
  */
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, memo } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -43,7 +43,7 @@ const MOOD_CHIPS = [
   { id: "deals", label: "Deals", emoji: "🏷️" },
 ];
 
-export default function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: boolean }) {
+function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: boolean }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [personalMode, setPersonalMode] = useState(true);
@@ -327,3 +327,5 @@ function EntityRow({ entity, rank, isTop, onView, onChat, badge }: {
     </div>
   );
 }
+
+export default memo(PersonalRadarPanel);

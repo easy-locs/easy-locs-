@@ -123,3 +123,11 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **Removed Hardcoded Fallbacks**: MeCommandCenter (spending/receipts/property labels), CommunicationCenter (new group/community/find contact) — all now pure i18n without `|| "English fallback"`
 - **Dead Code Cleaned**: Removed orphaned registry entries (`OrdersPage`, `SettingsPaymentMethodsPage`, `NotificationPreferencesPage`). Cleaned dead nav matchers (`/send`, `/super-map`) from navigation.ts
 - **Navigation Clarity**: `/settings/payment-methods` → redirects to `/wallet`, `/settings/notification-preferences` → redirects to `/settings/notifications` (routes kept, orphaned lazy imports removed)
+
+## Technical Improvement Pass (Latest)
+- **Critical Bug Fix**: CommunicationCenter useEffect had empty `[]` deps but referenced `activeSection` — threads were never cleared on section switch. Fixed with `[activeSection]` dep.
+- **Performance — Memoization**: `TransactionRow` (Wallet list), `PersonalRadarPanel` (Radar AI panel), `RadarStoryRail` (Radar story feed) wrapped in `React.memo` to prevent unnecessary re-renders
+- **Performance — useCallback**: HyperRadarPage `toggleLayer`, `cycleRadius`, `cyclePanelSnap` wrapped in `useCallback`. CommunicationCenter `handleContactInfo`, `handleStatusChange` wrapped in `useCallback` (were inline in JSX). WalletHubPage `createDefaultWallet` converted from bare function to `useCallback` with proper deps.
+- **useEffect Deps Fixed**: WalletHubPage `createDefaultWallet` added to effect deps. CommunicationCenter section-clearing effect now has proper `[activeSection]` dependency.
+- **Dead Store Removed**: `useCameraStore` (src/stores/cameraStore.ts) deleted — zero external imports confirmed.
+- **All stores audited**: 55+ stores verified, only `useCameraStore` was truly dead. `useStoryViewerStore` was initially flagged but confirmed used in 3 files.
