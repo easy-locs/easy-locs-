@@ -119,7 +119,8 @@ export default function RestaurantPage() {
       { menuItemId: item.id, name: item.name, description: item.description, imageUrl: item.image, unitPrice: Number(item.price) || 0 }
     );
     trackAnalyticsEvent({ eventType: "product_add_to_cart", userId: user?.id, merchantId: shop?.id, productId: item.id }).catch(() => {});
-    toast.success(`${item.name} added`, { duration: 1500 });
+    try { navigator?.vibrate?.(30); } catch {}
+    toast.success(`${item.name} added`, { duration: 1200, icon: "✓" });
   };
 
   const getItemQty = (menuItemId: string) => {
@@ -390,15 +391,26 @@ export default function RestaurantPage() {
                             )}
                           </div>
                           {qty === 0 ? (
-                            <button data-add-to-cart onClick={() => handleAdd(item)} className="h-8 px-4 rounded-full flex items-center gap-1.5 active:scale-90 transition-transform text-xs font-bold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+                            <motion.button
+                              data-add-to-cart
+                              onClick={() => handleAdd(item)}
+                              whileTap={{ scale: 0.85 }}
+                              className="h-9 px-5 rounded-full flex items-center gap-1.5 transition-colors text-xs font-bold shadow-sm"
+                              style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+                            >
                               <Plus className="w-3.5 h-3.5" /> Add
-                            </button>
+                            </motion.button>
                           ) : (
-                            <div className="flex items-center gap-2">
-                              <button onClick={() => { const ci = cart.items.find(i => i.menuItemId === item.id); if (ci) updateQuantity(ci.id, qty - 1); }} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90" style={{ background: "hsl(var(--muted))" }}><Minus className="w-3.5 h-3.5" /></button>
-                              <span className="text-sm font-bold w-5 text-center">{qty}</span>
-                              <button data-add-to-cart onClick={() => handleAdd(item)} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}><Plus className="w-3.5 h-3.5" /></button>
-                            </div>
+                            <motion.div
+                              initial={{ scale: 0.9 }}
+                              animate={{ scale: 1 }}
+                              className="flex items-center gap-1 rounded-full px-1"
+                              style={{ background: "hsl(var(--muted) / 0.5)" }}
+                            >
+                              <button onClick={() => { const ci = cart.items.find(i => i.menuItemId === item.id); if (ci) updateQuantity(ci.id, qty - 1); }} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--muted))" }}><Minus className="w-3.5 h-3.5" /></button>
+                              <span className="text-sm font-black w-6 text-center">{qty}</span>
+                              <button data-add-to-cart onClick={() => handleAdd(item)} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}><Plus className="w-3.5 h-3.5" /></button>
+                            </motion.div>
                           )}
                         </div>
                       </div>
@@ -419,13 +431,34 @@ export default function RestaurantPage() {
       )}
 
       {itemCount > 0 && cart.restaurantId === shop?.id && (
-        <motion.div initial={{ y: 80 }} animate={{ y: 0 }} className="fixed left-0 right-0 z-40 px-4" style={{ bottom: "calc(var(--mobile-bottom-nav-h, 72px) + env(safe-area-inset-bottom, 0px) + 8px)" }}>
-          <button data-primary-cta onClick={() => navigate("/checkout")} className="w-full max-w-md mx-auto flex items-center justify-between px-5 py-3.5 rounded-2xl active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--primary))", boxShadow: "0 8px 32px hsl(var(--primary) / 0.35)", display: "flex" }}>
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "hsl(0 0% 100% / 0.2)" }}><ShoppingCart className="w-4 h-4 text-primary-foreground" /></div>
-              <span className="text-sm font-bold text-primary-foreground">{itemCount} item{itemCount > 1 ? "s" : ""}</span>
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          className="fixed left-0 right-0 z-40 px-4"
+          style={{ bottom: "calc(var(--mobile-bottom-nav-h, 72px) + env(safe-area-inset-bottom, 0px) + 8px)" }}
+        >
+          <button
+            data-primary-cta
+            onClick={() => navigate("/checkout")}
+            className="w-full max-w-md mx-auto flex items-center justify-between px-5 py-4 rounded-2xl active:scale-[0.98] transition-transform"
+            style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 40% 24%))", boxShadow: "0 8px 32px hsl(220 40% 18% / 0.5), 0 0 0 1px hsl(38 65% 56% / 0.15)" }}
+          >
+            <div className="flex items-center gap-2.5">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="w-8 h-8 rounded-full flex items-center justify-center"
+                style={{ background: "hsl(38 65% 56% / 0.2)" }}
+              >
+                <ShoppingCart className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+              </motion.div>
+              <div className="text-left">
+                <span className="text-sm font-bold text-white">{itemCount} item{itemCount > 1 ? "s" : ""}</span>
+                <p className="text-[10px] text-white/50">Tap to checkout</p>
+              </div>
             </div>
-            <span className="text-sm font-bold text-primary-foreground">View Cart · {formatMoneyByCountry(total, shop?.country, shop?.currency)}</span>
+            <span className="text-sm font-black" style={{ color: "hsl(38 65% 56%)" }}>{formatMoneyByCountry(total, shop?.country, shop?.currency)} →</span>
           </button>
         </motion.div>
       )}

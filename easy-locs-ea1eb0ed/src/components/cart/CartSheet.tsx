@@ -1,18 +1,77 @@
-/**
- * CartSheet — Slide-up bottom sheet showing current cart items.
- */
+import { useState, useRef } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Zap, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createStorefrontOrder } from "@/lib/orders/orderEngine";
+import { resolveDisplayCurrency, formatMoneyByCountry } from "@/lib/currency-engine";
+import { toast } from "sonner";
 
 export default function CartSheet() {
   const { cart, total, itemCount, updateQuantity, removeItem, clearCart } = useCart();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [expressBusy, setExpressBusy] = useState(false);
+  const idempotencyRef = useRef(crypto.randomUUID());
 
   if (itemCount === 0) return null;
+
+  const deliveryFee = 5;
+  const grandTotal = total + deliveryFee;
+  const cur = resolveDisplayCurrency({ country: "AE" });
+  const fmt = (n: number) => formatMoneyByCountry(n, null, cur);
+
+  const expressCheckout = async () => {
+    if (!user) {
+      toast.error("Please sign in first");
+      navigate("/login");
+      return;
+    }
+    if (!cart.restaurantId) {
+      toast.error("No restaurant selected");
+      navigate("/checkout");
+      return;
+    }
+    setExpressBusy(true);
+    try {
+      const { storefrontService } = await import("@/services");
+      const ownerUserId = await storefrontService.fetchPageOwnerUserId(cart.restaurantId);
+      if (!ownerUserId) {
+        toast.info("Redirecting to full checkout");
+        navigate("/checkout");
+        return;
+      }
+
+      const { order, alreadyExists } = await createStorefrontOrder({
+        shopId: cart.restaurantId,
+        sellerId: ownerUserId,
+        items: cart.items,
+        fulfillmentType: "delivery",
+        currency: cur,
+        deliveryFee,
+        paymentMethod: "wallet",
+        idempotencyKey: idempotencyRef.current,
+      });
+
+      idempotencyRef.current = crypto.randomUUID();
+
+      if (alreadyExists) {
+        toast.info("Order already placed");
+      } else {
+        toast.success("Order placed!");
+      }
+      clearCart();
+      navigate(`/order/${order.id}`);
+    } catch (e: any) {
+      toast.error(e.message || "Order failed — try full checkout");
+      navigate("/checkout");
+    } finally {
+      setExpressBusy(false);
+    }
+  };
 
   return (
     <Sheet>
@@ -30,7 +89,9 @@ export default function CartSheet() {
             <ShoppingCart className="w-5 h-5 text-primary-foreground" />
             <span className="text-sm font-bold text-primary-foreground">{itemCount} items</span>
           </div>
-          <span className="text-sm font-bold text-primary-foreground">View Cart</span>
+          <span className="text-sm font-bold text-primary-foreground">
+            {fmt(grandTotal)}
+          </span>
         </motion.button>
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-3xl max-h-[85dvh] overflow-y-auto pb-safe">
@@ -64,6 +125,7 @@ export default function CartSheet() {
                 )}
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-semibold truncate">{item.name}</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">{fmt(item.unitPrice * item.quantity)}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -87,13 +149,37 @@ export default function CartSheet() {
           </AnimatePresence>
         </div>
 
-        {/* Actions */}
-        <div className="mt-6 space-y-3">
+        <div className="mt-4 rounded-2xl p-3 space-y-1.5" style={{ background: "hsl(var(--muted) / 0.3)" }}>
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-semibold">{fmt(total)}</span>
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">Delivery</span>
+            <span className="font-semibold">{fmt(deliveryFee)}</span>
+          </div>
+          <div className="flex justify-between text-sm font-bold pt-1.5 border-t border-border/15">
+            <span>Total</span>
+            <span>{fmt(grandTotal)}</span>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-2.5">
           <Button
-            onClick={() => navigate("/checkout")}
-            className="w-full rounded-2xl h-12 text-sm font-bold"
+            onClick={expressCheckout}
+            disabled={expressBusy}
+            className="w-full rounded-2xl h-12 text-sm font-bold gap-2"
+            style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 40% 24%))", color: "white" }}
           >
-            Proceed to Checkout
+            {expressBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />}
+            Express Order · {fmt(grandTotal)}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/checkout")}
+            className="w-full rounded-2xl h-11 text-sm font-semibold"
+          >
+            Full Checkout
           </Button>
           <button
             onClick={clearCart}

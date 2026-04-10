@@ -10,8 +10,8 @@
  */
 import { memo, useState, useEffect, useMemo } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
-import { Link } from "react-router-dom";
-import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Building2, Sparkles, TrendingUp, Zap, Brain, ShieldCheck, Clock, Activity, Coffee, UtensilsCrossed, Car, Package } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Building2, Sparkles, TrendingUp, Zap, Brain, ShieldCheck, Clock, Activity, Coffee, UtensilsCrossed, Car, Package, RotateCcw, Heart, ShoppingBag } from "lucide-react";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import { motion, AnimatePresence } from "framer-motion";
 import { FALLBACK_HOTELS } from "@/data/fallback-hotels";
@@ -35,6 +35,7 @@ import EssentialServicesStrip from "@/components/dashboard/EssentialServicesStri
 import SuperServicesGrid from "@/components/dashboard/SuperServicesGrid";
 import { useDashboardLiveStats } from "@/hooks/useDashboardLiveStats";
 import { prefetchForRoute } from "@/lib/smart-prefetch";
+import { useCart } from "@/hooks/useCart";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -136,6 +137,33 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap }: { hero: Smar
   </div>
 ));
 
+/* ═══ Active Cart Banner — Resume ordering in 1 tap ═══ */
+const ActiveCartBanner = memo(() => {
+  const { cart, total, itemCount } = useCart();
+  const navigate = useNavigate();
+  if (itemCount === 0) return null;
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      onClick={() => navigate("/checkout")}
+      className="mb-3 w-full flex items-center gap-3 px-4 py-3 rounded-2xl active:scale-[0.98] transition-transform"
+      style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 40% 24%))", border: "1px solid hsl(38 65% 56% / 0.2)" }}
+    >
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
+        <ShoppingBag className="w-4.5 h-4.5" style={{ color: "hsl(38 65% 56%)" }} />
+      </div>
+      <div className="flex-1 min-w-0 text-left">
+        <p className="text-xs font-bold text-white truncate">{cart.restaurantName || "Your order"}</p>
+        <p className="text-[10px] text-white/60">{itemCount} item{itemCount > 1 ? "s" : ""} in cart</p>
+      </div>
+      <span className="text-xs font-black text-white shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
+        Checkout →
+      </span>
+    </motion.button>
+  );
+});
+
 /* ═══ Smart Quick Actions — Time & context-aware ═══ */
 type QuickDef = { icon: typeof QrCode; labelKey: string; to: string; color: string };
 
@@ -150,6 +178,7 @@ const CONTEXT_ACTIONS: Record<string, QuickDef> = {
   food: { icon: UtensilsCrossed, labelKey: "home.qa_food", to: "/browse/food", color: "from-red-500/15 to-orange-500/8" },
   taxi: { icon: Car, labelKey: "home.qa_ride", to: "/mobility/taxi", color: "from-sky-500/15 to-blue-500/8" },
   delivery: { icon: Package, labelKey: "home.qa_delivery", to: "/browse/food?mode=delivery", color: "from-teal-500/15 to-emerald-500/8" },
+  reorder: { icon: RotateCcw, labelKey: "home.qa_reorder", to: "/my-orders", color: "from-pink-500/15 to-rose-500/8" },
 };
 
 function getSmartActions(): QuickDef[] {
@@ -176,7 +205,7 @@ function SmartQuickActions() {
   const actions = useMemo(() => getSmartActions(), []);
 
   return (
-    <div className="mb-4 flex items-center gap-2">
+    <div className="mb-3 flex items-center gap-2">
       {actions.map(({ icon: Icon, labelKey, to, color }) => (
         <Link
           key={labelKey}
@@ -190,6 +219,32 @@ function SmartQuickActions() {
     </div>
   );
 }
+
+/* ═══ Favorites & Reorder Strip — 1-tap access ═══ */
+const QuickAccessStrip = memo(() => {
+  const { t } = useI18n();
+  const links = useMemo(() => [
+    { icon: RotateCcw, label: t("home.qa_reorder") || "Reorder", to: "/my-orders", color: "hsl(340 65% 55%)" },
+    { icon: Heart, label: t("home.qa_favorites") || "Favorites", to: "/favorites", color: "hsl(0 72% 58%)" },
+    { icon: ShoppingBag, label: t("home.qa_my_orders") || "My Orders", to: "/my-orders/active", color: "hsl(38 65% 56%)" },
+  ], [t]);
+
+  return (
+    <div className="mb-3 flex items-center gap-2">
+      {links.map(({ icon: Icon, label, to, color }) => (
+        <Link
+          key={to}
+          to={to}
+          className="flex flex-1 items-center gap-1.5 px-3 py-2.5 rounded-xl active:scale-[0.95] transition-all"
+          style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.08)" }}
+        >
+          <Icon className="h-3.5 w-3.5 shrink-0" style={{ color }} />
+          <span className="text-[10px] font-bold text-foreground truncate">{label}</span>
+        </Link>
+      ))}
+    </div>
+  );
+});
 
 /* ═══ AI Smart Insights — Live intelligence bar ═══ */
 const AISmartInsights = memo(() => {
@@ -515,7 +570,9 @@ export default function SmartHome() {
     <div className="w-full min-w-0 pb-6">
       <div className="px-3 pt-3 sm:px-4 sm:pt-4">
         <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} />
+        <ActiveCartBanner />
         <SmartQuickActions />
+        <QuickAccessStrip />
         <AISmartInsights />
         <LiveStatsPulse />
       </div>
