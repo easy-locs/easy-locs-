@@ -132,6 +132,12 @@ export default function HyperRadarPage() {
   const fsmSetSubState = useNavigationStateMachine((s) => s.setPillarSubState);
   const fsmUpdateCtx = useNavigationStateMachine((s) => s.updatePillarContext);
 
+  const activeVertical = useMemo(() => getActiveVertical(activeLayers), [activeLayers]);
+  const [filterValues, setFilterValues] = useState<RadarFilterValues>(() =>
+    getDefaultFilterValues(activeVertical ?? "shops")
+  );
+  const [mapMovedCenter, setMapMovedCenter] = useState<{ lat: number; lng: number } | null>(null);
+
   useEffect(() => {
     if (selectedEntity) {
       fsmSetSubState("RADAR_DETAIL_PREVIEW");
@@ -151,12 +157,6 @@ export default function HyperRadarPage() {
       lastEntity: selectedEntity ? { id: selectedEntity.id, name: selectedEntity.name, type: selectedEntity.type } : undefined,
     });
   }, [deferredSearch, filterValues, selectedEntity, fsmUpdateCtx]);
-
-  const activeVertical = useMemo(() => getActiveVertical(activeLayers), [activeLayers]);
-  const [filterValues, setFilterValues] = useState<RadarFilterValues>(() =>
-    getDefaultFilterValues(activeVertical ?? "shops")
-  );
-  const [mapMovedCenter, setMapMovedCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [showSearchHere, setShowSearchHere] = useState(false);
   const lastSearchCenter = useRef<{ lat: number; lng: number } | null>(null);
 
