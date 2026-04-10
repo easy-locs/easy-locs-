@@ -23,7 +23,14 @@ export function initSentry() {
     beforeSend(event) {
       if (event.exception?.values) {
         for (const v of event.exception.values) {
-          if (v.value?.includes("ResizeObserver") || v.value?.includes("ChunkLoadError")) {
+          const msg = v.value || "";
+          if (
+            msg.includes("ResizeObserver") ||
+            msg.includes("ChunkLoadError") ||
+            msg.includes("Importing a module script failed") ||
+            msg.includes("Failed to fetch dynamically imported module") ||
+            msg.includes("Unable to preload CSS")
+          ) {
             return null;
           }
         }
