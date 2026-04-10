@@ -1,6 +1,8 @@
-import jsPDF from "jspdf";
+import type jsPDFType from "jspdf";
 import type { DocumentTemplate } from "./templates/types";
 import { getCountryEntry } from "@/lib/global-country-registry";
+
+type jsPDF = jsPDFType;
 
 const MARGIN = 20;
 const PAGE_WIDTH = 210;
@@ -377,13 +379,14 @@ function addUaeTableRow(doc: jsPDF, label: string, value: string, y: number, lab
 }
 
 function generateUaeEjariPdf(
+  JsPDF: typeof jsPDFType,
   template: DocumentTemplate,
   data: Record<string, unknown>,
   signatures?: { landlord?: string; tenant?: string },
   stamp?: string,
   options?: { skipTenantSignature?: boolean; country?: string }
 ): jsPDF {
-  const doc = new jsPDF();
+  const doc = new JsPDF();
   let y = 0;
 
   // === TOP BANNER: UAE Government style ===
@@ -628,23 +631,24 @@ function addUaeFooter(doc: jsPDF) {
 }
 
 // ====== UNIVERSAL TEMPLATE-BASED GENERATOR ======
-export function generateFromTemplate(
+export async function generateFromTemplate(
   template: DocumentTemplate,
   data: Record<string, unknown>,
   signatures?: { landlord?: string; tenant?: string },
   stamp?: string,
   options?: { skipTenantSignature?: boolean; country?: string }
-): jsPDF {
+): Promise<jsPDF> {
+  const { default: JsPDF } = await import("jspdf");
   const country = options?.country || template.country || "FR";
 
   // UAE Ejari: use dedicated official format
   if (country === "AE" && (template.docType === "lease-residential" || template.docType === "ejari-contract")) {
-    return generateUaeEjariPdf(template, data, signatures, stamp, options);
+    return generateUaeEjariPdf(JsPDF, template, data, signatures, stamp, options);
   }
 
   const labels = getPdfLabels(country);
   const locale = COUNTRY_LOCALE[country] || "en-GB";
-  const doc = new jsPDF();
+  const doc = new JsPDF();
   let y = addHeader(doc, template.label.toUpperCase(), country, template.docType);
 
   // Legal basis

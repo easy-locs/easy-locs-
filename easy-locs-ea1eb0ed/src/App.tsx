@@ -264,18 +264,18 @@ setTimeout(() => {
 }, 5000);
 
 const PageLoader = () => (
-  <div className="app-mobile-page bg-background min-h-[60dvh] px-4 pt-5 animate-pulse">
-    <div className="h-5 w-28 rounded-lg bg-muted/40 mb-4" />
-    <div className="h-32 w-full rounded-2xl bg-muted/25 mb-4" />
+  <div className="app-mobile-page bg-background min-h-[60dvh] px-4 pt-5">
+    <div className="h-5 w-28 rounded-lg skeleton-premium mb-4" />
+    <div className="h-32 w-full rounded-2xl skeleton-premium mb-4" />
     <div className="flex gap-2 mb-4">
-      {[...Array(4)].map((_, i) => <div key={i} className="h-10 flex-1 rounded-xl bg-muted/20" />)}
+      {[...Array(4)].map((_, i) => <div key={i} className="h-10 flex-1 rounded-xl skeleton-premium" />)}
     </div>
     <div className="grid grid-cols-5 gap-2 mb-4">
-      {[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-xl bg-muted/15" />)}
+      {[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-xl skeleton-premium" />)}
     </div>
     <div className="space-y-3">
-      <div className="h-4 w-2/3 rounded bg-muted/20" />
-      <div className="h-4 w-1/2 rounded bg-muted/20" />
+      <div className="h-4 w-2/3 rounded skeleton-premium" />
+      <div className="h-4 w-1/2 rounded skeleton-premium" />
     </div>
   </div>
 );

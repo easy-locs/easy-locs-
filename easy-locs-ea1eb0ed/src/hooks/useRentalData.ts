@@ -308,7 +308,7 @@ export function useRentalData(countryFilter?: string | null) {
           const allTpls = getAllTemplates();
           const receiptTemplate = allTpls.find(tpl => tpl.country === propCountryCode && tpl.docType === "rent-receipt" && tpl.active) || frRentReceipt;
           const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
-          const pdfDoc = generateFromTemplate(receiptTemplate, receiptData, signatures, stampUrl || undefined, { skipTenantSignature: true, country: propCountryCode });
+          const pdfDoc = await generateFromTemplate(receiptTemplate, receiptData, signatures, stampUrl || undefined, { skipTenantSignature: true, country: propCountryCode });
 
           const receiptTitle = t("hook.rental.receipt_title").replace("{name}", tenant.name).replace("{month}", call.month);
 

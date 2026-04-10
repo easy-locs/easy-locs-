@@ -223,7 +223,7 @@ describe("PDF Generator", () => {
       };
 
       // Should not throw
-      const doc = generateFromTemplate(lease, data);
+      const doc = await generateFromTemplate(lease, data);
       expect(doc).toBeDefined();
     }
   });
@@ -250,7 +250,7 @@ describe("PDF Generator", () => {
         startDate: "2025-01-01",
         endDate: "2025-12-31",
       };
-      const doc = generateFromTemplate(ejari, data);
+      const doc = await generateFromTemplate(ejari, data);
       expect(doc).toBeDefined();
     }
   });
@@ -274,7 +274,7 @@ describe("PDF Generator", () => {
           period: "January 2025",
           paymentDate: "2025-01-05",
         };
-        const doc = generateFromTemplate(receipt, data);
+        const doc = await generateFromTemplate(receipt, data);
         expect(doc).toBeDefined();
       }
     }

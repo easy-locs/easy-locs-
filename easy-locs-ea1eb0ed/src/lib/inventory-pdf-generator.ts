@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import type jsPDF from "jspdf";
 
 const MARGIN = 20;
 const PAGE_WIDTH = 210;
@@ -118,7 +118,8 @@ export async function generateInventoryPDF(
   signatures?: { landlord?: string; tenant?: string },
   stamp?: string
 ): Promise<jsPDF> {
-  const doc = new jsPDF();
+  const { default: JsPDF } = await import("jspdf");
+  const doc = new JsPDF();
   const typeLabel = data.reportType === "entry" ? "Etat des lieux d'entree" : "Etat des lieux de sortie";
 
   // Header — premium styling

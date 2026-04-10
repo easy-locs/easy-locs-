@@ -91,7 +91,7 @@ export function useRentalReceipts(
     const allTpls = getAllTemplates();
     const receiptTemplate = allTpls.find(t => t.country === propCountryCode && t.docType === "rent-receipt" && t.active) || frRentReceipt;
     const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
-    const doc = generateFromTemplate(receiptTemplate, data, signatures, stampUrl || undefined, { skipTenantSignature: true });
+    const doc = await generateFromTemplate(receiptTemplate, data, signatures, stampUrl || undefined, { skipTenantSignature: true });
     downloadPDF(doc, `${L.generateReceipt.replace(/\s/g, "_")}_${tenant.name}_${payment.month}.pdf`);
     toast({ title: L.validateReceipt });
   }, [tenants, properties, user, orgId, userCountry, toast, t]);

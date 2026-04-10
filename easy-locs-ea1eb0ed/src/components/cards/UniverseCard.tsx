@@ -80,12 +80,12 @@ export const UniverseCard = memo(function UniverseCard({
     );
 
     const cls = cn(
-      "block p-3 rounded-2xl border border-border/15 bg-card active:scale-[0.97] transition-transform shadow-sm",
+      "block p-3 rounded-2xl border border-border/15 bg-card card-lift shadow-sm",
       extraClass,
     );
 
-    if (to) return <Link to={to} className={cls}>{inner}</Link>;
-    return <button type="button" onClick={onClick} className={cn(cls, "text-left w-full")}>{inner}</button>;
+    if (to) return <Link to={to} className={cls} data-card-hover>{inner}</Link>;
+    return <button type="button" onClick={onClick} className={cn(cls, "text-left w-full")} data-card-hover>{inner}</button>;
   }
 
   const content = (
@@ -123,12 +123,12 @@ export const UniverseCard = memo(function UniverseCard({
   );
 
   const cls = cn(
-    "shrink-0 w-[170px] rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.97] transition-transform flex flex-col",
+    "shrink-0 w-[170px] rounded-2xl border border-border/15 bg-card overflow-hidden card-lift flex flex-col",
     extraClass,
   );
 
-  if (to) return <Link to={to} className={cls}>{content}</Link>;
-  return <button type="button" onClick={onClick} className={cn(cls, "text-left")}>{content}</button>;
+  if (to) return <Link to={to} className={cls} data-card-hover>{content}</Link>;
+  return <button type="button" onClick={onClick} className={cn(cls, "text-left")} data-card-hover>{content}</button>;
 });
 
 export default UniverseCard;

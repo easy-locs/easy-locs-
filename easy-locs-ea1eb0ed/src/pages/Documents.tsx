@@ -72,11 +72,11 @@ const Documents = () => {
     return acc;
   }, {} as Record<string, DocumentTemplate[]>);
 
-  const handleDownload = (d: DocRow) => {
+  const handleDownload = async (d: DocRow) => {
     if (d.template_id) {
       const template = allTemplates.find((t) => t.id === d.template_id);
       if (template) {
-        const doc = generateFromTemplate(template, d.data_json, undefined, undefined, { country: template.country });
+        const doc = await generateFromTemplate(template, d.data_json, undefined, undefined, { country: template.country });
         downloadPDF(doc, `${d.title.replace(/\s/g, "_")}.pdf`);
       }
     }

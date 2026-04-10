@@ -7,7 +7,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchDunningData, createDunningLetter, sendDunningEmail } from "@/repositories/dunning.repository";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, Download, Plus } from "lucide-react";
-import jsPDF from "jspdf";
 import { useI18n } from "@/lib/i18n";
 
 const LEVELS = [
@@ -75,7 +74,8 @@ const DunningLetters = () => {
     await load();
   };
 
-  const downloadPDF = (letter: DunningLetter) => {
+  const downloadPDF = async (letter: DunningLetter) => {
+    const { default: jsPDF } = await import("jspdf");
     const tenant = tenants.find(t => t.id === letter.tenant_id);
     const property = properties.find(p => p.id === letter.property_id);
     const levelInfo = LEVELS.find(l => l.value === letter.level) || LEVELS[0];

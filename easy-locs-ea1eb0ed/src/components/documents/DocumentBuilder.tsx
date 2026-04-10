@@ -341,7 +341,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
 
     const skipTenant = ["rent-receipt", "dunning-letter", "payment-notice", "formal-notice"].includes(template.docType);
     const docCountry = template.country || "FR";
-    const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined, stampUrl || undefined, { skipTenantSignature: skipTenant, country: docCountry });
+    const doc = await generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined, stampUrl || undefined, { skipTenantSignature: skipTenant, country: docCountry });
     const pdfFileName = `${template.docType}_${Date.now()}.pdf`;
     downloadPDF(doc, pdfFileName);
 
