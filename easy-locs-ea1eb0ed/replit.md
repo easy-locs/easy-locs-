@@ -96,6 +96,18 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **Weather**: Live weather station with temp, humidity, wind, precipitation
 - **Live context**: Real-time traffic, demand prediction, rider supply, zone events (via RadarView)
 
+## Dashboard ↔ Radar Progressive Engagement (4-Level Navigation)
+- **Architecture**: Dashboard consumes Radar capabilities without premature context switch. 4 engagement levels with progressive disclosure.
+- **Level 1 — Preview**: `RadarPreviewWidget` (in Dashboard) shows top 5 nearby results with mini cards (image, name, category, rating, distance). "Explore" CTA opens Level 2. No navigation away from Dashboard.
+- **Level 2 — Interactive Preview**: `RadarExplorerDrawer` (bottom sheet via `AppBottomSheet`, snap points 45%/88%). Scrollable results with `RadarCardDispatcher`, vertical filter chips (all/food/hotel/property/services/shops/taxi/healthcare), sort options (smart/nearest/top-rated/trending), collapsible mini map preview via lazy-loaded `UnifiedMap`.
+- **Level 3 — Transition Triggers**: Explicit buttons at drawer bottom: "Open Map" (navy CTA), "Full Search" (gold CTA), "Explore Zone" (arrow). Each builds URL with context (`vertical`, `sort`) via `buildRadarRoute()`.
+- **Level 4 — Radar Full Screen**: Standard `HyperRadarPage` — now reads `sort` and `vertical` URL params to hydrate initial state from dashboard context.
+- **Shared data**: `useDashboardRadar` hook lifted to `SmartHome`, passes same `items/loading/totalCount` to both preview widget and drawer. Single fetch, no duplication.
+- **Engagement state**: `radar-engagement.ts` — `EngagementLevel` enum, `TransitionTrigger` type, `buildRadarRoute()` for context-preserving navigation.
+- **AdapterSection pattern**: "See all" buttons on Trending/Best Rated/Newest/Near You sections now open `RadarExplorerDrawer` with pre-set sort instead of navigating directly to `/radar`.
+- **Drawer prop sync**: `useEffect` resets `activeSort`/`activeVertical`/`selectedItemId` when drawer opens with new props.
+- **Files**: `src/lib/radar/radar-engagement.ts`, `src/hooks/useDashboardRadar.ts`, `src/components/dashboard/RadarPreviewWidget.tsx`, `src/components/dashboard/RadarExplorerDrawer.tsx`
+
 ## Visual Cleanup (Error Sanitization)
 - All user-facing `toast.error(err.message)` replaced with user-friendly messages (~90+ files)
 - All `toast({ description: error.message })` replaced with generic messages (~30+ files)

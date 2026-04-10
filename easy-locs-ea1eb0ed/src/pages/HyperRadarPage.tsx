@@ -104,10 +104,16 @@ export default function HyperRadarPage() {
   const { entities, loading } = useRadarResults({ surface: "radar" });
   const urlCategory = searchParams.get("category");
   const urlSubcategory = searchParams.get("subcategory");
+  const urlSort = searchParams.get("sort") as SortMode | null;
+  const urlVertical = searchParams.get("vertical");
 
   const [viewMode, setViewMode] = useState<ViewMode>("map");
-  const [sortBy, setSortBy] = useState<SortMode>("smart");
+  const [sortBy, setSortBy] = useState<SortMode>(() => {
+    if (urlSort && ["smart", "nearest", "best_rated", "trending"].includes(urlSort)) return urlSort;
+    return "smart";
+  });
   const [activeLayers, setActiveLayers] = useState<RadarLayer[]>(() => {
+    if (urlVertical && CATEGORY_TO_LAYER[urlVertical]) return [CATEGORY_TO_LAYER[urlVertical]];
     if (urlCategory && CATEGORY_TO_LAYER[urlCategory]) return [CATEGORY_TO_LAYER[urlCategory]];
     return ["food", "stay", "services", "utility"];
   });
@@ -135,11 +141,12 @@ export default function HyperRadarPage() {
   }, []);
 
   useEffect(() => {
-    if (urlCategory && CATEGORY_TO_LAYER[urlCategory]) {
-      setActiveLayers([CATEGORY_TO_LAYER[urlCategory]]);
+    const key = urlVertical || urlCategory;
+    if (key && CATEGORY_TO_LAYER[key]) {
+      setActiveLayers([CATEGORY_TO_LAYER[key]]);
       setPanelSnap("half");
     }
-  }, [urlCategory]);
+  }, [urlCategory, urlVertical]);
 
   useEffect(() => {
     if (activeVertical) {
