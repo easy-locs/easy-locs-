@@ -1,3 +1,4 @@
+import { db } from "@/services/db";
 import { useEffect } from "react";
 
 interface SEOHeadProps {
@@ -104,11 +105,11 @@ const SEOHead = ({
       script.textContent = JSON.stringify(jsonLd);
     }
 
-    let preconnectSupabase = document.querySelector('link[href*="supabase"]') as HTMLLinkElement;
+    let preconnectSupabase = document.querySelector('link[href*="db"]') as HTMLLinkElement;
     if (!preconnectSupabase) {
       preconnectSupabase = document.createElement("link");
       preconnectSupabase.rel = "preconnect";
-      preconnectSupabase.href = "https://ifvuvbolrmuuugtzxsfk.supabase.co";
+      preconnectSupabase.href = "https://ifvuvbolrmuuugtzxsfk.db.co";
       document.head.appendChild(preconnectSupabase);
     }
 

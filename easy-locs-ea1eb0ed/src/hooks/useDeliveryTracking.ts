@@ -3,7 +3,7 @@
  * Uses canonical locationStore instead of raw navigator.geolocation.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useTrackingObserver, type TrackingSession } from "@/hooks/useServiceTracking";
 import { findActiveTracking } from "@/hooks/useLiveTracking";
 import { useLocationStore } from "@/stores/locationStore";
@@ -63,8 +63,7 @@ export function useDeliveryTrackerStart() {
       const lat = loc?.lat ?? 0;
       const lng = loc?.lng ?? 0;
 
-      const { data, error } = await supabase
-        .from("live_trackings")
+      const { data, error } = await db("live_trackings")
         .insert({
           org_id: opts.orgId,
           context_type: "delivery",

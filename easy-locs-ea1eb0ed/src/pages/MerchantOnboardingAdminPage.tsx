@@ -1,11 +1,11 @@
+import { db } from "@/services/db";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function MerchantOnboardingAdminPage() {
   const [profiles, setProfiles] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase
+    db
       .from("merchant_onboarding_profiles")
       .select("*")
       .order("created_at", { ascending: false })

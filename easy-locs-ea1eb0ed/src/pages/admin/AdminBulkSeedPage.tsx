@@ -6,13 +6,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { storefrontService } from "@/services";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { fetchUserFirstOrgId } from "@/repositories/profile.repository";
 import { generateAllCategorySeeds, type ShopSeed } from "@/lib/autofill/allCategorySeeder";
 import { toast } from "sonner";
 
 export default function AdminBulkSeedPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0, errors: 0 });
   const [launched, setLaunched] = useState(false);
@@ -20,7 +21,6 @@ export default function AdminBulkSeedPage() {
   const runSeed = async () => {
     setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error("You must be logged in to seed shops.");
       setLoading(false);

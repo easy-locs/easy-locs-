@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   getMerchantProfile,
   getMerchantByToken,
@@ -30,6 +30,7 @@ type Step = "welcome" | "verify" | "otp" | "confirm" | "done";
 export default function MerchantClaimPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const token = params.get("token");
   const profileIdParam = params.get("id");
 
@@ -44,15 +45,12 @@ export default function MerchantClaimPage() {
   const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
   const [claiming, setClaiming] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const userId = user?.id ?? null;
   const [countdown, setCountdown] = useState(0);
   const timerRef = useRef<any>(null);
 
   useEffect(() => {
     (async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      setUserId(auth.user?.id ?? null);
-
       if (token) {
         await trackOutreachEvent(token, "clicked");
         const outreach = await getMerchantByToken(token);

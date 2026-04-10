@@ -1,7 +1,7 @@
+import { db } from "@/services/db";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Truck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
@@ -14,7 +14,7 @@ export default function AdminDeliveryOpsPage() {
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["admin-delivery-ops"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("orders")
         .select("id,status,created_at")
         .in("status", DELIVERY_STATUSES)

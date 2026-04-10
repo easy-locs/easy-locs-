@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchOrderReceipts } from "@/repositories/customer-orders.repository";
 import { motion } from "framer-motion";
 import { ArrowLeft, Receipt, FileText, CheckCircle2, Clock, XCircle, Download } from "lucide-react";
 
@@ -20,17 +20,7 @@ export default function CustomerOrderReceiptsPage() {
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["customer-order-receipts", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("id,total_amount,currency,status,created_at,payment_status")
-        .eq("customer_user_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(200);
-
-      if (error) throw error;
-      return (data ?? []) as any[];
-    },
+    queryFn: () => fetchOrderReceipts(user!.id),
     enabled: !!user?.id,
     staleTime: 10000,
   });

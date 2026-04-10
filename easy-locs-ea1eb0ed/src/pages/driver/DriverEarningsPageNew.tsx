@@ -1,7 +1,7 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { ArrowLeft } from "lucide-react";
 
@@ -12,7 +12,7 @@ export default function DriverEarningsPageNew() {
   const { data, isLoading } = useQuery({
     queryKey: ["driver-earnings-page-v2", user?.id],
     queryFn: async () => {
-      const { data: walletAccounts, error: walletErr } = await supabase
+      const { data: walletAccounts, error: walletErr } = await db
         .from("wallet_accounts")
         .select("id")
         .eq("owner_user_id", user!.id);
@@ -24,7 +24,7 @@ export default function DriverEarningsPageNew() {
         return { total: 0, payouts: [] as any[] };
       }
 
-      const { data: ledgerRows, error: ledgerErr } = await supabase
+      const { data: ledgerRows, error: ledgerErr } = await db
         .from("wallet_ledger_entries")
         .select("*")
         .in("wallet_account_id", ids)

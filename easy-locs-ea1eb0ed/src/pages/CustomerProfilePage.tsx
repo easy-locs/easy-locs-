@@ -18,12 +18,11 @@ import {
   Settings, MapPin, Smartphone,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 
 export default function CustomerProfilePage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const profile = useOrbitIdentity();
 
   const initials = (profile?.displayName || "U")
@@ -33,7 +32,7 @@ export default function CustomerProfilePage() {
     .slice(0, 2);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     toast.success("Signed out");
     navigate("/login");
   };

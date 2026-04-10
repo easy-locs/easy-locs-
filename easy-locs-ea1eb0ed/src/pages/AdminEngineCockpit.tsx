@@ -2,7 +2,6 @@
  * Admin Engine Cockpit — Real-time engine health, logs, kill switches, blocked runs, browser repair.
  */
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

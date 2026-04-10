@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { uploadFile, getPublicFileUrl } from "@/lib/storage/uploadFile";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitProfileStore } from "@/stores/orbitStore";

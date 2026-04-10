@@ -58,7 +58,7 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
     if (!user) return;
     const fetchNotifs = async () => {
       setLoading(true);
-      const { data } = await supabase
+      const { data } = await db
         .from("app_notifications")
         .select("id, category, title, body, read_at, dismissed_at, route, metadata, created_at")
         .eq("user_id", user.id)

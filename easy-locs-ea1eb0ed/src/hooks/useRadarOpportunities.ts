@@ -6,7 +6,6 @@
  * Phase: 1 Hardened
  */
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { computeOpportunities, persistOpportunities } from "@/lib/radar/opportunity-scorer";
 import { useEffect, useRef } from "react";

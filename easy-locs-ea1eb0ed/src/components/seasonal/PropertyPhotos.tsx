@@ -1,3 +1,4 @@
+import { db } from "@/services/db";
 import { useState, useRef } from "react";
 import * as seasonalRepo from "@/repositories/seasonal.repository";
 import { useToast } from "@/hooks/use-toast";
@@ -59,7 +60,7 @@ const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange, allowVideo 
   const removePhoto = async (url: string) => {
     const updated = photos.filter(p => p !== url);
     onPhotosChange(updated);
-    // Note: property update uses supabase directly via repository pattern
+    // Note: property update uses db directly via repository pattern
     await seasonalRepo.deletePropertyPhoto(url);
     toast({ title: t("page.photos.deleted") });
   };

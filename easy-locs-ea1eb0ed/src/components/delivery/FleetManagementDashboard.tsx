@@ -2,6 +2,7 @@
  * FleetManagementDashboard — Real-time fleet overview: driver map, statuses, global KPIs.
  * PASS85-EE: Fleet Management Dashboard
  */
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";

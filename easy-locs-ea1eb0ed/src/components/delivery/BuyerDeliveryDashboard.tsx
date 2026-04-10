@@ -3,11 +3,11 @@
  * PASS83-Y: Buyer Dashboard
  * HARDENED: Real escrow status from server, confirmation code display, dropoff coords for GPS check.
  */
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Package, MapPin, Clock, CheckCircle2, Loader2, Eye, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";

@@ -6,7 +6,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Plus, Home, Briefcase, Pencil, Trash2, Check, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { toast } from "sonner";
 

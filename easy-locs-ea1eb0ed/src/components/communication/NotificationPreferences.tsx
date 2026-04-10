@@ -169,7 +169,7 @@ export default function NotificationPreferences() {
 
   useEffect(() => {
     if (!user) return;
-    supabase
+    db
       .from("notification_preferences")
       .select("*")
       .eq("user_id", user.id)

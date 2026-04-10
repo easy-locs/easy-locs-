@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";
@@ -20,8 +21,7 @@ export function useWalletRealtime() {
 
     setLoading(true);
 
-    const { data } = await supabase
-      .from("wallet_accounts")
+    const { data } = await db("wallet_accounts")
       .select("*")
       .eq("owner_user_id", user.id)
       .eq("status", "active")

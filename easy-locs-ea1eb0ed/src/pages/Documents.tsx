@@ -1,3 +1,4 @@
+import { db } from "@/services/db";
 import { useState, useEffect } from "react";
 import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import { motion } from "framer-motion";
@@ -7,7 +8,6 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import { FileText, Download, Clock, ChevronRight, Building2, Scale, Home, AlertTriangle } from "lucide-react";
 import { getCountryFlag } from "@/lib/global-country-registry";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getActiveTemplates, getAllTemplates } from "@/lib/templates/registry";
 import type { DocumentTemplate } from "@/lib/templates/types";
@@ -55,7 +55,7 @@ const Documents = () => {
 
   const fetchDocs = async () => {
     if (!orgId) return;
-    const { data } = await supabase
+    const { data } = await db
       .from("documents")
       .select("id, title, doc_type, template_id, template_version, data_json, pdf_url, created_at, country, routed_to, routing_status, property_id, tenant_id, lease_id")
       .eq("org_id", orgId)

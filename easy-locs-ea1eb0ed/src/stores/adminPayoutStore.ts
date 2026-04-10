@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { PayoutRequest } from "@/lib/types/finance";
 import {
   serverApprovePayoutRequest,
@@ -21,8 +21,7 @@ export const useAdminPayoutStore = create<AdminPayoutStore>((set) => ({
   hydrate: async () => {
     set({ loading: true });
 
-    const { data, error } = await supabase
-      .from("payout_requests")
+    const { data, error } = await db("payout_requests")
       .select("*")
       .order("created_at", { ascending: false });
 

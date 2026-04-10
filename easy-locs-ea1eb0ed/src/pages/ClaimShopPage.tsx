@@ -1,9 +1,9 @@
 /**
  * ClaimShopPage — Allows merchants to claim ghost listings.
  */
+import { db } from "@/services/db";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { claimMerchant } from "@/lib/engines/auto-acquisition-engine";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -21,7 +21,7 @@ export default function ClaimShopPage() {
 
   useEffect(() => {
     if (!merchantId) return;
-    supabase
+    db
       .from("auto_discovered_merchants")
       .select("*")
       .eq("id", merchantId)

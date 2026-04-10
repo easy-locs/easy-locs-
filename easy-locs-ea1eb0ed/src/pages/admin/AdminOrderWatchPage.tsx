@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
 
 export default function AdminOrderWatchPage() {
@@ -9,7 +9,7 @@ export default function AdminOrderWatchPage() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-order-watch"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("orders")
         .select("*")
         .order("created_at", { ascending: false })

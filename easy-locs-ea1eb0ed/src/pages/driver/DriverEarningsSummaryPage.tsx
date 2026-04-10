@@ -1,7 +1,7 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
 
 export default function DriverEarningsSummaryPage() {
@@ -11,7 +11,7 @@ export default function DriverEarningsSummaryPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["driver-earnings-summary-page", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("wallet_ledger_entries")
         .select("*")
         .eq("reference_type", "order")

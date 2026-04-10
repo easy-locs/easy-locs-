@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,13 +29,13 @@ export default function ShopCategoryPage() {
   const { data: services = [], isLoading, error: queryError } = useQuery({
     queryKey: ["shop-category", category, city],
     queryFn: async () => {
-      let q1 = supabase
+      let q1 = db
         .from("concierge_services_public" as any)
         .select("id, title, description, category, city, country, price, currency, photo_url, booking_slug, duration_minutes");
       if (category) q1 = q1.ilike("category", `%${category}%`);
       if (city) q1 = q1.ilike("city", `%${city}%`);
 
-      let q2 = supabase
+      let q2 = db
         .from("marketplace_services_public" as any)
         .select("id, title, description, category, city, country, price, currency, photo_urls, price_type, duration_minutes, booking_slug");
       if (category) q2 = q2.ilike("category", `%${category}%`);

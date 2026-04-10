@@ -5,7 +5,6 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isOutgoingMessage } from "@/domains/orbit/resolvers";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { subscribeInstantMessages } from "@/lib/realtime-broadcast";

@@ -1,10 +1,11 @@
 /**
  * AIOpsChatPage — AI-powered ops assistant chat.
  */
+import { db } from "@/services/db";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { createAIThread, sendAIMessage } from "@/lib/ai/ops-chat";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AIOpsChatPage() {
   const [threadId, setThreadId] = useState<string | null>(null);
@@ -25,8 +26,7 @@ export default function AIOpsChatPage() {
     if (!threadId) return;
     let mounted = true;
 
-    supabase
-      .from("ai_chat_messages" as any)
+    db("ai_chat_messages")
       .select("*")
       .eq("thread_id", threadId)
       .order("created_at", { ascending: true })

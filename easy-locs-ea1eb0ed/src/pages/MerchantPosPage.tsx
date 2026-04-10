@@ -1,6 +1,7 @@
+import { db } from "@/services/db";
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { posService } from "@/services/pos.service";
 import { useAuth } from "@/contexts/AuthContext";

@@ -1,12 +1,12 @@
+import { db } from "@/services/db";
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function ExecutiveKPIBoardPage() {
   const [rows, setRows] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase
+    db
       .from("executive_kpi_snapshots" as any)
       .select("*")
       .order("snapshot_date", { ascending: false })

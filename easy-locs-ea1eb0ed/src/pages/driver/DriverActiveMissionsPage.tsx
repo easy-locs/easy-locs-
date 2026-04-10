@@ -1,7 +1,7 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
 import { ArrowLeft, Package, Clock, ChevronRight } from "lucide-react";
 
@@ -12,7 +12,7 @@ export default function DriverActiveMissionsPage() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["driver-active-missions-page", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("mobility_jobs")
         .select("*")
         .eq("rider_user_id", user!.id)

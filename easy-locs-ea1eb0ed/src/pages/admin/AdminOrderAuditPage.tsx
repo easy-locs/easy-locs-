@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminOrderAuditPage() {
   const navigate = useNavigate();
@@ -8,7 +8,7 @@ export default function AdminOrderAuditPage() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-order-audit"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("orders")
         .select("*")
         .order("updated_at", { ascending: false })

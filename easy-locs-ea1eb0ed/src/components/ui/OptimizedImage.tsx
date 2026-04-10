@@ -1,3 +1,4 @@
+import { db } from "@/services/db";
 import { useState, useCallback, memo } from "react";
 
 interface OptimizedImageProps {
@@ -15,7 +16,7 @@ interface OptimizedImageProps {
 
 /** Generate srcset for Supabase storage images at multiple widths */
 function buildSrcSet(src: string, widths: number[]): string | undefined {
-  if (!src.includes("supabase.co/storage")) return undefined;
+  if (!src.includes("db.co/storage")) return undefined;
   const sep = src.includes("?") ? "&" : "?";
   return widths
     .map(w => `${src}${sep}width=${w}&quality=75 ${w}w`)
@@ -47,7 +48,7 @@ export const OptimizedImage = memo(function OptimizedImage({
 
   // Apply Supabase storage transform for thumbnails
   let optimizedSrc = error ? fallback : src;
-  if (width && optimizedSrc.includes("supabase.co/storage") && !error) {
+  if (width && optimizedSrc.includes("db.co/storage") && !error) {
     const separator = optimizedSrc.includes("?") ? "&" : "?";
     optimizedSrc = `${optimizedSrc}${separator}width=${width}&quality=75`;
   }

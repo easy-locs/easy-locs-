@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { User, MapPin, Star, Home, ArrowLeft, Shield } from "lucide-react";
 import AppLogo from "@/components/AppLogo";
 
@@ -23,7 +23,7 @@ const LandlordProfile = () => {
 
   useEffect(() => {
     if (!slug) return;
-    supabase
+    db
       .from("landlord_profiles")
       .select("display_name, bio, avatar_url, city, country, verified, properties_count, rating")
       .eq("slug", slug)

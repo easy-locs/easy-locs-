@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminFailedPaymentsPage() {
   const navigate = useNavigate();
@@ -8,7 +8,7 @@ export default function AdminFailedPaymentsPage() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-failed-payments"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("orders")
         .select("*")
         .eq("payment_status", "failed")

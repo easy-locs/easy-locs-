@@ -2,6 +2,7 @@
  * CustomerTrackingPage — Public tracking page for end customers with ETA and status notifications.
  * PASS85-GG: Customer Notifications & Tracking Page
  */
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";

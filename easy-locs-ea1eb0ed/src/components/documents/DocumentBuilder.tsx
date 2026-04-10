@@ -1,7 +1,8 @@
+import { db } from "@/services/db";
 import { useState, useMemo, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { ArrowLeft, AlertTriangle, Building2, FileText, Scale } from "lucide-react";
-import type { Json } from "@/integrations/supabase/types";
+import type { Json } from "@/integrations/db/types";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { validateDocument } from "@/lib/templates/validation";
 import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";

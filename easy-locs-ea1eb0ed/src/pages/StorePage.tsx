@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ export default function StorePage() {
   const { data: showcase, isLoading, error: storeError } = useQuery({
     queryKey: ["store-showcase", storeSlug],
     queryFn: async () => {
-      const { data: landlord } = await supabase
+      const { data: landlord } = await db
         .from("landlord_profiles")
         .select("*")
         .eq("slug", storeSlug!)
@@ -39,7 +39,7 @@ export default function StorePage() {
         .maybeSingle();
 
       if (landlord) {
-        const { data: services } = await supabase
+        const { data: services } = await db
           .from("concierge_services_public" as any)
           .select("*")
           .eq("org_id", landlord.org_id)
@@ -47,12 +47,12 @@ export default function StorePage() {
         return { type: "landlord" as const, profile: landlord, services: services || [] };
       }
 
-      const { data: providerRows } = await supabase
+      const { data: providerRows } = await db
         .rpc("get_public_marketplace_providers", { p_slug: storeSlug!, p_active_only: true });
       const provider = providerRows && providerRows.length > 0 ? providerRows[0] : null;
 
       if (provider) {
-        const { data: services } = await supabase
+        const { data: services } = await db
           .from("marketplace_services_public" as any)
           .select("*")
           .eq("provider_id", provider.id)
@@ -106,7 +106,7 @@ export default function StorePage() {
   const { data: reviews = [] } = useQuery({
     queryKey: ["store-reviews", providerId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await db
         .rpc("get_provider_reviews", { p_provider_id: providerId!, p_limit: 100 });
       return (data || []) as { id: string; reviewer_name: string; rating: number; comment: string; response: string | null; service_title: string | null; verified: boolean; created_at: string }[];
     },

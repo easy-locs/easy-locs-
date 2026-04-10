@@ -4,7 +4,6 @@
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as deliveryRepo from "@/repositories/delivery.repository";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
 

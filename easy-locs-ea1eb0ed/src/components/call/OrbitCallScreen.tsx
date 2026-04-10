@@ -15,7 +15,7 @@ import { CallMediaEngine } from "@/families/device/call-media-engine";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { listOrbitContacts } from "@/lib/orbit/orbit-contacts-service";
 import { toast } from "sonner";
 
@@ -600,6 +600,7 @@ function AddParticipantPanel({
   onClose: () => void;
   onAdd: (contact: { id: string; name: string; orbitId?: string }) => void;
 }) {
+  const { user } = useAuth();
   const [contacts, setContacts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -608,7 +609,6 @@ function AddParticipantPanel({
   useEffect(() => {
     (async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const list = await listOrbitContacts(user.id);
         setContacts(list.filter((c: any) => c.peer_user_id !== currentPeerId));

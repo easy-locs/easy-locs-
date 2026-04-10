@@ -1,15 +1,15 @@
 /**
  * AdminTrustGraphPage — Platform trust, safety and reliability overview.
  */
+import { db } from "@/services/db";
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminTrustGraphPage() {
   const [rows, setRows] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase
+    db
       .from("user_trust_graph" as any)
       .select("*")
       .order("trust_score", { ascending: false })
