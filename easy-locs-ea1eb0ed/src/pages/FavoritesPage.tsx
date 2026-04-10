@@ -10,12 +10,13 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Heart, Star, MapPin, ChevronRight } from "lucide-react";
 import { entityUrl } from "@/lib/entity/entity-url";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: favoriteRows = [], isLoading } = useQuery({
+  const { data: favoriteRows = [], isLoading, error: favError } = useQuery({
     queryKey: ["favorite-merchants", user?.id],
     queryFn: () => listFavoriteMerchants(user!.id),
     enabled: !!user?.id,
@@ -70,7 +71,15 @@ export default function FavoritesPage() {
           <div key={i} className="rounded-2xl h-28 animate-pulse" style={{ background: "hsl(var(--muted) / 0.3)" }} />
         ))}
 
-        {!isLoading && merchants.length === 0 && (
+        {!isLoading && favError && (
+          <ErrorState
+            message={tc("common.error")}
+            description={tc("common.error_description")}
+            compact
+          />
+        )}
+
+        {!isLoading && !favError && merchants.length === 0 && (
           <EmptyState
             icon={Heart}
             title={tc("common.no_favorites")}
@@ -79,7 +88,7 @@ export default function FavoritesPage() {
           />
         )}
 
-        {!isLoading && merchants.length > 0 && (
+        {!isLoading && !favError && merchants.length > 0 && (
           <div className="space-y-3">
             {merchants.map((merchant: any, idx: number) => {
               const rating = Number(merchant.rating ?? 4.2);

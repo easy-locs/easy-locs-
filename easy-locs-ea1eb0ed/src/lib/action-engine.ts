@@ -101,7 +101,7 @@ export async function executeUniversalAction(
 
       /* ── REQUEST ── */
       case "request":
-        navigate("/dashboard/wallet?action=request");
+        navigate("/wallet?action=request");
         return { ok: true };
 
       /* ── FOLLOW ── */

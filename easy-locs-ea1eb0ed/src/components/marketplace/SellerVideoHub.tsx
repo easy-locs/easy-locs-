@@ -39,7 +39,7 @@ export default function SellerVideoHub({ services }: SellerVideoHubProps) {
           size="sm"
           variant="outline"
           className="gap-2"
-          onClick={() => navigate("/dashboard/activities?action=new")}
+          onClick={() => navigate("/activities?action=new")}
         >
           <Plus className="w-3.5 h-3.5" />
           Ajouter un service avec vidéo

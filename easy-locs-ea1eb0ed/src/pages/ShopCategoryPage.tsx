@@ -26,7 +26,7 @@ export default function ShopCategoryPage() {
   const city = parts.pop() || "";
   const category = parts.join("-") || "";
 
-  const { data: services = [], isLoading } = useQuery({
+  const { data: services = [], isLoading, error: queryError } = useQuery({
     queryKey: ["shop-category", category, city],
     queryFn: async () => {
       let q1 = supabase
@@ -66,6 +66,19 @@ export default function ShopCategoryPage() {
   if (isLoading) return (
     <div className="app-mobile-page bg-background flex items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  );
+
+  if (queryError) return (
+    <div className="app-mobile-page bg-background">
+      <Navbar />
+      <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+        <Search className="h-10 w-10 text-muted-foreground/50 mb-4" />
+        <h2 className="text-lg font-semibold text-foreground mb-2">Failed to load services</h2>
+        <p className="text-sm text-muted-foreground mb-4">Something went wrong. Please try again.</p>
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+      <Footer />
     </div>
   );
 
