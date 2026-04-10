@@ -10,6 +10,13 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Bottom nav**: 72px height, hidden on `/login`, `/signup`, `/orbit`, `/checkout`, `/pay/`, `/order/`
 - **DB Access**: ALL database calls MUST use `db(table)` from `src/services/db.ts`
 
+## Super App Platform Layer (Block 1)
+- **Unified Module Registry** (`src/lib/core/module-registry.ts`): 27 modules across 5 pillars, each declaring domain, ownership, capabilities, routes, canonical models, events published/consumed, dependencies, health checks, feature flags, permissions, UI surfaces, backend services. `moduleRegistry` singleton for discovery/orchestration.
+- **Canonical Models SSOT** (`src/domains/shared/canonical-types.ts`): 30+ canonical types — CanonicalOrder, CanonicalDeliveryJob, CanonicalRideRequest, CanonicalListing, CanonicalProviderProfile, CanonicalNotification, CanonicalSupportTicket, CanonicalPresence, CanonicalMediaAsset, CanonicalPaymentIntent, CanonicalFeeBreakdown, CanonicalPayout, CanonicalLedgerEntry, CanonicalExchangeRate, CanonicalAppSession, CanonicalEscrow, CanonicalRefund, CanonicalCommission — plus all prior types.
+- **Super App Bridge** (`src/lib/super-app-bridge.ts`): Cross-module bridge actions — bridgeContactProvider, bridgePayNow, bridgeBookNow, bridgeRequestDelivery, bridgeOpenSupport, bridgeShareListing, bridgeLaunchRoute, bridgeCreateConversation, bridgeAttachPaymentContext, bridgeAttachOrderContext, bridgeAttachLiveLocation. All event-driven with canonical payloads.
+- **Runtime Data Pipeline** (`src/lib/platform/runtime-pipeline.ts`): Real-time event intake, normalization (12 categories), prioritization (4 levels), enrichment, deduplication (5s TTL), retry (exponential backoff, 3 max), dead-letter queue, telemetry (throughput/latency/category breakdown), audit log (500 entries), replay capability. `runtimePipeline` singleton.
+- **Module Health System** (`src/lib/platform/module-health-system.ts`): Per-module health (online/degraded/offline), latency tracking, error rate, missing dependencies, data freshness, queue backlog, failed events, broken UI surfaces, broken actions, policy violations, security warnings. Global snapshot across all pillars. `moduleHealthSystem` singleton.
+
 ## Component Library (src/components/ui/)
 69 unified UI components. Key canonical components:
 - **Button** (`button.tsx`): 8 variants (default/destructive/outline/secondary/ghost/link/premium/success), `loading` prop
