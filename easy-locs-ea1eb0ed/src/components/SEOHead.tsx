@@ -14,10 +14,10 @@ interface SEOHeadProps {
 }
 
 const SITE_NAME = "Easy-Locs";
-const DEFAULT_TITLE = "Easy-Locs — Super-App for Property, Discovery & Lifestyle";
-const DEFAULT_DESC = "Manage properties, discover local gems, connect with people, and handle payments — all in one beautiful super-app. Available worldwide.";
-const DEFAULT_IMAGE = "https://www.easy-locs.com/pwa-512x512.png";
-const DEFAULT_KEYWORDS = "property management, super app, local discovery, rental management, landlord software, tenant portal, radar, wallet, orbit";
+const DEFAULT_TITLE = "Easy-Locs — Super-App Food, Services, Taxi, Hotel, Delivery | 190+ Countries";
+const DEFAULT_DESC = "Easy-Locs: commandez des repas, réservez un taxi, trouvez un hôtel, faites livrer, découvrez des services locaux — tout dans une seule app. 190+ pays, 120+ devises, 31 langues.";
+const DEFAULT_IMAGE = "https://www.easy-locs.com/og-default.jpg";
+const DEFAULT_KEYWORDS = "super app, food delivery, taxi, hotel booking, local services, delivery, restaurant, ride hailing, property management, marketplace, Easy-Locs";
 
 const SEOHead = ({
   title = DEFAULT_TITLE,
