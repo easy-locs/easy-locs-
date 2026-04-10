@@ -470,17 +470,17 @@ const HeroSlideCarousel = memo(() => {
           </Link>
         </motion.div>
       </AnimatePresence>
-      <div className="flex justify-center gap-1.5 mt-3" aria-hidden="true">
+      <div className="flex justify-center gap-1.5 mt-2" aria-hidden="true">
         {HERO_SLIDE_DEFS.map((s, i) => (
           <button
             key={s.id}
             onClick={() => setActiveSlide(i)}
-            className="rounded-full transition-all duration-400 ease-out"
+            className="rounded-full transition-all duration-300 ease-out"
             tabIndex={-1}
             style={{
-              width: i === activeSlide ? 24 : 8,
-              height: 3,
-              background: i === activeSlide ? "hsl(var(--primary) / 0.6)" : "hsl(var(--muted-foreground) / 0.08)",
+              width: i === activeSlide ? 16 : 5,
+              height: 5,
+              background: i === activeSlide ? "hsl(38 65% 56% / 0.7)" : "hsl(var(--muted-foreground) / 0.15)",
             }}
           />
         ))}
