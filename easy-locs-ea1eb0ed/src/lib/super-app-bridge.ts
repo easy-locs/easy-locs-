@@ -4,6 +4,8 @@ import { installModuleIntelligence } from "@/engines/core/module-intelligence";
 import { installNetworkOptimizer } from "@/engines/core/network-optimizer";
 import { installSelfPilot } from "@/engines/core/self-pilot";
 import { moduleRegistry, installModuleLifecycle } from "@/lib/core/module-registry";
+import { runtimePipeline } from "@/lib/platform/runtime-pipeline";
+import { moduleHealthSystem } from "@/lib/platform/module-health-system";
 
 export interface TransferCompletedPayload {
   senderId: string;
@@ -84,6 +86,266 @@ export function emitModuleEvent(
   platformBus.emit(type, payload, source);
 }
 
+export interface BridgeContactProviderPayload {
+  providerId: string;
+  providerName: string;
+  contextType: string;
+  contextId: string;
+  userId: string;
+  initialMessage?: string;
+}
+
+export interface BridgePayNowPayload {
+  payerId: string;
+  payeeId: string;
+  amount: number;
+  currency: string;
+  contextType: "order" | "booking" | "subscription" | "transfer" | "invoice" | "ride" | "delivery";
+  contextId: string;
+  method?: "wallet" | "card" | "apple_pay" | "google_pay" | "qr" | "link" | "cash";
+}
+
+export interface BridgeBookNowPayload {
+  userId: string;
+  providerId: string;
+  providerName: string;
+  type: string;
+  amount: number;
+  currency: string;
+  scheduledAt: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface BridgeRequestDeliveryPayload {
+  orderId: string;
+  pickupAddress: Record<string, unknown>;
+  deliveryAddress: Record<string, unknown>;
+  userId: string;
+  estimatedFee?: number;
+  currency?: string;
+}
+
+export interface BridgeOpenSupportPayload {
+  userId: string;
+  subject: string;
+  category: string;
+  contextType?: string;
+  contextId?: string;
+  priority?: string;
+}
+
+export interface BridgeShareListingPayload {
+  listingId: string;
+  title: string;
+  imageUrl?: string;
+  price?: number;
+  currency?: string;
+  shareMethod: "link" | "qr" | "chat" | "social";
+  userId: string;
+}
+
+export interface BridgeLaunchRoutePayload {
+  origin: { lat: number; lng: number };
+  destination: { lat: number; lng: number };
+  mode: "driving" | "walking" | "transit";
+  contextType?: string;
+  contextId?: string;
+}
+
+export interface BridgeCreateConversationPayload {
+  initiatorId: string;
+  participantId: string;
+  contextType?: string;
+  contextId?: string;
+  contextLabel?: string;
+  initialMessage?: string;
+}
+
+export interface BridgeAttachPaymentContextPayload {
+  threadId: string;
+  paymentIntentId: string;
+  amount: number;
+  currency: string;
+  status: string;
+}
+
+export interface BridgeAttachOrderContextPayload {
+  threadId: string;
+  orderId: string;
+  orderType: string;
+  status: string;
+  total?: number;
+  currency?: string;
+}
+
+export interface BridgeAttachLiveLocationPayload {
+  userId: string;
+  contextType: string;
+  contextId: string;
+  position: { lat: number; lng: number };
+  durationMinutes?: number;
+}
+
+export function bridgeContactProvider(payload: BridgeContactProviderPayload): void {
+  platformBus.emit("orbit:thread_created", {
+    participantIds: [payload.userId, payload.providerId],
+    providerName: payload.providerName,
+    context: { type: payload.contextType, entityId: payload.contextId },
+  }, "orbit");
+  if (payload.initialMessage) {
+    platformBus.emit("orbit:message_sent", {
+      threadId: `${payload.userId}_${payload.providerId}`,
+      recipientId: payload.providerId,
+      body: payload.initialMessage,
+      type: "text",
+    }, "orbit");
+  }
+  platformBus.emit("dashboard:counters_refresh", {}, "orbit");
+}
+
+export function bridgePayNow(payload: BridgePayNowPayload): void {
+  platformBus.emit("payment:intent_created", {
+    payerId: payload.payerId,
+    payeeId: payload.payeeId,
+    amount: payload.amount,
+    currency: payload.currency,
+    contextType: payload.contextType,
+    contextId: payload.contextId,
+    method: payload.method ?? "wallet",
+  }, "wallet");
+  platformBus.emit("dashboard:counters_refresh", {}, "wallet");
+}
+
+export function bridgeBookNow(payload: BridgeBookNowPayload): void {
+  const bookingId = `bk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  platformBus.emit("marketplace:booking_created", {
+    bookingId,
+    id: bookingId,
+    userId: payload.userId,
+    providerId: payload.providerId,
+    providerName: payload.providerName,
+    type: payload.type,
+    amount: payload.amount,
+    currency: payload.currency,
+    scheduledAt: payload.scheduledAt,
+    metadata: payload.metadata ?? {},
+  }, "marketplace");
+  platformBus.emit("dashboard:counters_refresh", {}, "marketplace");
+}
+
+export function bridgeRequestDelivery(payload: BridgeRequestDeliveryPayload): void {
+  platformBus.emit("dispatch:job_created", {
+    orderId: payload.orderId,
+    pickupAddress: payload.pickupAddress,
+    deliveryAddress: payload.deliveryAddress,
+    userId: payload.userId,
+    estimatedFee: payload.estimatedFee,
+    currency: payload.currency,
+  }, "tracking");
+  platformBus.emit("dashboard:counters_refresh", {}, "tracking");
+}
+
+export function bridgeOpenSupport(payload: BridgeOpenSupportPayload): void {
+  platformBus.emit("orbit:thread_created", {
+    participantIds: [payload.userId, "support-agent"],
+    context: {
+      type: "support_case",
+      entityId: payload.contextId,
+      entityLabel: payload.subject,
+    },
+    category: payload.category,
+    priority: payload.priority ?? "medium",
+  }, "orbit");
+  platformBus.emit("dashboard:counters_refresh", {}, "orbit");
+}
+
+export function bridgeShareListing(payload: BridgeShareListingPayload): void {
+  platformBus.emit("marketplace:listing_shared", {
+    listingId: payload.listingId,
+    title: payload.title,
+    imageUrl: payload.imageUrl,
+    price: payload.price,
+    currency: payload.currency,
+    shareMethod: payload.shareMethod,
+    sharedBy: payload.userId,
+  }, "marketplace");
+}
+
+export function bridgeLaunchRoute(payload: BridgeLaunchRoutePayload): void {
+  platformBus.emit("radar:location_shared", {
+    origin: payload.origin,
+    destination: payload.destination,
+    mode: payload.mode,
+    contextType: payload.contextType,
+    contextId: payload.contextId,
+  }, "tracking");
+}
+
+export function bridgeCreateConversation(payload: BridgeCreateConversationPayload): void {
+  platformBus.emit("orbit:thread_created", {
+    participantIds: [payload.initiatorId, payload.participantId],
+    context: payload.contextType ? {
+      type: payload.contextType,
+      entityId: payload.contextId,
+      entityLabel: payload.contextLabel,
+    } : undefined,
+  }, "orbit");
+  if (payload.initialMessage) {
+    platformBus.emit("orbit:message_sent", {
+      threadId: `${payload.initiatorId}_${payload.participantId}`,
+      recipientId: payload.participantId,
+      body: payload.initialMessage,
+      type: "text",
+    }, "orbit");
+  }
+}
+
+export function bridgeAttachPaymentContext(payload: BridgeAttachPaymentContextPayload): void {
+  platformBus.emit("orbit:message_sent", {
+    threadId: payload.threadId,
+    type: "payment_receipt",
+    body: null,
+    metadata: {
+      paymentIntentId: payload.paymentIntentId,
+      amount: payload.amount,
+      currency: payload.currency,
+      status: payload.status,
+    },
+  }, "orbit");
+}
+
+export function bridgeAttachOrderContext(payload: BridgeAttachOrderContextPayload): void {
+  platformBus.emit("orbit:message_sent", {
+    threadId: payload.threadId,
+    type: "booking_card",
+    body: null,
+    metadata: {
+      orderId: payload.orderId,
+      orderType: payload.orderType,
+      status: payload.status,
+      total: payload.total,
+      currency: payload.currency,
+    },
+  }, "orbit");
+}
+
+export function bridgeAttachLiveLocation(payload: BridgeAttachLiveLocationPayload): void {
+  platformBus.emit("radar:location_shared", {
+    userId: payload.userId,
+    position: payload.position,
+    contextType: payload.contextType,
+    contextId: payload.contextId,
+    durationMinutes: payload.durationMinutes ?? 30,
+    live: true,
+  }, "tracking");
+  platformBus.emit("tracking:started", {
+    userId: payload.userId,
+    contextType: payload.contextType,
+    contextId: payload.contextId,
+    position: payload.position,
+  }, "tracking");
+}
+
 let _bridgeInstalled = false;
 
 export function installSuperAppBridge() {
@@ -94,6 +356,8 @@ export function installSuperAppBridge() {
   installNetworkOptimizer();
   installSelfPilot();
   installModuleLifecycle();
+  runtimePipeline.install();
+  moduleHealthSystem.install();
 
   const invalidate = (...keys: string[]) => {
     for (const key of keys) {
@@ -151,6 +415,7 @@ export function installSuperAppBridge() {
   platformBus.on("marketplace:booking_created", () => {
     invalidate("my-bookings", "dashboard-live-stats");
     moduleRegistry.activateModule("radar-booking");
+    moduleRegistry.activateModule("marketplace-core");
   });
 
   platformBus.on("marketplace:booking_confirmed", () => {
@@ -175,6 +440,7 @@ export function installSuperAppBridge() {
 
   platformBus.on("storefront:order_placed", () => {
     invalidate("my-orders", "wallet-balance", "wallet-transactions", "dashboard-live-stats");
+    moduleRegistry.activateModule("marketplace-core");
   });
 
   platformBus.on("storefront:order_completed", () => {
@@ -187,10 +453,12 @@ export function installSuperAppBridge() {
 
   platformBus.onPrefix("commerce:", () => {
     invalidate("wallet-balance", "wallet-transactions");
+    moduleRegistry.activateModule("payments-core");
   });
 
   platformBus.onPrefix("delivery:", () => {
     invalidate("my-orders", "dashboard-live-stats", "active-delivery");
+    moduleRegistry.activateModule("delivery-core");
   });
 
   platformBus.on("delivery:delivered", () => {
@@ -199,10 +467,12 @@ export function installSuperAppBridge() {
 
   platformBus.onPrefix("dispatch:", () => {
     invalidate("active-delivery", "dashboard-live-stats");
+    moduleRegistry.activateModule("delivery-core");
   });
 
   platformBus.onPrefix("pm:", () => {
     invalidate("properties", "leases", "dashboard-live-stats");
+    moduleRegistry.activateModule("property-core");
   });
 
   platformBus.on("pm:payment_received", () => {
@@ -211,6 +481,7 @@ export function installSuperAppBridge() {
 
   platformBus.onPrefix("tracking:", () => {
     invalidate("active-delivery");
+    moduleRegistry.activateModule("taxi-core");
   });
 
   platformBus.on("tracking:completed", () => {
@@ -234,5 +505,10 @@ export function installSuperAppBridge() {
     invalidate("dashboard-live-stats", "dashboard-activity");
   });
 
-  console.info("[super-app-bridge] Cross-section bridge + module lifecycle + engines installed");
+  platformBus.on("payment:intent_created", () => {
+    invalidate("wallet-balance", "wallet-transactions");
+    moduleRegistry.activateModule("payments-core");
+  });
+
+  console.info("[super-app-bridge] Cross-section bridge + module lifecycle + runtime pipeline + health system installed");
 }
