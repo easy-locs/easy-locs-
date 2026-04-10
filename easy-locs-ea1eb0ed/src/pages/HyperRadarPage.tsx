@@ -44,6 +44,7 @@ import {
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useSmartNavigation } from "@/hooks/useSmartNavigation";
 import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
+import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { Z } from "@/lib/ui/z-index";
@@ -128,6 +129,28 @@ export default function HyperRadarPage() {
   const { smartNavigate, overlayState, closeOverlay } = useSmartNavigation();
   const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
   const weather = useLiveWeatherStation({ lat: location?.lat, lng: location?.lng });
+  const fsmSetSubState = useNavigationStateMachine((s) => s.setPillarSubState);
+  const fsmUpdateCtx = useNavigationStateMachine((s) => s.updatePillarContext);
+
+  useEffect(() => {
+    if (selectedEntity) {
+      fsmSetSubState("RADAR_DETAIL_PREVIEW");
+    } else if (deferredSearch) {
+      fsmSetSubState("RADAR_SEARCHING");
+    } else if (entities.length > 0 && !loading) {
+      fsmSetSubState("RADAR_RESULTS");
+    } else {
+      fsmSetSubState("RADAR_IDLE");
+    }
+  }, [selectedEntity, deferredSearch, entities.length, loading, fsmSetSubState]);
+
+  useEffect(() => {
+    fsmUpdateCtx("radar", {
+      lastQuery: deferredSearch || undefined,
+      lastFilters: filterValues as Record<string, unknown>,
+      lastEntity: selectedEntity ? { id: selectedEntity.id, name: selectedEntity.name, type: selectedEntity.type } : undefined,
+    });
+  }, [deferredSearch, filterValues, selectedEntity, fsmUpdateCtx]);
 
   const activeVertical = useMemo(() => getActiveVertical(activeLayers), [activeLayers]);
   const [filterValues, setFilterValues] = useState<RadarFilterValues>(() =>

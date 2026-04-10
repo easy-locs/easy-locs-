@@ -49,6 +49,7 @@ import RadarExplorerDrawer from "@/components/dashboard/RadarExplorerDrawer";
 import { useDashboardRadar } from "@/hooks/useDashboardRadar";
 import { useSmartNavigation } from "@/hooks/useSmartNavigation";
 import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
+import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -611,6 +612,17 @@ export default function SmartHome() {
   const [drawerSort, setDrawerSort] = useState<string | undefined>();
   const radarData = useDashboardRadar(20);
   const { smartNavigate, overlayState, closeOverlay } = useSmartNavigation();
+  const fsmSetSubState = useNavigationStateMachine((s) => s.setPillarSubState);
+
+  useEffect(() => {
+    if (radarDrawerOpen) {
+      fsmSetSubState("DASHBOARD_INTERACTION");
+    } else if (overlayState.activeOverlay) {
+      fsmSetSubState("DASHBOARD_PREVIEW");
+    } else {
+      fsmSetSubState("DASHBOARD_IDLE");
+    }
+  }, [radarDrawerOpen, overlayState.activeOverlay, fsmSetSubState]);
 
   const openRadarDrawer = useCallback((sort?: string) => {
     setDrawerSort(sort);
