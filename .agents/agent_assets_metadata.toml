@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "9TjuVKfCXmLuChsAHTsYz"
+uri = "file://easy-locs-ea1eb0ed/docs/ENGINEERING_AUDIT.md"
+type = "text"
+title = "Rapport d'audit ingénierie complet"

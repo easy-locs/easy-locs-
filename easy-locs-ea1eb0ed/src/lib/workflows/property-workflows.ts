@@ -1,6 +1,6 @@
 import type { WorkflowDefinition } from "./workflow-engine";
 import { realEstatePropertyService } from "@/services/real-estate.service";
-import { checkPublishBlockers } from "@/domains/real-estate/quality-gates";
+import { getPublishBlockers } from "@/domains/real-estate/quality-gates";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 interface CreatePropertyCtx extends Record<string, unknown> {
@@ -77,8 +77,8 @@ export const createPropertyWorkflow: WorkflowDefinition<CreatePropertyCtx> = {
         if (ctx.propertyId) {
           const property = await realEstatePropertyService.fetchById(ctx.propertyId);
           if (property) {
-            const blockers = checkPublishBlockers(property);
-            ctx.qualityScore = blockers.canPublish ? 100 : Math.max(0, 100 - blockers.issues.length * 15);
+            const blockers = getPublishBlockers(property);
+            ctx.qualityScore = blockers.length === 0 ? 100 : Math.max(0, 100 - blockers.length * 15);
           }
         }
         return ctx;
@@ -117,9 +117,9 @@ export const publishPropertyWorkflow: WorkflowDefinition<PublishPropertyCtx> = {
         const property = await realEstatePropertyService.fetchById(ctx.propertyId);
         if (!property) throw new Error("Property not found");
         if (property.userId !== ctx.userId) throw new Error("Unauthorized");
-        const result = checkPublishBlockers(property);
-        ctx.canPublish = result.canPublish;
-        ctx.blockers = result.issues;
+        const blockers = getPublishBlockers(property);
+        ctx.canPublish = blockers.length === 0;
+        ctx.blockers = blockers;
         return ctx;
       },
     },

@@ -230,3 +230,12 @@ Replaces hardcoded `EXPLORE_CATEGORIES` and `SuperServicesGrid`.
 - **Me/Wallet contract**: Me = cockpit/overview. Wallet = all financial operations. Me Analytics has "Open Property Finance →" button linking to Wallet
 - **i18n**: 170+ keys in `re.*` namespace (EN/FR/AR) in i18n-canonical.ts `realEstateVertical` section
 - **Routes**: `/me/gestion-immo` redirects to `/me/properties`
+
+## Engineering Audit (2026-04-10)
+Full audit report: `docs/ENGINEERING_AUDIT.md`
+- **Build**: production build fixed (checkPublishBlockers import + duplicate patisserie key)
+- **TypeScript**: 0 errors confirmed
+- **Known issues**: 387 direct supabase imports (should use db()), 3762 `any` usages, 274 empty catch blocks, 214 console.log, wallet PIN secret fallback hardcoded
+- **Security**: Auth/RLS solid, CORS wildcard on Edge Functions needs restricting, CSP headers needed
+- **Test coverage**: ~2% (66 unit + 8 E2E for 3279 files)
+- **Performance**: 462K lines, bundle needs splitting by pillar, 8 files >800 lines need decomposition
