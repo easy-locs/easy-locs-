@@ -54,7 +54,7 @@ export function useMasterAppBootstrap() {
       } catch (e) {
         console.warn("[boot] stage-0 failed", e);
       }
-    }, 100);
+    }, 50);
     timers.push(t0);
 
     const t1 = setTimeout(async () => {
@@ -86,7 +86,7 @@ export function useMasterAppBootstrap() {
       } catch (e) {
         console.warn("[boot] stage-1 failed", e);
       }
-    }, 3000);
+    }, 1500);
     timers.push(t1);
 
     const t2 = setTimeout(async () => {
@@ -139,7 +139,7 @@ export function useMasterAppBootstrap() {
       } catch (e) {
         console.warn("[boot] stage-2 failed", e);
       }
-    }, 6000);
+    }, 3000);
     timers.push(t2);
 
     const t3 = setTimeout(async () => {
@@ -165,7 +165,7 @@ export function useMasterAppBootstrap() {
       } catch (e) {
         console.warn("[boot] stage-3 failed", e);
       }
-    }, 12000);
+    }, 5000);
     timers.push(t3);
 
     const t4 = setTimeout(async () => {
@@ -176,7 +176,7 @@ export function useMasterAppBootstrap() {
       } catch (e) {
         console.warn("[boot] stage-4 failed", e);
       }
-    }, 25000);
+    }, 8000);
     timers.push(t4);
 
     const t5 = setTimeout(async () => {
@@ -186,7 +186,7 @@ export function useMasterAppBootstrap() {
       } catch (e) {
         console.warn("[boot] recovery failed", e);
       }
-    }, 45000);
+    }, 15000);
     timers.push(t5);
 
     return () => {

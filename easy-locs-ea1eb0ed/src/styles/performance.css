@@ -84,3 +84,44 @@ a,
   animation: ultra-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   will-change: transform, opacity;
 }
+
+img[loading="lazy"] {
+  content-visibility: auto;
+}
+
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .page-transition {
+    animation: page-fade-in 150ms ease-out;
+  }
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, hsl(var(--muted) / 0.3) 25%, hsl(var(--muted) / 0.5) 50%, hsl(var(--muted) / 0.3) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.offscreen-hidden {
+  content-visibility: hidden;
+}

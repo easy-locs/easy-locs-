@@ -2,12 +2,9 @@
  * AppRouters — Extracted route-level decision components from App.tsx.
  * Single responsibility: root-level routing logic (/, /home).
  */
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, lazy } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import Index from "@/pages/Index";
-
-import { lazy } from "react";
 
 function safeLazy(factory: () => Promise<{ default: React.ComponentType<any> }>, name: string) {
   return lazy(async () => {
@@ -28,6 +25,7 @@ function safeLazy(factory: () => Promise<{ default: React.ComponentType<any> }>,
   });
 }
 
+const Index = safeLazy(() => import("@/pages/Index"), "Index");
 const Dashboard = safeLazy(() => import("@/pages/Dashboard"), "Dashboard");
 
 const PageLoader = () => (
@@ -65,7 +63,7 @@ export function HomeRouter() {
   const { user, loading, profileLoaded, emailVerified } = useAuth();
   const ready = useProfileTimeout(profileLoaded, user?.id);
   if (loading) return <PageLoader />;
-  if (!user) return <Index />;
+  if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
   if (!ready) return <PageLoader />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
@@ -76,7 +74,7 @@ export function MarketplaceHomeRouter() {
   const { user, loading, profileLoaded, emailVerified } = useAuth();
   const ready = useProfileTimeout(profileLoaded, user?.id);
   if (loading) return <PageLoader />;
-  if (!user) return <Index />;
+  if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
   if (!ready) return <PageLoader />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;

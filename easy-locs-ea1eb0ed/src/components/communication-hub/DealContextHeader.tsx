@@ -4,7 +4,7 @@
  */
 import { memo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import {
   Handshake, DollarSign, CheckCircle2, XCircle, Clock,
   ArrowRightLeft, TrendingUp, CalendarCheck, ChevronRight, Timer,
@@ -84,7 +84,7 @@ const DealContextHeader = memo(function DealContextHeader({
     queryKey: ["deal-context-header", dealId, contextType, contextId],
     queryFn: async () => {
       if (dealId) {
-        const { data } = await supabase
+        const { data } = await db
           .from("deal_rooms")
           .select("*")
           .eq("id", dealId)
@@ -92,7 +92,7 @@ const DealContextHeader = memo(function DealContextHeader({
         return data;
       }
       if (contextType && contextId) {
-        const { data } = await supabase
+        const { data } = await db
           .from("deal_rooms")
           .select("*")
           .eq("context_type", contextType)

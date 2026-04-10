@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { FileText, Download, Printer, Loader2, Calendar, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -52,7 +52,7 @@ export default function DeliveryInvoicePanel({ orgId, className }: Props) {
       else if (period === "month") since.setMonth(since.getMonth() - 1);
       else since.setMonth(since.getMonth() - 3);
 
-      const { data: jobs } = await supabase
+      const { data: jobs } = await db
         .from("mobility_jobs")
         .select("id, rider_user_id, pickup_address, dropoff_address, current_price, quoted_price, currency, completed_at, status")
         .eq("merchant_id", orgId)

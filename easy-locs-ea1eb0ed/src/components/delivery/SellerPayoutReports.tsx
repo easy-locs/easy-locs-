@@ -9,7 +9,7 @@ import {
   DollarSign, TrendingUp, TrendingDown, Download, Calendar,
   Loader2, FileText, PieChart, ArrowUpRight,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -39,7 +39,7 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
     if (!user) return;
     const fetch = async () => {
       setLoading(true);
-      let q = supabase
+      let q = db
         .from("mobility_jobs")
         .select("id, status, current_price, quoted_price, currency, created_at, completed_at")
         .eq("merchant_id", user.id)

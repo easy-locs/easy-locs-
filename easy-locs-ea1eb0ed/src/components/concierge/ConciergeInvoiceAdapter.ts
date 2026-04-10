@@ -3,7 +3,7 @@
  * Maps concierge_orders + concierge_services data to the InvoicePdfGenerator format.
  */
 import { generateInvoicePdf } from "@/components/marketplace/InvoicePdfGenerator";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { toast } from "sonner";
 
 /**
@@ -12,7 +12,7 @@ import { toast } from "sonner";
  */
 export async function generateConciergeInvoice(booking: any, service: any, orgId: string): Promise<Blob | null> {
   // Fetch provider profile for invoicing details
-  const { data: provider } = await supabase
+  const { data: provider } = await db
     .from("marketplace_providers")
     .select("*")
     .eq("org_id", orgId)

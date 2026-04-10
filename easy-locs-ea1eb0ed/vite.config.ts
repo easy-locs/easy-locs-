@@ -96,6 +96,7 @@ export default defineConfig(({ mode }) => ({
           if (id.includes("/src/pages/real-estate/")) return "pages-real-estate";
           if (id.includes("/src/components/delivery/")) return "components-delivery";
           if (id.includes("/src/components/map/") || id.includes("/src/lib/map/")) return "map-engine";
+          if (id.includes("/src/engines/")) return "engines";
         },
       },
     },

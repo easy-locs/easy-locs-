@@ -11,7 +11,7 @@ import { NAV_TABS_CONFIG, HIDE_NAV_PREFIXES } from "@/config/navigation";
 import { tc } from "@/lib/i18n-canonical";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { onModuleEnter, onModuleLeave } from "@/engines/core/module-intelligence";
-import { prefetchForRoute } from "@/lib/smart-prefetch";
+import { prefetchForRoute, prefetchOnInteraction } from "@/lib/smart-prefetch";
 
 type ModuleKey = "dashboard" | "radar" | "orbit" | "wallet" | "me";
 const TAB_MODULE_MAP: Record<string, ModuleKey> = {
@@ -71,6 +71,12 @@ function MainBottomNav() {
               aria-label={tab.label}
               onClick={() => {
                 if (!active) navigate(tab.path);
+              }}
+              onPointerEnter={() => {
+                if (!active) prefetchOnInteraction(tab.path);
+              }}
+              onTouchStart={() => {
+                if (!active) prefetchOnInteraction(tab.path);
               }}
               whileTap={{ scale: 0.88 }}
               transition={{ type: "spring", stiffness: 500, damping: 30 }}

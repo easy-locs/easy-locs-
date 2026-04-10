@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Property, Tenant } from "@/hooks/useRentalData";
 
@@ -32,7 +32,7 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
   // Load owner profile
   useEffect(() => {
     if (!orgId) return;
-    supabase
+    db
       .from("owner_profiles")
       .select("*")
       .eq("org_id", orgId)
@@ -46,7 +46,7 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
   // Load inventory reports
   useEffect(() => {
     if (!orgId) return;
-    supabase
+    db
       .from("inventory_reports")
       .select("id, property_id, tenant_id, report_type, report_date, status")
       .eq("org_id", orgId)

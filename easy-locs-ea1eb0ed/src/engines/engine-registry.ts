@@ -253,12 +253,12 @@ export function bootEngineSystem(): () => void {
   let disposed = false;
   let teardownAI: (() => void) | null = null;
 
-  const tier2Timer = setTimeout(() => {
+  const tier2Timer = import.meta.env.DEV ? setTimeout(() => {
     if (disposed) return;
     loadAndStartTier2().catch(e =>
       console.warn("[engine-registry] Tier 2 load failed", e)
     );
-  }, 8000);
+  }, 8000) : null;
 
   (async () => {
     const [{ agentIntelligence }, { automationPipelines }] = await Promise.all([
@@ -276,7 +276,7 @@ export function bootEngineSystem(): () => void {
 
   return () => {
     disposed = true;
-    clearTimeout(tier2Timer);
+    if (tier2Timer) clearTimeout(tier2Timer);
     teardownAI?.();
     engineOrchestrator.stopAll();
   };

@@ -6,7 +6,7 @@ import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Route, MapPin, Zap, RotateCcw, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { haversineKm } from "@/lib/geo/distance";
@@ -62,7 +62,7 @@ export default function RouteOptimizationEngine({ orgId, className }: Props) {
     setLoading(true);
     try {
       // Fetch pending/assigned jobs with coordinates
-      const { data: jobs } = await supabase
+      const { data: jobs } = await db
         .from("mobility_jobs")
         .select("id, pickup_address, pickup_lat, pickup_lng, dropoff_address, dropoff_lat, dropoff_lng, status")
         .eq("merchant_id", orgId)

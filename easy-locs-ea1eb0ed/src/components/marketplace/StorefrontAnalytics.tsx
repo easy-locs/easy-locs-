@@ -10,7 +10,7 @@ import {
   Eye, MousePointerClick, TrendingUp, BarChart3,
   ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface StorefrontAnalyticsProps {
@@ -25,7 +25,7 @@ export default function StorefrontAnalytics({ providerId, services }: Storefront
   const { data: clicks = [] } = useQuery({
     queryKey: ["storefront_clicks", orgId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await db
         .from("contact_clicks")
         .select("*")
         .eq("org_id", orgId!)
@@ -41,7 +41,7 @@ export default function StorefrontAnalytics({ providerId, services }: Storefront
   const { data: reveals = [] } = useQuery({
     queryKey: ["storefront_reveals", orgId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await db
         .from("contact_reveals")
         .select("*")
         .eq("org_id", orgId!)

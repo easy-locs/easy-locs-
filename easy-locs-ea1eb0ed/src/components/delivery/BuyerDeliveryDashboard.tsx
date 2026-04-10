@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Package, MapPin, Clock, CheckCircle2, Loader2, Eye, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import * as deliveryRepo from "@/repositories/delivery.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import EscrowDeliveryValidator from "@/components/delivery/EscrowDeliveryValidator";
@@ -53,7 +54,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
     if (!user) return;
     setLoading(true);
     try {
-      const { data } = await supabase
+      const { data } = await db
         .from("mobility_jobs")
         .select("id, status, pickup_address, dropoff_address, dropoff_lat, dropoff_lng, notes, current_price, quoted_price, currency, created_at, completed_at")
         .eq("customer_user_id", user.id)

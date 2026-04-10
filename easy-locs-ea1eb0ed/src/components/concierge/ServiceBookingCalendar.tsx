@@ -3,6 +3,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { format, isBefore, startOfDay, addDays, eachDayOfInterval, differenceInCalendarDays } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -109,8 +110,8 @@ function useServiceAvailability(serviceId: string) {
     if (!serviceId) return;
     const load = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .rpc("get_public_service_availability", { p_service_id: serviceId });
+      const { data, error } = await db
+        .rpc("get_public_service_availability" as any, { p_service_id: serviceId });
       if (error) {
         console.error("availability load error", error);
         setBookedSlots([]);

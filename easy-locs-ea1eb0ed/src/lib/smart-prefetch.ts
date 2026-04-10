@@ -1,7 +1,8 @@
 const prefetchedRoutes = new Set<string>();
+let prefetchScheduled = false;
 
 const ROUTE_PREFETCH_MAP: Record<string, string[]> = {
-  "/": ["/radar", "/orbit", "/wallet", "/me"],
+  "/": ["/radar", "/orbit", "/wallet", "/me", "/browse"],
   "/radar": ["/mobility/taxi", "/browse", "/explore"],
   "/orbit": ["/orbit/contacts"],
   "/wallet": ["/wallet/transfer", "/pay/scan", "/wallet/top-up"],
@@ -30,11 +31,22 @@ const ROUTE_LAZY_MAP: Record<string, () => Promise<unknown>> = {
   "/dashboard/finances": () => import("@/pages/Finances"),
   "/merchant/orders": () => import("@/pages/MerchantOrdersPage"),
   "/merchant/menu": () => import("@/pages/merchant/MerchantMenuPage"),
+  "/login": () => import("@/pages/Login"),
+  "/signup": () => import("@/pages/Signup"),
 };
 
 const scheduleIdle = typeof requestIdleCallback === "function"
   ? (fn: () => void, opts?: { timeout: number }) => requestIdleCallback(fn, opts)
-  : (fn: () => void, opts?: { timeout: number }) => setTimeout(fn, opts?.timeout ?? 2000);
+  : (fn: () => void, opts?: { timeout: number }) => setTimeout(fn, opts?.timeout ?? 200);
+
+function prefetchRoute(route: string) {
+  if (prefetchedRoutes.has(route)) return;
+  const loader = ROUTE_LAZY_MAP[route];
+  if (loader) {
+    prefetchedRoutes.add(route);
+    loader().catch(() => {});
+  }
+}
 
 export function prefetchForRoute(currentPath: string) {
   const normalized = currentPath.split("?")[0];
@@ -43,26 +55,30 @@ export function prefetchForRoute(currentPath: string) {
 
   scheduleIdle(() => {
     for (const target of targets) {
-      if (prefetchedRoutes.has(target)) continue;
-      const loader = ROUTE_LAZY_MAP[target];
-      if (loader) {
-        prefetchedRoutes.add(target);
-        loader().catch(() => {});
-      }
+      prefetchRoute(target);
     }
-  }, { timeout: 2000 });
+  }, { timeout: 500 });
+}
+
+export function prefetchOnInteraction(targetRoute: string) {
+  prefetchRoute(targetRoute);
 }
 
 export function prefetchCriticalRoutes() {
+  if (prefetchScheduled) return;
+  prefetchScheduled = true;
+
   scheduleIdle(() => {
     const critical = ["/radar", "/orbit", "/wallet", "/me"];
     for (const route of critical) {
-      if (prefetchedRoutes.has(route)) continue;
-      const loader = ROUTE_LAZY_MAP[route];
-      if (loader) {
-        prefetchedRoutes.add(route);
-        loader().catch(() => {});
-      }
+      prefetchRoute(route);
     }
-  }, { timeout: 3000 });
+  }, { timeout: 1000 });
+}
+
+export function prefetchAllPillars() {
+  const pillars = ["/radar", "/orbit", "/wallet", "/me", "/login", "/signup"];
+  for (const route of pillars) {
+    prefetchRoute(route);
+  }
 }
