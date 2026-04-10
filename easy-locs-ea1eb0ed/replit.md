@@ -90,10 +90,17 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - Memoized: CommCallsSection filtered list, filter labels, missed count
 - Bundle: index.js 429KB (was 487KB, -12%)
 
+## Page Layout System (Pillar Pages)
+- **Components**: `PillarPage` + `PageSection` in `src/components/layout/PillarPage.tsx`
+- **CSS**: `.pillar-page`, `.page-section`, `.page-section__header`, `.page-section__title`, `.page-section__action-btn`, `.page-section__divider`, `.page-hero` in `index.css`
+- **Spacing variables**: `--section-gap` (24px, tablet 32px, mobile 20px), `--section-gap-compact` (16px, tablet 24px, mobile 12px), `--section-header-mb` (12px, tablet 16px)
+- **RULE**: All pillar pages must use `pillar-page` class. Section headers use `page-section__header` pattern (title + action). Section spacing via CSS variables, never hardcode `mb-5`.
+- **5 pillars applied**: SmartHome (PillarPage component), WalletHub/Me/Radar/Orbit (pillar-page CSS class)
+
 ## Design System Standards (Enforced)
-- **Spacing scale**: 4/8/10/12/16/20/24/32/40/48/64px (see `src/config/ui.ts` SPACING)
-- **Section spacing**: `mb-5` (20px) between sections
-- **Section header spacing**: `mb-2.5` (10px) between section header and content; use `.ds-section-header` CSS class
+- **Spacing scale**: 4/8/12/16/24/32/48px (strict, see CSS variables + `src/config/ui.ts` SPACING)
+- **Section spacing**: `var(--section-gap)` between sections (NOT `mb-5`)
+- **Section header spacing**: `var(--section-header-mb)` between section header and content
 - **Section header typography**: `text-[13px] font-bold`; use `.ds-section-title` CSS class
 - **Card images**: `aspect-[16/10]`, never fixed height
 - **Card text**: Always `line-clamp-1` or `line-clamp-2`, never unclamped

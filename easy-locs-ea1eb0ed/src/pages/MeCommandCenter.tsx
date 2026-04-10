@@ -424,7 +424,7 @@ export default function MeCommandCenter() {
 
   if (shopsError && !shops) {
     return (
-      <div className="app-mobile-page max-w-md mx-auto px-4 py-12 flex flex-col items-center gap-4 text-center">
+      <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-12 flex flex-col items-center gap-4 text-center">
         <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: `${A.gold}1A` }}>
           <AlertTriangle className="w-7 h-7" style={{ color: A.gold }} />
@@ -444,9 +444,9 @@ export default function MeCommandCenter() {
 
   if (isInitialLoading) {
     return (
-      <div className="app-mobile-page max-w-md mx-auto px-4 py-4">
+      <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-4">
         <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
-        <div className="space-y-3 animate-pulse">
+        <div className="animate-pulse" style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap-compact)" }}>
           <div className="flex items-center gap-4 p-4 rounded-3xl bg-muted/30">
             <div className="w-14 h-14 rounded-2xl bg-muted/50" />
             <div className="flex-1 space-y-2">
@@ -467,9 +467,9 @@ export default function MeCommandCenter() {
   }
 
   return (
-    <div className="app-mobile-page max-w-md mx-auto px-4 py-4">
+    <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-4">
       <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
-      <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
+      <motion.div variants={stagger} initial="hidden" animate="show" style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap-compact)" }}>
 
         <motion.button
           variants={fadeUp}
@@ -644,7 +644,8 @@ export default function MeCommandCenter() {
         )}
 
         {isBusiness && (
-          <motion.div variants={fadeUp} className="pt-1 pb-0.5 px-1">
+          <motion.div variants={fadeUp} style={{ paddingTop: 8, paddingBottom: 4, paddingLeft: 4, paddingRight: 4 }}>
+            <div className="page-section__divider" style={{ marginBottom: 12 }} />
             <div className="flex items-center gap-2">
               <div className="w-1 h-4 rounded-full" style={{ background: A.gold }} />
               <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: A.navy }}>

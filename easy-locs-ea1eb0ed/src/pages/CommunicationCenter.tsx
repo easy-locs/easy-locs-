@@ -300,7 +300,7 @@ export const CommunicationCenter = () => {
     <>
       <SEOHead title={`${t("orbit.title")} — Easy-Locs`} description={t("orbit.seo_desc")} noindex />
       <div
-        className="flex flex-col"
+        className="flex flex-col pillar-page"
         onClick={(e) => e.stopPropagation()}
         style={{
           height: "100dvh",

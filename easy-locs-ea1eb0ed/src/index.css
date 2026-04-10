@@ -1700,6 +1700,118 @@ img {
 }
 
 /* ══════════════════════════════════════════════════
+   PILLAR PAGE LAYOUT SYSTEM
+   Strict spacing: 4 / 8 / 12 / 16 / 24 / 32 / 48
+   ══════════════════════════════════════════════════ */
+
+:root {
+  --section-gap: 24px;
+  --section-gap-compact: 16px;
+  --section-header-mb: 12px;
+  --section-px: 16px;
+}
+
+.pillar-page {
+  width: 100%;
+  min-width: 0;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pillar-page--padded {
+  padding-left: var(--section-px);
+  padding-right: var(--section-px);
+}
+
+.page-section {
+  position: relative;
+}
+
+.page-section--px {
+  padding-left: var(--section-px);
+  padding-right: var(--section-px);
+}
+
+.pillar-page--padded .page-section--px {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.page-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--section-header-mb);
+  gap: 8px;
+}
+
+.page-section__title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.page-section__icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.page-section__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-section__action {
+  flex-shrink: 0;
+}
+
+.page-section__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: hsl(38 65% 56%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.15s;
+}
+.page-section__action-btn:active {
+  opacity: 0.7;
+}
+
+.page-section__content {
+  position: relative;
+}
+
+.page-section__divider {
+  height: 1px;
+  margin: 0 0 16px;
+  background: hsl(var(--border) / 0.06);
+}
+
+.page-hero {
+  margin-bottom: var(--section-gap);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --section-gap: 32px;
+    --section-gap-compact: 24px;
+    --section-header-mb: 16px;
+  }
+}
+
+/* ══════════════════════════════════════════════════
    MOBILE-FIRST STRICT SYSTEM
    ══════════════════════════════════════════════════ */
 
@@ -1722,7 +1834,8 @@ html {
   :root {
     --card-padding: 0.875rem;
     --field-gap: 0.75rem;
-    --section-gap: 1rem;
+    --section-gap: 1.25rem;
+    --section-gap-compact: 0.75rem;
     --page-padding-x: 0.875rem;
     --card-radius: 0.875rem;
     --btn-radius: 0.625rem;
