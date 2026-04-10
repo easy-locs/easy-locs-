@@ -266,7 +266,7 @@ export default function PropertyHub() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="grid grid-cols-1 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
           >
             {listings.map((item, i) => (
               <motion.div
