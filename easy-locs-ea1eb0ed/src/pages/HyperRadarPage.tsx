@@ -32,7 +32,6 @@ import RadarEntitySheet from "@/components/radar/RadarEntitySheet";
 import RadarSmartSearch from "@/components/radar/RadarSmartSearch";
 import { entityUrl } from "@/lib/entity/entity-url";
 import { useAuth } from "@/contexts/AuthContext";
-import { openOrbitFromRadar } from "@/lib/radar/radar-orbit-bridge";
 import { haptic } from "@/lib/haptics";
 import {
   Radio, X, Search, Crosshair,
@@ -43,6 +42,8 @@ import {
   Home, MessageCircle, Wallet, User,
 } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
+import { useSmartNavigation } from "@/hooks/useSmartNavigation";
+import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { Z } from "@/lib/ui/z-index";
@@ -124,6 +125,7 @@ export default function HyperRadarPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearch = useDeferredValue(searchQuery);
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
+  const { smartNavigate, overlayState, closeOverlay } = useSmartNavigation();
   const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
   const weather = useLiveWeatherStation({ lat: location?.lat, lng: location?.lng });
 
@@ -354,9 +356,9 @@ export default function HyperRadarPage() {
   const handleMessageItem = useCallback(async (item: RadarResultItem) => {
     if (!user?.id) { navigate("/auth"); return; }
     haptic("light");
-    openOrbitFromRadar({ id: item.id, name: item.title, lat: item.lat, lng: item.lng, type: "shop" }, user.id, navigate);
+    smartNavigate("/orbit", "compose_message");
     trackRadarEvent("cta_used", { action: "message", entityId: item.id });
-  }, [user?.id, navigate]);
+  }, [user?.id, navigate, smartNavigate]);
 
   const handleNavigateEntity = useCallback((entity: RadarGeoEntity) => {
     haptic("medium");
@@ -367,8 +369,8 @@ export default function HyperRadarPage() {
   const handleMessageEntity = useCallback(async (entity: RadarGeoEntity) => {
     if (!user?.id) { navigate("/auth"); return; }
     haptic("light");
-    openOrbitFromRadar(entity, user.id, navigate);
-  }, [user?.id, navigate]);
+    smartNavigate("/orbit", "compose_message");
+  }, [user?.id, navigate, smartNavigate]);
 
   const handleCategorySelect = useCallback((layer: RadarLayer) => {
     haptic("light");
@@ -599,7 +601,7 @@ export default function HyperRadarPage() {
               <span className="text-[10px] text-muted-foreground">
                 {loading ? tSafe(t, "radar.loading", "Scanning...") : `${radarItems.length} ${tSafe(t, "radar.places_found", "places found")}`}
               </span>
-              <PillarNav navigate={navigate} />
+              <PillarNav onNavigate={smartNavigate} />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto px-4 pb-24">{resultListContent}</div>
@@ -719,7 +721,7 @@ export default function HyperRadarPage() {
                         </span>
                       )}
                     </div>
-                    <PillarNav navigate={navigate} />
+                    <PillarNav onNavigate={smartNavigate} />
                   </div>
 
                   <SortBar sortBy={sortBy} setSortBy={handleSortChange} t={t} />
@@ -792,6 +794,12 @@ export default function HyperRadarPage() {
           />
         )}
       </AnimatePresence>
+
+      <PillarOverlayHost
+        activeOverlay={overlayState.activeOverlay}
+        overlayRoute={overlayState.overlayRoute}
+        onClose={closeOverlay}
+      />
     </div>
   );
 }
@@ -1009,13 +1017,13 @@ function WeatherWidget({ weather, vibe, stats, t }: { weather: WeatherStationSta
   );
 }
 
-function PillarNav({ navigate }: { navigate: (path: string) => void }) {
+function PillarNav({ onNavigate }: { onNavigate: (path: string, action?: string) => void }) {
   return (
     <nav className="flex items-center gap-0.5" aria-label="Quick navigation">
       {PILLAR_LINKS.map(p => (
         <button
           key={p.path}
-          onClick={() => { haptic("light"); navigate(p.path); }}
+          onClick={() => { haptic("light"); onNavigate(p.path, "pillar_switch"); }}
           aria-label={p.label}
           className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform text-muted-foreground/60 hover:text-foreground"
         >
