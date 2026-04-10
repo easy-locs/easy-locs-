@@ -116,9 +116,9 @@ export default function DiscoverPage() {
                       See all <ChevronRight className="h-3 w-3" />
                     </button>
                   </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+                  <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none -mx-1 px-1">
                     {items.slice(0, 8).map((item, i) => (
-                      <div key={item.id} className="shrink-0 w-[180px]">
+                      <div key={item.id} className="card-carousel-item">
                         <MerchantCard
                           to={`/s/${item.slug}`}
                           image={item.banner_url || item.logo_url}

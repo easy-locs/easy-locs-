@@ -60,7 +60,7 @@ export const UniverseCard = memo(function UniverseCard({
     </>
   );
 
-  const className = "shrink-0 w-[160px] rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.97] transition-transform flex flex-col";
+  const className = "shrink-0 w-[170px] rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.97] transition-transform flex flex-col";
 
   if (to) {
     return <Link to={to} className={className}>{content}</Link>;
