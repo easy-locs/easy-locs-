@@ -192,7 +192,7 @@ const {
   AdminReviewQueuePage, RouteAuditPage, AdminRestaurantTestSeederPage,
   AdminRuntimeAuditPage, AdminRuntimeQuickLinksPage, AdminMasterDebugPage,
   AdminUiEnginePage, AdminMarketplaceOpsPage, AdminOpsDashboardPage, AdminOrchestrationPage,
-  AdminPipelinePage, AdminEnginesDashboardPage, AdminBackendTruthPage, AdminGaragePage,
+  AdminPipelinePage, AdminEnginesDashboardPage, QualityEnginesDashboardPage, AdminBackendTruthPage, AdminGaragePage,
   AdminSupportOpsPage, AdminDeliveryOpsPage, AdminMerchantAutofillPage, AdminBulkSeedPage,
   AdminSuperDashboardPage, AdminPaymentsOpsPage, AdminBulkMerchantImportPage,
   AdminSeedToolsPage, AdminContentOpsPage, AdminAnalyticsOpsPage, AdminQualityOpsPage,
@@ -702,6 +702,7 @@ const App = () => (
                   <Route path="/admin/orchestration" element={<ProtectedRoute><AdminOrchestrationPage /></ProtectedRoute>} />
                   <Route path="/admin/pipeline" element={<ProtectedRoute><AdminPipelinePage /></ProtectedRoute>} />
                   <Route path="/admin/engines" element={<ProtectedRoute><AdminEnginesDashboardPage /></ProtectedRoute>} />
+                  <Route path="/admin/quality-engines" element={<ProtectedRoute><QualityEnginesDashboardPage /></ProtectedRoute>} />
                   <Route path="/admin/engine-cockpit" element={<ProtectedRoute><AdminEngineCockpit /></ProtectedRoute>} />
                   <Route path="/admin/ai-control-center" element={<ProtectedRoute><AdminAIControlCenter /></ProtectedRoute>} />
                   <Route path="/admin/monetization" element={<ProtectedRoute><AdminMonetizationDashboard /></ProtectedRoute>} />

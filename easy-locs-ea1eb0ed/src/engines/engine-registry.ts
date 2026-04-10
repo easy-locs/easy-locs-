@@ -246,6 +246,95 @@ async function loadAndStartTier2(): Promise<void> {
   }
 }
 
+let tier3Done = false;
+
+async function loadAndStartTier3(): Promise<void> {
+  if (tier3Done) return;
+  tier3Done = true;
+  const [
+    { TaxonomyEngine },
+    { CanonicalMappingEngine },
+    { ProfileQualityEngine },
+    { AddressEngine },
+    { ModuleLinkEngine },
+    { RoutingQualityEngine: QRoutingEngine },
+    { UIPolishEngine },
+    { DataCleaningEngine },
+    { SEOEngine },
+    { DeadCodeEngine },
+    { DeadFlowEngine },
+    { WalletQualityEngine },
+    { OrbitQualityEngine },
+    { RadarOptimizationEngine },
+    { MeBusinessEngine },
+    { PropertyEngine },
+    { CountryRulesEngine },
+    { AutomationEngine },
+    { QualityObservabilityEngine },
+    { TestEnforcementEngine },
+    { FeatureFlagEngine },
+    { QualityScoreEngine },
+  ] = await Promise.all([
+    import("./quality/taxonomy-engine"),
+    import("./quality/canonical-mapping-engine"),
+    import("./quality/profile-quality-engine"),
+    import("./quality/address-engine"),
+    import("./quality/module-link-engine"),
+    import("./quality/routing-quality-engine"),
+    import("./quality/ui-polish-engine"),
+    import("./quality/data-cleaning-engine"),
+    import("./quality/seo-engine"),
+    import("./quality/dead-code-engine"),
+    import("./quality/dead-flow-engine"),
+    import("./quality/wallet-quality-engine"),
+    import("./quality/orbit-quality-engine"),
+    import("./quality/radar-optimization-engine"),
+    import("./quality/me-business-engine"),
+    import("./quality/property-engine"),
+    import("./quality/country-rules-engine"),
+    import("./quality/automation-engine"),
+    import("./quality/observability-engine"),
+    import("./quality/test-enforcement-engine"),
+    import("./quality/feature-flag-engine"),
+    import("./quality/quality-score-engine"),
+  ]);
+
+  const tier3Engines = [
+    new TaxonomyEngine(),
+    new CanonicalMappingEngine(),
+    new ProfileQualityEngine(),
+    new AddressEngine(),
+    new ModuleLinkEngine(),
+    new QRoutingEngine(),
+    new UIPolishEngine(),
+    new DataCleaningEngine(),
+    new SEOEngine(),
+    new DeadCodeEngine(),
+    new DeadFlowEngine(),
+    new WalletQualityEngine(),
+    new OrbitQualityEngine(),
+    new RadarOptimizationEngine(),
+    new MeBusinessEngine(),
+    new PropertyEngine(),
+    new CountryRulesEngine(),
+    new AutomationEngine(),
+    new QualityObservabilityEngine(),
+    new TestEnforcementEngine(),
+    new FeatureFlagEngine(),
+    new QualityScoreEngine(),
+  ];
+
+  engineOrchestrator.registerAll(tier3Engines);
+  for (const engine of tier3Engines) {
+    const registered = engineOrchestrator.getEngine(engine.id);
+    if (registered && !registered.isRunning) registered.start();
+  }
+
+  if (import.meta.env.DEV) {
+    console.log(`[engine-registry] Tier 3 (Quality): ${tier3Engines.length} engines loaded`);
+  }
+}
+
 export function bootEngineSystem(): () => void {
   registerAllEngines();
   engineOrchestrator.startAll();
@@ -259,6 +348,13 @@ export function bootEngineSystem(): () => void {
       console.warn("[engine-registry] Tier 2 load failed", e)
     );
   }, 8000) : null;
+
+  const tier3Timer = setTimeout(() => {
+    if (disposed) return;
+    loadAndStartTier3().catch(e =>
+      console.warn("[engine-registry] Tier 3 (Quality) load failed", e)
+    );
+  }, 12000);
 
   (async () => {
     const [{ agentIntelligence }, { automationPipelines }] = await Promise.all([
@@ -277,6 +373,7 @@ export function bootEngineSystem(): () => void {
   return () => {
     disposed = true;
     if (tier2Timer) clearTimeout(tier2Timer);
+    clearTimeout(tier3Timer);
     teardownAI?.();
     engineOrchestrator.stopAll();
   };
