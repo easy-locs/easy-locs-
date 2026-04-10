@@ -123,7 +123,7 @@ export const obEn: Record<string, string> = {
   "ob.act_esign": "Electronic signature",
   "ob.finish_title": "Setup complete!",
   "ob.finish_desc": "Your workspace is ready.",
-  "common.error": "Error",
+  "common.error": "Error"
 };
 
 export const obEs: Record<string, string> = {
@@ -186,7 +186,7 @@ export const obEs: Record<string, string> = {
   "ob.act_esign": "Firma electrónica",
   "ob.finish_title": "¡Configuración completada!",
   "ob.finish_desc": "Su espacio está listo.",
-  "common.error": "Error",
+  "common.error": "Error"
 };
 
 export const obDe: Record<string, string> = {
@@ -249,7 +249,7 @@ export const obDe: Record<string, string> = {
   "ob.act_esign": "Elektronische Unterschrift",
   "ob.finish_title": "Einrichtung abgeschlossen!",
   "ob.finish_desc": "Ihr Bereich ist bereit.",
-  "common.error": "Fehler",
+  "common.error": "Fehler"
 };
 
 export const obIt: Record<string, string> = {
@@ -312,7 +312,7 @@ export const obIt: Record<string, string> = {
   "ob.act_esign": "Firma elettronica",
   "ob.finish_title": "Configurazione completata!",
   "ob.finish_desc": "Il tuo spazio è pronto.",
-  "common.error": "Errore",
+  "common.error": "Errore"
 };
 
 export const obPt: Record<string, string> = {
@@ -375,7 +375,7 @@ export const obPt: Record<string, string> = {
   "ob.act_esign": "Assinatura eletrônica",
   "ob.finish_title": "Configuração concluída!",
   "ob.finish_desc": "Seu espaço está pronto.",
-  "common.error": "Erro",
+  "common.error": "Erro"
 };
 
 export const translations: Record<Locale, Record<string, string>> = {
