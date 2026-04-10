@@ -148,7 +148,7 @@ export default function POSPage() {
         contextType: "pos_order",
         contextId: order.id,
         title: `POS Order #${order.id.slice(0, 8)}`,
-      }).then(() => ({ success: true, error: null as string | null })).catch((e: any) => ({ success: false, error: e.message }));
+      }).then(() => ({ success: true, error: null as string | null })).catch((e) => ({ success: false, error: e instanceof Error ? e.message : "Payment failed" }));
 
       if (!result.success) {
         await posService.updateStorefrontOrderStatus(order.id, { status: "cancelled" });

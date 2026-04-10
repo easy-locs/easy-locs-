@@ -331,7 +331,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       title,
       data_json: data as unknown as Json,
       status: "final",
-    }).catch((e: any) => ({ error: e })) as any;
+    }).catch((e) => ({ error: e })) as { error?: unknown };
 
     if (error) {
       toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });

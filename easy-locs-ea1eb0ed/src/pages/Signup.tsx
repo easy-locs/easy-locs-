@@ -72,8 +72,8 @@ const Signup = () => {
 
       setActivatedUserId(userId);
       setShowContactSync(true);
-    } catch (err: any) {
-      console.error("[Auth]", err.message);
+    } catch (err) {
+      console.error("[Auth]", err instanceof Error ? err.message : err);
       toast({
         title: t("common.error") || "Error",
         description: t("common.error_generic") || "Something went wrong. Please try again.",

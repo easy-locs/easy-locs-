@@ -9,7 +9,7 @@ export function formatOrbitTimestamp(dateStr: string | null | undefined): string
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return "";
   if (isToday(d)) return format(d, "HH:mm");
-  if (isYesterday(d)) return "Yesterday";
+  if (isYesterday(d)) return "Yesterday"; // i18n applied at UI layer via t("common.yesterday")
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
   if (diffDays < 7) return format(d, "EEEE");

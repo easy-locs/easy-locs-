@@ -8,6 +8,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { useLocationStore } from "@/stores/locationStore";
 import { Navigation, Maximize2, MapPin } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface ClientMapCardProps {
   storeLat: number;
@@ -34,6 +35,7 @@ export default memo(function ClientMapCard({
   onExpand,
   className = "",
 }: ClientMapCardProps) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const userLoc = useLocationStore((s) => s.currentLocation);
@@ -110,7 +112,7 @@ export default memo(function ClientMapCard({
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             {storeCategory && <span>{storeCategory}</span>}
             <span className={storeStatus === "open" ? "text-green-500 font-semibold" : "text-destructive"}>
-              {storeStatus === "open" ? "Open" : "Closed"}
+              {storeStatus === "open" ? t("common.open") : t("common.closed")}
             </span>
             {distKm != null && <span>• {distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`}</span>}
           </div>

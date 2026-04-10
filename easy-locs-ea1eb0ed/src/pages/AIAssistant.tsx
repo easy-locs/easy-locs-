@@ -387,7 +387,7 @@ const AIAssistant = () => {
 
           {/* ─── Chat Tab ─── */}
           <TabsContent value="chat" className="mt-0">
-            <div className="flex flex-col" style={{ height: "calc(100vh - 22rem)" }}>
+            <div className="flex flex-col" style={{ height: "calc(100dvh - 22rem)" }}>
               <div className="flex-1 overflow-y-auto bg-card rounded-xl shadow-card border border-border/50 p-4 mb-4 space-y-4">
                 {messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full">

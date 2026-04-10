@@ -76,7 +76,7 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
       const showDateSep = dateStr !== lastDateStr;
       lastDateStr = dateStr;
       const dateLabel = showDateSep
-        ? (isToday(msgDate) ? "Today" : isYesterday(msgDate) ? "Yesterday" : format(msgDate, "dd/MM/yyyy"))
+        ? (isToday(msgDate) ? t("common.today") : isYesterday(msgDate) ? t("common.yesterday") : format(msgDate, "dd/MM/yyyy"))
         : "";
       const isMe = isOutgoingMessage(msg, userId);
       const prevMsg = idx > 0 ? filtered[idx - 1] : null;

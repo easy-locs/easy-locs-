@@ -127,12 +127,12 @@ const Login = () => {
         finalStatus: "success",
         failedStep: null,
       });
-    } catch (err: any) {
+    } catch (err) {
       failedStep = "LOGIN_SUPABASE_REQUEST_STARTED";
       authError("LOGIN_SUPABASE_RESPONSE", {
         traceId,
         success: false,
-        error: err?.message ?? "UNKNOWN",
+        error: err instanceof Error ? err.message : "UNKNOWN",
         attempt: 0,
       });
 
@@ -251,9 +251,9 @@ const Login = () => {
       } else {
         await redirectAfterLogin(traceId, userId);
       }
-    } catch (err: any) {
-      authError("PHONE_LOGIN_FAILED", { traceId, error: err?.message });
-      console.error("[Auth]", err.message);
+    } catch (err) {
+      authError("PHONE_LOGIN_FAILED", { traceId, error: err instanceof Error ? err.message : "UNKNOWN" });
+      console.error("[Auth]", err instanceof Error ? err.message : err);
       toast({
         title: t("common.error") || "Error",
         description: t("common.error_generic") || "Something went wrong. Please try again.",

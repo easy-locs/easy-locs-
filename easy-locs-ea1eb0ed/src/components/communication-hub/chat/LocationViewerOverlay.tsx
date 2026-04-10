@@ -5,8 +5,10 @@
 import { memo } from "react";
 import { X, Navigation, ExternalLink, Compass } from "lucide-react";
 import { useLocationViewer } from "@/families/location";
+import { useI18n } from "@/lib/i18n";
 
 function LocationViewerOverlayInner() {
+  const { t } = useI18n();
   const { open, lat, lng, label, mode, isLive, close } = useLocationViewer();
 
   if (!open || lat == null || lng == null) return null;
@@ -26,12 +28,12 @@ function LocationViewerOverlayInner() {
           )}
           <div>
             <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-              {label || (isLive ? "Live Location" : "Location")}
+              {label || (isLive ? t("common.live_location") : t("common.location"))}
             </p>
             {isLive && (
               <p className="text-[10px] font-medium flex items-center gap-1" style={{ color: "hsl(var(--primary))" }}>
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--primary))" }} />
-                Sharing live
+                {t("common.sharing_live")}
               </p>
             )}
           </div>
@@ -67,7 +69,7 @@ function LocationViewerOverlayInner() {
           style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
           <ExternalLink className="h-3.5 w-3.5" />
-          Open in Maps
+          {t("common.open_in_maps")}
         </a>
       </div>
     </div>

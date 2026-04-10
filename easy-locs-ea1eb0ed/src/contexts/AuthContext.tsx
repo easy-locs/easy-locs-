@@ -290,7 +290,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             traceId: hydrateTraceId, success: true, error: null,
             durationMs: Date.now() - hydrateStart, phase: "critical",
           });
-        } catch (err: any) {
+        } catch (err) {
           // DB is down — apply safe defaults, NEVER block navigation
           console.warn("[AuthContext] DB slow → critical hydration fallback safe:", err);
           setOrgId(null);
@@ -305,7 +305,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
           authError("LOGIN_PROFILE_HYDRATE_RESULT", {
             traceId: hydrateTraceId, success: false,
-            error: err?.message ?? "UNKNOWN", durationMs: Date.now() - hydrateStart,
+            error: err instanceof Error ? err.message : "UNKNOWN", durationMs: Date.now() - hydrateStart,
             step: "CRITICAL_HYDRATION_FALLBACK",
           });
 
@@ -317,10 +317,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 await fetchProfileCritical(userId);
                 await fetchOrgDetails(retryOrgIds);
                 await fetchDualRoleDeferred(userId);
-              } catch (retryErr: any) {
+              } catch (retryErr) {
                 authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
                   traceId: hydrateTraceId, success: false,
-                  error: retryErr?.message ?? "RETRY_FAILED",
+                  error: retryErr instanceof Error ? retryErr.message : "RETRY_FAILED",
                   retryAttempt: true,
                 });
               }
@@ -335,10 +335,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               try {
                 await fetchOrgDetails(orgIds);
                 await fetchDualRoleDeferred(userId);
-              } catch (deferredErr: any) {
+              } catch (deferredErr) {
                 authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
                   traceId: hydrateTraceId, success: false,
-                  error: deferredErr?.message ?? "DEFERRED_FAILED",
+                  error: deferredErr instanceof Error ? deferredErr.message : "DEFERRED_FAILED",
                   phase: "deferred",
                 });
               }

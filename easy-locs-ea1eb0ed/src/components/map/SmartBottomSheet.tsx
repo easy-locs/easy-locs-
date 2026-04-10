@@ -10,11 +10,13 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUnifiedMapStore, type SheetSnapPoint } from "@/stores/mapStore";
 import type { MapSearchResult } from "@/lib/map/smart-map-search";
+import { useI18n } from "@/lib/i18n";
 
-function ResultItem({ result, selected, onSelect }: {
+function ResultItem({ result, selected, onSelect, t }: {
   result: MapSearchResult;
   selected: boolean;
   onSelect: () => void;
+  t: (key: string) => string;
 }) {
   const distLabel = result.distanceM != null
     ? result.distanceM < 1000
@@ -61,7 +63,7 @@ function ResultItem({ result, selected, onSelect }: {
             <>
               <span className="text-white/15">·</span>
               <span className={result.isOpenNow ? "text-emerald-400" : "text-red-400"}>
-                {result.isOpenNow ? "Ouvert" : "Fermé"}
+                {result.isOpenNow ? t("common.open") : t("common.closed")}
               </span>
             </>
           )}
@@ -74,6 +76,7 @@ function ResultItem({ result, selected, onSelect }: {
 }
 
 function SheetContent() {
+  const { t } = useI18n();
   const results = useUnifiedMapStore(s => s.search.results);
   const intent = useUnifiedMapStore(s => s.search.intent);
   const selectedId = useUnifiedMapStore(s => s.selectedEntityId);
@@ -86,7 +89,7 @@ function SheetContent() {
     ? intent.brand.canonicalName
     : intent?.type === "service"
       ? intent.token.iconLabel
-      : "Résultats";
+      : t("common.results");
 
   // Detail view when entity selected
   if (selected && (sheetSnap === "half" || sheetSnap === "expanded")) {
@@ -161,7 +164,7 @@ function SheetContent() {
     <div>
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-[14px] font-semibold text-white/80">{intentLabel}</h3>
-        <span className="text-[11px] text-white/30">{results.length} résultats</span>
+        <span className="text-[11px] text-white/30">{results.length} {t("common.results").toLowerCase()}</span>
       </div>
       <div className="space-y-0.5 max-h-[50vh] overflow-y-auto scrollbar-none">
         {results.map(r => (
@@ -170,6 +173,7 @@ function SheetContent() {
             result={r}
             selected={r.id === selectedId}
             onSelect={() => selectEntity(r.id)}
+            t={t}
           />
         ))}
       </div>

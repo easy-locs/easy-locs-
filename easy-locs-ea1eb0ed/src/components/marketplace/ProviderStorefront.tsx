@@ -24,7 +24,7 @@ import ShareButtons from "@/components/public/ShareButtons";
 
 export default function ProviderStorefront() {
   const { providerSlug } = useParams<{ providerSlug: string }>();
-  const [bookingService, setBookingService] = useState<any>(null);
+  const [bookingService, setBookingService] = useState<Record<string, unknown> | null>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
   const servicesRef = useRef<HTMLDivElement>(null);
   const { t } = useI18n();
@@ -77,7 +77,8 @@ export default function ProviderStorefront() {
       });
       toast.success(t("mp.booking_submitted") || "Booking request sent!");
       setBookingService(null);
-    } catch (err: any) {
+    } catch (err) {
+      console.error("[ProviderStorefront]", err instanceof Error ? err.message : err);
       toast.error("Something went wrong. Please try again.");
     }
   };
