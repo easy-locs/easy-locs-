@@ -131,3 +131,14 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **useEffect Deps Fixed**: WalletHubPage `createDefaultWallet` added to effect deps. CommunicationCenter section-clearing effect now has proper `[activeSection]` dependency.
 - **Dead Store Removed**: `useCameraStore` (src/stores/cameraStore.ts) deleted — zero external imports confirmed.
 - **All stores audited**: 55+ stores verified, only `useCameraStore` was truly dead. `useStoryViewerStore` was initially flagged but confirmed used in 3 files.
+
+## Me Cockpit Strategic Upgrade
+- **MeCommandCenter** transformed from flat profile menu into structured business cockpit
+- **10 Business Blocs**: Business Identity, Contact & Address, Activities & Services, Media Center, Payments & Wallet, Orbit & Communication, Performance, Settings & Control, Documents & Compliance, Team & Roles
+- **Role-Adaptive**: Simple user sees personal essentials only; merchant sees full 10-bloc cockpit; property manager sees property section; driver sees driver hub
+- **MeBusinessSwitcher** (`src/components/me/MeBusinessSwitcher.tsx`): Multi-shop switcher for users with multiple businesses. Expandable dropdown with shop logos, names, and city.
+- **MeProfileQuality** (`src/components/me/MeProfileQuality.tsx`): Animated SVG gauge showing profile completeness (0-100%) computed from 10 checks (name, description, logo, cover, phone, email, address, categories, hours, wallet). Shows top 3 improvement suggestions.
+- **MeBusinessKpis** (`src/components/me/MeBusinessKpis.tsx`): 5-column KPI strip (Views, Contacts, Orders, Rating, Revenue) for merchant dashboard overview.
+- **Data Layer**: Added `typedQueries.storefrontPages.selectByOwner()` for full shop data fetch
+- **i18n**: 90+ new keys added (FR + EN) for all bloc titles, item labels, quality checks, KPI labels
+- **Cross-Pillar Wiring**: Merchant items link to `/merchant/store-settings/:id`, `/merchant/menu/:id`, `/merchant/finance`, `/pos`, `/seller`, `/seller/boost`. Property items link to `/dashboard/*`. Orbit items link to `/orbit`. Wallet items link to `/me/saved-cards`, `/me/order-receipts`.
