@@ -48,6 +48,34 @@ Key backend files:
 
 Storefront data flows into `storefront_pages` table with full profile: identity, contact, legal (in metadata_json), location with coordinates, media URLs, opening hours, provenance tracking, and completeness score.
 
+## Quality Engines System (22 engines)
+- **Location**: `src/engines/quality/` — Tier 3, lazy-loaded 12s after boot
+- **Dashboard**: `/admin/quality-engines` — real-time scores, findings, grade
+- **Engines**:
+  1. **TaxonomyEngine** — analyzes real CATEGORY_TREE: duplicate subcategories, missing tags, alias conflicts, orphan clusters
+  2. **CanonicalMappingEngine** — verifies source of truth: route uniqueness, wallet/orbit integration, capability/architecture alignment
+  3. **ProfileQualityEngine** — scans storefront_pages DB: missing photos, contacts, categories, completeness scores
+  4. **AddressEngine** — validates addresses: missing coordinates, null island, incomplete city/country
+  5. **ModuleLinkEngine** — verifies cross-pillar wiring: Dashboard↔Radar↔Orbit↔Wallet↔Me end-to-end
+  6. **RoutingQualityEngine** — detects dead routes, duplicate routes, orphan pages
+  7. **UIPolishEngine** — detects overflow, tiny text, missing alt, card height inconsistency
+  8. **DataCleaningEngine** — finds null names, null categories, missing coordinates, stale data in DB
+  9. **SEOEngine** — checks title, description, H1, OG tags, canonical links per page
+  10. **DeadCodeEngine** — detects deprecated/legacy DOM elements, inline handlers, hidden elements
+  11. **DeadFlowEngine** — detects dead buttons, broken links (#), orphan forms, invisible CTAs
+  12. **WalletQualityEngine** — finds stuck transactions, recurring payment failures, slow checkout
+  13. **OrbitQualityEngine** — checks message delivery, thread consistency, realtime connection status
+  14. **RadarOptimizationEngine** — monitors search speed, empty results, map pin count, filter usage
+  15. **MeBusinessEngine** — verifies business profiles, wallet/orbit links in Me section
+  16. **PropertyEngine** — validates property listings: media, location, staleness, completeness
+  17. **CountryRulesEngine** — detects single-country assumptions, hardcoded currencies, missing lang
+  18. **AutomationEngine** — finds inactive merchants, stuck orders, stale bookings
+  19. **ObservabilityEngine** — monitors error spikes, slow pages, memory leaks, engine failures
+  20. **TestEnforcementEngine** — checks responsive layout, tap target sizes, i18n gaps
+  21. **FeatureFlagEngine** — audits feature flags: stale, unregistered, debt
+  22. **QualityScoreEngine** — aggregates all engine scores into global quality grade (A-F)
+- **Architecture**: All extend `BaseEngine`, run on intervals, emit to `platformBus`, record via `engineObserver`
+
 ## Key Files
 - **5 Pillars**: `SmartHome.tsx` (Dashboard), `HyperRadarPage.tsx` (Radar), `CommunicationCenter.tsx` (Orbit), `WalletHubPage.tsx` (Wallet), `MeCommandCenter.tsx` (Me)
 - **Radar Components**: `RadarSmartSearch.tsx` (autocomplete + history), `RadarResultCard.tsx` (uniform card), `RadarEntitySheet.tsx` (detail), `PersonalRadarPanel.tsx` (AI personal), `RadarStoryRail.tsx` (stories), `ZoneIntelligenceSheet.tsx` (zone detail)
