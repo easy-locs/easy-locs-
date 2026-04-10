@@ -1,21 +1,33 @@
 /**
  * Dedup Engine — Multi-signal entity deduplication.
  * Matches on: name, phone, address, GPS, website, images, menus.
+ * Enhanced with fuzzy matching, n-gram similarity, and country-specific normalization.
  */
 import type { SourceEntityRecord, DedupMatch } from "../types";
 
 // ─── Normalizers ───
+const PROVIDER_NOISE = /deliveroo|talabat|careem|booking|noon|expedia|zomato|uber\s*eats|just\s*eat|grubhub|doordash|glovo|foodpanda|swiggy|bolt\s*food|wolt/gi;
+const PUNCTUATION = /[()|•·'"`\-—–_\/\\]/g;
+const ARABIC_ARTICLE = /^(ال|مطعم|مقهى|صيدلية|بقالة)\s*/;
+const ARTICLES = /^(the|le|la|les|el|al|das|der|die|il|lo)\s+/i;
+
 function normName(n: string): string {
   return n.toLowerCase()
-    .replace(/deliveroo|talabat|careem|booking|noon|expedia/gi, "")
-    .replace(/[()|•·'"`\-]/g, " ")
-    .replace(/[^a-z0-9\s]/g, "")
+    .replace(PROVIDER_NOISE, "")
+    .replace(PUNCTUATION, " ")
+    .replace(ARABIC_ARTICLE, "")
+    .replace(ARTICLES, "")
+    .replace(/[^a-z0-9\s\u0600-\u06FF]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
 
 function normPhone(p: string): string {
-  return p.replace(/[^0-9+]/g, "");
+  let cleaned = p.replace(/[^0-9+]/g, "");
+  cleaned = cleaned.replace(/^\+971/, "0").replace(/^\+33/, "0").replace(/^\+44/, "0")
+    .replace(/^\+1/, "").replace(/^\+49/, "0").replace(/^\+91/, "0")
+    .replace(/^\+966/, "0").replace(/^\+20/, "0").replace(/^\+234/, "0");
+  return cleaned;
 }
 
 function normDomain(url: string): string {
@@ -27,7 +39,49 @@ function normDomain(url: string): string {
 }
 
 function normAddress(a: string): string {
-  return a.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+  return a.toLowerCase()
+    .replace(PROVIDER_NOISE, "")
+    .replace(/[^a-z0-9\u0600-\u06FF]/g, "")
+    .trim();
+}
+
+function levenshteinDistance(a: string, b: string): number {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  if (a.length > 50 || b.length > 50) {
+    return a === b ? 0 : Math.max(a.length, b.length);
+  }
+
+  const matrix: number[][] = [];
+  for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      const cost = b[i - 1] === a[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost,
+      );
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
+function nameSimilarity(a: string, b: string): number {
+  const na = normName(a);
+  const nb = normName(b);
+  if (na === nb) return 1.0;
+  if (!na || !nb) return 0;
+
+  if (na.includes(nb) || nb.includes(na)) return 0.85;
+
+  const maxLen = Math.max(na.length, nb.length);
+  if (maxLen === 0) return 0;
+  const dist = levenshteinDistance(na, nb);
+  const similarity = 1 - dist / maxLen;
+  return Math.max(0, similarity);
 }
 
 // ─── Geo ───
@@ -79,30 +133,56 @@ export function computeDedupScore(a: SourceEntityRecord, b: SourceEntityRecord):
   const matchedOn: string[] = [];
   let score = 0;
 
-  // Name (0.30)
-  if (a.name && b.name && normName(a.name) === normName(b.name)) {
-    matchedOn.push("name");
-    score += 0.30;
+  // Name — exact match (0.30) or fuzzy match (0.15–0.25)
+  if (a.name && b.name) {
+    const sim = nameSimilarity(a.name, b.name);
+    if (sim >= 0.95) {
+      matchedOn.push("name");
+      score += 0.30;
+    } else if (sim >= 0.75) {
+      matchedOn.push("name");
+      score += 0.15 + (sim - 0.75) * 0.4;
+    }
   }
 
-  // Phone (0.20)
-  if (a.phone && b.phone && normPhone(a.phone) === normPhone(b.phone)) {
-    matchedOn.push("phone");
-    score += 0.20;
+  // Phone — country-normalized (0.20)
+  if (a.phone && b.phone) {
+    const pa = normPhone(a.phone);
+    const pb = normPhone(b.phone);
+    if (pa.length >= 7 && pb.length >= 7 && pa === pb) {
+      matchedOn.push("phone");
+      score += 0.20;
+    } else if (pa.length >= 7 && pb.length >= 7 && (pa.endsWith(pb.slice(-7)) || pb.endsWith(pa.slice(-7)))) {
+      matchedOn.push("phone_partial");
+      score += 0.12;
+    }
   }
 
-  // Address (0.10)
-  if (a.address && b.address && normAddress(a.address) === normAddress(b.address)) {
-    matchedOn.push("address");
-    score += 0.10;
+  // Address — normalized (0.10)
+  if (a.address && b.address) {
+    const aa = normAddress(a.address);
+    const ab = normAddress(b.address);
+    if (aa === ab) {
+      matchedOn.push("address");
+      score += 0.10;
+    } else if (aa.length > 10 && ab.length > 10 && (aa.includes(ab.slice(0, 15)) || ab.includes(aa.slice(0, 15)))) {
+      matchedOn.push("address_partial");
+      score += 0.05;
+    }
   }
 
-  // GPS proximity < 100m (0.25)
+  // GPS proximity: < 50m (0.25), < 100m (0.20), < 200m (0.10)
   if (a.lat != null && a.lng != null && b.lat != null && b.lng != null) {
     const dist = haversineMeters(a.lat, a.lng, b.lat, b.lng);
-    if (dist < 100) {
+    if (dist < 50) {
       matchedOn.push("geo");
       score += 0.25;
+    } else if (dist < 100) {
+      matchedOn.push("geo");
+      score += 0.20;
+    } else if (dist < 200) {
+      matchedOn.push("geo");
+      score += 0.10;
     }
   }
 

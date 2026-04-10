@@ -70,6 +70,16 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - Admin pages intentionally keep raw error messages for debugging
 - Pattern: `console.error("[Module]", err.message); toast.error("User-friendly message");`
 
+## Taxonomy & Data Architecture
+- **SSOT**: `src/lib/taxonomy/category-tree.ts` — 12 primaries, 150+ subcategories (was ~100), strict hierarchy
+- **Adapter**: `src/lib/taxonomy/world-class-taxonomy.ts` — enrichment layer (service modes, time relevance, geo hints)
+- **Import mapper**: `src/lib/import-engine/taxonomy/taxonomy-mapper.ts` — 180+ aliases for global category resolution
+- **Taxonomy health engine**: `src/lib/engines/taxonomy-health-engine.ts` — detects vertical mismatches, orphaned subcategories, missing tags, tree duplicates
+- **Data quality engine**: `src/lib/engines/data-quality-engine.ts` — 5-dimension scoring (identity/contact/geo/visuals/content), A–F grades, batch assessment
+- **Dedup engine**: `src/lib/import-engine/dedup/dedup-engine.ts` — Levenshtein fuzzy name matching, country-normalized phones, graduated GPS proximity, Arabic/multilingual normalizers
+- **Geo normalizer**: `src/lib/geo/geo-normalizer.ts` — address format templates per country (14 countries), noise removal, anomaly detection, enhanced confidence scoring
+- **Canonical address**: `src/lib/address/canonical-address-resolver.ts` — upsert/search/resolve pipeline, user saved addresses, active context system
+
 ## Dead Code Audit (Latest)
 - Removed 8 dead hooks: useActivityRealtime, useAuditReport, useDeliveryCommandCenter, useFavoritesRealtime, usePaymentStatusSync, useRadarGeo, useRealtimeDispatchBoard, useSmartBanners
 - Removed 1 dead store: liveBadgeStore
