@@ -101,6 +101,6 @@ export const EXPLORE_CATEGORIES = [
   { key: "services", label: "Services", icon: "🔧", path: "/browse/services" },
   { key: "taxi", label: "Taxi", icon: "🚕", path: "/mobility/taxi" },
   { key: "delivery", label: "Delivery", icon: "🚚", path: "/mobility/delivery" },
-  { key: "property", label: "Property", icon: "🏠", path: "/browse/real_estate" },
+  { key: "property", label: "Property", icon: "🏠", path: "/property-hub" },
   { key: "travel", label: "Travel", icon: "✈️", path: "/travel" },
 ] as const;

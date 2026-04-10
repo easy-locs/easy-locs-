@@ -18,7 +18,7 @@ const SECTIONS = [
   { icon: Plane, titleKey: "landing.universe.travel", descKey: "landing.universe.travel_desc", to: "/travel", accent: "hsl(250 65% 55%)" },
   { icon: Building2, titleKey: "landing.universe.property", descKey: "landing.universe.property_desc", to: "/property-hub", accent: "hsl(38 65% 50%)" },
   { icon: Wallet, titleKey: "landing.universe.wallet", descKey: "landing.universe.wallet_desc", to: "/wallet", accent: "hsl(152 60% 42%)" },
-  { icon: MessageCircle, titleKey: "landing.universe.messages", descKey: "landing.universe.messages_desc", to: "/dashboard/messages", accent: "hsl(210 80% 52%)" },
+  { icon: MessageCircle, titleKey: "landing.universe.messages", descKey: "landing.universe.messages_desc", to: "/orbit", accent: "hsl(210 80% 52%)" },
 ];
 
 export default function UniverseShowcase() {

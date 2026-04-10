@@ -33,7 +33,7 @@ export function AppInit() {
     const ric = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 2000));
     ric(() => startContinuousGuard());
     ric(() => {
-      try { generateExecutionProof(); } catch (_) {}
+      try { generateExecutionProof(); } catch (e) { console.warn("[AppInit] execution proof:", e); }
     });
   }, [init]);
 
@@ -62,20 +62,22 @@ export function AppInit() {
         ownerOrbitId: user.id,
         currency: "AED",
       });
-    });
+    }).catch((e) => console.warn("[AppInit] wallet setup:", e));
 
     void (async () => {
-      await ensureOrbitProfile();
-      await loadProfile(user.id);
+      try {
+        await ensureOrbitProfile();
+        await loadProfile(user.id);
 
-      const profile = useOrbitProfileStore.getState().profile;
-      const displayName = profile?.displayName || user.user_metadata?.full_name || `EL-${user.id.replace(/-/g, "").substring(0, 8).toUpperCase()}`;
-      PresencePipeline.connect(user.id, displayName);
+        const profile = useOrbitProfileStore.getState().profile;
+        const displayName = profile?.displayName || user.user_metadata?.full_name || `EL-${user.id.replace(/-/g, "").substring(0, 8).toUpperCase()}`;
+        PresencePipeline.connect(user.id, displayName);
 
-      await Promise.all([
-        useFavoritesStore.getState().hydrate(),
-        useSavedSearchStore.getState().hydrate(),
-      ]);
+        await Promise.all([
+          useFavoritesStore.getState().hydrate(),
+          useSavedSearchStore.getState().hydrate(),
+        ]);
+      } catch (e) { console.warn("[AppInit] profile/orbit setup:", e); }
     })();
   }, [initialized, user?.id, loadProfile, clear]);
 

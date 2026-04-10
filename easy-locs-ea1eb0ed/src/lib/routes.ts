@@ -4,7 +4,7 @@
  */
 export const routes = {
   home: () => `/`,
-  notFound: () => `/404`,
+  notFound: () => `/not-found`,
 
   // QR
   qr: (code: string) => `/qr/entry/${encodeURIComponent(code)}`,
@@ -29,8 +29,8 @@ export const routes = {
 
   // Admin
   walletDiagnostics: () => `/admin/wallet-diagnostics`,
-  dispatchDiagnostics: () => `/admin/dispatch-diagnostics`,
-  automations: () => `/admin/automations`,
+  dispatchDiagnostics: () => `/admin/ops-dashboard`,
+  automations: () => `/admin/ops-dashboard`,
   automationHealth: () => `/admin/automation-health`,
   opsExceptions: () => `/admin/ops-exceptions`,
   reviewQueue: () => `/admin/review-queue`,
@@ -41,7 +41,7 @@ export const routes = {
   restaurantSeedTest: () => `/admin/test-restaurants`,
   dubaiImport: () => `/admin/dubai-import`,
   alertCenter: () => `/admin/alerts`,
-  incidents: () => `/admin/incidents`,
+  incidents: () => `/admin/alerts`,
   auditDebug: () => `/admin/audit-debug`,
   opsWallboard: () => `/admin/ops-wallboard`,
   outreach: () => `/admin/outreach`,
@@ -386,8 +386,8 @@ export const ROUTE_REGISTRY = [
   { group: "merchant", label: "Merchant Onboarding", path: "/merchant/onboarding" },
 
   { group: "admin", label: "Wallet Diagnostics", path: "/admin/wallet-diagnostics" },
-  { group: "admin", label: "Dispatch Diagnostics", path: "/admin/dispatch-diagnostics" },
-  { group: "admin", label: "Automations", path: "/admin/automations" },
+  { group: "admin", label: "Dispatch Diagnostics", path: "/admin/ops-dashboard" },
+  { group: "admin", label: "Automations", path: "/admin/ops-dashboard" },
   { group: "admin", label: "Automation Health", path: "/admin/automation-health" },
   { group: "admin", label: "Ops Exceptions", path: "/admin/ops-exceptions" },
   { group: "admin", label: "Review Queue", path: "/admin/review-queue" },
