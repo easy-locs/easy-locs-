@@ -3,10 +3,11 @@
  * This replaces the old broken version that queried non-existent tables.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { ConversationRecord, ChatMessageRecord } from "@/lib/types/domain";
 
  
-const db = supabase as any;
+
 
 export const chatRepoExtended = {
   /**

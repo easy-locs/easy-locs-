@@ -2,9 +2,10 @@
  * Smart Suggestions — Context-aware, time-based, location-based.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { SearchSuggestion } from "./search-types";
 
-const db = supabase as any;
+
 
 // ── Time-based contextual suggestions ──
 function getTimeSuggestions(): SearchSuggestion[] {

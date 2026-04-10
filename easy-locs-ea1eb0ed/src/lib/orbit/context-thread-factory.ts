@@ -5,6 +5,7 @@
  * generates a dedicated Orbit thread. This is the single entry point.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 /* ═══════════════════════════════════════════════════
    TYPES
@@ -171,7 +172,7 @@ export async function getOrCreateContextThread(
   const entityId = req.entityId || req.contextId!;
   const { contextType, orgId, initiatorId, participantIds, title, subtitle, metadata } = req;
 
-  const db = supabase as any;
+  
 
   // 1. Check for existing V2 conversation with this context
   const { data: existing } = await db

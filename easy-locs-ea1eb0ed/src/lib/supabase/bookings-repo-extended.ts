@@ -1,8 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { BookingRecordV2 } from "@/lib/types/domain";
 
  
-const db = supabase as any;
+
 
 export const bookingsRepoExtended = {
   async listByOwner(ownerOrbitId: string): Promise<BookingRecordV2[]> {

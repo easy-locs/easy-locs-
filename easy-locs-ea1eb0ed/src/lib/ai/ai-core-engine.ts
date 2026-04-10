@@ -13,8 +13,9 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export type AiExecutionMode = "passive" | "safe_auto" | "active";
 

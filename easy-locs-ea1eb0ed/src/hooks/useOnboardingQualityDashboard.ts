@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export function useOnboardingQualityDashboard() {
   return useQuery({
     queryKey: ["onboarding-quality-dashboard"],
     queryFn: async () => {
-      const db = supabase as any;
+      
       const [queue, canonical, recrawls] = await Promise.all([
         db("onboarding_review_queue").select("*"),
         db("onboarding_canonical_records").select("*"),

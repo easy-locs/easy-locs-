@@ -2,9 +2,10 @@
  * group.update — Canonical group update pipeline.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 
-const db = supabase as any;
+
 
 export async function updateOrbitGroup(params: {
   groupId: string;

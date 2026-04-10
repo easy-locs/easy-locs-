@@ -54,10 +54,13 @@ easy-locs-ea1eb0ed/
 │   ├── components/      # UI components (wallet/, orbit/, radar/, dashboard/, navigation/, etc.)
 │   ├── app/             # app-route-registry.tsx (centralized lazy imports for all pages)
 │   ├── lib/             # Core utilities (i18n.tsx, wallet/, orbit/, engines/)
-│   ├── engines/         # 68+ autonomous engines (AI, self-healing, security, performance, data, UX, business, monetization)
+│   ├── engines/         # 80+ autonomous engines (AI, self-healing, security, performance, data, UX, business, monetization)
 │   │   ├── core/        # BaseEngine, EngineOrchestrator, EngineObserver, SelfPilot
 │   │   ├── ai/          # AIAnalysis, CodeSuggestion, RuntimeAnomaly, PolicyGuard, AgentIntelligence, AutomationPipeline
 │   │   └── ...          # security/, performance/, self-healing/, data/, uiux/, business/, observability/, release/
+│   │   NOTE: Engine loading is tiered — Tier 1 (critical: self-healing, performance, realtime, wallet, security, orbit, calls, radar, data)
+│   │         loads immediately; Tier 2 (architecture, code-quality, uiux, business, support, observability, release, AI analysis)
+│   │         loads lazily 8s after boot to reduce initial CPU/bundle overhead.
 │   ├── config/          # Navigation config (navigation.ts), app constants
 │   ├── integrations/    # Supabase client
 │   ├── services/        # SSOT service layer — all DB access centralized through db() function

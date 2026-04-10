@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import { uploadFile, getPublicFileUrl } from "@/lib/storage/uploadFile";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitProfileStore } from "@/stores/orbitStore";
 import { propagateIdentityChange } from "@/families/identity/identity-propagation";
 
  
-const db = supabase as any;
+
 
 type AvatarStore = {
   uploading: boolean;

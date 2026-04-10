@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Loader2, Paperclip } from "lucide-react";
@@ -11,7 +12,7 @@ import { insertMessage, updateConversationTimestamp, fetchGroupMessages } from "
 // NOTE: GuestBookingReply is a PUBLIC page (no auth context) — cannot use orbitDispatch.
 // Direct repository access is permissible for public/guest domain orchestrators.
 
-const db = supabase as any;
+
 
 interface Props {
   bookingId: string;

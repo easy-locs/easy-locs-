@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldCheck, AlertTriangle, XCircle, CheckCircle, Activity, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-const db = supabase as any;
+
 
 interface HealthStats {
   total: number;

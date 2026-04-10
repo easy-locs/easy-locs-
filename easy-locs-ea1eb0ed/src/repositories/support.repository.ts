@@ -3,8 +3,9 @@
  * All support_tickets + support_ticket_messages writes route here.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export const supportRepo = {
   tickets: {

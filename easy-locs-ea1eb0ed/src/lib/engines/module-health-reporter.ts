@@ -3,8 +3,9 @@
  * Bridges client-side engine execution to persistent DB observability.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 type ModuleKey = "orbit" | "wallet" | "scanner" | "checkout" | "radar" | "delivery" | "deep_scrape" | "publish_pipeline" | "notifications" | "realtime" | "chat" | "payments";
 

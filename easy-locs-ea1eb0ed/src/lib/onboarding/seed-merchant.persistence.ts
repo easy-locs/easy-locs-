@@ -2,6 +2,7 @@
  * Seed Merchant Persistence — Upserts canonical records into seed_merchants.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { StorefrontDraftPayload } from "./storefront-output.types";
 
 function slugify(input: string): string {
@@ -16,7 +17,7 @@ export async function upsertSeedMerchant(
   entityId: string,
   payload: StorefrontDraftPayload,
 ) {
-  const db = supabase as any;
+  
 
   const slugBase = slugify(payload.canonical_name || "merchant");
   const slug = `${slugBase}-${entityId.slice(0, 8)}`;

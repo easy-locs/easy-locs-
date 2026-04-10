@@ -3,10 +3,11 @@
  * Handles: delete-for-self, delete-for-all, grouped delete, preview reconciliation.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { updateConversationTimestamp } from "@/repositories/communication.repository";
 import { platformBus } from "@/lib/shared/platform-bus";
 
-const db = supabase as any;
+
 
 export type DeleteScope = "self" | "all";
 

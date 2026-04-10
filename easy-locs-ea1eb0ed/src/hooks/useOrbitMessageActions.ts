@@ -6,8 +6,9 @@ import { useCallback, useRef, useState } from "react";
 import { updateMessageFields } from "@/repositories/communication.repository";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export function useOrbitMessageActions(params: {
   conversationId?: string | null;

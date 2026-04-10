@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ENGINE_METADATA, detectEngineCollisions, type EngineTier, type BusinessFunction, type RuntimeStatus } from "@/lib/engines/engine-metadata-registry";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
 
-const db = supabase as any;
+
 
 const STATUS_CONFIG: Record<RuntimeStatus, { dot: string; label: string }> = {
   ok:      { dot: "bg-emerald-500", label: "Active" },

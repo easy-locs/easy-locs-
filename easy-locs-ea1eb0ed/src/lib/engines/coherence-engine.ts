@@ -1,3 +1,4 @@
+import { db } from "@/services/db";
 /**
  * Entity-Menu Coherence Engine
  * Prevents cross-vertical contamination (e.g., sushi shop with pizza menu).
@@ -223,7 +224,7 @@ export async function persistCoherenceResult(
   result: CoherenceResult
 ) {
   const { supabase } = await import("@/integrations/supabase/client");
-  const db = supabase as any;
+  
 
   const update: Record<string, any> = {
     coherence_score: result.entity_menu_match_score,

@@ -1,15 +1,5 @@
 import { engineOrchestrator } from "./core/engine-orchestrator";
 
-import { ConstraintEngine } from "./architecture/constraint-engine";
-import { SSOTAuditor } from "./architecture/ssot-auditor";
-import { DomainBoundaryEnforcer } from "./architecture/domain-boundary-enforcer";
-import { PlatformBusEnforcer } from "./architecture/platformbus-enforcer";
-
-import { CodeAuditor } from "./code-quality/code-auditor";
-import { DuplicationDetector } from "./code-quality/duplication-detector";
-import { RefactorSuggester } from "./code-quality/refactor-suggester";
-import { ModuleCleanupEngine } from "./code-quality/module-cleanup-engine";
-
 import { ErrorClassifier } from "./self-healing/error-classifier";
 import { AutoFixEngine } from "./self-healing/auto-fix-engine";
 import { RollbackEngine } from "./self-healing/rollback-engine";
@@ -63,57 +53,13 @@ import { HotelNormalizer } from "./data/hotel-normalizer";
 import { TaxonomyEnforcer } from "./data/taxonomy-enforcer";
 import { CurrencyPolicyEngine } from "./data/currency-policy-engine";
 
-import { UXFrictionEngine } from "./uiux/ux-friction-engine";
-import { LayoutConsistencyEngine } from "./uiux/layout-consistency-engine";
-import { InteractionOptimizer } from "./uiux/interaction-optimizer";
-import { DesignRegressionEngine } from "./uiux/design-regression-engine";
-import { AccessibilityEngine } from "./uiux/accessibility-engine";
-
-import { FlowIntegrityEngine } from "./business/flow-integrity-engine";
-import { ConversionEngine } from "./business/conversion-engine";
-import { FunnelDetectionEngine } from "./business/funnel-detection-engine";
-import { DropoffRepairEngine } from "./business/dropoff-repair-engine";
-import { CommissionEngine } from "./business/commission-engine";
-import { RevenueIntelligenceEngine } from "./business/revenue-intelligence-engine";
-import { GrowthIntelligenceEngine } from "./business/growth-intelligence-engine";
-
-import { TicketPatternEngine } from "./support/ticket-pattern-engine";
-import { IncidentClusteringEngine } from "./support/incident-clustering-engine";
-import { RootCauseEngine } from "./support/root-cause-engine";
-import { ResolutionOptimizer } from "./support/resolution-optimizer";
-
-import { TraceCorrelationEngine } from "./observability/trace-correlation-engine";
-import { BusinessEventsEngine } from "./observability/business-events-engine";
-import { ErrorHeatmapEngine } from "./observability/error-heatmap-engine";
-import { ReleaseImpactEngine } from "./observability/release-impact-engine";
-
-import { ReleaseGateEngine } from "./release/release-gate-engine";
-import { ShadowModeEngine } from "./release/shadow-mode-engine";
-import { CanaryControlEngine } from "./release/canary-control-engine";
-import { RollbackTriggerEngine } from "./release/rollback-trigger-engine";
-
-import { AIAnalysisEngine } from "./ai/analysis-engine";
-import { CodeSuggestionEngine } from "./ai/code-suggestion-engine";
-import { RuntimeAnomalyEngine } from "./ai/runtime-anomaly-engine";
-import { PolicyGuardEngine } from "./ai/policy-guard-engine";
-
-let registered = false;
+let tier1Done = false;
 
 export function registerAllEngines(): void {
-  if (registered) return;
-  registered = true;
+  if (tier1Done) return;
+  tier1Done = true;
 
   engineOrchestrator.registerAll([
-    new ConstraintEngine(),
-    new SSOTAuditor(),
-    new DomainBoundaryEnforcer(),
-    new PlatformBusEnforcer(),
-
-    new CodeAuditor(),
-    new DuplicationDetector(),
-    new RefactorSuggester(),
-    new ModuleCleanupEngine(),
-
     new ErrorClassifier(),
     new AutoFixEngine(),
     new RollbackEngine(),
@@ -166,13 +112,104 @@ export function registerAllEngines(): void {
     new HotelNormalizer(),
     new TaxonomyEnforcer(),
     new CurrencyPolicyEngine(),
+  ]);
+}
 
+let tier2Done = false;
+
+async function loadAndStartTier2(): Promise<void> {
+  if (tier2Done) return;
+  tier2Done = true;
+  const [
+    { ConstraintEngine },
+    { SSOTAuditor },
+    { DomainBoundaryEnforcer },
+    { PlatformBusEnforcer },
+    { CodeAuditor },
+    { DuplicationDetector },
+    { RefactorSuggester },
+    { ModuleCleanupEngine },
+    { UXFrictionEngine },
+    { LayoutConsistencyEngine },
+    { InteractionOptimizer },
+    { DesignRegressionEngine },
+    { AccessibilityEngine },
+    { FlowIntegrityEngine },
+    { ConversionEngine },
+    { FunnelDetectionEngine },
+    { DropoffRepairEngine },
+    { CommissionEngine },
+    { RevenueIntelligenceEngine },
+    { GrowthIntelligenceEngine },
+    { TicketPatternEngine },
+    { IncidentClusteringEngine },
+    { RootCauseEngine },
+    { ResolutionOptimizer },
+    { TraceCorrelationEngine },
+    { BusinessEventsEngine },
+    { ErrorHeatmapEngine },
+    { ReleaseImpactEngine },
+    { ReleaseGateEngine },
+    { ShadowModeEngine },
+    { CanaryControlEngine },
+    { RollbackTriggerEngine },
+    { AIAnalysisEngine },
+    { CodeSuggestionEngine },
+    { RuntimeAnomalyEngine },
+    { PolicyGuardEngine },
+  ] = await Promise.all([
+    import("./architecture/constraint-engine"),
+    import("./architecture/ssot-auditor"),
+    import("./architecture/domain-boundary-enforcer"),
+    import("./architecture/platformbus-enforcer"),
+    import("./code-quality/code-auditor"),
+    import("./code-quality/duplication-detector"),
+    import("./code-quality/refactor-suggester"),
+    import("./code-quality/module-cleanup-engine"),
+    import("./uiux/ux-friction-engine"),
+    import("./uiux/layout-consistency-engine"),
+    import("./uiux/interaction-optimizer"),
+    import("./uiux/design-regression-engine"),
+    import("./uiux/accessibility-engine"),
+    import("./business/flow-integrity-engine"),
+    import("./business/conversion-engine"),
+    import("./business/funnel-detection-engine"),
+    import("./business/dropoff-repair-engine"),
+    import("./business/commission-engine"),
+    import("./business/revenue-intelligence-engine"),
+    import("./business/growth-intelligence-engine"),
+    import("./support/ticket-pattern-engine"),
+    import("./support/incident-clustering-engine"),
+    import("./support/root-cause-engine"),
+    import("./support/resolution-optimizer"),
+    import("./observability/trace-correlation-engine"),
+    import("./observability/business-events-engine"),
+    import("./observability/error-heatmap-engine"),
+    import("./observability/release-impact-engine"),
+    import("./release/release-gate-engine"),
+    import("./release/shadow-mode-engine"),
+    import("./release/canary-control-engine"),
+    import("./release/rollback-trigger-engine"),
+    import("./ai/analysis-engine"),
+    import("./ai/code-suggestion-engine"),
+    import("./ai/runtime-anomaly-engine"),
+    import("./ai/policy-guard-engine"),
+  ]);
+
+  const tier2Engines = [
+    new ConstraintEngine(),
+    new SSOTAuditor(),
+    new DomainBoundaryEnforcer(),
+    new PlatformBusEnforcer(),
+    new CodeAuditor(),
+    new DuplicationDetector(),
+    new RefactorSuggester(),
+    new ModuleCleanupEngine(),
     new UXFrictionEngine(),
     new LayoutConsistencyEngine(),
     new InteractionOptimizer(),
     new DesignRegressionEngine(),
     new AccessibilityEngine(),
-
     new FlowIntegrityEngine(),
     new ConversionEngine(),
     new FunnelDetectionEngine(),
@@ -180,27 +217,33 @@ export function registerAllEngines(): void {
     new CommissionEngine(),
     new RevenueIntelligenceEngine(),
     new GrowthIntelligenceEngine(),
-
     new TicketPatternEngine(),
     new IncidentClusteringEngine(),
     new RootCauseEngine(),
     new ResolutionOptimizer(),
-
     new TraceCorrelationEngine(),
     new BusinessEventsEngine(),
     new ErrorHeatmapEngine(),
     new ReleaseImpactEngine(),
-
     new ReleaseGateEngine(),
     new ShadowModeEngine(),
     new CanaryControlEngine(),
     new RollbackTriggerEngine(),
-
     new AIAnalysisEngine(),
     new CodeSuggestionEngine(),
     new RuntimeAnomalyEngine(),
     new PolicyGuardEngine(),
-  ]);
+  ];
+
+  engineOrchestrator.registerAll(tier2Engines);
+  for (const engine of tier2Engines) {
+    const registered = engineOrchestrator.getEngine(engine.id);
+    if (registered && !registered.isRunning) registered.start();
+  }
+
+  if (import.meta.env.DEV) {
+    console.log(`[engine-registry] Tier 2: ${tier2Engines.length} engines loaded`);
+  }
 }
 
 export function bootEngineSystem(): () => void {
@@ -209,6 +252,13 @@ export function bootEngineSystem(): () => void {
 
   let disposed = false;
   let teardownAI: (() => void) | null = null;
+
+  const tier2Timer = setTimeout(() => {
+    if (disposed) return;
+    loadAndStartTier2().catch(e =>
+      console.warn("[engine-registry] Tier 2 load failed", e)
+    );
+  }, 8000);
 
   (async () => {
     const [{ agentIntelligence }, { automationPipelines }] = await Promise.all([
@@ -226,6 +276,7 @@ export function bootEngineSystem(): () => void {
 
   return () => {
     disposed = true;
+    clearTimeout(tier2Timer);
     teardownAI?.();
     engineOrchestrator.stopAll();
   };

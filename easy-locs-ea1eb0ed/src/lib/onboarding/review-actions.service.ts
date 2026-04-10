@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 async function logAction(params: {
   reviewQueueId: string;
@@ -8,7 +9,7 @@ async function logAction(params: {
   afterJson?: unknown;
   notes?: string | null;
 }) {
-  const db = supabase as any;
+  
   await db("onboarding_review_actions").insert({
     review_queue_id: params.reviewQueueId,
     action_type: params.actionType,
@@ -20,7 +21,7 @@ async function logAction(params: {
 }
 
 export async function assignReviewQueueItem(reviewQueueId: string, assignedTo: string, actorUserId?: string) {
-  const db = supabase as any;
+  
   const { data: before } = await db("onboarding_review_queue").select("*").eq("id", reviewQueueId).single();
   const { data, error } = await db("onboarding_review_queue").update({
     assigned_to: assignedTo, review_status: "in_review", updated_at: new Date().toISOString(),
@@ -31,7 +32,7 @@ export async function assignReviewQueueItem(reviewQueueId: string, assignedTo: s
 }
 
 export async function approveReviewQueueItem(reviewQueueId: string, actorUserId?: string) {
-  const db = supabase as any;
+  
   const { data: before } = await db("onboarding_review_queue").select("*").eq("id", reviewQueueId).single();
   const { data, error } = await db("onboarding_review_queue").update({
     review_status: "approved", final_visibility: "public",
@@ -43,7 +44,7 @@ export async function approveReviewQueueItem(reviewQueueId: string, actorUserId?
 }
 
 export async function rejectReviewQueueItem(reviewQueueId: string, reason: string, actorUserId?: string) {
-  const db = supabase as any;
+  
   const { data: before } = await db("onboarding_review_queue").select("*").eq("id", reviewQueueId).single();
   const { data, error } = await db("onboarding_review_queue").update({
     review_status: "rejected", review_reason: reason, final_visibility: "draft",
@@ -55,7 +56,7 @@ export async function rejectReviewQueueItem(reviewQueueId: string, reason: strin
 }
 
 export async function markNeedsRecrawl(reviewQueueId: string, entityId: string, vertical: string, reason: string, actorUserId?: string) {
-  const db = supabase as any;
+  
   const { data: before } = await db("onboarding_review_queue").select("*").eq("id", reviewQueueId).single();
   const { error: queueError } = await db("onboarding_review_queue").update({
     review_status: "needs_recrawl", review_reason: reason, updated_at: new Date().toISOString(),

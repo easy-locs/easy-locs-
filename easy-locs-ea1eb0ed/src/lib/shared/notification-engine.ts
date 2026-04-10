@@ -6,10 +6,11 @@
  * Uses canonical `app_notifications` table.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { DeepLinkMeta, NotificationPayload, TargetType, AppModule } from "./types";
 import { buildTargetUrl } from "./routes";
 
-const db = supabase as any;
+
 
 /**
  * Create a standardized DeepLinkMeta object.

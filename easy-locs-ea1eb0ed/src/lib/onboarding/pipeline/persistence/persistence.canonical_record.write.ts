@@ -3,6 +3,7 @@
  * ONE thing: write canonical entity records to DB.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { CanonicalOnboardingRecord } from "../../types";
 
 export async function writeCanonicalRecords(
@@ -12,7 +13,7 @@ export async function writeCanonicalRecords(
 ): Promise<string[]> {
   if (records.length === 0) return [];
 
-  const db = supabase as any;
+  
   const rows = records.map((record) => ({
     import_run_id: importRunId,
     entity_id: record.entityId,
