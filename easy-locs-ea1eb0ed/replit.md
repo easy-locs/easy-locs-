@@ -30,6 +30,24 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **OptimizedImage**: Lazy loading, srcset, fade-in, Supabase transforms
 - **AppActionButton**: Action button for payment/checkout flows
 
+## Shop Onboarding System
+Professional 8-step onboarding flow for merchants (`/merchant/onboarding`):
+1. Welcome (vertical + subcategory selection)
+2. Business Details (name, manager, phone, email, WhatsApp, description, tagline)
+3. Legal & Location (legal name, registration/tax numbers, address, city, country, geolocation)
+4. Media (logo URL, cover photo URL, gallery)
+5. Catalog (vertical-specific: menu/rooms/services)
+6. Schedule (food: opening hours per day, hotel: check-in/out + amenities, services: work days/hours)
+7. Payment (wallet or bank/IBAN)
+8. Go Live (completeness score, activation)
+
+Key backend files:
+- `src/lib/onboarding/merchant-onboarding.ts`: ActivationPayload (nested ShopContactInfo, ShopLegalInfo, ShopLocationInfo, ShopMediaInfo, ShopBusinessInfo), validation (phone/email/tax/coordinates), completeness scoring, legacy payload normalization
+- `src/data/onboarding-templates.ts`: VERTICAL_CONFIG (food/hotel/services step configs), menu/room/service templates
+- `src/pages/MerchantOnboardingPage.tsx`: Multi-step wizard with field validation and error display
+
+Storefront data flows into `storefront_pages` table with full profile: identity, contact, legal (in metadata_json), location with coordinates, media URLs, opening hours, provenance tracking, and completeness score.
+
 ## Key Files
 - **5 Pillars**: `SmartHome.tsx` (Dashboard), `HyperRadarPage.tsx` (Radar), `CommunicationCenter.tsx` (Orbit), `WalletHubPage.tsx` (Wallet), `MeCommandCenter.tsx` (Me)
 - **Stores**: `useOrbitProfileStore` (canonical; `useOrbitStore` deprecated alias)
