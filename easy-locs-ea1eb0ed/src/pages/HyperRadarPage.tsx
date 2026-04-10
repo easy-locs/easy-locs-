@@ -1,37 +1,48 @@
-/**
- * HyperRadarPage — Premium fullscreen radar with 4-layer architecture.
- * L1: Map  L2: UI Controls  L3: Interactions  L4: Results
- * V2: Enhanced discovery stats, smarter guidance, richer UX, fullscreen polish.
- */
 import { useState, useMemo, useCallback, useEffect, useDeferredValue } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
+import type { RadarStats } from "@/lib/engines/hyper-radar-engine";
+import type { VibeDensityResult } from "@/lib/engines/vibe-density-engine";
+import type { WeatherStationState } from "@/hooks/useLiveWeatherStation";
+
+type RadarGeoEntity = GeoEntity & { isSponsored?: boolean; reviewsCount?: number };
 import PersonalRadarPanel from "@/components/radar/PersonalRadarPanel";
 import ZoneIntelligenceSheet from "@/components/radar/ZoneIntelligenceSheet";
 import { useLocationStore } from "@/stores/locationStore";
+import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import {
   detectTimeSlot, generateGuidance, matchesLayer, computeRadarStats,
   type RadarLayer,
 } from "@/lib/engines/hyper-radar-engine";
 import { computeVibeDensity } from "@/lib/engines/vibe-density-engine";
-import { getZoneRhythm } from "@/lib/engines/behavior-pattern-engine";
 import UnifiedMap from "@/components/map/UnifiedMap";
 import RadarStoryRail from "@/components/radar/RadarStoryRail";
 import RadarEntitySheet from "@/components/radar/RadarEntitySheet";
+import RadarSmartSearch from "@/components/radar/RadarSmartSearch";
+import RadarResultCard from "@/components/radar/RadarResultCard";
+import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
+import { entityUrl } from "@/lib/entity/entity-url";
+import { useAuth } from "@/contexts/AuthContext";
+import { openOrbitFromRadar } from "@/lib/radar/radar-orbit-bridge";
+import { haptic } from "@/lib/haptics";
 import {
-  Radio, X, ChevronUp, ChevronDown,
+  Radio, X,
   Utensils, Hotel, Car, Sparkles, Moon, ShoppingBag, Building2,
-  Activity, Navigation, Search, Minus, Plus, CloudRain, CloudSun,
-  MapPin, TrendingUp, Star, Eye, Heart, Store,
-  Droplets, Wind,
+  Navigation, Minus, Plus, CloudRain,
+  MapPin, TrendingUp, Star, Heart, Store,
+  Droplets, Wind, Map as MapIcon, List, Columns2, Zap,
+  Home, MessageCircle, Wallet, User,
 } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, tSafe } from "@/lib/i18n";
 import { Z } from "@/lib/ui/z-index";
 import SEOHead from "@/components/SEOHead";
+
+type ViewMode = "map" | "list" | "hybrid";
+type SortMode = "smart" | "nearest" | "best_rated" | "trending";
 
 const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; color: string; emoji: string }[] = [
   { id: "food", labelKey: "radar.layer_food", icon: <Utensils className="w-3 h-3" />, color: "hsl(15 80% 55%)", emoji: "🍽️" },
@@ -45,6 +56,13 @@ const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; col
   { id: "property", labelKey: "radar.layer_property", icon: <Building2 className="w-3 h-3" />, color: "hsl(220 40% 38%)", emoji: "🏠" },
 ];
 
+const SORT_OPTIONS: { value: SortMode; icon: React.ReactNode; labelKey: string }[] = [
+  { value: "smart", icon: <Zap className="w-3 h-3" />, labelKey: "radar.sort_smart" },
+  { value: "nearest", icon: <Navigation className="w-3 h-3" />, labelKey: "radar.sort_nearest" },
+  { value: "best_rated", icon: <Star className="w-3 h-3" />, labelKey: "radar.sort_best" },
+  { value: "trending", icon: <TrendingUp className="w-3 h-3" />, labelKey: "radar.sort_trending" },
+];
+
 const RADIUS_PRESETS = [0.5, 1, 2, 5, 10, 25];
 const MAX_VISIBLE_PINS = 80;
 
@@ -54,24 +72,50 @@ const CATEGORY_TO_LAYER: Record<string, RadarLayer> = {
   healthcare: "healthcare", shops: "shops", property: "property",
 };
 
+const PILLAR_LINKS = [
+  { path: "/", icon: <Home className="w-4 h-4" />, labelKey: "radar.pillar_home", label: "Home" },
+  { path: "/orbit", icon: <MessageCircle className="w-4 h-4" />, labelKey: "radar.pillar_orbit", label: "Orbit" },
+  { path: "/wallet", icon: <Wallet className="w-4 h-4" />, labelKey: "radar.pillar_wallet", label: "Wallet" },
+  { path: "/me", icon: <User className="w-4 h-4" />, labelKey: "radar.pillar_me", label: "Me" },
+];
+
+function toRankable(e: RadarGeoEntity): RankableEntity {
+  return {
+    id: e.id,
+    entityType: "business",
+    vertical: e.type,
+    subcategory: e.category,
+    rating: e.rating,
+    reviewCount: e.reviewsCount,
+    lat: e.lat,
+    lng: e.lng,
+    isSponsored: e.isSponsored,
+    title: e.title || e.name,
+    profileScore: (e.imageUrl || e.image_url ? 0.3 : 0) + (e.rating ? 0.3 : 0) + (e.subtitle ? 0.2 : 0) + (e.category ? 0.2 : 0),
+  };
+}
+
 export default function HyperRadarPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const location = useLocationStore((s) => s.currentLocation);
+  const selectedPlace = useRadarPlaceStore((s) => s.selectedPlace);
   const { entities, loading } = useRadarResults({ surface: "radar" });
   const urlCategory = searchParams.get("category");
   const urlSubcategory = searchParams.get("subcategory");
+
+  const [viewMode, setViewMode] = useState<ViewMode>("map");
+  const [sortBy, setSortBy] = useState<SortMode>("smart");
   const [activeLayers, setActiveLayers] = useState<RadarLayer[]>(() => {
-    if (urlCategory && CATEGORY_TO_LAYER[urlCategory]) {
-      return [CATEGORY_TO_LAYER[urlCategory]];
-    }
+    if (urlCategory && CATEGORY_TO_LAYER[urlCategory]) return [CATEGORY_TO_LAYER[urlCategory]];
     return ["food", "stay", "services", "utility"];
   });
   const [radius, setRadius] = useState(5);
   const [panelSnap, setPanelSnap] = useState<"closed" | "peek" | "half">("peek");
   const [zoneClick, setZoneClick] = useState<{ lat: number; lng: number } | null>(null);
-  const [selectedEntity, setSelectedEntity] = useState<(GeoEntity & { isSponsored?: boolean; reviewsCount?: number }) | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<RadarGeoEntity | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearch = useDeferredValue(searchQuery);
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
@@ -85,7 +129,12 @@ export default function HyperRadarPage() {
     }
   }, [urlCategory]);
 
-  const visibleEntities = useMemo(() => {
+  const mapCenter = useMemo(() => {
+    if (selectedPlace?.lat && selectedPlace?.lng) return { lat: selectedPlace.lat, lng: selectedPlace.lng };
+    return location ? { lat: location.lat, lng: location.lng } : undefined;
+  }, [selectedPlace, location]);
+
+  const filteredEntities = useMemo(() => {
     let filtered = entities;
     if (activeLayers.length < LAYER_DEFS.length) {
       filtered = filtered.filter(e => {
@@ -104,11 +153,35 @@ export default function HyperRadarPage() {
       const q = deferredSearch.toLowerCase();
       filtered = filtered.filter(e => e.name?.toLowerCase().includes(q) || (e.category || "").toLowerCase().includes(q));
     }
-    if (filtered.length > MAX_VISIBLE_PINS) {
-      filtered = [...filtered].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, MAX_VISIBLE_PINS);
-    }
     return filtered;
   }, [entities, activeLayers, deferredSearch, urlSubcategory]);
+
+  const visibleEntities = useMemo(() => {
+    let sorted = [...filteredEntities];
+    const userLat = mapCenter?.lat ?? location?.lat ?? 25.2;
+    const userLng = mapCenter?.lng ?? location?.lng ?? 55.27;
+
+    if (sortBy === "smart") {
+      const rankables = sorted.map(toRankable);
+      const ctx: RankContext = { userLat, userLng };
+      const ranked = rankEntities(rankables, ctx, DISCOVERY_WEIGHTS);
+      const idOrder = new Map(ranked.map((r, i) => [r.id, i]));
+      sorted.sort((a, b) => (idOrder.get(a.id) ?? 999) - (idOrder.get(b.id) ?? 999));
+    } else if (sortBy === "nearest") {
+      sorted.sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
+    } else if (sortBy === "best_rated") {
+      sorted.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    } else if (sortBy === "trending") {
+      sorted.sort((a, b) => {
+        const aS = (a.isSponsored ? 50 : 0) + (a.reviewsCount ?? 0) * 0.5 + (a.rating ?? 0) * 5;
+        const bS = (b.isSponsored ? 50 : 0) + (b.reviewsCount ?? 0) * 0.5 + (b.rating ?? 0) * 5;
+        return bS - aS;
+      });
+    }
+
+    if (sorted.length > MAX_VISIBLE_PINS) sorted = sorted.slice(0, MAX_VISIBLE_PINS);
+    return sorted;
+  }, [filteredEntities, sortBy, location, mapCenter]);
 
   const handleZoneClick = useCallback((lat: number, lng: number) => {
     setZoneClick({ lat, lng });
@@ -116,22 +189,42 @@ export default function HyperRadarPage() {
     setPanelSnap("closed");
   }, []);
 
-  const handleSelectEntity = useCallback((entity: GeoEntity & { isSponsored?: boolean; reviewsCount?: number }) => {
-    setSelectedEntity(entity);
+  const handleSelectEntity = useCallback((entity: GeoEntity) => {
+    setSelectedEntity(entity as RadarGeoEntity);
     setZoneClick(null);
     setPanelSnap("closed");
   }, []);
 
-  const hour = new Date().getHours();
-  const rhythm = useMemo(() => getZoneRhythm(hour), [hour]);
-  const timeSlot = useMemo(() => detectTimeSlot(), []);
+  const handleViewEntity = useCallback((entity: RadarGeoEntity) => {
+    haptic("light");
+    const url = entity.slug ? `/s/${entity.slug}` : entityUrl({ id: entity.id });
+    navigate(url);
+  }, [navigate]);
 
+  const handleNavigateEntity = useCallback((entity: RadarGeoEntity) => {
+    haptic("medium");
+    const q = entity.address || `${entity.lat},${entity.lng}`;
+    window.open(`https://maps.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank", "noopener,noreferrer");
+  }, []);
+
+  const handleMessageEntity = useCallback(async (entity: RadarGeoEntity) => {
+    if (!user?.id) { navigate("/auth"); return; }
+    haptic("light");
+    openOrbitFromRadar(entity, user.id, navigate);
+  }, [user?.id, navigate]);
+
+  const handleCategorySelect = useCallback((layer: RadarLayer) => {
+    haptic("light");
+    setActiveLayers([layer]);
+    setPanelSnap("half");
+  }, []);
+
+  const hour = new Date().getHours();
+  const timeSlot = useMemo(() => detectTimeSlot(), []);
   const vibe = useMemo(() => {
     if (!visibleEntities.length) return null;
     return computeVibeDensity("current", visibleEntities.map(e => ({
-      category: e.category || "service",
-      rating: e.rating,
-      reviewsCount: e.reviewsCount,
+      category: e.category || "service", rating: e.rating, reviewsCount: e.reviewsCount,
     })), hour);
   }, [visibleEntities, hour]);
 
@@ -158,297 +251,254 @@ export default function HyperRadarPage() {
     setPanelSnap(prev => prev === "closed" ? "peek" : prev === "peek" ? "half" : "closed");
   }, []);
 
-  const distLabel = (r: number) => r >= 1 ? `${r}${t("radar.km")}` : `${r * 1000}${t("radar.m")}`;
+  const distLabel = (r: number) => r >= 1 ? `${r}${tSafe(t, "radar.km", "km")}` : `${r * 1000}${tSafe(t, "radar.m", "m")}`;
+
+  const mapComponent = (
+    <UnifiedMap
+      entities={visibleEntities}
+      showUserLocation
+      userLat={mapCenter?.lat ?? location?.lat}
+      userLng={mapCenter?.lng ?? location?.lng}
+      showHeatmap={visibleEntities.length > 30}
+      heatmapPoints={visibleEntities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
+      radiusKm={radius}
+      showWeatherLayer={radarOverlay !== "off"}
+      selectedId={selectedEntity?.id}
+      onSelectEntity={handleSelectEntity}
+      onZoneClick={handleZoneClick}
+      hideWeatherBadge
+    />
+  );
+
+  const resultListContent = (
+    <div className="space-y-1.5">
+      {visibleEntities.length === 0 && !loading && (
+        <div className="flex flex-col items-center gap-2 py-12 text-center">
+          <MapPin className="w-6 h-6 text-muted-foreground/40" />
+          <p className="text-xs font-bold text-foreground">{tSafe(t, "radar.no_results", "No results nearby")}</p>
+          <p className="text-[10px] text-muted-foreground">{tSafe(t, "radar.no_results_hint", "Try expanding your radius or changing filters")}</p>
+        </div>
+      )}
+      {visibleEntities.map((entity, idx) => (
+        <RadarResultCard
+          key={entity.id}
+          entity={entity}
+          rank={sortBy === "smart" ? idx + 1 : undefined}
+          selected={selectedEntity?.id === entity.id}
+          onSelect={() => handleSelectEntity(entity)}
+          onNavigate={() => handleNavigateEntity(entity)}
+          onMessage={() => handleMessageEntity(entity)}
+        />
+      ))}
+    </div>
+  );
 
   return (
     <div className="h-[100dvh] w-full relative overflow-hidden bg-background">
       <SEOHead
-        title={t("radar.seo_title")}
-        description={t("radar.seo_desc")}
+        title={tSafe(t, "radar.seo_title", "Radar — Discover nearby")}
+        description={tSafe(t, "radar.seo_desc", "Real-time discovery engine")}
         canonical="https://www.easy-locs.com/radar"
-        keywords={t("radar.seo_keywords")}
+        keywords={tSafe(t, "radar.seo_keywords", "radar, discover, nearby")}
       />
 
+      {viewMode === "map" && (
+        <>
+          {!loading && visibleEntities.length === 0 && (
+            <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
+              <div className="flex flex-col items-center gap-2 px-6 py-4 rounded-2xl bg-card/90 backdrop-blur-md border border-border/15 max-w-[240px] text-center">
+                <MapPin className="w-6 h-6 text-muted-foreground/50" />
+                <span className="text-xs font-bold text-foreground">{tSafe(t, "radar.no_results", "No results nearby")}</span>
+                <span className="text-[10px] text-muted-foreground">{tSafe(t, "radar.no_results_hint", "Try expanding your radius")}</span>
+              </div>
+            </div>
+          )}
 
-      {!loading && visibleEntities.length === 0 && (
-        <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-          <div className="flex flex-col items-center gap-2 px-6 py-4 rounded-2xl bg-card/90 backdrop-blur-md border border-border/15 max-w-[240px] text-center">
-            <MapPin className="w-6 h-6 text-muted-foreground/50" />
-            <span className="text-xs font-bold text-foreground">{t("radar.no_results")}</span>
-            <span className="text-[10px] text-muted-foreground">{t("radar.no_results_hint")}</span>
+          <div className="absolute inset-0 z-0">{mapComponent}</div>
+        </>
+      )}
+
+      {viewMode === "hybrid" && (
+        <div className="flex flex-col h-full">
+          <div className="h-[45%] relative shrink-0">{mapComponent}</div>
+          <div className="flex-1 overflow-y-auto bg-background">
+            <div className="px-4 pt-3 pb-2">
+              <SortBar sortBy={sortBy} setSortBy={setSortBy} t={t} />
+            </div>
+            <div className="px-4 pb-24">{resultListContent}</div>
           </div>
         </div>
       )}
 
-      {/* ═══ LAYER 1: MAP (base) ═══ */}
-      <div className="absolute inset-0 z-0">
-        <UnifiedMap
-          entities={visibleEntities}
-          showUserLocation
-          userLat={location?.lat}
-          userLng={location?.lng}
-          showHeatmap={visibleEntities.length > 30}
-          heatmapPoints={visibleEntities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
-          radiusKm={radius}
-          showWeatherLayer={radarOverlay !== "off"}
-          selectedId={selectedEntity?.id}
-          onSelectEntity={handleSelectEntity}
-          onZoneClick={handleZoneClick}
-          hideWeatherBadge
-        />
-      </div>
-
-      {/* ═══ LAYER 2: UI FLOATING CONTROLS ═══ */}
-
-      {/* Top Bar */}
-      <div
-        className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 pt-[env(safe-area-inset-top,8px)] pb-2"
-        style={{ zIndex: Z.overlay, background: "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background)/0.85) 60%, transparent 100%)" }}
-      >
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-card/90 border border-border/15 flex items-center justify-center active:scale-95 transition-transform backdrop-blur-md">
-          <X className="w-4 h-4 text-foreground" />
-        </button>
-
-        <div className="min-w-0 flex flex-col items-center gap-1">
-          <div className="flex items-center gap-1.5">
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
-              <Radio className="w-3 h-3" style={{ color: "hsl(38 65% 56%)" }} />
+      {viewMode === "list" && (
+        <div className="flex flex-col h-full">
+          <div className="shrink-0 px-4 pt-[env(safe-area-inset-top,8px)] pb-2" style={{ background: "hsl(var(--background))" }}>
+            <TopBar t={t} navigate={navigate} viewMode={viewMode} setViewMode={setViewMode} />
+            <div className="mt-2">
+              <RadarSmartSearch onCategorySelect={handleCategorySelect} onSearchFilter={setSearchQuery} />
             </div>
-            <span className="text-xs font-bold text-foreground">{t("radar.title")}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--success)/0.1)", border: "1px solid hsl(var(--success)/0.2)" }}>
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "hsl(var(--success))" }} />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "hsl(var(--success))" }} />
-          </span>
-          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>{t("radar.live")}</span>
-        </div>
-      </div>
-
-      {/* Search Bar */}
-      <motion.div
-        className="absolute left-3 right-3 top-[74px]"
-        style={{ zIndex: Z.overlay }}
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-      >
-        <div className="search-premium-wrap">
-          <Search className="search-premium-icon w-3.5 h-3.5 text-muted-foreground" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder={t("radar.search_places")}
-            className="search-premium-field h-11 border border-border/15 bg-card/95 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-accent/30 transition-colors"
-            style={{ backdropFilter: "blur(12px)" }}
-          />
-        </div>
-      </motion.div>
-
-      {/* Radius Control — right side */}
-      <motion.div
-        className="absolute right-3 top-[130px] flex flex-col items-center gap-1.5 rounded-2xl border border-border/15 bg-card/90 px-2 py-2.5 backdrop-blur-md"
-        style={{ zIndex: Z.overlay }}
-        initial={{ opacity: 0, x: 15 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.25 }}
-      >
-        <button onClick={() => cycleRadius(1)} className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-          <Plus className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
-        </button>
-        <div className="text-center py-0.5">
-          <p className="text-[11px] font-bold text-foreground">{radius >= 1 ? `${radius}` : `${radius * 1000}`}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{radius >= 1 ? t("radar.km") : t("radar.m")}</p>
-        </div>
-        <button onClick={() => cycleRadius(-1)} className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform bg-muted/15">
-          <Minus className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
-      </motion.div>
-
-      {/* Weather Widget — left side */}
-      <motion.div
-        className="absolute left-3 top-[130px] flex flex-col gap-1.5"
-        style={{ zIndex: Z.overlay }}
-        initial={{ opacity: 0, x: -15 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.25 }}
-      >
-        <div
-          className="rounded-2xl border border-border/15 px-3 py-2.5 backdrop-blur-md"
-          style={{
-            background: weather.isRaining
-              ? "linear-gradient(135deg, hsl(220 40% 18% / 0.92), hsl(210 50% 25% / 0.88))"
-              : "hsl(var(--card) / 0.9)",
-          }}
-        >
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-lg leading-none">{weather.icon}</span>
-            <div className="min-w-0">
-              {weather.temperatureC != null && (
-                <p className="text-base font-bold text-foreground leading-tight">{Math.round(weather.temperatureC)}°C</p>
-              )}
+            <div className="mt-2">
+              <LayerChips activeLayers={activeLayers} toggleLayer={toggleLayer} radarOverlay={radarOverlay} setRadarOverlay={setRadarOverlay} t={t} />
+            </div>
+            <div className="mt-2">
+              <SortBar sortBy={sortBy} setSortBy={setSortBy} t={t} />
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-[10px] text-muted-foreground">
+                {loading ? tSafe(t, "radar.loading", "Scanning...") : `${visibleEntities.length} ${tSafe(t, "radar.places_found", "places found")}`}
+              </span>
+              <PillarNav navigate={navigate} />
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            {weather.humidity != null && (
-              <div className="flex items-center gap-0.5">
-                <Droplets className="w-2.5 h-2.5" style={{ color: "hsl(200 70% 60%)" }} />
-                <span className="text-[10px] text-muted-foreground">{weather.humidity}%</span>
-              </div>
-            )}
-            {weather.windKmh != null && (
-              <div className="flex items-center gap-0.5">
-                <Wind className="w-2.5 h-2.5" style={{ color: "hsl(38 65% 56%)" }} />
-                <span className="text-[10px] text-muted-foreground">{Math.round(weather.windKmh)} km/h</span>
-              </div>
-            )}
-          </div>
-          {weather.isRaining && weather.precipitationMm > 0 && (
-            <div className="flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-md" style={{ background: "hsl(200 70% 50% / 0.12)" }}>
-              <CloudRain className="w-2.5 h-2.5" style={{ color: "hsl(200 70% 60%)" }} />
-              <span className="text-[10px] font-medium" style={{ color: "hsl(200 70% 65%)" }}>{weather.precipitationMm.toFixed(1)} mm</span>
-            </div>
-          )}
+          <div className="flex-1 overflow-y-auto px-4 pb-24">{resultListContent}</div>
         </div>
+      )}
 
-        {vibe && (
-          <div className="rounded-2xl border border-border/15 bg-card/90 px-2.5 py-2 backdrop-blur-md">
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm">{vibe.vibeEmoji}</span>
-              <div>
-                <p className="text-[10px] font-bold text-foreground">{vibe.vibeLabel}</p>
-                <p className="text-[10px] text-muted-foreground">{vibe.crowdDensity}% {t("radar.active")}</p>
-              </div>
-            </div>
-          </div>
-        )}
-        <div className="rounded-2xl border border-border/15 bg-card/90 px-2.5 py-1.5 backdrop-blur-md">
-          <div className="flex items-center gap-1">
-            <MapPin className="w-2.5 h-2.5" style={{ color: "hsl(38 65% 56%)" }} />
-            <span className="text-[10px] font-bold text-foreground">{stats.visibleEntities}</span>
-          </div>
-          {stats.hotspotCount > 0 && (
-            <div className="flex items-center gap-1 mt-0.5">
-              <Star className="w-2.5 h-2.5 text-yellow-500" />
-              <span className="text-[10px] text-muted-foreground">{stats.hotspotCount} {t("radar.hotspots")}</span>
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* ═══ LAYER 3: QUICK FILTERS ═══ */}
-      <motion.div
-        className="absolute left-0 right-0 px-3"
-        style={{ zIndex: Z.overlay, bottom: panelSnap === "half" ? "50%" : panelSnap === "peek" ? "160px" : "16px" }}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35 }}
-      >
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-1">
-          <button
-            onClick={() => setRadarOverlay(radarOverlay === "off" ? "full" : "off")}
-            className="flex items-center gap-1 rounded-full border border-border/15 bg-card/85 px-2.5 py-1.5 text-[10px] font-semibold whitespace-nowrap shrink-0 text-foreground backdrop-blur-md active:scale-95 transition-transform"
+      {(viewMode === "map" || viewMode === "hybrid") && (
+        <>
+          <div
+            className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 pt-[env(safe-area-inset-top,8px)] pb-2"
+            style={{ zIndex: Z.overlay, background: viewMode === "map" ? "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background)/0.85) 60%, transparent 100%)" : "hsl(var(--background))" }}
           >
-            <CloudRain className="h-3 w-3 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
-            {radarOverlay !== "off" ? t("radar.radar_on") : t("radar.radar_off")}
-          </button>
-          {LAYER_DEFS.map(layer => {
-            const active = activeLayers.includes(layer.id);
-            return (
-              <motion.button
-                key={layer.id}
-                onClick={() => toggleLayer(layer.id)}
-                whileTap={{ scale: 0.92 }}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all shrink-0"
-                style={{
-                  background: active ? `${layer.color}18` : "hsl(var(--card)/0.85)",
-                  borderColor: active ? `${layer.color}35` : "hsl(var(--border)/0.15)",
-                  color: active ? layer.color : "hsl(var(--muted-foreground))",
-                  backdropFilter: "blur(8px)",
-                }}
-              >
-                {layer.icon}
-                {t(layer.labelKey)}
-              </motion.button>
-            );
-          })}
-        </div>
-      </motion.div>
-
-      {/* ═══ LAYER 4: RESULT PANEL — Bottom Sheet ═══ */}
-      <AnimatePresence>
-        {!zoneClick && (
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 rounded-t-2xl border-t border-border/15"
-            style={{ zIndex: Z.controls, background: "hsl(var(--card)/0.97)", backdropFilter: "blur(16px)" }}
-            initial={{ y: 200 }}
-            animate={{
-              y: 0,
-              height: panelSnap === "closed" ? 36 : panelSnap === "peek" ? 180 : "55dvh",
-            }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-          >
-            <button onClick={cyclePanelSnap} className="w-full flex flex-col items-center justify-center py-2 active:bg-muted/10">
-              <div className="w-9 h-1 rounded-full bg-muted-foreground/25" />
+            <button onClick={() => navigate(-1)} aria-label="Close" className="w-9 h-9 rounded-xl bg-card/90 border border-border/15 flex items-center justify-center active:scale-95 transition-transform backdrop-blur-md">
+              <X className="w-4 h-4 text-foreground" />
             </button>
 
-            {panelSnap !== "closed" && (
-              <div className="px-3 pb-4 overflow-y-auto" style={{ maxHeight: panelSnap === "peek" ? 180 : "calc(55dvh - 36px)" }}>
-                <RadarStoryRail />
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground">
-                      {t("radar.places_radius").replace("{count}", String(visibleEntities.length)).replace("{radius}", distLabel(radius))}
-                    </span>
-                    {stats.avgRating > 0 && (
-                      <span className="flex items-center gap-0.5 text-[10px] text-yellow-500">
-                        <Star className="w-2.5 h-2.5" /> {stats.avgRating}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-medium text-muted-foreground">{rhythm.emoji}</span>
-                    <span className="text-[10px] font-bold capitalize" style={{ color: "hsl(38 65% 56%)" }}>
-                      {vibe?.vibeLabel || rhythm.suggestedActions[0] || t("radar.scanning")}
-                    </span>
-                  </div>
+            <div className="min-w-0 flex flex-col items-center gap-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
+                  <Radio className="w-3 h-3" style={{ color: "hsl(38 65% 56%)" }} />
                 </div>
-
-                {/* Smart Guidance */}
-                {guidance.length > 0 && (
-                  <div className="mb-3">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t("radar.for_you_now")}</p>
-                    <div className="flex gap-2 overflow-x-auto scrollbar-none">
-                      {guidance.map(g => (
-                        <motion.div
-                          key={g.id}
-                          whileTap={{ scale: 0.96 }}
-                          className="min-w-[140px] px-3 py-2.5 rounded-xl border border-border/10 shrink-0 bg-background/50 cursor-pointer transition-colors"
-                          style={{ borderLeft: `3px solid ${g.accentColor || "hsl(38 65% 56%)"}` }}
-                        >
-                          <p className="text-[11px] font-bold text-foreground truncate">{g.title}</p>
-                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{g.subtitle}</p>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-
-                {/* Personal Radar — only in half mode */}
-                {panelSnap === "half" && (
-                  <PersonalRadarPanel entities={visibleEntities} open />
-                )}
+                <span className="text-xs font-bold text-foreground">{tSafe(t, "radar.title", "Radar")}</span>
               </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
 
-      {/* ═══ ENTITY DETAIL SHEET ═══ */}
+            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+          </div>
+
+          {viewMode === "map" && (
+            <motion.div
+              className="absolute left-3 right-3 top-[74px]"
+              style={{ zIndex: Z.overlay }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <RadarSmartSearch onCategorySelect={handleCategorySelect} onSearchFilter={setSearchQuery} />
+            </motion.div>
+          )}
+
+          {viewMode === "map" && (
+            <>
+              <motion.div
+                className="absolute right-3 top-[130px] flex flex-col items-center gap-1.5 rounded-2xl border border-border/15 bg-card/90 px-2 py-2.5 backdrop-blur-md"
+                style={{ zIndex: Z.overlay }}
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.25 }}
+              >
+                <button onClick={() => cycleRadius(1)} aria-label="Increase radius" className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
+                  <Plus className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+                </button>
+                <div className="text-center py-0.5">
+                  <p className="text-[11px] font-bold text-foreground">{radius >= 1 ? `${radius}` : `${radius * 1000}`}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{radius >= 1 ? tSafe(t, "radar.km", "km") : tSafe(t, "radar.m", "m")}</p>
+                </div>
+                <button onClick={() => cycleRadius(-1)} aria-label="Decrease radius" className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform bg-muted/15">
+                  <Minus className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+              </motion.div>
+
+              <WeatherWidget weather={weather} vibe={vibe} stats={stats} t={t} />
+
+              <motion.div
+                className="absolute left-0 right-0 px-3"
+                style={{ zIndex: Z.overlay, bottom: panelSnap === "half" ? "50%" : panelSnap === "peek" ? "200px" : "16px" }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+              >
+                <LayerChips activeLayers={activeLayers} toggleLayer={toggleLayer} radarOverlay={radarOverlay} setRadarOverlay={setRadarOverlay} t={t} />
+              </motion.div>
+            </>
+          )}
+        </>
+      )}
+
+      {viewMode === "map" && (
+        <AnimatePresence>
+          {!zoneClick && (
+            <motion.div
+              className="absolute bottom-0 left-0 right-0 rounded-t-2xl border-t border-border/15"
+              style={{ zIndex: Z.controls, background: "hsl(var(--card)/0.97)", backdropFilter: "blur(16px)" }}
+              initial={{ y: 200 }}
+              animate={{
+                y: 0,
+                height: panelSnap === "closed" ? 36 : panelSnap === "peek" ? 220 : "60dvh",
+              }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            >
+              <button onClick={cyclePanelSnap} className="w-full flex flex-col items-center justify-center py-2 active:bg-muted/10">
+                <div className="w-9 h-1 rounded-full bg-muted-foreground/25" />
+              </button>
+
+              {panelSnap !== "closed" && (
+                <div className="px-4 pb-4 overflow-y-auto" style={{ maxHeight: panelSnap === "peek" ? 220 : "calc(60dvh - 36px)" }}>
+                  <RadarStoryRail />
+
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground">
+                        {tSafe(t, "radar.places_radius", "{count} places within {radius}").replace("{count}", String(visibleEntities.length)).replace("{radius}", distLabel(radius))}
+                      </span>
+                      {stats.avgRating > 0 && (
+                        <span className="flex items-center gap-0.5 text-[10px] text-yellow-500">
+                          <Star className="w-2.5 h-2.5" /> {stats.avgRating}
+                        </span>
+                      )}
+                    </div>
+                    <PillarNav navigate={navigate} />
+                  </div>
+
+                  <SortBar sortBy={sortBy} setSortBy={setSortBy} t={t} />
+
+                  {guidance.length > 0 && (
+                    <div className="mb-3 mt-2">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{tSafe(t, "radar.for_you_now", "For You Now")}</p>
+                      <div className="flex gap-2 overflow-x-auto scrollbar-none">
+                        {guidance.map(g => (
+                          <motion.div
+                            key={g.id}
+                            whileTap={{ scale: 0.96 }}
+                            className="min-w-[140px] px-3 py-2.5 rounded-xl border border-border/10 shrink-0 bg-background/50 cursor-pointer transition-colors"
+                            style={{ borderLeft: `3px solid ${g.accentColor || "hsl(38 65% 56%)"}` }}
+                            onClick={() => {
+                              const entity = visibleEntities.find(e => e.id === g.targetEntityId);
+                              if (entity) handleSelectEntity(entity);
+                            }}
+                          >
+                            <p className="text-[11px] font-bold text-foreground truncate">{g.title}</p>
+                            <p className="text-[10px] text-muted-foreground truncate mt-0.5">{g.subtitle}</p>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-2">{resultListContent}</div>
+
+                  {panelSnap === "half" && (
+                    <div className="mt-3">
+                      <PersonalRadarPanel entities={visibleEntities} open />
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+
       <AnimatePresence>
         {selectedEntity && (
           <RadarEntitySheet
@@ -458,7 +508,6 @@ export default function HyperRadarPage() {
         )}
       </AnimatePresence>
 
-      {/* ═══ ZONE INTELLIGENCE SHEET ═══ */}
       <AnimatePresence>
         {zoneClick && (
           <ZoneIntelligenceSheet
@@ -471,5 +520,213 @@ export default function HyperRadarPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function ViewModeToggle({ viewMode, setViewMode }: { viewMode: ViewMode; setViewMode: (v: ViewMode) => void }) {
+  const modes: { value: ViewMode; icon: React.ReactNode; label: string }[] = [
+    { value: "map", icon: <MapIcon className="w-3.5 h-3.5" />, label: "Map view" },
+    { value: "hybrid", icon: <Columns2 className="w-3.5 h-3.5" />, label: "Hybrid view" },
+    { value: "list", icon: <List className="w-3.5 h-3.5" />, label: "List view" },
+  ];
+
+  return (
+    <div className="flex rounded-xl p-0.5 bg-card/90 border border-border/15 backdrop-blur-md" role="group" aria-label="View mode">
+      {modes.map(m => (
+        <button
+          key={m.value}
+          onClick={() => { haptic("light"); setViewMode(m.value); }}
+          aria-label={m.label}
+          aria-pressed={viewMode === m.value}
+          className="p-1.5 rounded-lg transition-all"
+          style={{
+            background: viewMode === m.value ? "hsl(38 65% 56% / 0.15)" : "transparent",
+            color: viewMode === m.value ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))",
+          }}
+        >
+          {m.icon}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+type TFn = (key: string) => string;
+
+function TopBar({ t, navigate, viewMode, setViewMode }: { t: TFn; navigate: (to: string | number) => void; viewMode: ViewMode; setViewMode: (v: ViewMode) => void }) {
+  return (
+    <div className="flex items-center justify-between">
+      <button onClick={() => navigate(-1)} aria-label="Close" className="w-9 h-9 rounded-xl bg-card border border-border/15 flex items-center justify-center active:scale-95 transition-transform">
+        <X className="w-4 h-4 text-foreground" />
+      </button>
+      <div className="flex items-center gap-1.5">
+        <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
+          <Radio className="w-3 h-3" style={{ color: "hsl(38 65% 56%)" }} />
+        </div>
+        <span className="text-xs font-bold text-foreground">{tSafe(t, "radar.title", "Radar")}</span>
+        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full ml-1" style={{ background: "hsl(var(--success)/0.1)", border: "1px solid hsl(var(--success)/0.2)" }}>
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "hsl(var(--success))" }} />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "hsl(var(--success))" }} />
+          </span>
+          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>{tSafe(t, "radar.live", "Live")}</span>
+        </div>
+      </div>
+      <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+    </div>
+  );
+}
+
+function SortBar({ sortBy, setSortBy, t }: { sortBy: SortMode; setSortBy: (s: SortMode) => void; t: TFn }) {
+  return (
+    <div className="flex gap-1 overflow-x-auto scrollbar-none">
+      {SORT_OPTIONS.map(s => (
+        <button
+          key={s.value}
+          onClick={() => { haptic("light"); setSortBy(s.value); }}
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap shrink-0 border transition-all active:scale-95"
+          style={{
+            background: sortBy === s.value ? "hsl(38 65% 56% / 0.12)" : "hsl(var(--card) / 0.6)",
+            borderColor: sortBy === s.value ? "hsl(38 65% 56% / 0.3)" : "hsl(var(--border) / 0.15)",
+            color: sortBy === s.value ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))",
+          }}
+        >
+          {s.icon}
+          {tSafe(t, s.labelKey, s.value.replace("_", " "))}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function LayerChips({ activeLayers, toggleLayer, radarOverlay, setRadarOverlay, t }: {
+  activeLayers: RadarLayer[];
+  toggleLayer: (id: RadarLayer) => void;
+  radarOverlay: string;
+  setRadarOverlay: (v: string) => void;
+  t: TFn;
+}) {
+  return (
+    <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-1">
+      <button
+        onClick={() => setRadarOverlay(radarOverlay === "off" ? "full" : "off")}
+        className="flex items-center gap-1 rounded-full border border-border/15 bg-card/85 px-2.5 py-1.5 text-[10px] font-semibold whitespace-nowrap shrink-0 text-foreground backdrop-blur-md active:scale-95 transition-transform"
+      >
+        <CloudRain className="h-3 w-3 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+        {radarOverlay !== "off" ? tSafe(t, "radar.radar_on", "Radar On") : tSafe(t, "radar.radar_off", "Radar")}
+      </button>
+      {LAYER_DEFS.map(layer => {
+        const active = activeLayers.includes(layer.id);
+        return (
+          <motion.button
+            key={layer.id}
+            onClick={() => toggleLayer(layer.id)}
+            whileTap={{ scale: 0.92 }}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all shrink-0"
+            style={{
+              background: active ? `${layer.color}18` : "hsl(var(--card)/0.85)",
+              borderColor: active ? `${layer.color}35` : "hsl(var(--border)/0.15)",
+              color: active ? layer.color : "hsl(var(--muted-foreground))",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            {layer.icon}
+            {t(layer.labelKey)}
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+function WeatherWidget({ weather, vibe, stats, t }: { weather: WeatherStationState; vibe: VibeDensityResult | null; stats: RadarStats; t: TFn }) {
+  return (
+    <motion.div
+      className="absolute left-3 top-[130px] flex flex-col gap-1.5"
+      style={{ zIndex: Z.overlay }}
+      initial={{ opacity: 0, x: -15 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.25 }}
+    >
+      <div
+        className="rounded-2xl border border-border/15 px-3 py-2.5 backdrop-blur-md"
+        style={{
+          background: weather.isRaining
+            ? "linear-gradient(135deg, hsl(220 40% 18% / 0.92), hsl(210 50% 25% / 0.88))"
+            : "hsl(var(--card) / 0.9)",
+        }}
+      >
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-lg leading-none">{weather.icon}</span>
+          <div className="min-w-0">
+            {weather.temperatureC != null && (
+              <p className="text-base font-bold text-foreground leading-tight">{Math.round(weather.temperatureC)}°C</p>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+          {weather.humidity != null && (
+            <div className="flex items-center gap-0.5">
+              <Droplets className="w-2.5 h-2.5" style={{ color: "hsl(200 70% 60%)" }} />
+              <span className="text-[10px] text-muted-foreground">{weather.humidity}%</span>
+            </div>
+          )}
+          {weather.windKmh != null && (
+            <div className="flex items-center gap-0.5">
+              <Wind className="w-2.5 h-2.5" style={{ color: "hsl(38 65% 56%)" }} />
+              <span className="text-[10px] text-muted-foreground">{Math.round(weather.windKmh)} km/h</span>
+            </div>
+          )}
+        </div>
+        {weather.isRaining && weather.precipitationMm > 0 && (
+          <div className="flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-md" style={{ background: "hsl(200 70% 50% / 0.12)" }}>
+            <CloudRain className="w-2.5 h-2.5" style={{ color: "hsl(200 70% 60%)" }} />
+            <span className="text-[10px] font-medium" style={{ color: "hsl(200 70% 65%)" }}>{weather.precipitationMm.toFixed(1)} mm</span>
+          </div>
+        )}
+      </div>
+
+      {vibe && (
+        <div className="rounded-2xl border border-border/15 bg-card/90 px-2.5 py-2 backdrop-blur-md">
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">{vibe.vibeEmoji}</span>
+            <div>
+              <p className="text-[10px] font-bold text-foreground">{vibe.vibeLabel}</p>
+              <p className="text-[10px] text-muted-foreground">{vibe.crowdDensity}% {tSafe(t, "radar.active", "active")}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-border/15 bg-card/90 px-2.5 py-1.5 backdrop-blur-md">
+        <div className="flex items-center gap-1">
+          <MapPin className="w-2.5 h-2.5" style={{ color: "hsl(38 65% 56%)" }} />
+          <span className="text-[10px] font-bold text-foreground">{stats.visibleEntities}</span>
+        </div>
+        {stats.hotspotCount > 0 && (
+          <div className="flex items-center gap-1 mt-0.5">
+            <Star className="w-2.5 h-2.5 text-yellow-500" />
+            <span className="text-[10px] text-muted-foreground">{stats.hotspotCount} {tSafe(t, "radar.hotspots", "hotspots")}</span>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+function PillarNav({ navigate }: { navigate: (path: string) => void }) {
+  return (
+    <nav className="flex items-center gap-0.5" aria-label="Quick navigation">
+      {PILLAR_LINKS.map(p => (
+        <button
+          key={p.path}
+          onClick={() => { haptic("light"); navigate(p.path); }}
+          aria-label={p.label}
+          className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform text-muted-foreground/60 hover:text-foreground"
+        >
+          {p.icon}
+        </button>
+      ))}
+    </nav>
   );
 }

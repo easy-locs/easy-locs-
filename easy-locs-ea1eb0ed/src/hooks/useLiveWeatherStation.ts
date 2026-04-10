@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 
-type WeatherStationState = {
+export type WeatherStationState = {
   loading: boolean;
   isRaining: boolean;
   precipitationMm: number;
