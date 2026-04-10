@@ -19,6 +19,7 @@ import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 
 // ── Shell & system (critical — loaded eagerly for app tree) ──
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary";
 import { AppCrashBoundary } from "@/components/system/AppCrashBoundary";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 import AppLockGuard from "@/components/security/AppLockGuard";
@@ -322,7 +323,7 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 1 · DASHBOARD                         */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/" element={<HomeRouter />} />
+                  <Route path="/" element={<FeatureErrorBoundary featureName="Dashboard"><HomeRouter /></FeatureErrorBoundary>} />
                   <Route path="/home" element={<MarketplaceHomeRouter />} />
                   <Route path="/pricing" element={<Navigate to="/#pricing" replace />} />
                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -399,7 +400,7 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 2 · RADAR (Discover · Browse · Move)   */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/radar" element={<HyperRadarPage />} />
+                  <Route path="/radar" element={<FeatureErrorBoundary featureName="Radar"><HyperRadarPage /></FeatureErrorBoundary>} />
                   <Route path="/map" element={<Navigate to="/radar" replace />} />
                   <Route path="/discover" element={<Navigate to="/radar" replace />} />
                   <Route path="/search" element={<Navigate to="/radar" replace />} />
@@ -483,8 +484,8 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 3 · ORBIT (Messaging · Contacts)       */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/orbit" element={<ProtectedRoute><CommunicationCenter /></ProtectedRoute>} />
-                  <Route path="/orbit/:conversationId" element={<ProtectedRoute><CommunicationCenter /></ProtectedRoute>} />
+                  <Route path="/orbit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><CommunicationCenter /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/orbit/:conversationId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><CommunicationCenter /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/orbit/contacts" element={<ProtectedRoute><OrbitContactsPage /></ProtectedRoute>} />
                   <Route path="/orbit/add" element={<ProtectedRoute><OrbitAddContactPage /></ProtectedRoute>} />
                   <Route path="/orbit/identity" element={<ProtectedRoute><OrbitIdentityPage /></ProtectedRoute>} />
@@ -492,7 +493,7 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 4 · WALLET (Pay · Orders · Checkout)   */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/wallet" element={<ProtectedRoute><WalletHubPage /></ProtectedRoute>} />
+                  <Route path="/wallet" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/hub" element={<Navigate to="/wallet" replace />} />
                   <Route path="/wallet/top-up" element={<ProtectedRoute><WalletTopUpPage /></ProtectedRoute>} />
                   <Route path="/wallet/transfer" element={<ProtectedRoute><WalletTransferPage /></ProtectedRoute>} />
@@ -529,7 +530,7 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 5 · ME (Profile · Settings · Tools)    */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/me" element={<ProtectedRoute><MeCommandCenter /></ProtectedRoute>} />
+                  <Route path="/me" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><MeCommandCenter /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/spending-insights" element={<ProtectedRoute><CustomerSpendingInsightsPage /></ProtectedRoute>} />
                   <Route path="/me/address-book" element={<ProtectedRoute><CustomerAddressBookPage /></ProtectedRoute>} />
                   <Route path="/me/loyalty-history" element={<ProtectedRoute><CustomerLoyaltyHistoryPage /></ProtectedRoute>} />

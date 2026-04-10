@@ -1,23 +1,24 @@
-/**
- * OrdersManager — Seller-facing order management with realtime updates.
- * Status lifecycle: pending → accepted → preparing → shipped → completed / cancelled
- */
 import { useEffect } from "react";
-import { db } from "@/services/db";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Loader2, CheckCircle, XCircle, Truck, Package, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  storefrontOrdersService,
+  type StorefrontOrder,
+  type StorefrontOrderItem,
+} from "@/services/storefront-orders.service";
 
 interface OrdersManagerProps {
   shopId: string;
 }
 
-const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+const statusConfig: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
   pending: { label: "Pending", color: "bg-amber-500/10 text-amber-600", icon: Clock },
   accepted: { label: "Accepted", color: "bg-blue-500/10 text-blue-600", icon: CheckCircle },
   preparing: { label: "Preparing", color: "bg-purple-500/10 text-purple-600", icon: Package },
@@ -44,19 +45,10 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["my-orders", shopId],
-    queryFn: async () => {
-      const { data } = await db
-        .from("storefront_orders")
-        .select("*, storefront_order_items(*)")
-        .eq("shop_id", shopId)
-        .eq("seller_id", user!.id)
-        .order("created_at", { ascending: false });
-      return data || [];
-    },
+    queryFn: () => storefrontOrdersService.fetchOrdersByShop(shopId, user!.id),
     enabled: !!user,
   });
 
-  // Realtime: auto-refresh on new/updated orders
   useEffect(() => {
     const channel = supabase
       .channel(`storefront-orders-${shopId}`)
@@ -74,68 +66,33 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
   }, [shopId, qc]);
 
   const updateStatus = async (orderId: string, newStatus: string) => {
-    const { data: order } = await db("storefront_orders").select("*").eq("id", orderId).maybeSingle();
-    await db("storefront_orders").update({ status: newStatus, updated_at: new Date().toISOString() }).eq("id", orderId);
-    qc.invalidateQueries({ queryKey: ["my-orders", shopId] });
-    toast.success(`Order ${newStatus}`);
+    try {
+      await storefrontOrdersService.updateOrderStatus(orderId, newStatus);
+      qc.invalidateQueries({ queryKey: ["my-orders", shopId] });
+      toast.success(`Order ${newStatus}`);
+    } catch {
+      toast.error("Failed to update order status");
+      return;
+    }
 
-    // On completion: write commission split + settlement + notification
-    if (newStatus === "completed" && order) {
-      const total = Number(order.total ?? order.subtotal ?? 0);
-      const currency = order.currency ?? "AED";
-      const platformRate = 0.05;
-      const platformAmount = Math.round(total * platformRate * 100) / 100;
-      const netAmount = Math.round((total - platformAmount) * 100) / 100;
-
-      // Commission split
-      await db("commission_splits").insert({
-        order_id: orderId,
-        total_amount: total,
-        currency,
-        platform_amount: platformAmount,
-        platform_rate: platformRate,
-        store_amount: netAmount,
-        store_rate: 1 - platformRate,
-        driver_amount: 0,
-        driver_rate: 0,
-        store_user_id: order.seller_id ?? null,
-        status: "settled",
-        settled_at: new Date().toISOString(),
-      }).then(({ error }: any) => { if (error) console.error("[commission]", error.message); });
-
-      // Settlement ledger
-      await db("settlement_ledger").insert({
-        merchant_id: order.seller_id ?? null,
-        order_id: orderId,
-        gross_amount: total,
-        platform_fee: platformAmount,
-        processing_fee: 0,
-        net_amount: netAmount,
-        currency,
-        status: "settled",
-      }).then(({ error }: any) => { if (error) console.error("[settlement]", error.message); });
-
-      // Notification to buyer
-      if (order.buyer_id) {
-        await db("app_notifications").insert({
-          user_id: order.buyer_id,
-          scope: "global",
-          category: "order",
-          title: "Order completed",
-          body: "Your order has been completed.",
-          severity: "info",
-          entity_type: "order",
-          entity_id: orderId,
-          metadata: { order_id: orderId, status: "completed" },
-        }).then(({ error }: any) => { if (error) console.error("[notif]", error.message); });
+    if (newStatus === "completed") {
+      try {
+        await storefrontOrdersService.completeOrderWithSettlement(orderId);
+      } catch {
+        console.warn("[OrdersManager] Settlement bookkeeping failed for", orderId);
+        toast.warning("Order completed but settlement recording failed — will retry automatically");
       }
     }
   };
 
   const cancelOrder = async (orderId: string) => {
-    await db("storefront_orders").update({ status: "cancelled", updated_at: new Date().toISOString() }).eq("id", orderId);
-    qc.invalidateQueries({ queryKey: ["my-orders", shopId] });
-    toast.success("Order cancelled");
+    try {
+      await storefrontOrdersService.updateOrderStatus(orderId, "cancelled");
+      qc.invalidateQueries({ queryKey: ["my-orders", shopId] });
+      toast.success("Order cancelled");
+    } catch {
+      toast.error("Failed to cancel order");
+    }
   };
 
   if (isLoading) return <div className="py-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>;
@@ -150,12 +107,12 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
         <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">No orders yet</CardContent></Card>
       ) : (
         <div className="space-y-2">
-          {orders.map((order: any) => {
+          {orders.map((order) => {
             const cfg = statusConfig[order.status] || statusConfig.pending;
             const StatusIcon = cfg.icon;
             const next = nextStatus[order.status];
             const itemsSummary = (order.storefront_order_items || [])
-              .map((oi: any) => `${oi.quantity}× ${oi.title}`)
+              .map((oi) => `${oi.quantity}× ${oi.title}`)
               .join(", ");
 
             return (
@@ -172,7 +129,7 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
                   <p className="text-xs text-muted-foreground line-clamp-1">{itemsSummary || "No items"}</p>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-primary">{fmtPrice(order.total, order.currency)}</span>
+                    <span className="text-sm font-bold text-primary">{fmtPrice(Number(order.total ?? order.subtotal ?? 0), order.currency)}</span>
                     <span className="text-[10px] text-muted-foreground">
                       {new Date(order.created_at).toLocaleDateString()}
                     </span>

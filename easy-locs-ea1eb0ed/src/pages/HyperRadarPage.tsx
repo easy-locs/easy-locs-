@@ -168,6 +168,25 @@ export default function HyperRadarPage() {
         keywords={t("radar.seo_keywords")}
       />
 
+      {loading && (
+        <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
+          <div className="flex flex-col items-center gap-2 px-4 py-3 rounded-2xl bg-card/90 backdrop-blur-md border border-border/15">
+            <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(38 65% 56%)", borderTopColor: "transparent" }} />
+            <span className="text-[11px] font-semibold text-muted-foreground">{t("common.loading")}</span>
+          </div>
+        </div>
+      )}
+
+      {!loading && visibleEntities.length === 0 && (
+        <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
+          <div className="flex flex-col items-center gap-2 px-6 py-4 rounded-2xl bg-card/90 backdrop-blur-md border border-border/15 max-w-[240px] text-center">
+            <MapPin className="w-6 h-6 text-muted-foreground/50" />
+            <span className="text-xs font-bold text-foreground">{t("radar.no_results")}</span>
+            <span className="text-[10px] text-muted-foreground">{t("radar.no_results_hint")}</span>
+          </div>
+        </div>
+      )}
+
       {/* ═══ LAYER 1: MAP (base) ═══ */}
       <div className="absolute inset-0 z-0">
         <UnifiedMap

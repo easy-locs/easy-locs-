@@ -26,7 +26,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     try {
       await commsRepo.upsertConversationPreference(userId, ctxId(thread), !!thread.muted, true);
       toast.success(`"${thread.name}" archived`);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[archive] Failed:", e);
       updateThreadLocally(thread.id, { archived: false });
       toast.error("Failed to archive conversation");
@@ -39,7 +39,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     try {
       await commsRepo.upsertConversationPreference(userId, ctxId(thread), !!thread.muted, false);
       toast.success(`"${thread.name}" unarchived`);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[unarchive] Failed:", e);
       updateThreadLocally(thread.id, { archived: true });
       toast.error("Failed to unarchive conversation");
@@ -52,7 +52,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     try {
       await commsRepo.upsertConversationPreference(userId, ctxId(thread), true, true);
       toast.success(`"${thread.name}" deleted`);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[delete] Failed:", e);
       updateThreadLocally(thread.id, { archived: false, muted: false });
       toast.error("Failed to delete conversation");
@@ -66,7 +66,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     try {
       await commsRepo.upsertConversationPreference(userId, ctxId(thread), newMuted, !!thread.archived);
       toast.success(newMuted ? `"${thread.name}" muted` : `"${thread.name}" unmuted`);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[mute] Failed:", e);
       updateThreadLocally(thread.id, { muted: !newMuted });
       toast.error("Failed to update mute setting");
@@ -85,7 +85,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
       updateThreadLocally(thread.id, { archived: true, muted: true });
       await commsRepo.upsertConversationPreference(userId, ctxId(thread), true, true);
       toast.success(`${thread.name} blocked`);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[block] Failed:", e);
       toast.error("Failed to block user");
     }
@@ -104,7 +104,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
         { cleared_at: newClearedAt }
       );
       toast.success(`Chat with ${thread.name} cleared`);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[clear] Failed:", e);
       updateThreadLocally(thread.id, { lastMessage: prevLastMessage, unreadCount: prevUnread, clearedAt: prevClearedAt });
       toast.error("Failed to clear chat");
@@ -122,7 +122,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
         { favorited: newFavorited }
       );
       toast.success(newFavorited ? `"${thread.name}" added to favourites` : `"${thread.name}" removed from favourites`);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[favorite] Failed:", e);
       updateThreadLocally(thread.id, { pinned: wasFavorited });
       toast.error("Failed to update favourite");
@@ -138,7 +138,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
         { marked_unread: true }
       );
       toast.success(`"${thread.name}" marked as unread`);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[markUnread] Failed:", e);
       updateThreadLocally(thread.id, { unreadCount: thread.unreadCount });
       toast.error("Failed to mark as unread");
@@ -157,7 +157,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
         waiting_payment: "💰 Waiting payment", resolved: "✅ Resolved", archived: "📦 Archived",
       };
       toast.success(`Status: ${statusLabels[status] || status}`);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[changeStatus] Failed:", e);
       toast.error("Failed to update status");
     }

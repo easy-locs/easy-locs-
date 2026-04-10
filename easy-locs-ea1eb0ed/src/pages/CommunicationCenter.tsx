@@ -263,7 +263,19 @@ export const CommunicationCenter = () => {
   }
 
   const renderSection = () => {
-    const fallback = <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">{t("common.loading")}</div>;
+    const fallback = (
+      <div className="p-4 space-y-3 animate-pulse">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-muted/40 shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="h-3 w-28 rounded bg-muted/40" />
+              <div className="h-2.5 w-40 rounded bg-muted/30" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
     switch (activeSection) {
       case "calls": return <Suspense fallback={fallback}><CommCallsSection onOpenThread={async (peerId, peerName) => {
           if (!userId) return;
