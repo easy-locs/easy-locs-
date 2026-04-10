@@ -2,7 +2,6 @@
  * CustomerTrackingPage — Public tracking page for end customers with ETA and status notifications.
  * PASS85-GG: Customer Notifications & Tracking Page
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
@@ -56,8 +55,7 @@ export default function CustomerTrackingPage() {
     setLoading(true);
     try {
       // Search by confirmation code or job ID
-      const { data, error } = await supabase
-        .from("mobility_jobs")
+      const { data, error } = await db("mobility_jobs")
         .select("*")
         .or(`confirmation_code.eq.${code.trim()},id.eq.${code.trim()}`)
         .limit(1)
@@ -81,8 +79,7 @@ export default function CustomerTrackingPage() {
           trackingData.driver_vehicle = presence.vehicle_type;
         }
 
-        const { data: profile } = await supabase
-          .from("profiles")
+        const { data: profile } = await db("profiles")
           .select("name, first_name, last_name")
           .eq("id", (data as any).rider_user_id)
           .maybeSingle();
@@ -115,8 +112,7 @@ export default function CustomerTrackingPage() {
   // Realtime updates
   useEffect(() => {
     if (!tracking?.id) return;
-    const channel = supabase
-      .channel(`track-${tracking.id}`)
+    const channel = createRealtimeChannel(`track-${tracking.id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${tracking.id}` },
         (payload) => {
           const updated = payload.new as any;

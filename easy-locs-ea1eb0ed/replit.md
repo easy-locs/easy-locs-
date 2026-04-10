@@ -424,13 +424,40 @@ Replaces hardcoded `EXPLORE_CATEGORIES` and `SuperServicesGrid`.
 - **i18n**: 170+ keys in `re.*` namespace (EN/FR/AR) in i18n-canonical.ts `realEstateVertical` section
 - **Routes**: `/me/gestion-immo` redirects to `/me/properties`
 
+## Quality Control System (`src/lib/quality/`)
+Continuous audit system with 5 modules, all tested (17/17 vitest passing):
+- **architecture-audit.ts**: Detects direct supabase usage in UI layer (pages/components). Classifies violations as data_query/realtime/auth/storage/functions/mixed. Exempts auth boundaries, service layer, stores, repositories, domains.
+- **technical-leak-scanner.ts**: Detects `[object Object]`, `JSON.stringify` in render, backend tech names (postgres/supabase), stack traces, raw error messages, TODO/FIXME/PLACEHOLDER in user-facing text.
+- **duplication-detector.ts**: Detects duplicate search bars, category chips, bottom sheets, sort bars, recommendation sections, weather widgets. Also detects duplicate useState declarations in same file.
+- **i18n-validator.ts**: Detects hardcoded user-facing strings (>4 chars starting with uppercase), components with 3+ strings but no `t()` usage. Allows brand names (Easy-Locs, Google, Apple, etc.).
+- **control-board.ts**: Generates live PASS/PARTIAL/FAIL/MISSING matrix for systems (Sentry/Playwright/Storybook/Chromatic/service-layer), routes (12), critical flows (6), and critical counts (crashes/duplicates/leaks/violations/unstable).
+- **types.ts**: Shared types: AuditViolation, AuditResult, ControlBoardReport, SystemStatus, RouteStatus.
+
+### Control Board Status (2026-04-10)
+| System | Status |
+|--------|--------|
+| Sentry | PARTIAL (code ready, needs VITE_SENTRY_DSN) |
+| Playwright | MISSING |
+| Storybook | MISSING |
+| Chromatic | MISSING |
+| Service-layer | PASS (0 data-query violations in UI) |
+
+### Sentry Configuration
+- **Package**: `@sentry/react` v10.45.0
+- **Boot**: `main.tsx` → immediate `initSentry()` import (no delay)
+- **Config**: environment separation, release tagging, BrowserTracing, SessionReplay
+- **Sampling**: traces=0.2, replaysSession=0.1, replaysOnError=1.0
+- **Filtering**: ResizeObserver/ChunkLoadError suppressed, browser extensions denied
+- **Error boundaries**: AppCrashBoundary (top-level), ErrorBoundary (general), FeatureErrorBoundary (40+ routes)
+- **Activation**: Set `VITE_SENTRY_DSN` env var to activate
+
 ## Engineering Audit (2026-04-10)
 Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Build**: production build fixed (checkPublishBlockers import + duplicate patisserie key)
 - **TypeScript**: 0 errors confirmed
-- **Known issues**: 92 direct supabase imports in UI layer (should use db()/services), 3762 `any` usages, 274 empty catch blocks, 214 console.log
+- **Known issues**: ~13 remaining supabase.channel() imports in UI (all realtime — exempt), 0 data-query violations in UI
 - **Security**: Auth/RLS solid, CORS wildcard on Edge Functions needs restricting, CSP headers needed
-- **Test coverage**: ~2% (66 unit + 8 E2E for 3279 files)
+- **Test coverage**: 83 test files (17 quality audit tests + 66 unit + 7 E2E)
 - **Performance**: 462K lines, bundle needs splitting by pillar, 8 files >800 lines need decomposition
 
 ## Checkout Hardening (Cycle 2)
