@@ -3,12 +3,13 @@
  * Uses storefront_orders as the single source of truth.
  * Route: /checkout
  */
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import { createStorefrontOrder } from "@/lib/orders/orderEngine";
+import { trackFlowStart, trackFlowComplete, trackFlowAbandon } from "@/lib/smart-core";
 import { resolveDisplayCurrency, formatMoneyByCountry } from "@/lib/currency-engine";
 import { ArrowLeft, MapPin, CreditCard, Wallet, Banknote, Loader2, Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,17 @@ export default function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [addressOpen, setAddressOpen] = useState(false);
   const idempotencyRef = useRef(crypto.randomUUID());
+  const flowStartRef = useRef(Date.now());
+  const flowCompletedRef = useRef(false);
+
+  useEffect(() => {
+    trackFlowStart("checkout");
+    flowStartRef.current = Date.now();
+    flowCompletedRef.current = false;
+    return () => {
+      if (!flowCompletedRef.current) trackFlowAbandon("checkout");
+    };
+  }, []);
 
   if (itemCount === 0) {
     const browseOptions = [
@@ -108,6 +120,8 @@ export default function CheckoutPage() {
         toast.success("Order placed!");
       }
 
+      flowCompletedRef.current = true;
+      trackFlowComplete("checkout", Date.now() - flowStartRef.current);
       clearCart();
       idempotencyRef.current = crypto.randomUUID();
       navigate(`/order/${order.id}`);

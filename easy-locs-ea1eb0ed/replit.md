@@ -152,3 +152,16 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **CTA Layout Improved**: "Open Shop" and "Become Provider" now side-by-side in a 2-column grid for non-business users. More compact and actionable.
 - **5 Role Support**: simple user, merchant, property manager, provider, driver — each sees only their relevant cockpit sections.
 - **i18n**: 30+ additional keys for status bar, quick actions, provider hub, merchant KPIs (FR + EN).
+
+## SmartCore Intelligence Layer
+- **SmartCore** (`src/lib/smart-core.ts`): Unified intelligence engine tracking feature usage (route visits, dwell time), flow metrics (start/complete/abandon), and generating adaptive suggestions. Persists to localStorage with automatic history pruning (max 200 entries) and score decay (0.95 factor per session).
+- **SmartCoreTracker** (`src/components/system/SmartCoreTracker.tsx`): Mounted in App.tsx inside the Router. Automatically tracks every route visit and dwell time without component-level integration needed.
+- **useSmartInsights** (`src/hooks/useSmartInsights.ts`): React hook consuming SmartCore data. Returns `topRoutes` (usage-ranked), `suggestions` (context-aware), and `dismiss` function.
+- **SmartShortcuts** (`src/components/dashboard/SmartShortcuts.tsx`): Usage-frequency-based dynamic shortcut strip on Dashboard. Shows top 4 most-visited features as quick-access pills. Excludes main nav routes (/, /login) and adapts over time.
+- **SmartSuggestions** (`src/components/dashboard/SmartSuggestions.tsx`): Contextual action suggestions on Dashboard. Suggests: open shop, setup wallet, complete profile, try Orbit, flow help. Dismissible. Priority-sorted.
+- **Flow Tracking**: Taxi flow (taxiFlowStore) and Checkout (CheckoutPage) both track start/complete/abandon with duration metrics. Uses ref-based guard to prevent false abandon on successful completion.
+
+## Performance Hardening
+- **HyperRadarPage**: Search filtering now uses `useDeferredValue` for non-blocking input. Prevents UI jank during search with up to 80 visible pins.
+- **Existing infrastructure confirmed active**: smart-prefetch (T+2s), browser-telemetry (T+3s via DeferredBootGuards), UX friction engine (T+8s via engine-orchestrator Tier 2), PWA offline support, optimistic UI framework.
+- **i18n**: 24 new keys for smart suggestions (FR + EN).

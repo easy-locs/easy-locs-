@@ -3,7 +3,7 @@
  * L1: Map  L2: UI Controls  L3: Interactions  L4: Results
  * V2: Enhanced discovery stats, smarter guidance, richer UX, fullscreen polish.
  */
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useDeferredValue } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
@@ -71,6 +71,7 @@ export default function HyperRadarPage() {
   const [zoneClick, setZoneClick] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearch = useDeferredValue(searchQuery);
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
   const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
   const weather = useLiveWeatherStation({ lat: location?.lat, lng: location?.lng });
@@ -97,15 +98,15 @@ export default function HyperRadarPage() {
         return cat.includes(sub);
       });
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (deferredSearch.trim()) {
+      const q = deferredSearch.toLowerCase();
       filtered = filtered.filter(e => e.name?.toLowerCase().includes(q) || (e.category || "").toLowerCase().includes(q));
     }
     if (filtered.length > MAX_VISIBLE_PINS) {
       filtered = [...filtered].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, MAX_VISIBLE_PINS);
     }
     return filtered;
-  }, [entities, activeLayers, searchQuery, urlSubcategory]);
+  }, [entities, activeLayers, deferredSearch, urlSubcategory]);
 
   const handleZoneClick = useCallback((lat: number, lng: number) => {
     setZoneClick({ lat, lng });

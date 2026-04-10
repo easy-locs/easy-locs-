@@ -36,6 +36,12 @@ import SuperServicesGrid from "@/components/dashboard/SuperServicesGrid";
 import { useDashboardLiveStats } from "@/hooks/useDashboardLiveStats";
 import { prefetchForRoute } from "@/lib/smart-prefetch";
 import { useCart } from "@/hooks/useCart";
+import { useSmartInsights } from "@/hooks/useSmartInsights";
+import SmartShortcuts from "@/components/dashboard/SmartShortcuts";
+import SmartSuggestions from "@/components/dashboard/SmartSuggestions";
+import { useAuth } from "@/contexts/AuthContext";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
+import { useWalletBalance } from "@/payments/wallet-hooks";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -567,10 +573,22 @@ const DashboardStories = memo(() => {
 export default function SmartHome() {
   const { t } = useI18n();
   const vm = useDashboardViewModel();
+  const { user } = useAuth();
+  const orbitProfile = useOrbitIdentity();
+  const { balance: walletBal } = useWalletBalance();
+
+  const smartContext = useMemo(() => ({
+    hasShop: false,
+    hasWallet: walletBal !== null && walletBal !== undefined,
+    hasProfile: !!user,
+    profileComplete: !!(user?.user_metadata?.display_name && user?.user_metadata?.avatar_url),
+    hasOrbit: !!orbitProfile?.orbitId,
+  }), [user, walletBal, orbitProfile?.orbitId]);
+
+  const { topRoutes, suggestions, dismiss } = useSmartInsights(smartContext);
 
   useEffect(() => { prefetchForRoute("/"); }, []);
 
-  // ── Card adapters — bridge ViewModel to card contracts ──
   const trendingCard = useTrendingSectionCard();
   const bestRatedCard = useBestRatedSectionCard();
   const newestCard = useNewestSectionCard();
@@ -582,8 +600,10 @@ export default function SmartHome() {
         <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} t={t} />
         <ActiveCartBanner />
         <SmartQuickActions />
+        <SmartShortcuts topRoutes={topRoutes} />
         <QuickAccessStrip />
         <AISmartInsights />
+        <SmartSuggestions suggestions={suggestions} onDismiss={dismiss} />
         <LiveStatsPulse />
       </div>
       <OrbitPreviewWidget />
