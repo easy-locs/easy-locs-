@@ -11,6 +11,8 @@ import { getStoredBinding, ensureWalletBinding, clearWalletBinding } from "@/lib
 import { guardWalletReady } from "@/lib/wallet/wallet-guard";
 import { getDeviceFingerprint } from "@/lib/orbit-keystore";
 import { DAILY_TRANSFER_LIMITS } from "@/lib/wallet-limits";
+import { useTrustScore } from "@/hooks/useTrustScore";
+import { TrustLevelBadge, TrustLimitsCard } from "@/components/wallet/TrustLevelBadge";
 import PinManagement from "@/components/security/PinManagement";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -241,11 +243,25 @@ export default function WalletSecuritySettings() {
     refreshPinStatus();
   }, [refreshPinStatus]);
 
+  const trust = useTrustScore();
+
   const sectionClass = "rounded-2xl border p-4 space-y-4";
   const sectionStyle = { background: "hsl(var(--card))", borderColor: "hsl(var(--border))" };
 
   return (
     <div className="space-y-4">
+      {!trust.loading && (
+        <div className="space-y-3">
+          <TrustLevelBadge
+            score={trust.score}
+            level={trust.level}
+            securityFlag={trust.securityFlag}
+            showProgress
+          />
+          <TrustLimitsCard score={trust.score} level={trust.level} />
+        </div>
+      )}
+
       <div className={sectionClass} style={sectionStyle}>
         <div className="flex items-center gap-2.5">
           <Lock className="w-5 h-5 text-primary shrink-0" />

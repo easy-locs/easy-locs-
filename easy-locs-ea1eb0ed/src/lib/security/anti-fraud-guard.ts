@@ -1,3 +1,5 @@
+import { type SecurityFlag } from "@/lib/trust/trust-levels";
+
 const IDEMPOTENCY_TTL_MS = 300_000;
 const MAX_TX_PER_MINUTE = 10;
 const MAX_ORDER_PER_MINUTE = 3;
@@ -6,6 +8,13 @@ const MAX_UNIQUE_RECIPIENTS_PER_HOUR = 15;
 const SUSPICIOUS_AMOUNT_THRESHOLD = 25_000;
 const RAPID_SUCCESSION_MS = 5_000;
 const MAX_RAPID_TX = 3;
+
+const TRUST_ADJUSTED_LIMITS: Record<string, { maxTxPerMin: number; maxRecipients: number; suspiciousThreshold: number }> = {
+  blocked: { maxTxPerMin: 0, maxRecipients: 0, suspiciousThreshold: 0 },
+  high_risk: { maxTxPerMin: 3, maxRecipients: 3, suspiciousThreshold: 1000 },
+  suspicious: { maxTxPerMin: 5, maxRecipients: 8, suspiciousThreshold: 5000 },
+  normal: { maxTxPerMin: MAX_TX_PER_MINUTE, maxRecipients: MAX_UNIQUE_RECIPIENTS_PER_HOUR, suspiciousThreshold: SUSPICIOUS_AMOUNT_THRESHOLD },
+};
 
 interface IdempotencyEntry {
   key: string;
@@ -81,11 +90,11 @@ export function recordOperation(idempotencyKey: string, result?: unknown): void 
   });
 }
 
-export function checkRateLimit(userId: string, action: string): { allowed: boolean; retryAfterMs?: number } {
+export function checkRateLimit(userId: string, action: string, overrideLimit?: number): { allowed: boolean; retryAfterMs?: number } {
   const bucketKey = `${userId}:${action}`;
   const now = Date.now();
   const windowMs = 60_000;
-  const limit = action === "order" ? MAX_ORDER_PER_MINUTE : MAX_TX_PER_MINUTE;
+  const limit = overrideLimit ?? (action === "order" ? MAX_ORDER_PER_MINUTE : MAX_TX_PER_MINUTE);
 
   let bucket = rateLimitBuckets.get(bucketKey);
   if (!bucket) {
@@ -104,8 +113,9 @@ export function checkRateLimit(userId: string, action: string): { allowed: boole
   return { allowed: true };
 }
 
-function checkVelocity(userId: string, recipientId: string, amount: number): { pass: boolean; reason?: string } {
+function checkVelocity(userId: string, recipientId: string, amount: number, overrideMaxRecipients?: number): { pass: boolean; reason?: string } {
   const now = Date.now();
+  const maxRecipients = overrideMaxRecipients ?? MAX_UNIQUE_RECIPIENTS_PER_HOUR;
 
   if (blockedUsers.has(userId)) {
     return { pass: false, reason: "temporarily_blocked" };
@@ -127,7 +137,7 @@ function checkVelocity(userId: string, recipientId: string, amount: number): { p
   }
   recentRecipients.add(recipientId);
 
-  if (recentRecipients.size > MAX_UNIQUE_RECIPIENTS_PER_HOUR) {
+  if (recentRecipients.size > maxRecipients) {
     blockedUsers.set(userId, now);
     return { pass: false, reason: "too_many_unique_recipients" };
   }
@@ -180,6 +190,51 @@ function computeRiskScore(action: string, amount: number, userId: string): numbe
   if (action === "wallet_topup" && amount > 20000) score += 15;
 
   return Math.min(score, 100);
+}
+
+export function preTransactionCheckWithTrust(
+  userId: string,
+  action: "wallet_topup" | "wallet_transfer" | "payment" | "order" | "ride_request",
+  payload: Record<string, unknown>,
+  securityFlag: SecurityFlag = "normal"
+): FraudCheckResult {
+  const adjustedLimits = TRUST_ADJUSTED_LIMITS[securityFlag] || TRUST_ADJUSTED_LIMITS.normal;
+
+  if (securityFlag === "blocked") {
+    return { pass: false, reason: "account_blocked", idempotencyKey: "", riskScore: 100 };
+  }
+
+  const idemKey = generateIdempotencyKey(userId, action, payload);
+
+  const dupCheck = isDuplicate(idemKey);
+  if (dupCheck.duplicate) {
+    return { pass: false, reason: "duplicate_request", idempotencyKey: idemKey, riskScore: 100 };
+  }
+
+  const rateCheck = checkRateLimit(userId, action, adjustedLimits.maxTxPerMin);
+  if (!rateCheck.allowed) {
+    return { pass: false, reason: "rate_limited", idempotencyKey: idemKey, riskScore: 80 };
+  }
+
+  const amount = Number(payload.amount ?? 0);
+
+  if (amount > adjustedLimits.suspiciousThreshold) {
+    return { pass: false, reason: "amount_exceeds_trust_limit", idempotencyKey: idemKey, riskScore: 90 };
+  }
+
+  const recipientId = String(payload.recipientId ?? "");
+  if (recipientId && (action === "wallet_transfer" || action === "payment")) {
+    const velocityCheck = checkVelocity(userId, recipientId, amount, adjustedLimits.maxRecipients);
+    if (!velocityCheck.pass) {
+      return { pass: false, reason: velocityCheck.reason, idempotencyKey: idemKey, riskScore: 75 };
+    }
+  }
+
+  let riskScore = computeRiskScore(action, amount, userId);
+  if (securityFlag === "suspicious") riskScore = Math.min(100, riskScore + 20);
+  if (securityFlag === "high_risk") riskScore = Math.min(100, riskScore + 40);
+
+  return { pass: true, idempotencyKey: idemKey, riskScore };
 }
 
 export function preTransactionCheck(

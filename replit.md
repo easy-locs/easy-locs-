@@ -185,6 +185,45 @@ easy-locs-ea1eb0ed/
 └── public/              # Static assets
 ```
 
+## User Trust System (Level 0-4)
+Comprehensive trust scoring with dynamic wallet limits, security flags, KYC light, and anti-fraud integration.
+
+### Trust Levels (`src/lib/trust/trust-levels.ts`)
+- **Level 0 (Unverified)**: score<10, no transactions allowed (0/0/0 limits)
+- **Level 1 (Verified)**: score≥10, basic wallet (2K daily send / 5K receive / 500 per tx)
+- **Level 2 (Active)**: score≥30, QR payments + request money (5K/15K/2K)
+- **Level 3 (Trusted)**: score≥60, KYC selfie required (20K/50K/10K)
+- **Level 4 (Premium)**: score≥85, KYC doc required (100K/200K/50K)
+
+### Trust Engine (`src/lib/trust/user-trust-engine.ts`)
+5-signal scoring (weighted 100-point scale):
+- **Identity** (25%): phone, contacts, KYC, account age
+- **Activity** (20%): sessions, orbit interactions, engagement
+- **Financial** (25%): completed payments, failed payments, disputes
+- **Behavior** (15%): moderation flags, reports, location coherence
+- **Security** (15%): device stability, KYC, location
+
+### Security Flags
+- **normal**: full access at trust level
+- **suspicious**: score capped at 45, verification prompted
+- **high_risk**: score capped at 20, KYC + manual audit required
+- **blocked**: score=0, all transactions blocked
+
+### KYC Light (`src/lib/trust/kyc-light.ts`)
+- Status lifecycle: not_started → pending → selfie_required → document_required → under_review → completed/rejected/expired
+- Auto-triggers: level upgrade ≥3, >20 payments without KYC, moderation flags, 2+ device changes in 30d
+
+### Anti-Fraud Integration (`src/lib/security/anti-fraud-guard.ts`)
+- `preTransactionCheckWithTrust()`: Trust-aware pre-transaction check with security-flag-adjusted limits
+- `TRUST_ADJUSTED_LIMITS`: Per-flag rate limits (maxTxPerMin, maxRecipients, suspiciousThreshold)
+- Risk score augmentation: +20 for suspicious, +40 for high_risk
+
+### React Integration
+- **Hook**: `src/hooks/useTrustScore.ts` — computes trust score from live user signals
+- **UI**: `src/components/wallet/TrustLevelBadge.tsx` — badge + progress bar + limits card
+- **Integration**: WalletSecuritySettings shows trust badge + limits at top of security page
+- **Persistence**: `src/lib/trust/update-trust-profile.ts` — `updateUserTrustFromSignals()` persists to user_trust_graph
+
 ## Phone + OTP Identity Activation System
 The app uses phone number + OTP as the root identity activation method. Phone is the default auth tab on both Login and Signup pages.
 
