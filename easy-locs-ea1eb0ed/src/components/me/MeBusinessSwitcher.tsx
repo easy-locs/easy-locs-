@@ -83,7 +83,7 @@ function MeBusinessSwitcher({ shops, activeShopId, onSwitch }: Props) {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-semibold text-foreground truncate">{shop.name}</p>
+                  <p className="text-xs font-semibold text-foreground truncate">{shop.name}</p>
                   <p className="text-[10px] text-muted-foreground truncate">{shop.city ?? ""}</p>
                 </div>
                 {shop.id === activeShopId && (

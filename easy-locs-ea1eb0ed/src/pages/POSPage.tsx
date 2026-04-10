@@ -221,7 +221,7 @@ export default function POSPage() {
                           onClick={() => addToCart(item.title, item.price || 0)}
                         >
                           <span className="text-xs font-semibold truncate w-full">{item.title}</span>
-                          <span className="text-sm font-bold text-primary">{(item.price || 0).toFixed(2)} L</span>
+                          <span className="text-sm font-bold text-primary tabular-nums">{(item.price || 0).toFixed(2)} L</span>
                           {item.stock_quantity != null && (
                             <span className="text-[10px] text-muted-foreground">Stock: {item.stock_quantity}</span>
                           )}

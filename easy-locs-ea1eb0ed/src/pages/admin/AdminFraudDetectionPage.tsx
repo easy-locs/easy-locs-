@@ -55,7 +55,7 @@ export default function AdminFraudDetectionPage() {
           {data!.highValue.map((row: any) => (
             <div key={row.id} className="rounded-2xl border border-destructive/20 bg-card p-4">
               <p className="text-sm font-semibold text-foreground">Order #{String(row.id).slice(0, 8)}</p>
-              <p className="text-sm font-bold text-destructive">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</p>
+              <p className="text-sm font-bold text-destructive tabular-nums">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</p>
               <p className="text-xs text-muted-foreground">User {String(row.customer_user_id ?? "").slice(0, 8)} · {row.status}</p>
               <p className="text-[11px] text-muted-foreground/70">{row.created_at ? new Date(row.created_at).toLocaleString() : ""}</p>
             </div>

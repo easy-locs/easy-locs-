@@ -33,7 +33,7 @@ export default function AdminWalletWatchPage() {
           </div>
           <div className="rounded-2xl border border-border/20 bg-card p-4 mx-4">
             <p className="text-sm font-bold text-foreground">Total Wallet Balance</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{Number(totalBalance).toFixed(2)} AED</p>
+            <p className="text-2xl font-extrabold text-foreground mt-1 tabular-nums">{Number(totalBalance).toFixed(2)} AED</p>
           </div>
         </>
       )}

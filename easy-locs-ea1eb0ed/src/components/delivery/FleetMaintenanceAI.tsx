@@ -129,7 +129,7 @@ export default function FleetMaintenanceAI({ orgId, className }: { orgId: string
               style={{ background: v.healthScore < 70 ? "hsl(var(--destructive) / 0.03)" : "hsl(var(--muted) / 0.2)", border: `1px solid ${v.healthScore < 70 ? "hsl(var(--destructive) / 0.15)" : "hsl(var(--border) / 0.08)"}` }}>
               <div className="flex items-center gap-2">
                 <div className="text-right shrink-0 w-10">
-                  <p className="text-[12px] font-bold" style={{ color: v.healthScore >= 80 ? "hsl(var(--success))" : v.healthScore >= 65 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }}>
+                  <p className="text-xs font-bold" style={{ color: v.healthScore >= 80 ? "hsl(var(--success))" : v.healthScore >= 65 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }}>
                     {v.healthScore}%
                   </p>
                 </div>

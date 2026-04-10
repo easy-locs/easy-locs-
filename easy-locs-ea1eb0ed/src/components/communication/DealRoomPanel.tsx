@@ -186,7 +186,7 @@ export default function DealRoomPanel({
           {dealData?.accepted_amount && (
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/20">
               <span className="text-[10px] font-semibold text-green-600">✅ Accepted</span>
-              <span className="text-[12px] font-bold text-green-600">{fmtCurrency(dealData.accepted_amount, dealData.current_offer_currency)}</span>
+              <span className="text-xs font-bold text-green-600">{fmtCurrency(dealData.accepted_amount, dealData.current_offer_currency)}</span>
             </div>
           )}
         </div>

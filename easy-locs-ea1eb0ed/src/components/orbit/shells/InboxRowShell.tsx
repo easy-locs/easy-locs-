@@ -56,7 +56,7 @@ function InboxRowShell({
         </div>
 
         {contextLabel && (
-          <p className="mt-0.5 text-[12px] font-medium truncate"
+          <p className="mt-0.5 text-xs font-medium truncate"
             style={{ color: "hsl(var(--muted-foreground) / 0.55)", lineHeight: "1.3" }}
           >
             {contextEmoji && <span className="mr-1">{contextEmoji}</span>}

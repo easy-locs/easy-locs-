@@ -68,7 +68,7 @@ const SmartSuggestions = memo(({ suggestions, onDismiss }: Props) => {
                   <Icon className="w-4 h-4" style={{ color }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold text-foreground truncate">
+                  <p className="text-xs font-bold text-foreground truncate">
                     {tSafe(t, s.titleKey, s.titleKey)}
                   </p>
                   <p className="text-[10px] text-muted-foreground truncate">

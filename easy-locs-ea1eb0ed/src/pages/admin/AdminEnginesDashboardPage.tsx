@@ -349,7 +349,7 @@ export default function AdminEnginesDashboardPage() {
                   <div key={job.name} className="px-4 py-2 space-y-1">
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full shrink-0 ${STATUS_CONFIG[job.runtimeStatus].dot}`} />
-                      <p className="text-[12px] font-semibold text-foreground truncate flex-1">{job.name}</p>
+                      <p className="text-xs font-semibold text-foreground truncate flex-1">{job.name}</p>
                       <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${tierBadge.bg} ${tierBadge.text}`}>
                         {job.tier.toUpperCase()}
                       </span>

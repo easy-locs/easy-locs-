@@ -203,7 +203,7 @@ export default function AutomatedInvoicingEngine({ orgId, className }: { orgId: 
                   <span className="mx-1.5">|</span>
                   <span>TVA: {inv.vatAmount}€</span>
                 </div>
-                <p className="text-[12px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
+                <p className="text-xs font-bold" style={{ color: "hsl(var(--foreground))" }}>
                   {inv.totalAmount} {inv.currency}
                 </p>
               </div>

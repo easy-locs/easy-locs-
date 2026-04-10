@@ -264,7 +264,7 @@ const Pricing = () => {
                   {/* Features */}
                   <ul className="space-y-2 mb-6 flex-1">
                     {tier.features.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12px] text-muted-foreground leading-snug">
+                      <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground leading-snug">
                         <Check className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${isHighlight ? "text-primary" : "text-success"}`} />
                         <span>{f}</span>
                       </li>

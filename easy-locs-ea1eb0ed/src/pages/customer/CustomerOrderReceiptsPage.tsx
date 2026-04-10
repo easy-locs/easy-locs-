@@ -72,7 +72,7 @@ export default function CustomerOrderReceiptsPage() {
           </div>
           <div className="rounded-2xl p-3 text-center" style={{ background: "hsl(38 92% 50% / 0.06)", border: "1px solid hsl(38 92% 50% / 0.1)" }}>
             <Receipt className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(38 92% 50%)" }} />
-            <p className="text-lg font-bold text-foreground">{totalSpent.toFixed(0)}</p>
+            <p className="text-lg font-extrabold text-foreground tabular-nums">{totalSpent.toFixed(0)}</p>
             <p className="text-[10px] text-muted-foreground font-semibold uppercase">Total</p>
           </div>
         </motion.div>

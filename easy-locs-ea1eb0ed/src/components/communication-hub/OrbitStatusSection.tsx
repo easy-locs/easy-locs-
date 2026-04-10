@@ -470,7 +470,7 @@ export default function OrbitStatusSection() {
                 </div>
                 <button
                   onClick={() => { haptic("light"); toast.success(`${t("orbit.status.followed") || "Followed"} ${ch.name}`); }}
-                  className="px-4 py-1.5 rounded-full text-[12px] font-semibold shrink-0"
+                  className="px-4 py-1.5 rounded-full text-xs font-semibold shrink-0"
                   style={{ border: "1.5px solid hsl(var(--primary))", color: "hsl(var(--primary))", background: "transparent" }}
                 >
                   {t("orbit.status.follow") || "Follow"}

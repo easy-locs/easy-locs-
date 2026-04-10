@@ -220,7 +220,7 @@ export default function PropertyHub() {
             <button
               key={chip.value ?? "all"}
               onClick={() => setActiveChip(chip.value)}
-              className="shrink-0 px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-all whitespace-nowrap"
+              className="shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap"
               style={{
                 background: activeChip === chip.value
                   ? "hsl(var(--primary))"
@@ -244,7 +244,7 @@ export default function PropertyHub() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortMode)}
-            className="text-[12px] px-2 py-1.5 rounded-lg border"
+            className="text-xs px-2 py-1.5 rounded-lg border"
             style={{
               background: "hsl(var(--card))",
               borderColor: "hsl(var(--border))",
@@ -334,7 +334,7 @@ export default function PropertyHub() {
                 <p className="text-[14px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                   No listings found
                 </p>
-                <p className="text-[12px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
                   Try adjusting your filters or search terms
                 </p>
               </div>

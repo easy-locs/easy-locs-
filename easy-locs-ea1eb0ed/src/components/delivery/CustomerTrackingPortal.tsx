@@ -104,13 +104,13 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
         {isDelivered ? (
           <>
             <p className="text-lg">🏁</p>
-            <p className="text-[12px] font-bold mt-1" style={{ color: "hsl(var(--success))" }}>Livré à {pkg.deliveredAt}</p>
+            <p className="text-xs font-bold mt-1" style={{ color: "hsl(var(--success))" }}>Livré à {pkg.deliveredAt}</p>
             <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Par {pkg.driverName}</p>
           </>
         ) : (
           <>
             <p className="text-lg">🚚</p>
-            <p className="text-[12px] font-bold mt-1" style={{ color: "hsl(var(--hud-cyan))" }}>
+            <p className="text-xs font-bold mt-1" style={{ color: "hsl(var(--hud-cyan))" }}>
               Arrivée estimée : {pkg.eta}
             </p>
             <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>

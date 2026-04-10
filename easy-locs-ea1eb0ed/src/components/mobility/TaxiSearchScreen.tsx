@@ -209,7 +209,7 @@ export function TaxiSearchScreen() {
               <span className="text-[10px] text-muted-foreground/80 leading-tight text-center">{sl.desc}</span>
               <div className="flex items-center gap-0.5 mt-0.5">
                 <Clock className="w-2.5 h-2.5 text-muted-foreground/50" />
-                <span className="text-[9px] font-semibold text-muted-foreground/60">{sl.eta}</span>
+                <span className="text-[10px] font-semibold text-muted-foreground/60">{sl.eta}</span>
               </div>
             </button>
           );

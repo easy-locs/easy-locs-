@@ -52,7 +52,7 @@ export default function DriverEarningsSummaryPage() {
           <div className="px-4 space-y-3">
             {(data?.rows ?? []).slice(0, 20).map((row: any) => (
               <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
-                <p className="text-sm font-bold text-emerald-500">+{Number(row.amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</p>
+                <p className="text-sm font-bold text-emerald-500 tabular-nums">+{Number(row.amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</p>
                 <p className="text-xs text-muted-foreground">{row.note || "Driver payout"}</p>
                 <p className="text-[11px] text-muted-foreground/70">{row.created_at ? new Date(row.created_at).toLocaleString() : ""}</p>
               </div>

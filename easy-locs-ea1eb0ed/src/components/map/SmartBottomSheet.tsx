@@ -116,7 +116,7 @@ function SheetContent() {
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-[16px] font-bold text-white/95 line-clamp-1">{selected.displayName}</h3>
-            <div className="mt-0.5 flex items-center gap-2 text-[12px] text-white/40">
+            <div className="mt-0.5 flex items-center gap-2 text-xs text-white/40">
               <span className="capitalize">{(selected.category || "").replace(/_/g, " ")}</span>
               {distLabel && (
                 <>
@@ -131,7 +131,7 @@ function SheetContent() {
         {(selected.tags?.["addr:street"] || selected.tags?.["addr:city"]) && (
           <div className="flex items-start gap-2 rounded-xl bg-white/[0.03] px-3 py-2.5">
             <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/30" />
-            <span className="text-[12px] text-white/50">
+            <span className="text-xs text-white/50">
               {[selected.tags?.["addr:housenumber"], selected.tags?.["addr:street"], selected.tags?.["addr:postcode"], selected.tags?.["addr:city"]].filter(Boolean).join(", ")}
             </span>
           </div>

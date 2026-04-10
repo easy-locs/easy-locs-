@@ -130,7 +130,7 @@ export default function CustomerActiveOrdersPage() {
                     </div>
                     <p className="text-xs font-semibold mt-0.5" style={{ color: meta.color }}>{meta.label}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs font-bold text-foreground">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? ""}</span>
+                      <span className="text-xs font-bold text-foreground tabular-nums">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? ""}</span>
                       <span className="text-[10px] text-muted-foreground">{row.created_at ? new Date(row.created_at).toLocaleString() : ""}</span>
                     </div>
                   </div>

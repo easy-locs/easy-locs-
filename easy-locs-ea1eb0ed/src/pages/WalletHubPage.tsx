@@ -450,7 +450,7 @@ export default function WalletHubPage() {
                     {hasMoreTx && (
                       <button
                         onClick={() => setTxPage(p => p + 1)}
-                        className="w-full py-3 text-center text-[12px] font-bold active:opacity-70 transition-opacity"
+                        className="w-full py-3 text-center text-xs font-bold active:opacity-70 transition-opacity"
                         style={{ color: "hsl(38 65% 56%)" }}
                       >
                         {tSafe(t, "wallet.loadMore", "Load more")} ({filteredTx.length - paginatedTx.length} {tSafe(t, "wallet.remaining", "remaining")})

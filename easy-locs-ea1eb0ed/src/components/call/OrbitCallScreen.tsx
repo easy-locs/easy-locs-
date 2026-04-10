@@ -692,7 +692,7 @@ function AddParticipantPanel({
       <div className="flex items-center justify-between px-5 pt-[max(env(safe-area-inset-top,16px),16px)] pb-2">
         <div>
           <h3 className="text-base font-semibold" style={{ color: "white" }}>Add people</h3>
-          <p className="text-[12px]" style={{ color: "hsl(0 0% 50%)" }}>
+          <p className="text-xs" style={{ color: "hsl(0 0% 50%)" }}>
             {selected.size}/{contacts.length}
           </p>
         </div>
@@ -728,7 +728,7 @@ function AddParticipantPanel({
           <div className="pb-20">
             {!search && frequentContacts.length > 0 && (
               <>
-                <p className="px-4 pt-3 pb-1 text-[12px] font-semibold italic" style={{ color: "hsl(0 0% 45%)" }}>
+                <p className="px-4 pt-3 pb-1 text-xs font-semibold italic" style={{ color: "hsl(0 0% 45%)" }}>
                   Frequently contacted
                 </p>
                 {frequentContacts.map(renderContactRow)}

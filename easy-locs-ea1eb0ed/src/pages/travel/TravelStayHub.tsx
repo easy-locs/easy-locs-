@@ -194,7 +194,7 @@ export default function TravelStayHub() {
               <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
                 <PopoverTrigger asChild>
                   <button
-                    className="flex items-center gap-2 h-12 px-3.5 rounded-xl text-[12px] text-left transition-all"
+                    className="flex items-center gap-2 h-12 px-3.5 rounded-xl text-xs text-left transition-all"
                     style={{
                       background: "hsla(0,0%,100%,0.06)",
                       border: "1px solid hsla(0,0%,100%,0.08)",
@@ -223,7 +223,7 @@ export default function TravelStayHub() {
               <Popover open={checkOutOpen} onOpenChange={setCheckOutOpen}>
                 <PopoverTrigger asChild>
                   <button
-                    className="flex items-center gap-2 h-12 px-3.5 rounded-xl text-[12px] text-left transition-all"
+                    className="flex items-center gap-2 h-12 px-3.5 rounded-xl text-xs text-left transition-all"
                     style={{
                       background: "hsla(0,0%,100%,0.06)",
                       border: "1px solid hsla(0,0%,100%,0.08)",
@@ -267,7 +267,7 @@ export default function TravelStayHub() {
             <div className="flex gap-2">
               <div className="flex-1 flex gap-2">
                 <button
-                  className="flex-1 flex items-center justify-center gap-1.5 h-12 rounded-xl text-[12px] font-bold transition-all"
+                  className="flex-1 flex items-center justify-center gap-1.5 h-12 rounded-xl text-xs font-bold transition-all"
                   style={{
                     background: "hsla(0,0%,100%,0.06)",
                     border: "1px solid hsla(0,0%,100%,0.08)",
@@ -279,7 +279,7 @@ export default function TravelStayHub() {
                   {tc("common.guests", { count: guestCount })}
                 </button>
                 <button
-                  className="flex items-center justify-center gap-1.5 h-12 px-3 rounded-xl text-[12px] font-bold transition-all"
+                  className="flex items-center justify-center gap-1.5 h-12 px-3 rounded-xl text-xs font-bold transition-all"
                   style={{
                     background: "hsla(0,0%,100%,0.06)",
                     border: "1px solid hsla(0,0%,100%,0.08)",
@@ -347,7 +347,7 @@ export default function TravelStayHub() {
               }}
             >
               <span className="text-base">{emoji}</span>
-              <span className="text-[12px]">{tc(labelKey)}</span>
+              <span className="text-xs">{tc(labelKey)}</span>
             </button>
           ))}
         </div>
@@ -417,7 +417,7 @@ export default function TravelStayHub() {
               animate={{ rotate: 360 }}
               transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
             />
-            <p className="text-[12px] font-semibold text-muted-foreground">Finding stays…</p>
+            <p className="text-xs font-semibold text-muted-foreground">Finding stays…</p>
           </div>
         )}
 
@@ -469,7 +469,7 @@ export default function TravelStayHub() {
             </div>
             <div className="text-center">
               <p className="text-[14px] font-bold text-foreground">No stays found</p>
-              <p className="text-[12px] text-muted-foreground mt-1 max-w-[240px]">
+              <p className="text-xs text-muted-foreground mt-1 max-w-[240px]">
                 Try a different destination or adjust your dates
               </p>
             </div>
@@ -505,7 +505,7 @@ export default function TravelStayHub() {
                 }} />
                 <div className="absolute bottom-2 left-2.5 flex items-center gap-1.5">
                   <span className="text-lg">{dest.emoji}</span>
-                  <span className="text-[12px] font-bold text-white drop-shadow-md">{dest.name}</span>
+                  <span className="text-xs font-bold text-white drop-shadow-md">{dest.name}</span>
                 </div>
               </motion.button>
             ))}
@@ -525,7 +525,7 @@ export default function TravelStayHub() {
               <div key={i} className="flex items-start gap-3">
                 <span className="text-lg shrink-0">{item.icon}</span>
                 <div>
-                  <p className="text-[12px] font-bold text-foreground">{item.title}</p>
+                  <p className="text-xs font-bold text-foreground">{item.title}</p>
                   <p className="text-[11px] text-muted-foreground">{item.desc}</p>
                 </div>
               </div>

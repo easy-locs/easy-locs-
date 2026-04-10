@@ -67,7 +67,7 @@ function OrbitPreviewWidget() {
               ) : initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-semibold text-foreground truncate leading-tight">{thread.name}</p>
+              <p className="text-xs font-semibold text-foreground truncate leading-tight">{thread.name}</p>
               <p className="text-[10px] text-muted-foreground/60 truncate leading-tight mt-0.5">{thread.lastMessageContent}</p>
             </div>
             {(thread.unreadCount ?? 0) > 0 && (

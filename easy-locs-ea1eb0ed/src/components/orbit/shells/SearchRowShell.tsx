@@ -23,7 +23,7 @@ function SearchRowShell({ name, avatarUrl, subtitle, trailing, onClick }: Props)
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground line-clamp-1">{name}</p>
         {subtitle && (
-          <p className="text-[12px] text-muted-foreground line-clamp-1 mt-0.5">{subtitle}</p>
+          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{subtitle}</p>
         )}
       </div>
       {trailing && <div className="shrink-0">{trailing}</div>}
