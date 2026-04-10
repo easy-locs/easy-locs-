@@ -92,6 +92,7 @@ interface UnifiedMapProps {
   /** @deprecated — use weatherDisplayStore instead. Kept for backward compat. */
   showWeatherLayer?: boolean;
   hideWeatherBadge?: boolean;
+  onMapMove?: (center: { lat: number; lng: number }) => void;
 }
 
 /** Build rich popup HTML */
@@ -138,6 +139,7 @@ export default memo(function UnifiedMap({
   radiusKm,
   showWeatherLayer: _showWeatherLayerLegacy = true,
   hideWeatherBadge = false,
+  onMapMove,
 }: UnifiedMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -150,6 +152,8 @@ export default memo(function UnifiedMap({
   onSelectRef.current = onSelectEntity;
   const onZoneClickRef = useRef(onZoneClick);
   onZoneClickRef.current = onZoneClick;
+  const onMapMoveRef = useRef(onMapMove);
+  onMapMoveRef.current = onMapMove;
 
   // Weather display from canonical store (data always-on)
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
@@ -459,11 +463,14 @@ export default memo(function UnifiedMap({
 
       // ── Zone click: click on empty map area → zone intelligence ──
       map.on("click", (e) => {
-        // If the click hit a pin or cluster, ignore (those handlers run first)
         const pinFeatures = map.queryRenderedFeatures(e.point, { layers: [UNCLUSTERED_LAYER, CLUSTER_LAYER] });
         if (pinFeatures.length > 0) return;
-        // Clicked on empty zone
         onZoneClickRef.current?.(e.lngLat.lat, e.lngLat.lng);
+      });
+
+      map.on("moveend", () => {
+        const c = map.getCenter();
+        onMapMoveRef.current?.({ lat: c.lat, lng: c.lng });
       });
 
       setMapReady(true);
