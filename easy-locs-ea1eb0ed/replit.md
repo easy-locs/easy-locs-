@@ -50,6 +50,7 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 
 ## Key Files
 - **5 Pillars**: `SmartHome.tsx` (Dashboard), `HyperRadarPage.tsx` (Radar), `CommunicationCenter.tsx` (Orbit), `WalletHubPage.tsx` (Wallet), `MeCommandCenter.tsx` (Me)
+- **Radar Components**: `RadarSmartSearch.tsx` (autocomplete + history), `RadarResultCard.tsx` (uniform card), `RadarEntitySheet.tsx` (detail), `PersonalRadarPanel.tsx` (AI personal), `RadarStoryRail.tsx` (stories), `ZoneIntelligenceSheet.tsx` (zone detail)
 - **Stores**: `useOrbitProfileStore` (canonical; `useOrbitStore` deprecated alias)
 - **Services**: `src/services/db.ts` (database), `src/services/` (all services)
 
@@ -75,6 +76,19 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **Minimum font**: `text-[10px]` minimum; `text-xs` (12px) minimum body
 - **Brand colors**: Navy/Gold always via inline `style={{}}`, never Tailwind classes
 - **i18n**: Use `tSafe(t, key, fallback)` pattern
+
+## Radar (HyperRadarPage) Architecture
+- **View modes**: Map (fullscreen Mapbox), List (scrollable cards), Hybrid (50/50 split map+list synced)
+- **Search**: RadarSmartSearch with SearchBrain autocomplete, localStorage history (8 items), 300ms debounce, quick category chips
+- **Filters**: 9 layer toggles (Food, Stay, Services, Utility, Mobility, Nightlife, Healthcare, Shops, Property), weather radar toggle
+- **Sort**: Smart (ranking engine), Nearest (distance), Top Rated, Trending (popularity + reviews + sponsored)
+- **Scoring**: Uses `rankEntities()` from `ranking-engine.ts` — weighted hierarchy/proximity/rating/popularity/boost
+- **Result cards**: `RadarResultCard.tsx` — row variant with image, name (line-clamp-1), category, rating, distance, Ad badge, action buttons (Message, Navigate)
+- **Intelligence**: Vibe density engine, zone rhythm, time-slot guidance (coffee in morning, food at lunch, nightlife at night)
+- **Pillar wiring**: Quick-nav to Dashboard, Orbit, Wallet, Me from bottom sheet
+- **Performance**: `useDeferredValue` for search, `MAX_VISIBLE_PINS=80`, lazy image loading, memo on cards
+- **Weather**: Live weather station with temp, humidity, wind, precipitation
+- **Live context**: Real-time traffic, demand prediction, rider supply, zone events (via RadarView)
 
 ## Visual Cleanup (Error Sanitization)
 - All user-facing `toast.error(err.message)` replaced with user-friendly messages (~90+ files)
