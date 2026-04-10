@@ -625,11 +625,36 @@ export default function QrScannerPage() {
                     </button>
                   </motion.div>
                 ) : state === "resolved" && pendingPayment ? (
-                  <motion.div key="manual-pay" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[320px] rounded-[28px] border border-border bg-card p-5 shadow-xl">
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-lg font-black text-foreground">Enter amount</p>
-                        <p className="text-sm text-muted-foreground">{pendingPayment.recipientName}</p>
+                  <motion.div key="manual-pay" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[340px] rounded-[28px] overflow-hidden shadow-xl">
+                    <div className="p-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 35% 26%))" }}>
+                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
+                        <span className="text-xs font-black" style={{ color: "hsl(38 65% 56%)" }}>
+                          {pendingPayment.recipientName?.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?"}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{pendingPayment.recipientName}</p>
+                        <p className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.45)" }}>{pendingPayment.kind === "shop" ? "Merchant" : "User"} · {pendingPayment.currency}</p>
+                      </div>
+                    </div>
+                    <div className="bg-card p-5 space-y-4">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Enter amount</p>
+                      <div className="flex flex-wrap gap-2">
+                        {[5, 10, 20, 50, 100, 250].map(val => {
+                          const active = manualAmount === String(val);
+                          return (
+                            <button key={val} type="button"
+                              onClick={() => setManualAmount(prev => prev === String(val) ? "" : String(val))}
+                              className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+                              style={{
+                                background: active ? "hsl(38 65% 56%)" : "hsl(var(--muted) / 0.5)",
+                                color: active ? "hsl(220 40% 18%)" : "hsl(var(--foreground))",
+                                border: active ? "none" : "1px solid hsl(var(--border) / 0.3)",
+                              }}>
+                              {val}
+                            </button>
+                          );
+                        })}
                       </div>
                       <input
                         type="number"
@@ -638,11 +663,13 @@ export default function QrScannerPage() {
                         inputMode="decimal"
                         value={manualAmount}
                         onChange={(e) => setManualAmount(e.target.value)}
-                        placeholder="0.00"
+                        placeholder="Custom amount"
                         className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-lg font-semibold text-foreground outline-none"
+                        style={{ fontSize: "16px" }}
                       />
+                      {error && <p className="text-xs text-destructive font-medium">{error}</p>}
                       <div className="grid grid-cols-2 gap-3">
-                        <button type="button" onClick={handleReset} className="rounded-2xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground">Cancel</button>
+                        <button type="button" onClick={handleReset} className="rounded-2xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground active:scale-[0.97] transition-transform">Cancel</button>
                         <button
                           type="button"
                           onClick={async () => {
@@ -671,7 +698,10 @@ export default function QrScannerPage() {
                             } else if (result.error !== "Cancelled") { setError(result.error || "Payment failed"); setState("error"); }
                             else { setState("idle"); handledRef.current = false; }
                           }}
-                          className="rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground">Continue</button>
+                          className="rounded-2xl px-4 py-3 text-sm font-bold active:scale-[0.97] transition-transform"
+                          style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}>
+                          Continue
+                        </button>
                       </div>
                     </div>
                   </motion.div>

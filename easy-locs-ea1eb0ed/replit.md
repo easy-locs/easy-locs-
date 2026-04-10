@@ -97,3 +97,9 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - jsPDF (~300KB) converted from static to dynamic import in all 7 files (3 lib generators, 3 page files, 1 component)
 - All call sites updated to await the async `generateFromTemplate()` / `downloadFinancialPDF()`
 - Skeleton loaders upgraded to `skeleton-premium` CSS class (smooth directional shimmer vs basic pulse)
+
+## Payment/QR UX Improvements ("Améliore")
+- **UnifiedPaymentSystem**: Redesigned with Navy/Gold branded slide-up sheet, spring animation, recipient initials avatar card, swipe-to-pay gesture (drag + keyboard accessible), branded success state
+- **ReceiveQrPanel**: Navy/Gold branded QR card with gradient background, quick amount presets (5/10/20/50/100/250), toggle-off on re-tap, custom amount input
+- **QrScannerPage**: Manual amount entry upgraded with Navy header showing recipient initials, quick amount chips with Gold active state, 16px font-size input
+- **WalletHubPage**: Gold floating "Quick Pay" FAB positioned above bottom nav, spring entrance animation
