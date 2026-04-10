@@ -7,6 +7,7 @@ import { useState, useMemo, useCallback, useEffect, useDeferredValue } from "rea
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
+import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import PersonalRadarPanel from "@/components/radar/PersonalRadarPanel";
 import ZoneIntelligenceSheet from "@/components/radar/ZoneIntelligenceSheet";
 import { useLocationStore } from "@/stores/locationStore";
@@ -69,7 +70,7 @@ export default function HyperRadarPage() {
   const [radius, setRadius] = useState(5);
   const [panelSnap, setPanelSnap] = useState<"closed" | "peek" | "half">("peek");
   const [zoneClick, setZoneClick] = useState<{ lat: number; lng: number } | null>(null);
-  const [selectedEntity, setSelectedEntity] = useState<any>(null);
+  const [selectedEntity, setSelectedEntity] = useState<(GeoEntity & { isSponsored?: boolean; reviewsCount?: number }) | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearch = useDeferredValue(searchQuery);
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
@@ -114,7 +115,7 @@ export default function HyperRadarPage() {
     setPanelSnap("closed");
   }, []);
 
-  const handleSelectEntity = useCallback((entity: any) => {
+  const handleSelectEntity = useCallback((entity: GeoEntity & { isSponsored?: boolean; reviewsCount?: number }) => {
     setSelectedEntity(entity);
     setZoneClick(null);
     setPanelSnap("closed");
@@ -129,7 +130,7 @@ export default function HyperRadarPage() {
     return computeVibeDensity("current", visibleEntities.map(e => ({
       category: e.category || "service",
       rating: e.rating,
-      reviewsCount: (e as any).reviewsCount,
+      reviewsCount: e.reviewsCount,
     })), hour);
   }, [visibleEntities, hour]);
 

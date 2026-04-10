@@ -412,11 +412,22 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCate
 });
 
 /* ═══ Data-Driven Section — Now uses LifecycleCardShell + UniverseCard ═══ */
+interface ShopSummary {
+  id: string;
+  name: string;
+  slug: string;
+  address?: string;
+  vertical?: string;
+  banner_url?: string;
+  logo_url?: string;
+  rating?: number;
+}
+
 const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, shops, seeAllTo }: {
   title: string;
   icon: string;
   cardStatus: import("@/domains/cards/card-contract").CardStatus;
-  shops: any[];
+  shops: ShopSummary[];
   seeAllTo: string;
 }) {
   const { t } = useI18n();
@@ -432,7 +443,7 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
       </div>
       <LifecycleCardShell state={cardStatus} title={title} skeletonCount={3}>
         <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none px-1">
-          {shops.map((shop: any) => (
+          {shops.map((shop) => (
             <UniverseCard
               key={shop.id}
               id={shop.id}

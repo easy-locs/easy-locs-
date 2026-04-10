@@ -39,6 +39,9 @@ const OrbitPromptOverlay = lazy(() => import("@/components/engine/OrbitPromptOve
 const GlobalOverlayRenderer = lazy(() => import("@/components/overlays/GlobalOverlayRenderer").then(m => ({ default: m.GlobalOverlayRenderer })));
 const IntentNavigateProvider = lazy(() => import("@/components/app/IntentNavigateProvider"));
 import SmartCoreTracker from "@/components/system/SmartCoreTracker";
+import { initQualityGates } from "@/lib/quality-gates";
+
+initQualityGates();
 
 // ── Deferred boot guards — loaded 3s after first paint ──
 function DeferredBootGuards() {
