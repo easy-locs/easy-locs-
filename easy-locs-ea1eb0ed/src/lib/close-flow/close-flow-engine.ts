@@ -104,7 +104,7 @@ const DOMAIN_RETURN: Record<CloseFlowDomain, string> = {
   order: "/my-orders",
   delivery: "/mobility/delivery",
   booking: "/my-orders",
-  orbit: "/dashboard/communication",
+  orbit: "/orbit",
 };
 
 export function getReturnRoute(domain: CloseFlowDomain): string {

@@ -24,14 +24,14 @@ interface Props {
 }
 
 const ACTIONS = [
-  { icon: MessageSquare, labelKey: "orbit.nav.chats", fallback: "Chats", path: "/dashboard/communication?section=chats" },
-  { icon: Phone, labelKey: "orbit.nav.calls", fallback: "Calls", path: "/dashboard/communication?section=calls" },
-  { icon: FolderOpen, labelKey: "orbit.nav.files", fallback: "Files", path: "/dashboard/communication?section=files" },
-  { icon: Users, labelKey: "orbit.nav.contacts", fallback: "Contacts", path: "/dashboard/communication?section=contacts" },
-  { icon: CreditCard, labelKey: "orbit.nav.wallet", fallback: "Pay", path: "/dashboard/communication?section=payments" },
-  { icon: Handshake, labelKey: "orbit.nav.deals", fallback: "Deals", path: "/dashboard/communication?section=chats" },
-  { icon: Shield, labelKey: "orbit.nav.security", fallback: "Security", path: "/dashboard/communication?section=settings" },
-  { icon: UserCircle, labelKey: "orbit.nav.you", fallback: "You", path: "/dashboard/communication?section=you" },
+  { icon: MessageSquare, labelKey: "orbit.nav.chats", fallback: "Chats", path: "/orbit?section=chats" },
+  { icon: Phone, labelKey: "orbit.nav.calls", fallback: "Calls", path: "/orbit?section=calls" },
+  { icon: FolderOpen, labelKey: "orbit.nav.files", fallback: "Files", path: "/orbit?section=files" },
+  { icon: Users, labelKey: "orbit.nav.contacts", fallback: "Contacts", path: "/orbit/contacts" },
+  { icon: CreditCard, labelKey: "orbit.nav.wallet", fallback: "Pay", path: "/orbit?section=payments" },
+  { icon: Handshake, labelKey: "orbit.nav.deals", fallback: "Deals", path: "/orbit?section=chats" },
+  { icon: Shield, labelKey: "orbit.nav.security", fallback: "Security", path: "/orbit?section=settings" },
+  { icon: UserCircle, labelKey: "orbit.nav.you", fallback: "You", path: "/orbit?section=you" },
 ] as const;
 
 export default function OrbitSmartHub({ totalProperties, totalCountries, propertiesByCountry }: Props) {

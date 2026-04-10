@@ -2,7 +2,7 @@
  * UnifiedOrderDetailPage — Single screen showing order + payment + delivery + tracking.
  * Route: /order/:orderId
  */
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +26,7 @@ const fmtPrice = (n: number, c = "EUR") => {
 
 export default function UnifiedOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const {
     order, deliveryJob, driverSession, unifiedStatus, timeline,
@@ -63,7 +64,7 @@ export default function UnifiedOrderDetailPage() {
         break;
       case "reorder":
         if (order?.storefront_pages?.slug) {
-          window.location.hash = `/s/${order.storefront_pages.slug}`;
+          navigate(`/s/${order.storefront_pages.slug}`);
         }
         break;
       case "support":

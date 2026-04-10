@@ -5,7 +5,7 @@ import { hasRole } from "@/repositories/auth-utils.repository";
 
 /** Dashboard paths that require an active subscription (pro features) */
 const PRO_DASHBOARD_PREFIXES = [
-  "/dashboard/rental",
+  "/dashboard/rental-management",
   "/dashboard/leases",
   "/dashboard/finances",
   "/dashboard/accounting",

@@ -193,10 +193,10 @@ export function projectChecklist(counts: {
 }): ChecklistModel {
   const items: ChecklistItemModel[] = [
     { id: "property", label: "Ajouter un bien", description: "Créez votre premier bien immobilier", iconKey: "Building", route: "/dashboard/property-management", done: counts.properties > 0 },
-    { id: "tenant", label: "Ajouter un locataire", description: "Enregistrez votre premier locataire", iconKey: "Users", route: "/dashboard/rental?tab=tenants", done: counts.tenants > 0 },
+    { id: "tenant", label: "Ajouter un locataire", description: "Enregistrez votre premier locataire", iconKey: "Users", route: "/dashboard/rental-management?tab=tenants", done: counts.tenants > 0 },
     { id: "document", label: "Générer un document", description: "Bail, quittance, état des lieux…", iconKey: "FileText", route: "/dashboard/documents", done: counts.documents > 0 },
-    { id: "payment", label: "Configurer les loyers", description: "Appels de loyer automatiques", iconKey: "CreditCard", route: "/dashboard/rental?tab=payments", done: counts.payments > 0 },
-    { id: "communication", label: "Envoyer un message", description: "Utilisez le centre de communication", iconKey: "MessageSquare", route: "/dashboard/communication", done: counts.messages > 0 },
+    { id: "payment", label: "Configurer les loyers", description: "Appels de loyer automatiques", iconKey: "CreditCard", route: "/dashboard/rental-management?tab=payments", done: counts.payments > 0 },
+    { id: "communication", label: "Envoyer un message", description: "Utilisez le centre de communication", iconKey: "MessageSquare", route: "/orbit", done: counts.messages > 0 },
   ];
   const doneCount = items.filter((i) => i.done).length;
   return {

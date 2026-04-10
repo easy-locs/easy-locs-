@@ -61,8 +61,8 @@ const GLOBAL_PAGES = [
   "/dashboard/audit",
   "/dashboard/import",
   "/dashboard/install",
-  "/dashboard/communication",
-  "/dashboard/activities",
+  "/orbit",
+  "/activities",
   "/dashboard/my-shop",
   "/shops",
 ];

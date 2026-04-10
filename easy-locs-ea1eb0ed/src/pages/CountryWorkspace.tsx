@@ -46,7 +46,7 @@ const CountryWorkspace = () => {
       title: t("section.long_term") || "Long-term",
       description: t("section.long_term_desc") || "Properties, tenants, leases & rent calls",
       items: [
-        { icon: Home, label: t("nav.properties") || "Properties", path: cp("/dashboard/rental"), count: stats.properties },
+        { icon: Home, label: t("nav.properties") || "Properties", path: cp("/dashboard/rental-management"), count: stats.properties },
         { icon: Building, label: t("nav.buildings") || "Buildings", path: cp("/dashboard/buildings"), count: stats.buildings },
         { icon: Users, label: t("nav.tenants") || "Tenants", path: cp("/dashboard/tenants"), count: stats.tenants },
         { icon: KeyRound, label: t("nav.leases") || "Leases", path: cp("/dashboard/leases"), count: stats.leases },
@@ -54,7 +54,7 @@ const CountryWorkspace = () => {
         { icon: FileCheck, label: t("nav.receipts") || "Receipts", path: cp("/dashboard/receipts") },
         { icon: AlertTriangle, label: t("nav.dunning") || "Dunning Letters", path: cp("/dashboard/dunning") },
         { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
-        { icon: ClipboardCheck, label: t("nav.inventory") || "Inventories", path: cp("/dashboard/rental?tab=inventory"), count: stats.inventories },
+        { icon: ClipboardCheck, label: t("nav.inventory") || "Inventories", path: cp("/dashboard/rental-management?tab=inventory"), count: stats.inventories },
         { icon: Sofa, label: t("nav.furniture") || "Furniture", path: cp("/dashboard/furniture"), count: stats.furniture },
       ],
     },

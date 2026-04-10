@@ -97,7 +97,7 @@ export default function UserProfilePage() {
           {/* Actions */}
           {!isSelf && (
             <div className="flex gap-2 justify-center">
-              <Link to={user ? `/dashboard/communication?contact=${userId}` : `/login?redirect=/u/${userId}`}>
+              <Link to={user ? `/orbit?contact=${userId}` : `/login?redirect=/u/${userId}`}>
                 <Button size="sm" className="gap-1.5">
                   <MessageCircle className="h-4 w-4" /> Chat
                 </Button>

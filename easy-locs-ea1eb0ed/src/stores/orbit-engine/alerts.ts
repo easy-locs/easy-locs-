@@ -30,7 +30,7 @@ export function generateAlerts(state: AlertInput): OrbitAlert[] {
       id: "new-leads", type: "action", priority: 2, icon: "🔥",
       title: "New leads",
       message: `${state.newLeads} lead${state.newLeads > 1 ? "s" : ""} this week`,
-      link: "/dashboard/communication", timestamp: now,
+      link: "/orbit", timestamp: now,
     });
 
   if (state.pendingOrders > 0)
@@ -46,7 +46,7 @@ export function generateAlerts(state: AlertInput): OrbitAlert[] {
       id: "unread-msg", type: "info", priority: 4, icon: "💬",
       title: "Unread messages",
       message: `${state.unreadMessages} unread message${state.unreadMessages > 1 ? "s" : ""}`,
-      link: "/dashboard/communication", timestamp: now,
+      link: "/orbit", timestamp: now,
     });
 
   if (state.missedCalls > 0)
@@ -54,7 +54,7 @@ export function generateAlerts(state: AlertInput): OrbitAlert[] {
       id: "missed-calls", type: "warning", priority: 5, icon: "📞",
       title: "Missed calls",
       message: `${state.missedCalls} missed call${state.missedCalls > 1 ? "s" : ""}`,
-      link: "/dashboard/communication", timestamp: now,
+      link: "/orbit", timestamp: now,
     });
 
   if (state.pendingNotifications > 5)

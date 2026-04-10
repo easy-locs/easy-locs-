@@ -158,7 +158,7 @@ describe("Deep Link Routing — buildTargetUrl", () => {
   it("builds correct URL for payment", async () => {
     const { buildTargetUrl } = await import("@/lib/shared/routes");
     const url = buildTargetUrl("payment", { targetId: "pay-1" });
-    expect(url).toBe("/dashboard/rental?record=pay-1");
+    expect(url).toBe("/dashboard/rental-management?record=pay-1");
   });
 
   it("builds correct URL for receipt", async () => {
@@ -226,7 +226,7 @@ describe("Notification — resolveTarget", () => {
       metadata_json: {
         target_type: "payment",
         target_id: "p-1",
-        target_url: "/dashboard/rental?record=p-1",
+        target_url: "/dashboard/rental-management?record=p-1",
         module: "long_term",
         country_code: "",
       },
@@ -244,7 +244,7 @@ describe("Notification — resolveTarget", () => {
   it("falls back to type-based route as last resort", async () => {
     const { resolveTarget } = await import("@/lib/shared/routes");
     const notif = { type: "payment" };
-    expect(resolveTarget(notif, "landlord")).toBe("/dashboard/rental");
+    expect(resolveTarget(notif, "landlord")).toBe("/dashboard/rental-management");
   });
 
   it("unknown type falls back to /dashboard", async () => {

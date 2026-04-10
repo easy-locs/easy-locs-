@@ -99,7 +99,7 @@ const Login = () => {
           title: t("auth.login.error"),
           description: isInfraError
             ? "Le service de connexion est temporairement indisponible. Réessayez dans quelques instants."
-            : t("common.error_generic") || "Something went wrong. Please try again.",
+            : error.message || t("common.error_generic") || "Something went wrong. Please try again.",
           variant: "destructive",
         });
 
@@ -191,8 +191,8 @@ const Login = () => {
     });
     setLoading(false);
     if (error) {
-      console.error("[Auth]", error.message);
-      toast({ title: t("common.error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
+      console.error("[Auth] OTP send:", error.message);
+      toast({ title: t("common.error"), description: error.message || t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     } else {
       setOtpSent(true);
       toast({ title: t("auth.login.code_sent"), description: t("auth.login.code_sent_desc") });
@@ -209,8 +209,8 @@ const Login = () => {
     const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
     setLoading(false);
     if (error) {
-      console.error("[Auth]", error.message);
-      toast({ title: t("auth.login.invalid_code"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
+      console.error("[Auth] OTP verify:", error.message);
+      toast({ title: t("auth.login.invalid_code"), description: error.message || t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     } else {
       const otpTraceId = crypto.randomUUID();
       authLog("LOGIN_SESSION_DETECTED", { traceId: otpTraceId, userId: data.user?.id, source: "otp_verify" });
@@ -253,10 +253,10 @@ const Login = () => {
       }
     } catch (err) {
       authError("PHONE_LOGIN_FAILED", { traceId, error: err instanceof Error ? err.message : "UNKNOWN" });
-      console.error("[Auth]", err instanceof Error ? err.message : err);
+      console.error("[Auth] Phone login:", err instanceof Error ? err.message : err);
       toast({
         title: t("common.error") || "Error",
-        description: t("common.error_generic") || "Something went wrong. Please try again.",
+        description: (err instanceof Error ? err.message : null) || t("common.error_generic") || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {

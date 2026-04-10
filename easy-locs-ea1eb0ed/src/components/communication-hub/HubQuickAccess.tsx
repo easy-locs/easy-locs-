@@ -19,7 +19,7 @@ export default function HubQuickAccess({ variant }: Props) {
   if (variant === "topbar") {
     return (
       <Link
-        to="/dashboard/communication"
+        to="/orbit"
         className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/10 transition-colors"
         title="Communication Hub"
       >
@@ -44,7 +44,7 @@ export default function HubQuickAccess({ variant }: Props) {
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <Link
-        to="/dashboard/communication"
+        to="/orbit"
         className="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-accent text-accent-foreground shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-shadow"
         aria-label="Communication Hub"
       >

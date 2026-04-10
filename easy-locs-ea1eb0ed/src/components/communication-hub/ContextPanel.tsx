@@ -203,10 +203,10 @@ export default function ContextPanel({ thread, orgId }: Props) {
 
               <div className="space-y-1">
                 <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-7 gap-1.5" asChild>
-                  <a href={`/dashboard/rental?tab=tenants`}><User className="h-3 w-3" /> {t("orbit.context.tenant_file")}</a>
+                  <a href={`/dashboard/rental-management?tab=tenants`}><User className="h-3 w-3" /> {t("orbit.context.tenant_file")}</a>
                 </Button>
                 <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-7 gap-1.5" asChild>
-                  <a href={`/dashboard/rental?tab=payments`}><CreditCard className="h-3 w-3" /> {t("orbit.context.rent_payments")}</a>
+                  <a href={`/dashboard/rental-management?tab=payments`}><CreditCard className="h-3 w-3" /> {t("orbit.context.rent_payments")}</a>
                 </Button>
                 <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-7 gap-1.5" asChild>
                   <a href={`/dashboard/interventions`}><Wrench className="h-3 w-3" /> {t("orbit.context.maintenance")}</a>

@@ -105,7 +105,7 @@ const GuestPortal = () => {
     setSendingMessage(true);
     try {
       await sendGuestEmail(org?.email || "", booking.guest_name, booking.guest_email, message, property?.label || "—", booking.check_in, booking.check_out);
-      await notifyOrgOwner(booking.org_id, `💬 ${booking.guest_name}`, message.slice(0, 200), "guest_message", "/dashboard/communication");
+      await notifyOrgOwner(booking.org_id, `💬 ${booking.guest_name}`, message.slice(0, 200), "guest_message", "/orbit");
       setMessages(prev => [...prev, { id: Date.now().toString(), created_at: new Date().toISOString(), title: `💬 You`, message, type: "guest" }]);
       setMessage("");
       toast.success("Message sent!");

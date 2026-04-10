@@ -97,7 +97,7 @@ export const NAV_TABS = {
 export const EXPLORE_CATEGORIES = [
   { key: "food", label: "Food", icon: "🍔", path: "/browse/food" },
   { key: "grocery", label: "Grocery", icon: "🛒", path: "/browse/grocery" },
-  { key: "shops", label: "Shops", icon: "🛍️", path: "/browse/retail" },
+  { key: "shops", label: "Shops", icon: "🛍️", path: "/browse/shops" },
   { key: "services", label: "Services", icon: "🔧", path: "/browse/services" },
   { key: "taxi", label: "Taxi", icon: "🚕", path: "/mobility/taxi" },
   { key: "delivery", label: "Delivery", icon: "🚚", path: "/mobility/delivery" },

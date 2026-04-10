@@ -5,13 +5,13 @@
 
 const DEEP_LINK_MAP: Record<string, string> = {
   // Calls
-  incoming_call: "/dashboard/communication?section=calls",
-  call: "/dashboard/communication?section=calls",
-  missed_call: "/dashboard/communication?section=calls",
+  incoming_call: "/orbit?section=calls",
+  call: "/orbit?section=calls",
+  missed_call: "/orbit?section=calls",
 
   // Messages
-  message: "/dashboard/communication",
-  chat: "/dashboard/communication",
+  message: "/orbit",
+  chat: "/orbit",
 
   // Money
   wallet_credited: "/wallet",

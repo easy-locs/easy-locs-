@@ -425,8 +425,8 @@ describe("Communication Pipeline — Email CTA URLs", () => {
     const tests = [
       { type: "lease" as const, ids: { targetId: "l-1", countryCode: "FR" }, expected: "/dashboard/leases?country=FR&record=l-1" },
       { type: "booking_request" as const, ids: { bookingId: "bk-1", countryCode: "ES" }, expected: "/dashboard/seasonal?country=ES&booking=bk-1" },
-      { type: "marketplace_booking" as const, ids: { bookingId: "mb-1" }, expected: "/dashboard/activities?booking=mb-1" },
-      { type: "payment" as const, ids: { targetId: "p-1" }, expected: "/dashboard/rental?record=p-1" },
+      { type: "marketplace_booking" as const, ids: { bookingId: "mb-1" }, expected: "/activities?booking=mb-1" },
+      { type: "payment" as const, ids: { targetId: "p-1" }, expected: "/dashboard/rental-management?record=p-1" },
       { type: "intervention" as const, ids: { targetId: "i-1", countryCode: "DE" }, expected: "/dashboard/interventions?country=DE&record=i-1" },
     ];
 

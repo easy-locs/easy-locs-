@@ -45,8 +45,6 @@ export const routes = {
   auditDebug: () => `/admin/audit-debug`,
   opsWallboard: () => `/admin/ops-wallboard`,
   outreach: () => `/admin/outreach`,
-  dinoAudit: () => `/admin/dino`,
-  dinoControl: () => `/admin/dino-control`,
   seedTools: () => `/admin/seed-tools`,
   favorites: () => `/favorites`,
 
@@ -341,7 +339,7 @@ export const routes = {
 
   // Dashboard
   dashboard: () => `/dashboard`,
-  communication: () => `/dashboard/communication`,
+  communication: () => `/orbit`,
 
   // Wallet
   wallet: () => `/wallet`,

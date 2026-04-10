@@ -318,7 +318,7 @@ export default function PropertyCalendar() {
   /* ─── Communication Center link builder ─── */
   const getCommunicationLink = (ev: CalendarEvent) => {
     if (ev.source === "blocked") return null;
-    return `/dashboard/communication?search=${encodeURIComponent(ev.guestName || ev.guestEmail)}`;
+    return `/orbit?search=${encodeURIComponent(ev.guestName || ev.guestEmail)}`;
   };
 
   /* ─── Event pill for month/week view ─── */
