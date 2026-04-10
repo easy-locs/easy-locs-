@@ -28,6 +28,7 @@ import { AddContactByEmail } from "@/components/chat/AddContactByEmail";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import { useThreadActions } from "@/hooks/useThreadActions";
 import type { ConversationThread } from "@/components/communication-hub/types";
+import SEOHead from "@/components/SEOHead";
 import { useThreadSelectionStore } from "@/stores/orbit/thread-selection.store";
 // useOrbitCallSync removed — centralized in RealtimeHubGuard
 import { useAuth } from "@/contexts/AuthContext";
@@ -275,6 +276,7 @@ export const CommunicationCenter = () => {
 
   return (
     <>
+      <SEOHead title="Orbit — Easy-Locs" description="Messagerie et communication Easy-Locs." noindex />
       <div
         className="flex flex-col"
         onClick={(e) => e.stopPropagation()}

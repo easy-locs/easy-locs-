@@ -69,10 +69,10 @@ const SuperServicesGrid = memo(function SuperServicesGrid() {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-2 px-1">
-        <h3 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+      <div className="flex items-center justify-between mb-2.5 px-1">
+        <h2 className="text-[14px] font-black text-foreground flex items-center gap-1.5">
           <span>⚡</span> {t("dashboard.super_services")}
-        </h3>
+        </h2>
       </div>
       <div className="grid grid-cols-4 gap-2">
         {SUPER_SERVICES.map((svc, i) => {

@@ -6,6 +6,7 @@ import { useWalletBalance, useWalletTransactions } from "@/payments/wallet-hooks
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
+import SEOHead from "@/components/SEOHead";
 
 import {
   ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
@@ -41,6 +42,8 @@ export default function WalletHubPage() {
   const [showBalance, setShowBalance] = useState(true);
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
   const [activeTab, setActiveTab] = useState<WalletTab>("fiat");
+  const [txPage, setTxPage] = useState(1);
+  const TX_PER_PAGE = 20;
 
   const mainCurrency = walletCurrency || rows[0]?.currency || getWalletDefaultCurrency();
   const totalBalance = walletBalance;
@@ -101,11 +104,17 @@ export default function WalletHubPage() {
   ];
   const quickRoutes = ["/wallet/top-up", "/wallet/transfer", "/wallet/request", "/pay/scan"];
 
-  const filteredTx = txHistory.filter((tx) => {
-    if (filter === "all") return true;
-    if (filter === "in") return tx.recipient_id === user?.id;
-    return tx.sender_id === user?.id;
-  });
+  const filteredTx = useMemo(() => {
+    const filtered = txHistory.filter((tx) => {
+      if (filter === "all") return true;
+      if (filter === "in") return tx.recipient_id === user?.id;
+      return tx.sender_id === user?.id;
+    });
+    return filtered;
+  }, [txHistory, filter, user?.id]);
+
+  const paginatedTx = useMemo(() => filteredTx.slice(0, txPage * TX_PER_PAGE), [filteredTx, txPage]);
+  const hasMoreTx = paginatedTx.length < filteredTx.length;
 
   const createDefaultWallet = async () => {
     if (!user?.id) return;
@@ -133,6 +142,11 @@ export default function WalletHubPage() {
 
   return (
     <div className="app-mobile-page flex flex-col bg-background" data-wallet-page>
+      <SEOHead
+        title="Wallet — Easy-Locs"
+        description="Gérez votre portefeuille Easy-Locs : solde, paiements QR, transferts, historique des transactions."
+        noindex
+      />
       <header className="app-page-header">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate("/")} className="app-page-header-btn">
@@ -416,7 +430,7 @@ export default function WalletHubPage() {
                   </div>
                 ) : (
                   <div className="app-card">
-                    {filteredTx.map((tx, i) => (
+                    {paginatedTx.map((tx, i) => (
                       <div key={tx.id ?? i}>
                         <TransactionRow
                           id={tx.id}
@@ -428,9 +442,18 @@ export default function WalletHubPage() {
                           status={tx.status === "completed" ? "completed" : tx.status === "pending" ? "pending" : tx.status === "failed" ? "failed" : "completed"}
                           timestamp={tx.created_at}
                         />
-                        {i < filteredTx.length - 1 && <div className="app-list-divider" />}
+                        {i < paginatedTx.length - 1 && <div className="app-list-divider" />}
                       </div>
                     ))}
+                    {hasMoreTx && (
+                      <button
+                        onClick={() => setTxPage(p => p + 1)}
+                        className="w-full py-3 text-center text-[12px] font-bold active:opacity-70 transition-opacity"
+                        style={{ color: "hsl(38 65% 56%)" }}
+                      >
+                        {tSafe(t, "wallet.loadMore", "Load more")} ({filteredTx.length - paginatedTx.length} {tSafe(t, "wallet.remaining", "remaining")})
+                      </button>
+                    )}
                   </div>
                 )}
               </motion.div>

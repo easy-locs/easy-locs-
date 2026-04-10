@@ -30,6 +30,7 @@ import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useI18n } from "@/lib/i18n";
 import { Z } from "@/lib/ui/z-index";
+import SEOHead from "@/components/SEOHead";
 
 const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; color: string; emoji: string }[] = [
   { id: "food", labelKey: "radar.layer_food", icon: <Utensils className="w-3 h-3" />, color: "hsl(15 80% 55%)", emoji: "🍽️" },
@@ -158,6 +159,12 @@ export default function HyperRadarPage() {
 
   return (
     <div className="h-[100dvh] w-full relative overflow-hidden bg-background">
+      <SEOHead
+        title="Radar — Découvrez autour de vous | Easy-Locs"
+        description="Explorez restaurants, hôtels, services, commerces et activités à proximité sur la carte interactive Easy-Locs."
+        canonical="https://www.easy-locs.com/radar"
+        keywords="radar, découverte locale, restaurants proches, hôtels, services, carte interactive, Easy-Locs"
+      />
 
       {/* ═══ LAYER 1: MAP (base) ═══ */}
       <div className="absolute inset-0 z-0">
