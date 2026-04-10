@@ -18,8 +18,10 @@ export class FeatureErrorBoundary extends Component<Props, State> {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: unknown): State {
+    if (error instanceof Error) return { hasError: true, error };
+    const msg = typeof error === "string" ? error : "An unexpected error occurred";
+    return { hasError: true, error: new Error(msg) };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {

@@ -430,7 +430,9 @@ export default function MeCommandCenter() {
           <AlertTriangle className="w-7 h-7" style={{ color: A.gold }} />
         </div>
         <p className="text-sm font-bold text-foreground">{tSafe(t, "errors.load_failed", "Failed to load")}</p>
-        <p className="text-xs text-muted-foreground max-w-xs">{String(shopsError)}</p>
+        <p className="text-xs text-muted-foreground max-w-xs">
+          {shopsError instanceof Error ? shopsError.message : typeof shopsError === "string" ? shopsError : "Unable to load your profile data. Please try again."}
+        </p>
         <button
           onClick={() => window.location.reload()}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
