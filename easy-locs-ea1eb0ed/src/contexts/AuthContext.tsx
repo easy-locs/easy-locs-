@@ -435,7 +435,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const emailVerified = !!user?.email_confirmed_at;
+  const isPhoneUser = !!(user?.phone && (user.user_metadata as any)?.signup_method === "phone");
+  const emailVerified = !!user?.email_confirmed_at || isPhoneUser;
 
   const signOut = useCallback(async () => {
     teardownSession();

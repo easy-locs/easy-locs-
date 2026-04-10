@@ -2,10 +2,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
+import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AppLogo from "@/components/AppLogo";
 import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
+import PhoneOTPFlow from "@/components/auth/PhoneOTPFlow";
+import ContactSyncPrompt from "@/components/auth/ContactSyncPrompt";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
 import { getPostLoginRoute, waitForAuthenticatedUser } from "@/lib/auth-redirect";
@@ -14,8 +16,10 @@ import {
   authLog, authWarn, authError, authTraceSummary,
   setActiveTrace, clearActiveTrace,
 } from "@/lib/auth/auth-trace";
+import { signInOrSignUpWithPhone } from "@/lib/auth/phone-identity";
+import { runIdentityActivation } from "@/lib/auth/identity-activation-pipeline";
 
-type AuthMode = "password" | "otp";
+type AuthMode = "password" | "otp" | "phone";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -23,9 +27,12 @@ const Login = () => {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [retryStatus, setRetryStatus] = useState<string | null>(null);
-  const [mode, setMode] = useState<AuthMode>("password");
+  const [mode, setMode] = useState<AuthMode>("phone");
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
+  const [phoneActivating, setPhoneActivating] = useState(false);
+  const [phoneActivatedUserId, setPhoneActivatedUserId] = useState<string | null>(null);
+  const [showContactSync, setShowContactSync] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useI18n();
@@ -209,6 +216,60 @@ const Login = () => {
     }
   };
 
+  const handlePhoneVerified = async (phone: string, _sessionId: string) => {
+    setPhoneActivating(true);
+    const traceId = crypto.randomUUID();
+    setActiveTrace(traceId, Date.now());
+    authLog("PHONE_LOGIN_STARTED", { traceId, phone });
+
+    try {
+      const { userId, isNewUser } = await signInOrSignUpWithPhone(phone);
+      authLog("PHONE_IDENTITY_RESOLVED", { traceId, userId, isNewUser });
+
+      const activation = await runIdentityActivation({
+        userId,
+        phone,
+        isNewUser,
+      });
+      authLog("IDENTITY_ACTIVATION_COMPLETE", { traceId, ...activation });
+
+      if (!activation.success) {
+        throw new Error(activation.error || "Identity activation failed");
+      }
+
+      const { data: { user: confirmedUser } } = await supabase.auth.getUser();
+      if (!confirmedUser) {
+        authWarn("PHONE_LOGIN_NO_SESSION", { traceId, userId });
+      }
+
+      setPhoneActivatedUserId(userId);
+
+      if (isNewUser) {
+        setShowContactSync(true);
+      } else {
+        await redirectAfterLogin(traceId, userId);
+      }
+    } catch (err: any) {
+      authError("PHONE_LOGIN_FAILED", { traceId, error: err?.message });
+      toast({
+        title: t("common.error") || "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setPhoneActivating(false);
+      clearActiveTrace();
+    }
+  };
+
+  const handleContactSyncDone = async () => {
+    setShowContactSync(false);
+    if (phoneActivatedUserId) {
+      const traceId = crypto.randomUUID();
+      await redirectAfterLogin(traceId, phoneActivatedUserId);
+    }
+  };
+
   const inputClass = "w-full bg-background border border-border rounded-xl ps-10 pe-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
 
   return (
@@ -229,25 +290,52 @@ const Login = () => {
         <h1 className="text-2xl font-bold text-foreground mb-1 text-center">{t("auth.login.title")}</h1>
         <p className="text-muted-foreground text-sm mb-6 text-center">{t("auth.login.subtitle")}</p>
 
-        {/* Tabs */}
-        <div className="flex gap-1 bg-muted/50 rounded-xl p-1 mb-6">
-          {(["password", "otp"] as const).map((m) => (
-            <motion.button
-              key={m}
-              type="button"
-              onClick={() => { setMode(m); setOtpSent(false); setOtp(""); }}
-              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}
-              whileTap={{ scale: 0.97 }}
-            >
-              {m === "password" ? <Lock className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
-              {m === "password" ? t("auth.login.password_tab") : t("auth.login.otp_tab")}
-            </motion.button>
-          ))}
-        </div>
+        {!showContactSync && !phoneActivating && (
+          <div className="flex gap-1 bg-muted/50 rounded-xl p-1 mb-6">
+            {(["phone", "password", "otp"] as const).map((m) => (
+              <motion.button
+                key={m}
+                type="button"
+                onClick={() => { setMode(m); setOtpSent(false); setOtp(""); }}
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+                whileTap={{ scale: 0.97 }}
+              >
+                {m === "phone" && <Phone className="h-3.5 w-3.5" />}
+                {m === "password" && <Lock className="h-3.5 w-3.5" />}
+                {m === "otp" && <Sparkles className="h-3.5 w-3.5" />}
+                {m === "phone" ? (t("auth.login.phone_tab") || "Phone") : m === "password" ? t("auth.login.password_tab") : t("auth.login.otp_tab")}
+              </motion.button>
+            ))}
+          </div>
+        )}
 
-        {mode === "password" && (
+        {showContactSync && phoneActivatedUserId && (
+          <ContactSyncPrompt
+            userId={phoneActivatedUserId}
+            onComplete={handleContactSyncDone}
+            onSkip={handleContactSyncDone}
+          />
+        )}
+
+        {phoneActivating && (
+          <div className="flex flex-col items-center justify-center py-8 gap-3">
+            <Loader2 className="h-8 w-8 animate-spin" style={{ color: "hsl(38, 65%, 56%)" }} />
+            <p className="text-sm text-muted-foreground">{t("auth.phone.activating") || "Activating your account…"}</p>
+          </div>
+        )}
+
+        {mode === "phone" && !showContactSync && !phoneActivating && (
+          <PhoneOTPFlow
+            onVerified={handlePhoneVerified}
+            onCancel={() => setMode("password")}
+            title={t("auth.phone.title") || "Sign in with phone"}
+            subtitle={t("auth.phone.subtitle") || "Enter your phone number to receive a verification code"}
+          />
+        )}
+
+        {mode === "password" && !showContactSync && !phoneActivating && (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label htmlFor="login-email" className="block text-sm font-medium text-foreground mb-1.5">{t("auth.login.email")}</label>
@@ -292,7 +380,7 @@ const Login = () => {
           </form>
         )}
 
-        {mode === "otp" && !otpSent && (
+        {mode === "otp" && !otpSent && !showContactSync && !phoneActivating && (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t("auth.login.email")}</label>
@@ -316,7 +404,7 @@ const Login = () => {
           </form>
         )}
 
-        {mode === "otp" && otpSent && (
+        {mode === "otp" && otpSent && !showContactSync && !phoneActivating && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -347,14 +435,16 @@ const Login = () => {
           </form>
         )}
 
-        <SocialLoginButtons />
+        {!showContactSync && !phoneActivating && <SocialLoginButtons />}
 
-        <div className="flex items-center justify-between mt-6">
-          <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-accent transition-colors">{t("auth.login.forgot")}</Link>
-          <p className="text-sm text-muted-foreground">
-            <Link to="/signup" className="text-foreground font-medium hover:text-accent transition-colors">{t("auth.login.create_account")}</Link>
-          </p>
-        </div>
+        {!showContactSync && !phoneActivating && (
+          <div className="flex items-center justify-between mt-6">
+            <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-accent transition-colors">{t("auth.login.forgot")}</Link>
+            <p className="text-sm text-muted-foreground">
+              <Link to="/signup" className="text-foreground font-medium hover:text-accent transition-colors">{t("auth.login.create_account")}</Link>
+            </p>
+          </div>
+        )}
       </motion.div>
     </div>
   );

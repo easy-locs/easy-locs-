@@ -79,6 +79,25 @@ easy-locs-ea1eb0ed/
 └── public/              # Static assets
 ```
 
+## Phone + OTP Identity Activation System
+The app uses phone number + OTP as the root identity activation method. Phone is the default auth tab on both Login and Signup pages.
+
+**Architecture**:
+- `src/lib/auth/phone-identity.ts` — Phone verification service (send OTP, verify code, sign in/up)
+- `src/lib/auth/identity-activation-pipeline.ts` — Post-OTP chain: account → orbit profile → wallet → contact sync offer
+- `src/lib/contacts/contact-sync-service.ts` — Contact sync service for platform discovery (batch phone matching, native Contacts API)
+- `src/components/auth/PhoneOTPFlow.tsx` — 3-step animated UI (phone input → 6-digit OTP → verified)
+- `src/components/auth/ContactSyncPrompt.tsx` — Post-signup contact sync prompt with privacy notice
+
+**Flow**:
+1. User enters phone number → OTP sent via `send-otp` edge function + stored hash in `phone_otp_sessions`
+2. User enters 6-digit code → SHA-256 hash compared, rate-limited (5 attempts, 10min expiry)
+3. On verification: `signInOrSignUpWithPhone()` resolves existing user or creates new
+4. `runIdentityActivation()` pipeline: ensure user profile → ensure orbit profile (phone_verified) → ensure wallet → emit platform event
+5. New users get contact sync prompt before redirect; returning users redirect immediately
+
+**Security**: Hash-based OTP (never stored plain), 5 sessions/30min rate limit, 5 attempt max per session, 10-minute expiry.
+
 ## Supabase Project
 - **Project ID**: `ifvuvbolrmuuugtzxsfk`
 - **Region**: `ap-southeast-1`
