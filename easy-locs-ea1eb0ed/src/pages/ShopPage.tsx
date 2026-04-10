@@ -38,6 +38,8 @@ import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import { FALLBACK_SHOPS, FALLBACK_GROCERY, type FallbackShop } from "@/data/fallback-shops";
 import { FALLBACK_SERVICES, type FallbackServiceProvider } from "@/data/fallback-services";
 import { FALLBACK_HOTELS, type FallbackHotel } from "@/data/fallback-hotels";
+import SmartEntityActions from "@/components/smart/SmartEntityActions";
+import { buildEntityFromMerchant } from "@/lib/smart/smart-bridge";
 
 type FallbackEntry = FallbackShop | FallbackServiceProvider | FallbackHotel;
 
@@ -378,7 +380,7 @@ export default function ShopPage() {
 
         {/* ═══ CTA ROW ═══ */}
         <div className="px-4 max-w-2xl mx-auto mt-4">
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-2">
             {catalogItems.length > 0 && (
               <Button
                 size="sm"
@@ -389,29 +391,12 @@ export default function ShopPage() {
                 View Menu
               </Button>
             )}
-            {shop.contact_phone && (
-              <Button size="sm" variant="outline" className="gap-1.5 h-10 rounded-xl" onClick={() => { if (navigator.clipboard) navigator.clipboard.writeText(shop.contact_phone); toast.success("Phone number copied"); }}>
-                <Phone className="h-3.5 w-3.5" />
-              </Button>
-            )}
-            {shop.contact_whatsapp && (
-              <Button size="sm" variant="outline" className="gap-1.5 h-10 rounded-xl text-[#25D366] border-[#25D366]/30" asChild>
-                <a href={`https://wa.me/${shop.contact_whatsapp}`} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-3.5 w-3.5" />
-                </a>
-              </Button>
-            )}
-            {shop.contact_email && (
-              <Button size="sm" variant="outline" className="gap-1.5 h-10 rounded-xl"
-                onClick={async () => {
-                  const { navigateToOrbitThread } = await import("@/lib/orbit/navigate-to-thread");
-                  const path = await navigateToOrbitThread({ targetEmail: shop.contact_email, targetUserId: shop.user_id, targetName: shop.display_name || shop.name });
-                  if (path) navigate(path);
-                }}>
-                <Send className="h-3.5 w-3.5" />
-              </Button>
-            )}
           </div>
+          <SmartEntityActions
+            entity={buildEntityFromMerchant(shop)}
+            layout="row"
+            maxActions={8}
+          />
         </div>
 
         {/* ═══ TABS ═══ */}

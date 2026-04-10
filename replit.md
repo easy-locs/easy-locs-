@@ -333,6 +333,15 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **CustomerAddressBookPage** (`/me/address-book`): Real DB — reads/writes `user_addresses` table (unified with SettingsAddresses)
 - Both use `supabase.from("user_addresses")` pattern for CRUD
 
+### Smart Cross-Section Bridge
+- **Engine**: `src/lib/smart/smart-bridge.ts` — resolves contextual actions for any entity (merchant, contact, listing, service, hotel, property)
+- **UI Component**: `src/components/smart/SmartEntityActions.tsx` — renders action pills/grid/compact buttons with loading states
+- **Entity builders**: `buildEntityFromMerchant()`, `buildEntityFromContact()`, `buildEntityFromListing()`
+- **Actions**: message, voice_call, video_call, phone_call, whatsapp, order, book, taxi_to, deliver_from, view_shop, pay, share, save_contact, navigate
+- **Integrations**: ShopPage (merchant CTA row), CommContactsSection (contact detail sheet)
+- **Route contract**: Shop links → `/s/{slug}`, Pay → `/wallet/transfer`, Taxi → `/mobility/taxi`
+- **Platform bus events**: `mobility:set_destination` for taxi-to-entity, `orbit:contacts_updated` for save-contact
+
 ### RadarPage Map Integration
 - `filtered` from radarStore is converted to GeoEntity format via `radarPointsToGeoEntities()` 
 - Map entities are wired to UnifiedMap with click-to-navigate (slug → `/s/{slug}`)

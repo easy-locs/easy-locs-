@@ -144,7 +144,7 @@ export default function PremiumMerchantCard({
           to={to}
           className="block rounded-2xl overflow-hidden active:scale-[0.97] transition-transform border border-border/15 bg-card shadow-sm"
         >
-          <div className="aspect-[4/3] relative overflow-hidden">
+          <div className="aspect-[3/2] relative overflow-hidden">
             <Img className="w-full h-full" />
             {badge && (
               <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm"
