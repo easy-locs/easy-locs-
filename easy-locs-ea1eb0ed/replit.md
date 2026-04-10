@@ -165,3 +165,25 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **HyperRadarPage**: Search filtering now uses `useDeferredValue` for non-blocking input. Prevents UI jank during search with up to 80 visible pins.
 - **Existing infrastructure confirmed active**: smart-prefetch (T+2s), browser-telemetry (T+3s via DeferredBootGuards), UX friction engine (T+8s via engine-orchestrator Tier 2), PWA offline support, optimistic UI framework.
 - **i18n**: 24 new keys for smart suggestions (FR + EN).
+
+## Technical Hardening Pass (Latest)
+### Dead Code Cleanup
+- Removed `src/lib/address/resolver/` (unused directory — 3 files)
+- Removed `src/lib/payments/payment-intent.ts` (duplicate of payment-intents.ts)
+- Removed `src/i18n/locales/` (unused — app uses src/lib/i18n-data.ts)
+- Removed `src/lib/pwa-advanced.ts` + test (superseded by pwa-utils.ts)
+- Removed `src/lib/api-docs.ts` + test (unused)
+
+### Type Safety Hardening
+- **merchant.types.ts** (`src/services/merchant.types.ts`): 12 canonical interfaces for merchant domain (MerchantRecord, StorefrontPage, CatalogCategory, MenuItem, OrderRecord, ReviewRecord, PromoRecord, ProductRecord, MerchantSummary, MerchantAnalytics, OnboardingProfile, OrderSummaryRow)
+- **merchant.service.ts**: All return types now concrete (was `unknown[]` / `any[]`). Every method has explicit return type annotation.
+- **HyperRadarPage**: `selectedEntity` state typed as `GeoEntity & { isSponsored?; reviewsCount? }` (was `any`). `handleSelectEntity` callback typed. Removed `as any` cast for `reviewsCount`.
+- **SmartHome**: `AdapterSection` shops prop typed as `ShopSummary[]` interface (was `any[]`). Iterator typed.
+
+### Error Handling Normalization
+- **useAppError** (`src/hooks/useAppError.ts`): Hook wrapping `classifyError` + `reportError` + i18n-aware toast. Provides `handleError(error)` for manual catch blocks and `wrapAsync(fn, fallback)` for automatic error handling. Severity-aware toast duration (fatal=8s, transient=4s, standard=5s). Falls back through `error.{domain}` → `error.{context}` → built-in userMessage.
+- **i18n Error Keys**: 11 error domain keys added to FR + EN: `error.network`, `error.auth`, `error.validation`, `error.database`, `error.payment`, `error.unknown`, `error.wallet`, `error.booking`, `error.order`, `error.upload`, `error.permission`
+
+### Quality Gates System
+- **quality-gates.ts** (`src/lib/quality-gates.ts`): Runtime quality infrastructure with error log collection (max 500), health status monitoring (healthy/degraded/unhealthy based on 5-min error rate), architecture rules registry (8 rules: no-direct-db-in-ui, no-any-in-services, no-circular-deps, no-raw-error-messages, canonical-types-only, i18n-required, service-layer-required, no-dead-routes), performance budgets (bundle 500KB, page load 3s, interaction 100ms, list items 100, images 200KB), and module-level quality scoring.
+- **initQualityGates()**: Wired in App.tsx at module scope — registers global error reporter to feed error snapshots into quality tracking. `getErrorSummary()` returns live health dashboard data.
