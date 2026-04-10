@@ -143,8 +143,8 @@ export default function WalletHubPage() {
   return (
     <div className="app-mobile-page flex flex-col bg-background" data-wallet-page>
       <SEOHead
-        title="Wallet — Easy-Locs"
-        description="Gérez votre portefeuille Easy-Locs : solde, paiements QR, transferts, historique des transactions."
+        title={t("wallet.seo_title")}
+        description={t("wallet.seo_desc")}
         noindex
       />
       <header className="app-page-header">

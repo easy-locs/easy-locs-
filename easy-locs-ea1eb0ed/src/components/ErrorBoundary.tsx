@@ -24,6 +24,12 @@ class ErrorBoundary extends Component<Props, State> {
     console.error("[ErrorBoundary] Error:", error.message, error.stack);
     console.error("[ErrorBoundary] Component Stack:", info.componentStack);
 
+    void import("@/lib/analytics/sentry")
+      .then(({ captureException }) => {
+        captureException(error, { componentStack: info.componentStack });
+      })
+      .catch(() => {});
+
     void import("@/lib/ai-audit/triggers")
       .then(({ reportUIRegression }) => {
         reportUIRegression(

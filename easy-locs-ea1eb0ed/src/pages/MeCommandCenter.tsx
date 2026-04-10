@@ -129,7 +129,7 @@ export default function MeCommandCenter() {
         { icon: Heart, label: t("me.favorites"), subtitle: t("me.favorites_sub"), path: "/favorites", accent: A.rose },
         { icon: MapPin, label: t("me.addresses"), subtitle: t("me.addresses_sub"), path: "/me/address-book", accent: A.emerald },
         { icon: Star, label: t("me.loyalty"), subtitle: t("me.loyalty_sub"), path: "/me/loyalty-history", accent: A.amber },
-        { icon: PieChart, label: t("me.spending") || "Spending Insights", subtitle: t("me.spending_sub") || "Track your expenses", path: "/me/spending-insights", accent: A.cyan },
+        { icon: PieChart, label: t("me.spending"), subtitle: t("me.spending_sub"), path: "/me/spending-insights", accent: A.cyan },
       ],
     },
     {
@@ -138,7 +138,7 @@ export default function MeCommandCenter() {
       showIf: "always",
       items: [
         { icon: CreditCard, label: t("me.payment_methods"), subtitle: t("me.payment_methods_sub"), path: "/me/saved-cards", accent: A.emerald },
-        { icon: Receipt, label: t("me.receipts") || "Receipts", subtitle: t("me.receipts_sub") || "Payment history", path: "/me/order-receipts", accent: A.blue },
+        { icon: Receipt, label: t("me.receipts"), subtitle: t("me.receipts_sub"), path: "/me/order-receipts", accent: A.blue },
       ],
     },
     {
@@ -146,7 +146,7 @@ export default function MeCommandCenter() {
       title: t("me.property_mgmt"),
       showIf: "property",
       items: [
-        { icon: Building2, label: t("me.property_management") || "Gestion Immo", subtitle: t("me.property_management_sub") || "Biens, locataires, loyers", path: "/me/gestion-immo", accent: A.primary, badge: propCount },
+        { icon: Building2, label: t("me.property_management"), subtitle: t("me.property_management_sub"), path: "/me/gestion-immo", accent: A.primary, badge: propCount },
         { icon: Key, label: t("me.leases"), subtitle: t("me.leases_sub"), path: "/dashboard/leases", accent: A.emerald },
         { icon: TrendingUp, label: t("me.rent_cockpit"), subtitle: t("me.rent_sub"), path: "/dashboard/rent-cockpit", accent: A.amber },
         { icon: Wrench, label: t("me.maintenance"), subtitle: t("me.maintenance_sub"), path: "/dashboard/interventions", accent: A.slate },
@@ -234,7 +234,7 @@ export default function MeCommandCenter() {
 
   return (
     <div className="app-mobile-page max-w-md mx-auto px-4 py-4">
-      <SEOHead title="Mon Compte — Easy-Locs" description="Gérez votre profil, vos préférences, vos commandes et vos paramètres Easy-Locs." noindex />
+      <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
       <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
 
         <motion.button
@@ -275,7 +275,7 @@ export default function MeCommandCenter() {
             >
               <Package className="w-5 h-5 mx-auto mb-1" style={{ color: A.blue }} />
               <p className="text-lg font-bold text-foreground">{quickStats.activeOrders}</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{t("me.active") || "Active"}</p>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{t("me.active")}</p>
             </button>
             <button
               onClick={() => navigate("/me/loyalty-history")}
@@ -284,7 +284,7 @@ export default function MeCommandCenter() {
             >
               <Coins className="w-5 h-5 mx-auto mb-1" style={{ color: A.amber }} />
               <p className="text-lg font-bold text-foreground">{quickStats.loyaltyPoints}</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{t("me.points") || "Points"}</p>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{t("me.points")}</p>
             </button>
             <button
               onClick={() => navigate("/wallet")}

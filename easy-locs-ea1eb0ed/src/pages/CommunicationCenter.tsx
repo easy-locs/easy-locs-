@@ -276,7 +276,7 @@ export const CommunicationCenter = () => {
 
   return (
     <>
-      <SEOHead title="Orbit — Easy-Locs" description="Messagerie et communication Easy-Locs." noindex />
+      <SEOHead title={`${t("orbit.title")} — Easy-Locs`} description={t("orbit.seo_desc")} noindex />
       <div
         className="flex flex-col"
         onClick={(e) => e.stopPropagation()}
@@ -427,25 +427,25 @@ export const CommunicationCenter = () => {
             {/* Quick actions */}
             <div className="px-4 pt-3 pb-1 space-y-0.5">
               <button
-                onClick={() => { haptic("light"); toast.info(t("orbit.new_group") || "Create new group"); }}
+                onClick={() => { haptic("light"); toast.info(t("orbit.new_group")); }}
                 className="w-full flex items-center gap-3 py-2.5 active:bg-muted/10 rounded-lg transition-colors"
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
                   <UsersRound className="h-5 w-5" style={{ color: "hsl(38 65% 56%)" }} />
                 </div>
                 <span className="text-[14px] font-medium" style={{ color: "hsl(var(--foreground))" }}>
-                  {t("orbit.new_group") || "New group"}
+                  {t("orbit.new_group")}
                 </span>
               </button>
               <button
-                onClick={() => { haptic("light"); toast.info(t("orbit.new_community") || "Create new community"); }}
+                onClick={() => { haptic("light"); toast.info(t("orbit.new_community")); }}
                 className="w-full flex items-center gap-3 py-2.5 active:bg-muted/10 rounded-lg transition-colors"
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
                   <Megaphone className="h-5 w-5" style={{ color: "hsl(38 65% 56%)" }} />
                 </div>
                 <span className="text-[14px] font-medium" style={{ color: "hsl(var(--foreground))" }}>
-                  {t("orbit.new_community") || "New community"}
+                  {t("orbit.new_community")}
                 </span>
               </button>
             </div>
@@ -453,7 +453,7 @@ export const CommunicationCenter = () => {
             <div className="h-px mx-4 my-2" style={{ background: "hsl(var(--border) / 0.1)" }} />
 
             <p className="px-4 pb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
-              {t("orbit.find_contact") || "Find a contact"}
+              {t("orbit.find_contact")}
             </p>
 
             <div className="px-4 pb-2">
