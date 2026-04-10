@@ -133,7 +133,7 @@ export interface PrimaryCategory {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  THE CANONICAL TREE — 12 PRIMARIES
+//  THE CANONICAL TREE — 14 PRIMARIES
 // ═══════════════════════════════════════════════════════════
 
 export const CATEGORY_TREE: PrimaryCategory[] = [
