@@ -146,7 +146,7 @@ export default function MeCommandCenter() {
       title: t("me.property_mgmt"),
       showIf: "property",
       items: [
-        { icon: Building2, label: "Gestion Immo", subtitle: "Biens, locataires, loyers", path: "/me/gestion-immo", accent: A.primary, badge: propCount },
+        { icon: Building2, label: t("me.property_management") || "Gestion Immo", subtitle: t("me.property_management_sub") || "Biens, locataires, loyers", path: "/me/gestion-immo", accent: A.primary, badge: propCount },
         { icon: Key, label: t("me.leases"), subtitle: t("me.leases_sub"), path: "/dashboard/leases", accent: A.emerald },
         { icon: TrendingUp, label: t("me.rent_cockpit"), subtitle: t("me.rent_sub"), path: "/dashboard/rent-cockpit", accent: A.amber },
         { icon: Wrench, label: t("me.maintenance"), subtitle: t("me.maintenance_sub"), path: "/dashboard/interventions", accent: A.slate },
