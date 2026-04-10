@@ -143,7 +143,7 @@ export default function WalletHubPage() {
   const deltaPositive = balanceDelta >= 0;
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background" data-wallet-page>
+    <div className="app-mobile-page pillar-page flex flex-col bg-background" data-wallet-page>
       <SEOHead
         title={t("wallet.seo_title")}
         description={t("wallet.seo_desc")}
@@ -188,10 +188,10 @@ export default function WalletHubPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-24">
+      <div className="flex-1 overflow-y-auto px-4 pb-24" style={{ scrollBehavior: "smooth" }}>
         <AnimatePresence mode="wait">
           {activeTab === "fiat" && (
-            <motion.div key="fiat" {...fadeSlide} className="space-y-4">
+            <motion.div key="fiat" {...fadeSlide} style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap)" }}>
 
               {walletError && (
                 <div className="app-card p-4 flex items-center gap-3" style={{ borderColor: "hsl(var(--destructive) / 0.15)", background: "hsl(var(--destructive) / 0.04)" }}>
@@ -353,7 +353,7 @@ export default function WalletHubPage() {
 
               {rows.length > 0 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.18 }}>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="page-section__header" style={{ marginBottom: "var(--section-header-mb)" }}>
                     <p className="app-section-label">{t("wallet.accounts")}</p>
                     <button onClick={() => navigate("/wallet/accounts")} className="app-section-link">
                       {t("wallet.manage")} <ArrowRight />
@@ -409,7 +409,7 @@ export default function WalletHubPage() {
               )}
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22 }}>
-                <div className="flex items-center justify-between mb-3">
+                <div className="page-section__header" style={{ marginBottom: "var(--section-header-mb)" }}>
                   <p className="app-section-label">{t("wallet.recentActivity")}</p>
                   <div className="app-filter-bar">
                     {(["all", "in", "out"] as const).map(f => (

@@ -12,6 +12,7 @@ import { memo, useState, useEffect, useMemo, useCallback } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Building2, Sparkles, TrendingUp, Zap, Brain, ShieldCheck, Clock, Activity, Coffee, UtensilsCrossed, Car, Package, RotateCcw, Heart, ShoppingBag } from "lucide-react";
+import PillarPage, { PageSection } from "@/components/layout/PillarPage";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import { motion, AnimatePresence } from "framer-motion";
 import { FALLBACK_HOTELS } from "@/data/fallback-hotels";
@@ -81,7 +82,7 @@ const HERO_CATEGORIES = [
 
 /* ═══ Top Hero Banner — Premium super-app hero ═══ */
 const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: SmartHero; locationLabel: string; onLocationTap: () => void; t: (k: string) => string }) => (
-  <div className="relative mb-5 overflow-hidden rounded-[1.75rem] pt-3 pb-4 px-4" style={{ background: "linear-gradient(160deg, hsl(220 40% 18%), hsl(220 40% 22%), hsl(220 35% 28%))" }}>
+  <div className="relative overflow-hidden rounded-[1.75rem] pt-3 pb-4 px-4 page-hero" style={{ background: "linear-gradient(160deg, hsl(220 40% 18%), hsl(220 40% 22%), hsl(220 35% 28%))" }}>
     <motion.div
       className="absolute inset-0 pointer-events-none"
       style={{ background: "linear-gradient(105deg, transparent 35%, hsla(38,65%,56%,0.06) 50%, transparent 65%)" }}
@@ -162,8 +163,8 @@ const ActiveCartBanner = memo(() => {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={() => navigate("/checkout")}
-      className="mb-5 w-full flex items-center gap-3 px-4 py-3 rounded-2xl active:scale-[0.98] transition-transform"
-      style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 40% 24%))", border: "1px solid hsl(38 65% 56% / 0.2)" }}
+      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl active:scale-[0.98] transition-transform"
+      style={{ marginBottom: "var(--section-gap)", background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 40% 24%))", border: "1px solid hsl(38 65% 56% / 0.2)" }}
     >
       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
         <ShoppingBag className="w-4.5 h-4.5" style={{ color: "hsl(38 65% 56%)" }} />
@@ -220,7 +221,7 @@ function SmartQuickActions() {
   const actions = useMemo(() => getSmartActions(), []);
 
   return (
-    <div className="mb-5 flex items-center gap-2">
+    <div className="flex items-center gap-2" style={{ marginBottom: "var(--section-gap)" }}>
       {actions.map(({ icon: Icon, labelKey, to, color }) => (
         <Link
           key={labelKey}
@@ -245,7 +246,7 @@ const QuickAccessStrip = memo(() => {
   ], [t]);
 
   return (
-    <div className="mb-5 flex items-center gap-2">
+    <div className="flex items-center gap-2" style={{ marginBottom: "var(--section-gap-compact)" }}>
       {links.map(({ icon: Icon, label, to, color }) => (
         <Link
           key={to}
@@ -289,7 +290,8 @@ const AISmartInsights = memo(() => {
 
   return (
     <motion.div
-      className="mb-5 overflow-hidden rounded-xl border border-white/5 bg-gradient-to-r from-card/80 via-card/60 to-card/80 backdrop-blur-xl"
+      className="overflow-hidden rounded-xl border border-white/5 bg-gradient-to-r from-card/80 via-card/60 to-card/80 backdrop-blur-xl"
+      style={{ marginBottom: "var(--section-gap-compact)" }}
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -376,7 +378,8 @@ function LiveStatsPulse({ onNavigate }: { onNavigate?: (route: string, action?: 
 
   return (
     <motion.div
-      className="mb-5 grid grid-cols-4 gap-2"
+      className="grid grid-cols-4 gap-2"
+      style={{ marginBottom: "var(--section-gap)" }}
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.08 }}
@@ -446,17 +449,18 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
 }) {
   const { t } = useI18n();
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
-      <div className="flex items-center justify-between mb-2.5 px-1">
-        <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
-          <span>{icon}</span> {title}
-        </h2>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="page-section" style={{ marginBottom: "var(--section-gap)" }}>
+      <div className="page-section__header">
+        <div className="page-section__title-group">
+          <span className="page-section__icon">{icon}</span>
+          <h2 className="page-section__title">{title}</h2>
+        </div>
         {onSeeAll ? (
-          <button onClick={onSeeAll} className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70 shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
+          <button onClick={onSeeAll} className="page-section__action-btn">
             {t("home.see_all")} <ChevronRight className="h-3 w-3" />
           </button>
         ) : (
-          <Link to={seeAllTo} className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70 shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
+          <Link to={seeAllTo} className="page-section__action-btn">
             {t("home.see_all")} <ChevronRight className="h-3 w-3" />
           </Link>
         )}
@@ -490,12 +494,13 @@ const FeaturedHotelsCarousel = memo(() => {
   const { t } = useI18n();
   const top6 = FALLBACK_HOTELS.slice(0, 6);
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
-      <div className="flex items-center justify-between mb-2.5 px-1">
-        <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
-          <Building2 className="h-4 w-4" style={{ color: "hsl(38 65% 56%)" }} /> {t("home.featured_hotels")}
-        </h2>
-        <Link to="/stay" className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70" style={{ color: "hsl(38 65% 56%)" }}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="page-section" style={{ marginBottom: "var(--section-gap)" }}>
+      <div className="page-section__header">
+        <div className="page-section__title-group">
+          <Building2 className="h-4 w-4" style={{ color: "hsl(38 65% 56%)" }} />
+          <h2 className="page-section__title">{t("home.featured_hotels")}</h2>
+        </div>
+        <Link to="/stay" className="page-section__action-btn">
           {t("home.see_all")} <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
@@ -539,7 +544,7 @@ const HeroSlideCarousel = memo(() => {
   const slide = HERO_SLIDE_DEFS[activeSlide];
 
   return (
-    <div className="mb-5">
+    <div style={{ marginBottom: "var(--section-gap)" }}>
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.id}
@@ -647,7 +652,7 @@ export default function SmartHome() {
   const nearYouCard = useNearYouSectionCard();
 
   return (
-    <div className="w-full min-w-0 pb-8">
+    <PillarPage noPadding className="pb-8">
       <div className="px-4 pt-4">
         <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} t={t} />
         <ActiveCartBanner />
@@ -658,44 +663,43 @@ export default function SmartHome() {
         <SmartSuggestions suggestions={suggestions} onDismiss={dismiss} />
         <LiveStatsPulse onNavigate={smartNavigate} />
       </div>
+
       <OrbitPreviewWidget onNavigate={smartNavigate} />
       <PropertyDashboardWidget />
-      <div className="px-4">
 
-        {/* Live tracking banners for active rides/deliveries */}
+      <div className="px-4">
         <LiveTrackingBanner />
 
-        {/* Super Services — data-driven from CATEGORY_TREE */}
-        <ServiceMenuGrid columns={4} maxItems={8} />
-        <div className="flex justify-center mb-5">
-          <ServiceMenuDrawer />
-        </div>
+        <PageSection compact>
+          <ServiceMenuGrid columns={4} maxItems={8} />
+          <div className="flex justify-center" style={{ marginTop: 12 }}>
+            <ServiceMenuDrawer />
+          </div>
+        </PageSection>
 
-        {/* Essential Services — Horizontal strip (Hospital, ATM, Gas, Police, Fire, Pharmacy, Park, Parking) */}
-        <EssentialServicesStrip />
+        <PageSection compact>
+          <EssentialServicesStrip />
+        </PageSection>
 
-        {/* Category strip — horizontal scroll */}
-        <div className="mb-5">
-          <div className="flex items-center justify-between mb-2.5 px-1">
-            <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
-              <span>🏪</span> {t("dashboard.browse_categories") || "Browse Categories"}
-            </h2>
-            <Link
-              to="/browse"
-              className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70"
-              style={{ color: "hsl(38 65% 56%)" }}
-            >
+        <PageSection
+          title={t("dashboard.browse_categories") || "Browse Categories"}
+          icon={<span>🏪</span>}
+          actionLabel={t("dashboard.see_all") || "See all"}
+          onAction={() => {}}
+          action={
+            <Link to="/browse" className="page-section__action-btn">
               {t("dashboard.see_all") || "See all"} <ChevronRight className="h-3 w-3" />
             </Link>
-          </div>
+          }
+          noPaddingX
+        >
           <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none" data-no-swipe>
             {vm.categories.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i} />)}
           </div>
-        </div>
+        </PageSection>
 
-        {/* ═══ Context Banners — Animated carousel ═══ */}
         {vm.contextBanners.length > 0 && (
-          <div className="mb-5">
+          <div style={{ marginBottom: "var(--section-gap)" }}>
             <AnimatePresence mode="wait">
               {vm.contextBanners.slice(vm.activeBannerIdx, vm.activeBannerIdx + 1).map((banner) => (
                 <motion.div
@@ -713,25 +717,19 @@ export default function SmartHome() {
                     {banner.glowColor && (
                       <motion.div
                         className="absolute inset-0 pointer-events-none"
-                        style={{
-                          background: `radial-gradient(ellipse at 80% 20%, ${banner.glowColor}, transparent 65%)`,
-                        }}
+                        style={{ background: `radial-gradient(ellipse at 80% 20%, ${banner.glowColor}, transparent 65%)` }}
                         animate={{ opacity: [0.4, 0.8, 0.4] }}
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                       />
                     )}
-
                     {banner.animation === "shimmer" && (
                       <motion.div
                         className="absolute inset-0 pointer-events-none"
-                        style={{
-                          background: "linear-gradient(105deg, transparent 40%, hsla(0,0%,100%,0.08) 50%, transparent 60%)",
-                        }}
+                        style={{ background: "linear-gradient(105deg, transparent 40%, hsla(0,0%,100%,0.08) 50%, transparent 60%)" }}
                         animate={{ x: ["-100%", "200%"] }}
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
                       />
                     )}
-
                     <div className="relative z-10">
                       <p className="text-sm font-extrabold leading-snug text-white drop-shadow-sm">
                         {banner.emoji} {banner.title}
@@ -750,14 +748,13 @@ export default function SmartHome() {
           </div>
         )}
 
-        {/* ═══ Hero Slide Carousel — Auto-rotating promotions ═══ */}
         <HeroSlideCarousel />
 
-        {/* ═══ BOOST SLOT ═══ */}
-        <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="mb-5" />
+        <div style={{ marginBottom: "var(--section-gap)" }}>
+          <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" />
+        </div>
       </div>
 
-      {/* ═══ Radar Preview — Level 1 (passive discovery preview) ═══ */}
       <RadarPreviewWidget
         onExploreMore={() => openRadarDrawer()}
         items={radarData.items}
@@ -765,16 +762,11 @@ export default function SmartHome() {
         totalCount={radarData.totalCount}
       />
 
-      {/* ═══ Stories for you ═══ */}
       <DashboardStories />
 
       <div className="px-4">
-        {/* ═══ Featured Hotels ═══ */}
         <FeaturedHotelsCarousel />
 
-        {/* Live Map moved to Taxi/Mobility */}
-
-        {/* ═══ Data Sections — Card System Adoption ═══ */}
         <AdapterSection
           title={t("home.section_trending")}
           icon="🔥"
@@ -808,8 +800,7 @@ export default function SmartHome() {
           onSeeAll={() => openRadarDrawer("nearest")}
         />
 
-        {/* ═══ BOOST SLOT — Inline ═══ */}
-        <div className="pb-4">
+        <div style={{ paddingBottom: 16 }}>
           <BoostSlotRenderer surface="home" slotKey="inline_banner_1" variant="inline" />
         </div>
       </div>
@@ -831,6 +822,6 @@ export default function SmartHome() {
       />
 
       <AddressSelectorSheet open={vm.addressSheetOpen} onOpenChange={vm.onAddressSheetChange} />
-    </div>
+    </PillarPage>
   );
 }

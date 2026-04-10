@@ -558,7 +558,7 @@ export default function HyperRadarPage() {
   );
 
   return (
-    <div className="h-[100dvh] w-full relative overflow-hidden bg-background">
+    <div className="h-[100dvh] w-full relative overflow-hidden bg-background pillar-page">
       <SEOHead
         title={tSafe(t, "radar.seo_title", "Radar — Discover nearby")}
         description={tSafe(t, "radar.seo_desc", "Real-time discovery engine")}
