@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, Building2, Calendar, MessageCircle, TrendingUp, Loader2 } from "lucide-react";
+import { MapPin, Building2, Calendar, ArrowRight, TrendingUp, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
@@ -21,6 +21,9 @@ export interface PropertyProjectCardProps {
   propertyTypes?: string[];
 }
 
+const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(220 40% 18%)";
+
 const PropertyProjectCard = memo(function PropertyProjectCard({
   slug,
   projectName,
@@ -37,6 +40,8 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
   const { user } = useAuth();
   const { openPayment } = useUnifiedPayment();
   const [busy, setBusy] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const handleExplore = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,70 +61,96 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
     setBusy(false);
   }, [slug, projectName, developerId, developer, navigate, openPayment, user?.id]);
 
+  const formattedPrice = startingPrice >= 1_000_000
+    ? `${(startingPrice / 1_000_000).toFixed(1)}M`
+    : startingPrice.toLocaleString();
+
   return (
     <Link
       to={`/property/project/${slug}`}
-      className="group block rounded-2xl overflow-hidden transition-all duration-200 active:scale-[0.97] border border-border/15 bg-card shadow-sm"
+      className="group block rounded-2xl overflow-hidden transition-all duration-300 active:scale-[0.98]"
+      style={{
+        background: "hsl(var(--card))",
+        border: "1px solid hsl(var(--border) / 0.12)",
+        boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
+      }}
     >
-      <div className="relative aspect-[16/10] overflow-hidden">
-        <img
-          src={image}
-          alt={projectName}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
-        <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
-          style={{ background: "hsla(38,70%,50%,0.9)", color: "white" }}>
-          New Project
-        </div>
-        {paymentPlan && (
-          <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold"
-            style={{ background: "hsla(220,50%,50%,0.85)", color: "white" }}>
-            <TrendingUp className="h-3 w-3" />
-            {paymentPlan}
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        {!imgLoaded && !imgError && (
+          <div className="absolute inset-0 animate-pulse bg-muted" />
+        )}
+        {!imgError && (
+          <img
+            src={image}
+            alt={projectName}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            loading="lazy"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgError(true)}
+            style={{ opacity: imgLoaded ? 1 : 0 }}
+          />
+        )}
+        {imgError && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-4xl">🏗️</span>
           </div>
         )}
+        <div className="absolute inset-x-0 bottom-0 h-24" style={{ background: "linear-gradient(transparent, hsl(0 0% 0% / 0.5))" }} />
+
+        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+          <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-md"
+            style={{ background: GOLD, color: NAVY }}>
+            New Project
+          </span>
+          {paymentPlan && (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
+              style={{ background: "hsl(220 40% 18% / 0.75)", color: "white" }}>
+              <TrendingUp className="h-3 w-3" />
+              {paymentPlan}
+            </span>
+          )}
+        </div>
+
+        <div className="absolute bottom-3 left-3">
+          <span className="text-[10px] text-white/70 block">Starting from</span>
+          <span className="text-lg font-black text-white drop-shadow-md">
+            {currency} {formattedPrice}
+          </span>
+        </div>
       </div>
 
-      <div className="p-3 space-y-1.5">
-        <h3 className="text-[13px] font-bold leading-tight line-clamp-2 text-foreground">
+      <div className="p-3.5 space-y-2.5">
+        <h3 className="text-sm font-bold leading-snug line-clamp-2 text-foreground group-hover:text-[hsl(38_65%_56%)] transition-colors">
           {projectName}
         </h3>
-        <div className="flex items-center gap-1 text-[11px] font-medium text-primary">
-          <Building2 className="h-3 w-3 shrink-0" />
+
+        <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: GOLD }}>
+          <Building2 className="h-3.5 w-3.5 shrink-0" />
           <span className="line-clamp-1">{developer}</span>
         </div>
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-          <MapPin className="h-3 w-3 shrink-0" />
+
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: GOLD }} />
           <span className="line-clamp-1">{area}</span>
         </div>
 
-        {completionDate && (
-          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-            <Calendar className="h-3 w-3" />
-            Completion: {completionDate}
-          </div>
-        )}
-
-        <div className="flex items-end justify-between pt-1">
-          <div>
-            <span className="text-[10px] block text-muted-foreground">Starting from</span>
-            <span className="text-[15px] font-black text-foreground">
-              {currency} {startingPrice >= 1_000_000 ? `${(startingPrice / 1_000_000).toFixed(1)}M` : startingPrice.toLocaleString()}
+        <div className="flex items-center justify-between pt-1">
+          {completionDate ? (
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground px-2 py-1 rounded-lg"
+              style={{ background: "hsl(var(--muted) / 0.6)" }}>
+              <Calendar className="h-3 w-3" />
+              {completionDate}
             </span>
-          </div>
+          ) : <span />}
           <Button
             type="button"
             size="sm"
-            className="h-8 px-3 rounded-xl text-[11px] font-bold gap-1"
-            style={{
-              background: "hsl(var(--primary))",
-              color: "hsl(var(--primary-foreground))",
-            }}
+            className="h-9 px-4 rounded-xl text-[11px] font-bold gap-1.5"
+            style={{ background: GOLD, color: NAVY }}
             onClick={handleExplore}
             disabled={busy}
           >
-            {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageCircle className="h-3 w-3" />}
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowRight className="h-3.5 w-3.5" />}
             Explore
           </Button>
         </div>

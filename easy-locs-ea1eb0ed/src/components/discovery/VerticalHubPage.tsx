@@ -452,13 +452,34 @@ function SmartDiscovery({
 
       {isLoading && (
         <div className="px-4 space-y-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="flex gap-3 rounded-2xl p-3 animate-pulse" style={{ background: "hsl(var(--muted) / 0.5)" }}>
-              <div className="w-[100px] h-[80px] rounded-xl shrink-0" style={{ background: "hsl(var(--muted))" }} />
-              <div className="flex-1 space-y-2 py-1">
-                <div className="h-4 rounded-lg w-3/4" style={{ background: "hsl(var(--muted))" }} />
-                <div className="h-3 rounded-lg w-1/2" style={{ background: "hsl(var(--muted))" }} />
-              </div>
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="rounded-2xl overflow-hidden animate-pulse"
+              style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.08)" }}>
+              {i === 0 ? (
+                <>
+                  <div className="aspect-[16/9] bg-muted" />
+                  <div className="p-3.5 space-y-2">
+                    <div className="h-5 rounded-lg w-3/4 bg-muted" />
+                    <div className="h-3 rounded-lg w-1/2 bg-muted" />
+                    <div className="flex gap-2">
+                      <div className="h-6 w-16 rounded-lg bg-muted" />
+                      <div className="h-6 w-12 rounded-lg bg-muted" />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex gap-3 p-3">
+                  <div className="w-[88px] h-[88px] rounded-xl shrink-0 bg-muted" />
+                  <div className="flex-1 space-y-2 py-1">
+                    <div className="h-4 rounded-lg w-4/5 bg-muted" />
+                    <div className="h-3 rounded-lg w-3/5 bg-muted" />
+                    <div className="flex gap-2">
+                      <div className="h-5 w-14 rounded-lg bg-muted" />
+                      <div className="h-5 w-20 rounded-lg bg-muted" />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

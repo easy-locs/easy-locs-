@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Star, MapPin, MessageCircle, Loader2 } from "lucide-react";
+import { Star, MapPin, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
@@ -22,6 +22,9 @@ export interface StayCardProps {
   freeCancellation?: boolean;
 }
 
+const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(220 40% 18%)";
+
 const StayCard = memo(function StayCard({
   slug,
   name,
@@ -39,6 +42,8 @@ const StayCard = memo(function StayCard({
   const { user } = useAuth();
   const { openPayment } = useUnifiedPayment();
   const [busy, setBusy] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const handleBook = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -54,69 +59,90 @@ const StayCard = memo(function StayCard({
   return (
     <Link
       to={`/stay/${slug}`}
-      className="group block rounded-2xl overflow-hidden transition-all duration-200 active:scale-[0.97] border border-border/15 bg-card shadow-sm"
+      className="group block rounded-2xl overflow-hidden transition-all duration-300 active:scale-[0.98]"
+      style={{
+        background: "hsl(var(--card))",
+        border: "1px solid hsl(var(--border) / 0.12)",
+        boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
+      }}
     >
-      <div className="relative aspect-[16/10] overflow-hidden">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
-        <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold"
-          style={{ background: "hsla(0,0%,0%,0.55)", backdropFilter: "blur(8px)", color: "white" }}>
-          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-          {rating.toFixed(1)}
-          <span className="text-white/60 font-normal">({reviewsCount})</span>
-        </div>
-        {freeCancellation && (
-          <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-semibold"
-            style={{ background: "hsla(142,60%,45%,0.9)", color: "white" }}>
-            Free cancellation
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        {!imgLoaded && !imgError && (
+          <div className="absolute inset-0 animate-pulse bg-muted" />
+        )}
+        {!imgError && (
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            loading="lazy"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgError(true)}
+            style={{ opacity: imgLoaded ? 1 : 0 }}
+          />
+        )}
+        {imgError && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-4xl">🏨</span>
           </div>
         )}
-        <div className="absolute bottom-0 left-0 right-0 h-16"
-          style={{ background: "linear-gradient(transparent, hsla(0,0%,0%,0.5))" }} />
-        <div className="absolute bottom-2 left-2.5 flex items-center gap-0.5">
-          {Array.from({ length: stars }).map((_, i) => (
-            <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-          ))}
+        <div className="absolute inset-x-0 bottom-0 h-24" style={{ background: "linear-gradient(transparent, hsl(0 0% 0% / 0.5))" }} />
+
+        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold backdrop-blur-md"
+            style={{ background: "hsl(0 0% 0% / 0.5)", color: "white" }}>
+            <Star className="h-3 w-3" style={{ fill: GOLD, color: GOLD }} />
+            {rating.toFixed(1)}
+            <span className="text-white/60 font-normal text-[10px]">({reviewsCount})</span>
+          </span>
+        </div>
+
+        {freeCancellation && (
+          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-bold backdrop-blur-md"
+            style={{ background: "hsl(142 60% 45% / 0.9)", color: "white" }}>
+            Free cancel
+          </div>
+        )}
+
+        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+          <div className="flex items-center gap-0.5">
+            {Array.from({ length: stars }).map((_, i) => (
+              <Star key={i} className="h-3 w-3" style={{ fill: GOLD, color: GOLD }} />
+            ))}
+          </div>
+          <div className="text-right">
+            <span className="text-lg font-black text-white drop-shadow-md">
+              {currency} {pricePerNight.toLocaleString()}
+            </span>
+            <span className="text-xs text-white/70 ml-1">/night</span>
+          </div>
         </div>
       </div>
 
-      <div className="p-3 space-y-1.5">
-        <h3 className="text-[13px] font-bold leading-tight line-clamp-2 text-foreground">
+      <div className="p-3.5 space-y-2">
+        <h3 className="text-sm font-bold leading-snug line-clamp-2 text-foreground group-hover:text-[hsl(38_65%_56%)] transition-colors">
           {name}
         </h3>
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-          <MapPin className="h-3 w-3 shrink-0" />
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: GOLD }} />
           <span className="line-clamp-1">{area}</span>
           {distanceKm != null && (
-            <span className="shrink-0 ml-1">· {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)}km`}</span>
+            <span className="shrink-0 ml-1 font-medium">
+              · {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)}km`}
+            </span>
           )}
         </div>
 
-        <div className="flex items-end justify-between pt-1">
-          <div>
-            <span className="text-[15px] font-black text-foreground">
-              {currency} {pricePerNight.toLocaleString()}
-            </span>
-            <span className="text-[11px] ml-0.5 text-muted-foreground">
-              /night
-            </span>
-          </div>
+        <div className="flex items-center justify-end pt-0.5">
           <Button
             type="button"
             size="sm"
-            className="h-8 px-3 rounded-xl text-[11px] font-bold gap-1"
-            style={{
-              background: "hsl(var(--primary))",
-              color: "hsl(var(--primary-foreground))",
-            }}
+            className="h-9 px-4 rounded-xl text-[11px] font-bold gap-1.5"
+            style={{ background: GOLD, color: NAVY }}
             onClick={handleBook}
             disabled={busy}
           >
-            {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageCircle className="h-3 w-3" />}
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowRight className="h-3.5 w-3.5" />}
             Book
           </Button>
         </div>

@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, BedDouble, Bath, Maximize2, MessageCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { MapPin, BedDouble, Bath, Maximize2, MessageCircle, CheckCircle2, Loader2, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
@@ -25,6 +25,9 @@ export interface PropertyRentCardProps {
   brokerId?: string;
 }
 
+const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(220 40% 18%)";
+
 const PropertyRentCard = memo(function PropertyRentCard({
   slug,
   title,
@@ -45,7 +48,9 @@ const PropertyRentCard = memo(function PropertyRentCard({
   const { user } = useAuth();
   const { openPayment } = useUnifiedPayment();
   const [busy, setBusy] = useState(false);
-  const furnishedLabel = furnished === "furnished" ? "Furnished" : furnished === "semi_furnished" ? "Semi-Furnished" : "Unfurnished";
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const furnishedLabel = furnished === "furnished" ? "Furnished" : furnished === "semi_furnished" ? "Semi" : "Unfurnished";
 
   const handleContact = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -68,80 +73,109 @@ const PropertyRentCard = memo(function PropertyRentCard({
   return (
     <Link
       to={`/property/${slug}`}
-      className="group block rounded-2xl overflow-hidden transition-all duration-200 active:scale-[0.97] border border-border/15 bg-card shadow-sm"
+      className="group block rounded-2xl overflow-hidden transition-all duration-300 active:scale-[0.98]"
+      style={{
+        background: "hsl(var(--card))",
+        border: "1px solid hsl(var(--border) / 0.12)",
+        boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
+      }}
     >
-      <div className="relative aspect-[16/10] overflow-hidden">
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
-        {availableNow && (
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold"
-            style={{ background: "hsla(142,60%,45%,0.9)", color: "white" }}>
-            <CheckCircle2 className="h-3 w-3" />
-            Available Now
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        {!imgLoaded && !imgError && (
+          <div className="absolute inset-0 animate-pulse bg-muted" />
+        )}
+        {!imgError && (
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            loading="lazy"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgError(true)}
+            style={{ opacity: imgLoaded ? 1 : 0 }}
+          />
+        )}
+        {imgError && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-4xl">🏢</span>
           </div>
         )}
-        {furnished && (
-          <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-semibold"
-            style={{ background: "hsla(220,50%,50%,0.85)", color: "white" }}>
-            {furnishedLabel}
+        <div className="absolute inset-x-0 bottom-0 h-20" style={{ background: "linear-gradient(transparent, hsl(0 0% 0% / 0.4))" }} />
+
+        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+          {availableNow && (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold backdrop-blur-md"
+              style={{ background: "hsl(142 60% 45% / 0.9)", color: "white" }}>
+              <CheckCircle2 className="h-3 w-3" />
+              Available
+            </span>
+          )}
+          {furnished && (
+            <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
+              style={{ background: "hsl(220 40% 18% / 0.75)", color: "white" }}>
+              {furnishedLabel}
+            </span>
+          )}
+        </div>
+
+        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+          <div>
+            <span className="text-lg font-black text-white drop-shadow-md">
+              {currency} {annualRent.toLocaleString()}
+            </span>
+            <span className="text-xs text-white/70 ml-1">/year</span>
           </div>
-        )}
+          {monthlyRent && (
+            <span className="text-[11px] text-white/80 font-medium backdrop-blur-sm px-2 py-0.5 rounded-md"
+              style={{ background: "hsl(0 0% 0% / 0.3)" }}>
+              {currency} {monthlyRent.toLocaleString()}/mo
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="p-3 space-y-1.5">
-        <h3 className="text-[13px] font-bold leading-tight line-clamp-2 text-foreground">
+      <div className="p-3.5 space-y-2.5">
+        <h3 className="text-sm font-bold leading-snug line-clamp-2 text-foreground group-hover:text-[hsl(38_65%_56%)] transition-colors">
           {title}
         </h3>
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-          <MapPin className="h-3 w-3 shrink-0" />
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: GOLD }} />
           <span className="line-clamp-1">{area}</span>
         </div>
 
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-          <span className="flex items-center gap-1"><BedDouble className="h-3.5 w-3.5" /> {bedrooms}</span>
-          <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" /> {bathrooms}</span>
-          <span className="flex items-center gap-1"><Maximize2 className="h-3.5 w-3.5" /> {sizeSqft.toLocaleString()} sqft</span>
+        <div className="flex items-center gap-1 pt-0.5">
+          {[
+            { icon: BedDouble, label: `${bedrooms} Bed${bedrooms !== 1 ? "s" : ""}` },
+            { icon: Bath, label: `${bathrooms} Bath` },
+            { icon: Maximize2, label: `${sizeSqft.toLocaleString()} sqft` },
+          ].map((spec) => (
+            <span key={spec.label} className="flex items-center gap-1 text-[11px] text-muted-foreground px-2 py-1 rounded-lg"
+              style={{ background: "hsl(var(--muted) / 0.6)" }}>
+              <spec.icon className="h-3 w-3" />
+              {spec.label}
+            </span>
+          ))}
         </div>
 
-        <div className="flex items-end justify-between pt-1">
-          <div>
-            <span className="text-[15px] font-black text-foreground">
-              {currency} {annualRent.toLocaleString()}
+        <div className="flex items-center justify-between pt-1">
+          {brokerName && (
+            <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+              by {brokerName}
             </span>
-            <span className="text-[11px] ml-0.5 text-muted-foreground">
-              /year
-            </span>
-            {monthlyRent && (
-              <span className="block text-[10px] mt-0.5 text-muted-foreground">
-                {currency} {monthlyRent.toLocaleString()}/month
-              </span>
-            )}
-          </div>
+          )}
+          {!brokerName && <span />}
           <Button
             type="button"
             size="sm"
-            className="h-8 px-3 rounded-xl text-[11px] font-bold gap-1"
-            style={{
-              background: "hsl(var(--primary))",
-              color: "hsl(var(--primary-foreground))",
-            }}
+            className="h-9 px-4 rounded-xl text-[11px] font-bold gap-1.5 shrink-0"
+            style={{ background: GOLD, color: NAVY }}
             onClick={handleContact}
             disabled={busy}
           >
-            {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageCircle className="h-3 w-3" />}
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
             Contact
           </Button>
         </div>
-
-        {brokerName && (
-          <div className="text-[10px] pt-0.5 text-muted-foreground">
-            Listed by {brokerName}
-          </div>
-        )}
       </div>
     </Link>
   );

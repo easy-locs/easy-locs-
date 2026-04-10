@@ -1,8 +1,3 @@
-/**
- * PremiumMerchantCard — Enhanced card with vertical-aware styling.
- * Consumes the Canonical UI Engine for per-vertical card behavior.
- * Supports: horizontal (list), vertical (carousel), and featured (large hero card).
- */
 import { Link } from "react-router-dom";
 import { Star, Clock, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
@@ -27,6 +22,9 @@ interface PremiumMerchantCardProps {
   verticalType?: string;
 }
 
+const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(220 40% 18%)";
+
 const FALLBACK_EMOJIS: Record<string, string> = {
   food: "🍽️", grocery: "🛒", shops: "🛍️", services: "🛠️",
   property: "🏠", healthcare: "🏥", mobility: "🚗", experiences: "🎉",
@@ -38,51 +36,52 @@ export default function PremiumMerchantCard({
   verticalType = "food",
 }: PremiumMerchantCardProps) {
   const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
   const ui = useMemo(() => resolveCanonicalUI(verticalType), [verticalType]);
-
   const fallback = FALLBACK_EMOJIS[verticalType] || "🏪";
 
   const Img = ({ className }: { className: string }) =>
     image && !imgError ? (
-      <img
-        src={image}
-        alt={name}
-        className={`${className} object-cover`}
-        loading="lazy"
-        onError={() => setImgError(true)}
-      />
+      <div className={`${className} relative`}>
+        {!imgLoaded && <div className="absolute inset-0 animate-pulse bg-muted" />}
+        <img
+          src={image}
+          alt={name}
+          className={`w-full h-full object-cover transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+          loading="lazy"
+          onLoad={() => setImgLoaded(true)}
+          onError={() => setImgError(true)}
+        />
+      </div>
     ) : (
       <div className={`${className} flex items-center justify-center`} style={{ background: "hsl(var(--muted))" }}>
         <span className="text-3xl">{fallback}</span>
       </div>
     );
 
-  const RatingBadge = () => (
+  const RatingBadge = () =>
     rating != null && rating > 0 ? (
       <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg"
-        style={{ background: "hsl(45 90% 50% / 0.15)", color: "hsl(45 80% 40%)" }}>
-        <Star className="h-3 w-3 fill-current" style={{ color: "hsl(45 90% 50%)" }} />
+        style={{ background: "hsl(38 65% 56% / 0.12)", color: GOLD }}>
+        <Star className="h-3 w-3 fill-current" style={{ color: GOLD }} />
         {rating.toFixed(1)}
         {reviewCount != null && reviewCount > 0 && (
-          <span className="text-[11px] font-normal opacity-70">({reviewCount})</span>
+          <span className="text-[11px] font-normal opacity-60">({reviewCount})</span>
         )}
       </span>
-    ) : null
-  );
+    ) : null;
 
-  const StatusDot = () => (
+  const StatusDot = () =>
     isOpen != null ? (
       <span className="inline-flex items-center gap-1 text-[10px] font-semibold"
-        style={{ color: isOpen ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
+        style={{ color: isOpen ? "hsl(142 60% 45%)" : "hsl(var(--destructive))" }}>
         <span className="w-1.5 h-1.5 rounded-full" style={{
-          background: isOpen ? "hsl(var(--success))" : "hsl(var(--destructive))"
+          background: isOpen ? "hsl(142 60% 45%)" : "hsl(var(--destructive))"
         }} />
         {isOpen ? "Open" : "Closed"}
       </span>
-    ) : null
-  );
+    ) : null;
 
-  // ── FEATURED variant (hero card) ──
   if (variant === "featured") {
     return (
       <motion.div
@@ -92,31 +91,36 @@ export default function PremiumMerchantCard({
       >
         <Link
           to={to}
-          className="block rounded-2xl overflow-hidden active:scale-[0.97] transition-transform shadow-sm border border-border/15 bg-card"
+          className="block rounded-2xl overflow-hidden active:scale-[0.98] transition-transform"
+          style={{
+            boxShadow: "0 2px 8px hsl(var(--foreground) / 0.06), 0 8px 24px hsl(var(--foreground) / 0.04)",
+            border: "1px solid hsl(var(--border) / 0.12)",
+            background: "hsl(var(--card))",
+          }}
         >
           <div className="aspect-[16/9] relative overflow-hidden">
             <Img className="w-full h-full" />
             <div className="absolute inset-0" style={{
-              background: "linear-gradient(to top, hsla(0,0%,0%,0.6) 0%, transparent 50%)"
+              background: "linear-gradient(to top, hsl(0 0% 0% / 0.65) 0%, transparent 55%)"
             }} />
             {badge && (
-              <span className="absolute top-3 left-3 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg backdrop-blur-sm"
-                style={{ background: "hsl(var(--primary) / 0.9)", color: "hsl(var(--primary-foreground))" }}>
+              <span className="absolute top-3 left-3 text-[10px] font-bold px-3 py-1 rounded-lg shadow-lg backdrop-blur-md"
+                style={{ background: GOLD, color: NAVY }}>
                 {badge}
               </span>
             )}
             {isSponsored && (
-              <span className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                style={{ background: "hsl(var(--accent) / 0.9)", color: "hsl(var(--accent-foreground))" }}>
+              <span className="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-md"
+                style={{ background: "hsl(220 40% 18% / 0.7)", color: "white" }}>
                 Sponsored
               </span>
             )}
             <div className="absolute bottom-3 left-3 right-3">
               <h3 className="text-lg font-black text-white line-clamp-2 leading-tight break-words drop-shadow-md">{name}</h3>
-              {category && <p className="text-xs text-white/80 line-clamp-3 leading-snug break-words mt-0.5">{category}</p>}
+              {category && <p className="text-xs text-white/80 line-clamp-2 leading-snug break-words mt-1">{category}</p>}
             </div>
           </div>
-          <div className="p-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="p-3.5 flex flex-wrap items-center justify-between gap-2">
             <div className="flex min-w-0 flex-wrap items-center gap-2.5">
               <RatingBadge />
               <StatusDot />
@@ -124,7 +128,7 @@ export default function PremiumMerchantCard({
             <div className="flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs text-muted-foreground">
               {eta && <span className="flex items-center gap-1 shrink-0"><Clock className="h-3 w-3" />{eta}</span>}
               {distance && <span className="flex items-center gap-1 shrink-0"><MapPin className="h-3 w-3" />{distance}</span>}
-              {priceRange && <span className="font-semibold shrink-0">{priceRange}</span>}
+              {priceRange && <span className="font-bold text-foreground shrink-0">{priceRange}</span>}
             </div>
           </div>
         </Link>
@@ -132,7 +136,6 @@ export default function PremiumMerchantCard({
     );
   }
 
-  // ── VERTICAL variant (carousel) ──
   if (variant === "vertical") {
     return (
       <motion.div
@@ -142,19 +145,24 @@ export default function PremiumMerchantCard({
       >
         <Link
           to={to}
-          className="block rounded-2xl overflow-hidden active:scale-[0.97] transition-transform border border-border/15 bg-card shadow-sm"
+          className="group block rounded-2xl overflow-hidden active:scale-[0.98] transition-all duration-300"
+          style={{
+            border: "1px solid hsl(var(--border) / 0.12)",
+            background: "hsl(var(--card))",
+            boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
+          }}
         >
           <div className="aspect-[3/2] relative overflow-hidden">
             <Img className="w-full h-full" />
             {badge && (
-              <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm"
-                style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+              <span className="absolute top-2.5 left-2.5 text-[10px] font-bold px-2.5 py-0.5 rounded-lg shadow-sm backdrop-blur-md"
+                style={{ background: GOLD, color: NAVY }}>
                 {badge}
               </span>
             )}
           </div>
-          <div className="p-2.5 space-y-1">
-            <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug">{name}</h3>
+          <div className="p-3 space-y-1.5">
+            <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
             {category && <p className="text-[11px] text-muted-foreground line-clamp-1 leading-snug break-words">{category}</p>}
             <div className="flex items-center gap-2 pt-0.5">
               <RatingBadge />
@@ -170,7 +178,6 @@ export default function PremiumMerchantCard({
     );
   }
 
-  // ── HORIZONTAL variant (list) ──
   return (
     <motion.div
       initial={{ opacity: 0, x: -6 }}
@@ -179,23 +186,28 @@ export default function PremiumMerchantCard({
     >
       <Link
         to={to}
-        className="flex gap-3 p-3 rounded-2xl active:scale-[0.97] transition-transform border border-border/15 bg-card shadow-sm"
+        className="group flex gap-3 p-3 rounded-2xl active:scale-[0.98] transition-all duration-300"
+        style={{
+          border: "1px solid hsl(var(--border) / 0.12)",
+          background: "hsl(var(--card))",
+          boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
+        }}
       >
         <div className="w-[88px] h-[88px] rounded-xl overflow-hidden shrink-0 relative">
           <Img className="w-full h-full" />
           {badge && (
-            <span className="absolute bottom-1.5 left-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
-              style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+            <span className="absolute bottom-1.5 left-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-md"
+              style={{ background: GOLD, color: NAVY }}>
               {badge}
             </span>
           )}
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug flex-1 min-w-0">{name}</h3>
+            <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug flex-1 min-w-0 group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
             {isSponsored && (
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0"
-                style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}>
+                style={{ background: "hsl(38 65% 56% / 0.12)", color: GOLD }}>
                 AD
               </span>
             )}
@@ -208,7 +220,7 @@ export default function PremiumMerchantCard({
           <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
             {eta && <span className="flex items-center gap-1 shrink-0"><Clock className="h-3 w-3" />{eta}</span>}
             {distance && <span className="flex items-center gap-1 shrink-0"><MapPin className="h-3 w-3" />{distance}</span>}
-            {priceRange && <span className="font-semibold text-foreground shrink-0">{priceRange}</span>}
+            {priceRange && <span className="font-bold text-foreground shrink-0">{priceRange}</span>}
           </div>
         </div>
       </Link>
