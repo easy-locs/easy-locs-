@@ -14,12 +14,13 @@ import { DAILY_TRANSFER_LIMITS } from "@/lib/wallet-limits";
 import PinManagement from "@/components/security/PinManagement";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, tSafe } from "@/lib/i18n";
 import { db } from "@/services/db";
 
 export default function WalletSecuritySettings() {
   const { user } = useAuth();
   const { t } = useI18n();
+  const ts = (key: string, fallback: string) => tSafe(t, key, fallback);
 
   const [pinStatus, setPinStatus] = useState<"loading" | "set" | "not_set">("loading");
   const [showPinSetup, setShowPinSetup] = useState(false);
@@ -126,7 +127,7 @@ export default function WalletSecuritySettings() {
           });
 
           if (!credential) {
-            toast.error(t("wallet.biometric_registration_failed" as any) || "Biometric registration cancelled");
+            toast.error(ts("wallet.biometric_registration_failed", "Biometric registration cancelled"));
             setBiometricSaving(false);
             return;
           }
@@ -139,9 +140,9 @@ export default function WalletSecuritySettings() {
             .eq("id", user.id);
         } catch (err: any) {
           if (err.name === "NotAllowedError") {
-            toast.error(t("wallet.biometric_denied" as any) || "Biometric registration denied");
+            toast.error(ts("wallet.biometric_denied", "Biometric registration denied"));
           } else {
-            toast.error(t("wallet.biometric_error" as any) || "Biometric registration failed");
+            toast.error(ts("wallet.biometric_error", "Biometric registration failed"));
           }
           setBiometricSaving(false);
           return;
@@ -159,11 +160,11 @@ export default function WalletSecuritySettings() {
       setBiometricEnabled(newValue);
       toast.success(
         newValue
-          ? (t("wallet.biometric_activated" as any) || "Biometric authentication activated")
-          : (t("wallet.biometric_deactivated" as any) || "Biometric authentication deactivated")
+          ? ts("wallet.biometric_activated", "Biometric authentication activated")
+          : ts("wallet.biometric_deactivated", "Biometric authentication deactivated")
       );
     } catch {
-      toast.error(t("wallet.save_error" as any) || "Failed to update setting");
+      toast.error(ts("wallet.save_error", "Failed to update setting"));
     } finally {
       setBiometricSaving(false);
     }
@@ -175,7 +176,7 @@ export default function WalletSecuritySettings() {
     try {
       const guard = await guardWalletReady(user.id);
       if (!guard.valid || !guard.walletId) {
-        toast.error(guard.error || (t("wallet.not_ready" as any) || "Wallet not ready"));
+        toast.error(guard.error || ts("wallet.not_ready", "Wallet not ready"));
         return;
       }
       const deviceId = await getDeviceFingerprint();
@@ -185,9 +186,9 @@ export default function WalletSecuritySettings() {
         .update({ device_bound: true })
         .eq("id", user.id);
       setDeviceBound(true);
-      toast.success(t("wallet.device_bound_ok" as any) || "Device bound successfully");
+      toast.success(ts("wallet.device_bound_ok", "Device bound successfully"));
     } catch {
-      toast.error(t("wallet.device_bind_fail" as any) || "Failed to bind device");
+      toast.error(ts("wallet.device_bind_fail", "Failed to bind device"));
     } finally {
       setBindingInProgress(false);
     }
@@ -203,7 +204,7 @@ export default function WalletSecuritySettings() {
         .eq("id", user.id);
     } catch {}
     setDeviceBound(false);
-    toast.success(t("wallet.device_unbound_ok" as any) || "Device unbound");
+    toast.success(ts("wallet.device_unbound_ok", "Device unbound"));
   }, [user?.id, t]);
 
   const handleSaveLimit = useCallback(async () => {
@@ -216,9 +217,9 @@ export default function WalletSecuritySettings() {
         .update({ daily_transfer_limit: clampedLimit })
         .eq("id", user.id);
       setCustomLimit(clampedLimit);
-      toast.success(t("wallet.limit_saved" as any) || "Transfer limit updated");
+      toast.success(ts("wallet.limit_saved", "Transfer limit updated"));
     } catch {
-      toast.error(t("wallet.save_error" as any) || "Failed to save limit");
+      toast.error(ts("wallet.save_error", "Failed to save limit"));
     } finally {
       setLimitSaving(false);
     }
@@ -228,9 +229,9 @@ export default function WalletSecuritySettings() {
     try {
       setResetRequested(true);
       await pinRepo.requestPinReset();
-      toast.success(t("wallet.pin_reset_sent" as any) || "PIN reset email sent. Check your inbox.");
+      toast.success(ts("wallet.pin_reset_sent", "PIN reset email sent. Check your inbox."));
     } catch {
-      toast.error(t("wallet.pin_reset_error" as any) || "Failed to request PIN reset");
+      toast.error(ts("wallet.pin_reset_error", "Failed to request PIN reset"));
     }
   }, [t]);
 
@@ -247,21 +248,21 @@ export default function WalletSecuritySettings() {
     <div className="space-y-4">
       <div className={sectionClass} style={sectionStyle}>
         <div className="flex items-center gap-2.5">
-          <Lock className="w-5 h-5 text-primary" />
-          <div>
-            <h3 className="text-sm font-bold text-foreground">{t("wallet.pin_label" as any) || "Wallet PIN"}</h3>
-            <p className="text-[10px] text-muted-foreground">{t("wallet.pin_setup_desc" as any) || "6-digit PIN protects all transfers"}</p>
+          <Lock className="w-5 h-5 text-primary shrink-0" />
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.pin_label", "Wallet PIN")}</h3>
+            <p className="text-[10px] text-muted-foreground truncate">{ts("wallet.pin_setup_desc", "6-digit PIN protects all transfers")}</p>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto shrink-0">
             {pinStatus === "loading" ? (
               <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
             ) : pinStatus === "set" ? (
-              <span className="flex items-center gap-1 text-[10px] font-bold text-green-500">
-                <CheckCircle2 className="w-3.5 h-3.5" /> {t("wallet.active" as any) || "Active"}
+              <span className="flex items-center gap-1 text-[10px] font-bold text-green-500 whitespace-nowrap">
+                <CheckCircle2 className="w-3.5 h-3.5" /> {ts("wallet.active", "Active")}
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-[10px] font-bold" style={{ color: "hsl(38 92% 50%)" }}>
-                <AlertTriangle className="w-3.5 h-3.5" /> {t("wallet.not_set" as any) || "Not set"}
+              <span className="flex items-center gap-1 text-[10px] font-bold whitespace-nowrap" style={{ color: "hsl(38 92% 50%)" }}>
+                <AlertTriangle className="w-3.5 h-3.5" /> {ts("wallet.not_set", "Not set")}
               </span>
             )}
           </div>
@@ -275,7 +276,7 @@ export default function WalletSecuritySettings() {
             onClick={() => { setShowPinSetup(!showPinSetup); setShowPinReset(false); }}
           >
             <KeyRound className="w-3.5 h-3.5" />
-            {pinStatus === "set" ? (t("wallet.change_pin" as any) || "Change PIN") : (t("wallet.set_pin" as any) || "Set PIN")}
+            <span className="truncate">{pinStatus === "set" ? ts("wallet.change_pin", "Change PIN") : ts("wallet.set_pin", "Set PIN")}</span>
           </Button>
           {pinStatus === "set" && (
             <Button
@@ -286,7 +287,7 @@ export default function WalletSecuritySettings() {
               disabled={resetRequested}
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              {t("wallet.reset_pin" as any) || "Reset"}
+              <span className="truncate">{ts("wallet.reset_pin", "Reset")}</span>
             </Button>
           )}
         </div>
@@ -309,16 +310,16 @@ export default function WalletSecuritySettings() {
 
       <div className={sectionClass} style={sectionStyle}>
         <div className="flex items-center gap-2.5">
-          <Fingerprint className="w-5 h-5 text-primary" />
-          <div className="flex-1">
-            <h3 className="text-sm font-bold text-foreground">{t("wallet.biometric_label" as any) || "Biometric Auth"}</h3>
-            <p className="text-[10px] text-muted-foreground">
+          <Fingerprint className="w-5 h-5 text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.biometric_label", "Biometric Auth")}</h3>
+            <p className="text-[10px] text-muted-foreground truncate">
               {biometricAvailable
-                ? (t("wallet.biometric_available" as any) || "Platform authenticator available")
-                : (t("wallet.biometric_unavailable" as any) || "Not available on this device")}
+                ? ts("wallet.biometric_available", "Platform authenticator available")
+                : ts("wallet.biometric_unavailable", "Not available on this device")}
             </p>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto shrink-0">
             {biometricAvailable ? (
               biometricEnabled ? (
                 <CheckCircle2 className="w-4 h-4 text-green-500" />
@@ -343,23 +344,25 @@ export default function WalletSecuritySettings() {
           ) : (
             <Fingerprint className="w-3.5 h-3.5" />
           )}
-          {biometricEnabled
-            ? (t("wallet.disable_biometric" as any) || "Disable Biometric")
-            : (t("wallet.enable_biometric" as any) || "Enable Biometric")}
+          <span className="truncate">
+            {biometricEnabled
+              ? ts("wallet.disable_biometric", "Disable Biometric")
+              : ts("wallet.enable_biometric", "Enable Biometric")}
+          </span>
         </Button>
         {!biometricAvailable && (
           <p className="text-[10px] text-muted-foreground/60 text-center">
-            {t("wallet.biometric_not_supported" as any) || "Your device does not support biometric authentication (Face ID / Touch ID / fingerprint)."}
+            {ts("wallet.biometric_not_supported", "Your device does not support biometric authentication.")}
           </p>
         )}
       </div>
 
       <div className={sectionClass} style={sectionStyle}>
         <div className="flex items-center gap-2.5">
-          <TrendingUp className="w-5 h-5 text-primary" />
-          <div>
-            <h3 className="text-sm font-bold text-foreground">{t("wallet.daily_limit" as any) || "Daily Transfer Limit"}</h3>
-            <p className="text-[10px] text-muted-foreground">{t("wallet.limit_desc" as any) || "Max amount you can transfer per day"}</p>
+          <TrendingUp className="w-5 h-5 text-primary shrink-0" />
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.daily_limit", "Daily Transfer Limit")}</h3>
+            <p className="text-[10px] text-muted-foreground truncate">{ts("wallet.limit_desc", "Max amount you can transfer per day")}</p>
           </div>
         </div>
 
@@ -384,8 +387,9 @@ export default function WalletSecuritySettings() {
                 value={customLimit}
                 onChange={(e) => setCustomLimit(Math.max(100, Math.min(Number(e.target.value), DAILY_TRANSFER_LIMITS.premium)))}
                 className="w-28 bg-background border border-border rounded-lg px-3 py-2 text-sm font-bold tabular-nums text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                style={{ fontSize: "16px" }}
               />
-              <span className="text-xs text-muted-foreground font-medium">/ {t("wallet.day" as any) || "day"}</span>
+              <span className="text-xs text-muted-foreground font-medium">/ {ts("wallet.day", "day")}</span>
             </div>
             <Button
               variant="outline"
@@ -395,28 +399,28 @@ export default function WalletSecuritySettings() {
               disabled={limitSaving || !limitLoaded}
             >
               {limitSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              {t("wallet.save" as any) || "Save"}
+              <span className="truncate">{ts("wallet.save", "Save")}</span>
             </Button>
           </div>
           <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-            <span>{t("wallet.min_limit" as any) || "Min"}: 100</span>
-            <span>{t("wallet.max_limit" as any) || "Max"}: {DAILY_TRANSFER_LIMITS.premium.toLocaleString()}</span>
+            <span>{ts("wallet.min_limit", "Min")}: 100</span>
+            <span>{ts("wallet.max_limit", "Max")}: {DAILY_TRANSFER_LIMITS.premium.toLocaleString()}</span>
           </div>
         </div>
       </div>
 
       <div className={sectionClass} style={sectionStyle}>
         <div className="flex items-center gap-2.5">
-          <Smartphone className="w-5 h-5 text-primary" />
-          <div className="flex-1">
-            <h3 className="text-sm font-bold text-foreground">{t("wallet.device_label" as any) || "Device Binding"}</h3>
-            <p className="text-[10px] text-muted-foreground">
+          <Smartphone className="w-5 h-5 text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.device_label", "Device Binding")}</h3>
+            <p className="text-[10px] text-muted-foreground truncate">
               {deviceBound
-                ? (t("wallet.device_bound_desc" as any) || "Wallet locked to this device")
-                : (t("wallet.device_unbound_desc" as any) || "Wallet not bound to any device")}
+                ? ts("wallet.device_bound_desc", "Wallet locked to this device")
+                : ts("wallet.device_unbound_desc", "Wallet not bound to any device")}
             </p>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto shrink-0">
             {deviceBound ? (
               <CheckCircle2 className="w-4 h-4 text-green-500" />
             ) : (
@@ -435,7 +439,7 @@ export default function WalletSecuritySettings() {
               disabled={bindingInProgress}
             >
               {bindingInProgress ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Smartphone className="w-3.5 h-3.5" />}
-              {t("wallet.bind" as any) || "Bind This Device"}
+              <span className="truncate">{ts("wallet.bind", "Bind This Device")}</span>
             </Button>
           ) : (
             <Button
@@ -445,7 +449,7 @@ export default function WalletSecuritySettings() {
               onClick={handleUnbindDevice}
             >
               <Smartphone className="w-3.5 h-3.5" />
-              {t("wallet.unbind" as any) || "Unbind Device"}
+              <span className="truncate">{ts("wallet.unbind", "Unbind Device")}</span>
             </Button>
           )}
         </div>
@@ -453,17 +457,17 @@ export default function WalletSecuritySettings() {
 
       <div className="rounded-2xl border p-4 space-y-3" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
         <div className="flex items-center gap-2.5">
-          <Eye className="w-5 h-5 text-primary" />
-          <div>
-            <h3 className="text-sm font-bold text-foreground">{t("wallet.security_overview" as any) || "Security Overview"}</h3>
+          <Eye className="w-5 h-5 text-primary shrink-0" />
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.security_overview", "Security Overview")}</h3>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
           {[
             { label: "PIN", ok: pinStatus === "set" },
-            { label: t("wallet.biometric_label" as any) || "Biometric", ok: biometricEnabled },
-            { label: t("wallet.device_label" as any) || "Device", ok: deviceBound },
-            { label: t("wallet.email_verified" as any) || "Email", ok: !!user?.email },
+            { label: ts("wallet.biometric_label", "Biometric"), ok: biometricEnabled },
+            { label: ts("wallet.device_label", "Device"), ok: deviceBound },
+            { label: ts("wallet.email_verified", "Email"), ok: !!user?.email },
           ].map((item) => (
             <div
               key={item.label}
@@ -478,7 +482,7 @@ export default function WalletSecuritySettings() {
               ) : (
                 <ShieldAlert className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
               )}
-              <span className="text-[11px] font-medium text-foreground">{item.label}</span>
+              <span className="text-[11px] font-medium text-foreground truncate">{item.label}</span>
             </div>
           ))}
         </div>
