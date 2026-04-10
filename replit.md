@@ -333,6 +333,53 @@ Complete Taxi/Rider/Delivery dispatch engine with real-time matching, anti-confl
 - Busy-rider detection blocks double-assignment
 - Rollback on partial failure
 
+## Global Revenue Engine
+Comprehensive monetization layer that computes commissions, fees, and margins across every module, adapted per country/market.
+
+### Revenue Domain Types (`src/domains/revenue/revenue-types.ts`)
+- **11 RevenueModules**: wallet, flight, hotel, property, taxi, delivery, marketplace, services, orbit, advertising, subscription
+- **21 RevenueStreams**: commission, service_fee, transaction_fee, subscription_fee, boost_fee, booking_commission, ride_commission, delivery_commission, marketplace_commission, currency_conversion_fee, topup_fee, withdrawal_fee, price_margin, promoted_listing_fee, premium_feature_fee, insurance_fee, cancellation_fee, etc.
+- **Per-Module Revenue Configs**: WalletRevenueConfig, FlightRevenueConfig, HotelRevenueConfig, TaxiRevenueConfig, DeliveryRevenueConfig, MarketplaceRevenueConfig
+- **SubscriptionPlan**: 5 tiers (Free/Starter/Pro/Business/Enterprise) with per-tier limits, commission discounts, boost credits
+- **BoostPackage**: Quick Boost (1d), Weekly Spotlight (7d), Monthly Premium (30d), Sponsored Listing (14d) — per-module applicability
+- **CountryPricingConfig**: Per-country purchasing power, commission adjustment, fee adjustment, tax rate, payment processing rate
+- **PricingDecision**: Full breakdown of revenue computation with adjustment factors and per-line breakdown
+
+### Global Revenue Engine (`src/lib/revenue/global-revenue-engine.ts`)
+Per-module revenue computation with country-adaptive pricing:
+- **Wallet**: Transaction fee (1.5% + $0.25), currency conversion spread (2.5%), top-up fee (2%), withdrawal fee (1%), international transfer (3%), escrow (2%)
+- **Flight**: Booking commission (6%) + price margin (3%) + service fee ($12) + ancillaries (insurance 30%, seat $5, baggage 15%) + cancellation (10%) + change ($25)
+- **Hotel**: Booking commission (12%) + service fee (8% + $5) + last-minute margin (5%) + cancellation (15%)
+- **Taxi**: Ride commission (20%, premium 25%) + service fee ($1.50) + surge revenue share (25%) + wait time ($0.30/min) + scheduled premium ($2) + cancellation ($3)
+- **Delivery**: Delivery commission (25%) + merchant commission (15%) + service fee ($1) + small order fee ($2 under $10) + rush premium (50%) + peak surcharge (20%) + long distance ($0.50/km over 5km)
+- **Marketplace**: Sale commission (10%) + service fee (3%) + payment processing (2.9%) + promoted listing ($3/day) + featured ($10) + refund handling ($1)
+- **Subscriptions**: Free → $9.99/mo Starter → $29.99/mo Pro → $79.99/mo Business → $249.99/mo Enterprise (yearly discount ~17%)
+- **Boosts**: $4.99 Quick Boost → $19.99 Weekly Spotlight → $49.99 Monthly Premium → $34.99 Sponsored
+- **Loyalty Discounts**: Bronze (0%) → Silver (5%) → Gold (10%) → Platinum (15%) applied on top of computed revenue
+
+### Country Pricing Strategy (`src/lib/revenue/country-pricing-strategy.ts`)
+20 country configs across 4 market tiers:
+- **Premium** (AE, US, GB, SA, JP): Full pricing, 100% commission rates
+- **Mature** (FR, DE, KR): 90-95% commission adjustment, slight fee reduction
+- **Developing** (MA, EG, TN, TR, BR, MX): 65-70% commission, 40-50% fees — purchasing power adapted
+- **Emerging** (IN, SN, CM, NG, ID, PH): 50-55% commission, 25-30% fees — aggressive market penetration
+- `adjustPriceForCountry()`, `computeTaxAmount()`, `getPaymentProcessingCost()`
+
+### Revenue Analytics Engine (`src/lib/revenue/revenue-analytics-engine.ts`)
+- **`computeGlobalSnapshot()`**: Total revenue, per-module breakdown, per-country breakdown, top streams, conversion rate, user LTV, ROI
+- **`computeModuleBreakdown()`**: Per-module revenue by stream, growth %, projected monthly
+- **`computeConversionFunnel()`**: Visitors → Sign-ups → Active → Paying → Repeat (with drop-off rates)
+- **`computeUserLTV()`**: Gross/net LTV from avg order value × frequency × lifetime × commission rate
+- **`computeModuleROI()`**: Dev cost + operational cost vs revenue → ROI %, payback months, profit margin
+- **`projectRevenue()`**: Monthly revenue projections with compound growth
+- **`identifyRevenueOpportunities()`**: Auto-detects inactive modules, declining revenue, low conversion, missing subscription/advertising
+
+### Barrel Export (`src/lib/revenue/index.ts`)
+Single entry point re-exporting all types, computation functions, country configs, and analytics.
+
+### Updated Monetization Config (`src/lib/monetization-config.ts`)
+Expanded from 8 to 21 revenue streams, 7 to 18 commission rate types, 5 to 12 display entries. Aligned with global revenue engine.
+
 ## Key Directories
 ```
 easy-locs-ea1eb0ed/
