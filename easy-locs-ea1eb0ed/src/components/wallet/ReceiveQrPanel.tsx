@@ -1,8 +1,3 @@
-/**
- * ReceiveQrPanel — "My QR" with Easy-Locs branded QR.
- * Currency LOCKED to country default (no manual selector).
- * Clean, no duplicates.
- */
 import { useMemo, useState } from "react";
 import { Copy, Check, Share2 } from "lucide-react";
 import BrandedQR from "@/components/qr/BrandedQR";
@@ -12,14 +7,16 @@ import { qr, toResolveUrl } from "@/lib/qr-engine";
 import { formatMoney } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useWalletBalance } from "@/payments/wallet-hooks";
+import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 
 export default function ReceiveQrPanel() {
-  const { user } = useAuth();
+  const { user, userCurrency } = useAuth();
+  const { currency: walletCurrency } = useWalletBalance();
   const [amount, setAmount] = useState<string>("");
   const [copied, setCopied] = useState(false);
 
-  // Currency locked to country default — no manual selector
-  const currency = "AED";
+  const currency = walletCurrency || userCurrency || getWalletDefaultCurrency();
   const displayName = user?.user_metadata?.name || "Me";
 
   const payload = useMemo(() => {
@@ -57,7 +54,7 @@ export default function ReceiveQrPanel() {
       : `Pay ${displayName}`;
     try {
       await navigator.share({ title: text, url: link });
-    } catch { /* cancelled */ }
+    } catch {}
   };
 
   if (!user?.id) {
@@ -74,7 +71,6 @@ export default function ReceiveQrPanel() {
       animate={{ opacity: 1, scale: 1 }}
       className="space-y-5"
     >
-      {/* QR Code — Easy-Locs branded */}
       <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/20 bg-card p-8">
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
           My Payment QR
@@ -91,7 +87,6 @@ export default function ReceiveQrPanel() {
         )}
       </div>
 
-      {/* Amount — optional, currency locked */}
       <div className="space-y-2">
         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">
           Request amount (optional)
@@ -105,13 +100,12 @@ export default function ReceiveQrPanel() {
             onChange={(e) => setAmount(e.target.value)}
             className="flex-1 rounded-xl h-12 text-lg font-bold"
           />
-          <div className="px-4 py-3 rounded-xl bg-primary/10 text-primary text-xs font-black">
+          <div className="px-4 py-3 rounded-xl bg-primary/10 text-primary text-xs font-black whitespace-nowrap shrink-0">
             {currency}
           </div>
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex gap-3">
         <Button variant="outline" className="flex-1 rounded-xl gap-2 h-12" onClick={handleCopy}>
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

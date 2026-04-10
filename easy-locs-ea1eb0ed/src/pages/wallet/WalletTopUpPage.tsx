@@ -103,8 +103,8 @@ export default function WalletTopUpPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.amount")}</p>
           <div className="rounded-2xl bg-card border border-border/10 p-6 text-center">
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-lg text-muted-foreground font-bold">{currency}</span>
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-lg text-muted-foreground font-bold whitespace-nowrap shrink-0">{currency}</span>
               <input
                 type="number"
                 value={amount}

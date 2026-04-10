@@ -1,81 +1,52 @@
-import { useState, useEffect } from "react";
-import { Wallet, Check, Globe, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Wallet, Globe, Info } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import OrbitCurrencySelector from "@/components/orbit/payments/OrbitCurrencySelector";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { useI18n } from "@/lib/i18n";
+import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 
 export default function WalletCurrencySettings() {
-  const { user, userCurrency, refreshProfile } = useAuth();
+  const { userCurrency } = useAuth();
   const { balance, currency: walletCurrency, loading: walletLoading } = useWalletBalance();
   const { t } = useI18n();
-  const [currency, setCurrency] = useState(userCurrency || "EUR");
-  const [showSelector, setShowSelector] = useState(false);
-  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (userCurrency) setCurrency(userCurrency);
-  }, [userCurrency]);
-
-  const handleSave = async () => {
-    if (!user?.id) return;
-    setSaving(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ currency })
-      .eq("id", user.id);
-    if (error) {
-      toast.error(t("wallet.currency_update_failed" as any) || "Failed to update currency");
-    } else {
-      toast.success(t("wallet.currency_updated" as any) || "Currency updated");
-      refreshProfile?.();
-    }
-    setSaving(false);
-  };
+  const activeCurrency = walletCurrency || userCurrency || getWalletDefaultCurrency();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center gap-2">
         <Wallet className="w-5 h-5 text-primary" />
-        <h3 className="text-sm font-bold text-foreground">{t("wallet.currency_preference" as any) || "Currency Preference"}</h3>
+        <h3 className="text-sm font-bold text-foreground">{t("wallet.currency_preference" as any) || "Wallet Currency"}</h3>
       </div>
 
-      <div className="rounded-xl bg-muted p-4 space-y-2">
-        <p className="text-xs text-muted-foreground">{t("wallet.current_balance" as any) || "Current balance"}</p>
-        <p className="text-lg font-bold text-foreground">
-          {walletLoading ? "..." : `${balance.toFixed(2)} ${walletCurrency}`}
+      <div className="rounded-2xl p-5 space-y-1" style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.15)" }}>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("wallet.your_currency" as any) || "Your wallet currency"}</p>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.08)" }}>
+            <Globe className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-2xl font-black text-foreground tabular-nums">{activeCurrency}</p>
+            <p className="text-[11px] text-muted-foreground">{t("wallet.single_currency_desc" as any) || "All transactions use this currency"}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl p-5 space-y-1" style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.15)" }}>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("wallet.current_balance" as any) || "Current balance"}</p>
+        <p className="text-xl font-black text-foreground tabular-nums">
+          {walletLoading ? "..." : `${balance.toFixed(2)} ${activeCurrency}`}
         </p>
       </div>
 
-      <div className="space-y-2">
-        <p className="text-xs text-muted-foreground">{t("wallet.display_currency" as any) || "Display currency"}</p>
-        <button
-          onClick={() => setShowSelector(true)}
-          className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
-        >
-          <span className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-muted-foreground" />
-            {currency}
-          </span>
-          <span className="text-muted-foreground text-xs">{t("wallet.change" as any) || "Change"}</span>
-        </button>
+      <div className="flex items-start gap-3 rounded-2xl p-4" style={{ background: "hsl(var(--primary) / 0.04)", border: "1px solid hsl(var(--primary) / 0.1)" }}>
+        <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+        <div>
+          <p className="text-xs font-semibold text-foreground">{t("wallet.auto_exchange_title" as any) || "Automatic exchange"}</p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
+            {t("wallet.auto_exchange_desc" as any) || "When you pay in a different currency, the exchange is handled automatically at the current rate via Stripe. No manual conversion needed."}
+          </p>
+        </div>
       </div>
-
-      <Button onClick={handleSave} disabled={saving || currency === userCurrency} className="w-full" size="sm">
-        {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-        {t("wallet.save" as any) || "Save"}
-      </Button>
-
-      {showSelector && (
-        <OrbitCurrencySelector
-          selected={currency}
-          onSelect={(c) => { setCurrency(c); setShowSelector(false); }}
-          onClose={() => setShowSelector(false)}
-        />
-      )}
     </div>
   );
 }
