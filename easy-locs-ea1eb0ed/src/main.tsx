@@ -1,0 +1,57 @@
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { HashRouter } from "react-router-dom";
+import App from "./App";
+import "./index.css";
+import "./styles/performance.css";
+import { APP_VERSION } from "@/lib/version-check";
+
+if (typeof globalThis.crypto !== "undefined" && typeof globalThis.crypto.randomUUID !== "function") {
+  (globalThis.crypto as any).randomUUID = () =>
+    "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c: string) =>
+      (+c ^ (globalThis.crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16)
+    );
+}
+
+const rootElement = document.getElementById("root");
+if (!rootElement) throw new Error("Root element #root not found");
+
+if (typeof window !== "undefined") {
+  const { pathname, hash } = window.location;
+  if (pathname !== "/" && pathname !== "/index.html" && !hash) {
+    window.location.hash = pathname;
+  }
+  (window as any).__EASYLOCS_BUILD_ID__ = APP_VERSION;
+
+  setTimeout(() => {
+    import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});
+  }, 5000);
+  setTimeout(() => {
+    import("@/lib/events/event-init").catch(() => {});
+  }, 6000);
+  setTimeout(() => {
+    import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()).catch(() => {});
+  }, 8000);
+}
+
+try {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <HashRouter>
+      <App />
+    </HashRouter>
+  );
+  rootElement.querySelector("#app-loading")?.remove();
+  (window as any).__EASYLOCS_REACT_MOUNTED__ = true;
+  (window as any).__EASYLOCS_BOOTED__ = true;
+} catch (err) {
+  console.error("[BOOT_CRASH]", err);
+  rootElement.innerHTML = `
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui;background:#0F1117;">
+      <div style="text-align:center;max-width:400px;padding:20px;">
+        <p style="font-size:18px;color:#f8fafc;margin:0 0 8px;">Boot Error</p>
+        <p style="font-size:13px;color:#94a3b8;margin:0 0 16px;">${err instanceof Error ? err.message : String(err)}</p>
+        <button onclick="try{caches.keys().then(function(n){return Promise.all(n.map(function(k){return caches.delete(k)}))}).finally(function(){location.reload()})}catch(e){location.reload()}" style="background:#D4A853;color:#0F1117;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Reload</button>
+      </div>
+    </div>`;
+}
