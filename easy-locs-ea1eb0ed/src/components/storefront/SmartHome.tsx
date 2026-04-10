@@ -33,7 +33,8 @@ import { useI18n } from "@/lib/i18n";
 import OrbitPreviewWidget from "@/components/dashboard/OrbitPreviewWidget";
 import PropertyDashboardWidget from "@/components/dashboard/PropertyDashboardWidget";
 import EssentialServicesStrip from "@/components/dashboard/EssentialServicesStrip";
-import SuperServicesGrid from "@/components/dashboard/SuperServicesGrid";
+import { ServiceMenuGrid, ServiceMenuDrawer } from "@/components/menu";
+import LiveTrackingBanner from "@/components/dashboard/LiveTrackingBanner";
 import { useDashboardLiveStats } from "@/hooks/useDashboardLiveStats";
 import { prefetchForRoute } from "@/lib/smart-prefetch";
 import { useCart } from "@/hooks/useCart";
@@ -622,8 +623,14 @@ export default function SmartHome() {
       <PropertyDashboardWidget />
       <div className="px-3 sm:px-4">
 
-        {/* Super Services — 4-column grid (Food, Taxi, Delivery, Hotel, Flights, Seasonal, Real Estate, Services) */}
-        <SuperServicesGrid />
+        {/* Live tracking banners for active rides/deliveries */}
+        <LiveTrackingBanner />
+
+        {/* Super Services — data-driven from CATEGORY_TREE */}
+        <ServiceMenuGrid columns={4} maxItems={8} />
+        <div className="flex justify-center mb-3">
+          <ServiceMenuDrawer />
+        </div>
 
         {/* Essential Services — Horizontal strip (Hospital, ATM, Gas, Police, Fire, Pharmacy, Park, Parking) */}
         <EssentialServicesStrip />

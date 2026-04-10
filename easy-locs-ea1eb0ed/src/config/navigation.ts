@@ -87,6 +87,7 @@ export const NAV_TABS = {
   me: "/me",
 } as const;
 
+/** @deprecated Use ServiceMenuGrid / menu-registry instead. Kept for backward compat. */
 export const EXPLORE_CATEGORIES = [
   { key: "food", label: "Food", icon: "🍔", path: "/browse/food" },
   { key: "grocery", label: "Grocery", icon: "🛒", path: "/browse/grocery" },

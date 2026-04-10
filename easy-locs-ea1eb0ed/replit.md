@@ -70,8 +70,32 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - Admin pages intentionally keep raw error messages for debugging
 - Pattern: `console.error("[Module]", err.message); toast.error("User-friendly message");`
 
+## Global Menu System (src/lib/menu/ + src/components/menu/)
+Canonical, data-driven menu derived from CATEGORY_TREE (14 verticals, 268+ subcategories).
+Replaces hardcoded `EXPLORE_CATEGORIES` and `SuperServicesGrid`.
+
+**Data Layer** (`src/lib/menu/`):
+- `menu-types.ts` — MenuNode (4-level: vertical→cluster→subcategory→activity), MenuContext (role/country/language/RTL/features/time-of-day), MenuSection, MenuSearchResult, BusinessMenuItem
+- `menu-registry.ts` — Canonical registry built from CATEGORY_TREE. Exports: `getMenuTree()`, `getFlatMenuIndex()`, `getBusinessMenuItems(role)`, `getBusinessMenuSections(role)`, `QUICK_ACCESS_SERVICES`
+- `menu-engine.ts` — `resolvePublicMenu(ctx)`, `resolveBusinessMenu(ctx)`, `searchMenu(query, ctx)`, `getVerticalSubMenu(key, ctx)`, `getQuickActions(ctx)`. Handles visibility (role/country/feature-flag), scoring (frequency/favorites/time-of-day), filtering
+- `useMenuContext.ts` — React hook building MenuContext from i18n locale, user role, country, RTL detection, frequent routes from localStorage
+
+**Components** (`src/components/menu/`):
+- `ServiceMenuGrid` — Data-driven 4-col grid replacing SuperServicesGrid (used in SmartHome.tsx)
+- `ServiceMenuDrawer` — Bottom sheet with full CategoryMenu (mobile, 85vh)
+- `CategoryMenu` — 2-panel vertical→subcategory browser with search
+- `MegaMenu` — Desktop hover mega menu with vertical sidebar + cluster grid
+- `BusinessMenu` — Role-adaptive business menu (merchant/provider/property_manager/landlord/tenant/driver/admin)
+- `MenuSearchBar` — Fuzzy search across all menu nodes (label/slug/alias/tag matching)
+- `IconMenuCard` — Single service card with emoji/icon + label
+- `MenuItem` — List-style menu row with icon/emoji/badge/chevron
+- `MenuSectionComponent` — Collapsible section with title + child items
+
+**Roles supported**: user, merchant, provider, owner, manager, admin, property_manager, tenant, landlord, driver
+**Business menu sections**: operations, finance, growth, compliance, communication, settings, admin
+
 ## Taxonomy & Data Architecture
-- **SSOT**: `src/lib/taxonomy/category-tree.ts` — 12 primaries, 150+ subcategories (was ~100), strict hierarchy
+- **SSOT**: `src/lib/taxonomy/category-tree.ts` — 14 primaries, 268+ subcategories, strict hierarchy
 - **Adapter**: `src/lib/taxonomy/world-class-taxonomy.ts` — enrichment layer (service modes, time relevance, geo hints)
 - **Import mapper**: `src/lib/import-engine/taxonomy/taxonomy-mapper.ts` — 180+ aliases for global category resolution
 - **Taxonomy health engine**: `src/lib/engines/taxonomy-health-engine.ts` — detects vertical mismatches, orphaned subcategories, missing tags, tree duplicates
