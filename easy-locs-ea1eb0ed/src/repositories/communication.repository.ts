@@ -8,7 +8,7 @@ import { db } from "@/services/db";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { assertNoLegacyIds, assertValidMessageType, assertCanonicalMetadata } from "@/lib/governance";
 
-const db = supabase as any;
+
 
 // ═══ MESSAGES ═══
 

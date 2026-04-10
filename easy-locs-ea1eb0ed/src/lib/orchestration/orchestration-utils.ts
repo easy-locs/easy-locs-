@@ -3,8 +3,9 @@
  * Single responsibility: DB write helpers used by all domain handlers.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export async function createNotification(params: {
   actorType: "user" | "pro" | "driver" | "system";

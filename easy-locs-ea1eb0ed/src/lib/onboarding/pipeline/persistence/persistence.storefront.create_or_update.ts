@@ -3,6 +3,7 @@
  * ONE thing: upsert into storefront_pages.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { StorefrontPayload } from "../contracts";
 
 function slugify(input: string): string {
@@ -14,7 +15,7 @@ export async function createOrUpdateStorefront(
   payload: StorefrontPayload,
   visibilityMode: string,
 ): Promise<{ id: string; slug: string; status: string; visibility: string }> {
-  const db = supabase as any;
+  
   const slug = `${slugify(payload.canonical_name || "merchant")}-${entityId.slice(0, 8)}`;
   const readinessStatus = payload.publish_visibility === "public" ? "ready" : "draft";
 

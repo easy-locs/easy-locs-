@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type {
   OrbitProfile,
   WalletStateModel,
@@ -14,7 +15,7 @@ import type {
 
 // Use untyped client for V2 domain tables not yet in the auto-generated schema
  
-const db = supabase as any;
+
 
 export const orbitRepo = {
   async getByOrbitId(orbitId: string): Promise<OrbitProfile | null> {

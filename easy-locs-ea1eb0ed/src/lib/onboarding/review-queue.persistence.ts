@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { CanonicalOnboardingRecord, OnboardingQualityResult } from "./types";
 
 export async function enqueueForReview(
@@ -7,7 +8,7 @@ export async function enqueueForReview(
   quality: OnboardingQualityResult,
   suggestedVisibility: "draft" | "public",
 ) {
-  const db = supabase as any;
+  
 
   const priority =
     quality.score < 50 ? 95 :

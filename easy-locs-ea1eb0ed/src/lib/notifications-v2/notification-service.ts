@@ -3,8 +3,9 @@
  * SINGLE write + read path for all platform notifications.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export interface NotificationInsert {
   user_id: string;

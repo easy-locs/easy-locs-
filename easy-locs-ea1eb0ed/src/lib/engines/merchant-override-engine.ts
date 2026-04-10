@@ -4,8 +4,9 @@
  * Ensures automation never overwrites merchant manual changes.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 // ── Types ──
 

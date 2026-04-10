@@ -2,8 +2,9 @@
  * AI Chat Repository — Canonical DB access for ai_chat_* tables.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export const aiChatRepo = {
   threads: {

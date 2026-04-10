@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
@@ -15,7 +16,7 @@ import { Loader2, ChefHat, Clock, CheckCircle2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 
-const db = supabase as any;
+
 
 interface KitchenQueueProps {
   shopId: string;

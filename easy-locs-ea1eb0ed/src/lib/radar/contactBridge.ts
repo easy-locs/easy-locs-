@@ -4,13 +4,14 @@
  * Zero inline Supabase inserts.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { toast } from "sonner";
 import { sendText } from "@/families/send/send-text";
 import { notifyNewMessage } from "@/lib/engines/notification-event-dispatcher";
 import type { SendContext } from "@/families/send/send-context";
 import { orbitDb } from "@/lib/db/orbitDb";
 
-const db = supabase as any;
+
 
 async function resolveOwnerName(userId: string): Promise<string> {
   const { data } = await db

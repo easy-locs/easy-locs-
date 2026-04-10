@@ -2,9 +2,10 @@
  * search.fetch.products — Fetches seed_products results.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { SearchResult } from "../search-types";
 
-const db = supabase as any;
+
 
 export async function fetchProducts(query: string): Promise<SearchResult[]> {
   const q = query.trim().toLowerCase();

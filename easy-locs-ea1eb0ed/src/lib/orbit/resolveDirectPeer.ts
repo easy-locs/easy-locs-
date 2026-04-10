@@ -4,8 +4,9 @@
  * Uses ONLY orbit_profiles_v2 as the identity source.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export interface ResolvedDirectPeer {
   peerUserId: string | null;

@@ -3,8 +3,9 @@
  * Extracts direct supabase calls from GiftCardManager into repository layer.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export interface GiftCardRow {
   id: string;

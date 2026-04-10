@@ -80,9 +80,10 @@ export async function resolveAutocomplete(
 // ── Autocomplete-specific fetchers (small, focused) ──
 
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 
-const db = supabase as any;
+
 
 async function fetchAutocompleteShops(q: string): Promise<SearchResult[]> {
   let query = db

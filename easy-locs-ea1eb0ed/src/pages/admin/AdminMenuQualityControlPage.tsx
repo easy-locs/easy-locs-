@@ -4,10 +4,11 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-const db = supabase as any;
+
 
 export default function AdminMenuQualityControlPage() {
   const navigate = useNavigate();

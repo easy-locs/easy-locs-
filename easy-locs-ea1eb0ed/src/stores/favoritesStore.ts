@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
  
-const db = supabase as any;
+
 
 type FavoriteRow = {
   id: string;

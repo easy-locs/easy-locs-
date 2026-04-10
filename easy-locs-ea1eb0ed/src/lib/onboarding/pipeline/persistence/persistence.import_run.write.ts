@@ -3,6 +3,7 @@
  * ONE thing: write import run to DB.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { RawInput } from "../contracts";
 
 export async function writeImportRun(params: {
@@ -11,7 +12,7 @@ export async function writeImportRun(params: {
   status: string;
   resultJson: unknown;
 }): Promise<string> {
-  const db = supabase as any;
+  
   const { data, error } = await db
     .from("onboarding_import_runs")
     .insert({

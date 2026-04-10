@@ -2,6 +2,7 @@
  * Storefront Persistence — Upserts canonical records into storefront_pages.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { StorefrontDraftPayload } from "./storefront-output.types";
 
 export async function upsertStorefrontPage(
@@ -11,7 +12,7 @@ export async function upsertStorefrontPage(
   userId?: string,
   orgId?: string,
 ) {
-  const db = supabase as any;
+  
 
   const visibilityMode = payload.publish_visibility === "public" ? "live" : "coming_soon";
   const readinessStatus = payload.publish_visibility === "public" ? "ready" : "draft";

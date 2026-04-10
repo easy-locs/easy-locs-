@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { sendSystemMessage } from "@/lib/orbit/sendSystemMessage";
 import { toast } from "sonner";
@@ -27,7 +28,7 @@ export interface OrbitPaymentRequest {
  * Creates a wallet transaction + sends a system message in chat.
  */
 export async function requestPaymentInChat(params: OrbitPaymentRequest) {
-  const db = supabase as any;
+  
 
   // 1. Create wallet transaction (pending)
   const { data: tx, error: txError } = await db
@@ -88,7 +89,7 @@ export async function confirmPaymentInChat(params: {
   senderOrbitId: string;
   payerUserId: string;
 }) {
-  const db = supabase as any;
+  
 
   const { data: tx, error } = await db
     .from("wallet_transactions")
@@ -143,7 +144,7 @@ export async function sendMoneyInChat(params: {
   currency: string;
   note?: string;
 }) {
-  const db = supabase as any;
+  
   const refCode = `SND-${Date.now().toString(36).toUpperCase()}`;
 
   const { data: tx, error } = await db

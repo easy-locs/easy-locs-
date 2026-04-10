@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type {
   LeaseRecord,
   PropertyUnitManagement,
@@ -6,7 +7,7 @@ import type {
 } from "@/lib/types/domain";
 
  
-const db = supabase as any;
+
 
 export const propertyManagementRepoExtended = {
   async listUnitsByOwner(ownerOrbitId: string): Promise<PropertyUnitManagement[]> {

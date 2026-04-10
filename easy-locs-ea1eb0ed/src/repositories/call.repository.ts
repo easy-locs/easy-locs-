@@ -2,8 +2,9 @@
  * Call Repository — Canonical DB access for ghost_call_sessions.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export const callRepo = {
   findById(id: string) {

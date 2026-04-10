@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { subscribeInstantMessages } from "@/lib/realtime-broadcast";
 import {
@@ -15,7 +16,7 @@ import {
 } from "@/domains/orbit/controllers/receipt.controller";
 import { playMessageSound } from "@/lib/notifications/sounds";
 
-const db = supabase as any;
+
 
 type ThreadLike = {
   id: string;

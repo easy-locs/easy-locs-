@@ -1,8 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { runOnboardingPipeline } from "./onboarding-orchestrator";
 
 export async function processQueuedRecrawls(limit = 10) {
-  const db = supabase as any;
+  
   const { data: jobs, error } = await db("onboarding_recrawl_jobs").select("*").eq("status", "queued").limit(limit);
   if (error) throw error;
 

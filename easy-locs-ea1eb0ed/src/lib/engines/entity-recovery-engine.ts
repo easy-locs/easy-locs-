@@ -3,10 +3,11 @@
  * Runs on seeds/candidates that are stuck in "hidden" visibility.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { runShopQualityCheck, type ShopQualityResult } from "./shop-quality-engine";
 import { passesCoherenceGate } from "./coherence-engine";
 
-const db = supabase as any;
+
 
 export interface RecoveryDiagnosis {
   entityId: string;

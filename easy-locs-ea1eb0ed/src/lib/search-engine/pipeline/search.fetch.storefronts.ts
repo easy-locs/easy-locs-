@@ -3,10 +3,11 @@
  * Single responsibility: query construction + execution.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { SearchState, SearchResult } from "../search-types";
 import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 
-const db = supabase as any;
+
 
 export async function fetchStorefronts(state: SearchState): Promise<SearchResult[]> {
   const q = state.query.trim().toLowerCase();

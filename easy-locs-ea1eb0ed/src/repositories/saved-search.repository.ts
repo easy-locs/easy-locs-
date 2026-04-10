@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { ListingSearchFilters } from "@/lib/types/search";
 
-const db = supabase as any;
+
 
 export type SavedSearchRow = {
   id: string;

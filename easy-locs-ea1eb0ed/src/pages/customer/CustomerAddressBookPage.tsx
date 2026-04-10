@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Plus, Home, Briefcase, MapPin, Star, Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 type AddressRow = {
   id: string;
@@ -27,7 +28,7 @@ const LABEL_COLORS: Record<string, string> = {
   Work: "hsl(270 60% 55%)",
 };
 
-const db = supabase as any;
+
 
 export default function CustomerAddressBookPage() {
   const navigate = useNavigate();

@@ -4,8 +4,9 @@
  * from orbit_profiles_v2 to ensure consistency with the orbit ID format.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 /**
  * Generates the canonical orbit_id from a user UUID.

@@ -3,8 +3,9 @@
  * Replaces console-only logging with real DB persistence.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export interface EngineRunResult {
   logId: string;

@@ -2,8 +2,9 @@
  * SEO Engine — Ensures all public entities have proper SEO metadata.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export async function runSeoCheck(limit = 100) {
   const { data: shops } = await db

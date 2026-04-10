@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 export async function updateGroupConversation(
   conversationId: string,

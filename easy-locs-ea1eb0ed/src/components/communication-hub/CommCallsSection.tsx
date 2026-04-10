@@ -472,7 +472,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
                 setContactsList(mapped);
               } catch { setContactsList([]); }
               finally { setContactsLoading(false); }
-            }
+            }}
           />
         </div>
       </div>

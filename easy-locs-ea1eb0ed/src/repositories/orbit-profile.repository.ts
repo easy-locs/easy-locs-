@@ -9,7 +9,7 @@ import { db } from "@/services/db";
 import type { CanonicalOrbitProfile } from "@/domains/shared/canonical-types";
 import type { AppRole } from "@/domains/shared/canonical-types";
 
-const db = supabase as any;
+
 
 /**
  * Fetch a single orbit profile by auth user ID.

@@ -3,8 +3,9 @@
  * Uses delivery_missions table + driver_locations for proximity matching.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const db = supabase as any;
+
 
 /* ── Haversine distance (km) ── */
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {

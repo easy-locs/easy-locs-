@@ -42,14 +42,14 @@ export async function secureRevealContact(revealType: string, opts: {
 }
 
 export async function findExistingConversation(contextId: string) {
-  const db = supabase as any;
+  
   const { data } = await db("conversations_v2").select("id")
     .eq("listing_id", contextId || "").eq("type", "inquiry").limit(1).maybeSingle();
   return data?.id || null;
 }
 
 export async function resolveOrbitId(userId: string): Promise<string> {
-  const db = supabase as any;
+  
   try {
     const { data } = await db("orbit_profiles_v2").select("orbit_id").eq("id", userId).maybeSingle();
     return data?.orbit_id || `orbit_${userId.replace(/-/g, "").substring(0, 8)}`;
@@ -62,7 +62,7 @@ export async function fetchOrgOwner(orgId: string) {
 }
 
 export async function createV2Conversation(params: Record<string, any>) {
-  const db = supabase as any;
+  
   const { data, error } = await db("conversations_v2").insert(params).select("id").single();
   if (error) throw error;
   return data?.id || null;

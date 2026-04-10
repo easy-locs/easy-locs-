@@ -2,13 +2,14 @@
  * Onboarding Persistence — Saves pipeline results to the database.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { OnboardingRequest, OnboardingPipelineResult } from "./onboarding-orchestrator";
 
 export async function persistOnboardingRun(
   input: OnboardingRequest,
   result: OnboardingPipelineResult,
 ) {
-  const db = supabase as any;
+  
 
   const { data: run, error: runError } = await db
     .from("onboarding_import_runs")

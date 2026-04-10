@@ -3,6 +3,7 @@
  */
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,7 @@ import {
   Eye, Radio, MessageSquare, Phone, Users, CreditCard, Hotel, Utensils
 } from "lucide-react";
 
-const db = supabase as any;
+
 
 interface BrowserRepairRun {
   id: string;

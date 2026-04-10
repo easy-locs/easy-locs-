@@ -3,10 +3,11 @@
  * All Orbit reads/writes MUST go through this module.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { assertNoLegacyOrbitWrite } from "@/lib/guards/assertNoLegacyOrbit";
 
  
-const db = supabase as any;
+
 
 export const orbitDb = {
   conversations: {
