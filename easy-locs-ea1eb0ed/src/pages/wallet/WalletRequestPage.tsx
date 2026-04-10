@@ -8,12 +8,12 @@ import { typedQueries } from "@/lib/db/typed-queries";
 import { guardWalletReady } from "@/lib/wallet/wallet-guard";
 import { ensureWalletBinding } from "@/lib/wallet/wallet-identity-binding";
 import { getDeviceFingerprint } from "@/lib/orbit-keystore";
-import { ArrowLeft, Send, Loader2, Mail, MessageSquare, CheckCircle, Users, ChevronRight, ArrowRightLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Send, Loader2, MessageSquare, Users, ArrowRightLeft, AlertTriangle, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
-import { listOrbitContacts } from "@/lib/orbit/orbit-contacts-service";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
+import { AppCard } from "@/components/ui/AppCard";
+import { ContactPickerSheet, InviteContactSheet, type PickableContact } from "@/components/wallet/ContactPickerSheet";
 
 const QUICK_AMOUNTS = [25, 50, 100, 250, 500];
 
@@ -25,32 +25,21 @@ function formatCurrencyAmount(amount: number, currency: string): string {
   }
 }
 
-interface OrbitContact {
-  id: string;
-  display_name: string | null;
-  email: string | null;
-  phone: string | null;
-  avatar_url: string | null;
-  peer_user_id: string | null;
-}
-
 export default function WalletRequestPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useI18n();
   const { currency: walletCurrency } = useWalletBalance();
   const currency = walletCurrency ?? getWalletDefaultCurrency();
-  const [targetEmail, setTargetEmail] = useState("");
   const [amount, setAmount] = useState("25");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [resolvedTarget, setResolvedTarget] = useState<{ id: string; name: string; currency?: string } | null>(null);
-  const [resolving, setResolving] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<PickableContact | null>(null);
   const [walletReady, setWalletReady] = useState<{ valid: boolean; walletId: string | null; error?: string } | null>(null);
   const [showContactPicker, setShowContactPicker] = useState(false);
-  const [contacts, setContacts] = useState<OrbitContact[]>([]);
-  const [contactsLoading, setContactsLoading] = useState(false);
-  const [contactSearch, setContactSearch] = useState("");
+  const [showInviteSheet, setShowInviteSheet] = useState(false);
+  const [inviteContact, setInviteContact] = useState<PickableContact | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -71,62 +60,24 @@ export default function WalletRequestPage() {
     }).catch(() => setWalletReady({ valid: false, walletId: null, error: "Guard check failed" }));
   }, [user?.id]);
 
-  const resolveRecipient = async () => {
-    const email = targetEmail.trim().toLowerCase();
-    if (!email) return;
-    setResolving(true);
-    try {
-      const { data: row } = await typedQueries.profiles.selectByEmail(email);
-      if (row) {
-        const name = row.name || [row.first_name, row.last_name].filter(Boolean).join(" ") || row.username || email.split("@")[0];
-        setResolvedTarget({ id: row.id, name });
-      } else {
-        setResolvedTarget(null);
-      }
-    } catch {
-      setResolvedTarget(null);
-    } finally {
-      setResolving(false);
+  const handleSelectEasyLocsUser = (contact: PickableContact) => {
+    setShowContactPicker(false);
+    setSelectedContact(contact);
+    if (contact.peer_user_id) {
+      const name = contact.display_name || "Contact";
+      setResolvedTarget({ id: contact.peer_user_id, name });
     }
   };
 
-  const loadContacts = useCallback(async () => {
-    if (!user?.id) return;
-    setContactsLoading(true);
-    try {
-      const raw = await listOrbitContacts(user.id);
-      setContacts(raw.map((c: Record<string, unknown>) => ({
-        id: c.id as string,
-        display_name: (c.display_name as string) || null,
-        email: (c.email as string) || null,
-        phone: (c.phone as string) || null,
-        avatar_url: (c.avatar_url as string) || null,
-        peer_user_id: (c.peer_user_id as string) || null,
-      })));
-    } catch {
-      toast.error(t("wallet.contactLoadError") || "Could not load contacts");
-    } finally {
-      setContactsLoading(false);
-    }
-  }, [user?.id, t]);
-
-  const filteredContacts = useMemo(() => {
-    const payable = contacts.filter(c => c.peer_user_id && c.email);
-    if (!contactSearch.trim()) return payable;
-    const q = contactSearch.toLowerCase();
-    return payable.filter(c =>
-      (c.display_name?.toLowerCase().includes(q)) ||
-      (c.email?.toLowerCase().includes(q))
-    );
-  }, [contacts, contactSearch]);
-
-  const selectContact = (contact: OrbitContact) => {
+  const handleInviteContact = (contact: PickableContact) => {
     setShowContactPicker(false);
-    if (contact.email) {
-      setTargetEmail(contact.email);
-      const name = contact.display_name || contact.email.split("@")[0];
-      setResolvedTarget({ id: contact.peer_user_id!, name });
-    }
+    setInviteContact(contact);
+    setShowInviteSheet(true);
+  };
+
+  const clearRecipient = () => {
+    setResolvedTarget(null);
+    setSelectedContact(null);
   };
 
   const fxRate = useMemo(() => {
@@ -143,45 +94,31 @@ export default function WalletRequestPage() {
   const submit = async () => {
     if (!user?.id) { toast.error(t("wallet.signInFirst") || "Please sign in first"); return; }
     if (walletReady && !walletReady.valid) { toast.error(walletReady.error || t("wallet.walletNotReady") || "Wallet not ready"); return; }
-    const email = targetEmail.trim().toLowerCase();
-    if (!email) { toast.error(t("wallet.enterEmail") || "Enter recipient email"); return; }
+    if (!resolvedTarget?.id) { toast.error(t("wallet.selectContactFirst") || "Select a contact first"); return; }
     const numAmount = Number(amount ?? 0);
     if (!numAmount || numAmount <= 0) { toast.error(t("wallet.invalidAmount") || "Enter a valid amount"); return; }
+
+    if (resolvedTarget.id === user.id) {
+      toast.error(t("wallet.cannotRequestSelf") || "Cannot request money from yourself");
+      return;
+    }
 
     try {
       setSaving(true);
 
-      let targetUserId = resolvedTarget?.id ?? null;
-      if (!targetUserId) {
-        const { data: row } = await typedQueries.profiles.selectIdByEmail(email);
-        targetUserId = row?.id ?? null;
-      }
-
-      if (!targetUserId) {
-        toast.error(t("wallet.userNotFound") || "User not found — check the email and try again");
-        setSaving(false);
-        return;
-      }
-
-      if (targetUserId === user.id) {
-        toast.error(t("wallet.cannotRequestSelf") || "Cannot request money from yourself");
-        setSaving(false);
-        return;
-      }
-
-      const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
+      const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || "User";
 
       const { error } = await typedQueries.walletTransactions.insertRequest({
-          sender_id: targetUserId,
-          recipient_id: user.id,
-          amount: numAmount,
-          currency,
-          context_type: "request",
-          title: note.trim() || (t("wallet.paymentRequest") || "Payment Request"),
-          subtitle: `${t("wallet.requestFrom") || "Request from"} ${displayName}`,
-          status: "pending",
-          metadata: { requested_from_email: email, is_request: true, requester_id: user.id },
-        });
+        sender_id: resolvedTarget.id,
+        recipient_id: user.id,
+        amount: numAmount,
+        currency,
+        context_type: "request",
+        title: note.trim() || (t("wallet.paymentRequest") || "Payment Request"),
+        subtitle: `${t("wallet.requestFrom") || "Request from"} ${displayName}`,
+        status: "pending",
+        metadata: { is_request: true, requester_id: user.id },
+      });
       if (error) throw error;
 
       if (walletReady?.walletId) {
@@ -225,38 +162,64 @@ export default function WalletRequestPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="space-y-1.5"
         >
-          <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-            <Mail className="w-3.5 h-3.5" /> {t("wallet.recipientEmail") || "Recipient"}
-          </label>
-          <div className="flex gap-2">
-            <input
-              value={targetEmail}
-              onChange={(e) => { setTargetEmail(e.target.value); setResolvedTarget(null); }}
-              onBlur={resolveRecipient}
-              placeholder={t("wallet.emailPlaceholder") || "name@example.com"}
-              type="email"
-              className="flex-1 rounded-xl border border-border/30 bg-card px-3 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
-            />
-            <button
-              onClick={() => { setShowContactPicker(true); loadContacts(); }}
-              className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center active:scale-95 transition-transform shrink-0"
-              title={t("wallet.pickContact") || "Pick contact"}
-            >
-              <Users className="h-4 w-4 text-primary" />
-            </button>
-          </div>
-          {resolving && <p className="text-[10px] text-muted-foreground mt-1">{t("wallet.lookingUp") || "Looking up user…"}</p>}
-          {resolvedTarget && (
-            <div className="flex items-center gap-1.5 mt-1.5 px-2 py-1.5 rounded-lg bg-emerald-500/8 border border-emerald-500/15">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span className="text-[11px] font-medium text-emerald-600">{resolvedTarget.name}</span>
-            </div>
-          )}
-          {!resolving && targetEmail.trim() && !resolvedTarget && (
-            <p className="text-[10px] text-muted-foreground/60 mt-1">{t("wallet.willReceiveNotif") || "User will receive a payment request notification"}</p>
-          )}
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.requestFrom") || "Request from"}</p>
+
+          <AnimatePresence mode="wait">
+            {resolvedTarget && selectedContact ? (
+              <motion.div
+                key="resolved"
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+              >
+                <AppCard variant="elevated" padding="sm" className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
+                    {selectedContact.avatar_url ? (
+                      <img src={selectedContact.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-bold" style={{ color: "hsl(38 65% 56%)" }}>
+                        {selectedContact.display_name ? initials(selectedContact.display_name) : <User className="h-5 w-5" style={{ color: "hsl(38 65% 56%)" }} />}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-foreground truncate">{resolvedTarget.name}</p>
+                    {selectedContact.phone && (
+                      <p className="text-[11px] text-muted-foreground truncate">{selectedContact.phone}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={clearRecipient}
+                    className="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform"
+                    style={{ background: "hsl(var(--muted) / 0.5)", color: "hsl(var(--foreground))" }}
+                  >
+                    {t("wallet.change") || "Change"}
+                  </button>
+                </AppCard>
+              </motion.div>
+            ) : (
+              <motion.div key="picker" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                <button
+                  onClick={() => setShowContactPicker(true)}
+                  className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl border-2 border-dashed border-border/30 active:scale-[0.98] transition-transform"
+                  style={{ background: "hsl(var(--card))" }}
+                >
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
+                    <Users className="w-5 h-5" style={{ color: "hsl(38 65% 56%)" }} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-semibold text-foreground">
+                      {t("wallet.chooseContact") || "Choose a contact"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {t("wallet.tapToSelect") || "Tap to select from your contacts"}
+                    </p>
+                  </div>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         <motion.div
@@ -343,7 +306,7 @@ export default function WalletRequestPage() {
         >
           <button
             onClick={submit}
-            disabled={saving || !targetEmail.trim() || Number(amount) <= 0 || (walletReady !== null && !walletReady.valid)}
+            disabled={saving || !resolvedTarget || Number(amount) <= 0 || (walletReady !== null && !walletReady.valid)}
             className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3.5 text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.97] transition-transform"
           >
             {saving ? (
@@ -360,56 +323,18 @@ export default function WalletRequestPage() {
         </p>
       </div>
 
-      <Sheet open={showContactPicker} onOpenChange={setShowContactPicker}>
-        <SheetContent side="bottom" className="rounded-t-3xl max-h-[80vh] p-0">
-          <div className="px-4 pt-5 pb-3">
-            <h3 className="text-base font-bold text-foreground">{t("wallet.selectContact") || "Select Contact"}</h3>
-            <input
-              value={contactSearch}
-              onChange={(e) => setContactSearch(e.target.value)}
-              placeholder={t("wallet.searchContacts") || "Search contacts…"}
-              className="mt-3 w-full rounded-xl border border-border/20 bg-muted/30 px-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
-              autoFocus
-            />
-          </div>
-          <div className="overflow-y-auto max-h-[55vh] px-2 pb-6">
-            {contactsLoading ? (
-              <div className="flex flex-col items-center gap-2 py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{t("wallet.loadingContacts") || "Loading contacts…"}</p>
-              </div>
-            ) : filteredContacts.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-8">
-                <Users className="w-8 h-8 text-muted-foreground/40" />
-                <p className="text-xs text-muted-foreground">{t("wallet.noContacts") || "No contacts found"}</p>
-              </div>
-            ) : (
-              filteredContacts.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => selectContact(c)}
-                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl active:bg-muted/50 transition-colors text-left"
-                >
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
-                    {c.avatar_url ? (
-                      <img src={c.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xs font-bold text-primary">
-                        {c.display_name ? initials(c.display_name) : "?"}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{c.display_name || c.email || "Contact"}</p>
-                    {c.email && <p className="text-[10px] text-muted-foreground truncate">{c.email}</p>}
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
-                </button>
-              ))
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
+      <ContactPickerSheet
+        open={showContactPicker}
+        onOpenChange={setShowContactPicker}
+        onSelectEasyLocsUser={handleSelectEasyLocsUser}
+        onInviteContact={handleInviteContact}
+      />
+
+      <InviteContactSheet
+        open={showInviteSheet}
+        onOpenChange={setShowInviteSheet}
+        contact={inviteContact}
+      />
     </div>
   );
 }

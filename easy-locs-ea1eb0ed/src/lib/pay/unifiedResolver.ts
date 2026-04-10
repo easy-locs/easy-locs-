@@ -30,9 +30,8 @@ async function findProfile(input: {
   userId?: string | null;
   orbitId?: string | null;
   email?: string | null;
+  phone?: string | null;
 }): Promise<{ id: string; display_name: string | null; email: string | null } | null> {
-  const selectCols = "id, email, name, first_name, last_name";
-
   if (input.userId) {
     const { data } = await typedQueries.profiles.selectById(input.userId);
     const row = Array.isArray(data) ? data[0] : data;
@@ -41,6 +40,19 @@ async function findProfile(input: {
 
   if (input.orbitId) {
     const { data: orbitRow } = await typedQueries.orbitProfiles.selectByOrbitId(input.orbitId);
+    if (orbitRow?.id) {
+      const { data } = await typedQueries.profiles.selectById(orbitRow.id);
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row) return { id: row.id, display_name: buildDisplayName(row as Record<string, unknown>), email: row.email ?? null };
+    }
+  }
+
+  if (input.phone) {
+    const { data: orbitRow } = await supabase
+      .from("orbit_profiles_v2")
+      .select("id, display_name")
+      .eq("phone", input.phone.trim())
+      .maybeSingle();
     if (orbitRow?.id) {
       const { data } = await typedQueries.profiles.selectById(orbitRow.id);
       const row = Array.isArray(data) ? data[0] : data;
@@ -65,6 +77,7 @@ export async function resolveUnifiedTarget(input: {
   userId?: string | null;
   orbitId?: string | null;
   email?: string | null;
+  phone?: string | null;
   walletId?: string | null;
   currency?: string;
 }): Promise<UnifiedPayTarget | null> {
