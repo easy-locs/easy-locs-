@@ -4,7 +4,6 @@
  * All balance reads, transfers, and history come from HERE.
  */
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { typedQueries } from "@/lib/db/typed-queries";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";

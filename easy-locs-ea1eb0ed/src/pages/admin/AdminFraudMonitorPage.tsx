@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminFraudMonitorPage() {
   const navigate = useNavigate();
@@ -8,7 +8,7 @@ export default function AdminFraudMonitorPage() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-fraud-monitor"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("orders")
         .select("*")
         .order("created_at", { ascending: false })

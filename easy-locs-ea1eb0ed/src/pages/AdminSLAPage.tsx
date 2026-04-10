@@ -1,15 +1,15 @@
 /**
  * AdminSLAPage — SLA tracking dashboard.
  */
+import { db } from "@/services/db";
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminSLAPage() {
   const [rows, setRows] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase
+    db
       .from("ops_sla_events" as any)
       .select("*")
       .order("created_at", { ascending: false })

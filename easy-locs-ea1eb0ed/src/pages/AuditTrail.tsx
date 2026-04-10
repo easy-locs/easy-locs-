@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { History, Search, Filter, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -73,7 +73,7 @@ const AuditTrail = () => {
     if (!orgId) return;
     setLoading(true);
 
-    let query = supabase
+    let query = db
       .from("audit_logs")
       .select("*", { count: "exact" })
       .eq("org_id", orgId)

@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchSpendingHistory } from "@/repositories/customer-orders.repository";
 import { motion } from "framer-motion";
 import { ArrowLeft, PieChart, TrendingUp, ShoppingBag, Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
@@ -13,15 +13,7 @@ export default function CustomerSpendingInsightsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["customer-spending-insights", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("total_amount,status,created_at,currency")
-        .eq("customer_user_id", user!.id)
-        .limit(1000);
-
-      if (error) throw error;
-
-      const rows = data ?? [];
+      const rows = await fetchSpendingHistory(user!.id);
       const total = rows.reduce((sum: number, row: any) => sum + Number(row.total_amount ?? 0), 0);
       const average = rows.length > 0 ? total / rows.length : 0;
 

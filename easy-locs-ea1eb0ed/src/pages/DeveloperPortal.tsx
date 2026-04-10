@@ -1,3 +1,4 @@
+import { db } from "@/services/db";
 import { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -330,7 +331,7 @@ const DeveloperPortal = () => {
                 <div className="mt-6 p-4 bg-muted/50 rounded-lg">
                   <h4 className="font-semibold text-foreground text-sm mb-2">Authentification</h4>
                   <p className="text-xs text-muted-foreground">Incluez votre clé API dans le header <code className="bg-muted px-1 py-0.5 rounded">Authorization: Bearer el_xxxxx</code></p>
-                  <p className="text-xs text-muted-foreground mt-1">Base URL: <code className="bg-muted px-1 py-0.5 rounded">{`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/public-api/v1`}</code></p>
+                  <p className="text-xs text-muted-foreground mt-1">Base URL: <code className="bg-muted px-1 py-0.5 rounded">{`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.db.co/functions/v1/public-api/v1`}</code></p>
                 </div>
 
                 <div className="mt-6 p-4 bg-muted/50 rounded-lg">

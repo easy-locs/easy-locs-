@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminFraudDetectionPage() {
   const navigate = useNavigate();
@@ -9,13 +9,13 @@ export default function AdminFraudDetectionPage() {
     queryKey: ["admin-fraud-detection"],
     queryFn: async () => {
       const [{ data: highOrders }, { data: multiOrders }] = await Promise.all([
-        supabase
+        db
           .from("orders")
           .select("id,total_amount,currency,status,customer_user_id,created_at")
           .gt("total_amount", 1000)
           .order("total_amount", { ascending: false })
           .limit(100),
-        supabase
+        db
           .from("orders")
           .select("id,total_amount,currency,status,customer_user_id,created_at")
           .in("status", ["disputed", "refunded"])

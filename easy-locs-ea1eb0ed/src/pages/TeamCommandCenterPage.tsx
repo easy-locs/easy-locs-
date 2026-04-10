@@ -1,15 +1,15 @@
 /**
  * TeamCommandCenterPage — Unified task management for disputes, payouts, moderation.
  */
+import { db } from "@/services/db";
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function TeamCommandCenterPage() {
   const [tasks, setTasks] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase
+    db
       .from("team_tasks" as any)
       .select("*")
       .order("created_at", { ascending: false })

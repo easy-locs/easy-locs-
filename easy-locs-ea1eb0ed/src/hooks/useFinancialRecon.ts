@@ -3,7 +3,6 @@
  */
 import { useEffect, useState } from "react";
 import { db } from "@/services/db";
-import { supabase } from "@/integrations/supabase/client";
 
 export function useFinancialRecon() {
   const [rows, setRows] = useState<any[]>([]);

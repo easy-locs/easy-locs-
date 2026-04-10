@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ENGINE_METADATA, detectEngineCollisions, type EngineTier, type BusinessFunction, type RuntimeStatus } from "@/lib/engines/engine-metadata-registry";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
 

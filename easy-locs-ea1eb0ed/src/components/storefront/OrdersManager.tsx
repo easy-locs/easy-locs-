@@ -1,3 +1,5 @@
+import { db } from "@/services/db";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { removeRealtimeChannel } from "@/lib/realtime";
@@ -7,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Loader2, CheckCircle, XCircle, Truck, Package, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import {
   storefrontOrdersService,
   type StorefrontOrder,

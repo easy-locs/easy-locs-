@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchReorderCandidates } from "@/repositories/customer-orders.repository";
 import { toast } from "sonner";
 
 export default function CustomerReorderPage() {
@@ -10,17 +10,7 @@ export default function CustomerReorderPage() {
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["customer-reorder", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("customer_user_id", user!.id)
-        .in("status", ["completed", "delivered"])
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => fetchReorderCandidates(user!.id),
     enabled: !!user?.id,
     staleTime: 10000,
   });

@@ -9,7 +9,6 @@
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { Loader2, MapPin, Clock, Star, ShoppingCart, Plus, Minus, Trash2, ChevronRight, ArrowLeft, UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";

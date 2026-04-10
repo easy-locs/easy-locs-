@@ -12,7 +12,6 @@ import {
   Radio, Navigation, MapPin, Volume2, VolumeX, Vibrate, Mail,
   UserX, ShieldCheck, ShieldAlert, QrCode, RefreshCw, Monitor
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";

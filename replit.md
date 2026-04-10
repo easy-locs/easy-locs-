@@ -65,6 +65,17 @@ App.tsx routes are organized into clean, labeled sections:
 - **Section mb-4 → mb-5**: 58 section-level violations fixed across SEO pages, landing pages, admin dashboard, rental management, real estate detail, documents, platform vision, communication hub
 - **Files affected**: 100+ files across all 5 pillars, travel, delivery, admin, orbit, mobility, marketplace, communication, landing, SEO components
 
+## Cycle 3 Phase 2 — Supabase Migration (Service Layer Enforcement)
+- **Architecture Rule**: ALL data queries MUST use `db(table)` from `src/services/db.ts` — NEVER import supabase client directly in UI layer
+- **`db()` API**: `db(table)`, `db.from(table)`, `db.rpc()`, `db.storage` — thin wrapper over supabase client
+- **Migration Status**: ~77 direct supabase imports removed from UI layer (pages, components, stores, hooks)
+- **customer-orders.repository.ts**: New centralized repository for all customer order queries (active, archived, receipts, reorder, spending, count, byId)
+- **Remaining supabase in UI** (22 files, all legitimate):
+  - **Auth boundary** (7 files): Login, Signup, ForgotPassword, ResetPassword, AuthCallbackPage, VerifyEmail, SocialLoginButtons — need `supabase.auth.*`
+  - **Realtime subscriptions** (15 files): Components using `supabase.channel().on().subscribe()` for live updates — `db()` doesn't wrap realtime
+- **Exempted from migration**: AuthContext, v2AuthStore, i18n.tsx (auth infrastructure), useAutoEngineCron (supabase.functions.invoke), all repositories (they ARE the service layer), lib/ service files
+- **Stores cleaned**: favoritesStore, reviewsStore, avatarStore, analyticsStore (unused imports removed), adminPayoutStore (migrated to db())
+
 ## Dashboard Intelligence Engine
 Context-aware dashboard brain that prioritizes content based on time-of-day, day-of-week, and user state:
 

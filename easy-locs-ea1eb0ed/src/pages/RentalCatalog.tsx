@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
@@ -25,7 +25,7 @@ const RentalCatalog = () => {
     const load = async () => {
       setLoading(true);
       // Load all active public listings with property info via RPC or direct join
-      const { data } = await supabase
+      const { data } = await db
         .from("public_listings")
         .select("*")
         .eq("active", true)

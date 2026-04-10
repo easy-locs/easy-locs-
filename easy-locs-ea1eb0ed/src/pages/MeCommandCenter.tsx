@@ -2,8 +2,8 @@ import { useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
-import { supabase } from "@/integrations/supabase/client";
 import { typedQueries } from "@/lib/db/typed-queries";
+import { countActiveOrders } from "@/repositories/customer-orders.repository";
 import { getMerchantDashboardSnapshot } from "@/lib/merchant/merchantDashboard";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -88,7 +88,7 @@ interface ShopData {
 
 export default function MeCommandCenter() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const profile = useOrbitIdentity();
   const { t } = useI18n();
   const uid = user?.id ?? "";
@@ -163,17 +163,13 @@ export default function MeCommandCenter() {
     enabled: !!uid,
     staleTime: 30_000,
     queryFn: async () => {
-      const [ordersRes, loyaltyRes, walletRes] = await Promise.all([
-        supabase
-          .from("orders")
-          .select("id", { count: "exact", head: true })
-          .eq("customer_user_id", uid)
-          .in("status", ["paid", "confirmed", "preparing", "ready_for_pickup", "driver_search", "driver_assigned", "picked_up", "on_the_way"]),
+      const [activeOrderCount, loyaltyRes, walletRes] = await Promise.all([
+        countActiveOrders(uid),
         typedQueries.loyaltyAccounts.selectByUser(uid),
         typedQueries.walletSummary.selectMainByUser(uid),
       ]);
       return {
-        activeOrders: ordersRes.count ?? 0,
+        activeOrders: activeOrderCount,
         loyaltyPoints: Number(loyaltyRes?.data?.points_balance ?? 0),
         loyaltyTier: loyaltyRes?.data?.tier ?? "bronze",
         walletExists: walletRes?.data !== null,
@@ -212,10 +208,10 @@ export default function MeCommandCenter() {
   const handleSwitchShop = useCallback((id: string) => setActiveShopId(id), []);
 
   const handleSignOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    await signOut();
     toast.success(t("me.signed_out"));
     navigate("/login");
-  }, [navigate, t]);
+  }, [signOut, navigate, t]);
 
   const roleLabel = useMemo(() => {
     const roles: string[] = [];

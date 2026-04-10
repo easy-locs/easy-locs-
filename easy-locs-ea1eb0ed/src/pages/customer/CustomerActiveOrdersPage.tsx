@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchActiveOrders } from "@/repositories/customer-orders.repository";
 import { motion } from "framer-motion";
 import { ArrowLeft, Package, Clock, ChefHat, CheckCircle2, Truck, MapPin, Search, RefreshCw } from "lucide-react";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
@@ -25,20 +25,7 @@ export default function CustomerActiveOrdersPage() {
 
   const { data: rows = [], isLoading, refetch } = useQuery({
     queryKey: ["customer-active-orders-page", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("customer_user_id", user!.id)
-        .in("status", [
-          "paid", "confirmed", "preparing", "ready_for_pickup",
-          "driver_search", "driver_assigned", "picked_up", "on_the_way",
-        ])
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => fetchActiveOrders(user!.id),
     enabled: !!user?.id,
     staleTime: 5000,
     refetchInterval: 7000,

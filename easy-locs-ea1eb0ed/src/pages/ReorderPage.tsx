@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { listOrderItems } from "@/lib/reorder/reorderEngine";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchOrderById } from "@/repositories/customer-orders.repository";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { Loader2, ShoppingCart, AlertCircle, RotateCcw } from "lucide-react";
@@ -23,13 +23,7 @@ export default function ReorderPage() {
 
       try {
         setStep("fetching");
-        const { data: order, error } = await supabase
-          .from("orders")
-          .select("*")
-          .eq("id", orderId)
-          .maybeSingle();
-
-        if (error) throw error;
+        const order = await fetchOrderById(orderId);
         if (!order) throw new Error("not_found");
 
         const items = await listOrderItems(orderId);

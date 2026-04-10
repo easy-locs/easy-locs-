@@ -2,6 +2,7 @@
  * AuctionManager — Live auction system with countdown, bidding, auto-extend.
  * Seller: create/manage auctions. Buyer: place bids in real-time.
  */
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { db } from "@/services/db";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

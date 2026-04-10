@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Home, Briefcase, MapPin, Star, Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 type AddressRow = {

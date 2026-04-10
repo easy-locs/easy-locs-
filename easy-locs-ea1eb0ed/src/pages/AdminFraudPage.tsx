@@ -1,12 +1,12 @@
+import { db } from "@/services/db";
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminFraudPage() {
   const [rows, setRows] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase
+    db
       .from("user_risk_profiles" as any)
       .select("*")
       .order("risk_score", { ascending: false })

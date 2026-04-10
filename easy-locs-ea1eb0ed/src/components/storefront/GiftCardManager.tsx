@@ -2,8 +2,9 @@
  * GiftCardManager — Digital gift cards, store credit, promo codes.
  * Seller: create & manage. Buyer: purchase, redeem, transfer.
  *
- * ALL data access via gift-card.repository — zero direct supabase calls.
+ * ALL data access via gift-card.repository — zero direct db calls.
  */
+import { db } from "@/services/db";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";

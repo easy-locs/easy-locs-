@@ -1,3 +1,4 @@
+import { db } from "@/services/db";
 import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,8 +47,8 @@ export default function OrbitAddContactPage() {
     }
     (async () => {
       try {
-        const { supabase } = await import("@/integrations/supabase/client");
-        const { data } = await supabase
+        const { db } = await import("@/integrations/db/client");
+        const { data } = await db
           .from("orbit_profiles_v2")
           .select("display_name, avatar_url")
           .eq("id", targetUserId)

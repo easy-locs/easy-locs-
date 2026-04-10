@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchArchivedOrders } from "@/repositories/customer-orders.repository";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
 
 export default function CustomerOrderArchivePage() {
@@ -10,17 +10,7 @@ export default function CustomerOrderArchivePage() {
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["customer-order-archive", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("customer_user_id", user!.id)
-        .in("status", ["completed", "delivered", "cancelled", "refunded"])
-        .order("created_at", { ascending: false })
-        .limit(300);
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => fetchArchivedOrders(user!.id),
     enabled: !!user?.id,
     staleTime: 10000,
   });

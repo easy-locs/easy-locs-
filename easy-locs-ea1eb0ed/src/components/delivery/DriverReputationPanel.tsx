@@ -70,7 +70,7 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
     setLoading(true);
     try {
       // Fetch completed deliveries
-      const { data: jobs } = await supabase
+      const { data: jobs } = await db
         .from("mobility_jobs")
         .select("id, status, created_at, completed_at, accepted_at")
         .eq("rider_user_id", targetId)
@@ -82,7 +82,7 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
       const totalDeliveries = completed.length;
 
       // Fetch ratings
-      const { data: ratings } = await supabase
+      const { data: ratings } = await db
         .from("delivery_ratings")
         .select("rating, categories")
         .eq("driver_id", targetId);

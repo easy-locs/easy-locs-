@@ -2,6 +2,7 @@
  * BuyerOrderTracker — Buyer-facing order status tracker with realtime updates.
  * Shows order timeline, items, and live status progression.
  */
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { db } from "@/services/db";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

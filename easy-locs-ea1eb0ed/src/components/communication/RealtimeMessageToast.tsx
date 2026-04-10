@@ -3,8 +3,9 @@
  * Shows a toast when a new message arrives, regardless of current page.
  * V3: Migrated to chat_messages_v2.
  */
-import { useEffect, useRef } from "react";
+import { db } from "@/services/db";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useRef } from "react";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";
 import { useAuth } from "@/contexts/AuthContext";

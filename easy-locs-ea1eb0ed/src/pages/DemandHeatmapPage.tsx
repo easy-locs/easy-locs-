@@ -1,15 +1,15 @@
 /**
  * DemandHeatmapPage — /driver/heatmap — Live demand zones with surge info.
  */
+import { db } from "@/services/db";
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function DemandHeatmapPage() {
   const [zones, setZones] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase
+    db
       .from("demand_zones" as any)
       .select("*")
       .order("updated_at", { ascending: false })

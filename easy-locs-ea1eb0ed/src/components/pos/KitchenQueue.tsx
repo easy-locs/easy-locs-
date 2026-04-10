@@ -2,8 +2,8 @@
  * KitchenQueue — Realtime POS order queue for merchants.
  * 4-column KDS: New → Accepted → Preparing → Ready
  */
-import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 import { db } from "@/services/db";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

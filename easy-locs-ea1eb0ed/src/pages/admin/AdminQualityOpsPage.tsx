@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { isMerchantOpenNow } from "@/lib/merchant/availabilityEngine";
 
 export default function AdminQualityOpsPage() {
@@ -9,7 +9,7 @@ export default function AdminQualityOpsPage() {
   const { data: merchants = [], isLoading } = useQuery({
     queryKey: ["admin-quality-merchants"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("seed_merchants")
         .select("*")
         .limit(300);

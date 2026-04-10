@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
 
 export default function AdminOrderTimelinePage() {
@@ -9,7 +9,7 @@ export default function AdminOrderTimelinePage() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-order-timeline"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("orders")
         .select("*")
         .order("updated_at", { ascending: false })

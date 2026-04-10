@@ -46,7 +46,7 @@ export default function DriverWalletPanel({ className }: Props) {
     setLoading(true);
     try {
       // Get completed earnings
-      const { data: jobs } = await supabase
+      const { data: jobs } = await db
         .from("mobility_jobs")
         .select("current_price, quoted_price, currency")
         .eq("rider_user_id", user.id)

@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { autoSettleCompletedOrders, refundDisputedOrder } from "@/lib/settlement/orderSettlement";
 import { toast } from "sonner";
 
@@ -19,7 +19,7 @@ export default function AdminPaymentsOpsPage() {
   const { data: orders = [], refetch, isLoading } = useQuery({
     queryKey: ["admin-payments-ops-orders"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("orders")
         .select("*")
         .order("created_at", { ascending: false })

@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
@@ -23,7 +23,7 @@ const HostCatalog = () => {
     const load = async () => {
       if (!hostSlug) { setNotFound(true); setLoading(false); return; }
 
-      const { data: profile } = await supabase
+      const { data: profile } = await db
         .from("landlord_profiles")
         .select("*")
         .eq("slug", hostSlug)
@@ -33,7 +33,7 @@ const HostCatalog = () => {
       if (!profile) { setNotFound(true); setLoading(false); return; }
       setHost(profile);
 
-      const { data: hostListings } = await supabase
+      const { data: hostListings } = await db
         .from("public_listings")
         .select("*")
         .eq("org_id", profile.org_id)

@@ -1,6 +1,6 @@
+import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminSupportSlaPage() {
   const navigate = useNavigate();
@@ -8,7 +8,7 @@ export default function AdminSupportSlaPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-support-sla"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("support_tickets")
         .select("*")
         .limit(1000);

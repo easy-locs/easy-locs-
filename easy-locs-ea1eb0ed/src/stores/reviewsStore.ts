@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import type { ListingReview } from "@/lib/types/reviews";

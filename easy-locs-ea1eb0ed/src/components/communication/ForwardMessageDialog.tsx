@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Loader2, Forward, Send, Check, AlertCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
