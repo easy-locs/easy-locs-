@@ -265,6 +265,7 @@ export const MePropertyAnalyticsPage = safeLazy(() => import("@/pages/me/MePrope
 
 // Me — Customer pages
 export const CustomerSpendingInsightsPage = safeLazy(() => import("@/pages/CustomerSpendingInsightsPage"), "CustomerSpendingInsightsPage");
+export const EditProfilePage = safeLazy(() => import("@/pages/EditProfilePage"), "EditProfilePage");
 export const CustomerAddressBookPage = safeLazy(() => import("@/pages/customer/CustomerAddressBookPage"), "CustomerAddressBookPage");
 export const CustomerLoyaltyHistoryPage = safeLazy(() => import("@/pages/customer/CustomerLoyaltyHistoryPage"), "CustomerLoyaltyHistoryPage");
 export const CustomerActiveOrdersPage = safeLazy(() => import("@/pages/customer/CustomerActiveOrdersPage"), "CustomerActiveOrdersPage");
