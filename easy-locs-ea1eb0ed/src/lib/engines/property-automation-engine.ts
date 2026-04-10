@@ -23,7 +23,8 @@ export interface AutomationCondition {
 }
 
 export interface AutomationAction {
-  type: "notify" | "email" | "update_status" | "create_task" | "emit_event" | "score_lead";
+  type: "notify" | "email" | "update_status" | "create_task" | "emit_event" | "score_lead"
+    | "generate_receipt" | "trigger_rent_call" | "compliance_check" | "signature_reminder";
   params: Record<string, unknown>;
 }
 
@@ -157,6 +158,104 @@ const BUILT_IN_RULES: AutomationRule[] = [
     ],
     enabled: true,
     cooldownMs: 172800000,
+  },
+  {
+    id: "auto_receipt_on_payment",
+    name: "Auto-generate rent receipt on payment",
+    trigger: { type: "event", eventName: "rent.paid" },
+    conditions: [],
+    actions: [
+      { type: "generate_receipt", params: {} },
+      { type: "notify", params: { template: "receipt_generated", channel: "push" } },
+      { type: "emit_event", params: { event: "automation.receipt_generated" } },
+    ],
+    enabled: true,
+  },
+  {
+    id: "monthly_rent_call_generation",
+    name: "Generate monthly rent calls on 1st",
+    trigger: { type: "schedule", cronLike: "monthly_1st_8am" },
+    conditions: [
+      { field: "leaseStatus", operator: "eq", value: "active" },
+    ],
+    actions: [
+      { type: "trigger_rent_call", params: {} },
+      { type: "emit_event", params: { event: "automation.rent_calls_generated" } },
+    ],
+    enabled: true,
+    cooldownMs: 2592000000,
+  },
+  {
+    id: "lease_renewal_compliance_check",
+    name: "Compliance check before lease renewal",
+    trigger: { type: "event", eventName: "lease.renewal_initiated" },
+    conditions: [],
+    actions: [
+      { type: "compliance_check", params: { scope: "full" } },
+      { type: "emit_event", params: { event: "automation.compliance_checked" } },
+    ],
+    enabled: true,
+  },
+  {
+    id: "overdue_payment_orbit_relance",
+    name: "Send Orbit message for overdue rent (10+ days)",
+    trigger: { type: "schedule", cronLike: "daily_10am" },
+    conditions: [
+      { field: "paymentStatus", operator: "eq", value: "overdue" },
+      { field: "daysOverdue", operator: "gte", value: 10 },
+      { field: "reminderCount", operator: "lt", value: 3 },
+    ],
+    actions: [
+      { type: "notify", params: { template: "overdue_relance", channel: "orbit" } },
+      { type: "emit_event", params: { event: "automation.overdue_relance" } },
+    ],
+    enabled: true,
+    cooldownMs: 259200000,
+  },
+  {
+    id: "signature_expiry_reminder",
+    name: "Signature request expiring soon (2 days)",
+    trigger: { type: "schedule", cronLike: "daily_9am" },
+    conditions: [
+      { field: "daysUntilSignatureExpiry", operator: "lte", value: 2 },
+      { field: "signatureStatus", operator: "eq", value: "pending" },
+    ],
+    actions: [
+      { type: "signature_reminder", params: {} },
+      { type: "notify", params: { template: "signature_expiring", channel: "push" } },
+    ],
+    enabled: true,
+    cooldownMs: 86400000,
+  },
+  {
+    id: "partial_payment_followup",
+    name: "Follow up on partial payments (3 days)",
+    trigger: { type: "schedule", cronLike: "daily_10am" },
+    conditions: [
+      { field: "paymentStatus", operator: "eq", value: "partial" },
+      { field: "daysSincePartialPayment", operator: "gte", value: 3 },
+    ],
+    actions: [
+      { type: "notify", params: { template: "partial_payment_followup", channel: "push" } },
+      { type: "emit_event", params: { event: "automation.partial_payment_followup" } },
+    ],
+    enabled: true,
+    cooldownMs: 259200000,
+  },
+  {
+    id: "insurance_expiry_alert",
+    name: "Insurance expiry alert (30 days before)",
+    trigger: { type: "schedule", cronLike: "weekly_monday" },
+    conditions: [
+      { field: "daysUntilInsuranceExpiry", operator: "lte", value: 30 },
+      { field: "insuranceMandatory", operator: "eq", value: true },
+    ],
+    actions: [
+      { type: "notify", params: { template: "insurance_expiry", channel: "push" } },
+      { type: "emit_event", params: { event: "automation.insurance_expiry" } },
+    ],
+    enabled: true,
+    cooldownMs: 604800000,
   },
 ];
 
