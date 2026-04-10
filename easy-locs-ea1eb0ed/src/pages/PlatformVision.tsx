@@ -200,7 +200,7 @@ const PlatformVision = () => (
 
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="text-center mb-16">
           <SectionBadge icon={CreditCard} text="Global Payments" />
-          <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-extrabold mb-4">
+          <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-extrabold mb-5">
             Receive Payments{" "}
             <span className="text-accent">Directly</span>
           </motion.h2>
@@ -238,7 +238,7 @@ const PlatformVision = () => (
           <motion.div variants={fadeUp} custom={0} className="order-2 lg:order-1">
             <div className="relative bg-card border border-border rounded-2xl p-6 shadow-xl max-w-md mx-auto">
               {/* Mini calendar mockup */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-5">
                 <h4 className="text-sm font-bold text-foreground">March 2026</h4>
                 <Badge text="Live" />
               </div>
@@ -306,7 +306,7 @@ const PlatformVision = () => (
 
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="text-center mb-16">
           <SectionBadge icon={Store} text="Marketplace Vision" />
-          <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-extrabold mb-4">
+          <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-extrabold mb-5">
             From Individual to{" "}
             <span className="text-accent">Global Marketplace</span>
           </motion.h2>
@@ -346,7 +346,7 @@ const PlatformVision = () => (
       <Section className="bg-primary/[0.02]">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="text-center mb-16">
           <SectionBadge icon={LayoutDashboard} text="All-in-One Dashboard" />
-          <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-extrabold mb-4">
+          <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-extrabold mb-5">
             Everything You Need,{" "}
             <span className="text-accent">One Place</span>
           </motion.h2>

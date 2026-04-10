@@ -143,7 +143,7 @@ export default function CrowdDeliveryNetwork({ orgId, className }: { orgId: stri
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.description}</p>
-                      <span className="text-[6px] font-bold px-1 py-0.5 rounded"
+                      <span className="text-[10px] font-bold px-1 py-0.5 rounded"
                         style={{ background: `hsl(var(${urg.color}) / 0.1)`, color: `hsl(var(${urg.color}))` }}>{urg.label}</span>
                     </div>
                     <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -195,7 +195,7 @@ export default function CrowdDeliveryNetwork({ orgId, className }: { orgId: stri
                   <p className="text-[11px] font-bold" style={{ color: c.socialScore >= 90 ? "hsl(var(--success))" : c.socialScore >= 80 ? "hsl(var(--primary))" : "hsl(var(--warning))" }}>
                     {c.socialScore}
                   </p>
-                  <p className="text-[6px]" style={{ color: "hsl(var(--muted-foreground))" }}>score</p>
+                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>score</p>
                 </div>
               </div>
             </div>

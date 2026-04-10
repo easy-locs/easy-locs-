@@ -104,7 +104,7 @@ const Referrals = () => {
         {/* History */}
         {referrals.length > 0 && (
           <div className="bg-card rounded-xl shadow-card border border-border/50 p-5">
-            <h3 className="font-semibold text-foreground mb-4">{t("referral.history") || "Referral history"}</h3>
+            <h3 className="font-semibold text-foreground mb-5">{t("referral.history") || "Referral history"}</h3>
             <div className="space-y-3">
               {referrals.map((r) => (
                 <div key={r.id} className="flex items-center justify-between text-sm">

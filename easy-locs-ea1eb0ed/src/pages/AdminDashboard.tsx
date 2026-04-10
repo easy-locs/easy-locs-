@@ -264,7 +264,7 @@ const AdminDashboard = () => {
                 {/* Plans breakdown */}
                 {stats.subscriptionsByPlan.length > 0 && (
                   <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-                    <h2 className="font-semibold text-foreground mb-4">Subscriptions by Plan</h2>
+                    <h2 className="font-semibold text-foreground mb-5">Subscriptions by Plan</h2>
                     <div className="space-y-2">
                       {stats.subscriptionsByPlan.map(p => (
                         <div key={p.plan} className="flex items-center justify-between text-sm">
@@ -377,7 +377,7 @@ const AdminDashboard = () => {
 
             {(activeTab === "overview" || activeTab === "users") && (
               <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-                <h2 className="font-semibold text-foreground mb-4">Recent Signups</h2>
+                <h2 className="font-semibold text-foreground mb-5">Recent Signups</h2>
                 <div className="space-y-3">
                   {stats.recentSignups.map((u: any) => (
                     <div key={u.id} className="flex items-center justify-between text-sm border-b border-border/50 pb-2 last:border-0">

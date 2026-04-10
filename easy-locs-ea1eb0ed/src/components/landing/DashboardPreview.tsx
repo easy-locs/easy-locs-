@@ -237,7 +237,7 @@ const DashboardPreview = () => {
 
             {/* ═══ SERVICE CATEGORIES ═══ */}
             <div>
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-5">
                 <Sparkles className="h-4 w-4" style={{ color: "hsl(var(--accent))" }} />
                 <span className="text-sm font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.85)" }}>Service Categories</span>
                 <span
@@ -288,7 +288,7 @@ const DashboardPreview = () => {
                   borderColor: "hsl(var(--primary-foreground) / 0.06)",
                 }}
               >
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-5">
                   <Wallet className="h-4 w-4" style={{ color: "hsl(var(--success))" }} />
                   <span className="text-sm font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.85)" }}>Accept Payments Globally</span>
                 </div>
@@ -326,7 +326,7 @@ const DashboardPreview = () => {
                   borderColor: "hsl(var(--primary-foreground) / 0.06)",
                 }}
               >
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-5">
                   <Share2 className="h-4 w-4" style={{ color: "hsl(var(--accent))" }} />
                   <span className="text-sm font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.85)" }}>Share Anywhere</span>
                 </div>

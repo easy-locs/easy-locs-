@@ -94,7 +94,7 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
   const cid = conversationId || "";
 
   return (
-    <div ref={ref} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-3" style={{ background: "hsl(var(--background))", overscrollBehavior: "contain", willChange: "scroll-position", paddingBottom: "max(env(safe-area-inset-bottom, 24px), 24px)" }}>
+    <div ref={ref} className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3" style={{ background: "hsl(var(--background))", overscrollBehavior: "contain", willChange: "scroll-position", paddingBottom: "max(env(safe-area-inset-bottom, 24px), 24px)" }}>
       {isDecrypting && rawCount > 0 && messages.length === 0 ? (
         <div className="space-y-4 py-4">
           {Array.from({ length: 5 }).map((_, i) => (

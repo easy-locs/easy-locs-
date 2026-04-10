@@ -520,7 +520,7 @@ export default function OrbitStatusSection() {
             {composeMode === "text" ? (
               <>
                 <div
-                  className="flex-1 rounded-2xl flex items-center justify-center p-8 mb-4 min-h-[200px]"
+                  className="flex-1 rounded-2xl flex items-center justify-center p-8 mb-5 min-h-[200px]"
                   style={{ background: BG_COLORS[selectedBg] }}
                 >
                   <textarea
@@ -533,7 +533,7 @@ export default function OrbitStatusSection() {
                     autoFocus
                   />
                 </div>
-                <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                <div className="flex gap-2 mb-5 overflow-x-auto pb-2">
                   {BG_COLORS.map((bg, i) => (
                     <button
                       key={i}
@@ -551,7 +551,7 @@ export default function OrbitStatusSection() {
             ) : (
               <>
                 {mediaPreview ? (
-                  <div className="relative flex-1 rounded-2xl overflow-hidden mb-4 min-h-[200px]">
+                  <div className="relative flex-1 rounded-2xl overflow-hidden mb-5 min-h-[200px]">
                     {mediaIsVideo ? (
                       <video
                         src={mediaPreview}
@@ -584,7 +584,7 @@ export default function OrbitStatusSection() {
                 ) : (
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex-1 rounded-2xl flex flex-col items-center justify-center gap-3 mb-4 min-h-[200px] transition-colors active:opacity-80"
+                    className="flex-1 rounded-2xl flex flex-col items-center justify-center gap-3 mb-5 min-h-[200px] transition-colors active:opacity-80"
                     style={{ background: "hsl(var(--card))", border: "2px dashed hsl(var(--muted-foreground) / 0.2)" }}
                   >
                     {composeMode === "video" ? (

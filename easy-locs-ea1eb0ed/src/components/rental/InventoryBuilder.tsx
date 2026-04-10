@@ -474,7 +474,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 
       {/* General Info */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 mb-6">
-        <h3 className="font-semibold text-foreground mb-4">{t("page.inventory.general_info")}</h3>
+        <h3 className="font-semibold text-foreground mb-5">{t("page.inventory.general_info")}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">{t("page.inventory.date")}</label>

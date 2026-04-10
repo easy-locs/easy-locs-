@@ -150,7 +150,7 @@ const ConciergeServicesPage = () => (
       {/* CTA */}
       <section className="py-16 bg-primary/5">
         <div className="container mx-auto px-4 max-w-3xl text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-4">Ready to elevate your guest experience?</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-5">Ready to elevate your guest experience?</h2>
           <p className="text-muted-foreground mb-6">Join thousands of property owners using Easy-Locs to deliver professional concierge services worldwide.</p>
           <Button asChild size="lg"><Link to="/signup">Get Started Free</Link></Button>
           <nav className="flex flex-wrap justify-center gap-4 mt-8 text-sm" aria-label="Related pages">

@@ -264,7 +264,7 @@ const BrowseByCountry = () => {
         {/* Header */}
         <div className="text-center mb-10 sm:mb-14">
           <motion.span
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 mb-4"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 mb-5"
             initial={{ opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -298,7 +298,7 @@ const BrowseByCountry = () => {
                 className="rounded-2xl border border-border/60 bg-card/50 p-4 sm:p-6"
               >
                 {/* Continent header */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-5">
                   <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-muted-foreground flex items-center gap-2">
                     <span>{continent.emoji}</span>
                     {t(continent.nameKey) || continent.name}

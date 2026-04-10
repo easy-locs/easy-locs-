@@ -141,7 +141,7 @@ export default function DeliveryMarketplace({ orgId, className }: { orgId: strin
                   </p>
                   <div className="flex gap-1 mt-0.5">
                     {p.specialties.map(s => (
-                      <span key={s} className="text-[6px] px-1 py-0.5 rounded" style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}>{s}</span>
+                      <span key={s} className="text-[10px] px-1 py-0.5 rounded" style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}>{s}</span>
                     ))}
                   </div>
                 </div>
@@ -149,7 +149,7 @@ export default function DeliveryMarketplace({ orgId, className }: { orgId: strin
                   <p className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>
                     {fmt(p.priceRange.min)}-{fmt(p.priceRange.max)} F
                   </p>
-                  <p className="text-[6px]" style={{ color: "hsl(var(--muted-foreground))" }}>Réponse ~{p.responseTime}min</p>
+                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Réponse ~{p.responseTime}min</p>
                 </div>
               </div>
             </div>

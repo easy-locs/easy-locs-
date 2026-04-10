@@ -332,7 +332,7 @@ const PublicServiceBooking = () => {
         }}
       />
       <div className="app-mobile-page bg-background">
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+        <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
           {/* Photo Gallery */}
           {photos.length > 0 && (
             <div className="relative aspect-[16/9] rounded-2xl overflow-hidden mb-6 bg-muted">

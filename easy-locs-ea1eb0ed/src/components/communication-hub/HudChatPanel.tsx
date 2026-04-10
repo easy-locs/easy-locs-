@@ -300,7 +300,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
 
         {/* ── DEAL ACTIONS ── */}
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
-          <div className="px-3 sm:px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--border) / 0.06)", background: "hsl(var(--card) / 0.25)" }}>
+          <div className="px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--border) / 0.06)", background: "hsl(var(--card) / 0.25)" }}>
             <div className="flex items-center gap-2 overflow-x-auto" data-no-swipe>
               {!thread.dealId && <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={onToggleContext}>Deal</Button>}
               <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => payment.setPaymentLinkDialog(true)}>{t("orbit.payment")}</Button>

@@ -23,7 +23,7 @@ const CountryHubPage = () => {
         canonical="https://www.easy-locs.com/locations"
       >
         <section className="py-20 text-center container mx-auto px-4">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Country Not Found</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-5">Country Not Found</h1>
           <p className="text-muted-foreground mb-8">Explore our available destinations.</p>
           <Button asChild size="lg"><Link to="/locations">View All Locations</Link></Button>
         </section>

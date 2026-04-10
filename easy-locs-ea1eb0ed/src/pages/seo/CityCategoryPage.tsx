@@ -103,7 +103,7 @@ export default function CityCategoryPage() {
         canonical="https://www.easy-locs.com/locations"
       >
         <section className="py-20 text-center container mx-auto px-4">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Page Not Found</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-5">Page Not Found</h1>
           <p className="text-muted-foreground mb-6">This city or category doesn't exist yet.</p>
           <div className="flex gap-3 justify-center">
             <Button asChild><Link to="/explore">Explore All</Link></Button>
@@ -192,7 +192,7 @@ export default function CityCategoryPage() {
             <span>/</span>
             <span className="text-foreground font-medium">{config.label}</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-5">
             {config.emoji} {config.label} in {city.name}
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-6">

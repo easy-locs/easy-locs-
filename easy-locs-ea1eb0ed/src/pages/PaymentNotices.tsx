@@ -372,7 +372,7 @@ const PaymentNotices = () => {
           {partialDialog && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm">
               <div className="bg-card rounded-xl border border-border shadow-lg p-6 w-full max-w-md mx-4">
-                <h3 className="text-lg font-semibold text-foreground mb-4">
+                <h3 className="text-lg font-semibold text-foreground mb-5">
                   {t("page.notices.partial_title") || "Paiement partiel"}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-2">

@@ -103,7 +103,7 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-5">
         <h2 className="font-semibold text-foreground">{t("comp.inventory.inventory_by_property")}</h2>
         <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">{reports.length} {t("comp.inventory.reports_total")}</span>
       </div>

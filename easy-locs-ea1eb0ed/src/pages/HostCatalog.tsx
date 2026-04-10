@@ -119,7 +119,7 @@ const HostCatalog = () => {
           </div>
         </div>
 
-        <h2 className="text-lg font-semibold text-foreground mb-4">
+        <h2 className="text-lg font-semibold text-foreground mb-5">
           {listings.length} {t("page.host.listings_count")}
         </h2>
 

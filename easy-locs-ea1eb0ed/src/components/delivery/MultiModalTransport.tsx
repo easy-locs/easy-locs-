@@ -148,7 +148,7 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
                     <div key={leg.id} className="flex items-center gap-1">
                       <div className="text-center px-1.5 py-1 rounded-lg" style={{ background: `hsl(var(${mode.color}) / 0.08)` }}>
                         <p className="text-[10px]">{mode.label}</p>
-                        <p className="text-[6px]" style={{ color: `hsl(var(${st.color}))` }}>{st.label}</p>
+                        <p className="text-[10px]" style={{ color: `hsl(var(${st.color}))` }}>{st.label}</p>
                       </div>
                       {i < r.legs.length - 1 && <ArrowRight className="h-2.5 w-2.5" style={{ color: "hsl(var(--muted-foreground))" }} />}
                     </div>

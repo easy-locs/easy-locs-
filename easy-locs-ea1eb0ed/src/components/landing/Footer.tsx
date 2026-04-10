@@ -101,7 +101,7 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
               viewport={{ once: true }}
               transition={{ delay: ci * 0.05 }}
             >
-              <h4 className="font-semibold text-sm mb-4" style={{ color: "hsl(var(--primary-foreground) / 0.9)" }}>
+              <h4 className="font-semibold text-sm mb-5" style={{ color: "hsl(var(--primary-foreground) / 0.9)" }}>
                 {col.title}
               </h4>
               <ul className="space-y-2.5 text-sm">

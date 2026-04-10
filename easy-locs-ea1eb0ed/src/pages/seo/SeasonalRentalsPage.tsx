@@ -141,7 +141,7 @@ const SeasonalRentalsPage = () => (
 
       <section className="py-16 bg-primary/5">
         <div className="container mx-auto px-4 max-w-3xl text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-4">Start managing your vacation rentals today</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-5">Start managing your vacation rentals today</h2>
           <p className="text-muted-foreground mb-6">Join property owners in 190+ countries using Easy-Locs for professional short-term rental management.</p>
           <Button asChild size="lg"><Link to="/signup">Get Started Free</Link></Button>
           <nav className="flex flex-wrap justify-center gap-4 mt-8 text-sm" aria-label="Related pages">

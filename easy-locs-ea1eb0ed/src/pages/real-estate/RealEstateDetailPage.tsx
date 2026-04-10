@@ -120,7 +120,7 @@ export default function RealEstateDetailPage() {
           </span>
         </div>
 
-        <div className="flex gap-4 p-3 rounded-xl mb-4" style={{ background: "#fff" }}>
+        <div className="flex gap-4 p-3 rounded-xl mb-5" style={{ background: "#fff" }}>
           {property.bedrooms !== undefined && (
             <div className="flex items-center gap-2">
               <Bed size={18} style={{ color: navy }} />
@@ -150,7 +150,7 @@ export default function RealEstateDetailPage() {
           )}
         </div>
 
-        <div className="rounded-xl p-4 mb-4" style={{ background: "#fff" }}>
+        <div className="rounded-xl p-4 mb-5" style={{ background: "#fff" }}>
           <h2 className="text-sm font-bold mb-2" style={{ color: navy }}>{t("re.details", "Details")}</h2>
           <div className="grid grid-cols-2 gap-3">
             <DetailRow label={t("re.property_type", "Type")} value={t(`re.type.${property.propertyType}`, property.propertyType.replace(/_/g, " "))} />
@@ -163,14 +163,14 @@ export default function RealEstateDetailPage() {
         </div>
 
         {property.description && (
-          <div className="rounded-xl p-4 mb-4" style={{ background: "#fff" }}>
+          <div className="rounded-xl p-4 mb-5" style={{ background: "#fff" }}>
             <h2 className="text-sm font-bold mb-2" style={{ color: navy }}>{t("re.description", "Description")}</h2>
             <p className="text-sm leading-relaxed" style={{ color: "#555" }}>{property.description}</p>
           </div>
         )}
 
         {property.amenities.length > 0 && (
-          <div className="rounded-xl p-4 mb-4" style={{ background: "#fff" }}>
+          <div className="rounded-xl p-4 mb-5" style={{ background: "#fff" }}>
             <h2 className="text-sm font-bold mb-2" style={{ color: navy }}>{t("re.amenities", "Amenities")}</h2>
             <div className="flex flex-wrap gap-2">
               {property.amenities.map(a => (
@@ -207,7 +207,7 @@ export default function RealEstateDetailPage() {
           <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.5)" }} />
           <div className="relative w-full rounded-t-2xl p-6" style={{ background: "#fff" }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "#ddd" }} />
-            <h3 className="text-base font-bold mb-4" style={{ color: navy }}>{t("re.request_viewing", "Request a Viewing")}</h3>
+            <h3 className="text-base font-bold mb-5" style={{ color: navy }}>{t("re.request_viewing", "Request a Viewing")}</h3>
             <div className="space-y-3">
               <button
                 onClick={() => { setShowContactSheet(false); navigate(`/orbit?context=property&id=${property.id}`); }}
