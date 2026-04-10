@@ -55,7 +55,7 @@ const GLOBAL_PAGES = [
   "/dashboard/company",
   "/dashboard/developers",
   "/dashboard/admin",
-  "/dashboard/assistant",
+  "/dashboard/ai",
   "/dashboard/collaboration",
   "/dashboard/referrals",
   "/dashboard/audit",

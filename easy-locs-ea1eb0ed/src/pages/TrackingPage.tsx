@@ -40,7 +40,7 @@ export default function TrackingPage() {
   const navigate = useNavigate();
   const [showSupport, setShowSupport] = useState(false);
 
-  const { data: order, isLoading } = useQuery({
+  const { data: order, isLoading, error: trackingError } = useQuery({
     queryKey: ["tracking-order", orderId],
     queryFn: async () => {
       // Authoritative: storefront_orders + snapshot items
@@ -71,16 +71,26 @@ export default function TrackingPage() {
         {order && <OrderStatusChip status={normalizedStatus} variant="customer" />}
       </header>
 
+      {!isLoading && trackingError && (
+        <div className="mx-4 mt-4 flex flex-col items-center justify-center py-12 gap-3 rounded-2xl" style={{ background: "hsl(var(--card))" }}>
+          <Package className="w-12 h-12 text-destructive/40" />
+          <p className="text-sm font-medium text-destructive">Failed to load tracking</p>
+          <p className="text-xs text-muted-foreground">Check your connection and try again.</p>
+        </div>
+      )}
+
       {/* Live tracking map */}
-      <div className="mx-4 rounded-2xl overflow-hidden" style={{ height: 200 }}>
-        <Suspense fallback={
-          <div className="w-full h-full flex items-center justify-center bg-muted">
-            <MapPin className="w-8 h-8 text-muted-foreground/40" />
-          </div>
-        }>
-          <LiveTrackingMap trackingId={orderId ?? ""} />
-        </Suspense>
-      </div>
+      {!trackingError && (
+        <div className="mx-4 rounded-2xl overflow-hidden" style={{ height: 200 }}>
+          <Suspense fallback={
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <MapPin className="w-8 h-8 text-muted-foreground/40" />
+            </div>
+          }>
+            <LiveTrackingMap trackingId={orderId ?? ""} />
+          </Suspense>
+        </div>
+      )}
 
       {/* ETA banner */}
       {!isLoading && order && !isTerminal && (

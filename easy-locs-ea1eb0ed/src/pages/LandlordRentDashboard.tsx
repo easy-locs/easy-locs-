@@ -61,7 +61,7 @@ const LandlordRentDashboard = () => {
   const [search, setSearch] = useState("");
   const fmt = (n: number) => formatCurrency(n, userCountry);
 
-  const { data: rentCalls = [], isLoading } = useQuery({
+  const { data: rentCalls = [], isLoading, error: rentError } = useQuery({
     queryKey: ["rent-cockpit", orgId, countryFilter],
     queryFn: async () => {
       const data = await fetchRentCockpit(orgId!, countryFilter || undefined);
@@ -150,6 +150,12 @@ const LandlordRentDashboard = () => {
         {/* Rent calls list */}
         {isLoading ? (
           <div className="text-center py-16 text-muted-foreground">Loading...</div>
+        ) : rentError ? (
+          <div className="text-center py-16">
+            <Receipt className="h-12 w-12 text-destructive/30 mx-auto mb-4" />
+            <p className="text-sm font-medium text-destructive">Failed to load rent calls</p>
+            <p className="text-xs text-muted-foreground mt-1">Check your connection and try again.</p>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
             <Receipt className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />

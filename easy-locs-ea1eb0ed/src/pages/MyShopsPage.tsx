@@ -32,7 +32,7 @@ export default function MyShopsPage() {
   const { t } = useI18n();
   const tr = (k: string) => { const v = t(k); return v && v !== k ? v : FB[k] || k.split(".").pop() || ""; };
 
-  const { data: shops, isLoading } = useQuery({
+  const { data: shops, isLoading, error: shopsError } = useQuery({
     queryKey: ["my-shops", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -84,6 +84,17 @@ export default function MyShopsPage() {
               </div>
             </motion.button>
 
+            {/* Error */}
+            {!isLoading && shopsError && (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center mb-4">
+                  <Store className="h-7 w-7 text-destructive" />
+                </div>
+                <p className="text-sm font-semibold text-destructive">Failed to load shops</p>
+                <p className="text-xs text-muted-foreground mt-1">Check your connection and try again.</p>
+              </div>
+            )}
+
             {/* Loading */}
             {isLoading && (
               <div className="space-y-3">
@@ -92,7 +103,7 @@ export default function MyShopsPage() {
             )}
 
             {/* Empty */}
-            {!isLoading && (!shops || shops.length === 0) && (
+            {!isLoading && !shopsError && (!shops || shops.length === 0) && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
                   <Store className="h-7 w-7 text-muted-foreground" />

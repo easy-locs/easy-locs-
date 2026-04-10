@@ -856,6 +856,22 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **ALL files** using `supabase.from()`, `supabase.auth`, `supabase.storage`, `supabase.rpc` MUST import: `import { supabase } from "@/integrations/supabase/client"`
 - The `db()` wrapper from `@/services/db.ts` is preferred for table queries (`db("table_name")`)
 - 45+ repository and lib files fixed in April 2026 sweep to add missing supabase imports (was causing "Can't find variable: supabase" runtime crashes)
+- ~60 files still use direct supabase imports (Cycle 3 target)
+
+### Multi-Cycle Stabilization Progress (April 2026)
+**Cycle 1 — Global Audit + Critical Fixes: COMPLETE**
+- Button asChild crash fix (Slot single-child)
+- 20+ dead navigation links fixed across all pillars
+- Error state handling added to 12+ critical pages
+- Dashboard visual deduplication (removed triple "Complete profile")
+- i18n missing keys added (EN + FR)
+- AI streaming AbortController + cleanup
+- Canonical EmptyState adoption
+- `/dashboard/activities` redirect added to App.tsx
+- Route corrections: /auth→/login, /dashboard/seasonal→/seasonal-rentals, /dashboard/pricing→/dynamic-pricing, /dashboard/channel-manager→/channels, /dashboard/rental→/rental-management, /dashboard/properties→/real-estate, /mobility/receipt→/order/receipt, /business/my-shops→/dashboard/my-shops, /dashboard/assistant→/dashboard/ai
+
+**Cycle 2 — End-to-End Flow Reconnection: IN PROGRESS**
+- Target flows: login→dashboard→wallet→payment, contact→orbit→message→delivery
 
 ### Typography Minimum Standards
 - **Minimum text size**: `text-[9px]` for labels, `text-[10px]` for interactive/body text, `text-xs` (12px) for standard content
