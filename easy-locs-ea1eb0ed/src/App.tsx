@@ -394,7 +394,7 @@ const App = () => (
                   </Route>
                   <Route path="/real-estate/property/:propertyId" element={<REPropertyDetailPage />} />
                   <Route path="/real-estate/lease/:leaseId" element={<RELeaseDetailPage />} />
-                  <Route path="/property-management" element={<Navigate to="/dashboard/properties" replace />} />
+                  <Route path="/property-management" element={<Navigate to="/dashboard/real-estate" replace />} />
                   <Route path="/rentals" element={<Navigate to="/dashboard/rental-management" replace />} />
                   <Route path="/developer" element={<Navigate to="/dashboard/developer" replace />} />
                   <Route path="/concierge-ops" element={<ProtectedRoute><ConciergeOperations /></ProtectedRoute>} />

@@ -276,19 +276,6 @@ export function getPendingActions(ctx: DashboardContext): PendingAction[] {
     });
   }
 
-  if (!ctx.profileComplete && ctx.hasProfile) {
-    actions.push({
-      id: "action-complete-profile",
-      type: "profile_incomplete",
-      title: "Complete your profile",
-      subtitle: "Unlock all features and build trust",
-      route: "/me/edit-profile",
-      icon: "👤",
-      urgency: "low",
-      expiresAt: null,
-    });
-  }
-
   return actions.slice(0, 3);
 }
 

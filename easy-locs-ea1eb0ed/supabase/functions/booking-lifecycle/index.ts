@@ -169,7 +169,7 @@ serve(async (req) => {
           type: "info",
           title: template.title,
           message: `Auto-sent to ${booking.guest_name}: ${eventType.replace(/_/g, " ")}`,
-          link: "/dashboard/seasonal",
+          link: "/dashboard/seasonal-rentals",
         });
       }
 

@@ -792,7 +792,7 @@ async function handleBookingPayment(supabase: any, metadata: Record<string, stri
         checkin: br.check_in,
         checkout: br.check_out,
       }),
-      link: "/dashboard/seasonal",
+      link: "/dashboard/seasonal-rentals",
     });
   }
 

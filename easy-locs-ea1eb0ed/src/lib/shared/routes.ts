@@ -15,7 +15,7 @@ const TARGET_ROUTES: Record<TargetType, { landlord: string; tenant?: string }> =
   invoice:             { landlord: "/dashboard/finances" },
   dunning:             { landlord: "/dashboard/dunning" },
   expense:             { landlord: "/dashboard/expenses" },
-  booking_request:     { landlord: "/dashboard/seasonal" },
+  booking_request:     { landlord: "/dashboard/seasonal-rentals" },
   marketplace_booking: { landlord: "/dashboard/activities" },
   marketplace_service: { landlord: "/dashboard/activities" },
   concierge_order:     { landlord: "/dashboard/activities" },

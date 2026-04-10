@@ -40,7 +40,6 @@ import { useDashboardLiveStats } from "@/hooks/useDashboardLiveStats";
 import { prefetchForRoute } from "@/lib/smart-prefetch";
 import { useCart } from "@/hooks/useCart";
 import { useSmartInsights } from "@/hooks/useSmartInsights";
-import SmartShortcuts from "@/components/dashboard/SmartShortcuts";
 import SmartSuggestions from "@/components/dashboard/SmartSuggestions";
 import ContinueSection from "@/components/dashboard/ContinueSection";
 import SuggestedPaymentsSection from "@/components/dashboard/SuggestedPaymentsSection";
@@ -572,7 +571,7 @@ export default function SmartHome() {
     hasOrbit: !!orbitProfile?.orbitId,
   }), [user, walletBal, orbitProfile?.orbitId]);
 
-  const { topRoutes, suggestions, dismiss } = useSmartInsights(smartContext);
+  const { suggestions, dismiss } = useSmartInsights(smartContext);
 
   const liveStats = useDashboardLiveStats();
   const intelligence = useDashboardIntelligence({
@@ -600,7 +599,6 @@ export default function SmartHome() {
         <ActiveCartBanner />
         <SmartQuickActions />
         <ContextualNudge suggestion={intelligence.quickSuggestion} />
-        <SmartShortcuts topRoutes={topRoutes} />
         <QuickAccessStrip />
         <ContinueSection items={intelligence.continueItems} />
         <PendingActionsSection actions={intelligence.pendingActions} />

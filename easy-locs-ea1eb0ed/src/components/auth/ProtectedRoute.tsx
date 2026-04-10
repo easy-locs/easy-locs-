@@ -12,7 +12,7 @@ const PRO_DASHBOARD_PREFIXES = [
   "/dashboard/documents",
   "/dashboard/interventions",
   "/dashboard/calendar",
-  "/dashboard/channel-manager",
+  "/dashboard/channels",
   "/dashboard/dynamic-pricing",
   "/dashboard/fiscal",
   "/dashboard/expenses",

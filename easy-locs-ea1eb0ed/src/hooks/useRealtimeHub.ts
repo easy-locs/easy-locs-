@@ -154,7 +154,7 @@ export function useRealtimeHub() {
             type: "action", priority: 1, icon: "📩",
             title: "Nouvelle réservation",
             message: `${row.guest_name || "Client"} — ${row.check_in || ""}`,
-            link: "/dashboard/seasonal",
+            link: "/dashboard/seasonal-rentals",
           });
         }
         break;

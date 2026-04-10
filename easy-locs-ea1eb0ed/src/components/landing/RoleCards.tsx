@@ -41,7 +41,7 @@ const RoleCards = () => {
         { icon: Globe, label: t("landing.pillars.seasonal.f5") || "Multi-currency pricing" },
       ],
       cta: t("landing.pillars.seasonal.cta") || "Start Booking",
-      to: user ? "/dashboard/seasonal" : "/seasonal-rentals",
+      to: user ? "/dashboard/seasonal-rentals" : "/seasonal-rentals",
       color: "info",
     },
     {

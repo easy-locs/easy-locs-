@@ -119,7 +119,7 @@ const PropertyDetailHub = () => {
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Home className="h-12 w-12 text-muted-foreground mb-4" />
           <h2 className="text-lg font-bold text-foreground">{t("page.property.not_found") || "Property not found"}</h2>
-          <Link to="/dashboard/rental" className="text-accent hover:underline text-sm mt-2">
+          <Link to="/dashboard/rental-management" className="text-accent hover:underline text-sm mt-2">
             ← {t("page.property.back_to_list") || "Back to properties"}
           </Link>
         </div>

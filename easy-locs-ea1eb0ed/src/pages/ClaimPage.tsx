@@ -37,7 +37,7 @@ export default function ClaimPage() {
   const handleClaim = async () => {
     if (!user?.id || !token) {
       toast.error("Please sign in first");
-      navigate("/auth");
+      navigate("/login");
       return;
     }
 
