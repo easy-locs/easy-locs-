@@ -132,6 +132,7 @@ const {
   PropertyHubPage, FoodTypePage, CuisineListPage, FoodRestaurantPage,
   TravelHub, TravelFlights, TravelStays, TravelHotelDetail, HotelCheckout, TravelStayDetail, TravelFlightDetail,
   FlightSearchPage, FlightResultsPage, FlightDetailPage, FlightPassengerPage, FlightPaymentPage, FlightConfirmationPage,
+  PropertySearchPage, PropertyResultsPage, PropertyDetailPage, PropertyBookingPage, PropertyPaymentPage, PropertyConfirmationPage,
   MobilityHubPage, MobilityTaxiPage, MobilityDeliveryPage, DeliveryBringPage, DeliveryParcelPage, DeliveryGiftPage,
   DeliveryErrandPage, RiderLivePage, TrackRidePage, CallDriverPage,
   PublicListing, PublicServiceBooking, PublicRealEstateListing, LocalServices,
@@ -450,6 +451,12 @@ const App = () => (
                   <Route path="/travel/flight-passengers" element={<ProtectedRoute><FlightPassengerPage /></ProtectedRoute>} />
                   <Route path="/travel/flight-payment" element={<ProtectedRoute><FlightPaymentPage /></ProtectedRoute>} />
                   <Route path="/travel/flight-confirmation" element={<ProtectedRoute><FlightConfirmationPage /></ProtectedRoute>} />
+                  <Route path="/property/search" element={<PropertySearchPage />} />
+                  <Route path="/property/results" element={<PropertyResultsPage />} />
+                  <Route path="/property/detail" element={<PropertyDetailPage />} />
+                  <Route path="/property/booking" element={<ProtectedRoute><PropertyBookingPage /></ProtectedRoute>} />
+                  <Route path="/property/payment" element={<ProtectedRoute><PropertyPaymentPage /></ProtectedRoute>} />
+                  <Route path="/property/confirmation" element={<ProtectedRoute><PropertyConfirmationPage /></ProtectedRoute>} />
                   <Route path="/mobility" element={<MobilityHubPage />} />
                   <Route path="/mobility/taxi" element={<MobilityTaxiPage />} />
                   <Route path="/mobility/delivery" element={<MobilityDeliveryPage />} />
