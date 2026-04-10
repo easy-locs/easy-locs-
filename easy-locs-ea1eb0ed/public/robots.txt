@@ -1,50 +1,41 @@
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 2
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: LinkedInBot
-Allow: /
-
-User-agent: Slurp
-Allow: /
-
-User-agent: DuckDuckBot
-Allow: /
-
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /
-
 User-agent: *
 Allow: /
+Allow: /country/
+Allow: /city/
+Allow: /services/
+Allow: /activities/
+Allow: /marketplace/
+Allow: /s/
+Allow: /stay
+Allow: /browse
+Allow: /about
+Allow: /contact
+Allow: /help
+Allow: /vision
+
+Disallow: /wallet
+Disallow: /wallet/
+Disallow: /pay/
+Disallow: /checkout
+Disallow: /settings
+Disallow: /settings/
+Disallow: /orbit
+Disallow: /my-orders
+Disallow: /me
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dev
+Disallow: /merchant/onboarding
 Disallow: /dashboard/
 Disallow: /tenant/
 Disallow: /client/
 Disallow: /onboarding
 Disallow: /reset-password
 Disallow: /verify-email
-Disallow: /admin
 Disallow: /guest-portal
+Disallow: /api/
+Disallow: /auth/
+
+Crawl-delay: 1
 
 Sitemap: https://www.easy-locs.com/sitemap.xml
