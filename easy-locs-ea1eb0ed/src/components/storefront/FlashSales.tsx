@@ -190,13 +190,13 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
                   </div>
                   <div className="flex items-center gap-3 mb-2">
                     {sale.discount_percent > 0 && (
-                      <Badge className="text-[10px] bg-destructive text-destructive-foreground font-black">-{sale.discount_percent}%</Badge>
+                      <Badge className="text-[10px] bg-destructive text-destructive-foreground font-bold">-{sale.discount_percent}%</Badge>
                     )}
                     {sale.original_price && (
                       <span className="text-[10px] text-muted-foreground line-through">{fmt(sale.original_price, sale.currency || "EUR")}</span>
                     )}
                     {sale.sale_price && (
-                      <span className="text-sm font-black text-destructive">{fmt(sale.sale_price, sale.currency || "EUR")}</span>
+                      <span className="text-sm font-extrabold text-destructive tabular-nums">{fmt(sale.sale_price, sale.currency || "EUR")}</span>
                     )}
                   </div>
                   <div className="flex items-center gap-3">

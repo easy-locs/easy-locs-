@@ -78,7 +78,7 @@ export default function AdminPlatformHealthPage() {
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
-          <h1 className="text-base font-black text-foreground">Platform Health</h1>
+          <h1 className="text-base font-bold text-foreground">Platform Health</h1>
           <p className="text-[10px] text-muted-foreground">Quality scores, blocked entities, engine status</p>
         </div>
         <Button size="sm" variant="outline" className="ml-auto text-xs" onClick={loadStats} disabled={loading}>
@@ -98,7 +98,7 @@ export default function AdminPlatformHealthPage() {
                     <s.icon className={`w-4 h-4 ${s.color}`} />
                     <span className="text-[10px] font-medium text-muted-foreground">{s.label}</span>
                   </div>
-                  <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
+                  <p className={`text-xl font-extrabold tabular-nums ${s.color}`}>{s.value}</p>
                 </Card>
               ))}
             </div>
@@ -117,7 +117,7 @@ export default function AdminPlatformHealthPage() {
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-[10px] text-muted-foreground">Score</p>
-                      <p className="text-sm font-black text-destructive">{e.overall_quality_score ?? 0}</p>
+                      <p className="text-sm font-extrabold text-destructive tabular-nums">{e.overall_quality_score ?? 0}</p>
                     </div>
                   </Card>
                 ))}

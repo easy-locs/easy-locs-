@@ -237,7 +237,7 @@ export default function RestaurantPage() {
       </div>
 
       <div className="px-4 -mt-6 relative z-10 space-y-2">
-        <h1 className="text-xl font-black tracking-tight text-foreground">{shop?.name || "Restaurant"}</h1>
+        <h1 className="text-xl font-bold tracking-tight text-foreground">{shop?.name || "Restaurant"}</h1>
         <div className="flex items-center gap-3 flex-wrap">
           {shop?.rating != null && (
             <span className="flex items-center gap-1 text-xs font-semibold">
@@ -408,7 +408,7 @@ export default function RestaurantPage() {
                               style={{ background: "hsl(var(--muted) / 0.5)" }}
                             >
                               <button onClick={() => { const ci = cart.items.find(i => i.menuItemId === item.id); if (ci) updateQuantity(ci.id, qty - 1); }} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--muted))" }}><Minus className="w-3.5 h-3.5" /></button>
-                              <span className="text-sm font-black w-6 text-center">{qty}</span>
+                              <span className="text-sm font-bold w-6 text-center tabular-nums">{qty}</span>
                               <button data-add-to-cart onClick={() => handleAdd(item)} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}><Plus className="w-3.5 h-3.5" /></button>
                             </motion.div>
                           )}
@@ -458,7 +458,7 @@ export default function RestaurantPage() {
                 <p className="text-[10px] text-white/50">Tap to checkout</p>
               </div>
             </div>
-            <span className="text-sm font-black" style={{ color: "hsl(38 65% 56%)" }}>{formatMoneyByCountry(total, shop?.country, shop?.currency)} →</span>
+            <span className="text-sm font-bold tabular-nums" style={{ color: "hsl(38 65% 56%)" }}>{formatMoneyByCountry(total, shop?.country, shop?.currency)} →</span>
           </button>
         </motion.div>
       )}

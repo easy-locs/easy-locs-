@@ -81,7 +81,7 @@ export default function HomePromoCarousel() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 
                   <span
-                    className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase text-white backdrop-blur-md"
+                    className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase text-white backdrop-blur-md"
                     style={{ background: `${accent}cc`, border: `1px solid ${accent}50` }}
                   >
                     <Tag className="w-2.5 h-2.5" />

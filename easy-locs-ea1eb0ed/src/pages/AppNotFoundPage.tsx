@@ -12,7 +12,7 @@ export default function AppNotFoundPage() {
           <div className="w-20 h-20 mx-auto rounded-2xl bg-muted/50 flex items-center justify-center">
             <Search className="w-10 h-10 text-muted-foreground/60" />
           </div>
-          <h1 className="text-5xl font-black text-foreground tracking-tight">404</h1>
+          <h1 className="text-5xl font-extrabold text-foreground tracking-tight">404</h1>
           <p className="text-lg font-medium text-muted-foreground">Page not found</p>
           <p className="text-sm text-muted-foreground/70">
             Requested route: <code className="bg-muted px-2 py-0.5 rounded text-xs">{location.pathname}</code>

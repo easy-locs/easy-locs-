@@ -169,7 +169,7 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
         ].map(s => (
           <div key={s.label} className="rounded-xl p-2.5 text-center"
             style={{ background: `hsl(var(${s.color}) / 0.06)`, border: `1px solid hsl(var(${s.color}) / 0.1)` }}>
-            <p className="text-lg font-black" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
+            <p className="text-lg font-extrabold tabular-nums" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
             <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}

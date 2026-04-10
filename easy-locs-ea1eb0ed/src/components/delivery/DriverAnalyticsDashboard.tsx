@@ -138,7 +138,7 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
               className="rounded-xl p-3 text-center"
               style={{ background: `hsl(var(${kpi.color}) / 0.06)`, border: `1px solid hsl(var(${kpi.color}) / 0.1)` }}>
               <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: `hsl(var(${kpi.color}))` }} />
-              <p className="text-lg font-black" style={{ color: `hsl(var(${kpi.color}))` }}>{kpi.value}</p>
+              <p className="text-lg font-extrabold tabular-nums" style={{ color: `hsl(var(${kpi.color}))` }}>{kpi.value}</p>
               <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
             </motion.div>
           );
@@ -193,17 +193,17 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
       <div className="rounded-xl p-3 flex items-center justify-between"
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <div className="text-center flex-1">
-          <p className="text-sm font-black" style={{ color: "hsl(var(--success))" }}>{stats.avgEarning.toFixed(1)}€</p>
+          <p className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>{stats.avgEarning.toFixed(1)}€</p>
           <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Moy./mission</p>
         </div>
         <div className="w-px h-8" style={{ background: "hsl(var(--hud-border) / 0.1)" }} />
         <div className="text-center flex-1">
-          <p className="text-sm font-black" style={{ color: "hsl(var(--info))" }}>{stats.acceptRate}%</p>
+          <p className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--info))" }}>{stats.acceptRate}%</p>
           <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Taux accept.</p>
         </div>
         <div className="w-px h-8" style={{ background: "hsl(var(--hud-border) / 0.1)" }} />
         <div className="text-center flex-1">
-          <p className="text-sm font-black" style={{ color: "hsl(var(--destructive))" }}>{stats.cancelled}</p>
+          <p className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--destructive))" }}>{stats.cancelled}</p>
           <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Annulées</p>
         </div>
       </div>

@@ -117,7 +117,7 @@ export const TEXT = {
   price: "text-sm font-bold tabular-nums",
   priceLg: "text-base font-bold tabular-nums",
   badge: "text-[10px] font-bold uppercase tracking-wider",
-  stat: "text-xs font-black tabular-nums",
+  stat: "text-xs font-extrabold tabular-nums",
   statLabel: "text-[10px] font-medium text-muted-foreground",
   metadata: "text-[11px] text-muted-foreground",
   seeAll: "text-[11px] font-medium text-primary shrink-0",

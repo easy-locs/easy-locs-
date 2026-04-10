@@ -129,7 +129,7 @@ const PropertyBuyCard = memo(function PropertyBuyCard({
         )}
 
         <div className="absolute bottom-3 left-3">
-          <span className="text-lg font-black text-white drop-shadow-md">
+          <span className="text-lg font-extrabold text-white drop-shadow-md tabular-nums">
             {currency} {formattedPrice}
           </span>
           {pricePerSqft && (

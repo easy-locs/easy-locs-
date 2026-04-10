@@ -94,7 +94,7 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
       <div className="rounded-xl p-4 text-center"
         style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.03))", border: "1px solid hsl(var(--primary) / 0.15)" }}>
         <p className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>Vos points</p>
-        <motion.p className="text-3xl font-black" style={{ color: "hsl(var(--primary))" }}
+        <motion.p className="text-3xl font-extrabold tabular-nums" style={{ color: "hsl(var(--primary))" }}
           initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
           {totalPoints.toLocaleString()}
         </motion.p>
@@ -124,7 +124,7 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
         style={{ background: "hsl(var(--success) / 0.05)", border: "1px solid hsl(var(--success) / 0.15)" }}>
         <div>
           <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>Cashback disponible</p>
-          <p className="text-lg font-black" style={{ color: "hsl(var(--success))" }}>{cashbackBalance.toFixed(2)}€</p>
+          <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>{cashbackBalance.toFixed(2)}€</p>
         </div>
         <Button size="sm" className="text-[10px] h-8" onClick={redeemCashback}
           style={{ background: "hsl(var(--success))", color: "#fff" }}>

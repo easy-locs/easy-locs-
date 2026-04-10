@@ -172,7 +172,7 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
               className="rounded-xl p-3 text-center"
               style={{ background: `hsl(${kpi.color} / 0.06)`, border: `1px solid hsl(${kpi.color} / 0.1)` }}>
               <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: `hsl(${kpi.color})` }} />
-              <p className="text-lg font-black" style={{ color: `hsl(${kpi.color})` }}>{kpi.value}</p>
+              <p className="text-lg font-extrabold tabular-nums" style={{ color: `hsl(${kpi.color})` }}>{kpi.value}</p>
               <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
             </motion.div>
           );

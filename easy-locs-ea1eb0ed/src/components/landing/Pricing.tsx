@@ -244,7 +244,7 @@ const Pricing = () => {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 12 }}
                           transition={{ duration: 0.2 }}
-                          className="text-4xl font-black text-foreground tracking-tight"
+                          className="text-4xl font-extrabold text-foreground tabular-nums tracking-tight"
                         >
                           {price === 0 ? "0" : price}€
                         </motion.span>

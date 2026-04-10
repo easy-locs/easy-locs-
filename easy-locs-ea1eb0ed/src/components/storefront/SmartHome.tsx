@@ -96,7 +96,7 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: S
 
     <div className="relative z-10 mb-3">
       <motion.h1
-        className="text-lg font-black leading-tight"
+        className="text-lg font-bold leading-tight"
         style={{ color: "hsl(0 0% 100%)" }}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -166,7 +166,7 @@ const ActiveCartBanner = memo(() => {
         <p className="text-xs font-bold text-white truncate">{cart.restaurantName || t("home.your_order") || "Your order"}</p>
         <p className="text-[10px] text-white/60">{itemCount} {t("home.items_in_cart") || "item(s) in cart"}</p>
       </div>
-      <span className="text-xs font-black shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
+      <span className="text-xs font-extrabold shrink-0 tabular-nums" style={{ color: "hsl(38 65% 56%)" }}>
         {t("home.checkout") || "Checkout"} →
       </span>
     </motion.button>
@@ -370,7 +370,7 @@ function LiveStatsPulse() {
           className="flex flex-col items-center gap-1 rounded-xl border border-border/8 bg-muted/15 py-2.5 px-1.5 relative overflow-hidden active:scale-[0.95] transition-transform"
         >
           <s.icon className={`h-4 w-4 ${s.color} shrink-0`} />
-          <p className="text-xs font-black text-foreground tabular-nums leading-none">{s.value}</p>
+          <p className="text-xs font-extrabold text-foreground tabular-nums leading-none">{s.value}</p>
           <p className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5 text-center w-full break-words">{s.label}</p>
         </button>
       ))}

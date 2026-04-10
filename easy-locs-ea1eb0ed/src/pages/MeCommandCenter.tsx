@@ -481,7 +481,7 @@ export default function MeCommandCenter() {
           {avatarUrl ? (
             <img src={avatarUrl} alt="" className="w-14 h-14 rounded-2xl object-cover shrink-0" style={{ boxShadow: `0 0 0 2px ${A.gold}33` }} />
           ) : (
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black shrink-0 shadow-lg" style={{ background: A.navy, color: "#fff" }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold shrink-0 shadow-lg" style={{ background: A.navy, color: "#fff" }}>
               {initials}
             </div>
           )}
@@ -581,8 +581,8 @@ export default function MeCommandCenter() {
                 className="app-stat-chip text-center py-2.5 active:scale-[0.97] transition-transform"
                 style={{ background: `${kpi.color}08`, borderColor: `${kpi.color}14` }}
               >
-                <p className="text-lg font-black text-foreground leading-none">{kpi.value}</p>
-                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mt-1 truncate">{kpi.label}</p>
+                <p className="text-lg font-extrabold text-foreground leading-none tabular-nums">{kpi.value}</p>
+                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-1 truncate">{kpi.label}</p>
               </button>
             ))}
           </motion.div>
@@ -647,7 +647,7 @@ export default function MeCommandCenter() {
           <motion.div variants={fadeUp} className="pt-1 pb-0.5 px-1">
             <div className="flex items-center gap-2">
               <div className="w-1 h-4 rounded-full" style={{ background: A.gold }} />
-              <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: A.navy }}>
+              <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: A.navy }}>
                 {t("me.business_cockpit")}
               </h2>
             </div>

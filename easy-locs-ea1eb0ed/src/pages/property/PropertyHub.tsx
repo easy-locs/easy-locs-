@@ -160,7 +160,7 @@ export default function PropertyHub() {
               <ArrowLeft className="h-4 w-4 text-white" />
             </button>
 
-            <h1 className="text-[28px] font-black text-white tracking-tight leading-tight">
+            <h1 className="text-[28px] font-bold text-white tracking-tight leading-tight">
               Property
             </h1>
             <p className="text-[13px] text-white/55 mt-1 font-medium">

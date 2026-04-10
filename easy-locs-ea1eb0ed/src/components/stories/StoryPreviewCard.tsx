@@ -72,7 +72,7 @@ export default function StoryPreviewCard({ story, onClick, size = "medium" }: St
 
       <div className="absolute bottom-0 left-0 right-0 p-3">
         {story.priceLabel && (
-          <p className={`${config.priceClass} font-black tracking-tight mb-1`}
+          <p className={`${config.priceClass} font-extrabold tracking-tight mb-1`}
             style={{ color: "hsl(38 65% 56%)" }}
           >
             {story.priceLabel}

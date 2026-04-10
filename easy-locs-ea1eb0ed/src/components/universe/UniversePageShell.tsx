@@ -152,7 +152,7 @@ export default function UniversePageShell({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
             className={cn(
-              "text-2xl font-black tracking-tight",
+              "text-2xl font-bold tracking-tight",
               hasMedia ? "text-white" : "text-primary-foreground",
             )}
             style={{ textWrap: "balance" } as React.CSSProperties}

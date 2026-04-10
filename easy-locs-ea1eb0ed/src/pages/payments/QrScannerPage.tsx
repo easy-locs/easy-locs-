@@ -577,7 +577,7 @@ export default function QrScannerPage() {
             <button type="button" onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 backdrop-blur-sm active:scale-95 transition-transform">
               <ArrowLeft className="h-4.5 w-4.5 text-foreground" />
             </button>
-            <h1 className="text-base font-black text-foreground tracking-tight flex-1">Scan & Pay</h1>
+            <h1 className="text-base font-bold text-foreground tracking-tight flex-1">Scan & Pay</h1>
           </div>
 
           <div className="px-4 pb-3">
@@ -617,7 +617,7 @@ export default function QrScannerPage() {
                       className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10">
                       <CheckCircle2 className="h-10 w-10 text-emerald-500" />
                     </motion.div>
-                    <p className="text-xl font-black text-foreground">Payment sent!</p>
+                    <p className="text-xl font-bold text-foreground">Payment sent!</p>
                     {txId && <p className="text-[11px] text-muted-foreground font-mono">TX: {txId.slice(0, 16)}…</p>}
                     <button type="button" onClick={() => navigate("/wallet", { replace: true })}
                       className="mt-4 rounded-2xl bg-primary px-8 py-3 text-sm font-bold text-primary-foreground active:scale-[0.97] transition-transform">
@@ -628,7 +628,7 @@ export default function QrScannerPage() {
                   <motion.div key="manual-pay" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[340px] rounded-[28px] overflow-hidden shadow-xl">
                     <div className="p-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 35% 26%))" }}>
                       <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
-                        <span className="text-xs font-black" style={{ color: "hsl(38 65% 56%)" }}>
+                        <span className="text-xs font-bold" style={{ color: "hsl(38 65% 56%)" }}>
                           {pendingPayment.recipientName?.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?"}
                         </span>
                       </div>

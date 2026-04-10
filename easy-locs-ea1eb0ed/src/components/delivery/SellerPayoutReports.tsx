@@ -147,7 +147,7 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
               className="rounded-xl p-3 text-center"
               style={{ background: `hsl(var(${kpi.color}) / 0.06)`, border: `1px solid hsl(var(${kpi.color}) / 0.1)` }}>
               <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: `hsl(var(${kpi.color}))` }} />
-              <p className="text-lg font-black" style={{ color: `hsl(var(${kpi.color}))` }}>{kpi.value}</p>
+              <p className="text-lg font-extrabold tabular-nums" style={{ color: `hsl(var(${kpi.color}))` }}>{kpi.value}</p>
               <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
             </motion.div>
           );
@@ -158,7 +158,7 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
       <div className="rounded-xl p-3 flex items-center justify-between"
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais moyen / mission</span>
-        <span className="text-sm font-black" style={{ color: "hsl(var(--warning))" }}>{fmt(stats.avgPerJob)}€</span>
+        <span className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>{fmt(stats.avgPerJob)}€</span>
       </div>
 
       {/* Weekly revenue chart */}

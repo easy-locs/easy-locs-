@@ -19,7 +19,7 @@ export default function TravelFlightDetail() {
         <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
           <div className="flex items-center justify-between mb-3">
             <div className="text-center">
-              <p className="text-lg font-black text-foreground">CDG</p>
+              <p className="text-lg font-bold text-foreground">CDG</p>
               <p className="text-[10px] text-muted-foreground">Paris</p>
               <p className="text-xs font-bold text-foreground mt-1">08:30</p>
             </div>
@@ -33,7 +33,7 @@ export default function TravelFlightDetail() {
               <p className="text-[10px] text-primary font-semibold">Direct</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-black text-foreground">BCN</p>
+              <p className="text-lg font-bold text-foreground">BCN</p>
               <p className="text-[10px] text-muted-foreground">Barcelona</p>
               <p className="text-xs font-bold text-foreground mt-1">10:45</p>
             </div>
@@ -96,11 +96,11 @@ export default function TravelFlightDetail() {
 
         {/* Price breakdown */}
         <div className="p-3 rounded-xl border border-border/15 bg-card/50 space-y-1.5">
-          <div className="flex justify-between text-xs"><span className="text-muted-foreground">Base fare (1 adult)</span><span className="text-foreground font-semibold">$120</span></div>
-          <div className="flex justify-between text-xs"><span className="text-muted-foreground">Taxes & fees</span><span className="text-foreground font-semibold">$35</span></div>
+          <div className="flex justify-between text-xs"><span className="text-muted-foreground">Base fare (1 adult)</span><span className="text-foreground font-semibold tabular-nums">$120</span></div>
+          <div className="flex justify-between text-xs"><span className="text-muted-foreground">Taxes & fees</span><span className="text-foreground font-semibold tabular-nums">$35</span></div>
           <div className="border-t border-border/20 pt-1.5 flex justify-between text-sm">
             <span className="font-bold text-foreground">Total</span>
-            <span className="font-black text-foreground">$155</span>
+            <span className="font-extrabold text-foreground tabular-nums">$155</span>
           </div>
         </div>
       </div>
@@ -109,7 +109,7 @@ export default function TravelFlightDetail() {
       <div className="fixed bottom-20 left-0 right-0 px-4 pb-2 z-40">
         <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border/20 shadow-lg backdrop-blur-sm">
           <div>
-            <p className="text-lg font-black text-foreground">$155</p>
+            <p className="text-lg font-extrabold text-foreground tabular-nums">$155</p>
             <p className="text-[10px] text-muted-foreground">Total · 1 adult</p>
           </div>
           <Button size="sm" className="font-bold">Book Flight</Button>

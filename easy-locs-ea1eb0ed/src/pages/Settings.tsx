@@ -342,7 +342,7 @@ const Settings = () => {
       <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
         {/* Header */}
         <div>
-          <h1 className="text-lg font-black text-foreground">{t("page.settings.title") || "Settings"}</h1>
+          <h1 className="text-lg font-bold text-foreground">{t("page.settings.title") || "Settings"}</h1>
           <p className="text-xs text-muted-foreground mt-0.5">{t("page.settings.subtitle") || "Manage your account and preferences"}</p>
         </div>
 

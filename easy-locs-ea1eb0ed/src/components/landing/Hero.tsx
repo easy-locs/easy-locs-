@@ -241,7 +241,7 @@ const Hero = () => {
                     borderColor: `${vp.accent}25`,
                   }}
                 >
-                  <span className="text-base sm:text-lg font-black shrink-0" style={{ color: vp.accent }}>{vp.val}</span>
+                  <span className="text-base sm:text-lg font-extrabold tabular-nums shrink-0" style={{ color: vp.accent }}>{vp.val}</span>
                   <div className="min-w-0">
                     <p className="text-[10px] sm:text-[11px] font-bold leading-tight truncate" style={{ color: "hsl(40 50% 94%)" }}>{vp.label}</p>
                     <p className="text-[10px] sm:text-[10px] font-medium truncate" style={{ color: "hsl(220 15% 50%)" }}>{vp.sub}</p>

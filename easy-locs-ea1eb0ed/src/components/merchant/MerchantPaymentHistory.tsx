@@ -83,7 +83,7 @@ export default function MerchantPaymentHistory({
       <div className="flex items-center justify-between p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
         <div>
           <p className="text-xs font-medium text-emerald-600">Today's Revenue</p>
-          <p className="text-2xl font-black text-emerald-600">{formatMoney(todayTotal, currency)}</p>
+          <p className="text-2xl font-extrabold text-emerald-600 tabular-nums">{formatMoney(todayTotal, currency)}</p>
         </div>
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10">
           <ArrowDownLeft className="w-6 h-6 text-emerald-600" />

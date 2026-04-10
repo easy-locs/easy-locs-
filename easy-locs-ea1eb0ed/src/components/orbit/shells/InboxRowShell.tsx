@@ -40,7 +40,7 @@ function InboxRowShell({
       <div className="flex-1 min-w-0 overflow-hidden">
         <div className="flex items-center justify-between gap-2">
           <span
-            className={`text-[15px] leading-tight min-w-0 block truncate ${hasUnread ? "font-bold" : "font-medium"}`}
+            className={`text-sm leading-tight min-w-0 block truncate ${hasUnread ? "font-bold" : "font-medium"}`}
             style={{ color: "hsl(var(--foreground))" }}
           >
             {name}

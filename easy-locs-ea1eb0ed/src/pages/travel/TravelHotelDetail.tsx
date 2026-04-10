@@ -85,7 +85,7 @@ function RoomCard({
           <div className="text-right">
             {isAvailable ? (
               <>
-                <p className="text-base font-black text-foreground">AED {priceForRange}</p>
+                <p className="text-base font-extrabold text-foreground tabular-nums">AED {priceForRange}</p>
                 <p className="text-[10px] text-muted-foreground">/night</p>
               </>
             ) : (
@@ -239,7 +239,7 @@ export default function TravelHotelDetail() {
               </Badge>
             )}
           </div>
-          <h1 className="text-xl font-black text-foreground mt-1">{hotel.name}</h1>
+          <h1 className="text-xl font-bold text-foreground mt-1">{hotel.name}</h1>
           <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
             <MapPin className="h-3.5 w-3.5" />
             {[hotel.address, hotel.city, hotel.country].filter(Boolean).join(", ")}
@@ -402,7 +402,7 @@ export default function TravelHotelDetail() {
             </div>
             <div className="flex items-center gap-3 p-3 rounded-xl border border-border/15 bg-card/50">
               <div className="flex flex-col items-center">
-                <p className="text-2xl font-black text-foreground">{hotel.rating}</p>
+                <p className="text-2xl font-extrabold text-foreground tabular-nums">{hotel.rating}</p>
                 <StarRating stars={Math.round(hotel.rating)} />
                 <p className="text-[10px] text-muted-foreground mt-0.5">{hotel.reviews_count} reviews</p>
               </div>
@@ -418,7 +418,7 @@ export default function TravelHotelDetail() {
             <div>
               {hotel.rooms[0]?.lowestPrice ? (
                 <>
-                  <p className="text-lg font-black text-foreground">AED {hotel.rooms[0].lowestPrice}</p>
+                  <p className="text-lg font-extrabold text-foreground tabular-nums">AED {hotel.rooms[0].lowestPrice}</p>
                   <p className="text-[10px] text-muted-foreground">/night · lowest price</p>
                 </>
               ) : (

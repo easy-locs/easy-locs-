@@ -171,7 +171,7 @@ export default function AdminAIControlCenter() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-3xl font-black" style={{ color: healthColor(systemHealth) }}>
+            <div className="text-3xl font-extrabold tabular-nums" style={{ color: healthColor(systemHealth) }}>
               {systemHealth}
             </div>
             <div className="text-xs text-muted-foreground mt-1">System Health</div>
@@ -179,7 +179,7 @@ export default function AdminAIControlCenter() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-3xl font-black" style={{ color: "hsl(var(--primary))" }}>
+            <div className="text-3xl font-extrabold tabular-nums" style={{ color: "hsl(var(--primary))" }}>
               {orch?.orchestrator.totalEngines ?? 0}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Total Engines</div>
@@ -187,7 +187,7 @@ export default function AdminAIControlCenter() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-3xl font-black" style={{ color: "hsl(150 70% 40%)" }}>
+            <div className="text-3xl font-extrabold tabular-nums" style={{ color: "hsl(150 70% 40%)" }}>
               {orch?.orchestrator.runningEngines ?? 0}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Running</div>
@@ -195,13 +195,13 @@ export default function AdminAIControlCenter() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-3xl font-black">{orch?.totalTicks ?? 0}</div>
+            <div className="text-3xl font-extrabold tabular-nums">{orch?.totalTicks ?? 0}</div>
             <div className="text-xs text-muted-foreground mt-1">Total Ticks</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-3xl font-black" style={{ color: (orch?.totalErrors ?? 0) > 0 ? "hsl(0 70% 55%)" : "hsl(150 70% 40%)" }}>
+            <div className="text-3xl font-extrabold tabular-nums" style={{ color: (orch?.totalErrors ?? 0) > 0 ? "hsl(0 70% 55%)" : "hsl(150 70% 40%)" }}>
               {orch?.totalErrors ?? 0}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Total Errors</div>

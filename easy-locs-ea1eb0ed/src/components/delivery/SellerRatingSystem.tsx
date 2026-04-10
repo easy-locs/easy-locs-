@@ -95,7 +95,7 @@ export default function SellerRatingSystem({ orgId }: { orgId: string }) {
 
       {/* Trust Score */}
       <div className="rounded-xl p-4 text-center" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${scoreColor}20` }}>
-        <p className="text-3xl font-black" style={{ color: scoreColor }}>{seller.trustScore}</p>
+        <p className="text-3xl font-extrabold tabular-nums" style={{ color: scoreColor }}>{seller.trustScore}</p>
         <p className="text-[10px] font-semibold mt-1" style={{ color: "hsl(var(--hud-text))" }}>Score de Confiance</p>
         <div className="flex justify-center gap-4 mt-2">
           <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>⭐ {seller.avgRating} moy.</span>

@@ -149,7 +149,7 @@ function OrderNotificationAlert({ order, onAccept, onReject }: Props) {
                   <DollarSign className="w-4 h-4" style={{ color: "hsl(var(--hud-cyan))" }} />
                   <span className="text-xs font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}>Total</span>
                 </div>
-                <span className="text-lg font-black" style={{ color: "hsl(var(--hud-text))" }}>
+                <span className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>
                   {order.total.toFixed(2)} {order.currency}
                 </span>
               </div>

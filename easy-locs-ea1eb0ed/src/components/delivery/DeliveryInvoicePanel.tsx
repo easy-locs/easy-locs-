@@ -175,7 +175,7 @@ h1{font-size:20px}h2{font-size:14px;color:#666}</style></head>
                 <Calendar className="h-3 w-3 inline mr-1" />
                 {summary.periodStart} → {summary.periodEnd}
               </p>
-              <p className="text-2xl font-black mt-1" style={{ color: "hsl(var(--hud-cyan))" }}>
+              <p className="text-2xl font-extrabold tabular-nums mt-1" style={{ color: "hsl(var(--hud-cyan))" }}>
                 {summary.totalAmount.toFixed(2)} <span className="text-sm">{summary.currency}</span>
               </p>
               <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>

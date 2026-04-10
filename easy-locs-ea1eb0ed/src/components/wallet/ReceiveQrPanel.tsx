@@ -92,7 +92,7 @@ export default function ReceiveQrPanel() {
           background: `radial-gradient(circle, hsl(38 65% 56% / 0.12), transparent 70%)`,
         }} />
 
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] relative z-10" style={{ color: "hsl(38 65% 56% / 0.6)" }}>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] relative z-10" style={{ color: "hsl(38 65% 56% / 0.6)" }}>
           My Payment QR
         </p>
 
@@ -110,7 +110,7 @@ export default function ReceiveQrPanel() {
             key={amount}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="text-2xl font-black tabular-nums relative z-10"
+            className="text-2xl font-extrabold tabular-nums relative z-10"
             style={{ color: GOLD }}
           >
             {formatMoney(numAmount, currency)}
@@ -119,7 +119,7 @@ export default function ReceiveQrPanel() {
       </div>
 
       <div className="space-y-3">
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">
           Request amount (optional)
         </p>
 
@@ -154,7 +154,7 @@ export default function ReceiveQrPanel() {
             className="flex-1 rounded-xl h-12 text-lg font-bold bg-background border border-border px-4 outline-none text-foreground"
             style={{ fontSize: "16px" }}
           />
-          <div className="px-4 py-3 rounded-xl text-xs font-black whitespace-nowrap shrink-0" style={{ background: "hsl(38 65% 56% / 0.1)", color: GOLD }}>
+          <div className="px-4 py-3 rounded-xl text-xs font-bold whitespace-nowrap shrink-0" style={{ background: "hsl(38 65% 56% / 0.1)", color: GOLD }}>
             {currency}
           </div>
         </div>

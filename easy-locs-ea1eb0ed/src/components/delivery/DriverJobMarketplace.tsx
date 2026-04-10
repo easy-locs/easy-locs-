@@ -206,7 +206,7 @@ export default function DriverJobMarketplace({ className }: Props) {
                       )}
                     </div>
                     <div className="text-right shrink-0 ml-3">
-                      <p className="text-sm font-black" style={{ color: "hsl(var(--success))" }}>
+                      <p className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>
                         {(job.current_price || 0).toFixed(2)} AED
                       </p>
                       <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>

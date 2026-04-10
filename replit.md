@@ -46,6 +46,13 @@ App.tsx routes are organized into clean, labeled sections:
 8. **DEEP LINKS / QR** — Public deep links, QR resolvers
 9. **SEO / LEGAL** — Programmatic SEO pages, legal pages
 
+## Typography & Design System Standards (Amélioration Pass)
+- **font-black ELIMINATED**: All `font-black` removed from functional UI. Only retained in decorative watermarks (`EASY-LOCS` text with `select-none rotate`) and brand logo (`EasyLocsLogo.tsx`)
+- **Typography hierarchy**: Page titles = `text-lg font-bold`. Section headers = `text-[13px] font-bold`. Large numeric values = `font-extrabold tabular-nums`. Labels/buttons = `font-bold`
+- **tabular-nums enforced**: All monetary values, counts, stats, prices, ratings, and numeric displays use `tabular-nums` to prevent layout shift
+- **Spacing standard**: Section margin = `mb-4` (16px). Section header margin = `mb-2`. Carousel gap = `gap-2.5`. Card width in carousels = `w-[170px]`
+- **Files affected**: 60+ files across all 5 pillars (SmartHome, WalletHub, MeCommandCenter, Orbit, Radar), travel pages, delivery components, admin dashboards, settings, property cards, merchant pages, food/restaurant, cart, QR widgets
+
 ## UX Optimizations (Améliore Pass)
 - **Dashboard Quick Access**: ActiveCartBanner (resume cart in 1 tap), QuickAccessStrip (Reorder/Favorites/My Orders), time-aware smart actions
 - **Express Checkout**: 1-tap order from CartSheet (wallet pay, auto-resolve seller, idempotent), with fallback to full checkout

@@ -149,15 +149,15 @@ export default function MultiChannelDriverComms({ orgId, className }: { orgId: s
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2">
         <div className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))" }}>
-          <p className="text-lg font-black" style={{ color: "hsl(var(--hud-text))" }}>{totalSent}</p>
+          <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>{totalSent}</p>
           <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Envoyés</p>
         </div>
         <div className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))" }}>
-          <p className="text-lg font-black" style={{ color: "hsl(var(--success))" }}>{delivered}</p>
+          <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>{delivered}</p>
           <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Livrés</p>
         </div>
         <div className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))" }}>
-          <p className="text-lg font-black" style={{ color: "hsl(var(--destructive))" }}>{failed}</p>
+          <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--destructive))" }}>{failed}</p>
           <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Échoués</p>
         </div>
       </div>

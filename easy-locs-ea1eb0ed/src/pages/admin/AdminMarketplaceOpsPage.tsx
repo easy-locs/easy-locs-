@@ -11,7 +11,7 @@ function MetricCard({ label, value, sub, color }: { label: string; value: string
   return (
     <div className="rounded-2xl p-4 flex flex-col gap-1" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.12)" }}>
       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
-      <span className="text-xl font-black" style={{ color: color || "hsl(var(--foreground))" }}>{value}</span>
+      <span className="text-xl font-extrabold tabular-nums" style={{ color: color || "hsl(var(--foreground))" }}>{value}</span>
       {sub && <span className="text-[10px] text-muted-foreground">{sub}</span>}
     </div>
   );
@@ -75,7 +75,7 @@ export default function AdminMarketplaceOpsPage() {
         <div className="mt-3 grid grid-cols-3 gap-2">
           {categoryCounts.map((c: any) => (
             <div key={c.category} className="rounded-xl p-3 text-center" style={{ background: "hsl(var(--muted))" }}>
-              <span className="text-lg font-black text-foreground">{c.count}</span>
+              <span className="text-lg font-extrabold text-foreground tabular-nums">{c.count}</span>
               <p className="text-[10px] font-semibold text-muted-foreground capitalize mt-0.5">{c.category}</p>
             </div>
           ))}

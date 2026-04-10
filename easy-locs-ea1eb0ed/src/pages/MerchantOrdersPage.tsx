@@ -51,7 +51,7 @@ const OrderCard = memo(function OrderCard({ order, onAction }: { order: Merchant
           {new Date(order.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </span>
       </div>
-      <p className="text-lg font-black mb-2" style={{ color: "hsl(var(--foreground))" }}>
+      <p className="text-lg font-extrabold tabular-nums mb-2" style={{ color: "hsl(var(--foreground))" }}>
         {order.total_price?.toFixed(2)} {order.currency}
       </p>
       {order.notes && <p className="text-[11px] mb-2 truncate" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{order.notes}</p>}
