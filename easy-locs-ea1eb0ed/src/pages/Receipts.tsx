@@ -72,13 +72,13 @@ const Receipts = () => {
     return now.getDate() >= 25;
   };
 
-  const handleDownload = (receipt: DBDocument) => {
+  const handleDownload = async (receipt: DBDocument) => {
     const data = receipt.data_json as Record<string, unknown>;
     // Inject owner info if not present
     if (!data.landlordName && ownerName) data.landlordName = ownerName;
     if (!data.landlordAddress && ownerAddress) data.landlordAddress = ownerAddress;
     const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
-    const doc = generateFromTemplate(frRentReceipt, data, signatures, stampUrl || undefined, { skipTenantSignature: true });
+    const doc = await generateFromTemplate(frRentReceipt, data, signatures, stampUrl || undefined, { skipTenantSignature: true });
     downloadPDF(doc, `${receipt.title.replace(/\s/g, "_")}.pdf`);
   };
 

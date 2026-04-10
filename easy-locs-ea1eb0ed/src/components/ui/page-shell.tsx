@@ -46,7 +46,7 @@ const PageShell = ({
   emptyIcon: EmptyIcon = Inbox,
 }: PageShellProps) => {
   return (
-    <div className={cn(WIDTH_MAP[maxWidth], "mx-auto", className)}>
+    <div className={cn(WIDTH_MAP[maxWidth], "mx-auto page-fade-in", className)}>
       <div className="page-header flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h1>{title}</h1>

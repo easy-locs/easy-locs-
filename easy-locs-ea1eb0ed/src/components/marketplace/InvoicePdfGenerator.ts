@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import type jsPDF from "jspdf";
 import { toast } from "sonner";
 
 // ═══════════════════════════════════════════════════════════════
@@ -98,11 +98,12 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Blob | null
     return null;
   }
 
+  const { default: JsPDF } = await import("jspdf");
   const country = service?.country || provider?.country || booking?.country || "FR";
   const L = getLabels(country);
   const currency = booking.currency || "EUR";
 
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const doc = new JsPDF({ unit: "mm", format: "a4" });
   const PW = 210; // page width
   const M = 18;   // margin
   const W = PW - M * 2; // content width

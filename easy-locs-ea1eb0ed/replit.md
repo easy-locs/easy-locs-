@@ -69,3 +69,13 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - ExploreListingCard: removed raw category slug fallback, null-safe price display
 - Admin pages intentionally keep raw error messages for debugging
 - Pattern: `console.error("[Module]", err.message); toast.error("User-friendly message");`
+
+## Dead Code Audit (Latest)
+- Removed 8 dead hooks: useActivityRealtime, useAuditReport, useDeliveryCommandCenter, useFavoritesRealtime, usePaymentStatusSync, useRadarGeo, useRealtimeDispatchBoard, useSmartBanners
+- Removed 1 dead store: liveBadgeStore
+- Removed 9 dead components: CardCommerce, CardIdentity, CardMedia, CardSignals, StayCard, PayActionSheet, DeliveryHeatmapPanel, BubbleMediaBlock, ReplyPreview
+
+## Performance Optimization (Latest)
+- jsPDF (~300KB) converted from static to dynamic import in all 7 files (3 lib generators, 3 page files, 1 component)
+- All call sites updated to await the async `generateFromTemplate()` / `downloadFinancialPDF()`
+- Skeleton loaders upgraded to `skeleton-premium` CSS class (smooth directional shimmer vs basic pulse)

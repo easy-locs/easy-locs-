@@ -149,7 +149,7 @@ const ReportingDashboard = () => {
     );
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     const report: ReportSummary = {
       title: `${t("page.reporting.title")} ${year}`,
       period: String(year),
@@ -165,7 +165,7 @@ const ReportingDashboard = () => {
       expensesByCategory,
       monthlyBreakdown: monthlyData,
     };
-    downloadFinancialPDF(report);
+    await downloadFinancialPDF(report);
   };
 
   return (

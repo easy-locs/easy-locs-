@@ -6,7 +6,6 @@ import { fetchFurnitureData, createFurnitureItem, updateFurniturePhotoUrl, uploa
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Plus, Trash2, Download, Sofa, Camera, X, Image as ImageIcon, ChevronDown } from "lucide-react";
-import jsPDF from "jspdf";
 
 interface FurnitureItem {
   id: string; property_id: string; room_name: string; item_name: string;
@@ -200,6 +199,7 @@ const FurnitureInventory = () => {
     setUploading(true);
     try {
       const prop = properties.find(p => p.id === selectedProp);
+      const { default: jsPDF } = await import("jspdf");
       const doc = new jsPDF();
       const PAGE_W = 210;
       const MARGIN = 20;

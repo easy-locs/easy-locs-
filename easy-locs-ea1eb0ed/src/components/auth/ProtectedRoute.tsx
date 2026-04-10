@@ -32,15 +32,15 @@ const PRO_DASHBOARD_PREFIXES = [
 
 function InlineSkeleton() {
   return (
-    <div className="min-h-screen bg-background px-4 pt-6 animate-pulse">
-      <div className="h-6 w-32 rounded-lg bg-muted/40 mb-4" />
-      <div className="h-28 w-full rounded-2xl bg-muted/30 mb-4" />
+    <div className="min-h-screen bg-background px-4 pt-6">
+      <div className="h-6 w-32 rounded-lg skeleton-premium mb-4" />
+      <div className="h-28 w-full rounded-2xl skeleton-premium mb-4" />
       <div className="grid grid-cols-4 gap-2 mb-4">
-        {[...Array(4)].map((_, i) => <div key={i} className="h-10 rounded-xl bg-muted/20" />)}
+        {[...Array(4)].map((_, i) => <div key={i} className="h-10 rounded-xl skeleton-premium" />)}
       </div>
       <div className="space-y-3">
-        <div className="h-4 w-3/4 rounded bg-muted/25" />
-        <div className="h-4 w-1/2 rounded bg-muted/25" />
+        <div className="h-4 w-3/4 rounded skeleton-premium" />
+        <div className="h-4 w-1/2 rounded skeleton-premium" />
       </div>
     </div>
   );

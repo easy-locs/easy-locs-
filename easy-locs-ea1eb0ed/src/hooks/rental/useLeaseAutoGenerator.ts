@@ -67,7 +67,7 @@ export function useLeaseAutoGenerator(ctx: LeaseContext) {
 
     try {
       const signatures = landlordSignature ? { landlord: landlordSignature, tenant: "" } : undefined;
-      const doc = generateFromTemplate(template, leaseData, signatures);
+      const doc = await generateFromTemplate(template, leaseData, signatures);
       const leaseLabel = form.lease_type === "furnished" ? t("page.rental.lease_furnished") : form.lease_type === "commercial" ? t("page.rental.lease_commercial") : t("page.rental.lease_empty");
       const title = `${leaseLabel} — ${form.name}`;
       if (orgId) {

@@ -6,7 +6,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchPaymentNoticesData, insertPaymentNotices, sendNoticeEmail, fetchTenantEmail, regularizeRentCall, partialPayRentCall } from "@/repositories/payment-notices.repository";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Building, Globe, CreditCard, Banknote } from "lucide-react";
-import jsPDF from "jspdf";
 import { useI18n } from "@/lib/i18n";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
@@ -128,7 +127,8 @@ const PaymentNotices = () => {
     await load();
   };
 
-  const downloadNoticePDF = (notice: Notice) => {
+  const downloadNoticePDF = async (notice: Notice) => {
+    const { default: jsPDF } = await import("jspdf");
     const tenant = tenants.find(te => te.id === notice.tenant_id);
     const property = properties.find(p => p.id === notice.property_id);
     const doc = new jsPDF();

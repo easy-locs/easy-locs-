@@ -2,7 +2,7 @@
  * pdf-report — PDF financial report generator
  * PASS55 Block O: Reporting / Export
  */
-import jsPDF from "jspdf";
+import type jsPDF from "jspdf";
 
 export interface ReportSummary {
   title: string;
@@ -30,7 +30,8 @@ export interface PropertyReportRow {
   net: number;
 }
 
-export function generateFinancialPDF(report: ReportSummary): jsPDF {
+export async function generateFinancialPDF(report: ReportSummary): Promise<jsPDF> {
+  const { default: jsPDF } = await import("jspdf");
   const doc = new jsPDF();
   const pageW = doc.internal.pageSize.getWidth();
   let y = 20;
@@ -170,7 +171,7 @@ export function generateFinancialPDF(report: ReportSummary): jsPDF {
   return doc;
 }
 
-export function downloadFinancialPDF(report: ReportSummary) {
-  const doc = generateFinancialPDF(report);
+export async function downloadFinancialPDF(report: ReportSummary) {
+  const doc = await generateFinancialPDF(report);
   doc.save(`easy-locs-rapport-${report.period.replace(/\s/g, "-")}.pdf`);
 }
