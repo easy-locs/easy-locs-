@@ -78,7 +78,9 @@ export interface CanonicalUserProfile {
 // CURRENCY & FINANCE
 // ══════════════════════════════════════════════════
 
-export type CurrencyCode = "AED" | "USD" | "EUR" | "SAR" | "GBP";
+export type CurrencyCode =
+  | "AED" | "USD" | "EUR" | "SAR" | "GBP"
+  | "INR" | "MAD" | "EGP" | "TND" | "XOF" | "XAF" | "TRY";
 
 /**
  * CANONICAL WalletState — THE ONLY valid wallet balance model.

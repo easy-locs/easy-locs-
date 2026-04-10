@@ -47,7 +47,8 @@ export type PaymentStatus = "pending" | "paid" | "overdue" | "partial" | "cancel
 export type DocumentType =
   | "lease_contract" | "title_deed" | "identity" | "proof_of_income"
   | "insurance" | "inspection_report" | "rent_receipt" | "tax_document"
-  | "maintenance_report" | "photo_inventory" | "power_of_attorney" | "other";
+  | "maintenance_report" | "photo_inventory" | "power_of_attorney" | "other"
+  | "energy_certificate" | "gas_safety" | "lead_paint_disclosure";
 
 export type AreaUnit = "sqm" | "sqft" | "marla" | "kanal" | "hectare" | "acre";
 
