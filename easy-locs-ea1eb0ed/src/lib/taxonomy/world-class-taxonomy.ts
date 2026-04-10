@@ -603,7 +603,7 @@ const SUBCATEGORY_ALIASES: Record<string, string> = {
   paella: "spanish",
   bistro: "french",
   brasserie: "french",
-  patisserie: "french",
+  "patisserie-cuisine": "french",
   jollof: "african",
   "west african": "african",
   nigerian: "african",
