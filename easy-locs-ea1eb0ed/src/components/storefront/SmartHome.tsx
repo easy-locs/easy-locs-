@@ -292,7 +292,7 @@ function LiveStatsPulse() {
       value: "E2EE",
       icon: ShieldCheck,
       pulse: true,
-      color: "text-green-500",
+      color: "text-[hsl(38_65%_56%)]",
     },
   ], [t, live]);
 
