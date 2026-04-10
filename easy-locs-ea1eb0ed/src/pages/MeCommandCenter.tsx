@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
@@ -9,6 +9,9 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
+import MeBusinessSwitcher from "@/components/me/MeBusinessSwitcher";
+import MeProfileQuality from "@/components/me/MeProfileQuality";
+import MeBusinessKpis from "@/components/me/MeBusinessKpis";
 import {
   User, ChevronRight, LogOut,
   ShoppingBag, Heart, MapPin, CreditCard, Star, Bell, Settings2,
@@ -16,6 +19,8 @@ import {
   Building2, Users, Key, FileText, Wrench, CalendarDays, ClipboardList, Home, TrendingUp,
   Shield, Headphones, Scale, Truck,
   Plus, AlertTriangle, Package, Coins, PieChart, Zap,
+  Globe, Image, MessageCircle, Eye, FolderCheck, UserCog, Clock, Layers,
+  Briefcase, Camera, BadgeCheck, Phone, Mail, MapPinned,
 } from "lucide-react";
 
 interface MeItem {
@@ -30,7 +35,7 @@ interface MeItem {
 interface MeSection {
   id: string;
   title: string;
-  showIf?: "always" | "merchant" | "property" | "driver";
+  showIf: "always" | "merchant" | "property" | "driver";
   items: MeItem[];
   cta?: { label: string; path: string };
 }
@@ -44,30 +49,56 @@ const A = {
   cyan: "hsl(190 75% 46%)",
   slate: "hsl(220 15% 50%)",
   orange: "hsl(25 90% 52%)",
-  primary: "hsl(38 65% 56%)",
+  navy: "hsl(220 40% 18%)",
+  gold: "hsl(38 65% 56%)",
 };
 
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.035 } } };
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.03 } } };
 const fadeUp = {
   hidden: { opacity: 0, y: 6 },
   show: { opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.25, 0.1, 0.25, 1] as const } },
 };
+
+interface ShopData {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  banner_url: string | null;
+  description: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  shop_visibility: string;
+  is_verified: boolean;
+  active: boolean;
+  rating: number | null;
+  reviews_count: number | null;
+  views_count: number | null;
+  currency: string | null;
+  theme_color: string | null;
+}
 
 export default function MeCommandCenter() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const profile = useOrbitIdentity();
   const { t } = useI18n();
-
   const uid = user?.id ?? "";
 
-  const { data: shopCount } = useQuery({
-    queryKey: ["me-shop-count", uid],
+  const [activeShopId, setActiveShopId] = useState<string | null>(null);
+
+  const { data: shops } = useQuery<ShopData[]>({
+    queryKey: ["me-shops-full", uid],
     enabled: !!uid,
     staleTime: 60_000,
     queryFn: async () => {
-      const { count } = await typedQueries.storefrontPages.countByOwner(uid);
-      return count ?? 0;
+      const { data } = await typedQueries.storefrontPages.selectByOwner(uid);
+      return (data ?? []) as unknown as ShopData[];
     },
   });
 
@@ -115,92 +146,194 @@ export default function MeCommandCenter() {
     },
   });
 
-  const isMerchant = (shopCount ?? 0) > 0;
+  const shopCount = shops?.length ?? 0;
+  const isMerchant = shopCount > 0;
   const isPropertyManager = (propCount ?? 0) > 0;
   const hasDriverRole = isDriver ?? false;
+  const activeShop = useMemo(() => {
+    if (!shops || shops.length === 0) return null;
+    return shops.find(s => s.id === activeShopId) ?? shops[0];
+  }, [shops, activeShopId]);
 
-  const sections = useMemo<MeSection[]>(() => [
-    {
-      id: "essentials",
-      title: t("me.essentials"),
-      showIf: "always",
-      items: [
-        { icon: ShoppingBag, label: t("me.orders"), subtitle: t("me.orders_sub"), path: "/my-orders", accent: A.blue, badge: (quickStats?.activeOrders ?? 0) > 0 ? quickStats!.activeOrders : undefined },
-        { icon: Heart, label: t("me.favorites"), subtitle: t("me.favorites_sub"), path: "/favorites", accent: A.rose },
-        { icon: MapPin, label: t("me.addresses"), subtitle: t("me.addresses_sub"), path: "/me/address-book", accent: A.emerald },
-        { icon: Star, label: t("me.loyalty"), subtitle: t("me.loyalty_sub"), path: "/me/loyalty-history", accent: A.amber },
-        { icon: PieChart, label: t("me.spending"), subtitle: t("me.spending_sub"), path: "/me/spending-insights", accent: A.cyan },
-      ],
-    },
-    {
-      id: "wallet",
-      title: t("me.client_account"),
-      showIf: "always",
-      items: [
-        { icon: CreditCard, label: t("me.payment_methods"), subtitle: t("me.payment_methods_sub"), path: "/me/saved-cards", accent: A.emerald },
-        { icon: Receipt, label: t("me.receipts"), subtitle: t("me.receipts_sub"), path: "/me/order-receipts", accent: A.blue },
-      ],
-    },
-    {
-      id: "property",
-      title: t("me.property_mgmt"),
-      showIf: "property",
-      items: [
-        { icon: Building2, label: t("me.property_management"), subtitle: t("me.property_management_sub"), path: "/me/gestion-immo", accent: A.primary, badge: propCount },
-        { icon: Key, label: t("me.leases"), subtitle: t("me.leases_sub"), path: "/dashboard/leases", accent: A.emerald },
-        { icon: TrendingUp, label: t("me.rent_cockpit"), subtitle: t("me.rent_sub"), path: "/dashboard/rent-cockpit", accent: A.amber },
-        { icon: Wrench, label: t("me.maintenance"), subtitle: t("me.maintenance_sub"), path: "/dashboard/interventions", accent: A.slate },
-        { icon: FileText, label: t("me.documents"), subtitle: t("me.docs_sub"), path: "/dashboard/documents", accent: A.violet },
-        { icon: ClipboardList, label: t("me.inventory"), subtitle: t("me.inventory_sub"), path: "/dashboard/furniture-inventory", accent: A.cyan },
-        { icon: CalendarDays, label: t("me.calendar"), subtitle: t("me.calendar_sub"), path: "/dashboard/calendar", accent: A.rose },
-        { icon: Home, label: t("me.listings"), subtitle: t("me.listings_sub"), path: "/dashboard/real-estate", accent: A.emerald },
-      ],
-      cta: { label: t("me.add_property"), path: "/dashboard/property/add" },
-    },
-    {
-      id: "shop",
-      title: t("me.my_shop"),
-      showIf: "merchant",
-      items: [
-        { icon: Store, label: t("me.storefront"), subtitle: t("me.storefront_sub"), path: "/dashboard/my-shops", accent: A.primary, badge: shopCount },
-        { icon: Receipt, label: t("me.shop_orders"), subtitle: t("me.shop_orders_sub"), path: "/merchant/orders", accent: A.blue },
-        { icon: QrCode, label: t("me.pos"), subtitle: t("me.pos_sub"), path: "/pos", accent: A.emerald },
-        { icon: BarChart3, label: t("me.analytics"), subtitle: t("me.analytics_sub"), path: "/seller", accent: A.cyan },
-        { icon: Megaphone, label: t("me.promote"), subtitle: t("me.promote_sub"), path: "/seller/boost", accent: A.amber },
-      ],
-    },
-    {
-      id: "driver",
-      title: t("me.driver_hub"),
-      showIf: "driver",
-      items: [
-        { icon: Truck, label: t("me.driver_hub"), subtitle: t("me.driver_hub_sub"), path: "/driver/dashboard", accent: A.blue },
-        { icon: TrendingUp, label: t("me.analytics"), subtitle: t("me.analytics_sub"), path: "/driver/earnings", accent: A.emerald },
-        { icon: ClipboardList, label: t("me.orders"), subtitle: t("me.orders_sub"), path: "/driver/missions-board", accent: A.amber },
-      ],
-    },
-    {
-      id: "account",
-      title: t("me.account"),
-      showIf: "always",
-      items: [
-        { icon: User, label: t("me.personal_info"), subtitle: t("me.personal_sub"), path: "/settings/account", accent: A.blue },
-        { icon: Shield, label: t("me.security"), subtitle: t("me.security_sub"), path: "/settings/security", accent: A.emerald },
-        { icon: Bell, label: t("me.notifications"), subtitle: t("me.notifications_sub"), path: "/settings/notifications", accent: A.amber },
-        { icon: Settings2, label: t("me.preferences"), subtitle: t("me.preferences_sub"), path: "/settings/preferences", accent: A.violet },
-      ],
-    },
-    {
-      id: "support",
-      title: t("me.support"),
-      showIf: "always",
-      items: [
-        { icon: Headphones, label: t("me.help"), subtitle: t("me.help_sub"), path: "/settings/support", accent: A.violet },
-        { icon: AlertTriangle, label: t("me.disputes"), subtitle: t("me.disputes_sub"), path: "/support/tickets", accent: A.orange },
-        { icon: Scale, label: t("me.legal"), subtitle: t("me.legal_sub"), path: "/legal", accent: A.slate },
-      ],
-    },
-  ], [t, propCount, shopCount, quickStats]);
+  const handleSwitchShop = useCallback((id: string) => setActiveShopId(id), []);
+
+  const handleSignOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    toast.success(t("me.signed_out"));
+    navigate("/login");
+  }, [navigate, t]);
+
+  const roleLabel = useMemo(() => {
+    const roles: string[] = [];
+    if (isMerchant) roles.push(t("me.role_merchant"));
+    if (isPropertyManager) roles.push(t("me.role_property"));
+    if (hasDriverRole) roles.push(t("me.driver_hub"));
+    if (roles.length === 0) return t("me.role_personal");
+    if (roles.length >= 2) return t("me.role_pro");
+    return roles[0];
+  }, [isMerchant, isPropertyManager, hasDriverRole, t]);
+
+  const sections = useMemo<MeSection[]>(() => {
+    const merchantId = activeShop?.id ?? "";
+
+    return [
+      {
+        id: "identity",
+        title: t("me.business_identity"),
+        showIf: "merchant" as const,
+        items: [
+          { icon: Store, label: t("me.shop_identity"), subtitle: t("me.shop_identity_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/merchant/onboarding", accent: A.gold },
+          { icon: Layers, label: t("me.categories"), subtitle: t("me.categories_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/merchant/onboarding", accent: A.violet },
+          { icon: BadgeCheck, label: t("me.verification"), subtitle: t("me.verification_sub"), path: "/settings/business", accent: A.emerald },
+        ],
+      },
+      {
+        id: "contact",
+        title: t("me.contact_address"),
+        showIf: "merchant" as const,
+        items: [
+          { icon: Phone, label: t("me.contact_info"), subtitle: t("me.contact_info_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/settings/account", accent: A.blue },
+          { icon: MapPinned, label: t("me.locations"), subtitle: t("me.locations_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/me/address-book", accent: A.emerald },
+          { icon: Clock, label: t("me.hours"), subtitle: t("me.hours_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/settings/business", accent: A.amber },
+        ],
+      },
+      {
+        id: "activities",
+        title: t("me.activities_services"),
+        showIf: "merchant" as const,
+        items: [
+          { icon: ClipboardList, label: t("me.catalog"), subtitle: t("me.catalog_sub"), path: merchantId ? `/merchant/menu/${merchantId}` : "/merchant/onboarding", accent: A.gold },
+          { icon: Receipt, label: t("me.menu"), subtitle: t("me.menu_sub"), path: merchantId ? `/merchant/menu/${merchantId}` : "/merchant/onboarding", accent: A.blue },
+          { icon: CalendarDays, label: t("me.service_availability"), subtitle: t("me.service_availability_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/merchant/onboarding", accent: A.cyan },
+        ],
+      },
+      {
+        id: "media",
+        title: t("me.media_center"),
+        showIf: "merchant" as const,
+        items: [
+          { icon: Camera, label: t("me.gallery"), subtitle: t("me.gallery_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/settings/account", accent: A.rose },
+          { icon: Image, label: t("me.media_quality"), subtitle: t("me.media_quality_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/settings/account", accent: A.violet },
+        ],
+      },
+      {
+        id: "payments",
+        title: t("me.payments_wallet"),
+        showIf: "always" as const,
+        items: [
+          ...(isMerchant ? [
+            { icon: Briefcase, label: t("me.wallet_business"), subtitle: t("me.wallet_business_sub"), path: "/merchant/finance", accent: A.gold },
+            { icon: Coins, label: t("me.transactions"), subtitle: t("me.transactions_sub"), path: "/merchant/finance", accent: A.emerald },
+            { icon: QrCode, label: t("me.checkout"), subtitle: t("me.checkout_sub"), path: "/pos", accent: A.blue },
+          ] : []),
+          { icon: CreditCard, label: t("me.payment_methods"), subtitle: t("me.payment_methods_sub"), path: "/me/saved-cards", accent: A.emerald },
+          { icon: Receipt, label: t("me.receipts"), subtitle: t("me.receipts_sub"), path: "/me/order-receipts", accent: A.blue },
+        ],
+      },
+      {
+        id: "orbit",
+        title: t("me.orbit_comm"),
+        showIf: "merchant" as const,
+        items: [
+          { icon: MessageCircle, label: t("me.messaging"), subtitle: t("me.messaging_sub"), path: "/orbit", accent: A.blue },
+          { icon: Bell, label: t("me.notif_settings"), subtitle: t("me.notif_settings_sub"), path: "/settings/notifications", accent: A.amber },
+        ],
+      },
+      {
+        id: "performance",
+        title: t("me.performance"),
+        showIf: "merchant" as const,
+        items: [
+          { icon: BarChart3, label: t("me.dashboard_analytics"), subtitle: t("me.dashboard_analytics_sub"), path: "/seller", accent: A.cyan },
+          { icon: Star, label: t("me.reviews"), subtitle: t("me.reviews_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/seller", accent: A.amber },
+          { icon: Eye, label: t("me.visibility"), subtitle: t("me.visibility_sub"), path: "/seller/boost", accent: A.violet },
+          { icon: Megaphone, label: t("me.promote"), subtitle: t("me.promote_sub"), path: "/seller/boost", accent: A.gold },
+        ],
+      },
+      {
+        id: "essentials",
+        title: t("me.essentials"),
+        showIf: "always" as const,
+        items: [
+          { icon: ShoppingBag, label: t("me.orders"), subtitle: t("me.orders_sub"), path: "/my-orders", accent: A.blue, badge: (quickStats?.activeOrders ?? 0) > 0 ? quickStats!.activeOrders : undefined },
+          { icon: Heart, label: t("me.favorites"), subtitle: t("me.favorites_sub"), path: "/favorites", accent: A.rose },
+          { icon: MapPin, label: t("me.addresses"), subtitle: t("me.addresses_sub"), path: "/me/address-book", accent: A.emerald },
+          { icon: Star, label: t("me.loyalty"), subtitle: t("me.loyalty_sub"), path: "/me/loyalty-history", accent: A.amber },
+          { icon: PieChart, label: t("me.spending"), subtitle: t("me.spending_sub"), path: "/me/spending-insights", accent: A.cyan },
+        ],
+      },
+      {
+        id: "property",
+        title: t("me.property_mgmt"),
+        showIf: "property" as const,
+        items: [
+          { icon: Building2, label: t("me.property_management"), subtitle: t("me.property_management_sub"), path: "/me/gestion-immo", accent: A.gold, badge: propCount },
+          { icon: Key, label: t("me.leases"), subtitle: t("me.leases_sub"), path: "/dashboard/leases", accent: A.emerald },
+          { icon: TrendingUp, label: t("me.rent_cockpit"), subtitle: t("me.rent_sub"), path: "/dashboard/rent-cockpit", accent: A.amber },
+          { icon: Wrench, label: t("me.maintenance"), subtitle: t("me.maintenance_sub"), path: "/dashboard/interventions", accent: A.slate },
+          { icon: FileText, label: t("me.documents"), subtitle: t("me.docs_sub"), path: "/dashboard/documents", accent: A.violet },
+          { icon: ClipboardList, label: t("me.inventory"), subtitle: t("me.inventory_sub"), path: "/dashboard/furniture-inventory", accent: A.cyan },
+          { icon: CalendarDays, label: t("me.calendar"), subtitle: t("me.calendar_sub"), path: "/dashboard/calendar", accent: A.rose },
+          { icon: Home, label: t("me.listings"), subtitle: t("me.listings_sub"), path: "/dashboard/real-estate", accent: A.emerald },
+        ],
+        cta: { label: t("me.add_property"), path: "/dashboard/property/add" },
+      },
+      {
+        id: "driver",
+        title: t("me.driver_hub"),
+        showIf: "driver" as const,
+        items: [
+          { icon: Truck, label: t("me.driver_hub"), subtitle: t("me.driver_hub_sub"), path: "/driver/dashboard", accent: A.blue },
+          { icon: TrendingUp, label: t("me.analytics"), subtitle: t("me.analytics_sub"), path: "/driver/earnings", accent: A.emerald },
+          { icon: ClipboardList, label: t("me.orders"), subtitle: t("me.orders_sub"), path: "/driver/missions-board", accent: A.amber },
+        ],
+      },
+      {
+        id: "settings",
+        title: t("me.settings_control"),
+        showIf: "always" as const,
+        items: [
+          { icon: User, label: t("me.personal_info"), subtitle: t("me.personal_sub"), path: "/settings/account", accent: A.blue },
+          { icon: Globe, label: t("me.language_region"), subtitle: t("me.language_region_sub"), path: "/settings/preferences", accent: A.cyan },
+          { icon: Shield, label: t("me.security"), subtitle: t("me.security_sub"), path: "/settings/security", accent: A.emerald },
+          { icon: Settings2, label: t("me.preferences"), subtitle: t("me.preferences_sub"), path: "/settings/preferences", accent: A.violet },
+          ...(isMerchant ? [
+            { icon: Eye, label: t("me.publication"), subtitle: t("me.publication_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/settings/business", accent: A.gold },
+            { icon: UserCog, label: t("me.permissions"), subtitle: t("me.permissions_sub"), path: "/settings/security", accent: A.slate },
+          ] : []),
+        ],
+      },
+      {
+        id: "documents",
+        title: t("me.documents_compliance"),
+        showIf: "merchant" as const,
+        items: [
+          { icon: FolderCheck, label: t("me.business_docs"), subtitle: t("me.business_docs_sub"), path: "/settings/business", accent: A.blue },
+          { icon: BadgeCheck, label: t("me.kyc_kyb"), subtitle: t("me.kyc_kyb_sub"), path: "/settings/business", accent: A.emerald },
+          { icon: FileText, label: t("me.tax_docs"), subtitle: t("me.tax_docs_sub"), path: "/dashboard/documents", accent: A.violet },
+        ],
+      },
+      {
+        id: "team",
+        title: t("me.team_roles"),
+        showIf: "merchant" as const,
+        items: [
+          { icon: Users, label: t("me.staff"), subtitle: t("me.staff_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/settings/business", accent: A.blue },
+          { icon: UserCog, label: t("me.access_control"), subtitle: t("me.access_control_sub"), path: "/settings/security", accent: A.slate },
+        ],
+      },
+      {
+        id: "support",
+        title: t("me.support"),
+        showIf: "always" as const,
+        items: [
+          { icon: Headphones, label: t("me.help"), subtitle: t("me.help_sub"), path: "/settings/support", accent: A.violet },
+          { icon: AlertTriangle, label: t("me.disputes"), subtitle: t("me.disputes_sub"), path: "/support/tickets", accent: A.orange },
+          { icon: Scale, label: t("me.legal"), subtitle: t("me.legal_sub"), path: "/legal", accent: A.slate },
+        ],
+      },
+    ];
+  }, [t, propCount, quickStats, activeShop, isMerchant]);
 
   const visibleSections = useMemo(() => {
     return sections.filter((s) => {
@@ -216,22 +349,6 @@ export default function MeCommandCenter() {
   const displayName = profile?.displayName || user?.user_metadata?.display_name || t("me.user_fallback");
   const initials = displayName.split(/[\s@]/).map((w: string) => w[0]?.toUpperCase()).join("").slice(0, 2);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    toast.success(t("me.signed_out"));
-    navigate("/login");
-  };
-
-  const roleLabel = useMemo(() => {
-    const roles: string[] = [];
-    if (isMerchant) roles.push(t("me.role_merchant"));
-    if (isPropertyManager) roles.push(t("me.role_property"));
-    if (hasDriverRole) roles.push(t("me.driver_hub"));
-    if (roles.length === 0) return t("me.role_personal");
-    if (roles.length >= 2) return t("me.role_pro");
-    return roles[0];
-  }, [isMerchant, isPropertyManager, hasDriverRole, t]);
-
   return (
     <div className="app-mobile-page max-w-md mx-auto px-4 py-4">
       <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
@@ -241,13 +358,13 @@ export default function MeCommandCenter() {
           variants={fadeUp}
           onClick={() => navigate("/settings/account")}
           className="w-full flex items-center gap-4 p-4 rounded-3xl active:scale-[0.98] transition-all text-left relative overflow-hidden app-card"
-          style={{ background: "linear-gradient(135deg, hsl(220 40% 18% / 0.06), hsl(220 40% 18% / 0.02))", border: "1px solid hsl(38 65% 56% / 0.1)" }}
+          style={{ background: `linear-gradient(135deg, ${A.navy}0F, ${A.navy}05)`, border: `1px solid ${A.gold}1A` }}
         >
-          <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.04] pointer-events-none" style={{ background: "radial-gradient(circle, hsl(38 65% 56%) 0%, transparent 70%)" }} />
+          <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.04] pointer-events-none" style={{ background: `radial-gradient(circle, ${A.gold} 0%, transparent 70%)` }} />
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="w-14 h-14 rounded-2xl object-cover shrink-0" style={{ boxShadow: "0 0 0 2px hsl(38 65% 56% / 0.2)" }} />
+            <img src={avatarUrl} alt="" className="w-14 h-14 rounded-2xl object-cover shrink-0" style={{ boxShadow: `0 0 0 2px ${A.gold}33` }} />
           ) : (
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black shrink-0 shadow-lg" style={{ background: "hsl(220 40% 18%)", color: "hsl(0 0% 100%)" }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black shrink-0 shadow-lg" style={{ background: A.navy, color: "#fff" }}>
               {initials}
             </div>
           )}
@@ -258,20 +375,20 @@ export default function MeCommandCenter() {
             </p>
             <span
               className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-              style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)" }}
+              style={{ background: `${A.gold}1A`, color: A.gold }}
             >
               {roleLabel}
             </span>
           </div>
-          <ChevronRight className="w-5 h-5 shrink-0" style={{ color: "hsl(38 65% 56% / 0.4)" }} />
+          <ChevronRight className="w-5 h-5 shrink-0" style={{ color: `${A.gold}66` }} />
         </motion.button>
 
-        {quickStats && (
+        {quickStats && !isMerchant && (
           <motion.div variants={fadeUp} className="grid grid-cols-3 gap-2">
             <button
               onClick={() => navigate("/my-orders/active")}
               className="app-stat-chip text-center active:scale-[0.97] transition-transform"
-              style={{ background: "hsl(210 80% 52% / 0.05)", borderColor: "hsl(210 80% 52% / 0.1)" }}
+              style={{ background: `${A.blue}0D`, borderColor: `${A.blue}1A` }}
             >
               <Package className="w-5 h-5 mx-auto mb-1" style={{ color: A.blue }} />
               <p className="text-lg font-bold text-foreground">{quickStats.activeOrders}</p>
@@ -280,7 +397,7 @@ export default function MeCommandCenter() {
             <button
               onClick={() => navigate("/me/loyalty-history")}
               className="app-stat-chip text-center active:scale-[0.97] transition-transform"
-              style={{ background: "hsl(38 92% 50% / 0.05)", borderColor: "hsl(38 92% 50% / 0.1)" }}
+              style={{ background: `${A.amber}0D`, borderColor: `${A.amber}1A` }}
             >
               <Coins className="w-5 h-5 mx-auto mb-1" style={{ color: A.amber }} />
               <p className="text-lg font-bold text-foreground">{quickStats.loyaltyPoints}</p>
@@ -289,7 +406,7 @@ export default function MeCommandCenter() {
             <button
               onClick={() => navigate("/wallet")}
               className="app-stat-chip text-center active:scale-[0.97] transition-transform"
-              style={{ background: "hsl(152 60% 42% / 0.05)", borderColor: "hsl(152 60% 42% / 0.1)" }}
+              style={{ background: `${A.emerald}0D`, borderColor: `${A.emerald}1A` }}
             >
               <Zap className="w-5 h-5 mx-auto mb-1" style={{ color: A.emerald }} />
               <p className="text-lg font-bold text-foreground">{Number(quickStats.walletBalance ?? 0).toFixed(0)}</p>
@@ -298,21 +415,58 @@ export default function MeCommandCenter() {
           </motion.div>
         )}
 
+        {isMerchant && shops && shops.length > 1 && (
+          <motion.div variants={fadeUp}>
+            <MeBusinessSwitcher shops={shops} activeShopId={activeShopId ?? shops[0]?.id ?? null} onSwitch={handleSwitchShop} />
+          </motion.div>
+        )}
+
+        {isMerchant && activeShop && (
+          <motion.div variants={fadeUp}>
+            <MeProfileQuality
+              shopName={activeShop.name}
+              hasDescription={!!(activeShop.description && activeShop.description.length > 10)}
+              hasLogo={!!activeShop.logo_url}
+              hasCover={!!activeShop.banner_url}
+              hasPhone={!!activeShop.contact_phone}
+              hasEmail={!!activeShop.contact_email}
+              hasAddress={!!(activeShop.address && activeShop.city)}
+              hasCategories={false}
+              hasHours={false}
+              hasWallet={!!(quickStats?.walletBalance !== undefined)}
+              isVerified={activeShop.is_verified}
+            />
+          </motion.div>
+        )}
+
+        {isMerchant && activeShop && (
+          <motion.div variants={fadeUp}>
+            <MeBusinessKpis
+              views={Number(activeShop.views_count ?? 0)}
+              contacts={Number(activeShop.reviews_count ?? 0)}
+              orders={quickStats?.activeOrders ?? 0}
+              rating={Number(activeShop.rating ?? 0)}
+              revenue={quickStats?.walletBalance ?? 0}
+              currency={activeShop.currency ?? "EUR"}
+            />
+          </motion.div>
+        )}
+
         {!isMerchant && (
           <motion.button
             variants={fadeUp}
             onClick={() => navigate("/merchant/onboarding")}
             className="w-full flex items-center gap-3 p-3.5 app-card active:scale-[0.98] transition-transform text-left"
-            style={{ borderColor: "hsl(38 65% 56% / 0.12)", background: "hsl(38 65% 56% / 0.03)" }}
+            style={{ borderColor: `${A.gold}1F`, background: `${A.gold}08` }}
           >
-            <div className="app-list-row-icon shrink-0" style={{ background: "hsl(38 65% 56% / 0.08)" }}>
-              <Store style={{ color: "hsl(38 65% 56%)" }} />
+            <div className="app-list-row-icon shrink-0" style={{ background: `${A.gold}14` }}>
+              <Store style={{ color: A.gold }} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-bold text-foreground">{t("me.open_shop")}</p>
               <p className="text-[10px] text-muted-foreground">{t("me.open_shop_sub")}</p>
             </div>
-            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(38 65% 56% / 0.4)" }} />
+            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: `${A.gold}66` }} />
           </motion.button>
         )}
 
@@ -321,17 +475,28 @@ export default function MeCommandCenter() {
             variants={fadeUp}
             onClick={() => navigate("/dashboard/property/add")}
             className="w-full flex items-center gap-3 p-3.5 app-card active:scale-[0.98] transition-transform text-left"
-            style={{ borderColor: "hsl(210 80% 52% / 0.12)", background: "hsl(210 80% 52% / 0.03)" }}
+            style={{ borderColor: `${A.blue}1F`, background: `${A.blue}08` }}
           >
-            <div className="app-list-row-icon shrink-0" style={{ background: "hsl(210 80% 52% / 0.08)" }}>
+            <div className="app-list-row-icon shrink-0" style={{ background: `${A.blue}14` }}>
               <Building2 style={{ color: A.blue }} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-bold text-foreground">{t("me.add_first_property")}</p>
               <p className="text-[10px] text-muted-foreground">{t("me.add_first_property_sub")}</p>
             </div>
-            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(210 80% 52% / 0.4)" }} />
+            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: `${A.blue}66` }} />
           </motion.button>
+        )}
+
+        {isMerchant && (
+          <motion.div variants={fadeUp} className="pt-1 pb-0.5 px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-4 rounded-full" style={{ background: A.gold }} />
+              <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: A.navy }}>
+                {t("me.business_cockpit")}
+              </h2>
+            </div>
+          </motion.div>
         )}
 
         {visibleSections.map((section) => (
@@ -353,7 +518,7 @@ export default function MeCommandCenter() {
               )}
             </div>
 
-            {section.items.map((item, idx) => (
+            {section.items.map((item) => (
               <button
                 key={item.path + item.label}
                 onClick={() => navigate(item.path)}
@@ -361,7 +526,7 @@ export default function MeCommandCenter() {
               >
                 <div
                   className="app-list-row-icon shrink-0"
-                  style={{ background: item.accent.startsWith("hsl(var(") ? "hsl(38 65% 56% / 0.06)" : item.accent.replace(")", " / 0.06)") }}
+                  style={{ background: item.accent.replace(")", " / 0.06)") }}
                 >
                   <item.icon style={{ color: item.accent }} />
                 </div>
@@ -370,7 +535,7 @@ export default function MeCommandCenter() {
                   <span className="text-[10px] text-muted-foreground/60 leading-tight truncate block">{item.subtitle}</span>
                 </div>
                 {item.badge != null && Number(item.badge) > 0 && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0" style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)" }}>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0" style={{ background: `${A.gold}1A`, color: A.gold }}>
                     {item.badge}
                   </span>
                 )}

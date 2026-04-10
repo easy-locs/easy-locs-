@@ -134,6 +134,12 @@ export const typedQueries = {
         .select("id", { count: "exact", head: true })
         .eq("owner_user_id", userId) as unknown as PromiseLike<{ count: number | null; error: unknown }>;
     },
+    selectByOwner(userId: string) {
+      return untypedFrom("storefront_pages")
+        .select("id, name, slug, logo_url, banner_url, description, contact_email, contact_phone, address, city, country, latitude, longitude, shop_visibility, is_verified, active, rating, reviews_count, views_count, currency, theme_color")
+        .eq("owner_user_id", userId)
+        .order("created_at", { ascending: false }) as unknown as PromiseLike<{ data: Record<string, unknown>[] | null; error: unknown }>;
+    },
   },
 
   properties: {
