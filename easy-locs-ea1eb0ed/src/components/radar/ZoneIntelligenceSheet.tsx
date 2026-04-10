@@ -100,7 +100,7 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
     if (user?.id) {
       openOrbitFromRadar(entity, user.id, navigate);
     } else {
-      navigate("/auth");
+      navigate("/login");
     }
   };
 

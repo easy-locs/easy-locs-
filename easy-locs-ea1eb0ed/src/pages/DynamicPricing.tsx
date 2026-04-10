@@ -134,7 +134,7 @@ const DynamicPricing = () => {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => navigate("/dashboard/channel-manager")}>
+              <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => navigate("/dashboard/channels")}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <h1 className="text-2xl font-bold text-foreground">Dynamic Pricing</h1>

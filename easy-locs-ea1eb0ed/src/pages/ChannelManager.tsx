@@ -114,7 +114,7 @@ const ChannelManager = () => {
     setCancellingId(res.id);
     try {
       await cancelRes(res, org!.id);
-      if (user) await notifyOwner(user.id, "🚫 Réservation annulée", `${res.guest_name} — ${res.check_in} → ${res.check_out}`, "/dashboard/channel-manager");
+      if (user) await notifyOwner(user.id, "🚫 Réservation annulée", `${res.guest_name} — ${res.check_in} → ${res.check_out}`, "/dashboard/channels");
       toast.success("Réservation annulée et e-mail envoyé");
       invalidateAll();
     } catch (err: any) { console.error("[ChannelManager]", err.message); toast.error("Something went wrong. Please try again."); }
@@ -210,10 +210,10 @@ const ChannelManager = () => {
             <p className="text-muted-foreground text-sm">Calendrier unifié, synchronisation OTA & gestion des réservations</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/seasonal")}>
+            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/seasonal-rentals")}>
               <ArrowRight className="h-4 w-4 mr-1" />Locations saisonnières
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/pricing")}>
+            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/dynamic-pricing")}>
               <TrendingUp className="h-4 w-4 mr-1" />Dynamic Pricing
             </Button>
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
@@ -265,7 +265,7 @@ const ChannelManager = () => {
               <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View reservations →</p>
             </CardContent>
           </Card>
-          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/seasonal")}>
+          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/seasonal-rentals")}>
             <CardContent className="pt-4 pb-3">
                <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenue</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{totalRevenue.toLocaleString()} €</p>
@@ -279,7 +279,7 @@ const ChannelManager = () => {
               <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View calendar →</p>
             </CardContent>
           </Card>
-          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/pricing")}>
+          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/dynamic-pricing")}>
             <CardContent className="pt-4 pb-3">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Price rules</p>
               <p className="text-xl sm:text-2xl font-bold text-accent tabular-nums mt-1">{pricingRules.length}</p>

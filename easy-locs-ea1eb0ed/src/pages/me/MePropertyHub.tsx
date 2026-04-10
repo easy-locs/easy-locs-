@@ -124,7 +124,7 @@ export default function MePropertyHub() {
 
               <div className="flex gap-2">
                 <QuickAction icon={Zap} label="Appels de loyer" onClick={() => navigate("/dashboard/rent-cockpit")} color="hsl(270 60% 55%)" />
-                <QuickAction icon={Users} label="Locataires" onClick={() => navigate("/dashboard/rental?tab=tenants")} color="hsl(210 80% 52%)" />
+                <QuickAction icon={Users} label="Locataires" onClick={() => navigate("/dashboard/rental-management?tab=tenants")} color="hsl(210 80% 52%)" />
                 <QuickAction icon={Key} label="Baux" onClick={() => navigate("/dashboard/leases")} color="hsl(152 60% 42%)" />
               </div>
 

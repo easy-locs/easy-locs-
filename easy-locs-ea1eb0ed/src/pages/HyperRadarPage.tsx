@@ -377,7 +377,7 @@ export default function HyperRadarPage() {
   }, []);
 
   const handleMessageItem = useCallback(async (item: RadarResultItem) => {
-    if (!user?.id) { navigate("/auth"); return; }
+    if (!user?.id) { navigate("/login"); return; }
     haptic("light");
     smartNavigate("/orbit", "contact_entity", {
       entityId: item.id,
@@ -395,7 +395,7 @@ export default function HyperRadarPage() {
   }, []);
 
   const handleMessageEntity = useCallback(async (entity: RadarGeoEntity) => {
-    if (!user?.id) { navigate("/auth"); return; }
+    if (!user?.id) { navigate("/login"); return; }
     haptic("light");
     smartNavigate("/orbit", "contact_entity", {
       entityId: entity.id,

@@ -22,7 +22,7 @@ export function generateAlerts(state: AlertInput): OrbitAlert[] {
       id: "pending-bookings", type: "action", priority: 1, icon: "📩",
       title: "Pending bookings",
       message: `${state.pendingBookings} booking${state.pendingBookings > 1 ? "s" : ""} to confirm`,
-      link: "/dashboard/seasonal", timestamp: now,
+      link: "/dashboard/seasonal-rentals", timestamp: now,
     });
 
   if (state.newLeads > 0)

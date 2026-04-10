@@ -208,7 +208,7 @@ export function generateSuggestions(context: {
     });
   }
 
-  if (!context.hasWallet) {
+  if (!context.hasWallet && context.hasShop) {
     suggestions.push({
       id: "setup-wallet",
       type: "feature",
@@ -220,19 +220,7 @@ export function generateSuggestions(context: {
     });
   }
 
-  if (!context.profileComplete) {
-    suggestions.push({
-      id: "complete-profile",
-      type: "profile",
-      titleKey: "smart.suggest_profile",
-      descKey: "smart.suggest_profile_desc",
-      route: "/settings/account",
-      priority: 85,
-      dismissed: false,
-    });
-  }
-
-  if (!context.hasOrbit) {
+  if (!context.hasOrbit && context.hasShop) {
     suggestions.push({
       id: "try-orbit",
       type: "engagement",

@@ -27,7 +27,7 @@ export function RideCompletedCard({ jobId, fare, currency = "AED" }: Props) {
         )}
       </div>
       <div className="flex gap-2">
-        <Button variant="outline" className="flex-1 rounded-xl h-11" onClick={() => navigate(`/mobility/receipt/${jobId}`)}>
+        <Button variant="outline" className="flex-1 rounded-xl h-11" onClick={() => navigate(`/order/receipt/${jobId}`)}>
           {tc("ride.receipt")}
         </Button>
         <Button className="flex-1 rounded-xl h-11" onClick={() => navigate("/mobility/taxi")}>

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 const Tenants = () => {
   const navigate = useNavigate();
   useEffect(() => {
-    navigate("/dashboard/rental?tab=tenants", { replace: true });
+    navigate("/dashboard/rental-management?tab=tenants", { replace: true });
   }, [navigate]);
   return null;
 };

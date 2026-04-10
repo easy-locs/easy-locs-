@@ -6,7 +6,7 @@ const LINKS = [
   { label: "Add Property", icon: Plus, to: "/dashboard/add-property", accent: true },
   { label: "Add Service", icon: Briefcase, to: "/dashboard/activities" },
   { label: "Marketplace", icon: Store, to: "/explore" },
-  { label: "Seasonal Rentals", icon: Sun, to: "/dashboard/seasonal" },
+  { label: "Seasonal Rentals", icon: Sun, to: "/dashboard/seasonal-rentals" },
   { label: "Bookings", icon: CalendarCheck, to: "/my-orders" },
   { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
   { label: "Pricing", icon: CreditCard, to: "/#pricing" },
