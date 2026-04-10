@@ -75,8 +75,8 @@ export default function MobilityTaxiPage() {
   const inFlow = step !== "search";
 
   return (
-    <div className="flex flex-col bg-background" style={{ minHeight: "100dvh", paddingTop: "max(8px, env(safe-area-inset-top, 0px))" }}>
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0">
+    <div className="min-h-[100dvh] bg-background pb-[120px]" style={{ paddingTop: "max(8px, env(safe-area-inset-top, 0px))" }}>
+      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm flex items-center gap-3 px-4 pt-4 pb-3">
         <button onClick={() => inFlow ? reset() : (window.history.length > 1 ? navigate(-1) : navigate("/"))} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60">
           <ArrowLeft className="w-4.5 h-4.5" />
         </button>
@@ -89,7 +89,7 @@ export default function MobilityTaxiPage() {
         </span>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4" style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom, 0px) + 24px)" }}>
+      <div className="px-4">
         {inFlow ? (
           <div className="space-y-4">
             <TaxiStepIndicator step={step} />
