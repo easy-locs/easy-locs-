@@ -69,7 +69,7 @@ export function TaxiPreviewScreen() {
       setStep("requesting");
       toast.success("Taxi requested!");
     } catch (err: any) {
-      toast.error(err.message ?? "Failed to request ride");
+      toast.error("Failed to request ride");
     } finally {
       setSubmitting(false);
     }

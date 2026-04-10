@@ -55,7 +55,8 @@ const Billing = () => {
       const url = await createCheckoutSession(priceId);
       if (url) window.location.href = url;
     } catch (err: any) {
-      toast({ title: t("page.common.error") || "Error", description: err.message, variant: "destructive" });
+      console.error("[Billing]", err.message);
+      toast({ title: t("page.common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
       setLoadingPriceId(null);
     }
   };
@@ -66,7 +67,8 @@ const Billing = () => {
       const url = await openCustomerPortal();
       if (url) window.location.href = url;
     } catch (err: any) {
-      toast({ title: t("page.common.error") || "Error", description: err.message, variant: "destructive" });
+      console.error("[Billing]", err.message);
+      toast({ title: t("page.common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setPortalLoading(false);
     }

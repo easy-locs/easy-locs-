@@ -31,7 +31,8 @@ export function useOrbitMessageActions(params: {
       onAfterChangeRef.current?.();
       toast.success("Message updated");
     } catch (err: any) {
-      toast.error(err?.message || "Failed to update message");
+      console.error("[Orbit]", err?.message);
+      toast.error("Failed to update message. Please try again.");
     } finally {
       setBusyMessageId(null);
     }
@@ -49,7 +50,8 @@ export function useOrbitMessageActions(params: {
       onAfterChangeRef.current?.();
       toast.success("Message deleted");
     } catch (err: any) {
-      toast.error(err?.message || "Failed to delete message");
+      console.error("[Orbit]", err?.message);
+      toast.error("Failed to delete message. Please try again.");
     } finally {
       setBusyMessageId(null);
     }
@@ -84,7 +86,8 @@ export function useOrbitMessageActions(params: {
       onAfterChangeRef.current?.();
       toast.success(pin ? "Message pinned" : "Message unpinned");
     } catch (err: any) {
-      toast.error(err?.message || "Failed to update pin");
+      console.error("[Orbit]", err?.message);
+      toast.error("Failed to update pin. Please try again.");
     } finally {
       setBusyMessageId(null);
     }

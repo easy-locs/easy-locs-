@@ -125,7 +125,7 @@ export default function ShopOrderPage() {
       // Navigate to tracking
       navigate(`/qr/track?shop=${shop.slug || shop.id}&order=${order.id}`);
     } catch (e: any) {
-      toast.error(e?.message || "Failed to place order");
+      toast.error("Failed to place order");
     } finally {
       setPlacing(false);
     }

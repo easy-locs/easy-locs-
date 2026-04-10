@@ -46,7 +46,7 @@ const RealEstatePhotoUploader = ({ listingId, orgId, photos, onPhotosChange, mai
       try {
         await photoRepo.uploadPropertyPhoto(path, file);
         newUrls.push(photoRepo.getPublicUrl(path));
-      } catch (err: any) { toast({ title: "Upload error", description: err.message, variant: "destructive" }); continue; }
+      } catch (err: any) { toast({ title: "Upload error", description: "Something went wrong. Please try again.", variant: "destructive" }); continue; }
     }
 
     const updated = [...photos, ...newUrls];

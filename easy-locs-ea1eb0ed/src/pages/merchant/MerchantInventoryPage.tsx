@@ -25,7 +25,7 @@ export default function MerchantInventoryPage() {
       });
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Could not update stock");
+      toast.error("Could not update stock");
     } finally {
       setSavingId(null);
     }

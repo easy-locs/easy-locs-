@@ -31,7 +31,7 @@ export function useMarketplaceMutations(
       await insertProvider({ ...data, slug, user_id: user!.id, org_id: resolvedOrgId });
     },
     onSuccess: () => { toast.success("Provider profile created!"); qc.invalidateQueries({ queryKey: ["my_marketplace_provider"] }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => { console.error("[Marketplace]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const updateProvider = useMutation({
@@ -39,7 +39,7 @@ export function useMarketplaceMutations(
       await updateProviderRepo(myProvider!.id, data);
     },
     onSuccess: () => { toast.success("Profile updated!"); qc.invalidateQueries({ queryKey: ["my_marketplace_provider"] }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => { console.error("[Marketplace]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const createService = useMutation({
@@ -54,7 +54,7 @@ export function useMarketplaceMutations(
       if (created?.id && created.lat && created.lng) assignZoneToService(created.id, created.lat, created.lng).catch(() => {});
     },
     onSuccess: () => { toast.success("Service created!"); qc.invalidateQueries({ queryKey: ["my_marketplace_services"] }); qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => { console.error("[Marketplace]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const updateService = useMutation({
@@ -62,7 +62,7 @@ export function useMarketplaceMutations(
       await updateServiceRepo(id, data as any);
     },
     onSuccess: () => { toast.success("Service mis à jour !"); qc.invalidateQueries({ queryKey: ["my_marketplace_services"] }); qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => { console.error("[Marketplace]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const deleteService = useMutation({
@@ -104,7 +104,7 @@ export function useMarketplaceMutations(
       }
     },
     onSuccess: () => { toast.success("Demande de réservation envoyée !"); qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => { console.error("[Marketplace]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   return { createProvider, updateProvider, createService, updateService, deleteService, submitBooking };

@@ -65,7 +65,7 @@ const Vault = () => {
           filename: file.name, file_url: path, size: file.size,
         });
       } catch (err: any) {
-        toast({ title: t("page.vault.upload_error"), description: err.message, variant: "destructive" });
+        toast({ title: t("page.vault.upload_error"), description: "Something went wrong. Please try again.", variant: "destructive" });
         continue;
       }
     }
@@ -95,7 +95,7 @@ const Vault = () => {
       toast({ title: t("page.vault.deleted") });
       await loadFiles();
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 

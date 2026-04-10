@@ -28,7 +28,7 @@ export default function StripeCheckoutHandlerPage() {
         toast.success("Card payment confirmed");
         navigate(`/tracking/${orderId}`);
       } catch (e: any) {
-        toast.error(e.message || "Could not confirm payment");
+        toast.error("Could not confirm payment");
         navigate("/checkout");
       }
     };

@@ -52,7 +52,7 @@ export default function BookingDocumentsPanel({
       toast.success(`${files.length} document(s) uploaded`);
       onUpdate();
     } catch (err: any) {
-      toast.error("Upload failed: " + err.message);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setUploading(false);
       // Reset input

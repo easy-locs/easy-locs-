@@ -104,7 +104,7 @@ export default function MerchantClaimPage() {
         status: "attempted",
       });
     } catch (err: any) {
-      toast.error(err.message || "Failed to send code");
+      toast.error("Failed to send code");
     }
     setSendingOtp(false);
   };
@@ -143,7 +143,7 @@ export default function MerchantClaimPage() {
       toast.success("Verified! ✅");
       setStep("confirm");
     } catch (err: any) {
-      toast.error(err.message || "Verification failed");
+      toast.error("Verification failed");
     }
     setVerifying(false);
   };
@@ -171,7 +171,7 @@ export default function MerchantClaimPage() {
       setStep("done");
       toast.success("Restaurant claimed successfully! 🎉");
     } catch (err: any) {
-      toast.error(err.message || "Failed to claim");
+      toast.error("Failed to claim");
     }
     setClaiming(false);
   };

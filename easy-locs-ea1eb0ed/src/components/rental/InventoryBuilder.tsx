@@ -223,7 +223,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
         )
       );
     } catch (error: any) {
-      toast({ title: t("page.inventory.upload_error"), description: error.message, variant: "destructive" });
+      toast({ title: t("page.inventory.upload_error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 
@@ -276,7 +276,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       setReportStatus(newStatus);
       toast({ title: finalize ? t("page.inventory.finalized_toast") : t("page.inventory.draft_saved") });
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -311,7 +311,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       downloadPDF(doc, `etat_des_lieux_${typeStr}_${reportDate}.pdf`);
       toast({ title: t("page.inventory.pdf_downloaded") });
     } catch (err: any) {
-      toast({ title: t("page.inventory.pdf_error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.inventory.pdf_error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setGeneratingPdf(false);
     }
@@ -348,7 +348,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       downloadPDF(pdfDoc, `etat_des_lieux_${typeStr}_${reportDate}.pdf`);
       toast({ title: t("page.inventory.pdf_downloaded") });
     } catch (err: any) {
-      toast({ title: t("page.inventory.pdf_error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.inventory.pdf_error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     }
 
     if (tenantId && orgId) {

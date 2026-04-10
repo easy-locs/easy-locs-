@@ -72,7 +72,7 @@ export default function PaymentConfirmPage() {
         navigate("/wallet", { replace: true });
       }, 1800);
     } catch (err: any) {
-      toast.error(err.message || "Payment failed");
+      toast.error("Payment failed");
     } finally {
       setSending(false);
     }

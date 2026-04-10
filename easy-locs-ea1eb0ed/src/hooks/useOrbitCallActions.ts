@@ -30,7 +30,8 @@ export function useOrbitCallActions(params: {
       await acceptCallSession(p.activeCall.sessionId);
       p.patchCall({ uiState: "active", answeredAt: new Date().toISOString() });
     } catch (err: any) {
-      toast.error(err?.message || "Failed to accept call");
+      console.error("[Call]", err?.message);
+      toast.error("Failed to accept call. Please try again.");
       p.endCall("failed");
     } finally {
       setBusy(false);
@@ -45,7 +46,8 @@ export function useOrbitCallActions(params: {
       await declineCallSession(p.activeCall.sessionId);
       p.endCall("ended");
     } catch (err: any) {
-      toast.error(err?.message || "Failed to decline call");
+      console.error("[Call]", err?.message);
+      toast.error("Failed to decline call. Please try again.");
       p.endCall("failed");
     } finally {
       setBusy(false);
@@ -60,7 +62,8 @@ export function useOrbitCallActions(params: {
       await hangupCallSession(p.activeCall.sessionId, reason);
       p.endCall("ended");
     } catch (err: any) {
-      toast.error(err?.message || "Failed to end call");
+      console.error("[Call]", err?.message);
+      toast.error("Failed to end call. Please try again.");
       p.endCall("failed");
     } finally {
       setBusy(false);
@@ -112,7 +115,8 @@ export function useOrbitCallActions(params: {
       p.setUiState("outgoing");
       return session;
     } catch (err: any) {
-      toast.error(err?.message || "Failed to start call");
+      console.error("[Call]", err?.message);
+      toast.error("Failed to start call. Please try again.");
       return null;
     } finally {
       setBusy(false);

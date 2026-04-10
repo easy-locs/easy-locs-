@@ -356,7 +356,8 @@ const CreateListing = () => {
       toast({ title: "✅ Listing published!", description: isSale ? "Your listing is live for 30 days." : "Your listing is live until you deactivate it." });
       navigate("/dashboard/my-shop");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      console.error("[Listing]", err.message);
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setSaving(false);
     }

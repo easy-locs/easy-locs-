@@ -91,7 +91,8 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
 
           if (result.ok) onSent({ id: result.messageId });
         } catch (e: any) {
-          toast.error(e.message || "Failed to send voice message");
+          console.error("[Voice]", e.message);
+          toast.error("Failed to send voice message. Please try again.");
         }
         setUploading(false);
         setRecording(false);

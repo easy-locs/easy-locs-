@@ -79,7 +79,7 @@ export default function ProductMediaUploader({
         onImagesChange([...images, ...newUrls]);
         toast.success(`${newUrls.length} photo${newUrls.length > 1 ? "s" : ""} uploaded`);
       } catch (err: any) {
-        toast.error(err.message || "Upload failed");
+        toast.error("Upload failed");
       } finally {
         setUploading(false);
         if (imageInputRef.current) imageInputRef.current.value = "";
@@ -106,7 +106,7 @@ export default function ProductMediaUploader({
           toast.success("Video uploaded");
         }
       } catch (err: any) {
-        toast.error(err.message || "Video upload failed");
+        toast.error("Video upload failed");
       } finally {
         setUploadingVideo(false);
         if (videoInputRef.current) videoInputRef.current.value = "";

@@ -82,7 +82,7 @@ export default function BundleManager({ shopId, mode = "manage", onAddBundle }: 
       qc.invalidateQueries({ queryKey: ["shop-bundles", shopId] });
       toast.success("Bundle created!");
     } catch (e: any) {
-      toast.error(e.message || "Failed to create bundle");
+      toast.error("Failed to create bundle");
     } finally {
       setCreating(false);
     }

@@ -55,7 +55,7 @@ export function TaxiTrackingScreen() {
       toast.success("Ride cancelled");
       useTaxiFlowStore.getState().reset();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 

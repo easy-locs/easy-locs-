@@ -334,7 +334,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     }).catch((e: any) => ({ error: e })) as any;
 
     if (error) {
-      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
       setSaving(false);
       return;
     }

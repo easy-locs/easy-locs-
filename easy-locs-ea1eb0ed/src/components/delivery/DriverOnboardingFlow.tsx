@@ -78,7 +78,7 @@ export default function DriverOnboardingFlow({ onComplete, className }: Props) {
       toast.success("Inscription livreur terminée !");
       onComplete?.();
     } catch (err: any) {
-      toast.error(err.message || "Erreur lors de l'inscription");
+      toast.error("Erreur lors de l'inscription");
     } finally {
       setSubmitting(false);
     }

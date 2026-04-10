@@ -32,7 +32,7 @@ const ServicePhotoManager = ({ photos, onChange, orgId, allowVideo = false }: Pr
         const url = await uploadConciergeFile("property-photos", path, file);
         newUrls.push(url);
       } catch (err: any) {
-        toast.error(`Upload failed: ${err.message}`);
+        toast.error("Something went wrong. Please try again.");
       }
     }
     onChange([...photos, ...newUrls]);

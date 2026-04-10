@@ -41,7 +41,8 @@ export default function SmartEntityActions({
         navigate(action.route);
       }
     } catch (err: any) {
-      toast.error(err?.message || "Action failed");
+      console.error("[SmartAction]", err?.message);
+      toast.error("Action failed. Please try again.");
     } finally {
       setLoading(null);
     }

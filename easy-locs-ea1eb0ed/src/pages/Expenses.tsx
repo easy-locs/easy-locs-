@@ -72,7 +72,7 @@ const Expenses = () => {
       setForm({ property_id: "", category: "other", label: "", amount: 0, expense_date: new Date().toISOString().slice(0, 10), supplier: "", notes: "" });
       await load();
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 

@@ -111,7 +111,7 @@ export function BoostCampaignCreator({ onClose, onCreated }: Props) {
       toast({ title: "Campaign created!" });
       onCreated();
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setSaving(false);
     }

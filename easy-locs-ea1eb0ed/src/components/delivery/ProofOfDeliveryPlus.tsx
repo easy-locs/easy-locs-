@@ -180,7 +180,7 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
       }
     } catch (err: any) {
       setCapturing(null);
-      toast.error(`Erreur GPS : ${err?.message || "Unavailable"}`);
+      toast.error("GPS error. Please try again.");
     }
   }, []);
 
@@ -221,7 +221,7 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
       toast.success("✅ Preuve de livraison certifiée et enregistrée !");
       onProofSubmitted?.();
     } catch (err: any) {
-      toast.error(err.message || "Erreur d'envoi de la preuve");
+      toast.error("Erreur d'envoi de la preuve");
     } finally {
       setSubmitting(false);
     }

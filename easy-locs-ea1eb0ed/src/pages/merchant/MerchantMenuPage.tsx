@@ -31,7 +31,7 @@ export default function MerchantMenuPage() {
       toast.success("Availability updated");
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Update failed");
+      toast.error("Update failed");
     } finally {
       setSavingId(null);
     }

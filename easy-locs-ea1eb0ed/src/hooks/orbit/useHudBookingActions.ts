@@ -50,7 +50,8 @@ export function useHudBookingActions(
       onThreadUpdateRef.current(currentThread.id, { bookingStatus: newStatus });
       toast.success(t(`orbit.booking_${action}`) || action);
     } catch (e: any) {
-      toast.error(e?.message || "Booking action failed");
+      console.error("[Orbit]", e?.message);
+      toast.error("Something went wrong. Please try again.");
     }
   }, [orgId, userId, t, myOrbitId]);
 

@@ -108,7 +108,8 @@ export default function SettingsPreferences() {
                 a.click(); URL.revokeObjectURL(url);
                 toast({ title: t("page.settings.export_done") || "Data exported" });
               } catch (err: any) {
-                toast({ title: "Export failed", description: err.message, variant: "destructive" });
+                console.error("[Settings]", err.message);
+                toast({ title: "Export failed", description: "Something went wrong. Please try again.", variant: "destructive" });
               }
             }} className="w-full text-left px-4 py-3 rounded-xl border border-border hover:bg-muted/50 transition-colors">
               <p className="text-sm font-medium">{t("page.settings.export_data") || "Export my data"}</p>
@@ -122,7 +123,8 @@ export default function SettingsPreferences() {
                 toast({ title: t("page.settings.delete_requested") || "Deletion requested" });
                 await settingsRepo.requestAccountDeletion(user.id, user.email || "");
               } catch (err: any) {
-                toast({ title: "Request failed", description: err.message, variant: "destructive" });
+                console.error("[Settings]", err.message);
+                toast({ title: "Request failed", description: "Something went wrong. Please try again.", variant: "destructive" });
               }
             }} className="w-full text-left px-4 py-3 rounded-xl border border-destructive/30 hover:bg-destructive/5 transition-colors">
               <p className="text-sm font-medium text-destructive">{t("page.settings.delete_account") || "Delete account"}</p>

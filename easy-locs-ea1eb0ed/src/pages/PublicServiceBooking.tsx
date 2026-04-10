@@ -287,7 +287,8 @@ const PublicServiceBooking = () => {
       setSuccess(true);
       toast.success(t("mp.booking_submitted") || "Booking submitted!");
     } catch (err: any) {
-      toast.error(err.message || t("mp.booking_failed") || "Booking failed");
+      console.error("[Booking]", err.message);
+      toast.error(t("mp.booking_failed") || "Booking failed. Please try again.");
     } finally {
       setSubmitting(false);
     }

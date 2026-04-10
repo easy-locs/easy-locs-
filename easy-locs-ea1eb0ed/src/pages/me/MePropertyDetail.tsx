@@ -80,7 +80,8 @@ export default function MePropertyDetail() {
       await rentalRepo.insertRentCalls(newCalls);
       toast({ title: `${newCalls.length} appel(s) généré(s)` });
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      console.error("[Property]", err.message);
+      toast({ title: "Erreur", description: "Une erreur est survenue. Veuillez réessayer.", variant: "destructive" });
     }
   }, [orgId, propertyId, propTenants, today, toast]);
 

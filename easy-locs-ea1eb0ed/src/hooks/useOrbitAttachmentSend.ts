@@ -97,7 +97,7 @@ export function useOrbitAttachmentSend(params: {
     } catch (err: any) {
       reportHealth("orbit", "degraded", undefined, err?.message);
       endFlow(flow, "failed");
-      toast.error(err?.message || "Attachment send failed");
+      toast.error("Failed to send attachment. Please try again.");
     } finally {
       setSendingAttachments(false);
     }

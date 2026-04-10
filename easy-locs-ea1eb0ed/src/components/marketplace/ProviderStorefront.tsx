@@ -78,7 +78,7 @@ export default function ProviderStorefront() {
       toast.success(t("mp.booking_submitted") || "Booking request sent!");
       setBookingService(null);
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 

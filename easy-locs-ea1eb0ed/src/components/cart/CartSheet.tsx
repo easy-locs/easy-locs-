@@ -66,7 +66,7 @@ export default function CartSheet() {
       clearCart();
       navigate(`/order/${order.id}`);
     } catch (e: any) {
-      toast.error(e.message || "Order failed — try full checkout");
+      toast.error("Order failed — try full checkout");
       navigate("/checkout");
     } finally {
       setExpressBusy(false);

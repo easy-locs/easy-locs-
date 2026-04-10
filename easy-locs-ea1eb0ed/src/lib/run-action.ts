@@ -132,7 +132,7 @@ export async function runAction<T>(config: ActionConfig<T>): Promise<ActionResul
     console.error(`[runAction] ${config.name} failed:`, error.message);
 
     if (config.showErrorToast !== false) {
-      toast.error(error.message || "Action failed");
+      toast.error("Action failed. Please try again.");
     }
 
     config.onError?.(error);

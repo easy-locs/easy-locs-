@@ -37,7 +37,7 @@ export function StripeCheckoutButton(props: {
       window.location.href = `/wallet/pay-confirm?${params.toString()}`;
     } catch (err: any) {
       console.error("Payment error:", err);
-      toast.error(err?.message || "Payment failed");
+      toast.error("Payment failed");
     } finally {
       setLoading(false);
     }

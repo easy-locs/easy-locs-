@@ -50,10 +50,10 @@ export default function ClaimPage() {
         setClaimed(true);
         toast.success("Business claimed successfully!");
       } else {
-        toast.error(result.error || "Claim failed");
+        toast.error("Claim failed. Please try again.");
       }
     } catch (e: any) {
-      toast.error(e.message || "Claim failed");
+      toast.error("Claim failed");
     } finally {
       setClaiming(false);
     }

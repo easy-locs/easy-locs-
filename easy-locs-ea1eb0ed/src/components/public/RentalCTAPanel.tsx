@@ -53,7 +53,7 @@ const RentalCTAPanel = ({ listing, property }: Props) => {
       setSubmitted(true);
       toast.success(t("page.rental.request_sent") || "Request sent successfully!");
     } catch (err: any) {
-      toast.error(err.message || "Error");
+      toast.error("Error");
     } finally {
       setSubmitting(false);
     }

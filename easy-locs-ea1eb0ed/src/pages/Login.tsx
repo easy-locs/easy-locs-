@@ -99,7 +99,7 @@ const Login = () => {
           title: t("auth.login.error"),
           description: isInfraError
             ? "Le service de connexion est temporairement indisponible. Réessayez dans quelques instants."
-            : error.message,
+            : t("common.error_generic") || "Something went wrong. Please try again.",
           variant: "destructive",
         });
 
@@ -191,7 +191,8 @@ const Login = () => {
     });
     setLoading(false);
     if (error) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      console.error("[Auth]", error.message);
+      toast({ title: t("common.error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     } else {
       setOtpSent(true);
       toast({ title: t("auth.login.code_sent"), description: t("auth.login.code_sent_desc") });
@@ -208,7 +209,8 @@ const Login = () => {
     const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
     setLoading(false);
     if (error) {
-      toast({ title: t("auth.login.invalid_code"), description: error.message, variant: "destructive" });
+      console.error("[Auth]", error.message);
+      toast({ title: t("auth.login.invalid_code"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     } else {
       const otpTraceId = crypto.randomUUID();
       authLog("LOGIN_SESSION_DETECTED", { traceId: otpTraceId, userId: data.user?.id, source: "otp_verify" });
@@ -251,9 +253,10 @@ const Login = () => {
       }
     } catch (err: any) {
       authError("PHONE_LOGIN_FAILED", { traceId, error: err?.message });
+      console.error("[Auth]", err.message);
       toast({
         title: t("common.error") || "Error",
-        description: err.message,
+        description: t("common.error_generic") || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {

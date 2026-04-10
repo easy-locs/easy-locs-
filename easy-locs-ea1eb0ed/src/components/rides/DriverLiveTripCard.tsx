@@ -52,7 +52,7 @@ export function DriverLiveTripCard({ jobId, job }: { jobId: string; job: any }) 
       await advanceJobStatus(jobId, nextAction.status);
       toast.success(nextAction.status === "completed" ? "Trip completed! 🎉" : "Status updated");
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 

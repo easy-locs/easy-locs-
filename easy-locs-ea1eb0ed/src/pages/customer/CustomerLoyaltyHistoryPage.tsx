@@ -107,7 +107,7 @@ export default function CustomerLoyaltyHistoryPage() {
       toast.success(`Redeemed: ${reward.label}`);
       queryClient.invalidateQueries({ queryKey: ["customer-loyalty-full"] });
     } catch (err: any) {
-      toast.error(err.message || "Failed to redeem");
+      toast.error("Failed to redeem");
     } finally {
       setRedeeming(null);
     }

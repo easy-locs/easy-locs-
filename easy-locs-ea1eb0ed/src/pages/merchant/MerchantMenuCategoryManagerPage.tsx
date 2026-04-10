@@ -46,7 +46,7 @@ export default function MerchantMenuCategoryManagerPage() {
       qc.invalidateQueries({ queryKey: ["menu-categories", merchantId] });
       toast.success("Category added");
     } catch (err: any) {
-      toast.error(err.message || "Failed to add");
+      toast.error("Failed to add");
     } finally {
       setAdding(false);
     }

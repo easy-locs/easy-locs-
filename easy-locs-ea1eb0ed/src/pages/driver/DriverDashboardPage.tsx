@@ -38,7 +38,7 @@ export default function DriverDashboardPage() {
       refetch();
       toast.success(model.isOnline ? "You are now offline" : "You are now online!");
     } catch (err: any) {
-      toast.error(err.message || "Could not update online status");
+      toast.error("Could not update online status");
     }
   };
 
@@ -48,7 +48,7 @@ export default function DriverDashboardPage() {
       await toggleDriverAvailability(user.id, model.isAvailable);
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Could not update availability");
+      toast.error("Could not update availability");
     }
   };
 

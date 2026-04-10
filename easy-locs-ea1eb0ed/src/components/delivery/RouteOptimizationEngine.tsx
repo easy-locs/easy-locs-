@@ -122,7 +122,7 @@ export default function RouteOptimizationEngine({ orgId, className }: Props) {
       setOptimized(true);
       toast.success(`${optimizedRoutes.length} route(s) optimisée(s) !`);
     } catch (err: any) {
-      toast.error(err.message || "Erreur d'optimisation");
+      toast.error("Erreur d'optimisation");
     } finally {
       setLoading(false);
     }

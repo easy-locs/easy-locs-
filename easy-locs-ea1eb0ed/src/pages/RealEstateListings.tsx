@@ -165,7 +165,8 @@ export default function RealEstateListings() {
       await reRepo.upsertListing(editId, payload);
       toast({ title: editId ? "Listing updated" : "Listing created" });
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" }); return;
+      console.error("[RealEstate]", error.message);
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" }); return;
     }
     setCreateOpen(false);
     setEditId(null);
@@ -180,7 +181,8 @@ export default function RealEstateListings() {
       setListings(prev => prev.filter(l => l.id !== id));
       toast({ title: "Listing deleted" });
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      console.error("[RealEstate]", error.message);
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 
@@ -214,7 +216,8 @@ export default function RealEstateListings() {
       setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l));
       toast({ title: `Lead marked as ${status}` });
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      console.error("[RealEstate]", error.message);
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 

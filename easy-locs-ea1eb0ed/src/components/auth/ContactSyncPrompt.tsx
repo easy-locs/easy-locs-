@@ -50,7 +50,7 @@ export default function ContactSyncPrompt({ userId, onComplete, onSkip }: Contac
     } catch (err: any) {
       toast({
         title: t("common.error") || "Error",
-        description: err.message,
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
       onComplete(null);

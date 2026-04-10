@@ -90,7 +90,7 @@ export function useSeasonalData() {
     delete dbRecord.guest_address; delete dbRecord.guest_postal_code; delete dbRecord.guest_city; delete dbRecord.guest_country; delete dbRecord.identity_type; delete dbRecord.identity_number;
     try {
       await seasonalRepo.saveSeasonalBooking(dbRecord, editingId);
-    } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
+    } catch (error: any) { toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return false; }
     if (editingId) {
       await notifyReservation(t("page.seasonal.modified_reservation_notif"), t("page.seasonal.modified_reservation_msg").replace("{name}", record.guest_name), bookingEmail || undefined);
       toast({ title: t("page.seasonal.booking_modified") });

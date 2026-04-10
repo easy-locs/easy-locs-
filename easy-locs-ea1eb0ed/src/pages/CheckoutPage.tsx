@@ -112,7 +112,8 @@ export default function CheckoutPage() {
       idempotencyRef.current = crypto.randomUUID();
       navigate(`/order/${order.id}`);
     } catch (e: any) {
-      toast.error(e.message || "Failed to place order");
+      console.error("[Checkout]", e.message);
+      toast.error("Failed to place order. Please try again.");
     } finally {
       setPlacing(false);
     }

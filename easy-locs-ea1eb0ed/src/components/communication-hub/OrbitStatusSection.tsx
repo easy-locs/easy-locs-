@@ -263,7 +263,7 @@ export default function OrbitStatusSection() {
       clearMedia();
       loadStatuses();
     } catch (err: any) {
-      toast.error(err?.message || "Failed to post status");
+      toast.error("Failed to post status");
     } finally {
       setPosting(false);
     }

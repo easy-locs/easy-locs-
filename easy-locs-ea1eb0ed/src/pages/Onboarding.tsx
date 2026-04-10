@@ -138,7 +138,8 @@ const Onboarding = () => {
       await obRepo.insertOwnerProfile(user.id, orgData.org_id, { ...ownerForm, email: ownerForm.email || user.email || "" }, country || "FR");
     } catch (error: any) {
       setSaving(false);
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      console.error("[Onboarding]", error.message);
+      toast({ title: t("common.error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
       return;
     }
     setSaving(false);
@@ -163,7 +164,8 @@ const Onboarding = () => {
       }
     } catch (error: any) {
       setSaving(false);
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      console.error("[Onboarding]", error.message);
+      toast({ title: t("common.error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
       return;
     }
     setSaving(false);
@@ -180,7 +182,8 @@ const Onboarding = () => {
       await obRepo.insertTenantOnboarding(orgData.org_id, user.id, savedPropertyId, tenantForm);
     } catch (error: any) {
       setSaving(false);
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      console.error("[Onboarding]", error.message);
+      toast({ title: t("common.error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
       return;
     }
     setSaving(false);
@@ -234,7 +237,8 @@ const Onboarding = () => {
       setIcalResults(prev => ({ ...prev, [provider]: data.inserted || 0 }));
       toast({ title: "✅ " + (data.inserted || 0) + " " + t("ob.ical_success") });
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+      console.error("[Onboarding]", err.message);
+      toast({ title: t("common.error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     }
     setIcalSyncing(null);
   };

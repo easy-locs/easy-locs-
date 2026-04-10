@@ -83,7 +83,7 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
       });
       toast.success(`Order → ${STATUS_CONFIG[config.next]?.label ?? config.next}`);
     } catch (e: any) {
-      toast.error(e.message || "Failed to update order");
+      toast.error("Failed to update order");
     }
   };
 
@@ -97,7 +97,7 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
       });
       toast.success("Order cancelled");
     } catch (e: any) {
-      toast.error(e.message || "Failed to cancel");
+      toast.error("Failed to cancel");
     }
   };
 

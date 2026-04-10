@@ -188,7 +188,7 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
 
       if (error) {
         if (error.code === "23505") toast.error("This shop name is already taken");
-        else toast.error(error.message);
+        else toast.error("Something went wrong. Please try again.");
         return;
       }
 

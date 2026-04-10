@@ -292,7 +292,8 @@ export default function PropertyCalendar() {
       setBlockForm({ propertyId: "", dateFrom: "", dateTo: "", reason: "" });
       window.location.reload();
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      console.error("[Calendar]", err.message);
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 
@@ -303,7 +304,8 @@ export default function PropertyCalendar() {
       setDrawerOpen(false);
       toast({ title: "Dates unblocked" });
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      console.error("[Calendar]", err.message);
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 

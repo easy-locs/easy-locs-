@@ -59,7 +59,7 @@ function RaiseDisputeForm({ orgId, jobId, onSubmit, onCancel }: {
       toast.success("Litige créé !");
       onCancel();
     } catch (e: any) {
-      toast.error(e.message || "Erreur");
+      toast.error("Erreur");
     } finally {
       setSubmitting(false);
     }

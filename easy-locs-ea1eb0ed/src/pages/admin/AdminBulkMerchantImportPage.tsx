@@ -53,7 +53,7 @@ export default function AdminBulkMerchantImportPage() {
       const ok = res.filter((r) => r.ok).length;
       toast.success(`${ok} merchants imported`);
     } catch (err: any) {
-      toast.error(err.message || "Bulk import failed");
+      toast.error("Bulk import failed");
     } finally {
       setRunning(false);
     }

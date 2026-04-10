@@ -90,7 +90,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
       setSelectedDriver(null);
       fetchData();
     } catch (e: any) {
-      toast.error(e.message || "Erreur");
+      toast.error("Erreur");
     }
   };
 
@@ -104,7 +104,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
       setSelectedDispute(null);
       fetchData();
     } catch (e: any) {
-      toast.error(e.message || "Erreur");
+      toast.error("Erreur");
     }
   };
 

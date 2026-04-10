@@ -30,7 +30,8 @@ export function useLeaseWorkflow() {
       return data;
     } catch (err: any) {
       console.error("Lease generation failed:", err);
-      toast.error("Failed to generate lease: " + (err.message || "Unknown error"));
+      console.error("[Lease]", err.message);
+      toast.error("Failed to generate lease. Please try again.");
       return null;
     }
   };
@@ -43,7 +44,8 @@ export function useLeaseWorkflow() {
       toast.success("Signature recorded — awaiting owner signature");
       return lease;
     } catch (err: any) {
-      toast.error("Signature failed: " + (err.message || "Unknown error"));
+      console.error("[Lease]", err.message);
+      toast.error("Signature failed. Please try again.");
       return null;
     }
   };
@@ -68,7 +70,8 @@ export function useLeaseWorkflow() {
       }
       return lease;
     } catch (err: any) {
-      toast.error("Signature failed: " + (err.message || "Unknown error"));
+      console.error("[Lease]", err.message);
+      toast.error("Signature failed. Please try again.");
       return null;
     }
   };
@@ -84,7 +87,8 @@ export function useLeaseWorkflow() {
       return data;
     } catch (err: any) {
       console.error("Rent schedule generation failed:", err);
-      toast.error("Failed to generate rent schedule: " + (err.message || "Unknown error"));
+      console.error("[Lease]", err.message);
+      toast.error("Failed to generate rent schedule. Please try again.");
       return null;
     }
   };

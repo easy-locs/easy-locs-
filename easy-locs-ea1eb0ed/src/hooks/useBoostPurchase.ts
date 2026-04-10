@@ -50,7 +50,7 @@ export function useBoostPurchase() {
         });
 
         if (error) {
-          toast({ title: "Boost failed", description: error.message, variant: "destructive" });
+          toast({ title: "Boost failed", description: "Something went wrong. Please try again.", variant: "destructive" });
           return { success: false };
         }
 
@@ -62,7 +62,7 @@ export function useBoostPurchase() {
         toast({ title: "Boost activated!", description: `${config.label} for ${config.durationDays} days.` });
         return { success: true };
       } catch (err: any) {
-        toast({ title: "Boost failed", description: err.message, variant: "destructive" });
+        toast({ title: "Boost failed", description: "Something went wrong. Please try again.", variant: "destructive" });
         return { success: false };
       } finally {
         setPurchasing(false);

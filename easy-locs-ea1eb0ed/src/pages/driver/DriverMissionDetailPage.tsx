@@ -35,7 +35,7 @@ export default function DriverMissionDetailPage() {
       await setOrderStatus({ orderId: mission.id, currentStatus: mission.status as any, nextStatus: next as any });
       toast.success(`Mission updated`);
       refetch();
-    } catch (err: any) { toast.error(err.message || "Could not update mission"); }
+    } catch (err: any) { toast.error("Could not update mission"); }
   };
 
   const canAdvance = mission && ["driver_assigned", "picked_up", "on_the_way"].includes(mission.status);

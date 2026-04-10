@@ -47,7 +47,7 @@ class ErrorBoundary extends Component<Props, State> {
             <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
             <h2 style={{ fontSize: 18, fontWeight: 600, color: "#f8fafc", marginBottom: 8 }}>Something went wrong</h2>
             <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 24 }}>
-              {this.state.error?.message || "An unexpected error occurred."}
+              Something went wrong. Please try again.
             </p>
             <button
               onClick={this.handleReset}

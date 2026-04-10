@@ -132,7 +132,7 @@ export default function DriverWalletPanel({ className }: Props) {
       setWithdrawAmount("");
       refresh();
     } catch (err: any) {
-      toast.error(err.message || "Erreur de retrait");
+      toast.error("Erreur de retrait");
     } finally {
       setSubmitting(false);
     }

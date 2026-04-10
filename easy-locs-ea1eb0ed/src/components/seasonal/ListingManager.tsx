@@ -108,7 +108,7 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       } catch (err: any) { return { data: null, error: err }; }
     })();
     if (error) {
-      toast({ title: t("common.error") || "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
       return;
     }
 
@@ -138,7 +138,7 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
         telegram_username: form.telegram_username || null,
       }, listing.id);
     } catch (err: any) {
-      toast({ title: t("common.error") || "Error", description: err.message, variant: "destructive" });
+      toast({ title: t("common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
       return;
     }
     toast({ title: t("page.listing_mgr.updated") });

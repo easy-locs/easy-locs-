@@ -89,7 +89,7 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
       });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["flash-sales"] }); toast.success("Flash sale created!"); setCreating(false); setTitle(""); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => toast.error("Something went wrong. Please try again."),
   });
 
   const subscribe = useMutation({

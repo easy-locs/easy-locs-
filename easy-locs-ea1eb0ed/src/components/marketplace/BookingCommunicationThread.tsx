@@ -61,7 +61,7 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
       });
     },
     onSuccess: () => { setNewMessage(""); qc.invalidateQueries({ queryKey: ["booking_messages", bookingId] }); toast.success(messageType === "internal_note" ? "Note added" : "Message sent"); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error("Something went wrong. Please try again."),
   });
 
   const typeButtons: { type: MessageType; icon: any; label: string }[] = [

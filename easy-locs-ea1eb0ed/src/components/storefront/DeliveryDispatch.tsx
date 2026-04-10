@@ -68,7 +68,7 @@ export default function DeliveryDispatch({ shopId }: { shopId: string }) {
       qc.invalidateQueries({ queryKey: ["dispatch-orders", shopId] });
       toast.success("Delivery requested!");
     } catch (e: any) {
-      toast.error(e.message || "Failed to request delivery");
+      toast.error("Failed to request delivery");
     } finally {
       setDispatching(null);
     }

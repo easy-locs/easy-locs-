@@ -29,7 +29,7 @@ export function RiderOfferCard({ offer }: { offer: MobilityOffer }) {
       await acceptOffer(offer.id);
       toast.success("Offer accepted! Navigate to pickup.");
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setAccepting(false);
     }
@@ -40,7 +40,7 @@ export function RiderOfferCard({ offer }: { offer: MobilityOffer }) {
       await rejectOffer(offer.id);
       toast.info("Offer declined");
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 

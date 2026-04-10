@@ -71,7 +71,7 @@ export function useLocationMessage(params: {
 
         toast.success(t("orbit.location_shared"));
       } catch (e: any) {
-        toast.error(e?.message || t("orbit.location_failed"));
+        toast.error(t("orbit.location_failed"));
       }
     },
     [params],

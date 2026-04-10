@@ -96,7 +96,8 @@ export function usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId }: 
       setPaymentAmount("");
       setPaymentDescription("");
     } catch (err: any) {
-      toast.error("Payment failed: " + (err.message || "Unknown error"));
+      console.error("[Payment]", err.message);
+      toast.error("Payment failed. Please try again.");
     } finally {
       setSendingPaymentLink(false);
     }

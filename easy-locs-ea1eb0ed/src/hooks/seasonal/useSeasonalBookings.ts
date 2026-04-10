@@ -91,7 +91,7 @@ export function useSeasonalBookings() {
       deposit_amount: form.deposit_amount, notes: [form.notes?.trim(), details.length ? `---\n${details.join("\n")}` : ""].filter(Boolean).join("\n"),
     };
     try { await seasonalRepo.saveSeasonalBooking(record, editingId); }
-    catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
+    catch (error: any) { toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return false; }
     if (editingId) {
       await notifyReservation(t("page.seasonal.modified_reservation_notif"), t("page.seasonal.modified_reservation_msg").replace("{name}", form.guest_name), bookingEmail || undefined);
       toast({ title: t("page.seasonal.booking_modified") });

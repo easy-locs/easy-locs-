@@ -209,7 +209,8 @@ export default function NotificationPreferences() {
     let error: any = null;
     try { await upsertNotificationPrefs(user.id, prefs); } catch (e) { error = e; }
     if (error) {
-      toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" });
+      console.error("[Notifications]", error.message);
+      toast({ title: t("page.common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     } else {
       toast({ title: t("page.settings.profile_updated") || "Preferences updated" });
     }

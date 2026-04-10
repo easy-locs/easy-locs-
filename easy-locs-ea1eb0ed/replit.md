@@ -60,3 +60,12 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - Upgraded: Skeleton (stub → real animated), LoadingState (empty div → 4 variants), Button (+loading), AppCard (+kpi/status/glow)
 - Memoized: CommCallsSection filtered list, filter labels, missed count
 - Bundle: index.js 429KB (was 487KB, -12%)
+
+## Visual Cleanup (Error Sanitization)
+- All user-facing `toast.error(err.message)` replaced with user-friendly messages (~90+ files)
+- All `toast({ description: error.message })` replaced with generic messages (~30+ files)
+- ErrorBoundary no longer exposes raw `error.message` to users
+- Added `src/lib/safe-error.ts` utility and `common.error_generic` i18n key (EN/FR/AR)
+- ExploreListingCard: removed raw category slug fallback, null-safe price display
+- Admin pages intentionally keep raw error messages for debugging
+- Pattern: `console.error("[Module]", err.message); toast.error("User-friendly message");`

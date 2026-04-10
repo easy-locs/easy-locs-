@@ -177,7 +177,7 @@ const ListingContactButtons = ({
         toast.error("Phone number not available");
       }
     } catch (err: any) {
-      toast.error(err.message || "Failed to reveal phone");
+      toast.error("Failed to reveal phone");
     }
     setRevealLoading(false);
   };

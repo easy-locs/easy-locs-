@@ -89,7 +89,8 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
       if (!result.ok) throw new Error(result.error);
       d.setSecurityLevel("normal");
     } catch (e: any) {
-      toast.error(e?.message || "Failed to send voice message");
+      console.error("[Orbit]", e?.message);
+      toast.error("Failed to send voice message. Please try again.");
     } finally {
       URL.revokeObjectURL(localUrl);
     }
@@ -121,7 +122,8 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
           liveDurationMinutes: loc.duration,
         });
       } catch (e: any) {
-        toast.error(e?.message || "Failed to share location");
+        console.error("[Orbit]", e?.message);
+        toast.error("Failed to share location. Please try again.");
       }
     })();
   }, []);
@@ -158,7 +160,8 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
 
       toast.success(d.t("orbit.view_once_sent") || "View-once photo sent");
     } catch (e: any) {
-      toast.error(e?.message || "Upload failed");
+      console.error("[Orbit]", e?.message);
+      toast.error("Upload failed. Please try again.");
     } finally {
       d.setUploading(false);
       d.setViewOnceNext(false);

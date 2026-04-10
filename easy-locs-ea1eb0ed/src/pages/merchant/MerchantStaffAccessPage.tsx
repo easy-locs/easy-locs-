@@ -44,7 +44,7 @@ export default function MerchantStaffAccessPage() {
       setRole("manager");
       refetch();
     } catch (e: any) {
-      toast.error(e.message || "Could not invite staff");
+      toast.error("Could not invite staff");
     } finally {
       setSaving(false);
     }
@@ -56,7 +56,7 @@ export default function MerchantStaffAccessPage() {
       toast.success("Staff access updated");
       refetch();
     } catch (e: any) {
-      toast.error(e.message || "Could not update staff");
+      toast.error("Could not update staff");
     }
   };
 

@@ -27,7 +27,7 @@ export default function DriverProofPage() {
       platformBus.emit("MISSION_COMPLETED", { orderId, driverId: user?.id ?? "" }, "system");
       setSubmitted(true);
       toast.success("Delivery proof submitted");
-    } catch (err: any) { toast.error(err.message || "Could not submit proof"); }
+    } catch (err: any) { toast.error("Could not submit proof"); }
     finally { setSubmitting(false); }
   };
 

@@ -80,7 +80,8 @@ export default function HotelCheckout() {
       setBookingResult(result);
       toast.success("Booking confirmed! Ref: " + result.booking_reference);
     } catch (err: any) {
-      toast.error(err.message || "Booking failed");
+      console.error("[Hotel]", err.message);
+      toast.error("Booking failed. Please try again.");
     }
   };
 

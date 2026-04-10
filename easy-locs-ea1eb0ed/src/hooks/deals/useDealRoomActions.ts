@@ -31,7 +31,7 @@ export function useDealRoomActions({
       orgId: targetOrgId, buyerId: userId!, contextType, contextId, contextTitle, threadId,
     }),
     onSuccess: () => { invalidate(); toast.success("Deal Room created"); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => { console.error("[Deal]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const sendOffer = useMutation({
@@ -43,7 +43,7 @@ export function useDealRoomActions({
       actorId: userId!, actorRole: isOrgMember ? "seller" : "buyer",
     }),
     onSuccess: () => invalidate(),
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => { console.error("[Deal]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const acceptDeal = useMutation({
@@ -52,13 +52,13 @@ export function useDealRoomActions({
       targetOrgId, createPaymentRequest,
     }),
     onSuccess: () => { invalidate(); toast.success("Deal accepted! Payment request sent."); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => { console.error("[Deal]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const cancelDeal = useMutation({
     mutationFn: () => dealRepo.cancelDealRoom(deal!.id),
     onSuccess: () => { invalidate(); toast.success("Deal cancelled"); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => { console.error("[Deal]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const uploadDocument = useMutation({
@@ -72,7 +72,7 @@ export function useDealRoomActions({
       });
     },
     onSuccess: () => { invalidate(); toast.success("Document shared"); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => { console.error("[Deal]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const scheduleVisit = useMutation({
@@ -81,7 +81,7 @@ export function useDealRoomActions({
       return dealRepo.scheduleDealVisit(deal.id, userId!, isOrgMember ? "seller" : "buyer", date, note);
     },
     onSuccess: () => { invalidate(); toast.success("Visit scheduled"); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => { console.error("[Deal]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const generatePaymentLink = useMutation({
@@ -90,7 +90,7 @@ export function useDealRoomActions({
       return dealRepo.invokeDealPayment("deal_checkout", deal.id);
     },
     onSuccess: (data) => { invalidate(); if (data?.url) { window.open(data.url, "_blank"); toast.success("Payment page opened"); } },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => { console.error("[Deal]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const verifyPayment = useMutation({
@@ -99,7 +99,7 @@ export function useDealRoomActions({
       return dealRepo.invokeDealPayment("deal_verify_payment", deal.id);
     },
     onSuccess: (data) => { invalidate(); if (data?.paid) toast.success("Payment confirmed!"); else toast.info("Payment not yet received."); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => { console.error("[Deal]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   return { createDeal, sendOffer, acceptDeal, cancelDeal, uploadDocument, scheduleVisit, generatePaymentLink, verifyPayment };

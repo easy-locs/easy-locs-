@@ -40,7 +40,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
     ? `${fmtPrice(item.price_per_night)} / ${t("explore.night") || "night"}`
     : type === "real-estate"
     ? `${fmtPrice(item.price || 0)}${item.listing_type === "long_term_rent" ? `/${t("explore.mo") || "mo"}` : ""}`
-    : item.price > 0 ? `${fmtPrice(item.price)}${pricePeriodSuffix}` : (t("explore.free") || "Free");
+    : (item.price != null && item.price > 0) ? `${fmtPrice(item.price)}${pricePeriodSuffix}` : (t("explore.free") || "Free");
 
   const subInfo = getSubcategoryInfo(type === "service" ? item.category : type === "seasonal" ? "seasonal" : "real-estate");
 
@@ -51,7 +51,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
     ? { label: item.listing_type === "sale" ? (t("explore.for_sale") || "For Sale") : (t("explore.long_term") || "Long-term"), color: "bg-info/15 text-info border-info/25" }
     : isMarketplaceSaleOrRental
     ? { label: item.listing_type === "sale" ? (t("explore.for_sale") || "For Sale") : (t("explore.rental") || "Rental"), color: "bg-info/15 text-info border-info/25" }
-    : { label: subInfo?.label || item.category?.replace(/_/g, " ") || (t("explore.service") || "Service"), color: "bg-success/15 text-success border-success/25" };
+    : { label: subInfo?.label || (t("explore.service") || "Service"), color: "bg-success/15 text-success border-success/25" };
 
   const isVerified = type === "service" && Array.isArray(item.badges) && item.badges.includes("verified");
   const ctaLabel = type === "service"

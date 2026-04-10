@@ -36,7 +36,7 @@ export default function CustomerRewardRedemptionPage() {
       toast.success(`${title} redeemed`);
       refetch();
     } catch (e: any) {
-      toast.error(e.message || "Could not redeem reward");
+      toast.error("Could not redeem reward");
     }
   };
 

@@ -38,7 +38,7 @@ export default function MerchantPromoBannerEditorPage() {
       toast.success("Promo banner saved");
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Could not save banner");
+      toast.error("Could not save banner");
     } finally {
       setSaving(false);
     }

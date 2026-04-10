@@ -39,7 +39,7 @@ const ResetPassword = () => {
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } else {
       setSuccess(true);
       setTimeout(() => navigate("/dashboard"), 2000);

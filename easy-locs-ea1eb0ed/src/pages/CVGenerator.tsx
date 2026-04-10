@@ -69,7 +69,7 @@ export default function CVGenerator() {
       toast.success("CV generated successfully!");
     } catch (err: any) {
       console.error("CV generation error:", err);
-      toast.error(err?.message || "Failed to generate CV");
+      toast.error("Failed to generate CV");
     } finally {
       setGenerating(false);
     }

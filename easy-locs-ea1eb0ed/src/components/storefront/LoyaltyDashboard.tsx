@@ -103,7 +103,7 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
     const { error } = await db
       .from("storefront_loyalty_programs")
       .insert({ shop_id: shopId, user_id: user.id });
-    if (error) return toast.error(error.message);
+    if (error) return toast.error("Something went wrong. Please try again.");
     qc.invalidateQueries({ queryKey: ["loyalty-program", shopId] });
     toast.success("Loyalty program created!");
   };
@@ -119,7 +119,7 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
         discount_percent: parseFloat(tierDiscount) || 0,
         badge_emoji: tierEmoji,
       });
-    if (error) return toast.error(error.message);
+    if (error) return toast.error("Something went wrong. Please try again.");
     setShowCreateTier(false);
     setTierName(""); setTierMinPoints("100"); setTierDiscount("5");
     qc.invalidateQueries({ queryKey: ["loyalty-tiers", program?.id] });

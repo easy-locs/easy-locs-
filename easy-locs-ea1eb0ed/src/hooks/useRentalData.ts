@@ -165,14 +165,14 @@ export function useRentalData(countryFilter?: string | null) {
       await rentalRepo.upsertProperty(orgId, user.id, record, editId);
       toast({ title: editId ? t("hook.rental.property_modified") : t("hook.rental.property_added") });
     } catch (error: any) {
-      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false;
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return false;
     }
     await loadProperties();
     return true;
   };
 
   const deletePropertyFn = async (id: string) => {
-    try { await rentalRepo.deleteProperty(id); } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    try { await rentalRepo.deleteProperty(id); } catch (error: any) { toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return; }
     toast({ title: t("hook.rental.property_deleted") });
     await loadProperties();
   };
@@ -197,12 +197,12 @@ export function useRentalData(countryFilter?: string | null) {
       await loadTenants();
       return resultId;
     } catch (error: any) {
-      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false;
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return false;
     }
   };
 
   const deleteTenantFn = async (id: string) => {
-    try { await rentalRepo.deleteTenant(id); } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    try { await rentalRepo.deleteTenant(id); } catch (error: any) { toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return; }
     toast({ title: t("hook.rental.tenant_deleted") });
     await loadTenants();
   };
@@ -226,7 +226,7 @@ export function useRentalData(countryFilter?: string | null) {
     try {
       await rentalRepo.insertRentCalls(newCalls);
       toast({ title: `${newCalls.length} ${t("hook.rental.calls_generated")}` });
-    } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    } catch (error: any) { toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return; }
     await loadRentCalls();
   };
 
@@ -239,7 +239,7 @@ export function useRentalData(countryFilter?: string | null) {
         paid: nowPaid, paid_date: nowPaid ? new Date().toISOString() : null,
         payment_method: nowPaid ? (paymentMethod || null) : null, receipt_validated: nowPaid ? true : false,
       });
-    } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    } catch (error: any) { toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return; }
 
     if (nowPaid && user && orgId) {
       try {
@@ -372,7 +372,7 @@ export function useRentalData(countryFilter?: string | null) {
   };
 
   const validateReceipt = async (id: string) => {
-    try { await rentalRepo.updateRentCall(id, { receipt_validated: true }); } catch (error: any) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    try { await rentalRepo.updateRentCall(id, { receipt_validated: true }); } catch (error: any) { toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return; }
     toast({ title: t("hook.rental.receipt_validated") });
     await loadRentCalls();
   };
@@ -457,7 +457,7 @@ export function useRentalData(countryFilter?: string | null) {
         });
       }
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 
@@ -467,7 +467,7 @@ export function useRentalData(countryFilter?: string | null) {
     try {
       await rentalRepo.updateTenantProperty(tenantId, propertyId);
     } catch (error: any) {
-      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
       return false;
     }
     toast({

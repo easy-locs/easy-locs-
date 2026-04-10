@@ -118,7 +118,7 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
     setBidding(null);
 
     if (error) {
-      toast.error(error.message?.includes("higher") ? "Bid must be higher than current bid" : error.message || "Bid failed");
+      toast.error(error.message?.includes("higher") ? "Bid must be higher than current bid" : "Bid failed. Please try again.");
       return;
     }
     setBidAmounts(prev => ({ ...prev, [auctionId]: "" }));

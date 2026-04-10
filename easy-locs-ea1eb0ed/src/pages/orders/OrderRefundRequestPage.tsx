@@ -43,7 +43,7 @@ export default function OrderRefundRequestPage() {
       toast.success("Refund request submitted");
       navigate(`/support/tickets`);
     } catch (err: any) {
-      toast.error(err.message || "Could not submit refund request");
+      toast.error("Could not submit refund request");
     } finally {
       setSaving(false);
     }

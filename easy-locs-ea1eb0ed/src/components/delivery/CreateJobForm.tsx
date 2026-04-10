@@ -30,7 +30,7 @@ export default function CreateJobForm({ onSubmit, onCancel }: Props) {
     if (!form.pickup_address || !form.dropoff_address) { toast.error("Adresses requises"); return; }
     setSubmitting(true);
     try { await onSubmit(form); toast.success("Mission créée !"); onCancel(); }
-    catch (e: any) { toast.error(e.message || "Erreur"); }
+    catch (e: any) { toast.error("Erreur"); }
     finally { setSubmitting(false); }
   };
 

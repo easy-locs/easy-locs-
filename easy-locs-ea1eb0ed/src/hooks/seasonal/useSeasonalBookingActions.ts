@@ -124,7 +124,7 @@ export function useSeasonalBookingActions({ properties, reload }: UseSeasonalBoo
       }).catch(() => {});
       toast({ title: "✅ Payment link generated and sent!" });
       await reload();
-    } catch (err: any) { toast({ title: t("page.common.error"), description: err.message || "Payment link generation failed", variant: "destructive" }); }
+    } catch (err: any) { toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); }
     finally { setPayingRequest(null); }
   }, [orgId, user, properties, toast, t, reload]);
 

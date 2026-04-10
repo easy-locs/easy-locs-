@@ -112,7 +112,7 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
       setForm((f) => ({ ...f, avatar_url: url }));
       toast.success("Photo uploaded!");
     } catch (err: any) {
-      toast.error(`Upload failed: ${err.message}`);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setUploading(false);
     }

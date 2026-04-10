@@ -27,7 +27,7 @@ export function useOrbitDispatch() {
       }
       return result;
     } catch (err: any) {
-      toast.error(err?.message || "Action failed");
+      toast.error("Action failed");
       return { ok: false, error: err?.message || "dispatch_error" };
     } finally {
       releaseSubmitLock(submitLock);

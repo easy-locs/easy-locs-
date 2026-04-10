@@ -40,7 +40,7 @@ export function useGetOrCreateDealRoom() {
       return data;
     },
     onSuccess: () => { DEAL_QUERY_KEYS.forEach(k => queryClient.invalidateQueries({ queryKey: k })); },
-    onError: (err: any) => toast.error(err.message || "Failed to create deal room"),
+    onError: (err: any) => { console.error("[Deal]", err.message); toast.error("Failed to create deal room. Please try again."); },
   });
 }
 
@@ -86,7 +86,7 @@ export function useSendOffer() {
       await dealRepo.insertDealEvent({ deal_id: dealId, event_type: "offer", actor_id: user!.id, data_json: { amount, currency: currency || "EUR", message } });
     },
     onSuccess: () => { DEAL_QUERY_KEYS.forEach(k => queryClient.invalidateQueries({ queryKey: k })); toast.success("Offer sent"); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => { console.error("[Deal]", err.message); toast.error("Something went wrong. Please try again."); },
   });
 }
 
@@ -99,7 +99,7 @@ export function useSendCounterOffer() {
       await dealRepo.insertDealEvent({ deal_id: dealId, event_type: "counter_offer", actor_id: user!.id, data_json: { amount, currency: currency || "EUR", message } });
     },
     onSuccess: () => { DEAL_QUERY_KEYS.forEach(k => queryClient.invalidateQueries({ queryKey: k })); toast.success("Counter-offer sent"); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => { console.error("[Deal]", err.message); toast.error("Something went wrong. Please try again."); },
   });
 }
 
@@ -112,7 +112,7 @@ export function useAcceptDeal() {
       await dealRepo.insertDealEvent({ deal_id: dealId, event_type: "status_change", actor_id: user!.id, data_json: { action: "accepted", accepted_amount: acceptedAmount } });
     },
     onSuccess: () => { DEAL_QUERY_KEYS.forEach(k => queryClient.invalidateQueries({ queryKey: k })); toast.success("Deal accepted!"); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => { console.error("[Deal]", err.message); toast.error("Something went wrong. Please try again."); },
   });
 }
 
@@ -123,7 +123,7 @@ export function useUpdateDealStatus() {
       await dealRepo.updateDealRoom(dealId, { status });
     },
     onSuccess: (_, { status }) => { DEAL_QUERY_KEYS.forEach(k => queryClient.invalidateQueries({ queryKey: k })); toast.success(`Deal ${DEAL_STATUS_LABELS[status].toLowerCase()}`); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => { console.error("[Deal]", err.message); toast.error("Something went wrong. Please try again."); },
   });
 }
 

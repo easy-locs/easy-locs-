@@ -52,7 +52,8 @@ export default function SettingsBusiness() {
       setOrg(prev => ({ ...prev, logo_url: logoUrl }));
       toast({ title: "Logo updated" });
     } catch (err: any) {
-      toast({ title: "Upload error", description: err.message, variant: "destructive" });
+      console.error("[Settings]", err.message);
+      toast({ title: "Upload error", description: "Something went wrong. Please try again.", variant: "destructive" });
     }
     setUploading(false);
   };
