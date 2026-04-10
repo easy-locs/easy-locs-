@@ -108,7 +108,7 @@ export function QuickPaySheet({
                 style={{ background: "hsl(38 65% 56% / 0.15)" }}
               >
                 {target.avatarUrl ? (
-                  <img src={target.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  <img src={target.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <span className="text-sm font-bold" style={{ color: GOLD }}>{initials}</span>
                 )}

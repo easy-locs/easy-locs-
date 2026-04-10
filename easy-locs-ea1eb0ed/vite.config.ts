@@ -63,6 +63,7 @@ export default defineConfig(({ mode }) => ({
     cssMinify: true,
     chunkSizeWarningLimit: 500,
     sourcemap: false,
+    reportCompressedSize: true,
     rollupOptions: {
       external: ["@capacitor/filesystem"],
       output: {

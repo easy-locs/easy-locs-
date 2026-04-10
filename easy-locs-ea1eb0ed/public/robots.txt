@@ -1,17 +1,40 @@
 User-agent: *
 Allow: /
+Allow: /explore
+Allow: /food
+Allow: /taxi
+Allow: /flights
+Allow: /stay
+Allow: /services
+Allow: /activities
+Allow: /browse
+Allow: /radar
 Allow: /country/
 Allow: /city/
-Allow: /services/
-Allow: /activities/
 Allow: /marketplace/
+Allow: /marketplace-services
+Allow: /concierge-services
+Allow: /property-management
+Allow: /long-term-rentals
+Allow: /seasonal-rentals
+Allow: /rental-management
+Allow: /rentals
+Allow: /property-owner-software
+Allow: /property-management-platform
+Allow: /rental-management-software
 Allow: /s/
-Allow: /stay
-Allow: /browse
 Allow: /about
 Allow: /contact
 Allow: /help
 Allow: /vision
+Allow: /cv-generator
+Allow: /signup
+Allow: /login
+Allow: /install
+Allow: /terms
+Allow: /privacy
+Allow: /cookies
+Allow: /legal-notice
 
 Disallow: /wallet
 Disallow: /wallet/
@@ -36,6 +59,9 @@ Disallow: /verify-email
 Disallow: /guest-portal
 Disallow: /api/
 Disallow: /auth/
+Disallow: /provider/
+Disallow: /seller/
+Disallow: /driver/
 
 Crawl-delay: 1
 

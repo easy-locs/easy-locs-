@@ -24,6 +24,22 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Desktop Shell** (`src/components/layout/DesktopShell.tsx`): Navy/Gold sidebar + multi-panel desktop layout. Collapsible sidebar (240px↔64px) with active state, badges, smooth transitions. Side panel support for split views. Conditional rendering based on layout config.
 - **Adaptive Layout Components** (`src/components/layout/AdaptiveLayout.tsx`): `AdaptiveContainer` (responsive max-width), `AdaptiveSplit` (split↔stack based on layout.showSplitView), `AdaptiveGrid` (responsive columns with auto-fill), `AdaptiveModal` (fullscreen on mobile, dialog on desktop), `AdaptiveList` (cards on mobile, table on desktop), `AdaptiveNav` (bottom bar when no sidebar), `useAdaptiveValue()` hook.
 
+## SEO & Performance Optimization
+- **Title**: "Easy-Locs — Food, Services, Taxi, Hotel in One App" (50 chars, optimized)
+- **Meta Description**: 140 chars, English, SEO-optimized
+- **OG/Twitter Tags**: Unified with primary meta, matching title + description
+- **Structured Data**: Organization + WebSite + SoftwareApplication + WebPage + BreadcrumbList (JSON-LD)
+- **sitemap.xml**: 90+ URLs covering core pages, services, countries, cities, property management
+- **robots.txt**: Allows all public discovery pages, blocks private (wallet/admin/settings/auth)
+- **CDN Cache Headers** (`public/_headers`): Immutable for versioned assets, 30d for images, 5min for HTML
+- **Security Headers**: HSTS, X-Frame-Options, X-Content-Type-Options, CSP via Permissions-Policy
+- **Homepage SEO Content**: 700+ words noscript fallback with H1/H2 structure for crawlers
+- **Image Lazy Loading**: All non-critical images use `loading="lazy"` (Orbit, Radar, Wallet, Me, Dashboard)
+- **Core Web Vitals**: `src/lib/platform/web-vitals.ts` — tracks FCP, LCP, CLS, TTFB, INP at boot
+- **No-Cache Removed**: HTTP no-cache/no-store meta tags removed from index.html for CDN compatibility
+- **Code Splitting**: Route-based + feature-based + vendor chunking via Vite manualChunks
+- **Deferred Loading**: Heavy systems (monitoring, E2EE, events) loaded 3-6s after boot
+
 ## Component Library (src/components/ui/)
 69 unified UI components. Key canonical components:
 - **Button** (`button.tsx`): 8 variants (default/destructive/outline/secondary/ghost/link/premium/success), `loading` prop
