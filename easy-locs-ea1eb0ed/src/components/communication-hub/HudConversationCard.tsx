@@ -9,18 +9,30 @@ import { useOrbitComposerStore } from "@/stores/orbit/composer.store";
 import { Pin, BellOff, Check, CheckCheck, Camera, Mic, FileText, Image, Video, MapPin, CreditCard, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-function detectMediaType(msg: string | undefined): { icon: typeof Camera; label: string } | null {
+type MediaKey = "photo" | "video" | "voice" | "document" | "location" | "payment" | "gif";
+
+function detectMediaType(msg: string | undefined): { icon: typeof Camera; key: MediaKey } | null {
   if (!msg) return null;
   const lower = msg.toLowerCase();
-  if (lower.startsWith("📷") || lower.includes("[photo]") || lower.includes("[image]")) return { icon: Camera, label: "Photo" };
-  if (lower.startsWith("🎥") || lower.includes("[video]")) return { icon: Video, label: "Video" };
-  if (lower.startsWith("🎤") || lower.includes("[voice") || lower.includes("[audio]")) return { icon: Mic, label: "Voice message" };
-  if (lower.startsWith("📄") || lower.includes("[document]") || lower.includes("[file]")) return { icon: FileText, label: "Document" };
-  if (lower.startsWith("📍") || lower.includes("[location]")) return { icon: MapPin, label: "Location" };
-  if (lower.startsWith("💳") || lower.includes("[payment]")) return { icon: CreditCard, label: "Payment" };
-  if (lower.includes("[gif]") || lower.includes("[sticker]")) return { icon: Image, label: "GIF" };
+  if (lower.startsWith("📷") || lower.includes("[photo]") || lower.includes("[image]")) return { icon: Camera, key: "photo" };
+  if (lower.startsWith("🎥") || lower.includes("[video]")) return { icon: Video, key: "video" };
+  if (lower.startsWith("🎤") || lower.includes("[voice") || lower.includes("[audio]")) return { icon: Mic, key: "voice" };
+  if (lower.startsWith("📄") || lower.includes("[document]") || lower.includes("[file]")) return { icon: FileText, key: "document" };
+  if (lower.startsWith("📍") || lower.includes("[location]")) return { icon: MapPin, key: "location" };
+  if (lower.startsWith("💳") || lower.includes("[payment]")) return { icon: CreditCard, key: "payment" };
+  if (lower.includes("[gif]") || lower.includes("[sticker]")) return { icon: Image, key: "gif" };
   return null;
 }
+
+const MEDIA_LABELS: Record<MediaKey, string> = {
+  photo: "orbit.media.photo",
+  video: "orbit.media.video",
+  voice: "orbit.media.voice",
+  document: "orbit.media.document",
+  location: "orbit.media.location",
+  payment: "orbit.media.payment",
+  gif: "orbit.media.gif",
+};
 
 function formatPreview(raw: string | undefined): string | undefined {
   if (!raw) return undefined;
@@ -60,8 +72,8 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
   const typingLabel = usePresenceStore((s) => {
     const users = s.getTypingUsers(conversationId);
     if (users.length === 0) return "";
-    if (users.length === 1) return `${users[0].displayName} is typing…`;
-    return `${users.length} people typing…`;
+    if (users.length === 1) return t("orbit.typing_single", { name: users[0].displayName });
+    return t("orbit.typing_plural", { count: String(users.length) });
   });
   const isTyping = typingLabel.length > 0;
 
@@ -186,7 +198,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
                   <mediaType.icon className="h-3.5 w-3.5 shrink-0" style={{ color: hasUnread ? "hsl(var(--foreground) / 0.5)" : "hsl(var(--muted-foreground) / 0.4)" }} />
                 )}
                 <span className="min-w-0 truncate">
-                  {mediaType ? mediaType.label : formatPreview(thread.lastMessage)}
+                  {mediaType ? (t(MEDIA_LABELS[mediaType.key]) || mediaType.key) : formatPreview(thread.lastMessage)}
                 </span>
               </p>
             ) : (

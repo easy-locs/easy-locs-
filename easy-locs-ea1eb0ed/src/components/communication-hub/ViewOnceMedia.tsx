@@ -8,6 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { markViewOnceOpened } from "@/repositories/communication.repository";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   messageId: string;
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function ViewOnceMedia({ messageId, attachmentUrl, isMe, viewOnceOpenedAt, viewOnceOpenedBy, currentUserId }: Props) {
+  const { t } = useI18n();
   const [showMedia, setShowMedia] = useState(false);
   const [opening, setOpening] = useState(false);
   const isOpened = !!viewOnceOpenedAt;
@@ -27,15 +29,15 @@ export default function ViewOnceMedia({ messageId, attachmentUrl, isMe, viewOnce
   const handleOpen = useCallback(async () => {
     if (isMe) {
       if (isOpened) {
-        toast.info("Opened by recipient");
+        toast.info(t("orbit.view_once.opened_by_recipient") || "Opened by recipient");
       } else {
-        toast.info("Not yet opened");
+        toast.info(t("orbit.view_once.not_yet_opened") || "Not yet opened");
       }
       return;
     }
 
     if (isOpened) {
-      toast.info("This photo can only be viewed once");
+      toast.info(t("orbit.view_once.already_viewed") || "This photo can only be viewed once");
       return;
     }
 
@@ -60,7 +62,7 @@ export default function ViewOnceMedia({ messageId, attachmentUrl, isMe, viewOnce
       }}>
         <Camera className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
         <span className="text-xs font-medium" style={{ color: "hsl(var(--foreground))" }}>
-          View-once photo
+          {t("orbit.view_once.label") || "View-once photo"}
         </span>
         {isOpened ? (
           <Eye className="h-3.5 w-3.5 ml-1" style={{ color: "hsl(var(--hud-success))" }} />
@@ -79,7 +81,7 @@ export default function ViewOnceMedia({ messageId, attachmentUrl, isMe, viewOnce
       }}>
         <EyeOff className="h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
         <span className="text-xs italic" style={{ color: "hsl(var(--muted-foreground))" }}>
-          Photo viewed
+          {t("orbit.view_once.photo_viewed") || "Photo viewed"}
         </span>
       </div>
     );
@@ -107,17 +109,17 @@ export default function ViewOnceMedia({ messageId, attachmentUrl, isMe, viewOnce
         </div>
         <Camera className="h-5 w-5 relative z-10" style={{ color: "hsl(var(--primary))" }} />
         <span className="text-sm font-medium relative z-10" style={{ color: "hsl(var(--primary))" }}>
-          {opening ? "Opening..." : "View-once photo · Tap to open"}
+          {opening ? (t("orbit.view_once.opening") || "Opening...") : (t("orbit.view_once.tap_to_open") || "View-once photo · Tap to open")}
         </span>
       </button>
 
       <Dialog open={showMedia} onOpenChange={handleClose}>
         <DialogContent className="max-w-lg p-0 overflow-hidden bg-black border-0">
           <div className="relative">
-            <img src={attachmentUrl} alt="View once" className="w-full h-auto max-h-[80vh] object-contain" />
+            <img src={attachmentUrl} alt="" className="w-full h-auto max-h-[80vh] object-contain" />
             <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "rgba(0,0,0,0.6)" }}>
               <Eye className="h-3 w-3 text-white" />
-              <span className="text-[11px] text-white font-medium">View once — closes permanently</span>
+              <span className="text-[11px] text-white font-medium">{t("orbit.view_once.closes_permanently") || "View once — closes permanently"}</span>
             </div>
           </div>
         </DialogContent>

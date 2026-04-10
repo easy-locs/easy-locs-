@@ -221,9 +221,9 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
           onEnterSelectMode={() => { selection.clearSelection(); }}
           onAvatarTap={() => overlayBridge.setShowContactProfile(true)}
           onSearchMessages={undefined}
-          onMuteToggle={() => { onThreadUpdate(thread.id, { muted: !thread.muted }); toast.success(thread.muted ? "Unmuted" : "Muted"); }}
-          onClearChat={() => { onThreadUpdate(thread.id, { lastMessage: undefined, unreadCount: 0, clearedAt: new Date().toISOString() }); toast.success("Chat cleared"); }}
-          onBlockContact={() => { onThreadUpdate(thread.id, { archived: true, muted: true }); toast.success(`${thread.name} blocked`); }}
+          onMuteToggle={() => { onThreadUpdate(thread.id, { muted: !thread.muted }); toast.success(thread.muted ? t("orbit.unmuted_success", { name: thread.name }) : t("orbit.muted_success", { name: thread.name })); }}
+          onClearChat={() => { onThreadUpdate(thread.id, { lastMessage: undefined, unreadCount: 0, clearedAt: new Date().toISOString() }); toast.success(t("orbit.cleared_success", { name: thread.name })); }}
+          onBlockContact={() => { onThreadUpdate(thread.id, { archived: true, muted: true }); toast.success(t("orbit.blocked_success", { name: thread.name })); }}
           onDisappearTimerChange={(timer) => security.setDisappearTTL(timer)}
           disappearTTL={security.disappearTTL}
           t={t}
@@ -344,7 +344,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
               className="rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs font-medium"
               disabled={attFamily.attachmentSend.sendingAttachments}
             >
-              {attFamily.attachmentSend.sendingAttachments ? "Sending..." : "Send attachments"}
+              {attFamily.attachmentSend.sendingAttachments ? (t("orbit.sending") || "Sending...") : (t("orbit.send_attachments") || "Send attachments")}
             </button>
           </div>
         )}
@@ -366,7 +366,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
         <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto p-0">
           <OrbitSmartPayment
             recipientUserId={thread.peerUserId || thread.tenantId || thread.entityId || null}
-            recipientName={thread.name || "Recipient"}
+            recipientName={thread.name || t("orbit.contact")}
             context={thread.entityType ? { type: thread.entityType as string, id: thread.entityId, label: thread.serviceTitle || thread.propertyLabel || thread.listingTitle } : undefined}
             threadId={thread.conversationId || thread.id}
             defaultCurrency={thread.currency?.toUpperCase()}
@@ -382,14 +382,14 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
                     senderId: authUserId, orgId,
                     transactionId: conf.txnId, amount: conf.amount, currency: conf.currency,
                     recipientName: conf.recipientName || thread.name,
-                    title: conf.status === "completed" ? "Payment sent" : "Payment initiated",
+                    title: conf.status === "completed" ? (t("orbit.payment_sent") || "Payment sent") : (t("orbit.payment_initiated") || "Payment initiated"),
                     contextType: thread.entityType, contextId: thread.entityId,
                     tenantId: thread.tenantId, bookingId: thread.bookingId, bookingType: thread.bookingType,
                     encrypt: e2eReady ? encrypt : undefined, peerId: e2eReady ? peerId : null,
                   });
                 } catch {}
               })();
-              toast.success(conf.status === "completed" ? "Payment sent" : "Payment initiated");
+              toast.success(conf.status === "completed" ? (t("orbit.payment_sent") || "Payment sent") : (t("orbit.payment_initiated") || "Payment initiated"));
             }}
             onCancel={() => payment.setPaymentLinkDialog(false)}
           />

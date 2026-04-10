@@ -6,6 +6,7 @@ import { useCallback } from "react";
 import * as commsRepo from "@/repositories/communication.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 import type { ConversationThread } from "@/components/communication-hub/types";
 
 interface UseThreadActionsParams {
@@ -15,6 +16,7 @@ interface UseThreadActionsParams {
 
 export function useThreadActions({ updateThreadLocally, loadThreads }: UseThreadActionsParams) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const userId = user?.id;
 
   /** Helper: resolves contextId for preference upsert */
@@ -25,11 +27,11 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     updateThreadLocally(thread.id, { archived: true });
     try {
       await commsRepo.upsertConversationPreference(userId, ctxId(thread), !!thread.muted, true);
-      toast.success(`"${thread.name}" archived`);
+      toast.success(t("orbit.archived_success", { name: thread.name }));
     } catch (e) {
       console.error("[archive] Failed:", e);
       updateThreadLocally(thread.id, { archived: false });
-      toast.error("Failed to archive conversation");
+      toast.error(t("orbit.archive_failed"));
     }
   }, [userId, updateThreadLocally]);
 
@@ -38,24 +40,26 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     updateThreadLocally(thread.id, { archived: false });
     try {
       await commsRepo.upsertConversationPreference(userId, ctxId(thread), !!thread.muted, false);
-      toast.success(`"${thread.name}" unarchived`);
+      toast.success(t("orbit.unarchived_success", { name: thread.name }));
     } catch (e) {
       console.error("[unarchive] Failed:", e);
       updateThreadLocally(thread.id, { archived: true });
-      toast.error("Failed to unarchive conversation");
+      toast.error(t("orbit.unarchive_failed"));
     }
   }, [userId, updateThreadLocally]);
 
   const deleteThread = useCallback(async (thread: ConversationThread) => {
     if (!userId) return;
+    const prevArchived = !!thread.archived;
+    const prevMuted = !!thread.muted;
     updateThreadLocally(thread.id, { archived: true, muted: true });
     try {
       await commsRepo.upsertConversationPreference(userId, ctxId(thread), true, true);
-      toast.success(`"${thread.name}" deleted`);
+      toast.success(t("orbit.deleted_success", { name: thread.name }));
     } catch (e) {
       console.error("[delete] Failed:", e);
-      updateThreadLocally(thread.id, { archived: false, muted: false });
-      toast.error("Failed to delete conversation");
+      updateThreadLocally(thread.id, { archived: prevArchived, muted: prevMuted });
+      toast.error(t("orbit.delete_failed"));
     }
   }, [userId, updateThreadLocally]);
 
@@ -65,11 +69,11 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     updateThreadLocally(thread.id, { muted: newMuted });
     try {
       await commsRepo.upsertConversationPreference(userId, ctxId(thread), newMuted, !!thread.archived);
-      toast.success(newMuted ? `"${thread.name}" muted` : `"${thread.name}" unmuted`);
+      toast.success(newMuted ? t("orbit.muted_success", { name: thread.name }) : t("orbit.unmuted_success", { name: thread.name }));
     } catch (e) {
       console.error("[mute] Failed:", e);
       updateThreadLocally(thread.id, { muted: !newMuted });
-      toast.error("Failed to update mute setting");
+      toast.error(t("orbit.mute_failed"));
     }
   }, [userId, updateThreadLocally]);
 
@@ -77,17 +81,20 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     if (!userId) return;
     const otherUserId = resolveOtherUserId(thread, userId);
     if (!otherUserId) {
-      toast.error("Cannot identify user to block");
+      toast.error(t("orbit.block_failed"));
       return;
     }
+    const prevArchived = !!thread.archived;
+    const prevMuted = !!thread.muted;
+    updateThreadLocally(thread.id, { archived: true, muted: true });
     try {
       await commsRepo.blockUser(userId, otherUserId);
-      updateThreadLocally(thread.id, { archived: true, muted: true });
       await commsRepo.upsertConversationPreference(userId, ctxId(thread), true, true);
-      toast.success(`${thread.name} blocked`);
+      toast.success(t("orbit.blocked_success", { name: thread.name }));
     } catch (e) {
       console.error("[block] Failed:", e);
-      toast.error("Failed to block user");
+      updateThreadLocally(thread.id, { archived: prevArchived, muted: prevMuted });
+      toast.error(t("orbit.block_failed"));
     }
   }, [userId, updateThreadLocally]);
 
@@ -103,11 +110,11 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
         userId, ctxId(thread), !!thread.muted, !!thread.archived,
         { cleared_at: newClearedAt }
       );
-      toast.success(`Chat with ${thread.name} cleared`);
+      toast.success(t("orbit.cleared_success", { name: thread.name }));
     } catch (e) {
       console.error("[clear] Failed:", e);
       updateThreadLocally(thread.id, { lastMessage: prevLastMessage, unreadCount: prevUnread, clearedAt: prevClearedAt });
-      toast.error("Failed to clear chat");
+      toast.error(t("orbit.clear_failed"));
     }
   }, [userId, updateThreadLocally]);
 
@@ -121,11 +128,11 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
         userId, ctxId(thread), !!thread.muted, !!thread.archived,
         { favorited: newFavorited }
       );
-      toast.success(newFavorited ? `"${thread.name}" added to favourites` : `"${thread.name}" removed from favourites`);
+      toast.success(newFavorited ? t("orbit.favorited_success", { name: thread.name }) : t("orbit.unfavorited_success", { name: thread.name }));
     } catch (e) {
       console.error("[favorite] Failed:", e);
       updateThreadLocally(thread.id, { pinned: wasFavorited });
-      toast.error("Failed to update favourite");
+      toast.error(t("orbit.favorite_failed"));
     }
   }, [userId, updateThreadLocally]);
 
@@ -137,29 +144,27 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
         userId, ctxId(thread), !!thread.muted, !!thread.archived,
         { marked_unread: true }
       );
-      toast.success(`"${thread.name}" marked as unread`);
+      toast.success(t("orbit.marked_unread_success", { name: thread.name }));
     } catch (e) {
       console.error("[markUnread] Failed:", e);
       updateThreadLocally(thread.id, { unreadCount: thread.unreadCount });
-      toast.error("Failed to mark as unread");
+      toast.error(t("orbit.mark_unread_failed"));
     }
   }, [userId, updateThreadLocally]);
 
   const changeStatus = useCallback(async (thread: ConversationThread, status: string) => {
     if (!userId) return;
+    const prevStatus = thread.conversationStatus;
     updateThreadLocally(thread.id, { conversationStatus: status });
     try {
       if (thread.threadId) {
         await commsRepo.updateConversationTimestamp(thread.threadId, undefined);
       }
-      const statusLabels: Record<string, string> = {
-        active: "🟢 Active", waiting_tenant: "🟡 Waiting client", waiting_landlord: "🟠 Waiting owner",
-        waiting_payment: "💰 Waiting payment", resolved: "✅ Resolved", archived: "📦 Archived",
-      };
-      toast.success(`Status: ${statusLabels[status] || status}`);
+      toast.success(t("orbit.status_updated"));
     } catch (e) {
       console.error("[changeStatus] Failed:", e);
-      toast.error("Failed to update status");
+      updateThreadLocally(thread.id, { conversationStatus: prevStatus });
+      toast.error(t("orbit.status_update_failed"));
     }
   }, [userId, updateThreadLocally]);
 
