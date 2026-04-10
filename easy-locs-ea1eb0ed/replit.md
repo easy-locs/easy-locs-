@@ -142,3 +142,13 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **Data Layer**: Added `typedQueries.storefrontPages.selectByOwner()` for full shop data fetch
 - **i18n**: 90+ new keys added (FR + EN) for all bloc titles, item labels, quality checks, KPI labels
 - **Cross-Pillar Wiring**: Merchant items link to `/merchant/store-settings/:id`, `/merchant/menu/:id`, `/merchant/finance`, `/pos`, `/seller`, `/seller/boost`. Property items link to `/dashboard/*`. Orbit items link to `/orbit`. Wallet items link to `/me/saved-cards`, `/me/order-receipts`.
+
+## Me Cockpit Deep Enhancement (Phase 2)
+- **Provider Role Detection**: Added `marketplace_providers.existsByUser()` and `marketplace_providers.countServicesByUser()` to typedQueries. Me now detects marketplace provider role and shows provider-specific section.
+- **Provider Hub Section**: 6 items — Services & Activities, Covered Zones, Availability, Client Requests (bookings), Invoices, Performance. Links to marketplace pages.
+- **MeStatusBar** (`src/components/me/MeStatusBar.tsx`): Horizontal scrollable status pills showing 4 states: Verification (verified/pending), Publication (published/draft/hidden), Wallet (active/setup needed), Orbit (on/off). Green accent when active, navy muted when inactive.
+- **MeQuickActions** (`src/components/me/MeQuickActions.tsx`): 6-column quick action grid for merchants: Orders, Add Product, POS, Chat, Analytics, Media. One-tap access to frequent operations.
+- **Real Merchant KPIs**: Replaced generic KPI strip with real data from `getMerchantDashboardSnapshot()` — Revenue (grossSales), Active Orders, Completed Orders, Available Products. Each KPI is clickable and navigates to its detail page.
+- **CTA Layout Improved**: "Open Shop" and "Become Provider" now side-by-side in a 2-column grid for non-business users. More compact and actionable.
+- **5 Role Support**: simple user, merchant, property manager, provider, driver — each sees only their relevant cockpit sections.
+- **i18n**: 30+ additional keys for status bar, quick actions, provider hub, merchant KPIs (FR + EN).

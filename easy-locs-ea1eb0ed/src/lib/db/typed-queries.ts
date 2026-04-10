@@ -159,6 +159,20 @@ export const typedQueries = {
     },
   },
 
+  marketplaceProviders: {
+    existsByUser(userId: string) {
+      return untypedFrom("marketplace_providers")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle() as unknown as PromiseLike<{ data: { id: string } | null; error: unknown }>;
+    },
+    countServicesByUser(userId: string) {
+      return untypedFrom("marketplace_services")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId) as unknown as PromiseLike<{ count: number | null; error: unknown }>;
+    },
+  },
+
   loyaltyAccounts: {
     selectByUser(userId: string) {
       return untypedFrom("loyalty_accounts")
