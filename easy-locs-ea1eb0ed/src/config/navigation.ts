@@ -36,8 +36,8 @@ export const NAV_TABS_CONFIG: NavTab[] = [
       p.startsWith("/food") || p.startsWith("/grocery") ||
       p.startsWith("/travel") || p.startsWith("/property") ||
       p.startsWith("/mobility/") || p.startsWith("/rider/") ||
-      p.startsWith("/ride") || p.startsWith("/send") ||
-      p.startsWith("/track/") || p.startsWith("/super-map") ||
+      p.startsWith("/ride") ||
+      p.startsWith("/track/") ||
       p.startsWith("/services") || p.startsWith("/real-estate"),
   },
   {

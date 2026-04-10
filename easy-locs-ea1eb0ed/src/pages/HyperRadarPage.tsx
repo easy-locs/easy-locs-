@@ -160,10 +160,10 @@ export default function HyperRadarPage() {
   return (
     <div className="h-[100dvh] w-full relative overflow-hidden bg-background">
       <SEOHead
-        title="Radar — Découvrez autour de vous | Easy-Locs"
-        description="Explorez restaurants, hôtels, services, commerces et activités à proximité sur la carte interactive Easy-Locs."
+        title={t("radar.seo_title")}
+        description={t("radar.seo_desc")}
         canonical="https://www.easy-locs.com/radar"
-        keywords="radar, découverte locale, restaurants proches, hôtels, services, carte interactive, Easy-Locs"
+        keywords={t("radar.seo_keywords")}
       />
 
       {/* ═══ LAYER 1: MAP (base) ═══ */}
@@ -319,7 +319,7 @@ export default function HyperRadarPage() {
           {stats.hotspotCount > 0 && (
             <div className="flex items-center gap-1 mt-0.5">
               <Star className="w-2.5 h-2.5 text-yellow-500" />
-              <span className="text-[10px] text-muted-foreground">{stats.hotspotCount} top</span>
+              <span className="text-[10px] text-muted-foreground">{stats.hotspotCount} {t("radar.hotspots")}</span>
             </div>
           )}
         </div>

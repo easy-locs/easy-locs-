@@ -18,6 +18,11 @@ export class AppCrashBoundary extends React.Component<{ children: React.ReactNod
       details: { raw: String(error) },
       createdAt: new Date().toISOString(),
     });
+    void import("@/lib/analytics/sentry")
+      .then(({ captureException }) => {
+        captureException(error, { boundary: "AppCrashBoundary" });
+      })
+      .catch(() => {});
   }
 
   render() {

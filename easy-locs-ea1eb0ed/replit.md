@@ -115,3 +115,11 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **I18n Gaps Closed**: Hero categories, ActiveCartBanner, active ride/delivery banners — all hardcoded English replaced with i18n keys (FR/EN added)
 - **Design System Consistency**: Gold "See all" links uniform, section labels uniform across OrbitPreviewWidget and all dashboard sections
 - **Dead Code Cleanup**: Removed `sedeeNVJO` junk file, `safe-lazy.tsx` (unused duplicate)
+
+## Improvement Pass (Latest)
+- **Sentry Error Boundaries**: Both `ErrorBoundary` and `AppCrashBoundary` now report crashes to Sentry via `captureException()` (was console-only)
+- **Sentry Boot**: Already wired via `initMonitoring()` → `initUnifiedMonitoring()` → `initSentry()` (deferred 3s after boot). Needs `VITE_SENTRY_DSN` env var to activate
+- **I18n Completion**: All 5 pillar SEOHead tags now use i18n keys (was hardcoded French). Added: `radar.seo_title/desc/keywords`, `wallet.seo_title/desc`, `me.seo_title/desc`, `orbit.seo_desc`, `radar.hotspots`, `orbit.new_group/new_community/find_contact`, `me.property_management/property_management_sub`
+- **Removed Hardcoded Fallbacks**: MeCommandCenter (spending/receipts/property labels), CommunicationCenter (new group/community/find contact) — all now pure i18n without `|| "English fallback"`
+- **Dead Code Cleaned**: Removed orphaned registry entries (`OrdersPage`, `SettingsPaymentMethodsPage`, `NotificationPreferencesPage`). Cleaned dead nav matchers (`/send`, `/super-map`) from navigation.ts
+- **Navigation Clarity**: `/settings/payment-methods` → redirects to `/wallet`, `/settings/notification-preferences` → redirects to `/settings/notifications` (routes kept, orphaned lazy imports removed)

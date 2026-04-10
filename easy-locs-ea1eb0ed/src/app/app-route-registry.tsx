@@ -189,7 +189,6 @@ export const POSPage = safeLazy(() => import("@/pages/POSPage"), "POSPage");
 export const LoyaltyRedeemPage = safeLazy(() => import("@/pages/LoyaltyRedeemPage"), "LoyaltyRedeemPage");
 
 // Wallet — Orders
-export const OrdersPage = safeLazy(() => import("@/pages/OrdersPage"), "OrdersPage");
 export const MyOrdersPage = safeLazy(() => import("@/pages/MyOrdersPage"), "MyOrdersPage");
 export const UnifiedOrderDetailPage = safeLazy(() => import("@/pages/UnifiedOrderDetailPage"), "UnifiedOrderDetailPage");
 export const TrackingPage = safeLazy(() => import("@/pages/TrackingPage"), "TrackingPage");
@@ -228,8 +227,6 @@ export const SettingsNotificationsPage = safeLazy(() => import("@/pages/settings
 export const SettingsSecurityPage = safeLazy(() => import("@/pages/settings/SettingsSecurity"), "SettingsSecurity");
 export const SettingsPreferencesPage = safeLazy(() => import("@/pages/settings/SettingsPreferences"), "SettingsPreferences");
 export const SettingsSupportPage = safeLazy(() => import("@/pages/settings/SettingsSupport"), "SettingsSupport");
-export const SettingsPaymentMethodsPage = safeLazy(() => import("@/pages/settings/SettingsPaymentMethods"), "SettingsPaymentMethods");
-export const NotificationPreferencesPage = safeLazy(() => import("@/pages/settings/NotificationPreferencesPage"), "NotificationPreferencesPage");
 
 // Me — Property Management (mobile-first)
 export const MePropertyHub = safeLazy(() => import("@/pages/me/MePropertyHub"), "MePropertyHub");
