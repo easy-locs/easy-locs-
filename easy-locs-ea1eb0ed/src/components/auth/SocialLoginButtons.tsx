@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
 import {
   authLog, authError as authErrorLog,
@@ -161,10 +161,7 @@ const SocialLoginButtons = () => {
     }
   };
 
-  const statusIcon = (status: ProviderStatus) => {
-    if (status === "checking") return <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />;
-    if (status === "ready") return <CheckCircle2 className="h-3 w-3 text-emerald-500" />;
-    if (status === "unavailable") return <AlertCircle className="h-3 w-3 text-amber-500" />;
+  const statusIcon = (_status: ProviderStatus) => {
     return null;
   };
 
@@ -205,9 +202,6 @@ const SocialLoginButtons = () => {
           </svg>
         )}
         <span className="truncate">{t("auth.social.apple")}</span>
-        {appleStatus === "ready" && <CheckCircle2 className="h-3 w-3 text-emerald-400" />}
-        {appleStatus === "checking" && <Loader2 className="h-3 w-3 animate-spin opacity-50" />}
-        {appleStatus === "unavailable" && <AlertCircle className="h-3 w-3 text-amber-400" />}
       </button>
     </div>
   );

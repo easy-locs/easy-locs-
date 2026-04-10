@@ -156,7 +156,6 @@ function FullLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
         >
           -Locs
         </span>
-        <span className="text-[10px] font-bold align-super ml-0.5" style={{ color: "hsl(38 65% 56%)" }}>®</span>
       </div>
     </div>
   );
@@ -178,7 +177,6 @@ function SplashLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
 
   const content = (
     <div className="flex flex-col items-center gap-4 select-none">
-      {/* Radar emblem */}
       <div className="relative">
         <RadarSvg size={radarSize} animate={animate} />
         {animate && (
@@ -198,8 +196,6 @@ function SplashLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
           </>
         )}
       </div>
-
-      {/* Wordmark */}
       <div className="flex items-baseline gap-1">
         <span className={`${textClass} font-black tracking-tight text-white`}>
           Easy
@@ -215,7 +211,6 @@ function SplashLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
         >
           -Locs
         </span>
-        <span className="text-[10px] font-bold align-super ml-0.5" style={{ color: "hsl(38 65% 56%)" }}>®</span>
       </div>
       <span
         className="text-[10px] tracking-[0.35em] uppercase font-medium"

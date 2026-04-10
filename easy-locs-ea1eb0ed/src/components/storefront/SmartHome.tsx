@@ -348,9 +348,9 @@ function LiveStatsPulse() {
     },
     {
       label: t("home.stats_secure"),
-      value: "E2EE",
+      value: "✓",
       icon: ShieldCheck,
-      pulse: true,
+      pulse: false,
       color: "text-[hsl(38_65%_56%)]",
       to: "/me",
     },
@@ -369,13 +369,6 @@ function LiveStatsPulse() {
           onClick={() => navigate(s.to)}
           className="flex flex-col items-center gap-1 rounded-xl border border-border/8 bg-muted/15 py-2.5 px-1.5 relative overflow-hidden active:scale-[0.95] transition-transform"
         >
-          {s.pulse && (
-            <motion.div
-              className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-green-400"
-              animate={{ opacity: [1, 0.3, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          )}
           <s.icon className={`h-4 w-4 ${s.color} shrink-0`} />
           <p className="text-xs font-black text-foreground tabular-nums leading-none">{s.value}</p>
           <p className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5 text-center w-full break-words">{s.label}</p>
