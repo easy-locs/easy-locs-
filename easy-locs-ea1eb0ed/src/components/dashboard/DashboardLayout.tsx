@@ -17,7 +17,7 @@ import {
   Receipt, Compass,
   Layers, Zap, Store, ChevronDown,
   ArrowLeft, Globe, Clock,
-  Shield, UsersRound, Banknote, BarChart3, Activity, Bug,
+  Shield, UsersRound, Banknote, Activity, Bug,
 } from "lucide-react";
 
 
@@ -83,7 +83,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("nav.property_mgmt") || "Property Management",
       icon: Home,
       items: [
-        { icon: Home, label: t("nav.portfolio") || "Portfolio", path: cPath("/dashboard/rental") },
+        { icon: Home, label: t("nav.portfolio") || "Portfolio", path: cPath("/dashboard/rental-management") },
         { icon: Building, label: t("nav.listings") || "Listings", path: cPath("/dashboard/real-estate") },
         { icon: KeyRound, label: t("nav.rentals") || "Rentals", path: cPath("/dashboard/leases") },
         { icon: Users, label: t("nav.tenants") || "Tenants / Clients", path: cPath("/dashboard/tenants") },
@@ -100,10 +100,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("nav.shops") || "Shops",
       icon: Store,
       items: [
-        { icon: Store, label: t("nav.my_shops") || "My Shops", path: "/business/my-shops" },
+        { icon: Store, label: t("nav.my_shops") || "My Shops", path: "/dashboard/my-shops" },
         { icon: Layers, label: t("nav.catalog") || "Catalog", path: "/dashboard/my-shop" },
         { icon: Receipt, label: t("nav.orders") || "Orders", path: "/my-orders" },
-        { icon: UsersRound, label: t("nav.shop_team") || "Team", path: "/dashboard/shop-team" },
+        { icon: UsersRound, label: t("nav.shop_team") || "Team", path: "/dashboard/collaboration" },
       ],
     },
 
@@ -124,9 +124,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("nav.orbit") || "Orbit",
       icon: MessageCircle,
       items: [
-        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/dashboard/communication" },
-        { icon: BarChart3, label: t("nav.deals") || "Deals", path: "/dashboard/deals" },
-        { icon: Clock, label: t("nav.tracking") || "Tracking", path: "/dashboard/tracking" },
+        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/orbit" },
+        { icon: Receipt, label: t("nav.orders") || "Orders", path: "/my-orders" },
       ],
     },
 
@@ -148,7 +147,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: Settings,
       items: [
         { icon: Settings, label: t("nav.settings") || "Settings", path: "/dashboard/settings" },
-        { icon: BrainCircuit, label: t("nav.ai_assistant") || "AI Assistant", path: "/dashboard/assistant" },
+        { icon: BrainCircuit, label: t("nav.ai_assistant") || "AI Assistant", path: "/dashboard/ai" },
         { icon: Shield, label: t("nav.system_audit") || "System Audit", path: "/admin/audit-debug" },
         { icon: Activity, label: t("nav.runtime_audit") || "Runtime Audit", path: "/admin/runtime-audit" },
         { icon: Bug, label: t("nav.master_debug") || "Master Debug", path: "/admin/master-debug" },

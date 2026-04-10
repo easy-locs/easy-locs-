@@ -264,8 +264,18 @@ const AIAssistant = () => {
     userName: user?.user_metadata?.name || user?.user_metadata?.display_name || "User",
   });
 
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => { abortRef.current?.abort(); };
+  }, []);
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
+
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     const userMsg: Message = { role: "user", content: text.trim() };
     const updatedMessages = [...messages, userMsg];
@@ -289,6 +299,7 @@ const AIAssistant = () => {
           task: "chat",
           stream: true,
         }),
+        signal: controller.signal,
       });
 
       if (!resp.ok) {
@@ -334,7 +345,8 @@ const AIAssistant = () => {
       if (!assistantContent) {
         setMessages(prev => [...prev, { role: "assistant", content: "Sorry, no response was generated." }]);
       }
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       if (!assistantContent) {
         setMessages(prev => [...prev, { role: "assistant", content: "An error occurred. Please try again." }]);
       }

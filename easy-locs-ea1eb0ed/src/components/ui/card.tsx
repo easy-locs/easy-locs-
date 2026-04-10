@@ -16,11 +16,11 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+  ({ className, style, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex flex-col space-y-1.5", className)}
-      style={{ padding: "var(--card-padding)", paddingBottom: 0 }}
+      className={cn("flex flex-col space-y-1.5 p-5 pb-0", className)}
+      style={style}
       {...props}
     />
   ),
@@ -46,11 +46,11 @@ const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttribu
 CardDescription.displayName = "CardDescription";
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+  ({ className, style, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("", className)}
-      style={{ padding: "var(--card-padding)", paddingTop: 0 }}
+      className={cn("p-5 pt-0", className)}
+      style={style}
       {...props}
     />
   ),
@@ -58,11 +58,11 @@ const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
 CardContent.displayName = "CardContent";
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+  ({ className, style, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex flex-wrap items-center gap-2", className)}
-      style={{ padding: "var(--card-padding)", paddingTop: 0 }}
+      className={cn("flex flex-wrap items-center gap-2 p-5 pt-0", className)}
+      style={style}
       {...props}
     />
   ),

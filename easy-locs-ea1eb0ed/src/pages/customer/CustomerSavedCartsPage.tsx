@@ -5,6 +5,8 @@ import { listSavedCarts, deleteSavedCart } from "@/lib/cart/savedCarts";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
+import { ShoppingCart } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default function CustomerSavedCartsPage() {
   const navigate = useNavigate();
@@ -62,7 +64,7 @@ export default function CustomerSavedCartsPage() {
       {isLoading && [1, 2, 3].map((i) => <SkeletonCard key={i} />)}
 
       {!isLoading && rows.length === 0 && (
-        <EmptyState title="No saved carts" description="Save a cart during checkout to see it here" />
+        <EmptyState icon={ShoppingCart} title="No saved carts" description="Save a cart during checkout to see it here" compact />
       )}
 
       {!isLoading && rows.length > 0 && (
@@ -112,15 +114,6 @@ function Header({ title, subtitle, onBack }: { title: string; subtitle: string; 
   );
 }
 
-function EmptyState({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-[28px] border border-border/20 bg-card p-6 text-center">
-      <div className="text-3xl">🛒</div>
-      <div className="text-base font-bold mt-3">{title}</div>
-      <div className="text-sm text-muted-foreground mt-2">{description}</div>
-    </div>
-  );
-}
 
 function SkeletonCard() {
   return <div className="h-28 rounded-[28px] bg-muted animate-pulse" />;

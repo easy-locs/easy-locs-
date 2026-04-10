@@ -44,7 +44,7 @@ function OrbitPreviewWidget({ onNavigate }: Props) {
       className="mx-4 mb-5 rounded-2xl overflow-hidden"
       style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.08)" }}
     >
-      <div className="flex items-center justify-between px-4 pt-3 pb-1">
+      <div className="flex items-center justify-between px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
             <MessageCircle className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
@@ -74,7 +74,7 @@ function OrbitPreviewWidget({ onNavigate }: Props) {
           <button
             key={thread.id}
             onClick={() => handleThreadClick(thread.conversationId || thread.id)}
-            className="flex items-center gap-3 px-4 py-2.5 active:bg-muted/20 transition-colors w-full text-left bg-transparent border-none cursor-pointer"
+            className="flex items-center gap-3 px-4 py-3 active:bg-muted/20 transition-colors w-full text-left bg-transparent border-none cursor-pointer"
             style={idx < recent.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.05)" } : undefined}
           >
             <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold"

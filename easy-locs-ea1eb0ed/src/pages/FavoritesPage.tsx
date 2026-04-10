@@ -9,6 +9,7 @@ import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import { motion } from "framer-motion";
 import { ArrowLeft, Heart, Star, MapPin, ChevronRight } from "lucide-react";
 import { entityUrl } from "@/lib/entity/entity-url";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
@@ -70,22 +71,12 @@ export default function FavoritesPage() {
         ))}
 
         {!isLoading && merchants.length === 0 && (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: "hsl(350 65% 55% / 0.08)" }}>
-              <Heart className="w-8 h-8" style={{ color: "hsl(350 65% 55%)" }} />
-            </div>
-            <p className="text-sm font-bold text-foreground">{tc("common.no_favorites")}</p>
-            <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
-              {tc("common.no_favorites_sub")}
-            </p>
-            <button
-              onClick={() => navigate("/food")}
-              className="mt-4 px-5 py-2.5 rounded-xl text-xs font-bold text-white active:scale-95 transition-transform"
-              style={{ background: "hsl(var(--primary))" }}
-            >
-              Discover Places
-            </button>
-          </div>
+          <EmptyState
+            icon={Heart}
+            title={tc("common.no_favorites")}
+            description={tc("common.no_favorites_sub")}
+            action={{ label: tc("common.discover_places") || "Discover Places", to: "/browse/food" }}
+          />
         )}
 
         {!isLoading && merchants.length > 0 && (
