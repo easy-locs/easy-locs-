@@ -128,6 +128,7 @@ export const TravelStayDetail = safeLazy(() => import("@/pages/travel/TravelStay
 export const TravelFlightDetail = safeLazy(() => import("@/pages/travel/TravelFlightDetail"), "TravelFlightDetail");
 
 // Radar — Mobility
+export const MobilityHubPage = safeLazy(() => import("@/pages/mobility/MobilityHubPage"), "MobilityHubPage");
 export const MobilityTaxiPage = safeLazy(() => import("@/pages/mobility/MobilityTaxiPage"), "MobilityTaxiPage");
 export const MobilityDeliveryPage = safeLazy(() => import("@/pages/mobility/MobilityDeliveryPage"), "MobilityDeliveryPage");
 export const DeliveryBringPage = safeLazy(() => import("@/pages/mobility/DeliveryBringPage"), "DeliveryBringPage");

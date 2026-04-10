@@ -1,8 +1,5 @@
 import { heroCover, bannerCover } from "@/lib/image/category-covers";
-/**
- * TravelStayHub — Premium immersive Travel / Stay page.
- * Backend-connected calendar, real listings, Booking.com-level UX.
- */
+import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -120,16 +117,8 @@ export default function TravelStayHub() {
         description="Book hotels, resorts, vacation rentals and short stays across UAE. Best prices, instant booking."
       />
 
-      {/* ═══ IMMERSIVE HERO ═══ */}
-      <div className="relative overflow-hidden" style={{ minHeight: 380 }}>
-        <div className="absolute inset-0">
-          <img
-            src={heroCover("stay")}
-            alt="Luxury hotel pool"
-            className="w-full h-full object-cover scale-110"
-            loading="eager"
-          />
-        </div>
+      <div className="relative overflow-hidden" style={{ height: 380 }}>
+        <StayHeroVideo />
         <div className="absolute inset-0" style={{
           background: "linear-gradient(180deg, hsla(220,50%,5%,0.3) 0%, hsla(220,50%,5%,0.55) 40%, hsla(220,50%,5%,0.92) 100%)"
         }} />
@@ -545,5 +534,28 @@ export default function TravelStayHub() {
         </div>
       </div>
     </div>
+  );
+}
+
+function StayHeroVideo() {
+  const theme = getVerticalTheme("stay");
+  const [loaded, setLoaded] = useState(false);
+  const [err, setErr] = useState(false);
+  return (
+    <>
+      {theme.heroVideo && !err && (
+        <video
+          src={theme.heroVideo}
+          autoPlay loop muted playsInline preload="auto"
+          onCanPlay={() => setLoaded(true)}
+          onError={() => setErr(true)}
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+          style={{ opacity: loaded ? 1 : 0 }}
+        />
+      )}
+      {(!theme.heroVideo || !loaded || err) && (
+        <img src={heroCover("stay")} alt="Luxury hotel pool" className="absolute inset-0 w-full h-full object-cover scale-110" loading="eager" />
+      )}
+    </>
   );
 }

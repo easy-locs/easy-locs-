@@ -1,5 +1,6 @@
 import { heroCover, bannerCover } from "@/lib/image/category-covers";
 import { useState, useMemo, useCallback } from "react";
+import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Search, MapPin, SlidersHorizontal, ArrowLeft,
@@ -136,15 +137,8 @@ export default function PropertyHub() {
         description="Find apartments, villas, townhouses for sale or rent. Explore off-plan projects and investment opportunities across UAE."
       />
 
-      <div className="relative overflow-hidden" style={{ minHeight: 320 }}>
-        <div className="absolute inset-0">
-          <img
-            src={heroCover("property")}
-            alt="Dubai skyline"
-            className="w-full h-full object-cover scale-110"
-            loading="eager"
-          />
-        </div>
+      <div className="relative overflow-hidden" style={{ height: 320 }}>
+        <PropertyHeroVideo />
         <div className="absolute inset-0" style={{
           background: "linear-gradient(180deg, hsla(220,50%,5%,0.3) 0%, hsla(220,50%,5%,0.55) 40%, hsla(220,50%,5%,0.92) 100%)"
         }} />
@@ -349,5 +343,28 @@ export default function PropertyHub() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+function PropertyHeroVideo() {
+  const theme = getVerticalTheme("property");
+  const [loaded, setLoaded] = useState(false);
+  const [err, setErr] = useState(false);
+  return (
+    <>
+      {theme.heroVideo && !err && (
+        <video
+          src={theme.heroVideo}
+          autoPlay loop muted playsInline preload="auto"
+          onCanPlay={() => setLoaded(true)}
+          onError={() => setErr(true)}
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+          style={{ opacity: loaded ? 1 : 0 }}
+        />
+      )}
+      {(!theme.heroVideo || !loaded || err) && (
+        <img src={heroCover("property")} alt="Dubai skyline" className="absolute inset-0 w-full h-full object-cover scale-110" loading="eager" />
+      )}
+    </>
   );
 }
