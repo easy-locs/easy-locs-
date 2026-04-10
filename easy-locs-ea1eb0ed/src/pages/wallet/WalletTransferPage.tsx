@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import * as paymentsRepo from "@/repositories/payments.repository";
 import PinEntryDialog from "@/components/wallet/PinEntryDialog";
 import TransferSuccessScreen from "@/components/wallet/TransferSuccessScreen";
+import { useReturnToOrigin } from "@/hooks/useReturnToOrigin";
 import { useI18n } from "@/lib/i18n";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
 import { listOrbitContacts } from "@/lib/orbit/orbit-contacts-service";
@@ -57,6 +58,7 @@ export default function WalletTransferPage() {
   const { user } = useAuth();
   const { t } = useI18n();
   const { balance, currency, reload: reloadBalance, optimisticAdjust } = useWalletBalance();
+  const { returnToOrigin, hasOrigin } = useReturnToOrigin("/wallet");
 
   const [recipient, setRecipient] = useState(searchParams.get("to") || searchParams.get("email") || "");
   const [target, setTarget] = useState<ResolvedPayTarget | null>(null);
@@ -315,7 +317,7 @@ export default function WalletTransferPage() {
         amount={successMeta.amount}
         currency={successMeta.currency}
         recipientName={successMeta.name}
-        onDone={() => navigate("/wallet")}
+        onDone={() => returnToOrigin(500)}
       />
     );
   }
@@ -323,7 +325,7 @@ export default function WalletTransferPage() {
   return (
     <div className="app-mobile-page app-mobile-content bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate("/wallet")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-[0.95] transition-transform">
+        <button onClick={() => hasOrigin ? returnToOrigin(0) : navigate("/wallet")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-[0.95] transition-transform">
           <ArrowLeft className="w-4 h-4 text-foreground" />
         </button>
         <div>

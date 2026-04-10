@@ -2,18 +2,20 @@ import { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   resolveNavigationIntent,
-  resolveActionLevel,
   routeToPillar,
   type Pillar,
   type OverlayType,
+  type NavigationContext,
 } from "@/lib/navigation/navigation-intent";
 import { shouldUpgradeToFull } from "@/lib/navigation/pillar-rules";
 import { haptic } from "@/lib/haptics";
+import { setReturnOrigin } from "@/lib/navigation/return-origin";
 
 export interface SmartNavigationState {
   activeOverlay: OverlayType | null;
   overlayRoute: string | null;
   overlayAction: string | null;
+  overlayContext: NavigationContext | null;
 }
 
 export function useSmartNavigation() {
@@ -25,11 +27,12 @@ export function useSmartNavigation() {
     activeOverlay: null,
     overlayRoute: null,
     overlayAction: null,
+    overlayContext: null,
   });
 
   const smartNavigate = useCallback(
-    (targetRoute: string, action?: string) => {
-      const intent = resolveNavigationIntent(currentPillar, targetRoute, action);
+    (targetRoute: string, action?: string, context?: NavigationContext) => {
+      const intent = resolveNavigationIntent(currentPillar, targetRoute, action, context);
 
       if (intent.level === "inline") {
         return;
@@ -42,6 +45,7 @@ export function useSmartNavigation() {
 
         if (forceFullNav) {
           haptic("medium");
+          setReturnOrigin(location.pathname);
           navigate(targetRoute);
           return;
         }
@@ -51,14 +55,16 @@ export function useSmartNavigation() {
           activeOverlay: intent.overlayType,
           overlayRoute: targetRoute,
           overlayAction: intent.action,
+          overlayContext: context || null,
         });
         return;
       }
 
       haptic("medium");
+      setReturnOrigin(location.pathname);
       navigate(targetRoute);
     },
-    [currentPillar, navigate]
+    [currentPillar, navigate, location.pathname]
   );
 
   const closeOverlay = useCallback(() => {
@@ -66,6 +72,7 @@ export function useSmartNavigation() {
       activeOverlay: null,
       overlayRoute: null,
       overlayAction: null,
+      overlayContext: null,
     });
   }, []);
 
@@ -74,9 +81,10 @@ export function useSmartNavigation() {
     closeOverlay();
     if (route) {
       haptic("medium");
+      setReturnOrigin(location.pathname);
       setTimeout(() => navigate(route), 150);
     }
-  }, [overlayState.overlayRoute, closeOverlay, navigate]);
+  }, [overlayState.overlayRoute, closeOverlay, navigate, location.pathname]);
 
   return {
     smartNavigate,

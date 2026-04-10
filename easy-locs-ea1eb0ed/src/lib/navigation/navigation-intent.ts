@@ -2,6 +2,17 @@ export type ActionLevel = "inline" | "overlay" | "full";
 
 export type Pillar = "dashboard" | "radar" | "orbit" | "wallet" | "me";
 
+export interface NavigationContext {
+  entityId?: string;
+  entityName?: string;
+  entityType?: string;
+  entityImage?: string;
+  amount?: number;
+  currency?: string;
+  note?: string;
+  returnRoute?: string;
+}
+
 export interface NavigationIntent {
   from: Pillar;
   to: Pillar;
@@ -9,6 +20,7 @@ export interface NavigationIntent {
   level: ActionLevel;
   route: string;
   overlayType?: OverlayType;
+  context?: NavigationContext;
 }
 
 export type OverlayType = "radar" | "orbit" | "wallet" | "me" | "entity";
@@ -46,6 +58,8 @@ const OVERLAY_ACTIONS = new Set([
   "compose_message",
   "pillar_switch",
   "open_thread",
+  "pay_entity",
+  "contact_entity",
 ]);
 
 const FULL_ACTIONS = new Set([
@@ -65,7 +79,8 @@ const FULL_ACTIONS = new Set([
 export function resolveNavigationIntent(
   from: Pillar,
   targetRoute: string,
-  action?: string
+  action?: string,
+  context?: NavigationContext
 ): NavigationIntent {
   const to = routeToPillar(targetRoute);
   const resolvedAction = action || inferAction(targetRoute);
@@ -81,6 +96,7 @@ export function resolveNavigationIntent(
     level: finalLevel,
     route: targetRoute,
     overlayType: finalLevel === "overlay" ? pillarToOverlayType(to) : undefined,
+    context,
   };
 }
 

@@ -814,6 +814,7 @@ export default function SmartHome() {
       <PillarOverlayHost
         activeOverlay={overlayState.activeOverlay}
         overlayRoute={overlayState.overlayRoute}
+        overlayContext={overlayState.overlayContext}
         onClose={closeOverlay}
       />
 
