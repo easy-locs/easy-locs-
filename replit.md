@@ -102,6 +102,62 @@ Context-aware dashboard brain that prioritizes content based on time-of-day, day
 - **Hotel Booking**: Smart date defaults (tomorrow/day-after) so rooms show prices immediately without manual date selection
 - **i18n keys**: home.qa_reorder, home.qa_favorites, home.qa_my_orders added to FR/EN
 
+## Flight Vertical Module (API-Ready)
+World-class flight booking engine — multi-provider, state-machine driven, fully integrated with all 5 pillars. Ready to receive API keys from any GDS/OTA provider.
+
+### Domain Types (`src/domains/flight/flight-types.ts`)
+- **FlightOffer**: Complete offer with segments, baggage, pricing, fare rules, seat availability
+- **FlightBooking**: Full booking with provider refs, PNR, payment mode, platform fee split, retry count
+- **FlightTicket**: Per-passenger ticket with PNR, ticket number, status lifecycle
+- **Passenger**: Name, passport, DOB, nationality, frequent flyer, seat/meal preferences
+- **FlightSegment**: Per-leg segment with airline, aircraft, times, duration, cabin class, baggage
+- **FlightProviderConfig**: Per-provider config (API URL, regions, currencies, payment mode, commission, priority, timeout, retries)
+
+### State Machine (`src/domains/flight/flight-state-machine.ts`)
+12-state strict machine: `searching → priced → selected → booking_pending → payment_pending → payment_confirmed → ticketing_in_progress → ticketed` + `failed / cancelled / refund_pending / refunded`
+- `transitionFlight(current, event)` — strict transition (returns null on invalid)
+- `canTransitionFlight()`, `getValidEvents()`, `isTerminalState()`
+- Status metadata (label, color, icon) for UI rendering
+- Re-exported from `src/domains/shared/state-machines.ts`
+
+### Multi-Provider Adapter (`src/lib/flight/flight-provider-adapter.ts`)
+- **FlightProviderAdapter** interface: search, reprice, createBooking, confirmPayment, issueTickets, cancelBooking, requestRefund, verifyWebhookSignature, getBookingStatus, healthCheck
+- Provider registry: `registerProvider()` / `unregisterProvider()` / `getProvider()`
+- Region-based routing: `getProviderForRegion()` for geo-aware provider selection
+- Payment mode resolution: `resolvePaymentMode()` — platform / provider_direct / hybrid
+- Commission engine: `computePlatformFee()` — per-provider commission split
+- Dev mock adapter: `mockProviderAdapter` for development without API keys
+
+### Services (`src/lib/flight/`)
+- **flightSearchService**: Multi-provider parallel search, dedup, filtering, 5min cache, platform bus events
+- **flightPricingService**: Repricing with cache, expiry check, passenger total computation (adult/child/infant pricing)
+- **flightBookingService**: Full booking lifecycle — create, payment request, confirm, cancel, fail, expiry detection
+- **flightTicketingService**: Ticket issuance with 3-retry exponential backoff, void support
+- **flightPaymentOrchestrator**: Hybrid payment model — initiates payment (Wallet or provider), handles success/failure, auto-ticketing after payment, 15min payment timeout with auto-cancel
+- **flightWebhookHandler**: Ingests 10 webhook event types, dedup (1h window), signature verification, maps to booking actions + Orbit notifications
+- **flightReconciliationService**: Per-booking reconciliation, bulk reconciliation, expired booking cleanup, refund processing with provider delegation
+
+### Integration Points
+- **Dashboard**: Flight status in quick access, booking previews
+- **Radar**: Flight discovery if applicable
+- **Wallet**: Payment orchestrated via `wallet:payment_success` events, hybrid mode support
+- **Orbit**: Notifications for schedule changes, refund status, booking confirmations
+- **Me**: Booking history, ticket management, refund tracking
+
+### Payment Model (Hybrid)
+- `platform`: Easy-Locs collects payment, settles with provider (commission retained)
+- `provider_direct`: Provider handles payment directly (Easy-Locs earns commission on fee)
+- `hybrid`: Platform controls UX, routing decided per-country/provider
+- Commission split: `computePlatformFee()` with per-provider percentage
+
+### Flow
+1. Search → multi-provider parallel → deduplicate → filter → sort
+2. Select → reprice check → confirm availability
+3. Create booking → hold with provider → start payment timer
+4. Payment → Wallet orchestration or provider direct → confirm
+5. Payment confirmed → auto-issue tickets (3 retries with backoff)
+6. Ticketed → complete. Refunds/cancellations handled via state machine
+
 ## Smart Cross-Pillar Navigation
 Complete overlay-first navigation system ensuring seamless user flows across all 5 pillars:
 

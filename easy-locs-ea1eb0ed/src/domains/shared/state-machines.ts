@@ -97,3 +97,13 @@ export type {
   UploadState,
   ConnectionState,
 } from "@/lib/state-machines/canonical-machines";
+
+export {
+  FLIGHT_MACHINE,
+  transitionFlight,
+  canTransitionFlight,
+  getValidEvents as getFlightValidEvents,
+  isTerminalState as isFlightTerminal,
+  FLIGHT_STATUS_META,
+} from "@/domains/flight/flight-state-machine";
+export type { FlightEvent } from "@/domains/flight/flight-state-machine";
