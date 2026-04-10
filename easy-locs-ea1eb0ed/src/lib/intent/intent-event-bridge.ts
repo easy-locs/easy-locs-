@@ -1,0 +1,171 @@
+import { eventBus } from "@/lib/core/event-bus";
+import { detectIntent } from "./intent-engine";
+import { resolveRoute } from "./domain-router";
+import type { IntentContext, CanonicalEntityType, EntityVertical } from "./intent-types";
+
+type NavigateFn = (path: string) => void;
+
+let _navigate: NavigateFn | null = null;
+
+export function setIntentNavigate(fn: NavigateFn) {
+  _navigate = fn;
+}
+
+function handleNavigation(path: string) {
+  if (!_navigate) {
+    if (import.meta.env.DEV) {
+      console.warn("[intent-bridge] Navigate not initialized, queuing:", path);
+    }
+    return;
+  }
+  _navigate(path);
+}
+
+function resolveAndRoute(ctx: IntentContext) {
+  const intent = detectIntent(ctx);
+  const result = resolveRoute(intent);
+
+  if (import.meta.env.DEV) {
+    console.log("[intent-bridge]", ctx.metadata?.source ?? "unknown", "→", {
+      intent: intent.action,
+      route: result.path,
+      confidence: intent.confidence,
+    });
+  }
+
+  if (result.action === "navigate" && result.path) {
+    handleNavigation(result.path);
+  }
+
+  if (result.action === "event") {
+    eventBus.emit(`intent.${intent.action}`, {
+      entityId: intent.entityId,
+      entityType: intent.entityType,
+      vertical: intent.vertical,
+      source: intent.source,
+    });
+  }
+
+  return intent;
+}
+
+function handleStoryCTA(payload: Record<string, unknown>) {
+  resolveAndRoute({
+    entityId: String(payload.entityId ?? ""),
+    entityType: String(payload.entityType ?? "merchant") as CanonicalEntityType,
+    vertical: String(payload.vertical ?? "") as EntityVertical,
+    categoryKey: payload.categoryKey as string | undefined,
+    subcategoryKey: payload.subcategoryKey as string | undefined,
+    ctaType: payload.ctaType as string | undefined,
+    feedKey: payload.feedKey as string | undefined,
+    surface: "story",
+    metadata: { storyId: payload.storyId, source: "story.cta.clicked" },
+  });
+}
+
+function handleEntityClick(payload: Record<string, unknown>) {
+  resolveAndRoute({
+    entityId: String(payload.entityId ?? ""),
+    entityType: String(payload.entityType ?? "merchant") as CanonicalEntityType,
+    vertical: String(payload.vertical ?? "") as EntityVertical,
+    surface: "direct",
+    metadata: { source: "entity.click" },
+  });
+}
+
+function handleWalletAction(payload: Record<string, unknown>) {
+  const action = String(payload.action ?? "");
+  const context = String(payload.context ?? "");
+
+  const WALLET_DIRECT_ROUTES: Record<string, string> = {
+    scan: "/pay/scan",
+    link: "/pay/link-resolver",
+    request: "/wallet/request",
+  };
+
+  if (WALLET_DIRECT_ROUTES[context]) {
+    handleNavigation(WALLET_DIRECT_ROUTES[context]);
+    return;
+  }
+
+  const intentHintMap: Record<string, string> = {
+    transfer: "wallet_transfer",
+    send: "wallet_transfer",
+    pay: "wallet_payment",
+    topup: "wallet_topup",
+    "top-up": "wallet_topup",
+    receive: "wallet_transfer",
+  };
+
+  resolveAndRoute({
+    entityId: String(payload.recipientId ?? payload.merchantId ?? ""),
+    entityType: (payload.entityType as CanonicalEntityType) ?? "merchant",
+    vertical: "shops",
+    ctaType: action,
+    intentHint: intentHintMap[action] ?? "wallet_transfer",
+    surface: "wallet",
+    metadata: { source: "wallet.action", originalAction: action, amount: payload.amount },
+  });
+}
+
+function handleOrbitAction(payload: Record<string, unknown>) {
+  const action = String(payload.action ?? "open");
+  const isSupport = action === "support" || payload.context === "support";
+
+  resolveAndRoute({
+    entityId: String(payload.threadId ?? payload.entityId ?? ""),
+    entityType: (payload.entityType as CanonicalEntityType) ?? "merchant",
+    vertical: String(payload.vertical ?? "services") as EntityVertical,
+    ctaType: isSupport ? "support" : "thread",
+    surface: "orbit",
+    metadata: { source: "orbit.action", threadContext: payload.context },
+  });
+}
+
+function handleRadarAction(payload: Record<string, unknown>) {
+  resolveAndRoute({
+    entityId: String(payload.entityId ?? ""),
+    entityType: String(payload.entityType ?? "merchant") as CanonicalEntityType,
+    vertical: String(payload.vertical ?? "") as EntityVertical,
+    ctaType: "open",
+    surface: "radar",
+    metadata: { source: "radar.action", lat: payload.lat, lng: payload.lng },
+  });
+}
+
+function handleDashboardAction(payload: Record<string, unknown>) {
+  resolveAndRoute({
+    entityId: String(payload.entityId ?? ""),
+    entityType: String(payload.entityType ?? "merchant") as CanonicalEntityType,
+    vertical: String(payload.vertical ?? "") as EntityVertical,
+    ctaType: payload.ctaType as string | undefined,
+    surface: "dashboard",
+    feedKey: payload.feedKey as string | undefined,
+    metadata: { source: "dashboard.action" },
+  });
+}
+
+function handleSearchExecuted(payload: Record<string, unknown>) {
+  resolveAndRoute({
+    entityId: "",
+    entityType: "merchant",
+    vertical: String(payload.vertical ?? "") as EntityVertical,
+    searchQuery: String(payload.query ?? ""),
+    surface: "search",
+    metadata: { source: "search.executed" },
+  });
+}
+
+export function installIntentBridge() {
+  eventBus.on("story.cta.clicked", handleStoryCTA);
+  eventBus.on("entity.click", handleEntityClick);
+  eventBus.on("wallet.action", handleWalletAction);
+  eventBus.on("orbit.action", handleOrbitAction);
+  eventBus.on("radar.action", handleRadarAction);
+  eventBus.on("dashboard.action", handleDashboardAction);
+  eventBus.on("search.executed", handleSearchExecuted);
+
+  if (import.meta.env.DEV) {
+    console.log("[intent-bridge] Installed — listening to story.cta.clicked, entity.click, wallet.action, orbit.action, radar.action, dashboard.action, search.executed");
+  }
+}

@@ -1,0 +1,184 @@
+/**
+ * Notification handler — listens to canonical platform events (colon notation)
+ * and writes to app_notifications via insertNotification.
+ */
+import { platformBus } from "@/lib/shared/platform-bus";
+import { supabase } from "@/integrations/supabase/client";
+import { insertNotification } from "@/lib/notifications-v2/notification-service";
+
+// ── Message sent → notify receiver ──
+platformBus.on("orbit:message_sent", (event) => {
+  const msg = event.payload as any;
+  const message = msg?.message;
+  if (!message) return;
+  if (import.meta.env.DEV) console.log("[notification-handler] orbit:message_sent captured", message.conversationId);
+});
+
+// ── Wallet transaction created → notify user ──
+platformBus.on("wallet:transaction_created", (event) => {
+  const { transaction, walletBalance } = event.payload as any;
+  if (!transaction) return;
+  supabase.auth.getUser().then(({ data }) => {
+    const userId = data?.user?.id;
+    if (!userId) return;
+    const currency = transaction.currency ?? "AED";
+    const sign = transaction.amount > 0 ? "+" : "";
+    const amountStr = `${sign}${transaction.amount} ${currency}`;
+    const balanceStr = walletBalance != null ? ` · Balance: ${walletBalance} ${currency}` : "";
+    void insertNotification({
+      user_id: userId,
+      actor: "client",
+      domain: "wallet",
+      type: "wallet.credit",
+      title: "Transaction recorded",
+      body: `${amountStr}${balanceStr}`,
+      data: { transactionId: transaction.id, amount: transaction.amount, balance: walletBalance, currency },
+    });
+  });
+});
+
+// ── Payment success → notify ──
+platformBus.on("wallet:payment_success", (event) => {
+  const p = event.payload as any;
+  supabase.auth.getUser().then(({ data }) => {
+    const userId = data?.user?.id;
+    if (!userId) return;
+    const currency = p.currency ?? "AED";
+    const balanceStr = p.walletBalance != null ? ` · Balance: ${p.walletBalance} ${currency}` : "";
+    void insertNotification({
+      user_id: userId,
+      actor: "client",
+      domain: "wallet",
+      type: "payment.success",
+      title: "Payment successful ✅",
+      body: `${p.amount ?? ""} ${currency} payment completed${balanceStr}`,
+      data: { transactionId: p.transactionId, balance: p.walletBalance, currency },
+      related_payment_intent_id: p.paymentIntentId,
+    });
+  });
+});
+
+// ── Payment failed → notify ──
+platformBus.on("wallet:payment_failed", (event) => {
+  const p = event.payload as any;
+  supabase.auth.getUser().then(({ data }) => {
+    const userId = data?.user?.id;
+    if (!userId) return;
+    void insertNotification({
+      user_id: userId,
+      actor: "client",
+      domain: "wallet",
+      type: "payment.failed",
+      title: "Payment failed ❌",
+      body: p.reason || "Payment could not be processed",
+      priority: "high",
+      data: { transactionId: p.transactionId },
+    });
+  });
+});
+
+// ── Booking events ──
+platformBus.on("booking:requested", (event) => {
+  const { booking } = event.payload as any;
+  if (!booking) return;
+  supabase.auth.getUser().then(({ data }) => {
+    const userId = data?.user?.id;
+    if (!userId) return;
+    void insertNotification({
+      user_id: userId,
+      actor: "client",
+      domain: "system",
+      type: "booking.requested",
+      title: "Booking submitted",
+      body: "Your booking request has been sent",
+      data: { bookingId: booking.id },
+    });
+  });
+});
+
+platformBus.on("booking:confirmed", (event) => {
+  const p = event.payload as any;
+  supabase.auth.getUser().then(({ data }) => {
+    const userId = data?.user?.id;
+    if (!userId) return;
+    void insertNotification({
+      user_id: userId,
+      actor: "client",
+      domain: "system",
+      type: "booking.confirmed",
+      title: "Booking confirmed! 🎉",
+      body: "Your booking has been approved",
+      data: { bookingId: p.bookingId },
+    });
+  });
+});
+
+platformBus.on("booking:cancelled", (event) => {
+  const p = event.payload as any;
+  supabase.auth.getUser().then(({ data }) => {
+    const userId = data?.user?.id;
+    if (!userId) return;
+    void insertNotification({
+      user_id: userId,
+      actor: "client",
+      domain: "system",
+      type: "booking.cancelled",
+      title: "Booking cancelled",
+      body: "Your booking has been cancelled",
+      data: { bookingId: p.bookingId },
+    });
+  });
+});
+
+// ── Storefront order events ──
+platformBus.on("ORDER_CREATED", (event) => {
+  const p = event.payload as any;
+  const userId = p.userId || p.buyerId;
+  if (!userId) return;
+  void insertNotification({
+    user_id: userId,
+    actor: "client",
+    domain: "merchant",
+    type: "order.confirmed",
+    title: "Order confirmed",
+    body: `Order #${(p.orderId as string)?.slice(0, 8) ?? ""} is confirmed`,
+    data: { orderId: p.orderId, shopId: p.shopId },
+    related_order_id: p.orderId,
+  });
+});
+
+platformBus.on("ORDER_COMPLETED", (event) => {
+  const p = event.payload as any;
+  const userId = p.userId || p.buyerId;
+  if (!userId) return;
+  void insertNotification({
+    user_id: userId,
+    actor: "client",
+    domain: "merchant",
+    type: "order.delivered",
+    title: "Order delivered! 🎉",
+    body: "Your order has been delivered. Enjoy!",
+    data: { orderId: p.orderId },
+    related_order_id: p.orderId,
+  });
+});
+
+// ── QR payment completed ──
+platformBus.on("qr:payment_completed", (event) => {
+  const p = event.payload as any;
+  supabase.auth.getUser().then(({ data }) => {
+    const userId = data?.user?.id;
+    if (!userId) return;
+    void insertNotification({
+      user_id: userId,
+      actor: "client",
+      domain: "wallet",
+      type: "payment.qr.success",
+      title: "QR Payment successful ✅",
+      body: `Payment of ${p.amount ?? ""} ${p.currency ?? "AED"} completed`,
+      data: { targetId: p.targetId },
+    });
+  });
+});
+
+if (import.meta.env.DEV) console.log("[notification-handler] Registered on platformBus — colon notation");

@@ -1,0 +1,170 @@
+import { useState, useRef, useCallback, useEffect, type ReactNode } from "react";
+import { Archive, ArchiveRestore, MoreHorizontal } from "lucide-react";
+import { haptic } from "@/lib/haptics";
+import { useI18n } from "@/lib/i18n";
+
+interface Props {
+  children: ReactNode;
+  onDelete: () => void;
+  onArchive: () => void;
+  onMore?: () => void;
+  isArchived?: boolean;
+  disabled?: boolean;
+  itemId: string;
+  activeSwipeId: string | null;
+  onSwipeOpen: (id: string | null) => void;
+}
+
+const SWIPE_THRESHOLD = 60;
+const BUTTON_WIDTH = 72;
+const TOTAL_REVEAL = BUTTON_WIDTH * 2;
+
+export default function SwipeableThreadItem({
+  children, onDelete, onArchive, onMore, isArchived = false, disabled = false,
+  itemId, activeSwipeId, onSwipeOpen,
+}: Props) {
+  const { t } = useI18n();
+  const [offsetX, setOffsetX] = useState(0);
+  const isOpen = activeSwipeId === itemId;
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const isTracking = useRef(false);
+  const locked = useRef<"horizontal" | "vertical" | null>(null);
+  const wasDragging = useRef(false);
+  const currentOffset = useRef(0);
+
+  useEffect(() => {
+    if (activeSwipeId !== itemId && offsetX !== 0) {
+      setOffsetX(0);
+    }
+  }, [activeSwipeId, itemId, offsetX]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (disabled) return;
+    const touch = e.touches[0];
+    startX.current = touch.clientX;
+    startY.current = touch.clientY;
+    isTracking.current = true;
+    locked.current = null;
+    wasDragging.current = false;
+    currentOffset.current = activeSwipeId === itemId ? -TOTAL_REVEAL : 0;
+  }, [disabled, activeSwipeId, itemId]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isTracking.current || disabled) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - startX.current;
+    const dy = touch.clientY - startY.current;
+
+    if (!locked.current) {
+      if (Math.abs(dy) > 8) { locked.current = "vertical"; return; }
+      if (Math.abs(dx) > 8) locked.current = "horizontal";
+      else return;
+    }
+    if (locked.current === "vertical") return;
+
+    e.preventDefault();
+    wasDragging.current = true;
+
+    const raw = currentOffset.current + dx;
+    const clamped = Math.max(-TOTAL_REVEAL - 20, Math.min(0, raw));
+    const dampened = clamped < -TOTAL_REVEAL
+      ? -TOTAL_REVEAL + (clamped + TOTAL_REVEAL) * 0.3
+      : clamped;
+    setOffsetX(dampened);
+  }, [disabled]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isTracking.current) return;
+    isTracking.current = false;
+    locked.current = null;
+
+    if (Math.abs(offsetX) > SWIPE_THRESHOLD) {
+      setOffsetX(-TOTAL_REVEAL);
+      onSwipeOpen(itemId);
+      haptic("light");
+    } else {
+      setOffsetX(0);
+      if (isOpen) onSwipeOpen(null);
+    }
+  }, [offsetX, itemId, isOpen, onSwipeOpen]);
+
+  const close = useCallback(() => {
+    setOffsetX(0);
+    onSwipeOpen(null);
+  }, [onSwipeOpen]);
+
+  const handleArchiveClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    haptic("medium");
+    close();
+    onArchive();
+  }, [onArchive, close]);
+
+  const handleMoreClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    haptic("light");
+    close();
+    onMore?.();
+  }, [onMore, close]);
+
+  const handleContentClick = useCallback((e: React.MouseEvent) => {
+    if (wasDragging.current) {
+      e.stopPropagation();
+      e.preventDefault();
+      return;
+    }
+    if (isOpen) {
+      e.stopPropagation();
+      e.preventDefault();
+      close();
+    }
+  }, [isOpen, close]);
+
+  const absOffset = Math.abs(offsetX);
+  const moreWidth = Math.min(absOffset / 2, BUTTON_WIDTH);
+  const archiveWidth = Math.min(absOffset / 2, BUTTON_WIDTH);
+
+  return (
+    <div className="relative overflow-hidden">
+      <div className="absolute inset-y-0 right-0 flex overflow-hidden" style={{ width: `${absOffset}px` }}>
+        <button
+          onClick={handleMoreClick}
+          className="flex flex-col items-center justify-center gap-1 transition-colors active:opacity-80"
+          style={{ width: `${moreWidth}px`, background: "hsl(var(--muted-foreground) / 0.7)", color: "white" }}
+        >
+          <MoreHorizontal className="h-5 w-5" />
+          <span className="text-[10px] font-medium">{t("orbit.more")}</span>
+        </button>
+
+        <button
+          onClick={handleArchiveClick}
+          className="flex flex-col items-center justify-center gap-1 transition-colors active:opacity-80"
+          style={{ width: `${archiveWidth}px`, background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+        >
+          {isArchived ? <ArchiveRestore className="h-5 w-5" /> : <Archive className="h-5 w-5" />}
+          <span className="text-[10px] font-medium">
+            {isArchived ? (t("orbit.unarchive")) : (t("orbit.archive"))}
+          </span>
+        </button>
+      </div>
+
+      <div
+        className="relative z-10"
+        style={{
+          transform: `translateX(${offsetX}px)`,
+          transition: isTracking.current ? "none" : "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          willChange: "transform",
+          background: "hsl(var(--background))",
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        onClickCapture={handleContentClick}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}

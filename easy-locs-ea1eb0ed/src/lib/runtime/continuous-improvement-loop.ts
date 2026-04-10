@@ -1,0 +1,156 @@
+/**
+ * continuous-improvement-loop — Orchestrates all runtime engines in a continuous
+ * scan→detect→classify→fix→validate→optimize→protect cycle.
+ * Integrates with auto-repair-engine and all quality/guard engines.
+ */
+
+import { runAutoRepairCycle, getRepairHistory } from "./auto-repair-engine";
+import { runArchitectureGuard, getLastArchGuardReport } from "./architecture-guard";
+import { runTaxonomyGuard, getTaxonomyViolations } from "./taxonomy-guard";
+import { runSearchPurityEngine, getSearchPurityViolations } from "./search-purity-engine";
+import { runCardHealthValidator, getDeadCards } from "./card-health-validator";
+import { runProviderQualityEngine } from "./provider-quality-engine";
+import { runListingQualityEngine } from "./listing-quality-engine";
+import { runEntryGuards } from "./entry-guards";
+import { reportHealth } from "./health-aggregator";
+import { reportAnomaly } from "./anomaly-detector";
+
+export interface ImprovementCycleReport {
+  cycleNumber: number;
+  startedAt: string;
+  completedAt: string;
+  durationMs: number;
+  archGuard: { status: string; passed: number; failed: number; warnings: number };
+  taxonomyGuard: { violations: number };
+  searchPurity: { status: string; violations: number };
+  cardHealth: { total: number; healthy: number; dead: number };
+  repairActions: number;
+  overallStatus: "clean" | "warnings" | "violations" | "critical";
+}
+
+const CYCLE_INTERVAL_MS = 120_000;
+let cycleCount = 0;
+let lastCycleReport: ImprovementCycleReport | null = null;
+let intervalId: ReturnType<typeof setInterval> | null = null;
+let running = false;
+
+export async function runImprovementCycle(): Promise<ImprovementCycleReport> {
+  if (running) {
+    if (lastCycleReport) return lastCycleReport;
+    return {
+      cycleNumber: cycleCount,
+      startedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+      durationMs: 0,
+      archGuard: { status: "clean", passed: 0, failed: 0, warnings: 0 },
+      taxonomyGuard: { violations: 0 },
+      searchPurity: { status: "clean", violations: 0 },
+      cardHealth: { total: 0, healthy: 0, dead: 0 },
+      repairActions: 0,
+      overallStatus: "clean" as const,
+    };
+  }
+  running = true;
+  const startedAt = new Date().toISOString();
+  const startTime = Date.now();
+  cycleCount++;
+
+  try {
+    const archReport = runArchitectureGuard();
+
+    const taxonomyResult = runTaxonomyGuard();
+    const taxonomyViolations = getTaxonomyViolations();
+
+    const searchResult = runSearchPurityEngine();
+    const searchViolations = getSearchPurityViolations();
+
+    const cardResult = runCardHealthValidator();
+
+    runProviderQualityEngine();
+    runListingQualityEngine();
+    runEntryGuards();
+
+    const repairActions = await runAutoRepairCycle();
+
+    const deadCards = getDeadCards();
+    const criticalTaxonomy = taxonomyViolations.filter(v => v.severity === "critical").length;
+
+    let overallStatus: ImprovementCycleReport["overallStatus"] = "clean";
+    if (archReport.failed > 0 || criticalTaxonomy > 0) overallStatus = "critical";
+    else if (archReport.warnings > 0 || deadCards.length > 0 || searchViolations.length > 0) overallStatus = "warnings";
+    else if (taxonomyViolations.length > 0) overallStatus = "violations";
+
+    const completedAt = new Date().toISOString();
+    const durationMs = Date.now() - startTime;
+
+    const report: ImprovementCycleReport = {
+      cycleNumber: cycleCount,
+      startedAt,
+      completedAt,
+      durationMs,
+      archGuard: {
+        status: archReport.status,
+        passed: archReport.passed,
+        failed: archReport.failed,
+        warnings: archReport.warnings,
+      },
+      taxonomyGuard: { violations: taxonomyViolations.length },
+      searchPurity: { status: searchResult.status, violations: searchResult.violationCount },
+      cardHealth: { total: cardResult.total, healthy: cardResult.healthy, dead: cardResult.dead },
+      repairActions: repairActions.length,
+      overallStatus,
+    };
+
+    lastCycleReport = report;
+
+    reportHealth(
+      "continuous-improvement",
+      overallStatus === "critical" ? "degraded" : "ok",
+      durationMs,
+      overallStatus !== "clean" ? `Cycle #${cycleCount}: ${overallStatus}` : undefined
+    );
+
+    return report;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    reportAnomaly("architecture_violation", "continuous-improvement",
+      `Improvement cycle #${cycleCount} failed: ${msg}`, "critical");
+    throw err;
+  } finally {
+    running = false;
+  }
+}
+
+export function startContinuousImprovement(intervalMs = CYCLE_INTERVAL_MS): () => void {
+  if (intervalId) return () => {};
+
+  const initialTimer = setTimeout(async () => {
+    try {
+      await runImprovementCycle();
+    } catch {}
+  }, 30_000);
+
+  intervalId = setInterval(async () => {
+    try {
+      await runImprovementCycle();
+    } catch {}
+  }, intervalMs);
+
+  console.log(`[continuous-improvement] Loop started — cycle every ${intervalMs / 1000}s`);
+
+  return () => {
+    clearTimeout(initialTimer);
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  };
+}
+
+export function getLastCycleReport(): ImprovementCycleReport | null {
+  return lastCycleReport;
+}
+
+export function getCycleCount(): number {
+  return cycleCount;
+}
