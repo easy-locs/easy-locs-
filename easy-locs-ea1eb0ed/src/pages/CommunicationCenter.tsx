@@ -3,7 +3,7 @@
  * Full-screen messaging experience — NO sidebar, standalone layout.
  */
 import { useEffect, useCallback, useRef, lazy, Suspense, useState } from "react";
-import { Plus, ArrowLeft, UsersRound, Megaphone } from "lucide-react";
+import { Plus, ArrowLeft, UsersRound, Megaphone, Radio } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import E2EEBadge from "@/components/orbit/E2EEBadge";
@@ -327,7 +327,12 @@ export const CommunicationCenter = () => {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div className="flex-1 min-w-0" />
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
+                  <Radio className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+                </div>
+                <span className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.title")}</span>
+              </div>
               <div className="flex items-center gap-1">
                 <E2EEBadge compact />
                 {showChatArea && !selectedThread && (

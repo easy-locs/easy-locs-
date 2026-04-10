@@ -113,13 +113,34 @@ export function mapOrgSourcesToThreads(
   }
 }
 
+function findExistingLegacyThread(
+  threadMap: Map<string, ConversationThread>,
+  contextId: string | undefined,
+  convId: string
+): [string, ConversationThread] | null {
+  if (!contextId) return null;
+  const legacyPrefixes = ["booking-", "tenant-", "lead-", "guest-"];
+  for (const [key, thread] of threadMap) {
+    if (!legacyPrefixes.some(p => key.startsWith(p))) continue;
+    if (
+      thread.entityId === contextId ||
+      thread.contextId === contextId ||
+      thread.bookingId === contextId ||
+      thread.tenantId === contextId ||
+      thread.leadId === contextId
+    ) {
+      return [key, thread];
+    }
+  }
+  return null;
+}
+
 export function mapV2ConversationsToThreads(
   allConvs: any[],
   userId: string,
   threadMap: Map<string, ConversationThread>,
   allPeerIds: Set<string>
 ): void {
-  // Non-direct conversations
   for (const ct of allConvs) {
     if (ct.type === "direct") continue;
     const ctxType = ct.context_type || ct.type || "business";
@@ -138,6 +159,25 @@ export function mapV2ConversationsToThreads(
     const mergedParticipantIds = [...new Set([...participantUserIds, ...participantsJsonb])];
     const peerUserId = mergedParticipantIds.find((id) => id !== userId) ?? null;
     if (peerUserId) allPeerIds.add(peerUserId);
+
+    const existing = findExistingLegacyThread(threadMap, ct.context_id, ct.id);
+    if (existing) {
+      const [, legacyThread] = existing;
+      legacyThread.conversationId = ct.id;
+      legacyThread.v2ConversationId = ct.id;
+      legacyThread.threadId = ct.id;
+      legacyThread.isV2 = true;
+      if (peerUserId) legacyThread.peerUserId = peerUserId;
+      legacyThread.participantUserIds = mergedParticipantIds;
+      if (ct.last_message_at) {
+        legacyThread.lastMessageTime = legacyThread.lastMessageTime && legacyThread.lastMessageTime > ct.last_message_at
+          ? legacyThread.lastMessageTime : ct.last_message_at;
+      }
+      if (ct.last_message_preview && !legacyThread.lastMessage) {
+        legacyThread.lastMessage = ct.last_message_preview;
+      }
+      continue;
+    }
 
     const key = `${convType}-${ct.id}`;
     if (!threadMap.has(key)) {

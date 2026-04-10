@@ -3,7 +3,6 @@
  * Single responsibility: parallel DB queries for all thread sources.
  */
 import { db } from "@/services/db";
-import { supabase } from "@/integrations/supabase/client";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -29,12 +28,12 @@ export async function fetchOrgThreadSources(orgId: string): Promise<ThreadRawSou
   const emptyResult = { data: null };
 
   const [tenantRes, mBookingRes, cOrderRes, sBookingRes, reLeadRes, guestRes] = await Promise.all([
-    supabase.from("tenants").select("id, name, email, tenant_user_id, property_id, lease_type").eq("org_id", orgId).order("name"),
-    supabase.from("marketplace_bookings").select("id, booker_name, booker_email, booker_phone, status, total_price, currency, service_id, service_date, provider_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
-    supabase.from("concierge_orders").select("id, guest_name, guest_email, guest_phone, status, total_price, currency, service_id, service_date, property_label, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
-    supabase.from("booking_requests").select("id, guest_name, guest_email, guest_phone, status, check_in, check_out, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
-    supabase.from("real_estate_leads").select("id, name, email, phone, status, message, listing_id, created_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
-    supabase.from("guest_sessions").select("id, display_name, email, context_type, context_id, created_at, expires_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50).then(r => r, () => emptyResult),
+    db("tenants").select("id, name, email, tenant_user_id, property_id, lease_type").eq("org_id", orgId).order("name"),
+    db("marketplace_bookings").select("id, booker_name, booker_email, booker_phone, status, total_price, currency, service_id, service_date, provider_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
+    db("concierge_orders").select("id, guest_name, guest_email, guest_phone, status, total_price, currency, service_id, service_date, property_label, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
+    db("booking_requests").select("id, guest_name, guest_email, guest_phone, status, check_in, check_out, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
+    db("real_estate_leads").select("id, name, email, phone, status, message, listing_id, created_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
+    db("guest_sessions").select("id, display_name, email, context_type, context_id, created_at, expires_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50).then(r => r, () => emptyResult),
   ]);
 
   const tenants = tenantRes.data || [];
@@ -52,11 +51,11 @@ export async function fetchOrgThreadSources(orgId: string): Promise<ThreadRawSou
   const listingIds = [...new Set(reLeads.map(l => l.listing_id).filter(Boolean))] as string[];
 
   const [propRes, mSvcRes, cSvcRes, sPropRes, listingRes] = await Promise.all([
-    propertyIds.length > 0 ? supabase.from("properties").select("id, label, country").in("id", propertyIds) : { data: [] },
-    mSvcIds.length > 0 ? supabase.from("marketplace_services").select("id, title, country").in("id", mSvcIds) : { data: [] },
-    cSvcIds.length > 0 ? supabase.from("concierge_services").select("id, title, country").in("id", cSvcIds) : { data: [] },
-    sPropIds.length > 0 ? supabase.from("properties").select("id, label, country").in("id", sPropIds) : { data: [] },
-    listingIds.length > 0 ? supabase.from("real_estate_listings").select("id, title, listing_type, country").in("id", listingIds) : { data: [] },
+    propertyIds.length > 0 ? db("properties").select("id, label, country").in("id", propertyIds) : { data: [] },
+    mSvcIds.length > 0 ? db("marketplace_services").select("id, title, country").in("id", mSvcIds) : { data: [] },
+    cSvcIds.length > 0 ? db("concierge_services").select("id, title, country").in("id", cSvcIds) : { data: [] },
+    sPropIds.length > 0 ? db("properties").select("id, label, country").in("id", sPropIds) : { data: [] },
+    listingIds.length > 0 ? db("real_estate_listings").select("id, title, listing_type, country").in("id", listingIds) : { data: [] },
   ]);
 
   const result: ThreadRawSources = {
@@ -90,8 +89,7 @@ export async function fetchV2Conversations(userId: string, _hasOrg: boolean): Pr
 
   // RLS on conversations_v2 already filters by participant orbitId.
   // No extra client-side filter needed — just fetch and let RLS do its job.
-  const { data, error } = await db
-    .from("conversations_v2")
+  const { data, error } = await db("conversations_v2")
     .select("*")
     .order("last_message_at", { ascending: false, nullsFirst: false })
     .limit(300);
@@ -106,8 +104,7 @@ export async function fetchV2Conversations(userId: string, _hasOrg: boolean): Pr
 }
 
 export async function fetchDeals(orgId: string): Promise<any[]> {
-  const { data } = await supabase
-    .from("deal_rooms")
+  const { data } = await db("deal_rooms")
     .select("*")
     .eq("org_id", orgId)
     .order("updated_at", { ascending: false })
@@ -116,8 +113,7 @@ export async function fetchDeals(orgId: string): Promise<any[]> {
 }
 
 export async function fetchPreferences(userId: string): Promise<any[]> {
-  const { data } = await supabase
-    .from("conversation_preferences")
+  const { data } = await db("conversation_preferences")
     .select("context_id, archived, muted, favorited, cleared_at")
     .eq("user_id", userId);
   return data || [];
