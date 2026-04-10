@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Wallet, Shield, CreditCard } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, tSafe } from "@/lib/i18n";
 import WalletCurrencySettings from "@/components/settings/WalletCurrencySettings";
 import WalletSecuritySettings from "@/components/wallet/WalletSecuritySettings";
 
@@ -13,8 +13,8 @@ export default function SettingsWallet() {
   const [tab, setTab] = useState<SettingsTab>("currency");
 
   const tabs: { key: SettingsTab; icon: typeof Wallet; label: string }[] = [
-    { key: "currency", icon: CreditCard, label: t("wallet.currency" as any) || "Currency" },
-    { key: "security", icon: Shield, label: t("wallet.security") || "Security" },
+    { key: "currency", icon: CreditCard, label: tSafe(t, "wallet.currency", "Currency") },
+    { key: "security", icon: Shield, label: tSafe(t, "wallet.security", "Security") },
   ];
 
   return (
@@ -25,7 +25,7 @@ export default function SettingsWallet() {
         </button>
         <div className="flex items-center gap-2">
           <Wallet className="w-5 h-5 text-primary" />
-          <h1 className="text-lg font-bold">{t("wallet.walletSettings" as any) || "Wallet Settings"}</h1>
+          <h1 className="text-lg font-bold truncate">{tSafe(t, "wallet.walletSettings", "Wallet Settings")}</h1>
         </div>
       </header>
 
