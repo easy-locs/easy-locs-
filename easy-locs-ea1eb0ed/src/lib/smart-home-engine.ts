@@ -38,7 +38,7 @@ export interface SmartHero {
   gradient: string;
 }
 
-/* ═══ Keys already shown in SuperServicesGrid — excluded from category grid ═══ */
+/* ═══ Keys already shown in ServiceMenuGrid — excluded from category grid ═══ */
 const SUPER_SERVICE_KEYS = new Set(["food", "taxi", "delivery", "stay", "travel", "property", "services"]);
 
 /* ═══ Color mapping (semantic tokens only) ═══ */
