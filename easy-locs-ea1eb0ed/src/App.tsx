@@ -13,6 +13,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { I18nProvider } from "@/lib/i18n";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
+
 // ── Deferred providers (eagerly mount context, defer internals) ──
 import { CallProvider } from "@/components/call/CallProvider";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
@@ -130,6 +131,7 @@ const {
   DiscoverPage, BrowseVerticalPage, RetailIndexPage, RetailCategoryPage, RetailMallPage, RetailStorePage,
   PropertyHubPage, FoodTypePage, CuisineListPage, FoodRestaurantPage,
   TravelHub, TravelFlights, TravelStays, TravelHotelDetail, HotelCheckout, TravelStayDetail, TravelFlightDetail,
+  FlightSearchPage, FlightResultsPage, FlightDetailPage, FlightPassengerPage, FlightPaymentPage, FlightConfirmationPage,
   MobilityHubPage, MobilityTaxiPage, MobilityDeliveryPage, DeliveryBringPage, DeliveryParcelPage, DeliveryGiftPage,
   DeliveryErrandPage, RiderLivePage, TrackRidePage, CallDriverPage,
   PublicListing, PublicServiceBooking, PublicRealEstateListing, LocalServices,
@@ -442,6 +444,12 @@ const App = () => (
                   <Route path="/travel/hotel-checkout" element={<ProtectedRoute><HotelCheckout /></ProtectedRoute>} />
                   <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
                   <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
+                  <Route path="/travel/flight-search" element={<FlightSearchPage />} />
+                  <Route path="/travel/flight-results" element={<FlightResultsPage />} />
+                  <Route path="/travel/flight-detail" element={<FlightDetailPage />} />
+                  <Route path="/travel/flight-passengers" element={<ProtectedRoute><FlightPassengerPage /></ProtectedRoute>} />
+                  <Route path="/travel/flight-payment" element={<ProtectedRoute><FlightPaymentPage /></ProtectedRoute>} />
+                  <Route path="/travel/flight-confirmation" element={<ProtectedRoute><FlightConfirmationPage /></ProtectedRoute>} />
                   <Route path="/mobility" element={<MobilityHubPage />} />
                   <Route path="/mobility/taxi" element={<MobilityTaxiPage />} />
                   <Route path="/mobility/delivery" element={<MobilityDeliveryPage />} />

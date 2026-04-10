@@ -77,6 +77,9 @@ export const HIDE_NAV_PREFIXES = [
   "/checkout",
   "/pay/",
   "/order/",
+  "/travel/flight-passengers",
+  "/travel/flight-payment",
+  "/travel/flight-confirmation",
 ];
 
 export const NAV_TABS = {

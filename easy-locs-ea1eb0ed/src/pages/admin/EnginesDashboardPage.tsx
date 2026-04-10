@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import { engineOrchestrator } from "@/engines/core/engine-orchestrator";
 import { useI18n } from "@/lib/i18n";
-import MobilePageHeader from "@/components/ui/mobile-page-header";
+import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Activity, AlertTriangle, CheckCircle2, XCircle, RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
 
 interface EngineInfo {

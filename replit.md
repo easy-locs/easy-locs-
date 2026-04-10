@@ -137,6 +137,25 @@ World-class flight booking engine — multi-provider, state-machine driven, full
 - **flightWebhookHandler**: Ingests 10 webhook event types, dedup (1h window), signature verification, maps to booking actions + Orbit notifications
 - **flightReconciliationService**: Per-booking reconciliation, bulk reconciliation, expired booking cleanup, refund processing with provider delegation
 
+### Flight UI Pages (`src/pages/travel/Flight*.tsx`)
+Full 6-page booking flow with shared state via `flightFlowStore` (module-level store, no context provider needed):
+- **FlightSearchPage** (`/travel/flight-search`): Origin/destination, dates, passengers, cabin class, trip type
+- **FlightResultsPage** (`/travel/flight-results`): Sortable/filterable results, airline logos, segment details
+- **FlightDetailPage** (`/travel/flight-detail`): Full itinerary, baggage, fare rules, price-change alert
+- **FlightPassengerPage** (`/travel/flight-passengers`): Per-passenger forms (name, passport, DOB, nationality, preferences) — protected route
+- **FlightPaymentPage** (`/travel/flight-payment`): Payment method selection, booking summary, price breakdown — protected route
+- **FlightConfirmationPage** (`/travel/flight-confirmation`): Booking ref, PNR, ticket numbers, e-ticket download — protected route
+
+### Flight Flow Store (`src/lib/flight/flight-flow-store.ts`)
+- Module-level singleton store (not React context) — state persists across route navigation
+- `useSyncExternalStore`-based React hook (`src/hooks/useFlightFlow.ts`) for reactive UI binding
+- Actions: `search()`, `selectOffer()`, `createBooking()`, `confirmPayment()`, `reset()`
+- Auto-navigates between pages on successful action completion
+
+### Nav Config
+- Bottom nav hidden on `/travel/flight-passengers`, `/travel/flight-payment`, `/travel/flight-confirmation` (checkout flow)
+- Search/results/detail pages keep bottom nav visible for easy escape
+
 ### Integration Points
 - **Dashboard**: Flight status in quick access, booking previews
 - **Radar**: Flight discovery if applicable
