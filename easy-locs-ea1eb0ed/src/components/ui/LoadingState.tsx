@@ -1,13 +1,47 @@
 import { cn } from "@/lib/utils";
+import { Skeleton, SkeletonCard, SkeletonList } from "@/components/ui/skeleton";
 
 interface LoadingStateProps {
   rows?: number;
   className?: string;
-  variant?: "cards" | "list" | "page";
+  variant?: "cards" | "list" | "page" | "inline";
 }
 
-const LoadingState = ({ className, variant = "cards" }: LoadingStateProps) => {
-  return <div className={cn("min-h-[200px]", className)} />;
+const LoadingState = ({ className, variant = "cards", rows = 3 }: LoadingStateProps) => {
+  if (variant === "list") {
+    return <SkeletonList count={rows} className={className} />;
+  }
+
+  if (variant === "page") {
+    return (
+      <div className={cn("space-y-4 p-4", className)}>
+        <Skeleton className="h-6 w-1/3 rounded" />
+        <Skeleton className="h-3 w-2/3 rounded" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+          {Array.from({ length: rows }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === "inline") {
+    return (
+      <div className={cn("flex items-center gap-3 py-4 justify-center", className)}>
+        <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        <span className="text-sm text-muted-foreground">Loading...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-3", className)}>
+      {Array.from({ length: rows }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </div>
+  );
 };
 
 export { LoadingState };

@@ -2,26 +2,35 @@ import { cn } from "@/lib/utils";
 
 interface ResponsiveGridProps {
   children: React.ReactNode;
-  /** Minimum child width before wrapping (default: 280px) */
   minChildWidth?: string;
-  /** Gap override */
   className?: string;
-  /** Use stat-grid layout (smaller items) */
-  variant?: "default" | "stats";
+  variant?: "default" | "stats" | "cards" | "compact";
+  cols?: 1 | 2 | 3 | 4;
 }
 
-/**
- * ResponsiveGrid — Auto-fit grid that adapts to any screen width.
- * Replaces repetitive `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` patterns.
- */
+const VARIANT_STYLES: Record<string, string> = {
+  default: "responsive-card-grid",
+  stats: "stat-grid",
+  cards: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3",
+  compact: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2",
+};
+
+const COL_STYLES: Record<number, string> = {
+  1: "grid grid-cols-1 gap-3",
+  2: "grid grid-cols-1 sm:grid-cols-2 gap-3",
+  3: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3",
+  4: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3",
+};
+
 const ResponsiveGrid = ({
   children,
   minChildWidth,
   className,
   variant = "default",
+  cols,
 }: ResponsiveGridProps) => {
-  if (variant === "stats") {
-    return <div className={cn("stat-grid", className)}>{children}</div>;
+  if (cols) {
+    return <div className={cn(COL_STYLES[cols], className)}>{children}</div>;
   }
 
   if (minChildWidth) {
@@ -38,7 +47,7 @@ const ResponsiveGrid = ({
     );
   }
 
-  return <div className={cn("responsive-card-grid", className)}>{children}</div>;
+  return <div className={cn(VARIANT_STYLES[variant], className)}>{children}</div>;
 };
 
 export { ResponsiveGrid };

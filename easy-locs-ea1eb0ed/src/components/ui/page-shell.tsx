@@ -1,5 +1,9 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Inbox } from "lucide-react";
 
 interface PageShellProps {
   title: string;
@@ -7,13 +11,25 @@ interface PageShellProps {
   actions?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
-  maxWidth?: "sm" | "md" | "lg" | "xl" | "default";
+  maxWidth?: "sm" | "md" | "lg" | "xl" | "full" | "default";
+  loading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
+  isEmpty?: boolean;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  emptyIcon?: React.ElementType;
 }
 
-/**
- * PageShell — Consistent page wrapper with title, description, and optional actions.
- * Replaces repetitive page header patterns across the app.
- */
+const WIDTH_MAP: Record<string, string> = {
+  sm: "max-w-2xl",
+  md: "max-w-3xl",
+  lg: "max-w-5xl",
+  xl: "max-w-7xl",
+  full: "w-full",
+  default: "page-content",
+};
+
 const PageShell = ({
   title,
   description,
@@ -21,17 +37,16 @@ const PageShell = ({
   children,
   className,
   maxWidth = "default",
+  loading,
+  error,
+  onRetry,
+  isEmpty,
+  emptyTitle,
+  emptyDescription,
+  emptyIcon: EmptyIcon = Inbox,
 }: PageShellProps) => {
-  const widthClass = {
-    sm: "max-w-2xl",
-    md: "max-w-3xl",
-    lg: "max-w-5xl",
-    xl: "max-w-7xl",
-    default: "page-content",
-  }[maxWidth];
-
   return (
-    <div className={cn(widthClass, "mx-auto", className)}>
+    <div className={cn(WIDTH_MAP[maxWidth], "mx-auto", className)}>
       <div className="page-header flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h1>{title}</h1>
@@ -43,7 +58,19 @@ const PageShell = ({
           </div>
         )}
       </div>
-      {children}
+      {loading ? (
+        <LoadingState variant="page" />
+      ) : error ? (
+        <ErrorState message={error} onRetry={onRetry} />
+      ) : isEmpty ? (
+        <EmptyState
+          icon={EmptyIcon}
+          title={emptyTitle || "Nothing here yet"}
+          description={emptyDescription}
+        />
+      ) : (
+        children
+      )}
     </div>
   );
 };

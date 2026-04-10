@@ -2,7 +2,7 @@
  * CommCallsSection — Canonical call history screen.
  * Identity-first: every row shows name, direction, type, status, time.
  */
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   fetchCallLogs, deleteCallLog, resolveProfilesByIds, resolveOrbitProfilesByUserIds,
   resolveOrbitProfilesByOrbitIds,
@@ -253,7 +253,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
     }
   }, [startCall, isInCall, isStartingCall, myOrbitId, nameCache, t]);
 
-  const filtered = calls.filter(c => {
+  const filtered = useMemo(() => calls.filter(c => {
     if (filter === "missed" && c.status !== "missed") return false;
     if (filter === "incoming" && c.direction !== "incoming") return false;
     if (filter === "outgoing" && c.direction !== "outgoing") return false;
@@ -265,16 +265,16 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
       return searchable.includes(q);
     }
     return true;
-  });
+  }), [calls, filter, search, nameCache]);
 
-  const filters: { id: CallFilter; label: string }[] = [
-    { id: "all", label: t("orbit.calls.all") },
-    { id: "missed", label: t("orbit.calls.missed") },
-    { id: "incoming", label: t("orbit.calls.incoming") },
-    { id: "outgoing", label: t("orbit.calls.outgoing") },
-  ];
+  const filters: { id: CallFilter; label: string }[] = useMemo(() => [
+    { id: "all" as const, label: t("orbit.calls.all") },
+    { id: "missed" as const, label: t("orbit.calls.missed") },
+    { id: "incoming" as const, label: t("orbit.calls.incoming") },
+    { id: "outgoing" as const, label: t("orbit.calls.outgoing") },
+  ], [t]);
 
-  const missedCount = calls.filter(c => c.status === "missed").length;
+  const missedCount = useMemo(() => calls.filter(c => c.status === "missed").length, [calls]);
 
   /** Single unified call icon with direction arrow overlay */
   const getCallIcon = (call: CallLog) => {

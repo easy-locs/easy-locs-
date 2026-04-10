@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchOwnerCockpitStats, invokeOwnerAction } from "@/repositories/admin-ops.repository";
 import { toast } from "sonner";
-import { FuturisticCard } from "@/components/ui/FuturisticCard";
+import { AppCard } from "@/components/ui/AppCard";
 import { StatusPulse } from "@/components/ui/StatusPulse";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { motion } from "framer-motion";
@@ -136,18 +136,18 @@ export default function OwnerCockpitPage() {
 
       {/* Engine Summary */}
       <div className="grid grid-cols-3 gap-3">
-        <FuturisticCard variant="kpi" glow className="p-4 text-center">
+        <AppCard variant="kpi" glow className="p-4 text-center">
           <p className="text-2xl font-bold text-emerald-500"><AnimatedCounter value={totalOk} /></p>
           <p className="text-[11px] text-muted-foreground">Running OK</p>
-        </FuturisticCard>
-        <FuturisticCard variant="kpi" className="p-4 text-center">
+        </AppCard>
+        <AppCard variant="kpi" className="p-4 text-center">
           <p className="text-2xl font-bold text-amber-500"><AnimatedCounter value={totalPending} /></p>
           <p className="text-[11px] text-muted-foreground">Pending</p>
-        </FuturisticCard>
-        <FuturisticCard variant="kpi" className="p-4 text-center">
+        </AppCard>
+        <AppCard variant="kpi" className="p-4 text-center">
           <p className="text-2xl font-bold text-red-500"><AnimatedCounter value={totalError} /></p>
           <p className="text-[11px] text-muted-foreground">Errors</p>
-        </FuturisticCard>
+        </AppCard>
       </div>
 
       {loading ? (
@@ -161,7 +161,7 @@ export default function OwnerCockpitPage() {
             <h2 className="text-sm font-bold text-foreground mb-2">Platform KPIs</h2>
             <div className="grid grid-cols-2 gap-2">
               {kpis.map(k => (
-                <FuturisticCard key={k.label} variant="kpi" className="p-3">
+                <AppCard key={k.label} variant="kpi" className="p-3">
                   <div className="flex items-center gap-2">
                     <k.icon className="w-3.5 h-3.5 text-muted-foreground" />
                     <span className="text-[11px] text-muted-foreground">{k.label}</span>
@@ -169,7 +169,7 @@ export default function OwnerCockpitPage() {
                   <div className="text-lg font-bold mt-0.5 text-foreground">
                     <AnimatedCounter value={k.value ?? 0} />
                   </div>
-                </FuturisticCard>
+                </AppCard>
               ))}
             </div>
           </div>

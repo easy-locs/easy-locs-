@@ -10,7 +10,7 @@ import { useRef, useEffect, useCallback } from "react";
 import { storefrontService } from "@/services";
 import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import UniversePageShell from "@/components/universe/UniversePageShell";
-import UniverseCard from "@/components/universe/UniverseCard";
+import { UniverseCard } from "@/components/cards/UniverseCard";
 import { UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -143,6 +143,7 @@ export default function CuisineListPage() {
             subtitle={r.city || r.subcategory || ""}
             rating={r.rating ?? 4.2}
             index={i}
+            variant="horizontal"
           />
         ))}
       </div>

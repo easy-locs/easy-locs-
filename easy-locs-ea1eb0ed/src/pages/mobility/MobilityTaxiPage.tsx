@@ -5,7 +5,7 @@ import * as repo from "@/repositories/mobility.repository";
 import { Car, Clock, CheckCircle2, ArrowLeft, Calendar, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PageEmptyState } from "@/components/ui/PageEmptyState";
+import { EmptyState } from "@/components/ui/empty-state";
 import { CustomerJobCard } from "@/components/rides/CustomerJobCard";
 import { TaxiSearchScreen } from "@/components/mobility/TaxiSearchScreen";
 import { TaxiPreviewScreen } from "@/components/mobility/TaxiPreviewScreen";
@@ -123,12 +123,12 @@ export default function MobilityTaxiPage() {
               <TabsContent value="book" className="mt-4"><TaxiSearchScreen /></TabsContent>
               <TabsContent value="active" className="mt-4 space-y-3">
                 {activeJobs.length === 0 ? (
-                  <PageEmptyState icon={<Car className="h-6 w-6 text-muted-foreground" />} title="No active rides" description="Your current rides will appear here" />
+                  <EmptyState icon={Car} title="No active rides" description="Your current rides will appear here" compact />
                 ) : activeJobs.map(j => <CustomerJobCard key={j.id} job={j} />)}
               </TabsContent>
               <TabsContent value="history" className="mt-4 space-y-3">
                 {pastJobs.length === 0 ? (
-                  <PageEmptyState icon={<CheckCircle2 className="h-6 w-6 text-muted-foreground" />} title="No past rides" description="Your ride history will appear here" />
+                  <EmptyState icon={CheckCircle2} title="No past rides" description="Your ride history will appear here" compact />
                 ) : pastJobs.slice(0, 20).map(j => (
                   <div key={j.id} className="rounded-2xl border border-border/15 bg-card p-4 space-y-3">
                     <div className="flex items-center justify-between gap-2">
