@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "buildCommand": "vite build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/((?!assets|pwa-|manifest|registerSW|robots|sitemap|og-|~).*)", "destination": "/index.html" }
@@ -15,24 +15,8 @@
       "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" }]
     },
     {
-      "source": "/manifest.json",
-      "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" }]
-    },
-    {
       "source": "/assets/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
-    },
-    {
-      "source": "/(.*\\.woff2)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
-    },
-    {
-      "source": "/(pwa-.*\\.png|favicon\\.ico|favicon\\.png)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000" }]
-    },
-    {
-      "source": "/(sitemap.*\\.xml|robots\\.txt)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, s-maxage=86400" }]
     }
   ]
 }
