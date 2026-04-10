@@ -9,10 +9,13 @@ const SUSPICIOUS_AMOUNT_THRESHOLD = 25_000;
 const RAPID_SUCCESSION_MS = 5_000;
 const MAX_RAPID_TX = 3;
 
-const TRUST_ADJUSTED_LIMITS: Record<string, { maxTxPerMin: number; maxRecipients: number; suspiciousThreshold: number }> = {
+const TRUST_ADJUSTED_LIMITS: Record<SecurityFlag, { maxTxPerMin: number; maxRecipients: number; suspiciousThreshold: number }> = {
   blocked: { maxTxPerMin: 0, maxRecipients: 0, suspiciousThreshold: 0 },
-  high_risk: { maxTxPerMin: 3, maxRecipients: 3, suspiciousThreshold: 1000 },
+  restricted: { maxTxPerMin: 0, maxRecipients: 0, suspiciousThreshold: 0 },
+  high_risk: { maxTxPerMin: 2, maxRecipients: 2, suspiciousThreshold: 500 },
+  review_required: { maxTxPerMin: 3, maxRecipients: 3, suspiciousThreshold: 1000 },
   suspicious: { maxTxPerMin: 5, maxRecipients: 8, suspiciousThreshold: 5000 },
+  low_risk: { maxTxPerMin: 8, maxRecipients: 12, suspiciousThreshold: 15000 },
   normal: { maxTxPerMin: MAX_TX_PER_MINUTE, maxRecipients: MAX_UNIQUE_RECIPIENTS_PER_HOUR, suspiciousThreshold: SUSPICIOUS_AMOUNT_THRESHOLD },
 };
 
@@ -113,9 +116,10 @@ export function checkRateLimit(userId: string, action: string, overrideLimit?: n
   return { allowed: true };
 }
 
-function checkVelocity(userId: string, recipientId: string, amount: number, overrideMaxRecipients?: number): { pass: boolean; reason?: string } {
+function checkVelocity(userId: string, recipientId: string, amount: number, overrideMaxRecipients?: number, overrideSuspiciousThreshold?: number): { pass: boolean; reason?: string } {
   const now = Date.now();
   const maxRecipients = overrideMaxRecipients ?? MAX_UNIQUE_RECIPIENTS_PER_HOUR;
+  const suspiciousThreshold = overrideSuspiciousThreshold ?? SUSPICIOUS_AMOUNT_THRESHOLD;
 
   if (blockedUsers.has(userId)) {
     return { pass: false, reason: "temporarily_blocked" };
@@ -148,7 +152,7 @@ function checkVelocity(userId: string, recipientId: string, amount: number, over
   }
 
   const hourlyTotal = record.amounts.reduce((s, a) => s + a.amount, 0) + amount;
-  if (hourlyTotal > SUSPICIOUS_AMOUNT_THRESHOLD) {
+  if (hourlyTotal > suspiciousThreshold) {
     return { pass: false, reason: "hourly_volume_exceeded" };
   }
 
@@ -200,7 +204,7 @@ export function preTransactionCheckWithTrust(
 ): FraudCheckResult {
   const adjustedLimits = TRUST_ADJUSTED_LIMITS[securityFlag] || TRUST_ADJUSTED_LIMITS.normal;
 
-  if (securityFlag === "blocked") {
+  if (securityFlag === "blocked" || securityFlag === "restricted") {
     return { pass: false, reason: "account_blocked", idempotencyKey: "", riskScore: 100 };
   }
 
@@ -224,14 +228,16 @@ export function preTransactionCheckWithTrust(
 
   const recipientId = String(payload.recipientId ?? "");
   if (recipientId && (action === "wallet_transfer" || action === "payment")) {
-    const velocityCheck = checkVelocity(userId, recipientId, amount, adjustedLimits.maxRecipients);
+    const velocityCheck = checkVelocity(userId, recipientId, amount, adjustedLimits.maxRecipients, adjustedLimits.suspiciousThreshold);
     if (!velocityCheck.pass) {
       return { pass: false, reason: velocityCheck.reason, idempotencyKey: idemKey, riskScore: 75 };
     }
   }
 
   let riskScore = computeRiskScore(action, amount, userId);
+  if (securityFlag === "low_risk") riskScore = Math.min(100, riskScore + 10);
   if (securityFlag === "suspicious") riskScore = Math.min(100, riskScore + 20);
+  if (securityFlag === "review_required") riskScore = Math.min(100, riskScore + 30);
   if (securityFlag === "high_risk") riskScore = Math.min(100, riskScore + 40);
 
   return { pass: true, idempotencyKey: idemKey, riskScore };
