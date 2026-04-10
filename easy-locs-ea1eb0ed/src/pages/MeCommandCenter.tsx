@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { supabase } from "@/integrations/supabase/client";
 import { typedQueries } from "@/lib/db/typed-queries";
+import { getMerchantDashboardSnapshot } from "@/lib/merchant/merchantDashboard";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -12,6 +13,8 @@ import SEOHead from "@/components/SEOHead";
 import MeBusinessSwitcher from "@/components/me/MeBusinessSwitcher";
 import MeProfileQuality from "@/components/me/MeProfileQuality";
 import MeBusinessKpis from "@/components/me/MeBusinessKpis";
+import MeStatusBar from "@/components/me/MeStatusBar";
+import MeQuickActions from "@/components/me/MeQuickActions";
 import {
   User, ChevronRight, LogOut,
   ShoppingBag, Heart, MapPin, CreditCard, Star, Bell, Settings2,
@@ -20,7 +23,7 @@ import {
   Shield, Headphones, Scale, Truck,
   Plus, AlertTriangle, Package, Coins, PieChart, Zap,
   Globe, Image, MessageCircle, Eye, FolderCheck, UserCog, Clock, Layers,
-  Briefcase, Camera, BadgeCheck, Phone, Mail, MapPinned,
+  Briefcase, Camera, BadgeCheck, Phone, MapPinned, Compass, FileCheck, Activity,
 } from "lucide-react";
 
 interface MeItem {
@@ -35,7 +38,7 @@ interface MeItem {
 interface MeSection {
   id: string;
   title: string;
-  showIf: "always" | "merchant" | "property" | "driver";
+  showIf: "always" | "merchant" | "property" | "driver" | "provider";
   items: MeItem[];
   cta?: { label: string; path: string };
 }
@@ -122,6 +125,16 @@ export default function MeCommandCenter() {
     },
   });
 
+  const { data: isProvider } = useQuery({
+    queryKey: ["me-provider-check", uid],
+    enabled: !!uid,
+    staleTime: 120_000,
+    queryFn: async () => {
+      const { data } = await typedQueries.marketplaceProviders.existsByUser(uid);
+      return !!data;
+    },
+  });
+
   const { data: quickStats } = useQuery({
     queryKey: ["me-quick-stats", uid],
     enabled: !!uid,
@@ -140,6 +153,7 @@ export default function MeCommandCenter() {
         activeOrders: ordersRes.count ?? 0,
         loyaltyPoints: Number(loyaltyRes?.data?.points_balance ?? 0),
         loyaltyTier: loyaltyRes?.data?.tier ?? "bronze",
+        walletExists: walletRes?.data !== null,
         walletBalance: Number(walletRes?.data?.balance ?? 0),
         walletCurrency: walletRes?.data?.currency ?? "EUR",
       };
@@ -150,10 +164,27 @@ export default function MeCommandCenter() {
   const isMerchant = shopCount > 0;
   const isPropertyManager = (propCount ?? 0) > 0;
   const hasDriverRole = isDriver ?? false;
+  const hasProviderRole = isProvider ?? false;
+
   const activeShop = useMemo(() => {
     if (!shops || shops.length === 0) return null;
     return shops.find(s => s.id === activeShopId) ?? shops[0];
   }, [shops, activeShopId]);
+
+  const { data: merchantKpis } = useQuery({
+    queryKey: ["me-merchant-kpis", activeShop?.id],
+    enabled: !!activeShop?.id,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const snapshot = await getMerchantDashboardSnapshot(activeShop!.id);
+      return {
+        grossSales: snapshot.grossSales,
+        activeOrders: snapshot.activeOrders,
+        completedOrders: snapshot.completedOrders,
+        productCount: snapshot.availableProducts,
+      };
+    },
+  });
 
   const handleSwitchShop = useCallback((id: string) => setActiveShopId(id), []);
 
@@ -167,11 +198,12 @@ export default function MeCommandCenter() {
     const roles: string[] = [];
     if (isMerchant) roles.push(t("me.role_merchant"));
     if (isPropertyManager) roles.push(t("me.role_property"));
+    if (hasProviderRole) roles.push(t("me.provider_hub"));
     if (hasDriverRole) roles.push(t("me.driver_hub"));
     if (roles.length === 0) return t("me.role_personal");
     if (roles.length >= 2) return t("me.role_pro");
     return roles[0];
-  }, [isMerchant, isPropertyManager, hasDriverRole, t]);
+  }, [isMerchant, isPropertyManager, hasProviderRole, hasDriverRole, t]);
 
   const sections = useMemo<MeSection[]>(() => {
     const merchantId = activeShop?.id ?? "";
@@ -248,6 +280,19 @@ export default function MeCommandCenter() {
           { icon: Star, label: t("me.reviews"), subtitle: t("me.reviews_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/seller", accent: A.amber },
           { icon: Eye, label: t("me.visibility"), subtitle: t("me.visibility_sub"), path: "/seller/boost", accent: A.violet },
           { icon: Megaphone, label: t("me.promote"), subtitle: t("me.promote_sub"), path: "/seller/boost", accent: A.gold },
+        ],
+      },
+      {
+        id: "provider",
+        title: t("me.provider_hub"),
+        showIf: "provider" as const,
+        items: [
+          { icon: ClipboardList, label: t("me.provider_services"), subtitle: t("me.provider_services_sub"), path: "/activities", accent: A.gold },
+          { icon: Compass, label: t("me.provider_zones"), subtitle: t("me.provider_zones_sub"), path: "/settings/business", accent: A.emerald },
+          { icon: CalendarDays, label: t("me.provider_availability"), subtitle: t("me.provider_availability_sub"), path: "/settings/business", accent: A.cyan },
+          { icon: ShoppingBag, label: t("me.provider_bookings"), subtitle: t("me.provider_bookings_sub"), path: "/my-orders", accent: A.blue },
+          { icon: FileCheck, label: t("me.provider_invoices"), subtitle: t("me.provider_invoices_sub"), path: "/me/order-receipts", accent: A.violet },
+          { icon: Activity, label: t("me.provider_performance"), subtitle: t("me.provider_performance_sub"), path: "/seller", accent: A.amber },
         ],
       },
       {
@@ -341,13 +386,16 @@ export default function MeCommandCenter() {
       if (s.showIf === "merchant") return isMerchant;
       if (s.showIf === "property") return isPropertyManager;
       if (s.showIf === "driver") return hasDriverRole;
+      if (s.showIf === "provider") return hasProviderRole;
       return true;
     });
-  }, [sections, isMerchant, isPropertyManager, hasDriverRole]);
+  }, [sections, isMerchant, isPropertyManager, hasDriverRole, hasProviderRole]);
 
   const avatarUrl = profile?.avatarUrl || user?.user_metadata?.avatar_url;
   const displayName = profile?.displayName || user?.user_metadata?.display_name || t("me.user_fallback");
   const initials = displayName.split(/[\s@]/).map((w: string) => w[0]?.toUpperCase()).join("").slice(0, 2);
+
+  const isBusiness = isMerchant || isPropertyManager || hasDriverRole || hasProviderRole;
 
   return (
     <div className="app-mobile-page max-w-md mx-auto px-4 py-4">
@@ -382,6 +430,17 @@ export default function MeCommandCenter() {
           </div>
           <ChevronRight className="w-5 h-5 shrink-0" style={{ color: `${A.gold}66` }} />
         </motion.button>
+
+        {isMerchant && activeShop && (
+          <motion.div variants={fadeUp}>
+            <MeStatusBar
+              isVerified={activeShop.is_verified}
+              publishStatus={activeShop.shop_visibility}
+              walletActive={quickStats?.walletExists ?? false}
+              orbitActive={!!profile?.orbitId}
+            />
+          </motion.div>
+        )}
 
         {quickStats && !isMerchant && (
           <motion.div variants={fadeUp} className="grid grid-cols-3 gap-2">
@@ -433,62 +492,89 @@ export default function MeCommandCenter() {
               hasAddress={!!(activeShop.address && activeShop.city)}
               hasCategories={false}
               hasHours={false}
-              hasWallet={!!(quickStats?.walletBalance !== undefined)}
+              hasWallet={quickStats?.walletExists ?? false}
               isVerified={activeShop.is_verified}
             />
           </motion.div>
         )}
 
-        {isMerchant && activeShop && (
-          <motion.div variants={fadeUp}>
-            <MeBusinessKpis
-              views={Number(activeShop.views_count ?? 0)}
-              contacts={Number(activeShop.reviews_count ?? 0)}
-              orders={quickStats?.activeOrders ?? 0}
-              rating={Number(activeShop.rating ?? 0)}
-              revenue={quickStats?.walletBalance ?? 0}
-              currency={activeShop.currency ?? "EUR"}
-            />
+        {isMerchant && merchantKpis && (
+          <motion.div variants={fadeUp} className="grid grid-cols-4 gap-2">
+            {[
+              { value: merchantKpis.grossSales >= 1000 ? `${(merchantKpis.grossSales / 1000).toFixed(1)}k` : merchantKpis.grossSales.toFixed(0), label: t("me.merchant_kpi_revenue"), color: A.gold, path: "/merchant/finance" },
+              { value: String(merchantKpis.activeOrders), label: t("me.merchant_kpi_active"), color: A.blue, path: "/merchant/orders" },
+              { value: String(merchantKpis.completedOrders), label: t("me.merchant_kpi_completed"), color: A.emerald, path: "/seller" },
+              { value: String(merchantKpis.productCount), label: t("me.merchant_kpi_products"), color: A.violet, path: activeShop?.id ? `/merchant/menu/${activeShop.id}` : "/merchant/onboarding" },
+            ].map((kpi, i) => (
+              <button
+                key={i}
+                onClick={() => navigate(kpi.path)}
+                className="app-stat-chip text-center py-2.5 active:scale-[0.97] transition-transform"
+                style={{ background: `${kpi.color}08`, borderColor: `${kpi.color}14` }}
+              >
+                <p className="text-lg font-black text-foreground leading-none">{kpi.value}</p>
+                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mt-1 truncate">{kpi.label}</p>
+              </button>
+            ))}
           </motion.div>
         )}
 
-        {!isMerchant && (
-          <motion.button
-            variants={fadeUp}
-            onClick={() => navigate("/merchant/onboarding")}
-            className="w-full flex items-center gap-3 p-3.5 app-card active:scale-[0.98] transition-transform text-left"
-            style={{ borderColor: `${A.gold}1F`, background: `${A.gold}08` }}
-          >
-            <div className="app-list-row-icon shrink-0" style={{ background: `${A.gold}14` }}>
-              <Store style={{ color: A.gold }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold text-foreground">{t("me.open_shop")}</p>
-              <p className="text-[10px] text-muted-foreground">{t("me.open_shop_sub")}</p>
-            </div>
-            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: `${A.gold}66` }} />
-          </motion.button>
+        {isMerchant && activeShop && (
+          <motion.div variants={fadeUp}>
+            <MeQuickActions merchantId={activeShop.id} />
+          </motion.div>
+        )}
+
+        {!isMerchant && !hasProviderRole && (
+          <motion.div variants={fadeUp} className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => navigate("/merchant/onboarding")}
+              className="flex items-center gap-2.5 p-3 app-card active:scale-[0.98] transition-transform text-left"
+              style={{ borderColor: `${A.gold}1F`, background: `${A.gold}08` }}
+            >
+              <div className="app-list-row-icon shrink-0" style={{ background: `${A.gold}14` }}>
+                <Store className="w-4 h-4" style={{ color: A.gold }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-bold text-foreground truncate">{t("me.open_shop")}</p>
+                <p className="text-[9px] text-muted-foreground truncate">{t("me.open_shop_sub")}</p>
+              </div>
+            </button>
+            <button
+              onClick={() => navigate("/activities")}
+              className="flex items-center gap-2.5 p-3 app-card active:scale-[0.98] transition-transform text-left"
+              style={{ borderColor: `${A.cyan}1F`, background: `${A.cyan}08` }}
+            >
+              <div className="app-list-row-icon shrink-0" style={{ background: `${A.cyan}14` }}>
+                <Compass className="w-4 h-4" style={{ color: A.cyan }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-bold text-foreground truncate">{t("me.become_provider")}</p>
+                <p className="text-[9px] text-muted-foreground truncate">{t("me.become_provider_sub")}</p>
+              </div>
+            </button>
+          </motion.div>
         )}
 
         {!isPropertyManager && (
           <motion.button
             variants={fadeUp}
             onClick={() => navigate("/dashboard/property/add")}
-            className="w-full flex items-center gap-3 p-3.5 app-card active:scale-[0.98] transition-transform text-left"
+            className="w-full flex items-center gap-3 p-3 app-card active:scale-[0.98] transition-transform text-left"
             style={{ borderColor: `${A.blue}1F`, background: `${A.blue}08` }}
           >
             <div className="app-list-row-icon shrink-0" style={{ background: `${A.blue}14` }}>
-              <Building2 style={{ color: A.blue }} />
+              <Building2 className="w-4 h-4" style={{ color: A.blue }} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold text-foreground">{t("me.add_first_property")}</p>
-              <p className="text-[10px] text-muted-foreground">{t("me.add_first_property_sub")}</p>
+              <p className="text-[12px] font-bold text-foreground">{t("me.add_first_property")}</p>
+              <p className="text-[9px] text-muted-foreground">{t("me.add_first_property_sub")}</p>
             </div>
             <ChevronRight className="w-4 h-4 shrink-0" style={{ color: `${A.blue}66` }} />
           </motion.button>
         )}
 
-        {isMerchant && (
+        {isBusiness && (
           <motion.div variants={fadeUp} className="pt-1 pb-0.5 px-1">
             <div className="flex items-center gap-2">
               <div className="w-1 h-4 rounded-full" style={{ background: A.gold }} />
