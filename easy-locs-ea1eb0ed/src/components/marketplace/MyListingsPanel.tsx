@@ -4,7 +4,7 @@
  */
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -122,7 +122,7 @@ export default function MyListingsPanel() {
     queryKey: ["owner-listings", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("marketplace_services")
         .select("id, title, listing_type, status, active, auto_expire, listing_expires_at, published_at, archived_at, price, currency, city, category, photo_urls, created_at")
         .eq("user_id", user.id)
@@ -182,7 +182,7 @@ export default function MyListingsPanel() {
   const handleDelete = async (id: string) => {
     setBusy(id);
     haptic("warning");
-    const { error } = await supabase
+    const { error } = await db
       .from("marketplace_services")
       .update({ status: "deleted" as any, active: false, updated_at: new Date().toISOString() } as any)
       .eq("id", id);

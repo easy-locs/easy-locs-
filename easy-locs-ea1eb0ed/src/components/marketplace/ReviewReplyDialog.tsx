@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Star, Reply, Eye, EyeOff, Flag, Send } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { toast } from "sonner";
 
 interface Review {
@@ -32,7 +32,7 @@ export default function ReviewReplyDialog({ open, onOpenChange, review, onUpdate
   const handleReply = async () => {
     if (!reply.trim()) return;
     setSubmitting(true);
-    const { error } = await supabase
+    const { error } = await db
       .from("marketplace_reviews")
       .update({
         response: reply.trim(),
@@ -46,7 +46,7 @@ export default function ReviewReplyDialog({ open, onOpenChange, review, onUpdate
 
   const handleModerate = async (status: string) => {
     setSubmitting(true);
-    const { error } = await supabase
+    const { error } = await db
       .from("marketplace_reviews")
       .update({ status })
       .eq("id", review.id);

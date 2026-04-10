@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Radio, Clock, Wifi, WifiOff } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -49,7 +49,7 @@ export default function LiveCommerceToggle({ providerId, isLive, liveSince, onSt
     const newLive = !live;
     const now = new Date().toISOString();
 
-    const { error } = await supabase
+    const { error } = await db
       .from("marketplace_providers")
       .update({
         is_live: newLive,

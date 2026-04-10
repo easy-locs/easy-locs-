@@ -3,7 +3,7 @@
  * CANONICAL: reads from mobility_jobs only.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export interface DemandZone {
   id: string;
@@ -43,7 +43,7 @@ export function useDeliveryHeatmap(orgId?: string) {
     setLoading(true);
     try {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      let query = supabase
+      let query = db
         .from("mobility_jobs")
         .select("id, pickup_lat, pickup_lng, current_price, quoted_price, currency, status, created_at")
         .in("status", ["searching", "offered", "accepted", "in_progress"])

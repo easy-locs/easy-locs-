@@ -3,7 +3,7 @@
  * PASS85-HH: Driver Earnings & Payroll
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { DollarSign, TrendingUp, Clock, Download, Calendar, Award, Minus, Plus, FileText } from "lucide-react";
@@ -61,7 +61,7 @@ export default function DriverEarningsPayroll() {
     setLoading(true);
     const { from, to } = getPeriodRange(period);
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("mobility_jobs")
       .select("id, current_price, quoted_price, currency, status, completed_at, created_at, pickup_address, dropoff_address, service_level")
       .eq("rider_user_id", user.id)

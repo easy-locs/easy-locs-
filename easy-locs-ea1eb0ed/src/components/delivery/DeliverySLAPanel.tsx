@@ -3,7 +3,7 @@
  * PASS84-AA: Delivery SLA & Penalties
  */
 import { useState, useEffect, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { AlertTriangle, Clock, Shield, TrendingDown, CheckCircle2, XCircle } from "lucide-react";
@@ -46,7 +46,7 @@ export default function DeliverySLAPanel({ orgId }: { orgId: string }) {
   useEffect(() => {
     if (!orgId) return;
     const fetch = async () => {
-      const { data } = await supabase
+      const { data } = await db
         .from("mobility_jobs")
         .select("*")
         .eq("merchant_id", orgId)

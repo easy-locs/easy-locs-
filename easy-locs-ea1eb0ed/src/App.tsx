@@ -10,10 +10,12 @@ import { ThemeProvider } from "next-themes";
 
 // ── Auth & providers ──
 import { AuthProvider } from "@/contexts/AuthContext";
-import { CallProvider } from "@/components/call/CallProvider";
 import { I18nProvider } from "@/lib/i18n";
-import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+// ── Deferred providers (eagerly mount context, defer internals) ──
+import { CallProvider } from "@/components/call/CallProvider";
+import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 
 // ── Shell & system (critical — loaded eagerly for app tree) ──
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -260,11 +262,11 @@ if (import.meta.env.DEV) {
 }
 setActionQueryClient(queryClient);
 setTimeout(() => {
-  import("@/lib/super-app-bridge").then((m) => m.installSuperAppBridge()).catch((e) => console.warn("[boot] super-app-bridge failed", e));
-}, 7000);
-setTimeout(() => {
   import("@/lib/smart-prefetch").then((m) => m.prefetchCriticalRoutes()).catch((e) => console.warn("[boot] prefetch failed", e));
-}, 10000);
+}, 2000);
+setTimeout(() => {
+  import("@/lib/super-app-bridge").then((m) => m.installSuperAppBridge()).catch((e) => console.warn("[boot] super-app-bridge failed", e));
+}, 5000);
 
 const PageLoader = () => (
   <div className="app-mobile-page bg-background min-h-[60dvh] px-4 pt-5 animate-pulse">

@@ -3,7 +3,7 @@
  * CANONICAL: reads from mobility_jobs only.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export interface DeliveryAnalytics {
   totalJobs: number;
@@ -42,14 +42,14 @@ export function useDeliveryAnalytics(orgId?: string) {
     if (!orgId) return;
     setLoading(true);
     try {
-      const { data: jobs } = await supabase
+      const { data: jobs } = await db
         .from("mobility_jobs")
         .select("id, status, service_level, current_price, quoted_price, currency, created_at, accepted_at, picked_up_at, completed_at, rider_user_id")
         .eq("merchant_id", orgId)
         .order("created_at", { ascending: false })
         .limit(1000);
 
-      const { data: escrows } = await supabase
+      const { data: escrows } = await db
         .from("escrow_payments")
         .select("amount, status, currency")
         .eq("org_id", orgId);

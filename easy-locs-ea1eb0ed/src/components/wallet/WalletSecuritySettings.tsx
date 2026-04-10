@@ -15,7 +15,7 @@ import PinManagement from "@/components/security/PinManagement";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export default function WalletSecuritySettings() {
   const { user } = useAuth();
@@ -64,7 +64,7 @@ export default function WalletSecuritySettings() {
     if (!user?.id) return;
     (async () => {
       try {
-        const { data } = await supabase
+        const { data } = await db
           .from("profiles" as any)
           .select("daily_transfer_limit")
           .eq("id", user.id)
@@ -133,7 +133,7 @@ export default function WalletSecuritySettings() {
 
           const credId = (credential as PublicKeyCredential).rawId;
           const credIdB64 = btoa(String.fromCharCode(...new Uint8Array(credId)));
-          await supabase
+          await db
             .from("profiles" as any)
             .update({ webauthn_credential_id: credIdB64 })
             .eq("id", user.id);
@@ -149,7 +149,7 @@ export default function WalletSecuritySettings() {
       }
 
       if (!newValue) {
-        await supabase
+        await db
           .from("profiles" as any)
           .update({ webauthn_credential_id: null })
           .eq("id", user.id);
@@ -180,7 +180,7 @@ export default function WalletSecuritySettings() {
       }
       const deviceId = await getDeviceFingerprint();
       await ensureWalletBinding(user.id, deviceId, guard.walletId);
-      await supabase
+      await db
         .from("profiles" as any)
         .update({ device_bound: true })
         .eq("id", user.id);
@@ -197,7 +197,7 @@ export default function WalletSecuritySettings() {
     if (!user?.id) return;
     clearWalletBinding();
     try {
-      await supabase
+      await db
         .from("profiles" as any)
         .update({ device_bound: false })
         .eq("id", user.id);
@@ -211,7 +211,7 @@ export default function WalletSecuritySettings() {
     setLimitSaving(true);
     try {
       const clampedLimit = Math.max(100, Math.min(customLimit, DAILY_TRANSFER_LIMITS.premium));
-      await supabase
+      await db
         .from("profiles" as any)
         .update({ daily_transfer_limit: clampedLimit })
         .eq("id", user.id);

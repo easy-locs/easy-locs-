@@ -286,7 +286,10 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **Production log stripping**: Vite esbuild.drop removes ALL console/debugger in prod builds
 - **Dev-only logging**: All hot-path event bus, command bus, analytics, and handler logs guarded by `import.meta.env.DEV`
 - **Monitoring init**: Deferred to `requestIdleCallback` (non-blocking)
-- **Code splitting**: 6 additional lazy chunks (templates, taxonomy, discovery, pdf-generator, real-estate, map-engine)
+- **Code splitting**: 10+ lazy chunks (templates, taxonomy, discovery, pdf-generator, real-estate, map-engine, engines, call-system, payment-system, orbit-system)
+- **Deferred providers**: CallProvider and UnifiedPaymentProvider lazy-loaded 1.5s after mount (not needed for first paint)
+- **Tier 2 engines dev-only**: 36 analysis/code-quality engines only load in development mode
+- **Bundle reduction**: index.js 545KB → 412KB (24% smaller critical path)
 - **Route prefetching**: Critical routes preloaded on idle (4s after boot)
 - **Per-module prefetching**: Adjacent routes preloaded when entering a module
 - **Lazy geo/permissions**: GeoBoot, PermissionBootstrap lazy-loaded

@@ -1,7 +1,7 @@
 /**
  * Card Build Pipeline — resolve → normalize → compute → store
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { normalizeEntity } from "../normalizers";
 import { useCardStore } from "../card.store";
 import type { CardViewModel } from "../selectors";
@@ -34,8 +34,6 @@ export async function cardBuildPipeline(
   // Already cached?
   if (store.cards[entityId]) return { ok: true };
 
-  // Resolve from DB (lazy import to avoid circular)
-  const { supabase } = await import("@/integrations/supabase/client");
   const tableMap: Record<string, string> = {
     storefront: "storefront_pages",
     listing: "property_listings_v2",
@@ -45,7 +43,7 @@ export async function cardBuildPipeline(
   const table = tableMap[entityType];
   if (!table) return { ok: false, error: `unknown_entity_type:${entityType}` };
 
-  const { data, error } = await (supabase.from as any)(table).select("*").eq("id", entityId).maybeSingle();
+  const { data, error } = await db(table).select("*").eq("id", entityId).maybeSingle();
   if (error || !data) return { ok: false, error: error?.message || "not_found" };
 
   // Normalize → ViewModel → Store
@@ -74,8 +72,7 @@ export async function cardBatchPipeline(
   const table = tableMap[entityType];
   if (!table) return { ok: false, error: `unknown_entity_type:${entityType}` };
 
-  const { supabase } = await import("@/integrations/supabase/client");
-  const { data, error } = await (supabase.from as any)(table).select("*").in("id", missing);
+  const { data, error } = await db(table).select("*").in("id", missing);
   if (error) return { ok: false, error: error.message };
 
   const entries = (data ?? []).map((row: any) => {

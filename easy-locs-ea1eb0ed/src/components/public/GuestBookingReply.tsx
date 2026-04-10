@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -91,14 +90,14 @@ export default function GuestBookingReply({ bookingId, guestName, guestEmail }: 
       await updateConversationTimestamp(conversationId, `${guestName}: ${newMessage.slice(0, 100)}`);
 
       // Notify host via app_notifications
-      const { data: booking } = await supabase
+      const { data: booking } = await db
         .from("booking_requests")
         .select("org_id")
         .eq("id", bookingId)
         .maybeSingle();
 
       if (booking?.org_id) {
-        const { data: org } = await supabase
+        const { data: org } = await db
           .from("orgs")
           .select("owner_user_id")
           .eq("id", booking.org_id)

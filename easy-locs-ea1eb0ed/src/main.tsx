@@ -25,13 +25,13 @@ if (typeof window !== "undefined") {
 
   setTimeout(() => {
     import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});
-  }, 5000);
+  }, 3000);
   setTimeout(() => {
     import("@/lib/events/event-init").catch(() => {});
-  }, 6000);
+  }, 4000);
   setTimeout(() => {
     import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()).catch(() => {});
-  }, 8000);
+  }, 6000);
 }
 
 try {
