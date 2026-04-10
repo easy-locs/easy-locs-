@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
@@ -44,7 +44,7 @@ function timeAgo(dateStr: string): string {
   return `${hours}h`;
 }
 
-export default function RadarStoryRail() {
+function RadarStoryRail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [groups, setGroups] = useState<GroupedUser[]>([]);
@@ -249,3 +249,5 @@ export default function RadarStoryRail() {
     </>
   );
 }
+
+export default memo(RadarStoryRail);

@@ -141,19 +141,19 @@ export default function HyperRadarPage() {
 
   const stats = useMemo(() => computeRadarStats(entities.length, visibleEntities), [entities.length, visibleEntities]);
 
-  const toggleLayer = (id: RadarLayer) => {
+  const toggleLayer = useCallback((id: RadarLayer) => {
     setActiveLayers(prev => prev.includes(id) ? prev.filter(l => l !== id) : [...prev, id]);
-  };
+  }, []);
 
-  const cycleRadius = (dir: 1 | -1) => {
+  const cycleRadius = useCallback((dir: 1 | -1) => {
     const idx = RADIUS_PRESETS.indexOf(radius);
     const next = idx === -1 ? 2 : Math.max(0, Math.min(RADIUS_PRESETS.length - 1, idx + dir));
     setRadius(RADIUS_PRESETS[next]);
-  };
+  }, [radius]);
 
-  const cyclePanelSnap = () => {
+  const cyclePanelSnap = useCallback(() => {
     setPanelSnap(prev => prev === "closed" ? "peek" : prev === "peek" ? "half" : "closed");
-  };
+  }, []);
 
   const distLabel = (r: number) => r >= 1 ? `${r}${t("radar.km")}` : `${r * 1000}${t("radar.m")}`;
 

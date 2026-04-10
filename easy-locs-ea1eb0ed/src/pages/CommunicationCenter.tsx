@@ -65,7 +65,7 @@ export const CommunicationCenter = () => {
       setSelectedThread(null);
       setShowContext(false);
     }
-  }, []);
+  }, [activeSection]);
 
   useEffect(() => {
     void import("@/lib/notif-alert-prefs")
@@ -208,6 +208,16 @@ export const CommunicationCenter = () => {
   const handleClearThread = useCallback((thread: ConversationThread) => {
     clearThread(thread);
   }, [clearThread]);
+
+  const handleContactInfo = useCallback((thread: ConversationThread) => {
+    handleSelectThread(thread);
+    if (isMobileRef.current) setMobileContextOpen(true);
+    else setShowContext(true);
+  }, [handleSelectThread]);
+
+  const handleStatusChange = useCallback((thread: ConversationThread, status: string) => {
+    changeStatus(thread, status);
+  }, [changeStatus]);
 
   const handleSectionChange = useCallback((section: CommSection) => {
     setActiveSection(section);
@@ -352,17 +362,9 @@ export const CommunicationCenter = () => {
                 onClearThread={handleClearThread}
                 onFavoriteThread={favoriteThread}
                 onMarkUnreadThread={markUnread}
-                onContactInfo={(thread) => {
-                  handleSelectThread(thread);
-                  if (isMobile) setMobileContextOpen(true);
-                  else setShowContext(true);
-                }}
-                onStatusChange={(thread, status) => changeStatus(thread, status)}
-                onDetails={(thread) => {
-                  handleSelectThread(thread);
-                  if (isMobile) setMobileContextOpen(true);
-                  else setShowContext(true);
-                }}
+                onContactInfo={handleContactInfo}
+                onStatusChange={handleStatusChange}
+                onDetails={handleContactInfo}
                 visible={!selectedThread || !isMobile}
               />
               <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>

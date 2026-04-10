@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, ArrowDownLeft, RefreshCw, Lock, Unlock, Plus, Send, ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -33,7 +34,7 @@ function formatAmount(amount: number, currency: string): string {
   }
 }
 
-export default function TransactionRow({ id, title, amount, currency, type, direction, status, timestamp }: TransactionRowProps) {
+export default memo(function TransactionRow({ id, title, amount, currency, type, direction, status, timestamp }: TransactionRowProps) {
   const navigate = useNavigate();
   const { t } = useI18n();
   const config = TYPE_CONFIG[type] || TYPE_CONFIG.payment;
@@ -73,4 +74,4 @@ export default function TransactionRow({ id, title, amount, currency, type, dire
       </div>
     </div>
   );
-}
+});
