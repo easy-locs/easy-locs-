@@ -570,9 +570,9 @@ function SmartDiscovery({
                   Popular Near You
                 </h2>
               </div>
-              <div className="flex gap-3 overflow-x-auto pb-2 pl-4 pr-4 scrollbar-none snap-x snap-mandatory">
+              <div className="flex gap-2.5 overflow-x-auto pb-2 pl-4 pr-4 scrollbar-none snap-x snap-mandatory">
                 {popularItems.map((item, i) => (
-                  <div key={item.id} className="shrink-0 w-[180px] snap-start">
+                  <div key={item.id} className="shrink-0 w-[170px] snap-start">
                     <PremiumMerchantCard
                       to={buildMerchantLink(vertical.value, item)}
                       image={item.banner_url || item.logo_url}
@@ -613,9 +613,9 @@ function SmartDiscovery({
                       See all <ChevronRight className="h-3 w-3" />
                     </button>
                   </div>
-                  <div className="flex gap-3 overflow-x-auto pb-2 pl-4 pr-4 scrollbar-none snap-x snap-mandatory">
+                  <div className="flex gap-2.5 overflow-x-auto pb-2 pl-4 pr-4 scrollbar-none snap-x snap-mandatory">
                     {items.slice(0, 6).map((item, i) => (
-                      <div key={item.id} className="shrink-0 w-[180px] snap-start">
+                      <div key={item.id} className="shrink-0 w-[170px] snap-start">
                         <PremiumMerchantCard
                           to={buildMerchantLink(vertical.value, item)}
                           image={item.banner_url || item.logo_url}

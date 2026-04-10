@@ -156,7 +156,7 @@ const ActiveCartBanner = memo(() => {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={() => navigate("/checkout")}
-      className="mb-3 w-full flex items-center gap-3 px-4 py-3 rounded-2xl active:scale-[0.98] transition-transform"
+      className="mb-4 w-full flex items-center gap-3 px-4 py-3 rounded-2xl active:scale-[0.98] transition-transform"
       style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 40% 24%))", border: "1px solid hsl(38 65% 56% / 0.2)" }}
     >
       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
@@ -214,7 +214,7 @@ function SmartQuickActions() {
   const actions = useMemo(() => getSmartActions(), []);
 
   return (
-    <div className="mb-3 flex items-center gap-2">
+    <div className="mb-4 flex items-center gap-2">
       {actions.map(({ icon: Icon, labelKey, to, color }) => (
         <Link
           key={labelKey}
@@ -239,7 +239,7 @@ const QuickAccessStrip = memo(() => {
   ], [t]);
 
   return (
-    <div className="mb-3 flex items-center gap-2">
+    <div className="mb-4 flex items-center gap-2">
       {links.map(({ icon: Icon, label, to, color }) => (
         <Link
           key={to}
@@ -429,7 +429,7 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
       <div className="flex items-center justify-between mb-2 px-1">
-        <h2 className="text-[14px] font-black text-foreground flex items-center gap-1.5">
+        <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
           <span>{icon}</span> {title}
         </h2>
         <Link to={seeAllTo} className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70 shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
@@ -467,7 +467,7 @@ const FeaturedHotelsCarousel = memo(() => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
       <div className="flex items-center justify-between mb-2 px-1">
-        <h2 className="text-[14px] font-black text-foreground flex items-center gap-1.5">
+        <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
           <Building2 className="h-4 w-4" style={{ color: "hsl(38 65% 56%)" }} /> {t("home.featured_hotels")}
         </h2>
         <Link to="/stay" className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70" style={{ color: "hsl(38 65% 56%)" }}>
@@ -479,7 +479,7 @@ const FeaturedHotelsCarousel = memo(() => {
           <Link
             key={hotel.id}
             to={`/s/${hotel.slug}`}
-            className="min-w-[170px] max-w-[200px] rounded-2xl overflow-hidden border border-border/15 bg-card active:scale-[0.97] transition-transform shrink-0"
+            className="w-[170px] rounded-2xl overflow-hidden border border-border/15 bg-card active:scale-[0.97] transition-transform shrink-0"
           >
             <div className="relative h-24 w-full">
               <img src={hotel.banner_url} alt={hotel.name} className="w-full h-full object-cover" loading="lazy" />
@@ -621,7 +621,7 @@ export default function SmartHome() {
 
         {/* Super Services — data-driven from CATEGORY_TREE */}
         <ServiceMenuGrid columns={4} maxItems={8} />
-        <div className="flex justify-center mb-3">
+        <div className="flex justify-center mb-4">
           <ServiceMenuDrawer />
         </div>
 
@@ -630,8 +630,8 @@ export default function SmartHome() {
 
         {/* Category strip — horizontal scroll */}
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-2.5 px-1">
-            <h2 className="text-[14px] font-black text-foreground flex items-center gap-1.5">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
               <span>🏪</span> {t("dashboard.browse_categories") || "Browse Categories"}
             </h2>
             <Link

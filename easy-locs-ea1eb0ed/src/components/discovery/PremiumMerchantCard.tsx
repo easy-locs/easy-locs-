@@ -142,17 +142,18 @@ export default function PremiumMerchantCard({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.04 }}
+        className="h-full"
       >
         <Link
           to={to}
-          className="group block rounded-2xl overflow-hidden active:scale-[0.98] transition-all duration-300"
+          className="group flex flex-col h-full rounded-2xl overflow-hidden active:scale-[0.98] transition-all duration-300"
           style={{
             border: "1px solid hsl(var(--border) / 0.12)",
             background: "hsl(var(--card))",
             boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
           }}
         >
-          <div className="aspect-[3/2] relative overflow-hidden">
+          <div className="aspect-[3/2] relative overflow-hidden shrink-0">
             <Img className="w-full h-full" />
             {badge && (
               <span className="absolute top-2.5 left-2.5 text-[10px] font-bold px-2.5 py-0.5 rounded-lg shadow-sm backdrop-blur-md"
@@ -161,10 +162,10 @@ export default function PremiumMerchantCard({
               </span>
             )}
           </div>
-          <div className="p-3 space-y-1.5">
-            <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
+          <div className="p-3 flex-1 flex flex-col gap-1">
+            <h3 className="text-xs font-bold text-foreground line-clamp-2 leading-snug group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
             {category && <p className="text-[11px] text-muted-foreground line-clamp-1 leading-snug break-words">{category}</p>}
-            <div className="flex items-center gap-2 pt-0.5">
+            <div className="flex items-center gap-2 mt-auto pt-0.5">
               <RatingBadge />
               {distance && (
                 <span className="text-[11px] text-muted-foreground flex items-center gap-0.5 shrink-0">

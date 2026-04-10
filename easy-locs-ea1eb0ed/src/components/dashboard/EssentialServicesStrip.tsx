@@ -26,8 +26,8 @@ const EssentialServicesStrip = memo(function EssentialServicesStrip() {
 
   return (
     <div className="mb-4">
-      <div className="flex items-center justify-between mb-2.5 px-1">
-        <h2 className="text-[14px] font-black text-foreground flex items-center gap-1.5">
+      <div className="flex items-center justify-between mb-2 px-1">
+        <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
           <span>🏥</span> {t("dashboard.essential_services")}
         </h2>
         <Link
