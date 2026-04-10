@@ -37,12 +37,14 @@ export async function resolvePayTarget(params: {
   walletId?: string;
   email?: string;
   orbitId?: string;
+  phone?: string;
   currency?: string;
 }): Promise<ResolvedPayTarget> {
   const result = await resolveUnifiedTarget({
     userId: params.userId,
     orbitId: params.orbitId,
     email: params.email,
+    phone: params.phone,
     walletId: params.walletId,
     currency: params.currency,
   });

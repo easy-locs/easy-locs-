@@ -30,6 +30,16 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **OptimizedImage**: Lazy loading, srcset, fade-in, Supabase transforms
 - **AppActionButton**: Action button for payment/checkout flows
 
+## Payment Flows (Phone-Contact-Based)
+- **Identity**: Phone number = root identity, OTP required, user_id = internal stable ID
+- **Send Money** (`/wallet/transfer`): Contact picker (no email/ID input), resolves via `peer_user_id`
+- **Request Money** (`/wallet/request`): Contact picker (no email/ID input), resolves via `peer_user_id`
+- **Contact Picker**: `ContactPickerSheet` in `src/components/wallet/ContactPickerSheet.tsx`
+  - Shows "On Easy Locs" contacts (with green badge) and "Phone Contacts" (with invite)
+  - `InviteContactSheet` for non-users with share/invite flow
+- **Resolution**: `resolvePayTarget` supports userId, orbitId, phone, walletId (email kept for backward compat but removed from UI)
+- **RULE**: No email input, no ID input, no manual entry in payment flows. Contact → Action → Payment.
+
 ## Shop Onboarding System
 Professional 8-step onboarding flow for merchants (`/merchant/onboarding`):
 1. Welcome (vertical + subcategory selection)
