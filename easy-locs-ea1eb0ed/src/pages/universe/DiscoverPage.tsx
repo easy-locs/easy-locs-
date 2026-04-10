@@ -103,7 +103,7 @@ export default function DiscoverPage() {
               const ui = resolveCanonicalUI(v.value);
               return (
                 <div key={v.value} className="mb-6">
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-2.5">
                     <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                       <span>{v.emoji}</span> {v.label}
                       <span className="text-[10px] font-normal text-muted-foreground">({items.length})</span>

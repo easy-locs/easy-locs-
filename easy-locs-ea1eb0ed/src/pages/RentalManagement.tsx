@@ -513,7 +513,7 @@ const RentalManagement = () => {
             {/* Assign tenant inline */}
             {assignPropertyId === p.id && (
               <div className="mt-3 bg-muted/50 border border-border rounded-lg p-3" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2.5">
                   <span className="text-xs font-semibold text-foreground">{L.assignExisting}</span>
                   <button onClick={(e) => { e.stopPropagation(); setAssignPropertyId(null); }} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
                 </div>

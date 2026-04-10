@@ -31,9 +31,9 @@ const SuperServicesGrid = memo(function SuperServicesGrid() {
   );
 
   return (
-    <div className="mb-4">
+    <div className="mb-5">
       {(activeRides.length > 0 || activeDeliveries.length > 0) && (
-        <div className="space-y-2 mb-4">
+        <div className="space-y-2 mb-3">
           {activeRides.length > 0 && (
             <Link to="/mobility/taxi" className="flex items-center gap-3 rounded-xl px-3.5 py-3 active:scale-[0.98] transition-transform"
               style={{ background: "hsl(220 40% 18%)", border: "1px solid hsl(38 65% 56% / 0.2)" }}>
@@ -69,7 +69,7 @@ const SuperServicesGrid = memo(function SuperServicesGrid() {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-2 px-1">
+      <div className="flex items-center justify-between mb-2.5 px-1">
         <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
           <span>⚡</span> {t("dashboard.super_services")}
         </h2>

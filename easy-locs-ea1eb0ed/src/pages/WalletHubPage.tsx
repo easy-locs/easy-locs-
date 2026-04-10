@@ -223,7 +223,7 @@ export default function WalletHubPage() {
                 }} />
 
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-2.5">
                     <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "hsl(38 65% 56% / 0.7)" }}>{t("wallet.totalBalance")}</p>
                     <div className="flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
                       <Globe className="w-3 h-3" style={{ color: "hsl(38 65% 56% / 0.6)" }} />

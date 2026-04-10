@@ -437,7 +437,7 @@ function SmartDiscovery({
         </div>
       </div>
 
-      <div className="px-4 mb-4">
+      <div className="px-4 mb-3">
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {SORT_OPTIONS.map(opt => (
             <FilterChip
@@ -521,7 +521,7 @@ function SmartDiscovery({
         variant="inline"
         vertical={vertical.value}
         subcategory={activeSub}
-        className="mb-4 px-4"
+        className="mb-5 px-4"
       />
 
       {!isLoading && activeSub && listings.length > 0 && (

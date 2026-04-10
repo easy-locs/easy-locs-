@@ -18,7 +18,7 @@ const LiveTrackingBanner = memo(function LiveTrackingBanner() {
   if (activeRides.length === 0 && activeDeliveries.length === 0) return null;
 
   return (
-    <div className="space-y-2 mb-4">
+    <div className="space-y-2 mb-5">
       {activeRides.length > 0 && (
         <Link to="/mobility/taxi" className="flex items-center gap-3 rounded-xl px-3.5 py-3 active:scale-[0.98] transition-transform"
           style={{ background: "hsl(220 40% 18%)", border: "1px solid hsl(38 65% 56% / 0.2)" }}>

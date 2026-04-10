@@ -153,7 +153,7 @@ export default function PremiumMerchantCard({
             boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
           }}
         >
-          <div className="aspect-[3/2] relative overflow-hidden shrink-0">
+          <div className="aspect-[16/10] relative overflow-hidden shrink-0">
             <Img className="w-full h-full" />
             {badge && (
               <span className="absolute top-2.5 left-2.5 text-[10px] font-bold px-2.5 py-0.5 rounded-lg shadow-sm backdrop-blur-md"

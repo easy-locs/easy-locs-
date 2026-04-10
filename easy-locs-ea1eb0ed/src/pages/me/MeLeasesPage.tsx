@@ -88,7 +88,7 @@ export default function MeLeasesPage() {
                 className="w-full text-left p-4 rounded-xl"
                 style={{ background: "#fff" }}
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2.5">
                   <span
                     className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize"
                     style={{

@@ -157,7 +157,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
 
       {/* Active sessions */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-2.5">
           <span className="text-xs font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>
             {sessions.length} session{sessions.length > 1 ? "s" : ""} active{sessions.length > 1 ? "s" : ""}
           </span>

@@ -75,7 +75,7 @@ const HERO_CATEGORIES = [
 
 /* ═══ Top Hero Banner — Premium super-app hero ═══ */
 const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: SmartHero; locationLabel: string; onLocationTap: () => void; t: (k: string) => string }) => (
-  <div className="relative mb-4 overflow-hidden rounded-[1.75rem] pt-3 pb-4 px-4" style={{ background: "linear-gradient(160deg, hsl(220 40% 18%), hsl(220 40% 22%), hsl(220 35% 28%))" }}>
+  <div className="relative mb-5 overflow-hidden rounded-[1.75rem] pt-3 pb-4 px-4" style={{ background: "linear-gradient(160deg, hsl(220 40% 18%), hsl(220 40% 22%), hsl(220 35% 28%))" }}>
     <motion.div
       className="absolute inset-0 pointer-events-none"
       style={{ background: "linear-gradient(105deg, transparent 35%, hsla(38,65%,56%,0.06) 50%, transparent 65%)" }}
@@ -116,7 +116,7 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: S
     </div>
 
     <motion.div
-      className="relative z-10 mb-4"
+      className="relative z-10 mb-3"
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
@@ -156,7 +156,7 @@ const ActiveCartBanner = memo(() => {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={() => navigate("/checkout")}
-      className="mb-4 w-full flex items-center gap-3 px-4 py-3 rounded-2xl active:scale-[0.98] transition-transform"
+      className="mb-5 w-full flex items-center gap-3 px-4 py-3 rounded-2xl active:scale-[0.98] transition-transform"
       style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 40% 24%))", border: "1px solid hsl(38 65% 56% / 0.2)" }}
     >
       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
@@ -283,7 +283,7 @@ const AISmartInsights = memo(() => {
 
   return (
     <motion.div
-      className="mb-4 overflow-hidden rounded-xl border border-white/5 bg-gradient-to-r from-card/80 via-card/60 to-card/80 backdrop-blur-xl"
+      className="mb-5 overflow-hidden rounded-xl border border-white/5 bg-gradient-to-r from-card/80 via-card/60 to-card/80 backdrop-blur-xl"
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -479,9 +479,9 @@ const FeaturedHotelsCarousel = memo(() => {
           <Link
             key={hotel.id}
             to={`/s/${hotel.slug}`}
-            className="w-[170px] rounded-2xl overflow-hidden border border-border/15 bg-card active:scale-[0.97] transition-transform shrink-0"
+            className="w-[170px] rounded-2xl overflow-hidden border border-border/15 bg-card active:scale-[0.97] transition-transform shrink-0 flex flex-col card-lift"
           >
-            <div className="relative h-24 w-full">
+            <div className="relative aspect-[16/10] w-full overflow-hidden shrink-0">
               <img src={hotel.banner_url} alt={hotel.name} className="w-full h-full object-cover" loading="lazy" />
               <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "hsl(220 40% 18% / 0.7)", backdropFilter: "blur(4px)" }}>
                 <Star className="h-2.5 w-2.5" style={{ fill: "hsl(38 65% 56%)", color: "hsl(38 65% 56%)" }} /> {hotel.rating}
@@ -489,9 +489,9 @@ const FeaturedHotelsCarousel = memo(() => {
               <div className="absolute bottom-0 left-0 right-0 h-12" style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.6))" }} />
               <p className="absolute bottom-1.5 left-2 right-2 text-[10px] font-bold text-white leading-tight line-clamp-1">{hotel.name}</p>
             </div>
-            <div className="px-2.5 py-2">
+            <div className="px-2.5 py-2 flex-1 flex flex-col gap-0.5">
               <p className="text-[11px] text-muted-foreground line-clamp-1 leading-snug">{hotel.region} · {hotel.stars}★</p>
-              <p className="text-xs font-bold mt-0.5 line-clamp-1" style={{ color: "hsl(38 65% 56%)" }}>{t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}</p>
+              <p className="text-xs font-bold line-clamp-1" style={{ color: "hsl(38 65% 56%)" }}>{t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}</p>
             </div>
           </Link>
         ))}

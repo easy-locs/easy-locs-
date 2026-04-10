@@ -328,7 +328,7 @@ function BailTab({ leases, bailDocs, fmt, navigate, activeTenants, autoGenerateL
         <div className="space-y-2">
           {leases.map((lease: any) => (
             <div key={lease.id} className="rounded-2xl p-4 bg-card border border-border">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2.5">
                 <div className="flex items-center gap-2">
                   <Key className="w-4 h-4" style={{ color: lease.status === "active" ? "hsl(152 60% 42%)" : "hsl(220 15% 50%)" }} />
                   <span className="text-sm font-semibold text-foreground">{lease.tenants?.name || "Locataire"}</span>
@@ -516,7 +516,7 @@ function PaiementsTab({ propRentCalls, fmt, togglePayment, tenants }: any) {
             const tenant = tenants.find((t: any) => t.id === rc.tenant_id);
             return (
               <div key={rc.id} className="rounded-2xl p-3.5 bg-card border border-destructive/20">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2.5">
                   <div>
                     <p className="text-sm font-semibold text-foreground capitalize">{monthLabel}</p>
                     <p className="text-[10px] text-muted-foreground">{tenant?.name || "Locataire"}</p>

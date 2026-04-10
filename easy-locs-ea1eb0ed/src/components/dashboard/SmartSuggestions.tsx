@@ -36,7 +36,7 @@ const SmartSuggestions = memo(({ suggestions, onDismiss }: Props) => {
   const visible = suggestions.slice(0, 3);
 
   return (
-    <div className="mb-4 space-y-2">
+    <div className="mb-5 space-y-2">
       <div className="flex items-center gap-1.5 px-1">
         <Sparkles className="w-3 h-3" style={{ color: "hsl(38 65% 56%)" }} />
         <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(220 40% 18%)" }}>

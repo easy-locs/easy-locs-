@@ -155,7 +155,7 @@ const DashboardPreview = () => {
                     borderColor: "hsl(var(--accent) / 0.12)",
                   }}
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center gap-1.5">
                       <s.icon className="h-4 w-4" style={{ color: `hsl(var(--${s.color}))` }} />
                       <span className="text-[10px] sm:text-xs font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>{s.label}</span>

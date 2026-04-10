@@ -179,7 +179,7 @@ export default function DriverJobMarketplace({ className }: Props) {
                 className="rounded-xl overflow-hidden"
                 style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                 <div className="p-3">
-                  <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-start justify-between mb-2.5">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: badge.bg, color: badge.color }}>
