@@ -85,6 +85,10 @@ export const AuditTrail = safeLazy(() => import("@/pages/AuditTrail"), "AuditTra
 export const CountryWorkspace = safeLazy(() => import("@/pages/CountryWorkspace"), "CountryWorkspace");
 export const ServiceTrackingPage = safeLazy(() => import("@/pages/ServiceTrackingPage"), "ServiceTrackingPage");
 
+// Real Estate Vertical — Marketplace
+export const RealEstateMarketplace = safeLazy(() => import("@/pages/real-estate/RealEstateMarketplace"), "RealEstateMarketplace");
+export const RealEstateDetailPage = safeLazy(() => import("@/pages/real-estate/RealEstateDetailPage"), "RealEstateDetailPage");
+
 // Dashboard — Real Estate sub-module
 export const RealEstateModulePage = safeLazy(() => import("@/pages/real-estate/RealEstateModule"), "RealEstateModule");
 export const REPropertiesPage = safeLazy(() => import("@/pages/real-estate/PropertiesPage"), "REProperties");
@@ -176,6 +180,9 @@ export const WalletTransactionDetailPage = safeLazy(() => import("@/pages/wallet
 export const PayRidePage = safeLazy(() => import("@/pages/PayRidePage"), "PayRidePage");
 export const DriverPayoutPage = safeLazy(() => import("@/pages/DriverPayoutPage"), "DriverPayoutPage");
 
+// Wallet — Property Finance
+export const WalletPropertyHub = safeLazy(() => import("@/pages/wallet/WalletPropertyHub"), "WalletPropertyHub");
+
 // Wallet — Payments
 export const PaymentLinkResolverPage = safeLazy(() => import("@/pages/pay/PaymentLinkResolverPage"), "PaymentLinkResolverPage");
 export const PaymentConfirmPage = safeLazy(() => import("@/pages/pay/PaymentConfirmPage"), "PaymentConfirmPage");
@@ -232,6 +239,15 @@ export const SettingsSupportPage = safeLazy(() => import("@/pages/settings/Setti
 export const MePropertyHub = safeLazy(() => import("@/pages/me/MePropertyHub"), "MePropertyHub");
 export const MePropertyDetail = safeLazy(() => import("@/pages/me/MePropertyDetail"), "MePropertyDetail");
 export const MeTenantView = safeLazy(() => import("@/pages/me/MeTenantView"), "MeTenantView");
+
+// Me — Real Estate Vertical (global property management cockpit)
+export const MePropertyCockpit = safeLazy(() => import("@/pages/me/MePropertyCockpit"), "MePropertyCockpit");
+export const MePropertyListPage = safeLazy(() => import("@/pages/me/MePropertyListPage"), "MePropertyListPage");
+export const MePropertyCreatePage = safeLazy(() => import("@/pages/me/MePropertyCreatePage"), "MePropertyCreatePage");
+export const MeTenantsPage = safeLazy(() => import("@/pages/me/MeTenantsPage"), "MeTenantsPage");
+export const MeLeasesPage = safeLazy(() => import("@/pages/me/MeLeasesPage"), "MeLeasesPage");
+export const MeMaintenancePage = safeLazy(() => import("@/pages/me/MeMaintenancePage"), "MeMaintenancePage");
+export const MePropertyAnalyticsPage = safeLazy(() => import("@/pages/me/MePropertyAnalyticsPage"), "MePropertyAnalyticsPage");
 
 // Me — Customer pages
 export const CustomerSpendingInsightsPage = safeLazy(() => import("@/pages/CustomerSpendingInsightsPage"), "CustomerSpendingInsightsPage");

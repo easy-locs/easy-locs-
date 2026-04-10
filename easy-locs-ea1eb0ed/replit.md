@@ -187,3 +187,14 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 ### Quality Gates System
 - **quality-gates.ts** (`src/lib/quality-gates.ts`): Runtime quality infrastructure with error log collection (max 500), health status monitoring (healthy/degraded/unhealthy based on 5-min error rate), architecture rules registry (8 rules: no-direct-db-in-ui, no-any-in-services, no-circular-deps, no-raw-error-messages, canonical-types-only, i18n-required, service-layer-required, no-dead-routes), performance budgets (bundle 500KB, page load 3s, interaction 100ms, list items 100, images 200KB), and module-level quality scoring.
 - **initQualityGates()**: Wired in App.tsx at module scope — registers global error reporter to feed error snapshots into quality tracking. `getErrorSummary()` returns live health dashboard data.
+
+## Real Estate Vertical (Global)
+- **Domain layer**: `src/domains/real-estate/` — canonical-types.ts (14 entity interfaces, all enums), taxonomy.ts (full property tree + alias resolver), country-rules.ts (8 countries: AE/FR/US/GB/SA/MA/EG/IN + default fallback), permissions.ts (12 roles, fine-grained perms), quality-gates.ts (publish blockers + scoring)
+- **Service layer**: `src/services/real-estate.service.ts` — 8 service objects: property (CRUD, filters, publish), lease, tenant, maintenance, document, viewing, payment, analytics (portfolio overview)
+- **Marketplace**: `/real-estate` (ListingType tabs + filters), `/real-estate/:listingType/:slug` (detail page with media, specs, contact/viewing sheet)
+- **Me cockpit**: `/me/properties` (hub + list + 5-step create wizard + tenants + leases + maintenance + analytics). Cockpit = summary only, no financial operations
+- **Wallet finance**: `/wallet/property` (rents/deposits/payouts/expenses tabs, 4 KPI chips). ALL financial detail lives here
+- **Me/Wallet contract**: Me = cockpit/overview. Wallet = all financial operations. Me Analytics has "Open Property Finance →" button linking to Wallet
+- **Country rules**: `getCountryRules(countryCode)` returns currency, areaUnit, addressFormat, taxRules, contractRules, localLabels per country
+- **i18n**: 170+ keys in `re.*` namespace (EN/FR/AR) in i18n-canonical.ts `realEstateVertical` section
+- **Routes**: `/me/gestion-immo` redirects to `/me/properties`

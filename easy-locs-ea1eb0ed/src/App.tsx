@@ -427,7 +427,12 @@ const App = () => (
                   <Route path="/shop/mall/:mallSlug" element={<RetailMallPage />} />
                   <Route path="/shop/store/:slug" element={<RetailStorePage />} />
                   <Route path="/property" element={<PropertyHubPage />} />
-                  <Route path="/real-estate" element={<Navigate to="/property" replace />} />
+                  <Route path="/real-estate" element={<Pages.RealEstateMarketplace />} />
+                  <Route path="/real-estate/buy" element={<Pages.RealEstateMarketplace />} />
+                  <Route path="/real-estate/rent" element={<Pages.RealEstateMarketplace />} />
+                  <Route path="/real-estate/short-stay" element={<Pages.RealEstateMarketplace />} />
+                  <Route path="/real-estate/long-stay" element={<Pages.RealEstateMarketplace />} />
+                  <Route path="/real-estate/:listingType/:slug" element={<Pages.RealEstateDetailPage />} />
                   <Route path="/property-hub" element={<PropertyManagementHub />} />
                   <Route path="/travel" element={<TravelHub />} />
                   <Route path="/travel/flights" element={<TravelFlights />} />
@@ -500,6 +505,11 @@ const App = () => (
                   <Route path="/wallet/request" element={<ProtectedRoute><WalletRequestPage /></ProtectedRoute>} />
                   <Route path="/wallet/transaction/:txId" element={<ProtectedRoute><WalletTransactionDetailPage /></ProtectedRoute>} />
                   <Route path="/wallet/pay/:threadId" element={<ProtectedRoute><PayRidePage /></ProtectedRoute>} />
+                  <Route path="/wallet/property" element={<ProtectedRoute><Pages.WalletPropertyHub /></ProtectedRoute>} />
+                  <Route path="/wallet/property/rents" element={<ProtectedRoute><Pages.WalletPropertyHub /></ProtectedRoute>} />
+                  <Route path="/wallet/property/deposits" element={<ProtectedRoute><Pages.WalletPropertyHub /></ProtectedRoute>} />
+                  <Route path="/wallet/property/payouts" element={<ProtectedRoute><Pages.WalletPropertyHub /></ProtectedRoute>} />
+                  <Route path="/wallet/property/expenses" element={<ProtectedRoute><Pages.WalletPropertyHub /></ProtectedRoute>} />
                   <Route path="/wallet/accounts" element={<Navigate to="/settings/wallet" replace />} />
                   <Route path="/pos" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
                   <Route path="/pos/:shopId" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
@@ -539,9 +549,19 @@ const App = () => (
                   <Route path="/me/delivery-notes" element={<ProtectedRoute><CustomerDeliveryNotesPage /></ProtectedRoute>} />
                   <Route path="/me/payment-activity" element={<ProtectedRoute><CustomerPaymentActivityPage /></ProtectedRoute>} />
                   <Route path="/me/order-receipts" element={<ProtectedRoute><CustomerOrderReceiptsPage /></ProtectedRoute>} />
-                  <Route path="/me/gestion-immo" element={<ProtectedRoute><Pages.MePropertyHub /></ProtectedRoute>} />
+                  <Route path="/me/gestion-immo" element={<Navigate to="/me/properties" replace />} />
                   <Route path="/me/gestion-immo/:propertyId" element={<ProtectedRoute><Pages.MePropertyDetail /></ProtectedRoute>} />
                   <Route path="/me/tenant-view" element={<ProtectedRoute><Pages.MeTenantView /></ProtectedRoute>} />
+                  <Route path="/me/properties" element={<ProtectedRoute><Pages.MePropertyCockpit /></ProtectedRoute>} />
+                  <Route path="/me/properties/list" element={<ProtectedRoute><Pages.MePropertyListPage /></ProtectedRoute>} />
+                  <Route path="/me/properties/create" element={<ProtectedRoute><Pages.MePropertyCreatePage /></ProtectedRoute>} />
+                  <Route path="/me/properties/:propertyId" element={<ProtectedRoute><Pages.MePropertyDetail /></ProtectedRoute>} />
+                  <Route path="/me/properties/analytics" element={<ProtectedRoute><Pages.MePropertyAnalyticsPage /></ProtectedRoute>} />
+                  <Route path="/me/tenants" element={<ProtectedRoute><Pages.MeTenantsPage /></ProtectedRoute>} />
+                  <Route path="/me/leases" element={<ProtectedRoute><Pages.MeLeasesPage /></ProtectedRoute>} />
+                  <Route path="/me/leases/:leaseId" element={<ProtectedRoute><Pages.MeLeasesPage /></ProtectedRoute>} />
+                  <Route path="/me/maintenance" element={<ProtectedRoute><Pages.MeMaintenancePage /></ProtectedRoute>} />
+                  <Route path="/me/maintenance/:ticketId" element={<ProtectedRoute><Pages.MeMaintenancePage /></ProtectedRoute>} />
                   <Route path="/me/auto-repeat" element={<ProtectedRoute><CustomerAutoRepeatPage /></ProtectedRoute>} />
                   <Route path="/me/redeem-rewards" element={<ProtectedRoute><CustomerRewardRedemptionPage /></ProtectedRoute>} />
                   <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
