@@ -27,9 +27,9 @@ const TYPE_BADGE_GLOW: Record<string, string> = {
 };
 
 const SIZE_CONFIG = {
-  small: { width: "w-[110px]", height: "h-[155px]", titleClass: "text-[11px]", metaClass: "text-[10px]", priceClass: "text-[11px]" },
-  medium: { width: "w-[130px]", height: "h-[185px]", titleClass: "text-xs", metaClass: "text-[10px]", priceClass: "text-[11px]" },
-  large: { width: "w-[160px]", height: "h-[225px]", titleClass: "text-[13px]", metaClass: "text-[11px]", priceClass: "text-xs" },
+  small: { width: "w-[125px]", height: "h-[170px]", titleClass: "text-[11px]", metaClass: "text-[10px]", priceClass: "text-[11px]" },
+  medium: { width: "w-[140px]", height: "h-[195px]", titleClass: "text-xs", metaClass: "text-[10px]", priceClass: "text-[11px]" },
+  large: { width: "w-[165px]", height: "h-[230px]", titleClass: "text-[13px]", metaClass: "text-[11px]", priceClass: "text-xs" },
 };
 
 export default function StoryPreviewCard({ story, onClick, size = "medium" }: StoryPreviewCardProps) {

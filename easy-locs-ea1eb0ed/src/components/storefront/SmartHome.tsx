@@ -411,7 +411,7 @@ const FeaturedHotelsCarousel = memo(() => {
           <Link
             key={hotel.id}
             to={`/s/${hotel.slug}`}
-            className="min-w-[160px] max-w-[160px] rounded-2xl overflow-hidden border border-border/15 bg-card active:scale-[0.97] transition-transform shrink-0"
+            className="min-w-[170px] max-w-[200px] rounded-2xl overflow-hidden border border-border/15 bg-card active:scale-[0.97] transition-transform shrink-0"
           >
             <div className="relative h-24 w-full">
               <img src={hotel.banner_url} alt={hotel.name} className="w-full h-full object-cover" loading="lazy" />
@@ -422,8 +422,8 @@ const FeaturedHotelsCarousel = memo(() => {
               <p className="absolute bottom-1.5 left-2 right-2 text-[10px] font-bold text-white leading-tight line-clamp-1">{hotel.name}</p>
             </div>
             <div className="px-2.5 py-2">
-              <p className="text-[11px] text-muted-foreground line-clamp-1">{hotel.region} · {hotel.stars}★</p>
-              <p className="text-xs font-bold mt-0.5 truncate" style={{ color: "hsl(38 65% 56%)" }}>{t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}</p>
+              <p className="text-[11px] text-muted-foreground line-clamp-1 leading-snug">{hotel.region} · {hotel.stars}★</p>
+              <p className="text-xs font-bold mt-0.5 line-clamp-1" style={{ color: "hsl(38 65% 56%)" }}>{t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}</p>
             </div>
           </Link>
         ))}

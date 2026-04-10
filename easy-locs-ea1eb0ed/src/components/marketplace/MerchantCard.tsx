@@ -78,9 +78,9 @@ export default function MerchantCard({
               </span>
             )}
           </div>
-          <div className="p-3 space-y-1.5">
-            <h3 className="text-[13px] font-bold text-foreground line-clamp-2 break-words group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
-            {category && <p className="text-[11px] text-muted-foreground line-clamp-1 break-words">{category}</p>}
+          <div className="p-3 space-y-1">
+            <h3 className="text-[13px] font-bold text-foreground leading-snug line-clamp-2 break-words group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
+            {category && <p className="text-[11px] text-muted-foreground line-clamp-1 break-words leading-snug">{category}</p>}
             <div className="flex items-center gap-3 pt-0.5">
               {rating != null && (
                 <span className="flex items-center gap-1 text-[11px] font-bold">
@@ -120,7 +120,7 @@ export default function MerchantCard({
           boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
         }}
       >
-        <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 relative">
+        <div className="w-[88px] h-[88px] rounded-xl overflow-hidden shrink-0 relative">
           <Img className="w-full h-full" />
           {badge && (
             <span className="absolute bottom-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg backdrop-blur-md"
@@ -129,9 +129,9 @@ export default function MerchantCard({
             </span>
           )}
         </div>
-        <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-          <h3 className="text-sm font-bold text-foreground line-clamp-2 break-words group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
-          {category && <p className="text-[11px] text-muted-foreground line-clamp-1 break-words">{category}</p>}
+        <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+          <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 break-words group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
+          {category && <p className="text-[11px] text-muted-foreground line-clamp-1 break-words leading-snug">{category}</p>}
           <div className="flex items-center gap-3 mt-0.5">
             {rating != null && (
               <span className="flex items-center gap-1 text-[11px] font-bold">
