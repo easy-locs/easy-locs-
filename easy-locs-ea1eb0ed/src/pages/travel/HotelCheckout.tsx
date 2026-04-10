@@ -64,7 +64,7 @@ export default function HotelCheckout() {
   const handleConfirmBooking = async () => {
     if (!user) {
       toast.error("Please sign in to book");
-      navigate("/auth");
+      navigate("/login");
       return;
     }
     try {

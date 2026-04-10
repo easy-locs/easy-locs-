@@ -42,7 +42,7 @@ export default function PropertyPaywallBanner({ propertyCount }: Props) {
       </div>
 
       <Button
-        onClick={() => navigate("/dashboard/subscription")}
+        onClick={() => navigate("/dashboard/subscriptions")}
         className="w-full gap-2"
       >
         <Crown className="h-4 w-4" />

@@ -42,7 +42,7 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 
 ## Component Library (src/components/ui/)
 69 unified UI components. Key canonical components:
-- **Button** (`button.tsx`): 8 variants (default/destructive/outline/secondary/ghost/link/premium/success), `loading` prop
+- **Button** (`button.tsx`): 8 variants (default/destructive/outline/secondary/ghost/link/premium/success), `loading` prop, `asChild` renders single-child Slot (no sibling spinner)
 - **Card** (`card.tsx`): shadcn base with CSS vars (`--card-radius`, `--card-padding`)
 - **AppCard** (`AppCard.tsx`): App-level card with 5 variants (base/interactive/settings/elevated/kpi), status/glow/loading
 - **StatCard** (`stat-card.tsx`): KPI display with animated counters, loading skeleton
