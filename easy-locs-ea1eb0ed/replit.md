@@ -103,3 +103,13 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **ReceiveQrPanel**: Navy/Gold branded QR card with gradient background, quick amount presets (5/10/20/50/100/250), toggle-off on re-tap, custom amount input
 - **QrScannerPage**: Manual amount entry upgraded with Navy header showing recipient initials, quick amount chips with Gold active state, 16px font-size input
 - **WalletHubPage**: Gold floating "Quick Pay" FAB positioned above bottom nav, spring entrance animation
+
+## Super-App Amélioration (Latest)
+- **HERO Redesign**: TopHeroBanner upgraded with premium Navy gradient, H1 heading, prominent centered search bar, 6 category quick-access buttons (Food/Services/Hotel/Taxi/Delivery/Immo)
+- **SEO Overhaul**: robots.txt (single policy, comprehensive Allow/Disallow), index.html with schema.org @graph (Organization + WebSite+SearchAction + SoftwareApplication + WebPage+BreadcrumbList), updated meta tags to super-app positioning (French primary, multi-locale OG)
+- **SEOHead on All Pillars**: Dashboard, Wallet (noindex), Me (noindex), Radar (indexed with canonical+keywords)
+- **Wallet Pagination**: Transaction history now paginated (20 per page) with "Load more" button
+- **Me Role Logic**: Cleaned from nested ternary to proper role accumulation logic with useMemo
+- **Design System Consistency**: Section headings upgraded to H2 with font-black 14px across SuperServicesGrid, EssentialServicesStrip, Browse Categories
+- **SEOHead Defaults**: Updated from "property management" to super-app positioning, OG image path corrected
+- **Dead Code Cleanup**: Removed `sedeeNVJO` junk file, `safe-lazy.tsx` (unused duplicate)

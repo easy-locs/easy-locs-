@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
+import SEOHead from "@/components/SEOHead";
 import {
   User, ChevronRight, LogOut,
   ShoppingBag, Heart, MapPin, CreditCard, Star, Bell, Settings2,
@@ -221,18 +222,19 @@ export default function MeCommandCenter() {
     navigate("/login");
   };
 
-  const roleLabel = isMerchant && isPropertyManager
-    ? t("me.role_pro")
-    : isMerchant
-    ? t("me.role_merchant")
-    : isPropertyManager
-    ? t("me.role_property")
-    : hasDriverRole
-    ? t("me.driver_hub")
-    : t("me.role_personal");
+  const roleLabel = useMemo(() => {
+    const roles: string[] = [];
+    if (isMerchant) roles.push(t("me.role_merchant"));
+    if (isPropertyManager) roles.push(t("me.role_property"));
+    if (hasDriverRole) roles.push(t("me.driver_hub"));
+    if (roles.length === 0) return t("me.role_personal");
+    if (roles.length >= 2) return t("me.role_pro");
+    return roles[0];
+  }, [isMerchant, isPropertyManager, hasDriverRole, t]);
 
   return (
     <div className="app-mobile-page max-w-md mx-auto px-4 py-4">
+      <SEOHead title="Mon Compte — Easy-Locs" description="Gérez votre profil, vos préférences, vos commandes et vos paramètres Easy-Locs." noindex />
       <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
 
         <motion.button

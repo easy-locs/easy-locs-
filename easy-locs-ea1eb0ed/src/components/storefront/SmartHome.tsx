@@ -587,16 +587,16 @@ export default function SmartHome() {
 
         {/* Category strip — horizontal scroll */}
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-2 px-1">
-            <h3 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+          <div className="flex items-center justify-between mb-2.5 px-1">
+            <h2 className="text-[14px] font-black text-foreground flex items-center gap-1.5">
               <span>🏪</span> {t("dashboard.browse_categories") || "Browse Categories"}
-            </h3>
+            </h2>
             <Link
               to="/browse"
               className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70"
               style={{ color: "hsl(38 65% 56%)" }}
             >
-              {t("dashboard.see_all") || "See all"}
+              {t("dashboard.see_all") || "See all"} <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none" data-no-swipe>
