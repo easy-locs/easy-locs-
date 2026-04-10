@@ -1,16 +1,12 @@
-/**
- * TaxiPreviewScreen — Step 2: Route preview + fare + confirm.
- * Premium first-class design — no text clipping, proper spacing.
- */
 import React, { useState, useEffect } from "react";
 import { useTaxiFlowStore, type TaxiServiceLevel } from "@/stores/taxiFlowStore";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { loadRidePreview, type RidePreviewData } from "@/lib/mobility/load-ride-preview";
 import { toast } from "sonner";
-import { tc } from "@/lib/i18n-canonical";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Navigation, Clock, Car, DollarSign, Zap, Signal, Loader2, ShieldCheck, Users, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import { MobilityLiveMap } from "./MobilityLiveMap";
 
 const INITIAL_PREVIEW: RidePreviewData = {
   ready: false, waitMinutes: null, etaMinutes: null, distanceKm: null,
@@ -68,7 +64,7 @@ export function TaxiPreviewScreen() {
       setActiveJobId(job.id);
       setStep("requesting");
       toast.success("Taxi requested!");
-    } catch (err: any) {
+    } catch {
       toast.error("Failed to request ride");
     } finally {
       setSubmitting(false);
@@ -83,92 +79,52 @@ export function TaxiPreviewScreen() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
-      className="space-y-4"
+      className="space-y-3"
     >
-      {/* Back */}
       <button type="button" onClick={() => setStep("search")}
         className="flex items-center gap-1.5 text-sm text-muted-foreground active:text-foreground transition-colors">
         <ArrowLeft className="h-4 w-4 shrink-0" /> Edit trip
       </button>
 
-      {/* Route summary */}
-      <div className="rounded-2xl border border-border/20 bg-card/40 overflow-hidden">
-        <div className="h-40 bg-gradient-to-br from-primary/8 via-card to-emerald-500/5 flex items-center justify-center relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-72 h-72 rounded-full border border-primary/8 absolute animate-pulse" style={{ animationDuration: "4s" }} />
-            <div className="w-52 h-52 rounded-full border border-primary/6 absolute animate-pulse" style={{ animationDuration: "3s", animationDelay: "0.5s" }} />
-            <div className="w-32 h-32 rounded-full border border-dashed border-primary/10 absolute" />
-          </div>
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full bg-card/80 backdrop-blur-sm border border-border/15">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-semibold text-muted-foreground">Live route</span>
-          </div>
-          <div className="flex items-center gap-6 z-10">
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                <Navigation className="w-4 h-4 text-emerald-500" />
-              </div>
-              <span className="text-[10px] text-muted-foreground mt-1.5 max-w-[120px] text-center leading-tight line-clamp-2">{pickup?.label || "Pickup"}</span>
-            </div>
-            <div className="flex flex-col items-center gap-0.5">
-              <div className="w-16 h-[2px] bg-gradient-to-r from-emerald-500 to-primary rounded-full" />
-              {preview.ready && <span className="text-[10px] font-bold text-primary">{preview.distanceKm?.toFixed(1)} km</span>}
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
-                <MapPin className="w-4 h-4 text-primary" />
-              </div>
-              <span className="text-[10px] text-muted-foreground mt-1.5 max-w-[120px] text-center leading-tight line-clamp-2">{dropoff?.label || "Dropoff"}</span>
-            </div>
-          </div>
+      <div className="rounded-2xl overflow-hidden border border-border/20" style={{ height: 180 }}>
+        <MobilityLiveMap
+          mode="taxi"
+          pickupLat={pickup?.lat}
+          pickupLng={pickup?.lng}
+          dropoffLat={dropoff?.lat}
+          dropoffLng={dropoff?.lng}
+          nearbyRiders={preview.nearbyDrivers ?? 4}
+        />
+      </div>
+
+      <div className="rounded-2xl border border-border/20 bg-card p-3.5 space-y-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "hsl(142 71% 45%)" }} />
+          <p className="text-sm text-foreground leading-snug break-words flex-1 min-w-0 line-clamp-1">{pickup?.label || "Pickup"}</p>
         </div>
-        <div className="p-4 space-y-2">
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1 shrink-0 ring-2 ring-emerald-500/20" />
-            <p className="text-sm text-foreground leading-snug break-words">{pickup?.label || "Pickup"}</p>
-          </div>
-          <div className="ml-[5px] border-l-2 border-dashed border-border/30 h-4" />
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="w-2.5 h-2.5 rounded-full bg-primary mt-1 shrink-0 ring-2 ring-primary/20" />
-            <p className="text-sm text-foreground leading-snug break-words">{dropoff?.label || "Dropoff"}</p>
-          </div>
+        <div className="ml-[5px] border-l-2 border-dashed border-border/30 h-3" />
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "hsl(38 65% 56%)" }} />
+          <p className="text-sm text-foreground leading-snug break-words flex-1 min-w-0 line-clamp-1">{dropoff?.label || "Dropoff"}</p>
         </div>
       </div>
 
-      {/* Wait time */}
-      {preview.ready && !previewLoading && (
-        <div className="flex items-center gap-3 rounded-2xl border border-border/15 bg-card/40 px-4 py-3">
-          <div className="w-9 h-9 rounded-full bg-muted/40 flex items-center justify-center shrink-0">
-            <span className="text-base">⏱️</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-foreground">Wait time in your area</p>
-            <p className="text-[11px] text-muted-foreground leading-snug">
-              {activeOption.title} rides arriving in ~{preview.waitMinutes ?? "?"} min
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Ride options */}
       <div>
-        <p className="text-xs font-bold text-foreground mb-2.5">Choose your ride</p>
-        <div className="grid grid-cols-4 gap-2.5">
+        <p className="text-xs font-bold text-foreground mb-2">Choose your ride</p>
+        <div className="grid grid-cols-4 gap-2">
           {SERVICE_OPTIONS.map(opt => {
             const selected = opt.value === serviceLevel;
             return (
               <button key={opt.value} type="button" onClick={() => setServiceLevel(opt.value)}
                 className={cn(
-                  "flex flex-col items-center gap-1.5 py-3.5 rounded-2xl border-2 transition-all duration-200",
-                  selected
-                    ? "border-primary bg-primary/8 shadow-md shadow-primary/15 scale-[1.02]"
-                    : "border-border/20 bg-card/60"
-                )}>
-                <span className="text-2xl leading-none select-none">{opt.emoji}</span>
-                <span className={cn(
-                  "text-[11px] font-bold leading-none",
-                  selected ? "text-primary" : "text-foreground"
-                )}>{opt.title}</span>
+                  "flex flex-col items-center gap-1 py-3 rounded-2xl border-2 transition-all duration-200",
+                  selected ? "shadow-md scale-[1.02]" : "border-border/20 bg-card/60"
+                )}
+                style={selected ? { borderColor: "hsl(38 65% 56%)", background: "hsl(38 65% 56% / 0.08)" } : undefined}
+              >
+                <span className="text-xl leading-none select-none">{opt.emoji}</span>
+                <span className="text-[11px] font-bold leading-none"
+                  style={selected ? { color: "hsl(38 65% 56%)" } : undefined}>{opt.title}</span>
                 <span className="text-[10px] text-muted-foreground/80 leading-none">{opt.subtitle}</span>
               </button>
             );
@@ -176,60 +132,61 @@ export function TaxiPreviewScreen() {
         </div>
       </div>
 
-      {/* Fare card */}
       {previewLoading ? (
-        <div className="rounded-2xl border border-border/15 bg-card/40 p-8 flex items-center justify-center gap-2.5">
-          <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
+        <div className="rounded-2xl border border-border/15 bg-card p-8 flex items-center justify-center gap-2.5">
+          <Loader2 className="w-4 h-4 animate-spin shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
           <span className="text-xs text-muted-foreground">Computing route…</span>
         </div>
       ) : preview.ready ? (
-        <div className="rounded-2xl border border-border/15 bg-card/40 p-4 space-y-4">
-          {/* Fare header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-primary shrink-0" />
-              <span className="text-xs text-muted-foreground font-medium">Estimated fare</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-foreground tracking-tight">{preview.estimatedFare} AED</span>
+        <div className="rounded-2xl border border-border/20 overflow-hidden">
+          <div className="p-4 text-center" style={{ background: "hsl(220 40% 18%)" }}>
+            <p className="text-[10px] uppercase tracking-wider font-bold mb-1" style={{ color: "hsl(38 65% 56% / 0.7)" }}>Estimated Fare</p>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-3xl font-bold text-white tracking-tight">{preview.estimatedFare} AED</span>
               {preview.surgeMultiplier > 1 && (
-                <span className="flex items-center gap-0.5 text-[10px] font-bold bg-amber-500/10 text-amber-500 px-2 py-1 rounded-full">
+                <span className="flex items-center gap-0.5 text-[10px] font-bold px-2 py-1 rounded-full"
+                  style={{ background: "hsl(38 65% 56% / 0.15)", color: "hsl(38 65% 56%)" }}>
                   <Zap className="w-3 h-3 shrink-0" /> ×{preview.surgeMultiplier.toFixed(1)}
                 </span>
               )}
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { icon: Navigation, value: `${preview.distanceKm?.toFixed(1)} km`, label: "Distance" },
-              { icon: Clock, value: `${preview.etaMinutes} min`, label: "ETA" },
-              { icon: Car, value: `${preview.waitMinutes} min`, label: "Wait" },
-            ].map(({ icon: Icon, value, label }) => (
-              <div key={label} className="flex flex-col items-center bg-muted/20 rounded-xl py-3 px-2">
-                <Icon className="w-4 h-4 text-primary mb-1 shrink-0" />
-                <span className="text-xs font-bold text-foreground">{value}</span>
-                <span className="text-[10px] text-muted-foreground mt-0.5">{label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Zone context */}
-          <div className="flex items-center justify-between text-[10px]">
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Signal className="w-3 h-3 shrink-0" />
-              <span>{preview.nearbyDrivers ?? 0} drivers nearby</span>
+          <div className="p-3 bg-card">
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { icon: Navigation, value: `${preview.distanceKm?.toFixed(1)} km`, label: "Distance" },
+                { icon: Clock, value: `${preview.etaMinutes} min`, label: "Trip time" },
+                { icon: Car, value: `${preview.waitMinutes} min`, label: "Pickup ETA" },
+              ].map(({ icon: Icon, value, label }) => (
+                <div key={label} className="flex flex-col items-center rounded-xl py-2.5 px-2" style={{ background: "hsl(220 40% 18% / 0.04)" }}>
+                  <Icon className="w-4 h-4 mb-1 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+                  <span className="text-xs font-bold text-foreground">{value}</span>
+                  <span className="text-[10px] text-muted-foreground mt-0.5">{label}</span>
+                </div>
+              ))}
             </div>
-            <span className={cn(
-              "px-2.5 py-1 rounded-full font-bold capitalize text-[10px]",
-              preview.trafficLevel === "low" ? "bg-emerald-500/10 text-emerald-500" :
-              preview.trafficLevel === "moderate" ? "bg-amber-500/10 text-amber-500" :
-              preview.trafficLevel === "heavy" ? "bg-orange-500/10 text-orange-500" :
-              "bg-muted text-muted-foreground"
-            )}>
-              {preview.trafficLevel}
-            </span>
+
+            <div className="flex items-center justify-between text-[10px] mt-3 px-1">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Signal className="w-3 h-3 shrink-0" />
+                <span>{preview.nearbyDrivers ?? 0} drivers nearby</span>
+              </div>
+              <span className={cn(
+                "px-2 py-0.5 rounded-full font-bold capitalize text-[10px]",
+                preview.trafficLevel === "low" ? "text-emerald-500" :
+                preview.trafficLevel === "moderate" ? "text-amber-500" :
+                preview.trafficLevel === "heavy" ? "text-orange-500" :
+                "text-muted-foreground"
+              )} style={{
+                background: preview.trafficLevel === "low" ? "hsl(142 71% 45% / 0.1)" :
+                  preview.trafficLevel === "moderate" ? "hsl(38 65% 56% / 0.1)" :
+                  preview.trafficLevel === "heavy" ? "hsl(20 80% 50% / 0.1)" :
+                  "hsl(0 0% 50% / 0.1)"
+              }}>
+                {preview.trafficLevel}
+              </span>
+            </div>
           </div>
         </div>
       ) : (
@@ -238,41 +195,36 @@ export function TaxiPreviewScreen() {
         </div>
       )}
 
-      {/* Safety */}
-      <div className="flex items-center gap-3 rounded-2xl border border-border/15 bg-card/40 px-4 py-3">
-        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-          <ShieldCheck className="w-4 h-4 text-primary" />
+      <div className="flex items-center gap-3 rounded-xl border border-border/15 bg-card px-4 py-3">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "hsl(142 71% 45% / 0.1)" }}>
+          <ShieldCheck className="w-4 h-4" style={{ color: "hsl(142 71% 45%)" }} />
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-bold text-foreground">Safer and smarter</p>
-          <p className="text-[11px] text-muted-foreground leading-snug">Verified driver, live tracking, route visibility</p>
+          <p className="text-xs font-bold text-foreground">Verified & tracked</p>
+          <p className="text-[10px] text-muted-foreground leading-snug">Verified driver · Live tracking · Route monitoring</p>
         </div>
       </div>
 
-      {/* Confirm CTA */}
+      <div className="flex items-center justify-between rounded-xl border border-border/15 bg-card px-4 py-2.5">
+        <div className="flex items-center gap-2 min-w-0">
+          <Users className="w-4 h-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+          <span className="text-xs font-bold text-foreground">{seats} passenger{seats > 1 ? "s" : ""}</span>
+        </div>
+        <span className="text-xs text-muted-foreground shrink-0">{activeOption.subtitle}</span>
+      </div>
+
       <div className="pt-1 pb-2">
         <button
           type="button"
           disabled={!preview.ready || submitting}
           onClick={handleConfirm}
-          className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-sm disabled:opacity-40 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98]"
+          className="w-full h-14 rounded-2xl font-bold text-sm disabled:opacity-40 transition-all duration-200 flex items-center justify-center gap-2 text-white active:scale-[0.98]"
+          style={{ background: "hsl(220 40% 18%)", boxShadow: "0 8px 25px hsl(220 40% 18% / 0.3)" }}
         >
           {submitting
             ? <><Loader2 className="w-4 h-4 animate-spin shrink-0" /> Requesting…</>
-            : <>🚀 Request {activeOption.title}</>}
+            : <>Confirm {activeOption.title} — {preview.estimatedFare ?? "?"} AED</>}
         </button>
-      </div>
-
-      {/* Seats */}
-      <div className="flex items-center justify-between rounded-2xl border border-border/15 bg-card/40 px-4 py-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <Users className="w-4 h-4 text-primary shrink-0" />
-          <div>
-            <p className="text-xs font-bold text-foreground">Seats</p>
-            <p className="text-[11px] text-muted-foreground">{seats} passenger{seats > 1 ? "s" : ""}</p>
-          </div>
-        </div>
-        <span className="text-xs font-medium text-muted-foreground shrink-0">{activeOption.subtitle}</span>
       </div>
     </motion.div>
   );

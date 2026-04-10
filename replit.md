@@ -54,6 +54,19 @@ App.tsx routes are organized into clean, labeled sections:
 - **Hotel Booking**: Smart date defaults (tomorrow/day-after) so rooms show prices immediately without manual date selection
 - **i18n keys**: home.qa_reorder, home.qa_favorites, home.qa_my_orders added to FR/EN
 
+## Taxi / Rider / Delivery Premium Experience
+Ultra-fluid mobility experience comparable to Uber/Careem/Deliveroo:
+- **Taxi Page** (`/mobility/taxi`): Map-first with live nearby vehicles, Navy header, Gold accents. 5-step flow: search → preview → requesting → tracking → completed
+- **TaxiSearchScreen**: Live Mapbox map with animated drivers, recent destinations for 1-click rebook, vehicle types (Standard/Premium/XL/Moto) with ETA badges, Now/Schedule toggle
+- **TaxiPreviewScreen**: Route map with Mapbox Directions API polyline (Gold line on Navy shadow), fare card with Navy background, distance/ETA/wait stats, ride options, Confirm CTA
+- **TaxiRequestingScreen**: Animated radar with Gold ripple rings, status messages with check animations, cancel option
+- **TaxiTrackingScreen**: Real RideLiveMap with driver/pickup/dropoff markers, full driver card (photo/name/vehicle/plate/rating), Call/Chat/Share buttons (Orbit integration), 8-step timeline (searching→accepted→arriving→at_pickup→picked_up→in_progress→arriving_dropoff→completed), live speed display
+- **TaxiCompletedScreen**: Fare summary, 5-star rating, tip flow (0/5/10/20/50), bottom-sheet receipt with route details
+- **Delivery Page** (`/mobility/delivery`): Navy header, ActiveDeliveryTracker component per active job with progress bar + rider call/chat (Orbit integration), delivery statuses (finding→assigned→heading_to_pickup→at_pickup→picked_up→on_the_way→almost_there→delivered)
+- **Dashboard Integration**: SuperServicesGrid shows active rides/deliveries banners with LIVE badge for quick access
+- **MobilityLiveMap**: Mapbox Directions API route polyline between pickup/dropoff (Gold line), animated nearby vehicle markers, Navy/Gold markers
+- **Design**: All Navy `hsl(220 40% 18%)` / Gold `hsl(38 65% 56%)` inline styles
+
 ## Key Directories
 ```
 easy-locs-ea1eb0ed/

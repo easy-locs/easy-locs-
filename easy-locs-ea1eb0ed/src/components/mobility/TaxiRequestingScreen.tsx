@@ -1,13 +1,8 @@
-/**
- * TaxiRequestingScreen — Step 3: Searching for driver.
- * Premium animated waiting screen with dispatch status indicators.
- * Auto-transitions to tracking when job status changes.
- */
 import React, { useEffect, useState } from "react";
 import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
-import { Loader2, Radar, ShieldCheck, Check } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, ShieldCheck, Check } from "lucide-react";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 const STATUS_MESSAGES = [
@@ -22,7 +17,6 @@ export function TaxiRequestingScreen() {
   const jobs = useCustomerMobilityStore(s => s.jobs);
   const [msgIdx, setMsgIdx] = useState(0);
 
-  // Cycle through status messages
   useEffect(() => {
     const interval = setInterval(() => {
       setMsgIdx(prev => (prev + 1) % STATUS_MESSAGES.length);
@@ -30,7 +24,6 @@ export function TaxiRequestingScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  // Watch for job status change → transition to tracking
   const activeJob = jobs.find(j => j.id === activeJobId);
   useEffect(() => {
     if (!activeJob) return;
@@ -54,28 +47,24 @@ export function TaxiRequestingScreen() {
       transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="flex flex-col items-center justify-center py-16 px-6 text-center space-y-6"
     >
-      {/* Animated radar with ripple rings */}
       <div className="relative w-28 h-28 flex items-center justify-center">
         {[0, 1, 2].map(i => (
           <motion.div
             key={i}
-            className="absolute inset-0 rounded-full border-2 border-primary/20"
+            className="absolute inset-0 rounded-full"
+            style={{ border: "2px solid hsl(38 65% 56% / 0.2)" }}
             initial={{ scale: 0.5, opacity: 0.8 }}
             animate={{ scale: 1.8, opacity: 0 }}
-            transition={{
-              duration: 2.4,
-              repeat: Infinity,
-              delay: i * 0.8,
-              ease: "easeOut",
-            }}
+            transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.8, ease: "easeOut" }}
           />
         ))}
         <motion.div
-          className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center"
+          className="w-16 h-16 rounded-full flex items-center justify-center"
+          style={{ background: "hsl(220 40% 18% / 0.1)" }}
           animate={{ scale: [1, 1.05, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <Radar className="w-8 h-8 text-primary" />
+          <span className="text-3xl">🚗</span>
         </motion.div>
       </div>
 
@@ -84,11 +73,10 @@ export function TaxiRequestingScreen() {
           Finding your {label}
         </h2>
         <p className="text-sm text-muted-foreground max-w-[260px]">
-          Matching you with the best nearby driver using live zone intelligence.
+          Matching you with the best nearby driver
         </p>
       </div>
 
-      {/* Animated status messages */}
       <div className="space-y-2.5 w-full max-w-[260px]">
         {STATUS_MESSAGES.map((msg, idx) => {
           const isDone = idx < msgIdx;
@@ -102,11 +90,13 @@ export function TaxiRequestingScreen() {
               className="flex items-center gap-3 text-sm"
             >
               {isDone ? (
-                <Check className="w-4 h-4 text-primary shrink-0" />
+                <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "hsl(142 71% 45%)" }}>
+                  <Check className="w-3 h-3 text-white" />
+                </div>
               ) : isActive ? (
-                <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
+                <Loader2 className="w-5 h-5 animate-spin shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
               ) : (
-                <div className="w-4 h-4 rounded-full border border-border/40 shrink-0" />
+                <div className="w-5 h-5 rounded-full border border-border/40 shrink-0" />
               )}
               <span className={isDone || isActive ? "text-foreground" : "text-muted-foreground"}>
                 {msg}
@@ -116,18 +106,16 @@ export function TaxiRequestingScreen() {
         })}
       </div>
 
-      {/* Safety badge */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
         className="flex items-center gap-2 text-xs text-muted-foreground"
       >
-        <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+        <ShieldCheck className="w-3.5 h-3.5" style={{ color: "hsl(142 71% 45%)" }} />
         <span>Verified drivers only</span>
       </motion.div>
 
-      {/* Cancel */}
       <motion.button
         type="button"
         onClick={async () => {
@@ -136,7 +124,7 @@ export function TaxiRequestingScreen() {
               const cancelJob = useCustomerMobilityStore.getState().cancelJob;
               await cancelJob(activeJobId, "Customer cancelled during search");
               toast.success("Request cancelled");
-            } catch { /* best effort */ }
+            } catch {}
           }
           reset();
         }}

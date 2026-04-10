@@ -78,21 +78,37 @@ export function MobilityLiveMap({
     mapRef.current = map;
 
     map.on("load", () => {
-      // Pickup marker
       const pickupEl = document.createElement("div");
       pickupEl.innerHTML = `<div style="width:32px;height:32px;border-radius:50%;background:hsl(142,71%,45%);border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(34,197,94,0.4);font-size:14px;">📍</div>`;
       new mapboxgl.Marker(pickupEl).setLngLat([centerLng, centerLat]).addTo(map);
 
-      // Dropoff marker
       if (dropoffLat != null && dropoffLng != null) {
         const dropEl = document.createElement("div");
-        dropEl.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:#ef4444;border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(239,68,68,0.4);font-size:12px;">🏁</div>`;
+        dropEl.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:hsl(38,65%,56%);border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(196,155,80,0.4);font-size:12px;">🏁</div>`;
         new mapboxgl.Marker(dropEl).setLngLat([dropoffLng, dropoffLat]).addTo(map);
 
         const bounds = new mapboxgl.LngLatBounds();
         bounds.extend([centerLng, centerLat]);
         bounds.extend([dropoffLng, dropoffLat]);
         map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
+
+        fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${centerLng},${centerLat};${dropoffLng},${dropoffLat}?geometries=geojson&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`)
+          .then(r => r.json())
+          .then(data => {
+            const route = data.routes?.[0]?.geometry;
+            if (route && map.getSource("route") === undefined) {
+              map.addSource("route", { type: "geojson", data: { type: "Feature", properties: {}, geometry: route } });
+              map.addLayer({
+                id: "route-line-bg", type: "line", source: "route",
+                paint: { "line-color": "hsl(220, 40%, 18%)", "line-width": 6, "line-opacity": 0.3 },
+              }, map.getLayer("route-line") ? "route-line" : undefined);
+              map.addLayer({
+                id: "route-line", type: "line", source: "route",
+                paint: { "line-color": "hsl(38, 65%, 56%)", "line-width": 3, "line-opacity": 0.9 },
+              });
+            }
+          })
+          .catch(() => {});
       }
 
       // Add rider/driver markers
