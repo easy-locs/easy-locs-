@@ -646,8 +646,8 @@ export default memo(function UnifiedMap({
           <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
             <MapPin className="w-7 h-7 text-primary/60" />
           </div>
-          <p className="text-sm font-semibold text-white/80 mb-1">Map unavailable</p>
-          <p className="text-[11px] text-white/40">3D rendering not supported in this browser</p>
+          <p className="text-sm font-semibold text-white/80 mb-1">Explore nearby</p>
+          <p className="text-[11px] text-white/40 leading-relaxed">Use the list below to discover places around you</p>
         </div>
       </div>
     );
