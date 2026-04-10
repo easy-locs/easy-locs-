@@ -2,8 +2,21 @@ import { useEffect, useState } from "react";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { db } from "@/services/db";
 
+export interface WalletAccount {
+  id: string;
+  owner_user_id: string;
+  currency: string;
+  balance: number;
+  status: string;
+  account_type?: string;
+  label?: string;
+  is_default?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export function useWalletAccounts(ownerUserId?: string) {
-  const [rows, setRows] = useState<any[]>([]);
+  const [rows, setRows] = useState<WalletAccount[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,7 +32,7 @@ export function useWalletAccounts(ownerUserId?: string) {
         .order("created_at", { ascending: false });
 
       if (!mounted) return;
-      setRows(data ?? []);
+      setRows((data ?? []) as WalletAccount[]);
       setLoading(false);
     };
 

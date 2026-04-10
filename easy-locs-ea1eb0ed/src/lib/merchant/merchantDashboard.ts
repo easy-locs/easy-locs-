@@ -1,4 +1,24 @@
 import { db } from "@/services/db";
+import type { OrderRecord, ProductRecord, PromoRecord, MerchantRecord } from "@/services/merchant.types";
+
+interface DashboardOrderRow {
+  id: string;
+  total_amount?: number;
+  status?: string;
+  created_at?: string;
+}
+
+interface DashboardProductRow {
+  id: string;
+  is_available?: boolean;
+  sort_order?: number;
+}
+
+interface DashboardPromoRow {
+  id: string;
+  is_active?: boolean;
+  created_at?: string;
+}
 
 export async function getMerchantDashboardSnapshot(merchantId: string) {
   const [merchantRes, ordersRes, productsRes, promosRes] =
@@ -24,34 +44,34 @@ export async function getMerchantDashboardSnapshot(merchantId: string) {
     ]);
 
   const merchant = merchantRes?.data ?? null;
-  const orderRows = ordersRes?.data ?? [];
-  const productRows = productsRes?.data ?? [];
-  const promoRows = promosRes?.data ?? [];
+  const orderRows = (ordersRes?.data ?? []) as DashboardOrderRow[];
+  const productRows = (productsRes?.data ?? []) as DashboardProductRow[];
+  const promoRows = (promosRes?.data ?? []) as DashboardPromoRow[];
 
   const grossSales = orderRows.reduce(
-    (sum: number, row: any) => sum + Number(row.total_amount ?? 0),
+    (sum, row) => sum + Number(row.total_amount ?? 0),
     0
   );
 
-  const activeOrders = orderRows.filter((row: any) =>
+  const activeOrders = orderRows.filter((row) =>
     ["paid", "confirmed", "preparing", "driver_search", "driver_assigned", "picked_up", "on_the_way"].includes(
       String(row.status ?? "")
     )
   ).length;
 
-  const completedOrders = orderRows.filter((row: any) =>
+  const completedOrders = orderRows.filter((row) =>
     ["completed", "delivered"].includes(String(row.status ?? ""))
   ).length;
 
-  const cancelledOrders = orderRows.filter((row: any) =>
+  const cancelledOrders = orderRows.filter((row) =>
     ["cancelled", "refunded", "disputed"].includes(String(row.status ?? ""))
   ).length;
 
-  const availableProducts = productRows.filter((row: any) => !!row.is_available).length;
-  const activePromos = promoRows.filter((row: any) => !!row.is_active).length;
+  const availableProducts = productRows.filter((row) => !!row.is_available).length;
+  const activePromos = promoRows.filter((row) => !!row.is_active).length;
 
   return {
-    merchant: merchant ?? null,
+    merchant: merchant as MerchantRecord | null,
     grossSales,
     activeOrders,
     completedOrders,

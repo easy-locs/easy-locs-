@@ -8,7 +8,7 @@ import { getMerchantDashboardSnapshot } from "@/lib/merchant/merchantDashboard";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, tSafe } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
 import MeBusinessSwitcher from "@/components/me/MeBusinessSwitcher";
 import MeProfileQuality from "@/components/me/MeProfileQuality";
@@ -95,13 +95,36 @@ export default function MeCommandCenter() {
 
   const [activeShopId, setActiveShopId] = useState<string | null>(null);
 
-  const { data: shops } = useQuery<ShopData[]>({
+  const { data: shops, isLoading: shopsLoading, error: shopsError } = useQuery<ShopData[]>({
     queryKey: ["me-shops-full", uid],
     enabled: !!uid,
     staleTime: 60_000,
     queryFn: async () => {
-      const { data } = await typedQueries.storefrontPages.selectByOwner(uid);
-      return (data ?? []) as unknown as ShopData[];
+      const { data, error } = await typedQueries.storefrontPages.selectByOwner(uid);
+      if (error) throw error;
+      return (data ?? []).map((d: Record<string, unknown>) => ({
+        id: String(d.id ?? ""),
+        name: String(d.name ?? ""),
+        slug: String(d.slug ?? ""),
+        logo_url: d.logo_url as string | null,
+        banner_url: d.banner_url as string | null,
+        description: d.description as string | null,
+        contact_email: d.contact_email as string | null,
+        contact_phone: d.contact_phone as string | null,
+        address: d.address as string | null,
+        city: d.city as string | null,
+        country: d.country as string | null,
+        latitude: d.latitude as number | null,
+        longitude: d.longitude as number | null,
+        shop_visibility: String(d.shop_visibility ?? "draft"),
+        is_verified: Boolean(d.is_verified),
+        active: Boolean(d.active),
+        rating: d.rating as number | null,
+        reviews_count: d.reviews_count as number | null,
+        views_count: d.views_count as number | null,
+        currency: d.currency as string | null,
+        theme_color: d.theme_color as string | null,
+      }));
     },
   });
 
@@ -396,6 +419,52 @@ export default function MeCommandCenter() {
   const initials = displayName.split(/[\s@]/).map((w: string) => w[0]?.toUpperCase()).join("").slice(0, 2);
 
   const isBusiness = isMerchant || isPropertyManager || hasDriverRole || hasProviderRole;
+
+  const isInitialLoading = shopsLoading && !shops;
+
+  if (shopsError && !shops) {
+    return (
+      <div className="app-mobile-page max-w-md mx-auto px-4 py-12 flex flex-col items-center gap-4 text-center">
+        <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: `${A.gold}1A` }}>
+          <AlertTriangle className="w-7 h-7" style={{ color: A.gold }} />
+        </div>
+        <p className="text-sm font-bold text-foreground">{tSafe(t, "errors.load_failed", "Failed to load")}</p>
+        <p className="text-xs text-muted-foreground max-w-xs">{String(shopsError)}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
+          style={{ background: A.gold, color: A.navy }}
+        >
+          {tSafe(t, "common.retry", "Retry")}
+        </button>
+      </div>
+    );
+  }
+
+  if (isInitialLoading) {
+    return (
+      <div className="app-mobile-page max-w-md mx-auto px-4 py-4">
+        <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
+        <div className="space-y-3 animate-pulse">
+          <div className="flex items-center gap-4 p-4 rounded-3xl bg-muted/30">
+            <div className="w-14 h-14 rounded-2xl bg-muted/50" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-32 rounded bg-muted/50" />
+              <div className="h-3 w-20 rounded bg-muted/40" />
+            </div>
+          </div>
+          {[1, 2, 3].map(i => (
+            <div key={i} className="rounded-2xl p-3 bg-muted/20 space-y-2">
+              <div className="h-3 w-24 rounded bg-muted/40" />
+              <div className="h-10 w-full rounded-xl bg-muted/30" />
+              <div className="h-10 w-full rounded-xl bg-muted/30" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-mobile-page max-w-md mx-auto px-4 py-4">
