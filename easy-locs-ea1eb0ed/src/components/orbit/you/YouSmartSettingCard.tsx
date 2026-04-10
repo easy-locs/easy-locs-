@@ -15,29 +15,29 @@ interface YouSmartSettingCardProps {
 export default function YouSmartSettingCard({
   icon: Icon, label, summary, onClick, accentColor,
 }: YouSmartSettingCardProps) {
-  const color = accentColor || "hsl(var(--primary))";
+  const iconColor = accentColor || "hsl(38 65% 56%)";
 
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-colors text-left group hover:bg-muted/40 active:scale-[0.99]"
-      style={{ minHeight: 56 }}
+      className="w-full flex items-center gap-3.5 px-4 py-3 transition-colors text-left active:scale-[0.99] active:bg-muted/30"
+      style={{ minHeight: 52 }}
     >
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-        style={{ background: `${color}12` }}
+        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        style={{ background: `${iconColor.replace(")", " / 0.08)")}` }}
       >
-        <Icon className="h-[18px] w-[18px]" style={{ color }} />
+        <Icon className="h-[17px] w-[17px]" style={{ color: iconColor }} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-medium" style={{ color: "hsl(var(--foreground))" }}>{label}</p>
-        <p className="text-[12px] mt-0.5 leading-snug" style={{ color: "hsl(var(--muted-foreground))" }}>
+        <p className="text-[13px] font-semibold leading-tight" style={{ color: "hsl(var(--foreground))" }}>{label}</p>
+        <p className="text-[11px] mt-0.5 leading-snug truncate" style={{ color: "hsl(var(--muted-foreground))" }}>
           {summary}
         </p>
       </div>
       <ChevronRight
-        className="h-4 w-4 shrink-0 transition-colors"
-        style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}
+        className="h-4 w-4 shrink-0"
+        style={{ color: "hsl(var(--muted-foreground) / 0.25)" }}
       />
     </button>
   );

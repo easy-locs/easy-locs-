@@ -1,20 +1,19 @@
-import { MessageCircle, Phone, Users, CircleDot, Settings } from "lucide-react";
+import { MessageCircle, Phone, Users, Settings } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { motion } from "framer-motion";
 
 export type CommSection = "chats" | "calls" | "contacts" | "payments" | "groups" | "nearby" | "meetings" | "files" | "settings" | "you" | "updates" | "status";
 
 const TAB_IDS: { id: CommSection; icon: typeof MessageCircle; labelKey: string; fallback: string }[] = [
-  { id: "status", icon: CircleDot, labelKey: "orbit.nav.updates", fallback: "Updates" },
+  { id: "chats", icon: MessageCircle, labelKey: "orbit.nav.chats", fallback: "Chats" },
   { id: "calls", icon: Phone, labelKey: "orbit.nav.calls", fallback: "Calls" },
   { id: "groups", icon: Users, labelKey: "orbit.nav.communities", fallback: "Communities" },
-  { id: "chats", icon: MessageCircle, labelKey: "orbit.nav.chats", fallback: "Chats" },
   { id: "you", icon: Settings, labelKey: "orbit.nav.settings", fallback: "Settings" },
 ];
 
-const ACTIVE_COLOR = "hsl(var(--primary))";
-const INACTIVE_COLOR = "hsl(var(--muted-foreground) / 0.55)";
-const BADGE_COLOR = "hsl(var(--accent))";
+const ACTIVE_COLOR = "hsl(38 65% 56%)";
+const INACTIVE_COLOR = "hsl(var(--muted-foreground) / 0.5)";
+const BADGE_BG = "hsl(38 65% 56%)";
 
 interface Props {
   active: CommSection;
@@ -31,8 +30,8 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
       <nav
         className="flex items-stretch shrink-0"
         style={{
-          background: "hsl(var(--card) / 0.97)",
-          borderTop: "1px solid hsl(var(--border) / 0.15)",
+          background: "hsl(220 40% 12% / 0.98)",
+          borderTop: "1px solid hsl(220 30% 20% / 0.4)",
           height: 64,
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
@@ -58,7 +57,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                 {tab.id === "chats" && unreadCount > 0 && (
                   <span
                     className="absolute -top-1.5 -right-3 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold px-1"
-                    style={{ background: BADGE_COLOR, color: "hsl(var(--primary-foreground))", boxShadow: `0 0 6px hsl(var(--accent) / 0.4)` }}
+                    style={{ background: BADGE_BG, color: "hsl(220 40% 12%)", boxShadow: `0 0 6px hsl(38 65% 56% / 0.4)` }}
                   >
                     {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
@@ -93,8 +92,8 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
       className="flex flex-col items-center py-4 gap-2 shrink-0"
       style={{
         width: 60,
-        background: "hsl(var(--card) / 0.5)",
-        borderRight: "1px solid hsl(var(--border) / 0.1)",
+        background: "hsl(220 40% 12% / 0.5)",
+        borderRight: "1px solid hsl(220 30% 20% / 0.2)",
       }}
     >
       {TAB_IDS.map((tab) => {
@@ -107,7 +106,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
             onClick={(e) => { e.stopPropagation(); onChange(tab.id); }}
             className="relative flex flex-col items-center justify-center w-11 h-11 rounded-2xl transition-all duration-200"
             style={{
-              background: isActive ? "hsl(var(--primary) / 0.1)" : "transparent",
+              background: isActive ? "hsl(38 65% 56% / 0.12)" : "transparent",
               transform: isActive ? "scale(1.05)" : "scale(1)",
             }}
             title={label}
@@ -120,7 +119,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
             {tab.id === "chats" && unreadCount > 0 && (
               <span
                 className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold px-0.5"
-                style={{ background: BADGE_COLOR, color: "hsl(var(--primary-foreground))", boxShadow: `0 0 6px hsl(var(--accent) / 0.4)` }}
+                style={{ background: BADGE_BG, color: "hsl(220 40% 12%)", boxShadow: `0 0 6px hsl(38 65% 56% / 0.4)` }}
               >
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>

@@ -411,9 +411,10 @@ const App = () => (
                   <Route path="/shops" element={<Navigate to="/browse/retail" replace />} />
                   <Route path="/healthcare" element={<Navigate to="/browse/healthcare" replace />} />
                   <Route path="/experiences" element={<Navigate to="/browse/experiences" replace />} />
-                  <Route path="/electronics" element={<Navigate to="/browse/electronics" replace />} />
-                  <Route path="/gifts" element={<Navigate to="/browse/gifts" replace />} />
-                  <Route path="/pets" element={<Navigate to="/browse/pets" replace />} />
+                  <Route path="/utility" element={<Navigate to="/browse/utility" replace />} />
+                  <Route path="/electronics" element={<Navigate to="/browse/shops?sub=electronics" replace />} />
+                  <Route path="/gifts" element={<Navigate to="/browse/shops?sub=gifts" replace />} />
+                  <Route path="/pets" element={<Navigate to="/browse/services?sub=pet_care" replace />} />
                   <Route path="/food/restaurant/:restaurantId" element={<FoodRestaurantPage />} />
                   <Route path="/food/:type" element={<FoodTypePage />} />
                   <Route path="/food/:type/:cuisine" element={<CuisineListPage />} />

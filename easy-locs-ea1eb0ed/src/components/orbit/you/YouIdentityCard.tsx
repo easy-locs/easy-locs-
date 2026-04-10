@@ -69,16 +69,16 @@ export default function YouIdentityCard({
 
       <div className="flex items-center gap-3 mt-4">
         <button onClick={copyId}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors"
-          style={{ background: "hsl(var(--accent) / 0.08)", color: "hsl(var(--accent))" }}>
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full transition-colors active:scale-95"
+          style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)" }}>
           <span className="text-[11px] font-mono font-bold tracking-wider">EL-{shortId}</span>
           {copied
-            ? <Check className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
+            ? <Check className="h-3 w-3" />
             : <Copy className="h-3 w-3" />}
         </button>
         <button onClick={onEditProfile}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors"
-          style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}>
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full transition-colors active:scale-95"
+          style={{ background: "hsl(220 40% 18% / 0.08)", color: "hsl(var(--foreground))" }}>
           <Pencil className="h-3 w-3" />
           <span className="text-[11px] font-semibold">{t("common.edit")}</span>
         </button>

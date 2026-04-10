@@ -9,13 +9,7 @@ interface YouSectionBlockProps {
 
 export default function YouSectionBlock({ title, children }: YouSectionBlockProps) {
   return (
-    <div className="px-3 py-3">
-      <p
-        className="text-[11px] font-semibold uppercase tracking-wider mb-2 px-4"
-        style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}
-      >
-        {title}
-      </p>
+    <div className="px-3 py-1.5">
       <div
         className="rounded-2xl overflow-hidden"
         style={{

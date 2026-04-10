@@ -416,6 +416,7 @@ function SmartDiscovery({
   sectionOrder: string[];
 }) {
   const SORT_OPTIONS = useSortOptions();
+  const { t } = useI18n();
   return (
     <div className="mt-2">
       <div className="px-4 mb-3">
