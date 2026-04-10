@@ -4,7 +4,7 @@
  * V2: weighted scoring, seasonal awareness, result caching, richer guidance.
  */
 
-export type RadarLayer = "food" | "stay" | "services" | "utility" | "mobility" | "nightlife";
+export type RadarLayer = "food" | "stay" | "services" | "utility" | "mobility" | "nightlife" | "healthcare" | "shops";
 export type VibeType = "calm" | "active" | "nightlife" | "business" | "family" | "luxury";
 export type TimeSlot = "morning" | "lunch" | "afternoon" | "evening" | "night" | "late_night";
 
@@ -56,10 +56,12 @@ export interface RadarStats {
 const CATEGORY_SETS: Record<RadarLayer, string[]> = {
   food: ["restaurant", "food", "cafe", "bakery", "fast_food", "coffee", "pizza", "sushi", "burger", "bistro", "brasserie", "patisserie"],
   stay: ["hotel", "hostel", "resort", "property", "apartment", "guesthouse", "villa", "riad", "airbnb", "lodge"],
-  services: ["service", "salon", "spa", "healthcare", "dentist", "doctor", "laundry", "repair", "clinic", "veterinary"],
-  utility: ["shop", "atm", "pharmacy", "bank", "supermarket", "grocery", "exchange", "post_office", "gas_station"],
+  services: ["service", "salon", "spa", "laundry", "repair", "veterinary"],
+  utility: ["atm", "pharmacy", "bank", "supermarket", "grocery", "exchange", "post_office", "gas_station"],
   mobility: ["driver", "taxi", "bus", "mobility", "rental", "parking", "station", "airport", "metro", "tram"],
   nightlife: ["bar", "club", "lounge", "nightclub", "pub", "karaoke", "rooftop", "cocktail", "brewery"],
+  healthcare: ["hospital", "clinic", "doctor", "dentist", "healthcare", "medical", "emergency", "optician", "physiotherapy"],
+  shops: ["shop", "store", "boutique", "mall", "market", "retail", "clothing", "electronics", "jewelry", "fashion"],
 };
 
 let _slotCache: { h: number; slot: TimeSlot } | null = null;

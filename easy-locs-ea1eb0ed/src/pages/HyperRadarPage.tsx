@@ -23,7 +23,7 @@ import {
   Radio, X, ChevronUp, ChevronDown,
   Utensils, Hotel, Car, Sparkles, Moon, ShoppingBag,
   Activity, Navigation, Search, Minus, Plus, CloudRain, CloudSun,
-  MapPin, TrendingUp, Star, Zap, Eye,
+  MapPin, TrendingUp, Star, Zap, Eye, Heart, Store,
 } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
@@ -37,6 +37,8 @@ const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; col
   { id: "utility", labelKey: "radar.layer_utility", icon: <ShoppingBag className="w-3 h-3" />, color: "hsl(140 50% 45%)", emoji: "🛒" },
   { id: "mobility", labelKey: "radar.layer_mobility", icon: <Car className="w-3 h-3" />, color: "hsl(30 80% 50%)", emoji: "🚗" },
   { id: "nightlife", labelKey: "radar.layer_night", icon: <Moon className="w-3 h-3" />, color: "hsl(280 70% 55%)", emoji: "🌙" },
+  { id: "healthcare", labelKey: "radar.layer_healthcare", icon: <Heart className="w-3 h-3" />, color: "hsl(0 65% 50%)", emoji: "🏥" },
+  { id: "shops", labelKey: "radar.layer_shops", icon: <Store className="w-3 h-3" />, color: "hsl(38 65% 56%)", emoji: "🛍️" },
 ];
 
 const RADIUS_PRESETS = [0.5, 1, 2, 5, 10, 25];
@@ -45,6 +47,7 @@ const MAX_VISIBLE_PINS = 80;
 const CATEGORY_TO_LAYER: Record<string, RadarLayer> = {
   food: "food", stay: "stay", services: "services",
   utility: "utility", mobility: "mobility", nightlife: "nightlife",
+  healthcare: "healthcare", shops: "shops",
 };
 
 export default function HyperRadarPage() {
