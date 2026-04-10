@@ -33,6 +33,8 @@ import { resolveCanonicalDisplayIdentity } from "@/lib/orbit/canonical-helpers";
 import { useCall } from "@/components/call/CallProvider";
 import QRContactCard from "./QRContactCard";
 import { motion, AnimatePresence } from "framer-motion";
+import SmartEntityActions from "@/components/smart/SmartEntityActions";
+import { buildEntityFromContact } from "@/lib/smart/smart-bridge";
 
 interface Contact {
   id: string;
@@ -782,53 +784,19 @@ export default function CommContactsSection() {
                 </div>
               </SheetHeader>
 
-              <div className="flex items-center justify-center gap-4 px-5 pb-4" style={{ borderBottom: "1px solid hsl(var(--border) / 0.08)" }}>
-                <button
-                  type="button"
-                  onClick={() => { const c = detailContact; setDetailContact(null); if (c) setTimeout(() => handleMessage(c), 200); }}
-                  className="flex flex-col items-center gap-1 w-16 active:scale-90 transition-transform"
-                  style={{ touchAction: "manipulation" }}
-                >
-                  <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
-                    <MessageCircle className="h-5 w-5" style={{ color: "hsl(var(--primary))" }} />
-                  </div>
-                  <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{t("contact.action.message")}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { const c = detailContact; setDetailContact(null); if (c) setTimeout(() => handleCall(c, false), 200); }}
-                  className="flex flex-col items-center gap-1 w-16 active:scale-90 transition-transform"
-                  style={{ touchAction: "manipulation" }}
-                >
-                  <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
-                    <Phone className="h-5 w-5" style={{ color: "hsl(var(--primary))" }} />
-                  </div>
-                  <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{t("contact.action.audio")}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { const c = detailContact; setDetailContact(null); if (c) setTimeout(() => handleCall(c, true), 200); }}
-                  className="flex flex-col items-center gap-1 w-16 active:scale-90 transition-transform"
-                  style={{ touchAction: "manipulation" }}
-                >
-                  <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
-                    <Video className="h-5 w-5" style={{ color: "hsl(var(--primary))" }} />
-                  </div>
-                  <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{t("contact.action.video")}</span>
-                </button>
-                {detailContact.contact_user_id && (
-                  <button
-                    type="button"
-                    onClick={() => { const uid = detailContact.contact_user_id; setDetailContact(null); navigate(`/wallet/transfer?to=${uid}`); }}
-                    className="flex flex-col items-center gap-1 w-16 active:scale-90 transition-transform"
-                    style={{ touchAction: "manipulation" }}
-                  >
-                    <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-success) / 0.1)" }}>
-                      <Wallet className="h-5 w-5" style={{ color: "hsl(var(--hud-success))" }} />
-                    </div>
-                    <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{t("orbit.send")}</span>
-                  </button>
-                )}
+              <div className="px-5 pb-4" style={{ borderBottom: "1px solid hsl(var(--border) / 0.08)" }}>
+                <SmartEntityActions
+                  entity={buildEntityFromContact({
+                    id: detailContact.id,
+                    display_name: detailContact.name,
+                    peer_user_id: detailContact.contact_user_id,
+                    email: detailContact.email,
+                    phone: detailContact.phone,
+                    avatar_url: detailContact.avatar_url,
+                  })}
+                  layout="grid"
+                  maxActions={8}
+                />
               </div>
 
               <div className="px-3 py-2 space-y-0.5">
