@@ -3,9 +3,10 @@
  * Manages subscription state checking via edge function.
  * L2.6: Auth context split.
  */
+import { db } from "@/services/db";
 import { useState, useCallback, useEffect } from "react";
 import { invokeCheckSubscription } from "@/repositories/ai.repository";
-import type { Session } from "@supabase/supabase-js";
+import type { Session } from "@db/db-js";
 
 export interface SubscriptionState {
   subscribed: boolean;

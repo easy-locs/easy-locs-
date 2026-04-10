@@ -2,6 +2,8 @@
  * StorefrontRealtimeSync — PASS123-124: Realtime subscription for storefront orders.
  * Emits proper storefront:* bus events consumed by storefront-reactions.
  */
+import { db } from "@/services/db";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";

@@ -102,7 +102,7 @@ export async function fetchWalletBalance(userId: string): Promise<WalletCountSta
 
   // Store not yet hydrated (e.g. engine runs before wallet page loads) — DB fallback
   try {
-    const { data } = await supabase
+    const { data } = await db
       .from("wallet_accounts")
       .select("balance")
       .eq("owner_user_id", userId)

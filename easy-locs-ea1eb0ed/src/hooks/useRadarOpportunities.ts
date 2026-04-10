@@ -5,6 +5,7 @@
  * Brain owner: Experience Brain
  * Phase: 1 Hardened
  */
+import { db } from "@/services/db";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { computeOpportunities, persistOpportunities } from "@/lib/radar/opportunity-scorer";
@@ -39,7 +40,7 @@ export function useRadarOpportunities() {
   return useQuery({
     queryKey: ["radar-opportunities"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("radar_opportunities")
         .select("*")
         .eq("status", "active")

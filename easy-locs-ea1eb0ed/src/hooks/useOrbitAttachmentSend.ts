@@ -1,7 +1,8 @@
 /**
  * useOrbitAttachmentSend — Attachment send via canonical send family.
- * Zero inline supabase insert calls.
+ * Zero inline db insert calls.
  */
+import { db } from "@/services/db";
 import { useState, useCallback, useRef } from "react";
 import { sendMedia } from "@/families/send/send-media";
 import { buildAttachmentSummary } from "@/lib/orbit/orbit-attachment-utils";

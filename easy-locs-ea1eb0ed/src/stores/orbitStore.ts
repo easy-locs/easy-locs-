@@ -2,13 +2,14 @@
  * orbitStore — Orbit profile state (orbit_profiles_v2).
  *
  * SSOT alignment:
- *   - All DB access via orbit-profile.repository (no direct supabase calls here).
+ *   - All DB access via orbit-profile.repository (no direct db calls here).
  *   - Messaging / conversations: see domains/orbit/stores/orbit.store.ts
  *
  * NOTE: Both this store and domains/orbit/stores/orbit.store.ts export `useOrbitStore`.
  * Rename tracking: this store will be renamed useOrbitProfileStore in Wave 3.
  * Alias below is kept for current consumers during transition.
  */
+import { db } from "@/services/db";
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { AppRole } from "@/domains/shared/canonical-types";

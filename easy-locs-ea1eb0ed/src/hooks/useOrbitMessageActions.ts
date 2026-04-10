@@ -1,6 +1,6 @@
 /**
  * useOrbitMessageActions — Edit, soft-delete, pin messages.
- * Uses canonical repository — zero inline supabase calls.
+ * Uses canonical repository — zero inline db calls.
  */
 import { useCallback, useRef, useState } from "react";
 import { updateMessageFields } from "@/repositories/communication.repository";

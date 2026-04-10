@@ -1,7 +1,8 @@
+import { db } from "@/services/db";
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { PropertyListingV2, ListingAvailabilityRange, CurrencyCode } from "@/lib/types/domain";
-import { listingRepo } from "@/lib/supabase/repositories";
+import { listingRepo } from "@/lib/db/repositories";
 import { requireOrbitIdentity, getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
 type CreateListingInput = {

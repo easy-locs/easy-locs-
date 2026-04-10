@@ -2,6 +2,7 @@
  * useRadarLiveContext — Realtime subscriptions for radar layers.
  * Subscribes to geo_live_context, rider_runtime_state, zone_events.
  */
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
