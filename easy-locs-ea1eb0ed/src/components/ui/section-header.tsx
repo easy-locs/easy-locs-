@@ -1,24 +1,60 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface SectionHeaderProps {
   title: string;
   description?: string;
   actions?: React.ReactNode;
+  seeAllPath?: string;
+  seeAllLabel?: string;
+  icon?: React.ReactNode;
   className?: string;
+  compact?: boolean;
 }
 
-/**
- * SectionHeader — Consistent section heading within pages.
- * Replaces ad-hoc h2/h3 + description patterns.
- */
-const SectionHeader = ({ title, description, actions, className }: SectionHeaderProps) => (
-  <div className={cn("flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5", className)}>
-    <div className="min-w-0">
-      <h2 className="section-block-title">{title}</h2>
-      {description && <p className="text-2xs text-muted-foreground/70 mt-1">{description}</p>}
+const SectionHeader = ({
+  title,
+  description,
+  actions,
+  seeAllPath,
+  seeAllLabel,
+  icon,
+  className,
+  compact = false,
+}: SectionHeaderProps) => (
+  <div className={cn(
+    "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5",
+    compact ? "mb-3" : "mb-5",
+    className,
+  )}>
+    <div className="min-w-0 flex items-center gap-2">
+      {icon && <div className="shrink-0">{icon}</div>}
+      <div className="min-w-0">
+        <h2 className={cn(
+          "font-bold text-foreground leading-tight",
+          compact ? "text-sm" : "text-base",
+        )}>{title}</h2>
+        {description && (
+          <p className={cn(
+            "text-muted-foreground/70 mt-0.5 line-clamp-2",
+            compact ? "text-[10px]" : "text-2xs",
+          )}>{description}</p>
+        )}
+      </div>
     </div>
-    {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+    <div className="flex items-center gap-2 shrink-0">
+      {actions}
+      {seeAllPath && (
+        <Link
+          to={seeAllPath}
+          className="text-xs font-medium text-primary flex items-center gap-0.5 hover:underline"
+        >
+          {seeAllLabel || "See all"} <ChevronRight className="h-3 w-3" />
+        </Link>
+      )}
+    </div>
   </div>
 );
 

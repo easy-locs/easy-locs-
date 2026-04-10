@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingBag, ArrowLeft, CreditCard, Truck, AlertTriangle, Package, User, Store } from "lucide-react";
-import MapEmptyState from "@/components/map/MapEmptyState";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useUnifiedOrder } from "@/hooks/useUnifiedOrder";
 import UnifiedTimeline from "@/components/order/UnifiedTimeline";
 import OrderCTABlock from "@/components/order/OrderCTABlock";
@@ -92,12 +92,11 @@ export default function UnifiedOrderDetailPage() {
     return (
       <div className="app-mobile-page bg-background pb-20">
         <MobilePageHeader title="Order Details" icon={<ShoppingBag className="h-5 w-5 text-primary" />} backTo="/my-orders" />
-        <MapEmptyState
-          icon={<ShoppingBag className="h-6 w-6 text-muted-foreground/40" />}
+        <EmptyState
+          icon={ShoppingBag}
           title="Order not found"
-          subtitle="This order may have been removed or the link is invalid"
-          onRetry={() => window.history.back()}
-          retryLabel="Go Back"
+          description="This order may have been removed or the link is invalid"
+          action={{ label: "Go Back", onClick: () => window.history.back() }}
         />
       </div>
     );

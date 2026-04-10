@@ -58,8 +58,6 @@ const DeferredGuardsInner = lazy(async () => {
   const [
     { AppInit },
     { CanonicalShellRuntime },
-    { NetworkStatusBar },
-    { SkipLink },
     { GeoBoot },
     { PermissionBootstrap },
     { OrbitSessionGuard, RealtimeHubGuard, NotificationsRealtimeGuard },
@@ -69,8 +67,6 @@ const DeferredGuardsInner = lazy(async () => {
   ] = await Promise.all([
     import("@/components/system/AppInit"),
     import("@/components/app/CanonicalShellRuntime"),
-    import("@/components/ui/NetworkStatusBar"),
-    import("@/components/ui/a11y"),
     import("@/lib/geo/GeoBoot"),
     import("@/components/boot/PermissionBootstrap"),
     import("@/components/app/AppGuards"),
@@ -99,8 +95,7 @@ const DeferredGuardsInner = lazy(async () => {
         <GeoBoot />
         <PermissionBootstrap />
         <Suspense fallback={null}><AppBootstrapGuardDirect /></Suspense>
-        <NetworkStatusBar />
-        <SkipLink />
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-medium">Skip to main content</a>
       </>
     ),
   };
