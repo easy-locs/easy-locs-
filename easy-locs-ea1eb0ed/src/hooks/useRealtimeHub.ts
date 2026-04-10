@@ -102,7 +102,7 @@ export function useRealtimeHub() {
           addAlertRef.current({
             type: "warning", priority: 2, icon: "📞",
             title: "Appel manqué", message: "Vous avez manqué un appel",
-            link: "/dashboard/communication?section=calls",
+            link: "/orbit?section=calls",
           });
         }
         break;

@@ -41,7 +41,7 @@ function OrbitPreviewWidget({ onNavigate }: Props) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-4 mb-5 rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden"
       style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.08)" }}
     >
       <div className="flex items-center justify-between px-4 pt-3 pb-2">

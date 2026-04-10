@@ -14,6 +14,7 @@ import { startContinuousGuard } from "@/lib/runtime/architecture-guard";
 import { generateExecutionProof } from "@/lib/runtime/execution-proof";
 import { useAutoEngineCron } from "@/hooks/useAutoEngineCron";
 import { PresencePipeline } from "@/families/presence";
+import { logger } from "@/lib/monitoring";
 
 /**
  * AppInit — initializes V2 auth, hydrates orbit profile, wallet, favorites and saved searches.
@@ -33,7 +34,7 @@ export function AppInit() {
     const ric = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 2000));
     ric(() => startContinuousGuard());
     ric(() => {
-      try { generateExecutionProof(); } catch (e) { console.warn("[AppInit] execution proof:", e); }
+      try { generateExecutionProof(); } catch (e) { logger.warn("AppInit", "Execution proof generation failed", { error: e instanceof Error ? e.message : String(e) }); }
     });
   }, [init]);
 
@@ -62,7 +63,7 @@ export function AppInit() {
         ownerOrbitId: user.id,
         currency: "AED",
       });
-    }).catch((e) => console.warn("[AppInit] wallet setup:", e));
+    }).catch((e) => logger.error("AppInit", "Wallet setup failed — user may have degraded wallet experience", { error: e instanceof Error ? e.message : String(e), userId: user.id }));
 
     void (async () => {
       try {
@@ -77,7 +78,7 @@ export function AppInit() {
           useFavoritesStore.getState().hydrate(),
           useSavedSearchStore.getState().hydrate(),
         ]);
-      } catch (e) { console.warn("[AppInit] profile/orbit setup:", e); }
+      } catch (e) { logger.error("AppInit", "Profile/Orbit setup failed — messaging may be unavailable", { error: e instanceof Error ? e.message : String(e), userId: user.id }); }
     })();
   }, [initialized, user?.id, loadProfile, clear]);
 

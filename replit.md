@@ -870,8 +870,13 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - `/dashboard/activities` redirect added to App.tsx
 - Route corrections: /auth→/login, /dashboard/seasonal→/seasonal-rentals, /dashboard/pricing→/dynamic-pricing, /dashboard/channel-manager→/channels, /dashboard/rental→/rental-management, /dashboard/properties→/real-estate, /mobility/receipt→/order/receipt, /business/my-shops→/dashboard/my-shops, /dashboard/assistant→/dashboard/ai
 
-**Cycle 2 — End-to-End Flow Reconnection: IN PROGRESS**
-- Target flows: login→dashboard→wallet→payment, contact→orbit→message→delivery
+**Cycle 2 — Full Application Rectification: COMPLETE**
+- T001: Fixed 30+ remaining stale routes (/dashboard/rental→/rental-management across 12 files, /dashboard/communication→/orbit across 15+ files, dead dinoAudit/dinoControl helpers removed, /browse/retail→/browse/shops, /dashboard/activities→/activities in shared routes)
+- T002: FeatureErrorBoundary added to ALL sub-routes: 3 Orbit, 10 Wallet, 23 Me sub-routes now crash-isolated
+- T003: AppInit.tsx silent console.warn→logger.warn/error (monitoring.ts), Login/Signup generic "Something went wrong"→actual error.message in all 5 auth flows
+- T004: OrbitPreviewWidget forced mx-4 mb-5 margins removed (parent now controls), OrbitAppShell deprecated dispatcher→notificationV2Store.startRealtime
+- T005: UnifiedOrderDetailPage reorder window.location.hash→navigate() (React Router compatible)
+- Test expectations updated: production-stabilization.test.ts + advanced-regression.test.ts aligned with new routes
 
 ### Typography Minimum Standards
 - **Minimum text size**: `text-[9px]` for labels, `text-[10px]` for interactive/body text, `text-xs` (12px) for standard content

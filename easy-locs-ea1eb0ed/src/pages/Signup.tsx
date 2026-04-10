@@ -47,8 +47,8 @@ const Signup = () => {
     });
     setLoading(false);
     if (error) {
-      console.error("[Auth]", error.message);
-      toast({ title: t("common.error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
+      console.error("[Auth] Signup:", error.message);
+      toast({ title: t("common.error"), description: error.message || t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     } else {
       navigate("/verify-email");
     }
@@ -73,10 +73,10 @@ const Signup = () => {
       setActivatedUserId(userId);
       setShowContactSync(true);
     } catch (err) {
-      console.error("[Auth]", err instanceof Error ? err.message : err);
+      console.error("[Auth] Phone signup:", err instanceof Error ? err.message : err);
       toast({
         title: t("common.error") || "Error",
-        description: t("common.error_generic") || "Something went wrong. Please try again.",
+        description: (err instanceof Error ? err.message : null) || t("common.error_generic") || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {

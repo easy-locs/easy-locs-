@@ -231,8 +231,8 @@ export default function HudContextPanel({ thread, orgId }: Props) {
               {/* Quick links */}
               <div className="space-y-1">
                 {[
-                  { href: "/dashboard/rental?tab=tenants", icon: User, label: t("orbit.context.tenant_file") },
-                  { href: "/dashboard/rental?tab=payments", icon: CreditCard, label: t("orbit.context.rent_payments") },
+                  { href: "/dashboard/rental-management?tab=tenants", icon: User, label: t("orbit.context.tenant_file") },
+                  { href: "/dashboard/rental-management?tab=payments", icon: CreditCard, label: t("orbit.context.rent_payments") },
                   { href: "/dashboard/interventions", icon: Wrench, label: t("orbit.context.maintenance") },
                   { href: "/dashboard/documents", icon: FileText, label: t("orbit.context.documents") },
                 ].map(l => (

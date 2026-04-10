@@ -197,7 +197,7 @@ const DataImport = () => {
             </p>
             <div className="flex gap-3 justify-center mt-6">
               <button onClick={reset} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-muted transition-colors">{t("page.import.import_more")}</button>
-              <a href="/dashboard/rental" className="flex items-center gap-2 bg-accent text-accent-foreground font-medium px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity">{t("page.import.view_data")} <ArrowRight className="h-4 w-4" /></a>
+              <a href="/dashboard/rental-management" className="flex items-center gap-2 bg-accent text-accent-foreground font-medium px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity">{t("page.import.view_data")} <ArrowRight className="h-4 w-4" /></a>
             </div>
           </div>
         )}

@@ -507,25 +507,25 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   <Route path="/orbit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><CommunicationCenter /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/orbit/:conversationId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><CommunicationCenter /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/orbit/contacts" element={<ProtectedRoute><OrbitContactsPage /></ProtectedRoute>} />
-                  <Route path="/orbit/add" element={<ProtectedRoute><OrbitAddContactPage /></ProtectedRoute>} />
-                  <Route path="/orbit/identity" element={<ProtectedRoute><OrbitIdentityPage /></ProtectedRoute>} />
+                  <Route path="/orbit/contacts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitContactsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/orbit/add" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitAddContactPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/orbit/identity" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitIdentityPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 4 · WALLET (Pay · Orders · Checkout)   */}
                   {/* ═══════════════════════════════════════════════ */}
                   <Route path="/wallet" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/hub" element={<Navigate to="/wallet" replace />} />
-                  <Route path="/wallet/top-up" element={<ProtectedRoute><WalletTopUpPage /></ProtectedRoute>} />
-                  <Route path="/wallet/transfer" element={<ProtectedRoute><WalletTransferPage /></ProtectedRoute>} />
-                  <Route path="/wallet/request" element={<ProtectedRoute><WalletRequestPage /></ProtectedRoute>} />
-                  <Route path="/wallet/transaction/:txId" element={<ProtectedRoute><WalletTransactionDetailPage /></ProtectedRoute>} />
-                  <Route path="/wallet/pay/:threadId" element={<ProtectedRoute><PayRidePage /></ProtectedRoute>} />
-                  <Route path="/wallet/property" element={<ProtectedRoute><Pages.WalletPropertyHub /></ProtectedRoute>} />
-                  <Route path="/wallet/property/rents" element={<ProtectedRoute><Pages.WalletPropertyHub /></ProtectedRoute>} />
-                  <Route path="/wallet/property/deposits" element={<ProtectedRoute><Pages.WalletPropertyHub /></ProtectedRoute>} />
-                  <Route path="/wallet/property/payouts" element={<ProtectedRoute><Pages.WalletPropertyHub /></ProtectedRoute>} />
-                  <Route path="/wallet/property/expenses" element={<ProtectedRoute><Pages.WalletPropertyHub /></ProtectedRoute>} />
+                  <Route path="/wallet/top-up" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTopUpPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/transfer" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTransferPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/request" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletRequestPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/transaction/:txId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTransactionDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/pay/:threadId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><PayRidePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/property" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/property/rents" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/property/deposits" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/property/payouts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/property/expenses" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/accounts" element={<Navigate to="/settings/wallet" replace />} />
                   <Route path="/pos" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
                   <Route path="/pos/:shopId" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
@@ -557,30 +557,30 @@ const App = () => (
                   {/*  PILLAR 5 · ME (Profile · Settings · Tools)    */}
                   {/* ═══════════════════════════════════════════════ */}
                   <Route path="/me" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><MeCommandCenter /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/me/edit-profile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
-                  <Route path="/me/spending-insights" element={<ProtectedRoute><CustomerSpendingInsightsPage /></ProtectedRoute>} />
-                  <Route path="/me/address-book" element={<ProtectedRoute><CustomerAddressBookPage /></ProtectedRoute>} />
-                  <Route path="/me/loyalty-history" element={<ProtectedRoute><CustomerLoyaltyHistoryPage /></ProtectedRoute>} />
-                  <Route path="/me/saved-cards" element={<ProtectedRoute><CustomerSavedCardsPage /></ProtectedRoute>} />
-                  <Route path="/me/saved-carts" element={<ProtectedRoute><CustomerSavedCartsPage2 /></ProtectedRoute>} />
-                  <Route path="/me/delivery-notes" element={<ProtectedRoute><CustomerDeliveryNotesPage /></ProtectedRoute>} />
-                  <Route path="/me/payment-activity" element={<ProtectedRoute><CustomerPaymentActivityPage /></ProtectedRoute>} />
-                  <Route path="/me/order-receipts" element={<ProtectedRoute><CustomerOrderReceiptsPage /></ProtectedRoute>} />
+                  <Route path="/me/edit-profile" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><EditProfilePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/spending-insights" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSpendingInsightsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/address-book" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerAddressBookPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/loyalty-history" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerLoyaltyHistoryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/saved-cards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSavedCardsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/saved-carts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSavedCartsPage2 /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/delivery-notes" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerDeliveryNotesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/payment-activity" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerPaymentActivityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/order-receipts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerOrderReceiptsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/gestion-immo" element={<Navigate to="/me/properties" replace />} />
-                  <Route path="/me/gestion-immo/:propertyId" element={<ProtectedRoute><Pages.MePropertyDetail /></ProtectedRoute>} />
-                  <Route path="/me/tenant-view" element={<ProtectedRoute><Pages.MeTenantView /></ProtectedRoute>} />
-                  <Route path="/me/properties" element={<ProtectedRoute><Pages.MePropertyCockpit /></ProtectedRoute>} />
-                  <Route path="/me/properties/list" element={<ProtectedRoute><Pages.MePropertyListPage /></ProtectedRoute>} />
-                  <Route path="/me/properties/create" element={<ProtectedRoute><Pages.MePropertyCreatePage /></ProtectedRoute>} />
-                  <Route path="/me/properties/:propertyId" element={<ProtectedRoute><Pages.MePropertyDetail /></ProtectedRoute>} />
-                  <Route path="/me/properties/analytics" element={<ProtectedRoute><Pages.MePropertyAnalyticsPage /></ProtectedRoute>} />
-                  <Route path="/me/tenants" element={<ProtectedRoute><Pages.MeTenantsPage /></ProtectedRoute>} />
-                  <Route path="/me/leases" element={<ProtectedRoute><Pages.MeLeasesPage /></ProtectedRoute>} />
-                  <Route path="/me/leases/:leaseId" element={<ProtectedRoute><Pages.MeLeasesPage /></ProtectedRoute>} />
-                  <Route path="/me/maintenance" element={<ProtectedRoute><Pages.MeMaintenancePage /></ProtectedRoute>} />
-                  <Route path="/me/maintenance/:ticketId" element={<ProtectedRoute><Pages.MeMaintenancePage /></ProtectedRoute>} />
-                  <Route path="/me/auto-repeat" element={<ProtectedRoute><CustomerAutoRepeatPage /></ProtectedRoute>} />
-                  <Route path="/me/redeem-rewards" element={<ProtectedRoute><CustomerRewardRedemptionPage /></ProtectedRoute>} />
+                  <Route path="/me/gestion-immo/:propertyId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyDetail /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/tenant-view" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeTenantView /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/properties" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyCockpit /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/properties/list" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyListPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/properties/create" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyCreatePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/properties/:propertyId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyDetail /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/properties/analytics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyAnalyticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/tenants" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeTenantsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/leases" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeLeasesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/leases/:leaseId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeLeasesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/maintenance" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeMaintenancePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/maintenance/:ticketId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeMaintenancePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/auto-repeat" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerAutoRepeatPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/redeem-rewards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerRewardRedemptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
                   <Route path="/notifications" element={<ProtectedRoute><NotificationCenterPage /></ProtectedRoute>} />
                   <Route path="/location/live" element={<ProtectedRoute><CustomerLiveLocationPage /></ProtectedRoute>} />

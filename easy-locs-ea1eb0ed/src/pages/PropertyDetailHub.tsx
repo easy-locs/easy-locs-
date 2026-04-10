@@ -402,7 +402,7 @@ const PropertyDetailHub = () => {
           {/* Inventory tab */}
           <TabsContent value="inventory" className="mt-4">
             {inventories.length === 0 ? (
-              <EmptyState icon={ClipboardList} label={t("page.property.no_inventory") || "No inventory reports"} action={t("page.property.create_inventory") || "Create inventory"} actionLink={`/dashboard/rental?tab=inventory&property=${propertyId}`} />
+              <EmptyState icon={ClipboardList} label={t("page.property.no_inventory") || "No inventory reports"} action={t("page.property.create_inventory") || "Create inventory"} actionLink={`/dashboard/rental-management?tab=inventory&property=${propertyId}`} />
             ) : (
               <div className="space-y-2">
                 {inventories.map(inv => (

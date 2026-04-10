@@ -8,7 +8,7 @@ import type { TargetType, AppModule, DeepLinkMeta } from "./types";
 const TARGET_ROUTES: Record<TargetType, { landlord: string; tenant?: string }> = {
   lease:               { landlord: "/dashboard/leases",          tenant: "/dashboard/documents" },
   tenant:              { landlord: "/dashboard/tenants" },
-  payment:             { landlord: "/dashboard/rental",          tenant: "/wallet" },
+  payment:             { landlord: "/dashboard/rental-management", tenant: "/wallet" },
   receipt:             { landlord: "/dashboard/receipts",         tenant: "/my-orders" },
   document:            { landlord: "/dashboard/documents",        tenant: "/dashboard/documents" },
   intervention:        { landlord: "/dashboard/interventions",    tenant: "/support/tickets" },
@@ -16,10 +16,10 @@ const TARGET_ROUTES: Record<TargetType, { landlord: string; tenant?: string }> =
   dunning:             { landlord: "/dashboard/dunning" },
   expense:             { landlord: "/dashboard/expenses" },
   booking_request:     { landlord: "/dashboard/seasonal-rentals" },
-  marketplace_booking: { landlord: "/dashboard/activities" },
-  marketplace_service: { landlord: "/dashboard/activities" },
-  concierge_order:     { landlord: "/dashboard/activities" },
-  concierge_service:   { landlord: "/dashboard/activities" },
+  marketplace_booking: { landlord: "/activities" },
+  marketplace_service: { landlord: "/activities" },
+  concierge_order:     { landlord: "/activities" },
+  concierge_service:   { landlord: "/activities" },
   real_estate_lead:    { landlord: "/dashboard/real-estate?tab=leads" },
   real_estate_listing: { landlord: "/dashboard/real-estate" },
   deal:                { landlord: "/orbit" },
@@ -33,11 +33,11 @@ const TARGET_ROUTES: Record<TargetType, { landlord: string; tenant?: string }> =
 
 /** Fallback routes by notification type (legacy support) */
 const TYPE_FALLBACKS: Record<string, string> = {
-  payment: "/dashboard/rental",
-  message: "/dashboard/communication",
+  payment: "/dashboard/rental-management",
+  message: "/orbit",
   document: "/dashboard/documents",
   dunning: "/dashboard/dunning",
-  rent_call: "/dashboard/rental",
+  rent_call: "/dashboard/rental-management",
   request: "/dashboard/interventions",
   receipt: "/dashboard/receipts",
   order: "/my-orders",

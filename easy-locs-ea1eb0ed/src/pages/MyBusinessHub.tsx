@@ -42,7 +42,7 @@ const MODULES = [
   { icon: CreditCard, labelKey: "business.pos", descKey: "business.pos_desc", path: "/pos", gradient: "from-amber-500 to-orange-500" },
   { icon: Wallet, labelKey: "business.wallet", descKey: "business.wallet_desc", path: "/dashboard/wallet", gradient: "from-emerald-500 to-green-500" },
   { icon: Truck, labelKey: "business.delivery", descKey: "business.delivery_desc", path: "/dashboard/driver", gradient: "from-sky-500 to-indigo-500" },
-  { icon: Users, labelKey: "business.customers", descKey: "business.customers_desc", path: "/dashboard/communication", gradient: "from-pink-500 to-rose-500" },
+  { icon: Users, labelKey: "business.customers", descKey: "business.customers_desc", path: "/orbit", gradient: "from-pink-500 to-rose-500" },
   { icon: BarChart3, labelKey: "business.analytics", descKey: "business.analytics_desc", path: "/dashboard/reporting", gradient: "from-teal-500 to-cyan-500" },
   { icon: Boxes, labelKey: "business.inventory", descKey: "business.inventory_desc", path: "/dashboard/ops", gradient: "from-lime-500 to-emerald-500" },
   { icon: Settings, labelKey: "business.settings", descKey: "business.settings_desc", path: "/dashboard/seller", gradient: "from-slate-500 to-zinc-500" },
