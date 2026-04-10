@@ -2,7 +2,7 @@
  * UI Design Tokens — Single source of truth for the entire super-app.
  *
  * STRICT RULES:
- * - Spacing: Only values from SPACING scale (4/8/12/16/20/24/32/40/48/64)
+ * - Spacing: Only values from SPACING scale (4/8/10/12/16/20/24/32/40/48/64)
  * - Typography: Only TEXT presets or Tailwind's standard scale
  * - Radius: Only RADIUS values (8/12/16/20/full)
  * - Icons: Only ICON_SIZE values (16/20/24/32)
@@ -18,6 +18,7 @@ export const SPACING = {
   "2xs": "0.125rem",          // 2px — micro gaps only
   xs: "var(--space-xs)",      // 4px
   sm: "var(--space-sm)",      // 8px
+  "sm-section": "0.625rem",  // 10px — section header mb
   "sm-md": "var(--space-sm-md)", // 12px
   md: "var(--space-md)",      // 16px
   "md-lg": "var(--space-md-lg)", // 20px

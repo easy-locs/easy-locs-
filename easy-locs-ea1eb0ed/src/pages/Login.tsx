@@ -300,7 +300,7 @@ const Login = () => {
                 key={m}
                 type="button"
                 onClick={() => { setMode(m); setOtpSent(false); setOtp(""); }}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                   mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
                 whileTap={{ scale: 0.97 }}

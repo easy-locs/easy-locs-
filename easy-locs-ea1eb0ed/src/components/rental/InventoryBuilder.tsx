@@ -550,7 +550,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
                   const cond = conditionLabels[item.condition];
                   return (
                     <div key={item.id} className="bg-muted/20 rounded-lg p-3">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2.5 gap-1">
                         <span className="text-sm font-medium text-foreground truncate">{item.element_name}</span>
                         <div className="flex items-center gap-1 flex-wrap shrink-0">
                           {(["good", "average", "bad"] as const).map(c => {

@@ -156,7 +156,7 @@ export default function CustomerLoyaltyHistoryPage() {
               </div>
             </div>
 
-            <div className="flex items-end justify-between mb-2">
+            <div className="flex items-end justify-between mb-2.5">
               <div>
                 <p className="text-[10px] text-muted-foreground font-semibold uppercase">Balance</p>
                 <p className="text-3xl font-extrabold text-foreground tabular-nums">{points}<span className="text-sm font-bold text-muted-foreground ml-1">pts</span></p>

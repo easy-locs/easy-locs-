@@ -247,7 +247,7 @@ function PropertyTenantsSection({
           <p className="text-sm text-muted-foreground">{L.noTenant}.</p>
           {showAssign && (
             <div className="mt-3 bg-muted/50 border border-border rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2.5">
                 <span className="text-xs font-semibold text-foreground">{L.assignExisting}</span>
                 <button onClick={() => setShowAssign(false)} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
               </div>

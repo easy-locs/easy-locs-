@@ -290,7 +290,7 @@ const AIQualityDashboard = () => {
                     onClick={() => setSelectedCategory(selectedCategory === mod.category ? "all" : mod.category)}
                   >
                     <CardContent className="p-3">
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center justify-between mb-2.5">
                         <Icon className="h-4 w-4 text-muted-foreground" />
                         <TrendIcon trend={mod.trend} />
                       </div>

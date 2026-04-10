@@ -145,7 +145,7 @@ export default function MultiDropBatchPanel({ orgId }: { orgId: string }) {
 
       {/* Radius slider */}
       <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-2.5">
           <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Rayon de regroupement</span>
           <span className="text-xs font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{radiusKm} km</span>
         </div>

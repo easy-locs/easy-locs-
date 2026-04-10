@@ -203,7 +203,7 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
             <>
               <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>📍 Zone de couverture</h3>
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2.5">
                   <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Distance max.</Label>
                   <span className="text-xs font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{zone.maxDistanceKm} km</span>
                 </div>

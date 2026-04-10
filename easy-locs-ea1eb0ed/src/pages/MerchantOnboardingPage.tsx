@@ -565,7 +565,7 @@ export default function MerchantOnboardingPage() {
     <div className="app-mobile-page bg-background flex flex-col">
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 pt-3 pb-2">
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2.5">
             <span className="text-xs font-medium text-muted-foreground">
               {step + 1} / {totalSteps}
             </span>
@@ -1575,7 +1575,7 @@ function StepGoLive({ isLive, name, vertical, config, completeness }: { isLive: 
       </p>
 
       <div className="bg-muted/50 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-2.5">
           <span className="text-xs font-medium text-muted-foreground">{t("mob.profile_completeness" as any)}</span>
           <span className="text-sm font-bold" style={{ color: completeness >= 80 ? "hsl(142 70% 45%)" : completeness >= 50 ? "hsl(38 65% 56%)" : "hsl(0 60% 50%)" }}>
             {completeness}%

@@ -42,20 +42,21 @@ export default function StoryPreviewRail({ title, stories, size = "medium", feed
 
   return (
     <>
-      <section className="mb-4">
-        <div className="flex items-center justify-between mb-2 px-4 sm:px-5">
+      <section className="mb-5">
+        <div className="flex items-center justify-between mb-2.5 px-4">
           <h3 className="text-[13px] font-bold text-foreground">{title}</h3>
           {onSeeAll && (
             <button
               onClick={onSeeAll}
-              className="flex items-center gap-0.5 text-[11px] font-medium text-primary active:opacity-70"
+              className="flex items-center gap-0.5 text-[11px] font-semibold active:opacity-70"
+              style={{ color: "hsl(38 65% 56%)" }}
             >
               See all <ChevronRight className="h-3 w-3" />
             </button>
           )}
         </div>
         <div
-          className="flex gap-2.5 px-3 sm:px-4 overflow-x-auto scrollbar-hide pb-1"
+          className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-1.5"
           data-no-swipe
         >
           {stories.map((story, i) => (

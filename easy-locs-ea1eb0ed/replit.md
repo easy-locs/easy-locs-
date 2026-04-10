@@ -61,6 +61,21 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - Memoized: CommCallsSection filtered list, filter labels, missed count
 - Bundle: index.js 429KB (was 487KB, -12%)
 
+## Design System Standards (Enforced)
+- **Spacing scale**: 4/8/10/12/16/20/24/32/40/48/64px (see `src/config/ui.ts` SPACING)
+- **Section spacing**: `mb-5` (20px) between sections
+- **Section header spacing**: `mb-2.5` (10px) between section header and content; use `.ds-section-header` CSS class
+- **Section header typography**: `text-[13px] font-bold`; use `.ds-section-title` CSS class
+- **Card images**: `aspect-[16/10]`, never fixed height
+- **Card text**: Always `line-clamp-1` or `line-clamp-2`, never unclamped
+- **Carousel**: `gap-2.5`, `pb-1.5`, card width `w-[170px]`
+- **Padding**: `px-4` (never `px-3 sm:px-4`)
+- **Buttons**: `min-h-[44px]` on mobile, `whitespace-nowrap text-xs` for tab bars
+- **Typography**: `font-bold` for headers/labels, `font-extrabold tabular-nums` for numeric values, `font-black` ONLY in watermarks/logo
+- **Minimum font**: `text-[10px]` minimum; `text-xs` (12px) minimum body
+- **Brand colors**: Navy/Gold always via inline `style={{}}`, never Tailwind classes
+- **i18n**: Use `tSafe(t, key, fallback)` pattern
+
 ## Visual Cleanup (Error Sanitization)
 - All user-facing `toast.error(err.message)` replaced with user-friendly messages (~90+ files)
 - All `toast({ description: error.message })` replaced with generic messages (~30+ files)

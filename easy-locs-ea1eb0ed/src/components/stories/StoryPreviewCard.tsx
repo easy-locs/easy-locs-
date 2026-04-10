@@ -57,18 +57,10 @@ export default function StoryPreviewCard({ story, onClick, size = "medium" }: St
       />
 
       <div className="absolute top-2.5 left-2.5">
-        <span className={`px-2 py-[3px] rounded-lg text-[10px] font-extrabold text-white uppercase tracking-wider ${badgeColor} shadow-lg ${badgeGlow}`}>
+        <span className={`px-2 py-[3px] rounded-lg text-[10px] font-extrabold text-white uppercase tracking-wider ${badgeColor} shadow-lg ${badgeGlow} ${story.storyType === "deal" ? "animate-pulse" : ""}`}>
           {story.storyType === "merchant" ? story.vertical : story.storyType}
         </span>
       </div>
-
-      {story.storyType === "deal" && (
-        <div className="absolute top-2.5 right-2.5">
-          <span className="px-2 py-[3px] rounded-lg text-[10px] font-extrabold text-white bg-red-500 shadow-lg shadow-red-500/30 animate-pulse">
-            DEAL
-          </span>
-        </div>
-      )}
 
       <div className="absolute bottom-0 left-0 right-0 p-3">
         {story.priceLabel && (

@@ -167,7 +167,7 @@ const PaymentProvidersSettings = () => {
       <div className="space-y-4">
         {/* Stripe Connect */}
         <div className="border border-border rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-[#635bff]/10 rounded-lg flex items-center justify-center">
                 <span className="text-sm font-bold text-[#635bff]">S</span>

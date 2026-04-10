@@ -284,7 +284,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
 
         {calendarOpen && (
           <div className="pt-3 border-t border-border/50">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2.5">
               <p className="text-xs font-medium text-muted-foreground">{t("mp.availability_calendar") || "Availability Calendar"}</p>
               <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => setCalendarOpen(false)}>
                 <ChevronUp className="h-3 w-3 mr-1" /> {t("mp.close") || "Close"}

@@ -314,10 +314,10 @@ export default function TravelStayHub() {
           variant="inline"
           vertical="travel"
           subcategory={activeTab}
-          className="mb-4"
+          className="mb-5"
         />
         {/* ═══ BREADCRUMB ═══ */}
-        <nav className="flex items-center gap-1.5 mb-4 text-[11px] overflow-x-auto scrollbar-none">
+        <nav className="flex items-center gap-1.5 mb-3 text-[11px] overflow-x-auto scrollbar-none">
           <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 shrink-0">
             <Home className="h-3 w-3" /> {tc("nav.home")}
           </Link>
@@ -353,7 +353,7 @@ export default function TravelStayHub() {
         </div>
 
         {/* Amenity filters */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 mb-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 mb-5">
           {AMENITY_FILTERS.map(({ key, labelKey, icon }) => (
             <button
               key={key}
@@ -378,7 +378,7 @@ export default function TravelStayHub() {
         <StayStoriesSection />
 
         {/* Sort */}
-        <div className="flex items-center gap-1.5 mb-4 overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-1.5 mb-3 overflow-x-auto scrollbar-none">
           {(["rating", "price", "distance", "reviews"] as SortMode[]).map(s => (
             <button
               key={s}

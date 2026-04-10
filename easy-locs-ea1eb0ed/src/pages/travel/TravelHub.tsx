@@ -51,7 +51,7 @@ export default function TravelHub() {
 
       <div className="px-4 mt-5">
         {/* Tab Selector — 2 tabs only */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-5">
           {([
             { key: "flights" as TravelTab, label: "Flights", icon: <Plane className="h-4.5 w-4.5" /> },
             { key: "stays" as TravelTab, label: "Stays", icon: <Home className="h-4.5 w-4.5" /> },

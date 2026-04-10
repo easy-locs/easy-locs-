@@ -394,7 +394,7 @@ export default function TravelHotelDetail() {
         {/* ═══ REVIEWS ═══ */}
         {hotel.reviews_count > 0 && (
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2.5">
               <h2 className="text-sm font-bold text-foreground">Reviews</h2>
               <button className="text-[10px] font-medium text-primary flex items-center gap-0.5">
                 See all <ChevronRight className="h-3 w-3" />

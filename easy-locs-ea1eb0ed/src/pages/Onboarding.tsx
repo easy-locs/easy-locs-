@@ -263,7 +263,7 @@ const Onboarding = () => {
 
         {/* Progress + Step indicators */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2.5">
             <span className="text-xs font-medium text-muted-foreground">{t("onboarding.title")}</span>
             <span className="text-xs font-bold text-accent">{t("ob.step") || "Step"} {step + 1}/{totalSteps}</span>
           </div>

@@ -195,7 +195,7 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
             <motion.div key={zone.id}
               initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
               className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2.5">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ background: `hsl(var(--hud-cyan) / ${zone.intensity})` }} />
                   <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{zone.name}</p>

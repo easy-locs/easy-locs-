@@ -251,7 +251,7 @@ export default function DriverShiftScheduler({ orgId, className }: { orgId: stri
           {zoneCoverage.map(z => (
             <div key={z.zone} className="rounded-xl p-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2.5">
                 <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                   <MapPin className="h-3 w-3 inline mr-1" style={{ color: "hsl(var(--primary))" }} />
                   Zone {z.zone}

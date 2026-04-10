@@ -79,7 +79,7 @@ function KpiCard({ label, value, icon: Icon, color, trend }: {
       animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl border border-border/20 bg-card p-4 min-w-0"
     >
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-2.5">
         <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", `bg-${color}/10`)}>
           <Icon className={cn("w-4.5 h-4.5", `text-${color}`)} />
         </div>

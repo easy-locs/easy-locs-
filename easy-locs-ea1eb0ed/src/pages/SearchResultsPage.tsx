@@ -156,7 +156,7 @@ function VerticalResultSection({
 }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-2.5">
         <p className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full" style={{ background: `hsl(${ui.accentHsl})` }} />
           {ui.emoji} {ui.displayTitle}
@@ -182,7 +182,7 @@ function VerticalResultSection({
 function ResultSection({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-2.5">
         <p className="text-xs font-bold text-foreground uppercase tracking-wide">{title}</p>
         <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">{count}</span>
       </div>

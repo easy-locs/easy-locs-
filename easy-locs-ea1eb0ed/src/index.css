@@ -1075,7 +1075,7 @@ img {
 
   /* ── Section header — title + "See all" ── */
   .ds-section-header {
-    @apply flex items-center justify-between mb-2 px-1;
+    @apply flex items-center justify-between mb-2.5 px-1;
   }
   .ds-section-title {
     font-size: 13px;
