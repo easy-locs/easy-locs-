@@ -27,7 +27,7 @@ export default function OrdersPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: orders = [], isLoading, error: ordersError } = useQuery({
     queryKey: ["user-orders", user?.id],
     queryFn: () => orderService.fetchByUser(user!.id),
     enabled: !!user,
@@ -60,7 +60,15 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {!isLoading && orders.length === 0 && (
+        {!isLoading && ordersError && (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Package className="w-12 h-12 text-destructive/40" />
+            <p className="text-sm font-medium text-destructive">Failed to load orders</p>
+            <p className="text-xs text-muted-foreground">Check your connection and try again.</p>
+          </div>
+        )}
+
+        {!isLoading && !ordersError && orders.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <Package className="w-12 h-12 text-muted-foreground/40" />
             <p className="text-sm font-medium text-muted-foreground">No orders yet</p>

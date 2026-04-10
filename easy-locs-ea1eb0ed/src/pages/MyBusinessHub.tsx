@@ -37,7 +37,7 @@ const FALLBACKS: Record<string, string> = {
 };
 
 const MODULES = [
-  { icon: Store, labelKey: "business.my_shops", descKey: "business.my_shops_desc", path: "/business/my-shops", gradient: "from-violet-500 to-fuchsia-500" },
+  { icon: Store, labelKey: "business.my_shops", descKey: "business.my_shops_desc", path: "/dashboard/my-shops", gradient: "from-violet-500 to-fuchsia-500" },
   { icon: ShoppingBag, labelKey: "business.orders", descKey: "business.orders_desc", path: "/my-orders", gradient: "from-blue-500 to-cyan-500" },
   { icon: CreditCard, labelKey: "business.pos", descKey: "business.pos_desc", path: "/pos", gradient: "from-amber-500 to-orange-500" },
   { icon: Wallet, labelKey: "business.wallet", descKey: "business.wallet_desc", path: "/dashboard/wallet", gradient: "from-emerald-500 to-green-500" },

@@ -28,7 +28,7 @@ export default function StorePage() {
   const servicesRef = useRef<HTMLDivElement>(null);
   const { t } = useI18n();
 
-  const { data: showcase, isLoading } = useQuery({
+  const { data: showcase, isLoading, error: storeError } = useQuery({
     queryKey: ["store-showcase", storeSlug],
     queryFn: async () => {
       const { data: landlord } = await supabase
@@ -69,6 +69,17 @@ export default function StorePage() {
     <div className="app-mobile-page bg-background flex items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
+  );
+
+  if (storeError) return (
+    <>
+      <SEOHead title="Error | Easy-Locs" description="Failed to load store." />
+      <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-3">
+        <Home className="w-12 h-12 text-destructive/40" />
+        <p className="text-sm font-medium text-destructive">Failed to load store</p>
+        <p className="text-xs text-muted-foreground">Check your connection and try again.</p>
+      </div>
+    </>
   );
 
   if (!showcase) return (
