@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useDeferredValue } from "react";
+import { useState, useMemo, useCallback, useEffect, useDeferredValue, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
@@ -6,6 +6,15 @@ import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import type { RadarStats } from "@/lib/engines/hyper-radar-engine";
 import type { VibeDensityResult } from "@/lib/engines/vibe-density-engine";
 import type { WeatherStationState } from "@/hooks/useLiveWeatherStation";
+import type { RadarResultItem, RadarVertical } from "@/lib/radar/radar-result-item";
+import type { RadarFilterValues } from "@/lib/radar/radar-filter-schemas";
+import { getDefaultFilterValues } from "@/lib/radar/radar-filter-schemas";
+import { mapPointsToResultItems } from "@/services/radar/radarResultMapper";
+import { filterAndDemoteResults } from "@/lib/radar/radar-quality-gate";
+import { diversifyResults } from "@/lib/radar/radar-score";
+import { trackRadarEvent, resetRadarSession } from "@/services/radar/radarAnalytics";
+import RadarCardDispatcher from "@/components/radar/cards/RadarCardDispatcher";
+import RadarFilters from "@/components/radar/RadarFilters";
 
 type RadarGeoEntity = GeoEntity & { isSponsored?: boolean; reviewsCount?: number };
 import PersonalRadarPanel from "@/components/radar/PersonalRadarPanel";
@@ -21,18 +30,16 @@ import UnifiedMap from "@/components/map/UnifiedMap";
 import RadarStoryRail from "@/components/radar/RadarStoryRail";
 import RadarEntitySheet from "@/components/radar/RadarEntitySheet";
 import RadarSmartSearch from "@/components/radar/RadarSmartSearch";
-import RadarResultCard from "@/components/radar/RadarResultCard";
-import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
 import { entityUrl } from "@/lib/entity/entity-url";
 import { useAuth } from "@/contexts/AuthContext";
 import { openOrbitFromRadar } from "@/lib/radar/radar-orbit-bridge";
 import { haptic } from "@/lib/haptics";
 import {
-  Radio, X,
+  Radio, X, Search, Crosshair,
   Utensils, Hotel, Car, Sparkles, Moon, ShoppingBag, Building2,
   Navigation, Minus, Plus, CloudRain,
   MapPin, TrendingUp, Star, Heart, Store,
-  Droplets, Wind, Map as MapIcon, List, Columns2, Zap,
+  Droplets, Wind, Map as MapIcon, List, Columns2, Zap, Loader2,
   Home, MessageCircle, Wallet, User,
 } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
@@ -44,16 +51,16 @@ import SEOHead from "@/components/SEOHead";
 type ViewMode = "map" | "list" | "hybrid";
 type SortMode = "smart" | "nearest" | "best_rated" | "trending";
 
-const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; color: string; emoji: string }[] = [
-  { id: "food", labelKey: "radar.layer_food", icon: <Utensils className="w-3 h-3" />, color: "hsl(15 80% 55%)", emoji: "🍽️" },
-  { id: "stay", labelKey: "radar.layer_stay", icon: <Hotel className="w-3 h-3" />, color: "hsl(200 70% 50%)", emoji: "🏨" },
-  { id: "services", labelKey: "radar.layer_services", icon: <Sparkles className="w-3 h-3" />, color: "hsl(270 60% 55%)", emoji: "✨" },
-  { id: "utility", labelKey: "radar.layer_utility", icon: <ShoppingBag className="w-3 h-3" />, color: "hsl(140 50% 45%)", emoji: "🛒" },
-  { id: "mobility", labelKey: "radar.layer_mobility", icon: <Car className="w-3 h-3" />, color: "hsl(30 80% 50%)", emoji: "🚗" },
-  { id: "nightlife", labelKey: "radar.layer_night", icon: <Moon className="w-3 h-3" />, color: "hsl(280 70% 55%)", emoji: "🌙" },
-  { id: "healthcare", labelKey: "radar.layer_healthcare", icon: <Heart className="w-3 h-3" />, color: "hsl(0 65% 50%)", emoji: "🏥" },
-  { id: "shops", labelKey: "radar.layer_shops", icon: <Store className="w-3 h-3" />, color: "hsl(38 65% 56%)", emoji: "🛍️" },
-  { id: "property", labelKey: "radar.layer_property", icon: <Building2 className="w-3 h-3" />, color: "hsl(220 40% 38%)", emoji: "🏠" },
+const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; color: string; emoji: string; vertical: RadarVertical }[] = [
+  { id: "food", labelKey: "radar.layer_food", icon: <Utensils className="w-3 h-3" />, color: "hsl(15 80% 55%)", emoji: "🍽️", vertical: "food" },
+  { id: "stay", labelKey: "radar.layer_stay", icon: <Hotel className="w-3 h-3" />, color: "hsl(200 70% 50%)", emoji: "🏨", vertical: "hotel" },
+  { id: "services", labelKey: "radar.layer_services", icon: <Sparkles className="w-3 h-3" />, color: "hsl(270 60% 55%)", emoji: "✨", vertical: "services" },
+  { id: "utility", labelKey: "radar.layer_utility", icon: <ShoppingBag className="w-3 h-3" />, color: "hsl(140 50% 45%)", emoji: "🛒", vertical: "grocery" },
+  { id: "mobility", labelKey: "radar.layer_mobility", icon: <Car className="w-3 h-3" />, color: "hsl(30 80% 50%)", emoji: "🚗", vertical: "taxi" },
+  { id: "nightlife", labelKey: "radar.layer_night", icon: <Moon className="w-3 h-3" />, color: "hsl(280 70% 55%)", emoji: "🌙", vertical: "nightlife" },
+  { id: "healthcare", labelKey: "radar.layer_healthcare", icon: <Heart className="w-3 h-3" />, color: "hsl(0 65% 50%)", emoji: "🏥", vertical: "healthcare" },
+  { id: "shops", labelKey: "radar.layer_shops", icon: <Store className="w-3 h-3" />, color: "hsl(38 65% 56%)", emoji: "🛍️", vertical: "shops" },
+  { id: "property", labelKey: "radar.layer_property", icon: <Building2 className="w-3 h-3" />, color: "hsl(220 40% 38%)", emoji: "🏠", vertical: "property" },
 ];
 
 const SORT_OPTIONS: { value: SortMode; icon: React.ReactNode; labelKey: string }[] = [
@@ -79,20 +86,12 @@ const PILLAR_LINKS = [
   { path: "/me", icon: <User className="w-4 h-4" />, labelKey: "radar.pillar_me", label: "Me" },
 ];
 
-function toRankable(e: RadarGeoEntity): RankableEntity {
-  return {
-    id: e.id,
-    entityType: "business",
-    vertical: e.type,
-    subcategory: e.category,
-    rating: e.rating,
-    reviewCount: e.reviewsCount,
-    lat: e.lat,
-    lng: e.lng,
-    isSponsored: e.isSponsored,
-    title: e.title || e.name,
-    profileScore: (e.imageUrl || e.image_url ? 0.3 : 0) + (e.rating ? 0.3 : 0) + (e.subtitle ? 0.2 : 0) + (e.category ? 0.2 : 0),
-  };
+function getActiveVertical(activeLayers: RadarLayer[]): RadarVertical | undefined {
+  if (activeLayers.length === 1) {
+    const def = LAYER_DEFS.find(l => l.id === activeLayers[0]);
+    return def?.vertical;
+  }
+  return undefined;
 }
 
 export default function HyperRadarPage() {
@@ -122,6 +121,19 @@ export default function HyperRadarPage() {
   const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
   const weather = useLiveWeatherStation({ lat: location?.lat, lng: location?.lng });
 
+  const activeVertical = useMemo(() => getActiveVertical(activeLayers), [activeLayers]);
+  const [filterValues, setFilterValues] = useState<RadarFilterValues>(() =>
+    getDefaultFilterValues(activeVertical ?? "shops")
+  );
+  const [mapMovedCenter, setMapMovedCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [showSearchHere, setShowSearchHere] = useState(false);
+  const lastSearchCenter = useRef<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    resetRadarSession();
+    trackRadarEvent("search_started", { surface: "radar", viewMode });
+  }, []);
+
   useEffect(() => {
     if (urlCategory && CATEGORY_TO_LAYER[urlCategory]) {
       setActiveLayers([CATEGORY_TO_LAYER[urlCategory]]);
@@ -129,59 +141,164 @@ export default function HyperRadarPage() {
     }
   }, [urlCategory]);
 
+  useEffect(() => {
+    if (activeVertical) {
+      setFilterValues(getDefaultFilterValues(activeVertical));
+    }
+  }, [activeVertical]);
+
   const mapCenter = useMemo(() => {
     if (selectedPlace?.lat && selectedPlace?.lng) return { lat: selectedPlace.lat, lng: selectedPlace.lng };
     return location ? { lat: location.lat, lng: location.lng } : undefined;
   }, [selectedPlace, location]);
 
-  const filteredEntities = useMemo(() => {
-    let filtered = entities;
-    if (activeLayers.length < LAYER_DEFS.length) {
-      filtered = filtered.filter(e => {
-        const cat = (e.category || e.type || "").toLowerCase();
-        return activeLayers.some(layer => matchesLayer(cat, layer));
-      });
-    }
-    if (urlSubcategory) {
-      const sub = urlSubcategory.toLowerCase();
-      filtered = filtered.filter(e => {
-        const cat = (e.category || e.type || e.subcategory || "").toLowerCase();
-        return cat.includes(sub);
-      });
-    }
-    if (deferredSearch.trim()) {
-      const q = deferredSearch.toLowerCase();
-      filtered = filtered.filter(e => e.name?.toLowerCase().includes(q) || (e.category || "").toLowerCase().includes(q));
-    }
-    return filtered;
-  }, [entities, activeLayers, deferredSearch, urlSubcategory]);
+  const radarItems = useMemo<RadarResultItem[]>(() => {
+    if (!entities.length) return [];
 
-  const visibleEntities = useMemo(() => {
-    let sorted = [...filteredEntities];
     const userLat = mapCenter?.lat ?? location?.lat ?? 25.2;
     const userLng = mapCenter?.lng ?? location?.lng ?? 55.27;
 
+    const points = entities.map(e => ({
+      id: e.id,
+      title: e.title || e.name,
+      subtitle: e.subtitle || e.address || null,
+      imageUrl: e.imageUrl || e.image_url || null,
+      category: (e.category || e.type || "shops") as "food" | "shops" | "grocery" | "property" | "services",
+      subcategory: e.subcategory || e.category || null,
+      lat: e.lat,
+      lng: e.lng,
+      rating: e.rating ?? null,
+      reviewsCount: e.reviewsCount ?? null,
+      isSponsored: e.isSponsored ?? false,
+      distanceKm: e.distance,
+      slug: e.slug || null,
+      district: null,
+      cityName: null,
+    }));
+
+    let items = mapPointsToResultItems(points, {
+      userLat,
+      userLng,
+      searchQuery: deferredSearch || undefined,
+      vertical: activeVertical,
+    });
+
+    items = filterAndDemoteResults(items);
+
+    if (activeLayers.length > 0 && activeLayers.length < LAYER_DEFS.length) {
+      const verticals = new Set(activeLayers.map(l => LAYER_DEFS.find(d => d.id === l)?.vertical).filter(Boolean));
+      items = items.filter(i => {
+        if (verticals.has(i.type)) return true;
+        const cat = (i.category || "").toLowerCase();
+        return activeLayers.some(layer => matchesLayer(cat, layer));
+      });
+    }
+
+    if (urlSubcategory) {
+      const sub = urlSubcategory.toLowerCase();
+      items = items.filter(i => {
+        const cat = (i.category || i.subcategory || "").toLowerCase();
+        return cat.includes(sub);
+      });
+    }
+
+    if (deferredSearch.trim()) {
+      const q = deferredSearch.toLowerCase();
+      items = items.filter(i =>
+        i.title.toLowerCase().includes(q) ||
+        (i.category || "").toLowerCase().includes(q) ||
+        (i.subcategory || "").toLowerCase().includes(q)
+      );
+    }
+
+    if (filterValues.open_now === true) {
+      items = items.filter(i => i.available !== false);
+    }
+    if (typeof filterValues.rating_min === "number" && (filterValues.rating_min as number) > 0) {
+      items = items.filter(i => (i.ratingValue ?? 0) >= (filterValues.rating_min as number));
+    }
+    if (filterValues.distance_max && filterValues.distance_max !== "any") {
+      const maxKm = parseFloat(filterValues.distance_max as string);
+      items = items.filter(i => i.distanceKm == null || i.distanceKm <= maxKm);
+    }
+    if (filterValues.cuisine && typeof filterValues.cuisine === "string" && filterValues.cuisine !== "") {
+      const c = (filterValues.cuisine as string).toLowerCase();
+      items = items.filter(i =>
+        (i.subcategory || "").toLowerCase().includes(c) ||
+        (i.category || "").toLowerCase().includes(c)
+      );
+    }
+    if (typeof filterValues.price_level === "string" && filterValues.price_level !== "") {
+      const level = parseInt(filterValues.price_level as string, 10);
+      if (!isNaN(level)) {
+        items = items.filter(i => {
+          const meta = i.meta as Record<string, unknown>;
+          return meta.priceLevel == null || (meta.priceLevel as number) <= level;
+        });
+      }
+    }
+    if (filterValues.listing_type && typeof filterValues.listing_type === "string" && filterValues.listing_type !== "") {
+      items = items.filter(i => {
+        const meta = i.meta as Record<string, unknown>;
+        return !meta.listingType || meta.listingType === filterValues.listing_type;
+      });
+    }
+    if (filterValues.delivery === true) {
+      items = items.filter(i => {
+        const meta = i.meta as Record<string, unknown>;
+        return meta.delivery !== false;
+      });
+    }
+
     if (sortBy === "smart") {
-      const rankables = sorted.map(toRankable);
-      const ctx: RankContext = { userLat, userLng };
-      const ranked = rankEntities(rankables, ctx, DISCOVERY_WEIGHTS);
-      const idOrder = new Map(ranked.map((r, i) => [r.id, i]));
-      sorted.sort((a, b) => (idOrder.get(a.id) ?? 999) - (idOrder.get(b.id) ?? 999));
+      items.sort((a, b) => b.radarScore - a.radarScore);
+      items = diversifyResults(items, 3);
     } else if (sortBy === "nearest") {
-      sorted.sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
+      items.sort((a, b) => (a.distanceKm ?? 999) - (b.distanceKm ?? 999));
     } else if (sortBy === "best_rated") {
-      sorted.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+      items.sort((a, b) => (b.ratingValue ?? 0) - (a.ratingValue ?? 0));
     } else if (sortBy === "trending") {
-      sorted.sort((a, b) => {
-        const aS = (a.isSponsored ? 50 : 0) + (a.reviewsCount ?? 0) * 0.5 + (a.rating ?? 0) * 5;
-        const bS = (b.isSponsored ? 50 : 0) + (b.reviewsCount ?? 0) * 0.5 + (b.rating ?? 0) * 5;
+      items.sort((a, b) => {
+        const aS = (a.isSponsored ? 50 : 0) + a.reviewsCount * 0.5 + (a.ratingValue ?? 0) * 5;
+        const bS = (b.isSponsored ? 50 : 0) + b.reviewsCount * 0.5 + (b.ratingValue ?? 0) * 5;
         return bS - aS;
       });
     }
 
-    if (sorted.length > MAX_VISIBLE_PINS) sorted = sorted.slice(0, MAX_VISIBLE_PINS);
-    return sorted;
-  }, [filteredEntities, sortBy, location, mapCenter]);
+    if (items.length > MAX_VISIBLE_PINS) items = items.slice(0, MAX_VISIBLE_PINS);
+
+    return items;
+  }, [entities, activeLayers, deferredSearch, urlSubcategory, sortBy, location, mapCenter, activeVertical, filterValues]);
+
+  useEffect(() => {
+    trackRadarEvent("search_completed", {
+      total: radarItems.length,
+      vertical: activeVertical,
+      sortBy,
+      query: deferredSearch || null,
+    });
+  }, [radarItems.length, activeVertical, sortBy, deferredSearch]);
+
+  const visibleEntities = useMemo<RadarGeoEntity[]>(() => {
+    return radarItems.map(item => ({
+      id: item.id,
+      type: item.type === "food" ? "restaurant" as const : item.type === "hotel" ? "service" as const : item.type === "grocery" ? "grocery" as const : item.type === "property" ? "property" as const : "shop" as const,
+      name: item.title,
+      title: item.title,
+      subtitle: item.subtitle || undefined,
+      lat: item.lat,
+      lng: item.lng,
+      imageUrl: item.image || undefined,
+      image_url: item.image || undefined,
+      rating: item.ratingValue ?? undefined,
+      category: item.category,
+      address: item.address || undefined,
+      slug: item.slug || undefined,
+      distance: item.distanceKm ?? undefined,
+      isSponsored: item.isSponsored,
+      reviewsCount: item.reviewsCount,
+    }));
+  }, [radarItems]);
 
   const handleZoneClick = useCallback((lat: number, lng: number) => {
     setZoneClick({ lat, lng });
@@ -193,13 +310,46 @@ export default function HyperRadarPage() {
     setSelectedEntity(entity as RadarGeoEntity);
     setZoneClick(null);
     setPanelSnap("closed");
+    trackRadarEvent("result_clicked", { entityId: entity.id });
   }, []);
 
-  const handleViewEntity = useCallback((entity: RadarGeoEntity) => {
+  const handleSelectRadarItem = useCallback((item: RadarResultItem) => {
+    const geo: RadarGeoEntity = {
+      id: item.id,
+      type: item.type === "food" ? "restaurant" : item.type === "hotel" ? "service" : item.type === "grocery" ? "grocery" : item.type === "property" ? "property" : "shop",
+      name: item.title,
+      title: item.title,
+      subtitle: item.subtitle || undefined,
+      lat: item.lat,
+      lng: item.lng,
+      imageUrl: item.image || undefined,
+      image_url: item.image || undefined,
+      rating: item.ratingValue ?? undefined,
+      category: item.category,
+      slug: item.slug || undefined,
+      distance: item.distanceKm ?? undefined,
+      isSponsored: item.isSponsored,
+      reviewsCount: item.reviewsCount,
+    };
+    setSelectedEntity(geo);
+    setZoneClick(null);
+    setPanelSnap("closed");
+    trackRadarEvent("result_clicked", { entityId: item.id, vertical: item.type, score: item.radarScore });
+  }, []);
+
+  const handleNavigateItem = useCallback((item: RadarResultItem) => {
+    haptic("medium");
+    const q = item.address || `${item.lat},${item.lng}`;
+    window.open(`https://maps.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank", "noopener,noreferrer");
+    trackRadarEvent("cta_used", { action: "navigate", entityId: item.id });
+  }, []);
+
+  const handleMessageItem = useCallback(async (item: RadarResultItem) => {
+    if (!user?.id) { navigate("/auth"); return; }
     haptic("light");
-    const url = entity.slug ? `/s/${entity.slug}` : entityUrl({ id: entity.id });
-    navigate(url);
-  }, [navigate]);
+    openOrbitFromRadar({ id: item.id, name: item.title, lat: item.lat, lng: item.lng, type: "shop" }, user.id, navigate);
+    trackRadarEvent("cta_used", { action: "message", entityId: item.id });
+  }, [user?.id, navigate]);
 
   const handleNavigateEntity = useCallback((entity: RadarGeoEntity) => {
     haptic("medium");
@@ -217,6 +367,58 @@ export default function HyperRadarPage() {
     haptic("light");
     setActiveLayers([layer]);
     setPanelSnap("half");
+    trackRadarEvent("filter_used", { filter: "category", value: layer });
+  }, []);
+
+  const handleSearchHere = useCallback(() => {
+    if (mapMovedCenter) {
+      useRadarPlaceStore.getState().setSelectedPlace({
+        lat: mapMovedCenter.lat,
+        lng: mapMovedCenter.lng,
+        label: "Map area",
+      });
+      lastSearchCenter.current = mapMovedCenter;
+      setShowSearchHere(false);
+      trackRadarEvent("area_research", { lat: mapMovedCenter.lat, lng: mapMovedCenter.lng });
+    }
+  }, [mapMovedCenter]);
+
+  const handleRecenter = useCallback(() => {
+    if (location) {
+      useRadarPlaceStore.getState().setSelectedPlace(null);
+      setMapMovedCenter(null);
+      setShowSearchHere(false);
+      haptic("light");
+    }
+  }, [location]);
+
+  const handleMapMove = useCallback((center: { lat: number; lng: number }) => {
+    setMapMovedCenter(center);
+    const ref = lastSearchCenter.current ?? mapCenter;
+    if (ref) {
+      const dlat = Math.abs(center.lat - ref.lat);
+      const dlng = Math.abs(center.lng - ref.lng);
+      if (dlat > 0.005 || dlng > 0.005) {
+        setShowSearchHere(true);
+      }
+    }
+  }, [mapCenter]);
+
+  const handleFilterChange = useCallback((values: RadarFilterValues) => {
+    setFilterValues(values);
+    trackRadarEvent("filter_used", { filters: values });
+  }, []);
+
+  const handleSortChange = useCallback((s: SortMode) => {
+    haptic("light");
+    setSortBy(s);
+    trackRadarEvent("sort_changed", { sortBy: s });
+  }, []);
+
+  const handleViewModeChange = useCallback((v: ViewMode) => {
+    haptic("light");
+    setViewMode(v);
+    trackRadarEvent("view_mode_changed", { mode: v });
   }, []);
 
   const hour = new Date().getHours();
@@ -266,28 +468,48 @@ export default function HyperRadarPage() {
       selectedId={selectedEntity?.id}
       onSelectEntity={handleSelectEntity}
       onZoneClick={handleZoneClick}
+      onMapMove={handleMapMove}
       hideWeatherBadge
     />
   );
 
   const resultListContent = (
     <div className="space-y-1.5">
-      {visibleEntities.length === 0 && !loading && (
-        <div className="flex flex-col items-center gap-2 py-12 text-center">
-          <MapPin className="w-6 h-6 text-muted-foreground/40" />
-          <p className="text-xs font-bold text-foreground">{tSafe(t, "radar.no_results", "No results nearby")}</p>
-          <p className="text-[10px] text-muted-foreground">{tSafe(t, "radar.no_results_hint", "Try expanding your radius or changing filters")}</p>
+      {loading && (
+        <div className="flex flex-col items-center gap-2 py-8">
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: "hsl(38 65% 56%)" }} />
+          <p className="text-[10px] text-muted-foreground">{tSafe(t, "radar.loading", "Scanning...")}</p>
         </div>
       )}
-      {visibleEntities.map((entity, idx) => (
-        <RadarResultCard
-          key={entity.id}
-          entity={entity}
+      {radarItems.length === 0 && !loading && (
+        <div className="flex flex-col items-center gap-2.5 py-12 text-center">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.08)" }}>
+            <MapPin className="w-6 h-6" style={{ color: "hsl(38 65% 56% / 0.5)" }} />
+          </div>
+          <p className="text-xs font-bold text-foreground">{tSafe(t, "radar.no_results", "No results nearby")}</p>
+          <p className="text-[10px] text-muted-foreground max-w-[200px]">{tSafe(t, "radar.no_results_hint", "Try expanding your radius or changing filters")}</p>
+          <button
+            onClick={() => {
+              setActiveLayers(["food", "stay", "services", "utility"]);
+              setFilterValues(getDefaultFilterValues("shops"));
+              trackRadarEvent("filter_reset", {});
+            }}
+            className="mt-1 px-4 py-1.5 rounded-full text-[10px] font-bold active:scale-95 transition-transform"
+            style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)" }}
+          >
+            {tSafe(t, "radar.reset_all", "Reset all filters")}
+          </button>
+        </div>
+      )}
+      {radarItems.map((item, idx) => (
+        <RadarCardDispatcher
+          key={item.id}
+          item={item}
           rank={sortBy === "smart" ? idx + 1 : undefined}
-          selected={selectedEntity?.id === entity.id}
-          onSelect={() => handleSelectEntity(entity)}
-          onNavigate={() => handleNavigateEntity(entity)}
-          onMessage={() => handleMessageEntity(entity)}
+          selected={selectedEntity?.id === item.id}
+          onSelect={() => handleSelectRadarItem(item)}
+          onNavigate={() => handleNavigateItem(item)}
+          onMessage={() => handleMessageItem(item)}
         />
       ))}
     </div>
@@ -304,7 +526,7 @@ export default function HyperRadarPage() {
 
       {viewMode === "map" && (
         <>
-          {!loading && visibleEntities.length === 0 && (
+          {!loading && radarItems.length === 0 && (
             <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
               <div className="flex flex-col items-center gap-2 px-6 py-4 rounded-2xl bg-card/90 backdrop-blur-md border border-border/15 max-w-[240px] text-center">
                 <MapPin className="w-6 h-6 text-muted-foreground/50" />
@@ -320,10 +542,23 @@ export default function HyperRadarPage() {
 
       {viewMode === "hybrid" && (
         <div className="flex flex-col h-full">
-          <div className="h-[45%] relative shrink-0">{mapComponent}</div>
+          <div className="h-[45%] relative shrink-0">
+            {mapComponent}
+            {showSearchHere && (
+              <SearchHereButton onClick={handleSearchHere} t={t} />
+            )}
+          </div>
           <div className="flex-1 overflow-y-auto bg-background">
-            <div className="px-4 pt-3 pb-2">
-              <SortBar sortBy={sortBy} setSortBy={setSortBy} t={t} />
+            <div className="px-4 pt-3 pb-2 space-y-2">
+              {activeVertical && (
+                <RadarFilters
+                  vertical={activeVertical}
+                  values={filterValues}
+                  onChange={handleFilterChange}
+                  resultCount={radarItems.length}
+                />
+              )}
+              <SortBar sortBy={sortBy} setSortBy={handleSortChange} t={t} />
             </div>
             <div className="px-4 pb-24">{resultListContent}</div>
           </div>
@@ -333,19 +568,29 @@ export default function HyperRadarPage() {
       {viewMode === "list" && (
         <div className="flex flex-col h-full">
           <div className="shrink-0 px-4 pt-[env(safe-area-inset-top,8px)] pb-2" style={{ background: "hsl(var(--background))" }}>
-            <TopBar t={t} navigate={navigate} viewMode={viewMode} setViewMode={setViewMode} />
+            <TopBar t={t} navigate={navigate} viewMode={viewMode} setViewMode={handleViewModeChange} />
             <div className="mt-2">
               <RadarSmartSearch onCategorySelect={handleCategorySelect} onSearchFilter={setSearchQuery} />
             </div>
             <div className="mt-2">
               <LayerChips activeLayers={activeLayers} toggleLayer={toggleLayer} radarOverlay={radarOverlay} setRadarOverlay={setRadarOverlay} t={t} />
             </div>
+            {activeVertical && (
+              <div className="mt-2">
+                <RadarFilters
+                  vertical={activeVertical}
+                  values={filterValues}
+                  onChange={handleFilterChange}
+                  resultCount={radarItems.length}
+                />
+              </div>
+            )}
             <div className="mt-2">
-              <SortBar sortBy={sortBy} setSortBy={setSortBy} t={t} />
+              <SortBar sortBy={sortBy} setSortBy={handleSortChange} t={t} />
             </div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-[10px] text-muted-foreground">
-                {loading ? tSafe(t, "radar.loading", "Scanning...") : `${visibleEntities.length} ${tSafe(t, "radar.places_found", "places found")}`}
+                {loading ? tSafe(t, "radar.loading", "Scanning...") : `${radarItems.length} ${tSafe(t, "radar.places_found", "places found")}`}
               </span>
               <PillarNav navigate={navigate} />
             </div>
@@ -373,7 +618,7 @@ export default function HyperRadarPage() {
               </div>
             </div>
 
-            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+            <ViewModeToggle viewMode={viewMode} setViewMode={handleViewModeChange} />
           </div>
 
           {viewMode === "map" && (
@@ -407,7 +652,17 @@ export default function HyperRadarPage() {
                 <button onClick={() => cycleRadius(-1)} aria-label="Decrease radius" className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform bg-muted/15">
                   <Minus className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
+
+                <div className="w-full h-px my-0.5" style={{ background: "hsl(var(--border) / 0.15)" }} />
+
+                <button onClick={handleRecenter} aria-label="Recenter" className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
+                  <Crosshair className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+                </button>
               </motion.div>
+
+              {showSearchHere && (
+                <SearchHereButton onClick={handleSearchHere} t={t} />
+              )}
 
               <WeatherWidget weather={weather} vibe={vibe} stats={stats} t={t} />
 
@@ -449,7 +704,7 @@ export default function HyperRadarPage() {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] text-muted-foreground">
-                        {tSafe(t, "radar.places_radius", "{count} places within {radius}").replace("{count}", String(visibleEntities.length)).replace("{radius}", distLabel(radius))}
+                        {tSafe(t, "radar.places_radius", "{count} places within {radius}").replace("{count}", String(radarItems.length)).replace("{radius}", distLabel(radius))}
                       </span>
                       {stats.avgRating > 0 && (
                         <span className="flex items-center gap-0.5 text-[10px] text-yellow-500">
@@ -460,7 +715,18 @@ export default function HyperRadarPage() {
                     <PillarNav navigate={navigate} />
                   </div>
 
-                  <SortBar sortBy={sortBy} setSortBy={setSortBy} t={t} />
+                  <SortBar sortBy={sortBy} setSortBy={handleSortChange} t={t} />
+
+                  {activeVertical && panelSnap === "half" && (
+                    <div className="mt-2">
+                      <RadarFilters
+                        vertical={activeVertical}
+                        values={filterValues}
+                        onChange={handleFilterChange}
+                        resultCount={radarItems.length}
+                      />
+                    </div>
+                  )}
 
                   {guidance.length > 0 && (
                     <div className="mb-3 mt-2">
@@ -523,6 +789,28 @@ export default function HyperRadarPage() {
   );
 }
 
+function SearchHereButton({ onClick, t }: { onClick: () => void; t: (key: string) => string }) {
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      onClick={onClick}
+      className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-4 py-2 rounded-full border shadow-lg active:scale-95 transition-transform"
+      style={{
+        zIndex: Z.overlay + 1,
+        background: "hsl(220 40% 18% / 0.95)",
+        borderColor: "hsl(38 65% 56% / 0.3)",
+        color: "hsl(38 65% 56%)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      <Search className="w-3.5 h-3.5" />
+      <span className="text-[11px] font-bold">{tSafe(t, "radar.search_here", "Search this area")}</span>
+    </motion.button>
+  );
+}
+
 function ViewModeToggle({ viewMode, setViewMode }: { viewMode: ViewMode; setViewMode: (v: ViewMode) => void }) {
   const modes: { value: ViewMode; icon: React.ReactNode; label: string }[] = [
     { value: "map", icon: <MapIcon className="w-3.5 h-3.5" />, label: "Map view" },
@@ -535,7 +823,7 @@ function ViewModeToggle({ viewMode, setViewMode }: { viewMode: ViewMode; setView
       {modes.map(m => (
         <button
           key={m.value}
-          onClick={() => { haptic("light"); setViewMode(m.value); }}
+          onClick={() => setViewMode(m.value)}
           aria-label={m.label}
           aria-pressed={viewMode === m.value}
           className="p-1.5 rounded-lg transition-all"
@@ -583,7 +871,7 @@ function SortBar({ sortBy, setSortBy, t }: { sortBy: SortMode; setSortBy: (s: So
       {SORT_OPTIONS.map(s => (
         <button
           key={s.value}
-          onClick={() => { haptic("light"); setSortBy(s.value); }}
+          onClick={() => setSortBy(s.value)}
           className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap shrink-0 border transition-all active:scale-95"
           style={{
             background: sortBy === s.value ? "hsl(38 65% 56% / 0.12)" : "hsl(var(--card) / 0.6)",

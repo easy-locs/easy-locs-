@@ -80,10 +80,16 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 ## Radar (HyperRadarPage) Architecture
 - **View modes**: Map (fullscreen Mapbox), List (scrollable cards), Hybrid (50/50 split map+list synced)
 - **Search**: RadarSmartSearch with SearchBrain autocomplete, localStorage history (8 items), 300ms debounce, quick category chips
-- **Filters**: 9 layer toggles (Food, Stay, Services, Utility, Mobility, Nightlife, Healthcare, Shops, Property), weather radar toggle
-- **Sort**: Smart (ranking engine), Nearest (distance), Top Rated, Trending (popularity + reviews + sponsored)
-- **Scoring**: Uses `rankEntities()` from `ranking-engine.ts` — weighted hierarchy/proximity/rating/popularity/boost
-- **Result cards**: `RadarResultCard.tsx` — row variant with image, name (line-clamp-1), category, rating, distance, Ad badge, action buttons (Message, Navigate)
+- **Filters**: 9 layer toggles + contextual vertical filters. When single vertical selected, shows `RadarFilters.tsx` with vertical-specific schemas from `radar-filter-schemas.ts` (food: cuisine/price/delivery/dine-in, hotel: stars/budget/type/pool/breakfast, property: buy-rent/budget/bedrooms/furnished, services: urgency/availability/price, taxi: vehicle/ETA, healthcare: specialty/availability)
+- **Sort**: Smart (RadarScore composite), Nearest (distance), Top Rated, Trending (popularity + reviews + sponsored)
+- **Scoring**: Composite `RadarScore` from `radar-score.ts` — extends `ranking-engine.ts` with 9 vertical-specific weight profiles (food: proximity 28%, services: profile 15%, hotel: rating 22%, property: recency 20%, taxi: proximity 35%, etc). Additional signals: availability, quality, trust, preference match, conversion likelihood. Penalties for closed/low-quality, boosts for high-quality+nearby
+- **Quality gates**: `radar-quality-gate.ts` — fails entities missing geo/title/category or quality<0.15. Demotes entities with quality<0.3 or missing image in critical verticals (food/hotel). Score penalty 0.6x on demoted items
+- **Result cards**: 6 vertical-specific cards via `RadarCardDispatcher` — `RadarFoodCard` (cuisine, price, open status), `RadarHotelCard` (stars, district, price/night), `RadarPropertyCard` (image hero, bedrooms, price), `RadarServiceCard` (availability, healthcare badge), `RadarShopCard` (standard row), `RadarTaxiCard` (vehicle icon, ETA, status). All share consistent spacing/sizing (px-3 py-2.5, rounded-2xl, line-clamp-1)
+- **Normalized items**: `RadarResultItem` shape from `radar-result-item.ts` — type, radarScore, qualityScore, primaryAction, secondaryActions, orbitBindable, walletBindable, route builder
+- **Map sync**: UnifiedMap `onMapMove` callback fires on `moveend`. "Search this area" button appears when map pans >0.005° from last search center. Recenter button resets to GPS location
+- **Analytics**: `radarAnalytics.ts` — tracks search_started, search_completed, filter_used, filter_reset, sort_changed, view_mode_changed, result_clicked, cta_used, area_research. All events fire from handlers/effects, not memos
+- **Services layer**: `src/services/radar/` — `radarSearchService.ts` (unified search with pagination/timing), `radarResultMapper.ts` (RadarPoint → RadarResultItem with scoring), `radarAnalytics.ts` (event buffering, session management)
+- **Diversification**: `diversifyResults()` from `radar-score.ts` — limits max 3 consecutive same-type results in smart sort
 - **Intelligence**: Vibe density engine, zone rhythm, time-slot guidance (coffee in morning, food at lunch, nightlife at night)
 - **Pillar wiring**: Quick-nav to Dashboard, Orbit, Wallet, Me from bottom sheet
 - **Performance**: `useDeferredValue` for search, `MAX_VISIBLE_PINS=80`, lazy image loading, memo on cards
