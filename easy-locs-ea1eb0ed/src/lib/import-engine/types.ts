@@ -6,7 +6,7 @@
  */
 
 // ─── Verticals ───
-export type Vertical = "food" | "grocery" | "stay" | "services" | "property" | "shops" | "mobility" | "utility" | "healthcare" | "experiences";
+export type Vertical = "food" | "grocery" | "stay" | "services" | "property" | "shops" | "mobility" | "utility" | "healthcare" | "experiences" | "education" | "finance";
 
 // ─── Source Names ───
 export type SourceName =
