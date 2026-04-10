@@ -2,9 +2,10 @@
  * Orbit Repository — Orbit account actions, chat management, avatar.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function fetchUserConversations(limit = 500) {
-  const { data } = await supabase.from("conversations_v2").select("id, participants").order("updated_at", { ascending: false }).limit(limit);
+  const { data } = await db("conversations_v2").select("id, participants").order("updated_at", { ascending: false }).limit(limit);
   return data || [];
 }
 
@@ -12,7 +13,7 @@ export async function fetchUserConversations(limit = 500) {
 export { upsertConversationPreference } from "@/repositories/communication.repository";
 
 export async function fetchUserChatMessages(userId: string, limit = 1000) {
-  const { data } = await supabase.from("chat_messages_v2").select("body, created_at, sender_user_id").or(`sender_user_id.eq.${userId}`).order("created_at", { ascending: true }).limit(limit);
+  const { data } = await db("chat_messages_v2").select("body, created_at, sender_user_id").or(`sender_user_id.eq.${userId}`).order("created_at", { ascending: true }).limit(limit);
   return data || [];
 }
 
@@ -31,6 +32,6 @@ export async function updateAuthUser(data: Record<string, any>) {
 }
 
 export async function updateProfileName(userId: string, name: string) {
-  const { error } = await supabase.from("profiles").update({ name } as any).eq("id", userId);
+  const { error } = await db("profiles").update({ name } as any).eq("id", userId);
   if (error) throw error;
 }

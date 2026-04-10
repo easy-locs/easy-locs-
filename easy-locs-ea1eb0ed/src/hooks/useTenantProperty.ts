@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import { getTenantLabels, type TenantLabels } from "@/lib/tenant-i18n";
@@ -38,8 +38,7 @@ export function useTenantProperty(): TenantPropertyInfo {
   useEffect(() => {
     if (!user) { setLoading(false); return; }
     const fetch = async () => {
-      const { data: tenant } = await supabase
-        .from("tenants")
+      const { data: tenant } = await db("tenants")
         .select("id, org_id, property_id, name, rent_amount, charges_amount")
         .eq("tenant_user_id", user.id)
         .limit(1)
@@ -53,8 +52,7 @@ export function useTenantProperty(): TenantPropertyInfo {
       setPropertyId(tenant.property_id);
 
       if (tenant.property_id) {
-        const { data: prop } = await supabase
-          .from("properties")
+        const { data: prop } = await db("properties")
           .select("country")
           .eq("id", tenant.property_id)
           .maybeSingle();

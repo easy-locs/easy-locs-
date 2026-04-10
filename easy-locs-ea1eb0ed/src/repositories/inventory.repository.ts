@@ -5,17 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchInventoryReport(reportId: string) {
-  const { data } = await supabase.from("inventory_reports").select("*").eq("id", reportId).single();
+  const { data } = await db("inventory_reports").select("*").eq("id", reportId).single();
   return data;
 }
 
 export async function fetchInventoryRooms(reportId: string) {
-  const { data } = await supabase.from("inventory_rooms").select("*").eq("report_id", reportId).order("sort_order");
+  const { data } = await db("inventory_rooms").select("*").eq("report_id", reportId).order("sort_order");
   return data || [];
 }
 
 export async function fetchInventoryItems(roomId: string) {
-  const { data } = await supabase.from("inventory_items").select("*").eq("room_id", roomId).order("sort_order");
+  const { data } = await db("inventory_items").select("*").eq("room_id", roomId).order("sort_order");
   return data || [];
 }
 
@@ -26,11 +26,11 @@ export async function insertInventoryReport(record: Record<string, any>) {
 }
 
 export async function updateInventoryReport(reportId: string, fields: Record<string, any>) {
-  await supabase.from("inventory_reports").update(fields).eq("id", reportId);
+  await db("inventory_reports").update(fields).eq("id", reportId);
 }
 
 export async function deleteRoomsForReport(reportId: string) {
-  await supabase.from("inventory_rooms").delete().eq("report_id", reportId);
+  await db("inventory_rooms").delete().eq("report_id", reportId);
 }
 
 export async function insertRoom(record: Record<string, any>) {
@@ -54,17 +54,17 @@ export async function uploadInventoryPhoto(orgId: string, reportId: string, room
 }
 
 export async function fetchSignatureUrl(userId: string) {
-  const { data } = await supabase.from("profiles").select("signature_url").eq("id", userId).single();
+  const { data } = await db("profiles").select("signature_url").eq("id", userId).single();
   return data?.signature_url || null;
 }
 
 export async function fetchOrgStampUrl(orgId: string) {
-  const { data } = await supabase.from("orgs").select("stamp_url").eq("id", orgId).single();
+  const { data } = await db("orgs").select("stamp_url").eq("id", orgId).single();
   return (data as any)?.stamp_url || null;
 }
 
 export async function fetchTenantName(tenantId: string) {
-  const { data } = await supabase.from("tenants").select("name").eq("id", tenantId).single();
+  const { data } = await db("tenants").select("name").eq("id", tenantId).single();
   return data?.name || null;
 }
 
@@ -76,10 +76,10 @@ export async function invokeSendEmail(body: Record<string, any>) {
 
 // ── Inventory rooms/items for report ──
 export async function fetchInventoryRoomsWithItems(reportId: string) {
-  const { data: rooms } = await supabase.from("inventory_rooms").select("*").eq("report_id", reportId).order("sort_order");
+  const { data: rooms } = await db("inventory_rooms").select("*").eq("report_id", reportId).order("sort_order");
   const result = [];
   for (const r of rooms || []) {
-    const { data: items } = await supabase.from("inventory_items").select("*").eq("room_id", r.id).order("sort_order");
+    const { data: items } = await db("inventory_items").select("*").eq("room_id", r.id).order("sort_order");
     result.push({
       room_name: r.room_name,
       items: (items || []).map((it: any) => ({
@@ -92,12 +92,12 @@ export async function fetchInventoryRoomsWithItems(reportId: string) {
 }
 
 export async function fetchInventoryReportById(reportId: string) {
-  const { data } = await supabase.from("inventory_reports").select("*").eq("id", reportId).single();
+  const { data } = await db("inventory_reports").select("*").eq("id", reportId).single();
   return data;
 }
 
 export async function fetchInventoryReportsForOrg(orgId: string) {
-  const { data } = await supabase.from("inventory_reports")
+  const { data } = await db("inventory_reports")
     .select("id, property_id, tenant_id, report_type, report_date, status")
     .eq("org_id", orgId).order("report_date", { ascending: false });
   return data || [];

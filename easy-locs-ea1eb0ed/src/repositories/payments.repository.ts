@@ -67,7 +67,7 @@ export async function invokeFXRate(body: Record<string, any>) {
 
 // ── Subscription ──
 export async function fetchSubscription(orgId: string) {
-  const { data } = await supabase.from("subscriptions" as any).select("*").eq("org_id", orgId).limit(1).maybeSingle();
+  const { data } = await db("subscriptions" as any).select("*").eq("org_id", orgId).limit(1).maybeSingle();
   return data;
 }
 

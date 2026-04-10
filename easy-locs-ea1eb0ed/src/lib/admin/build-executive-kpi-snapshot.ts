@@ -10,9 +10,9 @@ export async function buildExecutiveKPISnapshot(date = new Date()) {
 
   const [jobs, refunds, disputes, payouts, zones] = await Promise.all([
     db("mobility_jobs").select("id,status,current_price,quoted_price").limit(5000),
-    supabase.from("refund_requests" as any).select("id,amount,refund_status").limit(5000),
-    supabase.from("ride_disputes").select("id,status").limit(5000),
-    supabase.from("driver_payouts").select("id,payout_status").limit(5000),
+    db("refund_requests" as any).select("id,amount,refund_status").limit(5000),
+    db("ride_disputes").select("id,status").limit(5000),
+    db("driver_payouts").select("id,payout_status").limit(5000),
     db("geo_live_zone_overlays").select("zone_key,surge_multiplier").limit(500),
   ]);
 

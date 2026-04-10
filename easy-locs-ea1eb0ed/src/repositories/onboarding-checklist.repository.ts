@@ -6,11 +6,11 @@ import { db } from "@/services/db";
 
 export async function fetchChecklistCounts(orgId: string) {
   const [props, tenants, docs, owner, payments, messages] = await Promise.all([
-    supabase.from("properties").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-    supabase.from("tenants").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-    supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-    supabase.from("owner_profiles").select("id").eq("org_id", orgId).limit(1).maybeSingle(),
-    supabase.from("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    db("properties").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    db("tenants").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    db("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    db("owner_profiles").select("id").eq("org_id", orgId).limit(1).maybeSingle(),
+    db("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId),
     db("chat_messages_v2").select("id", { count: "exact", head: true }),
   ]);
   return {

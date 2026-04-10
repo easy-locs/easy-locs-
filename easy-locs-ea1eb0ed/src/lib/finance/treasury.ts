@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function computePlatformRevenue(params: {
   start: string;
@@ -19,7 +20,7 @@ export async function triggerMerchantPayout(params: {
   merchantId: string;
   amount: number;
 }) {
-  return supabase.from("approval_queues").insert({
+  return db("approval_queues").insert({
     queue_name: "payout",
     entity_type: "merchant",
     entity_id: params.merchantId,

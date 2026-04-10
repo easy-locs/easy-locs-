@@ -11,14 +11,14 @@ export async function checkAdminRole(userId: string): Promise<boolean> {
 
 export async function fetchAdminStats() {
   const [users, subs, props, docs, refs, bookingReqs, paidRents, confirmedRes] = await Promise.all([
-    supabase.from("profiles").select("id, email, name, created_at, user_type", { count: "exact" }),
-    supabase.from("subscriptions").select("id, plan, status, created_at", { count: "exact" }),
-    supabase.from("properties").select("id", { count: "exact", head: true }),
-    supabase.from("documents").select("id", { count: "exact", head: true }),
-    supabase.from("referrals").select("id", { count: "exact", head: true }),
-    supabase.from("booking_requests").select("id, status", { count: "exact" }),
-    supabase.from("rent_calls").select("id, paid, total_amount, paid_date, month").eq("paid", true),
-    supabase.from("reservations").select("id, amount, status, created_at").eq("status", "confirmed"),
+    db("profiles").select("id, email, name, created_at, user_type", { count: "exact" }),
+    db("subscriptions").select("id, plan, status, created_at", { count: "exact" }),
+    db("properties").select("id", { count: "exact", head: true }),
+    db("documents").select("id", { count: "exact", head: true }),
+    db("referrals").select("id", { count: "exact", head: true }),
+    db("booking_requests").select("id, status", { count: "exact" }),
+    db("rent_calls").select("id, paid, total_amount, paid_date, month").eq("paid", true),
+    db("reservations").select("id, amount, status, created_at").eq("status", "confirmed"),
   ]);
 
   return {
@@ -46,43 +46,43 @@ export async function fetchPendingReviews(orgId: string) {
 }
 
 export async function moderateReview(reviewId: string, action: "published" | "rejected") {
-  const { error } = await supabase.from("marketplace_reviews").update({ status: action } as any).eq("id", reviewId);
+  const { error } = await db("marketplace_reviews").update({ status: action } as any).eq("id", reviewId);
   if (error) throw error;
 }
 
 export async function fetchBlockedUsers() {
-  const { data } = await supabase.from("blocked_users").select("*").order("created_at", { ascending: false }).limit(50);
+  const { data } = await db("blocked_users").select("*").order("created_at", { ascending: false }).limit(50);
   return data ?? [];
 }
 
 export async function unblockUser(blockId: string) {
-  const { error } = await supabase.from("blocked_users").delete().eq("id", blockId);
+  const { error } = await db("blocked_users").delete().eq("id", blockId);
   if (error) throw error;
 }
 
 // ── Org Members ──
 export async function fetchOrgMembers(orgId: string) {
-  const { data } = await supabase.from("org_members").select("id, user_id, role, created_at").eq("org_id", orgId).order("created_at");
+  const { data } = await db("org_members").select("id, user_id, role, created_at").eq("org_id", orgId).order("created_at");
   return data ?? [];
 }
 
 export async function fetchProfilesByIds(ids: string[]) {
-  const { data } = await supabase.from("profiles").select("id, name, email, first_name, last_name").in("id", ids);
+  const { data } = await db("profiles").select("id, name, email, first_name, last_name").in("id", ids);
   return data ?? [];
 }
 
 export async function changeOrgMemberRole(memberId: string, newRole: string) {
-  const { error } = await supabase.from("org_members").update({ role: newRole } as any).eq("id", memberId);
+  const { error } = await db("org_members").update({ role: newRole } as any).eq("id", memberId);
   if (error) throw error;
 }
 
 export async function removeOrgMember(memberId: string) {
-  const { error } = await supabase.from("org_members").delete().eq("id", memberId);
+  const { error } = await db("org_members").delete().eq("id", memberId);
   if (error) throw error;
 }
 
 export async function sendCollaborationInvite(record: Record<string, any>) {
-  const { error } = await supabase.from("collaboration_invitations").insert(record as any);
+  const { error } = await db("collaboration_invitations").insert(record as any);
   if (error) throw error;
 }
 
@@ -107,7 +107,7 @@ export async function getAuthUser() {
 }
 
 export async function getUserOrgId(userId: string) {
-  const { data } = await supabase.from("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
+  const { data } = await db("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
   return data?.org_id ?? null;
 }
 

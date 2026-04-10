@@ -16,7 +16,7 @@ export async function fetchPublicRealEstateListings(params: Record<string, any>)
 }
 
 export async function fetchPublicListings(filters?: Record<string, any>) {
-  let q = supabase.from("public_listings").select("*").eq("active", true);
+  let q = db("public_listings").select("*").eq("active", true);
   if (filters?.limit) q = q.limit(filters.limit);
   const { data } = await q.order("created_at", { ascending: false });
   return data ?? [];
@@ -41,7 +41,7 @@ export async function insertBookingRequest(record: Record<string, any>) {
 
 // ── Listing contact ──
 export async function fetchListingContact(listingId: string) {
-  const { data } = await supabase.from("public_listings").select("property_id, org_id").eq("id", listingId).single();
+  const { data } = await db("public_listings").select("property_id, org_id").eq("id", listingId).single();
   return data;
 }
 
@@ -55,7 +55,7 @@ export async function uploadRealEstatePhoto(path: string, file: File) {
 
 // ── QR ──
 export async function resolveQrCode(code: string) {
-  const { data } = await supabase.from("qr_codes" as any).select("*").eq("code", code).single();
+  const { data } = await db("qr_codes" as any).select("*").eq("code", code).single();
   return data;
 }
 
@@ -77,7 +77,7 @@ export async function deleteSavedListing(userId: string, listingId: string) {
 
 // ── Referrals ──
 export async function fetchReferralCode(userId: string) {
-  const { data } = await supabase.from("profiles").select("referral_code").eq("id", userId).single();
+  const { data } = await db("profiles").select("referral_code").eq("id", userId).single();
   return (data as any)?.referral_code ?? null;
 }
 
@@ -93,7 +93,7 @@ export async function claimMerchant(merchantId: string, userId: string) {
 }
 
 export async function fetchSeedMerchant() {
-  const { data } = await supabase.from("seed_merchants" as any).select("id").limit(1).maybeSingle();
+  const { data } = await db("seed_merchants" as any).select("id").limit(1).maybeSingle();
   return data;
 }
 

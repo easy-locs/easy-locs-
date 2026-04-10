@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function trackContactClick(channel: string, opts: { listingId?: string | null; serviceId?: string | null; orgId?: string | null }) {
-  supabase.from("contact_clicks" as any).insert({
+  db("contact_clicks" as any).insert({
     channel,
     listing_id: opts.listingId || null,
     service_id: opts.serviceId || null,
@@ -57,7 +57,7 @@ export async function resolveOrbitId(userId: string): Promise<string> {
 }
 
 export async function fetchOrgOwner(orgId: string) {
-  const { data } = await supabase.from("orgs").select("owner_user_id").eq("id", orgId).maybeSingle();
+  const { data } = await db("orgs").select("owner_user_id").eq("id", orgId).maybeSingle();
   return data;
 }
 

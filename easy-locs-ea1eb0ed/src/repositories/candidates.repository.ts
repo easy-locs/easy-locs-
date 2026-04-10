@@ -6,8 +6,8 @@ import { db } from "@/services/db";
 
 export async function fetchCandidatesAndProperties(orgId: string) {
   const [{ data: c }, { data: p }] = await Promise.all([
-    supabase.from("candidates").select("*").eq("org_id", orgId).order("created_at", { ascending: false }),
-    supabase.from("properties").select("id, label").eq("org_id", orgId).order("label"),
+    db("candidates").select("*").eq("org_id", orgId).order("created_at", { ascending: false }),
+    db("properties").select("id, label").eq("org_id", orgId).order("label"),
   ]);
   return { candidates: (c || []) as any[], properties: p || [] };
 }

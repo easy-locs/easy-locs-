@@ -3,7 +3,7 @@
  * Uses the centralized permissions system from src/lib/permissions.ts.
  */
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useQuery } from "@tanstack/react-query";
 import { roleHasPermission, isRoleAtLeast, getPermissions, type OrgRole, type Permission } from "@/lib/permissions";
 
@@ -14,8 +14,7 @@ export function useOrgRole() {
     queryKey: ["org_role", user?.id, orgId],
     queryFn: async () => {
       if (!user?.id || !orgId) return "member" as OrgRole;
-      const { data } = await supabase
-        .from("org_members")
+      const { data } = await db("org_members")
         .select("role")
         .eq("user_id", user.id)
         .eq("org_id", orgId)

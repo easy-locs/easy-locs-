@@ -8,23 +8,23 @@ const db = supabase as any;
 
 // ── Lease workflow ──
 export async function fetchLease(leaseId: string) {
-  const { data } = await supabase.from("leases").select("*").eq("id", leaseId).single();
+  const { data } = await db("leases").select("*").eq("id", leaseId).single();
   return data;
 }
 
 export async function updateLease(leaseId: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("leases").update(updates as any).eq("id", leaseId);
+  const { error } = await db("leases").update(updates as any).eq("id", leaseId);
   if (error) throw error;
 }
 
 export async function fetchLeasesByOrg(orgId: string) {
-  const { data } = await supabase.from("leases").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data } = await db("leases").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   return data ?? [];
 }
 
 // ── Receipts ──
 export async function fetchRentCalls(orgId: string, filters?: Record<string, any>) {
-  let q = supabase.from("rent_calls").select("*").eq("org_id", orgId);
+  let q = db("rent_calls").select("*").eq("org_id", orgId);
   if (filters?.paid !== undefined) q = q.eq("paid", filters.paid);
   if (filters?.tenantId) q = q.eq("tenant_id", filters.tenantId);
   const { data } = await q.order("month", { ascending: false });
@@ -32,7 +32,7 @@ export async function fetchRentCalls(orgId: string, filters?: Record<string, any
 }
 
 export async function updateRentCall(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("rent_calls").update(updates as any).eq("id", id);
+  const { error } = await db("rent_calls").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
@@ -98,12 +98,12 @@ export function subscribeLeases(orgId: string, onUpdate: (payload: any) => void)
 
 // ── Auto-generate lease ──
 export async function fetchTenantForLeaseGen(tenantId: string) {
-  const { data } = await supabase.from("tenants").select("*").eq("id", tenantId).single();
+  const { data } = await db("tenants").select("*").eq("id", tenantId).single();
   return data;
 }
 
 export async function fetchPropertyForLeaseGen(propertyId: string) {
-  const { data } = await supabase.from("properties").select("*").eq("id", propertyId).single();
+  const { data } = await db("properties").select("*").eq("id", propertyId).single();
   return data;
 }
 
@@ -137,7 +137,7 @@ export async function deleteReminder(id: string) {
 
 // ── Vault ──
 export async function fetchVaultFiles(orgId: string) {
-  const { data } = await supabase.from("vault_files").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data } = await db("vault_files").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   return data ?? [];
 }
 
@@ -148,7 +148,7 @@ export async function insertVaultFile(record: Record<string, any>) {
 
 export async function deleteVaultFile(fileId: string, fileUrl: string) {
   await supabase.storage.from("vault").remove([fileUrl]);
-  const { error } = await supabase.from("vault_files").delete().eq("id", fileId);
+  const { error } = await db("vault_files").delete().eq("id", fileId);
   if (error) throw error;
 }
 
@@ -161,8 +161,8 @@ export async function uploadVaultFile(path: string, file: File) {
 
 // ── Charges regularization ──
 export async function fetchChargesData(orgId: string) {
-  const { data: tenants } = await supabase.from("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
-  const { data: rentCalls } = await supabase.from("rent_calls").select("id, tenant_id, month, charges_amount, paid").eq("org_id", orgId);
+  const { data: tenants } = await db("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
+  const { data: rentCalls } = await db("rent_calls").select("id, tenant_id, month, charges_amount, paid").eq("org_id", orgId);
   return { tenants: tenants ?? [], rentCalls: rentCalls ?? [] };
 }
 
@@ -170,14 +170,14 @@ export async function fetchChargesData(orgId: string) {
 export async function fetchFiscalData(orgId: string, year: number) {
   const startMonth = `${year}-01`;
   const endMonth = `${year}-12`;
-  const { data: rentCalls } = await supabase.from("rent_calls").select("*").eq("org_id", orgId).gte("month", startMonth).lte("month", endMonth);
-  const { data: entries } = await supabase.from("accounting_entries").select("*").eq("org_id", orgId).gte("accounting_period", startMonth).lte("accounting_period", endMonth);
+  const { data: rentCalls } = await db("rent_calls").select("*").eq("org_id", orgId).gte("month", startMonth).lte("month", endMonth);
+  const { data: entries } = await db("accounting_entries").select("*").eq("org_id", orgId).gte("accounting_period", startMonth).lte("accounting_period", endMonth);
   return { rentCalls: rentCalls ?? [], entries: entries ?? [] };
 }
 
 // ── Accounting entries ──
 export async function fetchAccountingEntries(orgId: string) {
-  const { data } = await supabase.from("accounting_entries").select("*").eq("org_id", orgId).order("accounting_period", { ascending: false });
+  const { data } = await db("accounting_entries").select("*").eq("org_id", orgId).order("accounting_period", { ascending: false });
   return data ?? [];
 }
 
@@ -188,7 +188,7 @@ export async function insertAccountingEntry(record: Record<string, any>) {
 
 // ── Tenant documents (rental component) ──
 export async function fetchTenantDocsForProperty(orgId: string, tenantId: string) {
-  const { data } = await supabase.from("tenant_documents").select("*").eq("org_id", orgId).eq("tenant_id", tenantId).order("created_at", { ascending: false });
+  const { data } = await db("tenant_documents").select("*").eq("org_id", orgId).eq("tenant_id", tenantId).order("created_at", { ascending: false });
   return data ?? [];
 }
 
@@ -205,7 +205,7 @@ export async function updateDocumentRequest(id: string, updates: Record<string, 
 
 // ── Lease Signature Workflow ──
 export async function fetchLeaseForSignature(leaseId: string) {
-  const { data } = await supabase.from("leases").select("tenant_signed_at, org_id").eq("id", leaseId).single();
+  const { data } = await db("leases").select("tenant_signed_at, org_id").eq("id", leaseId).single();
   return data;
 }
 
@@ -213,22 +213,22 @@ export async function updateLeaseSignature(leaseId: string, party: "tenant" | "o
   const updates: Record<string, any> = party === "tenant"
     ? { tenant_signed_at: signedAt, status: "signed" }
     : { owner_signed_at: signedAt };
-  const { data, error } = await supabase.from("leases").update(updates as any).eq("id", leaseId).select("*").single();
+  const { data, error } = await db("leases").update(updates as any).eq("id", leaseId).select("*").single();
   if (error) throw error;
   if (signatureUrl) {
     const docUpdate: Record<string, any> = party === "tenant"
       ? { tenant_signature_url: signatureUrl, signed_by_tenant_at: signedAt }
       : { owner_signature_url: signatureUrl, signed_by_owner_at: signedAt };
-    await supabase.from("documents").update(docUpdate).eq("lease_id", leaseId);
+    await db("documents").update(docUpdate).eq("lease_id", leaseId);
   }
   return data;
 }
 
 export async function updateLeaseOwnerSignature(leaseId: string, signedAt: string, newStatus: string, signatureUrl?: string) {
-  const { data, error } = await supabase.from("leases").update({ owner_signed_at: signedAt, status: newStatus } as any).eq("id", leaseId).select("*").single();
+  const { data, error } = await db("leases").update({ owner_signed_at: signedAt, status: newStatus } as any).eq("id", leaseId).select("*").single();
   if (error) throw error;
   if (signatureUrl) {
-    await supabase.from("documents").update({ owner_signature_url: signatureUrl, signed_by_owner_at: signedAt, status: newStatus === "active" ? "signed" : "pending_signature" }).eq("lease_id", leaseId);
+    await db("documents").update({ owner_signature_url: signatureUrl, signed_by_owner_at: signedAt, status: newStatus === "active" ? "signed" : "pending_signature" }).eq("lease_id", leaseId);
   }
   return data;
 }
@@ -239,17 +239,17 @@ export async function insertLeaseAuditLog(orgId: string | undefined, action: str
 
 // ── Document requests ──
 export async function fetchDocumentRequests(tenantId: string) {
-  const { data } = await supabase.from("document_requests").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false });
+  const { data } = await db("document_requests").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false });
   return data || [];
 }
 
 export async function resolveDocumentRequest(requestId: string) {
-  const { error } = await supabase.from("document_requests").update({ status: "resolved", resolved_at: new Date().toISOString() } as any).eq("id", requestId);
+  const { error } = await db("document_requests").update({ status: "resolved", resolved_at: new Date().toISOString() } as any).eq("id", requestId);
   if (error) throw error;
 }
 
 export async function fetchTenantUserId(tenantId: string) {
-  const { data } = await supabase.from("tenants").select("tenant_user_id").eq("id", tenantId).single();
+  const { data } = await db("tenants").select("tenant_user_id").eq("id", tenantId).single();
   return data?.tenant_user_id as string | null;
 }
 
@@ -259,31 +259,31 @@ export async function insertAppNotification(payload: Record<string, any>) {
 
 // ── Fiscal report ──
 export async function fetchPropertiesForOrg(orgId: string, countryFilter?: string) {
-  let q = supabase.from("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
+  let q = db("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
   if (countryFilter) q = q.eq("country", countryFilter);
   const { data } = await q;
   return data || [];
 }
 
 export async function fetchRentCallsForOrg(orgId: string) {
-  const { data } = await supabase.from("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
+  const { data } = await db("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Charges regularization ──
 export async function fetchTenantsForCharges(orgId: string) {
-  const { data } = await supabase.from("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
+  const { data } = await db("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
   return data || [];
 }
 
 export async function fetchPropertiesMinimal(orgId: string) {
-  const { data } = await supabase.from("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
+  const { data } = await db("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Reminders ──
 export async function deactivateReminder(id: string) {
-  await supabase.from("reminders").update({ active: false } as any).eq("id", id);
+  await db("reminders").update({ active: false } as any).eq("id", id);
 }
 
 // ── Add property ──
@@ -294,23 +294,23 @@ export async function insertProperty(payload: Record<string, any>) {
 
 // ── Referrals ──
 export async function fetchReferralCode(userId: string) {
-  const { data } = await supabase.from("profiles").select("referral_code").eq("id", userId).single();
+  const { data } = await db("profiles").select("referral_code").eq("id", userId).single();
   return data;
 }
 
 export async function fetchReferrals(userId: string) {
-  const { data } = await supabase.from("referrals").select("*").eq("referrer_user_id", userId).order("created_at", { ascending: false });
+  const { data } = await db("referrals").select("*").eq("referrer_user_id", userId).order("created_at", { ascending: false });
   return data || [];
 }
 
 // ── Profile settings ──
 export async function fetchProfilePrivacy(userId: string, columns: string) {
-  const { data } = await supabase.from("profiles").select(columns).eq("id", userId).single();
+  const { data } = await db("profiles").select(columns).eq("id", userId).single();
   return data;
 }
 
 export async function updateProfileField(userId: string, column: string, value: any) {
-  await supabase.from("profiles").update({ [column]: value } as any).eq("id", userId);
+  await db("profiles").update({ [column]: value } as any).eq("id", userId);
 }
 
 // ── Tenant signup ──
@@ -341,19 +341,19 @@ export async function invokeLeaseWorkflow(body: Record<string, any>) {
 
 // ── Accounting entries ──
 export async function fetchPropertiesForAccounting(orgId: string) {
-  const { data } = await supabase.from("properties").select("id, label, country").eq("org_id", orgId);
+  const { data } = await db("properties").select("id, label, country").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Landlord rent dashboard properties ──
 export async function fetchPropertyIdsForCountry(orgId: string, country: string) {
-  const { data } = await supabase.from("properties").select("id").eq("org_id", orgId).eq("country", country);
+  const { data } = await db("properties").select("id").eq("org_id", orgId).eq("country", country);
   return (data || []).map((p: any) => p.id);
 }
 
 // ── Fiscal report queries (extended) ──
 export async function fetchPropertiesForFiscalReport(orgId: string, countryFilter?: string) {
-  let q = supabase.from("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
+  let q = db("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
   if (countryFilter) q = q.eq("country", countryFilter);
   const { data } = await q;
   return data || [];
@@ -361,18 +361,18 @@ export async function fetchPropertiesForFiscalReport(orgId: string, countryFilte
 
 // ── Reminders ──
 export async function dismissReminder(id: string) {
-  await supabase.from("reminders").update({ active: false } as any).eq("id", id);
+  await db("reminders").update({ active: false } as any).eq("id", id);
 }
 
 // ── Inventory report full ──
 export async function fetchInventoryReportFull(reportId: string) {
-  const { data } = await supabase.from("inventory_reports").select("*").eq("id", reportId).single();
+  const { data } = await db("inventory_reports").select("*").eq("id", reportId).single();
   return data;
 }
 
 // ── Booking requests ──
 export async function insertBookingRequest(payload: Record<string, any>) {
-  const { data, error } = await supabase.from("booking_requests").insert(payload as any).select().single();
+  const { data, error } = await db("booking_requests").insert(payload as any).select().single();
   if (error) throw error;
   return data;
 }
@@ -383,12 +383,12 @@ export async function invokeNotifyBooking(bookingRequestId: string) {
 
 // ── Local services ──
 export async function fetchOrgLocalServicesEnabled(orgId: string) {
-  const { data } = await supabase.from("orgs").select("local_services_enabled").eq("id", orgId).single();
+  const { data } = await db("orgs").select("local_services_enabled").eq("id", orgId).single();
   return data?.local_services_enabled || false;
 }
 
 export async function fetchLocalServices(orgId: string) {
-  const { data } = await supabase.from("local_services" as any).select("*").eq("org_id", orgId).eq("active", true).order("sort_order");
+  const { data } = await db("local_services" as any).select("*").eq("org_id", orgId).eq("active", true).order("sort_order");
   return data || [];
 }
 
@@ -400,17 +400,17 @@ export async function insertNewsletterSubscriber(email: string) {
 
 // ── Auth context helpers ──
 export async function checkTenantLink(userId: string) {
-  const { data } = await supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
+  const { data } = await db("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
   return data;
 }
 
 export async function checkOrgLink(userId: string) {
-  const { data } = await supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
+  const { data } = await db("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
   return data;
 }
 
 export async function markOnboardingComplete(userId: string) {
-  await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId);
+  await db("profiles").update({ onboarding_completed: true }).eq("id", userId);
 }
 
 // ── Upload booking document ──
@@ -421,52 +421,52 @@ export async function uploadBookingDocument(path: string, file: File) {
 
 // ── Inventory reports (detailed) ──
 export async function fetchInventoryReports(orgId: string) {
-  const { data } = await supabase.from("inventory_reports").select("id, property_id, tenant_id, report_type, report_date, status").eq("org_id", orgId).order("report_date", { ascending: false });
+  const { data } = await db("inventory_reports").select("id, property_id, tenant_id, report_type, report_date, status").eq("org_id", orgId).order("report_date", { ascending: false });
   return data || [];
 }
 
 export async function fetchInventoryReportById(reportId: string) {
-  const { data } = await supabase.from("inventory_reports").select("*").eq("id", reportId).single();
+  const { data } = await db("inventory_reports").select("*").eq("id", reportId).single();
   return data;
 }
 
 export async function fetchInventoryRooms(reportId: string) {
-  const { data } = await supabase.from("inventory_rooms").select("*").eq("report_id", reportId).order("sort_order");
+  const { data } = await db("inventory_rooms").select("*").eq("report_id", reportId).order("sort_order");
   return data || [];
 }
 
 export async function fetchInventoryItems(roomId: string) {
-  const { data } = await supabase.from("inventory_items").select("*").eq("room_id", roomId).order("sort_order");
+  const { data } = await db("inventory_items").select("*").eq("room_id", roomId).order("sort_order");
   return data || [];
 }
 
 // ── Charges regularization ──
 export async function fetchChargesRegTenants(orgId: string) {
-  const { data } = await supabase.from("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
+  const { data } = await db("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
   return data || [];
 }
 
 export async function fetchChargesRegProperties(orgId: string) {
-  const { data } = await supabase.from("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
+  const { data } = await db("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Fiscal report ──
 export async function fetchFiscalProperties(orgId: string, countryFilter?: string) {
-  let query = supabase.from("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
+  let query = db("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
   if (countryFilter) query = query.eq("country", countryFilter);
   const { data } = await query;
   return data || [];
 }
 
 export async function fetchFiscalRentCalls(orgId: string) {
-  const { data } = await supabase.from("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
+  const { data } = await db("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Rent dashboard ──
 export async function fetchPropertiesByCountry(orgId: string, country: string) {
-  const { data } = await supabase.from("properties").select("id").eq("org_id", orgId).eq("country", country);
+  const { data } = await db("properties").select("id").eq("org_id", orgId).eq("country", country);
   return data || [];
 }
 
@@ -474,7 +474,7 @@ export async function fetchPropertiesByCountry(orgId: string, country: string) {
 export async function fetchExistingBookings(propertyId: string) {
   const [{ data: seasonal }, { data: requests }] = await Promise.all([
     db("seasonal_bookings").select("check_in, check_out, status").eq("property_id", propertyId).neq("status", "cancelled"),
-    supabase.from("booking_requests").select("check_in, check_out, status").eq("property_id", propertyId).in("status", ["confirmed", "paid", "approved", "payment_pending"]),
+    db("booking_requests").select("check_in, check_out, status").eq("property_id", propertyId).in("status", ["confirmed", "paid", "approved", "payment_pending"]),
   ]);
   return [
     ...(seasonal || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
@@ -484,23 +484,23 @@ export async function fetchExistingBookings(propertyId: string) {
 
 // ── QR resolved card helpers ──
 export async function fetchProfileName(userId: string) {
-  const { data } = await supabase.from("profiles").select("name").eq("id", userId).maybeSingle();
+  const { data } = await db("profiles").select("name").eq("id", userId).maybeSingle();
   return data?.name || null;
 }
 
 export async function fetchContactExists(ownerId: string, contactUserId: string) {
-  const { data } = await supabase.from("contacts").select("id").eq("owner_id", ownerId).eq("contact_user_id", contactUserId).maybeSingle();
+  const { data } = await db("contacts").select("id").eq("owner_id", ownerId).eq("contact_user_id", contactUserId).maybeSingle();
   return !!data;
 }
 
 // ── Marketplace services ──
 export async function insertMarketplaceService(payload: Record<string, any>) {
-  const { error } = await supabase.from("marketplace_services").insert(payload as any);
+  const { error } = await db("marketplace_services").insert(payload as any);
   if (error) throw error;
 }
 
 export async function fetchServiceBySlug(slug: string) {
-  const { data } = await supabase.from("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
+  const { data } = await db("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
   return data;
 }
 
@@ -511,7 +511,7 @@ export async function insertParcelJobDetails(payload: Record<string, any>) {
 
 // ── Audit reports ──
 export async function fetchAuditHistory(limit = 30) {
-  const { data } = await supabase.from("audit_reports").select("created_at, global_score, total_issues, scan_type").order("created_at", { ascending: false }).limit(limit);
+  const { data } = await db("audit_reports").select("created_at, global_score, total_issues, scan_type").order("created_at", { ascending: false }).limit(limit);
   return data || [];
 }
 
@@ -525,7 +525,7 @@ export async function upsertKeyBundle(userId: string, publicKey: string, deviceI
 // ── Storefront pages (for health check) ──
 export async function healthCheckDb() {
   const start = performance.now();
-  const { data, error, status } = await supabase.from("storefront_pages").select("id").limit(1);
+  const { data, error, status } = await db("storefront_pages").select("id").limit(1);
   const elapsed = performance.now() - start;
   return { data, error, status, elapsed };
 }
@@ -544,13 +544,13 @@ export async function updateStorefrontOrder(orderId: string, updates: Record<str
 
 // ── Shop follows ──
 export async function fetchShopFollow(userId: string, shopId: string) {
-  const { data } = await supabase.from("shop_follows").select("user_id, shop_id").eq("user_id", userId).eq("shop_id", shopId).maybeSingle() as any;
+  const { data } = await db("shop_follows").select("user_id, shop_id").eq("user_id", userId).eq("shop_id", shopId).maybeSingle() as any;
   return !!data;
 }
 
 // ── Shop by slug ──
 export async function fetchShopBySlug(slug: string) {
-  const { data } = await supabase.from("storefront_pages").select("id, slug, name, user_id").eq("slug", slug).maybeSingle();
+  const { data } = await db("storefront_pages").select("id, slug, name, user_id").eq("slug", slug).maybeSingle();
   return data;
 }
 
@@ -562,14 +562,14 @@ export async function fetchDirectThreads(limit = 100) {
 
 // ── Dual role check ──
 export async function checkTenantAndOrgLinks(userId: string) {
-  const t = await supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
-  const o = await supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
+  const t = await db("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
+  const o = await db("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
   return { hasTenant: !!t.data, hasOrg: !!o.data };
 }
 
 // ── Mark onboarding (fire-and-forget) ──
 export async function markOnboardingCompleteFireAndForget(userId: string) {
-  supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
+  db("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
 }
 
 // ── Booking payment ──
@@ -581,13 +581,13 @@ export async function invokeCreateBookingPayment(body: Record<string, any>) {
 
 // ── Accounting entries properties ──
 export async function fetchAccountingProperties(orgId: string) {
-  const { data } = await supabase.from("properties").select("id, label, country").eq("org_id", orgId);
+  const { data } = await db("properties").select("id, label, country").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Reminders ──
 export async function fetchRemindersForOrg(orgId: string) {
-  const { data } = await supabase.from("reminders").select("id, type, label, next_run_at, active").eq("org_id", orgId).eq("active", true).order("next_run_at", { ascending: true });
+  const { data } = await db("reminders").select("id, type, label, next_run_at, active").eq("org_id", orgId).eq("active", true).order("next_run_at", { ascending: true });
   return data || [];
 }
 
@@ -602,7 +602,7 @@ export async function fetchPeerKeyBundle(peerId: string) {
 
 // ── Group members ──
 export async function fetchGroupMemberIds(userId: string) {
-  const { data } = await supabase.from("group_members").select("group_id").eq("user_id", userId);
+  const { data } = await db("group_members").select("group_id").eq("user_id", userId);
   return (data || []).map((r: any) => r.group_id).filter(Boolean);
 }
 
@@ -613,7 +613,7 @@ export async function fetchGroupConversations() {
 }
 
 export async function fetchGroupMemberCount(groupId: string) {
-  const { count } = await supabase.from("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  const { count } = await db("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
   return count || 0;
 }
 
@@ -629,7 +629,7 @@ export async function createGroupConversation(payload: Record<string, any>) {
 }
 
 export async function insertGroupMember(groupId: string, userId: string, role: string) {
-  await supabase.from("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
+  await db("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
 }
 
 // ── Chat messages v2 (payment) — delegates to canonical insertMessage ──
@@ -654,19 +654,19 @@ export async function insertWalletTransaction(payload: Record<string, any>) {
 }
 
 export async function fetchLeasesByOrgSimple(orgId: string) {
-  const { data } = await supabase.from("leases").select("*").eq("org_id", orgId);
+  const { data } = await db("leases").select("*").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Charges Regularization (properties) ──
 export async function fetchPropertiesForCharges(orgId: string) {
-  const { data } = await supabase.from("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
+  const { data } = await db("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Fiscal report (rent calls raw) ──
 export async function fetchFiscalRentCallsRaw(orgId: string) {
-  const { data } = await supabase.from("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
+  const { data } = await db("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
   return data || [];
 }
 
@@ -679,7 +679,7 @@ export async function fetchRentCockpit(orgId: string, countryFilter?: string | n
     .order("month", { ascending: false });
 
   if (countryFilter) {
-    const { data: props } = await supabase.from("properties").select("id").eq("org_id", orgId).eq("country", countryFilter);
+    const { data: props } = await db("properties").select("id").eq("org_id", orgId).eq("country", countryFilter);
     const ids = (props || []).map((p: any) => p.id);
     if (ids.length > 0) query = query.in("property_id", ids);
     else return [];
@@ -701,7 +701,7 @@ export async function fetchAuditReportsHistory(limit = 30) {
 
 // ── Marketplace service slug lookup ──
 export async function fetchMarketplaceServiceBySlug(slug: string) {
-  const { data } = await supabase.from("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
+  const { data } = await db("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
   return data;
 }
 

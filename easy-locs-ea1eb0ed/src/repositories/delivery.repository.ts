@@ -7,7 +7,7 @@ import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // ── Disputes ──
 export async function fetchDisputes() {
-  const { data } = await supabase.from("delivery_disputes").select("*").order("created_at", { ascending: false }).limit(50);
+  const { data } = await db("delivery_disputes").select("*").order("created_at", { ascending: false }).limit(50);
   return data ?? [];
 }
 
@@ -21,7 +21,7 @@ export async function insertAuditLog(record: Record<string, any>) {
 }
 
 export async function fetchProfilesByIds(ids: string[]) {
-  const { data } = await supabase.from("profiles").select("id, name, first_name, last_name").in("id", ids);
+  const { data } = await db("profiles").select("id, name, first_name, last_name").in("id", ids);
   return data ?? [];
 }
 
@@ -40,7 +40,7 @@ export async function insertDeliveryRating(record: Record<string, any>) {
 
 // ── Driver analytics ──
 export async function fetchDriverJobs(userId: string, since?: string) {
-  let q = supabase.from("mobility_jobs")
+  let q = db("mobility_jobs")
     .select("id, status, current_price, quoted_price, currency, created_at, completed_at, picked_up_at")
     .eq("rider_user_id", userId);
   if (since) q = q.gte("created_at", since);
@@ -49,7 +49,7 @@ export async function fetchDriverJobs(userId: string, since?: string) {
 }
 
 export async function fetchDriverRatings(userId: string, since?: string) {
-  let q = supabase.from("delivery_ratings").select("rating, created_at").eq("driver_id", userId);
+  let q = db("delivery_ratings").select("rating, created_at").eq("driver_id", userId);
   if (since) q = q.gte("created_at", since);
   const { data } = await q.limit(200);
   return data ?? [];
@@ -71,7 +71,7 @@ export async function insertDeliveryOffer(record: Record<string, any>) {
 
 // ── Onboarding ──
 export async function updateDriverProfile(userId: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("profiles").update(updates as any).eq("id", userId);
+  const { error } = await db("profiles").update(updates as any).eq("id", userId);
   if (error) throw error;
 }
 
@@ -102,17 +102,17 @@ export async function invokeProofOfDelivery(body: Record<string, any>) {
 
 // ── Live Tracking ──
 export async function insertLiveTracking(record: Record<string, any>) {
-  const { data, error } = await supabase.from("live_trackings").insert(record as any).select().single();
+  const { data, error } = await db("live_trackings").insert(record as any).select().single();
   if (error) throw error;
   return (data as any).id;
 }
 
 export async function updateLiveTracking(id: string, updates: Record<string, any>) {
-  await supabase.from("live_trackings").update(updates as any).eq("id", id);
+  await db("live_trackings").update(updates as any).eq("id", id);
 }
 
 export async function fetchLiveTracking(id: string) {
-  const { data } = await supabase.from("live_trackings").select("*").eq("id", id).single();
+  const { data } = await db("live_trackings").select("*").eq("id", id).single();
   return data;
 }
 

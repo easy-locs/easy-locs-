@@ -10,7 +10,7 @@ export async function getPublicRealEstateListings(limit = 6) {
 }
 
 export async function getPublicSeasonalListings(limit = 6) {
-  const { data } = await supabase.from("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(limit);
+  const { data } = await db("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(limit);
   return data || [];
 }
 
@@ -45,6 +45,6 @@ export async function insertRealEstateLead(payload: Record<string, any>) {
 }
 
 export async function fetchPublicListingBySlug(slug: string) {
-  const { data } = await supabase.from("public_listings").select("*").eq("slug", slug).eq("active", true).maybeSingle();
+  const { data } = await db("public_listings").select("*").eq("slug", slug).eq("active", true).maybeSingle();
   return data;
 }

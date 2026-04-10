@@ -141,7 +141,7 @@ export async function insertShop(record: Record<string, any>) {
 }
 
 export async function updateShop(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("storefront_pages").update(updates as any).eq("id", id);
+  const { error } = await db("storefront_pages").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 

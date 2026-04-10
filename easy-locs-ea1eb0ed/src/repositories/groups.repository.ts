@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchUserGroupIds(userId: string) {
-  const { data, error } = await supabase.from("group_members").select("group_id").eq("user_id", userId);
+  const { data, error } = await db("group_members").select("group_id").eq("user_id", userId);
   if (error) throw error;
   return (data || []).map((r: any) => r.group_id).filter(Boolean);
 }
@@ -17,7 +17,7 @@ export async function fetchConversationsByTypes(types: string[]) {
 }
 
 export async function fetchGroupMemberCount(groupId: string) {
-  const { count } = await supabase.from("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  const { count } = await db("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
   return count || 0;
 }
 
@@ -27,7 +27,7 @@ export async function fetchLastMessage(conversationId: string) {
 }
 
 export async function fetchGroupMembers(groupId: string) {
-  const { data } = await supabase.from("group_members").select("*").eq("group_id", groupId);
+  const { data } = await db("group_members").select("*").eq("group_id", groupId);
   return data || [];
 }
 
@@ -53,7 +53,7 @@ export async function createConversation(payload: Record<string, any>) {
 }
 
 export async function insertGroupMember(groupId: string, userId: string, role: string) {
-  const { error } = await supabase.from("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
+  const { error } = await db("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
   if (error) throw error;
 }
 
@@ -80,16 +80,16 @@ export async function fetchConversationParticipants(id: string) {
 }
 
 export async function updateGroupMemberRole(memberId: string, role: string) {
-  const { error } = await supabase.from("group_members").update({ role } as any).eq("id", memberId);
+  const { error } = await db("group_members").update({ role } as any).eq("id", memberId);
   if (error) throw error;
 }
 
 export async function deleteGroupMember(memberId: string) {
-  await supabase.from("group_members").delete().eq("id", memberId);
+  await db("group_members").delete().eq("id", memberId);
 }
 
 export async function deleteGroupMemberByUser(groupId: string, userId: string) {
-  await supabase.from("group_members").delete().eq("group_id", groupId).eq("user_id", userId);
+  await db("group_members").delete().eq("group_id", groupId).eq("user_id", userId);
 }
 
 export async function deleteConversation(id: string) {
@@ -97,10 +97,10 @@ export async function deleteConversation(id: string) {
 }
 
 export async function deleteGroupMembers(groupId: string) {
-  await supabase.from("group_members").delete().eq("group_id", groupId);
+  await db("group_members").delete().eq("group_id", groupId);
 }
 
 export async function fetchProfileByEmail(email: string) {
-  const { data } = await supabase.from("profiles").select("id").eq("email", email).single();
+  const { data } = await db("profiles").select("id").eq("email", email).single();
   return data;
 }

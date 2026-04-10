@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function updateMarketplaceBooking(bookingId: string, status: string) {
-  await supabase.from("marketplace_bookings").update({ status }).eq("id", bookingId);
+  await db("marketplace_bookings").update({ status }).eq("id", bookingId);
 }
 
 export async function updateConciergeOrder(bookingId: string, status: string, action: string) {
@@ -13,11 +13,11 @@ export async function updateConciergeOrder(bookingId: string, status: string, ac
   if (action === "confirm") updates.confirmed_at = new Date().toISOString();
   if (action === "cancel") updates.cancelled_at = new Date().toISOString();
   if (action === "complete") updates.completed_at = new Date().toISOString();
-  await supabase.from("concierge_orders").update(updates).eq("id", bookingId);
+  await db("concierge_orders").update(updates).eq("id", bookingId);
 }
 
 export async function updateBookingRequest(bookingId: string, status: string) {
-  await supabase.from("booking_requests").update({ status }).eq("id", bookingId);
+  await db("booking_requests").update({ status }).eq("id", bookingId);
 }
 
 export async function insertChatMessage(conversationId: string, senderUserId: string, senderOrbitId: string, body: string, metadata: Record<string, any>) {

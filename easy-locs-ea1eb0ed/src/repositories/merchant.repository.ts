@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchFirstSeedMerchant() {
-  const { data } = await supabase.from("seed_merchants").select("id").limit(1).maybeSingle();
+  const { data } = await db("seed_merchants").select("id").limit(1).maybeSingle();
   return data;
 }
 
@@ -28,7 +28,7 @@ export async function toggleProductAvailability(productId: string, isAvailable: 
 }
 
 export async function fetchOrderItems(limit = 5000) {
-  const { data } = await supabase.from("order_items").select("*").limit(limit);
+  const { data } = await db("order_items").select("*").limit(limit);
   return data ?? [];
 }
 

@@ -2,6 +2,7 @@
  * Personal Profile Engine — Builds & maintains user radar profile from behavior signals.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export interface UserRadarProfile {
   lifestyleTags: string[];
@@ -112,7 +113,7 @@ export async function refreshRadarProfile(userId: string): Promise<UserRadarProf
   };
 
   // Persist
-  await supabase.from("user_radar_profiles").upsert({
+  await db("user_radar_profiles").upsert({
     user_id: userId,
     lifestyle_tags: lifestyleTags,
     budget_profile: budgetProfile,
@@ -132,7 +133,7 @@ export async function trackRadarEvent(
   eventType: string,
   opts?: { entityId?: string; category?: string; subcategory?: string; context?: string; zoneId?: string }
 ) {
-  await supabase.from("user_radar_events").insert({
+  await db("user_radar_events").insert({
     user_id: userId,
     event_type: eventType,
     entity_id: opts?.entityId,

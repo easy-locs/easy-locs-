@@ -2,6 +2,7 @@
  * Expenses Repository — All DB access for Expenses page.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export interface ExpenseRecord {
   id: string;
@@ -20,14 +21,14 @@ export interface PropertyOption {
 }
 
 export async function fetchExpensesProperties(orgId: string, country?: string | null): Promise<PropertyOption[]> {
-  let q = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
+  let q = db("properties").select("id, label, country").eq("org_id", orgId).order("label");
   if (country) q = q.eq("country", country);
   const { data } = await q;
   return (data || []).map((p: any) => ({ id: p.id, label: p.label }));
 }
 
 export async function fetchExpenses(orgId: string, propertyIds?: string[]): Promise<ExpenseRecord[]> {
-  let q = supabase.from("expenses").select("*").eq("org_id", orgId).order("expense_date", { ascending: false });
+  let q = db("expenses").select("*").eq("org_id", orgId).order("expense_date", { ascending: false });
   if (propertyIds && propertyIds.length > 0) {
     q = q.in("property_id", propertyIds);
   }
@@ -46,11 +47,11 @@ export async function insertExpense(params: {
   supplier: string | null;
   notes: string;
 }) {
-  const { error } = await supabase.from("expenses").insert(params);
+  const { error } = await db("expenses").insert(params);
   if (error) throw error;
 }
 
 export async function deleteExpense(id: string) {
-  const { error } = await supabase.from("expenses").delete().eq("id", id);
+  const { error } = await db("expenses").delete().eq("id", id);
   if (error) throw error;
 }

@@ -2,6 +2,7 @@
  * suggest-best-driver-zone — AI-powered zone recommendation combining demand + cluster data.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function suggestBestDriverZone(driverId: string) {
   const { data: zones } = await supabase
@@ -31,7 +32,7 @@ export async function suggestBestDriverZone(driverId: string) {
   const best = enriched[0];
   if (!best) return null;
 
-  await supabase.from("driver_positioning" as any).insert({
+  await db("driver_positioning" as any).insert({
     driver_id: driverId,
     suggested_lat: best.center_lat,
     suggested_lng: best.center_lng,

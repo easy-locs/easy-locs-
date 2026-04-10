@@ -2,6 +2,7 @@
  * apply-wallet-credit — Credit/debit wallet credits for riders.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { getWalletDefaultCurrency } from "./wallet-config";
 
 export async function applyWalletCredit(params: {
@@ -27,14 +28,14 @@ export async function applyWalletCredit(params: {
       ? current + amount
       : Math.max(0, current - amount);
 
-  await supabase.from("user_wallet_credits" as any).upsert({
+  await db("user_wallet_credits" as any).upsert({
     user_id: userId,
     credits_amount: next,
     currency: params.currency ?? getWalletDefaultCurrency(),
     updated_at: new Date().toISOString(),
   } as any);
 
-  await supabase.from("wallet_credit_transactions" as any).insert({
+  await db("wallet_credit_transactions" as any).insert({
     user_id: userId,
     amount,
     direction,

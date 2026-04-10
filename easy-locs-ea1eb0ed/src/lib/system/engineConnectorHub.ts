@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { assignMatchedDriver } from "@/lib/core/driverMatchingEngine";
 import { createOrderEscrow, releaseOrderEscrow, refundOrderEscrow } from "@/lib/core/orderEscrowEngine";
@@ -180,7 +181,7 @@ export function installEngineConnectorHub() {
     try {
       const order = await getOrderById(payload.orderId);
       if (order?.user_id) {
-        await supabase.from("app_notifications").insert({
+        await db("app_notifications").insert({
           user_id: order.user_id,
           type: "order_completed",
           title: "Order completed!",
@@ -209,7 +210,7 @@ export function installEngineConnectorHub() {
     const payload = event.payload as any;
     if (payload?.driverUserId && payload?.orderId) {
       try {
-        await supabase.from("app_notifications").insert({
+        await db("app_notifications").insert({
           user_id: payload.driverUserId,
           type: "delivery_completed",
           title: "Delivery completed!",

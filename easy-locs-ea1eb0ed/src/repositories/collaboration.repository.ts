@@ -5,18 +5,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchUserOrgDetails(userId: string) {
-  const { data: member } = await supabase.from("org_members").select("org_id").eq("user_id", userId).limit(1).single();
+  const { data: member } = await db("org_members").select("org_id").eq("user_id", userId).limit(1).single();
   if (!member) return null;
-  const { data: org } = await supabase.from("orgs").select("*").eq("id", member.org_id).single();
+  const { data: org } = await db("orgs").select("*").eq("id", member.org_id).single();
   return org;
 }
 
 export async function fetchOrgMembers(orgId: string) {
-  const { data } = await supabase.from("org_members").select("id, user_id, role, created_at").eq("org_id", orgId);
+  const { data } = await db("org_members").select("id, user_id, role, created_at").eq("org_id", orgId);
   if (!data) return [];
   const profiles = await Promise.all(
     data.map(async (m) => {
-      const { data: p } = await supabase.from("profiles").select("email, name").eq("id", m.user_id).single();
+      const { data: p } = await db("profiles").select("email, name").eq("id", m.user_id).single();
       return { ...m, email: p?.email || "", name: p?.name || "" };
     })
   );
@@ -48,11 +48,11 @@ export async function deleteInvitation(id: string) {
 }
 
 export async function removeOrgMember(memberId: string) {
-  const { error } = await supabase.from("org_members").delete().eq("id", memberId);
+  const { error } = await db("org_members").delete().eq("id", memberId);
   if (error) throw error;
 }
 
 export async function updateOrgMemberRole(memberId: string, newRole: string) {
-  const { error } = await supabase.from("org_members").update({ role: newRole } as any).eq("id", memberId);
+  const { error } = await db("org_members").update({ role: newRole } as any).eq("id", memberId);
   if (error) throw error;
 }

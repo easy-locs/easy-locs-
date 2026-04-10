@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchVaultFiles(orgId: string) {
-  const { data } = await supabase.from("vault_files").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data } = await db("vault_files").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   return (data || []) as any[];
 }
 

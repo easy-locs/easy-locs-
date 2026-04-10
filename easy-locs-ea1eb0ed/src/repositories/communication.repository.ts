@@ -4,6 +4,7 @@
  * No UI component should import supabase directly for these domains.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { assertNoLegacyIds, assertValidMessageType, assertCanonicalMetadata } from "@/lib/governance";
 
@@ -155,7 +156,7 @@ export async function updateConversationParticipants(conversationId: string, par
 // ═══ GROUPS ═══
 
 export async function insertGroupMember(groupId: string, userId: string, role: string) {
-  const { error } = await supabase.from("group_members").insert({
+  const { error } = await db("group_members").insert({
     group_id: groupId,
     user_id: userId,
     role,
@@ -164,20 +165,20 @@ export async function insertGroupMember(groupId: string, userId: string, role: s
 }
 
 export async function deleteGroupMember(memberId: string) {
-  await supabase.from("group_members").delete().eq("id", memberId);
+  await db("group_members").delete().eq("id", memberId);
 }
 
 export async function deleteGroupMemberByUser(groupId: string, userId: string) {
-  await supabase.from("group_members").delete().eq("group_id", groupId).eq("user_id", userId);
+  await db("group_members").delete().eq("group_id", groupId).eq("user_id", userId);
 }
 
 export async function updateGroupMemberRole(memberId: string, role: string) {
-  const { error } = await supabase.from("group_members").update({ role } as any).eq("id", memberId);
+  const { error } = await db("group_members").update({ role } as any).eq("id", memberId);
   if (error) throw error;
 }
 
 export async function fetchGroupMembers(groupId: string) {
-  const { data } = await supabase.from("group_members").select("*").eq("group_id", groupId);
+  const { data } = await db("group_members").select("*").eq("group_id", groupId);
   return (data ?? []) as any[];
 }
 
@@ -204,7 +205,7 @@ export async function fetchCallLogs(userId: string, limit = 100) {
 }
 
 export async function deleteCallLog(callId: string) {
-  const { error } = await supabase.from("call_logs").delete().eq("id", callId);
+  const { error } = await db("call_logs").delete().eq("id", callId);
   if (error) throw error;
 }
 
@@ -221,7 +222,7 @@ export async function resolveOrbitProfile(userId: string) {
 
 export async function resolveProfilesByIds(ids: string[]) {
   if (ids.length === 0) return [];
-  const { data } = await supabase.from("profiles").select("id, full_name, email, phone").in("id", ids);
+  const { data } = await db("profiles").select("id, full_name, email, phone").in("id", ids);
   return data ?? [];
 }
 
@@ -234,23 +235,23 @@ export async function resolveOrbitProfilesByUserIds(userIds: string[]) {
 
 export async function resolveProfilesByEmail(emails: string[]) {
   if (emails.length === 0) return [];
-  const { data } = await supabase.from("profiles").select("id, email").in("email", emails);
+  const { data } = await db("profiles").select("id, email").in("email", emails);
   return data ?? [];
 }
 
 export async function resolveProfileByEmail(email: string) {
-  const { data } = await supabase.from("profiles").select("id").eq("email", email).single();
+  const { data } = await db("profiles").select("id").eq("email", email).single();
   return data;
 }
 
 export async function resolveProfilesByPhone() {
-  const { data } = await supabase.from("profiles").select("id, phone, whatsapp_number").not("phone", "is", null);
+  const { data } = await db("profiles").select("id, phone, whatsapp_number").not("phone", "is", null);
   return data ?? [];
 }
 
 export async function resolveOrgMemberships(userIds: string[]) {
   if (userIds.length === 0) return [];
-  const { data } = await supabase.from("org_members").select("user_id, org_id").in("user_id", userIds);
+  const { data } = await db("org_members").select("user_id, org_id").in("user_id", userIds);
   return data ?? [];
 }
 
@@ -263,7 +264,7 @@ export async function upsertConversationPreference(
   archived: boolean,
   extras?: { favorited?: boolean; cleared_at?: string | null; marked_unread?: boolean }
 ) {
-  await supabase.from("conversation_preferences").upsert({
+  await db("conversation_preferences").upsert({
     user_id: userId,
     context_id: contextId,
     muted,
@@ -276,14 +277,14 @@ export async function upsertConversationPreference(
 }
 
 export async function blockUser(blockerId: string, blockedId: string) {
-  await supabase.from("blocked_users").upsert({
+  await db("blocked_users").upsert({
     blocker_id: blockerId,
     blocked_id: blockedId,
   } as any, { onConflict: "blocker_id,blocked_id" });
 }
 
 export async function reportUser(reporterId: string, reportedUserId: string, reason: string, contextId: string) {
-  await supabase.from("user_reports").insert({
+  await db("user_reports").insert({
     reporter_id: reporterId,
     reported_user_id: reportedUserId,
     reason,
@@ -316,12 +317,12 @@ export async function insertAppNotification(params: {
 }
 
 export async function fetchNotificationPreferences(userId: string) {
-  const { data } = await supabase.from("notification_preferences").select("*").eq("user_id", userId).maybeSingle();
+  const { data } = await db("notification_preferences").select("*").eq("user_id", userId).maybeSingle();
   return data;
 }
 
 export async function upsertNotificationPreferences(userId: string, prefs: Record<string, any>) {
-  const { error } = await supabase.from("notification_preferences").upsert(
+  const { error } = await db("notification_preferences").upsert(
     { user_id: userId, ...prefs, updated_at: new Date().toISOString() } as any,
     { onConflict: "user_id" }
   );
@@ -331,12 +332,12 @@ export async function upsertNotificationPreferences(userId: string, prefs: Recor
 // ═══ PRESENCE ═══
 
 export async function fetchPresenceSettings(userId: string) {
-  const { data } = await supabase.from("user_presence").select("visible_on_nearby, location_sharing, who_can_see").eq("user_id", userId).single();
+  const { data } = await db("user_presence").select("visible_on_nearby, location_sharing, who_can_see").eq("user_id", userId).single();
   return data;
 }
 
 export async function updatePresence(userId: string, fields: Record<string, any>) {
-  await supabase.from("user_presence").update(fields as any).eq("user_id", userId);
+  await db("user_presence").update(fields as any).eq("user_id", userId);
 }
 
 export async function fetchNearbyUsers(excludeUserId: string) {
@@ -375,13 +376,13 @@ export async function uploadToStorage(bucket: string, path: string, file: File |
 
 export async function fetchPropertyContext(orgId: string, tenantId: string) {
   const [leaseRes, rentRes, interventionRes, docRes] = await Promise.all([
-    supabase.from("leases").select("id, lease_type, start_date, end_date, rent_amount, charges_amount, status, country")
+    db("leases").select("id, lease_type, start_date, end_date, rent_amount, charges_amount, status, country")
       .eq("org_id", orgId).eq("tenant_id", tenantId).order("start_date", { ascending: false }).limit(3),
-    supabase.from("rent_calls").select("id, month, total_amount, paid, paid_amount, paid_date")
+    db("rent_calls").select("id, month, total_amount, paid, paid_amount, paid_date")
       .eq("org_id", orgId).eq("tenant_id", tenantId).order("month", { ascending: false }).limit(6),
-    supabase.from("interventions").select("id, title, status, priority, category, created_at")
+    db("interventions").select("id, title, status, priority, category, created_at")
       .eq("org_id", orgId).eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(5),
-    supabase.from("documents").select("id, title, doc_type, status, created_at")
+    db("documents").select("id, title, doc_type, status, created_at")
       .eq("org_id", orgId).eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(5),
   ]);
   return {
@@ -397,21 +398,21 @@ export async function fetchBookingContext(bookingId: string, bookingType: string
   let service: any = null;
 
   if (bookingType === "marketplace") {
-    const { data } = await supabase.from("marketplace_bookings").select("*").eq("id", bookingId).single();
+    const { data } = await db("marketplace_bookings").select("*").eq("id", bookingId).single();
     booking = data;
     if (data?.service_id) {
-      const { data: svc } = await supabase.from("marketplace_services").select("id, title, description, price, currency, category, city, country, photo_urls, booking_slug").eq("id", data.service_id).single();
+      const { data: svc } = await db("marketplace_services").select("id, title, description, price, currency, category, city, country, photo_urls, booking_slug").eq("id", data.service_id).single();
       service = svc;
     }
   } else if (bookingType === "concierge") {
-    const { data } = await supabase.from("concierge_orders").select("*").eq("id", bookingId).single();
+    const { data } = await db("concierge_orders").select("*").eq("id", bookingId).single();
     booking = data;
     if (data?.service_id) {
-      const { data: svc } = await supabase.from("concierge_services").select("id, title, description, price, currency, category, city, country, photo_url").eq("id", data.service_id).single();
+      const { data: svc } = await db("concierge_services").select("id, title, description, price, currency, category, city, country, photo_url").eq("id", data.service_id).single();
       service = svc;
     }
   } else if (bookingType === "seasonal") {
-    const { data } = await supabase.from("booking_requests").select("*").eq("id", bookingId).single();
+    const { data } = await db("booking_requests").select("*").eq("id", bookingId).single();
     booking = data;
   }
 
@@ -422,9 +423,9 @@ export async function fetchBookingContext(bookingId: string, bookingType: string
 
 export async function fetchThreadStats(orgId: string) {
   const [docRes, overdueRes, maintRes] = await Promise.all([
-    supabase.from("document_requests").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
-    supabase.from("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("paid", false),
-    supabase.from("interventions").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
+    db("document_requests").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
+    db("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("paid", false),
+    db("interventions").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
   ]);
   return {
     pending_docs: docRes.count || 0,
@@ -445,7 +446,7 @@ export async function fetchEntityMessages(entityType: string, entityId: string, 
 }
 
 export async function fetchEntityPayments(entityType: string, entityId: string, orgId: string, maxItems: number) {
-  let query = supabase.from("rent_calls").select("id, month, total_amount, paid, paid_date").eq("org_id", orgId);
+  let query = db("rent_calls").select("id, month, total_amount, paid, paid_date").eq("org_id", orgId);
   if (entityType === "property") query = query.eq("property_id", entityId);
   if (entityType === "tenant") query = query.eq("tenant_id", entityId);
   const { data } = await query.order("month", { ascending: false }).limit(maxItems);
@@ -453,14 +454,14 @@ export async function fetchEntityPayments(entityType: string, entityId: string, 
 }
 
 export async function fetchEntityDocuments(orgId: string, leaseIds?: string[], maxItems = 50) {
-  let query = supabase.from("documents").select("id, title, doc_type, created_at, status").eq("org_id", orgId);
+  let query = db("documents").select("id, title, doc_type, created_at, status").eq("org_id", orgId);
   if (leaseIds?.length) query = query.in("lease_id", leaseIds);
   const { data } = await query.order("created_at", { ascending: false }).limit(maxItems);
   return data ?? [];
 }
 
 export async function fetchEntityInterventions(entityType: string, entityId: string, orgId: string, maxItems: number) {
-  let query = supabase.from("interventions").select("id, title, status, priority, created_at, category").eq("org_id", orgId);
+  let query = db("interventions").select("id, title, status, priority, created_at, category").eq("org_id", orgId);
   if (entityType === "property") query = query.eq("property_id", entityId);
   if (entityType === "tenant") query = query.eq("tenant_id", entityId);
   const { data } = await query.order("created_at", { ascending: false }).limit(maxItems);
@@ -479,7 +480,7 @@ export async function fetchEntityBookings(propertyId: string, orgId: string, max
 }
 
 export async function fetchEntityLeases(entityType: string, entityId: string, orgId: string) {
-  let query = supabase.from("leases").select("id, lease_type, start_date, end_date, rent_amount, status, created_at").eq("org_id", orgId);
+  let query = db("leases").select("id, lease_type, start_date, end_date, rent_amount, status, created_at").eq("org_id", orgId);
   if (entityType === "property") query = query.eq("property_id", entityId);
   if (entityType === "tenant") query = query.eq("tenant_id", entityId);
   const { data } = await query.order("created_at", { ascending: false }).limit(10);
@@ -487,7 +488,7 @@ export async function fetchEntityLeases(entityType: string, entityId: string, or
 }
 
 export async function fetchLeaseIdsByProperty(propertyId: string, orgId: string) {
-  const { data } = await supabase.from("leases").select("id").eq("property_id", propertyId).eq("org_id", orgId);
+  const { data } = await db("leases").select("id").eq("property_id", propertyId).eq("org_id", orgId);
   return data?.map(l => l.id) ?? [];
 }
 
@@ -617,7 +618,7 @@ export async function fetchGroupMembersById(groupId: string) {
 }
 
 export async function countGroupMembers(groupId: string) {
-  const { count } = await supabase.from("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  const { count } = await db("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
   return count || 0;
 }
 

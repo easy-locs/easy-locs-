@@ -3,6 +3,7 @@
  * Single source for concierge_orders, marketplace_bookings reads/writes.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export interface BookingOrderPayload {
   org_id: string;
@@ -54,8 +55,7 @@ export interface MarketplaceBookingPayload {
 
 /** Create a concierge order */
 export async function createConciergeOrder(data: BookingOrderPayload) {
-  const { data: order, error } = await supabase
-    .from("concierge_orders")
+  const { data: order, error } = await db("concierge_orders")
     .insert(data as any)
     .select()
     .single();
@@ -65,15 +65,14 @@ export async function createConciergeOrder(data: BookingOrderPayload) {
 
 /** Create a marketplace booking */
 export async function createMarketplaceBooking(data: MarketplaceBookingPayload) {
-  const { error } = await supabase
-    .from("marketplace_bookings")
+  const { error } = await db("marketplace_bookings")
     .insert(data as any);
   if (error) throw error;
 }
 
 /** Check service availability via RPC */
 export async function checkServiceAvailability(serviceId: string, dateFrom: string, dateTo: string | null) {
-  const { data } = await supabase.rpc("check_service_availability", {
+  const { data } = await db.rpc("check_service_availability" as any, {
     p_service_id: serviceId,
     p_date_from: dateFrom,
     p_date_to: dateTo,
@@ -146,46 +145,39 @@ export async function createConciergePaymentCheckout(params: {
 export async function fetchServiceBySlug(slug: string) {
   const normalizedSlug = decodeURIComponent(slug).trim();
 
-  // Try exact match on concierge
-  const { data: exactMatch } = await supabase
-    .from("concierge_services_public" as any)
-    .select("*")
-    .eq("booking_slug", normalizedSlug)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const [conciergeExact, mpExact] = await Promise.all([
+    db("concierge_services_public" as any)
+      .select("*")
+      .eq("booking_slug", normalizedSlug)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    db("marketplace_services_public" as any)
+      .select("*")
+      .eq("booking_slug", normalizedSlug)
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
-  if (exactMatch) return { ...(exactMatch as any), _source: "concierge" };
+  if (conciergeExact.data) return { ...(conciergeExact.data as any), _source: "concierge" };
+  if (mpExact.data) return { ...(mpExact.data as any), _source: "marketplace" };
 
-  // Try ilike on concierge
-  const { data: fallbackMatch } = await supabase
-    .from("concierge_services_public" as any)
-    .select("*")
-    .ilike("booking_slug", normalizedSlug)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const [conciergeFallback, mpFallback] = await Promise.all([
+    db("concierge_services_public" as any)
+      .select("*")
+      .ilike("booking_slug", normalizedSlug)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    db("marketplace_services_public" as any)
+      .select("*")
+      .ilike("booking_slug", normalizedSlug)
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
-  if (fallbackMatch) return { ...(fallbackMatch as any), _source: "concierge" };
-
-  // Try marketplace
-  const { data: mpExact } = await supabase
-    .from("marketplace_services_public" as any)
-    .select("*")
-    .eq("booking_slug", normalizedSlug)
-    .limit(1)
-    .maybeSingle();
-
-  if (mpExact) return { ...(mpExact as any), _source: "marketplace" };
-
-  const { data: mpFallback } = await supabase
-    .from("marketplace_services_public" as any)
-    .select("*")
-    .ilike("booking_slug", normalizedSlug)
-    .limit(1)
-    .maybeSingle();
-
-  if (mpFallback) return { ...(mpFallback as any), _source: "marketplace" };
+  if (conciergeFallback.data) return { ...(conciergeFallback.data as any), _source: "concierge" };
+  if (mpFallback.data) return { ...(mpFallback.data as any), _source: "marketplace" };
 
   return null;
 }

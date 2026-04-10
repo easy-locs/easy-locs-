@@ -30,7 +30,7 @@ export async function uploadTenantDoc(tenantId: string, orgId: string, userId: s
   const path = `${orgId}/${tenantId}/${Date.now()}_${file.name}`;
   const { error: upErr } = await supabase.storage.from("rental-docs").upload(path, file);
   if (upErr) throw upErr;
-  const { error } = await supabase.from("tenant_documents").insert({
+  const { error } = await db("tenant_documents").insert({
     tenant_id: tenantId, org_id: orgId, uploaded_by: userId,
     doc_type: docType, label, filename: file.name, file_url: path,
   });
@@ -38,7 +38,7 @@ export async function uploadTenantDoc(tenantId: string, orgId: string, userId: s
 }
 
 export async function getDocLeaseId(docId: string) {
-  const { data } = await supabase.from("documents").select("lease_id").eq("id", docId).single();
+  const { data } = await db("documents").select("lease_id").eq("id", docId).single();
   return (data as any)?.lease_id ?? null;
 }
 
@@ -76,14 +76,14 @@ export async function fetchDocumentRequests(tenantId: string) {
 }
 
 export async function insertDocumentRequest(tenantId: string, orgId: string, requestType: string, period: string | null) {
-  const { error } = await supabase.from("document_requests").insert({
+  const { error } = await db("document_requests").insert({
     tenant_id: tenantId, org_id: orgId, request_type: requestType, period,
   });
   if (error) throw error;
 }
 
 export async function fetchOrgOwnerInfo(orgId: string) {
-  const { data } = await supabase.from("orgs").select("owner_user_id, email").eq("id", orgId).single();
+  const { data } = await db("orgs").select("owner_user_id, email").eq("id", orgId).single();
   return data;
 }
 
@@ -97,12 +97,12 @@ export async function invokeEmail(body: Record<string, any>) {
 
 // ── Reviews ──
 export async function fetchTenantInfo(userId: string) {
-  const { data } = await supabase.from("tenants").select("id, org_id, property_id").eq("tenant_user_id", userId).limit(1).single();
+  const { data } = await db("tenants").select("id, org_id, property_id").eq("tenant_user_id", userId).limit(1).single();
   return data;
 }
 
 export async function fetchTenantReviews(tenantId: string) {
-  const { data } = await supabase.from("reviews").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false });
+  const { data } = await db("reviews").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false });
   return data || [];
 }
 
@@ -112,12 +112,12 @@ export async function insertReview(record: Record<string, any>) {
 }
 
 export async function updateReview(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("reviews").update(updates).eq("id", id);
+  const { error } = await db("reviews").update(updates).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteReview(id: string) {
-  const { error } = await supabase.from("reviews").delete().eq("id", id);
+  const { error } = await db("reviews").delete().eq("id", id);
   if (error) throw error;
 }
 
@@ -172,12 +172,12 @@ export async function insertAuditLog(record: Record<string, any>) {
 }
 
 export async function fetchOrgEmailAndOwner(orgId: string) {
-  const { data } = await supabase.from("orgs").select("email, owner_user_id").eq("id", orgId).single();
+  const { data } = await db("orgs").select("email, owner_user_id").eq("id", orgId).single();
   return data;
 }
 
 export async function fetchProfileEmail(userId: string) {
-  const { data } = await supabase.from("profiles").select("email").eq("id", userId).maybeSingle();
+  const { data } = await db("profiles").select("email").eq("id", userId).maybeSingle();
   return data?.email ?? null;
 }
 

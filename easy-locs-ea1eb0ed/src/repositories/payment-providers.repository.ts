@@ -2,6 +2,7 @@
  * payment-providers.repository — DB operations for PaymentProvidersSettings.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function fetchOrgPaymentSettings(orgId: string) {
   const { data } = await supabase
@@ -30,5 +31,5 @@ export async function disconnectStripe() {
 }
 
 export async function savePaymentSettings(orgId: string, settings: Record<string, any>) {
-  await supabase.from("orgs").update(settings as any).eq("id", orgId);
+  await db("orgs").update(settings as any).eq("id", orgId);
 }

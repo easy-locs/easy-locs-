@@ -7,7 +7,7 @@
  * - Pricing: 9.99€/month or 99€/year
  */
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const PROPERTY_PAYWALL = {
@@ -27,8 +27,7 @@ export function usePropertyPaywall() {
 
     const fetchCount = async () => {
       setLoading(true);
-      const { count, error } = await supabase
-        .from("properties")
+      const { count, error } = await db("properties")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id);
 

@@ -2,6 +2,7 @@
  * city-supply-balancer — Detect supply gaps and log rebalance needs.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function runCitySupplyBalancer(params: {
   city?: string;
@@ -29,7 +30,7 @@ export async function runCitySupplyBalancer(params: {
     .sort((a: any, b: any) => b.gap - a.gap);
 
   for (const zone of hotZones.slice(0, 10)) {
-    await supabase.from("city_supply_balancer_logs" as any).insert({
+    await db("city_supply_balancer_logs" as any).insert({
       city: params.city ?? zone.city ?? null,
       zone_key: zone.zone_key,
       action_type: "rebalance_needed",

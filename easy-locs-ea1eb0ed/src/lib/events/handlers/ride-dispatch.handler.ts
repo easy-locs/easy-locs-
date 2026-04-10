@@ -5,6 +5,7 @@
 import { eventBus } from "@/lib/core/event-bus";
 import { dispatchRide } from "@/lib/mobility/dispatch-engine";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export function initRideDispatchHandler() {
   eventBus.on("ride.dispatch.legacy", async (payload: any) => {
@@ -24,7 +25,7 @@ export function initRideDispatchHandler() {
     if (!job) return;
 
     for (const driver of result.drivers) {
-      await supabase.from("mobility_job_offers").insert({
+      await db("mobility_job_offers").insert({
         job_id: (job as any).id,
         rider_user_id: driver.user_id,
         status: "pending",
