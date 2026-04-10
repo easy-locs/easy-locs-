@@ -42,6 +42,11 @@ import { useCart } from "@/hooks/useCart";
 import { useSmartInsights } from "@/hooks/useSmartInsights";
 import SmartShortcuts from "@/components/dashboard/SmartShortcuts";
 import SmartSuggestions from "@/components/dashboard/SmartSuggestions";
+import ContinueSection from "@/components/dashboard/ContinueSection";
+import SuggestedPaymentsSection from "@/components/dashboard/SuggestedPaymentsSection";
+import PendingActionsSection from "@/components/dashboard/PendingActionsSection";
+import ContextualNudge from "@/components/dashboard/ContextualNudge";
+import { useDashboardIntelligence } from "@/hooks/useDashboardIntelligence";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useWalletBalance } from "@/payments/wallet-hooks";
@@ -644,6 +649,18 @@ export default function SmartHome() {
 
   const { topRoutes, suggestions, dismiss } = useSmartInsights(smartContext);
 
+  const liveStats = useDashboardLiveStats();
+  const intelligence = useDashboardIntelligence({
+    userId: user?.id || null,
+    hasWallet: smartContext.hasWallet,
+    walletBalance: liveStats.walletBalance,
+    unreadMessages: liveStats.unreadMessages,
+    activeOrders: liveStats.activeOrders,
+    hasProfile: smartContext.hasProfile,
+    profileComplete: smartContext.profileComplete,
+    hasOrbit: smartContext.hasOrbit,
+  });
+
   useEffect(() => { prefetchForRoute("/"); }, []);
 
   const trendingCard = useTrendingSectionCard();
@@ -657,10 +674,14 @@ export default function SmartHome() {
         <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} t={t} />
         <ActiveCartBanner />
         <SmartQuickActions />
+        <ContextualNudge suggestion={intelligence.quickSuggestion} />
         <SmartShortcuts topRoutes={topRoutes} />
         <QuickAccessStrip />
+        <ContinueSection items={intelligence.continueItems} />
+        <PendingActionsSection actions={intelligence.pendingActions} />
         <AISmartInsights />
         <SmartSuggestions suggestions={suggestions} onDismiss={dismiss} />
+        <SuggestedPaymentsSection payments={intelligence.suggestedPayments} />
         <LiveStatsPulse onNavigate={smartNavigate} />
       </div>
 

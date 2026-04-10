@@ -65,6 +65,35 @@ App.tsx routes are organized into clean, labeled sections:
 - **Section mb-4 → mb-5**: 58 section-level violations fixed across SEO pages, landing pages, admin dashboard, rental management, real estate detail, documents, platform vision, communication hub
 - **Files affected**: 100+ files across all 5 pillars, travel, delivery, admin, orbit, mobility, marketplace, communication, landing, SEO components
 
+## Dashboard Intelligence Engine
+Context-aware dashboard brain that prioritizes content based on time-of-day, day-of-week, and user state:
+
+### Core Engine (`src/lib/dashboard/dashboard-intelligence.ts`)
+- **DayPart detection**: morning/afternoon/evening/night with contextual greetings
+- **DayType detection**: weekday/weekend/holiday with behavior adjustments
+- **`getContinueItems()`**: Resumable routes from smart-core feature usage (lastUsed recency, score threshold)
+- **`getSuggestedPayments()`**: Context-aware payment nudges (weekend leisure, morning commute, evening bills)
+- **`getPendingActions()`**: Urgency-colored reminders (profile completion, wallet setup, Orbit activation, KYC)
+- **`prioritizeSections()`**: Time+weekend boost scoring for section ordering
+- **`getQuickSuggestion()`**: Single contextual nudge with route + icon
+
+### Dashboard UI Components (`src/components/dashboard/`)
+- **ContinueSection.tsx**: "Continue where you left off" cards with progress indicators and time-ago
+- **SuggestedPaymentsSection.tsx**: Payment suggestions with urgency-colored amounts and Gold accents
+- **PendingActionsSection.tsx**: Animated action cards with urgency dots (high=red, medium=gold, low=blue)
+- **ContextualNudge.tsx**: Single-line suggestion banner with gradient background
+
+### Hook (`src/hooks/useDashboardIntelligence.ts`)
+- Accepts user state (userId, hasWallet, walletBalance, unreadMessages, etc.)
+- Returns continueItems, suggestedPayments, pendingActions, sectionPriorities, greeting, quickSuggestion
+- Memoized with useMemo for performance
+
+### Integration in SmartHome.tsx
+- ContextualNudge after SmartQuickActions
+- ContinueSection after QuickAccessStrip
+- PendingActionsSection before AISmartInsights
+- SuggestedPaymentsSection after SmartSuggestions
+
 ## UX Optimizations (Améliore Pass)
 - **Dashboard Quick Access**: ActiveCartBanner (resume cart in 1 tap), QuickAccessStrip (Reorder/Favorites/My Orders), time-aware smart actions
 - **Express Checkout**: 1-tap order from CartSheet (wallet pay, auto-resolve seller, idempotent), with fallback to full checkout
