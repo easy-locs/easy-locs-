@@ -301,8 +301,11 @@ export const VERTICAL_CONFIG: Record<OnboardingVertical, VerticalStepConfig> = {
   food: {
     steps: [
       { label: "Bienvenue", icon: "rocket" },
-      { label: "Infos", icon: "store" },
+      { label: "Business", icon: "store" },
+      { label: "Légal", icon: "shield" },
+      { label: "Médias", icon: "camera" },
       { label: "Menu", icon: "utensils" },
+      { label: "Horaires", icon: "clock" },
       { label: "Paiement", icon: "credit-card" },
       { label: "Go Live", icon: "zap" },
     ],
@@ -325,7 +328,9 @@ export const VERTICAL_CONFIG: Record<OnboardingVertical, VerticalStepConfig> = {
   hotel: {
     steps: [
       { label: "Bienvenue", icon: "rocket" },
-      { label: "Infos", icon: "building" },
+      { label: "Business", icon: "building" },
+      { label: "Légal", icon: "shield" },
+      { label: "Médias", icon: "camera" },
       { label: "Chambres", icon: "bed" },
       { label: "Calendrier", icon: "calendar" },
       { label: "Paiement", icon: "credit-card" },
@@ -350,7 +355,9 @@ export const VERTICAL_CONFIG: Record<OnboardingVertical, VerticalStepConfig> = {
   services: {
     steps: [
       { label: "Bienvenue", icon: "rocket" },
-      { label: "Infos", icon: "store" },
+      { label: "Business", icon: "store" },
+      { label: "Légal", icon: "shield" },
+      { label: "Médias", icon: "camera" },
       { label: "Services", icon: "wrench" },
       { label: "Horaires", icon: "clock" },
       { label: "Paiement", icon: "credit-card" },

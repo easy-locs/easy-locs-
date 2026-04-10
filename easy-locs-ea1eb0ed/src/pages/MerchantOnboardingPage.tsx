@@ -1,7 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { adminOpsService } from "@/services";
-import { activateMerchantProfile, type ActivationPayload } from "@/lib/onboarding/merchant-onboarding";
+import {
+  activateMerchantProfile,
+  type ActivationPayload,
+  validatePhone,
+  validateEmail,
+  computeCompletenessScore,
+} from "@/lib/onboarding/merchant-onboarding";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   type OnboardingVertical,
@@ -20,6 +26,8 @@ import {
   Trash2, Plus, Edit2, Check, ArrowRight, ArrowLeft,
   Rocket, Store, Utensils, CreditCard, Zap, DollarSign,
   Building, BedDouble, CalendarDays, Wrench, Clock, Star,
+  Shield, Camera, MapPin, Mail, Phone, User, FileText,
+  Image, AlertCircle, CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,8 +37,45 @@ const ICON_MAP: Record<string, any> = {
   rocket: Rocket, store: Store, utensils: Utensils,
   "credit-card": CreditCard, zap: Zap, building: Building,
   bed: BedDouble, calendar: CalendarDays, wrench: Wrench,
-  clock: Clock,
+  clock: Clock, shield: Shield, camera: Camera,
 };
+
+const COUNTRIES = [
+  { code: "AE", name: "United Arab Emirates", phone: "+971" },
+  { code: "SA", name: "Saudi Arabia", phone: "+966" },
+  { code: "QA", name: "Qatar", phone: "+974" },
+  { code: "BH", name: "Bahrain", phone: "+973" },
+  { code: "KW", name: "Kuwait", phone: "+965" },
+  { code: "OM", name: "Oman", phone: "+968" },
+  { code: "EG", name: "Egypt", phone: "+20" },
+  { code: "MA", name: "Morocco", phone: "+212" },
+  { code: "TN", name: "Tunisia", phone: "+216" },
+  { code: "DZ", name: "Algeria", phone: "+213" },
+  { code: "JO", name: "Jordan", phone: "+962" },
+  { code: "LB", name: "Lebanon", phone: "+961" },
+  { code: "TR", name: "Turkey", phone: "+90" },
+  { code: "FR", name: "France", phone: "+33" },
+  { code: "GB", name: "United Kingdom", phone: "+44" },
+  { code: "US", name: "United States", phone: "+1" },
+  { code: "DE", name: "Germany", phone: "+49" },
+  { code: "IN", name: "India", phone: "+91" },
+  { code: "PK", name: "Pakistan", phone: "+92" },
+  { code: "PH", name: "Philippines", phone: "+63" },
+  { code: "NG", name: "Nigeria", phone: "+234" },
+  { code: "ZA", name: "South Africa", phone: "+27" },
+  { code: "BR", name: "Brazil", phone: "+55" },
+  { code: "MX", name: "Mexico", phone: "+52" },
+  { code: "CN", name: "China", phone: "+86" },
+  { code: "JP", name: "Japan", phone: "+81" },
+  { code: "KR", name: "South Korea", phone: "+82" },
+  { code: "AU", name: "Australia", phone: "+61" },
+  { code: "CA", name: "Canada", phone: "+1" },
+  { code: "IT", name: "Italy", phone: "+39" },
+  { code: "ES", name: "Spain", phone: "+34" },
+];
+
+const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+const DAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 interface MerchantData {
   id: string;
@@ -67,9 +112,34 @@ export default function MerchantOnboardingPage() {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [phoneSecondary, setPhoneSecondary] = useState("");
+  const [email, setEmail] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [managerName, setManagerName] = useState("");
+  const [description, setDescription] = useState("");
+  const [tagline, setTagline] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [starRating, setStarRating] = useState(4);
+
+  const [legalName, setLegalName] = useState("");
+  const [registrationNumber, setRegistrationNumber] = useState("");
+  const [taxNumber, setTaxNumber] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [region, setRegion] = useState("");
+  const [country, setCountry] = useState("AE");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+
+  const [logoUrl, setLogoUrl] = useState("");
+  const [coverUrl, setCoverUrl] = useState("");
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+
+  const [openingHours, setOpeningHours] = useState<Record<string, { open: string; close: string; closed: boolean }>>(() => {
+    const defaults: Record<string, { open: string; close: string; closed: boolean }> = {};
+    DAY_KEYS.forEach(d => { defaults[d] = { open: "09:00", close: "22:00", closed: d === "sunday" }; });
+    return defaults;
+  });
 
   const [menuItems, setMenuItems] = useState<(MenuTemplate & { id: string; is_available: boolean })[]>([]);
   const [rooms, setRooms] = useState<(RoomTemplate & { id: string; is_available: boolean })[]>([]);
@@ -90,6 +160,8 @@ export default function MerchantOnboardingPage() {
   const config = useMemo(() => VERTICAL_CONFIG[vertical], [vertical]);
   const totalSteps = config.steps.length;
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
   useEffect(() => {
     if (!profileId) {
       initFromTemplate(vertical, subcatParam);
@@ -102,7 +174,10 @@ export default function MerchantOnboardingPage() {
         setMerchant(m);
         setName(m.merchant_name || "");
         setPhone(m.phone || "");
-        setAddress(m.area ? `${m.area}, ${m.city || "Dubai"}` : m.city || "");
+        setEmail(m.email || "");
+        setAddress(m.area ? `${m.area}, ${m.city || ""}` : "");
+        setCity(m.city || "");
+        setManagerName(m.contact_name || "");
         setSpecialty(m.cuisine_type || "");
         const vert = (m.vertical as OnboardingVertical) || verticalParam;
         setVertical(vert);
@@ -111,7 +186,7 @@ export default function MerchantOnboardingPage() {
         initFromTemplate(vert, sub);
 
         if (m.onboarding_status === "info_confirmed") setStep(2);
-        else if (m.onboarding_status === "menu_confirmed") setStep(3);
+        else if (m.onboarding_status === "menu_confirmed") setStep(4);
         else if (m.onboarding_status === "payment_configured") setStep(totalSteps - 2);
         else if (m.onboarding_status === "live") setStep(totalSteps - 1);
       }
@@ -141,52 +216,100 @@ export default function MerchantOnboardingPage() {
     }
   }
 
+  const buildPayload = useCallback((): ActivationPayload => {
+    const payload: ActivationPayload = {
+      profileId: profileId || "self",
+      vertical,
+      name: name || t("mob.your_business" as any),
+      subcategory,
+      currency: "AED",
+      contact: {
+        phone,
+        phoneSecondary: phoneSecondary || undefined,
+        email: email || undefined,
+        whatsapp: whatsapp || undefined,
+      },
+      location: {
+        address,
+        city,
+        region: region || undefined,
+        country,
+        latitude: latitude ?? undefined,
+        longitude: longitude ?? undefined,
+      },
+      legal: {
+        legalName: legalName || undefined,
+        registrationNumber: registrationNumber || undefined,
+        taxNumber: taxNumber || undefined,
+      },
+      media: {
+        logoUrl: logoUrl || undefined,
+        coverUrl: coverUrl || undefined,
+        galleryUrls: galleryUrls.length > 0 ? galleryUrls : undefined,
+      },
+      business: {
+        description: description || undefined,
+        tagline: tagline || undefined,
+        managerName: managerName || undefined,
+        openingHours: Object.fromEntries(
+          Object.entries(openingHours)
+            .filter(([, v]) => !v.closed)
+            .map(([k, v]) => [k, { open: v.open, close: v.close }])
+        ),
+      },
+      paymentMethod,
+      iban: paymentMethod === "bank" ? iban : undefined,
+    };
+
+    if (vertical === "food") {
+      payload.menuItems = menuItems.filter(i => i.is_available).map(i => ({
+        name: i.name, price: i.price, category: i.category,
+        description: i.description, calories: i.calories,
+      }));
+    } else if (vertical === "hotel") {
+      payload.rooms = rooms.filter(r => r.is_available).map(r => ({
+        name: r.name, type: r.type, price_per_night: r.price_per_night,
+        max_guests: r.max_guests, beds: r.beds, description: r.description,
+      }));
+      payload.hotelSettings = {
+        check_in: hotelCheckIn, check_out: hotelCheckOut,
+        star_rating: starRating, amenities,
+      };
+    } else if (vertical === "services") {
+      payload.services = services.filter(s => s.is_available).map(s => ({
+        name: s.name, price: s.price, duration_minutes: s.duration_minutes,
+        category: s.category, description: s.description,
+      }));
+      payload.serviceSettings = {
+        slot_interval: 60, open_hour: svcOpenHour, close_hour: svcCloseHour,
+        available_days: svcDays, booking_mode: "hourly",
+        min_notice_hours: 4, max_advance_days: 30,
+      };
+    }
+
+    return payload;
+  }, [profileId, vertical, name, phone, phoneSecondary, email, whatsapp, address, city, region, country, latitude, longitude, legalName, registrationNumber, taxNumber, logoUrl, coverUrl, galleryUrls, description, tagline, managerName, openingHours, subcategory, menuItems, rooms, services, paymentMethod, iban, hotelCheckIn, hotelCheckOut, starRating, amenities, svcOpenHour, svcCloseHour, svcDays]);
+
+  const completeness = useMemo(() => {
+    try { return computeCompletenessScore(buildPayload()); } catch { return 0; }
+  }, [buildPayload]);
+
   const goLive = useCallback(async () => {
     setSaving(true);
     try {
-      const payload: ActivationPayload = {
-        profileId: profileId || "self",
-        vertical,
-        name: name || t("mob.your_business" as any),
-        phone,
-        address,
-        subcategory,
-        currency: "AED",
-        paymentMethod,
-        iban: paymentMethod === "bank" ? iban : undefined,
-      };
-
-      if (vertical === "food") {
-        payload.menuItems = menuItems.filter(i => i.is_available).map(i => ({
-          name: i.name, price: i.price, category: i.category,
-          description: i.description, calories: i.calories,
-        }));
-      } else if (vertical === "hotel") {
-        payload.rooms = rooms.filter(r => r.is_available).map(r => ({
-          name: r.name, type: r.type, price_per_night: r.price_per_night,
-          max_guests: r.max_guests, beds: r.beds, description: r.description,
-        }));
-        payload.hotelSettings = {
-          check_in: hotelCheckIn, check_out: hotelCheckOut,
-          star_rating: starRating, amenities,
-        };
-      } else if (vertical === "services") {
-        payload.services = services.filter(s => s.is_available).map(s => ({
-          name: s.name, price: s.price, duration_minutes: s.duration_minutes,
-          category: s.category, description: s.description,
-        }));
-        payload.serviceSettings = {
-          slot_interval: 60, open_hour: svcOpenHour, close_hour: svcCloseHour,
-          available_days: svcDays, booking_mode: "hourly",
-          min_notice_hours: 4, max_advance_days: 30,
-        };
-      }
-
+      const payload = buildPayload();
       const result = await activateMerchantProfile(payload);
+      if (result.errors?.length) {
+        const errMap: Record<string, string> = {};
+        result.errors.forEach(e => { errMap[e.field] = e.message; });
+        setFieldErrors(errMap);
+        toast.error(t("mob.fix_errors" as any));
+        setSaving(false);
+        return;
+      }
       if (result.success) {
         setIsLive(true);
-        const key = `mob.go_live_success_${vertical}` as const;
-        toast.success(t(key as any));
+        toast.success(t(`mob.go_live_success_${vertical}` as any));
       } else {
         toast.error(t("mob.go_live_error" as any));
       }
@@ -194,13 +317,47 @@ export default function MerchantOnboardingPage() {
       toast.error(t("mob.go_live_error" as any));
     }
     setSaving(false);
-  }, [profileId, vertical, name, phone, address, subcategory, menuItems, rooms, services, paymentMethod, iban, hotelCheckIn, hotelCheckOut, starRating, amenities, svcOpenHour, svcCloseHour, svcDays]);
+  }, [buildPayload, vertical]);
+
+  const validateCurrentStep = useCallback((): boolean => {
+    const errors: Record<string, string> = {};
+    if (step === 1) {
+      if (!name || name.trim().length < 2) errors.name = "Required (min 2 chars)";
+      if (!phone || !validatePhone(phone)) errors.phone = "Valid phone required";
+      if (email && !validateEmail(email)) errors.email = "Invalid email";
+    }
+    if (step === 2) {
+      if (!address || address.trim().length < 3) errors.address = "Address required";
+      if (!city || city.trim().length < 2) errors.city = "City required";
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      toast.error(t("mob.fix_errors" as any));
+      return false;
+    }
+    return true;
+  }, [step, name, phone, email, address, city]);
 
   const next = async () => {
     if (step === totalSteps - 1) { await goLive(); return; }
+    if ((step === 1 || step === 2) && !validateCurrentStep()) return;
+    setFieldErrors({});
     setStep(s => Math.min(s + 1, totalSteps - 1));
   };
-  const prev = () => setStep(s => Math.max(s - 1, 0));
+  const prev = () => { setFieldErrors({}); setStep(s => Math.max(s - 1, 0)); };
+
+  const detectLocation = useCallback(() => {
+    if (!navigator.geolocation) { toast.error("Geolocation not supported"); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLatitude(Math.round(pos.coords.latitude * 1e6) / 1e6);
+        setLongitude(Math.round(pos.coords.longitude * 1e6) / 1e6);
+        toast.success(t("mob.location_detected" as any));
+      },
+      () => toast.error(t("mob.location_error" as any)),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, []);
 
   if (loading) {
     return (
@@ -227,9 +384,7 @@ export default function MerchantOnboardingPage() {
               <Rocket className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-xl font-black text-white">{t("mob.become_seller" as any)}</h2>
-            <p className="text-sm text-white/80 mt-1">
-              {t("mob.join_sellers" as any)}
-            </p>
+            <p className="text-sm text-white/80 mt-1">{t("mob.join_sellers" as any)}</p>
           </div>
           <CardContent className="pt-5 pb-6 space-y-4">
             <div className="space-y-3">
@@ -257,6 +412,20 @@ export default function MerchantOnboardingPage() {
 
   const progressPct = ((step + 1) / totalSteps) * 100;
 
+  const getVerticalStepIndex = () => {
+    if (vertical === "food") return 4;
+    if (vertical === "hotel") return 4;
+    if (vertical === "services") return 4;
+    return 4;
+  };
+
+  const getScheduleStepIndex = () => {
+    if (vertical === "food") return 5;
+    if (vertical === "hotel") return 5;
+    if (vertical === "services") return 5;
+    return 5;
+  };
+
   const renderStepContent = () => {
     const stepConfig = config.steps[step];
     if (!stepConfig) return null;
@@ -267,15 +436,9 @@ export default function MerchantOnboardingPage() {
           vertical={vertical}
           name={name || merchant?.merchant_name || t("mob.your_business" as any)}
           config={config}
-          onChangeVertical={(v) => {
-            setVertical(v);
-            initFromTemplate(v, subcategory);
-          }}
+          onChangeVertical={(v) => { setVertical(v); initFromTemplate(v, subcategory); }}
           subcategory={subcategory}
-          onChangeSubcategory={(s) => {
-            setSubcategory(s);
-            initFromTemplate(vertical, s);
-          }}
+          onChangeSubcategory={(s) => { setSubcategory(s); initFromTemplate(vertical, s); }}
           selfMode={!profileId}
           nameValue={name}
           onNameChange={setName}
@@ -285,45 +448,86 @@ export default function MerchantOnboardingPage() {
 
     if (step === 1) {
       return (
-        <StepInfo
+        <StepBusinessDetails
           vertical={vertical}
           config={config}
           name={name} setName={setName}
           phone={phone} setPhone={setPhone}
-          address={address} setAddress={setAddress}
+          phoneSecondary={phoneSecondary} setPhoneSecondary={setPhoneSecondary}
+          email={email} setEmail={setEmail}
+          whatsapp={whatsapp} setWhatsapp={setWhatsapp}
+          managerName={managerName} setManagerName={setManagerName}
+          description={description} setDescription={setDescription}
+          tagline={tagline} setTagline={setTagline}
           specialty={specialty} setSpecialty={setSpecialty}
           starRating={starRating} setStarRating={setStarRating}
+          errors={fieldErrors}
         />
       );
     }
 
-    if (vertical === "food" && step === 2) {
-      return <StepFoodMenu items={menuItems} setItems={setMenuItems} />;
-    }
-    if (vertical === "hotel" && step === 2) {
-      return <StepHotelRooms rooms={rooms} setRooms={setRooms} />;
-    }
-    if (vertical === "hotel" && step === 3) {
+    if (step === 2) {
       return (
-        <StepHotelCalendar
-          checkIn={hotelCheckIn} setCheckIn={setHotelCheckIn}
-          checkOut={hotelCheckOut} setCheckOut={setHotelCheckOut}
-          amenities={amenities} setAmenities={setAmenities}
-          starRating={starRating}
+        <StepLegalLocation
+          legalName={legalName} setLegalName={setLegalName}
+          registrationNumber={registrationNumber} setRegistrationNumber={setRegistrationNumber}
+          taxNumber={taxNumber} setTaxNumber={setTaxNumber}
+          address={address} setAddress={setAddress}
+          city={city} setCity={setCity}
+          region={region} setRegion={setRegion}
+          country={country} setCountry={setCountry}
+          latitude={latitude} longitude={longitude}
+          onDetectLocation={detectLocation}
+          errors={fieldErrors}
         />
       );
     }
-    if (vertical === "services" && step === 2) {
-      return <StepServiceCatalog services={services} setServices={setServices} />;
-    }
-    if (vertical === "services" && step === 3) {
+
+    if (step === 3) {
       return (
-        <StepServiceSchedule
-          openHour={svcOpenHour} setOpenHour={setSvcOpenHour}
-          closeHour={svcCloseHour} setCloseHour={setSvcCloseHour}
-          days={svcDays} setDays={setSvcDays}
+        <StepMedia
+          logoUrl={logoUrl} setLogoUrl={setLogoUrl}
+          coverUrl={coverUrl} setCoverUrl={setCoverUrl}
+          galleryUrls={galleryUrls} setGalleryUrls={setGalleryUrls}
         />
       );
+    }
+
+    const vIdx = getVerticalStepIndex();
+    if (step === vIdx) {
+      if (vertical === "food") return <StepFoodMenu items={menuItems} setItems={setMenuItems} />;
+      if (vertical === "hotel") return <StepHotelRooms rooms={rooms} setRooms={setRooms} />;
+      if (vertical === "services") return <StepServiceCatalog services={services} setServices={setServices} />;
+    }
+
+    const sIdx = getScheduleStepIndex();
+    if (step === sIdx) {
+      if (vertical === "food") {
+        return (
+          <StepOpeningHours
+            hours={openingHours} setHours={setOpeningHours}
+          />
+        );
+      }
+      if (vertical === "hotel") {
+        return (
+          <StepHotelCalendar
+            checkIn={hotelCheckIn} setCheckIn={setHotelCheckIn}
+            checkOut={hotelCheckOut} setCheckOut={setHotelCheckOut}
+            amenities={amenities} setAmenities={setAmenities}
+            starRating={starRating}
+          />
+        );
+      }
+      if (vertical === "services") {
+        return (
+          <StepServiceSchedule
+            openHour={svcOpenHour} setOpenHour={setSvcOpenHour}
+            closeHour={svcCloseHour} setCloseHour={setSvcCloseHour}
+            days={svcDays} setDays={setSvcDays}
+          />
+        );
+      }
     }
 
     const paymentStepIdx = totalSteps - 2;
@@ -337,7 +541,15 @@ export default function MerchantOnboardingPage() {
     }
 
     if (step === totalSteps - 1) {
-      return <StepGoLive isLive={isLive} name={name || merchant?.merchant_name || ""} vertical={vertical} config={config} />;
+      return (
+        <StepGoLive
+          isLive={isLive}
+          name={name || merchant?.merchant_name || ""}
+          vertical={vertical}
+          config={config}
+          completeness={completeness}
+        />
+      );
     }
 
     return null;
@@ -345,7 +557,7 @@ export default function MerchantOnboardingPage() {
 
   const getNextLabel = () => {
     if (step === 0) return t("mob.next" as any);
-    if (step === totalSteps - 1) return saving ? "…" : t("mob.finish" as any);
+    if (step === totalSteps - 1) return saving ? "..." : t("mob.finish" as any);
     return t("mob.next" as any);
   };
 
@@ -357,12 +569,17 @@ export default function MerchantOnboardingPage() {
             <span className="text-xs font-medium text-muted-foreground">
               {step + 1} / {totalSteps}
             </span>
-            <button
-              onClick={() => toast.info(t("mob.progress_saved" as any))}
-              className="text-xs text-primary hover:underline"
-            >
-              {t("mob.continue_later" as any)}
-            </button>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-medium" style={{ color: completeness >= 80 ? "hsl(142 70% 45%)" : completeness >= 50 ? "hsl(38 65% 56%)" : "hsl(0 60% 50%)" }}>
+                {completeness}%
+              </span>
+              <button
+                onClick={() => toast.info(t("mob.progress_saved" as any))}
+                className="text-xs text-primary hover:underline"
+              >
+                {t("mob.continue_later" as any)}
+              </button>
+            </div>
           </div>
           <Progress value={progressPct} className="h-1.5" />
           <div className="flex justify-between mt-2">
@@ -444,7 +661,7 @@ function StepWelcome({ vertical, name, config, onChangeVertical, subcategory, on
       { value: "pizza", label: "Pizza / Italian" },
       { value: "burger", label: "Burger" },
       { value: "sushi", label: "Sushi / Japanese" },
-      { value: "cafe", label: "Café / Brunch" },
+      { value: "cafe", label: "Cafe / Brunch" },
       { value: "default", label: "Other" },
     ],
     hotel: [
@@ -471,9 +688,7 @@ function StepWelcome({ vertical, name, config, onChangeVertical, subcategory, on
           {selfMode ? t("mob.activate_shop" as any) : config.welcome_title(name)}
         </h1>
         <p className="text-muted-foreground mt-2 text-sm">
-          {selfMode
-            ? t("mob.activate_shop_sub" as any)
-            : config.welcome_subtitle(name)}
+          {selfMode ? t("mob.activate_shop_sub" as any) : config.welcome_subtitle(name)}
         </p>
       </div>
 
@@ -546,13 +761,19 @@ function ValueCard({ icon, title, subtitle }: { icon: string; title: string; sub
   );
 }
 
-function StepInfo({ vertical, config, name, setName, phone, setPhone, address, setAddress, specialty, setSpecialty, starRating, setStarRating }: {
+function StepBusinessDetails({ vertical, config, name, setName, phone, setPhone, phoneSecondary, setPhoneSecondary, email, setEmail, whatsapp, setWhatsapp, managerName, setManagerName, description, setDescription, tagline, setTagline, specialty, setSpecialty, starRating, setStarRating, errors }: {
   vertical: OnboardingVertical; config: any;
   name: string; setName: (v: string) => void;
   phone: string; setPhone: (v: string) => void;
-  address: string; setAddress: (v: string) => void;
+  phoneSecondary: string; setPhoneSecondary: (v: string) => void;
+  email: string; setEmail: (v: string) => void;
+  whatsapp: string; setWhatsapp: (v: string) => void;
+  managerName: string; setManagerName: (v: string) => void;
+  description: string; setDescription: (v: string) => void;
+  tagline: string; setTagline: (v: string) => void;
   specialty: string; setSpecialty: (v: string) => void;
   starRating: number; setStarRating: (v: number) => void;
+  errors: Record<string, string>;
 }) {
   const { t } = useI18n();
   return (
@@ -562,17 +783,26 @@ function StepInfo({ vertical, config, name, setName, phone, setPhone, address, s
         <p className="text-sm text-muted-foreground mt-1">{t("mob.verify_info" as any)}</p>
       </div>
       <div className="space-y-3">
-        <FieldRow label={t("mob.business_name" as any)}>
-          <Input value={name} onChange={e => setName(e.target.value)} className="h-11" />
+        <FieldRow label={t("mob.business_name" as any)} icon={<Store className="h-3.5 w-3.5" />} required error={errors.name}>
+          <Input value={name} onChange={e => setName(e.target.value)} className="h-11" placeholder={t("mob.business_name_placeholder" as any)} />
         </FieldRow>
-        <FieldRow label={t("mob.phone" as any)}>
-          <Input value={phone} onChange={e => setPhone(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" />
+        <FieldRow label={t("mob.manager_name" as any)} icon={<User className="h-3.5 w-3.5" />}>
+          <Input value={managerName} onChange={e => setManagerName(e.target.value)} className="h-11" placeholder={t("mob.manager_placeholder" as any)} />
         </FieldRow>
-        <FieldRow label={t("mob.address" as any)}>
-          <Input value={address} onChange={e => setAddress(e.target.value)} className="h-11" />
+        <FieldRow label={t("mob.phone" as any)} icon={<Phone className="h-3.5 w-3.5" />} required error={errors.phone}>
+          <Input value={phone} onChange={e => setPhone(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "16px" }} />
+        </FieldRow>
+        <FieldRow label={t("mob.phone_secondary" as any)} icon={<Phone className="h-3.5 w-3.5" />}>
+          <Input value={phoneSecondary} onChange={e => setPhoneSecondary(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "16px" }} />
+        </FieldRow>
+        <FieldRow label="Email" icon={<Mail className="h-3.5 w-3.5" />} error={errors.email}>
+          <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-11" placeholder="shop@example.com" style={{ fontSize: "16px" }} />
+        </FieldRow>
+        <FieldRow label="WhatsApp">
+          <Input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "16px" }} />
         </FieldRow>
         {vertical === "hotel" ? (
-          <FieldRow label={t("mob.category" as any)}>
+          <FieldRow label={t("mob.category" as any)} icon={<Star className="h-3.5 w-3.5" />}>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map(s => (
                 <button key={s} onClick={() => setStarRating(s)} className="p-1">
@@ -586,16 +816,274 @@ function StepInfo({ vertical, config, name, setName, phone, setPhone, address, s
             <Input value={specialty} onChange={e => setSpecialty(e.target.value)} className="h-11" />
           </FieldRow>
         )}
+        <FieldRow label={t("mob.tagline" as any)}>
+          <Input value={tagline} onChange={e => setTagline(e.target.value)} className="h-11" placeholder={t("mob.tagline_placeholder" as any)} />
+        </FieldRow>
+        <FieldRow label="Description">
+          <textarea
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-y"
+            placeholder={t("mob.description_placeholder" as any)}
+            style={{ fontSize: "16px" }}
+          />
+        </FieldRow>
       </div>
     </div>
   );
 }
 
-function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
+function StepLegalLocation({ legalName, setLegalName, registrationNumber, setRegistrationNumber, taxNumber, setTaxNumber, address, setAddress, city, setCity, region, setRegion, country, setCountry, latitude, longitude, onDetectLocation, errors }: {
+  legalName: string; setLegalName: (v: string) => void;
+  registrationNumber: string; setRegistrationNumber: (v: string) => void;
+  taxNumber: string; setTaxNumber: (v: string) => void;
+  address: string; setAddress: (v: string) => void;
+  city: string; setCity: (v: string) => void;
+  region: string; setRegion: (v: string) => void;
+  country: string; setCountry: (v: string) => void;
+  latitude: number | null; longitude: number | null;
+  onDetectLocation: () => void;
+  errors: Record<string, string>;
+}) {
+  const { t } = useI18n();
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-bold text-foreground">{t("mob.legal_location_title" as any)}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{t("mob.legal_location_sub" as any)}</p>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 mb-1">
+          <FileText className="h-4 w-4 text-primary" />
+          <span className="text-sm font-semibold text-foreground">{t("mob.legal_info" as any)}</span>
+          <Badge variant="outline" className="text-[10px]">{t("mob.optional" as any)}</Badge>
+        </div>
+        <FieldRow label={t("mob.legal_name" as any)}>
+          <Input value={legalName} onChange={e => setLegalName(e.target.value)} className="h-11" placeholder={t("mob.legal_name_placeholder" as any)} />
+        </FieldRow>
+        <FieldRow label={t("mob.registration_number" as any)}>
+          <Input value={registrationNumber} onChange={e => setRegistrationNumber(e.target.value)} className="h-11" placeholder="e.g. 123456789" />
+        </FieldRow>
+        <FieldRow label={t("mob.tax_vat_number" as any)}>
+          <Input value={taxNumber} onChange={e => setTaxNumber(e.target.value)} className="h-11" placeholder="e.g. TRN 100000000000003" />
+        </FieldRow>
+      </div>
+
+      <div className="border-t border-border pt-4 space-y-3">
+        <div className="flex items-center gap-2 mb-1">
+          <MapPin className="h-4 w-4 text-primary" />
+          <span className="text-sm font-semibold text-foreground">{t("mob.location_info" as any)}</span>
+        </div>
+        <FieldRow label={t("mob.address" as any)} required error={errors.address}>
+          <Input value={address} onChange={e => setAddress(e.target.value)} className="h-11" placeholder={t("mob.address_placeholder" as any)} />
+        </FieldRow>
+        <div className="grid grid-cols-2 gap-3">
+          <FieldRow label={t("mob.city" as any)} required error={errors.city}>
+            <Input value={city} onChange={e => setCity(e.target.value)} className="h-11" placeholder="Dubai" />
+          </FieldRow>
+          <FieldRow label={t("mob.region" as any)}>
+            <Input value={region} onChange={e => setRegion(e.target.value)} className="h-11" placeholder="Dubai" />
+          </FieldRow>
+        </div>
+        <FieldRow label={t("mob.country" as any)} required>
+          <select
+            value={country}
+            onChange={e => setCountry(e.target.value)}
+            className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            {COUNTRIES.map(c => (
+              <option key={c.code} value={c.code}>{c.name} ({c.phone})</option>
+            ))}
+          </select>
+        </FieldRow>
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-xs font-medium text-muted-foreground">{t("mob.geolocation" as any)}</label>
+            <Button variant="outline" size="sm" onClick={onDetectLocation} className="h-7 text-xs">
+              <MapPin className="h-3 w-3 mr-1" />
+              {t("mob.detect_position" as any)}
+            </Button>
+          </div>
+          {latitude != null && longitude != null ? (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20 text-xs">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="text-foreground font-medium">{latitude}, {longitude}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 text-xs text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span>{t("mob.no_coordinates" as any)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, setGalleryUrls }: {
+  logoUrl: string; setLogoUrl: (v: string) => void;
+  coverUrl: string; setCoverUrl: (v: string) => void;
+  galleryUrls: string[]; setGalleryUrls: (v: string[]) => void;
+}) {
+  const { t } = useI18n();
+  const [newGalleryUrl, setNewGalleryUrl] = useState("");
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-bold text-foreground">{t("mob.media_title" as any)}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{t("mob.media_sub" as any)}</p>
+      </div>
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Image className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">Logo</span>
+          </div>
+          <Input value={logoUrl} onChange={e => setLogoUrl(e.target.value)} className="h-11" placeholder="https://..." style={{ fontSize: "16px" }} />
+          {logoUrl && (
+            <div className="flex items-center gap-3 mt-1">
+              <img src={logoUrl} alt="Logo" className="w-16 h-16 rounded-xl object-cover border border-border" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <span className="text-xs text-muted-foreground">{t("mob.logo_preview" as any)}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Camera className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">{t("mob.cover_photo" as any)}</span>
+          </div>
+          <Input value={coverUrl} onChange={e => setCoverUrl(e.target.value)} className="h-11" placeholder="https://..." style={{ fontSize: "16px" }} />
+          {coverUrl && (
+            <img src={coverUrl} alt="Cover" className="w-full h-32 rounded-xl object-cover border border-border mt-1" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Image className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">{t("mob.gallery" as any)}</span>
+            <Badge variant="outline" className="text-[10px]">{galleryUrls.length} photos</Badge>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              value={newGalleryUrl}
+              onChange={e => setNewGalleryUrl(e.target.value)}
+              className="h-10 text-sm flex-1"
+              placeholder="https://..."
+              style={{ fontSize: "16px" }}
+            />
+            <Button variant="outline" size="sm" onClick={() => {
+              if (newGalleryUrl.trim()) {
+                setGalleryUrls([...galleryUrls, newGalleryUrl.trim()]);
+                setNewGalleryUrl("");
+              }
+            }}>
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+          {galleryUrls.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {galleryUrls.map((url, i) => (
+                <div key={i} className="relative group">
+                  <img src={url} alt={`Gallery ${i + 1}`} className="w-full h-20 rounded-lg object-cover border border-border" onError={(e) => { (e.target as HTMLImageElement).src = ""; (e.target as HTMLImageElement).className = "w-full h-20 rounded-lg bg-muted border border-border"; }} />
+                  <button
+                    onClick={() => setGalleryUrls(galleryUrls.filter((_, idx) => idx !== i))}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="bg-muted/50 rounded-xl p-3 text-xs text-muted-foreground">
+        💡 {t("mob.media_hint" as any)}
+      </div>
+    </div>
+  );
+}
+
+function StepOpeningHours({ hours, setHours }: {
+  hours: Record<string, { open: string; close: string; closed: boolean }>;
+  setHours: (v: Record<string, { open: string; close: string; closed: boolean }>) => void;
+}) {
+  const { t } = useI18n();
+
+  const updateDay = (day: string, field: string, value: string | boolean) => {
+    setHours({ ...hours, [day]: { ...hours[day], [field]: value } });
+  };
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-xl font-bold text-foreground">{t("mob.opening_hours_title" as any)}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{t("mob.opening_hours_sub" as any)}</p>
+      </div>
+
+      <div className="space-y-2">
+        {DAY_KEYS.map((day, i) => (
+          <div key={day} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+            hours[day]?.closed ? "border-border/50 bg-muted/30 opacity-60" : "border-border bg-card"
+          }`}>
+            <div className="w-10 text-xs font-semibold text-foreground">{DAY_SHORT[i]}</div>
+            <Switch
+              checked={!hours[day]?.closed}
+              onCheckedChange={v => updateDay(day, "closed", !v)}
+            />
+            {!hours[day]?.closed ? (
+              <div className="flex items-center gap-2 flex-1">
+                <Input
+                  type="time"
+                  value={hours[day]?.open || "09:00"}
+                  onChange={e => updateDay(day, "open", e.target.value)}
+                  className="h-9 text-sm w-24"
+                />
+                <span className="text-xs text-muted-foreground">-</span>
+                <Input
+                  type="time"
+                  value={hours[day]?.close || "22:00"}
+                  onChange={e => updateDay(day, "close", e.target.value)}
+                  className="h-9 text-sm w-24"
+                />
+              </div>
+            ) : (
+              <span className="text-xs text-muted-foreground">{t("mob.closed" as any)}</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-sm text-muted-foreground">
+        <Clock className="h-5 w-5 text-primary inline mr-1" />
+        {Object.entries(hours).filter(([, v]) => !v.closed).length} {t("mob.days_open" as any)}
+      </div>
+    </div>
+  );
+}
+
+function FieldRow({ label, children, icon, required, error }: { label: string; children: React.ReactNode; icon?: React.ReactNode; required?: boolean; error?: string }) {
   return (
     <div>
-      <label className="text-xs font-medium text-muted-foreground block mb-1">{label}</label>
+      <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 mb-1">
+        {icon}
+        {label}
+        {required && <span className="text-destructive">*</span>}
+      </label>
       {children}
+      {error && (
+        <div className="flex items-center gap-1 mt-1">
+          <AlertCircle className="h-3 w-3 text-destructive" />
+          <span className="text-[11px] text-destructive">{error}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -1034,7 +1522,7 @@ function StepPayment({ method, setMethod, iban, setIban }: {
   );
 }
 
-function StepGoLive({ isLive, name, vertical, config }: { isLive: boolean; name: string; vertical: OnboardingVertical; config: any }) {
+function StepGoLive({ isLive, name, vertical, config, completeness }: { isLive: boolean; name: string; vertical: OnboardingVertical; config: any; completeness: number }) {
   const { t } = useI18n();
 
   if (isLive) {
@@ -1056,6 +1544,15 @@ function StepGoLive({ isLive, name, vertical, config }: { isLive: boolean; name:
             subtitle={t("mob.included" as any)}
           />
         </div>
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <CheckCircle2 className="h-5 w-5 text-primary" />
+            <span className="text-sm font-semibold text-foreground">{t("mob.profile_quality" as any)}: {completeness}%</span>
+          </div>
+          {completeness < 80 && (
+            <p className="text-xs text-muted-foreground">{t("mob.improve_profile" as any)}</p>
+          )}
+        </div>
         <p className="text-sm text-primary font-medium">
           {vertical === "food" && t("mob.first_order" as any)}
           {vertical === "hotel" && t("mob.first_booking" as any)}
@@ -1076,6 +1573,20 @@ function StepGoLive({ isLive, name, vertical, config }: { isLive: boolean; name:
       <p className="text-muted-foreground">
         {t("mob.once_activated" as any)}
       </p>
+
+      <div className="bg-muted/50 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-medium text-muted-foreground">{t("mob.profile_completeness" as any)}</span>
+          <span className="text-sm font-bold" style={{ color: completeness >= 80 ? "hsl(142 70% 45%)" : completeness >= 50 ? "hsl(38 65% 56%)" : "hsl(0 60% 50%)" }}>
+            {completeness}%
+          </span>
+        </div>
+        <Progress value={completeness} className="h-2" />
+        {completeness < 60 && (
+          <p className="text-[11px] text-muted-foreground mt-2">{t("mob.completeness_low" as any)}</p>
+        )}
+      </div>
+
       <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
         <div className="text-sm font-medium text-foreground">
           {vertical === "food" && t("mob.goal_order" as any)}
