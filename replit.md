@@ -185,44 +185,104 @@ easy-locs-ea1eb0ed/
 └── public/              # Static assets
 ```
 
-## User Trust System (Level 0-4)
-Comprehensive trust scoring with dynamic wallet limits, security flags, KYC light, and anti-fraud integration.
+## User Trust System (Level 0-4) — Comprehensive Security Architecture
+Central transverse security layer influencing Wallet, Orbit, Dashboard, Radar, Me, payments, and onboarding.
 
 ### Trust Levels (`src/lib/trust/trust-levels.ts`)
-- **Level 0 (Unverified)**: score<10, no transactions allowed (0/0/0 limits)
-- **Level 1 (Verified)**: score≥10, basic wallet (2K daily send / 5K receive / 500 per tx)
-- **Level 2 (Active)**: score≥30, QR payments + request money (5K/15K/2K)
-- **Level 3 (Trusted)**: score≥60, KYC selfie required (20K/50K/10K)
-- **Level 4 (Premium)**: score≥85, KYC doc required (100K/200K/50K)
+- **Level 0 (Unverified)**: score<10, no transactions (all limits 0)
+- **Level 1 (Verified)**: score≥10, basic wallet (2K daily/5K recv/8K weekly/500 per tx/2K topup)
+- **Level 2 (Active)**: score≥30, QR+request (5K/15K/25K/2K/5K)
+- **Level 3 (Trusted)**: score≥60, KYC required (20K/50K/80K/10K/20K)
+- **Level 4 (Premium)**: score≥85, full access (100K/200K/500K/50K/100K)
 
 ### Trust Engine (`src/lib/trust/user-trust-engine.ts`)
-5-signal scoring (weighted 100-point scale):
+5-signal weighted scoring (0-100):
 - **Identity** (25%): phone, contacts, KYC, account age
 - **Activity** (20%): sessions, orbit interactions, engagement
-- **Financial** (25%): completed payments, failed payments, disputes
+- **Financial** (25%): completed/failed payments, disputes
 - **Behavior** (15%): moderation flags, reports, location coherence
 - **Security** (15%): device stability, KYC, location
 
-### Security Flags
-- **normal**: full access at trust level
-- **suspicious**: score capped at 45, verification prompted
-- **high_risk**: score capped at 20, KYC + manual audit required
-- **blocked**: score=0, all transactions blocked
+### 7-Level Security Flags (expanded)
+- **normal**: full access, multiplier 1.0
+- **low_risk**: score<20 or new account, multiplier 0.8
+- **suspicious**: score capped 45, OTP required, multiplier 0.5, orbit restricted
+- **review_required**: score capped 35, KYC+manual review, multiplier 0.3
+- **high_risk**: score capped 20, KYC+manual review, multiplier 0.1
+- **restricted**: score capped 10, wallet frozen, all txs blocked
+- **blocked**: score=0, account suspended, wallet frozen
+
+### Graduated Action System (`src/lib/trust/trust-actions.ts`)
+- `computeGraduatedResponse()`: Per-flag action set (allow/otp/reduce_limits/kyc/freeze/block)
+- `shouldRequireOtp()`: Per-action OTP enforcement based on flag
+- `getEscalationPath()` / `getDeescalationPath()`: Flag progression chains
+- `canUpgradeLevel()`: Level upgrade gating with flag+KYC checks
+
+### Fraud Detection Engine (`src/lib/security/fraud-detection-engine.ts`)
+Real-time + deferred fraud analysis:
+- **Circular transfers**: Detects A↔B loops with volume thresholds
+- **Chain transfers**: Rapid sequential sends to many recipients
+- **Mule accounts**: 70%+ passthrough ratio, multi-source → multi-destination
+- **Rapid account usage**: New accounts with immediate high activity
+- **Geo-inconsistency**: Multiple countries in 7 days
+- **Device anomaly**: Excessive device changes
+- **Abnormal amounts/topups**: Statistical outlier detection
+- **Relationship graph**: `analyzeAccountRelationships()` for network risk
+
+### Device Trust (`src/lib/security/device-trust-bridge.ts`)
+- Device profiles: trusted/known/new/suspect status lifecycle
+- Fingerprint tracking with change detection
+- Multi-device monitoring (3+ devices → suspect flag)
+- WebDriver/automation detection
+- `evaluateDeviceTrust()`: Returns trust signal updates for engine
+- `markDeviceTrusted()` / `revokeDeviceTrust()` / `clearAllDevices()`
+
+### Security Event Logger (`src/lib/security/security-event-logger.ts`)
+Structured observability for all security events:
+- 35+ event types (OTP, login, session, device, tx, fraud, KYC, trust changes)
+- 4 severity levels: info/warning/alert/critical
+- Buffered async persistence to `security_events` table
+- `logTransactionBlocked()`, `logFraudSignal()`, `logTrustLevelChanged()`, etc.
+- Query APIs: `querySecurityEvents()`, `getCriticalEvents()`
+
+### Transaction Risk Log (`src/lib/security/transaction-risk-log.ts`)
+- Every transaction gets risk entry: score, flag, result, device, country
+- `recordTransactionRisk()` with async persistence
+- `queryTransactionRiskLog()` for audit queries
+- `markAsReviewed()` for manual review workflow
+
+### Country-Aware Limits (`src/lib/trust/country-limits.ts`)
+- 13 country configs (US/GB/FR/DE/NG/KE/IN/AE/SA/BR/JP/CA/AU) + default
+- Per-country multipliers on all limit types
+- Per-country KYC trigger thresholds
+- `resolveEffectiveLimits()`: trustLevel × flag × country → final limits
 
 ### KYC Light (`src/lib/trust/kyc-light.ts`)
-- Status lifecycle: not_started → pending → selfie_required → document_required → under_review → completed/rejected/expired
-- Auto-triggers: level upgrade ≥3, >20 payments without KYC, moderation flags, 2+ device changes in 30d
+- Progressive: not_started → pending → selfie_required → document_required → under_review → completed/rejected/expired
+- Auto-triggers: level upgrade ≥3, >20 payments, moderation flags, 2+ device changes
 
-### Anti-Fraud Integration (`src/lib/security/anti-fraud-guard.ts`)
-- `preTransactionCheckWithTrust()`: Trust-aware pre-transaction check with security-flag-adjusted limits
-- `TRUST_ADJUSTED_LIMITS`: Per-flag rate limits (maxTxPerMin, maxRecipients, suspiciousThreshold)
-- Risk score augmentation: +20 for suspicious, +40 for high_risk
+### Anti-Fraud Guard (`src/lib/security/anti-fraud-guard.ts`)
+- `preTransactionCheckWithTrust()`: Flag-adjusted rate/velocity/amount limits
+- 7-flag TRUST_ADJUSTED_LIMITS (blocked/restricted → 0, high_risk → 2 tx/min, etc.)
+- Risk score augmentation: +10 low_risk, +20 suspicious, +30 review_required, +40 high_risk
 
-### React Integration
-- **Hook**: `src/hooks/useTrustScore.ts` — computes trust score from live user signals
-- **UI**: `src/components/wallet/TrustLevelBadge.tsx` — badge + progress bar + limits card
-- **Integration**: WalletSecuritySettings shows trust badge + limits at top of security page
-- **Persistence**: `src/lib/trust/update-trust-profile.ts` — `updateUserTrustFromSignals()` persists to user_trust_graph
+### Wallet Limits (`src/lib/wallet-limits.ts`)
+- `preflightTransactionCheck()`: Unified check (single tx + daily + weekly + topup + receive)
+- `getCountryAwareLimits()`: Country × trust × flag resolved limits
+- `checkWeeklyLimitByTrust()`, `checkTopUpLimit()`, `checkReceiveLimit()` — new limit dimensions
+- Backward-compatible: `checkDailyLimit()` + `mapTrustLevelToLegacyTier()` still available
+
+### Cross-Pillar Trust Hooks (`src/hooks/useTrustGuard.ts`)
+- **`useTrustGuard()`**: Central hook — canSend/canReceive/canTopUp/canRequestMoney, limits, graduated response
+- **`useOrbitTrustGuard()`**: Orbit-specific — canMessage/canInvite/isRestricted
+- **`useRadarTrustGuard()`**: Radar-specific — isDemoted flag for discovery ranking
+- **`useBusinessTrustGuard()`**: Business accounts — canAcceptPayments/canUsePOS/canReceivePayouts
+
+### React UI
+- **`useTrustScore`** hook: Live user signal computation
+- **`TrustLevelBadge`**: Compact/full badge with 7-flag colors + progress bar
+- **`TrustLimitsCard`**: 3×2 grid (daily send/receive, weekly, per tx, topup, level)
+- Integrated in WalletSecuritySettings
 
 ## Phone + OTP Identity Activation System
 The app uses phone number + OTP as the root identity activation method. Phone is the default auth tab on both Login and Signup pages.

@@ -258,7 +258,7 @@ export default function WalletSecuritySettings() {
             securityFlag={trust.securityFlag}
             showProgress
           />
-          <TrustLimitsCard score={trust.score} level={trust.level} />
+          <TrustLimitsCard score={trust.score} level={trust.level} securityFlag={trust.securityFlag} />
         </div>
       )}
 

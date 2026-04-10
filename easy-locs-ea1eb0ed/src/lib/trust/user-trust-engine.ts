@@ -135,8 +135,9 @@ function determineSecurityFlag(
   score: number,
   signals: TrustSignals
 ): SecurityFlag {
-  if (signals.moderationFlags >= 3) return "blocked";
-  if (signals.reportedByOthers >= 5) return "blocked";
+  if (signals.moderationFlags >= 5 || signals.reportedByOthers >= 8) return "blocked";
+
+  if (signals.moderationFlags >= 3 || signals.reportedByOthers >= 5) return "restricted";
 
   if (
     signals.moderationFlags >= 2 ||
@@ -148,6 +149,13 @@ function determineSecurityFlag(
   }
 
   if (
+    (signals.moderationFlags >= 1 && signals.disputesCount >= 2) ||
+    (signals.deviceChanges30d >= 3 && signals.reportedByOthers >= 2)
+  ) {
+    return "review_required";
+  }
+
+  if (
     signals.moderationFlags >= 1 ||
     signals.disputesCount >= 1 ||
     signals.deviceChanges30d >= 2 ||
@@ -156,6 +164,14 @@ function determineSecurityFlag(
     (signals.failedPayments > signals.completedPayments && signals.completedPayments > 0)
   ) {
     return "suspicious";
+  }
+
+  if (
+    score < 20 ||
+    (signals.accountAgeDays < 3 && signals.completedPayments > 0) ||
+    (!signals.deviceStable && signals.completedPayments > 5)
+  ) {
+    return "low_risk";
   }
 
   return "normal";
@@ -181,7 +197,9 @@ export function computeUserTrustScore(signals: TrustSignals): UserTrustProfile {
 
   let adjustedScore = score;
   if (securityFlag === "blocked") adjustedScore = 0;
+  else if (securityFlag === "restricted") adjustedScore = Math.min(adjustedScore, 10);
   else if (securityFlag === "high_risk") adjustedScore = Math.min(adjustedScore, 20);
+  else if (securityFlag === "review_required") adjustedScore = Math.min(adjustedScore, 35);
   else if (securityFlag === "suspicious") adjustedScore = Math.min(adjustedScore, 45);
 
   const finalLevel = getTrustLevel(adjustedScore);
@@ -254,39 +272,52 @@ export function getSecurityActions(flag: SecurityFlag): {
   blockAccount: boolean;
   requireKyc: boolean;
   requireManualAudit: boolean;
+  freezeWallet: boolean;
+  restrictOrbit: boolean;
+  demoteRadar: boolean;
 } {
   switch (flag) {
     case "blocked":
       return {
-        limitTransactions: true,
-        requireVerification: true,
-        blockAccount: true,
-        requireKyc: true,
-        requireManualAudit: true,
+        limitTransactions: true, requireVerification: true, blockAccount: true,
+        requireKyc: true, requireManualAudit: true, freezeWallet: true,
+        restrictOrbit: true, demoteRadar: true,
+      };
+    case "restricted":
+      return {
+        limitTransactions: true, requireVerification: true, blockAccount: false,
+        requireKyc: true, requireManualAudit: true, freezeWallet: true,
+        restrictOrbit: true, demoteRadar: true,
       };
     case "high_risk":
       return {
-        limitTransactions: true,
-        requireVerification: true,
-        blockAccount: false,
-        requireKyc: true,
-        requireManualAudit: true,
+        limitTransactions: true, requireVerification: true, blockAccount: false,
+        requireKyc: true, requireManualAudit: true, freezeWallet: false,
+        restrictOrbit: true, demoteRadar: true,
+      };
+    case "review_required":
+      return {
+        limitTransactions: true, requireVerification: true, blockAccount: false,
+        requireKyc: true, requireManualAudit: true, freezeWallet: false,
+        restrictOrbit: true, demoteRadar: true,
       };
     case "suspicious":
       return {
-        limitTransactions: true,
-        requireVerification: true,
-        blockAccount: false,
-        requireKyc: false,
-        requireManualAudit: false,
+        limitTransactions: true, requireVerification: true, blockAccount: false,
+        requireKyc: false, requireManualAudit: false, freezeWallet: false,
+        restrictOrbit: true, demoteRadar: true,
+      };
+    case "low_risk":
+      return {
+        limitTransactions: true, requireVerification: false, blockAccount: false,
+        requireKyc: false, requireManualAudit: false, freezeWallet: false,
+        restrictOrbit: false, demoteRadar: false,
       };
     default:
       return {
-        limitTransactions: false,
-        requireVerification: false,
-        blockAccount: false,
-        requireKyc: false,
-        requireManualAudit: false,
+        limitTransactions: false, requireVerification: false, blockAccount: false,
+        requireKyc: false, requireManualAudit: false, freezeWallet: false,
+        restrictOrbit: false, demoteRadar: false,
       };
   }
 }

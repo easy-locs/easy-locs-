@@ -1,4 +1,4 @@
-import { type TrustLevel, TRUST_LEVELS, getProgressToNextLevel } from "@/lib/trust/trust-levels";
+import { type TrustLevel, TRUST_LEVELS, getProgressToNextLevel, getEffectiveLimits } from "@/lib/trust/trust-levels";
 import { type SecurityFlag } from "@/lib/trust/trust-levels";
 import { useI18n } from "@/lib/i18n";
 import { Shield, ShieldAlert, ShieldCheck, ShieldX, ChevronRight } from "lucide-react";
@@ -26,8 +26,10 @@ export function TrustLevelBadge({
 
   const flagIcon = () => {
     switch (securityFlag) {
-      case "blocked": return <ShieldX className="w-4 h-4" />;
-      case "high_risk": return <ShieldAlert className="w-4 h-4" />;
+      case "blocked":
+      case "restricted": return <ShieldX className="w-4 h-4" />;
+      case "high_risk":
+      case "review_required":
       case "suspicious": return <ShieldAlert className="w-4 h-4" />;
       default: return level >= 3 ? <ShieldCheck className="w-4 h-4" /> : <Shield className="w-4 h-4" />;
     }
@@ -36,8 +38,11 @@ export function TrustLevelBadge({
   const flagColor = () => {
     switch (securityFlag) {
       case "blocked": return "hsl(0 72% 51%)";
+      case "restricted": return "hsl(0 60% 45%)";
       case "high_risk": return "hsl(25 95% 53%)";
+      case "review_required": return "hsl(35 90% 50%)";
       case "suspicious": return "hsl(45 93% 47%)";
+      case "low_risk": return "hsl(38 65% 56%)";
       default: return config.color;
     }
   };
@@ -106,11 +111,13 @@ export function TrustLevelBadge({
           </div>
         )}
 
-        {securityFlag !== "normal" && (
+        {securityFlag !== "normal" && securityFlag !== "low_risk" && (
           <p className="text-[10px] mt-0.5" style={{ color: flagColor() }}>
-            {securityFlag === "blocked" && (t("trust.blocked") || "Account restricted")}
+            {securityFlag === "blocked" && (t("trust.blocked") || "Account suspended")}
+            {securityFlag === "restricted" && (t("trust.restricted") || "Account restricted")}
             {securityFlag === "high_risk" && (t("trust.highRisk") || "Verification required")}
-            {securityFlag === "suspicious" && (t("trust.suspicious") || "Under review")}
+            {securityFlag === "review_required" && (t("trust.reviewRequired") || "Under review")}
+            {securityFlag === "suspicious" && (t("trust.suspicious") || "Unusual activity detected")}
           </p>
         )}
       </div>
@@ -123,13 +130,15 @@ export function TrustLevelBadge({
 interface TrustLimitsCardProps {
   score: number;
   level: TrustLevel;
+  securityFlag?: SecurityFlag;
 }
 
-export function TrustLimitsCard({ score, level }: TrustLimitsCardProps) {
+export function TrustLimitsCard({ score, level, securityFlag = "normal" }: TrustLimitsCardProps) {
   const { t } = useI18n();
-  const config = TRUST_LEVELS[level];
+  const limits = getEffectiveLimits(score, securityFlag);
 
   const formatLimit = (amount: number) => {
+    if (amount === 0) return "—";
     if (amount >= 1000) return `${(amount / 1000).toFixed(0)}K`;
     return String(amount);
   };
@@ -139,21 +148,29 @@ export function TrustLimitsCard({ score, level }: TrustLimitsCardProps) {
       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
         {t("trust.yourLimits") || "Your Limits"}
       </p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <div className="rounded-xl bg-muted/20 p-3 text-center">
-          <p className="text-lg font-extrabold text-foreground">{formatLimit(config.dailySendLimit)}</p>
+          <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.dailySend)}</p>
           <p className="text-[10px] text-muted-foreground">{t("trust.dailySend") || "Daily Send"}</p>
         </div>
         <div className="rounded-xl bg-muted/20 p-3 text-center">
-          <p className="text-lg font-extrabold text-foreground">{formatLimit(config.dailyReceiveLimit)}</p>
+          <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.dailyReceive)}</p>
           <p className="text-[10px] text-muted-foreground">{t("trust.dailyReceive") || "Daily Receive"}</p>
         </div>
         <div className="rounded-xl bg-muted/20 p-3 text-center">
-          <p className="text-lg font-extrabold text-foreground">{formatLimit(config.singleTxLimit)}</p>
-          <p className="text-[10px] text-muted-foreground">{t("trust.perTransaction") || "Per Transaction"}</p>
+          <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.weeklySend)}</p>
+          <p className="text-[10px] text-muted-foreground">{t("trust.weeklySend") || "Weekly Send"}</p>
         </div>
         <div className="rounded-xl bg-muted/20 p-3 text-center">
-          <p className="text-lg font-extrabold text-foreground">L{level}</p>
+          <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.singleTx)}</p>
+          <p className="text-[10px] text-muted-foreground">{t("trust.perTransaction") || "Per Tx"}</p>
+        </div>
+        <div className="rounded-xl bg-muted/20 p-3 text-center">
+          <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.topUp)}</p>
+          <p className="text-[10px] text-muted-foreground">{t("trust.topUp") || "Top-Up"}</p>
+        </div>
+        <div className="rounded-xl bg-muted/20 p-3 text-center">
+          <p className="text-lg font-extrabold tabular-nums text-foreground">L{level}</p>
           <p className="text-[10px] text-muted-foreground">{t("trust.trustLevel") || "Trust Level"}</p>
         </div>
       </div>
