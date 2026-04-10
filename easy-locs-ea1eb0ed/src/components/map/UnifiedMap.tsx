@@ -82,17 +82,16 @@ interface UnifiedMapProps {
   className?: string;
   selectedId?: string | null;
   onSelectEntity?: (entity: GeoEntity) => void;
-  /** Click on empty zone → lat/lng of click point */
   onZoneClick?: (lat: number, lng: number) => void;
   showUserLocation?: boolean;
   userLat?: number;
   userLng?: number;
   showHeatmap?: boolean;
   heatmapPoints?: { lat: number; lng: number; intensity: number }[];
-  /** Radius in km — renders a visual circle on map */
   radiusKm?: number;
   /** @deprecated — use weatherDisplayStore instead. Kept for backward compat. */
   showWeatherLayer?: boolean;
+  hideWeatherBadge?: boolean;
 }
 
 /** Build rich popup HTML */
@@ -138,6 +137,7 @@ export default memo(function UnifiedMap({
   heatmapPoints,
   radiusKm,
   showWeatherLayer: _showWeatherLayerLegacy = true,
+  hideWeatherBadge = false,
 }: UnifiedMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -202,9 +202,14 @@ export default memo(function UnifiedMap({
     mapRef.current = map;
 
     map.on("error", (e: any) => {
-      if (e?.error?.message?.includes("WebGL") || e?.error?.message?.includes("context")) {
-        console.warn("[UnifiedMap] Runtime map error:", e?.error?.message);
-        setMapError(e?.error?.message || "Map unavailable");
+      const msg = e?.error?.message || "";
+      if (msg.includes("WebGL") || msg.includes("context")) {
+        console.warn("[UnifiedMap] Runtime map error:", msg);
+        setMapError(msg || "Map unavailable");
+        return;
+      }
+      if (msg.includes("zoom") || msg.includes("tile") || msg.includes("404") || msg.includes("rain") || e?.sourceId === RAIN_SOURCE) {
+        return;
       }
     });
 
@@ -242,7 +247,7 @@ export default memo(function UnifiedMap({
           type: "raster",
           tiles: [rainRadar.activeTileUrl ?? "https://tilecache.rainviewer.com/v2/radar/{z}/{x}/{y}/256/2/1_1.png"],
           tileSize: 256,
-          maxzoom: 12,
+          maxzoom: 8,
         });
       }
 
@@ -251,7 +256,6 @@ export default memo(function UnifiedMap({
           id: RAIN_LAYER,
           type: "raster",
           source: RAIN_SOURCE,
-          maxzoom: 12,
           paint: {
             "raster-opacity": 0,
             "raster-fade-duration": 0,
@@ -656,12 +660,14 @@ export default memo(function UnifiedMap({
         className={`w-full h-full rounded-2xl overflow-hidden ${className}`}
         style={{ minHeight: 300 }}
       />
-      <div className="pointer-events-none absolute left-3 right-3 top-3 z-10 flex items-start justify-between gap-3">
-        <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/40 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md">
-          {weather.isRaining ? <CloudRain className="h-4 w-4 shrink-0 text-primary" /> : <CloudSun className="h-4 w-4 shrink-0 text-primary" />}
-          <span className="truncate text-[11px] font-medium text-foreground">Live station · {weather.label}</span>
+      {!hideWeatherBadge && (
+        <div className="pointer-events-none absolute left-3 right-3 top-3 z-10 flex items-start justify-between gap-3">
+          <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/40 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md">
+            {weather.isRaining ? <CloudRain className="h-4 w-4 shrink-0 text-primary" /> : <CloudSun className="h-4 w-4 shrink-0 text-primary" />}
+            <span className="truncate text-[11px] font-medium text-foreground">Live station · {weather.label}</span>
+          </div>
         </div>
-      </div>
+      )}
       {weather.isRaining && effectsLevel !== "off" && (
         <>
           <div className="map-rain-tint pointer-events-none absolute inset-0 rounded-2xl" />
