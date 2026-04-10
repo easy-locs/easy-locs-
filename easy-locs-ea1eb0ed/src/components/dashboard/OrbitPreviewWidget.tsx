@@ -1,18 +1,39 @@
-import { memo } from "react";
-import { Link } from "react-router-dom";
+import { memo, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { MessageCircle, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import { useI18n } from "@/lib/i18n";
 import E2EEBadge from "@/components/orbit/E2EEBadge";
 
-function OrbitPreviewWidget() {
+interface Props {
+  onNavigate?: (route: string, action?: string) => void;
+}
+
+function OrbitPreviewWidget({ onNavigate }: Props) {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const { threads, loading } = useConversationThreads();
 
   const recent = threads
     .filter(th => !th.archived && th.lastMessageContent)
     .slice(0, 3);
+
+  const handleSeeAll = useCallback(() => {
+    if (onNavigate) {
+      onNavigate("/orbit", "view_messages");
+    } else {
+      navigate("/orbit");
+    }
+  }, [onNavigate, navigate]);
+
+  const handleThreadClick = useCallback((threadId: string) => {
+    if (onNavigate) {
+      onNavigate(`/orbit/${threadId}`, "open_thread");
+    } else {
+      navigate(`/orbit/${threadId}`);
+    }
+  }, [onNavigate, navigate]);
 
   if (loading || recent.length === 0) return null;
 
@@ -33,13 +54,13 @@ function OrbitPreviewWidget() {
           </h3>
           <E2EEBadge compact />
         </div>
-        <Link
-          to="/orbit"
-          className="flex items-center gap-0.5 text-[10px] font-bold"
+        <button
+          onClick={handleSeeAll}
+          className="flex items-center gap-0.5 text-[10px] font-bold bg-transparent border-none cursor-pointer"
           style={{ color: "hsl(38 65% 56%)" }}
         >
           {t("dashboard.see_all")} <ChevronRight className="w-3 h-3" />
-        </Link>
+        </button>
       </div>
 
       {recent.map((thread, idx) => {
@@ -50,10 +71,10 @@ function OrbitPreviewWidget() {
           .slice(0, 2);
 
         return (
-          <Link
+          <button
             key={thread.id}
-            to={`/orbit/${thread.conversationId || thread.id}`}
-            className="flex items-center gap-3 px-4 py-2.5 active:bg-muted/20 transition-colors"
+            onClick={() => handleThreadClick(thread.conversationId || thread.id)}
+            className="flex items-center gap-3 px-4 py-2.5 active:bg-muted/20 transition-colors w-full text-left bg-transparent border-none cursor-pointer"
             style={idx < recent.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.05)" } : undefined}
           >
             <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold"
@@ -78,7 +99,7 @@ function OrbitPreviewWidget() {
                 {thread.unreadCount}
               </span>
             )}
-          </Link>
+          </button>
         );
       })}
     </motion.div>

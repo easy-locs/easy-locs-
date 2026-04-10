@@ -47,6 +47,8 @@ import { useWalletBalance } from "@/payments/wallet-hooks";
 import RadarPreviewWidget from "@/components/dashboard/RadarPreviewWidget";
 import RadarExplorerDrawer from "@/components/dashboard/RadarExplorerDrawer";
 import { useDashboardRadar } from "@/hooks/useDashboardRadar";
+import { useSmartNavigation } from "@/hooks/useSmartNavigation";
+import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -319,10 +321,18 @@ const AISmartInsights = memo(() => {
 });
 
 /* ═══ Stats Bar — LIVE super-app overview ═══ */
-function LiveStatsPulse() {
+function LiveStatsPulse({ onNavigate }: { onNavigate?: (route: string, action?: string) => void }) {
   const { t } = useI18n();
   const navigate = useNavigate();
   const live = useDashboardLiveStats();
+
+  const handleNav = useCallback((route: string, action?: string) => {
+    if (onNavigate) {
+      onNavigate(route, action);
+    } else {
+      navigate(route);
+    }
+  }, [onNavigate, navigate]);
 
   const stats = useMemo(() => [
     {
@@ -332,6 +342,7 @@ function LiveStatsPulse() {
       pulse: live.walletBalance > 0,
       color: "text-emerald-500",
       to: "/wallet",
+      action: "view_wallet_detail",
     },
     {
       label: t("home.stats_messages"),
@@ -340,6 +351,7 @@ function LiveStatsPulse() {
       pulse: live.unreadMessages > 0,
       color: "text-blue-500",
       to: "/orbit",
+      action: "view_messages",
     },
     {
       label: t("home.stats_orders"),
@@ -348,6 +360,7 @@ function LiveStatsPulse() {
       pulse: live.activeOrders > 0,
       color: "text-amber-500",
       to: "/my-orders",
+      action: "view_transactions",
     },
     {
       label: t("home.stats_secure"),
@@ -356,6 +369,7 @@ function LiveStatsPulse() {
       pulse: false,
       color: "text-[hsl(38_65%_56%)]",
       to: "/me",
+      action: "view_profile",
     },
   ], [t, live]);
 
@@ -369,7 +383,7 @@ function LiveStatsPulse() {
       {stats.map((s) => (
         <button
           key={s.label}
-          onClick={() => navigate(s.to)}
+          onClick={() => handleNav(s.to, s.action)}
           className="flex flex-col items-center gap-1 rounded-xl border border-border/8 bg-muted/15 py-2.5 px-1.5 relative overflow-hidden active:scale-[0.95] transition-transform"
         >
           <s.icon className={`h-4 w-4 ${s.color} shrink-0`} />
@@ -596,6 +610,7 @@ export default function SmartHome() {
   const [radarDrawerOpen, setRadarDrawerOpen] = useState(false);
   const [drawerSort, setDrawerSort] = useState<string | undefined>();
   const radarData = useDashboardRadar(20);
+  const { smartNavigate, overlayState, closeOverlay } = useSmartNavigation();
 
   const openRadarDrawer = useCallback((sort?: string) => {
     setDrawerSort(sort);
@@ -629,9 +644,9 @@ export default function SmartHome() {
         <QuickAccessStrip />
         <AISmartInsights />
         <SmartSuggestions suggestions={suggestions} onDismiss={dismiss} />
-        <LiveStatsPulse />
+        <LiveStatsPulse onNavigate={smartNavigate} />
       </div>
-      <OrbitPreviewWidget />
+      <OrbitPreviewWidget onNavigate={smartNavigate} />
       <PropertyDashboardWidget />
       <div className="px-4">
 
@@ -794,6 +809,12 @@ export default function SmartHome() {
         items={radarData.items}
         loading={radarData.loading}
         totalCount={radarData.totalCount}
+      />
+
+      <PillarOverlayHost
+        activeOverlay={overlayState.activeOverlay}
+        overlayRoute={overlayState.overlayRoute}
+        onClose={closeOverlay}
       />
 
       <AddressSelectorSheet open={vm.addressSheetOpen} onOpenChange={vm.onAddressSheetChange} />
