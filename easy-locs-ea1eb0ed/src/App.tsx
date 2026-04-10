@@ -38,6 +38,7 @@ const FloatingCTAButton = lazy(() => import("@/components/engine/FloatingCTAButt
 const OrbitPromptOverlay = lazy(() => import("@/components/engine/OrbitPromptOverlay").then(m => ({ default: m.OrbitPromptOverlay })));
 const GlobalOverlayRenderer = lazy(() => import("@/components/overlays/GlobalOverlayRenderer").then(m => ({ default: m.GlobalOverlayRenderer })));
 const IntentNavigateProvider = lazy(() => import("@/components/app/IntentNavigateProvider"));
+import SmartCoreTracker from "@/components/system/SmartCoreTracker";
 
 // ── Deferred boot guards — loaded 3s after first paint ──
 function DeferredBootGuards() {
@@ -298,6 +299,7 @@ const App = () => (
         <IntentNavigateProvider />
       </Suspense>
       <DeferredBootGuards />
+      <SmartCoreTracker />
       <Suspense fallback={<PageLoader />}>
         <SwipeableMain className="pb-[calc(72px+env(safe-area-inset-bottom,0px)+16px)]">
           <Routes>

@@ -4,6 +4,7 @@
  */
 import { create } from "zustand";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
+import { trackFlowStart, trackFlowComplete, trackFlowAbandon } from "@/lib/smart-core";
 
 export type TaxiFlowStep =
   | "search"       // Step 1: destination input, NO map
@@ -51,7 +52,12 @@ const INITIAL = {
 
 export const useTaxiFlowStore = create<TaxiFlowState>((set) => ({
   ...INITIAL,
-  setStep: (step) => set({ step }),
+  setStep: (step) => {
+    const prev = useTaxiFlowStore.getState().step;
+    if (prev === "search" && step === "preview") trackFlowStart("taxi");
+    if (step === "completed") trackFlowComplete("taxi", 0);
+    set({ step });
+  },
   setPickup: (pickup) => set({ pickup }),
   setDropoff: (dropoff) => set({ dropoff }),
   setServiceLevel: (serviceLevel) => set({ serviceLevel }),
@@ -60,5 +66,9 @@ export const useTaxiFlowStore = create<TaxiFlowState>((set) => ({
   setScheduledTime: (scheduledTime) => set({ scheduledTime }),
   setSeats: (seats) => set({ seats }),
   setActiveJobId: (activeJobId) => set({ activeJobId }),
-  reset: () => set({ ...INITIAL }),
+  reset: () => {
+    const prev = useTaxiFlowStore.getState().step;
+    if (prev !== "search" && prev !== "completed") trackFlowAbandon("taxi");
+    set({ ...INITIAL });
+  },
 }));
