@@ -160,22 +160,16 @@ export default function PersonalRadarPanel({ entities, open }: { entities: Entit
       {/* ══ FOR YOU NOW ══ */}
       {personalMode && actions.length > 0 && (
         <Section icon={<Clock className="w-3 h-3" />} title="For You Now" accent>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+          <div className="flex gap-2.5 overflow-x-auto no-scrollbar">
             {actions.slice(0, 4).map(a => (
               <div
                 key={a.id}
-                className="min-w-[130px] px-3 py-2 rounded-xl border border-border/20 shrink-0 cursor-pointer hover:border-accent/30 transition-all"
+                className="min-w-[140px] px-3.5 py-3 rounded-2xl border border-border/15 shrink-0 cursor-pointer active:scale-[0.97] transition-all"
                 style={{ background: "hsl(var(--background) / 0.6)" }}
                 onClick={() => pushSessionSignal({ category: a.suggestedCategories[0], action: "click", timestamp: Date.now() })}
               >
-                <p className="text-xs font-bold text-foreground">{a.title}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{a.subtitle}</p>
-                <div className="flex items-center gap-1 mt-1">
-                  <div className="h-1 flex-1 rounded-full bg-muted/30">
-                    <div className="h-1 rounded-full" style={{ width: `${a.confidence}%`, background: a.confidence > 80 ? "hsl(var(--success))" : "hsl(var(--accent))" }} />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">{a.confidence}%</span>
-                </div>
+                <p className="text-xs font-bold text-foreground line-clamp-1">{a.title}</p>
+                <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-snug">{a.subtitle}</p>
               </div>
             ))}
           </div>
@@ -272,50 +266,63 @@ function EntityRow({ entity, rank, isTop, onView, onChat, badge }: {
   onChat: () => void;
   badge?: "gem";
 }) {
+  const img = entity.imageUrl || (entity as any).image_url;
+  const distKm = entity.distanceKm;
+  const distLabel = distKm != null
+    ? distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`
+    : null;
+
   return (
     <div
-      className="flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all active:scale-[0.98]"
+      className="flex items-center gap-3 px-3 py-2.5 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer"
       style={{
-        background: isTop ? "hsl(var(--accent) / 0.04)" : "transparent",
-        borderColor: isTop ? "hsl(var(--accent) / 0.12)" : "hsl(var(--border) / 0.1)",
+        background: isTop ? "hsl(var(--accent) / 0.04)" : "hsl(var(--background) / 0.5)",
+        borderColor: isTop ? "hsl(var(--accent) / 0.15)" : "hsl(var(--border) / 0.1)",
       }}
+      onClick={onView}
     >
-      {rank && (
-        <div className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0" style={{
-          background: isTop ? "hsl(var(--accent) / 0.12)" : "hsl(var(--muted) / 0.12)",
-          color: isTop ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
-        }}>
-          {rank}
+      {img ? (
+        <img src={img} alt={entity.name} className="w-12 h-12 rounded-xl object-cover shrink-0" loading="lazy" />
+      ) : (
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--muted) / 0.12)" }}>
+          {rank ? (
+            <span className="text-sm font-bold" style={{ color: isTop ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))" }}>#{rank}</span>
+          ) : badge === "gem" ? (
+            <Gem className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />
+          ) : (
+            <MapPin className="w-4 h-4 text-muted-foreground/40" />
+          )}
         </div>
       )}
-      {badge === "gem" && (
-        <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0" style={{ background: "hsl(270 60% 55% / 0.12)" }}>
-          <Gem className="w-2.5 h-2.5" style={{ color: "hsl(270 60% 55%)" }} />
-        </div>
-      )}
-      <div className="flex-1 min-w-0 cursor-pointer" onClick={onView}>
-        <p className="text-[11px] font-bold text-foreground break-words leading-snug">{entity.name}</p>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-muted-foreground capitalize">{entity.category}</span>
-          {entity.matchReasons[0] && (
-            <span className="text-[10px] px-1 py-0.5 rounded-full" style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}>
-              {entity.matchReasons[0]}
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-bold text-foreground line-clamp-1 leading-snug">{entity.name}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-[11px] text-muted-foreground capitalize">{(entity.category || "").replace(/_/g, " ")}</span>
+          {entity.rating != null && entity.rating > 0 && (
+            <span className="flex items-center gap-0.5 text-[11px] font-semibold" style={{ color: "hsl(45 90% 50%)" }}>
+              <Star className="w-3 h-3 fill-current" />{entity.rating.toFixed(1)}
             </span>
+          )}
+          {distLabel && (
+            <span className="text-[11px] text-muted-foreground">{distLabel}</span>
           )}
         </div>
       </div>
-      {/* CTAs */}
-      <div className="flex items-center gap-1 shrink-0">
-        <button onClick={onChat} className="w-6 h-6 rounded-lg flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--primary) / 0.1)" }}>
-          <MessageCircle className="w-3 h-3" style={{ color: "hsl(var(--primary))" }} />
+      <div className="flex items-center gap-1.5 shrink-0">
+        <button
+          onClick={(e) => { e.stopPropagation(); onChat(); }}
+          className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+          style={{ background: "hsl(var(--primary) / 0.1)" }}
+        >
+          <MessageCircle className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
         </button>
-        <button onClick={onView} className="w-6 h-6 rounded-lg flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--accent) / 0.1)" }}>
-          <Eye className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
+        <button
+          onClick={(e) => { e.stopPropagation(); const q = `${entity.lat},${entity.lng}`; window.open(`https://maps.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank", "noopener,noreferrer"); }}
+          className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+          style={{ background: "hsl(var(--primary) / 0.1)" }}
+        >
+          <Navigation className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
         </button>
-      </div>
-      <div className="text-right shrink-0">
-        <p className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>{entity.personalScore}</p>
-        <p className="text-[10px] text-muted-foreground">score</p>
       </div>
     </div>
   );

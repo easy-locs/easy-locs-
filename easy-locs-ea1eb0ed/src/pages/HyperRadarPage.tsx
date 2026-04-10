@@ -18,6 +18,7 @@ import { computeVibeDensity } from "@/lib/engines/vibe-density-engine";
 import { getZoneRhythm } from "@/lib/engines/behavior-pattern-engine";
 import UnifiedMap from "@/components/map/UnifiedMap";
 import RadarStoryRail from "@/components/radar/RadarStoryRail";
+import RadarEntitySheet from "@/components/radar/RadarEntitySheet";
 import {
   Radio, X, ChevronUp, ChevronDown,
   Utensils, Hotel, Car, Sparkles, Moon, ShoppingBag,
@@ -63,6 +64,7 @@ export default function HyperRadarPage() {
   const [radius, setRadius] = useState(5);
   const [panelSnap, setPanelSnap] = useState<"closed" | "peek" | "half">("peek");
   const [zoneClick, setZoneClick] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
   const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
@@ -102,6 +104,13 @@ export default function HyperRadarPage() {
 
   const handleZoneClick = useCallback((lat: number, lng: number) => {
     setZoneClick({ lat, lng });
+    setSelectedEntity(null);
+    setPanelSnap("closed");
+  }, []);
+
+  const handleSelectEntity = useCallback((entity: any) => {
+    setSelectedEntity(entity);
+    setZoneClick(null);
     setPanelSnap("closed");
   }, []);
 
@@ -157,6 +166,8 @@ export default function HyperRadarPage() {
           heatmapPoints={visibleEntities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
           radiusKm={radius}
           showWeatherLayer={radarOverlay !== "off"}
+          selectedId={selectedEntity?.id}
+          onSelectEntity={handleSelectEntity}
           onZoneClick={handleZoneClick}
         />
       </div>
@@ -381,6 +392,16 @@ export default function HyperRadarPage() {
               </div>
             )}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ ENTITY DETAIL SHEET ═══ */}
+      <AnimatePresence>
+        {selectedEntity && (
+          <RadarEntitySheet
+            entity={selectedEntity}
+            onClose={() => { setSelectedEntity(null); setPanelSnap("peek"); }}
+          />
         )}
       </AnimatePresence>
 
