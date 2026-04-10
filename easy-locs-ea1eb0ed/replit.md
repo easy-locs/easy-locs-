@@ -428,7 +428,27 @@ Replaces hardcoded `EXPLORE_CATEGORIES` and `SuperServicesGrid`.
 Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Build**: production build fixed (checkPublishBlockers import + duplicate patisserie key)
 - **TypeScript**: 0 errors confirmed
-- **Known issues**: 387 direct supabase imports (should use db()), 3762 `any` usages, 274 empty catch blocks, 214 console.log, wallet PIN secret fallback hardcoded
+- **Known issues**: 92 direct supabase imports in UI layer (should use db()/services), 3762 `any` usages, 274 empty catch blocks, 214 console.log
 - **Security**: Auth/RLS solid, CORS wildcard on Edge Functions needs restricting, CSP headers needed
 - **Test coverage**: ~2% (66 unit + 8 E2E for 3279 files)
 - **Performance**: 462K lines, bundle needs splitting by pillar, 8 files >800 lines need decomposition
+
+## Checkout Hardening (Cycle 2)
+- **Card payment**: Real Stripe PaymentIntent via `create-stripe-intent` edge function. CardPayment component dynamically loads Stripe.js, mounts card element, confirms payment. Order created only after Stripe confirms success.
+- **Wallet payment**: Pre-checks balance via `useWalletAccounts`. Executes atomic `executeWalletTransfer` (via `wallet-transfer` edge function) before order creation. Insufficient funds blocked at UI level.
+- **Address validation**: Delivery orders require `selectedLocation` from `locationStore`. Checkout blocked with error if missing.
+- **Cash (COD)**: Order created with `payment_status: "pending"` (correct for COD).
+- **State machine**: `review` → `card_payment` (if card) → `processing` → `complete`. Double-click prevention via `placing` state.
+- **Idempotency**: UUID idempotency key for every order + wallet transfer.
+- **Files**: `CheckoutPage.tsx`, `CardPayment.tsx`, `orderEngine.ts` (added `updateOrderPaymentStatus`)
+
+## Wallet Security (Cycle 3 — Phase 1)
+- **Auth guards**: All wallet mutation functions now verify authenticated user via `supabase.auth.getUser()`
+- **Amount validation**: Max single transaction limits, NaN/negative/zero rejection
+- **Balance verification**: Debit operations check available balance before proceeding
+- **Idempotency**: Client-side deduplication for ledger entries (reference-based keys)
+- **Audit logging**: Every wallet mutation logged via `logger.info("[WALLET_AUDIT]")`
+- **Security logging**: Cross-user access attempts, duplicate operations, insufficient funds all logged via `logger.error/warn("[WALLET_SECURITY]")`
+- **Files hardened**: `ledger.ts`, `dispatch-wallet-bridge.ts`, `apply-wallet-credit.ts`
+- **Downstream inheritors**: `orderSettlement.ts`, `checkoutPaymentPatch.ts`, `create-refund-request.ts`, `credit-policies.ts`
+- **Remaining**: 92 direct Supabase imports in UI layer need service-layer migration (60 pages, 10 components, 15 hooks, 6 stores, 1 context)

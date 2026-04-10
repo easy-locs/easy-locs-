@@ -1,5 +1,33 @@
+/**
+ * dispatch-wallet-bridge — Handle wallet operations for ride payments.
+ *
+ * SECURITY: All mutations require authenticated user, amount validation,
+ * and idempotency checks to prevent duplicate charges or credits.
+ * MIGRATION TARGET: Should be moved to server-side edge function.
+ */
 import { supabase } from "@/integrations/supabase/client";
 import { eventBus } from "@/lib/core/event-bus";
+import { logger } from "@/lib/monitoring";
+
+const MAX_RIDE_AMOUNT = 10_000;
+const MIN_COMMISSION_RATE = 0.10;
+const MAX_COMMISSION_RATE = 0.40;
+const PLATFORM_COMMISSION_RATE = 0.20;
+
+async function requireAuth(): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Wallet operation requires authentication");
+  return user.id;
+}
+
+function validateRideAmount(amount: number): void {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error(`Invalid ride amount: ${amount}`);
+  }
+  if (amount > MAX_RIDE_AMOUNT) {
+    throw new Error(`Ride amount ${amount} exceeds safety limit`);
+  }
+}
 
 export async function bridgeWalletOnComplete(
   jobId: string,
@@ -8,7 +36,17 @@ export async function bridgeWalletOnComplete(
   currency: string,
 ) {
   try {
-    if (!customerId || !amount || amount <= 0) return;
+    const authUserId = await requireAuth();
+    validateRideAmount(amount);
+
+    if (!customerId || !jobId) {
+      logger.error("[WALLET_SECURITY] Missing customer/job ID for ride payment", { jobId, customerId });
+      return;
+    }
+
+    logger.info("[WALLET_AUDIT] Processing ride payment", {
+      jobId, customerId, amount, currency, authUser: authUserId,
+    });
 
     const { data: existing } = await supabase
       .from("wallet_transactions")
@@ -17,7 +55,10 @@ export async function bridgeWalletOnComplete(
       .limit(1)
       .maybeSingle();
 
-    if (existing) return;
+    if (existing) {
+      logger.warn("[WALLET_SECURITY] Duplicate ride payment blocked", { jobId });
+      return;
+    }
 
     const { data: wallet } = await supabase
       .from("wallets")
@@ -37,7 +78,7 @@ export async function bridgeWalletOnComplete(
       cardCharged = 0;
     } else if (wallet && walletBalance > 0) {
       walletDeducted = walletBalance;
-      cardCharged = amount - walletBalance;
+      cardCharged = Number((amount - walletBalance).toFixed(2));
     }
 
     const txnRecord = {
@@ -53,6 +94,7 @@ export async function bridgeWalletOnComplete(
         payment_method: paymentMethod,
         wallet_deducted: walletDeducted,
         card_charged: cardCharged,
+        auth_user: authUserId,
       },
       created_at: new Date().toISOString(),
     };
@@ -61,17 +103,24 @@ export async function bridgeWalletOnComplete(
       .from("wallet_transactions")
       .insert(txnRecord as any);
 
-    if (txnError) return;
+    if (txnError) {
+      logger.error("[WALLET] Failed to record ride transaction", { jobId, error: txnError.message });
+      return;
+    }
 
     if (wallet && walletDeducted > 0) {
-      const newBalance = paymentMethod === "wallet" ? walletBalance - amount : 0;
+      const newBalance = Math.max(0, Number((walletBalance - walletDeducted).toFixed(2)));
       await supabase
         .from("wallets")
         .update({
-          balance: Math.max(0, newBalance),
+          balance: newBalance,
           updated_at: new Date().toISOString(),
         } as any)
         .eq("id", (wallet as any).id);
+
+      logger.info("[WALLET_AUDIT] Customer wallet debited for ride", {
+        customerId, walletId: (wallet as any).id, deducted: walletDeducted, newBalance,
+      });
     }
 
     const { data: job } = await supabase
@@ -82,7 +131,7 @@ export async function bridgeWalletOnComplete(
 
     if (job && (job as any).rider_user_id) {
       const riderUserId = (job as any).rider_user_id;
-      const riderEarnings = Math.round(amount * 0.80);
+      const riderEarnings = Number((amount * (1 - PLATFORM_COMMISSION_RATE)).toFixed(2));
 
       const { data: existingEarning } = await supabase
         .from("wallet_transactions")
@@ -91,7 +140,10 @@ export async function bridgeWalletOnComplete(
         .limit(1)
         .maybeSingle();
 
-      if (existingEarning) return;
+      if (existingEarning) {
+        logger.warn("[WALLET_SECURITY] Duplicate rider earning blocked", { jobId, riderUserId });
+        return;
+      }
 
       const { data: riderWallet } = await supabase
         .from("wallets")
@@ -110,20 +162,27 @@ export async function bridgeWalletOnComplete(
         metadata: {
           job_id: jobId,
           gross_fare: amount,
-          commission_rate: 0.20,
+          commission_rate: PLATFORM_COMMISSION_RATE,
           net_earning: riderEarnings,
+          auth_user: authUserId,
         },
         created_at: new Date().toISOString(),
       } as any);
 
       if (riderWallet) {
+        const currentRiderBalance = Number((riderWallet as any).balance ?? 0);
+        const newRiderBalance = Number((currentRiderBalance + riderEarnings).toFixed(2));
         await supabase
           .from("wallets")
           .update({
-            balance: Number((riderWallet as any).balance ?? 0) + riderEarnings,
+            balance: newRiderBalance,
             updated_at: new Date().toISOString(),
           } as any)
           .eq("id", (riderWallet as any).id);
+
+        logger.info("[WALLET_AUDIT] Rider wallet credited", {
+          riderUserId, walletId: (riderWallet as any).id, credited: riderEarnings, newBalance: newRiderBalance,
+        });
       }
 
       void eventBus.emit("wallet.rider_paid", {
@@ -141,7 +200,9 @@ export async function bridgeWalletOnComplete(
       currency,
       method: paymentMethod,
     });
-  } catch {
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error("[WALLET] bridgeWalletOnComplete failed", { jobId, error: msg });
   }
 }
 

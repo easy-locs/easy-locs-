@@ -2,9 +2,14 @@
  * Wallet ledger operations — escrow, settlement, and refund flows.
  * P2P transfers use atomic_wallet_transfer RPC (see transactionChallenge.ts).
  * These functions remain for non-P2P flows: escrow, top-up, refund, settlement.
+ *
+ * SECURITY: All mutations require authenticated user, amount validation,
+ * and idempotency to prevent duplicate financial operations.
+ * MIGRATION TARGET: These should be moved to server-side edge functions.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { getWalletDefaultCurrency } from "./wallet-config";
+import { logger } from "@/lib/monitoring";
 
 export type LedgerDirection = "in" | "out";
 export type LedgerEntryType =
@@ -17,11 +22,46 @@ export type LedgerEntryType =
   | "adjustment"
   | "payout";
 
+const MAX_SINGLE_TRANSACTION = 100_000;
+const processedIdempotencyKeys = new Set<string>();
+
+async function requireAuth(): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Wallet operation requires authentication");
+  return user.id;
+}
+
+function validateAmount(amount: number, context: string): void {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error(`Invalid amount for ${context}: ${amount}`);
+  }
+  if (amount > MAX_SINGLE_TRANSACTION) {
+    throw new Error(`Amount ${amount} exceeds maximum single transaction limit for ${context}`);
+  }
+}
+
+function checkIdempotency(key: string): boolean {
+  if (processedIdempotencyKeys.has(key)) return true;
+  processedIdempotencyKeys.add(key);
+  if (processedIdempotencyKeys.size > 500) {
+    const first = processedIdempotencyKeys.values().next().value;
+    if (first) processedIdempotencyKeys.delete(first);
+  }
+  return false;
+}
+
 export async function getOrCreateWalletAccount(params: {
   ownerUserId: string;
   currency?: string;
   accountType?: string;
 }) {
+  const authUserId = await requireAuth();
+  if (params.ownerUserId !== authUserId) {
+    logger.warn("[WALLET_AUDIT] Cross-user wallet access", {
+      authUser: authUserId, targetUser: params.ownerUserId,
+    });
+  }
+
   const currency = params.currency ?? getWalletDefaultCurrency();
   const accountType = params.accountType ?? "fiat";
 
@@ -50,6 +90,11 @@ export async function getOrCreateWalletAccount(params: {
     .single();
 
   if (error) throw error;
+
+  logger.info("[WALLET] Created new wallet account", {
+    userId: params.ownerUserId, currency, accountType,
+  });
+
   return data;
 }
 
@@ -64,6 +109,25 @@ export async function createLedgerEntry(params: {
   externalTxnId?: string | null;
   note?: string | null;
 }) {
+  await requireAuth();
+  validateAmount(params.amount, `ledger_${params.entryType}`);
+
+  const idempKey = `ledger:${params.walletAccountId}:${params.entryType}:${params.referenceId ?? "none"}:${params.amount}`;
+  if (checkIdempotency(idempKey)) {
+    logger.warn("[WALLET_SECURITY] Duplicate ledger entry blocked", {
+      walletAccountId: params.walletAccountId, entryType: params.entryType, referenceId: params.referenceId,
+    });
+    throw new Error("Duplicate transaction detected — operation already processed");
+  }
+
+  logger.info("[WALLET_AUDIT] Creating ledger entry", {
+    walletAccountId: params.walletAccountId,
+    direction: params.direction,
+    amount: params.amount,
+    entryType: params.entryType,
+    referenceId: params.referenceId,
+  });
+
   const { data, error } = await supabase
     .from("wallet_ledger_entries")
     .insert({
@@ -86,6 +150,8 @@ export async function createLedgerEntry(params: {
 }
 
 export async function recomputeWalletBalance(walletAccountId: string) {
+  await requireAuth();
+
   const { data: entries, error } = await supabase
     .from("wallet_ledger_entries")
     .select("direction, amount, status")
@@ -99,9 +165,15 @@ export async function recomputeWalletBalance(walletAccountId: string) {
     return sum + dir * Number(row.amount ?? 0);
   }, 0);
 
+  const safeBalance = Math.max(0, Number(balance.toFixed(2)));
+
+  logger.info("[WALLET_AUDIT] Recomputing balance", {
+    walletAccountId, computedBalance: safeBalance, entryCount: entries?.length ?? 0,
+  });
+
   const { data: updated, error: updateErr } = await supabase
     .from("wallet_accounts")
-    .update({ balance, available_balance: balance })
+    .update({ balance: safeBalance, available_balance: safeBalance })
     .eq("id", walletAccountId)
     .select("*")
     .single();
@@ -110,7 +182,6 @@ export async function recomputeWalletBalance(walletAccountId: string) {
   return updated;
 }
 
-/** Post a wallet transaction: create ledger entry + recompute balance */
 export async function postWalletTransaction(params: {
   ownerUserId: string;
   amount: number;
@@ -122,10 +193,22 @@ export async function postWalletTransaction(params: {
   externalTxnId?: string | null;
   note?: string | null;
 }) {
+  validateAmount(params.amount, params.entryType);
+
   const wallet = await getOrCreateWalletAccount({
     ownerUserId: params.ownerUserId,
     currency: params.currency,
   });
+
+  if (params.direction === "out") {
+    const currentBalance = Number((wallet as any).balance ?? (wallet as any).balance_cash ?? 0);
+    if (currentBalance < params.amount) {
+      logger.warn("[WALLET_SECURITY] Insufficient balance for debit", {
+        walletId: wallet.id, balance: currentBalance, requested: params.amount, entryType: params.entryType,
+      });
+      throw new Error(`Insufficient wallet balance: ${currentBalance} < ${params.amount}`);
+    }
+  }
 
   const entry = await createLedgerEntry({
     walletAccountId: wallet.id,
@@ -143,13 +226,13 @@ export async function postWalletTransaction(params: {
   return { wallet: updatedWallet, entry };
 }
 
-/** Hold escrow for an order */
 export async function holdEscrow(params: {
   customerUserId: string;
   amount: number;
   currency?: string;
   orderId: string;
 }) {
+  validateAmount(params.amount, "escrow_hold");
   return postWalletTransaction({
     ownerUserId: params.customerUserId,
     amount: params.amount,
@@ -162,13 +245,13 @@ export async function holdEscrow(params: {
   });
 }
 
-/** Release escrow to merchant */
 export async function releaseEscrow(params: {
   merchantUserId: string;
   amount: number;
   currency?: string;
   orderId: string;
 }) {
+  validateAmount(params.amount, "escrow_release");
   return postWalletTransaction({
     ownerUserId: params.merchantUserId,
     amount: params.amount,
@@ -181,16 +264,15 @@ export async function releaseEscrow(params: {
   });
 }
 
-/** Alias for releaseEscrow — used by settlement engine */
 export const releaseEscrowToMerchant = releaseEscrow;
 
-/** Post refund credit to customer wallet */
 export async function postRefundToCustomer(params: {
   customerUserId: string;
   amount: number;
   currency?: string;
   orderId: string;
 }) {
+  validateAmount(params.amount, "refund");
   return postWalletTransaction({
     ownerUserId: params.customerUserId,
     amount: params.amount,
