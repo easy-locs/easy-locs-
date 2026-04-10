@@ -117,7 +117,7 @@ export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: P
 
         <div className="flex gap-4 px-5 pb-4 pt-1">
           {img ? (
-            <img src={img} alt={entity.name} className="w-20 h-20 rounded-2xl object-cover shrink-0 border border-border/10" />
+            <img src={img} alt={entity.name} className="w-20 h-20 rounded-2xl object-cover shrink-0 border border-border/10" loading="lazy" />
           ) : (
             <div className="w-20 h-20 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--muted) / 0.15)" }}>
               <MapPin className="w-7 h-7 text-muted-foreground/40" />

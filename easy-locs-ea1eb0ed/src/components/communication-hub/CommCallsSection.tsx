@@ -729,7 +729,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
                         style={{ background: `hsl(${(contact.name.charCodeAt(0) * 37) % 360} 50% 45%)` }}
                       >
                         {contact.avatarUrl ? (
-                          <img src={contact.avatarUrl} className="w-full h-full rounded-full object-cover" alt="" />
+                          <img src={contact.avatarUrl} className="w-full h-full rounded-full object-cover" alt="" loading="lazy" />
                         ) : contact.name.charAt(0).toUpperCase()}
                       </div>
                       <span className="flex-1 text-[13px] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>

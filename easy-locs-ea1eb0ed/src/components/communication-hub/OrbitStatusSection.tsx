@@ -361,7 +361,7 @@ export default function OrbitStatusSection() {
             >
               <div className="absolute inset-0" style={{ background: "hsl(var(--card))" }}>
                 {statusGroups.mine?.statuses[0]?.media_url ? (
-                  <img src={statusGroups.mine.statuses[0].media_url} alt="" className="w-full h-full object-cover opacity-60" />
+                  <img src={statusGroups.mine.statuses[0].media_url} alt="" className="w-full h-full object-cover opacity-60" loading="lazy" />
                 ) : statusGroups.mine?.statuses[0]?.background_color ? (
                   <div className="w-full h-full" style={{ background: statusGroups.mine.statuses[0].background_color, opacity: 0.6 }} />
                 ) : (

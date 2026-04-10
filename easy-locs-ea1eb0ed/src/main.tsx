@@ -23,6 +23,7 @@ if (typeof window !== "undefined") {
   }
   (window as any).__EASYLOCS_BUILD_ID__ = APP_VERSION;
 
+  import("@/lib/platform/web-vitals").then(m => m.initWebVitals()).catch(() => {});
   setTimeout(() => {
     import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});
   }, 3000);

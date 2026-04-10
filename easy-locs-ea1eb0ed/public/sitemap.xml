@@ -1,119 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Core pages -->
   <url><loc>https://www.easy-locs.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://www.easy-locs.com/explore</loc><changefreq>daily</changefreq><priority>0.95</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/long-term-rentals</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/seasonal-rentals</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/marketplace-services</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/concierge-services</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/activities</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/rental-management</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/property-owner-software</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-platform</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/rental-management-software</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/rentals</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.easy-locs.com/cv-generator</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/saved</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-
-  <!-- Phase-1 Countries -->
-  <url><loc>https://www.easy-locs.com/property-management-france</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-uk</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-spain</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-germany</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-italy</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-portugal</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-netherlands</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-switzerland</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-usa</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-canada</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-uae</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-saudi-arabia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-turkey</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-israel</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-thailand</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-japan</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-australia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-singapore-sg</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-indonesia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-morocco</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-south-africa</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-
-  <!-- Phase-1 Cities -->
-  <url><loc>https://www.easy-locs.com/property-management-paris</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-marseille</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-lyon</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-nice</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-bordeaux</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-toulouse</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-london</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-manchester</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-edinburgh</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-birmingham</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-madrid</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-barcelona</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-valencia</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-malaga</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-berlin</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-munich</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-hamburg</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-frankfurt</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-rome</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-milan</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-florence</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-lisbon</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-porto</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-amsterdam</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-zurich</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-geneva</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-new-york</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-miami</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-los-angeles</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-san-francisco</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-toronto</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-vancouver</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-montreal</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-dubai</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-abu-dhabi</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-riyadh</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-jeddah</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-istanbul</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-antalya</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-tel-aviv</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-bangkok</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-phuket</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-chiang-mai</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-tokyo</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-osaka</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-sydney</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-melbourne</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-singapore-city</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-bali</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-marrakech</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-casablanca</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-cape-town</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-johannesburg</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-vienna</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-warsaw</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-athens</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-dublin</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-prague</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-dubrovnik</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-seoul</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.easy-locs.com/property-management-mexico-city</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-
-  <!-- Utility pages -->
-  <url><loc>https://www.easy-locs.com/login</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://www.easy-locs.com/signup</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.easy-locs.com/install</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://www.easy-locs.com/guest</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.easy-locs.com/about</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.easy-locs.com/contact</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.easy-locs.com/help</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.easy-locs.com/vision</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+
+  <url><loc>https://www.easy-locs.com/services</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.easy-locs.com/marketplace-services</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.easy-locs.com/activities</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.easy-locs.com/concierge-services</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://www.easy-locs.com/food</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.easy-locs.com/taxi</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.easy-locs.com/flights</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.easy-locs.com/stay</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.easy-locs.com/browse</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.easy-locs.com/radar</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://www.easy-locs.com/property-management</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.easy-locs.com/long-term-rentals</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.easy-locs.com/seasonal-rentals</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.easy-locs.com/rental-management</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.easy-locs.com/rentals</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.easy-locs.com/property-owner-software</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-platform</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/rental-management-software</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+
+  <url><loc>https://www.easy-locs.com/country/france</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/united-kingdom</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/spain</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/germany</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/italy</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/portugal</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/usa</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/uae</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/japan</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/australia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/canada</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/morocco</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/south-africa</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/turkey</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/saudi-arabia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/thailand</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/singapore</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.easy-locs.com/country/indonesia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+
+  <url><loc>https://www.easy-locs.com/city/paris</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/london</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/dubai</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/new-york</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/tokyo</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/barcelona</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/berlin</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/rome</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/lisbon</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/amsterdam</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/miami</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/toronto</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/sydney</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/marrakech</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/cape-town</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/istanbul</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/bangkok</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/singapore-city</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/city/bali</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+
+  <url><loc>https://www.easy-locs.com/property-management-france</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-uk</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-spain</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-germany</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-italy</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-usa</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-uae</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-japan</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-australia</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-dubai</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-paris</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.easy-locs.com/property-management-london</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
+  <url><loc>https://www.easy-locs.com/signup</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.easy-locs.com/login</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://www.easy-locs.com/install</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://www.easy-locs.com/terms</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
   <url><loc>https://www.easy-locs.com/privacy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
   <url><loc>https://www.easy-locs.com/cookies</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://www.easy-locs.com/legal-notice</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://www.easy-locs.com/about</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://www.easy-locs.com/contact</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://www.easy-locs.com/help</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.easy-locs.com/legal</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
 </urlset>

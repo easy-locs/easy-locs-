@@ -84,7 +84,7 @@ function OrbitPreviewWidget({ onNavigate }: Props) {
               }}
             >
               {thread.avatarUrl ? (
-                <img src={thread.avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
+                <img src={thread.avatarUrl} alt="" className="w-full h-full rounded-full object-cover" loading="lazy" />
               ) : initials}
             </div>
             <div className="flex-1 min-w-0">
