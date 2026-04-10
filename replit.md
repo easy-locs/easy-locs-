@@ -177,6 +177,36 @@ Full 6-page booking flow with shared state via `flightFlowStore` (module-level s
 5. Payment confirmed → auto-issue tickets (3 retries with backoff)
 6. Ticketed → complete. Refunds/cancellations handled via state machine
 
+## Property Booking Vertical (Unified Hotel + Property)
+Airbnb-style unified booking system with short-term (hotel/vacation) and long-term (rental/buy) modes.
+
+### Domain Types (`src/domains/property/property-booking-types.ts`)
+- **PropertyListing**: Full listing with photos, amenities, host, pricing, availability, rules, cancellation policy
+- **PropertyBooking**: Complete booking with guest info, pricing breakdown, payment refs, status lifecycle
+- **PropertySearchParams**: Unified search supporting both modes (check-in/out for short-term, move-in for long-term)
+- **PriceBreakdown**: Per-night/per-month pricing, cleaning fee, service fee, taxes, security deposit
+- **PropertyHost**: Host profile with superhost badge, response rate, verification status
+
+### Property Booking Store (`src/lib/property/property-booking-store.ts`)
+Module-level singleton store (same pattern as flight-flow-store):
+- `search()` → mock results with mode-aware pricing
+- `selectListing()` → computes pricing based on stay duration
+- `createBooking()` → generates booking with ref number
+- `confirmPayment()` → supports wallet/card/bank/mobile money
+- Hook: `usePropertyBooking()` (`src/hooks/usePropertyBooking.ts`) — `useSyncExternalStore`-based
+
+### Property UI Pages (`src/pages/property/`)
+6-page booking flow:
+- **PropertySearchPage** (`/property/search`): Short-term / Long-term mode toggle, category pills, location/dates/guests
+- **PropertyResultsPage** (`/property/results`): Card grid with sort (rating/price/reviews), instant book badge, superhost badge
+- **PropertyDetailPage** (`/property/detail`): Gallery, host card with Orbit chat CTA, amenities, highlights, house rules, cancellation policy, sticky reserve bar
+- **PropertyBookingPage** (`/property/booking`): Guest info form, special requests, price breakdown — protected route
+- **PropertyPaymentPage** (`/property/payment`): 4 payment methods (Wallet/Card/Bank/Mobile Money), booking summary — protected route
+- **PropertyConfirmationPage** (`/property/confirmation`): Booking ref with copy, stay details, guest info, payment status, host contact via Orbit — protected route
+
+### Nav Config
+Bottom nav hidden on `/property/booking`, `/property/payment`, `/property/confirmation`
+
 ## Smart Cross-Pillar Navigation
 Complete overlay-first navigation system ensuring seamless user flows across all 5 pillars:
 

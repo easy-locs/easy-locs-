@@ -137,6 +137,14 @@ export const FlightPassengerPage = safeLazy(() => import("@/pages/travel/FlightP
 export const FlightPaymentPage = safeLazy(() => import("@/pages/travel/FlightPaymentPage"), "FlightPaymentPage");
 export const FlightConfirmationPage = safeLazy(() => import("@/pages/travel/FlightConfirmationPage"), "FlightConfirmationPage");
 
+// Radar — Property Booking (unified Hotel + Property)
+export const PropertySearchPage = safeLazy(() => import("@/pages/property/PropertySearchPage"), "PropertySearchPage");
+export const PropertyResultsPage = safeLazy(() => import("@/pages/property/PropertyResultsPage"), "PropertyResultsPage");
+export const PropertyDetailPage = safeLazy(() => import("@/pages/property/PropertyDetailPage"), "PropertyDetailPage");
+export const PropertyBookingPage = safeLazy(() => import("@/pages/property/PropertyBookingPage"), "PropertyBookingPage");
+export const PropertyPaymentPage = safeLazy(() => import("@/pages/property/PropertyPaymentPage"), "PropertyPaymentPage");
+export const PropertyConfirmationPage = safeLazy(() => import("@/pages/property/PropertyConfirmationPage"), "PropertyConfirmationPage");
+
 // Radar — Mobility
 export const MobilityHubPage = safeLazy(() => import("@/pages/mobility/MobilityHubPage"), "MobilityHubPage");
 export const MobilityTaxiPage = safeLazy(() => import("@/pages/mobility/MobilityTaxiPage"), "MobilityTaxiPage");
