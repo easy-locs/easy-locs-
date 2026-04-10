@@ -13,7 +13,8 @@ import { useCall } from "@/components/call/CallProvider";
 import { useI18n } from "@/lib/i18n";
 import {
   Phone, PhoneMissed, Video, Search, ArrowDownLeft, ArrowUpRight,
-  MessageSquare, Trash2, Clock, Info, PhoneCall, CalendarClock, Hash,
+  MessageSquare, Trash2, Clock, Info, PhoneCall, CalendarClock,
+  User, Loader2, X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
@@ -24,6 +25,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { isUUID } from "@/lib/orbit/message-formatter";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 import { formatOrbitTimestamp, formatCallStatusLabel } from "@/lib/orbit/canonical-helpers";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format, addDays, setHours, setMinutes } from "date-fns";
 
 type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
@@ -68,8 +72,17 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
   const [nameCache, setNameCache] = useState<Record<string, string>>({});
   const [detailCall, setDetailCall] = useState<CallLog | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [showDialpad, setShowDialpad] = useState(false);
-  const [dialInput, setDialInput] = useState("");
+  const [showContactPicker, setShowContactPicker] = useState(false);
+  const [contactPickerMode, setContactPickerMode] = useState<"audio" | "video">("audio");
+  const [contactsList, setContactsList] = useState<{ id: string; name: string; userId: string | null; orbitId: string | null; avatarUrl: string | null }[]>([]);
+  const [contactsLoading, setContactsLoading] = useState(false);
+  const [contactSearch, setContactSearch] = useState("");
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [scheduleContact, setScheduleContact] = useState<{ id: string; name: string; userId: string | null; orbitId: string | null } | null>(null);
+  const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined);
+  const [scheduleTime, setScheduleTime] = useState("10:00");
+  const [scheduleType, setScheduleType] = useState<"audio" | "video">("audio");
+  const [scheduledCalls, setScheduledCalls] = useState<{ id: string; contactName: string; date: Date; time: string; type: "audio" | "video" }[]>([]);
 
   const loadCalls = useCallback(async () => {
     if (!user?.id) {
@@ -171,6 +184,21 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
   }, [user?.id]);
 
   useEffect(() => { loadCalls(); }, [loadCalls]);
+
+  useEffect(() => {
+    if (scheduledCalls.length === 0) return;
+    const interval = setInterval(() => {
+      const now = new Date();
+      scheduledCalls.forEach(sc => {
+        const diff = sc.date.getTime() - now.getTime();
+        if (diff > 0 && diff <= 60_000) {
+          toast.info(`${sc.type === "video" ? "Video" : "Voice"} call with ${sc.contactName} starts now!`, { duration: 10_000 });
+          setScheduledCalls(prev => prev.filter(s => s.id !== sc.id));
+        }
+      });
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [scheduledCalls]);
 
   const handleOpenCallDetail = useCallback((call: CallLog) => {
     haptic("medium");
@@ -285,6 +313,88 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
     );
   };
 
+  const openContactPicker = useCallback(async () => {
+    setShowContactPicker(true);
+    setContactSearch("");
+    if (!user?.id) return;
+    setContactsLoading(true);
+    try {
+      const contacts = await listOrbitContacts(user.id);
+      const mapped = (contacts as any[]).map((c: any) => ({
+        id: c.id,
+        name: c.display_name || c.name || "Contact",
+        userId: c.peer_user_id || c.contact_user_id || null,
+        orbitId: c.peer_orbit_id || null,
+        avatarUrl: c.avatar_url || null,
+      })).filter((c: any) => c.userId || c.orbitId);
+      setContactsList(mapped);
+    } catch {
+      setContactsList([]);
+    } finally {
+      setContactsLoading(false);
+    }
+  }, [user?.id]);
+
+  const handleContactCall = useCallback(async (contact: typeof contactsList[0], isVideo: boolean) => {
+    setShowContactPicker(false);
+    haptic("medium");
+    const targetId = contact.orbitId || (contact.userId ? `orbit_${contact.userId.replace(/-/g, "").substring(0, 8)}` : "");
+    if (!targetId) {
+      toast.error("Cannot reach this contact");
+      return;
+    }
+    trackOrbitEvent("orbit.call.started", {
+      screen: "calls", component: "CommCallsSection",
+      action: "new_call_contact_picker",
+      payload: { callType: isVideo ? "video" : "audio" },
+      result: "success",
+    });
+    try {
+      const success = await startCall({
+        targetId,
+        receiverUserId: contact.userId || undefined,
+        receiverOrbitId: contact.orbitId || undefined,
+        entityType: "direct",
+        peerName: contact.name,
+        isVideo,
+      });
+      if (!success) toast.error(t("orbit.calls.redial_failed") || "Call failed");
+    } catch {
+      toast.error(t("orbit.calls.redial_failed") || "Call failed");
+    }
+  }, [startCall, t]);
+
+  const handleScheduleCall = useCallback(() => {
+    if (!scheduleContact || !scheduleDate) {
+      toast.error("Please select a contact and date");
+      return;
+    }
+    const [h, m] = scheduleTime.split(":").map(Number);
+    const scheduledAt = setMinutes(setHours(scheduleDate, h), m);
+    if (scheduledAt <= new Date()) {
+      toast.error("Please select a future date and time");
+      return;
+    }
+    const newScheduled = {
+      id: `sched_${Date.now()}`,
+      contactName: scheduleContact.name,
+      date: scheduledAt,
+      time: scheduleTime,
+      type: scheduleType,
+    };
+    setScheduledCalls(prev => [...prev, newScheduled]);
+    setShowSchedule(false);
+    setShowContactPicker(false);
+    haptic("success");
+    toast.success(`${scheduleType === "video" ? "Video" : "Voice"} call scheduled with ${scheduleContact.name} on ${format(scheduledAt, "MMM d")} at ${scheduleTime}`);
+    trackOrbitEvent("orbit.call.scheduled", {
+      screen: "calls", component: "CommCallsSection",
+      action: "schedule_call",
+      payload: { type: scheduleType, contactName: scheduleContact.name, scheduledAt: scheduledAt.toISOString() },
+      result: "success",
+    });
+  }, [scheduleContact, scheduleDate, scheduleTime, scheduleType]);
+
   const toFriendlyId = (id: string) => {
     if (id.startsWith("orbit_")) return `EL-${id.replace("orbit_", "").toUpperCase()}`;
     if (isUUID(id)) return `EL-${id.replace(/-/g, "").substring(0, 8).toUpperCase()}`;
@@ -323,12 +433,8 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
             color="hsl(var(--primary))"
             onClick={() => {
               haptic("light");
-              if (calls.length > 0) {
-                const recent = calls[0];
-                handleRedial(recent);
-              } else {
-                toast.info(t("orbit.calls.new_call_hint") || "No recent contacts — make your first call from a chat");
-              }
+              setContactPickerMode("audio");
+              openContactPicker();
             }}
           />
           <QuickAction
@@ -337,30 +443,36 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
             color="hsl(var(--primary))"
             onClick={() => {
               haptic("light");
-              const recentVideo = calls.find(c => c.call_type === "video");
-              if (recentVideo) {
-                handleRedial(recentVideo);
-              } else if (calls.length > 0) {
-                const peerId = calls[0].caller_orbit_id === myOrbitId ? calls[0].receiver_orbit_id : calls[0].caller_orbit_id;
-                startCall({ targetId: peerId, entityType: "direct", peerName: nameCache[peerId] || t("orbit.contact"), isVideo: true }).catch(() => {
-                  toast.error(t("orbit.calls.redial_failed") || "Call failed");
-                });
-              } else {
-                toast.info(t("orbit.calls.new_video_hint") || "No recent contacts — start a video call from a chat");
-              }
+              setContactPickerMode("video");
+              openContactPicker();
             }}
           />
           <QuickAction
             icon={<CalendarClock className="h-5 w-5" />}
             label={t("orbit.calls.schedule") || "Schedule"}
             color="hsl(var(--primary))"
-            onClick={() => { haptic("light"); toast.info(t("orbit.calls.schedule_hint") || "Schedule a call — coming soon"); }}
-          />
-          <QuickAction
-            icon={<Hash className="h-5 w-5" />}
-            label={t("orbit.calls.keypad") || "Keypad"}
-            color="hsl(var(--primary))"
-            onClick={() => { haptic("light"); setShowDialpad(true); }}
+            onClick={async () => {
+              haptic("light");
+              setScheduleContact(null);
+              setScheduleDate(undefined);
+              setScheduleTime("10:00");
+              setScheduleType("audio");
+              setShowSchedule(true);
+              if (!user?.id) return;
+              setContactsLoading(true);
+              try {
+                const contacts = await listOrbitContacts(user.id);
+                const mapped = (contacts as any[]).map((c: any) => ({
+                  id: c.id,
+                  name: c.display_name || c.name || "Contact",
+                  userId: c.peer_user_id || c.contact_user_id || null,
+                  orbitId: c.peer_orbit_id || null,
+                  avatarUrl: c.avatar_url || null,
+                })).filter((c: any) => c.userId || c.orbitId);
+                setContactsList(mapped);
+              } catch { setContactsList([]); }
+              finally { setContactsLoading(false); }
+            }
           />
         </div>
       </div>
@@ -406,6 +518,24 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
           ))}
         </div>
       </div>
+
+      {scheduledCalls.length > 0 && (
+        <div className="px-4 pb-2 shrink-0">
+          <p className="text-[11px] font-semibold mb-1.5" style={{ color: "hsl(var(--primary))" }}>Scheduled</p>
+          <div className="space-y-1">
+            {scheduledCalls.map(sc => (
+              <div key={sc.id} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs" style={{ background: "hsl(var(--primary) / 0.06)", border: "1px solid hsl(var(--primary) / 0.1)" }}>
+                {sc.type === "video" ? <Video className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} /> : <Phone className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-success))" }} />}
+                <span className="flex-1 truncate font-medium" style={{ color: "hsl(var(--foreground))" }}>{sc.contactName}</span>
+                <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{format(sc.date, "MMM d")} · {sc.time}</span>
+                <button onClick={() => setScheduledCalls(prev => prev.filter(s => s.id !== sc.id))} className="shrink-0 active:scale-90 transition-transform">
+                  <X className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Call list */}
       <div className="flex-1 overflow-y-auto px-2">
@@ -545,52 +675,216 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showDialpad} onOpenChange={setShowDialpad}>
-        <DialogContent className="max-w-xs" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border) / 0.15)" }}>
+      <Dialog open={showContactPicker && !showSchedule} onOpenChange={(open) => { if (!open) setShowContactPicker(false); }}>
+        <DialogContent className="max-w-sm max-h-[70vh] flex flex-col" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border) / 0.15)" }}>
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-              {t("orbit.calls.keypad") || "Keypad"}
+              {contactPickerMode === "video" ? "New Video Call" : "New Call"}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center gap-3">
+          <div className="relative mb-2">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
             <Input
-              value={dialInput}
-              onChange={e => setDialInput(e.target.value)}
-              placeholder="orbit_id or EL-ID"
-              className="text-center text-lg font-mono tracking-widest h-12"
+              value={contactSearch}
+              onChange={e => setContactSearch(e.target.value)}
+              placeholder="Search contacts..."
+              className="pl-9 h-9 text-sm border-0"
               style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
+              autoFocus
             />
-            <div className="grid grid-cols-3 gap-2 w-full max-w-[200px]">
-              {["1","2","3","4","5","6","7","8","9","*","0","#"].map(k => (
-                <button key={k} onClick={() => { haptic("light"); setDialInput(prev => prev + k); }}
-                  className="h-12 rounded-xl text-lg font-semibold transition-colors active:scale-95"
-                  style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}>{k}</button>
-              ))}
+          </div>
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {contactsLoading ? (
+              <div className="space-y-2 py-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 px-2 py-2">
+                    <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                    <Skeleton className="h-3.5 w-28" />
+                  </div>
+                ))}
+              </div>
+            ) : contactsList.filter(c => !contactSearch || c.name.toLowerCase().includes(contactSearch.toLowerCase())).length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <User className="h-8 w-8 mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
+                <p className="text-xs" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+                  {contactsList.length === 0 ? "No contacts yet — add contacts from the Contacts tab" : "No matching contacts"}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-0.5">
+                {contactsList
+                  .filter(c => !contactSearch || c.name.toLowerCase().includes(contactSearch.toLowerCase()))
+                  .map(contact => (
+                    <button
+                      key={contact.id}
+                      onClick={() => handleContactCall(contact, contactPickerMode === "video")}
+                      disabled={isInCall || isStartingCall}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-left active:scale-[0.98] disabled:opacity-50"
+                      style={{ background: "transparent" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "hsl(var(--card) / 0.4)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
+                        style={{ background: `hsl(${(contact.name.charCodeAt(0) * 37) % 360} 50% 45%)` }}
+                      >
+                        {contact.avatarUrl ? (
+                          <img src={contact.avatarUrl} className="w-full h-full rounded-full object-cover" alt="" />
+                        ) : contact.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="flex-1 text-[13px] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                        {contact.name}
+                      </span>
+                      <div className="shrink-0">
+                        {contactPickerMode === "video" ? (
+                          <Video className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
+                        ) : (
+                          <Phone className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showSchedule} onOpenChange={(open) => { if (!open) { setShowSchedule(false); setShowContactPicker(false); } }}>
+        <DialogContent className="max-w-sm max-h-[85vh] flex flex-col overflow-y-auto" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border) / 0.15)" }}>
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+              Schedule a Call
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Contact</label>
+              {scheduleContact ? (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "hsl(var(--card))" }}>
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                    style={{ background: `hsl(${(scheduleContact.name.charCodeAt(0) * 37) % 360} 50% 45%)` }}
+                  >
+                    {scheduleContact.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="flex-1 text-sm font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                    {scheduleContact.name}
+                  </span>
+                  <button onClick={() => setScheduleContact(null)} className="shrink-0">
+                    <X className="h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-0.5 max-h-[120px] overflow-y-auto rounded-lg" style={{ background: "hsl(var(--card) / 0.5)" }}>
+                  {contactsLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--muted-foreground))" }} />
+                    </div>
+                  ) : contactsList.length === 0 ? (
+                    <p className="text-xs text-center py-4" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>No contacts available</p>
+                  ) : (
+                    contactsList.map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => setScheduleContact({ id: c.id, name: c.name, userId: c.userId, orbitId: c.orbitId })}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors"
+                        style={{ color: "hsl(var(--foreground))" }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "hsl(var(--card))")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <div
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0"
+                          style={{ background: `hsl(${(c.name.charCodeAt(0) * 37) % 360} 50% 45%)` }}
+                        >
+                          {c.name.charAt(0).toUpperCase()}
+                        </div>
+                        {c.name}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
-            <div className="flex gap-2 w-full">
-              <button onClick={() => setDialInput(prev => prev.slice(0, -1))}
-                className="flex-1 h-11 rounded-xl text-sm font-medium"
-                style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
-                {t("orbit.delete") || "Delete"}
-              </button>
-              <button
-                onClick={() => {
-                  if (!dialInput.trim()) return;
-                  haptic("medium");
-                  const raw = dialInput.trim();
-                  const targetId = raw.startsWith("orbit_") ? raw
-                    : raw.toUpperCase().startsWith("EL-") ? `orbit_${raw.slice(3).replace(/[^a-zA-Z0-9]/g, "").toLowerCase()}`
-                    : `orbit_${raw.replace(/[^a-zA-Z0-9]/g, "").toLowerCase()}`;
-                  startCall({ targetId, entityType: "direct", peerName: dialInput.trim(), isVideo: false }).then(ok => {
-                    if (ok) { setShowDialpad(false); setDialInput(""); }
-                    else toast.error(t("orbit.calls.redial_failed") || "Call failed");
-                  }).catch(() => toast.error(t("orbit.calls.redial_failed") || "Call failed"));
-                }}
-                className="flex-1 h-11 rounded-xl text-sm font-medium"
-                style={{ background: "hsl(var(--primary))", color: "white" }}>
-                {t("orbit.calls.new_call") || "Call"}
-              </button>
+
+            <div>
+              <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Call Type</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setScheduleType("audio")}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors"
+                  style={{
+                    background: scheduleType === "audio" ? "hsl(var(--primary) / 0.12)" : "hsl(var(--card))",
+                    color: scheduleType === "audio" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                    border: `1px solid ${scheduleType === "audio" ? "hsl(var(--primary) / 0.3)" : "transparent"}`,
+                  }}
+                >
+                  <Phone className="h-3.5 w-3.5" /> Voice
+                </button>
+                <button
+                  onClick={() => setScheduleType("video")}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors"
+                  style={{
+                    background: scheduleType === "video" ? "hsl(var(--primary) / 0.12)" : "hsl(var(--card))",
+                    color: scheduleType === "video" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                    border: `1px solid ${scheduleType === "video" ? "hsl(var(--primary) / 0.3)" : "transparent"}`,
+                  }}
+                >
+                  <Video className="h-3.5 w-3.5" /> Video
+                </button>
+              </div>
             </div>
+
+            <div>
+              <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Date</label>
+              <div className="rounded-lg overflow-hidden" style={{ background: "hsl(var(--card))" }}>
+                <Calendar
+                  mode="single"
+                  selected={scheduleDate}
+                  onSelect={setScheduleDate}
+                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Time</label>
+              <input
+                type="time"
+                value={scheduleTime}
+                onChange={e => setScheduleTime(e.target.value)}
+                className="w-full h-10 px-3 rounded-lg text-sm"
+                style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))", border: "1px solid hsl(var(--border) / 0.15)" }}
+              />
+            </div>
+
+            <button
+              onClick={handleScheduleCall}
+              disabled={!scheduleContact || !scheduleDate}
+              className="w-full h-11 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40"
+              style={{ background: "hsl(var(--primary))", color: "white" }}
+            >
+              Schedule {scheduleType === "video" ? "Video" : ""} Call
+            </button>
+
+            {scheduledCalls.length > 0 && (
+              <div className="pt-2 border-t" style={{ borderColor: "hsl(var(--border) / 0.1)" }}>
+                <p className="text-[11px] font-medium mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>Upcoming</p>
+                <div className="space-y-1.5">
+                  {scheduledCalls.map(sc => (
+                    <div key={sc.id} className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs" style={{ background: "hsl(var(--card) / 0.5)" }}>
+                      {sc.type === "video" ? <Video className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} /> : <Phone className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-success))" }} />}
+                      <span className="flex-1 truncate" style={{ color: "hsl(var(--foreground))" }}>{sc.contactName}</span>
+                      <span style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{format(sc.date, "MMM d")} · {sc.time}</span>
+                      <button onClick={() => setScheduledCalls(prev => prev.filter(s => s.id !== sc.id))} className="shrink-0">
+                        <X className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
