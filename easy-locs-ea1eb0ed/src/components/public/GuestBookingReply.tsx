@@ -122,7 +122,7 @@ export default function GuestBookingReply({ bookingId, guestName, guestEmail }: 
       qc.invalidateQueries({ queryKey: ["guest_booking_messages", bookingId] });
       toast.success("Message sent!");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error("Something went wrong. Please try again."),
   });
 
   return (

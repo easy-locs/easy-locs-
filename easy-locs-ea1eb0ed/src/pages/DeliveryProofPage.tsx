@@ -31,7 +31,7 @@ export default function DeliveryProofPage() {
       setSubmitted(true);
       toast.success("Delivery proof submitted");
     } catch (err: any) {
-      toast.error(err.message || "Failed to submit proof");
+      toast.error("Failed to submit proof");
     } finally {
       setLoading(false);
     }

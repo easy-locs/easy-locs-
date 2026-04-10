@@ -267,7 +267,7 @@ export function useOpsDashboard() {
       setCleaningResult(res);
       toast.success(`Cleaning complete: ${res.totalProcessed} shops processed`);
       refetch();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { console.error("[Ops]", e.message); toast.error("Something went wrong. Please try again."); }
     finally { setCleaning(false); setCleaningProgress(""); }
   }, [refetch]);
 

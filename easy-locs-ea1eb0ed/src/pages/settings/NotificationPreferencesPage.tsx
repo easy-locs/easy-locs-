@@ -172,7 +172,8 @@ export default function NotificationPreferencesPage() {
       await userService.upsertNotificationCategoryPrefs(user.id, prefs, quietHours);
       toast.success(tl("notif.saved"));
     } catch (err: any) {
-      toast.error(err.message || "Error");
+      console.error("[Notifications]", err.message);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setSaving(false);
     }

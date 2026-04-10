@@ -42,7 +42,7 @@ const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange, allowVideo 
         const publicUrl = await seasonalRepo.uploadPropertyPhoto(orgId, propertyId, file);
         newUrls.push(publicUrl);
       } catch (error: any) {
-        toast({ title: t("page.photos.upload_error"), description: error.message, variant: "destructive" });
+        toast({ title: t("page.photos.upload_error"), description: "Something went wrong. Please try again.", variant: "destructive" });
         continue;
       }
     }

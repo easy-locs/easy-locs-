@@ -105,7 +105,7 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
           newUrls.push(publicUrl);
         }
       } catch (err: any) {
-        toast.error(`Upload failed: ${err.message}`);
+        toast.error("Something went wrong. Please try again.");
         continue;
       }
     }

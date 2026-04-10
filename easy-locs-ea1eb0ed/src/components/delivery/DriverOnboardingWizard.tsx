@@ -86,7 +86,7 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
       toast.success("Inscription chauffeur terminée !");
       onComplete?.();
     } catch (e: any) {
-      toast.error(e.message || "Erreur d'inscription");
+      toast.error("Erreur d'inscription");
     } finally {
       setSubmitting(false);
     }

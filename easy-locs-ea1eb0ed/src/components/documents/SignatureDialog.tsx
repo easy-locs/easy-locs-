@@ -54,7 +54,7 @@ const SignatureDialog = ({ open, onOpenChange, documentId, documentTitle, signer
       onSigned();
       onOpenChange(false);
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: "Erreur", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setSaving(false);
     }

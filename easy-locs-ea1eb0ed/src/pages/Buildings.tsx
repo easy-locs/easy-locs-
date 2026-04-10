@@ -70,7 +70,8 @@ const Buildings = () => {
         toast({ title: t("page.buildings.added") });
       }
     } catch (error: any) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return;
+      console.error("[Buildings]", error.message);
+      toast({ title: t("common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return;
     }
     setForm(defaultForm); setShowForm(false); setEditId(null);
     await load();
@@ -83,7 +84,8 @@ const Buildings = () => {
       toast({ title: t("page.buildings.deleted") });
       load();
     } catch (error: any) {
-      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
+      console.error("[Buildings]", error.message);
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 

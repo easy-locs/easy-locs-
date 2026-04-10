@@ -27,7 +27,7 @@ export default function MerchantAutoAcceptSettingsPage() {
       await merchantService.updateMerchant(merchantId, { auto_accept_orders: enabled });
       toast.success("Auto accept updated");
     } catch (err: any) {
-      toast.error(err.message || "Could not save");
+      toast.error("Could not save");
     } finally {
       setSaving(false);
     }

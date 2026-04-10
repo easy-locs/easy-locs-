@@ -111,7 +111,7 @@ Return: {"title":"optimized product title","description":"compelling product des
       setImages([]); setVideoUrl(""); setCoverIndex(0);
       onCreated?.();
     } catch (e: any) {
-      toast.error(e.message || "Failed to create product");
+      toast.error("Failed to create product");
     } finally {
       setLoading(false);
     }

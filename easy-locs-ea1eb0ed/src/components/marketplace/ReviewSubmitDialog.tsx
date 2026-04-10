@@ -82,7 +82,7 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
       if (error?.code === "23505") {
         toast.error(t("mp.review_already_submitted") || "You have already reviewed this booking");
       } else {
-        toast.error(error?.message || "Failed to submit review");
+        toast.error("Failed to submit review");
       }
     }
     setSubmitting(false);

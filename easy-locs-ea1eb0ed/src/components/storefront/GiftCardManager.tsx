@@ -79,7 +79,7 @@ export default function GiftCardManager({ shopId, mode }: Props) {
       setRecipientEmail("");
       setMessage("");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => toast.error("Something went wrong. Please try again."),
   });
 
   const redeemCardMutation = useMutation({
@@ -92,7 +92,7 @@ export default function GiftCardManager({ shopId, mode }: Props) {
       toast.success("Gift card redeemed!");
       setRedeemCode("");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => toast.error("Something went wrong. Please try again."),
   });
 
   const copyCode = (code: string, id: string) => {

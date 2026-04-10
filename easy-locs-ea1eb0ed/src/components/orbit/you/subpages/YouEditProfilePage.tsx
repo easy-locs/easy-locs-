@@ -42,7 +42,7 @@ export default function YouEditProfilePage({ onBack }: Props) {
       const publicUrl = await uploadAvatar(user.id, file);
       setAvatarUrl(publicUrl);
       toast.success(t("orbit.you.photo_uploaded"));
-    } catch (err: any) { toast.error(err.message || t("orbit.you.upload_failed")); }
+    } catch (err: any) { console.error("[Profile]", err.message); toast.error(t("orbit.you.upload_failed") || "Upload failed. Please try again."); }
     finally { setUploading(false); }
   };
 
@@ -54,7 +54,7 @@ export default function YouEditProfilePage({ onBack }: Props) {
       haptic("medium");
       toast.success(t("orbit.you.profile_updated"));
       onBack();
-    } catch (err: any) { toast.error(err.message || t("orbit.you.save_failed")); }
+    } catch (err: any) { console.error("[Profile]", err.message); toast.error(t("orbit.you.save_failed") || "Save failed. Please try again."); }
     finally { setSaving(false); }
   };
 

@@ -40,7 +40,7 @@ export default function SupportThread({
       setMessage("");
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Could not send message");
+      toast.error("Could not send message");
     }
   };
 

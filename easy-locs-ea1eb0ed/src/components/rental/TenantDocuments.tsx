@@ -121,7 +121,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       document.body.removeChild(anchor);
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setOpeningDocId(null);
     }
@@ -135,7 +135,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       toast({ title: `${label} ${t("comp.docs.uploaded")}` });
       await loadDocs();
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setUploading(null);
     }
@@ -153,7 +153,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       toast({ title: t("comp.docs.doc_deleted") });
       await loadDocs();
     } catch (error: any) {
-      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 
@@ -198,7 +198,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
 
       toast({ title: t("comp.docs.request_sent"), description: t("comp.docs.request_sent_desc").replace("{label}", label) });
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setRequestingDocType(null);
     }
@@ -239,7 +239,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       });
       toast({ title: t("comp.docs.email_sent"), description: t("comp.docs.email_sent_desc").replace("{email}", tenantEmail) });
     } catch (err: any) {
-      toast({ title: t("comp.docs.send_error"), description: err.message, variant: "destructive" });
+      toast({ title: t("comp.docs.send_error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setSendingEmail(false);
     }

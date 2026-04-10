@@ -104,7 +104,7 @@ const DynamicPricing = () => {
       qc.invalidateQueries({ queryKey: ["pricing_rules"] });
       setAddOpen(false);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error("Something went wrong. Please try again."),
   });
 
   const toggleMut = useMutation({

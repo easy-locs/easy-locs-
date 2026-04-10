@@ -158,7 +158,7 @@ export default function LeaseFormDialog({
       onSaved();
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.message || "Failed to save lease");
+      toast.error("Failed to save lease");
     } finally {
       setSaving(false);
     }

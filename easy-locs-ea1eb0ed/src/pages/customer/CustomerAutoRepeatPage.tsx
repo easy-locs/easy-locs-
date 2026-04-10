@@ -25,7 +25,7 @@ export default function CustomerAutoRepeatPage() {
       toast.success("Auto repeat updated");
       refetch();
     } catch (e: any) {
-      toast.error(e.message || "Could not update auto repeat");
+      toast.error("Could not update auto repeat");
     }
   };
 
@@ -35,7 +35,7 @@ export default function CustomerAutoRepeatPage() {
       toast.success("Auto repeat removed");
       refetch();
     } catch (e: any) {
-      toast.error(e.message || "Could not delete auto repeat");
+      toast.error("Could not delete auto repeat");
     }
   };
 

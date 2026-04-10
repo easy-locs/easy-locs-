@@ -121,7 +121,7 @@ export default function MultiStopRoutePanel({ orgId, className }: Props) {
       setPackageDesc("");
       setFee(10);
     } catch (err: any) {
-      toast.error(err.message || "Erreur création route");
+      toast.error("Erreur création route");
     } finally {
       setSubmitting(false);
     }

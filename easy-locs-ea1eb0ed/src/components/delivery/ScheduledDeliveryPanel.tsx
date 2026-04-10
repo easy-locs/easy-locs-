@@ -61,7 +61,7 @@ export default function ScheduledDeliveryPanel({ onDone }: Props) {
       toast.success(`${count} mission${count > 1 ? "s" : ""} programmée${count > 1 ? "s" : ""} !`);
       onDone?.();
     } catch (e: any) {
-      toast.error(e.message || "Erreur");
+      toast.error("Erreur");
     } finally {
       setSubmitting(false);
     }

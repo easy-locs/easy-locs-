@@ -21,7 +21,7 @@ export default function MerchantClosingModePage() {
       toast.success("Store switched to closing mode");
       navigate(`/merchant/dashboard/${merchantId}`);
     } catch (err: any) {
-      toast.error(err.message || "Could not activate closing mode");
+      toast.error("Could not activate closing mode");
     } finally {
       setSaving(false);
     }
@@ -38,7 +38,7 @@ export default function MerchantClosingModePage() {
       toast.success("Store reopened");
       navigate(`/merchant/dashboard/${merchantId}`);
     } catch (err: any) {
-      toast.error(err.message || "Could not reopen store");
+      toast.error("Could not reopen store");
     } finally {
       setSaving(false);
     }

@@ -41,7 +41,7 @@ export default function CustomerSavedCartsPage() {
       toast.success("Saved cart restored");
       navigate("/checkout");
     } catch (e: any) {
-      toast.error(e.message || "Could not restore saved cart");
+      toast.error("Could not restore saved cart");
     }
   };
 
@@ -51,7 +51,7 @@ export default function CustomerSavedCartsPage() {
       toast.success("Saved cart removed");
       refetch();
     } catch (e: any) {
-      toast.error(e.message || "Could not delete saved cart");
+      toast.error("Could not delete saved cart");
     }
   };
 

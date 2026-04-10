@@ -86,7 +86,7 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
       });
       toast({ title: t("comp.inventory.email_resent"), description: t("comp.inventory.email_resent_desc").replace("{email}", tenant.email) });
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setResendingId(null);
     }

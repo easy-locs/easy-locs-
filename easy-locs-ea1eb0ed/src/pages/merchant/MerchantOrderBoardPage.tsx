@@ -28,7 +28,7 @@ export default function MerchantOrderBoardPage() {
       toast.success(`Order moved to ${nextStatus}`);
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Could not update order");
+      toast.error("Could not update order");
     }
   };
 

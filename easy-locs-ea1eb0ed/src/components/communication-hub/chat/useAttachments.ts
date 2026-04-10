@@ -158,7 +158,7 @@ export function useAttachments(params: {
       trace("attachment.dispatch", "output", { conversationId, dispatched: true, fileName: file.name });
     } catch (e: any) {
       trace("attachment.message.insert", "error", { message: e?.message || "attachment_failed" });
-      toast.error(e?.message || t("orbit.upload_failed"));
+      toast.error(t("orbit.upload_failed"));
     } finally {
       setUploading(false);
     }

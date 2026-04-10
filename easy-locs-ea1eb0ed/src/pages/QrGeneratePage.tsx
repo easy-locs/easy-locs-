@@ -51,7 +51,8 @@ export default function QrGeneratePage() {
 
       toast.success(`${(data ?? []).length} QR codes created`);
     } catch (e: any) {
-      toast.error(e?.message ?? "Generation failed");
+      console.error("[QR]", e?.message);
+      toast.error("Generation failed. Please try again.");
     } finally {
       setLoading(false);
     }

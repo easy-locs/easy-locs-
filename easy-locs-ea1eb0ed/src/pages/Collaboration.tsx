@@ -52,7 +52,7 @@ const Collaboration = () => {
       setEmail("");
       setRole("agent");
     },
-    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "This person has already been invited" : e.message),
+    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "This person has already been invited" : "Something went wrong. Please try again."),
   });
 
   const cancelMut = useMutation({

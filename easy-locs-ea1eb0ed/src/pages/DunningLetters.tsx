@@ -50,7 +50,7 @@ const DunningLetters = () => {
     try {
       await createDunningLetter(orgId, tenantId, tenant?.property_id || null, level, month, amount);
     } catch (error: any) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return;
+      toast({ title: t("common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return;
     }
     toast({ title: t("page.dunning.created").replace("{level}", String(level)) });
 

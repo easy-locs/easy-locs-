@@ -30,7 +30,7 @@ const MFASettings = () => {
     setLoading(true);
     const { data, error } = await mfaRepo.enrollTotp("Easy-Locs TOTP");
     if (error) {
-      toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     } else if (data) {
       setQrCode(data.totp.qr_code);
       setSecret(data.totp.secret);
@@ -51,7 +51,7 @@ const MFASettings = () => {
     }
     const { error } = await mfaRepo.verifyFactor(factorId, challenge.data.id, code);
     if (error) {
-      toast({ title: t("page.settings.mfa_invalid_code") || "Invalid code", description: error.message, variant: "destructive" });
+      toast({ title: t("page.settings.mfa_invalid_code") || "Invalid code", description: "Something went wrong. Please try again.", variant: "destructive" });
     } else {
       toast({ title: t("page.settings.mfa_activated") || "✅ 2FA activated", description: t("page.settings.mfa_activated_desc") || "Two-factor authentication is now active." });
       setStep("enrolled");
@@ -64,7 +64,7 @@ const MFASettings = () => {
     setLoading(true);
     const { error } = await mfaRepo.unenrollFactor(fId);
     if (error) {
-      toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     } else {
       toast({ title: t("page.settings.mfa_deactivated") || "2FA disabled" });
       setStep("idle");

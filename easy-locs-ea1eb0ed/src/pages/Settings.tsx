@@ -103,7 +103,8 @@ const Settings = () => {
       setOrg(prev => ({ ...prev, logo_url: logoUrl }));
       toast({ title: t("page.settings.logo_updated") || "Logo updated" });
     } catch (error: any) {
-      toast({ title: t("page.settings.upload_error") || "Upload error", description: error.message, variant: "destructive" });
+      console.error("[Settings]", error.message);
+      toast({ title: t("page.settings.upload_error") || "Upload error", description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     }
     setUploading(false);
   };
@@ -305,7 +306,8 @@ const Settings = () => {
                     a.click(); URL.revokeObjectURL(url);
                     toast({ title: t("page.settings.export_done") || "Data exported" });
                   } catch (err: any) {
-                    toast({ title: t("page.settings.export_error") || "Export failed", description: err.message, variant: "destructive" });
+                    console.error("[Settings]", err.message);
+                    toast({ title: t("page.settings.export_error") || "Export failed", description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
                   }
                 }} className="w-full text-left px-4 py-3 rounded-xl border border-border hover:bg-muted/50 transition-colors">
                   <p className="text-sm font-medium text-foreground">{t("page.settings.export_data") || "Export my data"}</p>
@@ -319,7 +321,8 @@ const Settings = () => {
                     toast({ title: t("page.settings.delete_requested") || "Deletion requested" });
                     await requestAccountDeletion(user.id, user.email || "");
                   } catch (err: any) {
-                    toast({ title: t("page.settings.delete_error") || "Request failed", description: err.message, variant: "destructive" });
+                    console.error("[Settings]", err.message);
+                    toast({ title: t("page.settings.delete_error") || "Request failed", description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
                   }
                 }} className="w-full text-left px-4 py-3 rounded-xl border border-destructive/30 hover:bg-destructive/5 transition-colors">
                   <p className="text-sm font-medium text-destructive">{t("page.settings.delete_account") || "Delete account"}</p>

@@ -21,7 +21,7 @@ export default function AdminCoreEnginePage() {
       setResult(res);
       toast.success(res ? "Driver matched" : "No driver found");
     } catch (e: any) {
-      toast.error(e.message || "Matching failed");
+      toast.error("Matching failed");
     } finally {
       setLoading(false);
     }
@@ -38,7 +38,7 @@ export default function AdminCoreEnginePage() {
       setResult(res);
       toast.success("Order advanced");
     } catch (e: any) {
-      toast.error(e.message || "State move failed");
+      toast.error("State move failed");
     } finally {
       setLoading(false);
     }

@@ -67,7 +67,7 @@ export function useRentalNotifications(tenants: Tenant[], userCountry: string) {
 
       toast({ title: t("page.rental.notif_sent"), description: `${t("page.rental.email_sent_to")} ${tenant.email}` });
     } catch (err: any) {
-      toast({ title: t("page.rental.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.rental.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setNotifyingRentId(null);
     }

@@ -139,7 +139,7 @@ const Company = () => {
       const data = await companyRepo.createLegalNoticePayment(selectedJAL.name);
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message || t("page.common.error"), variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setPayingJAL(false);
     }

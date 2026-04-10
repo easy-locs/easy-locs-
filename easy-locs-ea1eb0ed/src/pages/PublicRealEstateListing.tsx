@@ -119,7 +119,8 @@ export default function PublicRealEstateListing() {
     }
     } catch (err: any) {
       setSubmitting(false);
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      console.error("[RealEstate]", err.message);
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
       return;
     }
   };

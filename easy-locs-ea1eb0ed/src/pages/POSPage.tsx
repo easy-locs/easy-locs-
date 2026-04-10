@@ -165,7 +165,8 @@ export default function POSPage() {
       setStep("receipt");
       toast.success("Payment completed!");
     } catch (err: any) {
-      toast.error(err.message || "Payment failed");
+      console.error("[POS]", err.message);
+      toast.error("Payment failed. Please try again.");
     } finally {
       setProcessing(false);
     }

@@ -108,7 +108,7 @@ export default function RiderLivePage() {
       }
       toast.success(tc(action.labelKey));
     } catch (e: any) {
-      toast.error(e.message || "Action failed");
+      toast.error("Action failed");
     } finally {
       setActionLoading(null);
     }
@@ -240,7 +240,7 @@ export default function RiderLivePage() {
                     <Button
                       size="sm"
                       className="flex-1 h-10 text-sm font-bold gap-1.5 bg-primary hover:bg-primary/90"
-                      onClick={() => acceptOffer(offer.id).catch((e: any) => toast.error(e.message))}
+                      onClick={() => acceptOffer(offer.id).catch((e: any) => toast.error("Something went wrong. Please try again."))}
                     >
                       <Check className="h-4 w-4" /> {tc("mobility.accept")}
                     </Button>
@@ -248,7 +248,7 @@ export default function RiderLivePage() {
                       size="sm"
                       variant="outline"
                       className="h-10 px-4 text-sm text-destructive border-destructive/30"
-                      onClick={() => rejectOffer(offer.id).catch((e: any) => toast.error(e.message))}
+                      onClick={() => rejectOffer(offer.id).catch((e: any) => toast.error("Something went wrong. Please try again."))}
                     >
                       <X className="h-4 w-4" />
                     </Button>

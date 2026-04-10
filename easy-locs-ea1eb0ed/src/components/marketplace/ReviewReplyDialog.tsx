@@ -39,7 +39,7 @@ export default function ReviewReplyDialog({ open, onOpenChange, review, onUpdate
         responded_at: new Date().toISOString(),
       })
       .eq("id", review.id);
-    if (error) toast.error(error.message);
+    if (error) toast.error("Something went wrong. Please try again.");
     else { toast.success("Reply saved"); onUpdated(); onOpenChange(false); }
     setSubmitting(false);
   };
@@ -50,7 +50,7 @@ export default function ReviewReplyDialog({ open, onOpenChange, review, onUpdate
       .from("marketplace_reviews")
       .update({ status })
       .eq("id", review.id);
-    if (error) toast.error(error.message);
+    if (error) toast.error("Something went wrong. Please try again.");
     else { toast.success(`Review ${status}`); onUpdated(); onOpenChange(false); }
     setSubmitting(false);
   };

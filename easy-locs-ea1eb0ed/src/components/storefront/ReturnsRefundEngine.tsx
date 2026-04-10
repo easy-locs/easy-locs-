@@ -87,7 +87,7 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
       setSelectedOrder("");
       setDescription("");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => toast.error("Something went wrong. Please try again."),
   });
 
   const updateStatus = useMutation({

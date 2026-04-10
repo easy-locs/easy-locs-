@@ -153,7 +153,7 @@ const Accounting = () => {
       setAddOpen(false);
       setNewEntry({ label: "", category: "other", debit: "", credit: "", transaction_date: format(new Date(), "yyyy-MM-dd"), notes: "", property_id: "" });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error("Something went wrong. Please try again."),
   });
 
   const exportCSV = () => {

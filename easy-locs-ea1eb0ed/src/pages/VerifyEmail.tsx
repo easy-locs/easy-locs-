@@ -42,7 +42,8 @@ const VerifyEmail = () => {
     const { error } = await supabase.auth.resend({ type: "signup", email });
     setResending(false);
     if (error) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      console.error("[Auth]", error.message);
+      toast({ title: t("common.error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     } else {
       toast({ title: t("auth.verify.resent"), description: t("auth.verify.resent_desc") });
     }

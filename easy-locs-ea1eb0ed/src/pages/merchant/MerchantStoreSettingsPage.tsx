@@ -65,7 +65,7 @@ export default function MerchantStoreSettingsPage() {
       toast.success("Store settings saved");
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Save failed");
+      toast.error("Save failed");
     } finally {
       setSaving(false);
     }

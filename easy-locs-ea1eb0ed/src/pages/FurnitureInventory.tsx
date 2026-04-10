@@ -138,7 +138,7 @@ const FurnitureInventory = () => {
         if (photoUrl) await updateFurniturePhotoUrl(data.id, photoUrl);
       }
     } catch (error: any) {
-      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
       setUploading(false);
       return;
     }
@@ -164,7 +164,7 @@ const FurnitureInventory = () => {
     try {
       await deleteFurnitureItem(id, orgId || "");
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" }); return;
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" }); return;
     }
     await load();
   };
@@ -285,7 +285,7 @@ const FurnitureInventory = () => {
       doc.save(`inventaire_mobilier_${prop?.label || "tous"}.pdf`);
       toast({ title: "PDF téléchargé" });
     } catch (err: any) {
-      toast({ title: "Erreur PDF", description: err.message, variant: "destructive" });
+      toast({ title: "Erreur PDF", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setUploading(false);
     }

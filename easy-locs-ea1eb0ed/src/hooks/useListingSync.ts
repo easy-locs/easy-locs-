@@ -170,7 +170,8 @@ export function useListingStatusMutation() {
       }
     },
     onError: (err: any) => {
-      toast.error(err.message || "Failed to update listing status");
+      console.error("[Listing]", err.message);
+      toast.error("Failed to update listing. Please try again.");
     },
   });
 }
@@ -200,7 +201,8 @@ export function useUpdateListingMutation() {
       toast.success("Listing updated");
     },
     onError: (err: any) => {
-      toast.error(err.message || "Failed to update listing");
+      console.error("[Listing]", err.message);
+      toast.error("Failed to update listing. Please try again.");
     },
   });
 }

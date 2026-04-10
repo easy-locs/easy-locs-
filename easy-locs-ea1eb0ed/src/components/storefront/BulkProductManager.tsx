@@ -54,7 +54,7 @@ export default function BulkProductManager({ shopId }: Props) {
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["bulk-catalog"] }); toast.success(`${selected.size} items updated`); setSelected(new Set()); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => toast.error("Something went wrong. Please try again."),
   });
 
   const bulkDelete = useMutation({
@@ -118,7 +118,7 @@ export default function BulkProductManager({ shopId }: Props) {
       toast.success(`Imported ${imported} products`);
       qc.invalidateQueries({ queryKey: ["bulk-catalog"] });
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error("Something went wrong. Please try again.");
     }
     setImporting(false);
     if (fileRef.current) fileRef.current.value = "";

@@ -45,7 +45,7 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
     if (status === "refunded") updates.refunded_at = new Date().toISOString();
     try {
       await dealRepo.updateMarketplaceBooking(booking.id, updates);
-    } catch (e: any) { toast.error(e.message); return false; }
+    } catch (e: any) { console.error("[Booking]", e.message); toast.error("Something went wrong. Please try again."); return false; }
 
     const labels: Record<string, string> = { confirmed: "confirmée", cancelled: "annulée", completed: "terminée", refunded: "remboursée", awaiting_payment: "en attente de paiement" };
     toast.success(`Réservation ${labels[status] || status}`);
@@ -65,7 +65,7 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
   const confirmPayment = async (booking: any) => {
     try {
       await dealRepo.updateMarketplaceBooking(booking.id, { payment_confirmed: true, payment_confirmed_at: new Date().toISOString(), payment_method: "manual" });
-    } catch (e: any) { toast.error(e.message); return false; }
+    } catch (e: any) { console.error("[Booking]", e.message); toast.error("Something went wrong. Please try again."); return false; }
     toast.success("Paiement confirmé !");
     invalidate();
     platformBus.emit("marketplace:booking_paid", { bookingId: booking.id, amount: booking.total_price, currency: booking.currency }, "marketplace", { userId: user?.id, orgId });
@@ -77,7 +77,7 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
   const modifyBooking = async (booking: any, changes: { service_date: string; service_time: string; date_from: string | null; date_to: string | null; quantity: number; total_price: number; modification_reason: string }) => {
     try {
       await dealRepo.updateMarketplaceBooking(booking.id, { service_date: changes.service_date, service_time: changes.service_time, date_from: changes.date_from, date_to: changes.date_to, quantity: changes.quantity, total_price: changes.total_price, status: "modified" });
-    } catch (e: any) { toast.error(e.message); return false; }
+    } catch (e: any) { console.error("[Booking]", e.message); toast.error("Something went wrong. Please try again."); return false; }
     toast.success("Réservation modifiée");
     invalidate();
     const svc = findService(booking.service_id);
@@ -101,7 +101,7 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
   const sendQuote = async (booking: any, data: { quoted_price: number; quote_message: string }) => {
     try {
       await dealRepo.updateMarketplaceBooking(booking.id, { total_price: data.quoted_price, status: "awaiting_payment" });
-    } catch (e: any) { toast.error(e.message); return false; }
+    } catch (e: any) { console.error("[Booking]", e.message); toast.error("Something went wrong. Please try again."); return false; }
     toast.success("Devis envoyé !");
     invalidate();
     const svc = findService(booking.service_id);

@@ -43,7 +43,7 @@ export default function FavoriteMerchantButton({
       setActive(res.active);
       toast.success(res.active ? "Added to favorites" : "Removed from favorites");
     } catch (err: any) {
-      toast.error(err.message || "Could not update favorite");
+      toast.error("Could not update favorite");
     } finally {
       setLoading(false);
     }

@@ -87,7 +87,7 @@ export function useRentalRentCalls() {
       platformBus.emit(APP_EVENTS.RENTAL_RENT_CALL_CREATED as any, { rentCallId: payment.id }, "rental");
       toast({ title: t("page.rental.notif_sent"), description: `${t("page.rental.email_sent_to")} ${tenant.email}` });
     } catch (err: any) {
-      toast({ title: t("page.rental.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.rental.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setNotifyingRentId(null);
     }

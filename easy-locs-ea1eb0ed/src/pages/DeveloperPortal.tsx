@@ -75,7 +75,7 @@ const DeveloperPortal = () => {
   const createMut = useMutation({
     mutationFn: () => createApiKey(org!.id, keyName),
     onSuccess: (key) => { setNewKey(key); qc.invalidateQueries({ queryKey: ["api_keys"] }); toast.success("API key created"); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error("Something went wrong. Please try again."),
   });
 
   const deleteMut = useMutation({
@@ -90,7 +90,7 @@ const DeveloperPortal = () => {
       setWebhookOpen(false); setWebhookUrl(""); setWebhookEvents(["*"]);
       qc.invalidateQueries({ queryKey: ["webhooks"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error("Something went wrong. Please try again."),
   });
 
   const deleteWebhookMut = useMutation({

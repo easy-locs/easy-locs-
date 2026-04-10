@@ -157,7 +157,8 @@ export default function MerchantPosPage() {
       setPendingOrderId(order.id);
       setPaymentStep("pin_entry");
     } catch (e: any) {
-      toast.error(e.message || "Failed to create order");
+      console.error("[POS]", e.message);
+      toast.error("Failed to create order. Please try again.");
       setPaymentStep("idle");
     } finally {
       setSubmitting(false);
@@ -193,7 +194,8 @@ export default function MerchantPosPage() {
         setPaymentStep("idle");
       }, 2000);
     } catch (e: any) {
-      setPaymentError(e.message || "Payment failed");
+      console.error("[POS]", e.message);
+      setPaymentError("Payment failed. Please try again.");
       setPaymentStep("pin_entry");
     }
   };

@@ -131,7 +131,8 @@ export function useStorefrontCart(shopId: string | undefined) {
       await loadItems(cId);
       toast.success("Added to cart");
     } catch (e: any) {
-      toast.error(e.message || "Failed to add item");
+      console.error("[Cart]", e.message);
+      toast.error("Failed to add item. Please try again.");
     } finally {
       setLoading(false);
     }

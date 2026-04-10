@@ -144,7 +144,7 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
       setDocs(prev => prev.map(d => d.id === doc.id ? { ...d, emailed_at: new Date().toISOString() } : d));
       toast({ title: "✅ Envoyé", description: `Document envoyé à ${tenant.email}` });
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: "Erreur", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setSendingId(null);
     }

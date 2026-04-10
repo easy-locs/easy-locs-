@@ -53,7 +53,7 @@ export function CustomerJobCard({ job }: { job: MobilityJob }) {
       await cancelJob(job.id, "Customer cancelled");
       toast.success("Ride cancelled");
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 

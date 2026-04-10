@@ -80,7 +80,7 @@ const GuestPortal = () => {
       setOrderSuccess(service.id);
       setTimeout(() => setOrderSuccess(null), 3000);
       toast.success(`"${service.title}" requested successfully!`);
-    } catch (err: any) { toast.error(err.message || "Failed to request service"); }
+    } catch (err: any) { toast.error("Failed to request service"); }
     finally { setOrderingServiceId(null); }
   };
 
@@ -96,7 +96,7 @@ const GuestPortal = () => {
       setOrderSuccess(activity.id);
       setTimeout(() => setOrderSuccess(null), 3000);
       toast.success(`"${activity.title}" booked successfully!`);
-    } catch (err: any) { toast.error(err.message || "Failed to book activity"); }
+    } catch (err: any) { toast.error("Failed to book activity"); }
     finally { setOrderingActivityId(null); }
   };
 

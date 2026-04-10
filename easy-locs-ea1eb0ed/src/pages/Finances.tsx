@@ -131,7 +131,7 @@ const Finances = () => {
       const data = await createConnectAccount();
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setOnboardingLoading(false);
     }
@@ -145,7 +145,7 @@ const Finances = () => {
       toast({ title: t("page.finances.disconnect_success") });
       setConnectStatus({ connected: false, onboarding_complete: false });
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setDisconnectLoading(false);
     }

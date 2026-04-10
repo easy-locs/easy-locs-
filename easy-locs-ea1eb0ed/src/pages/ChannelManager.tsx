@@ -96,13 +96,13 @@ const ChannelManager = () => {
   const syncMut = useMutation({
     mutationFn: async (conn: any) => { setSyncingId(conn.id); return syncIcal(conn, org!.id); },
     onSuccess: (data) => { toast.success(`Sync terminée : ${data.inserted} nouvelles, ${data.skipped} existantes`); invalidateAll(); setSyncingId(null); },
-    onError: (err: Error) => { toast.error(err.message); setSyncingId(null); },
+    onError: (err: Error) => { console.error("[ChannelManager]", err.message); toast.error("Sync failed. Please try again."); setSyncingId(null); },
   });
 
   const addMut = useMutation({
     mutationFn: () => addOtaConnection(org!.id, user!.id, newConn.provider, newConn.ical_url, newConn.property_id),
     onSuccess: () => { toast.success("Connexion OTA ajoutée"); invalidateAll(); setAddOpen(false); setNewConn({ provider: "airbnb", ical_url: "", property_id: "" }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => { console.error("[ChannelManager]", e.message); toast.error("Something went wrong. Please try again."); },
   });
 
   const deleteMut = useMutation({
@@ -117,7 +117,7 @@ const ChannelManager = () => {
       if (user) await notifyOwner(user.id, "🚫 Réservation annulée", `${res.guest_name} — ${res.check_in} → ${res.check_out}`, "/dashboard/channel-manager");
       toast.success("Réservation annulée et e-mail envoyé");
       invalidateAll();
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: any) { console.error("[ChannelManager]", err.message); toast.error("Something went wrong. Please try again."); }
     finally { setCancellingId(null); }
   };
 

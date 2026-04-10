@@ -600,6 +600,7 @@ const common = {
   en: {
     "common.loading": "Loading…",
     "common.error": "Something went wrong",
+    "common.error_generic": "Something went wrong. Please try again.",
     "common.retry": "Retry",
     "common.cancel": "Cancel",
     "common.confirm": "Confirm",
@@ -686,6 +687,7 @@ const common = {
   fr: {
     "common.loading": "Chargement…",
     "common.error": "Une erreur est survenue",
+    "common.error_generic": "Une erreur est survenue. Veuillez réessayer.",
     "common.retry": "Réessayer",
     "common.cancel": "Annuler",
     "common.confirm": "Confirmer",
@@ -772,6 +774,7 @@ const common = {
   ar: {
     "common.loading": "جارٍ التحميل…",
     "common.error": "حدث خطأ ما",
+    "common.error_generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "common.retry": "إعادة المحاولة",
     "common.cancel": "إلغاء",
     "common.confirm": "تأكيد",

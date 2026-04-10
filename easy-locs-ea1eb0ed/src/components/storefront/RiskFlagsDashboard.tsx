@@ -45,7 +45,7 @@ export default function RiskFlagsDashboard({ shopId }: Props) {
       .from("storefront_risk_flags")
       .update({ status: "resolved", resolved_by: user.id, resolved_at: new Date().toISOString(), resolution_note: "Reviewed and cleared" })
       .eq("id", flagId);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error("Something went wrong. Please try again.");
     qc.invalidateQueries({ queryKey: ["risk-flags", shopId] });
     toast.success("Flag resolved");
   };

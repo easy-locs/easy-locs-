@@ -41,7 +41,7 @@ export default function ReviewComposer({
       toast.success("Review submitted");
       onDone?.();
     } catch (err: any) {
-      toast.error(err.message || "Could not submit review");
+      toast.error("Could not submit review");
     } finally {
       setSaving(false);
     }

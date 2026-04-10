@@ -151,7 +151,7 @@ export default function EscrowDeliveryValidator({
       toast.success("Livraison confirmée ! Fonds libérés au livreur.");
       onStatusChange?.();
     } catch (err: any) {
-      toast.error(err.message || "Erreur de validation");
+      toast.error("Erreur de validation");
     } finally {
       setLoading(false);
     }
@@ -166,7 +166,7 @@ export default function EscrowDeliveryValidator({
       toast.success("Fonds remboursés.");
       onStatusChange?.();
     } catch (err: any) {
-      toast.error(err.message || "Erreur de remboursement");
+      toast.error("Erreur de remboursement");
     } finally {
       setLoading(false);
     }

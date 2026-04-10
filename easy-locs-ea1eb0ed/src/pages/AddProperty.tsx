@@ -117,7 +117,8 @@ const AddProperty = () => {
       toast({ title: t("page.rental.property_saved") || "Bien enregistré !" });
       navigate(`/dashboard/country/${form.country.toLowerCase()}`);
     } catch (err: any) {
-      toast({ title: t("page.rental.error"), description: err.message, variant: "destructive" });
+      console.error("[Property]", err.message);
+      toast({ title: t("page.rental.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setSaving(false);
     }

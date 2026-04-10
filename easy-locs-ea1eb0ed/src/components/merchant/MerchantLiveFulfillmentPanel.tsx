@@ -16,7 +16,7 @@ export function MerchantLiveFulfillmentPanel({
       toast.success("Order advanced");
       onDone?.();
     } catch (e: any) {
-      toast.error(e.message || "Could not advance order");
+      toast.error("Could not advance order");
     }
   };
 

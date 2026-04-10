@@ -17,7 +17,7 @@ export function BrowserRepairRunButton({ scope = "full" }: Props) {
         `Browser repair finished — scenarios: ${result?.scenarios ?? 0}, fail: ${result?.fail ?? 0}, fixed: ${result?.fixed ?? 0}`
       );
     } catch (e: any) {
-      toast.error(e?.message || "Browser repair failed.");
+      toast.error("Browser repair failed.");
     } finally {
       setLoading(false);
     }

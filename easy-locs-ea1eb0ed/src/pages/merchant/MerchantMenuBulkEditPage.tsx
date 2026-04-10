@@ -29,7 +29,7 @@ export default function MerchantMenuBulkEditPage() {
       setDrafts({});
       refetch();
     } catch (e: any) {
-      toast.error(e.message || "Bulk update failed");
+      toast.error("Bulk update failed");
     }
   };
 

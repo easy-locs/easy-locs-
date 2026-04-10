@@ -133,7 +133,8 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         toast.info(t("orbit.scan_qr_auth"));
       }
     } catch (err: any) {
-      toast.error(err.message || t("orbit.2fa_setup_failed"));
+      console.error("[Security]", err.message);
+      toast.error(t("orbit.2fa_setup_failed") || "2FA setup failed. Please try again.");
     } finally {
       setEnrolling2FA(false);
     }

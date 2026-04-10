@@ -101,7 +101,7 @@ const PaymentNotices = () => {
     try {
       await insertPaymentNotices(newNotices);
     } catch (error: any) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return;
+      toast({ title: t("common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return;
     }
     toast({ title: `${newNotices.length} ${t("page.notices.generated")}` });
 

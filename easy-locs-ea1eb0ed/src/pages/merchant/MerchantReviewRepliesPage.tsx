@@ -31,7 +31,7 @@ export default function MerchantReviewRepliesPage() {
       toast.success("Reply saved");
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Could not save reply");
+      toast.error("Could not save reply");
     } finally {
       setSavingId(null);
     }

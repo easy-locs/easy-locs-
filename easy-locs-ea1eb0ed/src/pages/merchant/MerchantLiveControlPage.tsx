@@ -39,7 +39,7 @@ export default function MerchantLiveControlPage() {
       toast.success("Live control updated");
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Could not update live controls");
+      toast.error("Could not update live controls");
     } finally {
       setSaving(false);
     }

@@ -35,7 +35,7 @@ export default function MerchantPromoManagerPage() {
       toast.success("Promo created");
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Could not create promo");
+      toast.error("Could not create promo");
     } finally {
       setSaving(false);
     }

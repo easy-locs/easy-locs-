@@ -42,7 +42,8 @@ export default function WalletTopUpPage() {
       if (!data?.url) throw new Error("No checkout URL returned");
       window.location.href = data.url;
     } catch (err: any) {
-      toast.error(err.message || t("wallet.walletNotReady"));
+      console.error("[Wallet]", err.message);
+      toast.error(t("wallet.walletNotReady") || "Wallet is not ready. Please try again.");
       setLoading(false);
     }
   };

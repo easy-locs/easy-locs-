@@ -44,7 +44,7 @@ export default function MerchantCouponManagerPage() {
       toast.success("Coupon created");
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Could not create coupon");
+      toast.error("Could not create coupon");
     } finally {
       setSaving(false);
     }
@@ -55,7 +55,7 @@ export default function MerchantCouponManagerPage() {
       await merchantService.togglePromo(row.id, row.is_active);
       refetch();
     } catch (err: any) {
-      toast.error(err.message || "Could not update coupon");
+      toast.error("Could not update coupon");
     }
   };
 

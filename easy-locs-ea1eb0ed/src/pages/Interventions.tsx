@@ -152,7 +152,7 @@ const Interventions = () => {
         });
       }
     } catch (error: any) {
-      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return;
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" }); return;
     }
     setDialogOpen(false);
     load();
@@ -164,7 +164,7 @@ const Interventions = () => {
       toast({ title: t("page.interventions.deleted") });
       load();
     } catch (error: any) {
-      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 

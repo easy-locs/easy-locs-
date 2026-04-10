@@ -57,7 +57,8 @@ const Candidates = () => {
       setForm({ property_id: "", name: "", email: "", phone: "", profession: "", monthly_income: 0, guarantor_info: "", notes: "", score: 0 });
       await load();
     } catch (error: any) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      console.error("[Candidates]", error.message);
+      toast({ title: t("common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     }
   };
 

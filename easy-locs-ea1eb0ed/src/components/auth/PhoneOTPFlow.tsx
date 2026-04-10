@@ -48,7 +48,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
     } catch (err: any) {
       toast({
         title: t("common.error") || "Error",
-        description: err.message,
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -102,7 +102,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
         inputRefs.current[0]?.focus();
       }
     } catch (err: any) {
-      toast({ title: t("common.error") || "Error", description: err.message, variant: "destructive" });
+      toast({ title: t("common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -125,7 +125,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
       setOtp(["", "", "", "", "", ""]);
       toast({ title: t("auth.otp.resent") || "Code resent" });
     } catch (err: any) {
-      toast({ title: t("common.error") || "Error", description: err.message, variant: "destructive" });
+      toast({ title: t("common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }

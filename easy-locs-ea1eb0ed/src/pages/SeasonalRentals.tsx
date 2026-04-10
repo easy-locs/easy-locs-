@@ -273,7 +273,8 @@ const SeasonalRentals = () => {
       setIcalUrl("");
       await load();
     } catch (err: any) {
-      toast({ title: t("page.seasonal.import_error"), description: err.message, variant: "destructive" });
+      console.error("[Seasonal]", err.message);
+      toast({ title: t("page.seasonal.import_error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setImportingIcal(false);
     }
@@ -314,7 +315,8 @@ const SeasonalRentals = () => {
         await load();
       }
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      console.error("[Seasonal]", err.message);
+      toast({ title: t("page.common.error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setImportingIcal(false);
       e.target.value = "";
