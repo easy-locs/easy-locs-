@@ -96,6 +96,18 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **Weather**: Live weather station with temp, humidity, wind, precipitation
 - **Live context**: Real-time traffic, demand prediction, rider supply, zone events (via RadarView)
 
+## Global Navigation State Machine
+- **Store**: `src/stores/navigationStateMachine.ts` (Zustand) — centralized FSM for all 5 pillars
+- **16 states**: 3 Dashboard (IDLE/PREVIEW/INTERACTION), 4 Radar (IDLE/SEARCHING/RESULTS/DETAIL_PREVIEW), 3 Orbit (IDLE/ACTIVE/CONVERSATION), 3 Wallet (IDLE/PAYMENT/CONFIRMATION), 3 Me (IDLE/EDIT/ANALYTICS)
+- **Transition types**: soft (same pillar), overlay (cross-pillar preview), hard (full navigation)
+- **Guard matrix**: `ALLOWED_TRANSITIONS` defines all valid state→state paths; blocked transitions logged in dev
+- **Context preservation**: Per-pillar `PillarContext` (lastQuery, lastFilters, lastPosition, lastScroll, lastEntity, lastRoute) — saved automatically on cross-pillar transitions
+- **Overlay management**: `openOverlay`/`closeOverlay`/`upgradeOverlay` — FSM-gated, single overlay at a time
+- **Route sync**: `forceSync(pillar)` bypasses guard matrix for URL-driven navigation (browser back/forward)
+- **History**: Last 50 transitions stored for debugging
+- **Integration**: `useSmartNavigation` reads/writes FSM via Zustand selectors; SmartHome + HyperRadarPage report sub-states via `setPillarSubState`
+- **Files**: `src/stores/navigationStateMachine.ts`, `src/hooks/useSmartNavigation.ts`
+
 ## Dashboard ↔ Radar Progressive Engagement (4-Level Navigation)
 - **Architecture**: Dashboard consumes Radar capabilities without premature context switch. 4 engagement levels with progressive disclosure.
 - **Level 1 — Preview**: `RadarPreviewWidget` (in Dashboard) shows top 5 nearby results with mini cards (image, name, category, rating, distance). "Explore" CTA opens Level 2. No navigation away from Dashboard.
