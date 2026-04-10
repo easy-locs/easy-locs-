@@ -8,7 +8,7 @@
  * This component is a PURE SHELL — render only.
  * Card system adoption: sections use LifecycleCardShell + UniverseCard via adapters.
  */
-import { memo, useState, useEffect, useMemo } from "react";
+import { memo, useState, useEffect, useMemo, useCallback } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Building2, Sparkles, TrendingUp, Zap, Brain, ShieldCheck, Clock, Activity, Coffee, UtensilsCrossed, Car, Package, RotateCcw, Heart, ShoppingBag } from "lucide-react";
@@ -44,6 +44,9 @@ import SmartSuggestions from "@/components/dashboard/SmartSuggestions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useWalletBalance } from "@/payments/wallet-hooks";
+import RadarPreviewWidget from "@/components/dashboard/RadarPreviewWidget";
+import RadarExplorerDrawer from "@/components/dashboard/RadarExplorerDrawer";
+import { useDashboardRadar } from "@/hooks/useDashboardRadar";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -418,12 +421,13 @@ interface ShopSummary {
   rating?: number;
 }
 
-const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, shops, seeAllTo }: {
+const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, shops, seeAllTo, onSeeAll }: {
   title: string;
   icon: string;
   cardStatus: import("@/domains/cards/card-contract").CardStatus;
   shops: ShopSummary[];
   seeAllTo: string;
+  onSeeAll?: () => void;
 }) {
   const { t } = useI18n();
   return (
@@ -432,9 +436,15 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
         <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
           <span>{icon}</span> {title}
         </h2>
-        <Link to={seeAllTo} className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70 shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
-          {t("home.see_all")} <ChevronRight className="h-3 w-3" />
-        </Link>
+        {onSeeAll ? (
+          <button onClick={onSeeAll} className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70 shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
+            {t("home.see_all")} <ChevronRight className="h-3 w-3" />
+          </button>
+        ) : (
+          <Link to={seeAllTo} className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70 shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
+            {t("home.see_all")} <ChevronRight className="h-3 w-3" />
+          </Link>
+        )}
       </div>
       <LifecycleCardShell state={cardStatus} title={title} skeletonCount={3}>
         <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1">
@@ -583,6 +593,15 @@ export default function SmartHome() {
   const orbitProfile = useOrbitIdentity();
   const { balance: walletBal } = useWalletBalance();
 
+  const [radarDrawerOpen, setRadarDrawerOpen] = useState(false);
+  const [drawerSort, setDrawerSort] = useState<string | undefined>();
+  const radarData = useDashboardRadar(20);
+
+  const openRadarDrawer = useCallback((sort?: string) => {
+    setDrawerSort(sort);
+    setRadarDrawerOpen(true);
+  }, []);
+
   const smartContext = useMemo(() => ({
     hasShop: false,
     hasWallet: walletBal !== null && walletBal !== undefined,
@@ -711,6 +730,14 @@ export default function SmartHome() {
         <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="mb-5" />
       </div>
 
+      {/* ═══ Radar Preview — Level 1 (passive discovery preview) ═══ */}
+      <RadarPreviewWidget
+        onExploreMore={() => openRadarDrawer()}
+        items={radarData.items}
+        loading={radarData.loading}
+        totalCount={radarData.totalCount}
+      />
+
       {/* ═══ Stories for you ═══ */}
       <DashboardStories />
 
@@ -727,6 +754,7 @@ export default function SmartHome() {
           cardStatus={trendingCard.status}
           shops={vm.sections.trending}
           seeAllTo="/radar?sort=trending"
+          onSeeAll={() => openRadarDrawer("trending")}
         />
         <AdapterSection
           title={t("home.section_best_rated")}
@@ -734,6 +762,7 @@ export default function SmartHome() {
           cardStatus={bestRatedCard.status}
           shops={vm.sections.bestRated}
           seeAllTo="/radar?sort=rating"
+          onSeeAll={() => openRadarDrawer("best_rated")}
         />
         <AdapterSection
           title={t("home.section_newest")}
@@ -741,6 +770,7 @@ export default function SmartHome() {
           cardStatus={newestCard.status}
           shops={vm.sections.newest}
           seeAllTo="/radar?sort=newest"
+          onSeeAll={() => openRadarDrawer("smart")}
         />
         <AdapterSection
           title={t("home.section_near_you")}
@@ -748,6 +778,7 @@ export default function SmartHome() {
           cardStatus={nearYouCard.status}
           shops={vm.sections.nearYou}
           seeAllTo="/radar?sort=distance"
+          onSeeAll={() => openRadarDrawer("nearest")}
         />
 
         {/* ═══ BOOST SLOT — Inline ═══ */}
@@ -755,6 +786,15 @@ export default function SmartHome() {
           <BoostSlotRenderer surface="home" slotKey="inline_banner_1" variant="inline" />
         </div>
       </div>
+
+      <RadarExplorerDrawer
+        open={radarDrawerOpen}
+        onOpenChange={setRadarDrawerOpen}
+        initialSort={drawerSort}
+        items={radarData.items}
+        loading={radarData.loading}
+        totalCount={radarData.totalCount}
+      />
 
       <AddressSelectorSheet open={vm.addressSheetOpen} onOpenChange={vm.onAddressSheetChange} />
     </div>
