@@ -237,6 +237,79 @@ type PlatformEventType =
 
 export type { PlatformEventType };
 
+export interface StorefrontOrderPayload {
+  orderId: string;
+  shopId?: string;
+  total?: number;
+  requiresDelivery?: boolean;
+  __bridged?: boolean;
+}
+
+export interface StorefrontCartPayload {
+  shopId: string;
+  __bridged?: boolean;
+}
+
+export interface StorefrontDealPayload {
+  dealId: string;
+  shopId?: string;
+  orderId?: string;
+  __bridged?: boolean;
+}
+
+export interface StorefrontDeliveryPayload {
+  orderId?: string;
+  jobId?: string;
+  shopId?: string;
+  source?: string;
+  __bridged?: boolean;
+}
+
+export interface StorefrontReviewPayload {
+  shopId: string;
+  __bridged?: boolean;
+}
+
+export interface StorefrontStockPayload {
+  itemTitle: string;
+  remaining: number;
+  __bridged?: boolean;
+}
+
+export interface StorefrontTrustPayload {
+  shopId: string;
+  score?: number;
+  __bridged?: boolean;
+}
+
+export interface StorefrontLoyaltyPayload {
+  shopId: string;
+  points: number;
+  __bridged?: boolean;
+}
+
+export interface StorefrontRiskPayload {
+  shopId: string;
+  severity: "critical" | "warning" | "info";
+  reason: string;
+  __bridged?: boolean;
+}
+
+export interface StorefrontGrowthPayload {
+  shopId: string;
+  milestone: string;
+  __bridged?: boolean;
+}
+
+export interface WalletPaymentPayload {
+  referenceType?: string;
+  referenceId?: string;
+  requiresDelivery?: boolean;
+  amount?: number;
+  currency?: string;
+  __bridged?: boolean;
+}
+
 export interface PlatformEvent<T = unknown> {
   type: PlatformEventType;
   payload: T;
@@ -478,7 +551,7 @@ export function installPlatformReactions(): () => void {
 
   unsubs.push(
     platformBus.onAll((event) => {
-      if ((event.payload as any)?.__bridged) return;
+      if ((event.payload as Record<string, unknown>)?.__bridged) return;
       const bridgedPayload = { ...(typeof event.payload === "object" && event.payload ? event.payload : {}), __bridged: true };
       const colon = NOTATION_BRIDGE[event.type];
       if (colon) {
@@ -496,7 +569,7 @@ export function installPlatformReactions(): () => void {
   if (import.meta.env.DEV) {
     unsubs.push(
       platformBus.onAll((event) => {
-        if (!(event.payload as any)?.__bridged) {
+        if (!(event.payload as Record<string, unknown>)?.__bridged) {
           console.debug(`[platform-bus] ${event.type}`, event.payload);
         }
       })

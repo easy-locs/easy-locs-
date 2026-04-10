@@ -75,7 +75,8 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
   }, [form.check_in, form.check_out]);
 
   const minNightsError = nights > 0 && listing?.min_nights && nights < listing.min_nights;
-  const totalPrice = nights * (listing?.price_per_night || 0) + (nights > 0 ? cleaningFee : 0);
+  const pricePerNight = Number(listing?.price_per_night) || 0;
+  const totalPrice = nights * pricePerNight + (nights > 0 ? cleaningFee : 0);
   const formReady = !!listing && !!property?.id && !!form.guest_name && !!form.guest_email && !!form.check_in && !!form.check_out && !availabilityError && !minNightsError && nights > 0;
 
   // Minimum check-out date based on min_nights
@@ -105,12 +106,13 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
         guests_count: form.guests_count,
         message: form.message,
       });
-    } catch (error: any) {
-      console.error("Booking insert error:", error?.message);
-      auditBookingResult(false, { module: "seasonal", error: error?.message || "Insert failed" });
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : "Insert failed";
+      console.error("Booking insert error:", errMsg);
+      auditBookingResult(false, { module: "seasonal", error: errMsg });
       setSubmitting(false);
       toast.error(t("page.listing.error_submit") || "Booking request failed", {
-        description: error?.message || "Please try again.",
+        description: errMsg || "Please try again.",
         duration: 8000,
       });
       return;
@@ -269,11 +271,11 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
             placeholder={t("page.listing.message_placeholder")} />
         </fieldset>
 
-        {nights > 0 && listing.price_per_night > 0 && (
+        {nights > 0 && pricePerNight > 0 && (
           <div className="bg-muted/50 rounded-xl p-4 text-sm space-y-1.5">
             <div className="flex justify-between">
-              <span className="text-muted-foreground whitespace-nowrap">{nights} {t("page.listing.nights")} × {listing.price_per_night}€</span>
-              <span className="text-foreground font-medium whitespace-nowrap">{nights * listing.price_per_night}€</span>
+              <span className="text-muted-foreground whitespace-nowrap">{nights} {t("page.listing.nights")} × {pricePerNight}€</span>
+              <span className="text-foreground font-medium whitespace-nowrap">{nights * pricePerNight}€</span>
             </div>
             {cleaningFee > 0 && (
               <div className="flex justify-between">

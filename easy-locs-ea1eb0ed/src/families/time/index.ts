@@ -19,11 +19,11 @@ export { formatDate } from "@/lib/i18n-engine";
 // ── Canonical date separator logic (used by message lists) ──
 import { format, isToday, isYesterday } from "date-fns";
 
-export function formatDateSeparator(dateStr: string): string {
+export function formatDateSeparator(dateStr: string, t?: (key: string) => string): string {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return "";
-  if (isToday(d)) return "Today";
-  if (isYesterday(d)) return "Yesterday";
+  if (isToday(d)) return t ? t("common.today") : "Today";
+  if (isYesterday(d)) return t ? t("common.yesterday") : "Yesterday";
   return format(d, "dd/MM/yyyy");
 }
 

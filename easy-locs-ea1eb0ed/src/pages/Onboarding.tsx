@@ -236,8 +236,8 @@ const Onboarding = () => {
       });
       setIcalResults(prev => ({ ...prev, [provider]: data.inserted || 0 }));
       toast({ title: "✅ " + (data.inserted || 0) + " " + t("ob.ical_success") });
-    } catch (err: any) {
-      console.error("[Onboarding]", err.message);
+    } catch (err) {
+      console.error("[Onboarding]", err instanceof Error ? err.message : err);
       toast({ title: t("common.error"), description: t("common.error_generic") || "Something went wrong. Please try again.", variant: "destructive" });
     }
     setIcalSyncing(null);

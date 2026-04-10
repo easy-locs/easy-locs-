@@ -7,7 +7,7 @@
  * This bridge handles the client-side bus event propagation
  * and manual delivery creation for wallet-only transactions.
  */
-import { platformBus } from "@/lib/shared/platform-bus";
+import { platformBus, type StorefrontOrderPayload, type WalletPaymentPayload } from "@/lib/shared/platform-bus";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -20,7 +20,7 @@ export function installDeliveryBridge(): () => void {
   // ── Order paid + requires delivery → emit delivery event ──
   unsubs.push(
     platformBus.on("storefront:order_paid", async (event) => {
-      const { orderId, shopId, requiresDelivery } = event.payload as any;
+      const { orderId, shopId, requiresDelivery } = event.payload as StorefrontOrderPayload;
       if (!requiresDelivery) return;
 
       // The DB trigger handles actual job creation.
@@ -39,30 +39,31 @@ export function installDeliveryBridge(): () => void {
   // NO delivery for: wallet top-up, P2P transfer, service-only payments
   unsubs.push(
     platformBus.on("wallet:payment_completed", async (event) => {
-      const { referenceType, referenceId, requiresDelivery } = event.payload as any;
+      const { referenceType, referenceId, requiresDelivery } = event.payload as WalletPaymentPayload;
       // Strict gate: only orders flagged for delivery
       if (referenceType !== "order" || !requiresDelivery || !referenceId) return;
 
       try {
         // Check if delivery job already exists (from DB trigger)
         const { data: order } = await supabase
-          .from("storefront_orders" as any)
+          .from("storefront_orders")
           .select("id, delivery_job_id, requires_delivery, status")
           .eq("id", referenceId)
           .maybeSingle();
 
-        if (order && (order as any).delivery_job_id) {
-          // Already created by trigger — just refresh UI
+        const row = order as Record<string, unknown> | null;
+        const deliveryJobId = row?.delivery_job_id as string | null;
+
+        if (row && deliveryJobId) {
           platformBus.emit("storefront:delivery_dispatched", {
             orderId: referenceId,
-            jobId: (order as any).delivery_job_id,
+            jobId: deliveryJobId,
             source: "trigger_confirmed",
           }, "marketplace", { userId: event.userId });
           return;
         }
 
-        // Fallback: create via edge function if trigger didn't fire
-        if (order && !(order as any).delivery_job_id) {
+        if (row && !deliveryJobId) {
           const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
             body: {
               action: "create_job",
@@ -95,7 +96,7 @@ export function installDeliveryBridge(): () => void {
   // ── Order completed → trigger delivery module refresh ──
   unsubs.push(
     platformBus.on("storefront:order_completed", async (event) => {
-      const { orderId, shopId } = event.payload as any;
+      const { orderId, shopId } = event.payload as StorefrontOrderPayload;
       // Invalidate delivery queries
       const { getActionQueryClient } = await import("@/lib/run-action");
       const qc = getActionQueryClient();

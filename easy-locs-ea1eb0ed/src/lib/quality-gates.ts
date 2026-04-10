@@ -120,6 +120,36 @@ const ARCHITECTURE_RULES = [
     description: "All routes must resolve to valid components",
     severity: "critical" as const,
   },
+  {
+    id: "no-catch-any",
+    description: "Never use catch(e: any) — use catch(e) with instanceof Error check",
+    severity: "warning" as const,
+  },
+  {
+    id: "no-as-any-payloads",
+    description: "Platform bus payloads must use typed interfaces — never cast as any",
+    severity: "critical" as const,
+  },
+  {
+    id: "no-direct-supabase",
+    description: "Never import supabase client directly in components — use db() from services/db.ts",
+    severity: "critical" as const,
+  },
+  {
+    id: "error-boundary-required",
+    description: "All 5 pillar routes must be wrapped in FeatureErrorBoundary",
+    severity: "critical" as const,
+  },
+  {
+    id: "no-usestate-any",
+    description: "useState<any> is prohibited — use concrete types or Record<string, unknown>",
+    severity: "warning" as const,
+  },
+  {
+    id: "suspense-fallback-required",
+    description: "All lazy-loaded routes must have Suspense fallback with loading skeleton",
+    severity: "warning" as const,
+  },
 ] as const;
 
 export function getArchitectureRules() {

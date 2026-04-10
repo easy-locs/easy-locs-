@@ -16,7 +16,7 @@ interface Props {
 export default function ReviewsManagerPanel({ providerId }: Props) {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedReview, setSelectedReview] = useState<any>(null);
+  const [selectedReview, setSelectedReview] = useState<Record<string, unknown> | null>(null);
 
   const { data: reviews = [], isLoading } = useQuery({
     queryKey: ["provider_reviews_manage", providerId, statusFilter],

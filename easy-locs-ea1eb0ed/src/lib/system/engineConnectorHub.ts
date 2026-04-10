@@ -115,20 +115,20 @@ export async function runSingleOrderConnector(orderId: string) {
 
   try {
     results.push(await syncOrderPaymentToEscrow(orderId));
-  } catch (e: any) {
-    results.push({ ok: false, step: "payment->escrow", message: e.message || "Escrow sync failed" });
+  } catch (e) {
+    results.push({ ok: false, step: "payment->escrow", message: e instanceof Error ? e.message : "Escrow sync failed" });
   }
 
   try {
     results.push(await syncReadyOrderToDriver(orderId));
-  } catch (e: any) {
-    results.push({ ok: false, step: "ready->driver", message: e.message || "Dispatch sync failed" });
+  } catch (e) {
+    results.push({ ok: false, step: "ready->driver", message: e instanceof Error ? e.message : "Dispatch sync failed" });
   }
 
   try {
     results.push(await syncCompletedOrderToSettlement(orderId));
-  } catch (e: any) {
-    results.push({ ok: false, step: "completed->settlement", message: e.message || "Settlement sync failed" });
+  } catch (e) {
+    results.push({ ok: false, step: "completed->settlement", message: e instanceof Error ? e.message : "Settlement sync failed" });
   }
 
   return results;
@@ -142,84 +142,84 @@ export function installEngineConnectorHub() {
 
   // ── Payment captured → Escrow ──
   platformBus.on("PAYMENT_SUCCESS", async (event) => {
-    const payload = event.payload as any;
+    const payload = event.payload as Record<string, unknown>;
     if (!payload?.orderId) return;
-    await syncOrderPaymentToEscrow(payload.orderId).catch((e: any) => {
-      console.error("[EngineHub] escrow sync failed:", payload.orderId, e?.message);
+    await syncOrderPaymentToEscrow(payload.orderId as string).catch((e) => {
+      console.error("[EngineHub] escrow sync failed:", payload.orderId, e instanceof Error ? e.message : e);
     });
   });
 
   // ── Order ready → Driver dispatch ──
   platformBus.on("ORDER_READY", async (event) => {
-    const payload = event.payload as any;
+    const payload = event.payload as Record<string, unknown>;
     if (!payload?.orderId) return;
-    await syncReadyOrderToDriver(payload.orderId).catch((e: any) => {
-      console.error("[EngineHub] driver dispatch failed:", payload.orderId, e?.message);
+    await syncReadyOrderToDriver(payload.orderId as string).catch((e) => {
+      console.error("[EngineHub] driver dispatch failed:", payload.orderId, e instanceof Error ? e.message : e);
     });
   });
 
   // ── Delivery done → Move order state ──
   platformBus.on("ORDER_DELIVERED", async (event) => {
-    const payload = event.payload as any;
+    const payload = event.payload as Record<string, unknown>;
     if (!payload?.orderId) return;
-    await moveOrderToNextState(payload.orderId).catch((e: any) => {
-      console.error("[EngineHub] order state transition failed:", payload.orderId, e?.message);
+    await moveOrderToNextState(payload.orderId as string).catch((e) => {
+      console.error("[EngineHub] order state transition failed:", payload.orderId, e instanceof Error ? e.message : e);
     });
   });
 
   // ── Order completed → Full chain: settlement + commission + notification + review trigger + loyalty ──
   platformBus.on("ORDER_COMPLETED", async (event) => {
-    const payload = event.payload as any;
+    const payload = event.payload as Record<string, unknown>;
     if (!payload?.orderId) return;
 
     // 1. Settlement
-    await syncCompletedOrderToSettlement(payload.orderId).catch((e: any) => {
-      console.error("[EngineHub] settlement sync failed:", payload.orderId, e?.message);
+    await syncCompletedOrderToSettlement(payload.orderId as string).catch((e) => {
+      console.error("[EngineHub] settlement sync failed:", payload.orderId, e instanceof Error ? e.message : e);
     });
 
     // 2. Review trigger notification (delayed by engine, but mark eligible)
     try {
-      const order = await getOrderById(payload.orderId);
+      const order = await getOrderById(payload.orderId as string);
       if (order?.user_id) {
         await db("app_notifications").insert({
           user_id: order.user_id,
           type: "order_completed",
           title: "Order completed!",
           body: "Your order has been delivered. Enjoy!",
-          entity_id: payload.orderId,
+          entity_id: payload.orderId as string,
           entity_type: "order",
           metadata_json: { shop_id: order.shop_id },
-        } as any);
+        } as Record<string, unknown>);
       }
-    } catch (e: any) {
-      console.error("[EngineHub] order completed notification failed:", payload?.orderId, e?.message);
+    } catch (e) {
+      console.error("[EngineHub] order completed notification failed:", payload?.orderId, e instanceof Error ? e.message : e);
     }
   });
 
   // ── Order refunded → Refund sync ──
   platformBus.on("ORDER_REFUNDED", async (event) => {
-    const payload = event.payload as any;
+    const payload = event.payload as Record<string, unknown>;
     if (!payload?.orderId) return;
-    await syncRefundedOrder(payload.orderId).catch((e: any) => {
-      console.error("[EngineHub] refund sync failed:", payload.orderId, e?.message);
+    await syncRefundedOrder(payload.orderId as string).catch((e) => {
+      console.error("[EngineHub] refund sync failed:", payload.orderId, e instanceof Error ? e.message : e);
     });
   });
 
   // ── Delivery completed → Driver earnings + proof reminder ──
   platformBus.on("DELIVERY_COMPLETED", async (event) => {
-    const payload = event.payload as any;
+    const payload = event.payload as Record<string, unknown>;
     if (payload?.driverUserId && payload?.orderId) {
       try {
         await db("app_notifications").insert({
-          user_id: payload.driverUserId,
+          user_id: payload.driverUserId as string,
           type: "delivery_completed",
           title: "Delivery completed!",
           body: "Your earnings have been credited.",
-          entity_id: payload.orderId,
+          entity_id: payload.orderId as string,
           entity_type: "order",
-        } as any);
-      } catch (e: any) {
-        console.error("[EngineHub] delivery completed notification failed:", payload?.orderId, e?.message);
+        } as Record<string, unknown>);
+      } catch (e) {
+        console.error("[EngineHub] delivery completed notification failed:", payload?.orderId, e instanceof Error ? e.message : e);
       }
     }
   });

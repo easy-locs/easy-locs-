@@ -380,6 +380,14 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **Ownership Scoping**: All service mutations require userId/orgId parameter for IDOR prevention
 - **Error Handling**: Full error boundary wraps entire app with retry + AI audit integration
 
+### Stabilization Pass (April 2026)
+- **Platform Bus Type Safety**: All 15 `as any` casts in storefront-reactions.ts replaced with typed payload interfaces (StorefrontOrderPayload, StorefrontCartPayload, etc.). v4-delivery-bridge.ts double-casts removed. engineConnectorHub.ts `as any` → `Record<string, unknown>`.
+- **catch(e: any) Cleanup**: AuthContext, Login, Signup, CheckoutPage, Onboarding, POSPage, RiderLivePage, DocumentBuilder, BookingForm, ProviderStorefront, engineConnectorHub — all converted to `catch(e)` + `instanceof Error` pattern.
+- **i18n Hardening**: SmartBottomSheet "Ouvert"/"Fermé" → t("common.open")/t("common.closed"), ClientMapCard, MessageList "Today"/"Yesterday", LocationViewerOverlay "Live Location"/"Sharing live", BookingAvailabilityCalendar "Select date"/"Unavailable"/"Selected" — all using t() keys. New canonical keys: common.results, common.select_date, common.live_location, common.location, common.sharing_live, common.open_in_maps, common.unavailable, common.selected (EN/FR/AR).
+- **Quality Gates Enhanced**: 6 new architecture rules (no-catch-any, no-as-any-payloads, no-direct-supabase, error-boundary-required, no-usestate-any, suspense-fallback-required).
+- **Delivery Bridge Bootstrap**: installDeliveryBridge() now wired in useMasterAppBootstrap stage-1 (was missing).
+- **UI Robustness**: AIAssistant calc(100vh) → calc(100dvh), BookingForm price=0 fallback with Number() guard, useState<any> → Record<string, unknown> in ReviewsManagerPanel + ProviderStorefront.
+
 ### Startup Performance
 - **Story audit deferred**: `fallback-stories.ts` audit IIFE moved to `setTimeout(5s)` gated by `import.meta.env.DEV` — zero startup cost in production
 - **DNS prefetch corrected**: `index.html` preconnect/dns-prefetch now points to correct Supabase project (`ifvuvbolrmuuugtzxsfk`), removed unused `ai.gateway.lovable.dev`

@@ -66,6 +66,7 @@ export function useMasterAppBootstrap() {
           { installEngineConnectorHub },
           { installNotificationEventBridge },
           { installCounterBridge },
+          { installDeliveryBridge },
         ] = await Promise.all([
           import("@/lib/shared/platform-bus"),
           import("@/lib/shared/storefront-reactions"),
@@ -73,6 +74,7 @@ export function useMasterAppBootstrap() {
           import("@/lib/system/engineConnectorHub"),
           import("@/lib/notifications/notification-event-bridge"),
           import("@/lib/dashboard/dashboard-counter-bridge"),
+          import("@/lib/shared/v4-delivery-bridge"),
         ]);
 
         installEngineConnectorHub();
@@ -82,6 +84,7 @@ export function useMasterAppBootstrap() {
           installCrossAppReactions(),
           installNotificationEventBridge(),
           installCounterBridge(),
+          installDeliveryBridge(),
         );
       } catch (e) {
         console.warn("[boot] stage-1 failed", e);

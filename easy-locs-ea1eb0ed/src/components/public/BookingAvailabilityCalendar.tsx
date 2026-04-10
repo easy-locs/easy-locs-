@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays } from "lucide-react";
 import { format, eachDayOfInterval, parseISO, isBefore, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   label: string;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function BookingAvailabilityCalendar({ label, value, onChange, minDate, bookedDates, blockedDates = [] }: Props) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   const disabledDays = useMemo(() => {
@@ -63,7 +65,7 @@ export default function BookingAvailabilityCalendar({ label, value, onChange, mi
             )}
           >
             <CalendarDays className="h-4 w-4 mr-2 shrink-0" />
-            {value ? format(parseISO(value), "dd/MM/yyyy") : "Select date"}
+            {value ? format(parseISO(value), "dd/MM/yyyy") : t("common.select_date")}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -93,11 +95,11 @@ export default function BookingAvailabilityCalendar({ label, value, onChange, mi
           <div className="px-3 pb-3 flex items-center gap-3 text-[10px] text-muted-foreground">
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 rounded-sm bg-destructive/15 border border-destructive/30" />
-              Unavailable
+              {t("common.unavailable")}
             </span>
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 rounded-sm bg-primary" />
-              Selected
+              {t("common.selected")}
             </span>
           </div>
         </PopoverContent>
