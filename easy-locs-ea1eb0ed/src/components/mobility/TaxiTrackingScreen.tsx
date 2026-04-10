@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
 import { useCustomerMobilityStore, type MobilityJob } from "@/stores/customerMobilityStore";
 import { useTripTrackingStore } from "@/stores/tripTrackingStore";
-import { Phone, MessageCircle, ShieldCheck, Star, XCircle, Navigation, MapPin } from "lucide-react";
+import { Phone, MessageCircle, ShieldCheck, Star, XCircle, Navigation, MapPin, Clock, Car, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -10,17 +10,31 @@ import { useNavigate } from "react-router-dom";
 import { useCall } from "@/components/call/CallProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
+import { RideLiveMap } from "./RideLiveMap";
 
 const TIMELINE_STEPS = [
-  { key: "searching", label: "Requested" },
-  { key: "accepted", label: "Driver assigned" },
-  { key: "rider_arriving_pickup", label: "Driver on the way" },
-  { key: "rider_arrived_pickup", label: "At pickup" },
-  { key: "picked_up", label: "In trip" },
-  { key: "completed", label: "Arrived" },
+  { key: "searching", label: "Requested", icon: "🔍" },
+  { key: "accepted", label: "Driver assigned", icon: "✅" },
+  { key: "rider_arriving_pickup", label: "On the way to you", icon: "🚗" },
+  { key: "rider_arrived_pickup", label: "Arrived at pickup", icon: "📍" },
+  { key: "picked_up", label: "Trip started", icon: "🛣️" },
+  { key: "in_progress", label: "On the way", icon: "🚀" },
+  { key: "rider_arriving_dropoff", label: "Almost there", icon: "📍" },
+  { key: "completed", label: "Arrived at destination", icon: "🏁" },
 ];
 
 const STATUS_ORDER = TIMELINE_STEPS.map(s => s.key);
+
+const STATUS_HEADLINE: Record<string, string> = {
+  searching: "Finding your driver",
+  accepted: "Driver is coming",
+  rider_arriving_pickup: "Driver on the way",
+  rider_arrived_pickup: "Driver has arrived",
+  picked_up: "Enjoy your ride",
+  in_progress: "On the way",
+  rider_arriving_dropoff: "Almost there",
+  completed: "You've arrived",
+};
 
 export function TaxiTrackingScreen() {
   const { activeJobId, setStep } = useTaxiFlowStore();
@@ -47,6 +61,8 @@ export function TaxiTrackingScreen() {
   }, [job?.status]);
 
   const currentIdx = job ? Math.max(STATUS_ORDER.indexOf(job.status), 0) : 0;
+  const headline = job ? (STATUS_HEADLINE[job.status] || job.status.replace(/_/g, " ")) : "Loading…";
+  const hasDriver = !!job?.rider_user_id;
 
   const handleCancel = async () => {
     if (!job) return;
@@ -54,16 +70,13 @@ export function TaxiTrackingScreen() {
       await cancelJob(job.id, "Customer cancelled");
       toast.success("Ride cancelled");
       useTaxiFlowStore.getState().reset();
-    } catch (err: any) {
+    } catch {
       toast.error("Something went wrong. Please try again.");
     }
   };
 
   const handleCall = async () => {
-    if (!job?.rider_user_id) {
-      toast.info("Driver not yet assigned");
-      return;
-    }
+    if (!job?.rider_user_id) { toast.info("Driver not yet assigned"); return; }
     if (callLockRef.current || isInCall || isStartingCall) return;
     callLockRef.current = true;
     try {
@@ -76,17 +89,14 @@ export function TaxiTrackingScreen() {
       });
       if (!success) toast.error("Could not call driver");
     } catch {
-      toast.error("Call to driver failed");
+      toast.error("Call failed");
     } finally {
       setTimeout(() => { callLockRef.current = false; }, 500);
     }
   };
 
   const handleChat = async () => {
-    if (!job?.rider_user_id) {
-      toast.info("Driver not yet assigned");
-      return;
-    }
+    if (!job?.rider_user_id) { toast.info("Driver not yet assigned"); return; }
     if (chatLockRef.current) return;
     chatLockRef.current = true;
     try {
@@ -111,11 +121,16 @@ export function TaxiTrackingScreen() {
 
   if (!job) {
     return (
-      <div className="text-center py-16">
-        <p className="text-sm text-muted-foreground">Loading ride…</p>
+      <div className="flex items-center justify-center py-20">
+        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }}
+          className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
+
+  const driverPos = livePosition?.lat != null ? { lat: livePosition.lat, lng: livePosition.lng! } : null;
+  const pickupPos = job.pickup_lat != null ? { lat: job.pickup_lat, lng: job.pickup_lng! } : null;
+  const dropoffPos = job.dropoff_lat != null ? { lat: job.dropoff_lat, lng: job.dropoff_lng! } : null;
 
   return (
     <motion.div
@@ -123,123 +138,171 @@ export function TaxiTrackingScreen() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
-      className="space-y-4"
+      className="space-y-3"
     >
-      {/* Live route visualization */}
-      <div className="rounded-2xl border border-border/30 bg-gradient-to-br from-primary/5 via-muted/10 to-emerald-500/5 overflow-hidden">
-        <div className="h-40 flex items-center justify-center relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <motion.div
-              className="w-48 h-48 rounded-full border border-primary/10"
-              animate={{ scale: [1, 1.15, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex items-center justify-between px-1"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(220 40% 18% / 0.1)" }}>
+            <Car className="w-5 h-5" style={{ color: "hsl(220 40% 18%)" }} />
           </div>
-          <div className="flex items-center gap-8 z-10">
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                <Navigation className="w-4 h-4 text-emerald-500" />
-              </div>
-              <span className="text-[10px] text-muted-foreground mt-1">Pickup</span>
-            </div>
-            <div className="flex flex-col items-center gap-0.5">
-              <motion.div
-                className="w-16 h-[2px] bg-gradient-to-r from-emerald-500 to-primary rounded-full"
-                animate={{ scaleX: [1, 1.2, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              {livePosition?.speed != null && (
-                <span className="text-[10px] font-bold text-primary">{livePosition.speed.toFixed(0)} km/h</span>
+          <div className="min-w-0">
+            <h2 className="text-base font-bold text-foreground">{headline}</h2>
+            <p className="text-[11px] text-muted-foreground">{job.service_level.replace(/_/g, " ")} · {job.confirmation_code || "—"}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full shrink-0" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(38 65% 56%)" }} />
+          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(38 65% 56%)" }}>Live</span>
+        </div>
+      </motion.div>
+
+      <div className="rounded-2xl overflow-hidden border border-border/20" style={{ height: 220 }}>
+        <RideLiveMap
+          driver={driverPos}
+          pickup={pickupPos}
+          dropoff={dropoffPos}
+        />
+      </div>
+
+      {hasDriver && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border border-border/20 bg-card p-4"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "hsl(220 40% 18%)" }}>
+              {(job as any).rider_photo_url ? (
+                <img src={(job as any).rider_photo_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-bold text-white">{(job as any).rider_name?.[0]?.toUpperCase() || "D"}</span>
               )}
             </div>
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
-                <MapPin className="w-4 h-4 text-primary" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-foreground">{(job as any).rider_name || "Your Driver"}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                {(job as any).vehicle_model && (
+                  <span className="text-[11px] text-muted-foreground">{(job as any).vehicle_model}</span>
+                )}
+                {(job as any).vehicle_plate && (
+                  <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-muted/40 text-foreground">{(job as any).vehicle_plate}</span>
+                )}
               </div>
-              <span className="text-[10px] text-muted-foreground mt-1">Dropoff</span>
+              {(job as any).rider_rating != null && (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  <span className="text-[11px] font-semibold text-foreground">{Number((job as any).rider_rating).toFixed(1)}</span>
+                </div>
+              )}
+            </div>
+            <div className="text-right shrink-0">
+              <p className="text-lg font-bold text-foreground">{job.current_price ?? job.quoted_price}</p>
+              <p className="text-[10px] text-muted-foreground">{job.currency}</p>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Driver card */}
-      <div className="rounded-2xl border border-border/30 bg-card p-4 space-y-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <Star className="w-5 h-5 text-primary" />
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={handleCall}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold active:scale-[0.97] transition-all text-white"
+              style={{ background: "hsl(142 71% 45%)" }}
+            >
+              <Phone className="w-4 h-4 shrink-0" /> Call
+            </button>
+            <button
+              onClick={handleChat}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold active:scale-[0.97] transition-all text-white"
+              style={{ background: "hsl(220 40% 18%)" }}
+            >
+              <MessageCircle className="w-4 h-4 shrink-0" /> Chat
+            </button>
+            <button
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({ title: "My ride", text: `Track my ride: ${job.confirmation_code || ""}`, url: window.location.href }).catch(() => {});
+                } else {
+                  toast.info("Share your trip link with family");
+                }
+              }}
+              className="w-12 flex items-center justify-center rounded-xl border border-border/20 bg-card active:scale-[0.97] transition-all"
+            >
+              <Share2 className="w-4 h-4 text-muted-foreground" />
+            </button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-foreground">
-              {job.rider_user_id ? "Driver assigned" : "Searching…"}
-            </p>
-            <p className="text-xs text-muted-foreground break-words line-clamp-1">
-              {job.service_level.replace(/_/g, " ")} · {job.confirmation_code || "—"}
-            </p>
-            {job.rider_user_id && (
-              <div className="flex items-center gap-1 mt-0.5">
-                <ShieldCheck className="w-3 h-3 text-emerald-500 shrink-0" />
-                <span className="text-[10px] text-emerald-500 font-medium">Verified driver</span>
-              </div>
-            )}
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-[10px] text-muted-foreground">Fare</p>
-            <p className="text-sm font-bold text-foreground">{job.current_price ?? job.quoted_price} {job.currency}</p>
-          </div>
-        </div>
+        </motion.div>
+      )}
 
-        <div className="flex gap-2">
-          <button
-            onClick={handleCall}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-500/10 text-xs font-semibold text-emerald-600 active:scale-[0.97] transition-all min-w-0"
-          >
-            <Phone className="w-3.5 h-3.5 shrink-0" /> <span>Call</span>
-          </button>
-          <button
-            onClick={handleChat}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary/10 text-xs font-semibold text-primary active:scale-[0.97] transition-all min-w-0"
-          >
-            <MessageCircle className="w-3.5 h-3.5 shrink-0" /> <span>Chat</span>
-          </button>
+      <div className="rounded-2xl border border-border/20 bg-card p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Clock className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+          <span className="text-xs font-bold text-foreground">Trip Progress</span>
         </div>
-      </div>
-
-      {/* Trip timeline */}
-      <div className="rounded-2xl border border-border/30 bg-card p-4">
-        <p className="text-xs font-bold text-foreground mb-3">Trip status</p>
-        <div className="space-y-0">
+        <div className="relative">
           {TIMELINE_STEPS.map((s, idx) => {
             const done = idx <= currentIdx;
             const isCurrent = idx === currentIdx;
+            const isLast = idx === TIMELINE_STEPS.length - 1;
             return (
-              <div key={s.key} className="flex items-center gap-3 py-1.5">
-                <div className={cn(
-                  "w-2.5 h-2.5 rounded-full shrink-0 transition-colors",
-                  done ? "bg-primary" : "bg-border",
-                  isCurrent && "ring-4 ring-primary/20"
-                )} />
-                <span className={cn(
-                  "text-xs transition-colors",
-                  done ? "text-foreground font-semibold" : "text-muted-foreground"
-                )}>
-                  {s.label}
-                </span>
+              <div key={s.key} className="flex items-start gap-3 relative">
+                <div className="flex flex-col items-center shrink-0">
+                  <div className={cn(
+                    "w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all",
+                    done ? "text-white" : "bg-muted/40 text-muted-foreground/40",
+                    isCurrent && "ring-4"
+                  )} style={done ? { background: "hsl(220 40% 18%)" } : undefined}
+                     {...(isCurrent ? { style: { background: "hsl(38 65% 56%)", boxShadow: "0 0 0 4px hsl(38 65% 56% / 0.2)" } } : {})}>
+                    {s.icon}
+                  </div>
+                  {!isLast && (
+                    <div className={cn("w-0.5 h-6", done ? "" : "bg-muted/30")}
+                      style={done ? { background: "hsl(220 40% 18% / 0.3)" } : undefined} />
+                  )}
+                </div>
+                <div className="pt-1 min-w-0 pb-2">
+                  <span className={cn(
+                    "text-sm transition-colors",
+                    done ? "text-foreground font-semibold" : "text-muted-foreground/50"
+                  )}>
+                    {s.label}
+                  </span>
+                  {isCurrent && livePosition?.speed != null && (
+                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(38 65% 56%)" }}>
+                      {livePosition.speed.toFixed(0)} km/h
+                    </p>
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Safety */}
-      <div className="flex items-center gap-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 px-4 py-2.5">
-        <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+      <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl" style={{ background: "hsl(142 71% 45% / 0.05)", border: "1px solid hsl(142 71% 45% / 0.15)" }}>
+        <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: "hsl(142 71% 45%)" }} />
         <div className="min-w-0">
           <p className="text-xs font-semibold text-foreground">Ride protection active</p>
-          <p className="text-[11px] text-muted-foreground leading-snug">Live tracking, verified driver, route monitoring</p>
+          <p className="text-[10px] text-muted-foreground">Live tracking · Verified driver · Route monitoring</p>
         </div>
       </div>
 
-      {/* Cancel */}
+      <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border/15 bg-card/40">
+        <Navigation className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] text-muted-foreground line-clamp-1">{job.pickup_label || "Pickup"}</p>
+        </div>
+        <div className="w-6 flex items-center justify-center">
+          <div className="w-4 h-0.5 rounded-full bg-border" />
+        </div>
+        <div className="flex-1 min-w-0 text-right">
+          <p className="text-[11px] text-muted-foreground line-clamp-1">{job.dropoff_label || "Dropoff"}</p>
+        </div>
+        <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+      </div>
+
       {!["completed", "cancelled", "picked_up", "in_progress", "rider_arriving_dropoff"].includes(job.status) && (
         <button
           type="button"
