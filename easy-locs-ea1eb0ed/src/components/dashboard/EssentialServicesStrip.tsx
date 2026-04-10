@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 
 const ESSENTIAL_POIS = [
-  { key: "hospital", icon: Hospital, labelKey: "dashboard.poi_hospital", to: "/radar?category=utility&subcategory=hospital", color: "hsl(0 72% 51%)", bg: "hsl(0 72% 51% / 0.1)" },
-  { key: "pharmacy", icon: Pill, labelKey: "dashboard.poi_pharmacy", to: "/radar?category=utility&subcategory=pharmacy", color: "hsl(152 60% 42%)", bg: "hsl(152 60% 42% / 0.1)" },
+  { key: "hospital", icon: Hospital, labelKey: "dashboard.poi_hospital", to: "/radar?category=utility&subcategory=poi_hospital", color: "hsl(0 72% 51%)", bg: "hsl(0 72% 51% / 0.1)" },
+  { key: "pharmacy", icon: Pill, labelKey: "dashboard.poi_pharmacy", to: "/radar?category=utility&subcategory=poi_pharmacy", color: "hsl(152 60% 42%)", bg: "hsl(152 60% 42% / 0.1)" },
   { key: "police", icon: Shield, labelKey: "dashboard.poi_police", to: "/radar?category=utility&subcategory=police_station", color: "hsl(220 60% 45%)", bg: "hsl(220 60% 45% / 0.1)" },
   { key: "fire", icon: Flame, labelKey: "dashboard.poi_fire", to: "/radar?category=utility&subcategory=fire_station", color: "hsl(16 85% 55%)", bg: "hsl(16 85% 55% / 0.1)" },
   { key: "park", icon: TreePine, labelKey: "dashboard.poi_park", to: "/radar?category=utility&subcategory=park", color: "hsl(142 70% 40%)", bg: "hsl(142 70% 40% / 0.1)" },

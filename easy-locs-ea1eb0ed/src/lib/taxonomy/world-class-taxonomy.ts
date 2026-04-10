@@ -30,7 +30,9 @@ export type Vertical =
   | "healthcare"
   | "mobility"
   | "experiences"
-  | "utility";
+  | "utility"
+  | "education"
+  | "finance";
 
 export type RadarMainCategory =
   | "all"
@@ -139,6 +141,15 @@ const SERVICE_MODE_ENRICHMENT: Record<string, ServiceMode[]> = {
   food_truck: ["pickup"],
   ice_cream: ["pickup", "delivery", "dine_in"],
   steakhouse: ["dine_in", "delivery"],
+  buffet: ["dine_in"],
+  cloud_kitchen: ["delivery"],
+  food_court: ["dine_in", "pickup"],
+  casual_dining: ["dine_in", "delivery", "pickup"],
+  smoothie_bar: ["pickup", "delivery"],
+  tea_house: ["dine_in", "pickup"],
+  chocolate: ["pickup", "delivery"],
+  pastry: ["pickup", "delivery", "dine_in"],
+  delivery_takeaway: ["delivery", "pickup"],
   // Grocery subs
   supermarket: ["delivery", "pickup"],
   mini_mart: ["delivery", "pickup"],
@@ -189,6 +200,12 @@ const SERVICE_MODE_ENRICHMENT: Record<string, ServiceMode[]> = {
   key_cutting: ["onsite", "home_service"],
   carpentry: ["home_service", "onsite"],
   it_support: ["onsite", "home_service", "virtual"],
+  consulting: ["onsite", "virtual"],
+  marketing: ["onsite", "virtual"],
+  hvac: ["home_service", "onsite"],
+  tire_service: ["onsite"],
+  technician: ["home_service", "onsite"],
+  delivery_service: ["home_service"],
   nails: ["onsite"],
   makeup: ["onsite", "home_service"],
   lashes: ["onsite"],
@@ -200,6 +217,10 @@ const SERVICE_MODE_ENRICHMENT: Record<string, ServiceMode[]> = {
   car_rental: ["onsite"],
   premium: ["onsite"],
   bike: ["onsite"],
+  scooter: ["onsite"],
+  // Delivery
+  courier: ["delivery"],
+  freight: ["delivery"],
   // Stay (hospitality)
   hotel: ["onsite"],
   resort: ["onsite"],
@@ -213,6 +234,27 @@ const SERVICE_MODE_ENRICHMENT: Record<string, ServiceMode[]> = {
   bed_breakfast: ["onsite"],
   glamping: ["onsite"],
   eco_lodge: ["onsite"],
+  budget_hotel: ["onsite"],
+  luxury_hotel: ["onsite"],
+  desert_camp: ["onsite"],
+  unique_stay: ["onsite"],
+  // Health & Medical
+  pharmacy: ["onsite", "delivery"],
+  clinic: ["onsite"],
+  hospital: ["onsite"],
+  dentist: ["onsite"],
+  physio: ["onsite"],
+  veterinary: ["onsite"],
+  optical: ["onsite"],
+  lab: ["onsite"],
+  mental_health: ["onsite", "virtual"],
+  dermatology: ["onsite"],
+  pediatrics: ["onsite"],
+  // Shops extras
+  wholesale: ["onsite"],
+  digital_products: ["delivery"],
+  // Property extras
+  property_management: ["onsite"],
   cruise: ["onsite"],
   safari: ["onsite"],
   diving: ["onsite"],
@@ -223,6 +265,29 @@ const SERVICE_MODE_ENRICHMENT: Record<string, ServiceMode[]> = {
   water_sports: ["onsite"],
   hiking: ["onsite"],
   city_tour: ["onsite"],
+  cinema: ["onsite"],
+  sports: ["onsite"],
+  tourism: ["onsite"],
+  // Education
+  k12_school: ["onsite"],
+  university: ["onsite"],
+  courses: ["onsite", "virtual"],
+  coaching: ["onsite", "virtual"],
+  online_learning: ["virtual"],
+  language_school: ["onsite"],
+  driving_school: ["onsite"],
+  daycare: ["onsite"],
+  vocational: ["onsite"],
+  music_school: ["onsite"],
+  // Finance
+  payments: ["onsite", "virtual"],
+  transfers: ["virtual"],
+  banking: ["onsite"],
+  insurance_finance: ["onsite", "virtual"],
+  exchange: ["onsite"],
+  crypto: ["virtual"],
+  investment_finance: ["onsite", "virtual"],
+  microfinance: ["onsite"],
 };
 
 const TIME_RELEVANCE_ENRICHMENT: Record<string, TimePeriod[]> = {
@@ -287,6 +352,7 @@ function mapCategoryKeyToVertical(key: string): Vertical {
     shops: "shops",
     services: "services",
     pharmacy: "healthcare",
+    health: "healthcare",
     beauty: "services",
     taxi: "mobility",
     delivery: "mobility",
@@ -294,6 +360,8 @@ function mapCategoryKeyToVertical(key: string): Vertical {
     stay: "stay",
     travel: "experiences",
     utility: "utility",
+    education: "education",
+    finance: "finance",
   };
   return mapping[key] ?? "services";
 }
@@ -310,6 +378,8 @@ function mapVerticalToRadar(vertical: Vertical): RadarMainCategory {
     mobility: "services",
     experiences: "services",
     utility: "utility",
+    education: "services",
+    finance: "utility",
   };
   return map[vertical] ?? "services";
 }
@@ -452,6 +522,18 @@ const VERTICAL_ALIASES: Record<string, Vertical> = {
   hotel: "stay",
   hotels: "stay",
   resort: "stay",
+  education: "education",
+  school: "education",
+  university: "education",
+  training: "education",
+  learning: "education",
+  courses: "education",
+  finance: "finance",
+  banking: "finance",
+  payments: "finance",
+  fintech: "finance",
+  "money transfer": "finance",
+  insurance: "finance",
 };
 
 const SUBCATEGORY_ALIASES: Record<string, string> = {
@@ -486,8 +568,8 @@ const SUBCATEGORY_ALIASES: Record<string, string> = {
   samu: "ambulance",
   gendarmerie: "police_station",
   commissariat: "police_station",
-  urgences: "hospital",
-  clinique: "hospital",
+  urgences: "poi_hospital",
+  clinique: "clinic",
   gare: "train_station",
   metro: "train_station",
   aeroport: "airport",
@@ -568,7 +650,29 @@ const SUBCATEGORY_ALIASES: Record<string, string> = {
   "pad thai": "thai",
   "bubble tea": "cafe",
   boba: "cafe",
-  "tea house": "cafe",
+  "tea house": "tea_house",
+  "matcha bar": "tea_house",
+  "chai shop": "tea_house",
+  "chocolate shop": "chocolate",
+  chocolatier: "chocolate",
+  confectionery: "chocolate",
+  "pastry shop": "pastry",
+  patisserie: "pastry",
+  "ghost kitchen": "cloud_kitchen",
+  "virtual kitchen": "cloud_kitchen",
+  "dark kitchen": "cloud_kitchen",
+  "food hall": "food_court",
+  "budget hotel": "budget_hotel",
+  "economy hotel": "budget_hotel",
+  "luxury hotel": "luxury_hotel",
+  "5 star hotel": "luxury_hotel",
+  "five star": "luxury_hotel",
+  "desert camp": "desert_camp",
+  "bedouin camp": "desert_camp",
+  treehouse: "unique_stay",
+  houseboat: "unique_stay",
+  "e-bike": "scooter",
+  "electric scooter": "scooter",
   "nail salon": "nails",
   manicure: "nails",
   pedicure: "nails",
