@@ -1,7 +1,8 @@
 /**
  * useRentalPropertyLoader — Extracted property detail + mode badges loading.
- * Replaces inline supabase calls in RentalManagement.tsx.
+ * Replaces inline db calls in RentalManagement.tsx.
  */
+import { db } from "@/services/db";
 import { useState, useEffect, useCallback } from "react";
 import { fetchPropertyDetail, fetchPropertyModeBadges } from "@/lib/rental/rental-repository";
 

@@ -2,6 +2,7 @@
  * useOrderFetcher — Fetches order + delivery job + driver presence.
  * Single responsibility: data loading + realtime subscriptions for order detail.
  */
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";

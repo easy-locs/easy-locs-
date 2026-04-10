@@ -2,8 +2,9 @@
  * savedSearchStore — Saved property search state.
  *
  * SSOT alignment:
- *   - All DB access via saved-search.repository (no direct supabase calls here).
+ *   - All DB access via saved-search.repository (no direct db calls here).
  */
+import { db } from "@/services/db";
 import { create } from "zustand";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";

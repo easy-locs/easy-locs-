@@ -1,6 +1,7 @@
 /**
  * usePaymentFX — Live FX conversion hook for Orbit Payments
  */
+import { db } from "@/services/db";
 import { useState, useCallback, useRef } from "react";
 import { getAccessToken } from "@/repositories/auth-utils.repository";
 import type { FXPreview } from "@/lib/orbit-payments/types";
@@ -17,7 +18,7 @@ export function usePaymentFX() {
     try {
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/fx-rates?action=rates`,
+        `https://${projectId}.db.co/functions/v1/fx-rates?action=rates`,
         {
           headers: {
             Authorization: `Bearer ${await getAccessToken()}`,
@@ -48,7 +49,7 @@ export function usePaymentFX() {
         try {
           const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
           const res = await fetch(
-            `https://${projectId}.supabase.co/functions/v1/fx-rates?action=convert&from=${currency}&amount=${amount}`,
+            `https://${projectId}.db.co/functions/v1/fx-rates?action=convert&from=${currency}&amount=${amount}`,
             {
               headers: {
                 Authorization: `Bearer ${await getAccessToken()}`,

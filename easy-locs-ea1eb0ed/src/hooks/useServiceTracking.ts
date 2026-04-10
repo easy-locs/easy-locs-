@@ -8,6 +8,8 @@
  * - Realtime subscription for observers
  * - Status lifecycle: pending → en_route → nearby → arrived → completed
  */
+import { db } from "@/services/db";
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";

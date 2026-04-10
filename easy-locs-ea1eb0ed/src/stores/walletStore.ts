@@ -1,7 +1,8 @@
+import { db } from "@/services/db";
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { WalletStateModel, WalletTransaction, CurrencyCode } from "@/lib/types/domain";
-import { walletRepo } from "@/lib/supabase/repositories";
+import { walletRepo } from "@/lib/db/repositories";
 import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 

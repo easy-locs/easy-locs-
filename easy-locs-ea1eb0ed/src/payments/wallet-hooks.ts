@@ -4,6 +4,7 @@
  * All balance reads, transfers, and history come from HERE.
  */
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { db } from "@/services/db";
 import { typedQueries } from "@/lib/db/typed-queries";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";
@@ -36,8 +37,7 @@ export function useWalletBalance() {
 
       const { data: balRow } = await typedQueries.walletBalances.selectByUser(user.id);
 
-      const { data: accRow } = await supabase
-        .from("wallet_accounts")
+      const { data: accRow } = await db("wallet_accounts")
         .select("id")
         .eq("owner_user_id", user.id)
         .eq("status", "active")
