@@ -60,6 +60,8 @@ export default function WalletSecurityPanel() {
   const { user } = useAuth();
   const { t } = useI18n();
   const { items: transactions, todaySpent } = useWalletTransactions();
+  const { currency: walletCurrency } = useWalletBalance();
+  const currency = walletCurrency || "AED";
   const [pinStatus, setPinStatus] = useState<"loading" | "set" | "not_set">("loading");
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [biometricStatus, setBiometricStatus] = useState<"active" | "inactive">("inactive");
@@ -170,6 +172,16 @@ export default function WalletSecurityPanel() {
       status: biometricStatus === "active" ? "active" : "inactive",
     },
     {
+      icon: Smartphone,
+      label: t("wallet.device_label"),
+      description: deviceBound
+        ? t("wallet.device_bound_desc")
+        : t("wallet.device_unbound_desc"),
+      status: bindingInProgress ? "loading" : deviceBound ? "active" : "warning",
+      action: !deviceBound && !bindingInProgress ? t("wallet.bind") : undefined,
+      onAction: handleBindDevice,
+    },
+    {
       icon: ShieldCheck,
       label: t("wallet.atomic_label"),
       description: t("wallet.atomic_desc"),
@@ -182,19 +194,9 @@ export default function WalletSecurityPanel() {
       status: "active",
     },
     {
-      icon: Smartphone,
-      label: t("wallet.device_label"),
-      description: deviceBound
-        ? t("wallet.device_bound_desc")
-        : t("wallet.device_unbound_desc"),
-      status: bindingInProgress ? "loading" : deviceBound ? "active" : "warning",
-      action: !deviceBound && !bindingInProgress ? t("wallet.bind") : undefined,
-      onAction: handleBindDevice,
-    },
-    {
       icon: Eye,
       label: t("wallet.transfer_limits_label"),
-      description: `Single tx: ${limit.toLocaleString()} AED · Daily: ${limit.toLocaleString()} AED`,
+      description: `${t("wallet.daily_limit")}: ${limit.toLocaleString()} ${currency || "AED"}`,
       status: "active",
     },
   ];
@@ -232,7 +234,7 @@ export default function WalletSecurityPanel() {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-muted-foreground">{t("wallet.used_today")}</span>
-            <span className="font-bold text-foreground tabular-nums">{todaySpent.toLocaleString()} AED</span>
+            <span className="font-bold text-foreground tabular-nums">{todaySpent.toLocaleString()} {currency}</span>
           </div>
           <div className="h-2 rounded-full bg-muted/30 overflow-hidden">
             <motion.div

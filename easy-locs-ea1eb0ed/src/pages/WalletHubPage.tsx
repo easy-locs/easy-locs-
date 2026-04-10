@@ -10,7 +10,7 @@ import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 import {
   ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
   CreditCard, Wallet, Shield, ScanLine, Settings, TrendingUp,
-  Clock, CheckCircle, ArrowRight, Globe, Banknote,
+  Clock, CheckCircle, ArrowRight, Globe, Banknote, Building2,
   Brain, AlertCircle, RefreshCw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -347,7 +347,9 @@ export default function WalletHubPage() {
                     {rows.map((acc: Record<string, unknown>) => {
                       const accCurrency = (acc.currency as string) || getWalletDefaultCurrency();
                       const accBalance = Number(acc.balance || 0);
-                      const accType = (acc.account_type as string) || "Main";
+                      const ownerType = (acc.owner_type as string) || "user";
+                      const isBusiness = ownerType === "workspace" || ownerType === "merchant";
+                      const accountLabel = isBusiness ? t("wallet.business" as any) || "Business" : t("wallet.personal" as any) || "Personal";
                       let formattedBalance = "••••";
                       if (showBalance) {
                         try { formattedBalance = new Intl.NumberFormat(undefined, { style: "currency", currency: accCurrency, minimumFractionDigits: 2 }).format(accBalance); }
@@ -355,17 +357,17 @@ export default function WalletHubPage() {
                       }
                       return (
                         <div key={acc.id as string} className="app-card flex items-center gap-3 p-4">
-                          <div className="app-list-row-icon" style={{ background: "hsl(var(--primary) / 0.06)" }}>
-                            {accType === "fiat" ? <Banknote style={{ color: "hsl(var(--primary))" }} /> : <Wallet style={{ color: "hsl(var(--primary))" }} />}
+                          <div className="app-list-row-icon" style={{ background: isBusiness ? "hsl(var(--accent) / 0.08)" : "hsl(var(--primary) / 0.06)" }}>
+                            {isBusiness ? <Building2 style={{ color: "hsl(var(--accent))" }} /> : <Wallet style={{ color: "hsl(var(--primary))" }} />}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-foreground capitalize">{accType}</p>
+                            <p className="text-sm font-bold text-foreground">{accountLabel}</p>
                             <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                               <CheckCircle className="w-2.5 h-2.5 text-success" />
                               {t("wallet.active")} · {accCurrency}
                             </p>
                           </div>
-                          <span className="text-sm font-black text-foreground tabular-nums">{formattedBalance}</span>
+                          <span className="text-sm font-black text-foreground tabular-nums whitespace-nowrap">{formattedBalance}</span>
                         </div>
                       );
                     })}

@@ -150,15 +150,6 @@ const Settings = () => {
       case "wallet":
         return (
           <div ref={el => { sectionRefs.current["wallet"] = el; }} className="space-y-3">
-            <SettingsCard icon={Wallet} title={t("wallet.walletSettings") || "Wallet Settings"}>
-              <p className="text-xs text-muted-foreground mb-3">
-                {t("wallet.settings_moved" as any) || "Wallet settings are now in the Wallet section for easier access."}
-              </p>
-              <Link to="/settings/wallet" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-                {t("wallet.go_to_wallet_settings" as any) || "Go to Wallet Settings"}
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            </SettingsCard>
             <PaymentProvidersSettings />
           </div>
         );
