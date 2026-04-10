@@ -150,6 +150,46 @@ const ARCHITECTURE_RULES = [
     description: "All lazy-loaded routes must have Suspense fallback with loading skeleton",
     severity: "warning" as const,
   },
+  {
+    id: "no-unsafe-casts",
+    description: "Never use 'as unknown as' casts — use proper mapper functions",
+    severity: "critical" as const,
+  },
+  {
+    id: "resilience-guards-required",
+    description: "Payment/booking flows must use withDoubleClickGuard or withSessionGuard",
+    severity: "warning" as const,
+  },
+  {
+    id: "workflow-required-for-critical-flows",
+    description: "Critical business flows (create, publish, lease, payment) must use workflow engine",
+    severity: "warning" as const,
+  },
+  {
+    id: "no-parallel-taxonomy",
+    description: "All category/type definitions must derive from canonical taxonomy — no local enums",
+    severity: "critical" as const,
+  },
+  {
+    id: "data-contract-stability",
+    description: "Service return types must match canonical interfaces — snake_case mapped to camelCase",
+    severity: "critical" as const,
+  },
+  {
+    id: "country-rules-required",
+    description: "Multi-country features must use getCountryRules() — no hardcoded locale assumptions",
+    severity: "warning" as const,
+  },
+  {
+    id: "me-wallet-separation",
+    description: "Me = cockpit/overview only. All financial detail stays in Wallet",
+    severity: "critical" as const,
+  },
+  {
+    id: "offline-recovery-required",
+    description: "Forms with user input must persist draft state for offline recovery",
+    severity: "info" as const,
+  },
 ] as const;
 
 export function getArchitectureRules() {
@@ -186,6 +226,12 @@ const PERF_BUDGETS = {
   maxModalDepth: 3,
   maxImageSizeKB: 200,
   maxConcurrentRequests: 6,
+  maxCheckoutMs: 5000,
+  maxMapLoadMs: 2000,
+  maxOrbitThreadLoadMs: 1500,
+  maxDashboardRenderMs: 2500,
+  maxModalOpenMs: 300,
+  maxLongListRenderMs: 500,
 } as const;
 
 export function getPerfBudgets() {
@@ -196,4 +242,76 @@ export type PerfBudgetKey = keyof typeof PERF_BUDGETS;
 
 export function checkPerfBudget(key: PerfBudgetKey, value: number): boolean {
   return value <= PERF_BUDGETS[key];
+}
+
+export type VerticalId = "dashboard" | "radar" | "orbit" | "wallet" | "me" | "real_estate" | "marketplace" | "mobility" | "food" | "stay";
+
+export interface VerticalHealthScore {
+  vertical: VerticalId;
+  overall: number;
+  breakdown: {
+    performance: number;
+    dataQuality: number;
+    uxQuality: number;
+    stability: number;
+    testCoverage: number;
+  };
+  status: "healthy" | "degraded" | "unhealthy";
+  issues: string[];
+  lastCheckedAt: number;
+}
+
+export function computeVerticalHealth(
+  vertical: VerticalId,
+  metrics: {
+    errorRate5min?: number;
+    avgLoadMs?: number;
+    dataCompleteness?: number;
+    renderIssues?: number;
+    crashCount?: number;
+  },
+): VerticalHealthScore {
+  const performance = Math.max(0, 100 - ((metrics.avgLoadMs ?? 0) / 30));
+  const dataQuality = (metrics.dataCompleteness ?? 100);
+  const uxQuality = Math.max(0, 100 - ((metrics.renderIssues ?? 0) * 10));
+  const stability = Math.max(0, 100 - ((metrics.crashCount ?? 0) * 20) - ((metrics.errorRate5min ?? 0) * 5));
+  const testCoverage = 50;
+
+  const overall = Math.round(
+    performance * 0.25 + dataQuality * 0.25 + uxQuality * 0.2 + stability * 0.2 + testCoverage * 0.1
+  );
+
+  const issues: string[] = [];
+  if (performance < 60) issues.push("Performance below budget");
+  if (dataQuality < 70) issues.push("Data quality issues detected");
+  if (uxQuality < 70) issues.push("UI rendering issues");
+  if (stability < 60) issues.push("Stability concerns — high error rate");
+
+  return {
+    vertical,
+    overall,
+    breakdown: { performance, dataQuality, uxQuality, stability, testCoverage },
+    status: overall >= 80 ? "healthy" : overall >= 50 ? "degraded" : "unhealthy",
+    issues,
+    lastCheckedAt: Date.now(),
+  };
+}
+
+export function computeGlobalHealthScore(verticals: VerticalHealthScore[]): {
+  score: number;
+  status: "healthy" | "degraded" | "unhealthy";
+  weakestVertical: string;
+  strongestVertical: string;
+} {
+  if (verticals.length === 0) return { score: 0, status: "unhealthy", weakestVertical: "none", strongestVertical: "none" };
+
+  const avg = Math.round(verticals.reduce((s, v) => s + v.overall, 0) / verticals.length);
+  const sorted = [...verticals].sort((a, b) => a.overall - b.overall);
+
+  return {
+    score: avg,
+    status: avg >= 80 ? "healthy" : avg >= 50 ? "degraded" : "unhealthy",
+    weakestVertical: sorted[0].vertical,
+    strongestVertical: sorted[sorted.length - 1].vertical,
+  };
 }

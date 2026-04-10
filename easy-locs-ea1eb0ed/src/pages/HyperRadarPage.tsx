@@ -22,7 +22,7 @@ import RadarStoryRail from "@/components/radar/RadarStoryRail";
 import RadarEntitySheet from "@/components/radar/RadarEntitySheet";
 import {
   Radio, X, ChevronUp, ChevronDown,
-  Utensils, Hotel, Car, Sparkles, Moon, ShoppingBag,
+  Utensils, Hotel, Car, Sparkles, Moon, ShoppingBag, Building2,
   Activity, Navigation, Search, Minus, Plus, CloudRain, CloudSun,
   MapPin, TrendingUp, Star, Zap, Eye, Heart, Store,
   Droplets, Wind,
@@ -42,6 +42,7 @@ const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; col
   { id: "nightlife", labelKey: "radar.layer_night", icon: <Moon className="w-3 h-3" />, color: "hsl(280 70% 55%)", emoji: "🌙" },
   { id: "healthcare", labelKey: "radar.layer_healthcare", icon: <Heart className="w-3 h-3" />, color: "hsl(0 65% 50%)", emoji: "🏥" },
   { id: "shops", labelKey: "radar.layer_shops", icon: <Store className="w-3 h-3" />, color: "hsl(38 65% 56%)", emoji: "🛍️" },
+  { id: "property", labelKey: "radar.layer_property", icon: <Building2 className="w-3 h-3" />, color: "hsl(220 40% 38%)", emoji: "🏠" },
 ];
 
 const RADIUS_PRESETS = [0.5, 1, 2, 5, 10, 25];
@@ -50,7 +51,7 @@ const MAX_VISIBLE_PINS = 80;
 const CATEGORY_TO_LAYER: Record<string, RadarLayer> = {
   food: "food", stay: "stay", services: "services",
   utility: "utility", mobility: "mobility", nightlife: "nightlife",
-  healthcare: "healthcare", shops: "shops",
+  healthcare: "healthcare", shops: "shops", property: "property",
 };
 
 export default function HyperRadarPage() {

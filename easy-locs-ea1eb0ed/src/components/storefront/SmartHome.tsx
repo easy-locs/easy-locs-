@@ -31,6 +31,7 @@ import {
 import type { SmartCategory, SmartHero } from "@/lib/smart-home-engine";
 import { useI18n } from "@/lib/i18n";
 import OrbitPreviewWidget from "@/components/dashboard/OrbitPreviewWidget";
+import PropertyDashboardWidget from "@/components/dashboard/PropertyDashboardWidget";
 import EssentialServicesStrip from "@/components/dashboard/EssentialServicesStrip";
 import SuperServicesGrid from "@/components/dashboard/SuperServicesGrid";
 import { useDashboardLiveStats } from "@/hooks/useDashboardLiveStats";
@@ -618,6 +619,7 @@ export default function SmartHome() {
         <LiveStatsPulse />
       </div>
       <OrbitPreviewWidget />
+      <PropertyDashboardWidget />
       <div className="px-3 sm:px-4">
 
         {/* Super Services — 4-column grid (Food, Taxi, Delivery, Hotel, Flights, Seasonal, Real Estate, Services) */}

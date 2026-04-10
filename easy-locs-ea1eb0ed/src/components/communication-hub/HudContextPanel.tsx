@@ -47,7 +47,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
 
   // Load property context
   useEffect(() => {
-    if (thread.conversationType !== "property" || !thread.tenantId) return;
+    if (!["property", "property_lead", "property_viewing", "property_manager", "property_landlord", "property_maintenance"].includes(thread.conversationType) || !thread.tenantId) return;
     setPropertyCtx(p => ({ ...p, loading: true }));
     commRepo.fetchPropertyContext(orgId, thread.tenantId)
       .then(ctx => setPropertyCtx({ ...ctx, loading: false }))

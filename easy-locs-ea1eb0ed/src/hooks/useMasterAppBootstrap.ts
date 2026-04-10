@@ -152,14 +152,17 @@ export function useMasterAppBootstrap() {
           { startStaleCacheScanner },
           { startAutoRepairEngine },
           { startRealtimeHealthCheck },
+          { initPropertyAutomation },
         ] = await Promise.all([
           import("@/lib/runtime/flow-completeness-validator"),
           import("@/lib/runtime/stale-cache-detector"),
           import("@/lib/runtime/auto-repair-engine"),
           import("@/lib/runtime/realtime-intelligence"),
+          import("@/lib/engines/property-automation-engine"),
         ]);
 
         initCoreFlowRegistry();
+        initPropertyAutomation();
         cleanups.push(
           startStaleCacheScanner(60_000),
           startAutoRepairEngine(45_000),

@@ -9,6 +9,9 @@ import { getPublishBlockers } from "@/domains/real-estate/quality-gates";
 import type { Property, PropertyType, ListingType, PropertyCategory, FurnishingStatus } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Check, ChevronRight, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { startWorkflow } from "@/lib/workflows/workflow-engine";
+import { PROPERTY_WORKFLOWS } from "@/lib/workflows/property-workflows";
+import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
 
 const navy = "hsl(220 40% 18%)";
 const gold = "hsl(38 65% 56%)";
@@ -81,9 +84,19 @@ export default function MePropertyCreatePage() {
     setSaving(true);
     try {
       const prop = buildProperty();
-      const created = await realEstatePropertyService.create(prop);
-      toast.success(t("re.create.success", "Property created"));
-      navigate(created ? `/me/properties/${created.id}` : "/me/properties/list");
+
+      if (isPlatformFlagEnabled("enable_property_workflows")) {
+        const wf = await startWorkflow(PROPERTY_WORKFLOWS.createProperty, {
+          userId: user?.id ?? "",
+          propertyData: prop,
+        });
+        toast.success(t("re.create.success", "Property created"));
+        navigate(wf.context.propertyId ? `/me/properties/${wf.context.propertyId}` : "/me/properties/list");
+      } else {
+        const created = await realEstatePropertyService.create(prop);
+        toast.success(t("re.create.success", "Property created"));
+        navigate(created ? `/me/properties/${created.id}` : "/me/properties/list");
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("re.create.error", "Failed to create property"));
     } finally {

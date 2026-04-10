@@ -421,6 +421,45 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **CustomerAddressBookPage** (`/me/address-book`): Real DB — reads/writes `user_addresses` table (unified with SettingsAddresses)
 - Both use `supabase.from("user_addresses")` pattern for CRUD
 
+### Durable Workflow Engine
+- **Engine**: `src/lib/workflows/workflow-engine.ts` — step-based durable orchestrator with retry (exponential backoff), rollback, timeout, state persistence (localStorage)
+- **Property Workflows**: `src/lib/workflows/property-workflows.ts` — 7 workflow definitions (createProperty, publishProperty, viewing, maintenance, leaseCreation, rentPayment, documentCompliance)
+- **Integration**: Property creation page (`MePropertyCreatePage.tsx`) uses workflow engine when `enable_property_workflows` flag is enabled; falls back to direct service call otherwise
+- **API**: `startWorkflow(definition, context)`, `resumeWorkflow(id)`, `getWorkflowStatus(id)` — events emitted via `platformBus`
+
+### Real Estate CRM Layer
+- **Types**: `src/domains/real-estate/crm-types.ts` — Lead, Pipeline, CrmTask, ViewingRecord, ConversionMetrics with lead scoring
+- **Service**: `src/services/real-estate-crm.service.ts` — leadService, crmTaskService, crmViewingService, crmAnalyticsService (full CRUD with snake_case mappers)
+- **Tables**: `re_leads`, `re_crm_tasks`, `re_viewings` (Supabase)
+
+### Property Automation Engine
+- **Engine**: `src/lib/engines/property-automation-engine.ts` — 9 built-in rules (rent reminders, document expiry, lease renewal, vacancy alerts, lead scoring, viewing reminders, SLA breach, overdue payment, lease near-expiry)
+- **Bootstrap**: Initialized at boot stage-3 via `useMasterAppBootstrap.ts` → `initPropertyAutomation()`
+- **API**: `addAutomationRule()`, `removeAutomationRule()`, `evaluateRules(context)`, `getActiveRules()`
+
+### Resilience Patterns
+- **Library**: `src/lib/resilience/resilience-patterns.ts` — withDoubleClickGuard, withOfflineQueue, withRetryBackoff, withSessionGuard
+- **Quality Gates**: Extended `src/lib/quality-gates.ts` with 8 new rules (no-unsafe-casts, resilience-guards-required, workflow-required, no-parallel-taxonomy, data-contract-stability, country-rules-required, me-wallet-separation, offline-recovery-required)
+- **Health Scoring**: `computeVerticalHealth()`, `computeGlobalHealthScore()` — per-vertical health monitoring with performance/data-quality/ux/stability breakdown
+
+### Feature Flag Targeting
+- **Registry**: `src/lib/growth/feature-flag-registry.ts` — 6 new flags (enable_real_estate, enable_property_crm, enable_property_automation, enable_property_workflows, enable_resilience_layer, enable_durable_workflows)
+- **Targeting**: `evaluateTargetedFlag(flag, context)` with country/vertical/role/percentage dimensions and include/exclude operators
+- **Rules**: Property CRM restricted to admin/agent/property_manager roles; automation restricted to admin/property_manager
+
+### Property Dashboard Widget
+- **Component**: `src/components/dashboard/PropertyDashboardWidget.tsx` — owner mode (KPIs: properties, occupancy, tickets, leases + recent properties + maintenance alerts) + buyer mode (marketplace quick-access: Buy/Rent/Short Stay)
+- **Integration**: Wired into SmartHome.tsx after OrbitPreviewWidget
+
+### Orbit Property Conversations
+- **Types**: 5 new ConversationType variants: property_lead, property_viewing, property_manager, property_landlord, property_maintenance
+- **Config**: All 5 added to CONV_TYPE_CONFIG with emoji/label/color
+- **Context Panel**: HudContextPanel extended to load property context for all property_* conversation types
+
+### Radar Property Layer
+- **Layer**: "property" added to LAYER_DEFS, CATEGORY_SETS, CATEGORY_TO_LAYER in HyperRadarPage + hyper-radar-engine
+- **i18n**: `radar.layer_property` translated in all 10 languages (EN/FR/ES/DE/IT/PT/NL/TR/AR/JA)
+
 ### Smart Cross-Section Bridge
 - **Engine**: `src/lib/smart/smart-bridge.ts` — resolves contextual actions for any entity (merchant, contact, listing, service, hotel, property)
 - **UI Component**: `src/components/smart/SmartEntityActions.tsx` — renders action pills/grid/compact buttons with loading states
