@@ -15,7 +15,7 @@ export async function insertTenant(record: Record<string, any>) {
 }
 
 export async function fetchTenantNames(orgId: string) {
-  const { data } = await supabase.from("tenants").select("id, name").eq("org_id", orgId);
+  const { data } = await db("tenants").select("id, name").eq("org_id", orgId);
   return data || [];
 }
 

@@ -2,11 +2,12 @@
  * company.repository — DB operations for Company page.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function fetchUserCountry() {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData?.user?.id) return null;
-  const { data: p } = await supabase.from("profiles").select("country").eq("id", authData.user.id).single();
+  const { data: p } = await db("profiles").select("country").eq("id", authData.user.id).single();
   return p?.country || null;
 }
 

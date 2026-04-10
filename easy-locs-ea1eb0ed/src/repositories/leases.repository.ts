@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function fetchLeases(orgId: string, countryFilter?: string | null) {
   let query = supabase
@@ -12,6 +13,6 @@ export async function fetchLeases(orgId: string, countryFilter?: string | null) 
 }
 
 export async function sendLeaseForSignature(leaseId: string) {
-  const { error } = await supabase.from("leases").update({ status: "pending_signature" }).eq("id", leaseId);
+  const { error } = await db("leases").update({ status: "pending_signature" }).eq("id", leaseId);
   if (error) throw error;
 }

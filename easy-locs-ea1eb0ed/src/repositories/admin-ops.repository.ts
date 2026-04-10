@@ -3,7 +3,7 @@ import { db } from "@/services/db";
 
 // ─── Super Dashboard ───
 export async function fetchSuperDashboardOrders() {
-  const { data, error } = await supabase.from("orders").select("id,status,total_amount,payment_status").limit(1000);
+  const { data, error } = await db("orders").select("id,status,total_amount,payment_status").limit(1000);
   if (error) throw error;
   return data ?? [];
 }
@@ -27,7 +27,7 @@ export async function fetchSuperDashboardTickets() {
 }
 
 export async function fetchSuperDashboardLedger() {
-  const { data, error } = await supabase.from("wallet_ledger_entries").select("id,amount,direction,entry_type").limit(1000);
+  const { data, error } = await db("wallet_ledger_entries").select("id,amount,direction,entry_type").limit(1000);
   if (error) throw error;
   return data ?? [];
 }
@@ -35,7 +35,7 @@ export async function fetchSuperDashboardLedger() {
 // ─── Ops Dashboard ───
 export async function fetchOpsDashboardData() {
   const [{ data: orders }, { data: merchants }, { data: tickets }] = await Promise.all([
-    supabase.from("orders").select("id,status,total_amount").limit(500),
+    db("orders").select("id,status,total_amount").limit(500),
     db("seed_merchants").select("id,is_active,is_open").limit(500),
     db("support_tickets").select("id,status,ticket_type").limit(500),
   ]);
@@ -45,9 +45,9 @@ export async function fetchOpsDashboardData() {
 // ─── Finance Summary ───
 export async function fetchFinanceSummaryData() {
   const [{ data: orders }, { data: ledger }, { data: wallets }] = await Promise.all([
-    supabase.from("orders").select("total_amount,payment_status,status,currency").limit(5000),
-    supabase.from("wallet_ledger_entries").select("amount,direction,entry_type").limit(5000),
-    supabase.from("wallet_accounts").select("balance").limit(2000),
+    db("orders").select("total_amount,payment_status,status,currency").limit(5000),
+    db("wallet_ledger_entries").select("amount,direction,entry_type").limit(5000),
+    db("wallet_accounts").select("balance").limit(2000),
   ]);
   return { orders: orders ?? [], ledger: ledger ?? [], wallets: wallets ?? [] };
 }
@@ -55,10 +55,10 @@ export async function fetchFinanceSummaryData() {
 // ─── Growth Dashboard ───
 export async function fetchGrowthDashboardData() {
   const [{ count: users }, { count: merchants }, { count: orders }, { count: favorites }] = await Promise.all([
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    db("profiles").select("*", { count: "exact", head: true }),
     db("seed_merchants").select("*", { count: "exact", head: true }),
-    supabase.from("orders").select("*", { count: "exact", head: true }),
-    supabase.from("user_favorites").select("*", { count: "exact", head: true }),
+    db("orders").select("*", { count: "exact", head: true }),
+    db("user_favorites").select("*", { count: "exact", head: true }),
   ]);
   return { users: users ?? 0, merchants: merchants ?? 0, orders: orders ?? 0, favorites: favorites ?? 0 };
 }
@@ -66,10 +66,10 @@ export async function fetchGrowthDashboardData() {
 // ─── System Health ───
 export async function fetchSystemHealthData() {
   const [{ count: users }, { count: orders }, { count: tickets }, { count: wallets }, { count: notifications }] = await Promise.all([
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
-    supabase.from("orders").select("*", { count: "exact", head: true }),
+    db("profiles").select("*", { count: "exact", head: true }),
+    db("orders").select("*", { count: "exact", head: true }),
     db("support_tickets").select("*", { count: "exact", head: true }),
-    supabase.from("wallet_accounts").select("*", { count: "exact", head: true }),
+    db("wallet_accounts").select("*", { count: "exact", head: true }),
     db("app_notifications").select("*", { count: "exact", head: true }),
   ]);
   return { users: users ?? 0, orders: orders ?? 0, tickets: tickets ?? 0, wallets: wallets ?? 0, notifications: notifications ?? 0 };
@@ -78,10 +78,10 @@ export async function fetchSystemHealthData() {
 // ─── User Lookup ───
 export async function fetchUserLookupData(userId: string) {
   const [{ data: favorites }, { data: tickets }, { data: orders }, { data: wallets }] = await Promise.all([
-    supabase.from("user_favorites").select("*").eq("user_id", userId).limit(200),
+    db("user_favorites").select("*").eq("user_id", userId).limit(200),
     db("support_tickets").select("*").eq("requester_user_id", userId).limit(200),
-    supabase.from("orders").select("*").eq("customer_user_id", userId).limit(200),
-    supabase.from("wallet_accounts").select("*").eq("owner_user_id", userId).limit(50),
+    db("orders").select("*").eq("customer_user_id", userId).limit(200),
+    db("wallet_accounts").select("*").eq("owner_user_id", userId).limit(50),
   ]);
   return { favorites: favorites ?? [], tickets: tickets ?? [], orders: orders ?? [], wallets: wallets ?? [] };
 }
@@ -89,8 +89,8 @@ export async function fetchUserLookupData(userId: string) {
 // ─── Wallet Watch ───
 export async function fetchWalletWatchData() {
   const [{ data: accounts }, { data: ledger }] = await Promise.all([
-    supabase.from("wallet_accounts").select("*").limit(2000),
-    supabase.from("wallet_ledger_entries").select("*").limit(5000),
+    db("wallet_accounts").select("*").limit(2000),
+    db("wallet_ledger_entries").select("*").limit(5000),
   ]);
   return { accounts: accounts ?? [], ledger: ledger ?? [] };
 }
@@ -100,7 +100,7 @@ export async function fetchPlatformAlertsData() {
   const [{ data: tickets }, { data: notifications }, { data: orders }] = await Promise.all([
     db("support_tickets").select("id,status").limit(2000),
     db("app_notifications").select("id,type").limit(2000),
-    supabase.from("orders").select("id,status,payment_status").limit(3000),
+    db("orders").select("id,status,payment_status").limit(3000),
   ]);
   return { tickets: tickets ?? [], notifications: notifications ?? [], orders: orders ?? [] };
 }
@@ -109,7 +109,7 @@ export async function fetchPlatformAlertsData() {
 export async function fetchCrmOpsData() {
   const [{ data: loyalty }, { data: favorites }, { data: tickets }] = await Promise.all([
     db("loyalty_accounts").select("*").limit(500),
-    supabase.from("user_favorites").select("*").limit(1000),
+    db("user_favorites").select("*").limit(1000),
     db("support_tickets").select("*").limit(1000),
   ]);
   return { loyalty: loyalty ?? [], favorites: favorites ?? [], tickets: tickets ?? [] };
@@ -120,7 +120,7 @@ export async function fetchGrowthOpsData() {
   const [{ data: merchants }, { data: promos }, { data: favorites }, { data: events }] = await Promise.all([
     db("seed_merchants").select("*").limit(1000),
     db("seed_merchant_promos").select("*").limit(1000),
-    supabase.from("user_favorites").select("*").limit(2000),
+    db("user_favorites").select("*").limit(2000),
     db("activity_logs").select("action").in("action", ["home_view", "merchant_view", "product_add_to_cart", "order_created"]).limit(5000),
   ]);
   return { merchants: merchants ?? [], promos: promos ?? [], favorites: favorites ?? [], events: events ?? [] };
@@ -129,8 +129,8 @@ export async function fetchGrowthOpsData() {
 // ─── Retention Ops ───
 export async function fetchRetentionOpsData() {
   const [{ data: orders }, { data: favorites }, { data: loyalty }, { data: searches }] = await Promise.all([
-    supabase.from("orders").select("customer_user_id,status,total_amount").limit(2000),
-    supabase.from("user_favorites").select("user_id").limit(2000),
+    db("orders").select("customer_user_id,status,total_amount").limit(2000),
+    db("user_favorites").select("user_id").limit(2000),
     db("loyalty_accounts").select("*").limit(2000),
     db("activity_logs").select("entity_id,action").eq("action", "search_used").limit(2000),
   ]);

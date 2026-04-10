@@ -3,40 +3,41 @@
  * Merged from deal.repository.ts + deals.repository.ts.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 // ── Read operations (from deal.repository.ts) ──
 
 export async function fetchDealRoom(dealId: string) {
-  const { data, error } = await supabase.from("deal_rooms").select("*").eq("id", dealId).single();
+  const { data, error } = await db("deal_rooms").select("*").eq("id", dealId).single();
   if (error) throw error;
   return data;
 }
 
 export async function fetchDealEvents(dealId: string) {
-  const { data, error } = await supabase.from("deal_events").select("*").eq("deal_id", dealId).order("created_at", { ascending: true });
+  const { data, error } = await db("deal_events").select("*").eq("deal_id", dealId).order("created_at", { ascending: true });
   if (error) throw error;
   return data || [];
 }
 
 export async function fetchMyDeals(userId: string) {
-  const { data, error } = await supabase.from("deal_rooms").select("*").or(`buyer_id.eq.${userId}`).neq("status", "cancelled" as any).order("updated_at", { ascending: false });
+  const { data, error } = await db("deal_rooms").select("*").or(`buyer_id.eq.${userId}`).neq("status", "cancelled" as any).order("updated_at", { ascending: false });
   if (error) throw error;
   return data || [];
 }
 
 export async function fetchOrgDeals(orgId: string) {
-  const { data, error } = await supabase.from("deal_rooms").select("*").eq("org_id", orgId).neq("status", "cancelled" as any).order("updated_at", { ascending: false });
+  const { data, error } = await db("deal_rooms").select("*").eq("org_id", orgId).neq("status", "cancelled" as any).order("updated_at", { ascending: false });
   if (error) throw error;
   return data || [];
 }
 
 export async function findExistingDealRoom(contextType: string, contextId: string, buyerId: string) {
-  const { data } = await supabase.from("deal_rooms").select("*").eq("context_type", contextType).eq("context_id", contextId).eq("buyer_id", buyerId).neq("status", "cancelled" as any).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  const { data } = await db("deal_rooms").select("*").eq("context_type", contextType).eq("context_id", contextId).eq("buyer_id", buyerId).neq("status", "cancelled" as any).order("created_at", { ascending: false }).limit(1).maybeSingle();
   return data;
 }
 
 export async function updateMarketplaceBooking(bookingId: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("marketplace_bookings").update(updates).eq("id", bookingId);
+  const { error } = await db("marketplace_bookings").update(updates).eq("id", bookingId);
   if (error) throw error;
 }
 
@@ -51,22 +52,22 @@ export async function invokeRefund(bookingId: string, bookingType: string, reaso
 // ── Write operations ──
 
 export async function createDealRoom(record: Record<string, any>) {
-  const { data, error } = await supabase.from("deal_rooms").insert(record as any).select().single();
+  const { data, error } = await db("deal_rooms").insert(record as any).select().single();
   if (error) throw error;
   return data;
 }
 
 export async function updateDealRoom(dealId: string, update: Record<string, any>) {
-  const { error } = await supabase.from("deal_rooms").update(update as any).eq("id", dealId);
+  const { error } = await db("deal_rooms").update(update as any).eq("id", dealId);
   if (error) throw error;
 }
 
 export async function insertDealEvent(record: Record<string, any>) {
-  await supabase.from("deal_events").insert(record as any);
+  await db("deal_events").insert(record as any);
 }
 
 export async function fetchBuyerProfile(buyerId: string) {
-  const { data } = await supabase.from("profiles").select("email, name").eq("id", buyerId).single();
+  const { data } = await db("profiles").select("email, name").eq("id", buyerId).single();
   return data;
 }
 

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { interpolate, resolvePlural, trackMissingKey } from "./i18n-utils";
 import { landingKeysEn, landingKeysFr } from "./i18n-landing";
 
@@ -253,7 +254,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     loadLocaleExtras(l);
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      await supabase.from("profiles").update({ locale: l }).eq("id", session.user.id);
+      await db("profiles").update({ locale: l }).eq("id", session.user.id);
     }
   }, []);
 

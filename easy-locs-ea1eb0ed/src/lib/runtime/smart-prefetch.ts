@@ -19,8 +19,8 @@ const prefetchRules: PrefetchRule[] = [
   {
     trigger: "/dashboard",
     targets: [
-      { queryKey: ["dashboard-kpis"], fetchFn: () => supabase.from("orders").select("id, status, total_amount", { count: "exact", head: true }).then(r => r) },
-      { queryKey: ["dashboard-counters"], fetchFn: () => supabase.from("app_notifications").select("id", { count: "exact", head: true }).eq("read_at", null as any).then(r => r) },
+      { queryKey: ["dashboard-kpis"], fetchFn: () => db("orders").select("id, status, total_amount", { count: "exact", head: true }).then(r => r) },
+      { queryKey: ["dashboard-counters"], fetchFn: () => db("app_notifications").select("id", { count: "exact", head: true }).eq("read_at", null as any).then(r => r) },
     ],
   },
   {

@@ -10,12 +10,10 @@
  */
 import { memo, useState, useEffect, useMemo } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
-import { Link, useNavigate } from "react-router-dom";
-import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Building2, Sparkles, TrendingUp, Zap, Brain, ShieldCheck, Clock, Users, Activity, Coffee, UtensilsCrossed, Car, Package } from "lucide-react";
+import { Link } from "react-router-dom";
+import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Building2, Sparkles, TrendingUp, Zap, Brain, ShieldCheck, Clock, Activity, Coffee, UtensilsCrossed, Car, Package } from "lucide-react";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import { motion, AnimatePresence } from "framer-motion";
-import { staggerContainer } from "@/lib/motion/motion-system";
-import { TRANSITIONS } from "@/lib/motion/motion-system";
 import { FALLBACK_HOTELS } from "@/data/fallback-hotels";
 import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
 import StoryPreviewRail from "@/components/stories/StoryPreviewRail";
@@ -55,13 +53,6 @@ const CATEGORY_IMAGES: Record<string, string> = {
   taxi: taxiImg, delivery: deliveryImg, property: propertyImg,
   beauty: beautyImg, travel: travelImg, pharmacy: pharmacyImg,
 };
-
-const SECTION_DEFS = [
-  { key: "trending", titleKey: "home.section_trending", icon: "🔥" },
-  { key: "bestRated", titleKey: "home.section_best_rated", icon: "⭐" },
-  { key: "newest", titleKey: "home.section_newest", icon: "✨" },
-  { key: "nearYou", titleKey: "home.section_near_you", icon: "📍" },
-] as const;
 
 /* ═══ Top Hero Banner — Pure shell ═══ */
 const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap }: { hero: SmartHero; locationLabel: string; onLocationTap: () => void }) => (
@@ -322,7 +313,7 @@ function LiveStatsPulse() {
 }
 
 /* ═══ Category Card — Full-width grid ═══ */
-function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
+const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
   const imgSrc = cat.image ? CATEGORY_IMAGES[cat.image] : null;
   return (
     <motion.div
@@ -347,10 +338,10 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
       </Link>
     </motion.div>
   );
-}
+});
 
 /* ═══ Data-Driven Section — Now uses LifecycleCardShell + UniverseCard ═══ */
-function AdapterSection({ title, icon, cardStatus, shops, seeAllTo }: {
+const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, shops, seeAllTo }: {
   title: string;
   icon: string;
   cardStatus: import("@/domains/cards/card-contract").CardStatus;
@@ -385,7 +376,7 @@ function AdapterSection({ title, icon, cardStatus, shops, seeAllTo }: {
       </LifecycleCardShell>
     </motion.div>
   );
-}
+});
 const HERO_SLIDE_DEFS = [
   { id: "slide-hotels", titleKey: "home.slide_hotels_title", subKey: "home.slide_hotels_sub", gradient: "linear-gradient(135deg, #44337a, #553c9a)", emoji: "🏨", ctaKey: "home.slide_hotels_cta", route: "/stay" },
   { id: "slide-food", titleKey: "home.slide_food_title", subKey: "home.slide_food_sub", gradient: "linear-gradient(135deg, #b7791f, #dd6b20)", emoji: "🍽️", ctaKey: "home.slide_food_cta", route: "/radar?vertical=restaurant" },
@@ -511,7 +502,6 @@ const DashboardStories = memo(() => {
 export default function SmartHome() {
   const { t } = useI18n();
   const vm = useDashboardViewModel();
-  const navigate = useNavigate();
 
   useEffect(() => { prefetchForRoute("/"); }, []);
 

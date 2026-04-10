@@ -17,7 +17,7 @@ export async function upsertRiderPresence(userId: string, vehicleType: string) {
 }
 
 export async function markOnboardingComplete(userId: string) {
-  await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId);
+  await db("profiles").update({ onboarding_completed: true }).eq("id", userId);
 }
 
 export async function uploadDriverDoc(path: string, file: File) {

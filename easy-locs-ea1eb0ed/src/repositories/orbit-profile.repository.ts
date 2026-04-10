@@ -1,10 +1,11 @@
 /**
  * orbit-profile.repository — Canonical DB access for orbit_profiles_v2.
- * Replaces direct supabase.from("orbit_profiles_v2") calls in orbitStore.ts.
+ * Replaces direct db("orbit_profiles_v2") calls in orbitStore.ts.
  *
  * All reads/writes to orbit_profiles_v2 for the profile domain go through here.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { CanonicalOrbitProfile } from "@/domains/shared/canonical-types";
 import type { AppRole } from "@/domains/shared/canonical-types";
 

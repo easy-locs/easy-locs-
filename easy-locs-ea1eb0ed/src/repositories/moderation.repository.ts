@@ -7,14 +7,14 @@ import { db } from "@/services/db";
 export async function fetchModerationData() {
   const [driversRes, disputesRes] = await Promise.all([
     db("rider_presence").select("*").limit(100),
-    supabase.from("delivery_disputes").select("*").order("created_at", { ascending: false }).limit(50),
+    db("delivery_disputes").select("*").order("created_at", { ascending: false }).limit(50),
   ]);
   return { drivers: driversRes.data || [], disputes: disputesRes.data || [] };
 }
 
 export async function fetchDriverNames(userIds: string[]) {
   if (userIds.length === 0) return [];
-  const { data } = await supabase.from("profiles").select("id, name, first_name, last_name").in("id", userIds);
+  const { data } = await db("profiles").select("id, name, first_name, last_name").in("id", userIds);
   return data || [];
 }
 
@@ -23,7 +23,7 @@ export async function suspendDriver(userId: string) {
 }
 
 export async function insertModerationAuditLog(userId: string, orgId: string, action: string, metadata: Record<string, any>) {
-  await supabase.from("audit_logs").insert({ user_id: userId, org_id: orgId, action, metadata_json: metadata });
+  await db("audit_logs").insert({ user_id: userId, org_id: orgId, action, metadata_json: metadata });
 }
 
 export async function insertModerationNotification(notification: Record<string, any>) {
@@ -31,7 +31,7 @@ export async function insertModerationNotification(notification: Record<string, 
 }
 
 export async function resolveDispute(disputeId: string, resolution: string) {
-  await supabase.from("delivery_disputes").update({
+  await db("delivery_disputes").update({
     status: "resolved", resolution, resolved_at: new Date().toISOString(),
   }).eq("id", disputeId);
 }

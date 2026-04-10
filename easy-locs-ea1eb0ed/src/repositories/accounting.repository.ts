@@ -1,21 +1,22 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function fetchOrgForUser(userId: string) {
-  const { data } = await supabase.from("org_members").select("org_id").eq("user_id", userId).limit(1).single();
+  const { data } = await db("org_members").select("org_id").eq("user_id", userId).limit(1).single();
   if (!data) return null;
-  const { data: o } = await supabase.from("orgs").select("*").eq("id", data.org_id).single();
+  const { data: o } = await db("orgs").select("*").eq("id", data.org_id).single();
   return o;
 }
 
 export async function fetchPropertiesForOrg(orgId: string, countryFilter?: string | null) {
-  let query = supabase.from("properties").select("id, label, country, monthly_rent, monthly_charges").eq("org_id", orgId);
+  let query = db("properties").select("id, label, country, monthly_rent, monthly_charges").eq("org_id", orgId);
   if (countryFilter) query = query.eq("country", countryFilter);
   const { data } = await query;
   return data || [];
 }
 
 export async function fetchJournal(orgId: string) {
-  const { data } = await supabase.from("transaction_journal" as any).select("*").eq("org_id", orgId).order("transaction_date", { ascending: false }).limit(500);
+  const { data } = await db("transaction_journal" as any).select("*").eq("org_id", orgId).order("transaction_date", { ascending: false }).limit(500);
   return (data || []) as unknown as Array<{
     id: string; label: string; category: string; debit: number; credit: number;
     transaction_date: string; currency: string; notes: string; source_type: string;
@@ -24,12 +25,12 @@ export async function fetchJournal(orgId: string) {
 }
 
 export async function fetchRentCalls(orgId: string) {
-  const { data } = await supabase.from("rent_calls").select("*").eq("org_id", orgId).eq("paid", true);
+  const { data } = await db("rent_calls").select("*").eq("org_id", orgId).eq("paid", true);
   return data || [];
 }
 
 export async function fetchAllExpenses(orgId: string) {
-  const { data } = await supabase.from("expenses").select("*").eq("org_id", orgId);
+  const { data } = await db("expenses").select("*").eq("org_id", orgId);
   return data || [];
 }
 
@@ -38,6 +39,6 @@ export async function insertJournalEntry(entry: {
   debit: number; credit: number; transaction_date: string; notes: string;
   property_id: string | null; source_type: string; currency: string;
 }) {
-  const { error } = await supabase.from("transaction_journal" as any).insert(entry);
+  const { error } = await db("transaction_journal" as any).insert(entry);
   if (error) throw error;
 }

@@ -2,6 +2,7 @@
  * Buildings Repository — DB access for Buildings page.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export interface BuildingRecord {
   id: string;
@@ -37,17 +38,17 @@ export async function insertBuilding(params: {
   country: string;
   units_count: number;
 }) {
-  const { data, error } = await supabase.from("buildings").insert(params).select().single();
+  const { data, error } = await db("buildings").insert(params).select().single();
   if (error) throw error;
   return data;
 }
 
 export async function deleteBuilding(id: string) {
-  const { error } = await supabase.from("buildings").delete().eq("id", id);
+  const { error } = await db("buildings").delete().eq("id", id);
   if (error) throw error;
 }
 
 export async function updateBuilding(id: string, record: Record<string, any>) {
-  const { error } = await supabase.from("buildings").update(record).eq("id", id);
+  const { error } = await db("buildings").update(record).eq("id", id);
   if (error) throw error;
 }

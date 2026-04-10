@@ -2,6 +2,7 @@
  * receipts.repository — DB operations for Receipts page.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function fetchReceipts(orgId: string, countryFilter?: string | null) {
   let query = supabase
@@ -15,16 +16,16 @@ export async function fetchReceipts(orgId: string, countryFilter?: string | null
 }
 
 export async function fetchProfileSignature(userId: string) {
-  const { data } = await supabase.from("profiles").select("signature_url, name").eq("id", userId).single();
+  const { data } = await db("profiles").select("signature_url, name").eq("id", userId).single();
   return data;
 }
 
 export async function fetchOrgStamp(orgId: string) {
-  const { data } = await supabase.from("orgs").select("stamp_url").eq("id", orgId).single();
+  const { data } = await db("orgs").select("stamp_url").eq("id", orgId).single();
   return (data as any)?.stamp_url || null;
 }
 
 export async function fetchOwnerProfile(orgId: string) {
-  const { data } = await supabase.from("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).single();
+  const { data } = await db("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).single();
   return data;
 }

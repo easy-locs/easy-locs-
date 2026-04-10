@@ -6,21 +6,21 @@ import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 export async function fetchPropertiesForOrg(orgId: string, countryFilter?: string | null) {
-  let q = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
+  let q = db("properties").select("id, label, country").eq("org_id", orgId).order("label");
   if (countryFilter) q = q.eq("country", countryFilter);
   const { data } = await q;
   return data || [];
 }
 
 export async function fetchInterventions(orgId: string, propIds?: string[]) {
-  let q = supabase.from("interventions").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  let q = db("interventions").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   if (propIds && propIds.length > 0) q = q.in("property_id", propIds);
   const { data } = await q;
   return (data || []) as any[];
 }
 
 export async function fetchTenantsForOrg(orgId: string) {
-  const { data } = await supabase.from("tenants").select("id, name, property_id").eq("org_id", orgId).order("name");
+  const { data } = await db("tenants").select("id, name, property_id").eq("org_id", orgId).order("name");
   return data || [];
 }
 
@@ -31,12 +31,12 @@ export async function insertIntervention(record: Record<string, any>) {
 }
 
 export async function updateIntervention(id: string, record: Record<string, any>) {
-  const { error } = await supabase.from("interventions").update(record).eq("id", id);
+  const { error } = await db("interventions").update(record).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteIntervention(id: string) {
-  const { error } = await supabase.from("interventions").delete().eq("id", id);
+  const { error } = await db("interventions").delete().eq("id", id);
   if (error) throw error;
 }
 

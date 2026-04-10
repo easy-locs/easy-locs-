@@ -11,12 +11,12 @@ export async function insertDocument(record: Record<string, any>) {
 }
 
 export async function updateDocument(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("documents").update(updates as any).eq("id", id);
+  const { error } = await db("documents").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteDocument(id: string) {
-  const { error } = await supabase.from("documents").delete().eq("id", id);
+  const { error } = await db("documents").delete().eq("id", id);
   if (error) throw error;
 }
 
@@ -42,7 +42,7 @@ export async function uploadSignature(path: string, blob: Blob) {
 }
 
 export async function fetchOrgOwnerUserId(orgId: string) {
-  const { data, error } = await supabase.from("orgs").select("owner_user_id").eq("id", orgId).single();
+  const { data, error } = await db("orgs").select("owner_user_id").eq("id", orgId).single();
   if (error) {
     console.warn("[documents.repository] fetchOrgOwnerUserId error:", error.message);
     return null;
@@ -74,17 +74,17 @@ export async function downloadFromStorage(bucket: string, path: string) {
 
 // ── Lease form ──
 export async function fetchProperties(orgId: string) {
-  const { data } = await supabase.from("properties").select("id, label, address, city, country").eq("org_id", orgId);
+  const { data } = await db("properties").select("id, label, address, city, country").eq("org_id", orgId);
   return data ?? [];
 }
 
 export async function fetchTenants(orgId: string) {
-  const { data } = await supabase.from("tenants").select("id, name, email, property_id, rent_amount, charges_amount, deposit_amount, tenant_user_id").eq("org_id", orgId);
+  const { data } = await db("tenants").select("id, name, email, property_id, rent_amount, charges_amount, deposit_amount, tenant_user_id").eq("org_id", orgId);
   return data ?? [];
 }
 
 export async function updateLease(leaseId: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("leases").update(updates as any).eq("id", leaseId);
+  const { error } = await db("leases").update(updates as any).eq("id", leaseId);
   if (error) throw error;
 }
 
@@ -107,12 +107,12 @@ export async function insertInventoryItem(record: Record<string, any>) {
 }
 
 export async function updateInventoryItem(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("inventory_items").update(updates as any).eq("id", id);
+  const { error } = await db("inventory_items").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteInventoryItem(id: string) {
-  const { error } = await supabase.from("inventory_items").delete().eq("id", id);
+  const { error } = await db("inventory_items").delete().eq("id", id);
   if (error) throw error;
 }
 
@@ -134,15 +134,15 @@ export async function fetchDocumentsForOrg(orgId: string) {
 }
 
 export async function fetchDocDataJson(docId: string) {
-  const { data } = await supabase.from("documents").select("data_json").eq("id", docId).single();
+  const { data } = await db("documents").select("data_json").eq("id", docId).single();
   return data;
 }
 
 export async function fetchTenantById(tenantId: string) {
-  const { data } = await supabase.from("tenants").select("email, name, tenant_user_id").eq("id", tenantId).single();
+  const { data } = await db("tenants").select("email, name, tenant_user_id").eq("id", tenantId).single();
   return data;
 }
 
 export async function markDocumentEmailed(docId: string) {
-  await supabase.from("documents").update({ emailed_at: new Date().toISOString() } as any).eq("id", docId);
+  await db("documents").update({ emailed_at: new Date().toISOString() } as any).eq("id", docId);
 }

@@ -2,6 +2,7 @@
  * driver-positioning — Suggest best zone for driver repositioning.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function suggestDriverPosition(driverId: string) {
   const { data: zones } = await supabase
@@ -14,7 +15,7 @@ export async function suggestDriverPosition(driverId: string) {
 
   const bestZone = (zones as any[])[0];
 
-  await supabase.from("driver_positioning" as any).insert({
+  await db("driver_positioning" as any).insert({
     driver_id: driverId,
     suggested_lat: bestZone.center_lat,
     suggested_lng: bestZone.center_lng,

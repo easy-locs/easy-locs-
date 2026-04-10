@@ -2,6 +2,7 @@
  * seo.repository — All DB ops for SEO pages (city, category, provider).
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 // ── Marketplace services (public RPC) ──
 export async function fetchPublicMarketplaceServices(params: Record<string, any> = {}) {
@@ -22,7 +23,7 @@ export async function fetchPublicRealEstateListings(params: Record<string, any> 
 
 // ── Public listings ──
 export async function fetchPublicListings(limit = 20) {
-  const { data } = await supabase.from("public_listings").select("*").eq("active", true).limit(limit);
+  const { data } = await db("public_listings").select("*").eq("active", true).limit(limit);
   return data ?? [];
 }
 

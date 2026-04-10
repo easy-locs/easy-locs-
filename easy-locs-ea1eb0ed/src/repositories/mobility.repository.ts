@@ -41,20 +41,18 @@ export async function fetchMobilityJobs(filters: {
 }
 
 export async function fetchMobilityJobById(jobId: string) {
-  const { data, error } = await supabase
-    .from("mobility_jobs").select("*").eq("id", jobId).single();
+  const { data, error } = await db("mobility_jobs").select("*").eq("id", jobId).single();
   if (error) throw error;
   return data;
 }
 
 export async function fetchMobilityJobMaybe(jobId: string) {
-  const { data } = await supabase
-    .from("mobility_jobs").select("*").eq("id", jobId).single();
+  const { data } = await db("mobility_jobs").select("*").eq("id", jobId).single();
   return data;
 }
 
 export async function updateMobilityJob(jobId: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("mobility_jobs").update(updates as any).eq("id", jobId);
+  const { error } = await db("mobility_jobs").update(updates as any).eq("id", jobId);
   if (error) throw error;
 }
 
@@ -294,13 +292,13 @@ export async function upsertUserSubscription(payload: Record<string, any>) {
 
 // ─── Driver Onboarding ───
 export async function updateProfile(userId: string, updates: Record<string, any>) {
-  await supabase.from("profiles").update(updates as any).eq("id", userId);
+  await db("profiles").update(updates as any).eq("id", userId);
 }
 
 export async function uploadDocument(path: string, file: File) {
-  const { error } = await supabase.storage.from("documents").upload(path, file);
+  const { error } = await db.storage.from("documents").upload(path, file);
   if (error) throw error;
-  const { data: { publicUrl } } = supabase.storage.from("documents").getPublicUrl(path);
+  const { data: { publicUrl } } = db.storage.from("documents").getPublicUrl(path);
   return publicUrl;
 }
 
@@ -319,7 +317,7 @@ export function unsubscribeChannel(channel: any) {
 
 // ─── Orders (legacy driver mission detail) ───
 export async function fetchOrderById(orderId: string) {
-  const { data, error } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
+  const { data, error } = await db("orders").select("*").eq("id", orderId).maybeSingle();
   if (error) throw error;
   return data;
 }

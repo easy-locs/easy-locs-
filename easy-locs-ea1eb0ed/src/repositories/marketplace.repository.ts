@@ -6,7 +6,7 @@ import { db } from "@/services/db";
 
 // ── Providers ──
 export async function fetchMyProvider(orgId: string) {
-  const { data } = await supabase.from("marketplace_providers").select("*").eq("org_id", orgId).limit(1).single();
+  const { data } = await db("marketplace_providers").select("*").eq("org_id", orgId).limit(1).single();
   return data;
 }
 
@@ -16,7 +16,7 @@ export async function insertProvider(record: Record<string, any>) {
 }
 
 export async function updateProvider(providerId: string, record: Record<string, any>) {
-  const { error } = await supabase.from("marketplace_providers").update(record).eq("id", providerId);
+  const { error } = await db("marketplace_providers").update(record).eq("id", providerId);
   if (error) throw error;
 }
 
@@ -29,34 +29,34 @@ export async function fetchPublicProviders(slug?: string) {
 
 // ── Services ──
 export async function fetchMyServices(providerId: string) {
-  const { data } = await supabase.from("marketplace_services").select("*").eq("provider_id", providerId).order("sort_order");
+  const { data } = await db("marketplace_services").select("*").eq("provider_id", providerId).order("sort_order");
   return data || [];
 }
 
 export async function fetchPublicServices(providerId: string) {
-  const { data } = await supabase.from("marketplace_services").select("*").eq("provider_id", providerId).eq("active", true).order("sort_order");
+  const { data } = await db("marketplace_services").select("*").eq("provider_id", providerId).eq("active", true).order("sort_order");
   return data || [];
 }
 
 export async function insertService(record: Record<string, any>) {
-  const { data, error } = await supabase.from("marketplace_services").insert(record as any).select("id, lat, lng").single();
+  const { data, error } = await db("marketplace_services").insert(record as any).select("id, lat, lng").single();
   if (error) throw error;
   return data;
 }
 
 export async function updateService(id: string, record: Record<string, any>) {
-  const { error } = await supabase.from("marketplace_services").update(record as any).eq("id", id);
+  const { error } = await db("marketplace_services").update(record as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteService(id: string) {
-  const { error } = await supabase.from("marketplace_services").delete().eq("id", id);
+  const { error } = await db("marketplace_services").delete().eq("id", id);
   if (error) throw error;
 }
 
 // ── Bookings ──
 export async function fetchMyBookings(orgId: string) {
-  const { data } = await supabase.from("marketplace_bookings").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data } = await db("marketplace_bookings").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   return data || [];
 }
 
@@ -82,12 +82,12 @@ export async function fetchProviderReviews(providerId: string, limit = 100) {
 }
 
 export async function checkExistingReview(bookingId: string) {
-  const { data } = await supabase.from("marketplace_reviews").select("id").eq("booking_id", bookingId).maybeSingle();
+  const { data } = await db("marketplace_reviews").select("id").eq("booking_id", bookingId).maybeSingle();
   return data;
 }
 
 export async function checkBookingStatus(bookingId: string) {
-  const { data } = await supabase.from("marketplace_bookings").select("status").eq("id", bookingId).maybeSingle();
+  const { data } = await db("marketplace_bookings").select("status").eq("id", bookingId).maybeSingle();
   return data;
 }
 
@@ -98,7 +98,7 @@ export async function insertReview(record: Record<string, any>) {
 
 // ── Audit ──
 export async function fetchBookingAuditLogs(orgId: string, bookingId: string) {
-  const { data } = await supabase.from("audit_logs").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50);
+  const { data } = await db("audit_logs").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50);
   return (data || []).filter((l: any) => (l.metadata_json as any)?.booking_id === bookingId);
 }
 

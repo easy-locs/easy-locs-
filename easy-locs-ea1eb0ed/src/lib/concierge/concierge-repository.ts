@@ -25,12 +25,12 @@ export async function createConciergeService(orgId: string, userId: string, form
 }
 
 export async function updateConciergeService(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("concierge_services").update(updates as any).eq("id", id);
+  const { error } = await db("concierge_services").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteConciergeService(id: string) {
-  const { error } = await supabase.from("concierge_services").delete().eq("id", id);
+  const { error } = await db("concierge_services").delete().eq("id", id);
   if (error) throw error;
 }
 

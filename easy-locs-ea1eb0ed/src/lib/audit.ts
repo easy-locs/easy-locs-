@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export type AuditAction =
   // Auth
@@ -58,7 +59,7 @@ export async function logAudit({ userId, orgId, action, metadata }: AuditOptions
     }
     if (!uid) return; // Can't log without a user
 
-    await supabase.from("audit_logs").insert({
+    await db("audit_logs").insert({
       user_id: uid,
       org_id: orgId || null,
       action,

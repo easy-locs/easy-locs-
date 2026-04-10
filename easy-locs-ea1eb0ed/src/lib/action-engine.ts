@@ -5,6 +5,7 @@
 import type { NavigateFunction } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 
 /* ═══════════════════════════════════════════════════
@@ -331,7 +332,7 @@ async function handleFollow(
     return { ok: false, error: "No shop ID" };
   }
 
-  const { error } = await supabase.from("shop_follows").insert({
+  const { error } = await db("shop_follows").insert({
     user_id: currentUserId,
     shop_id: shopId,
   } as any);
@@ -376,7 +377,7 @@ async function handleAddContact(
     .eq("id", targetId)
     .maybeSingle();
 
-  const { error } = await supabase.from("contacts").insert({
+  const { error } = await db("contacts").insert({
     owner_id: currentUserId,
     org_id: currentOrgId || null,
     name: profile?.name || input.title || "Unknown",

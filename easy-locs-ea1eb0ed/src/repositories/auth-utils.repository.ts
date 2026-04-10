@@ -2,6 +2,7 @@
  * auth-utils.repository — Auth session/user helpers for hooks/components.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function getAuthUser() {
   const { data, error } = await supabase.auth.getUser();
@@ -44,16 +45,16 @@ export async function invokeTenantSignup(body: Record<string, any>) {
 }
 
 export async function fetchOrgMembership(userId: string) {
-  const { data } = await supabase.from("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
+  const { data } = await db("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
   return data;
 }
 
 export async function fetchProfileSettings(userId: string, columns: string) {
-  const { data } = await supabase.from("profiles").select(columns).eq("id", userId).single();
+  const { data } = await db("profiles").select(columns).eq("id", userId).single();
   return data;
 }
 
 export async function updateProfileField(userId: string, field: string, value: any) {
-  const { error } = await supabase.from("profiles").update({ [field]: value } as any).eq("id", userId);
+  const { error } = await db("profiles").update({ [field]: value } as any).eq("id", userId);
   if (error) throw error;
 }

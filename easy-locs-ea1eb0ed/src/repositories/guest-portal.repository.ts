@@ -20,10 +20,10 @@ export async function fetchGuestPortalData(bookingId: string) {
   }
 
   const [{ data: p }, { data: svc }, { data: act }, { data: orgData }] = await Promise.all([
-    supabase.from("properties").select("*").eq("id", bookingData.property_id).maybeSingle(),
-    supabase.from("concierge_services_public" as any).select("*").eq("org_id", bookingData.org_id).order("sort_order"),
-    supabase.from("activities_public" as any).select("*").eq("org_id", bookingData.org_id).order("sort_order"),
-    supabase.from("orgs").select("name, email, phone, logo_url, brand_name").eq("id", bookingData.org_id).maybeSingle(),
+    db("properties").select("*").eq("id", bookingData.property_id).maybeSingle(),
+    db("concierge_services_public" as any).select("*").eq("org_id", bookingData.org_id).order("sort_order"),
+    db("activities_public" as any).select("*").eq("org_id", bookingData.org_id).order("sort_order"),
+    db("orgs").select("name, email, phone, logo_url, brand_name").eq("id", bookingData.org_id).maybeSingle(),
   ]);
 
   return {
@@ -36,7 +36,7 @@ export async function fetchGuestPortalData(bookingId: string) {
 }
 
 export async function createGuestOrder(booking: any, service: any) {
-  const { error } = await supabase.from("concierge_orders").insert({
+  const { error } = await db("concierge_orders").insert({
     org_id: booking.org_id, service_id: service.id,
     property_id: booking.property_id, booking_id: booking.id,
     guest_name: booking.guest_name, guest_email: booking.guest_email || "",
@@ -50,7 +50,7 @@ export async function createGuestOrder(booking: any, service: any) {
 }
 
 export async function notifyOrgOwner(orgId: string, title: string, body: string, category: string, route: string) {
-  const { data } = await supabase.from("orgs").select("owner_user_id").eq("id", orgId).single();
+  const { data } = await db("orgs").select("owner_user_id").eq("id", orgId).single();
   const ownerId = (data as any)?.owner_user_id;
   if (!ownerId) return;
   await db("app_notifications").insert({

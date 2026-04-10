@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export function useWalletAccounts(ownerUserId?: string) {
   const [rows, setRows] = useState<any[]>([]);
@@ -12,8 +12,7 @@ export function useWalletAccounts(ownerUserId?: string) {
     let mounted = true;
 
     const load = async () => {
-      const { data } = await supabase
-        .from("wallet_accounts")
+      const { data } = await db("wallet_accounts")
         .select("*")
         .eq("owner_user_id", ownerUserId)
         .eq("status", "active")

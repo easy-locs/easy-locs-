@@ -6,15 +6,15 @@ import { db } from "@/services/db";
 
 export async function fetchLocalServicesData(orgId: string) {
   const [{ data: svc }, { data: props }, { data: org }] = await Promise.all([
-    supabase.from("local_services").select("*").eq("org_id", orgId).order("sort_order"),
-    supabase.from("properties").select("id, label, city, country").eq("org_id", orgId).order("label"),
-    supabase.from("orgs").select("local_services_enabled").eq("id", orgId).single(),
+    db("local_services").select("*").eq("org_id", orgId).order("sort_order"),
+    db("properties").select("id, label, city, country").eq("org_id", orgId).order("label"),
+    db("orgs").select("local_services_enabled").eq("id", orgId).single(),
   ]);
   return { services: svc || [], properties: props || [], featureEnabled: org?.local_services_enabled || false };
 }
 
 export async function toggleLocalServicesFeature(orgId: string, enabled: boolean) {
-  await supabase.from("orgs").update({ local_services_enabled: enabled } as any).eq("id", orgId);
+  await db("orgs").update({ local_services_enabled: enabled } as any).eq("id", orgId);
 }
 
 export async function upsertLocalService(editingId: string | null, payload: Record<string, any>) {
@@ -26,5 +26,5 @@ export async function upsertLocalService(editingId: string | null, payload: Reco
 }
 
 export async function deleteLocalService(id: string) {
-  await supabase.from("local_services").delete().eq("id", id);
+  await db("local_services").delete().eq("id", id);
 }

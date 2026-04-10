@@ -25,12 +25,12 @@ export async function createSeasonalBooking(orgId: string, userId: string, form:
 }
 
 export async function updateSeasonalBooking(id: string, updates: Record<string, any>) {
-  const { error } = await supabase.from("stay_bookings").update(updates as any).eq("id", id);
+  const { error } = await db("stay_bookings").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteSeasonalBooking(id: string) {
-  const { error } = await supabase.from("stay_bookings").delete().eq("id", id);
+  const { error } = await db("stay_bookings").delete().eq("id", id);
   if (error) throw error;
 }
 

@@ -5,32 +5,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchOnboardingProgress(userId: string) {
-  const { data } = await supabase.from("profiles").select("onboarding_step, country, user_type").eq("id", userId).single();
+  const { data } = await db("profiles").select("onboarding_step, country, user_type").eq("id", userId).single();
   return data;
 }
 
 export async function saveOnboardingStep(userId: string, step: number) {
-  await supabase.from("profiles").update({ onboarding_step: step }).eq("id", userId);
+  await db("profiles").update({ onboarding_step: step }).eq("id", userId);
 }
 
 export async function updateProfileCountryAndType(userId: string, fields: Record<string, any>) {
-  await supabase.from("profiles").update(fields).eq("id", userId);
+  await db("profiles").update(fields).eq("id", userId);
 }
 
 export async function completeOnboarding(userId: string) {
-  await supabase.from("profiles").update({ onboarding_completed: true, onboarding_step: 7 }).eq("id", userId);
+  await db("profiles").update({ onboarding_completed: true, onboarding_step: 7 }).eq("id", userId);
 }
 
 export async function fetchUserOrg(userId: string) {
-  const { data } = await supabase.from("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
+  const { data } = await db("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
   return data;
 }
 
 export async function createOrgForUser(userId: string, orgName = "Mon organisation") {
   const newOrgId = crypto.randomUUID();
-  await supabase.from("orgs").insert({ id: newOrgId, owner_user_id: userId, name: orgName });
-  await supabase.from("org_members").insert({ org_id: newOrgId, user_id: userId, role: "owner" });
-  await supabase.from("subscriptions").insert({
+  await db("orgs").insert({ id: newOrgId, owner_user_id: userId, name: orgName });
+  await db("org_members").insert({ org_id: newOrgId, user_id: userId, role: "owner" });
+  await db("subscriptions").insert({
     user_id: userId, plan: "trial", status: "trialing",
     trial_ends_at: new Date(Date.now() + 3 * 86400000).toISOString(),
   });
@@ -38,7 +38,7 @@ export async function createOrgForUser(userId: string, orgName = "Mon organisati
 }
 
 export async function insertOwnerProfile(userId: string, orgId: string, ownerForm: Record<string, any>, country: string) {
-  const { error } = await supabase.from("owner_profiles").insert({
+  const { error } = await db("owner_profiles").insert({
     user_id: userId, org_id: orgId, ...ownerForm, country,
   });
   if (error) throw error;
@@ -60,7 +60,7 @@ export async function insertTenantOnboarding(orgId: string, userId: string, prop
 }
 
 export async function upsertOtaConnection(orgId: string, userId: string, provider: string, propertyId: string) {
-  await supabase.from("ota_connections").upsert({
+  await db("ota_connections").upsert({
     org_id: orgId, user_id: userId, provider, status: "active", linked_properties: [propertyId],
   }, { onConflict: "id" });
 }

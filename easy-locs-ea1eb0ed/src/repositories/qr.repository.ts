@@ -6,8 +6,8 @@ import { db } from "@/services/db";
 
 export async function fetchProfileAndContact(userId: string, currentUserId: string) {
   const [{ data: profile }, { data: existingContact }] = await Promise.all([
-    supabase.from("profiles").select("name").eq("id", userId).maybeSingle(),
-    supabase.from("contacts").select("id").eq("owner_id", currentUserId).eq("contact_user_id", userId).maybeSingle(),
+    db("profiles").select("name").eq("id", userId).maybeSingle(),
+    db("contacts").select("id").eq("owner_id", currentUserId).eq("contact_user_id", userId).maybeSingle(),
   ]);
   return { profile, existingContact };
 }

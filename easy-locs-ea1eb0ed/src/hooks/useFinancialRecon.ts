@@ -2,6 +2,7 @@
  * useFinancialRecon — Realtime financial reconciliation rows.
  */
 import { useEffect, useState } from "react";
+import { db } from "@/services/db";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useFinancialRecon() {
@@ -12,8 +13,7 @@ export function useFinancialRecon() {
     let mounted = true;
 
     const load = async () => {
-      const { data } = await supabase
-        .from("financial_reconciliation" as any)
+      const { data } = await db("financial_reconciliation" as any)
         .select("*")
         .order("created_at", { ascending: false })
         .limit(200);

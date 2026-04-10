@@ -2,6 +2,7 @@
  * Property Calendar Repository — All DB access for PropertyCalendar page.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export interface CalendarPropertyOption {
   id: string;
@@ -10,7 +11,7 @@ export interface CalendarPropertyOption {
 }
 
 export async function fetchCalendarProperties(orgId: string, country?: string | null): Promise<CalendarPropertyOption[]> {
-  let q = supabase.from("properties").select("id, label, country").eq("org_id", orgId);
+  let q = db("properties").select("id, label, country").eq("org_id", orgId);
   if (country) q = q.eq("country", country);
   const { data } = await q;
   return (data || []) as CalendarPropertyOption[];
@@ -68,11 +69,11 @@ export async function insertBlockedDate(params: {
   date_to: string;
   reason?: string;
 }) {
-  const { error } = await supabase.from("property_blocked_dates").insert(params);
+  const { error } = await db("property_blocked_dates").insert(params);
   if (error) throw error;
 }
 
 export async function deleteBlockedDate(id: string) {
-  const { error } = await supabase.from("property_blocked_dates").delete().eq("id", id);
+  const { error } = await db("property_blocked_dates").delete().eq("id", id);
   if (error) throw error;
 }
