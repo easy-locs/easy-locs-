@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowUpDown, ShieldCheck, ChevronDown } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ReviewCard from "./ReviewCard";
+import ReviewPaywall, { useReviewAccess } from "../reviews/ReviewPaywall";
 
 type SortMode = "latest" | "highest" | "lowest" | "replied";
 type FilterMode = "all" | "verified";
@@ -27,9 +28,18 @@ interface Props {
 
 export default function SortableReviewList({ reviews, totalCount, pageSize = 6 }: Props) {
   const { t } = useI18n();
+  const { unlocked } = useReviewAccess();
   const [sort, setSort] = useState<SortMode>("latest");
   const [filter, setFilter] = useState<FilterMode>("all");
   const [visibleCount, setVisibleCount] = useState(pageSize);
+
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : 0;
+
+  if (!unlocked) {
+    return <ReviewPaywall reviewCount={totalCount} averageRating={avgRating} />;
+  }
 
   const filtered = filter === "verified" ? reviews.filter((r) => r.verified) : reviews;
 
@@ -55,7 +65,6 @@ export default function SortableReviewList({ reviews, totalCount, pageSize = 6 }
 
   return (
     <div className="space-y-4">
-      {/* Controls */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
@@ -87,7 +96,6 @@ export default function SortableReviewList({ reviews, totalCount, pageSize = 6 }
         </Select>
       </div>
 
-      {/* Review cards */}
       {paginated.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-6">
           {filter === "verified"
@@ -102,7 +110,6 @@ export default function SortableReviewList({ reviews, totalCount, pageSize = 6 }
         </div>
       )}
 
-      {/* Load more */}
       {hasMore && (
         <div className="text-center pt-2">
           <Button

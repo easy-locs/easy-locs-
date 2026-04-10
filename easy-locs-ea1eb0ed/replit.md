@@ -80,6 +80,14 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
 - **Geo normalizer**: `src/lib/geo/geo-normalizer.ts` — address format templates per country (14 countries), noise removal, anomaly detection, enhanced confidence scoring
 - **Canonical address**: `src/lib/address/canonical-address-resolver.ts` — upsert/search/resolve pipeline, user saved addresses, active context system
 
+## Review Paywall
+- All review surfaces are locked behind subscription paywall (`ReviewPaywall` component)
+- Gated surfaces: `ReviewList` (merchant), `SortableReviewList` (marketplace), `ReviewPanel` (property)
+- Free users see blurred reviews with Navy/Gold lock overlay and upgrade CTA
+- Aggregate rating summary (stars, average) remains visible as teaser
+- Review submission (`ReviewComposer`) remains free — only viewing is gated
+- Feature key: `"reviews"` in `useSubscriptionGating` (not in FREE_FEATURES)
+
 ## Dead Code Audit (Latest)
 - Removed 8 dead hooks: useActivityRealtime, useAuditReport, useDeliveryCommandCenter, useFavoritesRealtime, usePaymentStatusSync, useRadarGeo, useRealtimeDispatchBoard, useSmartBanners
 - Removed 1 dead store: liveBadgeStore
