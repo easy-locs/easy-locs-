@@ -6,9 +6,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { qr, toResolveUrl } from "@/lib/qr-engine";
 import { formatMoney } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
+
+const NAVY = "hsl(220 40% 18%)";
+const GOLD = "hsl(38 65% 56%)";
+
+const QUICK_AMOUNTS = [5, 10, 20, 50, 100, 250];
 
 export default function ReceiveQrPanel() {
   const { user, userCurrency } = useAuth();
@@ -57,6 +61,10 @@ export default function ReceiveQrPanel() {
     } catch {}
   };
 
+  const handleQuickAmount = (val: number) => {
+    setAmount(prev => prev === String(val) ? "" : String(val));
+  };
+
   if (!user?.id) {
     return (
       <div className="rounded-2xl border border-border bg-card p-6 text-center">
@@ -65,42 +73,88 @@ export default function ReceiveQrPanel() {
     );
   }
 
+  const numAmount = parseFloat(amount);
+  const hasAmount = numAmount > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       className="space-y-5"
     >
-      <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/20 bg-card p-8">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+      <div
+        className="flex flex-col items-center gap-4 rounded-3xl p-8 relative overflow-hidden"
+        style={{
+          background: `linear-gradient(160deg, ${NAVY}, hsl(220 40% 22%), hsl(220 35% 26%))`,
+        }}
+      >
+        <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none" style={{
+          background: `radial-gradient(circle, hsl(38 65% 56% / 0.12), transparent 70%)`,
+        }} />
+
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] relative z-10" style={{ color: "hsl(38 65% 56% / 0.6)" }}>
           My Payment QR
         </p>
-        <BrandedQR value={link} size={220} />
-        <div className="text-center">
-          <p className="text-base font-bold text-foreground">{displayName}</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Easy-Locs Wallet · {currency}</p>
+
+        <div className="relative z-10 bg-white rounded-2xl p-3">
+          <BrandedQR value={link} size={200} />
         </div>
-        {parseFloat(amount) > 0 && (
-          <p className="text-2xl font-black text-foreground tabular-nums">
-            {formatMoney(parseFloat(amount), currency)}
-          </p>
+
+        <div className="text-center relative z-10">
+          <p className="text-base font-bold" style={{ color: "hsl(0 0% 100%)" }}>{displayName}</p>
+          <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Easy-Locs Wallet · {currency}</p>
+        </div>
+
+        {hasAmount && (
+          <motion.p
+            key={amount}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-2xl font-black tabular-nums relative z-10"
+            style={{ color: GOLD }}
+          >
+            {formatMoney(numAmount, currency)}
+          </motion.p>
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">
           Request amount (optional)
         </p>
+
+        <div className="flex flex-wrap gap-2">
+          {QUICK_AMOUNTS.map(val => {
+            const active = amount === String(val);
+            return (
+              <button
+                key={val}
+                type="button"
+                onClick={() => handleQuickAmount(val)}
+                className="px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+                style={{
+                  background: active ? GOLD : "hsl(var(--muted) / 0.5)",
+                  color: active ? NAVY : "hsl(var(--foreground))",
+                  border: active ? "none" : "1px solid hsl(var(--border) / 0.3)",
+                }}
+              >
+                {val}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="flex gap-2 items-center">
-          <Input
+          <input
             type="number"
             inputMode="decimal"
-            placeholder="0.00"
+            placeholder="Custom amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="flex-1 rounded-xl h-12 text-lg font-bold"
+            className="flex-1 rounded-xl h-12 text-lg font-bold bg-background border border-border px-4 outline-none text-foreground"
+            style={{ fontSize: "16px" }}
           />
-          <div className="px-4 py-3 rounded-xl bg-primary/10 text-primary text-xs font-black whitespace-nowrap shrink-0">
+          <div className="px-4 py-3 rounded-xl text-xs font-black whitespace-nowrap shrink-0" style={{ background: "hsl(38 65% 56% / 0.1)", color: GOLD }}>
             {currency}
           </div>
         </div>

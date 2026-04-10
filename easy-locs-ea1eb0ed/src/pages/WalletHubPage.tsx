@@ -11,7 +11,7 @@ import {
   ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
   CreditCard, Wallet, Shield, ScanLine, Settings, TrendingUp,
   Clock, CheckCircle, ArrowRight, Globe, Banknote, Building2,
-  Brain, AlertCircle, RefreshCw,
+  Brain, AlertCircle, RefreshCw, Zap,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -450,6 +450,27 @@ export default function WalletHubPage() {
           )}
         </AnimatePresence>
       </div>
+
+      <motion.button
+        type="button"
+        onClick={() => navigate("/pay/scan")}
+        className="fixed z-30 flex items-center gap-2 shadow-lg active:scale-95 transition-transform"
+        style={{
+          bottom: 88,
+          right: 20,
+          background: "hsl(38 65% 56%)",
+          color: "hsl(220 40% 18%)",
+          borderRadius: 28,
+          padding: "14px 20px",
+          boxShadow: "0 6px 24px hsl(38 65% 56% / 0.35)",
+        }}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 20 }}
+      >
+        <Zap className="w-5 h-5" />
+        <span className="text-sm font-black">{tSafe(t, "wallet.quickPay", "Quick Pay")}</span>
+      </motion.button>
     </div>
   );
 }
