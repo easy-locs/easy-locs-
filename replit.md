@@ -67,6 +67,40 @@ Ultra-fluid mobility experience comparable to Uber/Careem/Deliveroo:
 - **MobilityLiveMap**: Mapbox Directions API route polyline between pickup/dropoff (Gold line), animated nearby vehicle markers, Navy/Gold markers
 - **Design**: All Navy `hsl(220 40% 18%)` / Gold `hsl(38 65% 56%)` inline styles
 
+## Intelligent Dispatch System (Uber/Careem-Level)
+Complete Taxi/Rider/Delivery dispatch engine with real-time matching, anti-conflict, learning:
+
+### Core Engine Files (`src/lib/mobility/`)
+- **smart-dispatch-controller.ts**: Central brain — orchestrates scoring → pricing → zone → wave dispatch → offer tracking → escalation. <1s matching with progressive radius expansion (3→5→8→12→20km), 4-wave dispatch (precision→expanded→wide→emergency), integrated cron for expiry/escalation
+- **unified-driver-scorer.ts**: 8-dimensional scoring (distance/acceptance/response/reliability/zone/activity/vehicle_fit/GPS quality) + 3 new intelligence signals: finishing-soon detection (riders about to complete → pre-assigned), time-of-day weighting, dynamic activity scoring (recency + experience)
+- **unified-pricing-engine.ts**: Dynamic pricing with 6 multipliers: demand/supply surge, traffic, weather, service level, time-of-day (rush hour/late night), long-distance discount. Fare estimate with low/high confidence bands
+- **dispatch-conflict-resolver.ts**: Atomic assignment with in-memory locking, offer.job_id cross-validation, affected-row verification, busy-rider detection, rollback on failure
+- **delivery-batch-engine.ts**: Groups nearby deliveries (same pickup zone + dropoff cluster), nearest-neighbor route optimization, savings estimation. Max 4 jobs/batch, 2.5km pickup / 3km dropoff radius
+- **smart-zone-manager.ts**: Real-time heat mapping (cold→warm→hot→surge), demand prediction with time multipliers (rush hour 1.8x), rider repositioning suggestions to hot zones, zone incentive bonuses, 30s cache TTL
+- **dispatch-learning-engine.ts**: Continuous learning — records every outcome (dispatched/completed/failed), hourly metrics snapshots, auto-detects slow matching (>2s) / low success (<60%) / high failure (>30%), driver stats auto-update (acceptance rate, response time, completion rate)
+- **dispatch-orbit-bridge.ts**: Auto-creates Orbit chat thread on rider assignment, sends system status messages at each trip phase, provides thread ID for customer↔rider communication
+- **dispatch-wallet-bridge.ts**: Auto-charges customer wallet on completion (wallet → card fallback), auto-pays rider (80% net earning), idempotent via reference_id, earnings ledger per ride
+- **dispatch-monitor.ts**: Health monitoring (healthy/degraded/critical), tracks active jobs, pending offers, online riders, failure rate, hot/surge zones. Alerts on critical status
+
+### Dispatch Flow
+1. Customer requests ride → `smartDispatch()` called
+2. Zone intelligence fetched → demand/supply/traffic/weather assessed
+3. Dynamic pricing computed (6 multipliers)
+4. Driver scoring: 150 candidates max, 8 dimensions + 3 intelligence signals, finishing-soon riders included
+5. Delivery batching (if applicable) → nearby orders grouped
+6. Wave 1 dispatch: top 3 scored riders, 12s expiry
+7. If no accept → Wave 2 (5 riders, 15s) → Wave 3 (8, 20s) → Wave 4 (12, 25s)
+8. If all waves fail → radius expansion (3→20km) → `failed_no_rider`
+9. On accept → conflict resolver validates atomically → Orbit chat created → tracking starts
+10. On complete → Wallet auto-charge → rider paid → stats updated → learning cycle triggered
+
+### Anti-Conflict Guarantees
+- 1 job = 1 rider (atomic offer acceptance with affected-row checks)
+- offer.job_id cross-validation prevents cross-job tampering
+- In-memory lock prevents concurrent accept races
+- Busy-rider detection blocks double-assignment
+- Rollback on partial failure
+
 ## Key Directories
 ```
 easy-locs-ea1eb0ed/
