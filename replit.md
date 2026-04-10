@@ -252,6 +252,53 @@ Ultra-fluid mobility experience comparable to Uber/Careem/Deliveroo:
 - **MobilityLiveMap**: Mapbox Directions API route polyline between pickup/dropoff (Gold line), animated nearby vehicle markers, Navy/Gold markers
 - **Design**: All Navy `hsl(220 40% 18%)` / Gold `hsl(38 65% 56%)` inline styles
 
+## Ride Domain Layer (Unified Taxi + Delivery)
+Production-grade domain types, pricing engine, matching engine, and real-time tracking store for the ride-hailing and delivery verticals.
+
+### Domain Types (`src/domains/ride/ride-types.ts`)
+- **VehicleType**: standard, premium, xl, moto, bike, electric, van
+- **RideStatus**: 10-state lifecycle (idle → searching → driver_assigned → driver_arriving → driver_arrived → in_progress → arriving_destination → completed / cancelled / failed)
+- **DeliveryStatus**: 11-state lifecycle (pending → searching_rider → rider_assigned → rider_arriving_pickup → rider_arrived_pickup → picked_up → in_transit → arriving_dropoff → delivered / cancelled / failed)
+- **RideRequest / DeliveryRequest**: Full request models with pricing, driver profile, location tracking, payment method, scheduling
+- **RidePricing**: baseFare + distanceFare + timeFare + surge + booking + toll + tip - discount
+- **DeliveryPricing**: baseFee + distanceFee + weightFee + rushFee + surge + serviceFee + tip
+- **DriverProfile**: Full driver/rider info with vehicle details, rating, trip count, verification
+- **DriverLocation**: GPS point + heading + speed for real-time tracking
+- **SurgeZone**: demand/supply ratio → 5 levels (none/low/medium/high/extreme) with multiplier
+- **DeliveryCategory**: food, grocery, parcel, errand, gift
+- **PaymentMethod**: wallet, cash, card, mobile_money
+
+### Pricing Engine (`src/lib/ride/ride-pricing-engine.ts`)
+- **Vehicle Tier Pricing**: 7 vehicle types with tier-specific base fare, per-km, per-min, min fare, booking fee
+- **Delivery Category Pricing**: 5 categories (food/grocery/parcel/errand/gift) with base fee, per-km, weight multiplier
+- **Surge Calculation**: demand/supply ratio → 5 thresholds (1.0x → 2.5x), 5min expiry
+- **Traffic Multipliers**: low (1.0x) → moderate (1.05x) → heavy (1.15x) → gridlock (1.30x)
+- **Haversine Distance**: Real Earth-distance calculation with 1.3x road factor
+- **Duration Estimation**: Speed-based from traffic level (40/30/20/10 km/h)
+- **Vehicle Options**: Returns all tiers with price + ETA for fare comparison UI
+- **Tip & Discount**: Built into pricing breakdown
+
+### Matching Engine (`src/lib/ride/ride-matching-engine.ts`)
+- **5-Dimensional Scoring**: proximity (35%) + rating (20%) + experience (15%) + vehicle fit (20%) + acceptance (10%)
+- **Proximity Score**: Distance bands (≤1km=100, ≤3km=80, ≤5km=60, ≤10km=30)
+- **Vehicle Fit**: Exact match=100, valid upgrade=60, incompatible=0 (filtered out)
+- **ETA Calculation**: Driver-to-pickup ETA + pickup-to-dropoff ETA with traffic awareness
+- **Mock Driver Generation**: Realistic test drivers distributed around a center point
+- **Max Search Radius**: 15km default, configurable per request
+
+### Real-Time Tracking Store (`src/lib/ride/ride-tracking-store.ts`)
+- Module-level singleton store (same pattern as flight-flow-store, property-booking-store)
+- **requestRide()**: Computes pricing + surge → creates RideRequest → auto-simulates driver match
+- **requestDelivery()**: Computes delivery pricing → creates DeliveryRequest → auto-simulates rider assignment
+- **Driver Tracking Simulation**: 2s interval GPS updates, driver moves toward target (pickup/dropoff), auto-triggers arrival events
+- **Status Progression**: Automatic transitions (assigned → arriving → arrived → in_progress → completed)
+- **cancelRide/cancelDelivery**: Guards against cancelling in-progress rides
+- **rateRide/rateDelivery**: Post-completion rating + tip support
+- Hook: `useRideTracking()` (`src/hooks/useRideTracking.ts`) — `useSyncExternalStore`-based
+
+### Barrel Export (`src/lib/ride/index.ts`)
+Re-exports all types, pricing functions, matching engine, and tracking store from single entry point.
+
 ## Intelligent Dispatch System (Uber/Careem-Level)
 Complete Taxi/Rider/Delivery dispatch engine with real-time matching, anti-conflict, learning:
 
