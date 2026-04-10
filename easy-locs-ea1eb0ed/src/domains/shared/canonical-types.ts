@@ -273,6 +273,8 @@ export type DriverStatus =
   | "completed"
   | "offline";
 
+export type { FlightStatus } from "@/domains/flight/flight-types";
+
 // ══════════════════════════════════════════════════
 // COMMUNICATION CONTEXT
 // ══════════════════════════════════════════════════
