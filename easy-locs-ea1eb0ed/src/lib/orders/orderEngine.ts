@@ -165,6 +165,18 @@ export async function updateStorefrontOrderStatus(params: {
   return data;
 }
 
+export async function updateOrderPaymentStatus(
+  orderId: string,
+  paymentStatus: string,
+) {
+  const { error } = await db
+    .from("storefront_orders")
+    .update({ payment_status: paymentStatus, updated_at: new Date().toISOString() })
+    .eq("id", orderId);
+
+  if (error) throw error;
+}
+
 export async function getOrderWithItems(orderId: string) {
   const { data, error } = await db
     .from("storefront_orders")

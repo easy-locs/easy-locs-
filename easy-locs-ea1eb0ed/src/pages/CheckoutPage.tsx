@@ -1,22 +1,33 @@
 /**
  * CheckoutPage — Review cart, select delivery/pickup, choose payment, place order.
  * Uses storefront_orders as the single source of truth.
+ * Payment hardening: Card (real Stripe), Wallet (atomic transfer), Cash (COD).
  * Route: /checkout
  */
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
-import { createStorefrontOrder } from "@/lib/orders/orderEngine";
+import { createStorefrontOrder, updateOrderPaymentStatus } from "@/lib/orders/orderEngine";
 import { trackFlowStart, trackFlowComplete, trackFlowAbandon } from "@/lib/smart-core";
 import { resolveDisplayCurrency, formatMoneyByCountry } from "@/lib/currency-engine";
-import { ArrowLeft, MapPin, CreditCard, Wallet, Banknote, Loader2, Plus, Minus, Trash2 } from "lucide-react";
+import { useLocationStore } from "@/stores/locationStore";
+import { useWalletAccounts } from "@/hooks/useWalletAccounts";
+import { executeWalletTransfer } from "@/lib/wallet/wallet-transfer";
+import { logger } from "@/lib/monitoring";
+import {
+  ArrowLeft, MapPin, CreditCard, Wallet, Banknote,
+  Loader2, Plus, Minus, Trash2, AlertTriangle, ShieldCheck, CheckCircle2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+const CardPayment = lazy(() => import("@/components/payments/CardPayment"));
+
 type PaymentMethod = "wallet" | "card" | "cash";
 type DeliveryMode = "delivery" | "pickup";
+type CheckoutStep = "review" | "card_payment" | "processing";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -27,9 +38,14 @@ export default function CheckoutPage() {
   const [notes, setNotes] = useState("");
   const [placing, setPlacing] = useState(false);
   const [addressOpen, setAddressOpen] = useState(false);
+  const [step, setStep] = useState<CheckoutStep>("review");
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const idempotencyRef = useRef(crypto.randomUUID());
   const flowStartRef = useRef(Date.now());
   const flowCompletedRef = useRef(false);
+
+  const selectedLocation = useLocationStore((s) => s.selectedLocation);
+  const { rows: walletAccounts } = useWalletAccounts(user?.id);
 
   useEffect(() => {
     trackFlowStart("checkout");
@@ -87,57 +103,262 @@ export default function CheckoutPage() {
   const cur = resolveDisplayCurrency({ country: "AE" });
   const fmt = (n: number) => formatMoneyByCountry(n, null, cur);
 
+  const primaryWallet = walletAccounts.find((w) => w.is_default) || walletAccounts[0];
+  const walletBalance = primaryWallet
+    ? ((primaryWallet as any).balance_cash ?? primaryWallet.balance ?? 0)
+    : 0;
+  const walletInsufficient = payment === "wallet" && walletBalance < grandTotal;
+
+  const validateCheckout = (): string | null => {
+    if (!user) return "Please sign in to place an order";
+    if (!cart.restaurantId) return "No restaurant selected";
+    if (mode === "delivery" && !selectedLocation) return "Please select a delivery address first";
+    if (payment === "wallet" && !primaryWallet) return "No wallet account found — please set up your wallet first";
+    if (payment === "wallet" && walletInsufficient) {
+      return `Insufficient wallet balance. Available: ${fmt(walletBalance)}, Required: ${fmt(grandTotal)}`;
+    }
+    return null;
+  };
+
+  const resolveSellerId = async (): Promise<string> => {
+    const { storefrontService } = await import("@/services");
+    const ownerUserId = await storefrontService.fetchPageOwnerUserId(cart.restaurantId!);
+    return ownerUserId || user!.id;
+  };
+
+  const completeCheckout = useCallback((orderId: string, alreadyExists: boolean) => {
+    if (alreadyExists) {
+      toast.info("Order already placed");
+    } else {
+      toast.success("Order placed successfully!");
+    }
+    flowCompletedRef.current = true;
+    trackFlowComplete("checkout", Date.now() - flowStartRef.current);
+    clearCart();
+    idempotencyRef.current = crypto.randomUUID();
+    navigate(`/order/${orderId}`);
+  }, [clearCart, navigate]);
+
+  const createOrderWithPayment = async (
+    sellerId: string,
+    paymentMethod: PaymentMethod,
+    paymentStatus: string,
+  ) => {
+    const { order, alreadyExists } = await createStorefrontOrder({
+      shopId: cart.restaurantId!,
+      sellerId,
+      items: cart.items,
+      fulfillmentType: mode,
+      currency: cur,
+      deliveryAddress: selectedLocation?.label,
+      deliveryLat: selectedLocation?.lat,
+      deliveryLng: selectedLocation?.lng,
+      deliveryFee,
+      notes: notes || undefined,
+      paymentMethod,
+      idempotencyKey: idempotencyRef.current,
+    });
+
+    if (!alreadyExists && paymentStatus !== "pending") {
+      await updateOrderPaymentStatus(order.id, paymentStatus);
+    }
+
+    return { order, alreadyExists };
+  };
+
   const placeOrder = async () => {
-    if (!user) { toast.error("Please sign in to place an order"); return; }
-    if (!cart.restaurantId) { toast.error("No restaurant selected"); return; }
+    const validationError = validateCheckout();
+    if (validationError) {
+      toast.error(validationError);
+      if (validationError.includes("delivery address")) {
+        setAddressOpen(true);
+      }
+      return;
+    }
+
+    if (placing) return;
+    setPaymentError(null);
+
+    if (payment === "card") {
+      setStep("card_payment");
+      return;
+    }
+
     setPlacing(true);
 
     try {
-      // Resolve actual seller/owner — try storefront_pages first, then seed_merchants
-      const { storefrontService } = await import("@/services");
-      let sellerId = user.id;
-      const ownerUserId = await storefrontService.fetchPageOwnerUserId(cart.restaurantId);
-      if (ownerUserId) {
-        sellerId = ownerUserId;
-      }
-      // No seed_merchants fallback — storefront_pages is the only public truth
+      const sellerId = await resolveSellerId();
 
-      const { order, alreadyExists } = await createStorefrontOrder({
-        shopId: cart.restaurantId,
-        sellerId,
-        items: cart.items,
-        fulfillmentType: mode,
-        currency: resolveDisplayCurrency({ country: "AE" }),
-        deliveryFee,
-        notes: notes || undefined,
-        paymentMethod: payment,
-        idempotencyKey: idempotencyRef.current,
-      });
+      if (payment === "wallet") {
+        logger.info("[Checkout] Starting wallet payment", { amount: grandTotal, currency: cur });
 
-      if (alreadyExists) {
-        toast.info("Order already placed");
+        const transferResult = await executeWalletTransfer({
+          senderUserId: user!.id,
+          receiverUserId: sellerId,
+          amount: grandTotal,
+          currency: cur,
+          description: `Order from ${cart.restaurantName}`,
+          transactionType: "storefront_checkout",
+          idempotencyKey: idempotencyRef.current,
+        });
+
+        if (!transferResult.success) {
+          throw new Error(transferResult.error || "Wallet payment failed — please try again");
+        }
+
+        logger.info("[Checkout] Wallet payment succeeded", { transactionId: transferResult.transactionId });
+
+        try {
+          const { order, alreadyExists } = await createOrderWithPayment(sellerId, "wallet", "paid");
+          completeCheckout(order.id, alreadyExists);
+        } catch (orderErr) {
+          logger.critical("[CHECKOUT_RECOVERY] Wallet transfer succeeded but order creation failed", {
+            transactionId: transferResult.transactionId, amount: grandTotal, userId: user!.id,
+          });
+          throw new Error(
+            "Payment processed but order creation failed. " +
+            "Your funds are safe — please contact support with reference: " +
+            transferResult.transactionId
+          );
+        }
+
       } else {
-        toast.success("Order placed!");
+        logger.info("[Checkout] Placing cash (COD) order", { amount: grandTotal });
+        const { order, alreadyExists } = await createOrderWithPayment(sellerId, "cash", "pending");
+        completeCheckout(order.id, alreadyExists);
       }
-
-      flowCompletedRef.current = true;
-      trackFlowComplete("checkout", Date.now() - flowStartRef.current);
-      clearCart();
-      idempotencyRef.current = crypto.randomUUID();
-      navigate(`/order/${order.id}`);
     } catch (e) {
-      console.error("[Checkout]", e instanceof Error ? e.message : e);
-      toast.error("Failed to place order. Please try again.");
+      const msg = e instanceof Error ? e.message : "Payment failed";
+      setPaymentError(msg);
+      logger.error("[Checkout] Payment error", { error: msg, method: payment });
+      toast.error(msg);
     } finally {
       setPlacing(false);
     }
   };
 
-  const paymentMethods: { key: PaymentMethod; label: string; icon: typeof Wallet }[] = [
-    { key: "wallet", label: "Wallet", icon: Wallet },
-    { key: "card", label: "Card", icon: CreditCard },
-    { key: "cash", label: "Cash", icon: Banknote },
+  const handleCardPaymentSuccess = async (paymentIntentId: string) => {
+    setStep("processing");
+    setPlacing(true);
+    setPaymentError(null);
+
+    const maxRetries = 3;
+    let lastError = "";
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        logger.info("[Checkout] Card payment confirmed — creating order", {
+          paymentIntentId, attempt, amount: grandTotal,
+        });
+        const sellerId = await resolveSellerId();
+        const { order, alreadyExists } = await createOrderWithPayment(sellerId, "card", "paid");
+        completeCheckout(order.id, alreadyExists);
+        return;
+      } catch (e) {
+        lastError = e instanceof Error ? e.message : "Order creation failed";
+        logger.error("[Checkout] Post-payment order creation attempt failed", {
+          error: lastError, paymentIntentId, attempt, maxRetries,
+        });
+        if (attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, 1000 * attempt));
+        }
+      }
+    }
+
+    logger.critical("[CHECKOUT_RECOVERY] Payment captured but order creation failed after retries", {
+      paymentIntentId, amount: grandTotal, currency: cur, userId: user?.id,
+    });
+    setPaymentError(
+      "Your payment was processed but we had trouble creating the order. " +
+      "Your funds are safe — please contact support with reference: " + paymentIntentId
+    );
+    toast.error("Order creation issue — your payment is safe. Please contact support.");
+    setStep("review");
+    setPlacing(false);
+  };
+
+  const handleCardPaymentError = (error: string) => {
+    setPaymentError(error);
+    logger.error("[Checkout] Card payment failed", { error });
+  };
+
+  const paymentMethods: { key: PaymentMethod; label: string; icon: typeof Wallet; detail?: string }[] = [
+    {
+      key: "wallet",
+      label: "Wallet",
+      icon: Wallet,
+      detail: primaryWallet ? `Balance: ${fmt(walletBalance)}` : "Not set up",
+    },
+    { key: "card", label: "Card", icon: CreditCard, detail: "Visa, Mastercard" },
+    { key: "cash", label: "Cash on Delivery", icon: Banknote, detail: "Pay when delivered" },
   ];
+
+  if (step === "card_payment") {
+    return (
+      <div className="app-mobile-page flex flex-col bg-background">
+        <header className="flex items-center gap-3 px-4 pt-4 pb-3">
+          <button
+            onClick={() => { setStep("review"); setPaymentError(null); }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted"
+          >
+            <ArrowLeft className="w-4.5 h-4.5" />
+          </button>
+          <h1 className="text-lg font-bold text-foreground">Secure Payment</h1>
+        </header>
+
+        <div className="flex-1 px-4 pb-8 space-y-4">
+          <div className="rounded-2xl p-4 bg-card border border-border/20">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="w-4 h-4 text-green-400" />
+              <span className="text-xs font-semibold text-green-400">Secure payment via Stripe</span>
+            </div>
+            <div className="flex justify-between items-baseline">
+              <span className="text-sm text-muted-foreground">Total to pay</span>
+              <span className="text-xl font-bold text-foreground">{fmt(grandTotal)}</span>
+            </div>
+          </div>
+
+          {paymentError && (
+            <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/5 rounded-lg px-3 py-2.5">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span className="flex-1">{paymentError}</span>
+            </div>
+          )}
+
+          <div className="rounded-2xl p-4 bg-card border border-border/20">
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-3 text-muted-foreground">
+              Enter card details
+            </p>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading payment form...
+                </div>
+              }
+            >
+              <CardPayment
+                amount={grandTotal}
+                currency={cur}
+                onSuccess={handleCardPaymentSuccess}
+                onError={handleCardPaymentError}
+              />
+            </Suspense>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "processing") {
+    return (
+      <div className="app-mobile-page flex flex-col items-center justify-center gap-4 bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-sm font-semibold text-foreground">Creating your order...</p>
+        <p className="text-xs text-muted-foreground">Payment confirmed. Please wait.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="app-mobile-page flex flex-col bg-background" data-checkout-form>
@@ -175,17 +396,29 @@ export default function CheckoutPage() {
           </div>
         </section>
 
-        {/* Address */}
+        {/* Address (delivery only) */}
         {mode === "delivery" && (
           <>
             <button
               onClick={() => setAddressOpen(true)}
-              className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform bg-card border border-border/20"
+              className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform bg-card border"
+              style={{
+                borderColor: !selectedLocation
+                  ? "hsl(var(--destructive) / 0.4)"
+                  : "hsl(var(--border) / 0.2)",
+              }}
             >
-              <MapPin className="w-5 h-5 shrink-0 text-primary" />
+              <MapPin
+                className="w-5 h-5 shrink-0"
+                style={{ color: selectedLocation ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}
+              />
               <div className="flex-1 text-left">
                 <p className="text-[11px] text-muted-foreground font-medium">Deliver to</p>
-                <p className="text-sm font-semibold text-foreground">Select address</p>
+                {selectedLocation ? (
+                  <p className="text-sm font-semibold text-foreground truncate">{selectedLocation.label}</p>
+                ) : (
+                  <p className="text-sm font-semibold text-destructive">Select address (required)</p>
+                )}
               </div>
             </button>
             <AddressSelectorSheet open={addressOpen} onOpenChange={setAddressOpen} />
@@ -269,12 +502,31 @@ export default function CheckoutPage() {
                   border: `1px solid ${payment === pm.key ? "hsl(var(--primary) / 0.3)" : "hsl(var(--border) / 0.12)"}`,
                 }}
               >
-                <pm.icon className="w-5 h-5" style={{ color: payment === pm.key ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
-                <span className="text-sm font-semibold text-foreground">{pm.label}</span>
+                <pm.icon
+                  className="w-5 h-5"
+                  style={{ color: payment === pm.key ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
+                />
+                <div className="flex-1 text-left">
+                  <span className="text-sm font-semibold text-foreground">{pm.label}</span>
+                  {pm.detail && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{pm.detail}</p>
+                  )}
+                </div>
+                {pm.key === "wallet" && walletInsufficient && (
+                  <span className="text-[10px] font-semibold text-destructive">Insufficient</span>
+                )}
               </button>
             ))}
           </div>
         </section>
+
+        {/* Payment error */}
+        {paymentError && (
+          <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/5 rounded-xl px-3 py-2.5">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span className="flex-1">{paymentError}</span>
+          </div>
+        )}
       </div>
 
       {/* Bottom CTA */}
@@ -283,11 +535,16 @@ export default function CheckoutPage() {
           data-submit-order
           data-primary-cta
           onClick={placeOrder}
-          disabled={placing}
+          disabled={placing || walletInsufficient}
           className="w-full rounded-2xl h-[3.25rem] text-sm font-bold"
         >
           {placing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          Place Order · {fmt(grandTotal)}
+          {payment === "card"
+            ? `Continue to Payment · ${fmt(grandTotal)}`
+            : payment === "wallet"
+              ? `Pay with Wallet · ${fmt(grandTotal)}`
+              : `Place Order (COD) · ${fmt(grandTotal)}`
+          }
         </Button>
       </div>
     </div>
