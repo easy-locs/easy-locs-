@@ -57,16 +57,16 @@ const CATEGORY_IMAGES: Record<string, string> = {
 
 /* ═══ Hero Category Quick-Access Buttons ═══ */
 const HERO_CATEGORIES = [
-  { label: "Food", emoji: "🍽️", route: "/browse/food", color: "hsl(25 85% 55%)" },
-  { label: "Services", emoji: "🔧", route: "/browse/services", color: "hsl(210 70% 55%)" },
-  { label: "Hotel", emoji: "🏨", route: "/stay", color: "hsl(270 60% 55%)" },
-  { label: "Taxi", emoji: "🚗", route: "/mobility/taxi", color: "hsl(200 80% 50%)" },
-  { label: "Delivery", emoji: "📦", route: "/browse/food?mode=delivery", color: "hsl(160 60% 45%)" },
-  { label: "Immo", emoji: "🏠", route: "/property", color: "hsl(38 65% 56%)" },
+  { labelKey: "home.cat_food", fallback: "Food", emoji: "🍽️", route: "/browse/food", color: "hsl(25 85% 55%)" },
+  { labelKey: "home.cat_services", fallback: "Services", emoji: "🔧", route: "/browse/services", color: "hsl(210 70% 55%)" },
+  { labelKey: "home.cat_hotel", fallback: "Hotel", emoji: "🏨", route: "/stay", color: "hsl(270 60% 55%)" },
+  { labelKey: "home.cat_taxi", fallback: "Taxi", emoji: "🚗", route: "/mobility/taxi", color: "hsl(200 80% 50%)" },
+  { labelKey: "home.cat_delivery", fallback: "Delivery", emoji: "📦", route: "/browse/food?mode=delivery", color: "hsl(160 60% 45%)" },
+  { labelKey: "home.cat_immo", fallback: "Immo", emoji: "🏠", route: "/property", color: "hsl(38 65% 56%)" },
 ];
 
 /* ═══ Top Hero Banner — Premium super-app hero ═══ */
-const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap }: { hero: SmartHero; locationLabel: string; onLocationTap: () => void }) => (
+const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: SmartHero; locationLabel: string; onLocationTap: () => void; t: (k: string) => string }) => (
   <div className="relative mb-4 overflow-hidden rounded-[1.75rem] pt-3 pb-4 px-4" style={{ background: "linear-gradient(160deg, hsl(220 40% 18%), hsl(220 40% 22%), hsl(220 35% 28%))" }}>
     <motion.div
       className="absolute inset-0 pointer-events-none"
@@ -124,13 +124,13 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap }: { hero: Smar
     >
       {HERO_CATEGORIES.map((cat) => (
         <Link
-          key={cat.label}
+          key={cat.labelKey}
           to={cat.route}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl shrink-0 active:scale-95 transition-transform"
           style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.06)" }}
         >
           <span className="text-sm">{cat.emoji}</span>
-          <span className="text-[11px] font-bold" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{cat.label}</span>
+          <span className="text-[11px] font-bold" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{t(cat.labelKey) || cat.fallback}</span>
         </Link>
       ))}
     </motion.div>
@@ -139,6 +139,7 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap }: { hero: Smar
 
 /* ═══ Active Cart Banner — Resume ordering in 1 tap ═══ */
 const ActiveCartBanner = memo(() => {
+  const { t } = useI18n();
   const { cart, total, itemCount } = useCart();
   const navigate = useNavigate();
   if (itemCount === 0) return null;
@@ -154,11 +155,11 @@ const ActiveCartBanner = memo(() => {
         <ShoppingBag className="w-4.5 h-4.5" style={{ color: "hsl(38 65% 56%)" }} />
       </div>
       <div className="flex-1 min-w-0 text-left">
-        <p className="text-xs font-bold text-white truncate">{cart.restaurantName || "Your order"}</p>
-        <p className="text-[10px] text-white/60">{itemCount} item{itemCount > 1 ? "s" : ""} in cart</p>
+        <p className="text-xs font-bold text-white truncate">{cart.restaurantName || t("home.your_order") || "Your order"}</p>
+        <p className="text-[10px] text-white/60">{itemCount} {t("home.items_in_cart") || "item(s) in cart"}</p>
       </div>
-      <span className="text-xs font-black text-white shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
-        Checkout →
+      <span className="text-xs font-black shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
+        {t("home.checkout") || "Checkout"} →
       </span>
     </motion.button>
   );
@@ -309,6 +310,7 @@ const AISmartInsights = memo(() => {
 /* ═══ Stats Bar — LIVE super-app overview ═══ */
 function LiveStatsPulse() {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const live = useDashboardLiveStats();
 
   const stats = useMemo(() => [
@@ -318,6 +320,7 @@ function LiveStatsPulse() {
       icon: Wallet,
       pulse: live.walletBalance > 0,
       color: "text-emerald-500",
+      to: "/wallet",
     },
     {
       label: t("home.stats_messages"),
@@ -325,6 +328,7 @@ function LiveStatsPulse() {
       icon: Activity,
       pulse: live.unreadMessages > 0,
       color: "text-blue-500",
+      to: "/orbit",
     },
     {
       label: t("home.stats_orders"),
@@ -332,6 +336,7 @@ function LiveStatsPulse() {
       icon: Clock,
       pulse: live.activeOrders > 0,
       color: "text-amber-500",
+      to: "/my-orders",
     },
     {
       label: t("home.stats_secure"),
@@ -339,6 +344,7 @@ function LiveStatsPulse() {
       icon: ShieldCheck,
       pulse: true,
       color: "text-[hsl(38_65%_56%)]",
+      to: "/me",
     },
   ], [t, live]);
 
@@ -350,7 +356,11 @@ function LiveStatsPulse() {
       transition={{ delay: 0.08 }}
     >
       {stats.map((s) => (
-        <div key={s.label} className="flex flex-col items-center gap-1 rounded-xl border border-border/8 bg-muted/15 py-2.5 px-1.5 relative overflow-hidden">
+        <button
+          key={s.label}
+          onClick={() => navigate(s.to)}
+          className="flex flex-col items-center gap-1 rounded-xl border border-border/8 bg-muted/15 py-2.5 px-1.5 relative overflow-hidden active:scale-[0.95] transition-transform"
+        >
           {s.pulse && (
             <motion.div
               className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-green-400"
@@ -361,7 +371,7 @@ function LiveStatsPulse() {
           <s.icon className={`h-4 w-4 ${s.color} shrink-0`} />
           <p className="text-xs font-black text-foreground tabular-nums leading-none">{s.value}</p>
           <p className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5 text-center w-full break-words">{s.label}</p>
-        </div>
+        </button>
       ))}
     </motion.div>
   );
@@ -407,9 +417,9 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
       <div className="flex items-center justify-between mb-2 px-1">
-        <h3 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+        <h2 className="text-[14px] font-black text-foreground flex items-center gap-1.5">
           <span>{icon}</span> {title}
-        </h3>
+        </h2>
         <Link to={seeAllTo} className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70 shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
           {t("home.see_all")} <ChevronRight className="h-3 w-3" />
         </Link>
@@ -445,9 +455,9 @@ const FeaturedHotelsCarousel = memo(() => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
       <div className="flex items-center justify-between mb-2 px-1">
-        <h3 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+        <h2 className="text-[14px] font-black text-foreground flex items-center gap-1.5">
           <Building2 className="h-4 w-4" style={{ color: "hsl(38 65% 56%)" }} /> {t("home.featured_hotels")}
-        </h3>
+        </h2>
         <Link to="/stay" className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70" style={{ color: "hsl(38 65% 56%)" }}>
           {t("home.see_all")} <ChevronRight className="h-3 w-3" />
         </Link>
@@ -569,7 +579,7 @@ export default function SmartHome() {
   return (
     <div className="w-full min-w-0 pb-6">
       <div className="px-3 pt-3 sm:px-4 sm:pt-4">
-        <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} />
+        <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} t={t} />
         <ActiveCartBanner />
         <SmartQuickActions />
         <QuickAccessStrip />

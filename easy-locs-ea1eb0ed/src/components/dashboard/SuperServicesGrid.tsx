@@ -41,8 +41,8 @@ const SuperServicesGrid = memo(function SuperServicesGrid() {
                 <Navigation className="h-4 w-4" style={{ color: "hsl(38 65% 56%)" }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-white">{activeRides.length} ride{activeRides.length > 1 ? "s" : ""} in progress</p>
-                <p className="text-[10px]" style={{ color: "hsl(38 65% 56% / 0.7)" }}>Tap to track</p>
+                <p className="text-xs font-bold text-white">{activeRides.length} {t("dashboard.rides_in_progress")}</p>
+                <p className="text-[10px]" style={{ color: "hsl(38 65% 56% / 0.7)" }}>{t("dashboard.tap_to_track")}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(38 65% 56%)" }} />
@@ -57,8 +57,8 @@ const SuperServicesGrid = memo(function SuperServicesGrid() {
                 <Package className="h-4 w-4" style={{ color: "hsl(142 71% 45%)" }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-white">{activeDeliveries.length} delivery in progress</p>
-                <p className="text-[10px]" style={{ color: "hsl(142 71% 45% / 0.7)" }}>Tap to track</p>
+                <p className="text-xs font-bold text-white">{activeDeliveries.length} {t("dashboard.delivery_in_progress")}</p>
+                <p className="text-[10px]" style={{ color: "hsl(142 71% 45% / 0.7)" }}>{t("dashboard.tap_to_track")}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(142 71% 45%)" }} />

@@ -34,9 +34,9 @@ function OrbitPreviewWidget() {
           <E2EEBadge compact />
         </div>
         <Link
-          to="/dashboard/communication"
+          to="/orbit"
           className="flex items-center gap-0.5 text-[10px] font-bold"
-          style={{ color: "hsl(var(--primary))" }}
+          style={{ color: "hsl(38 65% 56%)" }}
         >
           {t("dashboard.see_all")} <ChevronRight className="w-3 h-3" />
         </Link>
@@ -52,7 +52,7 @@ function OrbitPreviewWidget() {
         return (
           <Link
             key={thread.id}
-            to={`/dashboard/communication?thread=${thread.conversationId || thread.id}`}
+            to={`/orbit/${thread.conversationId || thread.id}`}
             className="flex items-center gap-3 px-4 py-2.5 active:bg-muted/20 transition-colors"
             style={idx < recent.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.05)" } : undefined}
           >
