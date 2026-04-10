@@ -1,13 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { listMerchantReviews } from "@/lib/reviews/reviewEngine";
+import ReviewPaywall, { useReviewAccess } from "./ReviewPaywall";
 
 export default function ReviewList({ merchantId }: { merchantId: string }) {
+  const { unlocked } = useReviewAccess();
+
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["merchant-reviews", merchantId],
     queryFn: () => listMerchantReviews(merchantId),
-    enabled: !!merchantId,
+    enabled: !!merchantId && unlocked,
     staleTime: 5000,
   });
+
+  const avgRating = rows.length > 0
+    ? rows.reduce((sum: number, r: any) => sum + Number(r.rating ?? 0), 0) / rows.length
+    : 0;
+
+  if (!unlocked) {
+    return <ReviewPaywall reviewCount={0} averageRating={0} />;
+  }
 
   return (
     <div className="space-y-3">
