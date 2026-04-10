@@ -40,7 +40,7 @@ export default function CustomerSplitBillPage() {
           {rows.map((row) => (
             <div key={row.id} className="flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3">
               <span className="text-sm font-semibold">{row.name}</span>
-              <span className="text-sm font-bold">{row.amount.toFixed(2)} AED</span>
+              <span className="text-sm font-bold tabular-nums">{row.amount.toFixed(2)} AED</span>
             </div>
           ))}
         </div>

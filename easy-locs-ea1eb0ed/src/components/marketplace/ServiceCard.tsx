@@ -183,7 +183,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <span className="font-medium text-foreground text-[12px] break-words leading-snug">{provider.display_name}</span>
+              <span className="font-medium text-foreground text-xs break-words leading-snug">{provider.display_name}</span>
               {provider.verified && (
                 <CheckCircle2 className="inline h-3 w-3 text-accent ml-1" />
               )}

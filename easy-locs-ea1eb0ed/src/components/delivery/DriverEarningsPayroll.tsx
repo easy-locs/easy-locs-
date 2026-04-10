@@ -169,7 +169,7 @@ export default function DriverEarningsPayroll() {
       <div className="rounded-xl p-4 text-center"
         style={{ background: "linear-gradient(135deg, hsl(var(--success) / 0.08), hsl(var(--hud-cyan) / 0.05))", border: "1px solid hsl(var(--success) / 0.15)" }}>
         <p className="text-[10px] font-semibold mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>NET À PAYER</p>
-        <p className="text-2xl font-bold" style={{ color: "hsl(var(--success))" }}>{summary.netPay.toFixed(2)} €</p>
+        <p className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>{summary.netPay.toFixed(2)} €</p>
         <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
           {summary.totalDeliveries} livraisons terminées
         </p>

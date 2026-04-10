@@ -116,13 +116,13 @@ export function ContactProfileSheet({
               <h2 className="text-xl font-bold mt-3 text-center truncate max-w-[80%]" style={{ color: "hsl(var(--foreground))" }}>
                 {vm.displayName}
               </h2>
-              <p className="text-[12px] mt-0.5 font-medium" style={{
+              <p className="text-xs mt-0.5 font-medium" style={{
                 color: isOnline ? "hsl(var(--hud-success))" : "hsl(var(--muted-foreground) / 0.5)",
               }}>
                 {isOnline ? t("contact.online") : (presence.lastSeenAt ? formatLastSeen(presence.lastSeenAt, t) : t("contact.tap_for_info"))}
               </p>
               {vm.subtitle && (
-                <p className="text-[12px] mt-1 text-center truncate max-w-[90%]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
+                <p className="text-xs mt-1 text-center truncate max-w-[90%]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
                   {vm.subtitle}
                 </p>
               )}
@@ -262,7 +262,7 @@ export function ContactProfileSheet({
                             style={{ background: "hsl(var(--card))", color: "hsl(var(--muted-foreground))" }}>
                             {(g.name || "G").charAt(0).toUpperCase()}
                           </div>
-                          <span className="text-[12px] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                          <span className="text-xs font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
                             {g.name}
                           </span>
                         </div>

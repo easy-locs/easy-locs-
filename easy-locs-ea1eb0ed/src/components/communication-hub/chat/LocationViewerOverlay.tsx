@@ -65,7 +65,7 @@ function LocationViewerOverlayInner() {
           href={externalUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-lg hover:opacity-80 transition-opacity"
+          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg hover:opacity-80 transition-opacity"
           style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
           <ExternalLink className="h-3.5 w-3.5" />

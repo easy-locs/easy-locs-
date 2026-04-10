@@ -38,7 +38,7 @@ export default function ExecutiveKPIBoardPage() {
           </div>
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="text-xs text-muted-foreground">Conversion</p>
-            <p className="text-2xl font-bold text-foreground">{(Number(latest.conversion_rate) * 100).toFixed(1)}%</p>
+            <p className="text-2xl font-extrabold text-foreground tabular-nums">{(Number(latest.conversion_rate) * 100).toFixed(1)}%</p>
           </div>
         </div>
       )}

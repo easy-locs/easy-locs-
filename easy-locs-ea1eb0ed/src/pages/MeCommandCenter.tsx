@@ -519,7 +519,7 @@ export default function MeCommandCenter() {
               style={{ background: `${A.blue}0D`, borderColor: `${A.blue}1A` }}
             >
               <Package className="w-5 h-5 mx-auto mb-1" style={{ color: A.blue }} />
-              <p className="text-lg font-bold text-foreground">{quickStats.activeOrders}</p>
+              <p className="text-lg font-extrabold text-foreground tabular-nums">{quickStats.activeOrders}</p>
               <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{t("me.active")}</p>
             </button>
             <button
@@ -528,7 +528,7 @@ export default function MeCommandCenter() {
               style={{ background: `${A.amber}0D`, borderColor: `${A.amber}1A` }}
             >
               <Coins className="w-5 h-5 mx-auto mb-1" style={{ color: A.amber }} />
-              <p className="text-lg font-bold text-foreground">{quickStats.loyaltyPoints}</p>
+              <p className="text-lg font-extrabold text-foreground tabular-nums">{quickStats.loyaltyPoints}</p>
               <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{t("me.points")}</p>
             </button>
             <button
@@ -537,7 +537,7 @@ export default function MeCommandCenter() {
               style={{ background: `${A.emerald}0D`, borderColor: `${A.emerald}1A` }}
             >
               <Zap className="w-5 h-5 mx-auto mb-1" style={{ color: A.emerald }} />
-              <p className="text-lg font-bold text-foreground">{Number(quickStats.walletBalance ?? 0).toFixed(0)}</p>
+              <p className="text-lg font-extrabold text-foreground tabular-nums">{Number(quickStats.walletBalance ?? 0).toFixed(0)}</p>
               <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{quickStats.walletCurrency}</p>
             </button>
           </motion.div>
@@ -605,8 +605,8 @@ export default function MeCommandCenter() {
                 <Store className="w-4 h-4" style={{ color: A.gold }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-bold text-foreground truncate">{t("me.open_shop")}</p>
-                <p className="text-[9px] text-muted-foreground truncate">{t("me.open_shop_sub")}</p>
+                <p className="text-xs font-bold text-foreground truncate">{t("me.open_shop")}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{t("me.open_shop_sub")}</p>
               </div>
             </button>
             <button
@@ -618,8 +618,8 @@ export default function MeCommandCenter() {
                 <Compass className="w-4 h-4" style={{ color: A.cyan }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-bold text-foreground truncate">{t("me.become_provider")}</p>
-                <p className="text-[9px] text-muted-foreground truncate">{t("me.become_provider_sub")}</p>
+                <p className="text-xs font-bold text-foreground truncate">{t("me.become_provider")}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{t("me.become_provider_sub")}</p>
               </div>
             </button>
           </motion.div>
@@ -636,8 +636,8 @@ export default function MeCommandCenter() {
               <Building2 className="w-4 h-4" style={{ color: A.blue }} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-bold text-foreground">{t("me.add_first_property")}</p>
-              <p className="text-[9px] text-muted-foreground">{t("me.add_first_property_sub")}</p>
+              <p className="text-xs font-bold text-foreground">{t("me.add_first_property")}</p>
+              <p className="text-[10px] text-muted-foreground">{t("me.add_first_property_sub")}</p>
             </div>
             <ChevronRight className="w-4 h-4 shrink-0" style={{ color: `${A.blue}66` }} />
           </motion.button>

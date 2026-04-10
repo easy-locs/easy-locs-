@@ -38,7 +38,7 @@ function MeBusinessKpis({ views, contacts, orders, rating, revenue, currency }: 
         >
           <kpi.icon className="w-4 h-4 mx-auto mb-1" style={{ color: kpi.color }} />
           <p className="text-sm font-bold text-foreground leading-none">{kpi.value}</p>
-          <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider mt-0.5 truncate">{kpi.label}</p>
+          <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-0.5 truncate">{kpi.label}</p>
         </div>
       ))}
     </motion.div>

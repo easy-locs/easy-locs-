@@ -105,7 +105,7 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: S
         {hero.title}
       </motion.h1>
       <motion.p
-        className="mt-1 text-[12px] leading-relaxed max-w-[280px]"
+        className="mt-1 text-xs leading-relaxed max-w-[280px]"
         style={{ color: "hsl(0 0% 100% / 0.55)" }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -214,7 +214,7 @@ function SmartQuickActions() {
   const actions = useMemo(() => getSmartActions(), []);
 
   return (
-    <div className="mb-4 flex items-center gap-2">
+    <div className="mb-5 flex items-center gap-2">
       {actions.map(({ icon: Icon, labelKey, to, color }) => (
         <Link
           key={labelKey}
@@ -239,7 +239,7 @@ const QuickAccessStrip = memo(() => {
   ], [t]);
 
   return (
-    <div className="mb-4 flex items-center gap-2">
+    <div className="mb-5 flex items-center gap-2">
       {links.map(({ icon: Icon, label, to, color }) => (
         <Link
           key={to}
@@ -358,7 +358,7 @@ function LiveStatsPulse() {
 
   return (
     <motion.div
-      className="mb-4 grid grid-cols-4 gap-1.5"
+      className="mb-5 grid grid-cols-4 gap-2"
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.08 }}
@@ -427,8 +427,8 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
 }) {
   const { t } = useI18n();
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-      <div className="flex items-center justify-between mb-2 px-1">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
+      <div className="flex items-center justify-between mb-2.5 px-1">
         <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
           <span>{icon}</span> {title}
         </h2>
@@ -437,7 +437,7 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
         </Link>
       </div>
       <LifecycleCardShell state={cardStatus} title={title} skeletonCount={3}>
-        <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none px-1">
+        <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1">
           {shops.map((shop) => (
             <UniverseCard
               key={shop.id}
@@ -465,8 +465,8 @@ const FeaturedHotelsCarousel = memo(() => {
   const { t } = useI18n();
   const top6 = FALLBACK_HOTELS.slice(0, 6);
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-      <div className="flex items-center justify-between mb-2 px-1">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
+      <div className="flex items-center justify-between mb-2.5 px-1">
         <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
           <Building2 className="h-4 w-4" style={{ color: "hsl(38 65% 56%)" }} /> {t("home.featured_hotels")}
         </h2>
@@ -474,7 +474,7 @@ const FeaturedHotelsCarousel = memo(() => {
           {t("home.see_all")} <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none px-1">
+      <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1">
         {top6.map((hotel) => (
           <Link
             key={hotel.id}
@@ -514,7 +514,7 @@ const HeroSlideCarousel = memo(() => {
   const slide = HERO_SLIDE_DEFS[activeSlide];
 
   return (
-    <div className="mb-4">
+    <div className="mb-5">
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.id}
@@ -601,8 +601,8 @@ export default function SmartHome() {
   const nearYouCard = useNearYouSectionCard();
 
   return (
-    <div className="w-full min-w-0 pb-6">
-      <div className="px-3 pt-3 sm:px-4 sm:pt-4">
+    <div className="w-full min-w-0 pb-8">
+      <div className="px-4 pt-4">
         <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} t={t} />
         <ActiveCartBanner />
         <SmartQuickActions />
@@ -614,14 +614,14 @@ export default function SmartHome() {
       </div>
       <OrbitPreviewWidget />
       <PropertyDashboardWidget />
-      <div className="px-3 sm:px-4">
+      <div className="px-4">
 
         {/* Live tracking banners for active rides/deliveries */}
         <LiveTrackingBanner />
 
         {/* Super Services — data-driven from CATEGORY_TREE */}
         <ServiceMenuGrid columns={4} maxItems={8} />
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-5">
           <ServiceMenuDrawer />
         </div>
 
@@ -629,8 +629,8 @@ export default function SmartHome() {
         <EssentialServicesStrip />
 
         {/* Category strip — horizontal scroll */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2 px-1">
+        <div className="mb-5">
+          <div className="flex items-center justify-between mb-2.5 px-1">
             <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
               <span>🏪</span> {t("dashboard.browse_categories") || "Browse Categories"}
             </h2>
@@ -649,7 +649,7 @@ export default function SmartHome() {
 
         {/* ═══ Context Banners — Animated carousel ═══ */}
         {vm.contextBanners.length > 0 && (
-          <div className="mb-4">
+          <div className="mb-5">
             <AnimatePresence mode="wait">
               {vm.contextBanners.slice(vm.activeBannerIdx, vm.activeBannerIdx + 1).map((banner) => (
                 <motion.div
@@ -708,13 +708,13 @@ export default function SmartHome() {
         <HeroSlideCarousel />
 
         {/* ═══ BOOST SLOT ═══ */}
-        <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="mb-4" />
+        <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="mb-5" />
       </div>
 
       {/* ═══ Stories for you ═══ */}
       <DashboardStories />
 
-      <div className="px-3 sm:px-4">
+      <div className="px-4">
         {/* ═══ Featured Hotels ═══ */}
         <FeaturedHotelsCarousel />
 

@@ -57,7 +57,7 @@ export const UniverseCard = memo(function UniverseCard({
             </div>
           )}
           {badge && (
-            <span className="absolute top-1 left-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground">{badge}</span>
+            <span className="absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground">{badge}</span>
           )}
         </div>
         <div className="flex-1 min-w-0 space-y-0.5">

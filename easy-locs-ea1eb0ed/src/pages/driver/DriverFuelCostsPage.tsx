@@ -69,7 +69,7 @@ export default function DriverFuelCostsPage() {
           <div key={row.id} className="rounded-[28px] border border-border/20 bg-card p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-bold text-foreground">{row.amountAed.toFixed(2)} AED</div>
+                <div className="text-sm font-bold text-foreground tabular-nums">{row.amountAed.toFixed(2)} AED</div>
                 <div className="text-xs text-muted-foreground mt-1">{row.date} · {row.liters} L</div>
               </div>
               <div className="rounded-full bg-muted px-3 py-1 text-[11px] font-bold text-foreground">Fuel</div>

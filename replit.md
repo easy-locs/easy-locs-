@@ -46,12 +46,18 @@ App.tsx routes are organized into clean, labeled sections:
 8. **DEEP LINKS / QR** — Public deep links, QR resolvers
 9. **SEO / LEGAL** — Programmatic SEO pages, legal pages
 
-## Typography & Design System Standards (Amélioration Pass)
+## Typography & Design System Standards (Structural Overhaul Complete)
 - **font-black ELIMINATED**: All `font-black` removed from functional UI. Only retained in decorative watermarks (`EASY-LOCS` text with `select-none rotate`) and brand logo (`EasyLocsLogo.tsx`)
-- **Typography hierarchy**: Page titles = `text-lg font-bold`. Section headers = `text-[13px] font-bold`. Large numeric values = `font-extrabold tabular-nums`. Labels/buttons = `font-bold`
-- **tabular-nums enforced**: All monetary values, counts, stats, prices, ratings, and numeric displays use `tabular-nums` to prevent layout shift
-- **Spacing standard**: Section margin = `mb-4` (16px). Section header margin = `mb-2`. Carousel gap = `gap-2.5`. Card width in carousels = `w-[170px]`
-- **Files affected**: 60+ files across all 5 pillars (SmartHome, WalletHub, MeCommandCenter, Orbit, Radar), travel pages, delivery components, admin dashboards, settings, property cards, merchant pages, food/restaurant, cart, QR widgets
+- **Typography hierarchy**: Display = `text-[28px] font-bold`. Page titles = `text-[22px] font-bold`. Section titles = `text-lg font-semibold`. Section headers = `text-[13px] font-bold`. Body = `text-sm`. Card titles = `text-sm font-semibold line-clamp-2`. Stat values = `font-extrabold tabular-nums`. Labels/buttons = `font-bold`
+- **Minimum font size enforced**: All `text-[9px]` → `text-[10px]`, all `text-[12px]` → `text-xs` across entire codebase (0 violations remaining)
+- **tabular-nums enforced**: All monetary values, counts, stats, prices, ratings, and numeric displays use `tabular-nums` to prevent layout shift — including financial pages (wallet, driver earnings, admin dashboards, POS, customer receipts, fraud detection)
+- **Spacing standard**: Section margin = `mb-5` (20px). Section header margin = `mb-2.5`. Carousel gap = `gap-2.5`. Card width in carousels = `w-[170px]`. Padding = `px-4` consistently (removed `px-3 sm:px-4` responsive jank)
+- **Design system foundation** (`ui.ts`): Complete rewrite with SPACING (10 levels 2px→64px), TEXT (25+ presets), CARD (14 variants), CARD_INNER, BTN (8 types), GRID (6 layouts), FORM, SECTION, CAROUSEL, CATEGORY, STATE, EMPTY_STATE tokens
+- **CSS card type system** (`index.css`): `.card-small`, `.card-medium`, `.card-large`, `.card-story`, `.card-listing`, `.card-action`, `.card-stat`, `.card-carousel` with child selectors for `.card-image`, `.card-body`, `.card-title`, `.card-desc`, `.card-meta`, `.card-price`
+- **CSS grid system**: `.grid-cards-2/3/4`, `.grid-cards-auto` with responsive breakpoints
+- **CSS text clamping**: `.text-clamp-1/2/3` utilities
+- **CSS alignment**: `.row`, `.row-between`, `.row-tight`, `.stack`, `.stack-tight/normal/loose`
+- **Files affected**: 80+ files across all 5 pillars, travel, delivery, admin, orbit, mobility, marketplace, communication components
 
 ## UX Optimizations (Améliore Pass)
 - **Dashboard Quick Access**: ActiveCartBanner (resume cart in 1 tap), QuickAccessStrip (Reorder/Favorites/My Orders), time-aware smart actions

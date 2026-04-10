@@ -128,7 +128,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
 
         {contextLabel && (
           <p
-            className="mt-0.5 text-[12px] font-medium truncate"
+            className="mt-0.5 text-xs font-medium truncate"
             title={contextLabel}
             style={{
               color: typeConfig?.color ? undefined : "hsl(var(--muted-foreground) / 0.55)",
