@@ -43,7 +43,7 @@ const A = {
   cyan: "hsl(190 75% 46%)",
   slate: "hsl(220 15% 50%)",
   orange: "hsl(25 90% 52%)",
-  primary: "hsl(var(--primary))",
+  primary: "hsl(38 65% 56%)",
 };
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.035 } } };
@@ -239,13 +239,13 @@ export default function MeCommandCenter() {
           variants={fadeUp}
           onClick={() => navigate("/settings/account")}
           className="w-full flex items-center gap-4 p-4 rounded-3xl active:scale-[0.98] transition-all text-left relative overflow-hidden app-card"
-          style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.06), hsl(var(--primary) / 0.02))", border: "1px solid hsl(var(--primary) / 0.08)" }}
+          style={{ background: "linear-gradient(135deg, hsl(220 40% 18% / 0.06), hsl(220 40% 18% / 0.02))", border: "1px solid hsl(38 65% 56% / 0.1)" }}
         >
-          <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] pointer-events-none" style={{ background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)" }} />
+          <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.04] pointer-events-none" style={{ background: "radial-gradient(circle, hsl(38 65% 56%) 0%, transparent 70%)" }} />
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="w-14 h-14 rounded-2xl object-cover shrink-0 ring-2 ring-primary/20" />
+            <img src={avatarUrl} alt="" className="w-14 h-14 rounded-2xl object-cover shrink-0" style={{ boxShadow: "0 0 0 2px hsl(38 65% 56% / 0.2)" }} />
           ) : (
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black shrink-0 bg-primary text-primary-foreground shadow-lg">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black shrink-0 shadow-lg" style={{ background: "hsl(220 40% 18%)", color: "hsl(0 0% 100%)" }}>
               {initials}
             </div>
           )}
@@ -256,12 +256,12 @@ export default function MeCommandCenter() {
             </p>
             <span
               className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-              style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}
+              style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)" }}
             >
               {roleLabel}
             </span>
           </div>
-          <ChevronRight className="w-5 h-5 text-primary/40 shrink-0" />
+          <ChevronRight className="w-5 h-5 shrink-0" style={{ color: "hsl(38 65% 56% / 0.4)" }} />
         </motion.button>
 
         {quickStats && (
@@ -301,16 +301,16 @@ export default function MeCommandCenter() {
             variants={fadeUp}
             onClick={() => navigate("/merchant/onboarding")}
             className="w-full flex items-center gap-3 p-3.5 app-card active:scale-[0.98] transition-transform text-left"
-            style={{ borderColor: "hsl(var(--accent) / 0.12)", background: "hsl(var(--accent) / 0.03)" }}
+            style={{ borderColor: "hsl(38 65% 56% / 0.12)", background: "hsl(38 65% 56% / 0.03)" }}
           >
-            <div className="app-list-row-icon shrink-0" style={{ background: "hsl(var(--accent) / 0.08)" }}>
-              <Store className="text-accent" />
+            <div className="app-list-row-icon shrink-0" style={{ background: "hsl(38 65% 56% / 0.08)" }}>
+              <Store style={{ color: "hsl(38 65% 56%)" }} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-bold text-foreground">{t("me.open_shop")}</p>
               <p className="text-[10px] text-muted-foreground">{t("me.open_shop_sub")}</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-accent/40 shrink-0" />
+            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(38 65% 56% / 0.4)" }} />
           </motion.button>
         )}
 
@@ -359,7 +359,7 @@ export default function MeCommandCenter() {
               >
                 <div
                   className="app-list-row-icon shrink-0"
-                  style={{ background: item.accent.startsWith("hsl(var(") ? "hsl(var(--primary) / 0.06)" : item.accent.replace(")", " / 0.06)") }}
+                  style={{ background: item.accent.startsWith("hsl(var(") ? "hsl(38 65% 56% / 0.06)" : item.accent.replace(")", " / 0.06)") }}
                 >
                   <item.icon style={{ color: item.accent }} />
                 </div>
@@ -368,7 +368,7 @@ export default function MeCommandCenter() {
                   <span className="text-[10px] text-muted-foreground/60 leading-tight truncate block">{item.subtitle}</span>
                 </div>
                 {item.badge != null && Number(item.badge) > 0 && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0" style={{ background: "hsl(var(--primary) / 0.06)", color: "hsl(var(--primary))" }}>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0" style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)" }}>
                     {item.badge}
                   </span>
                 )}

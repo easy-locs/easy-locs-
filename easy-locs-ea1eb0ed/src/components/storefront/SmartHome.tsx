@@ -192,7 +192,7 @@ function SmartQuickActions() {
           to={to}
           className={`flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br ${color} border border-border/10 backdrop-blur-xl px-2 active:scale-[0.95] transition-all min-w-0`}
         >
-          <Icon className="h-4 w-4 text-primary shrink-0" />
+          <Icon className="h-4 w-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
           <span className="text-[11px] font-bold text-foreground truncate min-w-0">{t(labelKey)}</span>
         </Link>
       ))}
@@ -248,7 +248,7 @@ const AISmartInsights = memo(() => {
             transition={{ duration: 0.3 }}
             className="flex items-center gap-2.5 relative z-10"
           >
-            <div className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
+            <div className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
               <Icon className={`h-3.5 w-3.5 ${insight.color}`} />
             </div>
             <p className="text-[11px] font-medium text-foreground/80 leading-snug flex-1">{insight.text}</p>
@@ -333,7 +333,8 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
     >
       <Link
         to={cat.route}
-        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-border/10 bg-muted/20 p-2.5 w-[72px] min-h-[72px] transition-all duration-150 active:scale-[0.95]"
+        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl p-2.5 w-[72px] min-h-[72px] transition-all duration-150 active:scale-[0.95]"
+        style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)", boxShadow: "0 1px 4px hsl(var(--foreground) / 0.03)" }}
       >
         <div className="flex items-center justify-center mb-1 shrink-0">
           {imgSrc ? (
@@ -363,7 +364,7 @@ function AdapterSection({ title, icon, cardStatus, shops, seeAllTo }: {
         <h3 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
           <span>{icon}</span> {title}
         </h3>
-        <Link to={seeAllTo} className="text-[11px] font-medium text-primary flex items-center gap-0.5 active:opacity-70 shrink-0">
+        <Link to={seeAllTo} className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70 shrink-0" style={{ color: "hsl(38 65% 56%)" }}>
           {t("home.see_all")} <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
@@ -399,9 +400,9 @@ const FeaturedHotelsCarousel = memo(() => {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
       <div className="flex items-center justify-between mb-2 px-1">
         <h3 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
-          <Building2 className="h-4 w-4 text-primary" /> {t("home.featured_hotels")}
+          <Building2 className="h-4 w-4" style={{ color: "hsl(38 65% 56%)" }} /> {t("home.featured_hotels")}
         </h3>
-        <Link to="/stay" className="text-[11px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
+        <Link to="/stay" className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70" style={{ color: "hsl(38 65% 56%)" }}>
           {t("home.see_all")} <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
@@ -414,15 +415,15 @@ const FeaturedHotelsCarousel = memo(() => {
           >
             <div className="relative h-24 w-full">
               <img src={hotel.banner_url} alt={hotel.name} className="w-full h-full object-cover" loading="lazy" />
-              <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}>
-                <Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" /> {hotel.rating}
+              <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "hsl(220 40% 18% / 0.7)", backdropFilter: "blur(4px)" }}>
+                <Star className="h-2.5 w-2.5" style={{ fill: "hsl(38 65% 56%)", color: "hsl(38 65% 56%)" }} /> {hotel.rating}
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-12" style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.6))" }} />
               <p className="absolute bottom-1.5 left-2 right-2 text-[10px] font-bold text-white leading-tight line-clamp-1">{hotel.name}</p>
             </div>
             <div className="px-2.5 py-2">
               <p className="text-[11px] text-muted-foreground line-clamp-1">{hotel.region} · {hotel.stars}★</p>
-              <p className="text-xs font-bold text-foreground mt-0.5 truncate">{t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}</p>
+              <p className="text-xs font-bold mt-0.5 truncate" style={{ color: "hsl(38 65% 56%)" }}>{t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}</p>
             </div>
           </Link>
         ))}
@@ -545,7 +546,8 @@ export default function SmartHome() {
             </h3>
             <Link
               to="/browse"
-              className="text-[11px] font-medium text-primary flex items-center gap-0.5 active:opacity-70"
+              className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70"
+              style={{ color: "hsl(38 65% 56%)" }}
             >
               {t("dashboard.see_all") || "See all"}
             </Link>
