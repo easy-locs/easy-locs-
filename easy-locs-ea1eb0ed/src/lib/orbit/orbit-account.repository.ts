@@ -15,19 +15,46 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
   return publicUrl;
 }
 
+export interface ProfileData {
+  displayName: string;
+  avatarUrl: string;
+  bio?: string;
+  phone?: string;
+  city?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 /** Save profile (auth metadata + profiles + orbit_profiles_v2 for full propagation) */
-export async function saveProfile(userId: string, displayName: string, avatarUrl: string): Promise<void> {
-  const { error } = await supabase.auth.updateUser({
-    data: { full_name: displayName, display_name: displayName, avatar_url: avatarUrl },
+export async function saveProfile(userId: string, displayNameOrData: string | ProfileData, avatarUrl?: string): Promise<void> {
+  const data: ProfileData = typeof displayNameOrData === "string"
+    ? { displayName: displayNameOrData, avatarUrl: avatarUrl ?? "" }
+    : displayNameOrData;
+
+  const { error: authError } = await supabase.auth.updateUser({
+    data: {
+      full_name: data.displayName,
+      display_name: data.displayName,
+      avatar_url: data.avatarUrl,
+      ...(data.firstName !== undefined && { first_name: data.firstName }),
+      ...(data.lastName !== undefined && { last_name: data.lastName }),
+      ...(data.bio !== undefined && { bio: data.bio }),
+      ...(data.phone !== undefined && { phone: data.phone }),
+      ...(data.city !== undefined && { city: data.city }),
+    },
   });
-  if (error) throw error;
-  // Propagate to profiles table
-  await supabase.from("profiles").update({ name: displayName }).eq("id", userId);
-  // Propagate to orbit_profiles_v2 for canonical identity resolution across all surfaces
-  await supabase.from("orbit_profiles_v2" as any).update({
-    display_name: displayName,
-    avatar_url: avatarUrl,
-  } as any).eq("user_id", userId);
+  if (authError) throw authError;
+
+  const profileUpdate: Record<string, any> = { name: data.displayName };
+  if (data.firstName !== undefined) profileUpdate.first_name = data.firstName;
+  if (data.lastName !== undefined) profileUpdate.last_name = data.lastName;
+  if (data.phone !== undefined) profileUpdate.phone = data.phone;
+  const { error: profileError } = await supabase.from("profiles").update(profileUpdate).eq("id", userId);
+  if (profileError) console.warn("[saveProfile] profiles update:", profileError.message);
+
+  const orbitUpdate: Record<string, any> = { display_name: data.displayName, avatar_url: data.avatarUrl };
+  const { error: orbitError } = await supabase.from("orbit_profiles_v2" as any).update(orbitUpdate as any).eq("user_id", userId);
+  if (orbitError) console.warn("[saveProfile] orbit_profiles_v2 update:", orbitError.message);
 }
 
 /** Archive all user conversations */
