@@ -4,7 +4,7 @@
  * V2: weighted scoring, seasonal awareness, result caching, richer guidance.
  */
 
-export type RadarLayer = "food" | "stay" | "services" | "utility" | "mobility" | "nightlife" | "healthcare" | "shops";
+export type RadarLayer = "food" | "stay" | "services" | "utility" | "mobility" | "nightlife" | "healthcare" | "shops" | "property";
 export type VibeType = "calm" | "active" | "nightlife" | "business" | "family" | "luxury";
 export type TimeSlot = "morning" | "lunch" | "afternoon" | "evening" | "night" | "late_night";
 
@@ -62,6 +62,7 @@ const CATEGORY_SETS: Record<RadarLayer, string[]> = {
   nightlife: ["bar", "club", "lounge", "nightclub", "pub", "karaoke", "rooftop", "cocktail", "brewery"],
   healthcare: ["hospital", "clinic", "doctor", "dentist", "healthcare", "medical", "emergency", "optician", "physiotherapy"],
   shops: ["shop", "store", "boutique", "mall", "market", "retail", "clothing", "electronics", "jewelry", "fashion"],
+  property: ["property", "real_estate", "apartment", "villa", "penthouse", "townhouse", "duplex", "studio", "office", "warehouse", "land", "commercial", "residential"],
 };
 
 let _slotCache: { h: number; slot: TimeSlot } | null = null;

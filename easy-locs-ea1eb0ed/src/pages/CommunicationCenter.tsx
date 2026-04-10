@@ -150,7 +150,7 @@ export const CommunicationCenter = () => {
   const handleSelectThread = useCallback((thread: ConversationThread) => {
     if (!thread?.id) return;
     setSelectedThread(thread);
-    if (!isMobileRef.current && ["booking", "property", "listing", "deal"].includes(thread.conversationType)) {
+    if (!isMobileRef.current && ["booking", "property", "property_lead", "property_viewing", "property_manager", "property_landlord", "property_maintenance", "listing", "deal"].includes(thread.conversationType)) {
       setShowContext(true);
     }
   }, []);

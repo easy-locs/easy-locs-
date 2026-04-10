@@ -5,20 +5,25 @@
 
 /** All conversation categories in the platform */
 export type ConversationType =
-  | "direct"     // User ↔ User (WhatsApp-like)
-  | "business"   // Client ↔ Service provider
-  | "listing"    // User ↔ Listing owner (marketplace)
-  | "booking"    // Booking-linked conversation
-  | "deal"       // Deal room negotiation
-  | "property"   // Tenant ↔ Landlord
-  | "team"       // Internal team chat
-  | "order"      // Marketplace order lifecycle
-  | "rent_call"  // Rent payment lifecycle
-  | "payment"    // Generic payment / transfer
-  | "travel"     // Travel booking lifecycle
-  | "service"    // Service booking lifecycle
-  | "delivery"   // Delivery mission lifecycle
-  | "support";   // Support ticket
+  | "direct"              // User ↔ User (WhatsApp-like)
+  | "business"            // Client ↔ Service provider
+  | "listing"             // User ↔ Listing owner (marketplace)
+  | "booking"             // Booking-linked conversation
+  | "deal"                // Deal room negotiation
+  | "property"            // Tenant ↔ Landlord
+  | "property_lead"       // Agent ↔ Lead (buyer/renter inquiry)
+  | "property_viewing"    // Agent ↔ Lead (viewing coordination)
+  | "property_manager"    // Property Manager ↔ Tenant
+  | "property_landlord"   // Property Manager ↔ Landlord
+  | "property_maintenance"// Maintenance ↔ Provider
+  | "team"                // Internal team chat
+  | "order"               // Marketplace order lifecycle
+  | "rent_call"           // Rent payment lifecycle
+  | "payment"             // Generic payment / transfer
+  | "travel"              // Travel booking lifecycle
+  | "service"             // Service booking lifecycle
+  | "delivery"            // Delivery mission lifecycle
+  | "support";            // Support ticket
 
 /** Source module for badge display */
 export type SourceModule =
@@ -181,7 +186,12 @@ export const CONV_TYPE_CONFIG: Record<ConversationType, { emoji: string; label: 
   listing:   { emoji: "🏷️", label: "Listing",   color: "text-emerald-600",  border: "border-emerald-500/20",  bg: "bg-emerald-500/10",  text: "text-emerald-600" },
   booking:   { emoji: "📅", label: "Booking",   color: "text-sky-600",      border: "border-sky-500/20",      bg: "bg-sky-500/10",      text: "text-sky-600" },
   deal:      { emoji: "🤝", label: "Deal",      color: "text-amber-600",    border: "border-amber-500/20",    bg: "bg-amber-500/10",    text: "text-amber-600" },
-  property:  { emoji: "🏠", label: "Property",  color: "text-primary",      border: "border-primary/20",      bg: "bg-primary/10",      text: "text-primary" },
+  property:              { emoji: "🏠", label: "Property",     color: "text-primary",      border: "border-primary/20",      bg: "bg-primary/10",      text: "text-primary" },
+  property_lead:         { emoji: "🎯", label: "Lead",         color: "text-primary",      border: "border-primary/20",      bg: "bg-primary/10",      text: "text-primary" },
+  property_viewing:      { emoji: "👁️", label: "Viewing",      color: "text-sky-600",      border: "border-sky-500/20",      bg: "bg-sky-500/10",      text: "text-sky-600" },
+  property_manager:      { emoji: "🔑", label: "Manager",      color: "text-indigo-600",   border: "border-indigo-500/20",   bg: "bg-indigo-500/10",   text: "text-indigo-600" },
+  property_landlord:     { emoji: "🏛️", label: "Landlord",     color: "text-violet-600",   border: "border-violet-500/20",   bg: "bg-violet-500/10",   text: "text-violet-600" },
+  property_maintenance:  { emoji: "🔧", label: "Maintenance",  color: "text-amber-600",    border: "border-amber-500/20",    bg: "bg-amber-500/10",    text: "text-amber-600" },
   team:      { emoji: "👥", label: "Team",      color: "text-indigo-600",   border: "border-indigo-500/20",   bg: "bg-indigo-500/10",   text: "text-indigo-600" },
   order:     { emoji: "📦", label: "Order",     color: "text-violet-600",   border: "border-violet-500/20",   bg: "bg-violet-500/10",   text: "text-violet-600" },
   rent_call: { emoji: "🏠", label: "Rent",      color: "text-primary",      border: "border-primary/20",      bg: "bg-primary/10",      text: "text-primary" },
