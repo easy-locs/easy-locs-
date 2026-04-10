@@ -86,7 +86,7 @@ export default function CustomerSpendingInsightsPage() {
               <PieChart className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
             </div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Total Spending</p>
-            <p className="text-3xl font-black text-foreground">
+            <p className="text-3xl font-extrabold text-foreground tabular-nums">
               {formatMoneyByCountry(data.totalSpent, null, data.currency)}
             </p>
             {data.trend !== 0 && (

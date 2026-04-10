@@ -41,7 +41,7 @@ export default function OrdersPage() {
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--muted))" }}>
           <ArrowLeft className="w-4.5 h-4.5" />
         </button>
-        <h1 className="text-lg font-black tracking-tight">My Orders</h1>
+        <h1 className="text-lg font-bold tracking-tight">My Orders</h1>
       </div>
 
       <div className="flex-1 px-4 pb-24" style={{ minHeight: 200 }}>

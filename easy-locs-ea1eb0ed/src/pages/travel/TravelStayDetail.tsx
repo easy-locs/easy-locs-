@@ -22,7 +22,7 @@ export default function TravelStayDetail() {
 
         {/* Title */}
         <div>
-          <h1 className="text-lg font-black text-foreground">Charming apartment in city center</h1>
+          <h1 className="text-lg font-bold text-foreground">Charming apartment in city center</h1>
           <div className="flex items-center gap-2 mt-1">
             <Star className="h-3 w-3 fill-warning text-warning" />
             <span className="text-xs text-muted-foreground">4.8 · 54 reviews</span>
@@ -70,13 +70,13 @@ export default function TravelStayDetail() {
 
         {/* Pricing */}
         <div className="p-3 rounded-xl border border-border/15 bg-card/50 space-y-1.5">
-          <div className="flex justify-between text-xs"><span className="text-muted-foreground">$75 × 5 nights</span><span className="text-foreground font-semibold">$375</span></div>
-          <div className="flex justify-between text-xs"><span className="text-muted-foreground">Cleaning fee</span><span className="text-foreground font-semibold">$40</span></div>
-          <div className="flex justify-between text-xs"><span className="text-muted-foreground">Service fee</span><span className="text-foreground font-semibold">$25</span></div>
-          <div className="flex justify-between text-xs"><span className="text-muted-foreground">Taxes</span><span className="text-foreground font-semibold">$35</span></div>
+          <div className="flex justify-between text-xs"><span className="text-muted-foreground">$75 × 5 nights</span><span className="text-foreground font-semibold tabular-nums">$375</span></div>
+          <div className="flex justify-between text-xs"><span className="text-muted-foreground">Cleaning fee</span><span className="text-foreground font-semibold tabular-nums">$40</span></div>
+          <div className="flex justify-between text-xs"><span className="text-muted-foreground">Service fee</span><span className="text-foreground font-semibold tabular-nums">$25</span></div>
+          <div className="flex justify-between text-xs"><span className="text-muted-foreground">Taxes</span><span className="text-foreground font-semibold tabular-nums">$35</span></div>
           <div className="border-t border-border/20 pt-1.5 flex justify-between text-sm">
             <span className="font-bold text-foreground">Total</span>
-            <span className="font-black text-foreground">$475</span>
+            <span className="font-extrabold text-foreground tabular-nums">$475</span>
           </div>
         </div>
 
@@ -116,7 +116,7 @@ export default function TravelStayDetail() {
       <div className="fixed bottom-20 left-0 right-0 px-4 pb-2 z-40">
         <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border/20 shadow-lg backdrop-blur-sm">
           <div>
-            <p className="text-lg font-black text-foreground">$75</p>
+            <p className="text-lg font-extrabold text-foreground tabular-nums">$75</p>
             <p className="text-[10px] text-muted-foreground">/night · $475 total</p>
           </div>
           <Button size="sm" className="font-bold">Reserve</Button>

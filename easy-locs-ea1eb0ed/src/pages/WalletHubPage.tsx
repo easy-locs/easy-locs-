@@ -231,7 +231,7 @@ export default function WalletHubPage() {
                     </div>
                   </div>
                   <div className="flex items-end gap-3 mb-1">
-                    <p className="text-[2.5rem] font-black tracking-tight leading-none" style={{ color: "hsl(0 0% 100%)" }}>
+                    <p className="text-[2.5rem] font-extrabold tracking-tight leading-none tabular-nums" style={{ color: "hsl(0 0% 100%)" }}>
                       {showBalance ? <AnimatedCounter value={totalBalance} decimals={2} duration={1000} /> : "••••••"}
                     </p>
                   </div>
@@ -383,7 +383,7 @@ export default function WalletHubPage() {
                               {t("wallet.active")} · {accCurrency}
                             </p>
                           </div>
-                          <span className="text-sm font-black text-foreground tabular-nums whitespace-nowrap">{formattedBalance}</span>
+                          <span className="text-sm font-bold text-foreground tabular-nums whitespace-nowrap">{formattedBalance}</span>
                         </div>
                       );
                     })}
@@ -494,7 +494,7 @@ export default function WalletHubPage() {
         transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 20 }}
       >
         <Zap className="w-5 h-5" />
-        <span className="text-sm font-black">{tSafe(t, "wallet.quickPay", "Quick Pay")}</span>
+        <span className="text-sm font-bold">{tSafe(t, "wallet.quickPay", "Quick Pay")}</span>
       </motion.button>
     </div>
   );

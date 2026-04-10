@@ -169,7 +169,7 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
       {/* Level card */}
       <div className="rounded-xl p-4 text-center"
         style={{ background: "linear-gradient(135deg, hsl(var(--warning) / 0.08), hsl(var(--hud-cyan) / 0.06))", border: "1px solid hsl(var(--warning) / 0.12)" }}>
-        <p className="text-2xl font-black" style={{ color: "hsl(var(--warning))" }}>{data.levelName}</p>
+        <p className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>{data.levelName}</p>
         <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
           {data.xp} XP • Prochain niveau: {data.nextLevelXp} XP
         </p>

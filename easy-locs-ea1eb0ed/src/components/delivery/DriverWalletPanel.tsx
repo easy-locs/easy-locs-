@@ -155,7 +155,7 @@ export default function DriverWalletPanel({ className }: Props) {
         style={{ background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.1), hsl(var(--success) / 0.06))", border: "1px solid hsl(var(--hud-cyan) / 0.15)" }}>
         <Wallet className="h-5 w-5 mx-auto mb-1" style={{ color: "hsl(var(--hud-cyan))" }} />
         <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Solde disponible</p>
-        <p className="text-3xl font-black mt-1" style={{ color: "hsl(var(--hud-cyan))" }}>
+        <p className="text-3xl font-extrabold tabular-nums mt-1" style={{ color: "hsl(var(--hud-cyan))" }}>
           {balance.available.toFixed(2)} <span className="text-sm">{balance.currency}</span>
         </p>
         <div className="flex justify-center gap-4 mt-2">

@@ -114,7 +114,7 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
           {zones.filter(z => z.active).map(z => (
             <div key={z.id} className="flex-1 text-center py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))", border: `1px solid ${z.color}30` }}>
               <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{z.name}</p>
-              <p className="text-xs font-black" style={{ color: z.color }}>{simulatePrice(z).toFixed(2)}€</p>
+              <p className="text-xs font-extrabold tabular-nums" style={{ color: z.color }}>{simulatePrice(z).toFixed(2)}€</p>
             </div>
           ))}
         </div>
@@ -163,7 +163,7 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
                       </div>
                       <div className="text-center py-2 rounded-lg" style={{ background: `${z.color}10` }}>
                         <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Prix simulé ({simDistance}km, {simWeight}kg)</p>
-                        <p className="text-lg font-black" style={{ color: z.color }}>{simulatePrice(z).toFixed(2)}€</p>
+                        <p className="text-lg font-extrabold tabular-nums" style={{ color: z.color }}>{simulatePrice(z).toFixed(2)}€</p>
                       </div>
                     </div>
                   </motion.div>

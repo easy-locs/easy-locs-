@@ -116,7 +116,7 @@ export default function PremiumMerchantCard({
               </span>
             )}
             <div className="absolute bottom-3 left-3 right-3">
-              <h3 className="text-lg font-black text-white line-clamp-2 leading-tight break-words drop-shadow-md">{name}</h3>
+              <h3 className="text-lg font-bold text-white line-clamp-2 leading-tight break-words drop-shadow-md">{name}</h3>
               {category && <p className="text-xs text-white/80 line-clamp-2 leading-snug break-words mt-1">{category}</p>}
             </div>
           </div>

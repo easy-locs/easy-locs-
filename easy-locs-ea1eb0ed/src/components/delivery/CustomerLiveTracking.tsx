@@ -100,7 +100,7 @@ export default function CustomerLiveTracking({ jobId, className }: Props) {
       <div className="rounded-xl p-4 text-center"
         style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.03))", border: "1px solid hsl(var(--primary) / 0.15)" }}>
         <p className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>Arrivée estimée</p>
-        <motion.p className="text-3xl font-black mt-1" style={{ color: "hsl(var(--primary))" }}
+        <motion.p className="text-3xl font-extrabold tabular-nums mt-1" style={{ color: "hsl(var(--primary))" }}
           key={eta} initial={{ scale: 1.1 }} animate={{ scale: 1 }}>
           {eta} <span className="text-sm font-semibold">min</span>
         </motion.p>

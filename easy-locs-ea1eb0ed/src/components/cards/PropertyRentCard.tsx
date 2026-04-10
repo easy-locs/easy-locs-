@@ -120,7 +120,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
 
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <div>
-            <span className="text-lg font-black text-white drop-shadow-md">
+            <span className="text-lg font-extrabold text-white drop-shadow-md tabular-nums">
               {currency} {annualRent.toLocaleString()}
             </span>
             <span className="text-xs text-white/70 ml-1">/year</span>

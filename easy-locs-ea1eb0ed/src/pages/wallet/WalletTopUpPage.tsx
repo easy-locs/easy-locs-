@@ -113,7 +113,7 @@ export default function WalletTopUpPage() {
                 min="1"
                 max="50000"
                 placeholder="0"
-                className="text-4xl font-black text-foreground text-center bg-transparent outline-none w-[160px] tabular-nums"
+                className="text-4xl font-extrabold text-foreground text-center bg-transparent outline-none w-[160px] tabular-nums"
                 style={{ WebkitAppearance: "none", MozAppearance: "textfield" } as any}
               />
             </div>

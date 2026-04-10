@@ -24,11 +24,11 @@ function BrandedQrLogo({ size = 36 }: { size?: number }) {
         className="rounded-lg bg-white flex items-center justify-center shadow-sm whitespace-nowrap"
         style={{ height: size + 6, paddingLeft: 6, paddingRight: 6 }}
       >
-        <span className="font-black tracking-tight leading-none" style={{ fontSize: Math.max(8, size * 0.28), color: "hsl(220 20% 15%)" }}>
+        <span className="font-bold tracking-tight leading-none" style={{ fontSize: Math.max(8, size * 0.28), color: "hsl(220 20% 15%)" }}>
           Easy
         </span>
         <span
-          className="font-black tracking-tight leading-none"
+          className="font-bold tracking-tight leading-none"
           style={{
             fontSize: Math.max(8, size * 0.28),
             background: "linear-gradient(135deg, hsl(45 90% 48%), hsl(35 90% 42%))",

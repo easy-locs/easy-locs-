@@ -77,7 +77,7 @@ export default function AdminUxLiveTestPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">UX Score</p>
-              <p className="text-4xl font-black" style={{ color: scoreColor }}>
+              <p className="text-4xl font-extrabold tabular-nums" style={{ color: scoreColor }}>
                 {report?.uxScore ?? "—"}%
               </p>
               <p className="text-[10px] text-muted-foreground mt-1">

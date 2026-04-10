@@ -116,14 +116,14 @@ export default function HotelCheckout() {
         <div className="px-4 py-8 space-y-6">
           <div className="flex flex-col items-center text-center">
             <CheckCircle2 className="h-16 w-16 text-success mb-4" />
-            <h1 className="text-xl font-black text-foreground">Booking Confirmed!</h1>
+            <h1 className="text-xl font-bold text-foreground">Booking Confirmed!</h1>
             <p className="text-sm text-muted-foreground mt-1">Your reservation is secured</p>
           </div>
 
           <div className="rounded-2xl border border-border/15 bg-card/80 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Reference</span>
-              <span className="text-sm font-black text-primary">{bookingResult.booking_reference}</span>
+              <span className="text-sm font-bold text-primary">{bookingResult.booking_reference}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Hotel</span>
@@ -146,7 +146,7 @@ export default function HotelCheckout() {
             <div className="border-t border-border/10 pt-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-foreground">Total</span>
-                <span className="text-lg font-black text-foreground">
+                <span className="text-lg font-extrabold text-foreground tabular-nums">
                   {bookingResult.currency} {bookingResult.total_price.toFixed(2)}
                 </span>
               </div>
@@ -257,23 +257,23 @@ export default function HotelCheckout() {
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">{nights} night{nights > 1 ? "s" : ""} × AED {priceBreakdown.ppn}/night</span>
-                <span className="text-foreground">AED {priceBreakdown.totalBase.toFixed(2)}</span>
+                <span className="text-foreground tabular-nums">AED {priceBreakdown.totalBase.toFixed(2)}</span>
               </div>
               {priceBreakdown.totalTaxes > 0 && (
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Taxes</span>
-                  <span className="text-foreground">AED {priceBreakdown.totalTaxes.toFixed(2)}</span>
+                  <span className="text-foreground tabular-nums">AED {priceBreakdown.totalTaxes.toFixed(2)}</span>
                 </div>
               )}
               {priceBreakdown.totalFees > 0 && (
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Fees</span>
-                  <span className="text-foreground">AED {priceBreakdown.totalFees.toFixed(2)}</span>
+                  <span className="text-foreground tabular-nums">AED {priceBreakdown.totalFees.toFixed(2)}</span>
                 </div>
               )}
               <div className="border-t border-border/10 pt-2 flex justify-between">
                 <span className="text-sm font-bold text-foreground">Total</span>
-                <span className="text-lg font-black text-foreground">
+                <span className="text-lg font-extrabold text-foreground tabular-nums">
                   AED {priceBreakdown.totalFinal.toFixed(2)}
                 </span>
               </div>

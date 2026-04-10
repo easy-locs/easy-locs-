@@ -102,10 +102,10 @@ export default function CustomerWalletLoyalty() {
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Statut fidélité</p>
-                  <p className="text-lg font-black" style={{ color: currentTier.color }}>{currentTier.emoji} {currentTier.name}</p>
+                  <p className="text-lg font-extrabold tabular-nums" style={{ color: currentTier.color }}>{currentTier.emoji} {currentTier.name}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-black" style={{ color: "hsl(var(--warning))" }}>{myPoints.toLocaleString()}</p>
+                  <p className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>{myPoints.toLocaleString()}</p>
                   <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>points</p>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default function CustomerWalletLoyalty() {
           <motion.div key="rewards" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
             <div className="text-center py-2 rounded-xl" style={{ background: "hsl(var(--warning) / 0.06)", border: "1px solid hsl(var(--warning) / 0.12)" }}>
               <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Points disponibles</p>
-              <p className="text-xl font-black" style={{ color: "hsl(var(--warning))" }}>{myPoints.toLocaleString()}</p>
+              <p className="text-xl font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>{myPoints.toLocaleString()}</p>
             </div>
             {REWARDS.map(r => {
               const canAfford = myPoints >= r.cost;

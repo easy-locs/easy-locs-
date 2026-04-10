@@ -210,7 +210,7 @@ export default function HudConversationList({
                   <Archive className="h-5 w-5" style={{ color: "hsl(var(--muted-foreground))" }} />
                 </div>
                 <div className="flex-1 text-left">
-                  <span className="text-[15px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                  <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                     {t("orbit.archived")}
                   </span>
                 </div>

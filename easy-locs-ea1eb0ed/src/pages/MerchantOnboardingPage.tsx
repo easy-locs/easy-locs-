@@ -383,7 +383,7 @@ export default function MerchantOnboardingPage() {
             <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-3" style={{ background: "hsla(0,0%,100%,0.15)" }}>
               <Rocket className="h-8 w-8 text-white" />
             </div>
-            <h2 className="text-xl font-black text-white">{t("mob.become_seller" as any)}</h2>
+            <h2 className="text-xl font-bold text-white">{t("mob.become_seller" as any)}</h2>
             <p className="text-sm text-white/80 mt-1">{t("mob.join_sellers" as any)}</p>
           </div>
           <CardContent className="pt-5 pb-6 space-y-4">

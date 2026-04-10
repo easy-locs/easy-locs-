@@ -158,7 +158,7 @@ export default function TravelStayHub() {
               <ArrowLeft className="h-4 w-4 text-white" />
             </button>
 
-            <h1 className="text-[28px] font-black text-white tracking-tight leading-tight">
+            <h1 className="text-[28px] font-bold text-white tracking-tight leading-tight">
               {tc("travel.hero_title")}
             </h1>
             <p className="text-[13px] text-white/55 mt-1 font-medium">
@@ -292,7 +292,7 @@ export default function TravelStayHub() {
                 </button>
               </div>
               <Button
-                className="h-12 px-6 rounded-xl font-black gap-2 text-[13px] shadow-lg active:scale-95 transition-transform"
+                className="h-12 px-6 rounded-xl font-bold gap-2 text-[13px] shadow-lg active:scale-95 transition-transform"
                 style={{
                   background: "linear-gradient(135deg, hsl(38 70% 52%), hsl(28 75% 48%))",
                   color: "hsl(220 40% 10%)",
@@ -396,7 +396,7 @@ export default function TravelStayHub() {
 
         {/* Results header */}
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[13px] font-black text-foreground">
+          <p className="text-[13px] font-bold text-foreground">
             {filtered.length} {activeTab === "hotel" ? "hotels" : activeTab === "resort" ? "resorts" : activeTab === "short_stay" ? "stays" : "serviced apartments"}
           </p>
           <button
@@ -468,7 +468,7 @@ export default function TravelStayHub() {
               <span className="text-4xl">🏨</span>
             </div>
             <div className="text-center">
-              <p className="text-[14px] font-black text-foreground">No stays found</p>
+              <p className="text-[14px] font-bold text-foreground">No stays found</p>
               <p className="text-[12px] text-muted-foreground mt-1 max-w-[240px]">
                 Try a different destination or adjust your dates
               </p>
@@ -478,7 +478,7 @@ export default function TravelStayHub() {
 
         {/* Popular Destinations */}
         <div className="mt-8 mb-6">
-          <h2 className="text-[14px] font-black text-foreground mb-3 flex items-center gap-2">
+          <h2 className="text-[14px] font-bold text-foreground mb-3 flex items-center gap-2">
             <Sparkles className="h-4 w-4" style={{ color: "hsl(38 70% 52%)" }} />
             Popular in UAE
           </h2>
@@ -505,7 +505,7 @@ export default function TravelStayHub() {
                 }} />
                 <div className="absolute bottom-2 left-2.5 flex items-center gap-1.5">
                   <span className="text-lg">{dest.emoji}</span>
-                  <span className="text-[12px] font-black text-white drop-shadow-md">{dest.name}</span>
+                  <span className="text-[12px] font-bold text-white drop-shadow-md">{dest.name}</span>
                 </div>
               </motion.button>
             ))}
@@ -514,7 +514,7 @@ export default function TravelStayHub() {
 
         {/* Why book section */}
         <div className="mt-4 mb-8 p-4 rounded-2xl" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}>
-          <h3 className="text-[13px] font-black text-foreground mb-3">Why book with us?</h3>
+          <h3 className="text-[13px] font-bold text-foreground mb-3">Why book with us?</h3>
           <div className="space-y-2.5">
             {[
               { icon: "🔒", title: "Best price guarantee", desc: "We match or beat any price" },

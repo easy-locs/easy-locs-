@@ -322,7 +322,7 @@ export default function OrbitStatusSection() {
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 pt-4 pb-1 shrink-0">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
+            <h2 className="text-base font-semibold" style={{ color: "hsl(var(--foreground))" }}>
               {t("orbit.status.section_title") || "Status"}
             </h2>
             <div className="flex gap-1">
@@ -437,7 +437,7 @@ export default function OrbitStatusSection() {
 
         <div className="pb-6">
           <div className="flex items-center justify-between px-4 pb-3 pt-2">
-            <h2 className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
+            <h2 className="text-base font-semibold" style={{ color: "hsl(var(--foreground))" }}>
               {t("orbit.status.channels") || "Channels"}
             </h2>
             <button

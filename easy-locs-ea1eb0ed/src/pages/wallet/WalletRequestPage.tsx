@@ -274,7 +274,7 @@ export default function WalletRequestPage() {
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
                 min="1"
-                className="text-4xl font-black text-foreground text-center bg-transparent outline-none w-[160px] tabular-nums"
+                className="text-4xl font-extrabold text-foreground text-center bg-transparent outline-none w-[160px] tabular-nums"
                 style={{ WebkitAppearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
               />
             </div>

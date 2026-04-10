@@ -99,7 +99,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-hidden">
             <span
-              className={`text-[15px] leading-tight min-w-0 block truncate ${hasUnread ? "font-bold" : "font-medium"}`}
+              className={`text-sm leading-tight min-w-0 block truncate ${hasUnread ? "font-bold" : "font-medium"}`}
               style={{ color: "hsl(var(--foreground))" }}
             >
               {thread.name}

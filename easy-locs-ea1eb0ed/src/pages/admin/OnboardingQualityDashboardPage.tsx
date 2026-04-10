@@ -15,7 +15,7 @@ function StatCard({ title, value, icon: Icon, accent }: { title: string; value: 
         <Icon className={cn("w-4 h-4", accent || "text-muted-foreground")} />
         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{title}</span>
       </div>
-      <p className="text-xl font-black text-foreground">{value}</p>
+      <p className="text-xl font-extrabold text-foreground tabular-nums">{value}</p>
     </div>
   );
 }

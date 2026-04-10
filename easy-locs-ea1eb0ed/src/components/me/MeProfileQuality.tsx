@@ -70,7 +70,7 @@ function MeProfileQuality(props: Props) {
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-lg font-black text-foreground">{score}%</span>
+            <span className="text-lg font-extrabold text-foreground tabular-nums">{score}%</span>
           </div>
         </div>
 

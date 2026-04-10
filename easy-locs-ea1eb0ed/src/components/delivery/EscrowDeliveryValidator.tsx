@@ -190,7 +190,7 @@ export default function EscrowDeliveryValidator({
             {statusCfg.label}
           </p>
           {escrowAmount != null && escrowAmount > 0 && (
-            <p className="text-lg font-black text-foreground">
+            <p className="text-lg font-extrabold text-foreground tabular-nums">
               {escrowAmount.toFixed(2)} {escrowCurrency}
             </p>
           )}

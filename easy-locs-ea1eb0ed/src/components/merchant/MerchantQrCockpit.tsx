@@ -227,7 +227,7 @@ export default function MerchantQrCockpit({
           <div className="text-center space-y-1">
             <p className="font-bold text-foreground">{merchantName}</p>
             {generatedQr.amount ? (
-              <p className="text-xl font-black text-foreground">
+              <p className="text-xl font-extrabold text-foreground tabular-nums">
                 {formatMoney(generatedQr.amount, currency)}
               </p>
             ) : (

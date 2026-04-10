@@ -93,7 +93,7 @@ export default function DeliveryGamification() {
             {/* XP Card */}
             <div className="rounded-xl p-4 text-center" style={{ background: "linear-gradient(135deg, hsl(var(--warning) / 0.1), hsl(var(--hud-surface)))", border: "1px solid hsl(var(--warning) / 0.15)" }}>
               <div className="text-3xl mb-1">⭐</div>
-              <p className="text-lg font-black" style={{ color: "hsl(var(--warning))" }}>Niveau {myLevel}</p>
+              <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>Niveau {myLevel}</p>
               <p className="text-[11px]" style={{ color: "hsl(var(--hud-text))" }}>{myXP.toLocaleString()} XP</p>
               <div className="w-full rounded-full h-2 mt-2" style={{ background: "hsl(var(--hud-bg))" }}>
                 <motion.div className="h-2 rounded-full" initial={{ width: 0 }} animate={{ width: `${myProgress}%` }}
@@ -127,7 +127,7 @@ export default function DeliveryGamification() {
                 <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Streak Bonus Actif</p>
                 <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>+{Math.min(myStreak * 5, 50)}% XP bonus sur chaque livraison</p>
               </div>
-              <span className="text-sm font-black" style={{ color: "hsl(var(--warning))" }}>x{(1 + Math.min(myStreak * 0.05, 0.5)).toFixed(2)}</span>
+              <span className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>x{(1 + Math.min(myStreak * 0.05, 0.5)).toFixed(2)}</span>
             </div>
 
             {/* Next rewards */}
@@ -192,7 +192,7 @@ export default function DeliveryGamification() {
                     background: isMe ? "hsl(var(--hud-cyan) / 0.06)" : "hsl(var(--hud-surface))",
                     border: `1px solid ${isMe ? "hsl(var(--hud-cyan) / 0.2)" : "hsl(var(--hud-border) / 0.08)"}`,
                   }}>
-                  <span className="text-sm font-black w-6 text-center" style={{
+                  <span className="text-sm font-extrabold tabular-nums w-6 text-center" style={{
                     color: e.rank <= 3 ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.4)",
                   }}>
                     {e.rank <= 3 ? e.badge : `#${e.rank}`}

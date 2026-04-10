@@ -132,7 +132,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             <h3 className="font-bold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-[hsl(38_65%_56%)] transition-colors flex-1 min-w-0">
               {item.title}
             </h3>
-            <span className="text-sm font-black text-foreground whitespace-nowrap shrink-0">{priceLabel}</span>
+            <span className="text-sm font-extrabold text-foreground whitespace-nowrap shrink-0 tabular-nums">{priceLabel}</span>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

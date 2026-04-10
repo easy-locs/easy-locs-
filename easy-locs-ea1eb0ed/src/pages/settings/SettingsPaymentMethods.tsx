@@ -106,7 +106,7 @@ export default function SettingsPaymentMethods() {
               <Wallet className="w-4 h-4 text-primary-foreground/70" />
               <span className="text-xs font-semibold text-primary-foreground/70">{t("wallet.locsBalance")}</span>
             </div>
-            <p className="text-3xl font-black text-primary-foreground tabular-nums">
+            <p className="text-3xl font-extrabold text-primary-foreground tabular-nums">
               {formatCurrency(balance, currency)}
             </p>
             <div className="flex items-center gap-3 mt-3">
@@ -185,7 +185,7 @@ export default function SettingsPaymentMethods() {
                 min="1"
                 max="50000"
                 placeholder="0"
-                className="text-4xl font-black text-foreground text-center bg-transparent outline-none w-[160px] tabular-nums"
+                className="text-4xl font-bold text-foreground text-center bg-transparent outline-none w-[160px] tabular-nums"
                 style={{ WebkitAppearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
               />
             </div>

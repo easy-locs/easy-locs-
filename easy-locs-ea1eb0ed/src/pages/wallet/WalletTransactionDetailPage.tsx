@@ -144,7 +144,7 @@ export default function WalletTransactionDetailPage() {
           <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: `${statusColor}15` }}>
             {isOutgoing ? <ArrowUpRight className="w-6 h-6" style={{ color: statusColor }} /> : <ArrowDownLeft className="w-6 h-6" style={{ color: statusColor }} />}
           </div>
-          <p className="text-3xl font-black" style={{ color: amountColor }}>
+          <p className="text-3xl font-extrabold tabular-nums" style={{ color: amountColor }}>
             {sign}{tx.amount.toFixed(2)} <span className="text-base font-bold text-muted-foreground">{tx.currency}</span>
           </p>
           <p className="text-sm text-muted-foreground mt-1">{tx.title || localizeType(tx.context_type)}</p>

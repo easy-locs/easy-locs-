@@ -309,7 +309,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full" style={{ background: GOLD }} />
-                        <span className="text-[10px] font-black uppercase tracking-[0.15em]" style={{ color: GOLD }}>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: GOLD }}>
                           {getContextLabel(request.contextType)}
                         </span>
                       </div>
@@ -335,7 +335,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                           className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
                           style={{ background: GOLD_DIM }}
                         >
-                          <span className="text-sm font-black" style={{ color: GOLD }}>
+                          <span className="text-sm font-bold" style={{ color: GOLD }}>
                             {getRecipientInitials(request.recipientName)}
                           </span>
                         </div>
@@ -348,7 +348,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                           </p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-xl font-black tabular-nums" style={{ color: "hsl(0 0% 100%)" }}>
+                          <p className="text-xl font-extrabold tabular-nums" style={{ color: "hsl(0 0% 100%)" }}>
                             {formatMoney(request.amount, request.currency || "AED")}
                           </p>
                           <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
@@ -413,7 +413,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                     >
                       <CheckCircle2 className="w-10 h-10" style={{ color: "hsl(152 60% 42%)" }} />
                     </motion.div>
-                    <h2 className="text-xl font-black text-foreground mb-1">Payment sent</h2>
+                    <h2 className="text-xl font-bold text-foreground mb-1">Payment sent</h2>
                     <p className="text-sm text-muted-foreground">
                       {formatMoney(request.amount, request.currency || "AED")} to {request.recipientName || "recipient"}
                     </p>

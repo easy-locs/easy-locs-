@@ -34,7 +34,7 @@ export const ServiceMenuDrawer = memo(function ServiceMenuDrawer({
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl p-0">
         <SheetHeader className="px-4 pt-4 pb-2">
-          <SheetTitle className="text-base font-black" style={{ color: "hsl(220 40% 18%)" }}>
+          <SheetTitle className="text-base font-bold" style={{ color: "hsl(220 40% 18%)" }}>
             {tSafe(t, "menu.explore_services", "Explore Services")}
           </SheetTitle>
         </SheetHeader>

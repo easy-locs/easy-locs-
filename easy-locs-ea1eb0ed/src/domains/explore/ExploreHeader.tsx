@@ -22,7 +22,7 @@ export const ExploreHeader = memo(function ExploreHeader({ greeting, locationLab
             {greeting}
           </motion.p>
           <motion.h1
-            className="text-lg font-black text-foreground leading-tight"
+            className="text-lg font-bold text-foreground leading-tight"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}

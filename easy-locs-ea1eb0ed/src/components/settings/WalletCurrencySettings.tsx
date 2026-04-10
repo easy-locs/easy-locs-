@@ -25,7 +25,7 @@ export default function WalletCurrencySettings() {
             <Globe className="w-5 h-5 text-primary" />
           </div>
           <div className="min-w-0">
-            <p className="text-2xl font-black text-foreground tabular-nums truncate">{activeCurrency}</p>
+            <p className="text-2xl font-extrabold text-foreground tabular-nums truncate">{activeCurrency}</p>
             <p className="text-[11px] text-muted-foreground truncate">{tSafe(t, "wallet.single_currency_desc", "All transactions use this currency")}</p>
           </div>
         </div>
@@ -33,7 +33,7 @@ export default function WalletCurrencySettings() {
 
       <div className="rounded-2xl p-5 space-y-1" style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.15)" }}>
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{tSafe(t, "wallet.current_balance", "Current balance")}</p>
-        <p className="text-xl font-black text-foreground tabular-nums truncate">
+        <p className="text-xl font-extrabold text-foreground tabular-nums truncate">
           {walletLoading ? "..." : `${balance.toFixed(2)} ${activeCurrency}`}
         </p>
       </div>

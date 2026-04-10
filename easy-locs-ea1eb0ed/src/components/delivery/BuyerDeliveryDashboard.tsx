@@ -163,7 +163,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
                     <p className="text-[10px] truncate" style={{ color: `hsl(${cfg.color})` }}>{cfg.label}</p>
                   </div>
                   {order.delivery_fee != null && (
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
+                    <span className="text-[10px] font-bold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>
                       {order.delivery_fee.toFixed(2)}€
                     </span>
                   )}
@@ -189,7 +189,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
                       <div className="rounded-lg px-3 py-2 text-center"
                         style={{ background: "hsl(var(--warning) / 0.06)", border: "1px solid hsl(var(--warning) / 0.1)" }}>
                         <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Code de confirmation</p>
-                        <p className="text-lg font-black tracking-widest" style={{ color: "hsl(var(--warning))" }}>
+                        <p className="text-lg font-extrabold tracking-widest tabular-nums" style={{ color: "hsl(var(--warning))" }}>
                           {order.confirmation_code}
                         </p>
                       </div>
@@ -238,7 +238,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
                   </p>
                 </div>
                 {order.delivery_fee != null && (
-                  <span className="text-[10px] font-bold" style={{ color: `hsl(${cfg.color})` }}>
+                  <span className="text-[10px] font-bold tabular-nums" style={{ color: `hsl(${cfg.color})` }}>
                     {order.delivery_fee.toFixed(2)}€
                   </span>
                 )}

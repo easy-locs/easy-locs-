@@ -88,7 +88,7 @@ function KpiCard({ label, value, icon: Icon, color, trend }: {
         )}
       </div>
       <p className="text-[11px] text-muted-foreground font-medium truncate">{label}</p>
-      <p className="text-lg font-black text-foreground tabular-nums truncate">{value}</p>
+      <p className="text-lg font-extrabold text-foreground tabular-nums truncate">{value}</p>
     </motion.div>
   );
 }
@@ -156,7 +156,7 @@ function TxDetailDrawer({ tx, userId, currency, onClose }: {
           )}
           <div className="border-t border-border/20 pt-3 flex justify-between text-sm">
             <span className="font-semibold text-foreground">Net amount</span>
-            <span className={cn("font-black text-base tabular-nums", isCredit ? "text-emerald-500" : "text-red-500")}>
+            <span className={cn("font-extrabold text-base tabular-nums", isCredit ? "text-emerald-500" : "text-red-500")}>
               {isCredit ? "+" : "-"}{formatMoney(net, currency)}
             </span>
           </div>
@@ -288,15 +288,15 @@ export default function MerchantFinancePage() {
       <div className="flex gap-2.5">
         <div className="flex-1 rounded-2xl border border-border/20 bg-card p-3.5">
           <p className="text-[10px] text-muted-foreground font-medium">This Week</p>
-          <p className="text-base font-black text-foreground tabular-nums">{formatMoney(kpis.weekTotal, currency)}</p>
+          <p className="text-base font-extrabold text-foreground tabular-nums">{formatMoney(kpis.weekTotal, currency)}</p>
         </div>
         <div className="flex-1 rounded-2xl border border-border/20 bg-card p-3.5">
           <p className="text-[10px] text-muted-foreground font-medium">This Month</p>
-          <p className="text-base font-black text-foreground tabular-nums">{formatMoney(kpis.monthTotal, currency)}</p>
+          <p className="text-base font-extrabold text-foreground tabular-nums">{formatMoney(kpis.monthTotal, currency)}</p>
         </div>
         <div className="flex-1 rounded-2xl border border-border/20 bg-card p-3.5">
           <p className="text-[10px] text-muted-foreground font-medium">Today Debits</p>
-          <p className="text-base font-black text-red-500 tabular-nums">{formatMoney(kpis.todayOut, currency)}</p>
+          <p className="text-base font-extrabold text-red-500 tabular-nums">{formatMoney(kpis.todayOut, currency)}</p>
         </div>
       </div>
 

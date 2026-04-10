@@ -97,7 +97,7 @@ export default function CartSheet() {
       <SheetContent side="bottom" className="rounded-t-3xl max-h-[85dvh] overflow-y-auto pb-safe">
         <SheetHeader>
           <SheetTitle className="text-left">
-            <span className="text-lg font-black">Your Cart</span>
+            <span className="text-lg font-bold">Your Cart</span>
             {cart.restaurantName && (
               <p className="text-xs text-muted-foreground font-medium mt-0.5">{cart.restaurantName}</p>
             )}

@@ -149,7 +149,7 @@ export default function ThreadActionCard({
             {payload.label}
           </p>
           {displayAmount && (
-            <p className={`text-lg font-black ${isCompleted ? "text-muted-foreground" : "text-foreground"} leading-tight`}>
+            <p className={`text-lg font-extrabold ${isCompleted ? "text-muted-foreground" : "text-foreground"} leading-tight tabular-nums`}>
               {displayAmount}
             </p>
           )}

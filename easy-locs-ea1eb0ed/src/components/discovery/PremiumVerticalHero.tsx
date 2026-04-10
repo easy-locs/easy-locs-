@@ -122,7 +122,7 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
             {emoji}
           </motion.span>
           <motion.h1
-            className="min-w-0 flex-1 text-2xl font-black text-white tracking-tight leading-tight break-words drop-shadow-md"
+            className="min-w-0 flex-1 text-2xl font-bold text-white tracking-tight leading-tight break-words drop-shadow-md"
             style={{ textWrap: "balance" }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

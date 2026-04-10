@@ -63,7 +63,7 @@ export default function TrustScoreBadge({ shopId, compact = false }: Props) {
             <p className="text-[10px] text-muted-foreground">Trust Score: {trust.trust_score}/100</p>
           </div>
         </div>
-        <span className={`text-2xl font-black ${level.color}`}>{trust.trust_score}</span>
+        <span className={`text-2xl font-extrabold tabular-nums ${level.color}`}>{trust.trust_score}</span>
       </div>
 
       {/* Trust breakdown */}

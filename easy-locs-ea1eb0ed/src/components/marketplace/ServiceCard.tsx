@@ -133,7 +133,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           </div>
         )}
 
-        <h3 className="font-semibold text-foreground line-clamp-2 leading-snug text-[15px] break-words">{service.title}</h3>
+        <h3 className="font-semibold text-foreground line-clamp-2 leading-snug text-sm break-words">{service.title}</h3>
         {service.description && <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed break-words">{service.description}</p>}
 
         {/* Location + duration + capacity */}

@@ -72,7 +72,7 @@ function OrbitPreviewWidget() {
             </div>
             {(thread.unreadCount ?? 0) > 0 && (
               <span
-                className="min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-black px-1 shrink-0"
+                className="min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold px-1 shrink-0"
                 style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
               >
                 {thread.unreadCount}

@@ -42,7 +42,7 @@ export default function TravelHub() {
               <ArrowLeft className="h-4 w-4 text-primary-foreground" />
             </button>
             <Plane className="h-5 w-5 text-primary-foreground" />
-            <h1 className="text-xl font-black text-primary-foreground tracking-tight">Travel</h1>
+            <h1 className="text-xl font-bold text-primary-foreground tracking-tight">Travel</h1>
           </div>
           <p className="text-xs text-primary-foreground/60 ml-11">Flights & stays worldwide</p>
         </div>

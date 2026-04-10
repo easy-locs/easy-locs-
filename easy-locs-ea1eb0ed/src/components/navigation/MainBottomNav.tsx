@@ -122,7 +122,7 @@ function MainBottomNav() {
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-black leading-none px-1"
+                      className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold leading-none px-1"
                       style={{
                         background: "hsl(0 72% 51%)",
                         color: "#fff",

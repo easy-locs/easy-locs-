@@ -408,7 +408,7 @@ export default function WalletTransferPage() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
-                className="text-4xl font-black text-foreground text-center bg-transparent outline-none w-[160px] tabular-nums"
+                className="text-4xl font-extrabold text-foreground text-center bg-transparent outline-none w-[160px] tabular-nums"
                 style={{ WebkitAppearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
               />
             </div>

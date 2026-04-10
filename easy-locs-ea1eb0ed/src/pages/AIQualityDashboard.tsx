@@ -238,7 +238,7 @@ const AIQualityDashboard = () => {
               <div className={`absolute inset-0 bg-gradient-to-br ${getScoreGradient(report.globalScore)} opacity-10`} />
               <CardContent className="pt-6 text-center relative">
                 <p className="text-sm font-medium text-muted-foreground mb-2">Global Quality Score</p>
-                <p className={`text-6xl font-black ${getScoreColor(report.globalScore)}`}>
+                <p className={`text-6xl font-extrabold tabular-nums ${getScoreColor(report.globalScore)}`}>
                   {report.globalScore}
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">/ 100</p>

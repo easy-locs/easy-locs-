@@ -213,7 +213,7 @@ export default function WalletSecurityPanel() {
         <div className="relative z-10">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-3" style={{ background: `conic-gradient(${scoreColor} ${securityScore}%, hsl(var(--muted) / 0.2) 0%)` }}>
             <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--card))" }}>
-              <span className="text-xl font-black tabular-nums" style={{ color: scoreColor }}>{securityScore}</span>
+              <span className="text-xl font-extrabold tabular-nums" style={{ color: scoreColor }}>{securityScore}</span>
             </div>
           </div>
           <p className="text-sm font-bold text-foreground">{t("wallet.security_score")}</p>
@@ -255,7 +255,7 @@ export default function WalletSecurityPanel() {
       </motion.div>
 
       <div className="space-y-2">
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">
           {t("wallet.security_features")}
         </p>
         {features.map((f, i) => (

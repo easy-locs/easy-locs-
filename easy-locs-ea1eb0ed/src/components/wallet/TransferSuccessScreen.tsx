@@ -57,7 +57,7 @@ export default function TransferSuccessScreen({ amount, currency, recipientName,
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="text-4xl font-black text-foreground tracking-tight mb-2"
+        className="text-4xl font-extrabold text-foreground tracking-tight tabular-nums mb-2"
       >
         {formatted}
       </motion.p>

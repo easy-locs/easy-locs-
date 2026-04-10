@@ -107,7 +107,7 @@ export default function DeliveryKPIDashboard({ orgId }: { orgId: string }) {
           <div key={k.label} className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${k.color}15` }}>
             <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{k.label}</p>
             <div className="flex items-end gap-2 mt-1">
-              <p className="text-lg font-black" style={{ color: k.color }}>{k.value}</p>
+              <p className="text-lg font-extrabold tabular-nums" style={{ color: k.color }}>{k.value}</p>
               <div className="flex items-center gap-0.5 mb-1">
                 {k.trend > 0 ? <TrendingUp className="h-2.5 w-2.5" style={{ color: "hsl(var(--success))" }} /> : <TrendingDown className="h-2.5 w-2.5" style={{ color: "hsl(var(--success))" }} />}
                 <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>{Math.abs(k.trend)}%</span>

@@ -120,7 +120,7 @@ export default function ComplianceDashboard({ orgId }: { orgId: string }) {
           <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
             {/* Score */}
             <div className="text-center py-3 rounded-xl" style={{ background: "linear-gradient(135deg, hsl(var(--success) / 0.06), hsl(var(--hud-surface)))", border: "1px solid hsl(var(--success) / 0.12)" }}>
-              <p className="text-3xl font-black" style={{ color: score >= 80 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>{score}%</p>
+              <p className="text-3xl font-extrabold tabular-nums" style={{ color: score >= 80 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>{score}%</p>
               <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Score de conformité global</p>
             </div>
 
