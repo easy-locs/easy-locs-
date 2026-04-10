@@ -1,11 +1,7 @@
-/**
- * PremiumVerticalHero — Immersive hero section with background image, gradient overlay,
- * animated particles, shimmer effects, and vertical-specific theming.
- * V2: Enhanced with more dynamic animations and depth.
- */
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useState, useRef } from "react";
 import type { VerticalTheme } from "@/lib/discovery/vertical-themes";
 
 interface Props {
@@ -19,25 +15,45 @@ interface Props {
 
 export default function PremiumVerticalHero({ title, tagline, emoji, theme, search, children }: Props) {
   const navigate = useNavigate();
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const showVideo = !!theme.heroVideo && !videoError;
 
   return (
-    <div className="relative overflow-hidden rounded-b-[2rem]" style={{ minHeight: 240 }}>
-      {/* Background image with Ken Burns */}
-      <div className="absolute inset-0">
-        <motion.img
-          src={theme.heroImage}
-          alt={`${title} hero banner`}
-          className="w-full h-full object-cover"
-          loading="eager"
-          animate={{ scale: [1, 1.08, 1], x: [0, -12, 0], y: [0, 6, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+    <div className="relative overflow-hidden rounded-b-[2rem]" style={{ height: 280 }}>
+      {showVideo && (
+        <video
+          ref={videoRef}
+          src={theme.heroVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          onCanPlay={() => setVideoLoaded(true)}
+          onError={() => setVideoError(true)}
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+          style={{ opacity: videoLoaded ? 1 : 0 }}
         />
-      </div>
+      )}
 
-      {/* Gradient overlay — single layer, balanced for image visibility + text legibility */}
+      {(!showVideo || !videoLoaded) && (
+        <div className="absolute inset-0">
+          <motion.img
+            src={theme.heroImage}
+            alt={`${title} hero banner`}
+            className="w-full h-full object-cover"
+            loading="eager"
+            animate={{ scale: [1, 1.08, 1], x: [0, -12, 0], y: [0, 6, 0] }}
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </div>
+      )}
+
       <div className="absolute inset-0" style={{ background: theme.heroOverlay }} />
 
-      {/* Animated shimmer sweep */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -47,7 +63,6 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", repeatDelay: 4 }}
       />
 
-      {/* Radial glow */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -57,17 +72,6 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* Bottom light sweep */}
-      <motion.div
-        className="absolute inset-x-0 bottom-0 h-24 pointer-events-none"
-        style={{
-          background: "linear-gradient(180deg, transparent 0%, hsla(0,0%,100%,0.06) 40%, transparent 100%)",
-        }}
-        animate={{ x: ["-15%", "15%", "-15%"] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
-
-      {/* Floating particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {[...Array(7)].map((_, i) => (
           <motion.div
@@ -95,7 +99,6 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
         ))}
       </div>
 
-      {/* Content */}
       <div className="relative z-10 px-4 pt-12 pb-10">
         <div className="flex items-start gap-3 mb-2 min-w-0">
           <motion.button
@@ -140,12 +143,10 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
         {children}
       </div>
 
-      {/* Bottom fade for search overlap */}
       <div className="absolute bottom-0 left-0 right-0 h-10" style={{
         background: "linear-gradient(to top, hsl(var(--background)), transparent)"
       }} />
 
-      {/* Search bar floating */}
       {search && (
         <motion.div
           className="relative z-20 px-4 -mb-6 pb-2"

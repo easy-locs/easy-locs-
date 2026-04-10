@@ -87,6 +87,7 @@ export interface CanonicalUISpec {
   // ── Visual ──
   gradient: string;
   heroImage: string;
+  heroVideo?: string;
   heroOverlay: string;
   accentHsl: string;
   searchPlaceholder: string;
@@ -267,6 +268,7 @@ export function resolveCanonicalUI(
 
     gradient,
     heroImage,
+    heroVideo: baseTheme.heroVideo,
     heroOverlay,
     accentHsl,
     searchPlaceholder,

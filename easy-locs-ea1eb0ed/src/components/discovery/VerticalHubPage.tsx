@@ -288,6 +288,7 @@ export default function VerticalHubPage({ vertical, storyFeedKey, storyTitle }: 
               gradient: ui.gradient,
               accentHsl: ui.accentHsl,
               heroImage: ui.heroImage,
+              heroVideo: ui.heroVideo,
               heroOverlay: ui.heroOverlay,
               tagline: ui.searchPlaceholder,
               searchPlaceholder: ui.searchPlaceholder,
@@ -326,7 +327,7 @@ export default function VerticalHubPage({ vertical, storyFeedKey, storyTitle }: 
               <motion.button
                 key={item.id}
                 onClick={() => navigate(item.href)}
-                className="relative shrink-0 h-[132px] min-w-[220px] w-[78vw] max-w-[240px] overflow-hidden rounded-[1.4rem] snap-start text-left active:scale-[0.98]"
+                className="relative shrink-0 h-[140px] w-[240px] overflow-hidden rounded-2xl snap-start text-left active:scale-[0.98] border border-border/15"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -549,7 +550,7 @@ function SmartDiscovery({
               </div>
               <div className="flex gap-3 overflow-x-auto pb-2 pl-4 pr-4 scrollbar-none snap-x snap-mandatory">
                 {popularItems.map((item, i) => (
-                  <div key={item.id} className="shrink-0 w-[200px] snap-start">
+                  <div key={item.id} className="shrink-0 w-[200px] snap-start" style={{ minHeight: 220 }}>
                     <PremiumMerchantCard
                       to={buildMerchantLink(vertical.value, item)}
                       image={item.banner_url || item.logo_url}
@@ -592,7 +593,7 @@ function SmartDiscovery({
                   </div>
                   <div className="flex gap-3 overflow-x-auto pb-2 pl-4 pr-4 scrollbar-none snap-x snap-mandatory">
                     {items.slice(0, 6).map((item, i) => (
-                      <div key={item.id} className="shrink-0 w-[200px] snap-start">
+                      <div key={item.id} className="shrink-0 w-[200px] snap-start" style={{ minHeight: 220 }}>
                         <PremiumMerchantCard
                           to={buildMerchantLink(vertical.value, item)}
                           image={item.banner_url || item.logo_url}
