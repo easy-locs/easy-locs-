@@ -1,16 +1,19 @@
 import { memo, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wallet, ArrowUpCircle, Send, QrCode, ArrowUpRight, Receipt, CreditCard, ChevronRight } from "lucide-react";
+import { Wallet, ArrowUpCircle, Send, QrCode, ArrowUpRight, Receipt, CreditCard, ChevronRight, Store } from "lucide-react";
 import { motion } from "framer-motion";
 import { AppBottomSheet } from "@/components/ui/system/AppBottomSheet";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { useWalletBalance, useWalletTransactions } from "@/payments/wallet-hooks";
 import { haptic } from "@/lib/haptics";
+import { setReturnOrigin } from "@/lib/navigation/return-origin";
+import type { NavigationContext } from "@/lib/navigation/navigation-intent";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onGoFull: () => void;
+  entityContext?: NavigationContext | null;
 }
 
 const QUICK_ACTIONS = [
@@ -20,7 +23,7 @@ const QUICK_ACTIONS = [
   { icon: Receipt, labelKey: "wallet.request", fallback: "Request", route: "/wallet/request", color: "hsl(38 65% 56%)" },
 ];
 
-function WalletQuickSheet({ open, onOpenChange, onGoFull }: Props) {
+function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props) {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { balance, currency, loading: balLoading } = useWalletBalance();
@@ -31,7 +34,20 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull }: Props) {
   const handleAction = (route: string) => {
     haptic("medium");
     onOpenChange(false);
+    setReturnOrigin(window.location.pathname);
     setTimeout(() => navigate(route), 150);
+  };
+
+  const handlePayEntity = () => {
+    haptic("medium");
+    onOpenChange(false);
+    setReturnOrigin(window.location.pathname);
+    const params = new URLSearchParams();
+    if (entityContext?.entityId) params.set("to", entityContext.entityId);
+    if (entityContext?.entityName) params.set("name", entityContext.entityName);
+    if (entityContext?.amount) params.set("amount", String(entityContext.amount));
+    if (entityContext?.note) params.set("note", entityContext.note);
+    setTimeout(() => navigate(`/wallet/transfer?${params.toString()}`), 150);
   };
 
   return (
@@ -65,6 +81,39 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull }: Props) {
             <ArrowUpRight className="w-3 h-3 text-muted-foreground" />
           </button>
         </div>
+
+        {entityContext?.entityName && (
+          <button
+            onClick={handlePayEntity}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl mb-4 active:scale-[0.98] transition-transform"
+            style={{
+              background: "hsl(160 60% 45% / 0.08)",
+              border: "1px solid hsl(160 60% 45% / 0.15)",
+            }}
+          >
+            <div
+              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "hsl(160 60% 45% / 0.15)" }}
+            >
+              {entityContext.entityImage ? (
+                <img src={entityContext.entityImage} alt="" className="w-full h-full rounded-lg object-cover" />
+              ) : (
+                <Store className="w-4 h-4" style={{ color: "hsl(160 60% 45%)" }} />
+              )}
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-xs font-bold text-foreground truncate leading-tight">
+                {tSafe(t, "wallet.pay_to", "Pay")} {entityContext.entityName}
+              </p>
+              <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                {entityContext.amount
+                  ? `${currency} ${Number(entityContext.amount).toFixed(2)}`
+                  : tSafe(t, "wallet.send_payment", "Send payment")}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+          </button>
+        )}
 
         <div className="grid grid-cols-4 gap-2 mb-4">
           {QUICK_ACTIONS.map((a) => (

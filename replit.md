@@ -11,7 +11,7 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Backend**: Supabase (PostgreSQL + Auth + Storage + RPC)
 - **State**: React Query, custom contexts (AuthContext, I18nContext)
 - **i18n**: Custom i18n system — runtime in `src/lib/i18n.tsx` (~317 lines), translation data lazy-loaded from `src/lib/i18n-data.ts` (~4400+ lines, code-split). 31 locales supported. Super-app keys (home.*, radar.*, orbit.nav.*, wallet.*, dashboard.*) now fully translated for ES/DE/IT/PT/NL/TR/AR/JA (80 keys each). Merchant onboarding fully i18n'd with `mob.*` keys (90+ keys FR/EN).
-- **Navigation**: 5-tab bottom nav via `src/config/navigation.ts`
+- **Navigation**: 5-tab bottom nav via `src/config/navigation.ts`. Smart cross-pillar navigation via `src/lib/navigation/` (intent engine + pillar rules + overlay-first pattern + return-to-origin)
 
 ## 5-Pillar Routing Structure (App.tsx)
 App.tsx routes are organized into clean, labeled sections:
@@ -72,6 +72,38 @@ App.tsx routes are organized into clean, labeled sections:
 - **Service Booking**: Auto-fills name/email/phone from auth profile (PublicServiceBooking.tsx)
 - **Hotel Booking**: Smart date defaults (tomorrow/day-after) so rooms show prices immediately without manual date selection
 - **i18n keys**: home.qa_reorder, home.qa_favorites, home.qa_my_orders added to FR/EN
+
+## Smart Cross-Pillar Navigation
+Complete overlay-first navigation system ensuring seamless user flows across all 5 pillars:
+
+### Core Architecture (`src/lib/navigation/`)
+- **navigation-intent.ts**: Action classification (inline/overlay/full), route→pillar mapping, NavigationContext type (entity/payment metadata)
+- **pillar-rules.ts**: Per-pillar transition rules with upgrade conditions (e.g., dashboard→orbit defaults overlay, upgrades to full for "full_chat"/"active_call")
+- **return-origin.ts**: SessionStorage-based return-to-origin system (10min TTL, route validation)
+
+### Hooks
+- **useSmartNavigation**: Central hook — resolves intent, opens overlay or navigates, carries NavigationContext through overlay state
+- **useReturnToOrigin**: Auto-return after deep navigation (Wallet transfer success → back to Radar/Dashboard)
+
+### Overlay Sheets (`src/components/overlays/`)
+- **WalletQuickSheet**: Balance, 4 quick actions, recent txs. Shows "Pay [entity]" banner when opened with entity context
+- **OrbitQuickSheet**: Threads, compose, calls. Shows "Contact [entity]" banner when opened with entity context
+- **MeQuickSheet**: Profile summary, 6 quick links, status
+- **PillarOverlayHost**: Central renderer dispatching active overlay with context forwarding
+
+### User Flows Supported
+1. Discovery: Dashboard → RadarPreviewWidget → RadarExplorerDrawer → HyperRadarPage (progressive disclosure)
+2. Active Search: Radar → filters → results → entity detail → overlay actions (contact/pay/navigate)
+3. Contact: Radar entity → Orbit overlay with entity pre-fill → full chat if needed
+4. Payment: Any pillar → Wallet overlay with entity context → transfer → auto-return to origin
+5. Business: Dashboard → Me overlay → profile/settings → full Me if deeper management needed
+6. Favorites: Save from Radar → visible in Dashboard/Me → quick return to Radar
+
+### Integration Points
+- SmartHome: LiveStatsPulse + OrbitPreviewWidget use smartNavigate
+- HyperRadarPage: PillarNav + handleMessageItem/Entity + RadarEntitySheet use smartNavigate
+- RadarEntitySheet: Message → Orbit overlay with entity context, Pay → Wallet overlay with entity context
+- WalletTransferPage: returnToOrigin on success + back button
 
 ## Taxi / Rider / Delivery Premium Experience
 Ultra-fluid mobility experience comparable to Uber/Careem/Deliveroo:

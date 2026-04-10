@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { X, Navigation, MessageCircle, Eye, Phone, MapPin, Star, Clock, ChevronRight } from "lucide-react";
+import { X, Navigation, MessageCircle, Eye, Phone, MapPin, Star, Clock, ChevronRight, Wallet } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { entityUrl } from "@/lib/entity/entity-url";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import type { NavigationContext } from "@/lib/navigation/navigation-intent";
 
 interface RadarEntity {
   id: string;
@@ -26,9 +27,10 @@ interface RadarEntity {
 interface Props {
   entity: RadarEntity;
   onClose: () => void;
+  onSmartNavigate?: (route: string, action?: string, context?: NavigationContext) => void;
 }
 
-export default function RadarEntitySheet({ entity, onClose }: Props) {
+export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: Props) {
   const navigate = useNavigate();
   const { t } = useI18n();
   const img = entity.imageUrl || entity.image_url;
@@ -37,6 +39,13 @@ export default function RadarEntitySheet({ entity, onClose }: Props) {
     ? dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)} km`
     : null;
   const cat = entity.subcategory || entity.category || entity.type || "";
+
+  const entityCtx: NavigationContext = {
+    entityId: entity.id,
+    entityName: entity.name,
+    entityType: entity.type,
+    entityImage: img || undefined,
+  };
 
   const handleNavigate = () => {
     haptic("medium");
@@ -51,12 +60,27 @@ export default function RadarEntitySheet({ entity, onClose }: Props) {
     navigate(url);
   };
 
-  const handleMessage = async () => {
+  const handleMessage = () => {
     haptic("light");
-    onClose();
-    const { navigateToOrbitThread } = await import("@/lib/orbit/navigate-to-thread");
-    const path = await navigateToOrbitThread({ targetName: entity.name });
-    if (path) navigate(path);
+    if (onSmartNavigate) {
+      onSmartNavigate("/orbit", "contact_entity", entityCtx);
+    } else {
+      onClose();
+      import("@/lib/orbit/navigate-to-thread").then(async ({ navigateToOrbitThread }) => {
+        const path = await navigateToOrbitThread({ targetName: entity.name });
+        if (path) navigate(path);
+      });
+    }
+  };
+
+  const handlePay = () => {
+    haptic("light");
+    if (onSmartNavigate) {
+      onSmartNavigate("/wallet", "pay_entity", entityCtx);
+    } else {
+      onClose();
+      navigate(`/wallet/transfer?to=${encodeURIComponent(entity.id)}&name=${encodeURIComponent(entity.name)}`);
+    }
   };
 
   const handleCall = () => {
@@ -146,11 +170,11 @@ export default function RadarEntitySheet({ entity, onClose }: Props) {
             onClick={handleMessage}
           />
           <ActionBtn
-            icon={<Phone className="w-5 h-5" />}
-            label={t("radar.call") || "Call"}
-            color="hsl(var(--foreground))"
-            bg="hsl(var(--muted) / 0.12)"
-            onClick={handleCall}
+            icon={<Wallet className="w-5 h-5" />}
+            label={t("radar.pay") || "Pay"}
+            color="hsl(160 60% 45%)"
+            bg="hsl(160 60% 45% / 0.08)"
+            onClick={handlePay}
           />
         </div>
 

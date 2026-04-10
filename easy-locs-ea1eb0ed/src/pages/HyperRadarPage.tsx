@@ -356,7 +356,12 @@ export default function HyperRadarPage() {
   const handleMessageItem = useCallback(async (item: RadarResultItem) => {
     if (!user?.id) { navigate("/auth"); return; }
     haptic("light");
-    smartNavigate("/orbit", "compose_message");
+    smartNavigate("/orbit", "contact_entity", {
+      entityId: item.id,
+      entityName: item.title,
+      entityType: item.type,
+      entityImage: item.image || undefined,
+    });
     trackRadarEvent("cta_used", { action: "message", entityId: item.id });
   }, [user?.id, navigate, smartNavigate]);
 
@@ -369,7 +374,12 @@ export default function HyperRadarPage() {
   const handleMessageEntity = useCallback(async (entity: RadarGeoEntity) => {
     if (!user?.id) { navigate("/auth"); return; }
     haptic("light");
-    smartNavigate("/orbit", "compose_message");
+    smartNavigate("/orbit", "contact_entity", {
+      entityId: entity.id,
+      entityName: entity.name,
+      entityType: entity.type,
+      entityImage: entity.imageUrl || entity.image_url || undefined,
+    });
   }, [user?.id, navigate, smartNavigate]);
 
   const handleCategorySelect = useCallback((layer: RadarLayer) => {
@@ -779,6 +789,7 @@ export default function HyperRadarPage() {
           <RadarEntitySheet
             entity={selectedEntity}
             onClose={() => { setSelectedEntity(null); setPanelSnap("peek"); }}
+            onSmartNavigate={smartNavigate}
           />
         )}
       </AnimatePresence>
@@ -798,6 +809,7 @@ export default function HyperRadarPage() {
       <PillarOverlayHost
         activeOverlay={overlayState.activeOverlay}
         overlayRoute={overlayState.overlayRoute}
+        overlayContext={overlayState.overlayContext}
         onClose={closeOverlay}
       />
     </div>

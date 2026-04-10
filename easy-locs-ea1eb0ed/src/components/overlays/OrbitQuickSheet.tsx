@@ -1,19 +1,21 @@
 import { memo } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, ChevronRight, ArrowUpRight, PenSquare, Phone } from "lucide-react";
+import { MessageCircle, ChevronRight, ArrowUpRight, PenSquare, Phone, Store } from "lucide-react";
 import { AppBottomSheet } from "@/components/ui/system/AppBottomSheet";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import E2EEBadge from "@/components/orbit/E2EEBadge";
 import { haptic } from "@/lib/haptics";
+import type { NavigationContext } from "@/lib/navigation/navigation-intent";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onGoFull: () => void;
+  entityContext?: NavigationContext | null;
 }
 
-function OrbitQuickSheet({ open, onOpenChange, onGoFull }: Props) {
+function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props) {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { threads, loading } = useConversationThreads();
@@ -40,6 +42,16 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull }: Props) {
     haptic("medium");
     onOpenChange(false);
     setTimeout(() => navigate("/orbit?section=chats&compose=true"), 150);
+  };
+
+  const handleContactEntity = () => {
+    haptic("medium");
+    onOpenChange(false);
+    if (entityContext?.entityId) {
+      setTimeout(() => navigate(`/orbit?compose=true&to=${encodeURIComponent(entityContext.entityId!)}&name=${encodeURIComponent(entityContext.entityName || "")}`), 150);
+    } else {
+      setTimeout(() => navigate("/orbit?section=chats&compose=true"), 150);
+    }
   };
 
   return (
@@ -100,6 +112,37 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull }: Props) {
           </div>
         </div>
 
+        {entityContext?.entityName && (
+          <button
+            onClick={handleContactEntity}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl mb-3 active:scale-[0.98] transition-transform"
+            style={{
+              background: "hsl(38 65% 56% / 0.08)",
+              border: "1px solid hsl(38 65% 56% / 0.15)",
+            }}
+          >
+            <div
+              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "hsl(38 65% 56% / 0.15)" }}
+            >
+              {entityContext.entityImage ? (
+                <img src={entityContext.entityImage} alt="" className="w-full h-full rounded-lg object-cover" />
+              ) : (
+                <Store className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+              )}
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-xs font-bold text-foreground truncate leading-tight">
+                {tSafe(t, "orbit.contact_entity", "Contact")} {entityContext.entityName}
+              </p>
+              <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                {tSafe(t, "orbit.start_conversation", "Start a conversation")}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+          </button>
+        )}
+
         {loading ? (
           <div className="space-y-2 py-2">
             {[1, 2, 3].map((i) => (
@@ -116,7 +159,7 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull }: Props) {
               </div>
             ))}
           </div>
-        ) : recent.length === 0 ? (
+        ) : recent.length === 0 && !entityContext?.entityName ? (
           <div className="flex flex-col items-center justify-center py-8 gap-3">
             <div
               className="w-12 h-12 rounded-2xl flex items-center justify-center"
