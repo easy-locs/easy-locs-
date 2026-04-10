@@ -11,7 +11,7 @@
 import { memo, useState, useEffect, useMemo, useCallback } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Building2, Sparkles, TrendingUp, Zap, Brain, ShieldCheck, Clock, Activity, Coffee, UtensilsCrossed, Car, Package, RotateCcw, Heart, ShoppingBag } from "lucide-react";
+import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Building2, Sparkles, TrendingUp, Zap, Brain, Clock, Activity, Coffee, UtensilsCrossed, Car, Package, RotateCcw, Heart, ShoppingBag } from "lucide-react";
 import PillarPage, { PageSection } from "@/components/layout/PillarPage";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import { motion, AnimatePresence } from "framer-motion";
@@ -328,81 +328,6 @@ const AISmartInsights = memo(() => {
   );
 });
 
-/* ═══ Stats Bar — LIVE super-app overview ═══ */
-function LiveStatsPulse({ onNavigate }: { onNavigate?: (route: string, action?: string) => void }) {
-  const { t } = useI18n();
-  const navigate = useNavigate();
-  const live = useDashboardLiveStats();
-
-  const handleNav = useCallback((route: string, action?: string) => {
-    if (onNavigate) {
-      onNavigate(route, action);
-    } else {
-      navigate(route);
-    }
-  }, [onNavigate, navigate]);
-
-  const stats = useMemo(() => [
-    {
-      label: t("home.stats_wallet"),
-      value: live.loading ? "…" : `${Number(live.walletBalance || 0).toFixed(0)}`,
-      icon: Wallet,
-      pulse: live.walletBalance > 0,
-      color: "text-emerald-500",
-      to: "/wallet",
-      action: "view_wallet_detail",
-    },
-    {
-      label: t("home.stats_messages"),
-      value: live.loading ? "…" : String(live.unreadMessages),
-      icon: Activity,
-      pulse: live.unreadMessages > 0,
-      color: "text-blue-500",
-      to: "/orbit",
-      action: "view_messages",
-    },
-    {
-      label: t("home.stats_orders"),
-      value: live.loading ? "…" : String(live.activeOrders),
-      icon: Clock,
-      pulse: live.activeOrders > 0,
-      color: "text-amber-500",
-      to: "/my-orders",
-      action: "view_transactions",
-    },
-    {
-      label: t("home.stats_secure"),
-      value: "✓",
-      icon: ShieldCheck,
-      pulse: false,
-      color: "text-[hsl(38_65%_56%)]",
-      to: "/me",
-      action: "view_profile",
-    },
-  ], [t, live]);
-
-  return (
-    <motion.div
-      className="grid grid-cols-4 gap-2"
-      style={{ marginBottom: "var(--section-gap)" }}
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.08 }}
-    >
-      {stats.map((s) => (
-        <button
-          key={s.label}
-          onClick={() => handleNav(s.to, s.action)}
-          className="flex flex-col items-center gap-1 rounded-xl border border-border/8 bg-muted/15 py-2.5 px-1.5 relative overflow-hidden active:scale-[0.95] transition-transform"
-        >
-          <s.icon className={`h-4 w-4 ${s.color} shrink-0`} />
-          <p className="text-xs font-extrabold text-foreground tabular-nums leading-none">{s.value}</p>
-          <p className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5 text-center w-full break-words">{s.label}</p>
-        </button>
-      ))}
-    </motion.div>
-  );
-}
 
 /* ═══ Category Card — Full-width grid ═══ */
 const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
@@ -682,7 +607,6 @@ export default function SmartHome() {
         <AISmartInsights />
         <SmartSuggestions suggestions={suggestions} onDismiss={dismiss} />
         <SuggestedPaymentsSection payments={intelligence.suggestedPayments} />
-        <LiveStatsPulse onNavigate={smartNavigate} />
       </div>
 
       <OrbitPreviewWidget onNavigate={smartNavigate} />

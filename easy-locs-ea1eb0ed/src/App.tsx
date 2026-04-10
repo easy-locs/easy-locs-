@@ -160,7 +160,7 @@ const {
   SettingsAccountPage, SettingsOrbitPage, SettingsBusinessPage, SettingsWalletPage,
   SettingsAddressesPage, SettingsNotificationsPage, SettingsSecurityPage, SettingsPreferencesPage,
   SettingsSupportPage,
-  CustomerSpendingInsightsPage, CustomerAddressBookPage, CustomerLoyaltyHistoryPage,
+  CustomerSpendingInsightsPage, EditProfilePage, CustomerAddressBookPage, CustomerLoyaltyHistoryPage,
   CustomerActiveOrdersPage, CustomerOrderArchivePage, CustomerReorderPage,
   CustomerLiveLocationPage, CustomerSavedCardsPage, CustomerDeliveryNotesPage,
   CustomerPaymentActivityPage, CustomerOrderReceiptsPage,
@@ -556,6 +556,7 @@ const App = () => (
                   {/*  PILLAR 5 · ME (Profile · Settings · Tools)    */}
                   {/* ═══════════════════════════════════════════════ */}
                   <Route path="/me" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><MeCommandCenter /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/edit-profile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
                   <Route path="/me/spending-insights" element={<ProtectedRoute><CustomerSpendingInsightsPage /></ProtectedRoute>} />
                   <Route path="/me/address-book" element={<ProtectedRoute><CustomerAddressBookPage /></ProtectedRoute>} />
                   <Route path="/me/loyalty-history" element={<ProtectedRoute><CustomerLoyaltyHistoryPage /></ProtectedRoute>} />
