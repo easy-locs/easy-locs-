@@ -54,7 +54,7 @@ const SmartShortcuts = memo(({ topRoutes }: Props) => {
   if (shortcuts.length < 2) return null;
 
   return (
-    <div className="mb-3">
+    <div className="mb-4">
       <div className="flex items-center gap-1.5 px-1 mb-1.5">
         <Star className="w-3 h-3" style={{ color: "hsl(38 65% 56%)" }} />
         <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(220 40% 18%)" }}>

@@ -38,7 +38,7 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
     return (
       <div className="px-4 mb-4">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-black" style={{ color: navy }}>
+          <h2 className="text-[13px] font-bold" style={{ color: navy }}>
             {tSafe(t, "re.me.cockpit", "Property Management")}
           </h2>
           <button
@@ -50,7 +50,7 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
           </button>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 mb-3">
+        <div className="grid grid-cols-4 gap-2 mb-4">
           {[
             { label: tSafe(t, "re.me.properties", "Properties"), value: analytics.totalProperties, icon: <Home size={14} />, color: gold },
             { label: tSafe(t, "re.me.occupancy", "Occupancy"), value: `${analytics.occupancyRate}%`, icon: <Key size={14} />, color: "#22c55e" },
@@ -110,7 +110,7 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
   return (
     <div className="px-4 mb-4">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-sm font-black" style={{ color: navy }}>
+        <h2 className="text-[13px] font-bold" style={{ color: navy }}>
           {tSafe(t, "re.marketplace", "Real Estate")}
         </h2>
         <button
