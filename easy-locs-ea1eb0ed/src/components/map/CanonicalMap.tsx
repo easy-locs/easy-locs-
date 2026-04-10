@@ -147,6 +147,13 @@ export default memo(function CanonicalMap({
     });
     mapRef.current = map;
 
+    map.on("error", (e: any) => {
+      const msg = e?.error?.message || "";
+      if (msg.includes("zoom") || msg.includes("tile") || msg.includes("404") || e?.sourceId === S.RAIN) {
+        return;
+      }
+    });
+
     map.on("load", () => {
       // ── Sources ──
       map.addSource(S.ZONES, { type: "geojson", data: { type: "FeatureCollection", features: [] } });
@@ -166,7 +173,7 @@ export default memo(function CanonicalMap({
         tiles: ["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRkEJggg=="],
         tileSize: 256,
         minzoom: 2,
-        maxzoom: 12,
+        maxzoom: 8,
       });
 
       // ── Layers (bottom → top) ──
@@ -198,7 +205,7 @@ export default memo(function CanonicalMap({
         id: L.RAIN, type: "raster", source: S.RAIN,
         paint: { "raster-opacity": 0, "raster-fade-duration": 600 },
         layout: { visibility: "none" },
-        maxzoom: 12, // Prevent "Zoom Level Not Supported" tiles from showing
+        maxzoom: 8,
       });
 
       // Heatmap

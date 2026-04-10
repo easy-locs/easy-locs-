@@ -24,6 +24,7 @@ import {
   Utensils, Hotel, Car, Sparkles, Moon, ShoppingBag,
   Activity, Navigation, Search, Minus, Plus, CloudRain, CloudSun,
   MapPin, TrendingUp, Star, Zap, Eye, Heart, Store,
+  Droplets, Wind,
 } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
@@ -172,6 +173,7 @@ export default function HyperRadarPage() {
           selectedId={selectedEntity?.id}
           onSelectEntity={handleSelectEntity}
           onZoneClick={handleZoneClick}
+          hideWeatherBadge
         />
       </div>
 
@@ -192,10 +194,6 @@ export default function HyperRadarPage() {
               <Radio className="w-3 h-3" style={{ color: "hsl(38 65% 56%)" }} />
             </div>
             <span className="text-xs font-bold text-foreground">{t("radar.title")}</span>
-          </div>
-          <div className="inline-flex max-w-[200px] min-w-0 items-center gap-1.5 rounded-full border border-border/15 bg-card/80 px-2.5 py-1 backdrop-blur-md">
-            {weather.isRaining ? <CloudRain className="h-3 w-3 shrink-0" style={{ color: "hsl(38 65% 56%)" }} /> : <CloudSun className="h-3 w-3 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />}
-            <span className="truncate text-[10px] font-medium text-foreground">{weather.label}</span>
           </div>
         </div>
 
@@ -249,14 +247,52 @@ export default function HyperRadarPage() {
         </button>
       </motion.div>
 
-      {/* Vibe + Stats Badge — left side */}
+      {/* Weather Widget — left side */}
       <motion.div
         className="absolute left-3 top-[130px] flex flex-col gap-1.5"
         style={{ zIndex: Z.overlay }}
         initial={{ opacity: 0, x: -15 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.25 }}
       >
+        <div
+          className="rounded-2xl border border-border/15 px-3 py-2.5 backdrop-blur-md"
+          style={{
+            background: weather.isRaining
+              ? "linear-gradient(135deg, hsl(220 40% 18% / 0.92), hsl(210 50% 25% / 0.88))"
+              : "hsl(var(--card) / 0.9)",
+          }}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-lg leading-none">{weather.icon}</span>
+            <div className="min-w-0">
+              {weather.temperatureC != null && (
+                <p className="text-base font-bold text-foreground leading-tight">{Math.round(weather.temperatureC)}°C</p>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            {weather.humidity != null && (
+              <div className="flex items-center gap-0.5">
+                <Droplets className="w-2.5 h-2.5" style={{ color: "hsl(200 70% 60%)" }} />
+                <span className="text-[10px] text-muted-foreground">{weather.humidity}%</span>
+              </div>
+            )}
+            {weather.windKmh != null && (
+              <div className="flex items-center gap-0.5">
+                <Wind className="w-2.5 h-2.5" style={{ color: "hsl(38 65% 56%)" }} />
+                <span className="text-[10px] text-muted-foreground">{Math.round(weather.windKmh)} km/h</span>
+              </div>
+            )}
+          </div>
+          {weather.isRaining && weather.precipitationMm > 0 && (
+            <div className="flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-md" style={{ background: "hsl(200 70% 50% / 0.12)" }}>
+              <CloudRain className="w-2.5 h-2.5" style={{ color: "hsl(200 70% 60%)" }} />
+              <span className="text-[10px] font-medium" style={{ color: "hsl(200 70% 65%)" }}>{weather.precipitationMm.toFixed(1)} mm</span>
+            </div>
+          )}
+        </div>
+
         {vibe && (
           <div className="rounded-2xl border border-border/15 bg-card/90 px-2.5 py-2 backdrop-blur-md">
             <div className="flex items-center gap-1.5">
