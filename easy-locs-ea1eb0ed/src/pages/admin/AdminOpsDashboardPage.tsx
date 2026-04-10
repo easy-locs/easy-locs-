@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { fetchOpsDashboardData } from "@/repositories/admin-ops.repository";
 import { projectOpsDashboard } from "@/families/dashboard/dashboard.read-model";
 import { useMemo } from "react";
+import { Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function AdminOpsDashboardPage() {
   const navigate = useNavigate();
 
-  const { data } = useQuery({ queryKey: ["admin-ops-dashboard"], queryFn: fetchOpsDashboardData, staleTime: 15_000 });
+  const { data, isLoading, error, refetch } = useQuery({ queryKey: ["admin-ops-dashboard"], queryFn: fetchOpsDashboardData, staleTime: 15_000 });
 
   const model = useMemo(
     () => projectOpsDashboard(data?.orders ?? [], data?.merchants ?? [], data?.tickets ?? []),
@@ -23,11 +25,31 @@ export default function AdminOpsDashboardPage() {
           <p className="text-xs text-muted-foreground">Marketplace health</p>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        {model.metrics.map((m) => (
-          <Metric key={m.title} title={m.title} value={m.value} />
-        ))}
-      </div>
+
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {!isLoading && error && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <AlertTriangle className="h-8 w-8 text-destructive mb-3" />
+          <p className="text-sm font-semibold text-foreground mb-1">Failed to load dashboard</p>
+          <p className="text-xs text-muted-foreground mb-4">Something went wrong. Please try again.</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
+            <RefreshCw className="h-3.5 w-3.5" /> Retry
+          </Button>
+        </div>
+      )}
+
+      {!isLoading && !error && (
+        <div className="grid grid-cols-2 gap-3">
+          {model.metrics.map((m) => (
+            <Metric key={m.title} title={m.title} value={m.value} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
