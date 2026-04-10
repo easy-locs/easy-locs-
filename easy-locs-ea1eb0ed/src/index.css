@@ -3402,3 +3402,13 @@ button:focus-visible,
   0% { opacity: 0; transform: translateY(-8px); }
   100% { opacity: 1; transform: translateY(0); }
 }
+
+/* ══════════════════════════════════════════════════
+   28. CARD CLIP UTILITY — opt-in overflow-hidden for cards
+   Use .card-clip on any card container to enforce overflow clipping.
+   All .card-* classes already include overflow-hidden.
+   For inline Tailwind cards, add overflow-hidden explicitly.
+   ══════════════════════════════════════════════════ */
+.card-clip {
+  overflow: hidden;
+}

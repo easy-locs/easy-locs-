@@ -327,7 +327,7 @@ export default function VerticalHubPage({ vertical, storyFeedKey, storyTitle }: 
               <motion.button
                 key={item.id}
                 onClick={() => navigate(item.href)}
-                className="relative shrink-0 h-[140px] w-[240px] overflow-hidden rounded-2xl snap-start text-left active:scale-[0.98] border border-border/15"
+                className="relative shrink-0 aspect-[16/10] w-[240px] overflow-hidden rounded-2xl snap-start text-left active:scale-[0.98] border border-border/15"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}

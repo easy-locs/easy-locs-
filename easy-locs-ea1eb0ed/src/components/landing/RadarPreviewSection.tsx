@@ -86,7 +86,7 @@ export default function RadarPreviewSection() {
 
           {/* RIGHT — Nearby results */}
           <motion.div className="flex-1 max-w-md w-full space-y-3" initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }}>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-5">
               <div>
                 <h3 className="text-lg font-bold text-foreground">{t("landing.radar.nearby") || "Nearby Now"}</h3>
                 <p className="text-xs text-muted-foreground">{t("landing.radar.within") || "Within 2km · Smart ranked"}</p>

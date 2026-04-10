@@ -221,7 +221,7 @@ export default function AccountShowcase() {
               ...Object.entries(TYPE_CONFIG).map(([k, v]) => ({ key: k, label: v.label, icon: v.icon, count: (counts as any)[k] || 0 })),
             ].map(t => (
               <button key={t.key} onClick={() => setTypeFilter(t.key)}
-                className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border-2 min-h-[44px] ${
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border-2 min-h-[44px] ${
                   typeFilter === t.key
                     ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
                     : "bg-card text-foreground border-border hover:border-accent/40"

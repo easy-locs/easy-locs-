@@ -183,7 +183,7 @@ export default function AIDispatchBrain({ orgId, className }: { orgId: string; c
                   ].map(d => (
                     <div key={d.label} className="text-center">
                       <p className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{d.value}</p>
-                      <p className="text-[6px]" style={{ color: "hsl(var(--muted-foreground))" }}>{d.label}</p>
+                      <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{d.label}</p>
                     </div>
                   ))}
                 </div>

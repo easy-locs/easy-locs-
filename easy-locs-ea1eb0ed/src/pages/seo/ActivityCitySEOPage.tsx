@@ -39,7 +39,7 @@ const ActivityCitySEOPage = () => {
         canonical="https://www.easy-locs.com/activities"
       >
         <section className="py-20 text-center container mx-auto px-4">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Activities & Experiences</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-5">Activities & Experiences</h1>
           <p className="text-muted-foreground mb-8">Explore activities in destinations worldwide.</p>
           <Button asChild size="lg"><Link to="/activities">View All Activities</Link></Button>
         </section>

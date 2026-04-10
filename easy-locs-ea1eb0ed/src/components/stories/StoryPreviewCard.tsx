@@ -27,9 +27,9 @@ const TYPE_BADGE_GLOW: Record<string, string> = {
 };
 
 const SIZE_CONFIG = {
-  small: { width: "w-[125px]", height: "h-[170px]", titleClass: "text-[11px]", metaClass: "text-[10px]", priceClass: "text-[11px]" },
-  medium: { width: "w-[140px]", height: "h-[195px]", titleClass: "text-xs", metaClass: "text-[10px]", priceClass: "text-[11px]" },
-  large: { width: "w-[165px]", height: "h-[230px]", titleClass: "text-[13px]", metaClass: "text-[11px]", priceClass: "text-xs" },
+  small: { width: "w-[125px]", aspect: "aspect-[3/4]", titleClass: "text-[11px]", metaClass: "text-[10px]", priceClass: "text-[11px]" },
+  medium: { width: "w-[140px]", aspect: "aspect-[3/4]", titleClass: "text-xs", metaClass: "text-[10px]", priceClass: "text-[11px]" },
+  large: { width: "w-[165px]", aspect: "aspect-[3/4]", titleClass: "text-[13px]", metaClass: "text-[11px]", priceClass: "text-xs" },
 };
 
 export default function StoryPreviewCard({ story, onClick, size = "medium" }: StoryPreviewCardProps) {
@@ -40,7 +40,7 @@ export default function StoryPreviewCard({ story, onClick, size = "medium" }: St
   return (
     <button
       onClick={onClick}
-      className={`${config.width} ${config.height} flex-shrink-0 relative rounded-2xl overflow-hidden group active:scale-[0.97] transition-all duration-200`}
+      className={`${config.width} ${config.aspect} flex-shrink-0 relative rounded-2xl overflow-hidden group active:scale-[0.97] transition-all duration-200`}
       style={{ boxShadow: "0 4px 20px -4px rgba(0,0,0,0.35)" }}
     >
       <img

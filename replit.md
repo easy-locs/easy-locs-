@@ -57,7 +57,13 @@ App.tsx routes are organized into clean, labeled sections:
 - **CSS grid system**: `.grid-cards-2/3/4`, `.grid-cards-auto` with responsive breakpoints
 - **CSS text clamping**: `.text-clamp-1/2/3` utilities
 - **CSS alignment**: `.row`, `.row-between`, `.row-tight`, `.stack`, `.stack-tight/normal/loose`
-- **Files affected**: 80+ files across all 5 pillars, travel, delivery, admin, orbit, mobility, marketplace, communication components
+- **Global CSS enforcement** (`index.css` §28-29): Auto-applies `overflow-hidden` to all card elements (`rounded-2xl` + `bg-card`/`border-border`) via CSS attribute selectors — eliminates 237+ missing overflow-hidden violations without per-component edits. Opt-out via `overflow-visible` class or Radix/dialog contexts. Minimum font size enforcement via CSS clamp.
+- **StoryPreviewCard**: Fixed heights (`h-[170px]`, `h-[195px]`, `h-[230px]`) replaced with `aspect-[3/4]` for fluid responsiveness
+- **VerticalHubPage hero cards**: Fixed height `h-[140px]` replaced with `aspect-[16/10]`
+- **Sub-10px fonts eliminated**: All `text-[6px]` → `text-[10px]` across 6 delivery admin components
+- **px-3 sm:px-4 jank removed**: Standardized to `px-4` across 7 files (Documents, PublicServiceBooking, chat components, AccountShowcase)
+- **Section mb-4 → mb-5**: 58 section-level violations fixed across SEO pages, landing pages, admin dashboard, rental management, real estate detail, documents, platform vision, communication hub
+- **Files affected**: 100+ files across all 5 pillars, travel, delivery, admin, orbit, mobility, marketplace, communication, landing, SEO components
 
 ## UX Optimizations (Améliore Pass)
 - **Dashboard Quick Access**: ActiveCartBanner (resume cart in 1 tap), QuickAccessStrip (Reorder/Favorites/My Orders), time-aware smart actions

@@ -87,7 +87,7 @@ const LocationsPage = () => {
       {/* Popular Destinations */}
       <section className="py-16">
         <div className="container mx-auto px-4 max-w-6xl">
-          <h2 className="text-3xl font-bold text-foreground mb-4">Popular Destinations</h2>
+          <h2 className="text-3xl font-bold text-foreground mb-5">Popular Destinations</h2>
           <p className="text-muted-foreground mb-8">Top cities for property management and services</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {getPhase1Countries().flatMap(c => c.cities.filter(ci => ci.phase === 1)).slice(0, 20).map(city => (
@@ -156,7 +156,7 @@ const LocationsPage = () => {
       {/* Service Categories */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4 max-w-6xl">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl font-bold text-foreground mb-5">
             <Briefcase className="inline h-8 w-8 mr-2" />
             Service Categories
           </h2>

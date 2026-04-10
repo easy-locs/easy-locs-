@@ -47,7 +47,7 @@ const LandlordProfile = () => {
   if (notFound || !landlord) {
     return (
       <div className="app-mobile-page bg-background flex flex-col items-center justify-center p-6">
-        <h1 className="text-2xl font-bold text-foreground mb-4">Profile not found</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-5">Profile not found</h1>
         <Link to="/" className="text-accent hover:underline flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" /> Back to Easy-Locs
         </Link>

@@ -166,7 +166,7 @@ export default function SmartLockerNetwork({ orgId, className }: { orgId: string
                     <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                       {LOCKERS.find(l => l.id === s.lockerId)?.name} — {s.size}
                     </p>
-                    <span className="text-[6px] font-bold px-1 py-0.5 rounded"
+                    <span className="text-[10px] font-bold px-1 py-0.5 rounded"
                       style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                   </div>
                   <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>

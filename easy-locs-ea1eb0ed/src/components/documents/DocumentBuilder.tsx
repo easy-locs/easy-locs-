@@ -608,7 +608,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
 
           {/* Signatures */}
           <div className="border-t border-border pt-6 mt-6">
-            <h3 className="text-sm font-semibold text-foreground mb-4">{t("page.doc_builder.signature")}</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-5">{t("page.doc_builder.signature")}</h3>
             
             {/* Landlord signature block */}
             <div className="mb-6">

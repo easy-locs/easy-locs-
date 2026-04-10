@@ -136,7 +136,7 @@ const DealContextHeader = memo(function DealContextHeader({
       >
         <button
           onClick={onToggleContext}
-          className="w-full flex items-center gap-2.5 px-3 sm:px-4 py-2 transition-colors hover:brightness-110"
+          className="w-full flex items-center gap-2.5 px-4 py-2 transition-colors hover:brightness-110"
           style={{
             background: style.bg,
             borderBottom: `1px solid ${style.border}`,

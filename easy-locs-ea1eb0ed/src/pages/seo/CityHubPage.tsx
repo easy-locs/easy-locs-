@@ -44,7 +44,7 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
         canonical="https://www.easy-locs.com/locations"
       >
         <section className="py-20 text-center container mx-auto px-4">
-          <h1 className="text-4xl font-bold text-foreground mb-4">City Not Found</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-5">City Not Found</h1>
           <Button asChild size="lg"><Link to="/locations">View All Locations</Link></Button>
         </section>
       </SEOPageShell>
@@ -146,7 +146,7 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
             <span>/</span>
             <span className="text-foreground font-medium">{city.name}</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-5">
             {subPage === "overview" && city.name}
             {subPage === "services" && `Services in ${city.name}`}
             {subPage === "activities" && `Things to Do in ${city.name}`}
@@ -283,7 +283,7 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
       {/* Marketplace CTA */}
       <section className="py-12">
         <div className="container mx-auto px-4 max-w-4xl text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-4">
+          <h2 className="text-2xl font-bold text-foreground mb-5">
             <Sparkles className="inline h-6 w-6 mr-2" />
             {city.name} Marketplace
           </h2>

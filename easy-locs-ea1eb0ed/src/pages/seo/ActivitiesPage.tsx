@@ -125,7 +125,7 @@ const ActivitiesPage = () => (
 
       <section className="py-16 bg-primary/5">
         <div className="container mx-auto px-4 max-w-3xl text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-4">Share your passion with travelers</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-5">Share your passion with travelers</h2>
           <p className="text-muted-foreground mb-6">List your tours and activities on Easy-Locs and reach guests from around the world.</p>
           <Button asChild size="lg"><Link to="/signup">Get Started Free</Link></Button>
         </div>

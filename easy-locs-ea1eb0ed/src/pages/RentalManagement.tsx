@@ -661,7 +661,7 @@ const RentalManagement = () => {
             )}
 
             <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-              <h3 className="font-semibold text-foreground mb-4">{L.quickActions}</h3>
+              <h3 className="font-semibold text-foreground mb-5">{L.quickActions}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <button onClick={() => { setActiveTab("properties"); setShowPropertyForm(true); }} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3 hover:bg-muted/50 transition-colors text-left">
                   <Plus className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">{L.addProperty}</span>
@@ -680,7 +680,7 @@ const RentalManagement = () => {
         {/* ─── Properties Tab ─── */}
         {activeTab === "properties" && (
           <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <h2 className="font-semibold text-foreground">{properties.length} {L.properties.toLowerCase()}</h2>
               <button onClick={() => setShowPropertyForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity min-h-[44px] w-full sm:w-auto justify-center sm:justify-start">
                 <Plus className="h-4 w-4" />{L.addProperty}
@@ -689,7 +689,7 @@ const RentalManagement = () => {
 
             {showPropertyForm && (
               <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 mb-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-5">
                   <h3 className="font-semibold text-foreground">{editingPropertyId ? L.editProperty : L.addProperty}</h3>
                   <button onClick={resetPropertyForm} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
                 </div>
@@ -841,7 +841,7 @@ const RentalManagement = () => {
 
             {showTenantForm && (
               <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 mb-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-5">
                   <h3 className="font-semibold text-foreground">{editingTenantId ? L.editTenant : L.addTenant}</h3>
                   <button onClick={resetTenantForm} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
                 </div>

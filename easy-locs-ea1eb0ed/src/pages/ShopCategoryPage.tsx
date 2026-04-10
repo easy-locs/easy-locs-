@@ -131,7 +131,7 @@ export default function ShopCategoryPage() {
             {/* Suggest other categories in same city */}
             {otherCategories.length > 0 && prettyCity && (
               <section>
-                <h3 className="text-lg font-semibold text-foreground mb-4">
+                <h3 className="text-lg font-semibold text-foreground mb-5">
                   Other services{prettyCity ? ` in ${prettyCity}` : ""}
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -152,7 +152,7 @@ export default function ShopCategoryPage() {
             {/* Suggest same category in other cities */}
             {category && suggestedCities.length > 0 && (
               <section>
-                <h3 className="text-lg font-semibold text-foreground mb-4">
+                <h3 className="text-lg font-semibold text-foreground mb-5">
                   {prettyCategory} in other cities
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

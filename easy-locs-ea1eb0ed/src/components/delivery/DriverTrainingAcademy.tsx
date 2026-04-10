@@ -130,7 +130,7 @@ export default function DriverTrainingAcademy({ orgId, className }: { orgId: str
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.title}</p>
-                      {c.mandatory && <span className="text-[6px] font-bold px-1 py-0.5 rounded" style={{ background: "hsl(var(--destructive) / 0.1)", color: "hsl(var(--destructive))" }}>Obligatoire</span>}
+                      {c.mandatory && <span className="text-[10px] font-bold px-1 py-0.5 rounded" style={{ background: "hsl(var(--destructive) / 0.1)", color: "hsl(var(--destructive))" }}>Obligatoire</span>}
                     </div>
                     <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       📂 {c.category} • ⏱️ {c.duration}min • {c.completedModules}/{c.modules} modules • 🎯 {c.xpReward} XP

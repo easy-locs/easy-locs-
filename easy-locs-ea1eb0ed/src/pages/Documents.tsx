@@ -101,7 +101,7 @@ const Documents = () => {
       <FeatureGate feature="legal_documents" featureLabel={t("page.documents.title")}>
       <PropertyHubBreadcrumb currentPage={t("page.documents.title")} />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 sm:mb-6">
           <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
               <div className="p-1.5 sm:p-2 rounded-xl bg-accent/10 shrink-0"><FileText className="h-4 w-4 sm:h-5 sm:w-5 text-accent" /></div>
@@ -115,14 +115,14 @@ const Documents = () => {
           </div>
         </motion.div>
 
-        <div className="flex gap-1 bg-muted rounded-lg p-1 mb-4 sm:mb-8 overflow-x-auto scrollbar-thin">
+        <div className="flex gap-1 bg-muted rounded-lg p-1 mb-5 sm:mb-8 overflow-x-auto scrollbar-thin">
           {([
             { key: "create" as const, label: t("page.documents.create") },
             { key: "history" as const, label: `${t("page.documents.history")} (${docs.length})` },
             { key: "europe" as const, label: "🌍 International" },
           ]).map((tb) => (
             <button key={tb.key} onClick={() => setTab(tb.key)}
-              className={`flex-1 py-2 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${tab === tb.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              className={`flex-1 py-2 px-4 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${tab === tb.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
               {tb.label}
             </button>
           ))}
@@ -134,7 +134,7 @@ const Documents = () => {
               const Icon = categoryIcons[cat] || FileText;
               return (
                 <div key={cat}>
-                  <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground mb-4">
+                  <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground mb-5">
                     <Icon className="h-5 w-5 text-muted-foreground" />
                     {t(CATEGORY_LABEL_KEYS[cat] || "page.documents.cat_rental")}
                   </h2>

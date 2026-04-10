@@ -111,7 +111,7 @@ export default function RentalTenantDetailView({
       <div className="detail-tab-row mb-6">
         {tabs.map((tb) => (
           <button key={tb.key} onClick={() => { setTab(tb.key); if (tb.key === "messages") onLoadMessages(tenant.id); }}
-            className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${tab === tb.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${tab === tb.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             <tb.icon className="h-4 w-4 shrink-0" />
             <span>{tb.label}</span>
           </button>
@@ -161,7 +161,7 @@ export default function RentalTenantDetailView({
 
       {tab === "payments" && (
         <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-          <h3 className="font-semibold text-foreground mb-4">{L.paymentHistory}</h3>
+          <h3 className="font-semibold text-foreground mb-5">{L.paymentHistory}</h3>
           {tenantPayments.length === 0 ? (
             <p className="text-sm text-muted-foreground">{L.noPayment}</p>
           ) : (
@@ -235,7 +235,7 @@ export default function RentalTenantDetailView({
           <TenantDocuments tenantId={tenant.id} tenantName={tenant.name} />
           <TenantRequestsPanel tenantId={tenant.id} tenantName={tenant.name} />
           <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-            <h3 className="font-semibold text-foreground mb-4">Générer un document</h3>
+            <h3 className="font-semibold text-foreground mb-5">Générer un document</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {templates.map((tmpl) => {
                 const Icon = iconMap[Object.keys(iconMap).find(k => tmpl.docType.includes(k)) || ""] || FileText;

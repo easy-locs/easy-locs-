@@ -30,7 +30,7 @@ export default function FoodSection() {
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
-          className="flex items-center justify-between mb-4"
+          className="flex items-center justify-between mb-5"
         >
           <div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
@@ -50,7 +50,7 @@ export default function FoodSection() {
         </motion.div>
 
         {/* Subcategory pills */}
-        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none mb-4">
+        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none mb-5">
           {FOOD_SUBCATS.map((sub) => (
             <Link
               key={sub.label}

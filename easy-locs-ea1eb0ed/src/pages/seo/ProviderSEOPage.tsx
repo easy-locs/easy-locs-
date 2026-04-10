@@ -95,7 +95,7 @@ const ProviderSEOPage = () => {
         noindex
       >
         <section className="py-20 text-center container mx-auto px-4">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Provider Not Found</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-5">Provider Not Found</h1>
           <p className="text-muted-foreground mb-8">This provider does not exist or is no longer active.</p>
           <Button asChild size="lg"><Link to="/marketplace">Browse Marketplace</Link></Button>
         </section>

@@ -232,7 +232,7 @@ const Pricing = () => {
                     </div>
                   </div>
 
-                  <p className="text-xs text-foreground/70 font-medium mb-4">{tier.subtitle}</p>
+                  <p className="text-xs text-foreground/70 font-medium mb-5">{tier.subtitle}</p>
 
                   {/* Price with animation */}
                   <div className="mb-5">
