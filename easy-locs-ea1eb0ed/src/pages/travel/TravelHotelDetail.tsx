@@ -137,8 +137,12 @@ export default function TravelHotelDetail() {
   const navigate = useNavigate();
   const { data: hotel, isLoading } = useHotelDetail(id);
   const [galleryIdx, setGalleryIdx] = useState(0);
-  const [checkIn, setCheckIn] = useState<Date | undefined>(undefined);
-  const [checkOut, setCheckOut] = useState<Date | undefined>(undefined);
+  const [checkIn, setCheckIn] = useState<Date | undefined>(() => {
+    const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(0,0,0,0); return d;
+  });
+  const [checkOut, setCheckOut] = useState<Date | undefined>(() => {
+    const d = new Date(); d.setDate(d.getDate() + 2); d.setHours(0,0,0,0); return d;
+  });
   const [guests, setGuests] = useState(2);
 
   const allImages = useMemo(() => {

@@ -46,6 +46,14 @@ App.tsx routes are organized into clean, labeled sections:
 8. **DEEP LINKS / QR** — Public deep links, QR resolvers
 9. **SEO / LEGAL** — Programmatic SEO pages, legal pages
 
+## UX Optimizations (Améliore Pass)
+- **Dashboard Quick Access**: ActiveCartBanner (resume cart in 1 tap), QuickAccessStrip (Reorder/Favorites/My Orders), time-aware smart actions
+- **Express Checkout**: 1-tap order from CartSheet (wallet pay, auto-resolve seller, idempotent), with fallback to full checkout
+- **Restaurant Page**: Haptic feedback on add-to-cart, animated quantity controls (framer-motion whileTap), navy/gold floating cart CTA with pulse animation
+- **Service Booking**: Auto-fills name/email/phone from auth profile (PublicServiceBooking.tsx)
+- **Hotel Booking**: Smart date defaults (tomorrow/day-after) so rooms show prices immediately without manual date selection
+- **i18n keys**: home.qa_reorder, home.qa_favorites, home.qa_my_orders added to FR/EN
+
 ## Key Directories
 ```
 easy-locs-ea1eb0ed/

@@ -29,6 +29,7 @@ import PaymentMethodSelector, { type PaymentMethod } from "@/components/marketpl
 import { format, differenceInCalendarDays } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 /** Rental categories that use date-range + per-day pricing */
 const RANGE_CATEGORIES = new Set(["car_rental", "yacht", "accommodation", "equipment"]);
@@ -46,6 +47,7 @@ const PublicServiceBooking = () => {
   const { t } = useI18n();
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const [service, setService] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1);
@@ -59,6 +61,17 @@ const PublicServiceBooking = () => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const meta = user.user_metadata || {};
+    setForm(f => ({
+      ...f,
+      name: f.name || meta.full_name || meta.name || "",
+      email: f.email || user.email || "",
+      phone: f.phone || meta.phone || "",
+    }));
+  }, [user]);
 
    useEffect(() => {
     let mounted = true;
