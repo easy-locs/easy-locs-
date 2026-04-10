@@ -55,13 +55,13 @@ export default function POSPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   /* ── Load seller's real catalog ── */
-  const { data: shopData } = useQuery({
+  const { data: shopData, isLoading: shopLoading, error: shopError } = useQuery({
     queryKey: ["pos-shop", user?.id],
     queryFn: () => posService.fetchSellerShop(user!.id),
     enabled: !!user?.id,
   });
 
-  const { data: catalogItems = [] } = useQuery({
+  const { data: catalogItems = [], isLoading: catalogLoading } = useQuery({
     queryKey: ["pos-catalog", shopData?.id],
     queryFn: () => posService.fetchCatalogItems(shopData!.id),
     enabled: !!shopData?.id,
@@ -211,7 +211,18 @@ export default function POSPage() {
                       className="h-12 pl-10 text-sm rounded-xl"
                     />
                   </div>
-                  {filteredCatalog.length > 0 ? (
+                  {(shopLoading || catalogLoading) && (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                  {shopError && !shopLoading && (
+                    <div className="text-center py-6">
+                      <p className="text-sm text-destructive font-medium">Failed to load shop</p>
+                      <p className="text-xs text-muted-foreground mt-1">Check your connection and try again.</p>
+                    </div>
+                  )}
+                  {!shopLoading && !catalogLoading && !shopError && filteredCatalog.length > 0 && (
                     <div className="grid grid-cols-2 gap-3">
                       {filteredCatalog.map((item: any) => (
                         <Button
@@ -228,7 +239,8 @@ export default function POSPage() {
                         </Button>
                       ))}
                     </div>
-                  ) : (
+                  )}
+                  {!shopLoading && !catalogLoading && !shopError && filteredCatalog.length === 0 && (
                     <div className="grid grid-cols-3 gap-3">
                       {[5, 10, 15, 20, 25, 50].map(amt => (
                         <Button

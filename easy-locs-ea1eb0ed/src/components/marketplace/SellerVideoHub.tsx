@@ -116,7 +116,7 @@ export default function SellerVideoHub({ services }: SellerVideoHubProps) {
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0 shrink-0"
-                onClick={() => navigate(`/dashboard/activities?edit=${svc.id}`)}
+                onClick={() => navigate(`/activities?edit=${svc.id}`)}
               >
                 <ExternalLink className="w-3 h-3" />
               </Button>
