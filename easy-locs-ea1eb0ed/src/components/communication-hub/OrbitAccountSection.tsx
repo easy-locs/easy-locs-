@@ -1,11 +1,7 @@
-/**
- * OrbitAccountSection — "YOU" cockpit inside Orbit hub.
- * Uses canonical identity resolution for consistent profile display.
- */
 import { useState } from "react";
 import {
   Bell, Eye, MessageSquare, LogOut, Languages, Trash2, AlertTriangle,
-  Star, Clock, HardDrive, HelpCircle, Key,
+  Key, HardDrive, HelpCircle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +13,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import YouIdentityCard from "@/components/orbit/you/YouIdentityCard";
 import YouSmartSettingCard from "@/components/orbit/you/YouSmartSettingCard";
-import YouSectionBlock from "@/components/orbit/you/YouSectionBlock";
 import { useYouSummaries } from "@/hooks/orbit/useYouSummaries";
 
 import YouEditProfilePage from "@/components/orbit/you/subpages/YouEditProfilePage";
@@ -38,7 +33,6 @@ export default function OrbitAccountSection() {
   const orbitIdentity = useOrbitIdentity();
   const { locale, setLocale, availableLocales, t } = useI18n();
 
-  // Canonical identity chain: orbit profile → auth metadata → fallback
   const displayName = orbitIdentity?.displayName
     || user?.user_metadata?.full_name
     || user?.user_metadata?.display_name
@@ -58,7 +52,7 @@ export default function OrbitAccountSection() {
   if (subPage === "language") return (
     <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={goBack} className="text-sm font-medium" style={{ color: "hsl(var(--primary))" }}>{t("orbit.you.back")}</button>
+        <button onClick={goBack} className="text-sm font-medium" style={{ color: "hsl(38 65% 56%)" }}>{t("orbit.you.back")}</button>
         <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.language")}</span>
       </div>
       <div className="px-3 space-y-1">
@@ -66,11 +60,11 @@ export default function OrbitAccountSection() {
           <button key={l.value} onClick={() => { setLocale(l.value); haptic("selection"); toast.success(t("orbit.you.language_set", { lang: l.label })); }}
             className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors"
             style={{
-              background: locale === l.value ? "hsl(var(--primary) / 0.1)" : "transparent",
-              color: locale === l.value ? "hsl(var(--primary))" : "hsl(var(--foreground))",
+              background: locale === l.value ? "hsl(38 65% 56% / 0.1)" : "transparent",
+              color: locale === l.value ? "hsl(38 65% 56%)" : "hsl(var(--foreground))",
             }}>
             <span className="text-sm font-medium">{l.label}</span>
-            {locale === l.value && <span className="text-xs">&#10003;</span>}
+            {locale === l.value && <span className="text-xs" style={{ color: "hsl(38 65% 56%)" }}>&#10003;</span>}
           </button>
         ))}
       </div>
@@ -88,30 +82,22 @@ export default function OrbitAccountSection() {
         onEditProfile={() => setSubPage("edit-profile")}
       />
 
-      <YouSectionBlock title="">
-        <YouSmartSettingCard icon={Star} label={t("orbit.you.starred") || "Starred"} summary={t("orbit.you.starred_desc") || "Your saved messages"} onClick={() => { haptic("light"); toast.info(t("orbit.you.starred") || "Starred messages"); }} />
-        <YouSmartSettingCard icon={Clock} label={t("orbit.you.chat_history") || "Chat history"} summary={t("orbit.you.chat_history_desc") || "Export & backup"} onClick={() => { haptic("light"); toast.info(t("orbit.you.chat_history") || "Chat history"); }} />
-      </YouSectionBlock>
+      <div className="px-3 py-1.5">
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{ background: "hsl(var(--muted) / 0.25)", border: "1px solid hsl(var(--border) / 0.5)" }}
+        >
+          <YouSmartSettingCard icon={Key} label={t("orbit.you.account") || "Account"} summary={t("orbit.you.account_desc") || "Security, change number"} onClick={() => { haptic("light"); toast.info(t("orbit.you.account") || "Account settings"); }} />
+          <YouSmartSettingCard icon={Eye} label={t("orbit.you.privacy")} summary={summaries.privacySummary} onClick={() => setSubPage("privacy")} />
+          <YouSmartSettingCard icon={Bell} label={t("orbit.you.notifications")} summary={summaries.notifSummary} onClick={() => setSubPage("notifications")} />
+          <YouSmartSettingCard icon={MessageSquare} label={t("orbit.you.chats_setting") || "Chats"} summary={summaries.chatDefaultsSummary} onClick={() => setSubPage("chats")} />
+          <YouSmartSettingCard icon={HardDrive} label={t("orbit.you.storage") || "Storage"} summary={t("orbit.you.storage_desc") || "Network usage, auto-download"} onClick={() => setSubPage("media")} />
+          <YouSmartSettingCard icon={Languages} label={t("orbit.you.language")} summary={availableLocales.find(l => l.value === locale)?.label || locale} onClick={() => setSubPage("language")} />
+          <YouSmartSettingCard icon={HelpCircle} label={t("orbit.you.help") || "Help"} summary={t("orbit.you.help_desc") || "FAQ, contact us"} onClick={() => { haptic("light"); toast.info(t("orbit.you.help") || "Help center"); }} />
+        </div>
+      </div>
 
-      <YouSectionBlock title="">
-        <YouSmartSettingCard icon={Key} label={t("orbit.you.account") || "Account"} summary={t("orbit.you.account_desc") || "Security, change number"} onClick={() => { haptic("light"); toast.info(t("orbit.you.account") || "Account settings"); }} />
-        <YouSmartSettingCard icon={Eye} label={t("orbit.you.privacy")} summary={summaries.privacySummary} onClick={() => setSubPage("privacy")} />
-        <YouSmartSettingCard icon={MessageSquare} label={t("orbit.you.chats_setting") || "Chats"} summary={summaries.chatDefaultsSummary} onClick={() => setSubPage("chats")} />
-        <YouSmartSettingCard icon={Bell} label={t("orbit.you.notifications")} summary={summaries.notifSummary} onClick={() => setSubPage("notifications")} />
-        <YouSmartSettingCard icon={HardDrive} label={t("orbit.you.storage") || "Storage and data"} summary={t("orbit.you.storage_desc") || "Network usage, auto-download"} onClick={() => setSubPage("media")} />
-      </YouSectionBlock>
-
-      <YouSectionBlock title="">
-        <YouSmartSettingCard
-          icon={Languages}
-          label={t("orbit.you.language")}
-          summary={availableLocales.find(l => l.value === locale)?.label || locale}
-          onClick={() => setSubPage("language")}
-        />
-        <YouSmartSettingCard icon={HelpCircle} label={t("orbit.you.help") || "Help and feedback"} summary={t("orbit.you.help_desc") || "FAQ, contact us"} onClick={() => { haptic("light"); toast.info(t("orbit.you.help") || "Help center"); }} />
-      </YouSectionBlock>
-
-      <div className="px-3 pb-2 space-y-1">
+      <div className="px-3 pt-3 pb-2 space-y-1">
         <button
           onClick={async () => { haptic("medium"); await signOut(); navigate("/login"); }}
           className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-colors text-left hover:bg-destructive/5 active:scale-[0.99]"

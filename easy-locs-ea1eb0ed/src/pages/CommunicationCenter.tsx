@@ -3,7 +3,7 @@
  * Full-screen messaging experience — NO sidebar, standalone layout.
  */
 import { useEffect, useCallback, useRef, lazy, Suspense, useState } from "react";
-import { Plus, ArrowLeft, UsersRound, Megaphone, Camera, Search } from "lucide-react";
+import { Plus, ArrowLeft, UsersRound, Megaphone } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import E2EEBadge from "@/components/orbit/E2EEBadge";
@@ -17,10 +17,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import CommNavBar, { type CommSection } from "@/components/communication-hub/CommNavBar";
 
 const CommCallsSection = lazy(() => import("@/components/communication-hub/CommCallsSection"));
-const CommContactsSection = lazy(() => import("@/components/communication-hub/CommContactsSection"));
 const CommGroupsSection = lazy(() => import("@/components/communication-hub/CommGroupsSection"));
 const OrbitAccountSection = lazy(() => import("@/components/communication-hub/OrbitAccountSection"));
-const OrbitStatusSection = lazy(() => import("@/components/communication-hub/OrbitStatusSection"));
 const HudContextPanel = lazy(() => import("@/components/communication-hub/HudContextPanel"));
 
 // Core chat — always needed when a conversation is selected
@@ -34,7 +32,7 @@ import { useThreadSelectionStore } from "@/stores/orbit/thread-selection.store";
 // useOrbitCallSync removed — centralized in RealtimeHubGuard
 import { useAuth } from "@/contexts/AuthContext";
 
-const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "groups", "you", "status"];
+const VALID_SECTIONS: CommSection[] = ["chats", "calls", "groups", "you"];
 
 export const CommunicationCenter = () => {
   const { orgId, user } = useAuth();
@@ -53,7 +51,7 @@ export const CommunicationCenter = () => {
   const [showContext, setShowContext] = useState(false);
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [mobileContextOpen, setMobileContextOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<CommSection>("status");
+  const [activeSection, setActiveSection] = useState<CommSection>("chats");
   const pendingThreadRetryRef = useRef<string | null>(null);
   const pendingRetryCountRef = useRef(0);
   const selectedThreadIdRef = useRef(selectedThread?.id);
@@ -255,7 +253,6 @@ export const CommunicationCenter = () => {
   const renderSection = () => {
     const fallback = <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">{t("common.loading")}</div>;
     switch (activeSection) {
-      case "status": return <Suspense fallback={fallback}><OrbitStatusSection /></Suspense>;
       case "calls": return <Suspense fallback={fallback}><CommCallsSection onOpenThread={async (peerId, peerName) => {
           if (!userId) return;
           try {
@@ -268,21 +265,12 @@ export const CommunicationCenter = () => {
             }
           } catch (e) { console.error("[calls→thread]", e); }
         }} /></Suspense>;
-      case "contacts": return <Suspense fallback={fallback}><CommContactsSection /></Suspense>;
       case "groups": return <Suspense fallback={fallback}><CommGroupsSection /></Suspense>;
       case "you":
         return <Suspense fallback={fallback}><OrbitAccountSection /></Suspense>;
       default: return null;
     }
   };
-
-  const sectionTitle = activeSection === "chats" ? (t("orbit.nav.chats") || "Chats")
-    : activeSection === "calls" ? (t("orbit.nav.calls") || "Calls")
-    : activeSection === "contacts" ? (t("orbit.nav.contacts") || "Contacts")
-    : activeSection === "groups" ? (t("orbit.nav.communities") || "Communities")
-    : activeSection === "status" ? (t("orbit.nav.updates") || "Updates")
-    : activeSection === "you" ? (t("orbit.nav.settings") || "Settings")
-    : (t("orbit.nav.settings") || "Settings");
 
   return (
     <>
@@ -314,39 +302,17 @@ export const CommunicationCenter = () => {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <h1 className="text-[22px] font-bold tracking-tight truncate flex-1" style={{ color: "hsl(var(--foreground))" }}>
-                {sectionTitle}
-              </h1>
+              <div className="flex-1 min-w-0" />
               <div className="flex items-center gap-1">
                 <E2EEBadge compact />
                 {showChatArea && !selectedThread && (
-                  <>
-                    <Button
-                      size="sm" variant="ghost"
-                      className="h-9 w-9 p-0 rounded-full touch-target"
-                      style={{ color: "hsl(var(--foreground))" }}
-                      onClick={() => { haptic("light"); toast.info(t("orbit.camera") || "Camera"); }}
-                    >
-                      <Camera className="h-5 w-5" />
-                    </Button>
-                    <Button
-                      size="sm" variant="ghost"
-                      className="h-9 w-9 p-0 rounded-full touch-target"
-                      style={{ color: "hsl(var(--foreground))" }}
-                      onClick={() => setShowNewConversation(true)}
-                    >
-                      <Plus className="h-5 w-5" />
-                    </Button>
-                  </>
-                )}
-                {activeSection === "you" && (
                   <Button
                     size="sm" variant="ghost"
                     className="h-9 w-9 p-0 rounded-full touch-target"
                     style={{ color: "hsl(var(--foreground))" }}
-                    onClick={() => { haptic("light"); toast.info(t("orbit.qr_code") || "QR Code"); }}
+                    onClick={() => setShowNewConversation(true)}
                   >
-                    <Search className="h-5 w-5" />
+                    <Plus className="h-5 w-5" />
                   </Button>
                 )}
               </div>
