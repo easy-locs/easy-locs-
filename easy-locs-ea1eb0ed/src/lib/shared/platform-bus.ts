@@ -209,6 +209,9 @@ type PlatformEventType =
   | "system:currency_changed"
   | "system:sync_completed"
   | "system:user_online"
+  | "system:module_status_changed"
+  | "system:pipeline_completed"
+  | "system:pipeline_error"
   // Orchestration engine (UPPERCASE legacy — merged from lib/orchestration)
   | "ORDER_CREATED"
   | "ORDER_CONFIRMED"

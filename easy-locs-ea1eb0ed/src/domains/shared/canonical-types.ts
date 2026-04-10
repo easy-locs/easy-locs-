@@ -129,6 +129,19 @@ export interface CanonicalGeoPosition {
   updatedAt: string | null;
 }
 
+export interface CanonicalAddress {
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string | null;
+  postalCode: string | null;
+  country: string;
+  countryCode: string;
+  position: CanonicalGeoPosition | null;
+  formattedAddress: string | null;
+  placeId: string | null;
+}
+
 export interface CanonicalRadarEntity {
   id: string;
   type: string;
@@ -136,6 +149,70 @@ export interface CanonicalRadarEntity {
   label: string;
   category: string;
   metadata: Record<string, unknown>;
+}
+
+// ══════════════════════════════════════════════════
+// BOOKING
+// ══════════════════════════════════════════════════
+
+export type BookingStatus =
+  | "pending"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | "no_show"
+  | "refunded";
+
+export interface CanonicalBooking {
+  id: string;
+  userId: string;
+  providerId: string;
+  providerName: string;
+  type: "food" | "hotel" | "service" | "property" | "event";
+  status: BookingStatus;
+  scheduledAt: string;
+  duration: number | null;
+  amount: number;
+  currency: CurrencyCode;
+  paymentStatus: PaymentStatus;
+  transactionId: string | null;
+  address: CanonicalAddress | null;
+  notes: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ══════════════════════════════════════════════════
+// MESSAGE
+// ══════════════════════════════════════════════════
+
+export type MessageType =
+  | "text"
+  | "image"
+  | "video"
+  | "audio"
+  | "file"
+  | "location"
+  | "payment_request"
+  | "payment_sent"
+  | "payment_receipt"
+  | "booking_card"
+  | "system";
+
+export interface CanonicalMessage {
+  id: string;
+  threadId: string;
+  senderUserId: string;
+  type: MessageType;
+  body: string | null;
+  mediaUrl: string | null;
+  replyToId: string | null;
+  context: CommunicationContext | null;
+  status: "sending" | "sent" | "delivered" | "read" | "failed";
+  metadata: Record<string, unknown>;
+  createdAt: string;
 }
 
 // ══════════════════════════════════════════════════

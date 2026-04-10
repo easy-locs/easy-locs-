@@ -98,6 +98,53 @@ Storefront data flows into `storefront_pages` table with full profile: identity,
   22. **QualityScoreEngine** — aggregates all engine scores into global quality grade (A-F)
 - **Architecture**: All extend `BaseEngine`, run on intervals, emit to `platformBus`, record via `engineObserver`
 
+## Super App OS Architecture
+The app operates as a modular operating system with 5 unified pillars:
+
+### Core Infrastructure
+- **Platform Bus** (`src/lib/shared/platform-bus.ts`): Central nervous system — 200+ event types, dot↔colon notation bridge, prefix listeners, global listeners, rolling event log
+- **Super App Bridge** (`src/lib/super-app-bridge.ts`): Cross-pillar orchestrator — auto-invalidates React Query caches on any pillar event, installs Module Intelligence + Network Optimizer + Self-Pilot engines
+- **Module Registry** (`src/lib/core/module-registry.ts`): Unified registry of all 14 modules across 5 pillars, tracks status/health/capabilities/dependencies per module
+- **Data Pipeline** (`src/lib/core/data-pipeline.ts`): Generic runtime pipeline (input → normalize → validate → store → expose) with composable normalizers/validators
+- **OS Status** (`src/lib/core/os-status.ts`): Aggregate health reporting, dependency graph, circular dependency detection
+
+### Canonical Data Models (SSOT)
+All domain types live in `src/domains/shared/canonical-types.ts`:
+- **Identity**: `CanonicalOrbitProfile`, `CanonicalUserProfile`
+- **Finance**: `CanonicalWalletState`, `CanonicalWalletTransaction`
+- **Geo**: `CanonicalGeoPosition`, `CanonicalAddress`, `CanonicalRadarEntity`
+- **Booking**: `CanonicalBooking` (food/hotel/service/property/event)
+- **Communication**: `CanonicalMessage`, `CommunicationContext`
+- **Dashboard**: `CanonicalDashboardSummary`, `DashboardActivityItem`
+- **Status Machines**: `PaymentStatus`, `OrderStatus`, `DriverStatus`, `BookingStatus`
+- Legacy barrel in `src/lib/types/domain.ts` re-exports all + deprecated aliases
+
+### State Management (Zustand + React Context)
+- `useWalletStore` — wallet balance, transactions, platformBus integration
+- `useOrbitProfileStore` — canonical orbit identity
+- `useRadarStore` — points of interest, map/list state
+- `useLocationStore` — GPS, saved places, geolocation
+- `useDiscoveryStore` — unified search/filter state
+- `useAppStore` — persistent UI preferences
+- `AuthContext` — Supabase session, organization, roles
+- `RealtimeContext` — Supabase realtime subscriptions
+
+### Smart Navigation
+- **Navigation State Machine** (`src/stores/navigationStateMachine.ts`): FSM with pillar states, transition rules (soft/overlay/hard), context preservation per pillar
+- **Smart Navigation Hook** (`src/hooks/useSmartNavigation.ts`): Intent-based navigation, overlay vs full-page transitions
+- **Pillar Rules** (`src/lib/navigation/pillar-rules.ts`): Cross-pillar transition matrix
+- **Return Origin** (`src/lib/navigation/return-origin.ts`): Smart back navigation across pillar boundaries
+
+### Module Health Hooks
+- `useModuleHealth(moduleId)` — single module health snapshot with live status updates
+- `usePillarHealth(pillar)` — pillar-level aggregate health
+- `useOSHealth()` — full OS health report with auto-refresh
+
+### Core Engines (installed at boot via Super App Bridge)
+- **Module Intelligence** (`src/engines/core/module-intelligence.ts`): Cross-module staleness tracking, deferred refresh for inactive modules
+- **Self-Pilot** (`src/engines/core/self-pilot.ts`): Auto-healing — monitors query health, memory pressure, stale cache cleanup
+- **Network Optimizer** (`src/engines/core/network-optimizer.ts`): Request dedup, adaptive caching, network-quality adaptation (2g/3g/4g)
+
 ## Key Files
 - **5 Pillars**: `SmartHome.tsx` (Dashboard), `HyperRadarPage.tsx` (Radar), `CommunicationCenter.tsx` (Orbit), `WalletHubPage.tsx` (Wallet), `MeCommandCenter.tsx` (Me)
 - **Radar Components**: `RadarSmartSearch.tsx` (autocomplete + history), `RadarResultCard.tsx` (uniform card), `RadarEntitySheet.tsx` (detail), `PersonalRadarPanel.tsx` (AI personal), `RadarStoryRail.tsx` (stories), `ZoneIntelligenceSheet.tsx` (zone detail)
