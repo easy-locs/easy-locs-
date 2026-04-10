@@ -119,9 +119,8 @@ export function useMyPaymentRequests(limit = 20) {
 
   useEffect(() => {
     load();
-    const channel = supabase
-      .channel(`pr-${user?.id || "anon"}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "payment_requests" }, () => load())
+    const channel = createRealtimeChannel(`pr-${user?.id || "anon"}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "payment_requests" } as any, () => load())
       .subscribe();
     return () => { removeRealtimeChannel(channel); };
   }, [load, user?.id]);

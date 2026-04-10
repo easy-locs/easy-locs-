@@ -34,10 +34,22 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Identity**: Phone number = root identity, OTP required, user_id = internal stable ID
 - **Send Money** (`/wallet/transfer`): Contact picker (no email/ID input), resolves via `peer_user_id`
 - **Request Money** (`/wallet/request`): Contact picker (no email/ID input), resolves via `peer_user_id`
+- **QR Pay** (`/pay/scan`): Scan user/shop/service QR → instant payment overlay
+- **Orbit Chat Payments**: Send/Request buttons in chat, inline payment cards with live polling
 - **Contact Picker**: `ContactPickerSheet` in `src/components/wallet/ContactPickerSheet.tsx`
   - Shows "On Easy Locs" contacts (with green badge) and "Phone Contacts" (with invite)
-  - `InviteContactSheet` for non-users with share/invite flow
+  - `InviteContactSheet` supports invite-only OR invite+send (pending payment link)
 - **Resolution**: `resolvePayTarget` supports userId, orbitId, phone, walletId (email kept for backward compat but removed from UI)
+- **Payment Links**: `src/lib/payments/payment-link-service.ts` — shareable links for send/request/invite
+  - `createPaymentLink()` — creates link with QR + share URL
+  - `createInvitePaymentLink()` — invite non-user with pending payment (held until registration)
+  - `claimPaymentLink()` — atomic claim with status guard, phone validation, wallet transfer on claim
+  - `cancelPaymentLink()` — creator can cancel pending links
+- **QuickPay Sheet**: `src/components/wallet/QuickPaySheet.tsx` — 1-tap payment when recipient known
+- **Smart Payment Hook**: `src/hooks/useSmartPayment.ts` — context-aware payment from any pillar
+  - Sources: contact, orbit, qr, booking, service, shop, link
+  - Auto-maps context type, builds PaymentRequest, routes through UnifiedPaymentSystem
+- **Unified Payment System**: `src/payments/UnifiedPaymentSystem.tsx` — swipe-to-pay overlay
 - **RULE**: No email input, no ID input, no manual entry in payment flows. Contact → Action → Payment.
 
 ## Shop Onboarding System

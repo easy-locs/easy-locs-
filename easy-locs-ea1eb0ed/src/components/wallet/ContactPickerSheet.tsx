@@ -3,8 +3,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { listOrbitContacts } from "@/lib/orbit/orbit-contacts-service";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Search, Users, Loader2, ChevronRight, Phone, UserPlus, Link2, CheckCircle } from "lucide-react";
+import { Search, Users, Loader2, ChevronRight, Phone, UserPlus, Link2, CheckCircle, Send, Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { createInvitePaymentLink, generateShareMessage } from "@/lib/payments/payment-link-service";
+import { useWalletBalance } from "@/payments/wallet-hooks";
+import { formatMoney } from "@/lib/format";
 
 export interface PickableContact {
   id: string;
@@ -320,6 +323,11 @@ export function InviteContactSheet({
   contact: PickableContact | null;
 }) {
   const { t } = useI18n();
+  const { user } = useAuth();
+  const { balance, currency } = useWalletBalance();
+  const [mode, setMode] = useState<"invite" | "send">("invite");
+  const [amount, setAmount] = useState("");
+  const [sending, setSending] = useState(false);
 
   if (!contact) return null;
 
@@ -336,6 +344,49 @@ export function InviteContactSheet({
       }).catch(() => {});
     }
     onOpenChange(false);
+  };
+
+  const handleSendWithInvite = async () => {
+    if (!user?.id || !contact.phone) return;
+    const numAmount = parseFloat(amount);
+    if (!numAmount || numAmount <= 0) {
+      toast.error(t("wallet.invalidAmount") || "Enter a valid amount");
+      return;
+    }
+    if (numAmount > balance) {
+      toast.error(t("wallet.insufficient") || "Insufficient balance");
+      return;
+    }
+
+    setSending(true);
+    try {
+      const senderName = user.user_metadata?.display_name || user.user_metadata?.full_name || "Someone";
+      const link = await createInvitePaymentLink({
+        senderId: user.id,
+        recipientPhone: contact.phone,
+        recipientName: contact.display_name || "Friend",
+        amount: numAmount,
+        currency: currency || "AED",
+      });
+
+      const message = generateShareMessage(link, senderName);
+
+      if (navigator.share) {
+        await navigator.share({ title: "Easy Locs Payment", text: message }).catch(() => {});
+      } else {
+        await navigator.clipboard.writeText(message).catch(() => {});
+        toast.success(t("wallet.linkCopied") || "Payment link copied!");
+      }
+
+      toast.success(t("wallet.invitePaymentSent") || "Payment link created! They'll receive the money after signing up.");
+      onOpenChange(false);
+      setAmount("");
+      setMode("invite");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to create payment link");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -359,23 +410,90 @@ export function InviteContactSheet({
             <p className="text-sm text-muted-foreground max-w-[280px]">
               {t("wallet.notOnEasyLocs") || "This contact isn't on Easy Locs yet. Invite them to send money directly."}
             </p>
-            <button
-              onClick={shareInvite}
-              className="w-full rounded-2xl px-4 py-3.5 text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
-              style={{
-                background: "hsl(38 65% 56%)",
-                color: "hsl(220 40% 18%)",
-              }}
-            >
-              <UserPlus className="w-4 h-4" />
-              {t("wallet.inviteToEasyLocs") || "Invite to Easy Locs"}
-            </button>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="text-sm text-muted-foreground font-medium"
-            >
-              {t("common.cancel") || "Cancel"}
-            </button>
+
+            {mode === "send" && contact.phone ? (
+              <div className="w-full space-y-3">
+                <div className="rounded-2xl bg-card border border-border/10 p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-sm text-muted-foreground font-bold">{currency || "AED"}</span>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="0"
+                      autoFocus
+                      className="text-3xl font-extrabold text-foreground text-center bg-transparent outline-none w-[120px] tabular-nums"
+                      style={{ WebkitAppearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    {t("wallet.pendingUntilSignup") || "Payment held until they sign up"}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  {[25, 50, 100].map((preset) => (
+                    <button
+                      key={preset}
+                      onClick={() => setAmount(String(preset))}
+                      className="flex-1 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+                      style={{
+                        background: parseFloat(amount) === preset ? "hsl(38 65% 56%)" : "hsl(var(--muted) / 0.5)",
+                        color: parseFloat(amount) === preset ? "hsl(220 40% 18%)" : "hsl(var(--foreground))",
+                      }}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={handleSendWithInvite}
+                  disabled={sending || !parseFloat(amount)}
+                  className="w-full rounded-2xl px-4 py-3.5 text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50"
+                  style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+                >
+                  <Send className="w-4 h-4" />
+                  {sending
+                    ? (t("wallet.creating") || "Creating…")
+                    : parseFloat(amount) > 0
+                      ? `${t("wallet.inviteAndSend") || "Invite & Send"} ${formatMoney(parseFloat(amount), currency || "AED")}`
+                      : (t("wallet.enterAmount") || "Enter amount")}
+                </button>
+                <button
+                  onClick={() => setMode("invite")}
+                  className="text-xs text-muted-foreground font-medium"
+                >
+                  {t("wallet.justInvite") || "Just invite without payment"}
+                </button>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={shareInvite}
+                  className="w-full rounded-2xl px-4 py-3.5 text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
+                  style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+                >
+                  <UserPlus className="w-4 h-4" />
+                  {t("wallet.inviteToEasyLocs") || "Invite to Easy Locs"}
+                </button>
+                {contact.phone && (
+                  <button
+                    onClick={() => setMode("send")}
+                    className="w-full rounded-2xl px-4 py-3 text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform border border-border/30"
+                    style={{ background: "hsl(var(--card))" }}
+                  >
+                    <Wallet className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+                    {t("wallet.inviteAndSendMoney") || "Invite & Send Money"}
+                  </button>
+                )}
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="text-sm text-muted-foreground font-medium"
+                >
+                  {t("common.cancel") || "Cancel"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </SheetContent>
