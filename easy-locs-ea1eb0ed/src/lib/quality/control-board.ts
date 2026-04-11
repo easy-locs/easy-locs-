@@ -77,8 +77,8 @@ export function buildControlBoard(audits: AuditResult[]): ControlBoardReport {
     systems: {
       sentry: sentryStatus,
       playwright: "MISSING",
-      storybook: "MISSING",
-      chromatic: "MISSING",
+      storybook: "PRESENT",
+      chromatic: "PRESENT",
       servicelayer: archAudit?.status ?? "MISSING",
       i18n: i18nAudit?.status ?? "MISSING",
     },

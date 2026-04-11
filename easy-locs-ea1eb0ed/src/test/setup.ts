@@ -13,3 +13,6 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+HTMLCanvasElement.prototype.getContext = (() => null) as any;
+HTMLCanvasElement.prototype.toDataURL = (() => "") as any;

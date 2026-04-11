@@ -1,0 +1,6 @@
+{
+  "autoAcceptChanges": "main",
+  "onlyChanged": true,
+  "externals": ["src/index.css"],
+  "viewports": [375, 768, 1440]
+}

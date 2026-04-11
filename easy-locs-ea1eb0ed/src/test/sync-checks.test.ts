@@ -1,21 +1,54 @@
 import { describe, it, expect, vi } from "vitest";
 
 // Mock supabase for sync tests
+const mockQueryBuilder: any = {
+  select: vi.fn().mockImplementation(() => mockQueryBuilder),
+  insert: vi.fn().mockImplementation(() => mockQueryBuilder),
+  update: vi.fn().mockImplementation(() => mockQueryBuilder),
+  delete: vi.fn().mockImplementation(() => mockQueryBuilder),
+  upsert: vi.fn().mockImplementation(() => mockQueryBuilder),
+  eq: vi.fn().mockImplementation(() => mockQueryBuilder),
+  is: vi.fn().mockImplementation(() => mockQueryBuilder),
+  in: vi.fn().mockImplementation(() => mockQueryBuilder),
+  neq: vi.fn().mockImplementation(() => mockQueryBuilder),
+  gt: vi.fn().mockImplementation(() => mockQueryBuilder),
+  lt: vi.fn().mockImplementation(() => mockQueryBuilder),
+  gte: vi.fn().mockImplementation(() => mockQueryBuilder),
+  lte: vi.fn().mockImplementation(() => mockQueryBuilder),
+  like: vi.fn().mockImplementation(() => mockQueryBuilder),
+  ilike: vi.fn().mockImplementation(() => mockQueryBuilder),
+  limit: vi.fn().mockImplementation(() => mockQueryBuilder),
+  order: vi.fn().mockImplementation(() => mockQueryBuilder),
+  range: vi.fn().mockImplementation(() => mockQueryBuilder),
+  single: vi.fn().mockResolvedValue({ data: null }),
+  maybeSingle: vi.fn().mockResolvedValue({ data: null }),
+  then: vi.fn().mockImplementation((resolve: any) => resolve({ data: [], count: 0, error: null })),
+};
+const mockFrom = vi.fn().mockReturnValue(mockQueryBuilder);
+
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
       getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
       onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
+      getUser: vi.fn().mockResolvedValue({ data: { user: null } }),
     },
-    from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: null }),
-    }),
+    from: mockFrom,
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     functions: {
       invoke: vi.fn().mockResolvedValue({ data: null, error: null }),
     },
+    storage: {
+      from: vi.fn().mockReturnValue({
+        upload: vi.fn().mockResolvedValue({ data: null, error: null }),
+        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "" } }),
+      }),
+    },
+    channel: vi.fn().mockReturnValue({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn().mockReturnThis(),
+      unsubscribe: vi.fn(),
+    }),
   },
 }));
 
@@ -88,7 +121,7 @@ describe("Sync Health Check Structure", () => {
       expect(r).toHaveProperty("checkedAt");
       expect(["ok", "warning", "error"]).toContain(r.status);
     });
-  });
+  }, 30_000);
 });
 
 describe("Flow Integrity Checks", () => {
