@@ -6,3 +6,9 @@ id = "9TjuVKfCXmLuChsAHTsYz"
 uri = "file://easy-locs-ea1eb0ed/docs/ENGINEERING_AUDIT.md"
 type = "text"
 title = "Rapport d'audit ingénierie complet"
+
+[[outputs]]
+id = "rOyZvj-8VE6EGNYTjb3oX"
+uri = "file://easy-locs-ea1eb0ed/AUDIT_ENGINES.md"
+type = "text"
+title = "Audit Complet — Tous les Engines Easy-Locs"
