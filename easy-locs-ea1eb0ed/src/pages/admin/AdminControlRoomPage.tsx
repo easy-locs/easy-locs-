@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -8,10 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Activity, CheckCircle, Clock, Cpu, Heart,
   RefreshCw, XCircle, Pause, Shield, Wrench,
-  AlertTriangle, ArrowRight, Layers,
+  AlertTriangle, ArrowRight, Layers, Eye, Monitor,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { engineObserver } from "@/engines/core/engine-observer";
 
 interface EngineRow {
   engine_name: string;
@@ -97,6 +98,19 @@ const RUNTIME_PATCH_TYPES = [
   { type: "label_doesnt_fit", permanent: true, note: "Covered by button/tab CSS fixes" },
 ];
 
+const UI_ENGINE_PAGES = [
+  { route: "/dashboard", name: "Dashboard" },
+  { route: "/radar", name: "Radar" },
+  { route: "/orbit", name: "Orbit" },
+  { route: "/wallet", name: "Wallet" },
+  { route: "/me", name: "Me" },
+  { route: "/onboarding", name: "Onboarding" },
+  { route: "/shop/:id", name: "Shop" },
+  { route: "/listing/:id", name: "Public Listing" },
+  { route: "/merchant/dashboard", name: "Merchant Dashboard" },
+  { route: "/property/:id", name: "Property Detail" },
+];
+
 function StatusBadge({ status }: { status: string }) {
   const color = status === "ok" ? "bg-emerald-500/20 text-emerald-400" :
     status === "running" ? "bg-blue-500/20 text-blue-400" :
@@ -157,6 +171,8 @@ export default function AdminControlRoomPage() {
     refetchInterval: 15_000,
   });
 
+  const browserReport = useMemo(() => engineObserver.getReport(), [engines]);
+
   const totalEngines = engines.length;
   const enabledEngines = engines.filter(e => e.enabled);
   const serverEngines = engines.filter(e => e.runtime_class === "server");
@@ -188,6 +204,8 @@ export default function AdminControlRoomPage() {
   const blockedPublishes = recentLogs.filter(l =>
     l.engine_name.includes("publish-gate") && l.effect_summary?.toLowerCase().includes("block")
   );
+  const orphanCleanupLogs = recentLogs.filter(l => l.engine_name === "orphan-entity-cleanup");
+  const staleFlowLogs = recentLogs.filter(l => l.engine_name === "stale-flow-detection");
 
   const permanentFixes = SOURCE_FIX_REGISTRY.filter(f => f.status === "fixed").length;
   const runtimeOnly = SOURCE_FIX_REGISTRY.filter(f => f.status === "runtime_only").length;
@@ -252,7 +270,7 @@ export default function AdminControlRoomPage() {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
@@ -260,11 +278,26 @@ export default function AdminControlRoomPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-gray-400">Backend workers (permanent)</span><span className="text-emerald-400 font-bold">{serverEngines.length}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Backend workers</span><span className="text-emerald-400 font-bold">{serverEngines.length}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Browser monitors</span><span className="text-amber-400 font-bold">{browserEngines.length}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-400">Source fixes applied</span><span className="text-emerald-400 font-bold">{permanentFixes}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-400">Runtime-only patches</span><span className="text-amber-400 font-bold">{runtimeOnly}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Source fixes</span><span className="text-emerald-400 font-bold">{permanentFixes}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Runtime-only</span><span className="text-amber-400 font-bold">{runtimeOnly}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Patch types permanent</span><span className="text-emerald-400 font-bold">{permanentPatchTypes}/{RUNTIME_PATCH_TYPES.length}</span></div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+                    <Monitor className="w-4 h-4 inline mr-1" /> Browser Engine Observer
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-gray-400">Active browser engines</span><span className="text-blue-400 font-bold">{browserReport.totalEngines}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Total ticks</span><span className="text-white font-bold">{browserReport.totalTicks}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Total findings</span><span className="text-amber-400 font-bold">{browserReport.totalFindings}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Total actions</span><span className="text-emerald-400 font-bold">{browserReport.totalActions}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Browser errors</span><span className="text-red-400 font-bold">{browserReport.totalErrors}</span></div>
                 </CardContent>
               </Card>
 
@@ -277,9 +310,9 @@ export default function AdminControlRoomPage() {
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
                     <div className="flex justify-between"><span className="text-gray-400">Healthy</span><span className="text-emerald-400 font-bold">{latestHealth.healthy_count}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-400">Stale (recovered)</span><span className="text-amber-400 font-bold">{latestHealth.stale_count}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-400">Stale</span><span className="text-amber-400 font-bold">{latestHealth.stale_count}</span></div>
                     <div className="flex justify-between"><span className="text-gray-400">Errors</span><span className="text-red-400 font-bold">{latestHealth.error_count}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-400">Avg success rate</span><span className="text-blue-400 font-bold">{latestHealth.avg_success_rate}%</span></div>
+                    <div className="flex justify-between"><span className="text-gray-400">Success rate</span><span className="text-blue-400 font-bold">{latestHealth.avg_success_rate}%</span></div>
                     <div className="flex justify-between"><span className="text-gray-400">Runs/hour</span><span className="text-white font-bold">{latestHealth.total_runs_last_hour}</span></div>
                   </CardContent>
                 </Card>
@@ -355,10 +388,77 @@ export default function AdminControlRoomPage() {
                   <div>Untranslated key replacement (needs i18n file updates)</div>
                   <div>Element overlap resolution (per-component manual fix needed)</div>
                   <div>Sentinel/God/Omega browser loops (stop with tab close)</div>
-                  <div>36 Tier-2 dev-only engines (not in production builds)</div>
+                  <div>{browserEngines.length} browser-class engines (observers, not critical writers)</div>
                 </CardContent>
               </Card>
             </div>
+
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}><Eye className="w-4 h-4 inline mr-1" /> UI Engine Coverage (useUiEngine)</CardTitle></CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {UI_ENGINE_PAGES.map(p => (
+                    <div key={p.route} className="text-xs p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 18%)" }}>
+                      <span className="text-white font-medium">{p.name}</span>
+                      <div className="text-gray-500 mt-0.5 font-mono text-[10px]">{p.route}</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}><Monitor className="w-4 h-4 inline mr-1" /> Browser Engine Observer (Live)</CardTitle></CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm mb-3">
+                  <div className="text-center">
+                    <p className="text-blue-400 font-bold">{browserReport.totalEngines}</p>
+                    <p className="text-xs text-gray-500">Active Engines</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white font-bold">{browserReport.totalTicks}</p>
+                    <p className="text-xs text-gray-500">Total Ticks</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-amber-400 font-bold">{browserReport.totalFindings}</p>
+                    <p className="text-xs text-gray-500">Findings</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-emerald-400 font-bold">{browserReport.totalActions}</p>
+                    <p className="text-xs text-gray-500">Actions</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-red-400 font-bold">{browserReport.totalErrors}</p>
+                    <p className="text-xs text-gray-500">Errors</p>
+                  </div>
+                </div>
+                {browserReport.engines.length > 0 && (
+                  <div className="space-y-1">
+                    {browserReport.engines.slice(0, 10).map(e => (
+                      <div key={e.engineId} className="flex items-center justify-between text-xs">
+                        <span className="text-white font-medium">{e.engineId}</span>
+                        <div className="flex items-center gap-3 text-gray-400">
+                          <span>{e.tickCount} ticks</span>
+                          <span>{e.totalFindings} findings</span>
+                          <span>{e.totalActions} actions</span>
+                          <span className={e.errorCount > 0 ? "text-red-400" : "text-gray-500"}>{e.errorCount} errors</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {browserReport.recentLogs.length > 0 && (
+                  <div className="mt-3 border-t border-white/5 pt-2">
+                    <p className="text-xs text-gray-500 mb-1">Recent browser engine logs</p>
+                    {browserReport.recentLogs.slice(-5).map((l, i) => (
+                      <div key={i} className={`text-[10px] font-mono ${l.level === "error" ? "text-red-400" : l.level === "warn" ? "text-amber-400" : "text-gray-500"}`}>
+                        [{l.category}/{l.engineId}] {l.message}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
               <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>Top Impact Workers</CardTitle></CardHeader>
@@ -395,6 +495,31 @@ export default function AdminControlRoomPage() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {(orphanCleanupLogs.length > 0 || staleFlowLogs.length > 0) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {orphanCleanupLogs.length > 0 && (
+                  <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm text-orange-400">Orphan Cleanup Progress</CardTitle></CardHeader>
+                    <CardContent className="space-y-1 text-xs">
+                      {orphanCleanupLogs.slice(0, 5).map(l => (
+                        <div key={l.id} className="text-gray-300">{l.db_rows_affected} orphans cleaned — {l.effect_summary} <span className="text-gray-500">{timeAgo(l.started_at)}</span></div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+                {staleFlowLogs.length > 0 && (
+                  <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm text-amber-400">Stale Flow Detection</CardTitle></CardHeader>
+                    <CardContent className="space-y-1 text-xs">
+                      {staleFlowLogs.slice(0, 5).map(l => (
+                        <div key={l.id} className="text-gray-300">{l.db_rows_affected} stale flows expired — {l.effect_summary} <span className="text-gray-500">{timeAgo(l.started_at)}</span></div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             )}
 
             {(trustLogs.length > 0 || fraudLogs.length > 0) && (
