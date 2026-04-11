@@ -3,6 +3,7 @@ import { X, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Story } from "@/lib/stories/story-types";
 import { emitStoryView, emitStorySwipe, emitStoryClosed } from "@/lib/stories/story-events";
+import { useI18n } from "@/lib/i18n";
 import StoryProgressBar from "./StoryProgressBar";
 import StoryCTABar from "./StoryCTABar";
 
@@ -15,16 +16,18 @@ interface StoryViewerProps {
 const STORY_DURATION = 6000;
 
 const STORY_TYPE_COLORS: Record<string, string> = {
-  property: "bg-emerald-500",
-  stay: "bg-blue-500",
-  merchant: "bg-amber-500",
-  product: "bg-violet-500",
-  deal: "bg-red-500",
-  utility: "bg-slate-500",
-  mobility: "bg-cyan-500",
+  property: "hsl(160 60% 45%)",
+  stay: "hsl(210 70% 50%)",
+  merchant: "hsl(38 65% 56%)",
+  product: "hsl(270 60% 55%)",
+  deal: "hsl(0 70% 55%)",
+  utility: "hsl(220 15% 50%)",
+  mobility: "hsl(185 60% 45%)",
+  service: "hsl(38 65% 56%)",
 };
 
 export default function StoryViewer({ stories, initialIndex = 0, onClose }: StoryViewerProps) {
+  const { t } = useI18n();
   const [current, setCurrent] = useState(initialIndex);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -116,11 +119,12 @@ export default function StoryViewer({ stories, initialIndex = 0, onClose }: Stor
     return () => window.removeEventListener("keydown", handleKey);
   }, [goNext, goPrev, handleClose]);
 
-  const typeColor = STORY_TYPE_COLORS[story.storyType] || "bg-slate-500";
+  const typeColor = STORY_TYPE_COLORS[story.storyType] || "hsl(220 15% 50%)";
 
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      style={{ background: "hsl(220 40% 8%)" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -137,10 +141,10 @@ export default function StoryViewer({ stories, initialIndex = 0, onClose }: Stor
           <motion.div
             key={story.id}
             custom={direction}
-            initial={{ opacity: 0, y: direction >= 0 ? 60 : -60 }}
+            initial={{ opacity: 0, y: direction >= 0 ? 40 : -40 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: direction >= 0 ? -60 : 60 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
+            exit={{ opacity: 0, y: direction >= 0 ? -40 : 40 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
             className="absolute inset-0"
           >
             <img
@@ -149,7 +153,7 @@ export default function StoryViewer({ stories, initialIndex = 0, onClose }: Stor
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/70" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/60" />
           </motion.div>
         </AnimatePresence>
 
@@ -164,23 +168,28 @@ export default function StoryViewer({ stories, initialIndex = 0, onClose }: Stor
 
           <div className="flex items-center justify-between px-4 mt-3">
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold text-white uppercase tracking-wider ${typeColor}`}>
-                {story.storyType}
+              <span
+                className="px-2 py-0.5 rounded-lg text-[10px] font-bold text-white uppercase tracking-wider backdrop-blur-sm"
+                style={{ background: typeColor }}
+              >
+                {t(`story.type.${story.storyType}`) || story.storyType}
               </span>
-              <span className="text-xs text-white/70">{story.vertical}</span>
+              <span className="text-xs text-white/70 font-medium">{story.vertical}</span>
             </div>
             <div className="flex items-center gap-2">
               {story.mediaType === "video" && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setMuted(!muted); }}
-                  className="p-2 rounded-full bg-black/30 backdrop-blur-sm text-white"
+                  className="p-2 rounded-full text-white backdrop-blur-sm"
+                  style={{ background: "hsl(0 0% 0% / 0.3)" }}
                 >
                   {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </button>
               )}
               <button
                 onClick={(e) => { e.stopPropagation(); handleClose(); }}
-                className="p-2 rounded-full bg-black/30 backdrop-blur-sm text-white"
+                className="p-2 rounded-full text-white backdrop-blur-sm"
+                style={{ background: "hsl(0 0% 0% / 0.3)" }}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -190,7 +199,7 @@ export default function StoryViewer({ stories, initialIndex = 0, onClose }: Stor
 
         <StoryCTABar story={story} />
 
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 text-white/20 text-xs select-none pointer-events-none">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/15 text-[11px] font-medium select-none pointer-events-none tabular-nums">
           {current + 1}/{stories.length}
         </div>
       </div>

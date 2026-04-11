@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const PLACEHOLDER_IMG = "/placeholder.svg";
 const GOLD = "hsl(38 65% 56%)";
 const NAVY = "hsl(220 40% 18%)";
+const CARD_SHADOW = "0 1px 4px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)";
 
 export const ExploreListingCard = memo(function ExploreListingCard({ item }: { item: any }) {
   const { t } = useI18n();
@@ -73,7 +74,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
         style={{
           background: "hsl(var(--card))",
           border: "1px solid hsl(var(--border) / 0.12)",
-          boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
+          boxShadow: CARD_SHADOW,
         }}>
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           {!imgLoaded && (

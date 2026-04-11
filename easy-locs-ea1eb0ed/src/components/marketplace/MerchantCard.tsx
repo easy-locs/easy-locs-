@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Star, Clock, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 interface MerchantCardProps {
   to: string;
@@ -19,18 +20,20 @@ interface MerchantCardProps {
 
 const GOLD = "hsl(38 65% 56%)";
 const NAVY = "hsl(220 40% 18%)";
+const CARD_SHADOW = "0 1px 4px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)";
 
 export default function MerchantCard({
   to, image, name, category, rating, eta, distance,
   badge, partnerBadge, index = 0, variant = "horizontal",
 }: MerchantCardProps) {
+  const { t } = useI18n();
   const [imgError, setImgError] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
 
   const Img = ({ className }: { className: string }) =>
     image && !imgError ? (
       <div className={`${className} relative`}>
-        {!imgLoaded && <div className="absolute inset-0 animate-pulse bg-muted" />}
+        {!imgLoaded && <div className="absolute inset-0 animate-pulse" style={{ background: "hsl(var(--muted))" }} />}
         <img
           src={image}
           alt={name}
@@ -60,7 +63,7 @@ export default function MerchantCard({
           style={{
             border: "1px solid hsl(var(--border) / 0.12)",
             background: "hsl(var(--card))",
-            boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
+            boxShadow: CARD_SHADOW,
           }}
         >
           <div className="aspect-[16/10] relative overflow-hidden">
@@ -74,26 +77,27 @@ export default function MerchantCard({
             {partnerBadge && (
               <span className="absolute top-2.5 right-2.5 text-[10px] font-bold px-2.5 py-0.5 rounded-lg backdrop-blur-md"
                 style={{ background: "hsl(220 40% 18% / 0.7)", color: "white" }}>
-                Partner
+                {t("mp.partner") || "Partner"}
               </span>
             )}
           </div>
           <div className="p-3 space-y-1">
-            <h3 className="text-[13px] font-bold text-foreground leading-snug line-clamp-2 break-words group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
-            {category && <p className="text-[11px] text-muted-foreground line-clamp-1 break-words leading-snug">{category}</p>}
+            <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words transition-colors"
+              style={{ color: "hsl(var(--foreground))" }}>{name}</h3>
+            {category && <p className="text-xs leading-snug line-clamp-1 break-words" style={{ color: "hsl(var(--muted-foreground))" }}>{category}</p>}
             <div className="flex items-center gap-3 pt-0.5">
               {rating != null && (
-                <span className="flex items-center gap-1 text-[11px] font-bold">
+                <span className="flex items-center gap-1 text-xs font-bold">
                   <Star className="h-3 w-3 fill-current" style={{ color: GOLD }} /> {rating.toFixed(1)}
                 </span>
               )}
               {eta && (
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
                   <Clock className="h-3 w-3" /> {eta}
                 </span>
               )}
               {distance && (
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
                   <MapPin className="h-3 w-3" /> {distance}
                 </span>
               )}
@@ -117,7 +121,7 @@ export default function MerchantCard({
         style={{
           border: "1px solid hsl(var(--border) / 0.12)",
           background: "hsl(var(--card))",
-          boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)",
+          boxShadow: CARD_SHADOW,
         }}
       >
         <div className="w-[88px] h-[88px] rounded-xl overflow-hidden shrink-0 relative">
@@ -130,21 +134,22 @@ export default function MerchantCard({
           )}
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
-          <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 break-words group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
-          {category && <p className="text-[11px] text-muted-foreground line-clamp-1 break-words leading-snug">{category}</p>}
+          <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words transition-colors"
+            style={{ color: "hsl(var(--foreground))" }}>{name}</h3>
+          {category && <p className="text-xs line-clamp-1 break-words leading-snug" style={{ color: "hsl(var(--muted-foreground))" }}>{category}</p>}
           <div className="flex items-center gap-3 mt-0.5">
             {rating != null && (
-              <span className="flex items-center gap-1 text-[11px] font-bold">
+              <span className="flex items-center gap-1 text-xs font-bold">
                 <Star className="h-3 w-3 fill-current" style={{ color: GOLD }} /> {rating.toFixed(1)}
               </span>
             )}
             {eta && (
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
                 <Clock className="h-3 w-3" /> {eta}
               </span>
             )}
             {distance && (
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
                 <MapPin className="h-3 w-3" /> {distance}
               </span>
             )}

@@ -19,11 +19,11 @@ interface AppCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const VARIANTS: Record<CardVariant, string> = {
-  base: "rounded-2xl border border-border/20 bg-card",
-  interactive: "rounded-2xl border border-border/20 bg-card active:scale-[0.98] transition-transform duration-100 cursor-pointer",
-  settings: "rounded-2xl border border-border/15 bg-card/95 backdrop-blur-sm",
-  elevated: "rounded-2xl border border-border/10 bg-card shadow-[0_4px_16px_hsl(var(--foreground)/0.06)]",
-  kpi: "rounded-2xl border border-border/15 bg-card shadow-[0_4px_16px_hsl(var(--foreground)/0.06)] overflow-hidden",
+  base: "rounded-2xl border border-border/12 bg-card",
+  interactive: "rounded-2xl border border-border/12 bg-card active:scale-[0.98] transition-transform duration-100 cursor-pointer",
+  settings: "rounded-2xl border border-border/12 bg-card/95 backdrop-blur-sm",
+  elevated: "rounded-2xl border border-border/12 bg-card shadow-[0_1px_4px_hsl(var(--foreground)/0.04),0_4px_12px_hsl(var(--foreground)/0.03)]",
+  kpi: "rounded-2xl border border-border/12 bg-card shadow-[0_1px_4px_hsl(var(--foreground)/0.04),0_4px_12px_hsl(var(--foreground)/0.03)] overflow-hidden",
 };
 
 const PADDING: Record<CardPadding, string> = {

@@ -34,14 +34,14 @@ export default function StoryProgressBar({ total, current, duration, paused, onC
   }, [current, paused, duration, onComplete]);
 
   return (
-    <div className="flex gap-1 px-3 pt-2" style={{ paddingTop: "env(safe-area-inset-top, 12px)" }}>
+    <div className="flex gap-1 px-3 pt-3" style={{ paddingTop: "calc(env(safe-area-inset-top, 12px) + 4px)" }}>
       {Array.from({ length: total }, (_, i) => (
-        <div key={i} className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/30">
+        <div key={i} className="flex-1 h-[2.5px] rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.25)" }}>
           <div
             className="h-full rounded-full transition-none"
             style={{
               width: i < current ? "100%" : i === current ? `${progress}%` : "0%",
-              background: "white",
+              background: "hsl(38 65% 56%)",
             }}
           />
         </div>
