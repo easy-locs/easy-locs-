@@ -31,7 +31,7 @@ export function AppInit() {
 
   useEffect(() => {
     void init();
-    const ric = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 2000));
+    const ric = (cb: () => void) => requestIdleCallback(cb);
     ric(() => startContinuousGuard());
     ric(() => {
       try { generateExecutionProof(); } catch (e) { logger.warn("AppInit", "Execution proof generation failed", { error: e instanceof Error ? e.message : String(e) }); }

@@ -523,7 +523,7 @@ export const ClaimShopPage = safeLazy(() => import("@/pages/ClaimShopPage"), "Cl
 export const AppNotFoundPage = safeLazy(() => import("@/pages/AppNotFoundPage"), "AppNotFoundPage");
 
 // ── Idle prefetch critical routes ──
-const scheduleIdle = (typeof window !== "undefined" && "requestIdleCallback" in window) ? (cb: () => void) => window.requestIdleCallback(cb) : (cb: () => void) => window.setTimeout(cb, 200);
+const scheduleIdle = (cb: () => void) => requestIdleCallback(cb);
 scheduleIdle(() => {
   void import("@/pages/Index");
   void import("@/pages/Dashboard");
