@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -13,6 +13,7 @@ import {
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { engineObserver } from "@/engines/core/engine-observer";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { SOURCE_FIX_REGISTRY, RUNTIME_PATCH_TYPES, UI_ENGINE_PAGES } from "@/lib/control-room/source-fix-config";
 
 interface EngineRow {
@@ -84,8 +85,30 @@ function timeAgo(iso: string | null): string {
 
 type TabKey = "overview" | "engines" | "logs" | "health" | "core" | "fixes";
 
+interface UiEnginePageReport {
+  route: string;
+  score: number;
+  issueCount: number;
+  patchCount: number;
+  timestamp: number;
+}
+
 export default function AdminControlRoomPage() {
   const [tab, setTab] = useState<TabKey>("overview");
+  const [uiReports, setUiReports] = useState<Map<string, UiEnginePageReport>>(new Map());
+
+  const handleUiReport = useCallback((report: UiEnginePageReport) => {
+    setUiReports(prev => {
+      const next = new Map(prev);
+      next.set(report.route, report);
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    const unsub = platformBus.on("ui-engine:report" as Parameters<typeof platformBus.on>[0], handleUiReport as Parameters<typeof platformBus.on>[1]);
+    return () => { if (typeof unsub === "function") unsub(); };
+  }, [handleUiReport]);
 
   const { data: engines = [], refetch: refetchEngines } = useQuery({
     queryKey: ["control-room-engines"],
@@ -158,6 +181,10 @@ export default function AdminControlRoomPage() {
   );
   const orphanCleanupLogs = recentLogs.filter(l => l.engine_name === "orphan-entity-cleanup");
   const staleFlowLogs = recentLogs.filter(l => l.engine_name === "stale-flow-detection");
+
+  const SENTINEL_BACKEND_ENGINES = ["source-of-truth-drift", "pricing-integrity", "availability-integrity", "health-monitor", "incident-classify", "stale-flow-detection"];
+  const sentinelEngines = engines.filter(e => SENTINEL_BACKEND_ENGINES.includes(e.engine_name));
+  const sentinelLogs = recentLogs.filter(l => SENTINEL_BACKEND_ENGINES.includes(l.engine_name));
 
   const permanentFixes = SOURCE_FIX_REGISTRY.filter(f => f.status === "fixed").length;
   const runtimeOnly = SOURCE_FIX_REGISTRY.filter(f => f.status === "runtime_only").length;
@@ -346,15 +373,38 @@ export default function AdminControlRoomPage() {
             </div>
 
             <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
-              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}><Eye className="w-4 h-4 inline mr-1" /> UI Engine Coverage (useUiEngine)</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}><Eye className="w-4 h-4 inline mr-1" /> UI Engine Coverage (useUiEngine — Live)</CardTitle></CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                  {UI_ENGINE_PAGES.map(p => (
-                    <div key={p.route} className="text-xs p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 18%)" }}>
-                      <span className="text-white font-medium">{p.name}</span>
-                      <div className="text-gray-500 mt-0.5 font-mono text-[10px]">{p.route}</div>
-                    </div>
-                  ))}
+                  {UI_ENGINE_PAGES.map(p => {
+                    const liveReport = uiReports.get(p.route);
+                    return (
+                      <div key={p.route} className="text-xs p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 18%)" }}>
+                        <span className="text-white font-medium">{p.name}</span>
+                        <div className="text-gray-500 mt-0.5 font-mono text-[10px]">{p.route}</div>
+                        {liveReport ? (
+                          <div className="mt-1 space-y-0.5">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Score</span>
+                              <span className={liveReport.score >= 80 ? "text-emerald-400" : liveReport.score >= 50 ? "text-amber-400" : "text-red-400"}>
+                                {liveReport.score}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Issues</span>
+                              <span className={liveReport.issueCount === 0 ? "text-emerald-400" : "text-amber-400"}>{liveReport.issueCount}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Patches</span>
+                              <span className="text-blue-400">{liveReport.patchCount}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-1 text-[10px] text-gray-600">awaiting report</div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -498,6 +548,43 @@ export default function AdminControlRoomPage() {
                 )}
               </div>
             )}
+
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}><Shield className="w-4 h-4 inline mr-1" /> Sentinel Cron History (Backend Workers)</CardTitle></CardHeader>
+              <CardContent>
+                {sentinelEngines.length === 0 ? (
+                  <p className="text-xs text-gray-500">No Sentinel workers registered yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {sentinelEngines.map(e => (
+                        <div key={e.engine_name} className="text-xs p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 18%)" }}>
+                          <div className="flex items-center gap-1.5">
+                            <StatusBadge status={e.enabled ? e.status : "disabled"} />
+                            <span className="text-white font-medium">{e.engine_name}</span>
+                          </div>
+                          <div className="text-gray-500 mt-1">{e.success_rate}% success · {e.total_runs} runs · {timeAgo(e.last_run_at)}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {sentinelLogs.length > 0 && (
+                      <div className="space-y-1">
+                        <p className="text-[10px] text-gray-500 uppercase tracking-wide">Recent Activity</p>
+                        {sentinelLogs.slice(0, 8).map(l => (
+                          <div key={l.id} className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2">
+                              <StatusBadge status={l.status} />
+                              <span className="text-white">{l.engine_name}</span>
+                            </div>
+                            <span className="text-gray-500">{l.effect_summary ?? l.status} · {timeAgo(l.started_at)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
 
