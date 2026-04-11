@@ -63,6 +63,25 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Database Migration** (`supabase/migrations/20260411_canonical_content_architecture.sql`): 20+ tables with enums, constraints, indexes, RLS. Tables: taxonomy_families/categories/subcategories, canonical_types/subtypes/aliases, raw/normalized/canonical_entities, entity_validation_results, entity_publish_states, media_assets/analysis/fingerprints, quarantine_queue, review_queue, reclassification_requests, pipeline_jobs, audit_logs. Views: public_published_entities, quarantined_entities, validation_dashboard. RLS: public reads only published+approved, service role full access.
 - **ARCHITECTURE RULE**: No free-text categories anywhere. All taxonomy MUST come from canonical-registry.ts. No direct publish from raw/scraped data. Every entity must pass 7 gates before publication. Cross-vertical contamination is forbidden.
 
+## Deep Sentry Observability (Atom-by-Atom)
+- **Central Config** (`src/lib/analytics/sentry.ts`): DSN, smart tracesSampler (80% identity/wallet/orbit, 60% taxonomy/canonical, 40% navigation, 20% other), replay on error 100%, privacy scrubbing in beforeSend/beforeBreadcrumb (phone/email/OTP/token/card patterns), noise filtering (ResizeObserver, ChunkLoadError, NetworkError, AbortError)
+- **Domain Helpers** (`src/lib/observability/sentry-helpers.ts`): `captureDomainError()`, `captureDomainWarning()`, `startDomainSpan()`, `addDomainBreadcrumb()`, `setDomainContext()`, `setSafeUserContext()`, `instrumentCriticalAction()`, `captureRenderMismatch()`, `captureInvalidRenderPath()`, `capturePipelineFailure()`, `scrubSensitiveData()`. 15 domains: identity, contacts, orbit, wallet, taxonomy, marketplace, radar, dashboard, provider, onboarding, public_seo, support, media, canonical, delivery
+- **Domain Instrumentation** (`src/lib/observability/domain-instrumentation.ts`): Pre-built instrumentation for identity (OTP request/verify, login, session refresh), wallet (transfer, top-up, balance, checkout), orbit (message send, call start/end), contacts (sync), taxonomy (mapping, validation, publish), marketplace (listing import), provider (catalog update), radar (search)
+- **Orbit Observability** (`src/lib/observability/orbit-observability.ts`): Now wired to Sentry — all orbit logs emit domain breadcrumbs, errors auto-capture to Sentry with orbit domain tag
+- **Render Contract Monitoring** (`src/lib/rendering/contracts.ts`): `validateCardRendering()` captures render mismatches and invalid render paths to Sentry with entity/vertical/template metadata
+- **Pipeline Failure Capture** (`src/services/validation/gate-runner.ts`): `runAllGates()` captures pipeline failures with failed gate details to Sentry
+- **Feature Error Boundary** (`src/components/FeatureErrorBoundary.tsx`): Enhanced with optional `domain` prop for domain-level tagging in Sentry error reports
+- **Architecture Quality Gates** (`src/lib/observability/architecture-quality-gates.ts`): SSOT validation, domain boundary checks, bypass path detection — all gate failures emit Sentry warnings
+- **Naming Convention**: `{domain}.{action}.{step}` — e.g. `identity.otp.verify`, `orbit.message.send`, `wallet.transfer.submit`, `taxonomy.entity.publish`
+- **Privacy**: phone/email/OTP/token/card scrubbing in all Sentry events, breadcrumbs, and contexts. Sensitive field keys auto-redacted.
+
+## Anti-Conflict Architecture Cleanup
+- **Dead code removed**: `OrdersPage.tsx` (superseded by MyOrdersPage/CustomerActiveOrdersPage/MerchantOrdersPage), `NotificationPreferencesPage.tsx` (superseded by SettingsNotifications), `SettingsPaymentMethods.tsx` (superseded by SettingsWallet), `useOrbitComposerState.ts` (replaced by composerStore)
+- **Deprecated code removed**: `sendTextMessage`, `loadConversationMessages`, `markMessageRead` removed from `messageService.ts` — all migrated to orbitDispatch pipeline. Only `sendSystemMessage` and `createCallSystemMessage` remain (system events bypass dispatch).
+- **messageService.ts fixed**: Added missing `db` import from `src/services/db.ts`, removed unused supabase direct import
+- **Composer index cleaned**: Removed commented-out `useOrbitComposerState` export reference
+- **SSOT Rules enforced**: One source of truth per domain (identity=v2AuthStore, wallet=walletStore, orbit=orbitDispatch, taxonomy=canonical-registry, rendering=contracts.ts)
+
 ## Safe Auto-Healing System
 - **Error Classifier** (`src/lib/auto-heal/error-classifier.ts`): Classifies errors by severity (critical/medium/minor) and domain (crash/payment/auth/network/ui/data). Determines action (rollback/fallback/retry/suggest/log/ignore). Filters ignorable patterns (ResizeObserver, ChunkLoadError, etc).
 - **Runtime Healer** (`src/lib/auto-heal/runtime-healer.ts`): Deduplicates errors (5s window), logs to Sentry for criticals, provides `withAutoRetry()` for fetch operations (exponential backoff, 3 retries). Health report via `getHealerReport()`. Global listener via `installGlobalHealer()`.

@@ -1,7 +1,4 @@
-/**
- * Orbit Observability — Structured logging for critical messaging/call flows.
- * Logs key events with timing for performance monitoring.
- */
+import { addDomainBreadcrumb, captureDomainError } from "@/lib/observability/sentry-helpers";
 
 type LogLevel = "info" | "warn" | "error" | "metric";
 
@@ -28,8 +25,12 @@ function log(event: string, level: LogLevel, data?: Record<string, unknown>, dur
   logBuffer.push(entry);
   if (logBuffer.length > LOG_BUFFER_MAX) logBuffer.shift();
 
+  const sentryLevel = level === "error" ? "error" : level === "warn" ? "warning" : "info";
+  addDomainBreadcrumb("orbit", event, { ...data, durationMs }, sentryLevel);
+
   if (level === "error") {
     console.error(`[orbit:${event}]`, data);
+    captureDomainError("orbit", event, new Error(`orbit.${event}`), data);
   } else if (import.meta.env.DEV) {
     console.debug(`[orbit:${event}]`, durationMs ? `${durationMs}ms` : "", data ?? "");
   }

@@ -9,6 +9,7 @@ import type {
   EntityLifecycleStatus,
   AuditLogEntry,
 } from "@/domains/content-pipeline/types";
+import { capturePipelineFailure, addDomainBreadcrumb } from "@/lib/observability/sentry-helpers";
 import {
   isValidVertical,
   isValidCategoryChain,
@@ -394,6 +395,26 @@ export function runAllGates(
 
   const publishEligible = passedAllGates && !quarantined;
   const reviewRequired = gates.some(g => g.result === "warn");
+
+  if (failedGates.length > 0) {
+    capturePipelineFailure(
+      "gate_validation",
+      entity.id,
+      failedGates.map(g => g.gateId),
+      {
+        canonicalPath: entity.canonicalPath,
+        confidenceScore: entity.confidenceScore,
+        status,
+      },
+    );
+  }
+
+  addDomainBreadcrumb("canonical", "gates.completed", {
+    entityId: entity.id,
+    passed: passedAllGates,
+    failedCount: failedGates.length,
+    status,
+  });
 
   return {
     entityId: entity.id,
