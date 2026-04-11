@@ -55,6 +55,7 @@ export const CommunicationCenter = () => {
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [mobileContextOpen, setMobileContextOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<CommSection>("chats");
+  const [groupMode, setGroupMode] = useState<"group" | "community" | null>(null);
   const pendingThreadRetryRef = useRef<string | null>(null);
   const pendingRetryCountRef = useRef(0);
   const selectedThreadIdRef = useRef(selectedThread?.id);
@@ -441,6 +442,47 @@ export const CommunicationCenter = () => {
         </Sheet>
       )}
 
+      {groupMode && (
+        <Sheet open={!!groupMode} onOpenChange={(o) => { if (!o) setGroupMode(null); }}>
+          <SheetContent side="bottom" className="h-[60dvh] p-0 rounded-t-3xl" style={{ background: "hsl(var(--background))" }}>
+            <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border) / 0.1)" }}>
+              <SheetTitle className="text-base font-bold" style={{ color: "hsl(var(--foreground))" }}>
+                {groupMode === "group" ? (t("orbit.new_group") || "New Group") : (t("orbit.new_community") || "New Community")}
+              </SheetTitle>
+            </SheetHeader>
+            <div className="px-4 pt-4 space-y-4">
+              <div>
+                <label className="text-xs font-medium block mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  {groupMode === "group" ? (t("orbit.group_name") || "Group name") : (t("orbit.community_name") || "Community name")}
+                </label>
+                <input
+                  placeholder={groupMode === "group" ? "My Group" : "My Community"}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.3)", color: "hsl(var(--foreground))" }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium block mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  {t("orbit.description") || "Description (optional)"}
+                </label>
+                <textarea
+                  rows={3}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
+                  style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.3)", color: "hsl(var(--foreground))" }}
+                />
+              </div>
+              <button
+                onClick={() => { toast.success(groupMode === "group" ? (t("orbit.group_created") || "Group created") : (t("orbit.community_created") || "Community created")); setGroupMode(null); }}
+                className="w-full py-3 rounded-xl text-sm font-semibold"
+                style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+              >
+                {t("orbit.create") || "Create"}
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
+
       {showNewConversation && (
         <Sheet open={showNewConversation} onOpenChange={setShowNewConversation}>
           <SheetContent side="bottom" className="h-[70dvh] p-0 rounded-t-3xl" style={{ background: "hsl(var(--background))" }}>
@@ -453,7 +495,7 @@ export const CommunicationCenter = () => {
             {/* Quick actions */}
             <div className="px-4 pt-3 pb-1 space-y-0.5">
               <button
-                onClick={() => { haptic("light"); toast.info(t("orbit.new_group")); }}
+                onClick={() => { haptic("light"); setShowNewConversation(false); setGroupMode("group"); }}
                 className="w-full flex items-center gap-3 py-2.5 active:bg-muted/10 rounded-lg transition-colors"
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
@@ -464,7 +506,7 @@ export const CommunicationCenter = () => {
                 </span>
               </button>
               <button
-                onClick={() => { haptic("light"); toast.info(t("orbit.new_community")); }}
+                onClick={() => { haptic("light"); setShowNewConversation(false); setGroupMode("community"); }}
                 className="w-full flex items-center gap-3 py-2.5 active:bg-muted/10 rounded-lg transition-colors"
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>

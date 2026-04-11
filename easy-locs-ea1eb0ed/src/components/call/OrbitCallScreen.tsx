@@ -346,6 +346,8 @@ export function OrbitCallScreen() {
               onToggleHold={() => { setIsOnHold(!isOnHold); toast.info(isOnHold ? "Call resumed" : "Call on hold"); }}
               onAddParticipant={() => { setShowMoreMenu(false); setShowAddParticipant(true); }}
               onClose={() => setShowMoreMenu(false)}
+              onToggleCamera={toggleCamera}
+              onNavigateToChat={() => { setShowMoreMenu(false); }}
             />
           </>
         )}
@@ -494,12 +496,16 @@ function CallMoreMenu({
   onToggleHold,
   onAddParticipant,
   onClose,
+  onToggleCamera,
+  onNavigateToChat,
 }: {
   isOnHold: boolean;
   isVideoCall: boolean;
   onToggleHold: () => void;
   onAddParticipant: () => void;
   onClose: () => void;
+  onToggleCamera?: () => void;
+  onNavigateToChat?: () => void;
 }) {
   const [isRecording, setIsRecording] = useState(false);
   const { t } = useI18n();
@@ -556,7 +562,16 @@ function CallMoreMenu({
         <MenuRow
           label={t("call.menu.share_screen")}
           icon={<MonitorUp className="h-4.5 w-4.5" style={{ color: "hsl(0 0% 60%)" }} />}
-          onClick={() => { toast.info(t("call.menu.sharing_screen")); onClose(); }}
+          onClick={async () => {
+            try {
+              const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+              stream.getVideoTracks()[0].addEventListener("ended", () => toast.info(t("call.menu.screen_share_ended") || "Screen sharing ended"));
+              toast.success(t("call.menu.sharing_screen"));
+            } catch {
+              toast.error(t("call.menu.screen_share_denied") || "Screen share denied");
+            }
+            onClose();
+          }}
         />
         <Divider />
         {isVideoCall && (
@@ -564,7 +579,7 @@ function CallMoreMenu({
             <MenuRow
               label={t("call.menu.flip_camera")}
               icon={<SwitchCamera className="h-4.5 w-4.5" style={{ color: "hsl(0 0% 60%)" }} />}
-              onClick={() => { toast.info(t("call.menu.camera_flipped")); onClose(); }}
+              onClick={() => { onToggleCamera?.(); toast.success(t("call.menu.camera_flipped")); onClose(); }}
             />
             <Divider />
           </>
@@ -572,13 +587,22 @@ function CallMoreMenu({
         <MenuRow
           label={t("call.menu.audio_output")}
           icon={<Bluetooth className="h-4.5 w-4.5" style={{ color: "hsl(0 0% 60%)" }} />}
-          onClick={() => { toast.info(t("call.menu.audio_output")); onClose(); }}
+          onClick={async () => {
+            try {
+              const devices = await navigator.mediaDevices.enumerateDevices();
+              const outputs = devices.filter(d => d.kind === "audiooutput");
+              toast.info(`${t("call.menu.audio_output")}: ${outputs.length} ${outputs.length === 1 ? "device" : "devices"}`);
+            } catch {
+              toast.info(t("call.menu.audio_output"));
+            }
+            onClose();
+          }}
         />
         <Divider />
         <MenuRow
           label={t("call.menu.send_message")}
           icon={<MessageCircle className="h-4.5 w-4.5" style={{ color: "hsl(0 0% 60%)" }} />}
-          onClick={() => { toast.info(t("call.menu.opening_message")); onClose(); }}
+          onClick={() => { onClose(); onNavigateToChat?.(); }}
         />
         <Divider />
         <MenuRow

@@ -7,6 +7,7 @@
  * Document title is neutralized. Browser notifications are suppressed.
  */
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import { isAppLocked, setupAutoLock, getSecurityConfig, activateGhostMode, deactivateGhostMode } from "@/lib/app-security";
 import AppLockScreen from "./AppLockScreen";
 import { MessageCircle, Search, Users, Settings, MoreHorizontal } from "lucide-react";
@@ -73,7 +74,7 @@ function GhostShell() {
           <button
             key={item.label}
             className="flex flex-col items-center gap-0.5 px-4 py-1"
-            onClick={() => {}} // No-op
+            onClick={() => { if (!item.active) toast.info(`${item.label} is locked`); }}
           >
             <item.icon
               className="h-5 w-5"

@@ -105,6 +105,7 @@ export default function OrbitStatusSection() {
   const [posting, setPosting] = useState(false);
   const [viewingGroup, setViewingGroup] = useState<StatusGroup | null>(null);
   const [viewIndex, setViewIndex] = useState(0);
+  const [exploreChannels, setExploreChannels] = useState(false);
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -441,7 +442,7 @@ export default function OrbitStatusSection() {
               {t("orbit.status.channels") || "Channels"}
             </h2>
             <button
-              onClick={() => { haptic("light"); toast.info(t("orbit.status.explore_channels") || "Explore channels"); }}
+              onClick={() => { haptic("light"); setExploreChannels(true); }}
               className="text-[13px] font-semibold"
               style={{ color: "hsl(var(--primary))" }}
             >
@@ -449,7 +450,7 @@ export default function OrbitStatusSection() {
             </button>
           </div>
           <div className="space-y-0.5">
-            {SAMPLE_CHANNELS.map(ch => (
+            {(exploreChannels ? SAMPLE_CHANNELS : SAMPLE_CHANNELS.slice(0, 3)).map(ch => (
               <div key={ch.id} className="flex items-center gap-3 px-4 py-2.5">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold shrink-0"

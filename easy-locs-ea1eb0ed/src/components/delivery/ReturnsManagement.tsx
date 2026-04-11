@@ -8,34 +8,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Package, Clock, CheckCircle2, XCircle, Truck, DollarSign, Search, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDeliveryReturns, useUpdateMutation } from "@/hooks/useDeliveryData";
 
 type ReturnStatus = "requested" | "approved" | "pickup_scheduled" | "in_transit" | "received" | "inspected" | "refunded" | "rejected";
-type RefundMethod = "locs" | "original" | "store_credit";
-
-interface ReturnRequest {
-  id: string;
-  orderId: string;
-  customerName: string;
-  productDescription: string;
-  reason: string;
-  status: ReturnStatus;
-  refundAmount: number;
-  currency: string;
-  refundMethod: RefundMethod;
-  requestedAt: string;
-  pickupScheduledAt?: string;
-  receivedAt?: string;
-  inspectionNotes?: string;
-  conditionGrade?: "A" | "B" | "C" | "D";
-}
-
-const MOCK_RETURNS: ReturnRequest[] = [
-  { id: "r1", orderId: "ORD-4521", customerName: "Marie D.", productDescription: "Robe en soie taille M", reason: "Taille incorrecte", status: "pickup_scheduled", refundAmount: 89.00, currency: "EUR", refundMethod: "original", requestedAt: "2026-03-15T14:00:00Z", pickupScheduledAt: "2026-03-17T10:00:00Z" },
-  { id: "r2", orderId: "ORD-4498", customerName: "Jean P.", productDescription: "Casque audio Bluetooth", reason: "Produit défectueux", status: "inspected", refundAmount: 149.00, currency: "EUR", refundMethod: "original", requestedAt: "2026-03-13T09:00:00Z", receivedAt: "2026-03-15T11:00:00Z", inspectionNotes: "Défaut micro confirmé", conditionGrade: "C" },
-  { id: "r3", orderId: "ORD-4510", customerName: "Sophie L.", productDescription: "Lot cosmétiques bio", reason: "Changement d'avis", status: "requested", refundAmount: 45.50, currency: "EUR", refundMethod: "store_credit", requestedAt: "2026-03-16T08:00:00Z" },
-  { id: "r4", orderId: "ORD-4455", customerName: "Ali B.", productDescription: "Montre connectée", reason: "Non conforme à la description", status: "refunded", refundAmount: 199.00, currency: "EUR", refundMethod: "original", requestedAt: "2026-03-10T16:00:00Z", receivedAt: "2026-03-12T14:00:00Z", conditionGrade: "B" },
-  { id: "r5", orderId: "ORD-4480", customerName: "Lucas M.", productDescription: "Chaussures running 43", reason: "Produit endommagé à la réception", status: "rejected", refundAmount: 120.00, currency: "EUR", refundMethod: "original", requestedAt: "2026-03-11T10:00:00Z", inspectionNotes: "Dommages causés par le client" },
-];
 
 const STATUS_CFG: Record<ReturnStatus, { label: string; emoji: string; color: string }> = {
   requested: { label: "Demandé", emoji: "📩", color: "hsl(var(--warning))" },
@@ -56,28 +31,32 @@ const GRADE_CFG: Record<string, { label: string; color: string }> = {
 };
 
 export default function ReturnsManagement({ orgId }: { orgId: string }) {
+  const { data: returns = [], isLoading } = useDeliveryReturns(orgId);
+  const updateReturn = useUpdateMutation("storefront_returns");
   const [tab, setTab] = useState<"all" | "pending" | "processing" | "completed">("all");
   const [search, setSearch] = useState("");
 
-  const filtered = useMemo(() => {
-    let items = MOCK_RETURNS;
-    if (tab === "pending") items = items.filter(r => ["requested"].includes(r.status));
-    if (tab === "processing") items = items.filter(r => ["approved", "pickup_scheduled", "in_transit", "received", "inspected"].includes(r.status));
-    if (tab === "completed") items = items.filter(r => ["refunded", "rejected"].includes(r.status));
-    if (search) items = items.filter(r =>
-      r.customerName.toLowerCase().includes(search.toLowerCase()) ||
-      r.orderId.toLowerCase().includes(search.toLowerCase()) ||
-      r.productDescription.toLowerCase().includes(search.toLowerCase())
+  if (isLoading) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
+
+  const filtered = (() => {
+    let items = returns as any[];
+    if (tab === "pending") items = items.filter((r: any) => ["requested"].includes(r.status));
+    if (tab === "processing") items = items.filter((r: any) => ["approved", "pickup_scheduled", "in_transit", "received", "inspected"].includes(r.status));
+    if (tab === "completed") items = items.filter((r: any) => ["refunded", "rejected"].includes(r.status));
+    if (search) items = items.filter((r: any) =>
+      (r.customer_name || r.customerName || "").toLowerCase().includes(search.toLowerCase()) ||
+      (r.order_id || r.orderId || "").toLowerCase().includes(search.toLowerCase()) ||
+      (r.product_description || r.productDescription || "").toLowerCase().includes(search.toLowerCase())
     );
     return items;
-  }, [tab, search]);
+  })();
 
-  const stats = useMemo(() => ({
-    total: MOCK_RETURNS.length,
-    pending: MOCK_RETURNS.filter(r => r.status === "requested").length,
-    refunded: MOCK_RETURNS.filter(r => r.status === "refunded").reduce((s, r) => s + r.refundAmount, 0),
-    rejectionRate: Math.round(MOCK_RETURNS.filter(r => r.status === "rejected").length / MOCK_RETURNS.length * 100),
-  }), []);
+  const stats = {
+    total: returns.length,
+    pending: returns.filter((r: any) => r.status === "requested").length,
+    refunded: returns.filter((r: any) => r.status === "refunded").reduce((s: number, r: any) => s + (r.refund_amount || r.refundAmount || 0), 0),
+    rejectionRate: returns.length > 0 ? Math.round(returns.filter((r: any) => r.status === "rejected").length / returns.length * 100) : 0,
+  };
 
   return (
     <div className="space-y-3">
@@ -126,59 +105,76 @@ export default function ReturnsManagement({ orgId }: { orgId: string }) {
       {/* Returns list */}
       <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
-          {filtered.map(ret => {
-            const cfg = STATUS_CFG[ret.status];
+          {filtered.length === 0 && (
+            <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucun retour trouvé</div>
+          )}
+          {filtered.map((ret: any) => {
+            const cfg = STATUS_CFG[ret.status as ReturnStatus] || STATUS_CFG.requested;
+            const productDesc = ret.product_description || ret.productDescription || "";
+            const orderId = ret.order_id || ret.orderId || "";
+            const customerName = ret.customer_name || ret.customerName || "";
+            const refundAmount = ret.refund_amount || ret.refundAmount || 0;
+            const requestedAt = ret.requested_at || ret.requestedAt || ret.created_at || "";
+            const pickupScheduledAt = ret.pickup_scheduled_at || ret.pickupScheduledAt || "";
+            const receivedAt = ret.received_at || ret.receivedAt || "";
+            const conditionGrade = ret.condition_grade || ret.conditionGrade;
+            const inspectionNotes = ret.inspection_notes || ret.inspectionNotes;
+            const reason = ret.reason || "";
             return (
               <div key={ret.id} className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${cfg.color}15` }}>
                 <div className="flex items-center gap-3">
                   <span className="text-sm">{cfg.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{ret.productDescription}</p>
+                    <p className="text-[11px] font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{productDesc}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{ret.orderId}</span>
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>• {ret.customerName}</span>
+                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{orderId}</span>
+                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>• {customerName}</span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
                     <span className="text-[10px] font-bold" style={{ color: cfg.color }}>{cfg.label}</span>
-                    <p className="text-[10px] font-bold mt-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>{ret.refundAmount.toFixed(2)} €</p>
+                    <p className="text-[10px] font-bold mt-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>{Number(refundAmount).toFixed(2)} €</p>
                   </div>
                 </div>
 
                 {/* Reason */}
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md" style={{ background: "hsl(var(--hud-bg))" }}>
-                  <AlertTriangle className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--warning) / 0.6)" }} />
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{ret.reason}</p>
-                </div>
+                {reason && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md" style={{ background: "hsl(var(--hud-bg))" }}>
+                    <AlertTriangle className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--warning) / 0.6)" }} />
+                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{reason}</p>
+                  </div>
+                )}
 
                 {/* Inspection */}
-                {ret.conditionGrade && (
+                {conditionGrade && GRADE_CFG[conditionGrade] && (
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{
-                      background: `${GRADE_CFG[ret.conditionGrade].color}15`,
-                      color: GRADE_CFG[ret.conditionGrade].color,
-                    }}>Grade {ret.conditionGrade}: {GRADE_CFG[ret.conditionGrade].label}</span>
-                    {ret.inspectionNotes && (
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{ret.inspectionNotes}</span>
+                      background: `${GRADE_CFG[conditionGrade].color}15`,
+                      color: GRADE_CFG[conditionGrade].color,
+                    }}>Grade {conditionGrade}: {GRADE_CFG[conditionGrade].label}</span>
+                    {inspectionNotes && (
+                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{inspectionNotes}</span>
                     )}
                   </div>
                 )}
 
                 {/* Timeline */}
                 <div className="flex items-center gap-3 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                  <span>📅 {new Date(ret.requestedAt).toLocaleDateString("fr-FR")}</span>
-                  {ret.pickupScheduledAt && <span>🚚 {new Date(ret.pickupScheduledAt).toLocaleDateString("fr-FR")}</span>}
-                  {ret.receivedAt && <span>📥 {new Date(ret.receivedAt).toLocaleDateString("fr-FR")}</span>}
+                  {requestedAt && <span>📅 {new Date(requestedAt).toLocaleDateString("fr-FR")}</span>}
+                  {pickupScheduledAt && <span>🚚 {new Date(pickupScheduledAt).toLocaleDateString("fr-FR")}</span>}
+                  {receivedAt && <span>📥 {new Date(receivedAt).toLocaleDateString("fr-FR")}</span>}
                 </div>
 
                 {/* Actions for pending */}
                 {ret.status === "requested" && (
                   <div className="flex gap-2 pt-1">
                     <Button size="sm" className="flex-1 text-[10px] h-7"
+                      onClick={() => updateReturn.mutate({ id: ret.id, status: "approved" })}
                       style={{ background: "hsl(var(--success) / 0.12)", color: "hsl(var(--success))" }}>
                       ✅ Approuver
                     </Button>
                     <Button size="sm" className="flex-1 text-[10px] h-7"
+                      onClick={() => updateReturn.mutate({ id: ret.id, status: "rejected" })}
                       style={{ background: "hsl(var(--destructive) / 0.12)", color: "hsl(var(--destructive))" }}>
                       ❌ Rejeter
                     </Button>
@@ -186,6 +182,7 @@ export default function ReturnsManagement({ orgId }: { orgId: string }) {
                 )}
                 {ret.status === "inspected" && (
                   <Button size="sm" className="w-full text-[10px] h-7"
+                    onClick={() => updateReturn.mutate({ id: ret.id, status: "refunded" })}
                     style={{ background: "hsl(var(--success) / 0.12)", color: "hsl(var(--success))" }}>
                     💰 Procéder au remboursement
                   </Button>

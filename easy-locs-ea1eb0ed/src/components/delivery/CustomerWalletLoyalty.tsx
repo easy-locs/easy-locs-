@@ -7,6 +7,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wallet, Heart, Gift, Star, MapPin, Clock, ArrowUpRight, ArrowDownLeft, Crown, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDeliveryOrders, useUserAddresses } from "@/hooks/useDeliveryData";
 
 interface LoyaltyTier {
   name: string;
@@ -16,43 +17,11 @@ interface LoyaltyTier {
   color: string;
 }
 
-interface OrderHistoryItem {
-  id: string;
-  date: string;
-  from: string;
-  to: string;
-  amount: number;
-  status: "completed" | "cancelled" | "refunded";
-  pointsEarned: number;
-}
-
-interface FavoriteAddress {
-  id: string;
-  label: string;
-  address: string;
-  emoji: string;
-  usageCount: number;
-}
-
 const TIERS: LoyaltyTier[] = [
   { name: "Bronze", emoji: "🥉", minPoints: 0, perks: ["1 point par €", "Suivi temps réel"], color: "hsl(180 10% 55%)" },
   { name: "Silver", emoji: "🥈", minPoints: 500, perks: ["1.5 points par €", "Livraison prioritaire", "-5% frais"], color: "hsl(var(--muted-foreground))" },
   { name: "Gold", emoji: "🥇", minPoints: 2000, perks: ["2 points par €", "Express gratuit 1x/mois", "-10% frais", "Support prioritaire"], color: "hsl(var(--warning))" },
   { name: "Platinum", emoji: "💎", minPoints: 5000, perks: ["3 points par €", "Express gratuit illimité", "-15% frais", "Accès VIP", "Cashback 2%"], color: "hsl(var(--hud-cyan))" },
-];
-
-const MOCK_ORDERS: OrderHistoryItem[] = [
-  { id: "o1", date: "2026-03-15", from: "12 Rue Rivoli", to: "45 Ave Foch", amount: 12.50, status: "completed", pointsEarned: 25 },
-  { id: "o2", date: "2026-03-14", from: "8 Blvd Haussmann", to: "22 Rue de la Paix", amount: 8.00, status: "completed", pointsEarned: 16 },
-  { id: "o3", date: "2026-03-12", from: "5 Place Vendôme", to: "100 Ave Champs-Élysées", amount: 15.00, status: "completed", pointsEarned: 30 },
-  { id: "o4", date: "2026-03-10", from: "3 Rue du Louvre", to: "18 Blvd Saint-Germain", amount: 9.50, status: "cancelled", pointsEarned: 0 },
-  { id: "o5", date: "2026-03-08", from: "77 Rue de Rennes", to: "14 Ave Montaigne", amount: 11.00, status: "refunded", pointsEarned: 0 },
-];
-
-const MOCK_FAVORITES: FavoriteAddress[] = [
-  { id: "f1", label: "Maison", address: "12 Rue Rivoli, 75001 Paris", emoji: "🏠", usageCount: 23 },
-  { id: "f2", label: "Bureau", address: "45 Ave Foch, 75116 Paris", emoji: "🏢", usageCount: 18 },
-  { id: "f3", label: "Salle de sport", address: "8 Blvd Haussmann, 75009 Paris", emoji: "🏋️", usageCount: 7 },
 ];
 
 const REWARDS = [
@@ -62,12 +31,18 @@ const REWARDS = [
   { id: "r4", name: "Double points (7j)", cost: 500, emoji: "✨" },
 ];
 
-export default function CustomerWalletLoyalty() {
+export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
+  const { data: orders = [], isLoading: loadingOrders } = useDeliveryOrders(orgId);
+  const { data: addresses = [], isLoading: loadingAddresses } = useUserAddresses();
   const [tab, setTab] = useState<"wallet" | "orders" | "favorites" | "rewards">("wallet");
-  const myPoints = 1850;
+
+  if (loadingOrders || loadingAddresses) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
+
+  const completedOrders = orders.filter((o: any) => o.status === "completed" || o.status === "delivered");
+  const totalSpent = completedOrders.reduce((s: number, o: any) => s + (o.total_amount ?? o.amount ?? 0), 0);
+  const myPoints = Math.round(totalSpent * 2);
   const currentTier = TIERS.reduce((best, t) => myPoints >= t.minPoints ? t : best, TIERS[0]);
   const nextTier = TIERS.find(t => t.minPoints > myPoints);
-  const totalSpent = MOCK_ORDERS.filter(o => o.status === "completed").reduce((s, o) => s + o.amount, 0);
 
   return (
     <div className="space-y-3">
@@ -128,7 +103,7 @@ export default function CustomerWalletLoyalty() {
             <div className="grid grid-cols-3 gap-2">
               {[
                 { label: "Dépensé", value: `${totalSpent.toFixed(0)}€`, emoji: "💳" },
-                { label: "Commandes", value: MOCK_ORDERS.filter(o => o.status === "completed").length, emoji: "📦" },
+                { label: "Commandes", value: completedOrders.length, emoji: "📦" },
                 { label: "Économisé", value: "14€", emoji: "🎉" },
               ].map(s => (
                 <div key={s.label} className="text-center py-2 rounded-xl" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
@@ -154,26 +129,31 @@ export default function CustomerWalletLoyalty() {
 
         {tab === "orders" && (
           <motion.div key="orders" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
-            {MOCK_ORDERS.map(o => {
+            {orders.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucune commande</div>}
+            {orders.map((o: any) => {
+              const status = o.status || "completed";
               const statusCfg: Record<string, { color: string; label: string }> = {
                 completed: { color: "hsl(var(--success))", label: "✅ Livré" },
+                delivered: { color: "hsl(var(--success))", label: "✅ Livré" },
                 cancelled: { color: "hsl(var(--destructive))", label: "❌ Annulé" },
                 refunded: { color: "hsl(var(--warning))", label: "🔄 Remboursé" },
+                pending: { color: "hsl(var(--info))", label: "⏳ En cours" },
               };
-              const cfg = statusCfg[o.status];
+              const cfg = statusCfg[status] || statusCfg.pending;
+              const amount = o.total_amount ?? o.amount ?? 0;
+              const date = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR") : "";
               return (
                 <div key={o.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                   style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{o.from} → {o.to}</p>
+                    <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>Commande #{String(o.id).slice(0, 8)}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[10px]" style={{ color: cfg.color }}>{cfg.label}</span>
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{o.date}</span>
+                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{date}</span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{o.amount.toFixed(2)}€</p>
-                    {o.pointsEarned > 0 && <p className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>+{o.pointsEarned} pts</p>}
+                    <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{Number(amount).toFixed(2)}€</p>
                   </div>
                 </div>
               );
@@ -183,15 +163,15 @@ export default function CustomerWalletLoyalty() {
 
         {tab === "favorites" && (
           <motion.div key="favorites" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
-            {MOCK_FAVORITES.map(f => (
+            {addresses.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucune adresse favorite</div>}
+            {addresses.map((f: any) => (
               <div key={f.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                 style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-                <span className="text-lg">{f.emoji}</span>
+                <span className="text-lg">{f.emoji || "📍"}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{f.label}</p>
-                  <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{f.address}</p>
+                  <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{f.label || f.name || "Adresse"}</p>
+                  <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{f.address || f.formatted_address || ""}</p>
                 </div>
-                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{f.usageCount}x</span>
                 <Heart className="h-3.5 w-3.5" style={{ color: "hsl(var(--destructive))" }} fill="hsl(var(--destructive))" />
               </div>
             ))}

@@ -195,7 +195,7 @@ export default function AdminControlRoomPage() {
     { key: "overview" as const, label: "Overview", icon: Activity },
     { key: "core" as const, label: "Core Status", icon: Shield },
     { key: "engines" as const, label: "Engines", icon: Cpu },
-    { key: "fixes" as const, label: "Source Fixes", icon: Wrench },
+    { key: "fixes" as const, label: "Source Fixes (Reference)", icon: Wrench },
     { key: "logs" as const, label: "Run Logs", icon: Clock },
     { key: "health" as const, label: "Health", icon: Heart },
   ];
@@ -623,6 +623,10 @@ export default function AdminControlRoomPage() {
 
         {tab === "fixes" && (
           <div className="space-y-6">
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 flex items-center gap-2 text-sm text-amber-300">
+              <Eye size={14} />
+              <span>Documentation Reference — All fixes are permanently applied in source code. This tab is a read-only audit trail.</span>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { label: "Source Fixes", value: permanentFixes, color: "text-emerald-400" },

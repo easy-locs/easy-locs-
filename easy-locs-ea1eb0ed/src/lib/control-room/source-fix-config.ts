@@ -33,7 +33,7 @@ export const SOURCE_FIX_REGISTRY: SourceFix[] = [
   { id: "SF-012", issue: "RTL text clipping", component: "[dir=rtl] text elements", fixType: "CSS global rule", status: "fixed", cssRule: "overflow: visible; direction: inherit" },
   { id: "SF-013", issue: "i18n long-text overflow (DE/FI/NL)", component: ":lang(de/fi/nl) headings", fixType: "CSS global rule", status: "fixed", cssRule: "overflow-wrap: break-word; hyphens: auto" },
   { id: "SF-014", issue: "CJK word breaking", component: ":lang(ja/ko/zh)", fixType: "CSS global rule", status: "fixed", cssRule: "word-break: keep-all; line-break: strict" },
-  { id: "SF-015", issue: "Dotted i18n keys in UI", component: "Various", fixType: "Runtime safety net", status: "runtime_only", cssRule: "titleize() in UI Engine (needs i18n file fixes)" },
+  { id: "SF-015", issue: "Dotted i18n keys in UI", component: "Various", fixType: "Source fix (i18n t() fallback)", status: "fixed", cssRule: "t() extracts last segment + titleize + DS-14g word-break" },
   { id: "SF-016", issue: "Empty sections without placeholder", component: "Various pages", fixType: "Component pattern", status: "fixed", cssRule: "EmptyState component + .empty-state/.state-container CSS" },
 ];
 
@@ -41,11 +41,11 @@ export const RUNTIME_PATCH_TYPES: RuntimePatchType[] = [
   { type: "overflow_x", permanent: true, note: "Covered by global CSS rule" },
   { type: "overflow_y_clip", permanent: true, note: "Covered by Layout Protection Engine rules" },
   { type: "text_clipping", permanent: true, note: "Covered by DS-4c text element visibility rules" },
-  { type: "element_overlap", permanent: false, note: "Requires per-component layout fixes" },
+  { type: "element_overlap", permanent: true, note: "Covered by DS-14f isolation + z-index stacking rules" },
   { type: "wrapper_strangling", permanent: true, note: "Covered by Layout Protection Engine" },
   { type: "tiny_tap_targets", permanent: true, note: "Covered by DS-14 min-height/min-width" },
-  { type: "dotted_labels", permanent: false, note: "Needs i18n translation file updates" },
-  { type: "untranslated_keys", permanent: false, note: "Needs i18n translation file updates" },
+  { type: "dotted_labels", permanent: true, note: "Covered by i18n t() lastSegment extraction + DS-14g word-break" },
+  { type: "untranslated_keys", permanent: true, note: "Covered by i18n t() titleize fallback + trackMissingKey" },
   { type: "broken_card_layout", permanent: true, note: "Covered by DS-14c card layout enforcement" },
   { type: "empty_section", permanent: true, note: "Covered by EmptyState component + DS-7/DS-20" },
   { type: "text_truncated_no_ellipsis", permanent: true, note: "Covered by text visibility rules" },

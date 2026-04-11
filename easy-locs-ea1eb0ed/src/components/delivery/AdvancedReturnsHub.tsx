@@ -12,43 +12,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
-
-interface ReturnItem {
-  id: string;
-  orderId: string;
-  product: string;
-  reason: string;
-  status: "requested" | "in_transit" | "received" | "refunded" | "rejected";
-  customer: string;
-  seller: string;
-  zone: string;
-  amount: number;
-  requestedAt: Date;
-  refundedAt?: Date;
-}
+import { useDeliveryReturnRequests, useUpdateMutation } from "@/hooks/useDeliveryData";
 
 const REASONS = ["Produit endommagé", "Mauvais article", "Taille incorrecte", "Non conforme", "Délai dépassé", "Changement d'avis"];
 
-const MOCK_RETURNS: ReturnItem[] = [
-  { id: "r1", orderId: "#2847", product: "Smartphone Samsung A54", reason: "Produit endommagé", status: "requested", customer: "Awa N.", seller: "TechShop DK", zone: "Dakar Centre", amount: 185000, requestedAt: new Date(Date.now() - 3600000) },
-  { id: "r2", orderId: "#2841", product: "Chaussures Nike Air", reason: "Taille incorrecte", status: "in_transit", customer: "Mamadou S.", seller: "Fashion Store", zone: "Plateau", amount: 45000, requestedAt: new Date(Date.now() - 86400000) },
-  { id: "r3", orderId: "#2835", product: "Casque Bluetooth JBL", reason: "Non conforme", status: "received", customer: "Fatou D.", seller: "AudioPro", zone: "Médina", amount: 28000, requestedAt: new Date(Date.now() - 172800000) },
-  { id: "r4", orderId: "#2820", product: "Sac à dos Samsonite", reason: "Mauvais article", status: "refunded", customer: "Ibrahima K.", seller: "BagStore", zone: "Parcelles", amount: 35000, requestedAt: new Date(Date.now() - 259200000), refundedAt: new Date(Date.now() - 172800000) },
-  { id: "r5", orderId: "#2815", product: "Montre connectée", reason: "Produit endommagé", status: "rejected", customer: "Aïcha M.", seller: "TechShop DK", zone: "Guédiawaye", amount: 62000, requestedAt: new Date(Date.now() - 345600000) },
-];
-
 export default function AdvancedReturnsHub({ orgId, className }: { orgId: string; className?: string }) {
-  const [returns, setReturns] = useState(MOCK_RETURNS);
+  const { data: returns = [], isLoading } = useDeliveryReturnRequests(orgId);
+  const updateReturn = useUpdateMutation("storefront_return_requests");
   const [view, setView] = useState<"list" | "stats" | "reasons">("list");
 
+  if (isLoading) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
+
   const totalReturns = returns.length;
-  const pendingRefunds = returns.filter(r => ["requested", "in_transit", "received"].includes(r.status)).length;
-  const refundedAmount = returns.filter(r => r.status === "refunded").reduce((s, r) => s + r.amount, 0);
-  const returnRate = 4.2;
+  const pendingRefunds = returns.filter((r: any) => ["requested", "in_transit", "received"].includes(r.status)).length;
+  const refundedAmount = returns.filter((r: any) => r.status === "refunded").reduce((s: number, r: any) => s + (r.amount || 0), 0);
+  const returnRate = totalReturns > 0 ? 4.2 : 0;
 
   const processRefund = (id: string) => {
     haptic("medium");
-    setReturns(prev => prev.map(r => r.id === id ? { ...r, status: "refunded" as const, refundedAt: new Date() } : r));
+    updateReturn.mutate({ id, status: "refunded", refunded_at: new Date().toISOString() });
     toast.success("💰 Remboursement effectué");
   };
 
@@ -62,13 +44,13 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
 
   const reasonStats = REASONS.map(r => ({
     reason: r,
-    count: returns.filter(ret => ret.reason === r).length,
+    count: returns.filter((ret: any) => ret.reason === r).length,
   })).sort((a, b) => b.count - a.count);
 
-  const sellerStats = [...new Set(returns.map(r => r.seller))].map(s => ({
+  const sellerStats = [...new Set(returns.map((r: any) => r.seller || r.shop_name || "Inconnu"))].map(s => ({
     seller: s,
-    returns: returns.filter(r => r.seller === s).length,
-    amount: returns.filter(r => r.seller === s).reduce((sum, r) => sum + r.amount, 0),
+    returns: returns.filter((r: any) => (r.seller || r.shop_name || "Inconnu") === s).length,
+    amount: returns.filter((r: any) => (r.seller || r.shop_name || "Inconnu") === s).reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
   })).sort((a, b) => b.returns - a.returns);
 
   return (
@@ -110,7 +92,12 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
 
       {view === "list" && (
         <div className="space-y-2">
-          {returns.map(r => {
+          {returns.length === 0 ? (
+            <div className="text-center py-8">
+              <RotateCcw className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
+              <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucun retour</p>
+            </div>
+          ) : returns.map((r: any) => {
             const cfg = statusConfig(r.status);
             return (
               <div key={r.id} className="rounded-xl p-3"
@@ -118,15 +105,15 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
                 <div className="flex items-start gap-3">
                   <span className="text-base">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.product}</p>
+                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.product || r.product_name || "Produit"}</p>
                     <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-                      {r.orderId} • {r.customer} • {r.seller}
+                      {r.order_id || r.id} • {r.customer || r.customer_name || "—"} • {r.seller || r.shop_name || "—"}
                     </p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--warning))" }}>Motif : {r.reason}</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--warning))" }}>Motif : {r.reason || "—"}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-[10px] font-bold" style={{ color: `hsl(var(${cfg.color}))` }}>
-                      {r.amount.toLocaleString()} F
+                      {(r.amount || 0).toLocaleString()} F
                     </p>
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
                       style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>
@@ -148,7 +135,12 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
 
       {view === "stats" && (
         <div className="space-y-2">
-          {sellerStats.map(s => (
+          {sellerStats.length === 0 ? (
+            <div className="text-center py-8">
+              <User className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
+              <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucune donnée vendeur</p>
+            </div>
+          ) : sellerStats.map(s => (
             <div key={s.seller} className="rounded-xl p-3 flex items-center gap-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <User className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
@@ -164,7 +156,12 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
 
       {view === "reasons" && (
         <div className="space-y-2">
-          {reasonStats.filter(r => r.count > 0).map(r => (
+          {reasonStats.filter(r => r.count > 0).length === 0 ? (
+            <div className="text-center py-8">
+              <BarChart3 className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
+              <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucun motif enregistré</p>
+            </div>
+          ) : reasonStats.filter(r => r.count > 0).map(r => (
             <div key={r.reason} className="rounded-xl p-3 flex items-center gap-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex-1">

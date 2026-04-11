@@ -9,53 +9,31 @@ import { Tag, Plus, Percent, DollarSign, Clock, Users, TrendingUp, Copy, Trash2,
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-
-interface Coupon {
-  id: string;
-  code: string;
-  type: "percentage" | "fixed" | "free_delivery";
-  value: number;
-  currency?: string;
-  minOrder?: number;
-  maxDiscount?: number;
-  usageLimit: number;
-  usageCount: number;
-  perUserLimit: number;
-  validFrom: string;
-  validTo: string;
-  active: boolean;
-  categories?: string[];
-  revenue: number;
-  conversions: number;
-}
-
-const MOCK_COUPONS: Coupon[] = [
-  { id: "cp1", code: "BIENVENUE20", type: "percentage", value: 20, minOrder: 30, maxDiscount: 15, usageLimit: 500, usageCount: 187, perUserLimit: 1, validFrom: "2026-03-01", validTo: "2026-03-31", active: true, categories: ["food", "fashion"], revenue: 4250, conversions: 187 },
-  { id: "cp2", code: "LIVGRATUITE", type: "free_delivery", value: 0, minOrder: 25, usageLimit: 200, usageCount: 89, perUserLimit: 2, validFrom: "2026-03-10", validTo: "2026-03-20", active: true, revenue: 1780, conversions: 89 },
-  { id: "cp3", code: "FLASH5EUR", type: "fixed", value: 5, currency: "EUR", minOrder: 20, usageLimit: 100, usageCount: 100, perUserLimit: 1, validFrom: "2026-03-05", validTo: "2026-03-12", active: false, revenue: 2100, conversions: 100 },
-  { id: "cp4", code: "VIP30", type: "percentage", value: 30, minOrder: 50, maxDiscount: 25, usageLimit: 50, usageCount: 12, perUserLimit: 1, validFrom: "2026-03-15", validTo: "2026-04-15", active: true, categories: ["premium"], revenue: 960, conversions: 12 },
-];
+import { useCoupons, useUpdateMutation, useInsertMutation } from "@/hooks/useDeliveryData";
 
 export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
-  const [coupons, setCoupons] = useState(MOCK_COUPONS);
+  const { data: coupons = [], isLoading } = useCoupons(orgId);
+  const updateCoupon = useUpdateMutation("storefront_coupons");
+  const insertCoupon = useInsertMutation("storefront_coupons");
   const [tab, setTab] = useState<"active" | "expired" | "create">("active");
-  const [showCreate, setShowCreate] = useState(false);
 
-  const stats = useMemo(() => ({
-    totalRevenue: coupons.reduce((s, c) => s + c.revenue, 0),
-    totalConversions: coupons.reduce((s, c) => s + c.conversions, 0),
-    activeCount: coupons.filter(c => c.active).length,
-    avgROI: coupons.length > 0 ? +(coupons.reduce((s, c) => s + (c.revenue / Math.max(c.conversions * (c.type === "fixed" ? c.value : 5), 1)), 0) / coupons.length).toFixed(1) : 0,
-  }), [coupons]);
+  if (isLoading) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
 
-  const filtered = useMemo(() => {
-    if (tab === "active") return coupons.filter(c => c.active);
-    if (tab === "expired") return coupons.filter(c => !c.active || c.usageCount >= c.usageLimit);
+  const stats = {
+    totalRevenue: coupons.reduce((s: number, c: any) => s + (c.revenue || 0), 0),
+    totalConversions: coupons.reduce((s: number, c: any) => s + (c.conversions || 0), 0),
+    activeCount: coupons.filter((c: any) => c.active).length,
+    avgROI: coupons.length > 0 ? +(coupons.reduce((s: number, c: any) => s + ((c.revenue || 0) / Math.max((c.conversions || 0) * (c.type === "fixed" ? (c.value || 5) : 5), 1)), 0) / coupons.length).toFixed(1) : 0,
+  };
+
+  const filtered = (() => {
+    if (tab === "active") return coupons.filter((c: any) => c.active);
+    if (tab === "expired") return coupons.filter((c: any) => !c.active || (c.usage_count || c.usageCount || 0) >= (c.usage_limit || c.usageLimit || Infinity));
     return coupons;
-  }, [tab, coupons]);
+  })();
 
-  const toggleCoupon = (id: string) => {
-    setCoupons(prev => prev.map(c => c.id === id ? { ...c, active: !c.active } : c));
+  const toggleCoupon = (id: string, currentActive: boolean) => {
+    updateCoupon.mutate({ id, active: !currentActive });
   };
 
   const copyCode = (code: string) => {
@@ -145,9 +123,17 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
           </motion.div>
         ) : (
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
-            {filtered.map(c => {
-              const cfg = typeCfg[c.type];
-              const usagePercent = Math.round((c.usageCount / c.usageLimit) * 100);
+            {filtered.length === 0 && (
+              <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucun coupon trouvé</div>
+            )}
+            {filtered.map((c: any) => {
+              const cfg = typeCfg[c.type] || typeCfg.percentage;
+              const usageCount = c.usage_count || c.usageCount || 0;
+              const usageLimit = c.usage_limit || c.usageLimit || 1;
+              const usagePercent = Math.round((usageCount / usageLimit) * 100);
+              const minOrder = c.min_order || c.minOrder;
+              const validFrom = c.valid_from || c.validFrom || "";
+              const validTo = c.valid_to || c.validTo || "";
               return (
                 <div key={c.id} className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${c.active ? cfg.color + "20" : "hsl(var(--hud-border) / 0.08)"}` }}>
                   <div className="flex items-center gap-3">
@@ -158,14 +144,14 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
                       <p className="text-[10px] font-semibold" style={{ color: cfg.color }}>{cfg.label}</p>
                       <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                         {c.type === "percentage" ? `-${c.value}%` : c.type === "fixed" ? `-${c.value}€` : "Livraison offerte"}
-                        {c.minOrder ? ` • Min ${c.minOrder}€` : ""}
+                        {minOrder ? ` • Min ${minOrder}€` : ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <button onClick={() => copyCode(c.code)} className="p-1 rounded-md" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                         <Copy className="h-3 w-3" />
                       </button>
-                      <button onClick={() => toggleCoupon(c.id)} className="p-1">
+                      <button onClick={() => toggleCoupon(c.id, c.active)} className="p-1">
                         {c.active ? <ToggleRight className="h-4 w-4" style={{ color: "hsl(var(--success))" }} /> : <ToggleLeft className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />}
                       </button>
                     </div>
@@ -175,7 +161,7 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
                   <div>
                     <div className="flex justify-between mb-0.5">
                       <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Utilisations</span>
-                      <span className="text-[10px] font-semibold" style={{ color: cfg.color }}>{c.usageCount}/{c.usageLimit}</span>
+                      <span className="text-[10px] font-semibold" style={{ color: cfg.color }}>{usageCount}/{usageLimit}</span>
                     </div>
                     <div className="h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
                       <div className="h-full rounded-full transition-all" style={{ width: `${usagePercent}%`, background: cfg.color }} />
@@ -184,9 +170,9 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
 
                   {/* ROI */}
                   <div className="flex items-center gap-3 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                    <span>💰 {c.revenue}€ revenus</span>
-                    <span>📈 {c.conversions} conversions</span>
-                    <span>📅 {c.validFrom} → {c.validTo}</span>
+                    <span>💰 {c.revenue || 0}€ revenus</span>
+                    <span>📈 {c.conversions || 0} conversions</span>
+                    <span>📅 {validFrom} → {validTo}</span>
                   </div>
                 </div>
               );

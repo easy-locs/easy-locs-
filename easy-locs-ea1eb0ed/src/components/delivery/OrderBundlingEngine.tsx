@@ -7,39 +7,17 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Layers, MapPin, Package, Zap, Clock, TrendingUp, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface Order {
-  id: string;
-  address: string;
-  lat: number;
-  lng: number;
-  weight: number;
-  priority: "standard" | "express" | "urgent";
-  status: "pending" | "bundled" | "dispatched";
-  createdAt: string;
-  customerName: string;
-}
+import { useDeliveryOrders } from "@/hooks/useDeliveryData";
 
 interface Bundle {
   id: string;
-  orders: Order[];
+  orders: any[];
   zone: string;
   estimatedDistance: number;
   estimatedTime: number;
   savings: number;
   status: "draft" | "confirmed" | "dispatched";
 }
-
-const MOCK_ORDERS: Order[] = [
-  { id: "o1", address: "12 Rue de Rivoli, Paris 1er", lat: 48.856, lng: 2.359, weight: 2.5, priority: "standard", status: "pending", createdAt: "2026-03-16T09:00", customerName: "Alice M." },
-  { id: "o2", address: "45 Rue du Faubourg, Paris 1er", lat: 48.858, lng: 2.361, weight: 1.2, priority: "standard", status: "pending", createdAt: "2026-03-16T09:15", customerName: "Bruno C." },
-  { id: "o3", address: "8 Place Vendôme, Paris 1er", lat: 48.868, lng: 2.329, weight: 0.5, priority: "express", status: "pending", createdAt: "2026-03-16T09:20", customerName: "Claire D." },
-  { id: "o4", address: "120 Bd Haussmann, Paris 8e", lat: 48.875, lng: 2.316, weight: 3.0, priority: "standard", status: "pending", createdAt: "2026-03-16T09:30", customerName: "David R." },
-  { id: "o5", address: "55 Av. Montaigne, Paris 8e", lat: 48.866, lng: 2.306, weight: 1.8, priority: "urgent", status: "pending", createdAt: "2026-03-16T09:35", customerName: "Emma F." },
-  { id: "o6", address: "22 Rue de Passy, Paris 16e", lat: 48.856, lng: 2.279, weight: 4.2, priority: "standard", status: "pending", createdAt: "2026-03-16T10:00", customerName: "François G." },
-  { id: "o7", address: "15 Rue de la Pompe, Paris 16e", lat: 48.862, lng: 2.277, weight: 0.8, priority: "standard", status: "pending", createdAt: "2026-03-16T10:10", customerName: "Gaëlle H." },
-  { id: "o8", address: "33 Av. Victor Hugo, Paris 16e", lat: 48.869, lng: 2.285, weight: 2.1, priority: "express", status: "pending", createdAt: "2026-03-16T10:20", customerName: "Hugo J." },
-];
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -49,7 +27,7 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function clusterOrders(orders: Order[], radiusKm: number = 1.5): Bundle[] {
+function clusterOrders(orders: any[], radiusKm: number = 1.5): Bundle[] {
   const used = new Set<string>();
   const bundles: Bundle[] = [];
   const sorted = [...orders].sort((a, b) => (a.priority === "urgent" ? -1 : b.priority === "urgent" ? 1 : 0));
@@ -61,23 +39,33 @@ function clusterOrders(orders: Order[], radiusKm: number = 1.5): Bundle[] {
 
     sorted.forEach(other => {
       if (used.has(other.id)) return;
-      const dist = haversineKm(order.lat, order.lng, other.lat, other.lng);
-      if (dist <= radiusKm) {
-        cluster.push(other);
-        used.add(other.id);
+      const lat1 = order.lat || order.latitude || 0;
+      const lng1 = order.lng || order.longitude || 0;
+      const lat2 = other.lat || other.latitude || 0;
+      const lng2 = other.lng || other.longitude || 0;
+      if (lat1 && lng1 && lat2 && lng2) {
+        const dist = haversineKm(lat1, lng1, lat2, lng2);
+        if (dist <= radiusKm) {
+          cluster.push(other);
+          used.add(other.id);
+        }
       }
     });
 
     const totalDist = cluster.length > 1
-      ? cluster.reduce((s, o, i) => i === 0 ? 0 : s + haversineKm(cluster[i - 1].lat, cluster[i - 1].lng, o.lat, o.lng), 0)
+      ? cluster.reduce((s, o, i) => {
+          if (i === 0) return 0;
+          const prev = cluster[i - 1];
+          return s + haversineKm(prev.lat || prev.latitude || 0, prev.lng || prev.longitude || 0, o.lat || o.latitude || 0, o.lng || o.longitude || 0);
+        }, 0)
       : 0;
-    const individualDist = cluster.reduce((s, o) => s + 3.5, 0); // avg 3.5km per separate trip
+    const individualDist = cluster.reduce((s, o) => s + 3.5, 0);
     const savings = Math.max(0, Math.round((1 - totalDist / Math.max(individualDist, 1)) * 100));
 
     bundles.push({
       id: `b${bundles.length + 1}`,
       orders: cluster,
-      zone: cluster[0].address.split(",").pop()?.trim() || "Zone",
+      zone: (cluster[0].address || cluster[0].delivery_address || "Zone").split(",").pop()?.trim() || "Zone",
       estimatedDistance: Math.round((totalDist || 2.5) * 10) / 10,
       estimatedTime: Math.round(cluster.length * 8 + (totalDist || 2.5) * 3),
       savings,
@@ -89,20 +77,22 @@ function clusterOrders(orders: Order[], radiusKm: number = 1.5): Bundle[] {
 }
 
 export default function OrderBundlingEngine({ orgId }: { orgId: string }) {
+  const { data: orders = [], isLoading } = useDeliveryOrders(orgId);
   const [tab, setTab] = useState<"pending" | "bundles" | "stats">("pending");
   const [radius, setRadius] = useState(1.5);
-  const [orders] = useState(MOCK_ORDERS);
 
-  const bundles = useMemo(() => clusterOrders(orders, radius), [orders, radius]);
+  if (isLoading) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
 
-  const stats = useMemo(() => ({
+  const bundles = clusterOrders(orders, radius);
+
+  const stats = {
     totalOrders: orders.length,
     totalBundles: bundles.length,
     avgPerBundle: Math.round(orders.length / Math.max(bundles.length, 1) * 10) / 10,
     totalSavings: bundles.reduce((s, b) => s + b.savings, 0),
-    totalWeight: orders.reduce((s, o) => s + o.weight, 0),
-    urgentCount: orders.filter(o => o.priority === "urgent").length,
-  }), [orders, bundles]);
+    totalWeight: orders.reduce((s: number, o: any) => s + (o.weight || 0), 0),
+    urgentCount: orders.filter((o: any) => o.priority === "urgent").length,
+  };
 
   const priorityCfg: Record<string, { color: string; emoji: string }> = {
     standard: { color: "hsl(var(--success))", emoji: "🟢" },
@@ -166,17 +156,20 @@ export default function OrderBundlingEngine({ orgId }: { orgId: string }) {
       <AnimatePresence mode="wait">
         {tab === "pending" && (
           <motion.div key="pending" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-1.5">
-            {orders.map(o => {
-              const p = priorityCfg[o.priority];
+            {orders.length === 0 && (
+              <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucune commande</div>
+            )}
+            {orders.map((o: any) => {
+              const p = priorityCfg[o.priority] || priorityCfg.standard;
               return (
                 <div key={o.id} className="rounded-lg px-3 py-2 flex items-center gap-2"
                   style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
                   <span className="text-xs">{p.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{o.customerName}</p>
-                    <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{o.address}</p>
+                    <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{o.customer_name || o.customerName || "Client"}</p>
+                    <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{o.address || o.delivery_address || ""}</p>
                   </div>
-                  <span className="text-[10px] font-mono shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{o.weight}kg</span>
+                  <span className="text-[10px] font-mono shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{o.weight || 0}kg</span>
                 </div>
               );
             })}
@@ -202,13 +195,13 @@ export default function OrderBundlingEngine({ orgId }: { orgId: string }) {
                 <div className="flex gap-3 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                   <span>📏 {b.estimatedDistance} km</span>
                   <span>⏱️ ~{b.estimatedTime} min</span>
-                  <span>📦 {b.orders.reduce((s, o) => s + o.weight, 0).toFixed(1)} kg</span>
+                  <span>📦 {b.orders.reduce((s: number, o: any) => s + (o.weight || 0), 0).toFixed(1)} kg</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {b.orders.map(o => (
+                  {b.orders.map((o: any) => (
                     <span key={o.id} className="text-[10px] px-1.5 py-0.5 rounded-md"
-                      style={{ background: `${priorityCfg[o.priority].color}10`, color: priorityCfg[o.priority].color }}>
-                      {o.customerName}
+                      style={{ background: `${(priorityCfg[o.priority] || priorityCfg.standard).color}10`, color: (priorityCfg[o.priority] || priorityCfg.standard).color }}>
+                      {o.customer_name || o.customerName || "Client"}
                     </span>
                   ))}
                 </div>
