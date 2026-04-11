@@ -66,7 +66,7 @@ Key files:
 ### HARD CORE BUSINESS
 The engines that process real business data. Backend workers run 24/7 via Supabase Edge Functions. Browser engines handle session-level business logic (message delivery, wallet monitoring, radar, data normalization).
 
-Backend (55+ handlers in run-engine-cron):
+Backend (71 handlers in run-engine-cron):
 - Trust: `trust-ranking-recompute` (5min)
 - Fraud: `fraud-anomaly-scan` (2min)
 - Quality: `quality-deep-scan`, `shop-quality` (5min)
@@ -112,11 +112,11 @@ Dev-only engines (36, loaded only when `import.meta.env.DEV`). Architecture enfo
 | Block | Browser Engines | Backend Workers | Total |
 |-------|----------------|-----------------|-------|
 | Runtime | 0 | 0 | Infrastructure |
-| Business | 25 | 55+ | 80+ |
+| Business | 25 | 71 | 96+ |
 | Quality | 22 + UI Engine | 0 | 23 |
 | UI | 23 | 0 | 23 |
 | Pro Console | 36 (DEV only) | 0 | 36 |
-| **Total** | **106** | **55+** | **160+** |
+| **Total** | **106** | **71** | **177** |
 
 ## Pipeline Engines (src/lib/engines/)
 

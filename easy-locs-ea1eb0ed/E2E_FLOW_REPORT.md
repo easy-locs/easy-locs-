@@ -192,4 +192,4 @@
 - **Missing links**: 0 — all flows connect input → validation → processing → output → proof
 - **Weak points**: 1 minor (Flow 3: external data quality dependency, mitigated by normalizer/audit engines)
 - **UI Engine coverage**: 10/18 flows have direct UI engine involvement (remaining 8 are backend-only or use covered pages)
-- **Backend worker coverage**: 55+ ENGINE_ACTIONS cover all processing needs
+- **Backend worker coverage**: 71 ENGINE_ACTIONS cover all processing needs

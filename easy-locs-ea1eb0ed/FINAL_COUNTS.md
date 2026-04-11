@@ -4,10 +4,10 @@
 
 ### Edge Functions
 - **Total**: 113 Edge Functions in `supabase/functions/`
-- **Key functions**: `run-engine-cron` (1280+ lines, 55+ ENGINE_ACTIONS), `worker-health-monitor` (health snapshots)
+- **Key functions**: `run-engine-cron` (1550 lines, 71 ENGINE_ACTIONS), `worker-health-monitor` (health snapshots)
 
 ### Backend Engine Actions (run-engine-cron)
-- **Total ENGINE_ACTIONS**: 55+
+- **Total ENGINE_ACTIONS**: 71
 - **Group A — Data Quality & Trust**: 5 (shop-quality, data-completeness, data-trust-scan, trust-ranking-recompute, quality-deep-scan)
 - **Group B — Fraud & Compliance**: 4 (fraud-anomaly-scan, compliance-aml, entity-integrity, entity-recovery)
 - **Group C — Content Normalization**: 7 (vertical-classifier, food-menu-normalizer, hotel-inventory-normalizer, grocery-normalizer, service-catalog-normalizer, taxonomy-enforcer, coherence-sweep)
@@ -37,7 +37,7 @@
 - **Telemetry**: platformBus "ui-engine:report" channel
 
 ### Database Tables (engine infrastructure)
-- **engine_supervisor**: Worker registry with 55+ rows, columns: engine_name, engine_tier, runtime_class, status, enabled, kill_switch, dry_run, frequency_seconds, timeout_ms, worker_group, total_runs, success_rate, consecutive_failures, max_retries, heartbeat, description, last_run_at, last_success_at, last_error_at, last_error_message, last_duration_ms, total_rows_affected
+- **engine_supervisor**: Worker registry with 71 rows, columns: engine_name, engine_tier, runtime_class, status, enabled, kill_switch, dry_run, frequency_seconds, timeout_ms, worker_group, total_runs, success_rate, consecutive_failures, max_retries, heartbeat, description, last_run_at, last_success_at, last_error_at, last_error_message, last_duration_ms, total_rows_affected
 - **engine_run_logs**: Execution history with rows_read, side_effect_count, trigger_source columns
 - **worker_health_snapshots**: 1-minute health snapshots with healthy/stale/error/disabled counts
 - **seed_merchants** (new columns): trust_score, ranking_score, fraud_flag, fraud_flagged_at, quality_deep_score, quality_scanned_at, taxonomy_enforced_at

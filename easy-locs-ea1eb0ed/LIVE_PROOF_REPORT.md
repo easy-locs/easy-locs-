@@ -8,10 +8,10 @@ This document proves the system is alive and functioning by documenting observab
 ## Layer 1: Permanent Backend Core (run-engine-cron)
 
 ### Proof Points
-1. **`engine_supervisor` table**: Contains 55+ registered engines with `total_runs`, `success_rate`, `last_run_at` timestamps
+1. **`engine_supervisor` table**: Contains 71 registered engines with `total_runs`, `success_rate`, `last_run_at` timestamps
 2. **`engine_run_logs` table**: Contains timestamped execution records with `duration_ms`, `db_rows_affected`, `effect_summary`
 3. **`worker_health_snapshots` table**: Contains 1-minute health snapshots with `healthy_count`, `stale_count`, `error_count`
-4. **Edge Function deployed**: `run-engine-cron` at `supabase/functions/run-engine-cron/index.ts` (1280+ lines)
+4. **Edge Function deployed**: `run-engine-cron` at `supabase/functions/run-engine-cron/index.ts` (1550 lines)
 5. **Health monitor deployed**: `worker-health-monitor` at `supabase/functions/worker-health-monitor/index.ts`
 
 ### Verification
@@ -87,8 +87,8 @@ done
 
 | Indicator | Source | Expected |
 |-----------|--------|----------|
-| Engine count | `engine_supervisor` | 55+ |
-| Active engines | `engine_supervisor WHERE enabled = true` | 55+ |
+| Engine count | `engine_supervisor` | 71 |
+| Active engines | `engine_supervisor WHERE enabled = true` | 71 |
 | Health snapshots/hr | `worker_health_snapshots` | 60 |
 | UI engine pages | `useUiEngine` imports | 10 |
 | Browser engine dirs | `src/engines/` | 20 |

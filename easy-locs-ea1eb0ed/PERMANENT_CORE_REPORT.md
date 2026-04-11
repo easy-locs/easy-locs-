@@ -199,7 +199,7 @@ The following browser engines have explicit `BACKEND_WORKER` references and serv
 
 | Group | Count | Where | Persistent |
 |-------|-------|-------|-----------|
-| A (Backend) | 55+ handlers in run-engine-cron + 10 standalone functions | Supabase Edge Functions | Yes, 24/7 |
+| A (Backend) | 71 handlers in run-engine-cron + 10 standalone functions | Supabase Edge Functions | Yes, 24/7 |
 | B (Browser) | 104 engines (46 T1 + 36 T2 + 22 T3) | Client JavaScript | No, session-only |
 | C (Hybrid) | 4 engines | Browser reads + backend writes | Partial |
 
