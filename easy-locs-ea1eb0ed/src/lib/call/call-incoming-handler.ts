@@ -38,7 +38,7 @@ export async function processIncomingInsert(
   if (callerField === currentUserId || callerField === myOrbitId) return null;
 
   let callerName = "User";
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from("profiles")
     .select("name, email")
     .eq("id", callerField)
