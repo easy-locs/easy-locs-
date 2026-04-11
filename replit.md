@@ -889,6 +889,14 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - T005: UnifiedOrderDetailPage reorder window.location.hash→navigate() (React Router compatible)
 - Test expectations updated: production-stabilization.test.ts + advanced-regression.test.ts aligned with new routes
 
+**Cycle 3 — Sentry-driven Production Cleanup + UI Normalization**
+- T001: SentryRouteTracker wired into App.tsx, FeatureErrorBoundary now reports to Sentry with featureName/componentStack/retryCount context
+- T001: ALL Dashboard sub-routes (40+), checkout/order routes (20+), settings routes (9), merchant routes (33), driver routes (15), seller/business routes (3) wrapped in FeatureErrorBoundary
+- T001: AuthContext setUserContext enriched with activeRole for Sentry tagging
+- T002: CSS DS-10 (flex/grid child min-width:0 overflow safety), DS-11 (stat-value tabular nums), DS-12 (scroll-lock for modals)
+- T003: PropertyDashboardWidget skeleton loading state (was returning null), Finances StatCard loading prop (was showing "..."), OrdersPage user!.id→user?.id, CheckoutPage 3x user!.id→user?.id
+- Coverage: Every authenticated route now has FeatureErrorBoundary + Sentry capture
+
 ### Typography Minimum Standards
 - **Minimum text size**: `text-[9px]` for labels, `text-[10px]` for interactive/body text, `text-xs` (12px) for standard content
 - **NEVER use**: `text-[7px]` or `text-[8px]` — globally replaced in April 2026 sweep

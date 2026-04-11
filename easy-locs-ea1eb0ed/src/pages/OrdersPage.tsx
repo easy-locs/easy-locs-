@@ -29,7 +29,7 @@ export default function OrdersPage() {
 
   const { data: orders = [], isLoading, error: ordersError } = useQuery({
     queryKey: ["user-orders", user?.id],
-    queryFn: () => orderService.fetchByUser(user!.id),
+    queryFn: () => orderService.fetchByUser(user?.id ?? ""),
     enabled: !!user,
     staleTime: 30_000,
     placeholderData: (prev: any) => prev,

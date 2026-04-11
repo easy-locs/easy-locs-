@@ -41,6 +41,7 @@ const OrbitPromptOverlay = lazy(() => import("@/components/engine/OrbitPromptOve
 const GlobalOverlayRenderer = lazy(() => import("@/components/overlays/GlobalOverlayRenderer").then(m => ({ default: m.GlobalOverlayRenderer })));
 const IntentNavigateProvider = lazy(() => import("@/components/app/IntentNavigateProvider"));
 import SmartCoreTracker from "@/components/system/SmartCoreTracker";
+import SentryRouteTracker from "@/components/system/SentryRouteTracker";
 import { initQualityGates } from "@/lib/quality-gates";
 
 initQualityGates();
@@ -307,6 +308,7 @@ const App = () => (
       </Suspense>
       <DeferredBootGuards />
       <SmartCoreTracker />
+      <SentryRouteTracker />
       <Suspense fallback={<PageLoader />}>
         <SwipeableMain className="pb-[calc(72px+env(safe-area-inset-bottom,0px)+16px)]">
           <Routes>
@@ -329,63 +331,63 @@ const App = () => (
                   <Route path="/" element={<FeatureErrorBoundary featureName="Dashboard"><HomeRouter /></FeatureErrorBoundary>} />
                   <Route path="/home" element={<MarketplaceHomeRouter />} />
                   <Route path="/pricing" element={<Navigate to="/#pricing" replace />} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/dashboard/property/add" element={<ProtectedRoute><AddProperty /></ProtectedRoute>} />
-                  <Route path="/dashboard/property/:id" element={<ProtectedRoute><PropertyDetailHub /></ProtectedRoute>} />
-                  <Route path="/dashboard/create-listing" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
-                  <Route path="/dashboard/receipts" element={<ProtectedRoute><Receipts /></ProtectedRoute>} />
-                  <Route path="/dashboard/reminders" element={<ProtectedRoute><Reminders /></ProtectedRoute>} />
-                  <Route path="/dashboard/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
-                  <Route path="/dashboard/ai" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
-                  <Route path="/dashboard/leases" element={<ProtectedRoute><Leases /></ProtectedRoute>} />
-                  <Route path="/dashboard/company" element={<ProtectedRoute><Company /></ProtectedRoute>} />
-                  <Route path="/dashboard/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
-                  <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                  <Route path="/dashboard/tenants" element={<ProtectedRoute><Tenants /></ProtectedRoute>} />
-                  <Route path="/dashboard/rental-management" element={<ProtectedRoute><RentalManagement /></ProtectedRoute>} />
-                  <Route path="/dashboard/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
-                  <Route path="/dashboard/interventions" element={<ProtectedRoute><Interventions /></ProtectedRoute>} />
-                  <Route path="/dashboard/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Dashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/property/add" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AddProperty /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/property/:id" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><PropertyDetailHub /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/create-listing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CreateListing /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/receipts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Receipts /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/reminders" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Reminders /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/documents" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Documents /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/ai" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AIAssistant /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/leases" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Leases /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/company" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Company /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/billing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Billing /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/settings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Settings /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/tenants" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Tenants /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/rental-management" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><RentalManagement /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/finances" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Finances /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/interventions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Interventions /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/tasks" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Tasks /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/messages" element={<Navigate to="/orbit" replace />} />
                   <Route path="/dashboard/activities" element={<Navigate to="/activities" replace />} />
                   <Route path="/dashboard/communication" element={<DashboardCommRedirect />} />
-                  <Route path="/dashboard/charges-regularization" element={<ProtectedRoute><ChargesRegularization /></ProtectedRoute>} />
-                  <Route path="/dashboard/fiscal-report" element={<ProtectedRoute><FiscalReport /></ProtectedRoute>} />
-                  <Route path="/dashboard/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
-                  <Route path="/dashboard/candidates" element={<ProtectedRoute><Candidates /></ProtectedRoute>} />
-                  <Route path="/dashboard/seasonal-rentals" element={<ProtectedRoute><SeasonalRentals /></ProtectedRoute>} />
-                  <Route path="/dashboard/payment-notices" element={<ProtectedRoute><PaymentNotices /></ProtectedRoute>} />
-                  <Route path="/dashboard/dunning-letters" element={<ProtectedRoute><DunningLetters /></ProtectedRoute>} />
-                  <Route path="/dashboard/furniture-inventory" element={<ProtectedRoute><FurnitureInventory /></ProtectedRoute>} />
-                  <Route path="/dashboard/buildings" element={<ProtectedRoute><Buildings /></ProtectedRoute>} />
-                  <Route path="/dashboard/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
-                  <Route path="/dashboard/import" element={<ProtectedRoute><DataImport /></ProtectedRoute>} />
-                  <Route path="/dashboard/cv-generator" element={<ProtectedRoute><CVGenerator /></ProtectedRoute>} />
-                  <Route path="/dashboard/subscriptions" element={<ProtectedRoute><CategorySubscriptions /></ProtectedRoute>} />
-                  <Route path="/dashboard/channels" element={<ProtectedRoute><ChannelManager /></ProtectedRoute>} />
-                  <Route path="/dashboard/accounting" element={<ProtectedRoute><Accounting /></ProtectedRoute>} />
-                  <Route path="/dashboard/rent-cockpit" element={<ProtectedRoute><LandlordRentDashboard /></ProtectedRoute>} />
-                  <Route path="/dashboard/accounting-entries" element={<ProtectedRoute><AccountingEntries /></ProtectedRoute>} />
-                  <Route path="/dashboard/reporting" element={<ProtectedRoute><ReportingDashboard /></ProtectedRoute>} />
-                  <Route path="/dashboard/dynamic-pricing" element={<ProtectedRoute><DynamicPricing /></ProtectedRoute>} />
-                  <Route path="/dashboard/calendar" element={<ProtectedRoute><PropertyCalendar /></ProtectedRoute>} />
-                  <Route path="/dashboard/real-estate" element={<ProtectedRoute><RealEstateListings /></ProtectedRoute>} />
-                  <Route path="/dashboard/profile" element={<ProtectedRoute><LandlordProfile /></ProtectedRoute>} />
-                  <Route path="/dashboard/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
-                  <Route path="/dashboard/collaboration" element={<ProtectedRoute><Collaboration /></ProtectedRoute>} />
-                  <Route path="/dashboard/developer" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
-                  <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
+                  <Route path="/dashboard/charges-regularization" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ChargesRegularization /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/fiscal-report" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><FiscalReport /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/expenses" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Expenses /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/candidates" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Candidates /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/seasonal-rentals" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><SeasonalRentals /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/payment-notices" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><PaymentNotices /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/dunning-letters" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DunningLetters /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/furniture-inventory" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><FurnitureInventory /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/buildings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Buildings /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/vault" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Vault /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/import" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DataImport /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/cv-generator" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CVGenerator /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/subscriptions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CategorySubscriptions /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/channels" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ChannelManager /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/accounting" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Accounting /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/rent-cockpit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><LandlordRentDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/accounting-entries" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AccountingEntries /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/reporting" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ReportingDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/dynamic-pricing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DynamicPricing /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/calendar" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><PropertyCalendar /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/real-estate" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><RealEstateListings /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/profile" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><LandlordProfile /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/referrals" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Referrals /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/collaboration" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Collaboration /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/developer" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DeveloperPortal /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AuditTrail /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/wallet" element={<Navigate to="/wallet" replace />} />
-                  <Route path="/dashboard/service-tracking" element={<ProtectedRoute><ServiceTrackingPage /></ProtectedRoute>} />
+                  <Route path="/dashboard/service-tracking" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ServiceTrackingPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/seller" element={<Navigate to="/seller" replace />} />
                   <Route path="/dashboard/driver" element={<Navigate to="/driver/dashboard" replace />} />
                   <Route path="/dashboard/delivery" element={<Navigate to="/driver/dashboard" replace />} />
                   <Route path="/dashboard/my-shop" element={<Navigate to="/dashboard/my-shops" replace />} />
-                  <Route path="/dashboard/my-shops" element={<ProtectedRoute><MyShopsPage /></ProtectedRoute>} />
-                  <Route path="/dashboard/ops" element={<ProtectedRoute><OpsCenter /></ProtectedRoute>} />
-                  <Route path="/dashboard/country/:countryCode" element={<ProtectedRoute><CountryWorkspace /></ProtectedRoute>} />
-                  <Route path="/dashboard/boost" element={<ProtectedRoute><BoostDashboardPage /></ProtectedRoute>} />
-                  <Route path="/dashboard/properties" element={<ProtectedRoute><RealEstateModulePage /></ProtectedRoute>}>
+                  <Route path="/dashboard/my-shops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MyShopsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><OpsCenter /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/country/:countryCode" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CountryWorkspace /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/boost" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><BoostDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/properties" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><RealEstateModulePage /></FeatureErrorBoundary></ProtectedRoute>}>
                     <Route index element={<REPropertiesPage />} />
                     <Route path="units" element={<REUnitsPage />} />
                     <Route path="tenants" element={<RETenantsPage />} />
@@ -398,8 +400,8 @@ const App = () => (
                   <Route path="/property-management" element={<Navigate to="/dashboard/real-estate" replace />} />
                   <Route path="/rentals" element={<Navigate to="/dashboard/rental-management" replace />} />
                   <Route path="/developer" element={<Navigate to="/dashboard/developer" replace />} />
-                  <Route path="/concierge-ops" element={<ProtectedRoute><ConciergeOperations /></ProtectedRoute>} />
-                  <Route path="/customer/:customerId" element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
+                  <Route path="/concierge-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ConciergeOperations /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/customer/:customerId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CustomerProfilePage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 2 · RADAR (Discover · Browse · Move)   */}
@@ -443,21 +445,21 @@ const App = () => (
                   <Route path="/travel/stays" element={<TravelStays />} />
                   <Route path="/travel/hotels" element={<Navigate to="/travel/stays" replace />} />
                   <Route path="/travel/hotel/:id" element={<TravelHotelDetail />} />
-                  <Route path="/travel/hotel-checkout" element={<ProtectedRoute><HotelCheckout /></ProtectedRoute>} />
+                  <Route path="/travel/hotel-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><HotelCheckout /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
                   <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
                   <Route path="/travel/flight-search" element={<FlightSearchPage />} />
                   <Route path="/travel/flight-results" element={<FlightResultsPage />} />
                   <Route path="/travel/flight-detail" element={<FlightDetailPage />} />
-                  <Route path="/travel/flight-passengers" element={<ProtectedRoute><FlightPassengerPage /></ProtectedRoute>} />
-                  <Route path="/travel/flight-payment" element={<ProtectedRoute><FlightPaymentPage /></ProtectedRoute>} />
-                  <Route path="/travel/flight-confirmation" element={<ProtectedRoute><FlightConfirmationPage /></ProtectedRoute>} />
+                  <Route path="/travel/flight-passengers" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><FlightPassengerPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/travel/flight-payment" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><FlightPaymentPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/travel/flight-confirmation" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><FlightConfirmationPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/property/search" element={<PropertySearchPage />} />
                   <Route path="/property/results" element={<PropertyResultsPage />} />
                   <Route path="/property/detail" element={<PropertyDetailPage />} />
-                  <Route path="/property/booking" element={<ProtectedRoute><PropertyBookingPage /></ProtectedRoute>} />
-                  <Route path="/property/payment" element={<ProtectedRoute><PropertyPaymentPage /></ProtectedRoute>} />
-                  <Route path="/property/confirmation" element={<ProtectedRoute><PropertyConfirmationPage /></ProtectedRoute>} />
+                  <Route path="/property/booking" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><PropertyBookingPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/property/payment" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><PropertyPaymentPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/property/confirmation" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><PropertyConfirmationPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/mobility" element={<MobilityHubPage />} />
                   <Route path="/mobility/taxi" element={<MobilityTaxiPage />} />
                   <Route path="/mobility/delivery" element={<MobilityDeliveryPage />} />
@@ -465,16 +467,16 @@ const App = () => (
                   <Route path="/mobility/delivery/parcel" element={<DeliveryParcelPage />} />
                   <Route path="/mobility/delivery/gift" element={<DeliveryGiftPage />} />
                   <Route path="/mobility/delivery/errand" element={<DeliveryErrandPage />} />
-                  <Route path="/rider/live" element={<ProtectedRoute><RiderLivePage /></ProtectedRoute>} />
+                  <Route path="/rider/live" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><RiderLivePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/ride" element={<Navigate to="/mobility/taxi" replace />} />
                   <Route path="/taxi" element={<Navigate to="/mobility/taxi" replace />} />
                   <Route path="/send" element={<Navigate to="/mobility/delivery" replace />} />
                   <Route path="/send-package" element={<Navigate to="/mobility/delivery" replace />} />
                   <Route path="/delivery" element={<Navigate to="/mobility/delivery" replace />} />
                   <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
-                  <Route path="/call/:threadId" element={<ProtectedRoute><CallDriverPage /></ProtectedRoute>} />
-                  <Route path="/driver/heatmap" element={<ProtectedRoute><DemandHeatmapPage /></ProtectedRoute>} />
-                  <Route path="/subscription/priority" element={<ProtectedRoute><RiderPrioritySubscriptionPage /></ProtectedRoute>} />
+                  <Route path="/call/:threadId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><CallDriverPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/heatmap" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><DemandHeatmapPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/subscription/priority" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><RiderPrioritySubscriptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/listing/:id" element={<PublicListing />} />
                   <Route path="/book/:slug" element={<PublicServiceBooking />} />
                   <Route path="/nearby" element={<LocalServices />} />
@@ -527,30 +529,30 @@ const App = () => (
                   <Route path="/wallet/property/payouts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/property/expenses" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/accounts" element={<Navigate to="/settings/wallet" replace />} />
-                  <Route path="/pos" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
-                  <Route path="/pos/:shopId" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/checkout/address-selector" element={<ProtectedRoute><CustomerAddressSelectorPage /></ProtectedRoute>} />
-                  <Route path="/checkout/group-order" element={<ProtectedRoute><CustomerGroupOrderPage /></ProtectedRoute>} />
-                  <Route path="/checkout/gift-order" element={<ProtectedRoute><CustomerOrderGiftsPage /></ProtectedRoute>} />
-                  <Route path="/checkout/split-bill" element={<ProtectedRoute><CustomerSplitBillPage /></ProtectedRoute>} />
-                  <Route path="/checkout/party-order" element={<ProtectedRoute><CustomerPartyOrderPage /></ProtectedRoute>} />
-                  <Route path="/checkout/share-cart" element={<ProtectedRoute><CustomerShareCartPage /></ProtectedRoute>} />
+                  <Route path="/pos" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><POSPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/pos/:shopId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><POSPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/checkout" element={<FeatureErrorBoundary featureName="Wallet"><CheckoutPage /></FeatureErrorBoundary>} />
+                  <Route path="/checkout/address-selector" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerAddressSelectorPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/checkout/group-order" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerGroupOrderPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/checkout/gift-order" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerOrderGiftsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/checkout/split-bill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerSplitBillPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/checkout/party-order" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerPartyOrderPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/checkout/share-cart" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerShareCartPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/orders" element={<Navigate to="/my-orders" replace />} />
-                  <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
-                  <Route path="/my-orders/active" element={<ProtectedRoute><CustomerActiveOrdersPage /></ProtectedRoute>} />
-                  <Route path="/my-orders/archive" element={<ProtectedRoute><CustomerOrderArchivePage /></ProtectedRoute>} />
-                  <Route path="/order/:orderId" element={<ProtectedRoute><UnifiedOrderDetailPage /></ProtectedRoute>} />
-                  <Route path="/order/receipt/:orderId" element={<ProtectedRoute><OrderReceiptPage /></ProtectedRoute>} />
-                  <Route path="/order/refund/:orderId" element={<ProtectedRoute><OrderRefundRequestPage /></ProtectedRoute>} />
-                  <Route path="/order/reorder/:orderId" element={<ProtectedRoute><ReorderPage /></ProtectedRoute>} />
-                  <Route path="/reorder" element={<ProtectedRoute><CustomerReorderPage /></ProtectedRoute>} />
-                  <Route path="/tracking/:orderId" element={<ProtectedRoute><TrackingPage /></ProtectedRoute>} />
-                  <Route path="/live-tracking" element={<ProtectedRoute><LiveTrackingPageNew /></ProtectedRoute>} />
-                  <Route path="/refund/:rideRequestId" element={<ProtectedRoute><RefundRequestPage /></ProtectedRoute>} />
-                  <Route path="/payment/:orderId" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
-                  <Route path="/payments/stripe-elements" element={<ProtectedRoute><StripeElementsPage /></ProtectedRoute>} />
-                  <Route path="/payments/stripe-handler" element={<ProtectedRoute><StripeCheckoutHandlerPage /></ProtectedRoute>} />
+                  <Route path="/my-orders" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><MyOrdersPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/my-orders/active" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerActiveOrdersPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/my-orders/archive" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerOrderArchivePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/order/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><UnifiedOrderDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/order/receipt/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><OrderReceiptPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/order/refund/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><OrderRefundRequestPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/order/reorder/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><ReorderPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/reorder" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerReorderPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/tracking/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><TrackingPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/live-tracking" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><LiveTrackingPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/refund/:rideRequestId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><RefundRequestPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/payment/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><PaymentPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/payments/stripe-elements" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><StripeElementsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/payments/stripe-handler" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><StripeCheckoutHandlerPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
 
                   {/* ═══════════════════════════════════════════════ */}
@@ -581,205 +583,205 @@ const App = () => (
                   <Route path="/me/maintenance/:ticketId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeMaintenancePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/auto-repeat" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerAutoRepeatPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/redeem-rewards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerRewardRedemptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
-                  <Route path="/notifications" element={<ProtectedRoute><NotificationCenterPage /></ProtectedRoute>} />
-                  <Route path="/location/live" element={<ProtectedRoute><CustomerLiveLocationPage /></ProtectedRoute>} />
-                  <Route path="/permissions" element={<ProtectedRoute><PermissionCenterPage /></ProtectedRoute>} />
-                  <Route path="/support/tickets" element={<ProtectedRoute><SupportTicketsPage /></ProtectedRoute>} />
-                  <Route path="/support/tickets/:ticketId" element={<ProtectedRoute><SupportTicketDetailPage /></ProtectedRoute>} />
-                  <Route path="/team/command-center" element={<ProtectedRoute><TeamCommandCenterPage /></ProtectedRoute>} />
-                  <Route path="/team/permissions" element={<ProtectedRoute><TeamPermissionsPage /></ProtectedRoute>} />
+                  <Route path="/favorites" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><FavoritesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/notifications" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><NotificationCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/location/live" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerLiveLocationPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/permissions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><PermissionCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/support/tickets" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SupportTicketsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/support/tickets/:ticketId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SupportTicketDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/team/command-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><TeamCommandCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/team/permissions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><TeamPermissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* Settings — /settings redirects to /me (unified hub) */}
                   <Route path="/settings" element={<Navigate to="/me" replace />} />
-                  <Route path="/settings/account" element={<ProtectedRoute><SettingsAccountPage /></ProtectedRoute>} />
-                  <Route path="/settings/orbit" element={<ProtectedRoute><SettingsOrbitPage /></ProtectedRoute>} />
-                  <Route path="/settings/business" element={<ProtectedRoute><SettingsBusinessPage /></ProtectedRoute>} />
-                  <Route path="/settings/wallet" element={<ProtectedRoute><SettingsWalletPage /></ProtectedRoute>} />
-                  <Route path="/settings/addresses" element={<ProtectedRoute><SettingsAddressesPage /></ProtectedRoute>} />
-                  <Route path="/settings/notifications" element={<ProtectedRoute><SettingsNotificationsPage /></ProtectedRoute>} />
-                  <Route path="/settings/security" element={<ProtectedRoute><SettingsSecurityPage /></ProtectedRoute>} />
-                  <Route path="/settings/preferences" element={<ProtectedRoute><SettingsPreferencesPage /></ProtectedRoute>} />
-                  <Route path="/settings/support" element={<ProtectedRoute><SettingsSupportPage /></ProtectedRoute>} />
+                  <Route path="/settings/account" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsAccountPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/orbit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsOrbitPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/business" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsBusinessPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/wallet" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsWalletPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/addresses" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsAddressesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/notifications" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsNotificationsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/security" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSecurityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/preferences" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsPreferencesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/support" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSupportPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/settings/payment-methods" element={<Navigate to="/wallet" replace />} />
                   <Route path="/settings/notification-preferences" element={<Navigate to="/settings/notifications" replace />} />
 
                   {/* Merchant tools */}
                   <Route path="/merchant/claim" element={<MerchantClaimPage />} />
                   <Route path="/merchant/onboarding" element={<MerchantOnboardingPage />} />
-                  <Route path="/merchant/dashboard" element={<ProtectedRoute><MerchantDashboardPage /></ProtectedRoute>} />
-                  <Route path="/merchant/dashboard/:merchantId" element={<ProtectedRoute><MerchantDashboardPage /></ProtectedRoute>} />
-                  <Route path="/merchant/finance" element={<ProtectedRoute><MerchantFinancePage /></ProtectedRoute>} />
-                  <Route path="/merchant/pos" element={<ProtectedRoute><MerchantPosPage /></ProtectedRoute>} />
-                  <Route path="/merchant/kitchen" element={<ProtectedRoute><MerchantKitchenPage /></ProtectedRoute>} />
-                  <Route path="/merchant/orders" element={<ProtectedRoute><MerchantOrdersPage /></ProtectedRoute>} />
-                  <Route path="/merchant/orders/:merchantId" element={<ProtectedRoute><MerchantOrderBoardPage /></ProtectedRoute>} />
-                  <Route path="/merchant/qr/:shopId" element={<ProtectedRoute><ShopQrCenterPage /></ProtectedRoute>} />
-                  <Route path="/merchant/menu" element={<ProtectedRoute><MerchantMenuPageNew /></ProtectedRoute>} />
-                  <Route path="/merchant/menu/:merchantId" element={<ProtectedRoute><MerchantMenuPageNew /></ProtectedRoute>} />
-                  <Route path="/merchant/menu-bulk/:merchantId" element={<ProtectedRoute><MerchantMenuBulkEditPage /></ProtectedRoute>} />
-                  <Route path="/merchant/menu-categories/:merchantId" element={<ProtectedRoute><MerchantMenuCategoryManagerPage /></ProtectedRoute>} />
-                  <Route path="/merchant/store-settings/:merchantId" element={<ProtectedRoute><MerchantStoreSettingsPage /></ProtectedRoute>} />
-                  <Route path="/merchant/promos/:merchantId" element={<ProtectedRoute><MerchantPromoManagerPage /></ProtectedRoute>} />
-                  <Route path="/merchant/banner-editor/:merchantId" element={<ProtectedRoute><MerchantPromoBannerEditorPage /></ProtectedRoute>} />
-                  <Route path="/merchant/inventory/:merchantId" element={<ProtectedRoute><MerchantInventoryPage /></ProtectedRoute>} />
-                  <Route path="/merchant/inventory-alerts/:merchantId" element={<ProtectedRoute><MerchantInventoryAlertsPage /></ProtectedRoute>} />
-                  <Route path="/merchant/live/:merchantId" element={<ProtectedRoute><MerchantLiveControlPage /></ProtectedRoute>} />
-                  <Route path="/merchant/coupons/:merchantId" element={<ProtectedRoute><MerchantCouponManagerPage /></ProtectedRoute>} />
-                  <Route path="/merchant/analytics/:merchantId" element={<ProtectedRoute><MerchantBasicAnalyticsPage /></ProtectedRoute>} />
-                  <Route path="/merchant/customers/:merchantId" element={<ProtectedRoute><MerchantCustomersPage /></ProtectedRoute>} />
-                  <Route path="/merchant/customer-insights/:merchantId" element={<ProtectedRoute><MerchantCustomerInsightsPage /></ProtectedRoute>} />
-                  <Route path="/merchant/product-performance/:merchantId" element={<ProtectedRoute><MerchantProductPerformancePage /></ProtectedRoute>} />
-                  <Route path="/merchant/business-summary/:merchantId" element={<ProtectedRoute><MerchantBusinessSummaryPage /></ProtectedRoute>} />
-                  <Route path="/merchant/closing-mode/:merchantId" element={<ProtectedRoute><MerchantClosingModePage /></ProtectedRoute>} />
-                  <Route path="/merchant/auto-accept/:merchantId" element={<ProtectedRoute><MerchantAutoAcceptSettingsPage /></ProtectedRoute>} />
-                  <Route path="/merchant/staff-access/:merchantId" element={<ProtectedRoute><MerchantStaffAccessPage /></ProtectedRoute>} />
-                  <Route path="/merchant/daily-sales/:merchantId" element={<ProtectedRoute><MerchantDailySalesPage /></ProtectedRoute>} />
-                  <Route path="/merchant/reviews/:merchantId" element={<ProtectedRoute><MerchantReviewRepliesPage /></ProtectedRoute>} />
-                  <Route path="/merchant/refund-requests/:merchantId" element={<ProtectedRoute><MerchantRefundRequestsPage /></ProtectedRoute>} />
-                  <Route path="/merchant/delivery-zones/:merchantId" element={<ProtectedRoute><MerchantDeliveryZonesPage /></ProtectedRoute>} />
-                  <Route path="/merchant/kitchen-display/:merchantId" element={<ProtectedRoute><MerchantKitchenDisplayPage /></ProtectedRoute>} />
-                  <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><MerchantBusinessHoursPage /></ProtectedRoute>} />
+                  <Route path="/merchant/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/dashboard/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/finance" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantFinancePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/pos" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantPosPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/kitchen" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantKitchenPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/orders" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantOrdersPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/orders/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantOrderBoardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/qr/:shopId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ShopQrCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/menu" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/menu/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/menu-bulk/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuBulkEditPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/menu-categories/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuCategoryManagerPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/store-settings/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantStoreSettingsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/promos/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantPromoManagerPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/banner-editor/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantPromoBannerEditorPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/inventory/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantInventoryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/inventory-alerts/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantInventoryAlertsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/live/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantLiveControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/coupons/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantCouponManagerPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/analytics/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantBasicAnalyticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/customers/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantCustomersPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/customer-insights/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantCustomerInsightsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/product-performance/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantProductPerformancePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/business-summary/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantBusinessSummaryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/closing-mode/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantClosingModePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/auto-accept/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantAutoAcceptSettingsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/staff-access/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantStaffAccessPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/daily-sales/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDailySalesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/reviews/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantReviewRepliesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/refund-requests/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantRefundRequestsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/delivery-zones/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDeliveryZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/kitchen-display/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantKitchenDisplayPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantBusinessHoursPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* Driver tools */}
-                  <Route path="/driver/dashboard" element={<ProtectedRoute><DriverDashboardPageNew /></ProtectedRoute>} />
-                  <Route path="/driver/payout" element={<ProtectedRoute><DriverPayoutPage /></ProtectedRoute>} />
-                  <Route path="/driver/earnings" element={<ProtectedRoute><DriverEarningsPageNew /></ProtectedRoute>} />
+                  <Route path="/driver/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverDashboardPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/payout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><DriverPayoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/earnings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><DriverEarningsPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/driver/earnings-v2" element={<Navigate to="/driver/earnings" replace />} />
-                  <Route path="/driver/earnings-summary" element={<ProtectedRoute><DriverEarningsSummaryPage /></ProtectedRoute>} />
-                  <Route path="/driver/missions-board" element={<ProtectedRoute><DriverMissionsPage /></ProtectedRoute>} />
-                  <Route path="/driver/missions-board/:orderId" element={<ProtectedRoute><DriverMissionDetailPage /></ProtectedRoute>} />
-                  <Route path="/driver/proof/:orderId" element={<ProtectedRoute><DriverProofPage /></ProtectedRoute>} />
-                  <Route path="/driver/active-missions" element={<ProtectedRoute><DriverActiveMissionsPage /></ProtectedRoute>} />
-                  <Route path="/driver/live-missions" element={<ProtectedRoute><DriverLiveMissionsPage /></ProtectedRoute>} />
-                  <Route path="/driver/completed-deliveries" element={<ProtectedRoute><DriverCompletedDeliveriesPage /></ProtectedRoute>} />
-                  <Route path="/driver/shift" element={<ProtectedRoute><DriverShiftPage /></ProtectedRoute>} />
-                  <Route path="/driver/availability-zones" element={<ProtectedRoute><DriverAvailabilityZonesPage /></ProtectedRoute>} />
-                  <Route path="/driver/fuel-costs-v2" element={<ProtectedRoute><DriverFuelCostsPage /></ProtectedRoute>} />
-                  <Route path="/driver/breaks" element={<ProtectedRoute><DriverBreaksPage /></ProtectedRoute>} />
+                  <Route path="/driver/earnings-summary" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><DriverEarningsSummaryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/missions-board" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/missions-board/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverMissionDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/active-missions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverActiveMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/live-missions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverLiveMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/completed-deliveries" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverCompletedDeliveriesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/shift" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverShiftPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/availability-zones" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverAvailabilityZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/fuel-costs-v2" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverFuelCostsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/breaks" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverBreaksPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* Seller & Business */}
-                  <Route path="/seller" element={<ProtectedRoute><SellerDashboardPage /></ProtectedRoute>} />
-                  <Route path="/seller/boost" element={<ProtectedRoute><BoostDashboardPage /></ProtectedRoute>} />
-                  <Route path="/business" element={<ProtectedRoute><MyBusinessHub /></ProtectedRoute>} />
+                  <Route path="/seller" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><SellerDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/seller/boost" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><BoostDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/business" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MyBusinessHub /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/claim-shop/:merchantId" element={<ClaimShopPage />} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  ADMIN PANEL                                   */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-                  <Route path="/admin/super-dashboard" element={<ProtectedRoute><AdminSuperDashboardPage /></ProtectedRoute>} />
-                  <Route path="/admin/executive-dashboard" element={<ProtectedRoute><ExecutiveDashboard /></ProtectedRoute>} />
-                  <Route path="/admin/executive-kpi" element={<ProtectedRoute><ExecutiveKPIBoardPage /></ProtectedRoute>} />
-                  <Route path="/admin/ops-dashboard" element={<ProtectedRoute><AdminOpsDashboardPage /></ProtectedRoute>} />
-                  <Route path="/admin/ai-quality" element={<ProtectedRoute><AIQualityDashboard /></ProtectedRoute>} />
-                  <Route path="/admin/ai-ops-chat" element={<ProtectedRoute><AIOpsChatPage /></ProtectedRoute>} />
-                  <Route path="/admin/ai-decisions" element={<ProtectedRoute><AIDecisionsDashboardPage /></ProtectedRoute>} />
-                  <Route path="/admin/disputes" element={<ProtectedRoute><AdminDisputesPage /></ProtectedRoute>} />
-                  <Route path="/admin/fraud" element={<ProtectedRoute><AdminFraudPage /></ProtectedRoute>} />
-                  <Route path="/admin/fraud-detection" element={<ProtectedRoute><AdminFraudDetectionPage /></ProtectedRoute>} />
-                  <Route path="/admin/fraud-monitor" element={<ProtectedRoute><AdminFraudMonitorPage /></ProtectedRoute>} />
-                  <Route path="/admin/live-ops" element={<ProtectedRoute><AdminLiveOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/sla" element={<ProtectedRoute><AdminSLAPage /></ProtectedRoute>} />
-                  <Route path="/admin/support-sla" element={<ProtectedRoute><AdminSupportSlaPage /></ProtectedRoute>} />
-                  <Route path="/admin/trust-graph" element={<ProtectedRoute><AdminTrustGraphPage /></ProtectedRoute>} />
-                  <Route path="/admin/financial-recon" element={<ProtectedRoute><FinancialReconPage /></ProtectedRoute>} />
-                  <Route path="/admin/recon-alerts" element={<ProtectedRoute><ReconAlertsPage /></ProtectedRoute>} />
-                  <Route path="/admin/merchant-onboarding" element={<ProtectedRoute><MerchantOnboardingAdminPage /></ProtectedRoute>} />
-                  <Route path="/admin/workspace-bootstrap" element={<ProtectedRoute><WorkspaceBootstrapPage /></ProtectedRoute>} />
-                  <Route path="/admin/menu" element={<ProtectedRoute><MenuAdminPage /></ProtectedRoute>} />
-                  <Route path="/admin/support-inbox" element={<ProtectedRoute><SupportInboxPage /></ProtectedRoute>} />
-                  <Route path="/admin/kpi-charts" element={<ProtectedRoute><KpiChartsPage /></ProtectedRoute>} />
-                  <Route path="/admin/driver-heatmap" element={<ProtectedRoute><AdminDriverHeatmapPage /></ProtectedRoute>} />
-                  <Route path="/admin/driver-live" element={<ProtectedRoute><DriverLivePage /></ProtectedRoute>} />
-                  <Route path="/admin/driver-monitor" element={<ProtectedRoute><AdminDriverMonitorPage /></ProtectedRoute>} />
-                  <Route path="/admin/realtime-control" element={<ProtectedRoute><AdminRealtimeControlPage /></ProtectedRoute>} />
-                  <Route path="/admin/deployment-checklist" element={<ProtectedRoute><DeploymentChecklistPage /></ProtectedRoute>} />
-                  <Route path="/admin/loyalty-redeem" element={<ProtectedRoute><LoyaltyRedeemPage /></ProtectedRoute>} />
-                  <Route path="/admin/alerts" element={<ProtectedRoute><AdminAlertCenterPage /></ProtectedRoute>} />
-                  <Route path="/admin/outreach" element={<ProtectedRoute><AdminOutreachPage /></ProtectedRoute>} />
-                  <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><AdminWalletDiagnosticsPage /></ProtectedRoute>} />
-                  <Route path="/admin/wallet-watch" element={<ProtectedRoute><AdminWalletWatchPage /></ProtectedRoute>} />
-                  <Route path="/admin/execution-proof" element={<ProtectedRoute><ExecutionProofPage /></ProtectedRoute>} />
-                  <Route path="/admin/review-queue" element={<ProtectedRoute><AdminReviewQueuePage /></ProtectedRoute>} />
-                  <Route path="/admin/growth" element={<ProtectedRoute><AdminGrowthDashboardPage /></ProtectedRoute>} />
-                  <Route path="/admin/growth-engine" element={<ProtectedRoute><AdminGrowthEnginePage /></ProtectedRoute>} />
-                  <Route path="/admin/growth-ops" element={<ProtectedRoute><AdminGrowthOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/qr-generate" element={<ProtectedRoute><QrGeneratePage /></ProtectedRoute>} />
-                  <Route path="/admin/route-audit" element={<ProtectedRoute><RouteAuditPage /></ProtectedRoute>} />
-                  <Route path="/admin/test-restaurants" element={<ProtectedRoute><AdminRestaurantTestSeederPage /></ProtectedRoute>} />
-                  <Route path="/admin/runtime-audit" element={<ProtectedRoute><AdminRuntimeAuditPage /></ProtectedRoute>} />
-                  <Route path="/admin/runtime-links" element={<ProtectedRoute><AdminRuntimeQuickLinksPage /></ProtectedRoute>} />
-                  <Route path="/admin/runtime-cockpit" element={<ProtectedRoute><AdminRuntimeCockpitPage /></ProtectedRoute>} />
-                  <Route path="/admin/master-debug" element={<ProtectedRoute><AdminMasterDebugPage /></ProtectedRoute>} />
-                  <Route path="/admin/master-control" element={<ProtectedRoute><AdminMasterControlPage /></ProtectedRoute>} />
-                  <Route path="/admin/central-control" element={<ProtectedRoute><AdminCentralControlPanelPage /></ProtectedRoute>} />
-                  <Route path="/admin/ui-engine" element={<ProtectedRoute><AdminUiEnginePage /></ProtectedRoute>} />
-                  <Route path="/admin/marketplace-ops" element={<ProtectedRoute><AdminMarketplaceOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/orchestration" element={<ProtectedRoute><AdminOrchestrationPage /></ProtectedRoute>} />
-                  <Route path="/admin/pipeline" element={<ProtectedRoute><AdminPipelinePage /></ProtectedRoute>} />
-                  <Route path="/admin/engines" element={<ProtectedRoute><AdminEnginesDashboardPage /></ProtectedRoute>} />
-                  <Route path="/admin/quality-engines" element={<ProtectedRoute><QualityEnginesDashboardPage /></ProtectedRoute>} />
-                  <Route path="/admin/engine-cockpit" element={<ProtectedRoute><AdminEngineCockpit /></ProtectedRoute>} />
-                  <Route path="/admin/ai-control-center" element={<ProtectedRoute><AdminAIControlCenter /></ProtectedRoute>} />
-                  <Route path="/admin/monetization" element={<ProtectedRoute><AdminMonetizationDashboard /></ProtectedRoute>} />
-                  <Route path="/admin/core-engine" element={<ProtectedRoute><AdminCoreEnginePage /></ProtectedRoute>} />
-                  <Route path="/admin/home-engine" element={<ProtectedRoute><AdminHomeEnginePage /></ProtectedRoute>} />
-                  <Route path="/admin/map-engine" element={<ProtectedRoute><AdminMapEnginePage /></ProtectedRoute>} />
-                  <Route path="/admin/notification-engine" element={<ProtectedRoute><AdminNotificationEnginePage /></ProtectedRoute>} />
-                  <Route path="/admin/unified-engine" element={<ProtectedRoute><UnifiedGlobalEnginePage /></ProtectedRoute>} />
-                  <Route path="/admin/backend-truth" element={<ProtectedRoute><AdminBackendTruthPage /></ProtectedRoute>} />
-                  <Route path="/admin/garage" element={<ProtectedRoute><AdminGaragePage /></ProtectedRoute>} />
-                  <Route path="/admin/browser-repair" element={<ProtectedRoute><AdminBrowserRepairPage /></ProtectedRoute>} />
-                  <Route path="/admin/support-ops" element={<ProtectedRoute><AdminSupportOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/delivery-ops" element={<ProtectedRoute><AdminDeliveryOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/delivery-incidents" element={<ProtectedRoute><AdminDeliveryIncidentsPage /></ProtectedRoute>} />
-                  <Route path="/admin/merchant-autofill" element={<ProtectedRoute><AdminMerchantAutofillPage /></ProtectedRoute>} />
-                  <Route path="/admin/merchant-health" element={<ProtectedRoute><AdminMerchantHealthPage /></ProtectedRoute>} />
-                  <Route path="/admin/merchant-approval-queue" element={<ProtectedRoute><AdminMerchantApprovalQueuePage /></ProtectedRoute>} />
-                  <Route path="/admin/merchant-promo-watch" element={<ProtectedRoute><AdminMerchantPromoWatchPage /></ProtectedRoute>} />
-                  <Route path="/admin/bulk-seed" element={<ProtectedRoute><AdminBulkSeedPage /></ProtectedRoute>} />
-                  <Route path="/admin/bulk-merchant-import" element={<ProtectedRoute><AdminBulkMerchantImportPage /></ProtectedRoute>} />
-                  <Route path="/admin/seed-tools" element={<ProtectedRoute><AdminSeedToolsPage /></ProtectedRoute>} />
-                  <Route path="/admin/shop-import" element={<ProtectedRoute><AdminShopImportPage /></ProtectedRoute>} />
-                  <Route path="/admin/shop-quality" element={<ProtectedRoute><AdminShopQualityPage /></ProtectedRoute>} />
-                  <Route path="/admin/content-ops" element={<ProtectedRoute><AdminContentOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/analytics-ops" element={<ProtectedRoute><AdminAnalyticsOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/quality-ops" element={<ProtectedRoute><AdminQualityOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/crm-ops" element={<ProtectedRoute><AdminCrmOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/retention-ops" element={<ProtectedRoute><AdminRetentionOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/payments-ops" element={<ProtectedRoute><AdminPaymentsOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/notification-ops" element={<ProtectedRoute><AdminNotificationOpsPage /></ProtectedRoute>} />
-                  <Route path="/admin/uae-ops" element={<ProtectedRoute><AdminUaeOpsDashboard /></ProtectedRoute>} />
-                  <Route path="/admin/owner-cockpit" element={<ProtectedRoute><OwnerCockpitPage /></ProtectedRoute>} />
-                  <Route path="/admin/onboarding-quality" element={<ProtectedRoute><OnboardingQualityDashboardPage /></ProtectedRoute>} />
-                  <Route path="/admin/url-import" element={<ProtectedRoute><UrlImportPage /></ProtectedRoute>} />
-                  <Route path="/admin/platform-recovery" element={<ProtectedRoute><AdminPlatformRecoveryPage /></ProtectedRoute>} />
-                  <Route path="/admin/platform-health" element={<ProtectedRoute><AdminPlatformHealthPage /></ProtectedRoute>} />
-                  <Route path="/admin/platform-alerts" element={<ProtectedRoute><AdminPlatformAlertsPage /></ProtectedRoute>} />
-                  <Route path="/admin/visual-quality" element={<ProtectedRoute><AdminVisualQualityPage /></ProtectedRoute>} />
-                  <Route path="/admin/ranking-control" element={<ProtectedRoute><AdminRankingControlPage /></ProtectedRoute>} />
-                  <Route path="/admin/coherence-control" element={<ProtectedRoute><AdminCoherenceControlPage /></ProtectedRoute>} />
-                  <Route path="/admin/source-audit" element={<ProtectedRoute><AdminSourceAuditPage /></ProtectedRoute>} />
-                  <Route path="/admin/user-lookup" element={<ProtectedRoute><AdminUserLookupPage /></ProtectedRoute>} />
-                  <Route path="/admin/finance-summary" element={<ProtectedRoute><AdminFinanceSummaryPage /></ProtectedRoute>} />
-                  <Route path="/admin/order-watch" element={<ProtectedRoute><AdminOrderWatchPage /></ProtectedRoute>} />
-                  <Route path="/admin/order-audit" element={<ProtectedRoute><AdminOrderAuditPage /></ProtectedRoute>} />
-                  <Route path="/admin/order-timeline" element={<ProtectedRoute><AdminOrderTimelinePage /></ProtectedRoute>} />
-                  <Route path="/admin/search-watch" element={<ProtectedRoute><AdminSearchWatchPage /></ProtectedRoute>} />
-                  <Route path="/admin/refund-watch" element={<ProtectedRoute><AdminRefundWatchPage /></ProtectedRoute>} />
-                  <Route path="/admin/refund-queue" element={<ProtectedRoute><AdminRefundQueuePage /></ProtectedRoute>} />
-                  <Route path="/admin/system-health" element={<ProtectedRoute><AdminSystemHealthPage /></ProtectedRoute>} />
-                  <Route path="/admin/system-live" element={<ProtectedRoute><AdminSystemLivePanelPage /></ProtectedRoute>} />
-                  <Route path="/admin/active-sessions" element={<ProtectedRoute><AdminActiveSessionsPage /></ProtectedRoute>} />
-                  <Route path="/admin/failed-payments" element={<ProtectedRoute><AdminFailedPaymentsPage /></ProtectedRoute>} />
-                  <Route path="/admin/coupon-oversight" element={<ProtectedRoute><AdminCouponOversightPage /></ProtectedRoute>} />
-                  <Route path="/admin/restaurant-autofill" element={<ProtectedRoute><AdminRestaurantFillPage /></ProtectedRoute>} />
-                  <Route path="/admin/menu-quality-control" element={<ProtectedRoute><AdminMenuQualityControlPage /></ProtectedRoute>} />
-                  <Route path="/admin/ux-live-test" element={<ProtectedRoute><AdminUxLiveTestPage /></ProtectedRoute>} />
-                  <Route path="/admin/qa-command" element={<ProtectedRoute><AdminQaCommandPage /></ProtectedRoute>} />
-                  <Route path="/admin/food-checkout" element={<ProtectedRoute><FoodOrderCheckoutPage /></ProtectedRoute>} />
-                  <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><DeliveryProofPage /></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/super-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSuperDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/executive-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ExecutiveDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/executive-kpi" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ExecutiveKPIBoardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/ops-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOpsDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/ai-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AIQualityDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/ai-ops-chat" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AIOpsChatPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/ai-decisions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AIDecisionsDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/disputes" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDisputesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/fraud" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFraudPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/fraud-detection" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFraudDetectionPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/fraud-monitor" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFraudMonitorPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/live-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminLiveOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/sla" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSLAPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/support-sla" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSupportSlaPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/trust-graph" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminTrustGraphPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/financial-recon" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FinancialReconPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/recon-alerts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ReconAlertsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/merchant-onboarding" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><MerchantOnboardingAdminPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/workspace-bootstrap" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><WorkspaceBootstrapPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/menu" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><MenuAdminPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/support-inbox" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><SupportInboxPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/kpi-charts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><KpiChartsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/driver-heatmap" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDriverHeatmapPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/driver-live" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DriverLivePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/driver-monitor" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDriverMonitorPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/realtime-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRealtimeControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/deployment-checklist" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeploymentChecklistPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/loyalty-redeem" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><LoyaltyRedeemPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/alerts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAlertCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/outreach" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOutreachPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWalletDiagnosticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/wallet-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWalletWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/execution-proof" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ExecutionProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/review-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminReviewQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/growth" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGrowthDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/growth-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGrowthEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/growth-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGrowthOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/qr-generate" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><QrGeneratePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/route-audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><RouteAuditPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/test-restaurants" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRestaurantTestSeederPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/runtime-audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRuntimeAuditPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/runtime-links" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRuntimeQuickLinksPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/runtime-cockpit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRuntimeCockpitPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/master-debug" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMasterDebugPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/master-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMasterControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/central-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCentralControlPanelPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/ui-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUiEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/marketplace-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMarketplaceOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/orchestration" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOrchestrationPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/pipeline" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPipelinePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/quality-engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><QualityEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/engine-cockpit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEngineCockpit /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/ai-control-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAIControlCenter /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/monetization" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMonetizationDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/core-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCoreEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/home-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminHomeEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/map-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMapEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/notification-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/unified-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><UnifiedGlobalEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/backend-truth" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminBackendTruthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/garage" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGaragePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/browser-repair" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminBrowserRepairPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/support-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSupportOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/delivery-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDeliveryOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/delivery-incidents" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDeliveryIncidentsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/merchant-autofill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantAutofillPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/merchant-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/merchant-approval-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantApprovalQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/merchant-promo-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantPromoWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/bulk-seed" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminBulkSeedPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/bulk-merchant-import" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminBulkMerchantImportPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/seed-tools" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSeedToolsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/shop-import" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShopImportPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/shop-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShopQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/content-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminContentOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/analytics-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAnalyticsOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/quality-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminQualityOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/crm-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCrmOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/retention-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRetentionOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/payments-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPaymentsOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/notification-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/uae-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUaeOpsDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/owner-cockpit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><OwnerCockpitPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/onboarding-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><OnboardingQualityDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/url-import" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><UrlImportPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/platform-recovery" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformRecoveryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/platform-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/platform-alerts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformAlertsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/visual-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminVisualQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/ranking-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRankingControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/coherence-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCoherenceControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/source-audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSourceAuditPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/user-lookup" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUserLookupPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/finance-summary" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFinanceSummaryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/order-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOrderWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/order-audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOrderAuditPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/order-timeline" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOrderTimelinePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/search-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSearchWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/refund-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRefundWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/refund-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRefundQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/system-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSystemHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/system-live" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSystemLivePanelPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/active-sessions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminActiveSessionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/failed-payments" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFailedPaymentsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/coupon-oversight" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCouponOversightPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/restaurant-autofill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRestaurantFillPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/menu-quality-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMenuQualityControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/ux-live-test" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUxLiveTestPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/qa-command" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminQaCommandPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  DEEP LINKS · QR · PUBLIC                      */}

@@ -425,6 +425,24 @@ img {
   -webkit-line-clamp: 2;
 }
 
+/* DS-10. Flex child overflow safety — prevents text blowout in flex layouts */
+.flex > * { min-width: 0; }
+.grid > * { min-width: 0; }
+
+/* DS-11. Stat/KPI value safety — tabular nums + no wrap */
+.stat-value {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* DS-12. Safe modal/sheet content — prevent body scroll when overlay is open */
+body[data-scroll-locked] {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
 /* 11. Ultra-small screen protection — 320px */
 @media (max-width: 340px) {
   h1 { font-size: 1.25rem !important; }

@@ -34,6 +34,14 @@ export class FeatureErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error(`[FeatureErrorBoundary:${this.props.featureName}]`, error.message, info.componentStack);
 
+    void import("@/lib/analytics/sentry").then(({ captureException }) => {
+      captureException(error, {
+        featureName: this.props.featureName,
+        componentStack: info.componentStack || "",
+        retryCount: this.state.retryCount,
+      });
+    }).catch(() => {});
+
     void import("@/lib/auto-heal")
       .then(({ healError }) => healError(error))
       .catch(() => {});
