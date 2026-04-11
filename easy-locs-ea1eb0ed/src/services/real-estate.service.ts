@@ -544,21 +544,28 @@ export const realEstateBuildingService = {
 
 export const realEstateAnalyticsService = {
   async getPortfolioOverview(userId: string): Promise<PortfolioAnalytics> {
-    const [propsRes, leasesRes, ticketsRes] = await Promise.all([
-      db("properties").select("id, status", { count: "exact" }).eq("user_id", userId),
-      db("leases").select("id, status, rent_amount, currency")
-        .eq("status", "active")
-        .in("property_id", (await db("properties").select("id").eq("user_id", userId)).data?.map((p: Record<string, unknown>) => p.id as string) ?? []),
-      db("maintenance_tickets").select("id", { count: "exact" })
-        .in("status", ["open", "assigned", "in_progress"])
-        .in("property_id", (await db("properties").select("id").eq("user_id", userId)).data?.map((p: Record<string, unknown>) => p.id as string) ?? []),
-    ]);
+    const propsRes = await db("properties").select("id", { count: "exact" }).eq("user_id", userId);
+    const propertyIds = (propsRes.data ?? []).map((p: Record<string, unknown>) => p.id as string);
+    const totalProperties = propertyIds.length;
 
-    const properties = propsRes.data ?? [];
-    const totalProperties = properties.length;
-    const activeLeases = (leasesRes.data ?? []).length;
-    const openTickets = ticketsRes.count ?? 0;
-    const monthlyRevenue = (leasesRes.data ?? []).reduce((sum: number, l: Record<string, unknown>) => sum + (Number(l.rent_amount) || 0), 0);
+    let activeLeases = 0;
+    let openTickets = 0;
+    let monthlyRevenue = 0;
+
+    if (propertyIds.length > 0) {
+      const [leasesRes, ticketsRes] = await Promise.all([
+        db("leases").select("id, status, rent_amount, currency")
+          .eq("status", "active")
+          .in("property_id", propertyIds),
+        db("maintenance_tickets").select("id", { count: "exact" })
+          .in("status", ["open", "assigned", "in_progress"])
+          .in("property_id", propertyIds),
+      ]);
+
+      activeLeases = (leasesRes.data ?? []).length;
+      openTickets = ticketsRes.count ?? 0;
+      monthlyRevenue = (leasesRes.data ?? []).reduce((sum: number, l: Record<string, unknown>) => sum + (Number(l.rent_amount) || 0), 0);
+    }
 
     return {
       totalProperties,
