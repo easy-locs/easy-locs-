@@ -106,7 +106,9 @@ export default function AdminControlRoomPage() {
   }, []);
 
   useEffect(() => {
-    const unsub = platformBus.on("ui-engine:report", handleUiReport as any);
+    const unsub = platformBus.on("ui-engine:report", (event) => {
+      handleUiReport(event.payload as UiEnginePageReport);
+    });
     return () => { if (typeof unsub === "function") unsub(); };
   }, [handleUiReport]);
 
@@ -325,37 +327,46 @@ export default function AdminControlRoomPage() {
                 <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
                   <Layers className="w-4 h-4 inline mr-1" /> Flow Closure Status
                 </CardTitle>
-                <p className="text-[10px] text-gray-500 mt-1">End-to-end flows — live engine health + static audit reference</p>
+                <p className="text-[10px] text-gray-500 mt-1">Derived from live engine_supervisor data — {engines.length} engines loaded</p>
               </CardHeader>
               <CardContent className="space-y-1 text-xs">
-                {[
-                  { flow: "Auth → Dashboard", status: "wired", engine: "auth_engine" },
-                  { flow: "Orbit: compose → send → encrypt → store → broadcast → receive → decrypt → display", status: "wired", engine: "message_delivery_engine" },
-                  { flow: "Orbit: WebRTC calls", status: "wired", engine: "call_engine" },
-                  { flow: "Wallet: Stripe Checkout → webhook → ledger credit → balance", status: "wired", engine: "payment_engine" },
-                  { flow: "Delivery: 23 components → real DB → CRUD", status: "wired", engine: "delivery_engine" },
-                  { flow: "KPI Dashboard → worker_health_snapshots", status: "wired", engine: "kpi_engine" },
-                  { flow: "Multi-currency: ECB rates → FX conversion → wallet", status: "wired", engine: "fx_engine" },
-                  { flow: "71 engines → cron runner → health monitoring", status: "wired", engine: "engine_cron" },
-                  { flow: "Flight booking (airline API)", status: "missing", engine: "flight_engine" },
-                  { flow: "Stripe Elements card save", status: "missing", engine: "payment_engine" },
-                  { flow: "Push notifications (native)", status: "missing", engine: "notification_engine" },
-                  { flow: "Secure Enclave key storage", status: "missing", engine: "e2ee_engine" },
-                ].map(f => {
-                  const eng = engines.find(e => e.engine_name === f.engine);
-                  const liveStatus = eng ? (eng.enabled ? eng.status : "disabled") : null;
-                  return (
-                    <div key={f.flow} className="flex items-center justify-between gap-2">
-                      <span className={`truncate max-w-[70%] ${f.status === "wired" ? "text-gray-300" : "text-gray-500"}`}>{f.flow}</span>
-                      <div className="flex items-center gap-1">
-                        {liveStatus && <StatusBadge status={liveStatus} />}
-                        <span className={`text-[10px] font-bold ${f.status === "wired" ? "text-emerald-400" : "text-red-400"}`}>
-                          {f.status === "wired" ? "WIRED" : "MISSING"}
-                        </span>
+                {(() => {
+                  const engineNames = new Set(engines.map(e => e.engine_name));
+                  const flowDefs = [
+                    { flow: "Auth → Dashboard", engines: ["auth_engine", "session_engine"] },
+                    { flow: "Orbit messaging pipeline", engines: ["message_delivery_engine", "message_dedup_engine"] },
+                    { flow: "Orbit WebRTC calls", engines: ["call_engine"] },
+                    { flow: "Wallet + payments", engines: ["payment_engine", "ledger_engine"] },
+                    { flow: "Delivery pipeline", engines: ["delivery_engine", "dispatch_engine"] },
+                    { flow: "KPI + health monitoring", engines: ["kpi_engine", "health_check_engine"] },
+                    { flow: "FX + multi-currency", engines: ["fx_engine", "currency_engine"] },
+                    { flow: "Engine cron runner", engines: ["engine_cron"] },
+                    { flow: "Flight booking (airline API)", engines: ["flight_engine"] },
+                    { flow: "Push notifications (native)", engines: ["notification_engine"] },
+                  ];
+                  return flowDefs.map(f => {
+                    const matched = f.engines.filter(n => engineNames.has(n));
+                    const matchedEngines = engines.filter(e => f.engines.includes(e.engine_name));
+                    const hasEngine = matched.length > 0;
+                    const allHealthy = matchedEngines.every(e => e.enabled && e.status === "healthy");
+                    const anyError = matchedEngines.some(e => e.status === "error" || e.consecutive_failures > 0);
+                    return (
+                      <div key={f.flow} className="flex items-center justify-between gap-2">
+                        <span className={`truncate max-w-[65%] ${hasEngine ? "text-gray-300" : "text-gray-500"}`}>{f.flow}</span>
+                        <div className="flex items-center gap-1.5">
+                          {hasEngine && matchedEngines.map(e => (
+                            <StatusBadge key={e.engine_name} status={e.enabled ? e.status : "disabled"} />
+                          ))}
+                          <span className={`text-[10px] font-bold ${
+                            !hasEngine ? "text-red-400" : anyError ? "text-amber-400" : allHealthy ? "text-emerald-400" : "text-blue-400"
+                          }`}>
+                            {!hasEngine ? "NO ENGINE" : anyError ? "DEGRADED" : allHealthy ? "HEALTHY" : matched.length + "/" + f.engines.length}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </CardContent>
             </Card>
 
