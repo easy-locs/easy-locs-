@@ -100,6 +100,29 @@ engine_registry, cron_registry, source_of_truth_registry, invariant_registry, co
 ### Master Orchestrator (`sentinel-core.ts`)
 Boots all registries, registers 31 engines + 14 source-of-truth mappings + 9 invariants + 25 cron jobs. Heartbeat every 30s with auto-degradation. Initial audit at boot+8s. Pipeline: VALIDATE → CHECK INVARIANTS → START DURABLE WORKFLOW → EMIT TELEMETRY → APPLY QUALITY GATE → PUBLISH → CONTINUOUS RE-AUDIT → SAFE AUTO-HEAL. Exposes `runVerification()` for full proof report generation.
 
+## Omega Intelligence Core — Central Brain (`src/core/omega/`)
+Total intelligence layer. 12 files, 2,060 lines. 10 engines + master orchestrator + type system. Boots deferred at 28s after app start (t8 stage). Intelligence loop runs every 60s.
+
+**Motto: SEE → UNDERSTAND → PROVE → DECIDE → BLOCK → HEAL → OPTIMIZE → PREDICT → EVOLVE → RE-AUDIT**
+
+### Engines (10 engines)
+- **Knowledge Graph Engine** (`knowledge-graph/`): Universal graph with 39 node types (USER through OPPORTUNITY_SIGNAL) + 20 edge types (BELONGS_TO through RECOMMENDS). Path finding (BFS), orphan detection, broken edge detection, duplicate detection, type indexing. Bounded: 50K nodes / 200K edges with LRU eviction
+- **Memory Engine** (`memory/`): System memory for audits, incidents, regressions, conflicts, optimizations, healing actions, patterns, root causes. Category + domain indexing, recurring pattern detection, root cause clustering, unstable domain identification, improvement history tracking, TTL-based expiry. Bounded: 5K entries
+- **Decision Engine** (`decision/`): Central decision-making with weighted scoring (severity, criticality, user/business/performance/revenue impact, dependency reach, regression risk). 10 decisions: BLOCK_NOW, FIX_NOW, SAFE_AUTO_HEAL, ESCALATE, DEFER, OBSERVE, OPTIMIZE_NEXT, ROLLOUT_GRADUALLY, REJECT_CHANGE, REQUIRE_HUMAN_REVIEW. Bounded: 2K decisions
+- **Priority Engine** (`priority/`): Weighted priority scoring formula (severity × user_impact × business_impact × recurrence × confidence × dependency_reach). 5 bands: now/next/later/observe/ignore. Top-N retrieval, recalculation, type filtering. Bounded: 2K items
+- **Prediction Engine** (`prediction/`): 14 prediction types (engine_failure through payment_friction). Risk + confidence scoring, outcome tracking (confirmed/false_alarm), precision/recall metrics, high-risk filtering. Specialized predictors: engine failure, workflow timeout, demand spike. Bounded: 1K predictions
+- **Business Opportunity Engine** (`business-opportunity/`): 9 signal types (high_demand_zone through launch_candidate). Geo priority maps, category scoring. Detectors: high demand zones, weak supply, high value categories, vertical expansion, content enrichment. Bounded: 1K signals
+- **Adaptive UX Engine** (`adaptive-ux/`): 9 rule types (card_reorder through cta_focus). Context-driven adaptation with measurable/reversible/gradual constraints. Specialized: card ordering, dashboard adaptation, search ranking, preload strategy. Bounded: 500 rules
+- **Self-Improvement Engine** (`self-improvement/`): Weakness reporting + clustering, 6-stage cycle (proposed → simulated → tested → applied/rolled_back/rejected). Safe-only auto-apply with before/after scoring + re-audit. Success rate tracking. Bounded: 500 cycles
+- **Incident Response Engine** (`incident-response/`): Autonomous incident lifecycle (detected → classified → mitigating → re_auditing → resolved/escalated). 15 safe mitigations, 8 unsafe mitigations. Severity-based prioritization. Bounded: 1K actions
+- **Code Evolution Engine** (`code-evolution/`): 15 issue types (complexity through stale_utility). Safe action classification, tech debt scoring. Suggestion lifecycle: proposed → approved → applied/rejected. Bounded: 500 suggestions
+
+### Master Brain (`omega-core.ts`)
+Boots all 10 engines, seeds knowledge graph with 25 domains + 37 system engines. Intelligence loop every 60s: memory cleanup, orphan detection, unstable domain escalation, incident classification, safe code suggestion auto-approval, health checks every 5 loops. `generateIntelligenceReport()` produces full scored report with sub-scores, verdict, and next actions. Weighted scoring: incident_response 15%, decision 12%, prediction 12%, priority 10%, self_improvement 10%, code_evolution 10%, knowledge_graph 8%, memory 8%, business_opportunity 8%, adaptive_ux 7%.
+
+### Database (17 tables in `omega` schema)
+knowledge_nodes, knowledge_edges, memory_entries, decision_log, prediction_log, priority_queue, opportunity_signals, adaptive_ux_rules, improvement_cycles, incident_response_actions, code_evolution_suggestions, intelligence_reports, regression_log, drift_log, release_registry, baseline_registry, optimization_runs, telemetry_index
+
 ## God System — Self-Auditing Infrastructure (`src/lib/god/`)
 Complete self-auditing, anti-conflict, auto-healing, continuous-monitoring infrastructure. 16 files, 5200+ lines. Boots deferred at 18s after app start via `useMasterAppBootstrap`.
 
