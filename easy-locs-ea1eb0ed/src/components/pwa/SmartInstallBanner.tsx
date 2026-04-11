@@ -79,10 +79,10 @@ export default function SmartInstallBanner() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">
+              <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">
                 {t("pwa.banner.title")}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-muted-foreground line-clamp-1 break-words">
                 {isIOS ? t("pwa.banner.ios_hint") : t("pwa.banner.hint")}
               </p>
             </div>

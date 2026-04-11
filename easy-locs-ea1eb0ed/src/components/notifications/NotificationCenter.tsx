@@ -98,7 +98,7 @@ export default function NotificationCenter() {
                     <Icon className={`h-4 w-4 ${isUnread ? "text-primary" : "text-muted-foreground"}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold truncate ${isUnread ? "text-foreground" : "text-foreground/80"}`}>
+                    <p className={`text-sm font-semibold line-clamp-1 break-words ${isUnread ? "text-foreground" : "text-foreground/80"}`}>
                       {notif.title}
                     </p>
                     <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{notif.body}</p>
