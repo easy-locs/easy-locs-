@@ -175,19 +175,37 @@ export function initMonitoring() {
   // Initialize unified monitoring (Sentry + module_health + global error handlers)
   initUnifiedMonitoring();
 
-  // Unhandled JS errors
+  const ERROR_NOISE = [
+    "HTTP Client Error with status code:",
+    "ResizeObserver loop",
+    "Failed to fetch",
+    "Load failed",
+  ];
+
   window.addEventListener("error", (e) => {
+    const msg = e.message || "Unknown error";
+    if (ERROR_NOISE.some((p) => msg.includes(p))) return;
     pushEvent({
       type: "error",
       source: e.filename || "unknown",
-      message: e.message || "Unknown error",
+      message: msg,
       metadata: { lineno: e.lineno, colno: e.colno, stack: e.error?.stack?.slice(0, 500) },
     });
   });
 
-  // Unhandled promise rejections
+  const REJECTION_NOISE = [
+    "HTTP Client Error with status code:",
+    "Failed to fetch",
+    "Load failed",
+    "AbortError",
+    "The operation was aborted",
+    "NetworkError",
+    "net::ERR_",
+  ];
+
   window.addEventListener("unhandledrejection", (e) => {
     const msg = e.reason?.message || String(e.reason || "Unhandled promise rejection");
+    if (REJECTION_NOISE.some((p) => msg.includes(p))) return;
     pushEvent({
       type: "error",
       source: "promise",
@@ -239,7 +257,23 @@ export function initMonitoring() {
     "tile.openstreetmap.org",
     "maps.googleapis.com",
     "api.mapbox.com",
+    "api.open-meteo.com",
+    "api.rainviewer.com",
+    "tilecache.rainviewer.com",
   ];
+
+  const VITE_INTERNAL_PATTERNS = [
+    "/@vite/",
+    "/__vite_ping",
+    "/@fs/",
+    "/@id/",
+    "/node_modules/.vite/",
+    "hot-update",
+  ];
+
+  function isViteInternal(url: string): boolean {
+    return VITE_INTERNAL_PATTERNS.some((p) => url.includes(p));
+  }
 
   function isExternalApi(url: string): boolean {
     try {
@@ -254,27 +288,32 @@ export function initMonitoring() {
   window.fetch = async (...args) => {
     const url = typeof args[0] === "string" ? args[0] : (args[0] as Request)?.url || "unknown";
     const isAuditReq = url.includes("/audit_logs");
+    const isVite = isViteInternal(url);
     const isExternal = isExternalApi(url);
+    const isSkippable = isAuditReq || isVite;
+
     try {
       const res = await origFetch(...args);
-      if (res.status >= 500 && !isAuditReq) {
-        pushEvent({
-          type: isExternal ? "warning" : "error",
-          source: "network",
-          message: `${isExternal ? "External API" : "Server"} error ${res.status} on ${url.split("?")[0]}`,
-          severity: isExternal ? "warning" : "error",
-          metadata: { status: res.status, url: url.split("?")[0], external: isExternal },
-        });
+      if (res.status >= 500 && !isSkippable) {
+        if (!isExternal || res.status >= 500 && res.status !== 502 && res.status !== 503 && res.status !== 504) {
+          pushEvent({
+            type: isExternal ? "warning" : "error",
+            source: "network",
+            message: `${isExternal ? "External API" : "Server"} error ${res.status} on ${url.split("?")[0]}`,
+            severity: isExternal ? "warning" : "error",
+            metadata: { status: res.status, url: url.split("?")[0], external: isExternal },
+          });
+        }
       }
       return res;
     } catch (err: any) {
-      if (!isAuditReq) {
+      if (!isSkippable && !isExternal) {
         pushEvent({
-          type: isExternal ? "warning" : "error",
+          type: "warning",
           source: "network",
-          message: `${isExternal ? "External API" : "Network"} failure: ${err.message}`,
-          severity: isExternal ? "warning" : "error",
-          metadata: { url: url.split("?")[0], external: isExternal },
+          message: `Network failure: ${err.message}`,
+          severity: "warning",
+          metadata: { url: url.split("?")[0] },
         });
       }
       throw err;

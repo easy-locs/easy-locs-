@@ -15,6 +15,9 @@ const NOISE_PATTERNS = [
   "The operation was aborted",
   "Non-Error promise rejection captured",
   "Object captured as promise rejection",
+  "HTTP Client Error with status code: 502",
+  "HTTP Client Error with status code: 503",
+  "HTTP Client Error with status code: 504",
 ];
 
 const SENSITIVE_FIELD_PATTERNS = /phone|email|otp|token|password|secret|authorization|api_key|card_number|cvv|pin|ssn|balance/i;
@@ -79,7 +82,10 @@ export function initSentry() {
         blockAllMedia: false,
       }),
       Sentry.feedbackIntegration({ autoInject: false }),
-      Sentry.httpClientIntegration(),
+      Sentry.httpClientIntegration({
+        failedRequestStatusCodes: [[500, 599]],
+        failedRequestTargets: [/\.supabase\.co/],
+      }),
       Sentry.reportingObserverIntegration(),
       Sentry.extraErrorDataIntegration({ depth: 4 }),
     ],
