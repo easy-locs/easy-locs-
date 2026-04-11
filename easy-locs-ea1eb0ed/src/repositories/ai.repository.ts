@@ -39,9 +39,13 @@ export async function invokeLeaseWorkflow(body: Record<string, any>) {
 }
 
 export async function invokeCheckSubscription() {
-  const { data, error } = await supabase.functions.invoke("check-subscription");
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase.functions.invoke("check-subscription");
+    if (error) return null;
+    return data;
+  } catch {
+    return null;
+  }
 }
 
 export async function invokeConciergePayment(body: Record<string, any>) {
