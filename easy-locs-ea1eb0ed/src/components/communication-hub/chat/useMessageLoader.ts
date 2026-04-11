@@ -247,20 +247,20 @@ export function useMessageLoader({
       setMessagesLoading(false);
       setPendingOffline(prev => prev.length === 0 ? prev : []);
 
-      if (readReceiptsRef.current && markedReadForRef.current !== cid) {
+      if (readReceiptsRef.current && uid && markedReadForRef.current !== cid) {
         const unreadIds = (data ?? [])
           .filter((m: any) => !m.read_at && m.sender_user_id !== uid)
           .map((m: any) => m.id);
 
         if (unreadIds.length > 0) {
           markedReadForRef.current = cid;
-          markConversationMessagesRead(cid, uid!).then(({ markedCount }) => {
+          markConversationMessagesRead(cid, uid).then(({ markedCount }) => {
             if (markedCount > 0 && tid) {
               onThreadUpdateRef.current(tid, { unreadCount: 0, lastMessagePreview: undefined });
             }
           }).catch(() => {});
           const ctxId = eid || tid;
-          if (ctxId) clearMarkedUnread(uid!, ctxId).catch(() => {});
+          if (ctxId) clearMarkedUnread(uid, ctxId).catch(() => {});
         } else {
           markedReadForRef.current = cid;
         }
@@ -319,8 +319,14 @@ export function useMessageLoader({
         if (prev.some((m) => m.id === mapped.id)) return prev;
         if (isOwn) {
           let matched = false;
+          const incomingTempId = (broadcastMsg.metadata as any)?._tempId ?? null;
           const reconciled = prev.filter(m => {
             if (!m.pending || m.sender_id !== userId || matched) return true;
+            const myTempId = (m.metadata as any)?._tempId ?? null;
+            if (incomingTempId && myTempId && incomingTempId === myTempId) {
+              matched = true;
+              return false;
+            }
             if (m.content === safeString(broadcastMsg.body)) {
               matched = true;
               return false;
@@ -378,8 +384,14 @@ export function useMessageLoader({
             if (prev.some((m) => m.id === mapped.id)) return prev;
             if (isOwn) {
               let matched = false;
+              const incomingTempId = (msg.metadata as any)?._tempId ?? null;
               const reconciled = prev.filter(m => {
                 if (!m.pending || m.sender_id !== userId || matched) return true;
+                const myTempId = (m.metadata as any)?._tempId ?? null;
+                if (incomingTempId && myTempId && incomingTempId === myTempId) {
+                  matched = true;
+                  return false;
+                }
                 if (m.content === safeString(msg.body)) {
                   matched = true;
                   return false;

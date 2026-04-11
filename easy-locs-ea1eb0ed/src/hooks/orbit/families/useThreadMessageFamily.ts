@@ -98,6 +98,7 @@ export function useThreadMessageFamily(params: {
         locale,
         category: "general",
         ...(disappearTTL && disappearTTL !== "off" ? { disappearTTL } : {}),
+        _uiTempId: tempId,
       });
 
       if (!result.ok) {

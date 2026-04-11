@@ -73,7 +73,7 @@ export const NAV_TABS_CONFIG: NavTab[] = [
 export const HIDE_NAV_PREFIXES = [
   "/login", "/signup", "/forgot-password", "/reset-password",
   "/verify-email", "/onboarding", "/auth/",
-  "/orbit",
+  "/orbit/",
   "/checkout",
   "/pay/",
   "/order/",

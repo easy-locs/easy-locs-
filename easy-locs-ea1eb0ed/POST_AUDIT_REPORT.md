@@ -341,3 +341,44 @@ All 14 runtime patch types are now permanent source fixes:
 - ❌ Stripe Elements card saving (placeholder UI)
 - ❌ Push notifications to native devices (web-only toast/in-app)
 - ❌ Secure Enclave key storage (web app limitation — IndexedDB only)
+
+---
+
+## 10. ENGINE GAP ANALYSIS — 5 Product Issues
+
+Each issue below was found via manual inspection. This section analyzes which engine *should* have caught it, why it missed, and the permanent improvement applied.
+
+### Issue 1: Orbit Message-Open Crash
+- **Root Cause**: `uid!` non-null assertion in `useMessageLoader.ts:257` — `markConversationMessagesRead(cid, uid!)` throws if `uid` is undefined during auth state transitions (sign-out race, session expiry).
+- **Responsible Engine**: `message_delivery_engine` + `error_boundary_engine`
+- **Why Missed**: The engine tests message delivery on established sessions. It does not simulate auth-edge transitions (session expiry mid-conversation, rapid sign-in/sign-out). The error boundary existed (`HudChatErrorBoundary`) but the crash occurred in hook initialization before the boundary could catch it.
+- **Fix Applied**: Replaced `uid!` with a `uid &&` guard (line 253). Read receipts now safely skip when userId is unavailable.
+- **Permanent Improvement**: All `!` non-null assertions in hooks that depend on auth state must be replaced with conditional guards.
+
+### Issue 2: Duplicate Messages in Orbit
+- **Root Cause**: Optimistic message reconciliation used content-string matching (`m.content === safeString(msg.body)`) in both broadcast and postgres_changes handlers. When E2EE is active, `msg.body` is encrypted ciphertext while the optimistic `m.content` is plaintext — the match always fails, leaving both the optimistic and server messages in the list.
+- **Responsible Engine**: `message_dedup_engine` + `e2ee_integration_engine`
+- **Why Missed**: The dedup engine (`message-dedup.ts`) operates on the Zustand store level and works correctly with `tempId` reconciliation. However, the UI-level `useMessageLoader` maintains its own `rawMessages` state that bypasses the store's dedup logic. The E2EE engine tested encryption/decryption but not the reconciliation path where encrypted wire format differs from plaintext optimistic content.
+- **Fix Applied**: (a) Added `_tempId` to wire metadata in `executeSendText.ts` so it survives the round-trip. (b) Changed reconciliation in both broadcast and postgres handlers to first match by `metadata._tempId`, then by content, then by oldest-pending-from-same-sender fallback. (c) This aligns the UI-level dedup with the store-level dedup logic.
+- **Permanent Improvement**: Any optimistic insert system must carry a stable reconciliation key through the entire round-trip (insert → persist → broadcast → receive). Content matching is unreliable when content transforms (encryption, sanitization, truncation) occur.
+
+### Issue 3: Language Settings Double-Write Conflict
+- **Root Cause**: `SettingsOrbit.tsx` called both `setLocale(code)` (which writes to `profiles.locale` via `i18n.tsx`) AND `settingsRepo.updateProfileField(user.id, "locale", code)` — two competing async writes to the same DB column. Under load, the second write could overwrite the first with stale data or cause a race condition.
+- **Responsible Engine**: `i18n_engine` + `settings_sync_engine`
+- **Why Missed**: The i18n engine validates locale resolution and display. The settings engine validates profile field persistence. Neither engine checks for *duplicate write paths* to the same field from different code locations. `OrbitAccountSection.tsx` correctly uses only `setLocale()`, but `SettingsOrbit.tsx` had a legacy double-write.
+- **Fix Applied**: Removed the duplicate `settingsRepo.updateProfileField` call from `SettingsOrbit.tsx:saveLang`. Now uses only the global `setLocale()` which handles both state + persistence.
+- **Permanent Improvement**: Each DB field must have exactly one canonical write path. Settings engines should detect competing write paths to the same column.
+
+### Issue 4: Bottom Nav Bar Disappears on Orbit Landing
+- **Root Cause**: `HIDE_NAV_PREFIXES` included `/orbit` (without trailing slash), which matched both `/orbit` (landing page) and `/orbit/chat/123` (chat views). When a user clicked the Orbit tab, the bottom nav immediately vanished — the user could navigate TO Orbit but not AWAY from it via the nav bar.
+- **Responsible Engine**: `navigation_engine` + `ux_flow_engine`
+- **Why Missed**: The navigation engine validated tab routing and active-state detection but didn't test the interaction between `HIDE_NAV_PREFIXES` and `NAV_TABS_CONFIG.match`. The Orbit tab's match function (`p.startsWith("/orbit")`) correctly highlighted the tab, but the hide-prefix also matched, creating a paradox: the tab is "active" but invisible.
+- **Fix Applied**: Changed `"/orbit"` to `"/orbit/"` in `HIDE_NAV_PREFIXES`. Now the nav bar shows on the Orbit landing page (`/orbit`) but hides correctly on sub-pages (`/orbit/chat/123`, `/orbit/settings`).
+- **Permanent Improvement**: Any route in `HIDE_NAV_PREFIXES` that also appears in `NAV_TABS_CONFIG` must use a sub-path prefix (trailing slash) to avoid hiding its own tab landing page.
+
+### Issue 5: Text Clipping and Broken Card Layouts
+- **Root Cause**: DS-14c card layout rules only targeted `[data-card="merchant"]`, `[data-card="listing"]`, and `[data-card="shell"]`. The `AppCard` component emits `data-card` with values like `base`, `interactive`, `settings`, `elevated`, `kpi` — none of which were covered by DS-14c. Cards using these variants lacked `min-width: 0` on children, causing text overflow and clipping in flex containers, especially with translated text in longer languages (German, Arabic, Portuguese).
+- **Responsible Engine**: `ui_layout_engine` + `i18n_render_engine`
+- **Why Missed**: The layout engine tested the three original card types but was not updated when `AppCard` was introduced with new variant names. The i18n render engine validated text direction (RTL/LTR) but didn't test text overflow in constrained card layouts across all locale lengths.
+- **Fix Applied**: (a) Broadened DS-14c to target all `[data-card]` elements (any variant). (b) Added DS-14i for card text overflow safety (`overflow-wrap: break-word` on `p` and `span` within cards, `min-width: 0` on truncated/clamped elements). (c) Kept specific `min-height: 120px` only for merchant/listing/shell cards.
+- **Permanent Improvement**: CSS layout rules must target the attribute generically (`[data-card]`) rather than specific values, since new variants are added without updating global CSS. Component-level attributes should be the single selector.

@@ -49,10 +49,7 @@ export default function SettingsOrbit() {
 
   const saveLang = async (code: string) => {
     setSelectedLang(code as Locale);
-    setLocale(code as any);
-    if (user) {
-      await settingsRepo.updateProfileField(user.id, "locale", code);
-    }
+    await setLocale(code as any);
     toast({ title: "Language updated" });
   };
 

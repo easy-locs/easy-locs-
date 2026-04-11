@@ -48,7 +48,7 @@ export async function executeSendText(
 
     // ── Phase 2: Canonical metadata ──
     enterPhase(trace, "canonical");
-    const metadata = buildTextMeta({
+    const baseMeta = buildTextMeta({
       encrypted: cmd.encrypted,
       category: cmd.category,
       locale: cmd.locale,
@@ -61,6 +61,8 @@ export async function executeSendText(
     const store = useOrbitMessagingStore.getState();
     store.mergeMessage(optimistic);
     const tempId = optimistic.tempId ?? optimistic.id;
+    const uiTempId = cmd._uiTempId ?? tempId;
+    const metadata = { ...baseMeta, _tempId: uiTempId };
 
     if (import.meta.env.DEV) {
       console.debug("[executeSendText] Optimistic text merged", {
