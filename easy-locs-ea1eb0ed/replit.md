@@ -25,27 +25,32 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Adaptive Layout Components** (`src/components/layout/AdaptiveLayout.tsx`): `AdaptiveContainer` (responsive max-width), `AdaptiveSplit` (split↔stack based on layout.showSplitView), `AdaptiveGrid` (responsive columns with auto-fill), `AdaptiveModal` (fullscreen on mobile, dialog on desktop), `AdaptiveList` (cards on mobile, table on desktop), `AdaptiveNav` (bottom bar when no sidebar), `useAdaptiveValue()` hook.
 
 ## SEO & Performance Optimization
-- **Title**: "Easy-Locs — Food, Services, Taxi, Hotel in One App" (50 chars, optimized)
-- **Meta Description**: 140 chars, English, SEO-optimized
-- **OG/Twitter Tags**: Unified with primary meta, matching title + description
-- **Structured Data**: Organization + WebSite + SoftwareApplication + WebPage + BreadcrumbList (JSON-LD)
-- **sitemap.xml**: 90+ URLs covering core pages, services, countries, cities, property management
-- **robots.txt**: Allows all public discovery pages, blocks private (wallet/admin/settings/auth)
+- **Title**: "Easy-Locs — Food, Services, Taxi, Hotel in One App | 190+ Countries" (optimized, keyword-rich)
+- **Meta Description**: 160 chars, English, SEO-optimized with value proposition
+- **Meta Robots**: `index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1`
+- **OG/Twitter Tags**: Full set including og:image:alt, twitter:image:alt, twitter:site
+- **Hreflang Tags**: 9 alternates (fr, en, es, de, it, pt, ar, ja, x-default) for international SEO
+- **Structured Data**: Organization + WebSite + SoftwareApplication + WebPage + BreadcrumbList + FAQPage (JSON-LD)
+- **sitemap.xml**: 90+ URLs with lastmod dates; build-time plugin generates split sitemaps with lastmod
+- **robots.txt**: Allows all public discovery pages, blocks private (wallet/admin/settings/auth), sitemap reference
 - **CDN Cache Headers** (`public/_headers`): Immutable for versioned assets, 30d for images, 5min for HTML
-- **Security Headers**: HSTS, X-Frame-Options, X-Content-Type-Options, CSP via Permissions-Policy
-- **Homepage SEO Content**: 700+ words noscript fallback with H1/H2 structure for crawlers
-- **Image Lazy Loading**: All non-critical images use `loading="lazy"` (Orbit, Radar, Wallet, Me, Dashboard)
+- **Security Headers**: HSTS (preload), X-Frame-Options, X-Content-Type-Options, CSP (script/style/img/font/connect), Referrer-Policy, Permissions-Policy
+- **manifest.json**: Full super-app description, proper categories, lang/dir/id fields
+- **PWA Icons**: Optimized (192x192: 6KB, 512x512: 22KB) + favicon-16x16, favicon-32x32
+- **Homepage SEO Content**: 800+ words noscript fallback with semantic HTML (header/section/nav/footer), H1/H2 hierarchy, internal navigation links to verticals and cities
+- **Accessibility**: Skip-to-content link, aria labels, proper alt text on public images, focus management
+- **Image Lazy Loading**: All non-critical images use `loading="lazy"` with width/height for CLS prevention
 - **Core Web Vitals**: `src/lib/platform/web-vitals.ts` — tracks FCP, LCP, CLS, TTFB, INP at boot
-- **No-Cache Removed**: HTTP no-cache/no-store meta tags removed from index.html for CDN compatibility
-- **Code Splitting**: Route-based + feature-based + vendor chunking via Vite manualChunks (react-core, react-dom, icons, call-engine, orbit-engine separated)
-- **Deferred Loading**: All non-critical systems use `requestIdleCallback` with timeouts (sentry 2s, web-vitals 4s, monitoring 8s, events 10s, E2EE 12s) — never blocks boot
+- **Code Splitting**: Route-based + feature-based + vendor chunking via Vite manualChunks
+- **Deferred Loading**: All non-critical systems use `requestIdleCallback` with timeouts (sentry 2s, web-vitals 4s, monitoring 8s, events 10s, E2EE 12s)
 - **Passive Touch Listeners**: SwipeableMain uses native passive event listeners for jank-free scrolling
-- **CSS Containment**: `contain: layout style` on bottom nav + utility classes (`.contain-layout`, `.contain-paint`, `.contain-strict`)
+- **CSS Containment**: `contain: layout style` on bottom nav + utility classes
 - **touch-action: manipulation**: Applied to all interactive elements — eliminates 300ms tap delay
 - **Content Visibility**: `.render-offscreen` for below-fold sections, `.render-critical` for above-fold
 - **GPU Scroll**: `.scroll-gpu` for smooth momentum scrolling with `overscroll-behavior: contain`
 - **Module Preload Polyfill**: Enabled in Vite build for faster chunk loading
 - **Reduced Motion**: All animations respect `prefers-reduced-motion: reduce`
+- **Font Loading**: Non-render-blocking (print/onload pattern) + noscript fallback + font-display:swap via Google Fonts
 
 ## Visual Design System (Storybook + Chromatic)
 - **Storybook 8** installed with React/Vite framework, a11y addon, interactions addon

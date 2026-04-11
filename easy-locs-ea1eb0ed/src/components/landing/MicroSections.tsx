@@ -82,7 +82,7 @@ export function NearYouStrip() {
             >
               <div className="w-9 h-9 rounded-lg bg-muted/30 flex items-center justify-center overflow-hidden shrink-0">
                 {shop.logo_url ? (
-                  <img src={shop.logo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  <img src={shop.logo_url} alt={shop.name || "Shop logo"} className="w-full h-full object-cover" loading="lazy" width={36} height={36} />
                 ) : (
                   <Flame className="h-4 w-4 text-muted-foreground/30" />
                 )}
