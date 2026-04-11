@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import type { CardStatus } from "@/domains/cards/card-contract";
 import { Loader2, Inbox, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export type CardState = CardStatus;
 
@@ -72,9 +73,9 @@ export function LifecycleCardShell({
   className,
   skeletonCount = 3,
 }: LifecycleCardShellProps) {
-  if (state === "loading") return <div className={className}><SkeletonCards count={skeletonCount} /></div>;
-  if (state === "empty") return <div className={className}><EmptyState title={title} /></div>;
-  if (state === "error") return <div className={className}><ErrorState onRetry={onRetry} /></div>;
+  if (state === "loading") return <div className={cn("min-w-0", className)}><SkeletonCards count={skeletonCount} /></div>;
+  if (state === "empty") return <div className={cn("min-w-0", className)}><EmptyState title={title} /></div>;
+  if (state === "error") return <div className={cn("min-w-0", className)}><ErrorState onRetry={onRetry} /></div>;
   if (state === "disabled") return null;
-  return <div className={className}>{children}</div>;
+  return <div className={cn("min-w-0", className)}>{children ?? null}</div>;
 }

@@ -50,6 +50,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
   const [busy, setBusy] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const safeAnnualRent = annualRent ?? 0;
   const furnishedLabel = furnished === "furnished" ? "Furnished" : furnished === "semi_furnished" ? "Semi" : "Unfurnished";
 
   const handleContact = useCallback(async (e: React.MouseEvent) => {
@@ -121,7 +122,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <div>
             <span className="text-lg font-extrabold text-white drop-shadow-md tabular-nums">
-              {currency} {annualRent.toLocaleString()}
+              {currency} {safeAnnualRent.toLocaleString()}
             </span>
             <span className="text-xs text-white/70 ml-1">/year</span>
           </div>

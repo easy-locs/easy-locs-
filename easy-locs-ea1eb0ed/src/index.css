@@ -149,6 +149,150 @@ input::placeholder, textarea::placeholder {
   overflow: hidden;
 }
 
+/* ══════════════════════════════════════════════════
+   DESIGN SYSTEM HARDENING — Typography, Cards, Overflow
+   ══════════════════════════════════════════════════ */
+
+/* DS-1. Unified typography scale — enforced via utility classes */
+.text-display   { font-size: 2rem; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; }
+.text-headline  { font-size: 1.5rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.015em; }
+.text-title     { font-size: 1.125rem; line-height: 1.3; font-weight: 600; }
+.text-subtitle  { font-size: 1rem; line-height: 1.4; font-weight: 600; }
+.text-body      { font-size: 0.875rem; line-height: 1.5; font-weight: 400; }
+.text-body-sm   { font-size: 0.8125rem; line-height: 1.5; font-weight: 400; }
+.text-caption   { font-size: 0.75rem; line-height: 1.4; font-weight: 500; }
+.text-overline  { font-size: 0.6875rem; line-height: 1.3; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.text-micro     { font-size: 0.625rem; line-height: 1.3; font-weight: 500; }
+
+/* DS-2. Responsive card grid — auto-fit with min-max */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: var(--card-gap-lg);
+}
+.card-grid-sm {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+  gap: var(--card-gap);
+}
+.card-grid-lg {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+  gap: var(--section-gap);
+}
+
+/* DS-3. Safe line clamp utilities */
+.clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.clamp-4 { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* DS-4. Overflow control */
+.overflow-safe {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.scroll-x-safe {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll-x-safe::-webkit-scrollbar { display: none; }
+
+/* DS-5. Card content protection */
+.card-body {
+  padding: var(--card-padding);
+  min-width: 0;
+  overflow: hidden;
+}
+.card-body-sm {
+  padding: var(--card-padding-sm);
+  min-width: 0;
+  overflow: hidden;
+}
+.card-title-safe {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: break-word;
+}
+.card-desc-safe {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: hsl(var(--muted-foreground));
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: break-word;
+}
+
+/* DS-6. Spacing scale utilities */
+.gap-token-xs  { gap: var(--space-xs); }
+.gap-token-sm  { gap: var(--space-sm); }
+.gap-token-md  { gap: var(--space-md); }
+.gap-token-lg  { gap: var(--space-lg); }
+.gap-token-xl  { gap: var(--space-xl); }
+.p-token-xs    { padding: var(--space-xs); }
+.p-token-sm    { padding: var(--space-sm); }
+.p-token-md    { padding: var(--space-md); }
+.p-token-lg    { padding: var(--space-lg); }
+
+/* DS-7. Empty / fallback state container */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-2xl) var(--space-md);
+  min-height: 200px;
+}
+.empty-state-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: var(--space-md);
+  opacity: 0.4;
+}
+.empty-state-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+.empty-state-desc {
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+  max-width: 280px;
+}
+
+/* DS-8. Touch target enforcement */
+.touch-target {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+}
+
+/* DS-9. Image safety inside cards */
+.img-card {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: var(--card-radius);
+  background-color: hsl(var(--muted));
+}
+
+@media (max-width: 640px) {
+  .text-display  { font-size: 1.5rem; }
+  .text-headline { font-size: 1.25rem; }
+  .text-title    { font-size: 1rem; }
+  .card-grid     { grid-template-columns: 1fr; }
+}
+
 /* Search wrapper safety — never clip positioned children */
 .relative:has(> input),
 .relative:has(> .absolute) {

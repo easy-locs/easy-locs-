@@ -13,12 +13,24 @@ export function initSentry() {
     dsn,
     environment: import.meta.env.MODE || "development",
     release: (window as any).__EASYLOCS_BUILD_ID__ || "unknown",
-    tracesSampleRate: 0.2,
+    tracesSampleRate: 0.3,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
+    profilesSampleRate: 0.1,
     integrations: [
-      Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration(),
+      Sentry.browserTracingIntegration({
+        enableLongTask: true,
+        enableInp: true,
+      }),
+      Sentry.replayIntegration({
+        maskAllText: true,
+        maskAllInputs: true,
+        blockAllMedia: false,
+      }),
+      Sentry.feedbackIntegration({ autoInject: false }),
+      Sentry.httpClientIntegration(),
+      Sentry.reportingObserverIntegration(),
+      Sentry.extraErrorDataIntegration({ depth: 4 }),
     ],
     beforeSend(event) {
       if (event.exception?.values) {
@@ -30,7 +42,11 @@ export function initSentry() {
             msg.includes("ChunkLoadError") ||
             msg.includes("Importing a module script failed") ||
             msg.includes("Failed to fetch dynamically imported module") ||
-            msg.includes("Unable to preload CSS")
+            msg.includes("Unable to preload CSS") ||
+            msg.includes("Load failed") ||
+            msg.includes("NetworkError") ||
+            msg.includes("AbortError") ||
+            msg.includes("The operation was aborted")
           ) {
             return null;
           }
@@ -38,23 +54,21 @@ export function initSentry() {
       }
       return event;
     },
+    beforeBreadcrumb(breadcrumb) {
+      if (breadcrumb.category === "console" && breadcrumb.level === "debug") {
+        return null;
+      }
+      return breadcrumb;
+    },
     denyUrls: [
       /extensions\//i,
       /^chrome:\/\//i,
       /^moz-extension:\/\//i,
+      /googletagmanager\.com/i,
+      /analytics\.google\.com/i,
     ],
+    tracePropagationTargets: ["localhost", /\.supabase\.co/, /\.replit\.dev/],
   });
-}
-
-export function captureDinoError(
-  message: string,
-  extra?: Record<string, unknown>,
-) {
-  Sentry.captureMessage(message, { level: "error", extra });
-}
-
-export function captureException(error: unknown, context?: Record<string, unknown>) {
-  Sentry.captureException(error, { extra: context });
 }
 
 export function setUserContext(userId: string, email?: string) {
@@ -65,8 +79,38 @@ export function clearUserContext() {
   Sentry.setUser(null);
 }
 
+export function captureException(error: unknown, context?: Record<string, unknown>) {
+  Sentry.captureException(error, { extra: context });
+}
+
+export function captureDinoError(message: string, extra?: Record<string, unknown>) {
+  Sentry.captureMessage(message, { level: "error", extra });
+}
+
 export function addBreadcrumb(category: string, message: string, data?: Record<string, unknown>) {
   Sentry.addBreadcrumb({ category, message, data, level: "info" });
+}
+
+export function captureUIAnomaly(component: string, issue: string, meta?: Record<string, unknown>) {
+  Sentry.captureMessage(`[UI] ${component}: ${issue}`, {
+    level: "warning",
+    tags: { anomalyType: "ui", component },
+    extra: meta,
+  });
+}
+
+export function startSpan(name: string, op: string) {
+  return Sentry.startInactiveSpan({ name, op });
+}
+
+export function measureRender(componentName: string, durationMs: number) {
+  if (durationMs > 500) {
+    Sentry.captureMessage(`[SlowRender] ${componentName} took ${durationMs}ms`, {
+      level: "warning",
+      tags: { anomalyType: "performance", component: componentName },
+      extra: { durationMs },
+    });
+  }
 }
 
 export { Sentry };

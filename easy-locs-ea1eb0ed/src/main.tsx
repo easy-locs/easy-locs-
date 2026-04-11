@@ -1,10 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { HashRouter } from "react-router-dom";
-import App from "./App";
+import { withProfiler } from "@sentry/react";
+import RawApp from "./App";
 import "./index.css";
 import "./styles/performance.css";
 import { APP_VERSION } from "@/lib/version-check";
+
+const App = import.meta.env.PROD ? withProfiler(RawApp, { name: "App" }) : RawApp;
 
 if (typeof globalThis.crypto !== "undefined" && typeof globalThis.crypto.randomUUID !== "function") {
   (globalThis.crypto as any).randomUUID = () =>

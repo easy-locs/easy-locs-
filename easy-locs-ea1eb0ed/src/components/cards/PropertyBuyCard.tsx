@@ -69,9 +69,10 @@ const PropertyBuyCard = memo(function PropertyBuyCard({
     setBusy(false);
   }, [slug, title, brokerId, brokerName, navigate, openPayment, user?.id]);
 
-  const formattedPrice = totalPrice >= 1_000_000
-    ? `${(totalPrice / 1_000_000).toFixed(1)}M`
-    : totalPrice.toLocaleString();
+  const safePrice = totalPrice ?? 0;
+  const formattedPrice = safePrice >= 1_000_000
+    ? `${(safePrice / 1_000_000).toFixed(1)}M`
+    : safePrice.toLocaleString();
 
   return (
     <Link
