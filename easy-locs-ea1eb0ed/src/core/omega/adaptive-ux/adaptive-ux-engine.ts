@@ -1,4 +1,5 @@
-import type { AdaptiveUXRule, OmegaEngineStatus } from "../omega-types";
+import type { AdaptiveUXRule, AdaptiveUXContext, AdaptiveUXAdaptation, OmegaEngineStatus } from "../omega-types";
+import { omegaPersistence } from "../omega-persistence";
 
 const MAX_RULES = 500;
 let ruleIdCounter = 0;
@@ -18,8 +19,8 @@ class AdaptiveUXEngine {
 
   addRule(
     ruleType: RuleType,
-    context: Record<string, unknown>,
-    adaptation: Record<string, unknown>,
+    context: AdaptiveUXContext,
+    adaptation: AdaptiveUXAdaptation,
     gradual = true,
   ): AdaptiveUXRule {
     if (this.rules.size >= MAX_RULES) {
@@ -39,6 +40,7 @@ class AdaptiveUXEngine {
     };
     this.rules.set(rule.rule_id, rule);
     this.lastRunAt = Date.now();
+    omegaPersistence.writeAdaptiveRule(rule).catch(() => {});
     return rule;
   }
 
@@ -74,7 +76,7 @@ class AdaptiveUXEngine {
       { visible_modules: topModules, layout: userRole === "provider" ? "operations_first" : "discovery_first" });
   }
 
-  adaptSearchRanking(context: Record<string, unknown>): AdaptiveUXRule {
+  adaptSearchRanking(context: AdaptiveUXContext): AdaptiveUXRule {
     return this.addRule("search_ranking", context,
       { boost_factors: ["geo_proximity", "quality_score", "availability", "media_quality", "trust_score"], decay: "time_weighted" });
   }

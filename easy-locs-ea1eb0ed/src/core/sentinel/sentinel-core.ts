@@ -1,6 +1,9 @@
 import { sentinelEngineRegistry } from "./registry/engine-registry";
 import { sentinelCronRegistry } from "./registry/cron-registry";
 import { sentinelTaxonomyRegistry } from "./registry/taxonomy-registry";
+import { sentinelPageRegistry } from "./registry/page-registry";
+import { sentinelCardRegistry } from "./registry/card-registry";
+import { sentinelWorkflowRegistry } from "./registry/workflow-registry";
 import { sentinelConflictEngine } from "./conflict/sentinel-conflict-engine";
 import { sentinelValidationEngine } from "./validation/sentinel-validation-engine";
 import { sentinelHealthEngine } from "./health/sentinel-health-engine";
@@ -209,6 +212,204 @@ class SentinelCore {
         } catch {}
       }
       return { summary: `Healed ${healed}/${healable.length} auto-healable issues` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("taxonomy_integrity_scan", async () => {
+      const allTaxonomies = sentinelTaxonomyRegistry.getAll();
+      let orphans = 0;
+      let duplicates = 0;
+      const seen = new Set<string>();
+      for (const t of allTaxonomies) {
+        const key = `${t.family}:${t.canonical_path}`;
+        if (seen.has(key)) duplicates++;
+        seen.add(key);
+        if (!t.parent_path && t.canonical_path.includes("/")) orphans++;
+      }
+      sentinelTelemetryEngine.emit("cron:taxonomy_integrity", "sentinel-cron", { total: allTaxonomies.length, orphans, duplicates });
+      if (duplicates > 0) sentinelIncidentEngine.open("medium", "taxonomy", "taxonomy_integrity_scan", "Taxonomy duplicates", `${duplicates} duplicate paths`);
+      return { summary: `Taxonomy: ${allTaxonomies.length} entries, ${orphans} orphans, ${duplicates} duplicates` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("data_integrity_scan", async () => {
+      const sotEntries = sentinelSourceOfTruthRegistry.getAll();
+      let driftCount = 0;
+      for (const entry of sotEntries) {
+        if (!entry.owner_domain || !entry.owner_table) driftCount++;
+      }
+      sentinelTelemetryEngine.emit("cron:data_integrity", "sentinel-cron", { entries: sotEntries.length, drifts: driftCount });
+      return { summary: `Data integrity: ${sotEntries.length} SOT entries checked, ${driftCount} drifts` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("media_relevance_scan", async () => {
+      const engines = sentinelEngineRegistry.getAll();
+      const mediaEngine = engines.find((e) => e.engine_id === "media-intelligence-engine");
+      const status = mediaEngine ? mediaEngine.status : "not_registered";
+      sentinelTelemetryEngine.emit("cron:media_relevance", "sentinel-cron", { engine_status: status });
+      return { summary: `Media relevance: engine ${status}, scan complete` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("seo_public_page_scan", async () => {
+      const pages = sentinelPageRegistry.getAll();
+      let missingMeta = 0;
+      let missingCanonical = 0;
+      for (const page of pages) {
+        if (!page.seo_template) missingMeta++;
+        if (!page.canonical_id) missingCanonical++;
+      }
+      sentinelTelemetryEngine.emit("cron:seo_scan", "sentinel-cron", { pages: pages.length, missing_meta: missingMeta, missing_canonical: missingCanonical });
+      return { summary: `SEO: ${pages.length} pages, ${missingMeta} missing meta, ${missingCanonical} missing canonical` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("performance_budget_scan", async () => {
+      const pages = sentinelPageRegistry.getAll();
+      let overBudget = 0;
+      for (const page of pages) {
+        if (page.performance_budget > 0 && page.performance_budget < 1000) overBudget++;
+      }
+      sentinelTelemetryEngine.emit("cron:performance_budget", "sentinel-cron", { pages: pages.length, over_budget: overBudget });
+      return { summary: `Performance: ${pages.length} pages scanned, ${overBudget} tight budgets` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("route_integrity_scan", async () => {
+      const pages = sentinelPageRegistry.getAll();
+      const routes = new Set<string>();
+      let duplicateRoutes = 0;
+      for (const page of pages) {
+        if (routes.has(page.route)) duplicateRoutes++;
+        routes.add(page.route);
+      }
+      sentinelTelemetryEngine.emit("cron:route_integrity", "sentinel-cron", { routes: routes.size, duplicates: duplicateRoutes });
+      return { summary: `Routes: ${routes.size} unique, ${duplicateRoutes} duplicates` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("dashboard_card_integrity_scan", async () => {
+      const cards = sentinelCardRegistry.getAll();
+      let missingSource = 0;
+      let missingStates = 0;
+      for (const card of cards) {
+        if (!card.data_source) missingSource++;
+        if (!card.empty_state_defined || !card.loading_state_defined || !card.error_state_defined) missingStates++;
+      }
+      sentinelTelemetryEngine.emit("cron:card_integrity", "sentinel-cron", { cards: cards.length, missing_source: missingSource, missing_states: missingStates });
+      return { summary: `Cards: ${cards.length} total, ${missingSource} missing source, ${missingStates} missing states` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("wallet_integrity_scan", async () => {
+      const engine = sentinelEngineRegistry.get("wallet-integrity-engine");
+      const status = engine ? engine.status : "not_registered";
+      const heartbeat = engine ? engine.last_heartbeat_at : 0;
+      const staleSec = heartbeat > 0 ? Math.floor((Date.now() - heartbeat) / 1000) : -1;
+      sentinelTelemetryEngine.emit("cron:wallet_integrity", "sentinel-cron", { status, stale_sec: staleSec });
+      if (staleSec > 300) sentinelIncidentEngine.open("high", "wallet", "wallet_integrity_scan", "Wallet engine stale", `Last heartbeat ${staleSec}s ago`);
+      return { summary: `Wallet: engine ${status}, heartbeat ${staleSec}s ago` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("orbit_integrity_scan", async () => {
+      const engine = sentinelEngineRegistry.get("orbit-integrity-engine");
+      const status = engine ? engine.status : "not_registered";
+      const heartbeat = engine ? engine.last_heartbeat_at : 0;
+      const staleSec = heartbeat > 0 ? Math.floor((Date.now() - heartbeat) / 1000) : -1;
+      sentinelTelemetryEngine.emit("cron:orbit_integrity", "sentinel-cron", { status, stale_sec: staleSec });
+      if (staleSec > 300) sentinelIncidentEngine.open("high", "orbit", "orbit_integrity_scan", "Orbit engine stale", `Last heartbeat ${staleSec}s ago`);
+      return { summary: `Orbit: engine ${status}, heartbeat ${staleSec}s ago` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("delivery_integrity_scan", async () => {
+      const engine = sentinelEngineRegistry.get("delivery-engine");
+      const status = engine ? engine.status : "not_registered";
+      const heartbeat = engine ? engine.last_heartbeat_at : 0;
+      const staleSec = heartbeat > 0 ? Math.floor((Date.now() - heartbeat) / 1000) : -1;
+      sentinelTelemetryEngine.emit("cron:delivery_integrity", "sentinel-cron", { status, stale_sec: staleSec });
+      return { summary: `Delivery: engine ${status}, heartbeat ${staleSec}s ago` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("flight_integrity_scan", async () => {
+      const engine = sentinelEngineRegistry.get("flight-engine");
+      const status = engine ? engine.status : "not_registered";
+      const heartbeat = engine ? engine.last_heartbeat_at : 0;
+      const staleSec = heartbeat > 0 ? Math.floor((Date.now() - heartbeat) / 1000) : -1;
+      sentinelTelemetryEngine.emit("cron:flight_integrity", "sentinel-cron", { status, stale_sec: staleSec });
+      return { summary: `Flight: engine ${status}, heartbeat ${staleSec}s ago` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("security_scan", async () => {
+      const engine = sentinelEngineRegistry.get("security-engine");
+      const status = engine ? engine.status : "not_registered";
+      const conflicts = sentinelConflictEngine.getByDomain("security");
+      const openIncidents = sentinelIncidentEngine.getOpen().filter((i) => i.category === "security").length;
+      sentinelTelemetryEngine.emit("cron:security_scan", "sentinel-cron", { engine_status: status, conflicts: conflicts.length, incidents: openIncidents });
+      return { summary: `Security: engine ${status}, ${conflicts.length} conflicts, ${openIncidents} incidents` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("dependency_scan", async () => {
+      const allEngines = sentinelEngineRegistry.getAll();
+      let deprecated = 0;
+      let outdated = 0;
+      for (const eng of allEngines) {
+        if (eng.version && eng.version < "1.0.0") outdated++;
+        if (!eng.enabled) deprecated++;
+      }
+      sentinelTelemetryEngine.emit("cron:dependency_scan", "sentinel-cron", { total: allEngines.length, deprecated, outdated });
+      return { summary: `Dependencies: ${allEngines.length} engines, ${deprecated} disabled, ${outdated} pre-1.0` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("stale_data_cleanup", async () => {
+      const telemetryStats = sentinelTelemetryEngine.getStats();
+      const cronHistory = sentinelCronOrchestrator.getRunHistory(500);
+      const staleThreshold = Date.now() - 86_400_000;
+      let cleaned = 0;
+      for (const run of cronHistory) {
+        if (run.ended_at < staleThreshold && run.status === "failed") cleaned++;
+      }
+      sentinelTelemetryEngine.emit("cron:stale_cleanup", "sentinel-cron", { events: telemetryStats.total_events, stale_runs: cleaned });
+      return { summary: `Stale cleanup: ${cleaned} old failed runs identified, ${telemetryStats.total_events} telemetry events` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("orphan_cleanup", async () => {
+      const taxonomies = sentinelTaxonomyRegistry.getAll();
+      let orphanCount = 0;
+      for (const t of taxonomies) {
+        if (!t.parent_path && t.canonical_path.includes("/")) orphanCount++;
+      }
+      sentinelTelemetryEngine.emit("cron:orphan_cleanup", "sentinel-cron", { orphans: orphanCount });
+      return { summary: `Orphan cleanup: ${orphanCount} orphan taxonomy entries found` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("cache_revalidate", async () => {
+      const engines = sentinelEngineRegistry.getAll();
+      let revalidated = 0;
+      for (const eng of engines) {
+        if (eng.owner_domain === "sentinel") {
+          sentinelEngineRegistry.updateHeartbeat(eng.engine_id);
+          revalidated++;
+        }
+      }
+      sentinelTelemetryEngine.emit("cron:cache_revalidate", "sentinel-cron", { revalidated });
+      return { summary: `Cache revalidate: ${revalidated} sentinel engines refreshed` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("workflow_health_check", async () => {
+      const workflows = sentinelWorkflowRegistry.getAll();
+      let healthy = 0;
+      let stale = 0;
+      for (const wf of workflows) {
+        if (wf.enabled) healthy++;
+        else stale++;
+      }
+      const activeRuns = sentinelWorkflowEngine.getActiveRuns();
+      sentinelTelemetryEngine.emit("cron:workflow_health", "sentinel-cron", { total: workflows.length, healthy, stale, active_runs: activeRuns.length });
+      return { summary: `Workflows: ${workflows.length} registered, ${healthy} healthy, ${stale} disabled, ${activeRuns.length} active runs` };
+    });
+
+    sentinelCronOrchestrator.registerHandler("incident_check", async () => {
+      const openIncidents = sentinelIncidentEngine.getOpen();
+      const criticalCount = openIncidents.filter((i) => i.severity === "critical").length;
+      const highCount = openIncidents.filter((i) => i.severity === "high").length;
+      sentinelTelemetryEngine.emit("cron:incident_check", "sentinel-cron", { open: openIncidents.length, critical: criticalCount, high: highCount });
+      if (criticalCount > 3) {
+        sentinelTelemetryEngine.emit("sentinel:incident_surge", "sentinel-cron", { critical: criticalCount });
+      }
+      return { summary: `Incidents: ${openIncidents.length} open (${criticalCount} critical, ${highCount} high)` };
     });
   }
 

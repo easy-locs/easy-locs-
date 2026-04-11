@@ -1,5 +1,36 @@
 import type { SentinelVerdict, SentinelSeverity, SentinelStatus, SentinelScores } from "../types";
 
+export interface ProofEvidence {
+  alive?: boolean;
+  age_ms?: number;
+  status?: string;
+  score?: number;
+  count?: number;
+  passed?: boolean;
+  detected?: boolean;
+  blocked?: boolean;
+  verdict?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
+export interface ValidationPayload {
+  name?: string;
+  type?: string;
+  status?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
+export interface SectionDetails {
+  total?: number;
+  healthy?: number;
+  degraded?: number;
+  missing?: number;
+  engines?: unknown[];
+  crons?: unknown[];
+  workflows?: unknown[];
+  [key: string]: unknown;
+}
+
 export type VerificationPhase =
   | "identity_check"
   | "policy_check"
@@ -34,7 +65,7 @@ export interface ProofRecord {
   proof_id: string;
   proof_type: "heartbeat" | "audit" | "workflow" | "telemetry" | "policy" | "quality_gate" | "test";
   target_id: string;
-  evidence: Record<string, unknown>;
+  evidence: ProofEvidence;
   verified_at: number;
   valid: boolean;
 }
@@ -63,7 +94,7 @@ export interface ValidationTestCase {
   entity_type: string;
   entity_id: string;
   domain: string;
-  payload: Record<string, unknown>;
+  payload: ValidationPayload;
   expected_verdict: SentinelVerdict;
 }
 
@@ -83,7 +114,7 @@ export interface VerificationSectionResult {
   failed: number;
   warnings: number;
   blockers: string[];
-  details: Record<string, unknown>;
+  details: SectionDetails;
 }
 
 export interface EngineVerificationResult {

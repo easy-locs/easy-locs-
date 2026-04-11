@@ -32,12 +32,26 @@ export type KnowledgeEdgeType =
   | "VIOLATES" | "IMPROVES" | "REGRESSED_FROM" | "CLUSTERED_WITH"
   | "PREDICTS" | "RECOMMENDS";
 
+export interface KnowledgeNodeMetadata {
+  type?: string;
+  status?: string;
+  score?: number;
+  domain_root?: boolean;
+  [key: string]: string | number | boolean | undefined;
+}
+
+export interface KnowledgeEdgeMetadata {
+  weight_reason?: string;
+  source_audit?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
 export interface KnowledgeNode {
   id: string;
   type: KnowledgeNodeType;
   label: string;
   domain: string;
-  metadata: Record<string, unknown>;
+  metadata: KnowledgeNodeMetadata;
   created_at: number;
   updated_at: number;
 }
@@ -48,8 +62,17 @@ export interface KnowledgeEdge {
   target_id: string;
   edge_type: KnowledgeEdgeType;
   weight: number;
-  metadata: Record<string, unknown>;
+  metadata: KnowledgeEdgeMetadata;
   created_at: number;
+}
+
+export interface MemoryDetails {
+  decision?: string;
+  reasoning?: string;
+  severity?: string;
+  domains?: string[];
+  degraded_count?: number;
+  [key: string]: string | number | boolean | string[] | undefined;
 }
 
 export interface MemoryEntry {
@@ -57,7 +80,7 @@ export interface MemoryEntry {
   category: "audit" | "incident" | "regression" | "conflict" | "optimization" | "healing" | "pattern" | "root_cause";
   domain: string;
   summary: string;
-  details: Record<string, unknown>;
+  details: MemoryDetails;
   outcome: "success" | "failure" | "partial" | "pending";
   before_score: number;
   after_score: number;
@@ -124,6 +147,22 @@ export interface PriorityItem {
   created_at: number;
 }
 
+export interface OpportunityEvidence {
+  search_volume?: number;
+  listing_count?: number;
+  ratio?: number;
+  quality_score?: number;
+  avg_basket?: number;
+  conversion_rate?: number;
+  combined_value?: number;
+  demand_signals?: number;
+  current_supply?: number;
+  gap?: number;
+  incomplete?: number;
+  total?: number;
+  [key: string]: string | number | boolean | undefined;
+}
+
 export interface OpportunitySignal {
   signal_id: string;
   signal_type: "high_demand_zone" | "weak_supply_zone" | "high_value_category" | "profitable_behavior" | "vertical_expansion" | "price_gap" | "content_enrichment" | "promo_opportunity" | "launch_candidate";
@@ -131,16 +170,36 @@ export interface OpportunitySignal {
   category_scope: string;
   confidence_score: number;
   impact_score: number;
-  evidence: Record<string, unknown>;
+  evidence: OpportunityEvidence;
   recommended_action: string;
   created_at: number;
+}
+
+export interface AdaptiveUXContext {
+  page?: string;
+  role?: string;
+  time?: string;
+  behavior?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
+export interface AdaptiveUXAdaptation {
+  strategy?: string;
+  factors?: string[];
+  visible_modules?: string[];
+  layout?: string;
+  boost_factors?: string[];
+  decay?: string;
+  preload?: string[];
+  lazy?: string[];
+  [key: string]: string | number | boolean | string[] | undefined;
 }
 
 export interface AdaptiveUXRule {
   rule_id: string;
   rule_type: "card_reorder" | "surface_priority" | "recommendation_order" | "page_composition" | "preload_strategy" | "search_ranking" | "dashboard_adapt" | "radar_adapt" | "cta_focus";
-  context: Record<string, unknown>;
-  adaptation: Record<string, unknown>;
+  context: AdaptiveUXContext;
+  adaptation: AdaptiveUXAdaptation;
   measurable: boolean;
   reversible: boolean;
   gradual: boolean;
@@ -190,13 +249,16 @@ export interface CodeEvolutionSuggestion {
   created_at: number;
 }
 
+export type OmegaSubScoreKey = "knowledge_graph" | "memory" | "decision" | "priority" | "prediction" | "business_opportunity" | "adaptive_ux" | "self_improvement" | "incident_response" | "code_evolution";
+export type OmegaEngineKey = "knowledgeGraph" | "memory" | "decision" | "priority" | "prediction" | "businessOpportunity" | "adaptiveUX" | "selfImprovement" | "incidentResponse" | "codeEvolution";
+
 export interface OmegaIntelligenceReport {
   report_id: string;
   generated_at: number;
   global_score: number;
   verdict: "PASS" | "PASS_WITH_WARNINGS" | "BLOCKED" | "DEGRADED" | "MONITOR_CLOSELY";
-  sub_scores: Record<string, number>;
-  engine_statuses: Record<string, OmegaEngineStatus>;
+  sub_scores: Partial<Record<OmegaSubScoreKey, number>>;
+  engine_statuses: Partial<Record<OmegaEngineKey, OmegaEngineStatus>>;
   decisions_made: DecisionOutput[];
   predictions_active: PredictionRecord[];
   priorities: PriorityItem[];

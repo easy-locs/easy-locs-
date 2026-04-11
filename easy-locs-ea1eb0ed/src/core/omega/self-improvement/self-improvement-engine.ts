@@ -1,4 +1,5 @@
 import type { SelfImprovementCycle, OmegaEngineStatus } from "../omega-types";
+import { omegaPersistence } from "../omega-persistence";
 
 const MAX_CYCLES = 500;
 let cycleIdCounter = 0;
@@ -68,6 +69,7 @@ class SelfImprovementEngine {
     };
     this.cycles.set(cycle.cycle_id, cycle);
     this.lastRunAt = Date.now();
+    omegaPersistence.writeImprovementCycle(cycle).catch(() => {});
     return cycle;
   }
 
