@@ -32,7 +32,16 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
     });
   }, [user?.id]);
 
-  if (loading || (!isOwner && properties.length === 0)) return null;
+  if (!isOwner && !loading && properties.length === 0) return null;
+
+  if (loading) return (
+    <div className="px-4 mb-5">
+      <div className="h-4 w-40 rounded skeleton-premium mb-3" />
+      <div className="grid grid-cols-2 gap-2">
+        {[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-2xl skeleton-premium" />)}
+      </div>
+    </div>
+  );
 
   if (isOwner && analytics) {
     return (

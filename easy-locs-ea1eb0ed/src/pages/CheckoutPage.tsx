@@ -123,7 +123,7 @@ export default function CheckoutPage() {
   const resolveSellerId = async (): Promise<string> => {
     const { storefrontService } = await import("@/services");
     const ownerUserId = await storefrontService.fetchPageOwnerUserId(cart.restaurantId!);
-    return ownerUserId || user!.id;
+    return ownerUserId || user?.id || "";
   };
 
   const completeCheckout = useCallback((orderId: string, alreadyExists: boolean) => {
@@ -193,7 +193,7 @@ export default function CheckoutPage() {
         logger.info("[Checkout] Starting wallet payment", { amount: grandTotal, currency: cur });
 
         const transferResult = await executeWalletTransfer({
-          senderUserId: user!.id,
+          senderUserId: user?.id ?? "",
           receiverUserId: sellerId,
           amount: grandTotal,
           currency: cur,
@@ -213,7 +213,7 @@ export default function CheckoutPage() {
           completeCheckout(order.id, alreadyExists);
         } catch (orderErr) {
           logger.critical("[CHECKOUT_RECOVERY] Wallet transfer succeeded but order creation failed", {
-            transactionId: transferResult.transactionId, amount: grandTotal, userId: user!.id,
+            transactionId: transferResult.transactionId, amount: grandTotal, userId: user?.id ?? "",
           });
           throw new Error(
             "Payment processed but order creation failed. " +

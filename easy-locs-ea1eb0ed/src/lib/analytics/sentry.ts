@@ -71,8 +71,15 @@ export function initSentry() {
   });
 }
 
-export function setUserContext(userId: string, email?: string) {
+export function setUserContext(userId: string, email?: string, extra?: { role?: string; orgId?: string }) {
   Sentry.setUser({ id: userId, email });
+  if (extra?.role) Sentry.setTag("user.role", extra.role);
+  if (extra?.orgId) Sentry.setTag("user.orgId", extra.orgId);
+}
+
+export function setSectionContext(section: string, route?: string) {
+  Sentry.setTag("app.section", section);
+  if (route) Sentry.setTag("app.route", route);
 }
 
 export function clearUserContext() {
