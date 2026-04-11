@@ -73,9 +73,9 @@ function DeferredHeavyProviders({ children }: { children: React.ReactNode }) {
 }
 
 // ── Quality gates — defer to idle (never block parse) ──
-const scheduleIdle = typeof requestIdleCallback === "function"
-  ? (fn: () => void) => requestIdleCallback(fn, { timeout: 3000 })
-  : (fn: () => void) => setTimeout(fn, 1500);
+const scheduleIdle = (typeof window !== "undefined" && "requestIdleCallback" in window)
+  ? (fn: () => void) => window.requestIdleCallback(fn, { timeout: 3000 })
+  : (fn: () => void) => window.setTimeout(fn, 1500);
 scheduleIdle(() => { import("@/lib/quality-gates").then(m => m.initQualityGates()).catch(() => {}); });
 
 // ── Deferred boot guards — loaded 3s after first paint ──
