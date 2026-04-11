@@ -82,20 +82,32 @@ export function initSentry() {
         blockAllMedia: false,
       }),
       Sentry.feedbackIntegration({ autoInject: false }),
-      Sentry.httpClientIntegration({
-        failedRequestStatusCodes: [[500, 599]],
-        failedRequestTargets: [/\.supabase\.co/],
-      }),
-      Sentry.reportingObserverIntegration(),
       Sentry.extraErrorDataIntegration({ depth: 4 }),
     ],
+    ignoreErrors: [
+      /HTTP Client Error with status code/,
+      /Failed to fetch/,
+      /Load failed/,
+      /NetworkError/,
+      /AbortError/,
+      /The operation was aborted/,
+      /ResizeObserver loop/,
+      /Non-Error promise rejection captured/,
+      /Object captured as promise rejection/,
+      /ChunkLoadError/,
+      /Importing a module script failed/,
+      /Failed to fetch dynamically imported module/,
+      /Unable to preload CSS/,
+      /net::ERR_/,
+    ],
     beforeSend(event) {
-      if (event.exception?.values) {
-        for (const v of event.exception.values) {
-          const msg = v.value || "";
-          if (NOISE_PATTERNS.some(p => msg.includes(p))) {
-            return null;
-          }
+      const msg = event.exception?.values?.[0]?.value || event.message || "";
+      if (NOISE_PATTERNS.some(p => msg.includes(p))) {
+        return null;
+      }
+      for (const v of event.exception?.values ?? []) {
+        if (NOISE_PATTERNS.some(p => (v.value || "").includes(p))) {
+          return null;
         }
       }
 
@@ -112,9 +124,25 @@ export function initSentry() {
 
       return event;
     },
+    beforeSendTransaction(event) {
+      const op = event.contexts?.trace?.op || "";
+      if (op === "http.client") {
+        const status = event.contexts?.response?.status_code;
+        if (status && status >= 500 && status <= 504) {
+          return null;
+        }
+      }
+      return event;
+    },
     beforeBreadcrumb(breadcrumb) {
       if (breadcrumb.category === "console" && breadcrumb.level === "debug") {
         return null;
+      }
+      if (breadcrumb.category === "fetch" || breadcrumb.category === "xhr") {
+        const status = breadcrumb.data?.status_code;
+        if (status && status >= 500 && status <= 504) {
+          return null;
+        }
       }
       if (breadcrumb.data) {
         breadcrumb.data = scrubEventData(breadcrumb.data);
@@ -127,6 +155,11 @@ export function initSentry() {
       /^moz-extension:\/\//i,
       /googletagmanager\.com/i,
       /analytics\.google\.com/i,
+      /\/@vite\//i,
+      /__vite_ping/i,
+      /overpass-api\.de/i,
+      /rainviewer\.com/i,
+      /open-meteo\.com/i,
     ],
     tracePropagationTargets: ["localhost", /\.supabase\.co/, /\.replit\.dev/],
   });
