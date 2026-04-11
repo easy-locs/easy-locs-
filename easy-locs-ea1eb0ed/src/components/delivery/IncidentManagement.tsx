@@ -14,39 +14,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
-
-interface Incident {
-  id: string;
-  type: string;
-  severity: "low" | "medium" | "high" | "critical";
-  description: string;
-  driver: string;
-  zone: string;
-  status: "open" | "investigating" | "escalated" | "resolved";
-  reportedAt: Date;
-  resolvedAt?: Date;
-  slaDeadline: Date;
-  escalationLevel: number;
-}
+import { useDeliveryIncidents, useInsertMutation, useUpdateMutation } from "@/hooks/useDeliveryData";
 
 const TYPES = ["Accident véhicule", "Colis perdu", "Agression", "Panne véhicule", "Retard majeur", "Fraude", "Plainte client", "Dommage colis"];
 
-const MOCK_INCIDENTS: Incident[] = [
-  { id: "i1", type: "Colis perdu", severity: "high", description: "Colis #2847 introuvable après livraison", driver: "Ousmane B.", zone: "Guédiawaye", status: "open", reportedAt: new Date(Date.now() - 1800000), slaDeadline: new Date(Date.now() + 7200000), escalationLevel: 0 },
-  { id: "i2", type: "Retard majeur", severity: "medium", description: "Livraison express dépassée de 25 min", driver: "Ibrahima S.", zone: "Médina", status: "investigating", reportedAt: new Date(Date.now() - 3600000), slaDeadline: new Date(Date.now() + 3600000), escalationLevel: 1 },
-  { id: "i3", type: "Panne véhicule", severity: "low", description: "Pneu crevé en mission, mission transférée", driver: "Aïcha M.", zone: "Parcelles", status: "escalated", reportedAt: new Date(Date.now() - 7200000), slaDeadline: new Date(Date.now() + 1800000), escalationLevel: 2 },
-  { id: "i4", type: "Plainte client", severity: "medium", description: "Client signale attitude inappropriée", driver: "Mamadou K.", zone: "Dakar Centre", status: "resolved", reportedAt: new Date(Date.now() - 86400000), resolvedAt: new Date(Date.now() - 43200000), slaDeadline: new Date(Date.now() - 43200000), escalationLevel: 1 },
-];
-
 export default function IncidentManagement({ orgId, className }: { orgId: string; className?: string }) {
-  const [incidents, setIncidents] = useState(MOCK_INCIDENTS);
+  const { data: incidents = [], isLoading } = useDeliveryIncidents(orgId);
+  const insertIncident = useInsertMutation("browser_front_incidents");
+  const updateIncident = useUpdateMutation("browser_front_incidents");
   const [view, setView] = useState<"list" | "create" | "stats">("list");
   const [newIncident, setNewIncident] = useState({ type: TYPES[0], severity: "medium" as "low" | "medium" | "high" | "critical", description: "", driver: "", zone: "" });
 
-  const openCount = incidents.filter(i => i.status !== "resolved").length;
-  const criticalCount = incidents.filter(i => i.severity === "critical" || i.severity === "high").filter(i => i.status !== "resolved").length;
+  if (isLoading) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
+
+  const allIncidents = incidents as any[];
+  const openCount = allIncidents.filter((i: any) => i.status !== "resolved").length;
+  const criticalCount = allIncidents.filter((i: any) => i.severity === "critical" || i.severity === "high").filter((i: any) => i.status !== "resolved").length;
   const avgResolution = "4.2h";
-  const slaBreaches = incidents.filter(i => i.status !== "resolved" && new Date() > i.slaDeadline).length;
+  const slaBreaches = allIncidents.filter((i: any) => i.status !== "resolved" && i.sla_deadline && new Date() > new Date(i.sla_deadline)).length;
 
   const severityConfig = (s: string) => ({
     low: { label: "Faible", color: "--info", bg: "hsl(var(--info) / 0.1)" },
@@ -64,25 +49,30 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
 
   const resolveIncident = (id: string) => {
     haptic("medium");
-    setIncidents(prev => prev.map(i => i.id === id ? { ...i, status: "resolved" as const, resolvedAt: new Date() } : i));
+    updateIncident.mutate({ id, status: "resolved" });
     toast.success("✅ Incident résolu");
   };
 
-  const escalateIncident = (id: string) => {
+  const escalateIncident = (id: string, currentLevel: number) => {
     haptic("warning");
-    setIncidents(prev => prev.map(i => i.id === id ? { ...i, status: "escalated" as const, escalationLevel: i.escalationLevel + 1 } : i));
+    updateIncident.mutate({ id, status: "escalated", escalation_level: (currentLevel || 0) + 1 });
     toast("⬆️ Incident escaladé au niveau supérieur");
   };
 
   const submitIncident = () => {
     if (!newIncident.description || !newIncident.driver) { toast.error("Remplissez tous les champs"); return; }
     haptic("medium");
-    const inc: Incident = {
-      id: `i${Date.now()}`, type: newIncident.type, severity: newIncident.severity,
-      description: newIncident.description, driver: newIncident.driver, zone: newIncident.zone || "Non spécifié",
-      status: "open", reportedAt: new Date(), slaDeadline: new Date(Date.now() + 14400000), escalationLevel: 0,
-    };
-    setIncidents(prev => [inc, ...prev]);
+    insertIncident.mutate({
+      org_id: orgId,
+      type: newIncident.type,
+      severity: newIncident.severity,
+      description: newIncident.description,
+      driver: newIncident.driver,
+      zone: newIncident.zone || "Non spécifié",
+      status: "open",
+      sla_deadline: new Date(Date.now() + 14400000).toISOString(),
+      escalation_level: 0,
+    });
     toast.success("🚨 Incident déclaré");
     setView("list");
     setNewIncident({ type: TYPES[0], severity: "medium", description: "", driver: "", zone: "" });
@@ -131,10 +121,14 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
 
       {view === "list" && (
         <div className="space-y-2">
-          {incidents.map(inc => {
+          {allIncidents.length === 0 && (
+            <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucun incident</div>
+          )}
+          {allIncidents.map((inc: any) => {
             const sev = severityConfig(inc.severity);
             const st = statusConfig(inc.status);
-            const slaExpired = inc.status !== "resolved" && new Date() > inc.slaDeadline;
+            const slaExpired = inc.status !== "resolved" && inc.sla_deadline && new Date() > new Date(inc.sla_deadline);
+            const escalationLevel = inc.escalation_level || inc.escalationLevel || 0;
             return (
               <div key={inc.id} className="rounded-xl p-3"
                 style={{
@@ -152,7 +146,7 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
                     </div>
                     <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{inc.description}</p>
                     <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
-                      👤 {inc.driver} • 📍 {inc.zone} • Escalade: Niv.{inc.escalationLevel}
+                      👤 {inc.driver} • 📍 {inc.zone} • Escalade: Niv.{escalationLevel}
                     </p>
                     {slaExpired && (
                       <p className="text-[10px] mt-0.5 font-semibold animate-pulse" style={{ color: "hsl(var(--destructive))" }}>
@@ -166,7 +160,7 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
                         style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
                         Résoudre
                       </Button>
-                      <Button size="sm" className="text-[10px] h-6 px-2" onClick={() => escalateIncident(inc.id)}
+                      <Button size="sm" className="text-[10px] h-6 px-2" onClick={() => escalateIncident(inc.id, escalationLevel)}
                         style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>
                         Escalader
                       </Button>
@@ -216,9 +210,12 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
 
       {view === "stats" && (
         <div className="space-y-2">
-          {[...new Set(incidents.map(i => i.driver))].map(driver => {
-            const driverInc = incidents.filter(i => i.driver === driver);
-            const resolved = driverInc.filter(i => i.status === "resolved").length;
+          {allIncidents.length === 0 && (
+            <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucune donnée</div>
+          )}
+          {[...new Set(allIncidents.map((i: any) => i.driver))].filter(Boolean).map((driver: any) => {
+            const driverInc = allIncidents.filter((i: any) => i.driver === driver);
+            const resolved = driverInc.filter((i: any) => i.status === "resolved").length;
             return (
               <div key={driver} className="rounded-xl p-3 flex items-center gap-3"
                 style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>

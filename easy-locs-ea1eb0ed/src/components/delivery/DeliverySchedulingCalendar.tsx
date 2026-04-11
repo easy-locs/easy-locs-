@@ -7,30 +7,9 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Calendar, ChevronLeft, ChevronRight, Clock, Package, Truck, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDeliveryJobs } from "@/hooks/useDeliveryData";
 
 type CalendarView = "day" | "week" | "month";
-
-interface CalendarJob {
-  id: string;
-  time: string;
-  duration: number;
-  title: string;
-  status: "pending" | "assigned" | "in_progress" | "completed";
-  driver?: string;
-  pickup: string;
-  dropoff: string;
-  priority: "standard" | "express" | "urgent";
-}
-
-const MOCK_JOBS: CalendarJob[] = [
-  { id: "j1", time: "08:30", duration: 45, title: "Colis électronique", status: "completed", driver: "Mohamed K.", pickup: "Entrepôt A", dropoff: "12 Rue Victor Hugo", priority: "standard" },
-  { id: "j2", time: "09:15", duration: 30, title: "Documents urgents", status: "in_progress", driver: "Sophie L.", pickup: "Bureau central", dropoff: "45 Av. Foch", priority: "urgent" },
-  { id: "j3", time: "10:00", duration: 60, title: "Meubles (fragile)", status: "assigned", driver: "Ali B.", pickup: "Magasin déco", dropoff: "8 Pl. de la République", priority: "express" },
-  { id: "j4", time: "11:30", duration: 30, title: "Commande alimentaire", status: "pending", pickup: "Restaurant Le Bon", dropoff: "22 Rue de la Paix", priority: "express" },
-  { id: "j5", time: "14:00", duration: 45, title: "Colis mode", status: "pending", pickup: "Boutique Mode", dropoff: "15 Bd Haussmann", priority: "standard" },
-  { id: "j6", time: "15:30", duration: 30, title: "Pharmacie express", status: "assigned", driver: "Lucas M.", pickup: "Pharmacie Centrale", dropoff: "3 Rue Pasteur", priority: "urgent" },
-  { id: "j7", time: "17:00", duration: 60, title: "Livraison B2B", status: "pending", pickup: "Entrepôt B", dropoff: "Zone Industrielle Nord", priority: "standard" },
-];
 
 const PRIORITY_CFG: Record<string, { color: string; label: string }> = {
   standard: { color: "hsl(var(--success))", label: "🟢" },
@@ -46,11 +25,14 @@ const STATUS_CFG: Record<string, { color: string; bg: string }> = {
 };
 
 export default function DeliverySchedulingCalendar({ orgId }: { orgId: string }) {
+  const { data: jobs = [], isLoading } = useDeliveryJobs(orgId);
   const [view, setView] = useState<CalendarView>("day");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
 
-  const hours = Array.from({ length: 12 }, (_, i) => i + 7); // 7:00 - 18:00
+  if (isLoading) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
+
+  const hours = Array.from({ length: 12 }, (_, i) => i + 7);
 
   const weekDays = useMemo(() => {
     const start = new Date(currentDate);
@@ -88,6 +70,16 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
     ...(view === "month" ? { month: "long", year: "numeric" } : {}),
   });
 
+  const getJobHour = (job: any) => {
+    if (job.scheduled_time || job.time) {
+      return parseInt(job.scheduled_time || job.time);
+    }
+    if (job.created_at) {
+      return new Date(job.created_at).getHours();
+    }
+    return 8;
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
@@ -95,7 +87,6 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Planning Livraisons</h3>
       </div>
 
-      {/* Navigation */}
       <div className="flex items-center justify-between">
         <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => navigate(-1)}
           style={{ color: "hsl(var(--hud-text-dim))" }}>
@@ -108,7 +99,6 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
         </Button>
       </div>
 
-      {/* View selector */}
       <div className="flex gap-1 p-1 rounded-lg" style={{ background: "hsl(var(--hud-surface))" }}>
         {([
           { id: "day" as const, label: "Jour" },
@@ -126,37 +116,37 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
         ))}
       </div>
 
-      {/* Day view */}
       {view === "day" && (
         <div className="space-y-1">
           {hours.map(h => {
-            const hourJobs = MOCK_JOBS.filter(j => parseInt(j.time) === h);
+            const hourJobs = jobs.filter((j: any) => getJobHour(j) === h);
             return (
               <div key={h} className="flex gap-2 min-h-[44px]">
                 <span className="text-[10px] font-mono w-10 shrink-0 pt-1 text-right" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                   {String(h).padStart(2, "0")}:00
                 </span>
                 <div className="flex-1 border-t pt-1 space-y-1" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
-                  {hourJobs.map(job => {
-                    const sCfg = STATUS_CFG[job.status];
+                  {hourJobs.map((job: any) => {
+                    const sCfg = STATUS_CFG[job.status] || STATUS_CFG["pending"];
+                    const pCfg = PRIORITY_CFG[job.priority] || PRIORITY_CFG["standard"];
                     return (
                       <motion.div key={job.id} layout
                         onClick={() => setSelectedJob(selectedJob === job.id ? null : job.id)}
                         className="rounded-lg px-2.5 py-1.5 cursor-pointer"
                         style={{ background: sCfg.bg, borderLeft: `3px solid ${sCfg.color}` }}>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px]">{PRIORITY_CFG[job.priority].label}</span>
-                          <p className="text-[10px] font-semibold flex-1 truncate" style={{ color: "hsl(var(--hud-text))" }}>{job.title}</p>
-                          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{job.time} • {job.duration}min</span>
+                          <span className="text-[10px]">{pCfg.label}</span>
+                          <p className="text-[10px] font-semibold flex-1 truncate" style={{ color: "hsl(var(--hud-text))" }}>{job.title || job.description || "Mission"}</p>
+                          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{job.scheduled_time || job.time || "—"} • {job.duration || 30}min</span>
                         </div>
                         {selectedJob === job.id && (
                           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mt-1.5 space-y-1">
                             <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                              <MapPin className="h-2.5 w-2.5" /> {job.pickup} → {job.dropoff}
+                              <MapPin className="h-2.5 w-2.5" /> {job.pickup || job.pickup_address || "—"} → {job.dropoff || job.dropoff_address || "—"}
                             </div>
-                            {job.driver && (
+                            {(job.driver || job.driver_name) && (
                               <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                                <Truck className="h-2.5 w-2.5" /> {job.driver}
+                                <Truck className="h-2.5 w-2.5" /> {job.driver || job.driver_name}
                               </div>
                             )}
                           </motion.div>
@@ -171,7 +161,6 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
         </div>
       )}
 
-      {/* Week view */}
       {view === "week" && (
         <div className="space-y-1">
           <div className="grid grid-cols-7 gap-1 mb-1">
@@ -182,7 +171,11 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
           <div className="grid grid-cols-7 gap-1">
             {weekDays.map((d, i) => {
               const isToday = d.toDateString() === new Date().toDateString();
-              const jobCount = Math.floor(Math.random() * 4);
+              const dayJobs = jobs.filter((j: any) => {
+                const jDate = new Date(j.created_at || j.scheduled_date);
+                return jDate.toDateString() === d.toDateString();
+              });
+              const jobCount = dayJobs.length;
               return (
                 <div key={i} className="rounded-lg p-1.5 text-center min-h-[60px]"
                   style={{
@@ -211,7 +204,6 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
         </div>
       )}
 
-      {/* Month view */}
       {view === "month" && (
         <div>
           <div className="grid grid-cols-7 gap-0.5 mb-1">
@@ -237,15 +229,14 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
         </div>
       )}
 
-      {/* Summary */}
       <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text))" }}>📊 Résumé du jour</p>
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: "Total", value: MOCK_JOBS.length, color: "--hud-cyan" },
-            { label: "En attente", value: MOCK_JOBS.filter(j => j.status === "pending").length, color: "--warning" },
-            { label: "En cours", value: MOCK_JOBS.filter(j => j.status === "in_progress").length, color: "--info" },
-            { label: "Terminées", value: MOCK_JOBS.filter(j => j.status === "completed").length, color: "--success" },
+            { label: "Total", value: jobs.length, color: "--hud-cyan" },
+            { label: "En attente", value: jobs.filter((j: any) => j.status === "pending").length, color: "--warning" },
+            { label: "En cours", value: jobs.filter((j: any) => j.status === "in_progress").length, color: "--info" },
+            { label: "Terminées", value: jobs.filter((j: any) => j.status === "completed").length, color: "--success" },
           ].map(s => (
             <div key={s.label} className="text-center">
               <p className="text-sm font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>

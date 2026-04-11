@@ -7,82 +7,53 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, Wrench, Shield, DollarSign, AlertTriangle, Plus, Calendar, Fuel, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface Vehicle {
-  id: string;
-  plate: string;
-  model: string;
-  type: "van" | "truck" | "bike" | "car" | "ev";
-  status: "active" | "maintenance" | "inactive";
-  mileage: number;
-  fuelType: "diesel" | "gasoline" | "electric" | "hybrid";
-  lastService: string;
-  nextService: string;
-  insuranceExpiry: string;
-  monthlyFuelCost: number;
-  monthlyMaintCost: number;
-  assignedDriver?: string;
-  healthScore: number;
-}
-
-const MOCK_VEHICLES: Vehicle[] = [
-  { id: "v1", plate: "AB-123-CD", model: "Renault Master", type: "van", status: "active", mileage: 45200, fuelType: "diesel", lastService: "2026-02-15", nextService: "2026-04-15", insuranceExpiry: "2026-08-01", monthlyFuelCost: 380, monthlyMaintCost: 120, assignedDriver: "Thomas D.", healthScore: 87 },
-  { id: "v2", plate: "EF-456-GH", model: "Peugeot e-Expert", type: "ev", status: "active", mileage: 22100, fuelType: "electric", lastService: "2026-03-01", nextService: "2026-06-01", insuranceExpiry: "2026-12-15", monthlyFuelCost: 95, monthlyMaintCost: 45, assignedDriver: "Marie L.", healthScore: 95 },
-  { id: "v3", plate: "IJ-789-KL", model: "Citroën Berlingo", type: "van", status: "maintenance", mileage: 78500, fuelType: "diesel", lastService: "2026-03-10", nextService: "2026-03-20", insuranceExpiry: "2026-05-30", monthlyFuelCost: 420, monthlyMaintCost: 280, healthScore: 52 },
-  { id: "v4", plate: "MN-012-OP", model: "Vélo cargo élec.", type: "bike", status: "active", mileage: 3200, fuelType: "electric", lastService: "2026-02-28", nextService: "2026-05-28", insuranceExpiry: "2027-01-01", monthlyFuelCost: 15, monthlyMaintCost: 30, assignedDriver: "Karim B.", healthScore: 98 },
-  { id: "v5", plate: "QR-345-ST", model: "Mercedes Sprinter", type: "truck", status: "inactive", mileage: 120300, fuelType: "diesel", lastService: "2026-01-20", nextService: "2026-03-20", insuranceExpiry: "2026-04-01", monthlyFuelCost: 0, monthlyMaintCost: 0, healthScore: 31 },
-];
-
-interface MaintenanceLog {
-  id: string;
-  vehicleId: string;
-  type: "preventive" | "corrective" | "inspection";
-  description: string;
-  cost: number;
-  date: string;
-  status: "scheduled" | "in_progress" | "completed";
-}
-
-const MOCK_MAINTENANCE: MaintenanceLog[] = [
-  { id: "m1", vehicleId: "v3", type: "corrective", description: "Remplacement courroie distribution", cost: 650, date: "2026-03-16", status: "in_progress" },
-  { id: "m2", vehicleId: "v1", type: "preventive", description: "Vidange + filtres", cost: 180, date: "2026-04-15", status: "scheduled" },
-  { id: "m3", vehicleId: "v5", type: "inspection", description: "Contrôle technique obligatoire", cost: 75, date: "2026-03-20", status: "scheduled" },
-  { id: "m4", vehicleId: "v2", type: "preventive", description: "Rotation pneus + freins", cost: 220, date: "2026-06-01", status: "scheduled" },
-  { id: "m5", vehicleId: "v1", type: "corrective", description: "Remplacement rétroviseur", cost: 95, date: "2026-03-05", status: "completed" },
-];
+import { useDriverSessions, useDeliveryJobs } from "@/hooks/useDeliveryData";
 
 export default function FleetManagementSystem({ orgId }: { orgId: string }) {
+  const { data: vehicles = [], isLoading: loadingV } = useDriverSessions(orgId);
+  const { data: maintenance = [], isLoading: loadingM } = useDeliveryJobs(orgId);
   const [tab, setTab] = useState<"vehicles" | "maintenance" | "costs" | "alerts">("vehicles");
+
+  if (loadingV || loadingM) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
+
+  const allVehicles = vehicles as any[];
+  const allMaintenance = maintenance as any[];
 
   const alerts = useMemo(() => {
     const a: { type: string; message: string; severity: "critical" | "warning" | "info"; vehicleId: string }[] = [];
     const now = new Date();
-    MOCK_VEHICLES.forEach(v => {
-      if (new Date(v.insuranceExpiry) <= new Date(now.getTime() + 30 * 86400000)) {
-        a.push({ type: "insurance", message: `${v.plate} — Assurance expire le ${v.insuranceExpiry}`, severity: "critical", vehicleId: v.id });
+    allVehicles.forEach((v: any) => {
+      const insuranceExpiry = v.insurance_expiry || v.insuranceExpiry;
+      const nextService = v.next_service || v.nextService;
+      const healthScore = v.health_score || v.healthScore || 100;
+      const plate = v.plate || v.vehicle_plate || v.id;
+      if (insuranceExpiry && new Date(insuranceExpiry) <= new Date(now.getTime() + 30 * 86400000)) {
+        a.push({ type: "insurance", message: `${plate} — Assurance expire le ${insuranceExpiry}`, severity: "critical", vehicleId: v.id });
       }
-      if (new Date(v.nextService) <= new Date(now.getTime() + 14 * 86400000)) {
-        a.push({ type: "maintenance", message: `${v.plate} — Entretien prévu le ${v.nextService}`, severity: "warning", vehicleId: v.id });
+      if (nextService && new Date(nextService) <= new Date(now.getTime() + 14 * 86400000)) {
+        a.push({ type: "maintenance", message: `${plate} — Entretien prévu le ${nextService}`, severity: "warning", vehicleId: v.id });
       }
-      if (v.healthScore < 50) {
-        a.push({ type: "health", message: `${v.plate} — Score santé critique: ${v.healthScore}%`, severity: "critical", vehicleId: v.id });
+      if (healthScore < 50) {
+        a.push({ type: "health", message: `${plate} — Score santé critique: ${healthScore}%`, severity: "critical", vehicleId: v.id });
       }
     });
     return a;
-  }, []);
+  }, [allVehicles]);
 
   const costStats = useMemo(() => {
-    const totalFuel = MOCK_VEHICLES.reduce((s, v) => s + v.monthlyFuelCost, 0);
-    const totalMaint = MOCK_VEHICLES.reduce((s, v) => s + v.monthlyMaintCost, 0);
-    const avgHealth = Math.round(MOCK_VEHICLES.reduce((s, v) => s + v.healthScore, 0) / MOCK_VEHICLES.length);
+    const totalFuel = allVehicles.reduce((s: number, v: any) => s + (v.monthly_fuel_cost || v.monthlyFuelCost || 0), 0);
+    const totalMaint = allVehicles.reduce((s: number, v: any) => s + (v.monthly_maint_cost || v.monthlyMaintCost || 0), 0);
+    const avgHealth = allVehicles.length > 0 ? Math.round(allVehicles.reduce((s: number, v: any) => s + (v.health_score || v.healthScore || 100), 0) / allVehicles.length) : 0;
     return { totalFuel, totalMaint, total: totalFuel + totalMaint, avgHealth };
-  }, []);
+  }, [allVehicles]);
 
   const typeIcon: Record<string, string> = { van: "🚐", truck: "🚛", bike: "🚲", car: "🚗", ev: "⚡" };
   const statusCfg: Record<string, { color: string; label: string }> = {
     active: { color: "hsl(var(--success))", label: "Actif" },
     maintenance: { color: "hsl(var(--warning))", label: "Maintenance" },
     inactive: { color: "hsl(var(--destructive))", label: "Inactif" },
+    online: { color: "hsl(var(--success))", label: "En ligne" },
+    offline: { color: "hsl(var(--destructive))", label: "Hors ligne" },
   };
 
   return (
@@ -101,8 +72,8 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-1.5">
         {[
-          { label: "Véhicules", value: MOCK_VEHICLES.length, color: "--info" },
-          { label: "Actifs", value: MOCK_VEHICLES.filter(v => v.status === "active").length, color: "--success" },
+          { label: "Véhicules", value: allVehicles.length, color: "--info" },
+          { label: "Actifs", value: allVehicles.filter((v: any) => v.status === "active" || v.status === "online").length, color: "--success" },
           { label: "Coûts/mois", value: `${costStats.total}€`, color: "--warning" },
           { label: "Santé moy.", value: `${costStats.avgHealth}%`, color: costStats.avgHealth > 70 ? "--success" : "--destructive" },
         ].map(s => (
@@ -135,16 +106,27 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
       <AnimatePresence mode="wait">
         {tab === "vehicles" && (
           <motion.div key="vehicles" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
-            {MOCK_VEHICLES.map(v => {
-              const st = statusCfg[v.status];
-              const healthColor = v.healthScore > 70 ? "hsl(var(--success))" : v.healthScore > 40 ? "hsl(var(--warning))" : "hsl(var(--destructive))";
+            {allVehicles.length === 0 && (
+              <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucun véhicule</div>
+            )}
+            {allVehicles.map((v: any) => {
+              const st = statusCfg[v.status] || statusCfg.active;
+              const healthScore = v.health_score || v.healthScore || 100;
+              const healthColor = healthScore > 70 ? "hsl(var(--success))" : healthScore > 40 ? "hsl(var(--warning))" : "hsl(var(--destructive))";
+              const plate = v.plate || v.vehicle_plate || "";
+              const model = v.model || v.vehicle_model || "";
+              const mileage = v.mileage || 0;
+              const assignedDriver = v.assigned_driver || v.assignedDriver || v.driver_name || "";
+              const monthlyFuelCost = v.monthly_fuel_cost || v.monthlyFuelCost || 0;
+              const monthlyMaintCost = v.monthly_maint_cost || v.monthlyMaintCost || 0;
+              const nextService = v.next_service || v.nextService || "";
               return (
                 <div key={v.id} className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${st.color}15` }}>
                   <div className="flex items-center gap-3">
                     <span className="text-lg">{typeIcon[v.type] || "🚐"}</span>
                     <div className="flex-1">
-                      <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{v.model}</p>
-                      <p className="text-[10px] font-mono" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{v.plate} • {v.mileage.toLocaleString()} km</p>
+                      <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{model || plate}</p>
+                      <p className="text-[10px] font-mono" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{plate} • {Number(mileage).toLocaleString()} km</p>
                     </div>
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${st.color}15`, color: st.color }}>{st.label}</span>
                   </div>
@@ -152,22 +134,22 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
                     <div className="flex-1">
                       <div className="flex justify-between text-[10px] mb-0.5">
                         <span style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Santé</span>
-                        <span style={{ color: healthColor }}>{v.healthScore}%</span>
+                        <span style={{ color: healthColor }}>{healthScore}%</span>
                       </div>
                       <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
-                        <div className="h-full rounded-full transition-all" style={{ width: `${v.healthScore}%`, background: healthColor }} />
+                        <div className="h-full rounded-full transition-all" style={{ width: `${healthScore}%`, background: healthColor }} />
                       </div>
                     </div>
-                    {v.assignedDriver && (
+                    {assignedDriver && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: "hsl(var(--info) / 0.08)", color: "hsl(var(--info))" }}>
-                        👤 {v.assignedDriver}
+                        👤 {assignedDriver}
                       </span>
                     )}
                   </div>
                   <div className="flex gap-3 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                    <span>⛽ {v.monthlyFuelCost}€/mois</span>
-                    <span>🔧 {v.monthlyMaintCost}€/mois</span>
-                    <span>📅 Prochain: {v.nextService}</span>
+                    <span>⛽ {monthlyFuelCost}€/mois</span>
+                    <span>🔧 {monthlyMaintCost}€/mois</span>
+                    {nextService && <span>📅 Prochain: {nextService}</span>}
                   </div>
                 </div>
               );
@@ -180,28 +162,32 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
             <Button size="sm" className="w-full text-xs h-8" style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
               <Wrench className="h-3.5 w-3.5 mr-1" /> Planifier un entretien
             </Button>
-            {MOCK_MAINTENANCE.map(m => {
-              const vehicle = MOCK_VEHICLES.find(v => v.id === m.vehicleId);
+            {allMaintenance.length === 0 && (
+              <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucun entretien</div>
+            )}
+            {allMaintenance.map((m: any) => {
+              const vehicle = allVehicles.find((v: any) => v.id === (m.vehicle_id || m.vehicleId));
               const typeCfg: Record<string, { color: string; label: string; emoji: string }> = {
                 preventive: { color: "hsl(var(--info))", label: "Préventif", emoji: "🔵" },
                 corrective: { color: "hsl(var(--warning))", label: "Correctif", emoji: "🟠" },
                 inspection: { color: "hsl(var(--hud-cyan))", label: "Inspection", emoji: "🔍" },
               };
-              const cfg = typeCfg[m.type];
+              const cfg = typeCfg[m.type] || { color: "hsl(var(--info))", label: m.type || "Tâche", emoji: "🔵" };
               const stCfg: Record<string, { color: string; label: string }> = {
                 scheduled: { color: "hsl(var(--info))", label: "Planifié" },
                 in_progress: { color: "hsl(var(--warning))", label: "En cours" },
                 completed: { color: "hsl(var(--success))", label: "Terminé" },
               };
-              const st = stCfg[m.status];
+              const st = stCfg[m.status] || stCfg.scheduled;
+              const plate = vehicle?.plate || vehicle?.vehicle_plate || m.plate || m.vehicle_plate || "";
               return (
                 <div key={m.id} className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${cfg.color}15` }}>
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{cfg.emoji}</span>
                     <div className="flex-1">
-                      <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{m.description}</p>
+                      <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{m.description || m.title || cfg.label}</p>
                       <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                        {vehicle?.plate} • {m.date} • {m.cost}€
+                        {plate} • {m.date || m.scheduled_date || m.created_at || ""} • {m.cost || 0}€
                       </p>
                     </div>
                     <span className="text-[10px] font-semibold" style={{ color: st.color }}>{st.label}</span>
@@ -219,8 +205,7 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
               {[
                 { label: "Carburant / Énergie", value: costStats.totalFuel, color: "hsl(var(--warning))", icon: "⛽" },
                 { label: "Maintenance", value: costStats.totalMaint, color: "hsl(var(--info))", icon: "🔧" },
-                { label: "Assurances", value: 890, color: "hsl(var(--hud-cyan))", icon: "🛡️" },
-                { label: "Total", value: costStats.total + 890, color: "hsl(var(--destructive))", icon: "💰" },
+                { label: "Total", value: costStats.total, color: "hsl(var(--destructive))", icon: "💰" },
               ].map(c => (
                 <div key={c.label} className="flex items-center justify-between">
                   <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{c.icon} {c.label}</span>
@@ -230,12 +215,17 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
             </div>
             <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
               <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Coût par véhicule</p>
-              {MOCK_VEHICLES.filter(v => v.status === "active").map(v => (
-                <div key={v.id} className="flex items-center justify-between text-[10px]">
-                  <span style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{typeIcon[v.type]} {v.plate}</span>
-                  <span className="font-bold" style={{ color: "hsl(var(--warning))" }}>{v.monthlyFuelCost + v.monthlyMaintCost}€/mois</span>
-                </div>
-              ))}
+              {allVehicles.filter((v: any) => v.status === "active" || v.status === "online").map((v: any) => {
+                const plate = v.plate || v.vehicle_plate || v.id;
+                const fuelCost = v.monthly_fuel_cost || v.monthlyFuelCost || 0;
+                const maintCost = v.monthly_maint_cost || v.monthlyMaintCost || 0;
+                return (
+                  <div key={v.id} className="flex items-center justify-between text-[10px]">
+                    <span style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{typeIcon[v.type] || "🚐"} {plate}</span>
+                    <span className="font-bold" style={{ color: "hsl(var(--warning))" }}>{fuelCost + maintCost}€/mois</span>
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
         )}

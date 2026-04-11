@@ -9,34 +9,17 @@ import { MapPin, Star, Plus, Edit3, Trash2, Navigation, Home, Briefcase, Buildin
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
-interface Address {
-  id: string;
-  label: string;
-  type: "home" | "work" | "other";
-  street: string;
-  city: string;
-  postalCode: string;
-  country: string;
-  instructions: string;
-  isFavorite: boolean;
-  lat?: number;
-  lng?: number;
-  lastUsed?: string;
-}
-
-const MOCK_ADDRESSES: Address[] = [
-  { id: "a1", label: "Maison", type: "home", street: "45 Rue de la Paix", city: "Paris", postalCode: "75002", country: "France", instructions: "Code porte: 4521. 3ème étage gauche.", isFavorite: true, lat: 48.869, lng: 2.331, lastUsed: "2026-03-16" },
-  { id: "a2", label: "Bureau", type: "work", street: "120 Av. des Champs-Élysées", city: "Paris", postalCode: "75008", country: "France", instructions: "Accueil au RDC, demander Sophie.", isFavorite: true, lat: 48.870, lng: 2.307, lastUsed: "2026-03-15" },
-  { id: "a3", label: "Entrepôt", type: "other", street: "8 Rue du Port", city: "Gennevilliers", postalCode: "92230", country: "France", instructions: "Quai B, sonner 2 fois.", isFavorite: false, lat: 48.934, lng: 2.292, lastUsed: "2026-03-10" },
-  { id: "a4", label: "Parents", type: "home", street: "22 Chemin des Vignes", city: "Lyon", postalCode: "69003", country: "France", instructions: "Maison au fond de l'allée.", isFavorite: false, lat: 45.760, lng: 4.857 },
-];
+import { useUserAddresses, useInsertMutation, useUpdateMutation } from "@/hooks/useDeliveryData";
 
 export default function AddressBookManager({ orgId }: { orgId: string }) {
-  const [addresses, setAddresses] = useState(MOCK_ADDRESSES);
+  const { data: addresses = [], isLoading } = useUserAddresses();
+  const insertAddress = useInsertMutation("user_saved_addresses");
+  const updateAddress = useUpdateMutation("user_saved_addresses");
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+
+  if (isLoading) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
 
   const typeIcon: Record<string, { icon: typeof Home; color: string }> = {
     home: { icon: Home, color: "hsl(var(--success))" },
@@ -44,20 +27,20 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
     other: { icon: Building2, color: "hsl(var(--warning))" },
   };
 
-  const filtered = addresses.filter(a =>
-    !search || a.label.toLowerCase().includes(search.toLowerCase()) || a.street.toLowerCase().includes(search.toLowerCase()) || a.city.toLowerCase().includes(search.toLowerCase())
+  const filtered = addresses.filter((a: any) =>
+    !search || (a.label || "").toLowerCase().includes(search.toLowerCase()) || (a.street || "").toLowerCase().includes(search.toLowerCase()) || (a.city || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const toggleFavorite = (id: string) => {
-    setAddresses(prev => prev.map(a => a.id === id ? { ...a, isFavorite: !a.isFavorite } : a));
+  const toggleFavorite = (id: string, current: boolean) => {
+    updateAddress.mutate({ id, is_favorite: !current });
   };
 
   const deleteAddress = (id: string) => {
-    setAddresses(prev => prev.filter(a => a.id !== id));
+    updateAddress.mutate({ id, deleted_at: new Date().toISOString() });
   };
 
-  const favorites = filtered.filter(a => a.isFavorite);
-  const others = filtered.filter(a => !a.isFavorite);
+  const favorites = filtered.filter((a: any) => a.is_favorite);
+  const others = filtered.filter((a: any) => !a.is_favorite);
 
   return (
     <div className="space-y-3">
@@ -70,7 +53,6 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
         </span>
       </div>
 
-      {/* Search + Add */}
       <div className="flex gap-2">
         <Input placeholder="Rechercher une adresse…" value={search} onChange={e => setSearch(e.target.value)}
           className="h-8 text-xs flex-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
@@ -80,7 +62,6 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
         </Button>
       </div>
 
-      {/* Add form */}
       <AnimatePresence>
         {showAdd && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
@@ -114,23 +95,22 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
         )}
       </AnimatePresence>
 
-      {/* Favorites */}
       {favorites.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-[10px] font-bold px-1" style={{ color: "hsl(var(--warning))" }}>⭐ Favoris</p>
-          {favorites.map(a => {
-            const t = typeIcon[a.type];
+          {favorites.map((a: any) => {
+            const t = typeIcon[a.type || "other"] || typeIcon["other"];
             const Icon = t.icon;
             return (
               <div key={a.id} className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--warning) / 0.1)" }}>
                 <div className="flex items-center gap-2">
                   <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: t.color }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{a.label}</p>
-                    <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{a.street}, {a.postalCode} {a.city}</p>
+                    <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{a.label || a.name || "—"}</p>
+                    <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{a.street || a.address_line || "—"}, {a.postal_code || ""} {a.city || ""}</p>
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    <button onClick={() => toggleFavorite(a.id)} className="p-1 rounded-md transition-colors hover:bg-[hsl(var(--warning)/0.1)]">
+                    <button onClick={() => toggleFavorite(a.id, true)} className="p-1 rounded-md transition-colors hover:bg-[hsl(var(--warning)/0.1)]">
                       <Star className="h-3 w-3" style={{ color: "hsl(var(--warning))", fill: "hsl(var(--warning))" }} />
                     </button>
                     <button onClick={() => deleteAddress(a.id)} className="p-1 rounded-md transition-colors hover:bg-[hsl(var(--destructive)/0.1)]">
@@ -141,8 +121,8 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
                 {a.instructions && (
                   <p className="text-[10px] mt-1.5 px-5" style={{ color: "hsl(var(--info) / 0.7)" }}>📝 {a.instructions}</p>
                 )}
-                {a.lastUsed && (
-                  <p className="text-[10px] mt-1 px-5" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Dernière utilisation: {a.lastUsed}</p>
+                {a.last_used && (
+                  <p className="text-[10px] mt-1 px-5" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Dernière utilisation: {a.last_used}</p>
                 )}
               </div>
             );
@@ -150,22 +130,21 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
         </div>
       )}
 
-      {/* Others */}
       {others.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-[10px] font-bold px-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Autres adresses</p>
-          {others.map(a => {
-            const t = typeIcon[a.type];
+          {others.map((a: any) => {
+            const t = typeIcon[a.type || "other"] || typeIcon["other"];
             const Icon = t.icon;
             return (
               <div key={a.id} className="rounded-lg px-3 py-2 flex items-center gap-2"
                 style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
                 <Icon className="h-3 w-3 shrink-0" style={{ color: t.color }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{a.label}</p>
-                  <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{a.street}, {a.city}</p>
+                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{a.label || a.name || "—"}</p>
+                  <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{a.street || a.address_line || "—"}, {a.city || ""}</p>
                 </div>
-                <button onClick={() => toggleFavorite(a.id)} className="p-1">
+                <button onClick={() => toggleFavorite(a.id, false)} className="p-1">
                   <Star className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
                 </button>
                 <button onClick={() => deleteAddress(a.id)} className="p-1">
@@ -174,6 +153,13 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {filtered.length === 0 && (
+        <div className="text-center py-8">
+          <MapPin className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+          <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Aucune adresse enregistrée</p>
         </div>
       )}
     </div>

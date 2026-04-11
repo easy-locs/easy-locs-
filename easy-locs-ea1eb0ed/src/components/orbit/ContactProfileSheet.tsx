@@ -56,6 +56,12 @@ export function ContactProfileSheet({
   const vm = useMemo(() => buildContactProfileVM(entity), [entity]);
   const [muted, setMuted] = useState(false);
   const [favorited, setFavorited] = useState(false);
+  const [locked, setLocked] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mediaOpen, setMediaOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [labelsOpen, setLabelsOpen] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
 
   const peerId = entity?.user_id || entity?.id || "";
   const presence = usePresenceStore((s) => s.getPresence(peerId));
@@ -154,7 +160,7 @@ export function ContactProfileSheet({
               <ActionButton
                 icon={<Search className="h-5 w-5" />}
                 label={t("contact.action.search")}
-                onClick={() => { haptic("light"); toast.info(t("contact.search_conversation")); }}
+                onClick={() => { haptic("light"); setSearchOpen(true); }}
               />
             </div>
 
@@ -168,7 +174,7 @@ export function ContactProfileSheet({
 
               <InfoCard>
                 <button
-                  onClick={() => { haptic("light"); toast.info(t("contact.media_links_docs")); }}
+                  onClick={() => { haptic("light"); setMediaOpen(true); }}
                   className="w-full flex items-center justify-between py-2 min-h-[44px]"
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -276,7 +282,7 @@ export function ContactProfileSheet({
                 <ContactAction
                   icon={<StickyNote className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />}
                   label={t("contact.add_notes") || "Add notes"}
-                  onClick={() => { haptic("light"); toast.info(t("contact.add_notes") || "Add notes"); }}
+                  onClick={() => { haptic("light"); setNotesOpen(true); }}
                 />
               </InfoCard>
 
@@ -284,13 +290,13 @@ export function ContactProfileSheet({
                 <ContactAction
                   icon={<Tag className="h-4 w-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />}
                   label={t("contact.labels") || "Labels"}
-                  onClick={() => { haptic("light"); toast.info(t("contact.labels") || "Labels"); }}
+                  onClick={() => { haptic("light"); setLabelsOpen(true); }}
                 />
                 <div className="h-px mx-0" style={{ background: "hsl(var(--border) / 0.06)" }} />
                 <ContactAction
                   icon={<Palette className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />}
                   label={t("contact.chat_theme") || "Chat theme"}
-                  onClick={() => { haptic("light"); toast.info(t("contact.chat_theme") || "Chat theme"); }}
+                  onClick={() => { haptic("light"); setThemeOpen(true); }}
                 />
               </InfoCard>
 
@@ -318,13 +324,21 @@ export function ContactProfileSheet({
                 <ContactAction
                   icon={<LockKeyhole className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />}
                   label={t("contact.lock_chat") || "Lock chat"}
-                  onClick={() => { haptic("light"); toast.info(t("contact.lock_chat") || "Lock chat"); }}
+                  onClick={() => { haptic("light"); setLocked(!locked); toast.success(locked ? (t("contact.chat_unlocked") || "Chat unlocked") : (t("contact.chat_locked") || "Chat locked")); }}
                 />
                 <div className="h-px mx-0" style={{ background: "hsl(var(--border) / 0.06)" }} />
                 <ContactAction
                   icon={<Share2 className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />}
                   label={t("contact.share_contact") || "Share contact"}
-                  onClick={() => { haptic("light"); toast.info(t("contact.share_contact") || "Share contact"); }}
+                  onClick={async () => {
+                    haptic("light");
+                    try {
+                      await navigator.share({ title: vm.name, text: `Contact: ${vm.name}` });
+                    } catch {
+                      await navigator.clipboard.writeText(vm.name);
+                      toast.success(t("contact.contact_copied") || "Contact copied to clipboard");
+                    }
+                  }}
                 />
               </InfoCard>
 

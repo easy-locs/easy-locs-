@@ -8,71 +8,55 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Package, MapPin, Clock, Star, MessageSquare, Bell, CheckCircle2, Truck, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-
-interface TrackingStep {
-  id: string;
-  label: string;
-  emoji: string;
-  time: string | null;
-  status: "completed" | "active" | "pending";
-}
-
-interface TrackedPackage {
-  id: string;
-  trackingCode: string;
-  description: string;
-  status: "confirmed" | "preparing" | "picked_up" | "in_transit" | "nearby" | "delivered";
-  driverName: string;
-  driverRating: number;
-  driverVehicle: string;
-  eta: string;
-  etaMinutes: number;
-  origin: string;
-  destination: string;
-  steps: TrackingStep[];
-  deliveredAt?: string;
-  photoProofUrl?: string;
-}
-
-const MOCK_PACKAGES: TrackedPackage[] = [
-  {
-    id: "pkg1", trackingCode: "EL-20260316-0042", description: "Carton électronique 30x20", status: "in_transit",
-    driverName: "Thomas D.", driverRating: 4.8, driverVehicle: "Renault Master", eta: "14:35", etaMinutes: 12,
-    origin: "123 Rue du Commerce, Paris 12e", destination: "45 Av. de la Liberté, Paris 8e",
-    steps: [
-      { id: "s1", label: "Commande confirmée", emoji: "✅", time: "13:20", status: "completed" },
-      { id: "s2", label: "Colis préparé", emoji: "📦", time: "13:35", status: "completed" },
-      { id: "s3", label: "Récupéré par le livreur", emoji: "🚗", time: "13:50", status: "completed" },
-      { id: "s4", label: "En route vers vous", emoji: "🛣️", time: "14:05", status: "active" },
-      { id: "s5", label: "À proximité", emoji: "📍", time: null, status: "pending" },
-      { id: "s6", label: "Livré", emoji: "🏁", time: null, status: "pending" },
-    ],
-  },
-  {
-    id: "pkg2", trackingCode: "EL-20260316-0038", description: "Documents importants", status: "delivered",
-    driverName: "Marie L.", driverRating: 4.9, driverVehicle: "Peugeot e-Expert", eta: "", etaMinutes: 0,
-    origin: "8 Place Vendôme, Paris 1er", destination: "22 Rue de Passy, Paris 16e",
-    deliveredAt: "12:45",
-    steps: [
-      { id: "s1", label: "Commande confirmée", emoji: "✅", time: "11:00", status: "completed" },
-      { id: "s2", label: "Colis préparé", emoji: "📦", time: "11:15", status: "completed" },
-      { id: "s3", label: "Récupéré par le livreur", emoji: "🚗", time: "11:30", status: "completed" },
-      { id: "s4", label: "En route", emoji: "🛣️", time: "11:45", status: "completed" },
-      { id: "s5", label: "À proximité", emoji: "📍", time: "12:35", status: "completed" },
-      { id: "s6", label: "Livré", emoji: "🏁", time: "12:45", status: "completed" },
-    ],
-  },
-];
+import { useLiveTrackings, useDeliveryShipments, useInsertMutation } from "@/hooks/useDeliveryData";
+import { toast } from "sonner";
 
 export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
-  const [selectedPkg, setSelectedPkg] = useState<string>(MOCK_PACKAGES[0].id);
+  const { data: trackings = [], isLoading: loadingTrackings } = useLiveTrackings(orgId);
+  const { data: shipments = [], isLoading: loadingShipments } = useDeliveryShipments(orgId);
+  const insertRating = useInsertMutation("delivery_ratings");
+
+  const packages: any[] = trackings.length > 0 ? trackings : shipments;
+  const [selectedPkg, setSelectedPkg] = useState<string>("");
   const [showFeedback, setShowFeedback] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
-  const pkg = MOCK_PACKAGES.find(p => p.id === selectedPkg)!;
-  const isDelivered = pkg.status === "delivered";
-  const activeStep = pkg.steps.findIndex(s => s.status === "active");
+  if (loadingTrackings || loadingShipments) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
+
+  if (packages.length === 0) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Navigation className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+          <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Suivi Colis</h3>
+        </div>
+        <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucun colis à suivre</div>
+      </div>
+    );
+  }
+
+  const currentPkgId = selectedPkg || packages[0]?.id;
+  const pkg = packages.find((p: any) => p.id === currentPkgId) || packages[0];
+  const isDelivered = pkg?.status === "delivered";
+
+  const submitFeedback = () => {
+    if (rating === 0) return;
+    insertRating.mutate({
+      org_id: orgId,
+      rating,
+      comment,
+      shipment_id: pkg?.id,
+    } as any, {
+      onSuccess: () => {
+        toast.success("Merci pour votre évaluation !");
+        setShowFeedback(false);
+        setRating(0);
+        setComment("");
+      },
+      onError: () => toast.error("Erreur lors de l'envoi"),
+    });
+  };
 
   return (
     <div className="space-y-3">
@@ -83,15 +67,15 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
 
       {/* Package selector */}
       <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
-        {MOCK_PACKAGES.map(p => (
+        {packages.map((p: any) => (
           <button key={p.id} onClick={() => { setSelectedPkg(p.id); setShowFeedback(false); }}
             className="shrink-0 rounded-lg px-3 py-2 text-left transition-all"
             style={{
-              background: selectedPkg === p.id ? "hsl(var(--hud-cyan) / 0.1)" : "hsl(var(--hud-surface))",
-              border: `1px solid ${selectedPkg === p.id ? "hsl(var(--hud-cyan) / 0.2)" : "hsl(var(--hud-border) / 0.06)"}`,
+              background: currentPkgId === p.id ? "hsl(var(--hud-cyan) / 0.1)" : "hsl(var(--hud-surface))",
+              border: `1px solid ${currentPkgId === p.id ? "hsl(var(--hud-cyan) / 0.2)" : "hsl(var(--hud-border) / 0.06)"}`,
             }}>
-            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{p.trackingCode}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{p.description}</p>
+            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{p.tracking_code || p.tracking_number || `#${String(p.id).slice(0, 8)}`}</p>
+            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{p.description || p.status || ""}</p>
           </button>
         ))}
       </div>
@@ -104,20 +88,20 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
         {isDelivered ? (
           <>
             <p className="text-lg">🏁</p>
-            <p className="text-xs font-bold mt-1" style={{ color: "hsl(var(--success))" }}>Livré à {pkg.deliveredAt}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Par {pkg.driverName}</p>
+            <p className="text-xs font-bold mt-1" style={{ color: "hsl(var(--success))" }}>Livré</p>
+            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              {pkg.driver_name ? `Par ${pkg.driver_name}` : ""}
+            </p>
           </>
         ) : (
           <>
             <p className="text-lg">🚚</p>
             <p className="text-xs font-bold mt-1" style={{ color: "hsl(var(--hud-cyan))" }}>
-              Arrivée estimée : {pkg.eta}
-            </p>
-            <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
-              dans ~{pkg.etaMinutes} min
+              {pkg.eta ? `Arrivée estimée : ${pkg.eta}` : `Statut: ${pkg.status || "en cours"}`}
             </p>
             <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-              🚗 {pkg.driverName} • {pkg.driverVehicle} • ⭐ {pkg.driverRating}
+              {pkg.driver_name ? `🚗 ${pkg.driver_name}` : ""}
+              {pkg.driver_vehicle ? ` • ${pkg.driver_vehicle}` : ""}
             </p>
           </>
         )}
@@ -133,53 +117,35 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
         <div className="flex-1 space-y-3">
           <div>
             <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>RETRAIT</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{pkg.origin}</p>
+            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{pkg.origin || pkg.pickup_address || pkg.from_address || "—"}</p>
           </div>
           <div>
             <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>LIVRAISON</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{pkg.destination}</p>
+            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{pkg.destination || pkg.delivery_address || pkg.to_address || "—"}</p>
           </div>
         </div>
       </div>
 
-      {/* Timeline */}
-      <div className="rounded-xl p-3 space-y-0" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-bold mb-2" style={{ color: "hsl(var(--hud-text))" }}>Suivi en temps réel</p>
-        {pkg.steps.map((step, i) => {
-          const isActive = step.status === "active";
-          const isCompleted = step.status === "completed";
-          const lineColor = isCompleted ? "hsl(var(--success))" : "hsl(var(--hud-border) / 0.1)";
-          return (
-            <div key={step.id} className="flex items-start gap-3">
-              <div className="flex flex-col items-center">
-                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0"
-                  style={{
-                    background: isCompleted ? "hsl(var(--success) / 0.12)" : isActive ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-bg))",
-                    border: `1.5px solid ${isCompleted ? "hsl(var(--success))" : isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-border) / 0.15)"}`,
-                  }}>
-                  {step.emoji}
-                </div>
-                {i < pkg.steps.length - 1 && (
-                  <div className="w-0.5 h-5" style={{ background: lineColor }} />
-                )}
-              </div>
-              <div className="pb-2 flex-1">
-                <p className="text-[10px] font-semibold" style={{
-                  color: isCompleted ? "hsl(var(--hud-text))" : isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)",
-                }}>{step.label}</p>
-                {step.time && (
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{step.time}</p>
-                )}
-                {isActive && (
-                  <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 2 }}
-                    className="text-[10px] mt-0.5 font-semibold" style={{ color: "hsl(var(--hud-cyan))" }}>
-                    En cours…
-                  </motion.div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      {/* Status info */}
+      <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
+        <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Statut actuel</p>
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]"
+            style={{
+              background: isDelivered ? "hsl(var(--success) / 0.12)" : "hsl(var(--hud-cyan) / 0.12)",
+              border: `1.5px solid ${isDelivered ? "hsl(var(--success))" : "hsl(var(--hud-cyan))"}`,
+            }}>
+            {isDelivered ? "🏁" : "🚚"}
+          </div>
+          <p className="text-[10px] font-semibold" style={{ color: isDelivered ? "hsl(var(--success))" : "hsl(var(--hud-cyan))" }}>
+            {isDelivered ? "Livré" : pkg.status || "En cours"}
+          </p>
+          {pkg.updated_at && (
+            <span className="text-[10px] ml-auto" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+              {new Date(pkg.updated_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Feedback section for delivered packages */}
@@ -195,7 +161,7 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
             className="rounded-xl p-3 space-y-3 overflow-hidden"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--warning) / 0.12)" }}>
-            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Évaluez {pkg.driverName}</p>
+            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Évaluez la livraison</p>
             <div className="flex gap-1 justify-center">
               {[1, 2, 3, 4, 5].map(s => (
                 <button key={s} onClick={() => setRating(s)} className="text-lg transition-transform hover:scale-110">
@@ -207,7 +173,7 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
               rows={2} className="text-xs"
               style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
             <div className="flex gap-2">
-              <Button size="sm" className="flex-1 text-xs h-8" disabled={rating === 0}
+              <Button size="sm" className="flex-1 text-xs h-8" disabled={rating === 0} onClick={submitFeedback}
                 style={{ background: "hsl(var(--success))", color: "#fff" }}>
                 <CheckCircle2 className="h-3 w-3 mr-1" /> Envoyer
               </Button>
@@ -217,24 +183,6 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Notifications */}
-      <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-bold flex items-center gap-1" style={{ color: "hsl(var(--hud-text))" }}>
-          <Bell className="h-3 w-3" /> Notifications récentes
-        </p>
-        {[
-          { time: "14:05", msg: "Votre colis est en route vers vous", emoji: "🚗" },
-          { time: "13:50", msg: "Le livreur a récupéré votre colis", emoji: "📦" },
-          { time: "13:35", msg: "Votre colis est prêt pour l'enlèvement", emoji: "✅" },
-        ].map((n, i) => (
-          <div key={i} className="flex items-center gap-2 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-            <span>{n.emoji}</span>
-            <span className="flex-1">{n.msg}</span>
-            <span className="font-mono" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{n.time}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

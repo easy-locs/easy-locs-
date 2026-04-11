@@ -9,29 +9,7 @@ import { MapPin, Plus, Edit3, Trash2, DollarSign, TrendingUp, Layers } from "luc
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-
-interface PricingZone {
-  id: string;
-  name: string;
-  type: "city" | "district" | "region";
-  baseFee: number;
-  perKmRate: number;
-  perKgRate: number;
-  surgeMultiplier: number;
-  peakHourSurcharge: number;
-  minFee: number;
-  maxFee: number;
-  active: boolean;
-  color: string;
-}
-
-const MOCK_ZONES: PricingZone[] = [
-  { id: "z1", name: "Paris Centre", type: "district", baseFee: 4.5, perKmRate: 1.2, perKgRate: 0.5, surgeMultiplier: 1.0, peakHourSurcharge: 2.0, minFee: 5, maxFee: 50, active: true, color: "hsl(var(--hud-cyan))" },
-  { id: "z2", name: "Paris Périphérique", type: "district", baseFee: 5.0, perKmRate: 1.0, perKgRate: 0.4, surgeMultiplier: 1.0, peakHourSurcharge: 1.5, minFee: 6, maxFee: 60, active: true, color: "hsl(var(--info))" },
-  { id: "z3", name: "Île-de-France", type: "region", baseFee: 6.0, perKmRate: 0.8, perKgRate: 0.3, surgeMultiplier: 1.0, peakHourSurcharge: 1.0, minFee: 7, maxFee: 80, active: true, color: "hsl(var(--success))" },
-  { id: "z4", name: "Lyon Métro", type: "city", baseFee: 4.0, perKmRate: 1.1, perKgRate: 0.45, surgeMultiplier: 1.0, peakHourSurcharge: 1.5, minFee: 5, maxFee: 45, active: true, color: "hsl(var(--warning))" },
-  { id: "z5", name: "Marseille", type: "city", baseFee: 3.5, perKmRate: 0.9, perKgRate: 0.4, surgeMultiplier: 1.0, peakHourSurcharge: 1.0, minFee: 4, maxFee: 40, active: false, color: "hsl(var(--destructive))" },
-];
+import { useDeliveryPricingRules, useUpdateMutation } from "@/hooks/useDeliveryData";
 
 const TYPE_LABELS: Record<string, { label: string; emoji: string }> = {
   city: { label: "Ville", emoji: "🏙️" },
@@ -40,31 +18,59 @@ const TYPE_LABELS: Record<string, { label: string; emoji: string }> = {
 };
 
 export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
-  const [zones, setZones] = useState(MOCK_ZONES);
+  const { data: zones = [], isLoading } = useDeliveryPricingRules(orgId);
+  const updateRule = useUpdateMutation("delivery_pricing_rules");
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
-  const [editingZone, setEditingZone] = useState<PricingZone | null>(null);
   const [simDistance, setSimDistance] = useState(5);
   const [simWeight, setSimWeight] = useState(2);
   const [simPeak, setSimPeak] = useState(false);
 
-  const simulatePrice = (zone: PricingZone) => {
-    let price = zone.baseFee + (simDistance * zone.perKmRate) + (simWeight * zone.perKgRate);
-    if (simPeak) price += zone.peakHourSurcharge;
-    price *= zone.surgeMultiplier;
-    return Math.min(Math.max(price, zone.minFee), zone.maxFee);
+  if (isLoading) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
+
+  const simulatePrice = (zone: any) => {
+    const baseFee = zone.base_fee ?? zone.baseFee ?? 0;
+    const perKmRate = zone.per_km_rate ?? zone.perKmRate ?? 0;
+    const perKgRate = zone.per_kg_rate ?? zone.perKgRate ?? 0;
+    const peakHourSurcharge = zone.peak_hour_surcharge ?? zone.peakHourSurcharge ?? 0;
+    const surgeMultiplier = zone.surge_multiplier ?? zone.surgeMultiplier ?? 1;
+    const minFee = zone.min_fee ?? zone.minFee ?? 0;
+    const maxFee = zone.max_fee ?? zone.maxFee ?? 999;
+    let price = baseFee + (simDistance * perKmRate) + (simWeight * perKgRate);
+    if (simPeak) price += peakHourSurcharge;
+    price *= surgeMultiplier;
+    return Math.min(Math.max(price, minFee), maxFee);
   };
 
   const toggleZone = (id: string) => {
-    setZones(prev => prev.map(z => z.id === id ? { ...z, active: !z.active } : z));
-    toast.success("Zone mise à jour");
+    const zone = zones.find((z: any) => z.id === id);
+    if (!zone) return;
+    const currentActive = zone.active ?? true;
+    updateRule.mutate({ id, active: !currentActive } as any, {
+      onSuccess: () => toast.success("Zone mise à jour"),
+      onError: () => toast.error("Erreur lors de la mise à jour"),
+    });
   };
+
+  const activeZones = zones.filter((z: any) => z.active !== false);
 
   const stats = useMemo(() => ({
     totalZones: zones.length,
-    activeZones: zones.filter(z => z.active).length,
-    avgBaseFee: zones.reduce((s, z) => s + z.baseFee, 0) / zones.length,
-    avgPerKm: zones.reduce((s, z) => s + z.perKmRate, 0) / zones.length,
+    activeZones: activeZones.length,
+    avgBaseFee: zones.length > 0 ? zones.reduce((s: number, z: any) => s + (z.base_fee ?? z.baseFee ?? 0), 0) / zones.length : 0,
+    avgPerKm: zones.length > 0 ? zones.reduce((s: number, z: any) => s + (z.per_km_rate ?? z.perKmRate ?? 0), 0) / zones.length : 0,
   }), [zones]);
+
+  if (zones.length === 0) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Layers className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+          <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Tarification par Zones</h3>
+        </div>
+        <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucune zone de tarification</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
@@ -111,34 +117,46 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
           </div>
         </div>
         <div className="flex gap-2 pt-1">
-          {zones.filter(z => z.active).map(z => (
-            <div key={z.id} className="flex-1 text-center py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))", border: `1px solid ${z.color}30` }}>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{z.name}</p>
-              <p className="text-xs font-extrabold tabular-nums" style={{ color: z.color }}>{simulatePrice(z).toFixed(2)}€</p>
-            </div>
-          ))}
+          {activeZones.map((z: any) => {
+            const color = z.color || "hsl(var(--hud-cyan))";
+            return (
+              <div key={z.id} className="flex-1 text-center py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))", border: `1px solid ${color}30` }}>
+                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{z.name}</p>
+                <p className="text-xs font-extrabold tabular-nums" style={{ color }}>{simulatePrice(z).toFixed(2)}€</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* Zones list */}
       <div className="space-y-2">
-        {zones.map(z => {
+        {zones.map((z: any) => {
           const typeCfg = TYPE_LABELS[z.type] || TYPE_LABELS.city;
+          const isActive = z.active !== false;
+          const color = z.color || "hsl(var(--hud-cyan))";
+          const baseFee = z.base_fee ?? z.baseFee ?? 0;
+          const perKmRate = z.per_km_rate ?? z.perKmRate ?? 0;
+          const perKgRate = z.per_kg_rate ?? z.perKgRate ?? 0;
+          const surgeMultiplier = z.surge_multiplier ?? z.surgeMultiplier ?? 1;
+          const peakHourSurcharge = z.peak_hour_surcharge ?? z.peakHourSurcharge ?? 0;
+          const minFee = z.min_fee ?? z.minFee ?? 0;
+          const maxFee = z.max_fee ?? z.maxFee ?? 999;
           return (
-            <div key={z.id} className="rounded-xl overflow-hidden" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${z.active ? z.color + "20" : "hsl(var(--hud-border) / 0.06)"}`, opacity: z.active ? 1 : 0.6 }}>
+            <div key={z.id} className="rounded-xl overflow-hidden" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${isActive ? color + "20" : "hsl(var(--hud-border) / 0.06)"}`, opacity: isActive ? 1 : 0.6 }}>
               <div className="flex items-center gap-3 px-3 py-2.5 cursor-pointer" onClick={() => setSelectedZone(selectedZone === z.id ? null : z.id)}>
-                <div className="w-3 h-3 rounded-full shrink-0" style={{ background: z.color }} />
+                <div className="w-3 h-3 rounded-full shrink-0" style={{ background: color }} />
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{typeCfg.emoji} {z.name}</p>
                   <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                    Base: {z.baseFee}€ • {z.perKmRate}€/km • {z.perKgRate}€/kg
+                    Base: {baseFee}€ • {perKmRate}€/km • {perKgRate}€/kg
                   </p>
                 </div>
                 <button onClick={e => { e.stopPropagation(); toggleZone(z.id); }}
                   className="w-8 h-4 rounded-full transition-all relative shrink-0"
-                  style={{ background: z.active ? "hsl(var(--success))" : "hsl(var(--hud-bg))" }}>
+                  style={{ background: isActive ? "hsl(var(--success))" : "hsl(var(--hud-bg))" }}>
                   <div className="w-3 h-3 rounded-full absolute top-0.5 transition-all"
-                    style={{ left: z.active ? "16px" : "2px", background: "white" }} />
+                    style={{ left: isActive ? "16px" : "2px", background: "white" }} />
                 </button>
               </div>
 
@@ -148,12 +166,12 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
                     <div className="px-3 pb-3 space-y-2">
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          { label: "Frais de base", value: `${z.baseFee}€` },
-                          { label: "Par km", value: `${z.perKmRate}€` },
-                          { label: "Par kg", value: `${z.perKgRate}€` },
-                          { label: "Surge", value: `x${z.surgeMultiplier}` },
-                          { label: "Surcharge pointe", value: `+${z.peakHourSurcharge}€` },
-                          { label: "Min / Max", value: `${z.minFee}€ — ${z.maxFee}€` },
+                          { label: "Frais de base", value: `${baseFee}€` },
+                          { label: "Par km", value: `${perKmRate}€` },
+                          { label: "Par kg", value: `${perKgRate}€` },
+                          { label: "Surge", value: `x${surgeMultiplier}` },
+                          { label: "Surcharge pointe", value: `+${peakHourSurcharge}€` },
+                          { label: "Min / Max", value: `${minFee}€ — ${maxFee}€` },
                         ].map(item => (
                           <div key={item.label} className="px-2 py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
                             <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{item.label}</p>
@@ -161,9 +179,9 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
                           </div>
                         ))}
                       </div>
-                      <div className="text-center py-2 rounded-lg" style={{ background: `${z.color}10` }}>
+                      <div className="text-center py-2 rounded-lg" style={{ background: `${color}10` }}>
                         <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Prix simulé ({simDistance}km, {simWeight}kg)</p>
-                        <p className="text-lg font-extrabold tabular-nums" style={{ color: z.color }}>{simulatePrice(z).toFixed(2)}€</p>
+                        <p className="text-lg font-extrabold tabular-nums" style={{ color }}>{simulatePrice(z).toFixed(2)}€</p>
                       </div>
                     </div>
                   </motion.div>

@@ -21,7 +21,7 @@ import YouPrivacyPage from "@/components/orbit/you/subpages/YouPrivacyPage";
 import YouChatDefaultsPage from "@/components/orbit/you/subpages/YouChatDefaultsPage";
 import YouMediaPage from "@/components/orbit/you/subpages/YouMediaPage";
 
-type SubPage = "main" | "edit-profile" | "notifications" | "privacy" | "chats" | "media" | "language";
+type SubPage = "main" | "edit-profile" | "notifications" | "privacy" | "chats" | "media" | "language" | "account" | "help";
 
 export default function OrbitAccountSection() {
   const { user, signOut } = useAuth();
@@ -49,6 +49,52 @@ export default function OrbitAccountSection() {
   if (subPage === "privacy") return <YouPrivacyPage onBack={goBack} />;
   if (subPage === "chats") return <YouChatDefaultsPage onBack={goBack} />;
   if (subPage === "media") return <YouMediaPage onBack={goBack} />;
+  if (subPage === "account") return (
+    <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+        <button onClick={goBack} className="text-sm font-medium" style={{ color: "hsl(38 65% 56%)" }}>{t("orbit.you.back")}</button>
+        <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.account") || "Account"}</span>
+      </div>
+      <div className="px-3 space-y-3">
+        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--muted) / 0.25)", border: "1px solid hsl(var(--border) / 0.5)" }}>
+          <p className="text-xs font-medium mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.you.email") || "Email"}</p>
+          <p className="text-sm" style={{ color: "hsl(var(--foreground))" }}>{user?.email || "—"}</p>
+        </div>
+        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--muted) / 0.25)", border: "1px solid hsl(var(--border) / 0.5)" }}>
+          <p className="text-xs font-medium mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.you.user_id") || "User ID"}</p>
+          <p className="text-sm font-mono" style={{ color: "hsl(var(--foreground))" }}>{user?.id?.slice(0, 12) || "—"}...</p>
+        </div>
+        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--muted) / 0.25)", border: "1px solid hsl(var(--border) / 0.5)" }}>
+          <p className="text-xs font-medium mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.you.joined") || "Joined"}</p>
+          <p className="text-sm" style={{ color: "hsl(var(--foreground))" }}>{user?.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (subPage === "help") return (
+    <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+        <button onClick={goBack} className="text-sm font-medium" style={{ color: "hsl(38 65% 56%)" }}>{t("orbit.you.back")}</button>
+        <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.help") || "Help"}</span>
+      </div>
+      <div className="px-3 space-y-3">
+        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--muted) / 0.25)", border: "1px solid hsl(var(--border) / 0.5)" }}>
+          <p className="text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.help.faq") || "Frequently Asked Questions"}</p>
+          <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.help.faq_desc") || "Find answers to common questions"}</p>
+        </div>
+        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--muted) / 0.25)", border: "1px solid hsl(var(--border) / 0.5)" }}>
+          <p className="text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.help.contact_us") || "Contact Us"}</p>
+          <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.help.contact_desc") || "Get in touch with our support team"}</p>
+        </div>
+        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--muted) / 0.25)", border: "1px solid hsl(var(--border) / 0.5)" }}>
+          <p className="text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.help.terms") || "Terms & Privacy"}</p>
+          <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.help.terms_desc") || "Review our terms and privacy policy"}</p>
+        </div>
+      </div>
+    </div>
+  );
+
   if (subPage === "language") return (
     <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
@@ -87,13 +133,13 @@ export default function OrbitAccountSection() {
           className="rounded-2xl overflow-hidden"
           style={{ background: "hsl(var(--muted) / 0.25)", border: "1px solid hsl(var(--border) / 0.5)" }}
         >
-          <YouSmartSettingCard icon={Key} label={t("orbit.you.account") || "Account"} summary={t("orbit.you.account_desc") || "Security, change number"} onClick={() => { haptic("light"); toast.info(t("orbit.you.account") || "Account settings"); }} />
+          <YouSmartSettingCard icon={Key} label={t("orbit.you.account") || "Account"} summary={t("orbit.you.account_desc") || "Security, change number"} onClick={() => { haptic("light"); setSubPage("account"); }} />
           <YouSmartSettingCard icon={Eye} label={t("orbit.you.privacy")} summary={summaries.privacySummary} onClick={() => setSubPage("privacy")} />
           <YouSmartSettingCard icon={Bell} label={t("orbit.you.notifications")} summary={summaries.notifSummary} onClick={() => setSubPage("notifications")} />
           <YouSmartSettingCard icon={MessageSquare} label={t("orbit.you.chats_setting") || "Chats"} summary={summaries.chatDefaultsSummary} onClick={() => setSubPage("chats")} />
           <YouSmartSettingCard icon={HardDrive} label={t("orbit.you.storage") || "Storage"} summary={t("orbit.you.storage_desc") || "Network usage, auto-download"} onClick={() => setSubPage("media")} />
           <YouSmartSettingCard icon={Languages} label={t("orbit.you.language")} summary={availableLocales.find(l => l.value === locale)?.label || locale} onClick={() => setSubPage("language")} />
-          <YouSmartSettingCard icon={HelpCircle} label={t("orbit.you.help") || "Help"} summary={t("orbit.you.help_desc") || "FAQ, contact us"} onClick={() => { haptic("light"); toast.info(t("orbit.you.help") || "Help center"); }} />
+          <YouSmartSettingCard icon={HelpCircle} label={t("orbit.you.help") || "Help"} summary={t("orbit.you.help_desc") || "FAQ, contact us"} onClick={() => { haptic("light"); setSubPage("help"); }} />
         </div>
       </div>
 

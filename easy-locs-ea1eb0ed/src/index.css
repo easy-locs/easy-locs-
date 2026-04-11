@@ -520,6 +520,47 @@ button:has(> svg:only-child),
   overflow-wrap: break-word;
 }
 
+/* DS-14f. Permanent element overlap prevention — replaces runtime element_overlap patch */
+* {
+  isolation: auto;
+}
+section, article, [data-card], [role="listitem"],
+.card, .merchant-card, .restaurant-card,
+[class*="Card"], [class*="card-"] {
+  position: relative;
+  z-index: auto;
+}
+section + section,
+article + article,
+[data-card] + [data-card],
+.card + .card {
+  margin-top: 0;
+  clear: both;
+}
+[data-card] > *,
+.card > * {
+  position: relative;
+  z-index: 0;
+}
+.fixed, .sticky, [class*="fixed"], [class*="sticky"] {
+  z-index: 40;
+}
+[role="dialog"], [data-radix-dialog-content], [data-radix-popper-content] {
+  z-index: 50;
+}
+
+/* DS-14g. Permanent dotted label sanitization — replaces runtime dotted_labels patch */
+[data-i18n-key] {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* DS-14h. Permanent untranslated key fallback — replaces runtime untranslated_keys patch */
+[data-i18n-fallback]::after {
+  content: attr(data-i18n-fallback);
+}
+
 /* DS-15. Safe heading truncation — prevent heading overflow on small screens */
 h1, h2, h3, h4 {
   overflow-wrap: break-word;

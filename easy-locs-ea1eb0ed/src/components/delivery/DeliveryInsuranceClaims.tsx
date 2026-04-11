@@ -14,20 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
-
-interface Claim {
-  id: string;
-  jobId: string;
-  type: "damaged" | "lost" | "delayed" | "wrong_item" | "theft";
-  status: "submitted" | "under_review" | "approved" | "rejected" | "refunded";
-  description: string;
-  amount: number;
-  currency: string;
-  evidenceCount: number;
-  createdAt: Date;
-  resolvedAt?: Date;
-  refundAmount?: number;
-}
+import { useDeliveryDispatch, useInsertMutation } from "@/hooks/useDeliveryData";
 
 const CLAIM_TYPES = [
   { id: "damaged" as const, label: "Colis endommagé", emoji: "📦💥", color: "--warning" },
@@ -45,54 +32,51 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof
   refunded: { label: "Remboursée", color: "--success", icon: CheckCircle2 },
 };
 
-const MOCK_CLAIMS: Claim[] = [
-  { id: "c1", jobId: "j-001", type: "damaged", status: "under_review", description: "Emballage écrasé, contenu cassé", amount: 45, currency: "EUR", evidenceCount: 3, createdAt: new Date(Date.now() - 86400000) },
-  { id: "c2", jobId: "j-002", type: "lost", status: "approved", description: "Colis jamais livré", amount: 120, currency: "EUR", evidenceCount: 1, createdAt: new Date(Date.now() - 172800000), resolvedAt: new Date(Date.now() - 43200000), refundAmount: 120 },
-  { id: "c3", jobId: "j-003", type: "delayed", status: "refunded", description: "Livraison avec 3h de retard", amount: 15, currency: "EUR", evidenceCount: 2, createdAt: new Date(Date.now() - 259200000), resolvedAt: new Date(Date.now() - 86400000), refundAmount: 10 },
-];
-
 export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: string; className?: string }) {
-  const [claims, setClaims] = useState<Claim[]>(MOCK_CLAIMS);
+  const { data: claims = [], isLoading } = useDeliveryDispatch(orgId);
+  const insertClaim = useInsertMutation("dispatch_jobs_v2");
   const [showNewClaim, setShowNewClaim] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "resolved">("all");
-  const [newClaim, setNewClaim] = useState({ type: "damaged" as Claim["type"], jobId: "", description: "", amount: 0 });
+  const [newClaim, setNewClaim] = useState({ type: "damaged", jobId: "", description: "", amount: 0 });
   const [submitting, setSubmitting] = useState(false);
 
-  const filtered = claims.filter(c => {
+  if (isLoading) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
+
+  const filtered = claims.filter((c: any) => {
     if (filter === "active") return ["submitted", "under_review"].includes(c.status);
     if (filter === "resolved") return ["approved", "rejected", "refunded"].includes(c.status);
     return true;
   });
 
-  const totalPending = claims.filter(c => ["submitted", "under_review"].includes(c.status)).length;
-  const totalRefunded = claims.filter(c => c.status === "refunded").reduce((s, c) => s + (c.refundAmount || 0), 0);
+  const totalPending = claims.filter((c: any) => ["submitted", "under_review"].includes(c.status)).length;
+  const totalRefunded = claims.filter((c: any) => c.status === "refunded").reduce((s: number, c: any) => s + (c.refund_amount || 0), 0);
 
   const submitClaim = async () => {
     if (!newClaim.jobId || !newClaim.description) { toast.error("Remplissez tous les champs"); return; }
     setSubmitting(true);
     haptic("medium");
-    await new Promise(r => setTimeout(r, 1200));
-    const claim: Claim = {
-      id: "c-" + Date.now(),
-      jobId: newClaim.jobId,
-      type: newClaim.type,
-      status: "submitted",
-      description: newClaim.description,
-      amount: newClaim.amount,
-      currency: "EUR",
-      evidenceCount: 0,
-      createdAt: new Date(),
-    };
-    setClaims(prev => [claim, ...prev]);
-    setShowNewClaim(false);
-    setNewClaim({ type: "damaged", jobId: "", description: "", amount: 0 });
-    setSubmitting(false);
-    toast.success("📋 Réclamation soumise — examen sous 24h");
+    try {
+      await insertClaim.mutateAsync({
+        org_id: orgId,
+        job_id: newClaim.jobId,
+        type: newClaim.type,
+        status: "submitted",
+        description: newClaim.description,
+        amount: newClaim.amount,
+        currency: "EUR",
+      });
+      setShowNewClaim(false);
+      setNewClaim({ type: "damaged", jobId: "", description: "", amount: 0 });
+      toast.success("📋 Réclamation soumise — examen sous 24h");
+    } catch {
+      toast.error("Erreur lors de la soumission");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className={`space-y-3 ${className || ""}`}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: "hsl(var(--foreground))" }}>
           <Shield className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
@@ -104,7 +88,6 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
         </Button>
       </div>
 
-      {/* KPI Strip */}
       <div className="grid grid-cols-3 gap-2">
         {[
           { label: "En cours", value: totalPending, color: "--warning" },
@@ -119,7 +102,6 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
         ))}
       </div>
 
-      {/* New Claim Form */}
       {showNewClaim && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           className="rounded-xl p-4 space-y-3" style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.15)" }}>
@@ -166,7 +148,6 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
         </motion.div>
       )}
 
-      {/* Filter */}
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["all", "active", "resolved"] as const).map(f => (
           <button key={f} onClick={() => { setFilter(f); haptic("selection"); }}
@@ -180,17 +161,17 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
         ))}
       </div>
 
-      {/* Claims List */}
       <div className="space-y-2">
         {filtered.length === 0 ? (
           <div className="text-center py-8">
             <Shield className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--success) / 0.3)" }} />
             <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucune réclamation</p>
           </div>
-        ) : filtered.map(c => {
-          const cfg = STATUS_CONFIG[c.status];
-          const typeInfo = CLAIM_TYPES.find(t => t.id === c.type)!;
+        ) : filtered.map((c: any) => {
+          const cfg = STATUS_CONFIG[c.status] || STATUS_CONFIG["submitted"];
+          const typeInfo = CLAIM_TYPES.find(t => t.id === c.type) || CLAIM_TYPES[0];
           const Icon = cfg.icon;
+          const createdAt = c.created_at ? new Date(c.created_at) : new Date();
           return (
             <div key={c.id} className="rounded-xl p-3 space-y-2"
               style={{ background: "hsl(var(--muted) / 0.2)", border: `1px solid hsl(var(${cfg.color}) / 0.15)` }}>
@@ -199,20 +180,19 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{typeInfo.label}</p>
                   <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    Mission {c.jobId} • {c.createdAt.toLocaleDateString("fr-FR")}
+                    Mission {c.job_id || c.id} • {createdAt.toLocaleDateString("fr-FR")}
                   </p>
-                  <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.8)" }}>{c.description}</p>
+                  <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.8)" }}>{c.description || "—"}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
                     style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>
                     <Icon className="h-2.5 w-2.5" /> {cfg.label}
                   </span>
-                  <p className="text-[10px] font-bold mt-1" style={{ color: "hsl(var(--foreground))" }}>{c.amount} {c.currency}</p>
+                  <p className="text-[10px] font-bold mt-1" style={{ color: "hsl(var(--foreground))" }}>{c.amount || 0} {c.currency || "EUR"}</p>
                 </div>
               </div>
 
-              {/* Progress Bar */}
               <div className="flex items-center gap-1">
                 {["submitted", "under_review", "approved", "refunded"].map((step, i) => {
                   const steps = ["submitted", "under_review", "approved", "refunded"];
@@ -225,9 +205,9 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
                 })}
               </div>
 
-              {c.refundAmount && (
+              {c.refund_amount && (
                 <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>
-                  ✅ Remboursé : {c.refundAmount} {c.currency}
+                  ✅ Remboursé : {c.refund_amount} {c.currency || "EUR"}
                 </p>
               )}
             </div>

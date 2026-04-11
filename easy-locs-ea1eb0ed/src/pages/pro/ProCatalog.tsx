@@ -1,38 +1,70 @@
 import { useState } from 'react';
-import { Plus, Package, Search, ToggleLeft, ToggleRight, Edit, Trash2, GripVertical, Image, Tag } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { db } from '@/services/db';
+import { useAuth } from '@/contexts/AuthContext';
+import { Plus, Package, Search, Edit, Trash2, GripVertical, Image, Tag, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
 const GOLD = 'hsl(38 65% 56%)';
 const CARD_BG = 'hsl(220 38% 20%)';
 
-interface CatalogItem {
-  id: string;
-  name: string;
-  category: string;
-  price: string;
-  status: 'active' | 'inactive';
-  hasImage: boolean;
-  quality: number;
-}
-
-const MOCK_ITEMS: CatalogItem[] = [
-  { id: '1', name: 'Standard Room', category: 'Rooms', price: '$120/night', status: 'active', hasImage: true, quality: 85 },
-  { id: '2', name: 'Deluxe Suite', category: 'Rooms', price: '$250/night', status: 'active', hasImage: true, quality: 92 },
-  { id: '3', name: 'Airport Transfer', category: 'Services', price: '$45', status: 'active', hasImage: false, quality: 40 },
-  { id: '4', name: 'City Tour', category: 'Services', price: '$80', status: 'inactive', hasImage: false, quality: 30 },
-];
-
 const CATEGORIES = ['All', 'Rooms', 'Services', 'Menu', 'Products'];
 
 export default function ProCatalog() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useAuth();
+  const qc = useQueryClient();
 
-  const filtered = MOCK_ITEMS.filter(i =>
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ['pro-catalog', user?.id],
+    queryFn: async () => {
+      const { data, error } = await db('storefront_pages')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map((r: Record<string, unknown>) => ({
+        id: String(r.id),
+        name: String(r.title ?? r.page_name ?? ''),
+        category: String(r.page_type ?? 'Products'),
+        price: r.meta_json && typeof r.meta_json === 'object' && 'price' in (r.meta_json as Record<string, unknown>)
+          ? String((r.meta_json as Record<string, string>).price)
+          : '—',
+        status: (r.published ? 'active' : 'inactive') as 'active' | 'inactive',
+        hasImage: !!(r.cover_image_url || r.og_image_url),
+        quality: Number(r.seo_score ?? 50),
+      }));
+    },
+    enabled: !!user,
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await db('storefront_pages').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['pro-catalog'] });
+      toast.success('Item deleted');
+    },
+    onError: () => toast.error('Delete failed'),
+  });
+
+  const filtered = items.filter((i: { category: string; name: string }) =>
     (activeCategory === 'All' || i.category === activeCategory) &&
     (!searchQuery || i.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: '4rem', textAlign: 'center', color: '#888' }}>
+        <Loader2 size={24} className="animate-spin" style={{ margin: '0 auto 12px' }} />
+        Loading catalog...
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -77,55 +109,67 @@ export default function ProCatalog() {
         />
       </div>
 
-      <div style={{ background: CARD_BG, borderRadius: 12, border: `1px solid ${NAVY_LIGHT}`, overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 100px 100px 80px 80px', padding: '12px 16px', borderBottom: `1px solid ${NAVY_LIGHT}`, gap: 12 }}>
-          <span />
-          <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>ITEM</span>
-          <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>CATEGORY</span>
-          <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>PRICE</span>
-          <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>STATUS</span>
-          <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>QUALITY</span>
-          <span />
+      {filtered.length === 0 ? (
+        <div style={{ padding: '3rem', textAlign: 'center', color: 'hsl(220 20% 55%)', background: CARD_BG, borderRadius: 12, border: `1px solid ${NAVY_LIGHT}` }}>
+          <Package size={32} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
+          <p style={{ fontSize: 14 }}>No catalog items yet. Click "Add Item" to get started.</p>
         </div>
-        {filtered.map(item => (
-          <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 100px 100px 80px 80px', padding: '14px 16px', borderBottom: `1px solid ${NAVY_LIGHT}`, gap: 12, alignItems: 'center' }}>
-            <GripVertical size={14} color="hsl(220 20% 35%)" style={{ cursor: 'grab' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: NAVY_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {item.hasImage ? <Image size={14} color="hsl(220 20% 55%)" /> : <Package size={14} color="hsl(220 20% 35%)" />}
-              </div>
-              <span style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>{item.name}</span>
-            </div>
-            <span style={{ color: 'hsl(220 20% 65%)', fontSize: 13 }}>{item.category}</span>
-            <span style={{ color: GOLD, fontSize: 13, fontWeight: 600 }}>{item.price}</span>
-            <div>
-              <span style={{
-                padding: '3px 10px',
-                borderRadius: 6,
-                fontSize: 11,
-                fontWeight: 600,
-                background: item.status === 'active' ? '#22c55e15' : '#ef444415',
-                color: item.status === 'active' ? '#22c55e' : '#ef4444',
-              }}>
-                {item.status}
-              </span>
-            </div>
-            <div>
-              <span style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: item.quality >= 70 ? '#22c55e' : item.quality >= 40 ? '#f59e0b' : '#ef4444',
-              }}>
-                {item.quality}%
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button style={{ background: 'transparent', border: 'none', color: 'hsl(220 20% 55%)', cursor: 'pointer' }}><Edit size={14} /></button>
-              <button style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={14} /></button>
-            </div>
+      ) : (
+        <div style={{ background: CARD_BG, borderRadius: 12, border: `1px solid ${NAVY_LIGHT}`, overflow: 'hidden' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 100px 100px 80px 80px', padding: '12px 16px', borderBottom: `1px solid ${NAVY_LIGHT}`, gap: 12 }}>
+            <span />
+            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>ITEM</span>
+            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>CATEGORY</span>
+            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>PRICE</span>
+            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>STATUS</span>
+            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>QUALITY</span>
+            <span />
           </div>
-        ))}
-      </div>
+          {filtered.map((item: { id: string; name: string; category: string; price: string; status: string; hasImage: boolean; quality: number }) => (
+            <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 100px 100px 80px 80px', padding: '14px 16px', borderBottom: `1px solid ${NAVY_LIGHT}`, gap: 12, alignItems: 'center' }}>
+              <GripVertical size={14} color="hsl(220 20% 35%)" style={{ cursor: 'grab' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: NAVY_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {item.hasImage ? <Image size={14} color="hsl(220 20% 55%)" /> : <Package size={14} color="hsl(220 20% 35%)" />}
+                </div>
+                <span style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>{item.name}</span>
+              </div>
+              <span style={{ color: 'hsl(220 20% 65%)', fontSize: 13 }}>{item.category}</span>
+              <span style={{ color: GOLD, fontSize: 13, fontWeight: 600 }}>{item.price}</span>
+              <div>
+                <span style={{
+                  padding: '3px 10px',
+                  borderRadius: 6,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  background: item.status === 'active' ? '#22c55e15' : '#ef444415',
+                  color: item.status === 'active' ? '#22c55e' : '#ef4444',
+                }}>
+                  {item.status}
+                </span>
+              </div>
+              <div>
+                <span style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: item.quality >= 70 ? '#22c55e' : item.quality >= 40 ? '#f59e0b' : '#ef4444',
+                }}>
+                  {item.quality}%
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button style={{ background: 'transparent', border: 'none', color: 'hsl(220 20% 55%)', cursor: 'pointer' }}><Edit size={14} /></button>
+                <button
+                  onClick={() => deleteMut.mutate(item.id)}
+                  style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
