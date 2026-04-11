@@ -70,7 +70,7 @@ export function useThreadMessageFamily(params: {
 
   const messageSender = useMemo(() => ({
     handleSend: async (explicitDraft: string) => {
-      const conversationId = thread?.conversationId || "";
+      const conversationId = thread?.conversationId || thread?.v2ConversationId || "";
       if (!conversationId || !explicitDraft.trim()) return;
       const body = explicitDraft.trim();
       const tempId = crypto.randomUUID();
@@ -106,14 +106,14 @@ export function useThreadMessageFamily(params: {
         );
       }
     },
-  }), [thread?.conversationId, locale, dispatch, disappearTTL, userId]);
+  }), [thread?.conversationId, thread?.v2ConversationId, locale, dispatch, disappearTTL, userId]);
 
   const loadMessagesRef = useRef(loader.loadMessages);
   loadMessagesRef.current = loader.loadMessages;
   const stableOnAfterChange = useCallback(() => { loadMessagesRef.current(); }, []);
 
   const messageActions = useOrbitMessageActions({
-    conversationId: thread?.conversationId ?? null,
+    conversationId: thread?.conversationId || thread?.v2ConversationId || null,
     currentUserId: userId ?? null,
     onAfterChange: stableOnAfterChange,
   });
@@ -122,7 +122,7 @@ export function useThreadMessageFamily(params: {
     scrollRef,
     messages.length,
     loader.typingIndicator,
-    thread?.conversationId || thread?.id || undefined
+    thread?.conversationId || thread?.v2ConversationId || thread?.id || undefined
   );
 
   const threadUi = useOrbitThreadUiState({

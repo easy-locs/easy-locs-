@@ -37,7 +37,7 @@ export function useHudCallSetup(
         targetId: peerTarget,
         receiverUserId: peer.userId || undefined,
         receiverOrbitId: peer.orbitId || undefined,
-        conversationId: currentThread?.conversationId || undefined,
+        conversationId: currentThread?.conversationId || currentThread?.v2ConversationId || undefined,
         peerName: peer.displayName,
         isVideo: false,
       });
@@ -73,7 +73,7 @@ export function useHudCallSetup(
         targetId: peerTarget,
         receiverUserId: peer.userId || undefined,
         receiverOrbitId: peer.orbitId || undefined,
-        conversationId: currentThread?.conversationId || undefined,
+        conversationId: currentThread?.conversationId || currentThread?.v2ConversationId || undefined,
         peerName: peer.displayName,
         isVideo: useVideo,
       });

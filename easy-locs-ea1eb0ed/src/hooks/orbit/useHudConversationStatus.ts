@@ -22,7 +22,7 @@ export function useHudConversationStatus(
     if (!currentThread) return;
     setConvStatus(status);
     onThreadUpdateRef.current(currentThread.id, { conversationStatus: status });
-    const conversationId = currentThread.conversationId;
+    const conversationId = currentThread.conversationId || currentThread.v2ConversationId;
     if (conversationId) {
       await updateConversationMetadata(conversationId, { conversation_status: status });
     }

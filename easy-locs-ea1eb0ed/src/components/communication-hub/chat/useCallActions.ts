@@ -12,7 +12,7 @@ import type { ConversationThread } from "../types";
 
 /** Resolve canonical conversationId from thread */
 function getConversationId(thread: ConversationThread | null): string | undefined {
-  return thread?.conversationId || undefined;
+  return thread?.conversationId || thread?.v2ConversationId || undefined;
 }
 
 export function useCallActions(thread: ConversationThread | null, workspaceId: string | null) {

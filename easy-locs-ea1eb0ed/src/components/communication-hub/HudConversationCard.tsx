@@ -65,7 +65,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
   const peerId = thread.peerUserId || thread.tenantId || thread.entityId || "";
   const isOnline = usePresenceStore((s) => s.getPresence(peerId).isOnline);
 
-  const conversationId = thread.conversationId || thread.id || "";
+  const conversationId = thread.conversationId || thread.v2ConversationId || thread.id || "";
   const draft = useOrbitComposerStore((s) => s.drafts[conversationId] ?? "");
   const hasDraft = draft.trim().length > 0;
 
