@@ -50,6 +50,11 @@ const IGNORABLE_PATTERNS: RegExp[] = [
   /AbortError/i,
   /cancelled/i,
   /user aborted/i,
+  /HTTP Client Error with status code/i,
+  /Failed to fetch$/i,
+  /Load failed$/i,
+  /NetworkError when attempting/i,
+  /net::ERR_/i,
 ];
 
 export function classifyError(error: unknown): ClassifiedError {

@@ -78,19 +78,42 @@ export async function monitoredEngineRun<T extends { summary: string; rowsAffect
 /**
  * Initialize unified monitoring stack
  */
+const HTTP_ERROR_NOISE = [
+  "HTTP Client Error",
+  "Failed to fetch",
+  "Load failed",
+  "NetworkError",
+  "AbortError",
+  "The operation was aborted",
+  "net::ERR_",
+  "ResizeObserver loop",
+];
+
+function isNoiseError(msg: string): boolean {
+  return HTTP_ERROR_NOISE.some((p) => msg.includes(p));
+}
+
 export function initUnifiedMonitoring() {
-  // 1. Sentry (no-op if DSN missing)
   initSentry();
 
-  // 2. Global error handler → Sentry + module_health
   const origOnError = window.onerror;
   window.onerror = (msg, source, line, col, error) => {
+    const message = typeof msg === "string" ? msg : error?.message || "";
+    if (isNoiseError(message)) {
+      origOnError?.call(window, msg, source, line, col, error);
+      return;
+    }
     captureException(error ?? msg, { source: source ?? "", line, col });
     origOnError?.call(window, msg, source, line, col, error);
   };
 
   const origOnUnhandled = window.onunhandledrejection;
   window.onunhandledrejection = (event) => {
+    const message = event.reason?.message || String(event.reason || "");
+    if (isNoiseError(message)) {
+      if (typeof origOnUnhandled === "function") origOnUnhandled.call(window, event);
+      return;
+    }
     captureException(event.reason, { type: "unhandledrejection" });
     if (typeof origOnUnhandled === "function") origOnUnhandled.call(window, event);
   };
