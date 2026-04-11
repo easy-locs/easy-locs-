@@ -7,6 +7,7 @@ import {
   fetchCallLogs, deleteCallLog, resolveProfilesByIds, resolveOrbitProfilesByUserIds,
   resolveOrbitProfilesByOrbitIds,
 } from "@/repositories/communication.repository";
+import { db } from "@/services/db";
 import { listOrbitContacts } from "@/lib/orbit/orbit-contacts-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
@@ -82,7 +83,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
   const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined);
   const [scheduleTime, setScheduleTime] = useState("10:00");
   const [scheduleType, setScheduleType] = useState<"audio" | "video">("audio");
-  const [scheduledCalls, setScheduledCalls] = useState<{ id: string; contactName: string; date: Date; time: string; type: "audio" | "video" }[]>([]);
+  const [scheduledCalls, setScheduledCalls] = useState<{ id: string; contactName: string; contactUserId?: string | null; contactOrbitId?: string | null; date: Date; time: string; type: "audio" | "video" }[]>([]);
 
   const loadCalls = useCallback(async () => {
     if (!user?.id) {
@@ -184,21 +185,6 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
   }, [user?.id]);
 
   useEffect(() => { loadCalls(); }, [loadCalls]);
-
-  useEffect(() => {
-    if (scheduledCalls.length === 0) return;
-    const interval = setInterval(() => {
-      const now = new Date();
-      scheduledCalls.forEach(sc => {
-        const diff = sc.date.getTime() - now.getTime();
-        if (diff > 0 && diff <= 60_000) {
-          toast.info(`${sc.type === "video" ? "Video" : "Voice"} call with ${sc.contactName} starts now!`, { duration: 10_000 });
-          setScheduledCalls(prev => prev.filter(s => s.id !== sc.id));
-        }
-      });
-    }, 30_000);
-    return () => clearInterval(interval);
-  }, [scheduledCalls]);
 
   const handleOpenCallDetail = useCallback((call: CallLog) => {
     haptic("medium");
@@ -364,8 +350,79 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
     }
   }, [startCall, t]);
 
-  const handleScheduleCall = useCallback(() => {
-    if (!scheduleContact || !scheduleDate) {
+  const loadScheduledCalls = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const { data } = await db
+        .from("scheduled_calls")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "pending")
+        .gte("scheduled_at", new Date().toISOString())
+        .order("scheduled_at", { ascending: true });
+      if (data) {
+        setScheduledCalls(data.map((sc: any) => ({
+          id: sc.id,
+          contactName: sc.contact_name,
+          contactUserId: sc.contact_user_id,
+          contactOrbitId: sc.contact_orbit_id,
+          date: new Date(sc.scheduled_at),
+          time: format(new Date(sc.scheduled_at), "HH:mm"),
+          type: sc.call_type as "audio" | "video",
+        })));
+      }
+    } catch {}
+  }, [user?.id]);
+
+  useEffect(() => { loadScheduledCalls(); }, [loadScheduledCalls]);
+
+  useEffect(() => {
+    if (scheduledCalls.length === 0 || !user?.id) return;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    scheduledCalls.forEach((sc) => {
+      const ms = sc.date.getTime() - Date.now();
+      if (ms <= 0 || ms > 24 * 60 * 60 * 1000) return;
+      timers.push(setTimeout(() => {
+        haptic("heavy");
+        toast.info(`${sc.type === "video" ? "Video" : "Voice"} call with ${sc.contactName} is starting now`, { duration: 10000 });
+        if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+          try {
+            new Notification(`Scheduled ${sc.type === "video" ? "Video" : "Voice"} Call`, {
+              body: `Call with ${sc.contactName} is starting now`,
+              icon: "/favicon.ico",
+              tag: `scheduled-call-${sc.id}`,
+              requireInteraction: true,
+            });
+          } catch {}
+        }
+        if ("vibrate" in navigator) {
+          try { navigator.vibrate([500, 200, 500, 200, 500, 200, 500]); } catch {}
+        }
+        const targetId = (sc as any).contactOrbitId || ((sc as any).contactUserId ? `orbit_${(sc as any).contactUserId.replace(/-/g, "").substring(0, 8)}` : "");
+        if (targetId) {
+          startCall({
+            targetId,
+            receiverUserId: (sc as any).contactUserId || undefined,
+            receiverOrbitId: (sc as any).contactOrbitId || undefined,
+            entityType: "direct",
+            peerName: sc.contactName,
+            isVideo: sc.type === "video",
+          }).then((success) => {
+            db.from("scheduled_calls").update({ status: success ? "completed" : "missed" }).eq("id", sc.id).then(() => {});
+          }).catch(() => {
+            db.from("scheduled_calls").update({ status: "missed" }).eq("id", sc.id).then(() => {});
+          });
+        } else {
+          db.from("scheduled_calls").update({ status: "missed" }).eq("id", sc.id).then(() => {});
+        }
+        setScheduledCalls(prev => prev.filter(s => s.id !== sc.id));
+      }, ms));
+    });
+    return () => timers.forEach(clearTimeout);
+  }, [scheduledCalls, user?.id, startCall]);
+
+  const handleScheduleCall = useCallback(async () => {
+    if (!scheduleContact || !scheduleDate || !user?.id) {
       toast.error("Please select a contact and date");
       return;
     }
@@ -375,14 +432,47 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
       toast.error("Please select a future date and time");
       return;
     }
-    const newScheduled = {
-      id: `sched_${Date.now()}`,
-      contactName: scheduleContact.name,
-      date: scheduledAt,
-      time: scheduleTime,
-      type: scheduleType,
-    };
-    setScheduledCalls(prev => [...prev, newScheduled]);
+
+    try {
+      const { data, error } = await db
+        .from("scheduled_calls")
+        .insert({
+          user_id: user.id,
+          contact_user_id: scheduleContact.userId || null,
+          contact_orbit_id: scheduleContact.orbitId || null,
+          contact_name: scheduleContact.name,
+          call_type: scheduleType,
+          scheduled_at: scheduledAt.toISOString(),
+          status: "pending",
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      const newScheduled = {
+        id: data?.id || `sched_${Date.now()}`,
+        contactName: scheduleContact.name,
+        contactUserId: scheduleContact.userId,
+        contactOrbitId: scheduleContact.orbitId,
+        date: scheduledAt,
+        time: scheduleTime,
+        type: scheduleType,
+      };
+      setScheduledCalls(prev => [...prev, newScheduled]);
+    } catch (err) {
+      const newScheduled = {
+        id: `sched_${Date.now()}`,
+        contactName: scheduleContact.name,
+        contactUserId: scheduleContact.userId,
+        contactOrbitId: scheduleContact.orbitId,
+        date: scheduledAt,
+        time: scheduleTime,
+        type: scheduleType,
+      };
+      setScheduledCalls(prev => [...prev, newScheduled]);
+    }
+
     setShowSchedule(false);
     setShowContactPicker(false);
     haptic("success");
@@ -393,7 +483,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
       payload: { type: scheduleType, contactName: scheduleContact.name, scheduledAt: scheduledAt.toISOString() },
       result: "success",
     });
-  }, [scheduleContact, scheduleDate, scheduleTime, scheduleType]);
+  }, [scheduleContact, scheduleDate, scheduleTime, scheduleType, user?.id]);
 
   const toFriendlyId = (id: string) => {
     if (id.startsWith("orbit_")) return `EL-${id.replace("orbit_", "").toUpperCase()}`;
@@ -528,7 +618,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
                 {sc.type === "video" ? <Video className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} /> : <Phone className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-success))" }} />}
                 <span className="flex-1 truncate font-medium" style={{ color: "hsl(var(--foreground))" }}>{sc.contactName}</span>
                 <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{format(sc.date, "MMM d")} · {sc.time}</span>
-                <button onClick={() => setScheduledCalls(prev => prev.filter(s => s.id !== sc.id))} className="shrink-0 active:scale-90 transition-transform">
+                <button onClick={() => { db.from("scheduled_calls").update({ status: "cancelled" }).eq("id", sc.id).then(() => {}); setScheduledCalls(prev => prev.filter(s => s.id !== sc.id)); }} className="shrink-0 active:scale-90 transition-transform">
                   <X className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
                 </button>
               </div>
@@ -877,7 +967,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
                       {sc.type === "video" ? <Video className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} /> : <Phone className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-success))" }} />}
                       <span className="flex-1 truncate" style={{ color: "hsl(var(--foreground))" }}>{sc.contactName}</span>
                       <span style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{format(sc.date, "MMM d")} · {sc.time}</span>
-                      <button onClick={() => setScheduledCalls(prev => prev.filter(s => s.id !== sc.id))} className="shrink-0">
+                      <button onClick={() => { db.from("scheduled_calls").update({ status: "cancelled" }).eq("id", sc.id).then(() => {}); setScheduledCalls(prev => prev.filter(s => s.id !== sc.id)); }} className="shrink-0">
                         <X className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
                       </button>
                     </div>
