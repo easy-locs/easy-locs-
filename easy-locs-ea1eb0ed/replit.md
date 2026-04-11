@@ -40,6 +40,14 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Code Splitting**: Route-based + feature-based + vendor chunking via Vite manualChunks
 - **Deferred Loading**: Heavy systems (monitoring, E2EE, events) loaded 3-6s after boot
 
+## Visual Design System (Storybook + Chromatic)
+- **Storybook 8** installed with React/Vite framework, a11y addon, interactions addon
+- **Stories** (`src/stories/`): Button (all 8 variants, sizes, loading, icons), Input (text, email, password, textarea, form groups), Card (AppCard 5 variants, status, loading), StatCard (KPIs, animated counters, grid), SmartActionCard (navigation cards, counts, dashboard grid), MobilePageHeader (back nav, actions, subtitles), List (tenant list, payment list, scrollable, empty state)
+- **Chromatic** configured for visual regression: 3 viewport sizes (375px mobile, 768px tablet, 1440px desktop). Requires `CHROMATIC_PROJECT_TOKEN` env var to run.
+- **Scripts**: `npm run storybook` (dev), `npm run build-storybook`, `npm run chromatic`
+- **Config**: `.storybook/main.ts`, `.storybook/preview.ts`, `chromatic.config.json` (repo root)
+- **Backgrounds**: Navy (brand), Dark, Light, White presets for all stories
+
 ## Safe Auto-Healing System
 - **Error Classifier** (`src/lib/auto-heal/error-classifier.ts`): Classifies errors by severity (critical/medium/minor) and domain (crash/payment/auth/network/ui/data). Determines action (rollback/fallback/retry/suggest/log/ignore). Filters ignorable patterns (ResizeObserver, ChunkLoadError, etc).
 - **Runtime Healer** (`src/lib/auto-heal/runtime-healer.ts`): Deduplicates errors (5s window), logs to Sentry for criticals, provides `withAutoRetry()` for fetch operations (exponential backoff, 3 retries). Health report via `getHealerReport()`. Global listener via `installGlobalHealer()`.
