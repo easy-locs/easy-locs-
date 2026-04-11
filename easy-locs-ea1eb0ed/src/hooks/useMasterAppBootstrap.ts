@@ -208,6 +208,17 @@ export function useMasterAppBootstrap() {
     }, 18000);
     timers.push(t6);
 
+    const t7 = setTimeout(async () => {
+      try {
+        const { sentinelCore } = await import("@/core/sentinel");
+        await sentinelCore.boot();
+        cleanups.push(() => sentinelCore.shutdown());
+      } catch (e) {
+        console.warn("[boot] sentinel-core failed", e);
+      }
+    }, 22000);
+    timers.push(t7);
+
     return () => {
       timers.forEach(clearTimeout);
       cleanups.forEach((fn) => fn());
