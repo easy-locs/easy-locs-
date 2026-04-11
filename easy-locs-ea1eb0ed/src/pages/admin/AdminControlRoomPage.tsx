@@ -106,7 +106,7 @@ export default function AdminControlRoomPage() {
   }, []);
 
   useEffect(() => {
-    const unsub = platformBus.on("ui-engine:report" as Parameters<typeof platformBus.on>[0], handleUiReport as Parameters<typeof platformBus.on>[1]);
+    const unsub = platformBus.on("ui-engine:report", handleUiReport as any);
     return () => { if (typeof unsub === "function") unsub(); };
   }, [handleUiReport]);
 
@@ -255,6 +255,7 @@ export default function AdminControlRoomPage() {
                   <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
                     <Shield className="w-4 h-4 inline mr-1" /> Permanent vs Runtime
                   </CardTitle>
+                  <p className="text-[10px] text-gray-500 mt-1">Static audit reference — not live telemetry</p>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-gray-400">Backend workers</span><span className="text-emerald-400 font-bold">{serverEngines.length}</span></div>
@@ -318,6 +319,45 @@ export default function AdminControlRoomPage() {
                 </CardContent>
               </Card>
             )}
+
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+                  <Layers className="w-4 h-4 inline mr-1" /> Flow Closure Status
+                </CardTitle>
+                <p className="text-[10px] text-gray-500 mt-1">End-to-end flows — live engine health + static audit reference</p>
+              </CardHeader>
+              <CardContent className="space-y-1 text-xs">
+                {[
+                  { flow: "Auth → Dashboard", status: "wired", engine: "auth_engine" },
+                  { flow: "Orbit: compose → send → encrypt → store → broadcast → receive → decrypt → display", status: "wired", engine: "message_delivery_engine" },
+                  { flow: "Orbit: WebRTC calls", status: "wired", engine: "call_engine" },
+                  { flow: "Wallet: Stripe Checkout → webhook → ledger credit → balance", status: "wired", engine: "payment_engine" },
+                  { flow: "Delivery: 23 components → real DB → CRUD", status: "wired", engine: "delivery_engine" },
+                  { flow: "KPI Dashboard → worker_health_snapshots", status: "wired", engine: "kpi_engine" },
+                  { flow: "Multi-currency: ECB rates → FX conversion → wallet", status: "wired", engine: "fx_engine" },
+                  { flow: "71 engines → cron runner → health monitoring", status: "wired", engine: "engine_cron" },
+                  { flow: "Flight booking (airline API)", status: "missing", engine: "flight_engine" },
+                  { flow: "Stripe Elements card save", status: "missing", engine: "payment_engine" },
+                  { flow: "Push notifications (native)", status: "missing", engine: "notification_engine" },
+                  { flow: "Secure Enclave key storage", status: "missing", engine: "e2ee_engine" },
+                ].map(f => {
+                  const eng = engines.find(e => e.engine_name === f.engine);
+                  const liveStatus = eng ? (eng.enabled ? eng.status : "disabled") : null;
+                  return (
+                    <div key={f.flow} className="flex items-center justify-between gap-2">
+                      <span className={`truncate max-w-[70%] ${f.status === "wired" ? "text-gray-300" : "text-gray-500"}`}>{f.flow}</span>
+                      <div className="flex items-center gap-1">
+                        {liveStatus && <StatusBadge status={liveStatus} />}
+                        <span className={`text-[10px] font-bold ${f.status === "wired" ? "text-emerald-400" : "text-red-400"}`}>
+                          {f.status === "wired" ? "WIRED" : "MISSING"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
 
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-gray-300">Worker Groups</h2>

@@ -237,7 +237,9 @@ type PlatformEventType =
   | "DELIVERY_COMPLETED"
   | "ISSUE_CREATED"
   | "USER_OPEN_HOME"
-  | "USER_SEARCH";
+  | "USER_SEARCH"
+  // UI Engine (control-room telemetry)
+  | "ui-engine:report";
 
 export type { PlatformEventType };
 
