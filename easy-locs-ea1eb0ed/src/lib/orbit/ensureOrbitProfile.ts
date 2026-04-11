@@ -48,6 +48,7 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
     email,
     display_name: displayName,
     avatar_url: avatarUrl,
+    role: "user",
     updated_at: new Date().toISOString(),
   };
   if (phone) row.phone = phone;
