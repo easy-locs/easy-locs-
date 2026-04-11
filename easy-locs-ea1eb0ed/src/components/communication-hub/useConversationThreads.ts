@@ -134,6 +134,7 @@ export function useConversationThreads() {
     if (!userId) return;
 
     const unsubMessage = platformBus.on("orbit:message_received", () => debouncedReload());
+    const unsubMessageSent = platformBus.on("orbit:message_sent", () => debouncedReload());
     const unsubThread = platformBus.on("orbit:thread_created", () => debouncedReload());
     const unsubThreadUpdate = platformBus.on("orbit:thread_updated", () => debouncedReload());
 
@@ -147,12 +148,14 @@ export function useConversationThreads() {
     }
 
     channel
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversations_v2" }, () => debouncedReload())
       .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, () => debouncedReload())
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_preferences", filter: `user_id=eq.${userId}` }, () => debouncedReload())
       .subscribe();
 
     return () => {
       unsubMessage();
+      unsubMessageSent();
       unsubThread();
       unsubThreadUpdate();
       if (debounceRef.current) clearTimeout(debounceRef.current);
