@@ -85,7 +85,7 @@ export default function MePropertyDetail() {
     }
   }, [orgId, propertyId, propTenants, today, toast]);
 
-  const { data: leases = [] } = useQuery({
+  const { data: leases = [] , isError } = useQuery({
     queryKey: ["property-leases", propertyId, orgId],
     enabled: !!propertyId && !!orgId,
     staleTime: 30_000,
@@ -106,7 +106,9 @@ export default function MePropertyDetail() {
   const cc = useMemo(() => getCountryConfig(property?.country || userCountry), [property?.country, userCountry]);
 
   if (loading) {
-    return (
+    if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
+
+  return (
       <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4 pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
         <Skeleton className="h-8 w-48 mb-4" />
         <Skeleton className="h-32 w-full mb-3" />

@@ -52,7 +52,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
     queryKey: ["challenge-progress", shopId, user?.id],
     queryFn: async () => {
       const { data } = await db("storefront_challenge_progress")
-        .select("*").eq("user_id", user!.id);
+        .select("*").eq("user_id", user?.id);
       return data || [];
     },
     enabled: mode === "buyer" && !!user,
@@ -74,7 +74,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
     queryFn: async () => {
       const { data } = await db("storefront_user_badges")
         .select("*, storefront_badges(name, description, icon_url, badge_type)")
-        .eq("user_id", user!.id);
+        .eq("user_id", user?.id);
       return data || [];
     },
     enabled: mode === "buyer" && !!user,
@@ -98,7 +98,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
   const createChallenge = useMutation({
     mutationFn: async () => {
       await db("storefront_challenges").insert({
-        shop_id: shopId, user_id: user!.id,
+        shop_id: shopId, user_id: user?.id,
         title: challengeForm.title, description: challengeForm.description || null,
         challenge_type: challengeForm.type, target_value: challengeForm.target,
         reward_points: challengeForm.rewardPoints, reward_badge: challengeForm.rewardBadge || null,
@@ -116,7 +116,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
   const createBadge = useMutation({
     mutationFn: async () => {
       await db("storefront_badges").insert({
-        shop_id: shopId, user_id: user!.id,
+        shop_id: shopId, user_id: user?.id,
         name: badgeForm.name, description: badgeForm.description || null,
         badge_type: badgeForm.type,
       });
@@ -132,7 +132,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
   const joinChallenge = useMutation({
     mutationFn: async (challengeId: string) => {
       await db("storefront_challenge_progress").insert({
-        challenge_id: challengeId, user_id: user!.id,
+        challenge_id: challengeId, user_id: user?.id,
       });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["challenge-progress"] }); toast.success("Challenge joined!"); },

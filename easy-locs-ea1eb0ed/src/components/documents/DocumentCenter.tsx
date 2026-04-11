@@ -130,7 +130,7 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
 
       await docRepo.markDocumentEmailed(doc.id);
       await docRepo.insertAuditLog({
-        user_id: user!.id, org_id: orgId, action: "document_emailed",
+        user_id: user?.id, org_id: orgId, action: "document_emailed",
         metadata_json: { document_id: doc.id, doc_type: doc.doc_type, tenant_email: tenant.email },
       });
 

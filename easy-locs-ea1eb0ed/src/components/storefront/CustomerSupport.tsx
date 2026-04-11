@@ -52,7 +52,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ["support-tickets", shopId, mode],
     queryFn: async () => {
-      const { data } = await storefrontSupportRepo.tickets.list(shopId, mode === "buyer" ? user!.id : undefined);
+      const { data } = await storefrontSupportRepo.tickets.list(shopId, mode === "buyer" ? user?.id : undefined);
       return data || [];
     },
     enabled: !!user,
@@ -81,14 +81,14 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   const createTicket = useMutation({
     mutationFn: async () => {
       const { data } = await storefrontSupportRepo.tickets.insert({
-        shop_id: shopId, customer_id: user!.id,
+        shop_id: shopId, customer_id: user?.id,
         subject: ticketForm.subject, description: ticketForm.description,
         category: ticketForm.category, priority: ticketForm.priority,
       });
       // Add initial message
       if (ticketForm.description) {
         await storefrontSupportRepo.messages.insert({
-          ticket_id: data.id, sender_id: user!.id, sender_role: "customer", message: ticketForm.description,
+          ticket_id: data.id, sender_id: user?.id, sender_role: "customer", message: ticketForm.description,
         });
       }
       return data;
@@ -105,7 +105,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   const sendMessage = useMutation({
     mutationFn: async () => {
       await storefrontSupportRepo.messages.insert({
-        ticket_id: selectedTicket, sender_id: user!.id,
+        ticket_id: selectedTicket, sender_id: user?.id,
         sender_role: mode === "seller" ? "seller" : "customer",
         message: newMessage,
       });
@@ -138,7 +138,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
   const createFaq = useMutation({
     mutationFn: async () => {
       await storefrontSupportRepo.faq.insert({
-        shop_id: shopId, user_id: user!.id, ...faqForm,
+        shop_id: shopId, user_id: user?.id, ...faqForm,
       });
     },
     onSuccess: () => {

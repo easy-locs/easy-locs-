@@ -15,9 +15,9 @@ export default function CustomerRewardRedemptionPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data, refetch } = useQuery({
+  const { data, refetch , isError } = useQuery({
     queryKey: ["redeem-loyalty", user?.id],
-    queryFn: () => getLoyaltySnapshot(user!.id),
+    queryFn: () => getLoyaltySnapshot(user?.id),
     enabled: !!user?.id,
     staleTime: 5000,
   });
@@ -39,6 +39,8 @@ export default function CustomerRewardRedemptionPage() {
       toast.error("Could not redeem reward");
     }
   };
+
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
     <div className="max-w-md mx-auto px-4 py-4 space-y-4">

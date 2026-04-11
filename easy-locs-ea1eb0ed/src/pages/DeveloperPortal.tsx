@@ -51,19 +51,19 @@ const DeveloperPortal = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: () => fetchOrgForUser(user!.id),
+    queryFn: () => fetchOrgForUser(user?.id),
     enabled: !!user,
   });
 
   const { data: apiKeys = [] } = useQuery({
     queryKey: ["api_keys", org?.id],
-    queryFn: () => fetchApiKeys(org!.id),
+    queryFn: () => fetchApiKeys(org?.id),
     enabled: !!org,
   });
 
   const { data: webhooks = [] } = useQuery({
     queryKey: ["webhooks", org?.id],
-    queryFn: () => fetchWebhooks(org!.id),
+    queryFn: () => fetchWebhooks(org?.id),
     enabled: !!org,
   });
 
@@ -74,7 +74,7 @@ const DeveloperPortal = () => {
   });
 
   const createMut = useMutation({
-    mutationFn: () => createApiKey(org!.id, keyName),
+    mutationFn: () => createApiKey(org?.id, keyName),
     onSuccess: (key) => { setNewKey(key); qc.invalidateQueries({ queryKey: ["api_keys"] }); toast.success("API key created"); },
     onError: (e: Error) => toast.error("Something went wrong. Please try again."),
   });
@@ -85,7 +85,7 @@ const DeveloperPortal = () => {
   });
 
   const createWebhookMut = useMutation({
-    mutationFn: () => createWebhook(org!.id, user!.id, webhookUrl, webhookEvents),
+    mutationFn: () => createWebhook(org?.id, user?.id, webhookUrl, webhookEvents),
     onSuccess: () => {
       toast.success("Webhook created");
       setWebhookOpen(false); setWebhookUrl(""); setWebhookEvents(["*"]);

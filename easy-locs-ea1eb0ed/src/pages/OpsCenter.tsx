@@ -22,7 +22,7 @@ export default function OpsCenter() {
   // Shops
   const { data: shops = [], isLoading: shopsLoading } = useQuery({
     queryKey: ["ops-shops"],
-    queryFn: () => adminOpsService.fetchShopsByUser(user!.id),
+    queryFn: () => adminOpsService.fetchShopsByUser(user?.id),
     enabled: !!user,
   });
 
@@ -36,7 +36,7 @@ export default function OpsCenter() {
   // Launch audits
   const { data: audits = [] } = useQuery({
     queryKey: ["ops-audits"],
-    queryFn: () => adminOpsService.fetchLaunchAudits(user!.id),
+    queryFn: () => adminOpsService.fetchLaunchAudits(user?.id),
     enabled: !!user,
   });
 

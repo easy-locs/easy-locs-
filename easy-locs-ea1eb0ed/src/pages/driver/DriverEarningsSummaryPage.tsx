@@ -8,7 +8,7 @@ export default function DriverEarningsSummaryPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading , isError } = useQuery({
     queryKey: ["driver-earnings-summary-page", user?.id],
     queryFn: async () => {
       const { data, error } = await db
@@ -26,6 +26,8 @@ export default function DriverEarningsSummaryPage() {
     enabled: !!user?.id,
     staleTime: 10000,
   });
+
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
     <div className="app-mobile-page bg-background pb-24">

@@ -40,7 +40,7 @@ export default function InventoryManager({ shopId }: InventoryManagerProps) {
         .from("catalog_items")
         .select("id, title, sku, photo_url, stock_quantity, track_inventory, available, price, currency")
         .eq("shop_id", shopId)
-        .eq("user_id", user!.id)
+        .eq("user_id", user?.id)
         .order("title");
       return data || [];
     },

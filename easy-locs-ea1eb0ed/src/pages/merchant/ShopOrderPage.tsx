@@ -38,7 +38,7 @@ export default function ShopOrderPage() {
   const [placing, setPlacing] = useState(false);
 
   // Fetch shop
-  const { data: shop, isLoading: shopLoading } = useQuery({
+  const { data: shop, isLoading: shopLoading , isError } = useQuery({
     queryKey: ["order-shop", shopSlug],
     queryFn: async () => {
       return merchantService.fetchStorefrontBySlugOrId(shopSlug!);
@@ -131,7 +131,9 @@ export default function ShopOrderPage() {
   }
 
   if (shopLoading) {
-    return (
+    if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
+
+  return (
       <div className="app-mobile-page bg-background flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>

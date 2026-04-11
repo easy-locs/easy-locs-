@@ -23,9 +23,9 @@ export default function CustomerActiveOrdersPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: rows = [], isLoading, refetch } = useQuery({
+  const { data: rows = [], isLoading, refetch , isError } = useQuery({
     queryKey: ["customer-active-orders-page", user?.id],
-    queryFn: () => fetchActiveOrders(user!.id),
+    queryFn: () => fetchActiveOrders(user?.id),
     enabled: !!user?.id,
     staleTime: 5000,
     refetchInterval: 7000,
@@ -58,6 +58,7 @@ export default function CustomerActiveOrdersPage() {
         </button>
       </div>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mb-3 h-28 rounded-2xl animate-pulse" style={{ background: "hsl(var(--muted) / 0.3)" }} />
       ))}

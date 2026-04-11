@@ -6,7 +6,7 @@ export default function MerchantCustomerInsightsPage() {
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading , isError } = useQuery({
     queryKey: ["merchant-customer-insights", merchantId],
     queryFn: async () => {
       const rows = await merchantService.fetchCustomerInsightOrders(merchantId) as any[];
@@ -31,6 +31,8 @@ export default function MerchantCustomerInsightsPage() {
     enabled: !!merchantId,
     staleTime: 10000,
   });
+
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
     <div className="app-mobile-page bg-background pb-24">

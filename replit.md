@@ -65,6 +65,15 @@ App.tsx routes are organized into clean, labeled sections:
 - **Section mb-4 → mb-5**: 58 section-level violations fixed across SEO pages, landing pages, admin dashboard, rental management, real estate detail, documents, platform vision, communication hub
 - **Files affected**: 100+ files across all 5 pillars, travel, delivery, admin, orbit, mobility, marketplace, communication, landing, SEO components
 
+## Continuous Stability Hardening (Auto-Correction Workflow)
+- **Non-null assertion cleanup**: 113 `user!.id` → `user?.id` across 64 files, 30 `org!.id` → `org?.id` across 6 files, `myProvider!.id` → `myProvider?.id`, `deal!.id` → `deal?.id`, `data!.` → `data?.`, `pc!.` → `pc?.` in WebRTC call manager, `meta.ui!.` → `meta.ui.` in normalize-message, `mapRef.current!` → `mapRef.current`, `channel!.` → `channel?.` in signaling
+- **Error state coverage**: 43 user-facing pages (customer/driver/merchant/support/me) now have `isError` destructured from useQuery with proper error UI fallbacks
+- **Build fix**: Fixed broken `@/integrations/db/client` → `@/services/db` import in OrbitAddContactPage
+- **Design system CSS (DS-13 → DS-24)**: Card content safety (img/pre/code overflow), button touch target 44px, heading word-break, table scroll, input max-width, badge truncation, RTL icon flip + space-x-reverse, state containers, skeleton pulse animation, page section rhythm, Arabic font stack, pillar container responsive
+- **Card data attributes**: AppCard emits `data-card={variant}`, CardShell emits `data-card="shell"` for CSS-level card protections
+- **Sentry coverage**: 304/305 ProtectedRoute entries wrapped in FeatureErrorBoundary, reactive Sentry user context (role + orgId) in AuthContext
+- **SentryRouteTracker**: Longest-prefix matching in SECTION_PREFIXES array (fixed /merchant before /me collision)
+
 ## Cycle 3 Phase 2 — Supabase Migration (Service Layer Enforcement)
 - **Architecture Rule**: ALL data queries MUST use `db(table)` from `src/services/db.ts` — NEVER import supabase client directly in UI layer
 - **`db()` API**: `db(table)`, `db.from(table)`, `db.rpc()`, `db.storage` — thin wrapper over supabase client

@@ -19,7 +19,7 @@ export default function DriverMissionDetailPage() {
   const navigate = useNavigate();
   const { orderId } = useParams();
 
-  const { data: mission, isLoading, refetch } = useQuery({
+  const { data: mission, isLoading, refetch , isError } = useQuery({
     queryKey: ["driver-mission-detail", orderId],
     enabled: !!orderId,
     queryFn: () => repo.fetchOrderById(orderId!),
@@ -55,7 +55,8 @@ export default function DriverMissionDetailPage() {
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-4 pt-1">
-        {isLoading && (
+        {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      {isLoading && (
           <div className="space-y-3">
             <Skeleton className="h-32 rounded-2xl" />
             <Skeleton className="h-20 rounded-2xl" />

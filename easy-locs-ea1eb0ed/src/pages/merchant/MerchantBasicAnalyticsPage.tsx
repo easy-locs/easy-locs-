@@ -6,7 +6,7 @@ export default function MerchantBasicAnalyticsPage() {
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading , isError } = useQuery({
     queryKey: ["merchant-basic-analytics", merchantId],
     queryFn: async () => {
       const { orders, reviews, promos } = await merchantService.fetchMerchantAnalytics(merchantId);
@@ -37,6 +37,7 @@ export default function MerchantBasicAnalyticsPage() {
         </div>
       </header>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mt-3 h-16 rounded-2xl bg-muted animate-pulse" />
       ))}

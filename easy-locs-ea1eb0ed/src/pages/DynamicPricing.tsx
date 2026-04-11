@@ -36,31 +36,31 @@ const DynamicPricing = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: () => fetchOrgForUser(user!.id),
+    queryFn: () => fetchOrgForUser(user?.id),
     enabled: !!user,
   });
 
   const { data: properties = [] } = useQuery({
     queryKey: ["properties", org?.id],
-    queryFn: () => fetchSeasonalProperties(org!.id),
+    queryFn: () => fetchSeasonalProperties(org?.id),
     enabled: !!org,
   });
 
   const { data: rules = [] } = useQuery({
     queryKey: ["pricing_rules", org?.id],
-    queryFn: () => fetchPricingRules(org!.id),
+    queryFn: () => fetchPricingRules(org?.id),
     enabled: !!org,
   });
 
   const { data: listings = [] } = useQuery({
     queryKey: ["listings", org?.id],
-    queryFn: () => fetchListings(org!.id),
+    queryFn: () => fetchListings(org?.id),
     enabled: !!org,
   });
 
   const { data: reservations = [] } = useQuery({
     queryKey: ["reservations", org?.id],
-    queryFn: () => fetchReservations(org!.id),
+    queryFn: () => fetchReservations(org?.id),
     enabled: !!org,
   });
 
@@ -91,7 +91,7 @@ const DynamicPricing = () => {
 
   const addMut = useMutation({
     mutationFn: async () => {
-      await addPricingRule(org!.id, user!.id, {
+      await addPricingRule(org?.id, user?.id, {
         rule_type: newRule.rule_type, name: newRule.name,
         adjustment_type: newRule.adjustment_type,
         adjustment_value: Number(newRule.adjustment_value) || 0,

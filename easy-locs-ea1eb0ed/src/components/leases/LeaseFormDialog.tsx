@@ -137,7 +137,7 @@ export default function LeaseFormDialog({
           // Fallback: direct insert
           const leaseId = await docRepo.insertLease({
             org_id: orgId!,
-            user_id: user!.id,
+            user_id: user?.id,
             property_id: form.property_id,
             tenant_id: form.tenant_id,
             lease_type: form.lease_type,

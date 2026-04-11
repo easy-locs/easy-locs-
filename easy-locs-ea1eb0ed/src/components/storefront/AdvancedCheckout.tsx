@@ -61,7 +61,7 @@ export default function AdvancedCheckout({ shop, cartItems, total, discount = 0,
       const { data } = await db
         .from("storefront_addresses")
         .select("*")
-        .eq("user_id", user!.id)
+        .eq("user_id", user?.id)
         .order("is_default", { ascending: false });
       return data || [];
     },

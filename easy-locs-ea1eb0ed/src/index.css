@@ -443,6 +443,142 @@ body[data-scroll-locked] {
   touch-action: none;
 }
 
+/* DS-13. Card content safety — prevent text/image blowout inside cards */
+[data-card] img,
+.rounded-lg img,
+.rounded-xl img {
+  max-width: 100%;
+  height: auto;
+}
+[data-card] pre,
+[data-card] code {
+  overflow-x: auto;
+  max-width: 100%;
+  word-break: break-all;
+}
+
+/* DS-14. Button minimum touch target — 44px for mobile accessibility */
+button, [role="button"], a[role="button"] {
+  min-height: 2.25rem;
+}
+@media (pointer: coarse) {
+  button, [role="button"], a[role="button"] {
+    min-height: 2.75rem;
+  }
+}
+
+/* DS-15. Safe heading truncation — prevent heading overflow on small screens */
+h1, h2, h3, h4 {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* DS-16. Table/data-grid horizontal scroll safety */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* DS-17. Input/form field consistent sizing */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+textarea,
+select {
+  max-width: 100%;
+}
+
+/* DS-18. Badge/chip text safety */
+.badge, [data-badge], .inline-flex.rounded-full {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* DS-19. RTL icon flip for directional icons */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+[dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 1; }
+[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 1; }
+[dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 1; }
+[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 1; }
+[dir="rtl"] .rounded-l-lg { border-radius: 0 0.5rem 0.5rem 0; }
+[dir="rtl"] .rounded-r-lg { border-radius: 0.5rem 0 0 0.5rem; }
+
+/* DS-20. Safe empty/loading/error state containers */
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  padding: 2rem 1rem;
+  text-align: center;
+  gap: 0.75rem;
+}
+.state-container > svg,
+.state-container > img {
+  width: 3rem;
+  height: 3rem;
+  opacity: 0.5;
+}
+
+/* DS-21. Safe skeleton pulse animation */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+.skeleton-line {
+  background: hsl(220 20% 88%);
+  border-radius: 0.25rem;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+.dark .skeleton-line {
+  background: hsl(220 20% 25%);
+}
+
+/* DS-22. Page section vertical rhythm */
+.page-section {
+  margin-bottom: 1.5rem;
+}
+.page-section:last-child {
+  margin-bottom: 0;
+}
+@media (min-width: 640px) {
+  .page-section {
+    margin-bottom: 2rem;
+  }
+}
+
+/* DS-23. Arabic font stack enhancement */
+:lang(ar) {
+  font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
+  letter-spacing: 0;
+  line-height: 1.8;
+}
+:lang(ar) h1, :lang(ar) h2, :lang(ar) h3 {
+  line-height: 1.5;
+}
+
+/* DS-24. Responsive container safety for pillar pages */
+.pillar-container {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+@media (min-width: 1280px) {
+  .pillar-container {
+    max-width: 1200px;
+    margin-inline: auto;
+  }
+}
+
 /* 11. Ultra-small screen protection — 320px */
 @media (max-width: 340px) {
   h1 { font-size: 1.25rem !important; }

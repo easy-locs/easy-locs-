@@ -13,7 +13,7 @@ export default function MerchantPromoBannerEditorPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const { data: merchant, refetch } = useQuery({
+  const { data: merchant, refetch , isError } = useQuery({
     queryKey: ["merchant-promo-banner-editor", merchantId],
     queryFn: () => merchantService.fetchMerchantById(merchantId),
     enabled: !!merchantId,
@@ -43,6 +43,8 @@ export default function MerchantPromoBannerEditorPage() {
       setSaving(false);
     }
   };
+
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
     <div className="app-mobile-page bg-background pb-24">

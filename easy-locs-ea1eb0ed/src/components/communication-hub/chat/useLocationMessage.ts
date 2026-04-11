@@ -65,7 +65,8 @@ export function useLocationMessage(params: {
           ? `📍 ${loc.label || t("orbit.media.location")}`
           : t("orbit.shared_location");
 
-        params.onThreadUpdate(params.thread!.id, {
+        if (!params.thread?.id) return;
+        params.onThreadUpdate(params.thread.id, {
           lastMessage: body,
           lastMessageTime: new Date().toISOString(),
           lastMessagePreview: body,

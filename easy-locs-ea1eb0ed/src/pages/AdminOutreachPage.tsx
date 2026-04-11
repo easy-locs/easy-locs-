@@ -106,14 +106,14 @@ export default function AdminOutreachPage() {
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           {funnelSteps.map((s) => {
             const Icon = s.icon;
-            const rate = metrics!.sent > 0 ? Math.round((s.value / metrics!.sent) * 100) : 0;
+            const rate = (metrics?.sent ?? 0) > 0 ? Math.round((s.value / (metrics?.sent ?? 0)) * 100) : 0;
             return (
               <Card key={s.label}>
                 <CardContent className="pt-4 text-center">
                   <Icon className={`h-5 w-5 mx-auto mb-1 ${s.color}`} />
                   <div className="text-lg font-bold text-foreground">{s.value}</div>
                   <div className="text-[10px] text-muted-foreground">{s.label}</div>
-                  {metrics!.sent > 0 && s.label !== "Sent" && (
+                  {(metrics?.sent ?? 0) > 0 && s.label !== "Sent" && (
                     <div className="text-[10px] text-muted-foreground mt-0.5">{rate}%</div>
                   )}
                 </CardContent>

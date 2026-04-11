@@ -10,7 +10,7 @@ export default function MerchantOrderBoardPage() {
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data: rows = [], isLoading, refetch } = useQuery({
+  const { data: rows = [], isLoading, refetch , isError } = useQuery({
     queryKey: ["merchant-order-board", merchantId],
     queryFn: () => merchantService.fetchOrders(merchantId, { orderBy: "created_at", limit: 100 }),
     enabled: !!merchantId,
@@ -47,6 +47,7 @@ export default function MerchantOrderBoardPage() {
         </div>
       </header>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="rounded-2xl bg-muted/30 h-28 animate-pulse" />
       ))}

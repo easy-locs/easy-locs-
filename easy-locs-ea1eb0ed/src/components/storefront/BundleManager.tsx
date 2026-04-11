@@ -69,7 +69,7 @@ export default function BundleManager({ shopId, mode = "manage", onAddBundle }: 
     try {
       const { data: bundle, error } = await db
         .from("storefront_bundles")
-        .insert({ shop_id: shopId, user_id: user!.id, title: title.trim(), bundle_price: parseFloat(price) })
+        .insert({ shop_id: shopId, user_id: user?.id, title: title.trim(), bundle_price: parseFloat(price) })
         .select("id")
         .single();
       if (error) throw error;

@@ -11,7 +11,7 @@ export function useProperties(search?: string) {
   return useQuery({
     queryKey: ["re-properties", user?.id, search],
     enabled: !!user,
-    queryFn: () => reRepo.fetchPropertiesByUser(user!.id, search),
+    queryFn: () => reRepo.fetchPropertiesByUser(user?.id, search),
   });
 }
 
@@ -36,7 +36,7 @@ export function useTenants(search?: string) {
   return useQuery({
     queryKey: ["re-tenants", user?.id, search],
     enabled: !!user,
-    queryFn: () => reRepo.fetchTenantsByUser(user!.id, search),
+    queryFn: () => reRepo.fetchTenantsByUser(user?.id, search),
   });
 }
 
@@ -45,7 +45,7 @@ export function useLeases(search?: string) {
   return useQuery({
     queryKey: ["re-leases", user?.id, search],
     enabled: !!user,
-    queryFn: () => reRepo.fetchLeasesByUser(user!.id, search),
+    queryFn: () => reRepo.fetchLeasesByUser(user?.id, search),
   });
 }
 
@@ -70,7 +70,7 @@ export function usePropertyDocuments(propertyId?: string) {
   return useQuery({
     queryKey: ["re-docs", propertyId, user?.id],
     enabled: !!user,
-    queryFn: () => reRepo.fetchPropertyDocuments(user!.id, propertyId),
+    queryFn: () => reRepo.fetchPropertyDocuments(user?.id, propertyId),
   });
 }
 
@@ -79,6 +79,6 @@ export function useRealEstateStats() {
   return useQuery({
     queryKey: ["re-stats", user?.id],
     enabled: !!user,
-    queryFn: () => reRepo.fetchRealEstateStats(user!.id),
+    queryFn: () => reRepo.fetchRealEstateStats(user?.id),
   });
 }

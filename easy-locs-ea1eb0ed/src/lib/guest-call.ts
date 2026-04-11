@@ -136,8 +136,8 @@ export class GuestCallManager {
     await this.setupMedia(isVideo);
     this.createPeerConnection();
 
-    const offer = await this.pc!.createOffer();
-    await this.pc!.setLocalDescription(offer);
+    const offer = await this.pc.createOffer();
+    await this.pc.setLocalDescription(offer);
 
     await invokeSignal({
       action: "call_signal",
@@ -163,9 +163,9 @@ export class GuestCallManager {
 
     if (signalType === "offer") {
       const offer = JSON.parse(signalData);
-      await this.pc!.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await this.pc!.createAnswer();
-      await this.pc!.setLocalDescription(answer);
+      await this.pc.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await this.pc.createAnswer();
+      await this.pc.setLocalDescription(answer);
 
       await invokeSignal({
         action: "call_signal",
@@ -180,10 +180,10 @@ export class GuestCallManager {
       this.startIceTimeout();
     } else if (signalType === "answer") {
       const answer = JSON.parse(signalData);
-      await this.pc!.setRemoteDescription(new RTCSessionDescription(answer));
+      await this.pc.setRemoteDescription(new RTCSessionDescription(answer));
     } else if (signalType === "ice") {
       const candidate = JSON.parse(signalData);
-      await this.pc!.addIceCandidate(new RTCIceCandidate(candidate));
+      await this.pc.addIceCandidate(new RTCIceCandidate(candidate));
     } else if (signalType === "declined" || signalType === "ended") {
       this.onStateChange({ status: signalType === "declined" ? "declined" : "ended" });
       this.cleanup();
@@ -203,7 +203,7 @@ export class GuestCallManager {
     // Add local tracks
     if (this.localStream) {
       this.localStream.getTracks().forEach((track) => {
-        this.pc!.addTrack(track, this.localStream!);
+        this.pc.addTrack(track, this.localStream);
       });
     }
 
@@ -335,7 +335,7 @@ export class GuestCallManager {
 
       if (this.localStream) {
         this.localStream.getTracks().forEach((track) => {
-          this.pc!.addTrack(track, this.localStream!);
+          this.pc.addTrack(track, this.localStream);
         });
       }
 

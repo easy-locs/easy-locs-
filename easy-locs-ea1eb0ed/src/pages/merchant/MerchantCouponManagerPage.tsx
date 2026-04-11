@@ -16,7 +16,7 @@ export default function MerchantCouponManagerPage() {
   const [minimumOrderAmount, setMinimumOrderAmount] = useState("0");
   const [saving, setSaving] = useState(false);
 
-  const { data: rows = [], isLoading, refetch } = useQuery({
+  const { data: rows = [], isLoading, refetch , isError } = useQuery({
     queryKey: ["merchant-coupon-manager", merchantId],
     queryFn: () => merchantService.fetchPromos(merchantId),
     enabled: !!merchantId,
@@ -112,6 +112,7 @@ export default function MerchantCouponManagerPage() {
         </button>
       </div>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2].map((i) => (
         <div key={i} className="mx-4 mt-3 h-16 rounded-2xl bg-muted animate-pulse" />
       ))}

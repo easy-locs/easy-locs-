@@ -250,7 +250,7 @@ export default function WalletRequestPage() {
               >
                 <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                   <ArrowRightLeft className="w-3.5 h-3.5" />
-                  <span>≈ {formatCurrencyAmount(convertedAmount, resolvedTarget!.currency!)}</span>
+                  <span>≈ {formatCurrencyAmount(convertedAmount, resolvedTarget?.currency ?? "")}</span>
                 </div>
               </motion.div>
             )}

@@ -35,7 +35,7 @@ export default function SellerDashboard() {
 
   const { data: shops = [], isLoading: loadingShops } = useQuery({
     queryKey: ["seller-shops", user?.id],
-    queryFn: () => fetchSellerShops(user!.id),
+    queryFn: () => fetchSellerShops(user?.id),
     enabled: !!user?.id,
   });
 

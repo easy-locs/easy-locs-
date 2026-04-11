@@ -188,8 +188,8 @@ const PublicServiceBooking = () => {
 
     setSubmitting(true);
     try {
-      const dateFrom = isRangeMode ? format(selectedRange!.from, "yyyy-MM-dd") : format(selectedDate!, "yyyy-MM-dd");
-      const dateTo = isRangeMode ? format(selectedRange!.to, "yyyy-MM-dd") : null;
+      const dateFrom = isRangeMode ? format(selectedRange?.from!, "yyyy-MM-dd") : format(selectedDate, "yyyy-MM-dd");
+      const dateTo = isRangeMode ? format(selectedRange?.to!, "yyyy-MM-dd") : null;
 
       const available = await checkServiceAvailability(service.id, dateFrom, dateTo);
 

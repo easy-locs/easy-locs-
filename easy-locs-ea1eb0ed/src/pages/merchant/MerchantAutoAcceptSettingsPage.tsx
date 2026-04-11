@@ -10,7 +10,7 @@ export default function MerchantAutoAcceptSettingsPage() {
   const [enabled, setEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const { data: merchant, isLoading } = useQuery({
+  const { data: merchant, isLoading , isError } = useQuery({
     queryKey: ["merchant-auto-accept", merchantId],
     queryFn: () => merchantService.fetchMerchantById(merchantId),
     enabled: !!merchantId,
@@ -32,6 +32,8 @@ export default function MerchantAutoAcceptSettingsPage() {
       setSaving(false);
     }
   };
+
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
     <div className="app-mobile-page bg-background pb-24">

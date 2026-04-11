@@ -354,7 +354,7 @@ export default function WalletTransferPage() {
           <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-destructive/10 border border-destructive/20">
             <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
             <p className="text-xs text-destructive font-medium">
-              {target!.walletStatus === "locked"
+              {target?.walletStatus === "locked"
                 ? t("wallet.recipientLocked") || "Recipient's wallet is locked"
                 : t("wallet.recipientNoWallet") || "Recipient has no active wallet"}
             </p>

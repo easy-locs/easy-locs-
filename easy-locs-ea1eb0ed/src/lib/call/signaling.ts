@@ -34,7 +34,7 @@ export class SignalingChannel {
     return new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error("Channel subscription timeout")), 10_000);
 
-      this.channel!.subscribe((status) => {
+      this.channel.subscribe((status) => {
         if (status === "SUBSCRIBED") {
           clearTimeout(timeout);
           this._ready = true;

@@ -47,7 +47,7 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
       const { data } = await db
         .from("storefront_loyalty_tiers")
         .select("*")
-        .eq("program_id", program!.id)
+        .eq("program_id", program?.id)
         .order("min_points");
       return data || [];
     },
@@ -61,8 +61,8 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
       const { data } = await db
         .from("storefront_loyalty_points")
         .select("*, storefront_loyalty_tiers(name, badge_emoji, discount_percent)")
-        .eq("program_id", program!.id)
-        .eq("user_id", user!.id)
+        .eq("program_id", program?.id)
+        .eq("user_id", user?.id)
         .maybeSingle();
       return data;
     },
@@ -76,8 +76,8 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
       const { data } = await db
         .from("storefront_loyalty_history")
         .select("*")
-        .eq("program_id", program!.id)
-        .eq("user_id", user!.id)
+        .eq("program_id", program?.id)
+        .eq("user_id", user?.id)
         .order("created_at", { ascending: false })
         .limit(20);
       return data || [];
@@ -92,7 +92,7 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
       const { count } = await db
         .from("storefront_loyalty_points")
         .select("id", { count: "exact", head: true })
-        .eq("program_id", program!.id);
+        .eq("program_id", program?.id);
       return count || 0;
     },
     enabled: !!program?.id && mode === "seller",
@@ -113,7 +113,7 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
     const { error } = await db
       .from("storefront_loyalty_tiers")
       .insert({
-        program_id: program!.id,
+        program_id: program?.id,
         name: tierName.trim(),
         min_points: parseInt(tierMinPoints) || 0,
         discount_percent: parseFloat(tierDiscount) || 0,

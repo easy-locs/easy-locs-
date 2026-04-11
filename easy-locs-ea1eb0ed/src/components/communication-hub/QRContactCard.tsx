@@ -71,7 +71,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
     : "";
 
   const qrPayload = myData && typeof window !== "undefined"
-    ? `${window.location.origin}/orbit/add?userId=${user!.id}&data=${encodeURIComponent(toBase64Utf8(myData))}`
+    ? `${window.location.origin}/orbit/add?userId=${user?.id}&data=${encodeURIComponent(toBase64Utf8(myData))}`
     : "";
 
   useEffect(() => {

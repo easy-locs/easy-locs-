@@ -13,7 +13,7 @@ export default function MerchantPromoManagerPage() {
   const [minimum, setMinimum] = useState("0");
   const [saving, setSaving] = useState(false);
 
-  const { data: promos = [], refetch } = useQuery({
+  const { data: promos = [], refetch , isError } = useQuery({
     queryKey: ["merchant-promos", merchantId],
     enabled: !!merchantId,
     queryFn: () => merchantService.fetchPromos(merchantId!),
@@ -47,6 +47,8 @@ export default function MerchantPromoManagerPage() {
       refetch();
     } catch { /* silent */ }
   };
+
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
     <div className="app-mobile-page flex flex-col bg-background">

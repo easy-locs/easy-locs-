@@ -29,12 +29,12 @@ export default function MeTenantView() {
   const fmt = useCallback((n: number) => formatCurrency(n, userCountry), [userCountry]);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
-  const { data: tenantData, isLoading } = useQuery({
+  const { data: tenantData, isLoading , isError } = useQuery({
     queryKey: ["tenant-full-view", user?.id],
     enabled: !!user?.id,
     staleTime: 30_000,
     queryFn: async () => {
-      const result = await tenantService.fetchFullTenantView(user!.id);
+      const result = await tenantService.fetchFullTenantView(user?.id);
       if (!result) return null;
       const { tenant, rentCalls: rentCallsData, leases: leasesData, documents: docsData } = result;
 
@@ -48,6 +48,7 @@ export default function MeTenantView() {
     },
   });
 
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
   if (isLoading) {
     return (
       <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4 pb-[calc(80px+env(safe-area-inset-bottom,0px))]">

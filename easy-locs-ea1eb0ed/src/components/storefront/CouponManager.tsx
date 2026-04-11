@@ -56,7 +56,7 @@ export default function CouponManager({ shopId }: CouponManagerProps) {
         .from("storefront_coupons")
         .select("*")
         .eq("shop_id", shopId)
-        .eq("user_id", user!.id)
+        .eq("user_id", user?.id)
         .order("created_at", { ascending: false });
       return data || [];
     },
@@ -69,7 +69,7 @@ export default function CouponManager({ shopId }: CouponManagerProps) {
     try {
       const { error } = await db("storefront_coupons").insert({
         shop_id: shopId,
-        user_id: user!.id,
+        user_id: user?.id,
         code: code.trim().toUpperCase(),
         type,
         value: parseFloat(value) || 0,

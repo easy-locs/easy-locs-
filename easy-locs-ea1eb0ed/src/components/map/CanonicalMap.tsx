@@ -564,7 +564,7 @@ export default memo(function CanonicalMap({
     if (!mapRef.current || !ready) return;
     const vis = layers.zones && zones.length > 0 ? "visible" : "none";
     [L.ZONE_FILL, L.ZONE_LINE].forEach((l) => {
-      if (mapRef.current!.getLayer(l)) mapRef.current!.setLayoutProperty(l, "visibility", vis);
+      if (mapRef.current.getLayer(l)) mapRef.current.setLayoutProperty(l, "visibility", vis);
     });
     safeSetData(mapRef.current, S.ZONES, zonesToFeatureCollection(layers.zones ? zones : []));
   }, [zones, layers.zones, ready]);
@@ -605,7 +605,7 @@ export default memo(function CanonicalMap({
     if (!mapRef.current || !ready) return;
     const vis = layers.clusters ? "visible" : "none";
     [L.CLUSTER_OUTER_GLOW, L.CLUSTER_GLOW, L.CLUSTER_CIRCLE, L.CLUSTER_COUNT].forEach((l) => {
-      if (mapRef.current!.getLayer(l)) mapRef.current!.setLayoutProperty(l, "visibility", vis);
+      if (mapRef.current.getLayer(l)) mapRef.current.setLayoutProperty(l, "visibility", vis);
     });
   }, [layers.clusters, ready]);
 

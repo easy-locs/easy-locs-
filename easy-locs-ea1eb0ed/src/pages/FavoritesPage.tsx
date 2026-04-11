@@ -18,7 +18,7 @@ export default function FavoritesPage() {
 
   const { data: favoriteRows = [], isLoading, error: favError } = useQuery({
     queryKey: ["favorite-merchants", user?.id],
-    queryFn: () => listFavoriteMerchants(user!.id),
+    queryFn: () => listFavoriteMerchants(user?.id),
     enabled: !!user?.id,
     staleTime: 5000,
   });

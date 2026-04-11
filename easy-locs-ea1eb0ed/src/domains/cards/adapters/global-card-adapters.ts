@@ -34,7 +34,7 @@ export function useWalletBalanceCard(): CardContract<{ balance: number; currency
         actionType: "business" as const,
         run: async () => {
           const { platformBus } = await import("@/lib/shared/platform-bus");
-          platformBus.emit("wallet:top_up", { userId: user!.id }, "walletBalanceCard");
+          platformBus.emit("wallet:top_up", { userId: user?.id }, "walletBalanceCard");
         },
       },
     });

@@ -40,7 +40,7 @@ export default function SmartNotifications({ shopId, mode }: Props) {
     queryKey: ["notif-prefs", shopId, user?.id],
     queryFn: async () => {
       const { data } = await db("storefront_notification_preferences")
-        .select("*").eq("shop_id", shopId).eq("user_id", user!.id).maybeSingle();
+        .select("*").eq("shop_id", shopId).eq("user_id", user?.id).maybeSingle();
       return data;
     },
     enabled: !!user,
@@ -52,7 +52,7 @@ export default function SmartNotifications({ shopId, mode }: Props) {
     queryFn: async () => {
       const query = db("storefront_notification_log")
         .select("*").eq("shop_id", shopId).order("sent_at", { ascending: false }).limit(30);
-      if (mode === "buyer") query.eq("user_id", user!.id);
+      if (mode === "buyer") query.eq("user_id", user?.id);
       const { data } = await query;
       return data || [];
     },
@@ -67,7 +67,7 @@ export default function SmartNotifications({ shopId, mode }: Props) {
           .update({ ...updates, updated_at: new Date().toISOString() }).eq("id", prefs.id);
       } else {
         await db("storefront_notification_preferences")
-          .insert({ shop_id: shopId, user_id: user!.id, ...updates });
+          .insert({ shop_id: shopId, user_id: user?.id, ...updates });
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["notif-prefs"] }); toast.success("Preferences saved"); },

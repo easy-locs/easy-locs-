@@ -57,13 +57,13 @@ export default function POSPage() {
   /* ── Load seller's real catalog ── */
   const { data: shopData, isLoading: shopLoading, error: shopError } = useQuery({
     queryKey: ["pos-shop", user?.id],
-    queryFn: () => posService.fetchSellerShop(user!.id),
+    queryFn: () => posService.fetchSellerShop(user?.id),
     enabled: !!user?.id,
   });
 
   const { data: catalogItems = [], isLoading: catalogLoading } = useQuery({
     queryKey: ["pos-catalog", shopData?.id],
-    queryFn: () => posService.fetchCatalogItems(shopData!.id),
+    queryFn: () => posService.fetchCatalogItems(shopData?.id),
     enabled: !!shopData?.id,
   });
 

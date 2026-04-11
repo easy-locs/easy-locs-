@@ -104,7 +104,7 @@ export default function BulkProductManager({ shopId }: Props) {
         if (!row.title) continue;
         await db("catalog_items").insert({
           shop_id: shopId,
-          user_id: user!.id,
+          user_id: user?.id,
           title: row.title,
           price: parseFloat(row.price) || 0,
           currency: row.currency || "EUR",

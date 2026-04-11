@@ -9,7 +9,7 @@ export default function MerchantMenuBulkEditPage() {
   const { merchantId = "" } = useParams();
   const [drafts, setDrafts] = useState<Record<string, any>>({});
 
-  const { data: items = [], isLoading, refetch } = useQuery({
+  const { data: items = [], isLoading, refetch , isError } = useQuery({
     queryKey: ["merchant-menu-bulk", merchantId],
     queryFn: () => merchantService.fetchMenuItems(merchantId),
     enabled: !!merchantId,
@@ -47,6 +47,7 @@ export default function MerchantMenuBulkEditPage() {
         Save All Changes
       </button>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2].map((i) => (<div key={i} className="mx-4 mb-3 h-20 rounded-2xl bg-muted animate-pulse" />))}
 
       {!isLoading && items.length === 0 && (

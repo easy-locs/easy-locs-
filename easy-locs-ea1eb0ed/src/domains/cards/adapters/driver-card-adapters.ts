@@ -41,7 +41,7 @@ export function useDriverStatusCard(): CardContract<{
             actionType: "mutation" as const,
             run: async () => {
               const { platformBus } = await import("@/lib/shared/platform-bus");
-              platformBus.emit("driver:toggle_online", { driverId: user!.id }, "driverStatusCard");
+              platformBus.emit("driver:toggle_online", { driverId: user?.id }, "driverStatusCard");
             },
           }
         : undefined,
@@ -82,7 +82,7 @@ export function useDriverEarningsCard(): CardContract<DriverEarningsSummary> {
 
   const { data: earnings, error, isLoading } = useQuery({
     queryKey: ["driver-earnings", user?.id],
-    queryFn: () => getDriverEarnings(user!.id),
+    queryFn: () => getDriverEarnings(user?.id),
     enabled: !!user?.id,
     staleTime: 30_000,
   });

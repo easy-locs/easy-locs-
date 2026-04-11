@@ -25,18 +25,18 @@ export default function BuyerDashboard() {
       const [ordersRes, wishlistRes, loyaltyRes, invoicesRes] = await Promise.all([
         db("storefront_orders")
           .select("id, status, total, currency, created_at, shop_id")
-          .eq("buyer_id", user!.id)
+          .eq("buyer_id", user?.id)
           .order("created_at", { ascending: false })
           .limit(100),
         db("storefront_wishlist")
           .select("id")
-          .eq("user_id", user!.id),
+          .eq("user_id", user?.id),
         db("storefront_loyalty_points")
           .select("points_balance")
-          .eq("user_id", user!.id),
+          .eq("user_id", user?.id),
         db("storefront_invoices")
           .select("id, invoice_number, total, currency, status, issued_at, buyer_name")
-          .eq("buyer_email", user!.email)
+          .eq("buyer_email", user?.email)
           .order("issued_at", { ascending: false })
           .limit(5),
       ]);

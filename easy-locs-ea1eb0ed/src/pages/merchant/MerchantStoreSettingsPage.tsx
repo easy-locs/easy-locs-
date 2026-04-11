@@ -14,7 +14,7 @@ export default function MerchantStoreSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>(null);
 
-  const { data: merchant, refetch } = useQuery({
+  const { data: merchant, refetch , isError } = useQuery({
     queryKey: ["merchant-store-settings", merchantId],
     enabled: !!merchantId,
     queryFn: () => merchantService.fetchMerchantById(merchantId!),
@@ -42,7 +42,9 @@ export default function MerchantStoreSettingsPage() {
   }, [merchant, form]);
 
   if (!merchant || !form) {
-    return (
+    if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
+
+  return (
       <div className="app-mobile-page flex flex-col bg-background p-4">
         <Skeleton className="h-40 rounded-2xl" />
       </div>

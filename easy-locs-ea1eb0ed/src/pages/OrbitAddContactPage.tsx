@@ -47,9 +47,8 @@ export default function OrbitAddContactPage() {
     }
     (async () => {
       try {
-        const { db } = await import("@/integrations/db/client");
-        const { data } = await db
-          .from("orbit_profiles_v2")
+        const { db } = await import("@/services/db");
+        const { data } = await db("orbit_profiles_v2")
           .select("display_name, avatar_url")
           .eq("id", targetUserId)
           .maybeSingle();

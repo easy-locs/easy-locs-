@@ -307,7 +307,7 @@ const CreateListing = () => {
       const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
 
       await insertMarketplaceService({
-        org_id: orgId, user_id: user.id, provider_id: provider!.id,
+        org_id: orgId, user_id: user.id, provider_id: provider?.id,
         title: form.title.trim(), category: form.category,
         listing_type: form.listing_type,
         auto_expire: autoExpire,

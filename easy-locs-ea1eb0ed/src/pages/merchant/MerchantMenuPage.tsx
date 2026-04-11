@@ -10,7 +10,7 @@ export default function MerchantMenuPage() {
   const { merchantId } = useParams();
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  const { data: products = [], refetch } = useQuery({
+  const { data: products = [], refetch , isError } = useQuery({
     queryKey: ["merchant-menu-products", merchantId],
     queryFn: async () => {
       let mid = merchantId;
@@ -36,6 +36,8 @@ export default function MerchantMenuPage() {
       setSavingId(null);
     }
   };
+
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
     <div className="max-w-md mx-auto px-4 py-4 space-y-4">

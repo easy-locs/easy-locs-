@@ -25,7 +25,7 @@ export default function MerchantMenuCategoryManagerPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
-  const { data: categories = [], isLoading } = useQuery({
+  const { data: categories = [], isLoading , isError } = useQuery({
     queryKey: ["menu-categories", merchantId],
     queryFn: async () => {
       return merchantService.fetchCategories(merchantId!);
@@ -79,6 +79,8 @@ export default function MerchantMenuCategoryManagerPage() {
     await merchantService.toggleCategory(id, active);
     qc.invalidateQueries({ queryKey: ["menu-categories", merchantId] });
   };
+
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
     <div className="max-w-lg mx-auto px-4 py-4 space-y-5">
