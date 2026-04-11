@@ -52,8 +52,13 @@ const LazyUnifiedPaymentProvider = lazy(() => import("@/payments/UnifiedPaymentS
 function DeferredHeavyProviders({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    const id = requestIdleCallback ? requestIdleCallback(() => setReady(true), { timeout: 1500 }) : setTimeout(() => setReady(true), 800) as unknown as number;
-    return () => { try { cancelIdleCallback(id); } catch { clearTimeout(id); } };
+    const hasRIC = typeof window !== "undefined" && "requestIdleCallback" in window;
+    if (hasRIC) {
+      const id = window.requestIdleCallback(() => setReady(true), { timeout: 1500 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(() => setReady(true), 800);
+    return () => window.clearTimeout(id);
   }, []);
   if (!ready) return <>{children}</>;
   return (
