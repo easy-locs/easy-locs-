@@ -393,7 +393,7 @@ export const CommunicationCenter = () => {
                     showContext={showContext || mobileContextOpen}
                     onThreadUpdate={handleThreadUpdate}
                   />
-                  {showContext && selectedThread && orgId && !isMobile && (
+                  {showContext && selectedThread && !isMobile && (
                     <Suspense fallback={null}>
                       <HudContextPanel thread={selectedThread} orgId={orgId} />
                     </Suspense>

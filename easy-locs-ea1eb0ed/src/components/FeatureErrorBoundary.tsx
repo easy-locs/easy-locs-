@@ -5,20 +5,27 @@ interface Props {
   children: ReactNode;
   featureName: string;
   onReset?: () => void;
+  maxAutoRetries?: number;
 }
 
 interface State {
   hasError: boolean;
   error?: Error;
+  retryCount: number;
 }
 
+const AUTO_RETRY_DELAY = 800;
+const DEFAULT_MAX_RETRIES = 2;
+
 export class FeatureErrorBoundary extends Component<Props, State> {
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, retryCount: 0 };
   }
 
-  static getDerivedStateFromError(error: unknown): State {
+  static getDerivedStateFromError(error: unknown): Partial<State> {
     if (error instanceof Error) return { hasError: true, error };
     const msg = typeof error === "string" ? error : "An unexpected error occurred";
     return { hasError: true, error: new Error(msg) };
@@ -26,18 +33,44 @@ export class FeatureErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error(`[FeatureErrorBoundary:${this.props.featureName}]`, error.message, info.componentStack);
-    void import("@/lib/analytics/sentry")
-      .then(({ captureException }) => captureException(error, { componentStack: info.componentStack }))
+
+    void import("@/lib/auto-heal")
+      .then(({ healError }) => healError(error))
       .catch(() => {});
+
+    const maxRetries = this.props.maxAutoRetries ?? DEFAULT_MAX_RETRIES;
+    if (this.state.retryCount < maxRetries) {
+      if (this.retryTimer) clearTimeout(this.retryTimer);
+      this.retryTimer = setTimeout(() => {
+        this.setState(prev => ({
+          hasError: false,
+          error: undefined,
+          retryCount: prev.retryCount + 1,
+        }));
+      }, AUTO_RETRY_DELAY * (this.state.retryCount + 1));
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.retryTimer) clearTimeout(this.retryTimer);
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: undefined });
+    this.setState({ hasError: false, error: undefined, retryCount: 0 });
     this.props.onReset?.();
   };
 
   render() {
     if (!this.state.hasError) return this.props.children;
+
+    const maxRetries = this.props.maxAutoRetries ?? DEFAULT_MAX_RETRIES;
+    if (this.state.retryCount < maxRetries) {
+      return (
+        <div className="flex items-center justify-center" style={{ minHeight: 200 }}>
+          <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(38 65% 56%)", borderTopColor: "transparent" }} />
+        </div>
+      );
+    }
 
     return (
       <div

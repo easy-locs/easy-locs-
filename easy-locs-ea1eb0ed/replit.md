@@ -40,6 +40,12 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Code Splitting**: Route-based + feature-based + vendor chunking via Vite manualChunks
 - **Deferred Loading**: Heavy systems (monitoring, E2EE, events) loaded 3-6s after boot
 
+## Safe Auto-Healing System
+- **Error Classifier** (`src/lib/auto-heal/error-classifier.ts`): Classifies errors by severity (critical/medium/minor) and domain (crash/payment/auth/network/ui/data). Determines action (rollback/fallback/retry/suggest/log/ignore). Filters ignorable patterns (ResizeObserver, ChunkLoadError, etc).
+- **Runtime Healer** (`src/lib/auto-heal/runtime-healer.ts`): Deduplicates errors (5s window), logs to Sentry for criticals, provides `withAutoRetry()` for fetch operations (exponential backoff, 3 retries). Health report via `getHealerReport()`. Global listener via `installGlobalHealer()`.
+- **FeatureErrorBoundary** (`src/components/FeatureErrorBoundary.tsx`): Wraps all 5 pillars. Auto-retries up to 2 times before showing fallback UI. Integrates with auto-heal system. Gold-themed "Try again" button.
+- **Error Boundary Hierarchy**: `AppCrashBoundary` > `ChunkRecoveryBoundary` > `ErrorBoundary` > `FeatureErrorBoundary` (per pillar route).
+
 ## Component Library (src/components/ui/)
 69 unified UI components. Key canonical components:
 - **Button** (`button.tsx`): 8 variants (default/destructive/outline/secondary/ghost/link/premium/success), `loading` prop, `asChild` renders single-child Slot (no sibling spinner)

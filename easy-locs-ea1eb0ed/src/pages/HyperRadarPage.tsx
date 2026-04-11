@@ -501,8 +501,8 @@ export default function HyperRadarPage() {
     <UnifiedMap
       entities={visibleEntities}
       showUserLocation
-      userLat={mapCenter?.lat ?? location?.lat}
-      userLng={mapCenter?.lng ?? location?.lng}
+      userLat={mapCenter?.lat ?? location?.lat ?? 25.2}
+      userLng={mapCenter?.lng ?? location?.lng ?? 55.27}
       showHeatmap={visibleEntities.length > 30}
       heatmapPoints={visibleEntities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
       radiusKm={radius}
@@ -980,7 +980,7 @@ function LayerChips({ activeLayers, toggleLayer, radarOverlay, setRadarOverlay, 
 function WeatherWidget({ weather, vibe, stats, t }: { weather: WeatherStationState; vibe: VibeDensityResult | null; stats: RadarStats; t: TFn }) {
   return (
     <motion.div
-      className="absolute left-3 top-[130px] flex flex-col gap-1.5"
+      className="absolute left-3 top-[46px] flex flex-col gap-1.5"
       style={{ zIndex: Z.overlay }}
       initial={{ opacity: 0, x: -15 }}
       animate={{ opacity: 1, x: 0 }}

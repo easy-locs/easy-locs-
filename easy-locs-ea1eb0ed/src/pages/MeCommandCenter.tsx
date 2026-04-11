@@ -195,7 +195,8 @@ export default function MeCommandCenter() {
     enabled: !!activeShop?.id,
     staleTime: 60_000,
     queryFn: async () => {
-      const snapshot = await getMerchantDashboardSnapshot(activeShop!.id);
+      if (!activeShop?.id) return null;
+      const snapshot = await getMerchantDashboardSnapshot(activeShop.id);
       return {
         grossSales: snapshot.grossSales,
         activeOrders: snapshot.activeOrders,
