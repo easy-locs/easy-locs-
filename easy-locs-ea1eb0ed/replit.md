@@ -6,6 +6,7 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 ## Architecture
 - **Stack**: React 18, Vite, TypeScript, TailwindCSS, Supabase, Framer Motion, Tanstack Query, Zustand
 - **Design**: Navy `hsl(220 40% 18%)` / Gold `hsl(38 65% 56%)` — always inline `style={{}}` for brand colors
+- **Landing Dark Theme**: `.landing-dark` CSS scope on Index page forces dark CSS variable overrides (background, foreground, card, muted, border) + `color-scheme: dark`. Loading skeleton also uses dark theme via `PageLoader dark` prop. All landing sections auto-inherit dark styling through CSS variable cascade.
 - **Typography**: Min `text-[10px]`, `font-size: 16px` on inputs
 - **Bottom nav**: 72px height, hidden on `/login`, `/signup`, `/orbit`, `/checkout`, `/pay/`, `/order/`
 - **DB Access**: ALL database calls MUST use `db(table)` from `src/services/db.ts`
@@ -101,7 +102,7 @@ engine_registry, cron_registry, source_of_truth_registry, invariant_registry, co
 Boots all registries, registers 31 engines + 14 source-of-truth mappings + 9 invariants + 25 cron jobs. Heartbeat every 30s with auto-degradation. Initial audit at boot+8s. Pipeline: VALIDATE → CHECK INVARIANTS → START DURABLE WORKFLOW → EMIT TELEMETRY → APPLY QUALITY GATE → PUBLISH → CONTINUOUS RE-AUDIT → SAFE AUTO-HEAL. Exposes `runVerification()` for full proof report generation.
 
 ## Omega Intelligence Core — Central Brain (`src/core/omega/`)
-Total intelligence layer. 12 files, 2,060 lines. 10 engines + master orchestrator + type system. Boots deferred at 28s after app start (t8 stage). Intelligence loop runs every 60s.
+Total intelligence layer. 14 files, 2,570 lines. 10 engines + master orchestrator + type system + persistence layer. Boots deferred at 28s after app start (t8 stage). Intelligence loop runs every 60s. Full DB persistence: all 10 engines write through `omega-persistence.ts` (11 tables) and restore from DB at boot. Strict typed interfaces throughout (no `Record<string,unknown>`).
 
 **Motto: SEE → UNDERSTAND → PROVE → DECIDE → BLOCK → HEAL → OPTIMIZE → PREDICT → EVOLVE → RE-AUDIT**
 

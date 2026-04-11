@@ -47,6 +47,13 @@ class BusinessOpportunityEngine {
     return signal;
   }
 
+  async restore(): Promise<void> {
+    const persisted = await omegaPersistence.loadOpportunities();
+    for (const s of persisted) {
+      if (!this.signals.has(s.signal_id)) this.signals.set(s.signal_id, s);
+    }
+  }
+
   detectHighDemandZone(geoZone: string, searchVolume: number, listingCount: number): OpportunitySignal | null {
     const ratio = listingCount > 0 ? searchVolume / listingCount : searchVolume;
     if (ratio < 3) return null;
@@ -126,9 +133,10 @@ class BusinessOpportunityEngine {
     };
   }
 
-  boot(): void {
+  async boot(): Promise<void> {
     this.status = "active";
     this.lastRunAt = Date.now();
+    await this.restore().catch(() => {});
     console.log(`[OMEGA] BusinessOpportunityEngine booted | signals: ${this.signals.size}`);
   }
 

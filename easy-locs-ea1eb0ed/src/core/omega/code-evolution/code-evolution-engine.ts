@@ -54,6 +54,13 @@ class CodeEvolutionEngine {
     return suggestion;
   }
 
+  async restore(): Promise<void> {
+    const persisted = await omegaPersistence.loadCodeSuggestions();
+    for (const s of persisted) {
+      if (!this.suggestions.has(s.suggestion_id)) this.suggestions.set(s.suggestion_id, s);
+    }
+  }
+
   approve(suggestionId: string): boolean {
     const s = this.suggestions.get(suggestionId);
     if (!s || s.status !== "proposed") return false;
@@ -112,9 +119,10 @@ class CodeEvolutionEngine {
     };
   }
 
-  boot(): void {
+  async boot(): Promise<void> {
     this.status = "active";
     this.lastRunAt = Date.now();
+    await this.restore().catch(() => {});
     console.log(`[OMEGA] CodeEvolutionEngine booted | suggestions: ${this.suggestions.size}`);
   }
 
