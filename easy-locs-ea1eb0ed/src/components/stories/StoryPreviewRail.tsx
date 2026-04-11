@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import type { Story } from "@/lib/stories/story-types";
 import { emitStoryImpression, emitStoryOpened } from "@/lib/stories/story-events";
+import { useI18n } from "@/lib/i18n";
 import StoryPreviewCard from "./StoryPreviewCard";
 import StoryViewer from "./StoryViewer";
 
@@ -16,6 +17,7 @@ interface StoryPreviewRailProps {
 }
 
 export default function StoryPreviewRail({ title, stories, size = "medium", feedKey = "unknown", surface = "rail", onSeeAll }: StoryPreviewRailProps) {
+  const { t } = useI18n();
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const impressionsFired = useRef<Set<string>>(new Set());
@@ -42,21 +44,21 @@ export default function StoryPreviewRail({ title, stories, size = "medium", feed
 
   return (
     <>
-      <section className="mb-5">
-        <div className="flex items-center justify-between mb-2.5 px-4">
-          <h3 className="text-[13px] font-bold text-foreground">{title}</h3>
+      <section className="mb-6">
+        <div className="flex items-center justify-between mb-3 px-4">
+          <h3 className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>{title}</h3>
           {onSeeAll && (
             <button
               onClick={onSeeAll}
-              className="flex items-center gap-0.5 text-[11px] font-semibold active:opacity-70"
+              className="flex items-center gap-0.5 text-xs font-semibold active:opacity-70 transition-opacity"
               style={{ color: "hsl(38 65% 56%)" }}
             >
-              See all <ChevronRight className="h-3 w-3" />
+              {t("story.see_all") || "See all"} <ChevronRight className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
         <div
-          className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-1.5"
+          className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2"
           data-no-swipe
         >
           {stories.map((story, i) => (

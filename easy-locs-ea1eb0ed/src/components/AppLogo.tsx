@@ -3,6 +3,7 @@
  */
 import { Link } from "react-router-dom";
 import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
+import { useI18n } from "@/lib/i18n";
 
 interface AppLogoProps {
   linkTo?: string;
@@ -25,6 +26,7 @@ const AppLogo = ({
   variant = "sidebar",
   className = "",
 }: AppLogoProps) => {
+  const { t } = useI18n();
   const isLanding = variant === "landing" || variant === "footer";
   const isAuth = variant === "auth";
   const href = isLanding || isAuth ? "/" : linkTo;
@@ -34,7 +36,6 @@ const AppLogo = ({
       to={href}
       className={`flex items-center gap-2 shrink-0 select-none group ${className}`}
     >
-      {/* Always show full brand name */}
       <div className="hidden sm:block">
         <EasyLocsLogo variant="full" size={sizeMap[variant]} />
       </div>
@@ -46,7 +47,7 @@ const AppLogo = ({
           className="text-[10px] tracking-[0.2em] uppercase font-medium hidden sm:block"
           style={{ color: "hsl(38 65% 56% / 0.6)" }}
         >
-          Connect • Locate • Grow
+          {t("brand.tagline") || "Connect \u2022 Locate \u2022 Grow"}
         </span>
       )}
     </Link>
