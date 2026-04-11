@@ -389,6 +389,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (_event === "SIGNED_IN" && nextSession?.user) {
         logAudit({ userId: nextSession.user.id, action: "user_login" });
+        void import("@/lib/analytics/sentry").then(m => m.setUserContext(nextSession.user.id, nextSession.user.email ?? undefined)).catch(() => {});
         void import("@/lib/auth/profile")
           .then((m) => m.ensureUserProfile(nextSession.user.id, {
             fullName: nextSession.user.user_metadata?.full_name,
@@ -403,6 +404,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       if (_event === "SIGNED_OUT") {
         logAudit({ action: "user_logout" });
+        void import("@/lib/analytics/sentry").then(m => m.clearUserContext()).catch(() => {});
       }
       void hydrateAuthState(nextSession);
     });

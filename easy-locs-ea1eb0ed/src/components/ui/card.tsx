@@ -19,7 +19,7 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
   ({ className, style, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex flex-col space-y-1.5 p-5 pb-0", className)}
+      className={cn("flex flex-col space-y-1.5 p-5 pb-0 min-w-0", className)}
       style={style}
       {...props}
     />
@@ -28,19 +28,23 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
+  ({ className, children, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn("text-base font-semibold leading-snug tracking-tight", className)}
+      className={cn("text-base font-semibold leading-snug tracking-tight line-clamp-2 break-words", className)}
       {...props}
-    />
+    >
+      {children ?? null}
+    </h3>
   ),
 );
 CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+  ({ className, children, ...props }, ref) => (
+    <p ref={ref} className={cn("text-sm text-muted-foreground line-clamp-3 break-words", className)} {...props}>
+      {children ?? null}
+    </p>
   ),
 );
 CardDescription.displayName = "CardDescription";
@@ -49,7 +53,7 @@ const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
   ({ className, style, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("p-5 pt-0", className)}
+      className={cn("p-5 pt-0 min-w-0", className)}
       style={style}
       {...props}
     />
@@ -61,7 +65,7 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
   ({ className, style, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex flex-wrap items-center gap-2 p-5 pt-0", className)}
+      className={cn("flex flex-wrap items-center gap-2 p-5 pt-0 min-w-0", className)}
       style={style}
       {...props}
     />
