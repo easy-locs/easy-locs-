@@ -56,6 +56,7 @@ function MainBottomNav() {
         boxShadow: "0 -4px 24px hsl(var(--background) / 0.5)",
         backdropFilter: "blur(16px)",
         WebkitBackdropFilter: "blur(16px)",
+        contain: "layout style",
       }}
     >
       <div className="flex items-stretch justify-around h-[58px] max-w-md mx-auto">

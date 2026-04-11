@@ -290,12 +290,12 @@ if (import.meta.env.DEV) {
   (window as unknown as Record<string, unknown>).__REACT_QUERY_CLIENT__ = queryClient;
 }
 setActionQueryClient(queryClient);
-setTimeout(() => {
-  import("@/lib/smart-prefetch").then((m) => m.prefetchCriticalRoutes()).catch((e) => console.warn("[boot] prefetch failed", e));
-}, 5000);
-setTimeout(() => {
-  import("@/lib/super-app-bridge").then((m) => m.installSuperAppBridge()).catch((e) => console.warn("[boot] super-app-bridge failed", e));
-}, 8000);
+requestIdleCallback(() => {
+  import("@/lib/smart-prefetch").then((m) => m.prefetchCriticalRoutes()).catch(() => {});
+}, { timeout: 5000 });
+requestIdleCallback(() => {
+  import("@/lib/super-app-bridge").then((m) => m.installSuperAppBridge()).catch(() => {});
+}, { timeout: 10000 });
 
 const PageLoader = () => (
   <div className="app-mobile-page bg-background min-h-[60dvh] px-4 pt-5">
