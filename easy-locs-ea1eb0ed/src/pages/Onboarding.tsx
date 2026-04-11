@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import {
   Home, Users, ArrowRight, ArrowLeft, MapPin, Loader2,
   User, Building, Link2, ClipboardList, FileText, CheckCircle2, Briefcase
@@ -33,6 +34,7 @@ const STEPS = [
 // Countries are now sourced from CountrySelect (global-country-registry)
 
 const Onboarding = () => {
+  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const [step, setStep] = useState(0);
   const [selectedType, setSelectedType] = useState<UserType | null>(null);
   const [country, setCountry] = useState<string | null>(null);

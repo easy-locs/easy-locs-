@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import { fetchPublicListingBySlug, getListingProperty } from "@/repositories/explore.repository";
 import { invokeCreateBookingPayment } from "@/repositories/ai.repository";
 import { useI18n } from "@/lib/i18n";
@@ -19,6 +20,7 @@ import AppLogo from "@/components/AppLogo";
 import ListingMapSection from "@/components/public/ListingMapSection";
 
 const PublicListing = () => {
+  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const { slug, propertySlug } = useParams<{ slug?: string; propertySlug?: string }>();
   const listingSlug = slug || propertySlug;
   const [searchParams] = useSearchParams();

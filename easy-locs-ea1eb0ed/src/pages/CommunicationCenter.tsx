@@ -7,6 +7,7 @@ import { Plus, ArrowLeft, UsersRound, Megaphone, Radio } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import E2EEBadge from "@/components/orbit/E2EEBadge";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
@@ -36,6 +37,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const VALID_SECTIONS: CommSection[] = ["chats", "calls", "groups", "you"];
 
 export const CommunicationCenter = () => {
+  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const { orgId, user } = useAuth();
   const navigate = useNavigate();
   const { conversationId: routeConversationId } = useParams<{ conversationId?: string }>();

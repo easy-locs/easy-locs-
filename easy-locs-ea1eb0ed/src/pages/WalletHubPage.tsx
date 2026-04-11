@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { typedQueries } from "@/lib/db/typed-queries";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import { useWalletBalance, useWalletTransactions } from "@/payments/wallet-hooks";
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
 import { useI18n, tSafe } from "@/lib/i18n";
@@ -33,6 +34,7 @@ const fadeSlide = {
 };
 
 export default function WalletHubPage() {
+  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useI18n();

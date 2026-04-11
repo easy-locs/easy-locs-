@@ -1,13 +1,16 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
 
 export class ReconciliationEngine extends BaseEngine {
+  static readonly RUNTIME_CLASS = "browser-monitor";
+  static readonly BACKEND_WORKER = "wallet-sync";
+
   private lastBalance: number | null = null;
   private discrepancies: Array<{ expected: number; actual: number; timestamp: number }> = [];
 
   constructor() {
     super({
       id: "wallet-reconciliation",
-      name: "Reconciliation Engine",
+      name: "Reconciliation Engine (Monitor)",
       category: "wallet",
       intervalMs: 120_000,
     });

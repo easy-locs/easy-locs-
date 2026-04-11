@@ -4,6 +4,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import SEOHead from "@/components/SEOHead";
 import { lazy, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const OnboardingChecklist = lazy(() => import("@/components/onboarding/OnboardingChecklist"));
 const WelcomeTour = lazy(() => import("@/components/onboarding/WelcomeTour"));
@@ -32,6 +33,7 @@ const DashboardLoader = () => (
 );
 
 const Dashboard = () => {
+  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   return (
     <DashboardLayout>
       <SEOHead

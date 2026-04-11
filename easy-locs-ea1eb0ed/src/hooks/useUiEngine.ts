@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import type { UiEngineReport } from "@/lib/ui-engine/types";
 import { runUiEngine } from "@/lib/ui-engine/runUiEngine";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 interface UseUiEngineOptions {
   enabled?: boolean;
@@ -30,6 +31,17 @@ export function useUiEngine(options: UseUiEngineOptions = {}) {
     try {
       const next = runUiEngine(route);
       setReport(next);
+
+      if (next) {
+        platformBus.emit("ui-engine:report" as any, {
+          route,
+          score: next.score,
+          issueCount: next.issues?.length ?? 0,
+          patchCount: next.patches?.length ?? 0,
+          timestamp: Date.now(),
+        });
+      }
+
       return next;
     } finally {
       setRunning(false);

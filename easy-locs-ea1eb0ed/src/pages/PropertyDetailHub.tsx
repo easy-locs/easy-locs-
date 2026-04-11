@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
@@ -43,6 +44,7 @@ type PropertyDetail = {
 };
 
 const PropertyDetailHub = () => {
+  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const { propertyId } = useParams<{ propertyId: string }>();
   const navigate = useNavigate();
   const { orgId, userCountry } = useAuth();

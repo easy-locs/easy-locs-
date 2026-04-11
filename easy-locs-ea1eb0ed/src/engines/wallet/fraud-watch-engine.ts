@@ -9,13 +9,16 @@ interface SuspiciousEvent {
 }
 
 export class FraudWatchEngine extends BaseEngine {
+  static readonly RUNTIME_CLASS = "browser-monitor";
+  static readonly BACKEND_WORKER = "fraud-anomaly-scan";
+
   private events: SuspiciousEvent[] = [];
   private transferHistory: Array<{ amount: number; ts: number }> = [];
 
   constructor() {
     super({
       id: "wallet-fraud-watch",
-      name: "Fraud Watch Engine",
+      name: "Fraud Watch Engine (Monitor)",
       category: "wallet",
       intervalMs: 15_000,
     });
@@ -48,16 +51,16 @@ export class FraudWatchEngine extends BaseEngine {
 
     const uniqueAmounts = new Set(last5min.map(t => t.amount));
     if (last5min.length > 3 && uniqueAmounts.size === 1) {
-      findings.push(`Repeated identical transfers: ${last5min.length}x ${[...uniqueAmounts][0]}`);
-      this.events.push({ type: "pattern-repeat", detail: "identical amounts", riskLevel: "medium", timestamp: Date.now() });
+      findings.push(`Repeated identical transfers: ${last5min.length}x ${last5min[0]?.amount}`);
+      this.events.push({ type: "repeated-amount", detail: `${last5min.length}x same`, riskLevel: "medium", timestamp: Date.now() });
     }
 
-    if (this.events.length > 500) this.events = this.events.slice(-500);
+    if (this.events.length > 300) this.events = this.events.slice(-300);
 
     return { level: findings.length > 0 ? "detect" : "observe", findings: findings.length, actions: [], duration: 0 };
   }
 
-  getSuspiciousEvents() {
+  getEvents() {
     return [...this.events];
   }
 }

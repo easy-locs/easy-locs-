@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { typedQueries } from "@/lib/db/typed-queries";
 import { countActiveOrders } from "@/repositories/customer-orders.repository";
@@ -87,6 +88,7 @@ interface ShopData {
 }
 
 export default function MeCommandCenter() {
+  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const profile = useOrbitIdentity();

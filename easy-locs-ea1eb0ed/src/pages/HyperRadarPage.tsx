@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useDeferredValue, useRef } f
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import type { RadarStats } from "@/lib/engines/hyper-radar-engine";
 import type { VibeDensityResult } from "@/lib/engines/vibe-density-engine";
@@ -97,6 +98,7 @@ function getActiveVertical(activeLayers: RadarLayer[]): RadarVertical | undefine
 }
 
 export default function HyperRadarPage() {
+  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();
