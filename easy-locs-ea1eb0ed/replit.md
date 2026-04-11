@@ -94,8 +94,11 @@ Production-grade central surveillance layer. 25 TypeScript files, 3,623 lines + 
 ### Database (16 tables in `sentinel` schema)
 engine_registry, cron_registry, source_of_truth_registry, invariant_registry, conflict_log, audit_runs, engine_health_snapshots, job_runs, incident_log, healing_actions, workflow_registry, workflow_runs, taxonomy_registry, taxonomy_aliases, page_registry, card_registry
 
+### Verification Master Block (`src/core/sentinel/verification/`)
+8-phase proof system (1,394 lines, 3 files). Executes: IDENTITY CHECK → POLICY CHECK → START DURABLE WORKFLOW → EMIT TRACES/METRICS/LOGS → QUALITY GATE → CONTROLLED RELEASE → CONTINUOUS RE-AUDIT → SAFE AUTO-HEAL. Produces full A-through-Q report (17 sections). Features: 11 state machine definitions, 20 E2E flow definitions, 25 domain coverage, conflict injection tests, validation acceptance/rejection tests, healing safe/unsafe tests, page/card/CTA registration + audit, SEO/perf/security scoring. `verificationRunner.runFullVerification()` returns `VerificationFinalReport`. Wired into `sentinelCore.runVerification()`.
+
 ### Master Orchestrator (`sentinel-core.ts`)
-Boots all registries, registers 31 engines + 14 source-of-truth mappings + 9 invariants + 25 cron jobs. Heartbeat every 30s with auto-degradation. Initial audit at boot+8s. Pipeline: VALIDATE → CHECK INVARIANTS → START DURABLE WORKFLOW → EMIT TELEMETRY → APPLY QUALITY GATE → PUBLISH → CONTINUOUS RE-AUDIT → SAFE AUTO-HEAL
+Boots all registries, registers 31 engines + 14 source-of-truth mappings + 9 invariants + 25 cron jobs. Heartbeat every 30s with auto-degradation. Initial audit at boot+8s. Pipeline: VALIDATE → CHECK INVARIANTS → START DURABLE WORKFLOW → EMIT TELEMETRY → APPLY QUALITY GATE → PUBLISH → CONTINUOUS RE-AUDIT → SAFE AUTO-HEAL. Exposes `runVerification()` for full proof report generation.
 
 ## God System — Self-Auditing Infrastructure (`src/lib/god/`)
 Complete self-auditing, anti-conflict, auto-healing, continuous-monitoring infrastructure. 16 files, 5200+ lines. Boots deferred at 18s after app start via `useMasterAppBootstrap`.

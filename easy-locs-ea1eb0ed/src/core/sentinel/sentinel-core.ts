@@ -15,6 +15,8 @@ import { sentinelScoringEngine } from "./scoring/sentinel-scoring-engine";
 import { sentinelReportEngine } from "./reports/sentinel-report-engine";
 import { sentinelInvariantEngine } from "./invariants/invariant-engine";
 import { sentinelSourceOfTruthRegistry } from "./registry/source-of-truth-registry";
+import { verificationRunner } from "./verification/verification-runner";
+import type { VerificationFinalReport } from "./verification/verification-types";
 
 type SentinelPhase = "idle" | "initializing" | "running" | "degraded" | "stopped";
 
@@ -312,6 +314,22 @@ class SentinelCore {
 
   async startWorkflow(workflowId: string, entityType: string, entityId: string, initialState?: Record<string, unknown>) {
     return sentinelWorkflowEngine.startWorkflow(workflowId, entityType, entityId, initialState);
+  }
+
+  async runVerification(): Promise<VerificationFinalReport> {
+    sentinelTelemetryEngine.emit("sentinel:verification_start", "sentinel-core");
+    const report = await verificationRunner.runFullVerification();
+    sentinelTelemetryEngine.emit("sentinel:verification_complete", "sentinel-core", {
+      verdict: report.verdict,
+      global_score: report.global_score,
+      phases: report.phases_completed.length,
+      tests_run: report.total_tests_run,
+      tests_passed: report.total_tests_passed,
+      tests_failed: report.total_tests_failed,
+      blockers: report.critical_blockers.length,
+    });
+    console.log(`[SENTINEL VERIFICATION] ${report.verdict} | Score: ${report.global_score}/100 | Tests: ${report.total_tests_passed}/${report.total_tests_run} | Phases: ${report.phases_completed.length}/8 | Blockers: ${report.critical_blockers.length} | Proofs: ${report.proofs.length}`);
+    return report;
   }
 }
 
