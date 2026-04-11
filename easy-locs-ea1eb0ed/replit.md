@@ -126,6 +126,9 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Request Money** (`/wallet/request`): Contact picker (no email/ID input), resolves via `peer_user_id`
 - **QR Pay** (`/pay/scan`): Scan user/shop/service QR → instant payment overlay
 - **Orbit Chat Payments**: Send/Request buttons in chat, inline payment cards with live polling
+- **Orbit Messaging Pipeline**: `orbitDispatch` → `executeSendText` → `insertMessage` → `chat_messages_v2`. Optimistic UI at T0+0ms, background DB persist + broadcast. Dual-channel realtime: broadcast (10-50ms) + postgres_changes (200-500ms). Real-time tables: `chat_messages_v2`, `conversations_v2`, `conversation_preferences` (all in `supabase_realtime` publication). Thread list auto-refreshes on `orbit:message_sent`, `orbit:message_received`, `orbit:thread_created`, `orbit:thread_updated` events + `conversations_v2` postgres changes.
+- **Orbit Read Receipts**: `receipt.controller.ts` — flow-gate protected, throttled (2s), batch mark-read. Participants can mark-read via RLS policy `chat_messages_participant_mark_read` (uses `orbit_profiles_v2` join).
+- **Orbit Message Actions**: Star, delete-for-sender, delete-for-all, hide-for-self, edit, disappearing messages. All mutations use read-merge-write pattern to preserve metadata.
 - **Contact Picker**: `ContactPickerSheet` in `src/components/wallet/ContactPickerSheet.tsx`
   - Shows "On Easy Locs" contacts (with green badge) and "Phone Contacts" (with invite)
   - `InviteContactSheet` supports invite-only OR invite+send (pending payment link)

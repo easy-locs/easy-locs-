@@ -63,6 +63,7 @@ export async function fetchGroupMessages(conversationId: string, limit = 200) {
     .from("chat_messages_v2")
     .select("*")
     .eq("conversation_id", conversationId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: true })
     .limit(limit);
   if (error) throw error;
@@ -518,26 +519,38 @@ export async function sendInviteEmail(recipientEmail: string, subject: string, m
 
 // ── Chat message delete/edit ──
 export async function deleteChatMessageForEveryone(msgId: string, userId: string) {
+  const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", msgId).single();
+  const meta = (existing?.metadata as Record<string, any>) || {};
   const { error } = await db("chat_messages_v2").update({
     deleted_at: new Date().toISOString(),
+    deleted_for_all: true,
+    deleted_by: userId,
     body: "🚫 This message was deleted",
-    metadata: { deleted_by: userId, deletion_reason: "user_action" },
+    metadata: { ...meta, deleted_by: userId, deletion_reason: "user_action" },
   }).eq("id", msgId);
   if (error) throw error;
 }
 
 export async function deleteChatMessageModeration(msgId: string, userId: string) {
+  const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", msgId).single();
+  const meta = (existing?.metadata as Record<string, any>) || {};
   const { error } = await db("chat_messages_v2").update({
     deleted_at: new Date().toISOString(),
+    deleted_for_all: true,
+    deleted_by: userId,
     body: "🚫 This message was deleted",
-    metadata: { deleted_by: userId, deletion_reason: "moderation" },
+    metadata: { ...meta, deleted_by: userId, deletion_reason: "moderation" },
   }).eq("id", msgId);
   if (error) throw error;
 }
 
 export async function hideChatMessageForSelf(msgId: string, userId: string) {
+  const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", msgId).single();
+  const meta = (existing?.metadata as Record<string, any>) || {};
+  const currentHidden: string[] = Array.isArray(meta.hidden_for) ? meta.hidden_for : [];
+  if (currentHidden.includes(userId)) return;
   const { error } = await db("chat_messages_v2").update({
-    metadata: { hidden_for: [userId] },
+    metadata: { ...meta, hidden_for: [...currentHidden, userId] },
   }).eq("id", msgId);
   if (error) throw error;
 }
@@ -551,8 +564,11 @@ export async function editChatMessage(msgId: string, newBody: string) {
 
 export async function setDisappearTimer(msgId: string, seconds: number) {
   const disappearAt = seconds > 0 ? new Date(Date.now() + seconds * 1000).toISOString() : null;
+  const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", msgId).single();
+  const meta = (existing?.metadata as Record<string, any>) || {};
   const { error } = await db("chat_messages_v2").update({
-    metadata: { disappear_after_seconds: seconds, disappear_at: disappearAt },
+    disappear_at: disappearAt,
+    metadata: { ...meta, disappear_after_seconds: seconds },
   }).eq("id", msgId);
   if (error) throw error;
 }
