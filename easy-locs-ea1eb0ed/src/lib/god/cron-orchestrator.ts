@@ -42,6 +42,7 @@ interface CronJobState {
   last_result: CronJobResult | null;
   last_error: string | null;
   timer: ReturnType<typeof setInterval> | null;
+  pendingRetryTimers: ReturnType<typeof setTimeout>[];
 }
 
 interface DeadLetterEntry {
@@ -129,6 +130,7 @@ class CronOrchestrator extends BaseEngine {
       last_result: null,
       last_error: null,
       timer: null,
+      pendingRetryTimers: [],
     };
 
     this.jobs.set(declaration.job_id, state);
@@ -164,6 +166,10 @@ class CronOrchestrator extends BaseEngine {
         clearInterval(state.timer);
         state.timer = null;
       }
+      for (const rt of state.pendingRetryTimers) {
+        clearTimeout(rt);
+      }
+      state.pendingRetryTimers = [];
     }
     this.log("info", "Stopped all cron jobs");
   }
@@ -281,10 +287,12 @@ class CronOrchestrator extends BaseEngine {
       state.status = "idle";
     } else {
       const backoff = state.declaration.retry_policy.backoff_ms * Math.pow(2, state.retry_count - 1);
-      setTimeout(() => {
+      const retryTimer = setTimeout(() => {
+        state.pendingRetryTimers = state.pendingRetryTimers.filter((t) => t !== retryTimer);
         state.status = "idle";
         this.executeJob(state);
       }, backoff);
+      state.pendingRetryTimers.push(retryTimer);
     }
   }
 
@@ -296,6 +304,10 @@ class CronOrchestrator extends BaseEngine {
       clearInterval(state.timer);
       state.timer = null;
     }
+    for (const rt of state.pendingRetryTimers) {
+      clearTimeout(rt);
+    }
+    state.pendingRetryTimers = [];
     return true;
   }
 

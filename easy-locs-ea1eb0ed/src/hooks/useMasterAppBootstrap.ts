@@ -198,6 +198,16 @@ export function useMasterAppBootstrap() {
     }, 15000);
     timers.push(t5);
 
+    const t6 = setTimeout(async () => {
+      try {
+        const { godCore } = await import("@/lib/god/god-core");
+        godCore.boot();
+      } catch (e) {
+        console.warn("[boot] god-system failed", e);
+      }
+    }, 18000);
+    timers.push(t6);
+
     return () => {
       timers.forEach(clearTimeout);
       cleanups.forEach((fn) => fn());
