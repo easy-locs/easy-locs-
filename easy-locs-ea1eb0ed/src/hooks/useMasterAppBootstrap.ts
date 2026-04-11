@@ -219,6 +219,17 @@ export function useMasterAppBootstrap() {
     }, 22000);
     timers.push(t7);
 
+    const t8 = setTimeout(async () => {
+      try {
+        const { omegaCore } = await import("@/core/omega");
+        await omegaCore.boot();
+        cleanups.push(() => { omegaCore.shutdown(); });
+      } catch (e) {
+        console.warn("[boot] omega-core failed", e);
+      }
+    }, 28000);
+    timers.push(t8);
+
     return () => {
       timers.forEach(clearTimeout);
       cleanups.forEach((fn) => fn());
