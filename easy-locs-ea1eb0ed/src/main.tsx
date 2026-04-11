@@ -1,13 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { HashRouter } from "react-router-dom";
-import { withProfiler } from "@sentry/react";
 import RawApp from "./App";
 import "./index.css";
 import "./styles/performance.css";
 import { APP_VERSION } from "@/lib/version-check";
 
-const App = import.meta.env.PROD ? withProfiler(RawApp, { name: "App" }) : RawApp;
+const App = RawApp;
 
 if (typeof globalThis.crypto !== "undefined" && typeof globalThis.crypto.randomUUID !== "function") {
   (globalThis.crypto as any).randomUUID = () =>
@@ -29,16 +28,18 @@ if (typeof window !== "undefined") {
   }
   (window as any).__EASYLOCS_BUILD_ID__ = APP_VERSION;
 
-  import("@/lib/platform/web-vitals").then(m => m.initWebVitals()).catch(() => {});
   setTimeout(() => {
-    import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});
+    import("@/lib/platform/web-vitals").then(m => m.initWebVitals()).catch(() => {});
   }, 3000);
   setTimeout(() => {
+    import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});
+  }, 6000);
+  setTimeout(() => {
     import("@/lib/events/event-init").catch(() => {});
-  }, 4000);
+  }, 8000);
   setTimeout(() => {
     import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()).catch(() => {});
-  }, 6000);
+  }, 10000);
 }
 
 try {

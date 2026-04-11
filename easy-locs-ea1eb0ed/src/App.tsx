@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 // ── React & routing ──
-import { Suspense, lazy, useState, useEffect } from "react";
+import { Suspense, lazy, useState, useEffect, memo } from "react";
 import { Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
@@ -13,38 +13,65 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { I18nProvider } from "@/lib/i18n";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
-
-// ── Deferred providers (eagerly mount context, defer internals) ──
-import { CallProvider } from "@/components/call/CallProvider";
-import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
-
 // ── Shell & system (critical — loaded eagerly for app tree) ──
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary";
 import { AppCrashBoundary } from "@/components/system/AppCrashBoundary";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
-import AppLockGuard from "@/components/security/AppLockGuard";
 
-// ── UI chrome (critical) ──
+// ── UI chrome (critical — minimal for first paint) ──
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import MainBottomNav from "@/components/navigation/MainBottomNav";
 import SwipeableMain from "@/components/navigation/SwipeableMain";
 import { HomeRouter, MarketplaceHomeRouter } from "@/components/app/AppRouters";
 
-// ── Deferred shell (lazy-loaded — not needed for first paint) ──
+// ── ALL heavy providers & chrome deferred via lazy ──
+const MainBottomNav = lazy(() => import("@/components/navigation/MainBottomNav"));
 const SmartInstallBanner = lazy(() => import("@/components/pwa/SmartInstallBanner"));
 const SmartCloseFlowSheet = lazy(() => import("@/components/close-flow/SmartCloseFlowSheet"));
 const FloatingCTAButton = lazy(() => import("@/components/engine/FloatingCTAButton").then(m => ({ default: m.FloatingCTAButton })));
 const OrbitPromptOverlay = lazy(() => import("@/components/engine/OrbitPromptOverlay").then(m => ({ default: m.OrbitPromptOverlay })));
 const GlobalOverlayRenderer = lazy(() => import("@/components/overlays/GlobalOverlayRenderer").then(m => ({ default: m.GlobalOverlayRenderer })));
 const IntentNavigateProvider = lazy(() => import("@/components/app/IntentNavigateProvider"));
-import SmartCoreTracker from "@/components/system/SmartCoreTracker";
-import SentryRouteTracker from "@/components/system/SentryRouteTracker";
-import { initQualityGates } from "@/lib/quality-gates";
+const SmartCoreTracker = lazy(() => import("@/components/system/SmartCoreTracker"));
+const SentryRouteTracker = lazy(() => import("@/components/system/SentryRouteTracker"));
+const LazyAppLockGuard = lazy(() => import("@/components/security/AppLockGuard"));
+function AppLockGuardShell({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<>{children}</>}>
+      <LazyAppLockGuard>{children}</LazyAppLockGuard>
+    </Suspense>
+  );
+}
 
-initQualityGates();
+// ── Deferred heavy providers — mount 1.5s after first paint ──
+const LazyCallProvider = lazy(() => import("@/components/call/CallProvider").then(m => ({ default: m.CallProvider })));
+const LazyUnifiedPaymentProvider = lazy(() => import("@/payments/UnifiedPaymentSystem").then(m => ({ default: m.UnifiedPaymentProvider })));
+
+function DeferredHeavyProviders({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const id = requestIdleCallback ? requestIdleCallback(() => setReady(true), { timeout: 1500 }) : setTimeout(() => setReady(true), 800) as unknown as number;
+    return () => { try { cancelIdleCallback(id); } catch { clearTimeout(id); } };
+  }, []);
+  if (!ready) return <>{children}</>;
+  return (
+    <Suspense fallback={<>{children}</>}>
+      <LazyCallProvider>
+        <LazyUnifiedPaymentProvider>
+          {children}
+        </LazyUnifiedPaymentProvider>
+      </LazyCallProvider>
+    </Suspense>
+  );
+}
+
+// ── Quality gates — defer to idle (never block parse) ──
+const scheduleIdle = typeof requestIdleCallback === "function"
+  ? (fn: () => void) => requestIdleCallback(fn, { timeout: 3000 })
+  : (fn: () => void) => setTimeout(fn, 1500);
+scheduleIdle(() => { import("@/lib/quality-gates").then(m => m.initQualityGates()).catch(() => {}); });
 
 // ── Deferred boot guards — loaded 3s after first paint ──
 function DeferredBootGuards() {
@@ -267,10 +294,10 @@ if (import.meta.env.DEV) {
 setActionQueryClient(queryClient);
 setTimeout(() => {
   import("@/lib/smart-prefetch").then((m) => m.prefetchCriticalRoutes()).catch((e) => console.warn("[boot] prefetch failed", e));
-}, 2000);
+}, 5000);
 setTimeout(() => {
   import("@/lib/super-app-bridge").then((m) => m.installSuperAppBridge()).catch((e) => console.warn("[boot] super-app-bridge failed", e));
-}, 5000);
+}, 8000);
 
 const PageLoader = () => (
   <div className="app-mobile-page bg-background min-h-[60dvh] px-4 pt-5">
@@ -300,15 +327,16 @@ const App = () => (
     <Toaster />
     <Sonner />
     <AuthProvider>
-    <CallProvider>
-    <UnifiedPaymentProvider>
-    <AppLockGuard>
+    <DeferredHeavyProviders>
+    <AppLockGuardShell>
       <Suspense fallback={null}>
         <IntentNavigateProvider />
       </Suspense>
       <DeferredBootGuards />
-      <SmartCoreTracker />
-      <SentryRouteTracker />
+      <Suspense fallback={null}>
+        <SmartCoreTracker />
+        <SentryRouteTracker />
+      </Suspense>
       <Suspense fallback={<PageLoader />}>
         <SwipeableMain className="pb-[calc(72px+env(safe-area-inset-bottom,0px)+16px)]">
           <Routes>
@@ -855,16 +883,15 @@ const App = () => (
             </Routes>
           </SwipeableMain>
         </Suspense>
-        <MainBottomNav />
+        <Suspense fallback={null}><MainBottomNav /></Suspense>
         <Suspense fallback={null}>
           <SmartInstallBanner />
           <FloatingCTAButton />
           <OrbitPromptOverlay />
           <SmartCloseFlowSheet />
         </Suspense>
-    </AppLockGuard>
-    </UnifiedPaymentProvider>
-    </CallProvider>
+    </AppLockGuardShell>
+    </DeferredHeavyProviders>
     <Suspense fallback={null}><GlobalOverlayRenderer /></Suspense>
     </AuthProvider>
   </TooltipProvider>
