@@ -1115,7 +1115,9 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
       if (!e.enabled) { disabled++; continue; }
       if (e.status === "error") { errored++; errorNames.push(e.engine_name); continue; }
       const hb = e.heartbeat ? new Date(e.heartbeat).getTime() : 0;
-      if (hb > 0 && now - hb > staleThreshold) {
+      if (hb === 0) {
+        healthy++;
+      } else if (now - hb > staleThreshold) {
         stale++;
         staleNames.push(e.engine_name);
         await sb.from("engine_supervisor").update({ status: "idle", consecutive_failures: 0 }).eq("engine_name", e.engine_name);
