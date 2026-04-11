@@ -293,10 +293,22 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   );
 }
 
+const FALLBACK_I18N: I18nContextType = {
+  locale: "en" as Locale,
+  setLocale: () => {},
+  t: (key: string) => {
+    const last = key.split(".").pop() || key;
+    return last.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  },
+  availableLocales: [{ value: "en" as Locale, label: "English" }],
+};
+
 export function useI18n() {
   const ctx = useContext(I18nContext);
-  if (!ctx) throw new Error("useI18n must be used within I18nProvider");
-  return ctx;
+  if (!ctx && import.meta.env.DEV) {
+    console.warn("[i18n] useI18n called outside I18nProvider — using fallback. Check provider nesting.");
+  }
+  return ctx ?? FALLBACK_I18N;
 }
 
 export function tSafe(t: (key: string, vars?: Record<string, any>) => string, key: string, fallback: string, vars?: Record<string, any>): string {
