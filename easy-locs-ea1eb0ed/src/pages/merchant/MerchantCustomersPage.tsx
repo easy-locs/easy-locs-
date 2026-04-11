@@ -6,7 +6,7 @@ export default function MerchantCustomersPage() {
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data: rows = [], isLoading } = useQuery({
+  const { data: rows = [], isLoading , isError } = useQuery({
     queryKey: ["merchant-customers-page", merchantId],
     queryFn: async () => {
       const data = await merchantService.fetchCustomerOrders(merchantId);
@@ -68,6 +68,7 @@ export default function MerchantCustomersPage() {
         </div>
       </div>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mb-3 h-24 rounded-2xl bg-muted animate-pulse" />
       ))}

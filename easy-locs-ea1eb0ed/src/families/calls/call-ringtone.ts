@@ -53,8 +53,8 @@ function playSynthRingtone(type: Exclude<RingtoneType, "none">, loop: boolean) {
       const durSec = p.onMs / 1000;
 
       p.freqs.forEach((freq) => {
-        const osc = synthCtx!.createOscillator();
-        const gain = synthCtx!.createGain();
+        const osc = synthCtx.createOscillator();
+        const gain = synthCtx.createGain();
         osc.type = "sine";
         osc.frequency.value = freq;
         gain.gain.setValueAtTime(0, now);
@@ -62,7 +62,7 @@ function playSynthRingtone(type: Exclude<RingtoneType, "none">, loop: boolean) {
         gain.gain.setValueAtTime(p.gain, now + durSec - 0.02);
         gain.gain.linearRampToValueAtTime(0, now + durSec);
         osc.connect(gain);
-        gain.connect(synthCtx!.destination);
+        gain.connect(synthCtx.destination);
         osc.start(now);
         osc.stop(now + durSec);
       });

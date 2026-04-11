@@ -25,7 +25,7 @@ const Collaboration = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: () => collabRepo.fetchUserOrgDetails(user!.id),
+    queryFn: () => collabRepo.fetchUserOrgDetails(user?.id),
     enabled: !!user,
   });
 
@@ -33,18 +33,18 @@ const Collaboration = () => {
 
   const { data: members = [] } = useQuery({
     queryKey: ["org_members", org?.id],
-    queryFn: () => collabRepo.fetchOrgMembers(org!.id),
+    queryFn: () => collabRepo.fetchOrgMembers(org?.id),
     enabled: !!org,
   });
 
   const { data: invitations = [] } = useQuery({
     queryKey: ["collab_invitations", org?.id],
-    queryFn: () => collabRepo.fetchCollabInvitations(org!.id),
+    queryFn: () => collabRepo.fetchCollabInvitations(org?.id),
     enabled: !!org,
   });
 
   const inviteMut = useMutation({
-    mutationFn: () => collabRepo.insertInvitation(org!.id, user!.id, email, role),
+    mutationFn: () => collabRepo.insertInvitation(org?.id, user?.id, email, role),
     onSuccess: () => {
       toast.success("Invitation sent!");
       qc.invalidateQueries({ queryKey: ["collab_invitations"] });

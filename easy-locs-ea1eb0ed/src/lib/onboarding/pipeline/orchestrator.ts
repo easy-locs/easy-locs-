@@ -109,15 +109,16 @@ export async function runPipelineV2(rawParams: {
 
     // Step 5: Web fallback (soft-fail)
     let finalGroup = [...group];
-    if (mergeStep.data.missingFields.length > 0) {
-      const fallbackStep = await executeStep(`web.fallback[${i}]`, { missing: mergeStep.data.missingFields }, softCtx("fallback", 5), async () =>
+    const mData = mergeStep.data;
+    if (mData.missingFields.length > 0) {
+      const fallbackStep = await executeStep(`web.fallback[${i}]`, { missing: mData.missingFields }, softCtx("fallback", 5), async () =>
         fillMissingWithWebFallback(vertical, {
-          name: mergeStep.data!.canonicalName,
-          city: mergeStep.data!.city,
-          district: mergeStep.data!.district,
-          country: mergeStep.data!.country,
-          website: mergeStep.data!.website,
-          phone: mergeStep.data!.phone,
+          name: mData.canonicalName,
+          city: mData.city,
+          district: mData.district,
+          country: mData.country,
+          website: mData.website,
+          phone: mData.phone,
         }),
       );
       steps.push(fallbackStep.state);

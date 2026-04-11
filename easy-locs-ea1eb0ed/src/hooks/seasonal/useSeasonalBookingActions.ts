@@ -117,7 +117,7 @@ export function useSeasonalBookingActions({ properties, reload }: UseSeasonalBoo
       dispatchSyncEvent({
         type: "payment_request_sent",
         context: { orgId: orgId!, propertyId: req.property_id, bookingId: req.id, countryCode: (prop as any)?.country || "" },
-        actorUserId: user!.id, targetEmail: req.guest_email,
+        actorUserId: user?.id, targetEmail: req.guest_email,
         amount: totalAmount, currency: "EUR",
         description: `Payment for ${listingData?.title || ""} — ${req.check_in} → ${req.check_out}`,
         recipientName: req.guest_name,

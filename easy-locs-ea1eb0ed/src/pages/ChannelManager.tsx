@@ -60,31 +60,31 @@ const ChannelManager = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: () => fetchOrgForUser(user!.id),
+    queryFn: () => fetchOrgForUser(user?.id),
     enabled: !!user,
   });
 
   const { data: properties = [] } = useQuery({
     queryKey: ["properties", org?.id],
-    queryFn: () => fetchProperties(org!.id),
+    queryFn: () => fetchProperties(org?.id),
     enabled: !!org,
   });
 
   const { data: connections = [] } = useQuery({
     queryKey: ["ota_connections", org?.id],
-    queryFn: () => fetchOtaConnections(org!.id),
+    queryFn: () => fetchOtaConnections(org?.id),
     enabled: !!org,
   });
 
   const { data: pricingRules = [] } = useQuery({
     queryKey: ["pricing_rules", org?.id],
-    queryFn: () => fetchPricingRules(org!.id),
+    queryFn: () => fetchPricingRules(org?.id),
     enabled: !!org,
   });
 
   const { data: reservations = [] } = useQuery({
     queryKey: ["channel_reservations", org?.id],
-    queryFn: () => fetchChannelReservations(org!.id),
+    queryFn: () => fetchChannelReservations(org?.id),
     enabled: !!org,
   });
 
@@ -94,13 +94,13 @@ const ChannelManager = () => {
   };
 
   const syncMut = useMutation({
-    mutationFn: async (conn: any) => { setSyncingId(conn.id); return syncIcal(conn, org!.id); },
+    mutationFn: async (conn: any) => { setSyncingId(conn.id); return syncIcal(conn, org?.id); },
     onSuccess: (data) => { toast.success(`Sync terminée : ${data.inserted} nouvelles, ${data.skipped} existantes`); invalidateAll(); setSyncingId(null); },
     onError: (err: Error) => { console.error("[ChannelManager]", err.message); toast.error("Sync failed. Please try again."); setSyncingId(null); },
   });
 
   const addMut = useMutation({
-    mutationFn: () => addOtaConnection(org!.id, user!.id, newConn.provider, newConn.ical_url, newConn.property_id),
+    mutationFn: () => addOtaConnection(org?.id, user?.id, newConn.provider, newConn.ical_url, newConn.property_id),
     onSuccess: () => { toast.success("Connexion OTA ajoutée"); invalidateAll(); setAddOpen(false); setNewConn({ provider: "airbnb", ical_url: "", property_id: "" }); },
     onError: (e: Error) => { console.error("[ChannelManager]", e.message); toast.error("Something went wrong. Please try again."); },
   });
@@ -113,7 +113,7 @@ const ChannelManager = () => {
   const cancelReservation = async (res: Reservation) => {
     setCancellingId(res.id);
     try {
-      await cancelRes(res, org!.id);
+      await cancelRes(res, org?.id);
       if (user) await notifyOwner(user.id, "🚫 Réservation annulée", `${res.guest_name} — ${res.check_in} → ${res.check_out}`, "/dashboard/channels");
       toast.success("Réservation annulée et e-mail envoyé");
       invalidateAll();
@@ -124,7 +124,7 @@ const ChannelManager = () => {
   const modifyDates = async () => {
     if (!editModalRes || !editDates.check_in || !editDates.check_out) return;
     if (editDates.check_out <= editDates.check_in) { toast.error("La date de départ doit être après l'arrivée"); return; }
-    await modifyReservationDates(editModalRes, editDates.check_in, editDates.check_out, org!.id);
+    await modifyReservationDates(editModalRes, editDates.check_in, editDates.check_out, org?.id);
     toast.success("Dates modifiées et e-mail envoyé");
     setEditModalRes(null);
     invalidateAll();

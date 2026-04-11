@@ -53,7 +53,7 @@ export default function GiftCardManager({ shopId, mode }: Props) {
 
   const { data: cards = [], isLoading } = useQuery({
     queryKey: ["storefront-gift-cards", shopId, mode],
-    queryFn: () => fetchGiftCards(shopId, mode, user!.id),
+    queryFn: () => fetchGiftCards(shopId, mode, user?.id),
     enabled: !!shopId && !!user,
   });
 
@@ -67,7 +67,7 @@ export default function GiftCardManager({ shopId, mode }: Props) {
         code,
         type,
         amount: num,
-        purchaserId: user!.id,
+        purchaserId: user?.id,
         recipientEmail: recipientEmail || null,
         message: message || null,
       });
@@ -86,7 +86,7 @@ export default function GiftCardManager({ shopId, mode }: Props) {
   const redeemCardMutation = useMutation({
     mutationFn: async () => {
       if (!redeemCode.trim()) throw new Error("Enter a code");
-      await redeemGiftCard(redeemCode, shopId, user!.id);
+      await redeemGiftCard(redeemCode, shopId, user?.id);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["storefront-gift-cards"] });

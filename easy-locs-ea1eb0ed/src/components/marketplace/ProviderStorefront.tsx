@@ -40,7 +40,7 @@ export default function ProviderStorefront() {
 
   const { data: services = [] } = useQuery({
     queryKey: ["marketplace_services_public", provider?.id],
-    queryFn: () => fetchPublicServices(provider!.id),
+    queryFn: () => fetchPublicServices(provider?.id),
     enabled: !!provider?.id,
   });
 
@@ -51,7 +51,7 @@ export default function ProviderStorefront() {
   // Fetch ALL reviews from DB for client-side pagination
   const { data: reviews = [] } = useQuery({
     queryKey: ["provider_reviews", provider?.id],
-    queryFn: () => fetchProviderReviews(provider!.id),
+    queryFn: () => fetchProviderReviews(provider?.id),
     enabled: !!provider?.id,
   });
 

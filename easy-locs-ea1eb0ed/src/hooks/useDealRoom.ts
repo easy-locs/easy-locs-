@@ -33,10 +33,11 @@ export function useGetOrCreateDealRoom() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ contextType, contextId, contextTitle, targetOrgId, threadId }: { contextType: string; contextId: string; contextTitle?: string; targetOrgId: string; threadId?: string }) => {
-      const existing = await dealRepo.findExistingDealRoom(contextType, contextId, user!.id);
+      if (!user?.id) throw new Error("User not authenticated");
+      const existing = await dealRepo.findExistingDealRoom(contextType, contextId, user.id);
       if (existing) return existing;
-      const data = await dealRepo.createDealRoom({ org_id: targetOrgId, buyer_id: user!.id, context_type: contextType, context_id: contextId, context_title: contextTitle || "", thread_id: threadId || null, status: "inquiry" });
-      await dealRepo.insertDealEvent({ deal_id: data.id, event_type: "status_change", actor_id: user!.id, actor_role: "buyer", data_json: { new_status: "inquiry", context_title: contextTitle } });
+      const data = await dealRepo.createDealRoom({ org_id: targetOrgId, buyer_id: user.id, context_type: contextType, context_id: contextId, context_title: contextTitle || "", thread_id: threadId || null, status: "inquiry" });
+      await dealRepo.insertDealEvent({ deal_id: data.id, event_type: "status_change", actor_id: user.id, actor_role: "buyer", data_json: { new_status: "inquiry", context_title: contextTitle } });
       return data;
     },
     onSuccess: () => { DEAL_QUERY_KEYS.forEach(k => queryClient.invalidateQueries({ queryKey: k })); },
@@ -64,7 +65,7 @@ export function useMyDeals() {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["deal_rooms", "my", user?.id],
-    queryFn: () => dealRepo.fetchMyDeals(user!.id),
+    queryFn: () => dealRepo.fetchMyDeals(user?.id),
     enabled: !!user?.id,
   });
 }
@@ -82,8 +83,9 @@ export function useSendOffer() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ dealId, amount, currency, message }: { dealId: string; amount: number; currency?: string; message?: string }) => {
+      if (!user?.id) throw new Error("User not authenticated");
       await dealRepo.updateDealRoom(dealId, { current_offer_amount: amount, current_offer_currency: currency || "EUR", status: "offer_sent" });
-      await dealRepo.insertDealEvent({ deal_id: dealId, event_type: "offer", actor_id: user!.id, data_json: { amount, currency: currency || "EUR", message } });
+      await dealRepo.insertDealEvent({ deal_id: dealId, event_type: "offer", actor_id: user.id, data_json: { amount, currency: currency || "EUR", message } });
     },
     onSuccess: () => { DEAL_QUERY_KEYS.forEach(k => queryClient.invalidateQueries({ queryKey: k })); toast.success("Offer sent"); },
     onError: (err: any) => { console.error("[Deal]", err.message); toast.error("Something went wrong. Please try again."); },
@@ -95,8 +97,9 @@ export function useSendCounterOffer() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ dealId, amount, currency, message }: { dealId: string; amount: number; currency?: string; message?: string }) => {
+      if (!user?.id) throw new Error("User not authenticated");
       await dealRepo.updateDealRoom(dealId, { counter_offer_amount: amount, status: "counter_offer" });
-      await dealRepo.insertDealEvent({ deal_id: dealId, event_type: "counter_offer", actor_id: user!.id, data_json: { amount, currency: currency || "EUR", message } });
+      await dealRepo.insertDealEvent({ deal_id: dealId, event_type: "counter_offer", actor_id: user.id, data_json: { amount, currency: currency || "EUR", message } });
     },
     onSuccess: () => { DEAL_QUERY_KEYS.forEach(k => queryClient.invalidateQueries({ queryKey: k })); toast.success("Counter-offer sent"); },
     onError: (err: any) => { console.error("[Deal]", err.message); toast.error("Something went wrong. Please try again."); },
@@ -108,8 +111,9 @@ export function useAcceptDeal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ dealId, acceptedAmount }: { dealId: string; acceptedAmount: number }) => {
+      if (!user?.id) throw new Error("User not authenticated");
       await dealRepo.updateDealRoom(dealId, { accepted_amount: acceptedAmount, status: "accepted" });
-      await dealRepo.insertDealEvent({ deal_id: dealId, event_type: "status_change", actor_id: user!.id, data_json: { action: "accepted", accepted_amount: acceptedAmount } });
+      await dealRepo.insertDealEvent({ deal_id: dealId, event_type: "status_change", actor_id: user.id, data_json: { action: "accepted", accepted_amount: acceptedAmount } });
     },
     onSuccess: () => { DEAL_QUERY_KEYS.forEach(k => queryClient.invalidateQueries({ queryKey: k })); toast.success("Deal accepted!"); },
     onError: (err: any) => { console.error("[Deal]", err.message); toast.error("Something went wrong. Please try again."); },

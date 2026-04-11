@@ -9,13 +9,13 @@ export default function DriverEarningsPageNew() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading , isError } = useQuery({
     queryKey: ["driver-earnings-page-v2", user?.id],
     queryFn: async () => {
       const { data: walletAccounts, error: walletErr } = await db
         .from("wallet_accounts")
         .select("id")
-        .eq("owner_user_id", user!.id);
+        .eq("owner_user_id", user?.id);
 
       if (walletErr) throw walletErr;
 
@@ -61,6 +61,7 @@ export default function DriverEarningsPageNew() {
         </div>
       </header>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2].map((i) => (
         <div key={i} className="mx-4 mt-3 h-16 rounded-2xl bg-muted animate-pulse" />
       ))}

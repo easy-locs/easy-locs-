@@ -48,7 +48,7 @@ export default function AffiliateProgram({ shopId, shopSlug, mode }: Props) {
         .from("storefront_affiliates")
         .select("*")
         .eq("shop_id", shopId)
-        .eq("user_id", user!.id)
+        .eq("user_id", user?.id)
         .maybeSingle();
       return data;
     },

@@ -183,7 +183,7 @@ function buildCanonicalMetadata(
       startedAt: legacy.started_at || null,
       endedAt: legacy.ended_at || null,
     };
-    meta.ui!.primaryAction = "callback";
+    meta.ui.primaryAction = "callback";
   }
 
   // Location
@@ -196,7 +196,7 @@ function buildCanonicalMetadata(
       label: legacy.label ?? null,
       liveUntil: type === "location_live" ? legacy.live_until ?? null : null,
     };
-    meta.ui!.primaryAction = "open_map";
+    meta.ui.primaryAction = "open_map";
   }
 
   // Voice / Media
@@ -214,7 +214,7 @@ function buildCanonicalMetadata(
       transcription: legacy.transcription || null,
       transcriptionStatus: legacy.transcript_status || "none",
     };
-    meta.ui!.primaryAction = "open_media";
+    meta.ui.primaryAction = "open_media";
   }
 
   // Payment
@@ -227,7 +227,7 @@ function buildCanonicalMetadata(
       paymentType: type === "payment_request" ? "request" : "receipt",
       recipientName: legacy.recipient_name || null,
     };
-    meta.ui!.primaryAction = "open_payment";
+    meta.ui.primaryAction = "open_payment";
   }
 
   // System

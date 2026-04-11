@@ -51,7 +51,7 @@ export function useDealRoomData(contextType: string, contextId: string) {
       const { data } = await supabase
         .from("deal_events")
         .select("*")
-        .eq("deal_id", deal!.id)
+        .eq("deal_id", deal?.id)
         .order("created_at", { ascending: true });
       return data || [];
     },

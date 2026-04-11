@@ -70,7 +70,7 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
   const createLive = useMutation({
     mutationFn: async () => {
       await db("storefront_live_sessions").insert({
-        shop_id: shopId, host_id: user!.id,
+        shop_id: shopId, host_id: user?.id,
         title: liveForm.title, description: liveForm.description,
         scheduled_at: liveForm.scheduledAt || null,
       });
@@ -98,7 +98,7 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
   const createPost = useMutation({
     mutationFn: async () => {
       await db("storefront_social_posts").insert({
-        shop_id: shopId, user_id: user!.id,
+        shop_id: shopId, user_id: user?.id,
         content: postForm.content, caption: postForm.content,
         post_type: postForm.postType, status: "published",
       });
@@ -114,11 +114,11 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
   const likeMutation = useMutation({
     mutationFn: async (postId: string) => {
       const { data: existing } = await db("storefront_social_likes")
-        .select("id").eq("post_id", postId).eq("user_id", user!.id).maybeSingle();
+        .select("id").eq("post_id", postId).eq("user_id", user?.id).maybeSingle();
       if (existing) {
         await db("storefront_social_likes").delete().eq("id", existing.id);
       } else {
-        await db("storefront_social_likes").insert({ post_id: postId, user_id: user!.id });
+        await db("storefront_social_likes").insert({ post_id: postId, user_id: user?.id });
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["social-posts-v2"] }),

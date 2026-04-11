@@ -46,7 +46,7 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["my-orders", shopId],
-    queryFn: () => storefrontOrdersService.fetchOrdersByShop(shopId, user!.id),
+    queryFn: () => storefrontOrdersService.fetchOrdersByShop(shopId, user?.id),
     enabled: !!user,
   });
 

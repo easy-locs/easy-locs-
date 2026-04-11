@@ -53,7 +53,7 @@ export function useRentalLeaseGenerator(properties: Property[], userCountry: str
     let landlordEmail = user?.email || "";
     let landlordSignature = "";
     try {
-      const profile = await rentalRepo.fetchProfile(user!.id);
+      const profile = await rentalRepo.fetchProfile(user?.id);
       if (profile?.name) landlordName = profile.name;
       if (profile?.email) landlordEmail = profile.email;
       if (profile?.signature_url) landlordSignature = profile.signature_url;
@@ -101,7 +101,7 @@ export function useRentalLeaseGenerator(properties: Property[], userCountry: str
       const title = `${leaseLabel} — ${form.name}`;
       if (orgId) {
         await rentalRepo.insertDocument({
-          org_id: orgId, user_id: user!.id, title, doc_type: template.docType,
+          org_id: orgId, user_id: user?.id, title, doc_type: template.docType,
           template_id: template.id, template_version: template.version,
           data_json: leaseData as any, status: "draft", country: propCountry,
         });

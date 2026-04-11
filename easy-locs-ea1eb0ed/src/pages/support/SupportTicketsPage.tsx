@@ -10,10 +10,10 @@ export default function SupportTicketsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: tickets = [], isLoading } = useQuery({
+  const { data: tickets = [], isLoading , isError } = useQuery({
     queryKey: ["support-tickets", user?.id],
     enabled: !!user?.id,
-    queryFn: () => supportService.fetchTickets(user!.id),
+    queryFn: () => supportService.fetchTickets(user?.id),
     staleTime: 15_000,
   });
 
@@ -33,7 +33,8 @@ export default function SupportTicketsPage() {
       </header>
 
       <div className="flex-1 px-4 pb-24 space-y-3">
-        {isLoading && [1, 2, 3].map((i) => (
+        {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      {isLoading && [1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-24 rounded-2xl" />
         ))}
 

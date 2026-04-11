@@ -12,7 +12,7 @@ export default function MerchantLiveControlPage() {
   const [promoActive, setPromoActive] = useState(false);
   const [openFlag, setOpenFlag] = useState(false);
 
-  const { data: merchant, isLoading, refetch } = useQuery({
+  const { data: merchant, isLoading, refetch , isError } = useQuery({
     queryKey: ["merchant-live-control", merchantId],
     queryFn: () => merchantService.fetchMerchantById(merchantId),
     enabled: !!merchantId,
@@ -44,6 +44,8 @@ export default function MerchantLiveControlPage() {
       setSaving(false);
     }
   };
+
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
     <div className="app-mobile-page bg-background pb-24">

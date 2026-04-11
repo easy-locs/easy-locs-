@@ -16,7 +16,7 @@ export default function MerchantStaffAccessPage() {
   const [role, setRole] = useState<"manager" | "cashier" | "kitchen" | "support">("manager");
   const [saving, setSaving] = useState(false);
 
-  const { data: rows = [], refetch, isLoading } = useQuery({
+  const { data: rows = [], refetch, isLoading , isError } = useQuery({
     queryKey: ["merchant-staff", merchantId],
     queryFn: () => listMerchantStaff(merchantId!),
     enabled: !!merchantId,
@@ -84,6 +84,7 @@ export default function MerchantStaffAccessPage() {
         </button>
       </div>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && <div className="h-28 rounded-[28px] bg-muted animate-pulse" />}
 
       {!isLoading && rows.length === 0 && (

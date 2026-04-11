@@ -67,7 +67,7 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
   const { data: isSubscribed } = useQuery({
     queryKey: ["deal-sub", shopId, user?.id],
     queryFn: async () => {
-      const { data } = await db("storefront_deal_subscribers").select("id").eq("shop_id", shopId).eq("user_id", user!.id).maybeSingle();
+      const { data } = await db("storefront_deal_subscribers").select("id").eq("shop_id", shopId).eq("user_id", user?.id).maybeSingle();
       return !!data;
     },
     enabled: !!shopId && !!user && mode === "buyer",
@@ -95,9 +95,9 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
   const subscribe = useMutation({
     mutationFn: async () => {
       if (isSubscribed) {
-        await db("storefront_deal_subscribers").delete().eq("shop_id", shopId).eq("user_id", user!.id);
+        await db("storefront_deal_subscribers").delete().eq("shop_id", shopId).eq("user_id", user?.id);
       } else {
-        await db("storefront_deal_subscribers").insert({ shop_id: shopId, user_id: user!.id });
+        await db("storefront_deal_subscribers").insert({ shop_id: shopId, user_id: user?.id });
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["deal-sub"] }); toast.success(isSubscribed ? "Unsubscribed" : "Subscribed to deals!"); },

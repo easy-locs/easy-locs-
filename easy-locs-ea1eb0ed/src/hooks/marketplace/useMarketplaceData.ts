@@ -19,7 +19,7 @@ export function useMarketplaceData(orgId: string | undefined, displayCurrency: s
 
   const { data: myServices = [] } = useQuery({
     queryKey: ["my_marketplace_services", myProvider?.id],
-    queryFn: () => fetchMyServices(myProvider!.id),
+    queryFn: () => fetchMyServices(myProvider?.id),
     enabled: !!myProvider?.id,
   });
 

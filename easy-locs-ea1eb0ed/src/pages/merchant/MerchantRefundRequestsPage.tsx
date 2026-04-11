@@ -7,7 +7,7 @@ export default function MerchantRefundRequestsPage() {
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data: rows = [], isLoading, refetch } = useQuery({
+  const { data: rows = [], isLoading, refetch , isError } = useQuery({
     queryKey: ["merchant-refund-requests", merchantId],
     queryFn: () => merchantService.fetchOrders(merchantId, { statuses: ["disputed", "refunded"], orderBy: "updated_at", limit: 200 }),
     enabled: !!merchantId,
@@ -34,6 +34,7 @@ export default function MerchantRefundRequestsPage() {
         </div>
       </div>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2].map((i) => (<div key={i} className="mx-4 mb-3 h-20 rounded-2xl bg-muted animate-pulse" />))}
 
       {!isLoading && rows.length === 0 && (

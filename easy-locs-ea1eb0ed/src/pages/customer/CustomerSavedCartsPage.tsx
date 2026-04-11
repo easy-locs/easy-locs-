@@ -13,9 +13,9 @@ export default function CustomerSavedCartsPage() {
   const { user } = useAuth();
   const { addItem, clearCart } = useCart();
 
-  const { data: rows = [], isLoading, refetch } = useQuery({
+  const { data: rows = [], isLoading, refetch , isError } = useQuery({
     queryKey: ["saved-carts", user?.id],
-    queryFn: () => listSavedCarts(user!.id),
+    queryFn: () => listSavedCarts(user?.id),
     enabled: !!user?.id,
     staleTime: 5000,
   });
@@ -61,6 +61,7 @@ export default function CustomerSavedCartsPage() {
     <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Saved Carts" subtitle="Restore previous carts" onBack={() => navigate("/me")} />
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => <SkeletonCard key={i} />)}
 
       {!isLoading && rows.length === 0 && (

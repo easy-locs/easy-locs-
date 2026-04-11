@@ -75,7 +75,7 @@ const ServiceCitySEOPage = () => {
   ];
 
   const otherServices = SEO_SERVICE_CATEGORIES
-    .filter(s => s.slug !== service!.slug)
+    .filter(s => s.slug !== service?.slug)
     .slice(0, 8)
     .map(s => ({ to: `/services/${s.slug}-${city.slug}`, label: s.label, icon: s.icon }));
 

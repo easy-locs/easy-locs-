@@ -12,10 +12,10 @@ export default function SupportTicketDetailPage() {
   const { ticketId } = useParams();
   const { user } = useAuth();
 
-  const { data: ticket, isLoading } = useQuery({
+  const { data: ticket, isLoading , isError } = useQuery({
     queryKey: ["support-ticket-detail", ticketId],
     enabled: !!ticketId && !!user?.id,
-    queryFn: () => supportService.fetchTicketById(ticketId!, user!.id),
+    queryFn: () => supportService.fetchTicketById(ticketId!, user?.id),
     staleTime: 10000,
   });
 
@@ -37,7 +37,8 @@ export default function SupportTicketDetailPage() {
       </header>
 
       <div className="flex-1 px-4 pb-24 space-y-4">
-        {isLoading && <Skeleton className="h-40 rounded-2xl" />}
+        {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      {isLoading && <Skeleton className="h-40 rounded-2xl" />}
 
         {!isLoading && !ticket && (
           <div className="flex flex-col items-center justify-center py-16 text-center">

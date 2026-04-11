@@ -36,13 +36,13 @@ const Accounting = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: () => fetchOrgForUser(user!.id),
+    queryFn: () => fetchOrgForUser(user?.id),
     enabled: !!user,
   });
 
   const { data: properties = [] } = useQuery({
     queryKey: ["properties", org?.id, countryFilter],
-    queryFn: () => fetchPropertiesForOrg(org!.id, countryFilter),
+    queryFn: () => fetchPropertiesForOrg(org?.id, countryFilter),
     enabled: !!org,
   });
 
@@ -59,19 +59,19 @@ const Accounting = () => {
 
   const { data: journal = [] } = useQuery({
     queryKey: ["journal", org?.id],
-    queryFn: () => fetchJournal(org!.id),
+    queryFn: () => fetchJournal(org?.id),
     enabled: !!org,
   });
 
   const { data: rentCalls = [] } = useQuery({
     queryKey: ["rent_calls", org?.id],
-    queryFn: () => fetchRentCalls(org!.id),
+    queryFn: () => fetchRentCalls(org?.id),
     enabled: !!org,
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ["expenses", org?.id],
-    queryFn: () => fetchAllExpenses(org!.id),
+    queryFn: () => fetchAllExpenses(org?.id),
     enabled: !!org,
   });
 
@@ -139,7 +139,7 @@ const Accounting = () => {
       const entryCurrency = linkedProp ? (COUNTRY_CURRENCY_MAP[linkedProp.country] || "EUR") : activeRules.currency;
 
       await insertJournalEntry({
-        org_id: org!.id, user_id: user!.id,
+        org_id: org?.id, user_id: user?.id,
         label: newEntry.label, category: newEntry.category,
         debit: Number(newEntry.debit) || 0, credit: Number(newEntry.credit) || 0,
         transaction_date: newEntry.transaction_date, notes: newEntry.notes,

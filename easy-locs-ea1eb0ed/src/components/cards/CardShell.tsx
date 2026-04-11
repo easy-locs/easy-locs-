@@ -27,6 +27,7 @@ export function CardShell({ to, className, index = 0, layout = "horizontal", chi
     >
       <Link
         to={to}
+        data-card="shell"
         className={cn(
           "min-w-0",
           layout === "vertical"

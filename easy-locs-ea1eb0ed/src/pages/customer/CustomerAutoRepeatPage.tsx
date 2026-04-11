@@ -12,9 +12,9 @@ export default function CustomerAutoRepeatPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: rows = [], isLoading, refetch } = useQuery({
+  const { data: rows = [], isLoading, refetch , isError } = useQuery({
     queryKey: ["auto-repeat-orders", user?.id],
-    queryFn: () => listAutoRepeatOrders(user!.id),
+    queryFn: () => listAutoRepeatOrders(user?.id),
     enabled: !!user?.id,
     staleTime: 5000,
   });
@@ -43,6 +43,7 @@ export default function CustomerAutoRepeatPage() {
     <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Auto Repeat" subtitle="Recurring order plans" onBack={() => navigate("/me")} />
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => <SkeletonCard key={i} />)}
 
       {!isLoading && rows.length === 0 && (

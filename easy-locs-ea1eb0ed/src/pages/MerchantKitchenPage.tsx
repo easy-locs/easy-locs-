@@ -19,7 +19,7 @@ export default function MerchantKitchenPage() {
     queryKey: ["merchant-shop-id", user?.id, shopIdParam],
     queryFn: async () => {
       if (shopIdParam) return shopIdParam;
-      const shop = await posService.fetchSellerShop(user!.id);
+      const shop = await posService.fetchSellerShop(user?.id);
       return shop?.id ?? null;
     },
     enabled: !!user?.id,

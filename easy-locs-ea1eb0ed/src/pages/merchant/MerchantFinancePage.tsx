@@ -352,7 +352,7 @@ export default function MerchantFinancePage() {
             visible: { transition: { staggerChildren: 0.03 } }
           }}>
             {filtered.map((tx) => {
-              const type = classifyTx(tx, user!.id);
+              const type = classifyTx(tx, user?.id);
               const config = TX_CONFIG[type] || TX_CONFIG.credit;
               const TxIcon = config.icon;
               const isCredit = ["credit", "topup"].includes(type);
@@ -404,7 +404,7 @@ export default function MerchantFinancePage() {
         {selectedTx && (
           <TxDetailDrawer
             tx={selectedTx}
-            userId={user!.id}
+            userId={user?.id}
             currency={currency}
             onClose={() => setSelectedTx(null)}
           />

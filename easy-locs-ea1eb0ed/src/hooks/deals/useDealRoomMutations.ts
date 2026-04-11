@@ -28,9 +28,12 @@ export function useDealRoomMutations({
   };
 
   const createDeal = useMutation({
-    mutationFn: () => dealRepo.createDealWithEvent({
-      orgId: targetOrgId, buyerId: userId!, contextType, contextId, contextTitle, threadId,
-    }),
+    mutationFn: () => {
+      if (!userId) throw new Error("User not authenticated");
+      return dealRepo.createDealWithEvent({
+        orgId: targetOrgId, buyerId: userId, contextType, contextId, contextTitle, threadId,
+      });
+    },
     onSuccess: () => { invalidateDeal(); toast.success("Deal Room created"); },
     onError: (e: any) => toast.error("Something went wrong. Please try again."),
   });
@@ -38,26 +41,35 @@ export function useDealRoomMutations({
   const sendOffer = useMutation({
     mutationFn: ({ amount, message, offerType, expiry }: {
       amount: number; message: string; offerType: "offer" | "counter_offer"; expiry: string;
-    }) => dealRepo.sendDealOffer({
-      dealId: deal!.id, amount, message, isCounter: offerType === "counter_offer",
-      expiry, currentRound: deal?.negotiation_round || 0,
-      actorId: userId!, actorRole: isOrgMember ? "seller" : "buyer",
-    }),
+    }) => {
+      if (!userId || !deal?.id) throw new Error("Missing deal or user");
+      return dealRepo.sendDealOffer({
+        dealId: deal.id, amount, message, isCounter: offerType === "counter_offer",
+        expiry, currentRound: deal?.negotiation_round || 0,
+        actorId: userId, actorRole: isOrgMember ? "seller" : "buyer",
+      });
+    },
     onSuccess: () => { invalidateDeal(); toast.success("Offer sent"); },
     onError: (e: any) => toast.error("Something went wrong. Please try again."),
   });
 
   const acceptDeal = useMutation({
-    mutationFn: () => dealRepo.acceptDealAndPay({
-      deal, actorId: userId!, isOrgMember: !!isOrgMember,
-      targetOrgId, createPaymentRequest,
-    }),
+    mutationFn: () => {
+      if (!userId) throw new Error("User not authenticated");
+      return dealRepo.acceptDealAndPay({
+        deal, actorId: userId, isOrgMember: !!isOrgMember,
+        targetOrgId, createPaymentRequest,
+      });
+    },
     onSuccess: () => { invalidateDeal(); toast.success("Deal accepted! Payment request sent."); },
     onError: (e: any) => toast.error("Something went wrong. Please try again."),
   });
 
   const cancelDeal = useMutation({
-    mutationFn: () => dealRepo.cancelDealRoom(deal!.id),
+    mutationFn: () => {
+      if (!deal?.id) throw new Error("No deal to cancel");
+      return dealRepo.cancelDealRoom(deal.id);
+    },
     onSuccess: () => { invalidateDeal(); toast.success("Deal cancelled"); },
     onError: (e: any) => toast.error("Something went wrong. Please try again."),
   });
@@ -66,8 +78,9 @@ export function useDealRoomMutations({
     mutationFn: async (docFile: File) => {
       if (!docFile || !deal) throw new Error("No file selected");
       const url = await dealRepo.uploadDealDocument(deal.id, docFile);
+      if (!userId) throw new Error("User not authenticated");
       await dealRepo.insertDealEvent({
-        deal_id: deal.id, event_type: "document", actor_id: userId!,
+        deal_id: deal.id, event_type: "document", actor_id: userId,
         actor_role: isOrgMember ? "seller" : "buyer",
         data_json: { name: docFile.name, url, size: docFile.size },
       });
@@ -79,7 +92,7 @@ export function useDealRoomMutations({
   const scheduleVisit = useMutation({
     mutationFn: ({ date, note }: { date: string; note: string }) => {
       if (!date || !deal) throw new Error("Select a date");
-      return dealRepo.scheduleDealVisit(deal.id, userId!, isOrgMember ? "seller" : "buyer", date, note);
+      return dealRepo.scheduleDealVisit(deal.id, userId, isOrgMember ? "seller" : "buyer", date, note);
     },
     onSuccess: () => { invalidateDeal(); toast.success("Visit scheduled"); },
     onError: (e: any) => toast.error("Something went wrong. Please try again."),

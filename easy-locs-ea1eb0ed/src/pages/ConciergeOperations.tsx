@@ -20,37 +20,37 @@ const ConciergeOperations = () => {
 
   const { data: org } = useQuery({
     queryKey: ["org", user?.id],
-    queryFn: () => fetchUserOrg(user!.id),
+    queryFn: () => fetchUserOrg(user?.id),
     enabled: !!user,
   });
 
   const { data: properties = [] } = useQuery({
     queryKey: ["props", org?.id],
-    queryFn: () => fetchOrgProperties(org!.id),
+    queryFn: () => fetchOrgProperties(org?.id),
     enabled: !!org,
   });
 
   const { data: bookings = [] } = useQuery({
     queryKey: ["all_bookings", org?.id],
-    queryFn: () => fetchAllBookings(org!.id),
+    queryFn: () => fetchAllBookings(org?.id),
     enabled: !!org,
   });
 
   const { data: orders = [] } = useQuery({
     queryKey: ["concierge_orders", org?.id],
-    queryFn: () => fetchConciergeOrders(org!.id),
+    queryFn: () => fetchConciergeOrders(org?.id),
     enabled: !!org,
   });
 
   const { data: services = [] } = useQuery({
     queryKey: ["services", org?.id],
-    queryFn: () => fetchConciergeServices(org!.id),
+    queryFn: () => fetchConciergeServices(org?.id),
     enabled: !!org,
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ["tasks", org?.id],
-    queryFn: () => fetchBookingTasks(org!.id),
+    queryFn: () => fetchBookingTasks(org?.id),
     enabled: !!org,
   });
 

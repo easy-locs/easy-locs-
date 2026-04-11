@@ -74,8 +74,8 @@ const CallAudioEngine = {
 
         // Standard ringback: 440Hz + 480Hz dual tone, 2s on, 4s off
         [440, 480].forEach((freq) => {
-          const osc = ringbackCtx!.createOscillator();
-          const gain = ringbackCtx!.createGain();
+          const osc = ringbackCtx.createOscillator();
+          const gain = ringbackCtx.createGain();
           osc.type = "sine";
           osc.frequency.value = freq;
           gain.gain.setValueAtTime(0, now);
@@ -83,7 +83,7 @@ const CallAudioEngine = {
           gain.gain.setValueAtTime(0.12, now + 1.95);
           gain.gain.linearRampToValueAtTime(0, now + 2.0);
           osc.connect(gain);
-          gain.connect(ringbackCtx!.destination);
+          gain.connect(ringbackCtx.destination);
           osc.start(now);
           osc.stop(now + 2.0);
         });

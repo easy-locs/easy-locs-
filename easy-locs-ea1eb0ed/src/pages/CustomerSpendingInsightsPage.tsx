@@ -13,7 +13,7 @@ export default function CustomerSpendingInsightsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["customer-spending-insights", user?.id],
     queryFn: async () => {
-      const rows = await fetchSpendingHistory(user!.id);
+      const rows = await fetchSpendingHistory(user?.id);
       const total = rows.reduce((sum: number, row: any) => sum + Number(row.total_amount ?? 0), 0);
       const average = rows.length > 0 ? total / rows.length : 0;
 

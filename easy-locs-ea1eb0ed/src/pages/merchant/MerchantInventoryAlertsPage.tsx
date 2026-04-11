@@ -6,7 +6,7 @@ export default function MerchantInventoryAlertsPage() {
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data: rows = [], isLoading } = useQuery({
+  const { data: rows = [], isLoading , isError } = useQuery({
     queryKey: ["merchant-inventory-alerts", merchantId],
     queryFn: () => merchantService.fetchProducts(merchantId, { orderBy: "name" }),
     enabled: !!merchantId,
@@ -36,6 +36,7 @@ export default function MerchantInventoryAlertsPage() {
         <Metric title="Out of Stock" value={String(outOfStock.length)} />
       </div>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mb-3 h-20 rounded-2xl bg-muted animate-pulse" />
       ))}

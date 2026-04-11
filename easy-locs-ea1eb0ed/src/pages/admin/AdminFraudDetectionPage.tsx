@@ -52,7 +52,7 @@ export default function AdminFraudDetectionPage() {
       {!isLoading && (data?.highValue.length ?? 0) > 0 && (
         <div className="px-4 space-y-3">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">High Value Orders ({'>'}1000)</p>
-          {data!.highValue.map((row: any) => (
+          {(data?.highValue ?? []).map((row: any) => (
             <div key={row.id} className="rounded-2xl border border-destructive/20 bg-card p-4">
               <p className="text-sm font-semibold text-foreground">Order #{String(row.id).slice(0, 8)}</p>
               <p className="text-sm font-bold text-destructive tabular-nums">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</p>

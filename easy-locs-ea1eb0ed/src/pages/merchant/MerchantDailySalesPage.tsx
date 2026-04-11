@@ -6,7 +6,7 @@ export default function MerchantDailySalesPage() {
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading , isError } = useQuery({
     queryKey: ["merchant-daily-sales", merchantId],
     queryFn: async () => {
       const rows = await merchantService.fetchDailySalesOrders(merchantId) as any[];
@@ -45,6 +45,7 @@ export default function MerchantDailySalesPage() {
         </div>
       </div>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mb-3 h-20 rounded-2xl bg-muted animate-pulse" />
       ))}

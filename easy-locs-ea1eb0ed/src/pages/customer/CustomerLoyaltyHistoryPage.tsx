@@ -43,12 +43,12 @@ export default function CustomerLoyaltyHistoryPage() {
   const queryClient = useQueryClient();
   const [redeeming, setRedeeming] = useState<string | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading , isError } = useQuery({
     queryKey: ["customer-loyalty-full", user?.id],
     queryFn: async () => {
       const account = await getOrCreateLoyaltyAccount({});
       const [orders, ledger] = await Promise.all([
-        customerService.fetchCustomerOrders(user!.id, 100),
+        customerService.fetchCustomerOrders(user?.id, 100),
         account?.id
           ? db("loyalty_ledger")
               .select("*")
@@ -133,6 +133,7 @@ export default function CustomerLoyaltyHistoryPage() {
         </div>
       </div>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mb-3 h-20 rounded-2xl animate-pulse bg-muted/30" />
       ))}

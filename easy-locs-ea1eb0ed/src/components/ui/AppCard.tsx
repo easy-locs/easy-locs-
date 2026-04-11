@@ -52,6 +52,7 @@ const AppCard = memo(forwardRef<HTMLDivElement, AppCardProps>(
         loading && "animate-pulse",
         className,
       )}
+      data-card={variant}
       {...props}
     >
       {children}

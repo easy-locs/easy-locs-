@@ -66,7 +66,7 @@ const ActivityCitySEOPage = () => {
   };
 
   const otherActivities = SEO_ACTIVITY_TYPES
-    .filter(a => a.slug !== activity!.slug)
+    .filter(a => a.slug !== activity?.slug)
     .slice(0, 8)
     .map(a => ({ to: `/activities/${a.slug}-${city.slug}`, label: a.label, icon: a.icon }));
 

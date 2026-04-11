@@ -26,7 +26,7 @@ export function useDashboardLiveStats(): DashboardLiveStats {
     queryFn: async () => {
       const { count } = await db("storefront_orders")
         .select("*", { count: "exact", head: true })
-        .eq("buyer_id", user!.id)
+        .eq("buyer_id", user?.id)
         .in("status", [...ACTIVE_ORDER_STATUSES]);
       return count ?? 0;
     },

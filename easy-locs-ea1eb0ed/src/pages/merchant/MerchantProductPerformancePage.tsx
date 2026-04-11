@@ -6,7 +6,7 @@ export default function MerchantProductPerformancePage() {
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading , isError } = useQuery({
     queryKey: ["merchant-product-performance", merchantId],
     queryFn: async () => {
       const [products, orderItems] = await Promise.all([
@@ -36,6 +36,7 @@ export default function MerchantProductPerformancePage() {
         </div>
       </div>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2].map((i) => (
         <div key={i} className="mx-4 mb-3 h-16 rounded-2xl bg-muted animate-pulse" />
       ))}

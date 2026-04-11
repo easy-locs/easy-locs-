@@ -88,9 +88,9 @@ export class CallManager {
 
     this.sendSignal({ type: "accepted", data: "{}" });
     await this.createPeerConnection();
-    const offer = await this.pc!.createOffer();
+    const offer = await this.pc.createOffer();
     console.log(`[CALL][call.offer.create] output:`, { callId: this.callId, role: this.role, type: offer.type });
-    await this.pc!.setLocalDescription(offer);
+    await this.pc.setLocalDescription(offer);
     this.sendSignal({ type: "offer", data: JSON.stringify(offer) });
     this.startIceTimeout();
     this.startElapsedTimer();
@@ -140,18 +140,18 @@ export class CallManager {
         this.startElapsedTimer();
       } else if (signal.type === "offer") {
         if (!this.pc) await this.createPeerConnection();
-        await this.pc!.setRemoteDescription(new RTCSessionDescription(JSON.parse(signal.data)));
+        await this.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(signal.data)));
         console.log(`[CALL][call.answer.receive] output:`, { callId: this.callId, role: this.role, remoteOfferSet: true });
         this.flushPendingCandidates();
-        const answer = await this.pc!.createAnswer();
-        await this.pc!.setLocalDescription(answer);
+        const answer = await this.pc.createAnswer();
+        await this.pc.setLocalDescription(answer);
         this.sendSignal({ type: "answer", data: JSON.stringify(answer) });
       } else if (signal.type === "answer") {
         if (!this.pc) {
           console.error(`[CALL][call.answer.receive] error:`, { callId: this.callId, role: this.role, reason: "missing_peer_connection" });
           return;
         }
-        await this.pc!.setRemoteDescription(new RTCSessionDescription(JSON.parse(signal.data)));
+        await this.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(signal.data)));
         console.log(`[CALL][call.answer.receive] output:`, { callId: this.callId, role: this.role, remoteAnswerSet: true });
         this.flushPendingCandidates();
       } else if (signal.type === "ice") {
@@ -198,7 +198,7 @@ export class CallManager {
     this.onStateChange({ remoteStream: this.remoteStream });
 
     if (this.localStream) {
-      this.localStream.getTracks().forEach((track) => this.pc!.addTrack(track, this.localStream!));
+      this.localStream.getTracks().forEach((track) => this.pc.addTrack(track, this.localStream));
     }
 
     this.pc.ontrack = (event) => {
@@ -302,7 +302,7 @@ export class CallManager {
       this.onStateChange({ remoteStream: this.remoteStream, usingRelay: true });
 
       if (this.localStream) {
-        this.localStream.getTracks().forEach((track) => this.pc!.addTrack(track, this.localStream!));
+        this.localStream.getTracks().forEach((track) => this.pc.addTrack(track, this.localStream));
       }
 
       this.pc.ontrack = (event) => {

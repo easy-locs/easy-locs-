@@ -134,7 +134,7 @@ export function useAttachments(params: {
     setUploading(true);
     try {
       const orgId = p.orgId || "orbit";
-      const pathPrefix = `${orgId}/${p.thread!.id}`;
+      const pathPrefix = `${orgId}/${p.thread?.id}`;
 
       trace("attachment.dispatch", "input", { conversationId, fileName: file.name });
       const result = await orbitDispatch({

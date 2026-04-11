@@ -39,7 +39,7 @@ export default function AdminActiveSessionsPage() {
 
       {!isLoading && (data?.rows ?? []).length > 0 && (
         <div className="px-4 space-y-3">
-          {data!.rows.slice(0, 30).map((row: any, idx: number) => (
+          {(data?.rows ?? []).slice(0, 30).map((row: any, idx: number) => (
             <div key={idx} className="rounded-2xl border border-border/20 bg-card p-4">
               <p className="text-sm font-bold text-foreground">{row.event_type}</p>
               <p className="text-xs text-muted-foreground mt-1">{row.entity_type} · {String(row.entity_id).slice(0, 8)}</p>

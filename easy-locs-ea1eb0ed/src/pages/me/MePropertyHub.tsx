@@ -31,12 +31,12 @@ export default function MePropertyHub() {
   const { properties, tenants, rentCalls, loading } = useRentalData();
   const [role, setRole] = useState<Role>("bailleur");
 
-  const { data: tenantProfile } = useQuery({
+  const { data: tenantProfile , isError } = useQuery({
     queryKey: ["me-tenant-profile", user?.id],
     enabled: !!user?.id,
     staleTime: 60_000,
     queryFn: async () => {
-      return tenantService.fetchByTenantUserId(user!.id);
+      return tenantService.fetchByTenantUserId(user?.id);
     },
   });
 
@@ -65,7 +65,9 @@ export default function MePropertyHub() {
   const hasTenantsView = (tenantProfile?.length ?? 0) > 0;
 
   if (loading) {
-    return (
+    if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
+
+  return (
       <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4 pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
         <Skeleton className="h-8 w-48 mb-4" />
         <Skeleton className="h-24 w-full mb-3" />

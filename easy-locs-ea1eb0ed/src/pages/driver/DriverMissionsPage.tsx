@@ -10,7 +10,7 @@ const DRIVER_STATUSES = ["driver_search", "driver_assigned", "picked_up", "on_th
 export default function DriverMissionsPage() {
   const navigate = useNavigate();
 
-  const { data: missions = [], isLoading } = useQuery({
+  const { data: missions = [], isLoading , isError } = useQuery({
     queryKey: ["driver-missions"],
     queryFn: async () => {
       const { data, error } = await db
@@ -38,7 +38,8 @@ export default function DriverMissionsPage() {
       </header>
 
       <div className="flex-1 px-4 pb-24 space-y-3">
-        {isLoading && [1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
+        {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      {isLoading && [1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
 
         {!isLoading && missions.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">

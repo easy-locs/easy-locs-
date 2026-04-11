@@ -43,7 +43,7 @@ export default function DeliveryDispatch({ shopId }: { shopId: string }) {
     setDispatching(order.id);
     try {
       // Get user's org
-      const orgMemberId = await storefrontRepo.fetchUserOrgId(user!.id);
+      const orgMemberId = await storefrontRepo.fetchUserOrgId(user?.id);
       if (!orgMemberId) throw new Error("No organization found");
 
       const result = await storefrontRepo.invokeDispatchRide({

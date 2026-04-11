@@ -18,7 +18,7 @@ export function useSellerBusinessesCard(): CardContract<{ shops: any[]; count: n
       const { data } = await db
         .from("storefront_pages")
         .select("id, name, slug, vertical, city, logo_url, active, status")
-        .eq("user_id", user!.id)
+        .eq("user_id", user?.id)
         .order("created_at", { ascending: false })
         .limit(20);
       return data ?? [];
@@ -43,7 +43,7 @@ export function useSellerBusinessesCard(): CardContract<{ shops: any[]; count: n
           actionType: "mutation" as const,
           run: async () => {
             const { platformBus } = await import("@/lib/shared/platform-bus");
-            platformBus.emit("seller:create_business", { userId: user!.id }, "sellerBusinessesCard");
+            platformBus.emit("seller:create_business", { userId: user?.id }, "sellerBusinessesCard");
           },
         },
       }),

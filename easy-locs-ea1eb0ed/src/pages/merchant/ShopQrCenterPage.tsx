@@ -17,7 +17,7 @@ export default function ShopQrCenterPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const navigate = useNavigate();
 
-  const { data: ctx, isLoading } = useQuery({
+  const { data: ctx, isLoading , isError } = useQuery({
     queryKey: ["shop-qr-center", shopId],
     queryFn: () => loadShopContext(shopId!),
     enabled: !!shopId,
@@ -36,6 +36,7 @@ export default function ShopQrCenterPage() {
     }
   };
 
+  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
   if (isLoading) {
     return (
       <div className="app-mobile-page bg-background flex items-center justify-center">

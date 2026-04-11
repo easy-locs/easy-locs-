@@ -18,9 +18,9 @@ export default function CustomerOrderReceiptsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: rows = [], isLoading } = useQuery({
+  const { data: rows = [], isLoading , isError } = useQuery({
     queryKey: ["customer-order-receipts", user?.id],
-    queryFn: () => fetchOrderReceipts(user!.id),
+    queryFn: () => fetchOrderReceipts(user?.id),
     enabled: !!user?.id,
     staleTime: 10000,
   });
@@ -68,6 +68,7 @@ export default function CustomerOrderReceiptsPage() {
         </motion.div>
       )}
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mb-3 h-24 rounded-2xl animate-pulse" style={{ background: "hsl(var(--muted) / 0.3)" }} />
       ))}

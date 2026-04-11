@@ -60,7 +60,7 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
     queryKey: ["storefront-returns", shopId, mode],
     queryFn: async () => {
       let q = db("storefront_returns").select("*").eq("shop_id", shopId);
-      if (mode === "buyer") q = q.eq("buyer_id", user!.id);
+      if (mode === "buyer") q = q.eq("buyer_id", user?.id);
       const { data } = await q.order("created_at", { ascending: false });
       return data || [];
     },
@@ -73,7 +73,7 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
       await db("storefront_returns").insert({
         shop_id: shopId,
         order_id: selectedOrder,
-        buyer_id: user!.id,
+        buyer_id: user?.id,
         reason,
         description: description || null,
         refund_type: refundType,

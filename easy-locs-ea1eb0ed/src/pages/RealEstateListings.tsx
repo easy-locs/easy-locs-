@@ -156,7 +156,7 @@ export default function RealEstateListings() {
     const resolvedOrgId = orgId || await ensureOrg();
     if (!resolvedOrgId) { toast({ title: "Impossible de créer votre espace", variant: "destructive" }); return; }
     const payload: any = {
-      ...form, org_id: resolvedOrgId, user_id: user!.id,
+      ...form, org_id: resolvedOrgId, user_id: user?.id,
       country: form.country || activeCountry || "",
       latitude: form.latitude || null,
       longitude: form.longitude || null,

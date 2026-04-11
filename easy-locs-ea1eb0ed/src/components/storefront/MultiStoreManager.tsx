@@ -24,7 +24,7 @@ export default function MultiStoreManager() {
     queryKey: ["my-all-shops", user?.id],
     queryFn: async () => {
       const { data } = await db("storefront_pages")
-        .select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+        .select("*").eq("user_id", user?.id).order("created_at", { ascending: false });
       return data || [];
     },
     enabled: !!user,
@@ -36,7 +36,7 @@ export default function MultiStoreManager() {
     queryFn: async () => {
       const { data } = await db("storefront_store_groups")
         .select("*, storefront_store_group_members(shop_id)")
-        .eq("owner_id", user!.id).order("created_at", { ascending: false });
+        .eq("owner_id", user?.id).order("created_at", { ascending: false });
       return data || [];
     },
     enabled: !!user,
@@ -64,7 +64,7 @@ export default function MultiStoreManager() {
   const createGroup = useMutation({
     mutationFn: async () => {
       await db("storefront_store_groups").insert({
-        owner_id: user!.id, name: newGroupName,
+        owner_id: user?.id, name: newGroupName,
       });
     },
     onSuccess: () => {

@@ -6,7 +6,7 @@ export default function MerchantKitchenDisplayPage() {
   const navigate = useNavigate();
   const { merchantId } = useParams();
 
-  const { data: rows = [], isLoading } = useQuery({
+  const { data: rows = [], isLoading , isError } = useQuery({
     queryKey: ["merchant-kds-orders", merchantId],
     queryFn: () => merchantService.fetchOrders(merchantId!, { statuses: ["paid", "confirmed", "preparing", "ready_for_pickup"], limit: 50 }),
     enabled: !!merchantId,
@@ -24,6 +24,7 @@ export default function MerchantKitchenDisplayPage() {
         </div>
       </div>
 
+      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="h-24 rounded-[28px] bg-muted animate-pulse" />
       ))}

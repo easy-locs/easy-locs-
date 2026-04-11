@@ -9,13 +9,13 @@ export default function DriverActiveMissionsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: rows = [], isLoading } = useQuery({
+  const { data: rows = [], isLoading , isError } = useQuery({
     queryKey: ["driver-active-missions-page", user?.id],
     queryFn: async () => {
       const { data, error } = await db
         .from("mobility_jobs")
         .select("*")
-        .eq("rider_user_id", user!.id)
+        .eq("rider_user_id", user?.id)
         .in("status", ["accepted", "rider_arriving_pickup", "picked_up", "in_progress"])
         .order("created_at", { ascending: false })
         .limit(50);
@@ -47,7 +47,8 @@ export default function DriverActiveMissionsPage() {
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-3 pt-2">
-        {isLoading && [1, 2].map((i) => (
+        {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      {isLoading && [1, 2].map((i) => (
           <div key={i} className="h-24 rounded-2xl bg-muted/40 animate-pulse" />
         ))}
 

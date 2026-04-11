@@ -65,7 +65,7 @@ export default function MultiCurrencyTax({ shopId, mode }: Props) {
     mutationFn: async () => {
       await db("storefront_tax_rules").insert({
         shop_id: shopId,
-        user_id: user!.id,
+        user_id: user?.id,
         country: form.country,
         tax_name: form.tax_name,
         tax_rate: parseFloat(form.tax_rate),

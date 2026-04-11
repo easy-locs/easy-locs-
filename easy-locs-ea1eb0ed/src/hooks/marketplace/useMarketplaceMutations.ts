@@ -28,7 +28,7 @@ export function useMarketplaceMutations(
       const resolvedOrgId = await ensureOrg();
       if (!resolvedOrgId) throw new Error("Impossible de créer votre espace. Veuillez vous reconnecter.");
       const slug = data.display_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-      await insertProvider({ ...data, slug, user_id: user!.id, org_id: resolvedOrgId });
+      await insertProvider({ ...data, slug, user_id: user?.id, org_id: resolvedOrgId });
     },
     onSuccess: () => { toast.success("Provider profile created!"); qc.invalidateQueries({ queryKey: ["my_marketplace_provider"] }); },
     onError: (e: Error) => { console.error("[Marketplace]", e.message); toast.error("Something went wrong. Please try again."); },
@@ -36,7 +36,7 @@ export function useMarketplaceMutations(
 
   const updateProvider = useMutation({
     mutationFn: async (data: any) => {
-      await updateProviderRepo(myProvider!.id, data);
+      await updateProviderRepo(myProvider?.id, data);
     },
     onSuccess: () => { toast.success("Profile updated!"); qc.invalidateQueries({ queryKey: ["my_marketplace_provider"] }); },
     onError: (e: Error) => { console.error("[Marketplace]", e.message); toast.error("Something went wrong. Please try again."); },
@@ -49,7 +49,7 @@ export function useMarketplaceMutations(
       const dupCheck = await checkServiceDuplicate(data.title, (data as any).lat ?? null, (data as any).lng ?? null, (data as any).phone ?? null);
       if (dupCheck.blocked) throw new Error(`Duplicate detected: similar service "${dupCheck.existingMatch?.name ?? "unknown"}" already exists nearby.`);
       const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-      const insertData: Record<string, unknown> = { ...data, booking_slug: slug, provider_id: myProvider!.id, org_id: resolvedOrgId, user_id: user!.id };
+      const insertData: Record<string, unknown> = { ...data, booking_slug: slug, provider_id: myProvider?.id, org_id: resolvedOrgId, user_id: user?.id };
       const created = await insertService(insertData as any);
       if (created?.id && created.lat && created.lng) assignZoneToService(created.id, created.lat, created.lng).catch(() => {});
     },
