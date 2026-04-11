@@ -96,12 +96,111 @@ function classifyElement(tags: Record<string, string>): { category: string; subc
   return { category: "services", subcategory: "other" };
 }
 
-// In-memory cache to avoid hammering Overpass
+const OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+];
+
+const FETCH_TIMEOUT_MS = 10_000;
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1500;
+
 const cache = new Map<string, { data: OSMPlace[]; ts: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 min
+const CACHE_TTL = 5 * 60 * 1000;
+
+const failedEndpoints = new Map<string, number>();
+const ENDPOINT_COOLDOWN_MS = 60_000;
 
 function cacheKey(lat: number, lng: number, radius: number): string {
   return `${lat.toFixed(3)}_${lng.toFixed(3)}_${radius}`;
+}
+
+function getHealthyEndpoints(): string[] {
+  const now = Date.now();
+  return OVERPASS_ENDPOINTS.filter((ep) => {
+    const failedAt = failedEndpoints.get(ep);
+    return !failedAt || now - failedAt > ENDPOINT_COOLDOWN_MS;
+  });
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function tryFetchOverpass(query: string): Promise<any | null> {
+  const endpoints = getHealthyEndpoints();
+  if (endpoints.length === 0) {
+    failedEndpoints.clear();
+    endpoints.push(...OVERPASS_ENDPOINTS);
+  }
+
+  for (const endpoint of endpoints) {
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const res = await fetchWithTimeout(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `data=${encodeURIComponent(query)}`,
+        }, FETCH_TIMEOUT_MS);
+
+        if (res.status === 429 || res.status === 504 || res.status === 503) {
+          failedEndpoints.set(endpoint, Date.now());
+          break;
+        }
+
+        if (!res.ok) {
+          if (attempt < MAX_RETRIES) {
+            await new Promise((r) => setTimeout(r, RETRY_DELAY_MS * (attempt + 1)));
+            continue;
+          }
+          return null;
+        }
+
+        return await res.json();
+      } catch (err: any) {
+        if (err?.name === "AbortError") {
+          failedEndpoints.set(endpoint, Date.now());
+          break;
+        }
+        if (attempt < MAX_RETRIES) {
+          await new Promise((r) => setTimeout(r, RETRY_DELAY_MS * (attempt + 1)));
+          continue;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function parseElements(elements: any[], lat: number, lng: number, limit: number): OSMPlace[] {
+  return elements
+    .filter((el: any) => (el.lat || el.center?.lat) && (el.lon || el.center?.lon) && el.tags?.name)
+    .map((el: any) => {
+      const elLat = el.lat ?? el.center?.lat;
+      const elLon = el.lon ?? el.center?.lon;
+      const { category, subcategory } = classifyElement(el.tags);
+      return {
+        id: `osm-${el.id}`,
+        name: el.tags.name,
+        lat: elLat,
+        lng: elLon,
+        category,
+        subcategory,
+        address: [el.tags["addr:street"], el.tags["addr:housenumber"]].filter(Boolean).join(" ") || undefined,
+        phone: el.tags.phone || el.tags["contact:phone"] || undefined,
+        website: el.tags.website || el.tags["contact:website"] || undefined,
+        openingHours: el.tags.opening_hours || undefined,
+      };
+    })
+    .sort((a, b) => haversineKm(lat, lng, a.lat, a.lng) - haversineKm(lat, lng, b.lat, b.lng))
+    .slice(0, limit);
 }
 
 export async function fetchOSMPlaces(
@@ -120,50 +219,16 @@ export async function fetchOSMPlaces(
 
   try {
     const query = buildOverpassQuery(lat, lng, radiusM);
-    const res = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `data=${encodeURIComponent(query)}`,
-    });
+    const json = await tryFetchOverpass(query);
 
-    if (!res.ok) {
-      console.warn("[OSM] Overpass returned", res.status);
+    if (!json || !json.elements) {
       return [];
     }
 
-    const json = await res.json();
-    const elements: any[] = json.elements ?? [];
-
-    const places: OSMPlace[] = elements
-      .filter((el: any) => (el.lat || el.center?.lat) && (el.lon || el.center?.lon) && el.tags?.name)
-      .map((el: any) => {
-        const elLat = el.lat ?? el.center?.lat;
-        const elLon = el.lon ?? el.center?.lon;
-        const { category, subcategory } = classifyElement(el.tags);
-        return {
-          id: `osm-${el.id}`,
-          name: el.tags.name,
-          lat: elLat,
-          lng: elLon,
-          category,
-          subcategory,
-          address: [el.tags["addr:street"], el.tags["addr:housenumber"]].filter(Boolean).join(" ") || undefined,
-          phone: el.tags.phone || el.tags["contact:phone"] || undefined,
-          website: el.tags.website || el.tags["contact:website"] || undefined,
-          openingHours: el.tags.opening_hours || undefined,
-        };
-      })
-      .sort((a, b) => {
-        const dA = haversineKm(lat, lng, a.lat, a.lng);
-        const dB = haversineKm(lat, lng, b.lat, b.lng);
-        return dA - dB;
-      })
-      .slice(0, limit);
-
+    const places = parseElements(json.elements, lat, lng, limit);
     cache.set(key, { data: places, ts: Date.now() });
     return places;
-  } catch (err) {
-    console.error("[OSM] Fetch failed:", err);
+  } catch {
     return [];
   }
 }
