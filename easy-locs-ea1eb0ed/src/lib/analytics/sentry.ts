@@ -25,6 +25,7 @@ export function initSentry() {
         for (const v of event.exception.values) {
           const msg = v.value || "";
           if (
+            msg.includes("[SentryVerify]") ||
             msg.includes("ResizeObserver") ||
             msg.includes("ChunkLoadError") ||
             msg.includes("Importing a module script failed") ||
