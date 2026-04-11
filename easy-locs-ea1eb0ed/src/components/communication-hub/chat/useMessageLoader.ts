@@ -255,10 +255,14 @@ export function useMessageLoader({
         if (unreadIds.length > 0) {
           markedReadForRef.current = cid;
           markConversationMessagesRead(cid, uid!).then(({ markedCount }) => {
-            if (markedCount > 0 && tid) onThreadUpdateRef.current(tid, { unreadCount: 0 });
-          });
+            if (markedCount > 0 && tid) {
+              onThreadUpdateRef.current(tid, { unreadCount: 0, lastMessagePreview: undefined });
+            }
+          }).catch(() => {});
           const ctxId = eid || tid;
-          if (ctxId) clearMarkedUnread(uid!, ctxId);
+          if (ctxId) clearMarkedUnread(uid!, ctxId).catch(() => {});
+        } else {
+          markedReadForRef.current = cid;
         }
       }
     } finally {
@@ -270,7 +274,11 @@ export function useMessageLoader({
   const loadMessagesRef = useRef(loadMessages);
   loadMessagesRef.current = loadMessages;
 
+  const conversationIdRef = useRef(conversationId);
   useEffect(() => {
+    if (conversationIdRef.current !== conversationId) {
+      conversationIdRef.current = conversationId;
+    }
     void loadMessages();
   }, [conversationId]);
 

@@ -168,7 +168,12 @@ export const CommunicationCenter = () => {
 
   const handleThreadUpdate = useCallback((threadId: string, updates: Partial<ConversationThread>) => {
     updateThreadLocally(threadId, updates);
-    if (selectedThreadIdRef.current === threadId) updateSelectedThreadRef.current(updates);
+    if (selectedThreadIdRef.current === threadId) {
+      const volatileKeys = new Set(['unreadCount', 'lastMessage', 'lastMessageTime',
+        'lastMessagePreview', 'lastMessageTimestamp', 'updatedAt']);
+      const hasUiChange = Object.keys(updates).some(k => !volatileKeys.has(k));
+      if (hasUiChange) updateSelectedThreadRef.current(updates);
+    }
   }, [updateThreadLocally]);
 
   const handleNewThreadCreated = useCallback(() => { loadThreads(); }, [loadThreads]);

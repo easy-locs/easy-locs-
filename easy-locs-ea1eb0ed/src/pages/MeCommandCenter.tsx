@@ -99,32 +99,41 @@ export default function MeCommandCenter() {
     queryKey: ["me-shops-full", uid],
     enabled: !!uid,
     staleTime: 60_000,
+    retry: 1,
     queryFn: async () => {
-      const { data, error } = await typedQueries.storefrontPages.selectByOwner(uid);
-      if (error) throw error;
-      return (data ?? []).map((d: Record<string, unknown>) => ({
-        id: String(d.id ?? ""),
-        name: String(d.name ?? ""),
-        slug: String(d.slug ?? ""),
-        logo_url: d.logo_url as string | null,
-        banner_url: d.banner_url as string | null,
-        description: d.description as string | null,
-        contact_email: d.contact_email as string | null,
-        contact_phone: d.contact_phone as string | null,
-        address: d.address as string | null,
-        city: d.city as string | null,
-        country: d.country as string | null,
-        latitude: d.latitude as number | null,
-        longitude: d.longitude as number | null,
-        shop_visibility: String(d.shop_visibility ?? "draft"),
-        is_verified: Boolean(d.is_verified),
-        active: Boolean(d.active),
-        rating: d.rating as number | null,
-        reviews_count: d.reviews_count as number | null,
-        views_count: d.views_count as number | null,
-        currency: d.currency as string | null,
-        theme_color: d.theme_color as string | null,
-      }));
+      try {
+        const { data, error } = await typedQueries.storefrontPages.selectByOwner(uid);
+        if (error) {
+          console.warn("[MeCommandCenter] storefront_pages query error:", error);
+          return [];
+        }
+        return (data ?? []).map((d: Record<string, unknown>) => ({
+          id: String(d.id ?? ""),
+          name: String(d.name ?? ""),
+          slug: String(d.slug ?? ""),
+          logo_url: d.logo_url as string | null,
+          banner_url: d.banner_url as string | null,
+          description: d.description as string | null,
+          contact_email: d.contact_email as string | null,
+          contact_phone: d.contact_phone as string | null,
+          address: d.address as string | null,
+          city: d.city as string | null,
+          country: d.country as string | null,
+          latitude: d.latitude as number | null,
+          longitude: d.longitude as number | null,
+          shop_visibility: String(d.shop_visibility ?? "draft"),
+          is_verified: Boolean(d.is_verified),
+          active: Boolean(d.active),
+          rating: d.rating as number | null,
+          reviews_count: d.reviews_count as number | null,
+          views_count: d.views_count as number | null,
+          currency: d.currency as string | null,
+          theme_color: d.theme_color as string | null,
+        }));
+      } catch (err) {
+        console.warn("[MeCommandCenter] storefront_pages fetch failed:", err);
+        return [];
+      }
     },
   });
 
@@ -132,9 +141,12 @@ export default function MeCommandCenter() {
     queryKey: ["me-prop-count", uid],
     enabled: !!uid,
     staleTime: 60_000,
+    retry: 1,
     queryFn: async () => {
-      const { count } = await typedQueries.properties.countByUser(uid);
-      return count ?? 0;
+      try {
+        const { count } = await typedQueries.properties.countByUser(uid);
+        return count ?? 0;
+      } catch { return 0; }
     },
   });
 
@@ -142,9 +154,12 @@ export default function MeCommandCenter() {
     queryKey: ["me-driver-check", uid],
     enabled: !!uid,
     staleTime: 120_000,
+    retry: 1,
     queryFn: async () => {
-      const { data } = await typedQueries.riderProfiles.existsByUser(uid);
-      return !!data;
+      try {
+        const { data } = await typedQueries.riderProfiles.existsByUser(uid);
+        return !!data;
+      } catch { return false; }
     },
   });
 
@@ -152,9 +167,12 @@ export default function MeCommandCenter() {
     queryKey: ["me-provider-check", uid],
     enabled: !!uid,
     staleTime: 120_000,
+    retry: 1,
     queryFn: async () => {
-      const { data } = await typedQueries.marketplaceProviders.existsByUser(uid);
-      return !!data;
+      try {
+        const { data } = await typedQueries.marketplaceProviders.existsByUser(uid);
+        return !!data;
+      } catch { return false; }
     },
   });
 
@@ -162,20 +180,25 @@ export default function MeCommandCenter() {
     queryKey: ["me-quick-stats", uid],
     enabled: !!uid,
     staleTime: 30_000,
+    retry: 1,
     queryFn: async () => {
-      const [activeOrderCount, loyaltyRes, walletRes] = await Promise.all([
-        countActiveOrders(uid),
-        typedQueries.loyaltyAccounts.selectByUser(uid),
-        typedQueries.walletSummary.selectMainByUser(uid),
-      ]);
-      return {
-        activeOrders: activeOrderCount,
-        loyaltyPoints: Number(loyaltyRes?.data?.points_balance ?? 0),
-        loyaltyTier: loyaltyRes?.data?.tier ?? "bronze",
-        walletExists: walletRes?.data !== null,
-        walletBalance: Number(walletRes?.data?.balance ?? 0),
-        walletCurrency: walletRes?.data?.currency ?? "EUR",
-      };
+      try {
+        const [activeOrderCount, loyaltyRes, walletRes] = await Promise.all([
+          countActiveOrders(uid).catch(() => 0),
+          typedQueries.loyaltyAccounts.selectByUser(uid).catch(() => ({ data: null })),
+          typedQueries.walletSummary.selectMainByUser(uid).catch(() => ({ data: null })),
+        ]);
+        return {
+          activeOrders: activeOrderCount,
+          loyaltyPoints: Number(loyaltyRes?.data?.points_balance ?? 0),
+          loyaltyTier: loyaltyRes?.data?.tier ?? "bronze",
+          walletExists: walletRes?.data !== null,
+          walletBalance: Number(walletRes?.data?.balance ?? 0),
+          walletCurrency: walletRes?.data?.currency ?? "EUR",
+        };
+      } catch {
+        return { activeOrders: 0, loyaltyPoints: 0, loyaltyTier: "bronze", walletExists: false, walletBalance: 0, walletCurrency: "EUR" };
+      }
     },
   });
 
@@ -194,15 +217,18 @@ export default function MeCommandCenter() {
     queryKey: ["me-merchant-kpis", activeShop?.id],
     enabled: !!activeShop?.id,
     staleTime: 60_000,
+    retry: 1,
     queryFn: async () => {
       if (!activeShop?.id) return null;
-      const snapshot = await getMerchantDashboardSnapshot(activeShop.id);
-      return {
-        grossSales: snapshot.grossSales,
-        activeOrders: snapshot.activeOrders,
-        completedOrders: snapshot.completedOrders,
-        productCount: snapshot.availableProducts,
-      };
+      try {
+        const snapshot = await getMerchantDashboardSnapshot(activeShop.id);
+        return {
+          grossSales: snapshot.grossSales,
+          activeOrders: snapshot.activeOrders,
+          completedOrders: snapshot.completedOrders,
+          productCount: snapshot.availableProducts,
+        };
+      } catch { return null; }
     },
   });
 
@@ -419,23 +445,23 @@ export default function MeCommandCenter() {
 
   const isInitialLoading = shopsLoading && !shops;
 
-  if (shopsError && !shops) {
+  if (!user) {
     return (
       <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-12 flex flex-col items-center gap-4 text-center">
         <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: `${A.gold}1A` }}>
-          <AlertTriangle className="w-7 h-7" style={{ color: A.gold }} />
+          <User className="w-7 h-7" style={{ color: A.gold }} />
         </div>
         <p className="text-sm font-bold text-foreground">{tSafe(t, "errors.load_failed", "Failed to load")}</p>
         <p className="text-xs text-muted-foreground max-w-xs">
-          {shopsError instanceof Error ? shopsError.message : typeof shopsError === "string" ? shopsError : "Unable to load your profile data. Please try again."}
+          {tSafe(t, "me.sign_in_required", "Please sign in to view your profile.")}
         </p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => navigate("/login")}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
           style={{ background: A.gold, color: A.navy }}
         >
-          {tSafe(t, "common.retry", "Retry")}
+          {tSafe(t, "common.sign_in", "Sign In")}
         </button>
       </div>
     );

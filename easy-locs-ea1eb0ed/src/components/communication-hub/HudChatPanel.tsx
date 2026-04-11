@@ -81,6 +81,30 @@ interface Props {
   onThreadUpdate: (threadId: string, updates: Partial<ConversationThread>) => void;
 }
 
+const VOLATILE_THREAD_KEYS = new Set([
+  'unreadCount', 'lastMessage', 'lastMessageTime', 'lastMessagePreview',
+  'lastMessageTimestamp', 'updatedAt',
+]);
+
+function arePropsEqual(prev: Props, next: Props): boolean {
+  if (prev.showContext !== next.showContext) return false;
+  if (prev.onBack !== next.onBack) return false;
+  if (prev.onToggleContext !== next.onToggleContext) return false;
+  if (prev.onThreadUpdate !== next.onThreadUpdate) return false;
+
+  const pt = prev.thread;
+  const nt = next.thread;
+  if (pt === nt) return true;
+  if (!pt || !nt) return pt === nt;
+
+  const allKeys = new Set([...Object.keys(pt), ...Object.keys(nt)]);
+  for (const k of allKeys) {
+    if (VOLATILE_THREAD_KEYS.has(k)) continue;
+    if ((pt as any)[k] !== (nt as any)[k]) return false;
+  }
+  return true;
+}
+
 const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onToggleContext, onThreadUpdate }: Props) {
   const { user, orgId } = useAuth();
   const { t, locale } = useI18n();
@@ -499,7 +523,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
       />
     </>
   );
-});
+}, arePropsEqual);
 
 class HudChatErrorBoundary extends React.Component<
   { children: React.ReactNode; onBack: () => void },
