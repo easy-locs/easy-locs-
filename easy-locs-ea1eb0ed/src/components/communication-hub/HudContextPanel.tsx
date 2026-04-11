@@ -21,7 +21,7 @@ import { useI18n } from "@/lib/i18n";
 
 interface Props {
   thread: ConversationThread;
-  orgId: string;
+  orgId?: string;
 }
 
 interface PropertyContext {
@@ -47,7 +47,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
 
   // Load property context
   useEffect(() => {
-    if (!["property", "property_lead", "property_viewing", "property_manager", "property_landlord", "property_maintenance"].includes(thread.conversationType) || !thread.tenantId) return;
+    if (!orgId || !["property", "property_lead", "property_viewing", "property_manager", "property_landlord", "property_maintenance"].includes(thread.conversationType) || !thread.tenantId) return;
     setPropertyCtx(p => ({ ...p, loading: true }));
     commRepo.fetchPropertyContext(orgId, thread.tenantId)
       .then(ctx => setPropertyCtx({ ...ctx, loading: false }))

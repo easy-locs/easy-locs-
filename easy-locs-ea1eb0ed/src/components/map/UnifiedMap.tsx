@@ -11,6 +11,7 @@ import DiscoveryHeatmapLayer from "@/components/map/DiscoveryHeatmapLayer";
 import { CloudRain, CloudSun, MapPin } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useRainRadar } from "@/hooks/useRainRadar";
+import { useI18n } from "@/lib/i18n";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import {
   animateStationPulse,
@@ -156,6 +157,7 @@ export default memo(function UnifiedMap({
   onMapMoveRef.current = onMapMove;
 
   // Weather display from canonical store (data always-on)
+  const { t } = useI18n();
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
   const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
 
@@ -653,8 +655,8 @@ export default memo(function UnifiedMap({
           <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
             <MapPin className="w-7 h-7 text-primary/60" />
           </div>
-          <p className="text-sm font-semibold text-white/80 mb-1">Explore nearby</p>
-          <p className="text-[11px] text-white/40 leading-relaxed">Use the list below to discover places around you</p>
+          <p className="text-sm font-semibold text-white/80 mb-1">{t?.("radar.explore_nearby") ?? "Explore nearby"}</p>
+          <p className="text-[11px] text-white/40 leading-relaxed">{t?.("radar.explore_nearby_sub") ?? "Use the list below to discover places around you"}</p>
         </div>
       </div>
     );

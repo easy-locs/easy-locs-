@@ -17,6 +17,7 @@ const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element #root not found");
 
 import("@/lib/analytics/sentry").then(m => m.initSentry()).catch(() => {});
+import("@/lib/auto-heal").then(m => m.installGlobalHealer()).catch(() => {});
 
 if (typeof window !== "undefined") {
   const { pathname, hash } = window.location;
