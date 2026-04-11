@@ -42,3 +42,13 @@ export type {
 } from "./contracts";
 
 export { validateEngineContract } from "./contracts";
+
+export { verificationRunner } from "./verification/verification-runner";
+export type {
+  VerificationPhase,
+  IdentityRecord,
+  PolicyDecision,
+  ProofRecord,
+  VerificationSectionResult,
+  VerificationFinalReport,
+} from "./verification/verification-types";
