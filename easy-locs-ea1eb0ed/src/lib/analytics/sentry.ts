@@ -2,6 +2,57 @@ import * as Sentry from "@sentry/react";
 
 let _initialized = false;
 
+const NOISE_PATTERNS = [
+  "[SentryVerify]",
+  "ResizeObserver",
+  "ChunkLoadError",
+  "Importing a module script failed",
+  "Failed to fetch dynamically imported module",
+  "Unable to preload CSS",
+  "Load failed",
+  "NetworkError",
+  "AbortError",
+  "The operation was aborted",
+  "Non-Error promise rejection captured",
+  "Object captured as promise rejection",
+];
+
+const SENSITIVE_FIELD_PATTERNS = /phone|email|otp|token|password|secret|authorization|api_key|card_number|cvv|pin|ssn|balance/i;
+
+function scrubEventData(data: Record<string, any> | undefined): Record<string, any> | undefined {
+  if (!data) return data;
+  const scrubbed: Record<string, any> = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (SENSITIVE_FIELD_PATTERNS.test(key)) {
+      scrubbed[key] = "[REDACTED]";
+    } else if (typeof value === "string" && value.length > 4) {
+      scrubbed[key] = value
+        .replace(/(\+?\d[\d\s\-().]{7,}\d)/g, "[PHONE]")
+        .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[EMAIL]")
+        .replace(/(?:ey[A-Za-z0-9_-]{10,}\.){1,2}[A-Za-z0-9_-]+/g, "[TOKEN]");
+    } else {
+      scrubbed[key] = value;
+    }
+  }
+  return scrubbed;
+}
+
+const HIGH_VALUE_DOMAINS = new Set(["identity", "wallet", "orbit", "canonical", "payments"]);
+
+function tracesSampler(samplingContext: { name?: string; attributes?: Record<string, any>; parentSampled?: boolean }): number {
+  if (samplingContext.parentSampled !== undefined) return samplingContext.parentSampled ? 1.0 : 0;
+
+  const name = samplingContext.name || "";
+  const domain = samplingContext.attributes?.domain as string | undefined;
+
+  if (domain && HIGH_VALUE_DOMAINS.has(domain)) return 0.8;
+  if (name.includes("identity.") || name.includes("wallet.") || name.includes("orbit.")) return 0.8;
+  if (name.includes("taxonomy.") || name.includes("canonical.") || name.includes("pipeline.")) return 0.6;
+  if (name.includes("pageload") || name.includes("navigation")) return 0.4;
+
+  return 0.2;
+}
+
 export function initSentry() {
   if (_initialized) return;
   const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
@@ -13,7 +64,7 @@ export function initSentry() {
     dsn,
     environment: import.meta.env.MODE || "development",
     release: (window as any).__EASYLOCS_BUILD_ID__ || "unknown",
-    tracesSampleRate: 0.3,
+    tracesSampler,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
     profilesSampleRate: 0.1,
@@ -36,27 +87,31 @@ export function initSentry() {
       if (event.exception?.values) {
         for (const v of event.exception.values) {
           const msg = v.value || "";
-          if (
-            msg.includes("[SentryVerify]") ||
-            msg.includes("ResizeObserver") ||
-            msg.includes("ChunkLoadError") ||
-            msg.includes("Importing a module script failed") ||
-            msg.includes("Failed to fetch dynamically imported module") ||
-            msg.includes("Unable to preload CSS") ||
-            msg.includes("Load failed") ||
-            msg.includes("NetworkError") ||
-            msg.includes("AbortError") ||
-            msg.includes("The operation was aborted")
-          ) {
+          if (NOISE_PATTERNS.some(p => msg.includes(p))) {
             return null;
           }
         }
       }
+
+      if (event.extra) {
+        event.extra = scrubEventData(event.extra as Record<string, any>);
+      }
+      if (event.contexts) {
+        for (const [key, ctx] of Object.entries(event.contexts)) {
+          if (ctx && typeof ctx === "object") {
+            event.contexts[key] = scrubEventData(ctx as Record<string, any>);
+          }
+        }
+      }
+
       return event;
     },
     beforeBreadcrumb(breadcrumb) {
       if (breadcrumb.category === "console" && breadcrumb.level === "debug") {
         return null;
+      }
+      if (breadcrumb.data) {
+        breadcrumb.data = scrubEventData(breadcrumb.data);
       }
       return breadcrumb;
     },

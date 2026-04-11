@@ -8,6 +8,7 @@ import {
 } from "@/lib/taxonomy/canonical-registry";
 import { shouldExcludeFromPublic } from "@/services/quarantine/quarantine-engine";
 import type { EntityLifecycleStatus } from "@/domains/content-pipeline/types";
+import { captureInvalidRenderPath, captureRenderMismatch } from "@/lib/observability/sentry-helpers";
 
 export interface RenderableEntity {
   id: string;
@@ -168,11 +169,19 @@ export function validateCardRendering(
   requestedTemplate: CardTemplate,
 ): { valid: boolean; error: string | null } {
   if (!entity.canonicalType) {
+    captureInvalidRenderPath(entity.id, "unknown", "Entity has no canonical type", {
+      vertical: entity.vertical,
+      canonicalPath: entity.canonicalPath,
+    });
     return { valid: false, error: "Entity has no canonical type" };
   }
 
   if (!isCardTemplateAllowed(entity.canonicalType, requestedTemplate)) {
     const allowed = getAllowedCardTemplates(entity.canonicalType);
+    captureRenderMismatch(entity.id, entity.vertical, entity.canonicalType, requestedTemplate, {
+      canonicalPath: entity.canonicalPath,
+      allowedTemplates: allowed,
+    });
     return {
       valid: false,
       error: `Template "${requestedTemplate}" not allowed for type "${entity.canonicalType}". Allowed: ${allowed.join(", ")}`,

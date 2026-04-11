@@ -4,6 +4,7 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 interface Props {
   children: ReactNode;
   featureName: string;
+  domain?: string;
   onReset?: () => void;
   maxAutoRetries?: number;
 }
@@ -34,11 +35,14 @@ export class FeatureErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error(`[FeatureErrorBoundary:${this.props.featureName}]`, error.message, info.componentStack);
 
-    void import("@/lib/analytics/sentry").then(({ captureException }) => {
-      captureException(error, {
-        featureName: this.props.featureName,
-        componentStack: info.componentStack || "",
-        retryCount: this.state.retryCount,
+    void import("@/lib/analytics/sentry").then(({ captureException: sentryCapture, Sentry }) => {
+      Sentry.withScope((scope: any) => {
+        scope.setTag("feature", this.props.featureName);
+        if (this.props.domain) scope.setTag("domain", this.props.domain);
+        scope.setTag("errorBoundary", "feature");
+        scope.setExtra("componentStack", info.componentStack || "");
+        scope.setExtra("retryCount", this.state.retryCount);
+        sentryCapture(error);
       });
     }).catch(() => {});
 
