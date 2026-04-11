@@ -24,6 +24,7 @@ export type RadarPoint = {
   imageUrl?: string | null;
   category: RadarCategory;
   subcategory?: RadarSubCategory | null;
+  vertical?: string | null;
   lat: number;
   lng: number;
   rating?: number | null;

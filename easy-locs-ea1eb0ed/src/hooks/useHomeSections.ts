@@ -27,7 +27,7 @@ function pointToPreview(p: RadarPoint): HomeShopPreview {
     name: p.title,
     logo_url: p.imageUrl ?? null,
     banner_url: p.imageUrl ?? null,
-    vertical: p.category ?? null,
+    vertical: p.vertical ?? p.category ?? null,
     address: p.subtitle ?? null,
     slug: p.slug || p.id,
     ranking_score: p.isSponsored ? 100 : 50,
@@ -74,6 +74,34 @@ function buildVerticalSection(previews: HomeShopPreview[]): VerticalSection {
 
 const VERTICALS = ["food", "hotel", "services", "grocery", "shops"] as const;
 
+const VERTICAL_TO_SECTION: Record<string, typeof VERTICALS[number]> = {
+  food: "food",
+  restaurant: "food",
+  dining: "food",
+  cafe: "food",
+  hotel: "hotel",
+  stay: "hotel",
+  hostel: "hotel",
+  motel: "hotel",
+  accommodation: "hotel",
+  services: "services",
+  home_services: "services",
+  healthcare: "services",
+  mobility: "services",
+  grocery: "grocery",
+  supermarket: "grocery",
+  market: "grocery",
+  shops: "shops",
+  retail: "shops",
+  property: "shops",
+  experiences: "shops",
+};
+
+function resolveHomeSection(raw: string | null | undefined): typeof VERTICALS[number] | null {
+  if (!raw) return null;
+  return VERTICAL_TO_SECTION[raw.toLowerCase().trim()] ?? null;
+}
+
 export function useHomeSections() {
   const location = useLocationStore((s) => s.currentLocation);
   const isFallback = useLocationStore((s) => s.isFallback);
@@ -83,20 +111,20 @@ export function useHomeSections() {
     queryFn: async (): Promise<HomeSections> => {
       const userLoc = location && !isFallback ? { lat: location.lat, lng: location.lng } : undefined;
 
-      // Fetch per vertical to guarantee NO mixing
-      const fetches = VERTICALS.map(v =>
-        fetchCanonicalDiscovery({
-          surface: "home",
-          userLocation: userLoc,
-          vertical: v,
-          limit: 50,
-        }).then(pts => ({ vertical: v, previews: pts.map(pointToPreview) }))
-      );
+      const allPoints = await fetchCanonicalDiscovery({
+        surface: "home",
+        userLocation: userLoc,
+        limit: 250,
+      });
 
-      const results = await Promise.all(fetches);
+      const allPreviews = allPoints.map(pointToPreview);
 
       const byVertical: Record<string, HomeShopPreview[]> = {};
-      for (const r of results) byVertical[r.vertical] = r.previews;
+      for (const v of VERTICALS) byVertical[v] = [];
+      for (const p of allPreviews) {
+        const section = resolveHomeSection(p.vertical);
+        if (section && byVertical[section]) byVertical[section].push(p);
+      }
 
       const food = buildVerticalSection(byVertical.food ?? []);
       const hotel = buildVerticalSection(byVertical.hotel ?? []);
@@ -104,12 +132,10 @@ export function useHomeSections() {
       const grocery = buildVerticalSection(byVertical.grocery ?? []);
       const shops = buildVerticalSection(byVertical.shops ?? []);
 
-      // Legacy compat — all combined (deprecated)
-      const all = results.flatMap(r => r.previews);
-      const trending = all.slice(0, 10);
-      const bestRated = [...all].filter(p => p.rating > 0).sort((a, b) => b.rating - a.rating).slice(0, 10);
-      const nearYou = [...all].filter(p => p.distanceKm != null).sort((a, b) => (a.distanceKm ?? 9999) - (b.distanceKm ?? 9999)).slice(0, 8);
-      const newest = all.slice(Math.max(0, all.length - 10));
+      const trending = allPreviews.slice(0, 10);
+      const bestRated = [...allPreviews].filter(p => p.rating > 0).sort((a, b) => b.rating - a.rating).slice(0, 10);
+      const nearYou = [...allPreviews].filter(p => p.distanceKm != null).sort((a, b) => (a.distanceKm ?? 9999) - (b.distanceKm ?? 9999)).slice(0, 8);
+      const newest = allPreviews.slice(Math.max(0, allPreviews.length - 10));
 
       return { trending, bestRated, newest, nearYou, food, hotel, services, grocery, shops };
     },
