@@ -60,6 +60,43 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Config**: `.storybook/main.ts`, `.storybook/preview.ts`, `chromatic.config.json` (repo root)
 - **Backgrounds**: Navy (brand), Dark, Light, White presets for all stories
 
+## Sentinel Core — Central Surveillance System (`src/core/sentinel/`)
+Production-grade central surveillance layer. 25 TypeScript files, 3,623 lines + 220-line SQL migration (16 tables). Boots deferred at 22s after app start (t7 stage in useMasterAppBootstrap).
+
+**Motto: WATCH → VALIDATE → BLOCK → HEAL → RE-AUDIT → RELEASE**
+
+### Registries (7 registries, database-backed)
+- **Engine Registry**: 31 engines registered (14 sentinel + 17 domain). Heartbeat tracking, health snapshots, status management
+- **Cron Registry**: 25 jobs with schedule presets (1m→24h), lock keys, collision detection, failure tracking
+- **Source-of-Truth Registry**: 14 critical field mappings. Conflict detection (no dual authority)
+- **Taxonomy Registry**: Path validation, alias resolution, orphan detection, conflict scanning
+- **Page Registry**: Route-based, orphan/duplicate canonical detection, SEO/perf tracking
+- **Card Registry**: Compliance auditing (data source, states, route), non-compliant detection
+- **Workflow Registry**: Durable workflow tracking with runs, state history, completion/failure
+
+### Core Engines
+- **Conflict Engine**: 5 built-in scanners (source-truth, taxonomy, cron, SEO, route). Per-domain scoring, auto-fix detection
+- **Validation Engine**: 14-stage pipeline (normalize → parse_type → schema → taxonomy → geo → time → media → state → owner → source_of_truth → invariant → quality_score → conflict_check → save_or_reject)
+- **Health Engine**: Heartbeat collection, stale detection, global status (healthy/degraded/unhealthy)
+- **Healing Engine**: 12 safe auto-fix types + 6 unsafe (review_required). Rollback support, review queue
+- **Workflow Engine**: Durable workflows with retry, timeout, compensating actions, idempotency keys
+- **Cron Orchestrator**: Central scheduling with resource locking, dead-letter queue, timeout enforcement
+- **Audit Engine**: 19 audit types with frequency scheduling (1min→24h). Event-triggered audits on deploy/schema/migration/taxonomy
+- **Quality Gate**: Blocks on critical conflicts, broken invariants, stale heartbeats. 9 checkpoints (build/deploy/migration/import/taxonomy/media/banner/route/schema)
+- **Incident Engine**: Auto-open, dedup, recurring detection, severity tracking, category filtering
+- **Telemetry Engine**: Event emission, metric gauges/counters, system snapshots
+- **Scoring Engine**: Weighted global score (health 20%, conflict 20%, audit 15%, invariant 15%, incidents 10%, engines 10%, quality gate 10%)
+- **Report Engine**: Full 10-section final report (A→J as per spec): engine inventory, cron inventory, flow health, source-of-truth map, conflict report, page health, security health, maintenance health, global scores, verdict
+
+### Invariant Engine
+9 built-in invariants: GLOBAL_001-004 (heartbeat, cron, pages, source-of-truth), TAXONOMY_001-002 (path validity, alias conflicts), DASHBOARD_001 (card compliance), SEO_001-002 (metadata, duplicates)
+
+### Database (16 tables in `sentinel` schema)
+engine_registry, cron_registry, source_of_truth_registry, invariant_registry, conflict_log, audit_runs, engine_health_snapshots, job_runs, incident_log, healing_actions, workflow_registry, workflow_runs, taxonomy_registry, taxonomy_aliases, page_registry, card_registry
+
+### Master Orchestrator (`sentinel-core.ts`)
+Boots all registries, registers 31 engines + 14 source-of-truth mappings + 9 invariants + 25 cron jobs. Heartbeat every 30s with auto-degradation. Initial audit at boot+8s. Pipeline: VALIDATE → CHECK INVARIANTS → START DURABLE WORKFLOW → EMIT TELEMETRY → APPLY QUALITY GATE → PUBLISH → CONTINUOUS RE-AUDIT → SAFE AUTO-HEAL
+
 ## God System — Self-Auditing Infrastructure (`src/lib/god/`)
 Complete self-auditing, anti-conflict, auto-healing, continuous-monitoring infrastructure. 16 files, 5200+ lines. Boots deferred at 18s after app start via `useMasterAppBootstrap`.
 
