@@ -4,6 +4,8 @@ import { ensureOrbitProfile, invalidateOrbitProfileCache } from "@/lib/orbit/ens
 import { ensureUserProfile } from "@/lib/auth/profile";
 import { normalizePhone } from "@/lib/auth/phone-identity";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { structuredLogger } from "@/lib/observability/structured-logger";
+import { recordAction } from "@/lib/control-plane/domain-health";
 
 export interface ActivationResult {
   success: boolean;
@@ -27,6 +29,9 @@ export async function runIdentityActivation(input: ActivationInput): Promise<Act
   const normalized = normalizePhone(phone);
   let orbitId: string | null = null;
   let walletReady = false;
+
+  const pipelineStart = performance.now();
+  structuredLogger.info("identity", "activation.start", `Identity activation started for ${isNewUser ? "new" : "returning"} user`, { is_new_user: isNewUser });
 
   try {
     await ensureUserProfile(userId, {
@@ -93,7 +98,9 @@ export async function runIdentityActivation(input: ActivationInput): Promise<Act
           });
           walletReady = true;
         } catch (walletErr) {
-          console.warn("[IdentityActivation] Wallet creation deferred:", walletErr);
+          structuredLogger.warn("wallet", "activation.wallet_deferred", "Wallet creation deferred during activation", {
+            error: walletErr instanceof Error ? walletErr.message : String(walletErr),
+          });
           walletReady = false;
         }
       }
@@ -102,6 +109,15 @@ export async function runIdentityActivation(input: ActivationInput): Promise<Act
     }
 
     await logActivation(userId, normalized, isNewUser);
+
+    const elapsed = Math.round(performance.now() - pipelineStart);
+    recordAction("identity", "activation.complete", true, elapsed);
+    structuredLogger.info("identity", "activation.complete", "Identity activation succeeded", {
+      orbit_id: orbitId,
+      wallet_ready: walletReady,
+      is_new_user: isNewUser,
+      elapsed_ms: elapsed,
+    });
 
     platformBus.emit("identity:activated" as any, {
       userId,
@@ -120,14 +136,21 @@ export async function runIdentityActivation(input: ActivationInput): Promise<Act
       contactsSyncAvailable: true,
     };
   } catch (err) {
-    console.error("[IdentityActivation] Pipeline failed:", err);
+    const elapsed = Math.round(performance.now() - pipelineStart);
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    recordAction("identity", "activation.complete", false, elapsed);
+    structuredLogger.error("identity", "activation.failed", `Identity activation failed: ${errorMsg}`, {
+      is_new_user: isNewUser,
+      elapsed_ms: elapsed,
+      error_code: errorMsg,
+    });
     return {
       success: false,
       userId,
       orbitId,
       walletReady,
       contactsSyncAvailable: false,
-      error: err instanceof Error ? err.message : String(err),
+      error: errorMsg,
     };
   }
 }

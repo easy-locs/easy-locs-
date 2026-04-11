@@ -46,6 +46,20 @@ export class FeatureErrorBoundary extends Component<Props, State> {
       });
     }).catch(() => {});
 
+    void import("@/lib/observability/structured-logger").then(({ structuredLogger }) => {
+      const domain = (this.props.domain || this.props.featureName.toLowerCase()) as any;
+      structuredLogger.error(domain, "error_boundary.caught", `Error boundary caught: ${error.message}`, {
+        feature: this.props.featureName,
+        retry_count: this.state.retryCount,
+        component_stack: info.componentStack?.slice(0, 500),
+      });
+    }).catch(() => {});
+
+    void import("@/lib/control-plane/domain-health").then(({ recordAction }) => {
+      const domain = (this.props.domain || this.props.featureName.toLowerCase()) as any;
+      recordAction(domain, "render", false);
+    }).catch(() => {});
+
     void import("@/lib/auto-heal")
       .then(({ healError }) => healError(error))
       .catch(() => {});

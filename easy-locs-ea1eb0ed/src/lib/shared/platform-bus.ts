@@ -569,7 +569,6 @@ export function installPlatformReactions(): () => void {
     })
   );
 
-  // Debug logging in development
   if (import.meta.env.DEV) {
     unsubs.push(
       platformBus.onAll((event) => {
@@ -579,6 +578,24 @@ export function installPlatformReactions(): () => void {
       })
     );
   }
+
+  try {
+    import("@/lib/platform-bus").then(({ platformBus: canonicalBus }) => {
+      unsubs.push(
+        platformBus.onAll((event) => {
+          if ((event.payload as Record<string, unknown>)?.__bridged) return;
+          const domainMap: Record<string, import("@/lib/platform-bus").PlatformEventDomain> = {
+            wallet: "wallet", orbit: "orbit", marketplace: "listing",
+            pm: "listing", system: "system", tracking: "system",
+          };
+          const domain = domainMap[event.source] || "system";
+          canonicalBus.emit(event.type, domain, event.payload, {
+            user_id_safe: event.userId,
+          });
+        })
+      );
+    }).catch(() => {});
+  } catch {}
 
   return () => unsubs.forEach((fn) => fn());
 }

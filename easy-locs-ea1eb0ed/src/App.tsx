@@ -215,7 +215,7 @@ const {
   AdminActiveSessionsPage, AdminFraudMonitorPage, AdminCoreEnginePage, AdminOrderAuditPage,
   AdminRefundQueuePage, AdminPlatformHealthPage, AdminRuntimeCockpitPage,
   AdminSystemLivePanelPage, AdminRestaurantFillPage, AdminMasterControlPage,
-  AdminQaCommandPage, AdminMenuQualityControlPage, AdminUxLiveTestPage, AdminEngineCockpit,
+  AdminQaCommandPage, AdminMenuQualityControlPage, AdminUxLiveTestPage, AdminEngineCockpit, ControlPlanePage,
   AdminAIControlCenter, AdminMonetizationDashboard,
   AdminBrowserRepairPage, AdminCentralControlPanelPage,
   RiderPrioritySubscriptionPage,
@@ -723,6 +723,7 @@ const App = () => (
                   <Route path="/admin/engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/quality-engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><QualityEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/engine-cockpit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEngineCockpit /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/control-plane" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ControlPlanePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/ai-control-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAIControlCenter /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/monetization" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMonetizationDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/core-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCoreEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />

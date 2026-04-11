@@ -75,6 +75,18 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Naming Convention**: `{domain}.{action}.{step}` — e.g. `identity.otp.verify`, `orbit.message.send`, `wallet.transfer.submit`, `taxonomy.entity.publish`
 - **Privacy**: phone/email/OTP/token/card scrubbing in all Sentry events, breadcrumbs, and contexts. Sensitive field keys auto-redacted.
 
+## Auto-Pilot Mondial Infrastructure
+- **Structured Logger** (`src/lib/observability/structured-logger.ts`): JSON schema, 30+ `LogDomain` types, PII scrubbing, Sentry breadcrumbs/capture, `timed()` wrapper, domain-tagged, in-memory buffer. API: `structuredLogger.debug/info/warn/error/critical(domain, action, message, extra)`
+- **Canonical Platform Event Bus** (`src/lib/platform-bus/index.ts`): Typed events, 60+ `PLATFORM_EVENTS` constants, pattern matching, history buffer, domain-to-log mapping. API: `platformBus.emit(name, domain, payload)` / `platformBus.on(pattern, handler)`
+- **Legacy Platform Bus Bridge** (`src/lib/shared/platform-bus.ts`): Existing 240+ event types, notation bridge (dot↔colon), cross-module reactions (wallet↔orbit↔marketplace↔PM). Forward bridge to canonical bus for structured logging
+- **Control Plane** (`src/lib/control-plane/`): Domain health scoring, incident engine (P0-P3), kill switches (19 defaults), feature flags (18 flags with rollout %), platform health summary
+- **Domain Health** (`src/lib/control-plane/domain-health.ts`): Per-domain metrics (error rate, P95 latency, failing actions), 5-min sliding windows, health status (healthy/degraded/unhealthy/unknown), 25 tracked domains
+- **Architecture Enforcement** (`src/lib/architecture/`): Domain boundary rules (7 domains, forbidden imports), 12 catalogued violations, architecture validator with grading (A-F), import boundary validation, domain coverage audit
+- **Card Health Audit** (`src/domains/cards/card-health-audit.ts`): Card registry health monitoring, dead card detection, connection status computation, integration with domain-health and platform bus
+- **Domain Error Boundaries** (`src/components/error-boundaries/DomainErrorBoundary.tsx`): 8 pillar-specific error boundaries with domain-tagged Sentry capture
+- **Control Plane Admin** (`src/pages/admin/ControlPlanePage.tsx`): 6-tab admin dashboard (Health, Incidents, Kill Switches, Feature Flags, Architecture, Card Health). Route: `/admin/control-plane`
+- **Audit Report**: `docs/AUDIT-AUTOPILOT.md` — 12 arch violations, 4 orphan cards, full P0/P1/P2/P3 classification
+
 ## Anti-Conflict Architecture Cleanup
 - **Dead code removed**: `OrdersPage.tsx` (superseded by MyOrdersPage/CustomerActiveOrdersPage/MerchantOrdersPage), `NotificationPreferencesPage.tsx` (superseded by SettingsNotifications), `SettingsPaymentMethods.tsx` (superseded by SettingsWallet), `useOrbitComposerState.ts` (replaced by composerStore)
 - **Deprecated code removed**: `sendTextMessage`, `loadConversationMessages`, `markMessageRead` removed from `messageService.ts` — all migrated to orbitDispatch pipeline. Only `sendSystemMessage` and `createCallSystemMessage` remain (system events bypass dispatch).
