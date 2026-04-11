@@ -64,7 +64,30 @@ class AutoHealEngine {
 
   /** Register default heal actions */
   private registerDefaultActions(): void {
-    // 1. Realtime disconnected → trigger background sync catch-up
+    this.register({
+      name: "protection-health-check",
+      cooldownMs: 60_000,
+      detect: async () => {
+        try {
+          const { getProtectionStats } = await import("@/lib/auto-protect");
+          const stats = getProtectionStats();
+          return stats.healthStatus === "critical" || stats.healthStatus === "degraded";
+        } catch { return false; }
+      },
+      heal: async () => {
+        try {
+          const { getProtectionStats } = await import("@/lib/auto-protect");
+          const stats = getProtectionStats();
+          const { captureDomainWarning } = await import("@/lib/observability/sentry-helpers");
+          captureDomainWarning("canonical", "protection.health", `Protection system status: ${stats.healthStatus}`, {
+            total: stats.total,
+            critical: stats.bySeverity.critical,
+            high: stats.bySeverity.high,
+          });
+        } catch {}
+      },
+    });
+
     this.register({
       name: "realtime-catchup",
       cooldownMs: 60_000,

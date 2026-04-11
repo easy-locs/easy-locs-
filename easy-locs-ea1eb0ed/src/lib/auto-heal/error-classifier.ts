@@ -1,5 +1,5 @@
 export type ErrorSeverity = "critical" | "medium" | "minor";
-export type ErrorDomain = "crash" | "payment" | "auth" | "network" | "ui" | "data" | "unknown";
+export type ErrorDomain = "crash" | "payment" | "auth" | "network" | "ui" | "data" | "taxonomy" | "wallet" | "orbit" | "rendering" | "unknown";
 
 export interface ClassifiedError {
   severity: ErrorSeverity;
@@ -21,6 +21,9 @@ const CRITICAL_PATTERNS: Array<{ pattern: RegExp; domain: ErrorDomain }> = [
   { pattern: /out of memory/i, domain: "crash" },
   { pattern: /payment|stripe|charge|invoice/i, domain: "payment" },
   { pattern: /auth|token|session|login|unauthorized|403|401/i, domain: "auth" },
+  { pattern: /wallet.*inconsist|balance.*mismatch|transfer.*fail/i, domain: "wallet" },
+  { pattern: /cross.?vertical|contamination/i, domain: "taxonomy" },
+  { pattern: /otp.*abuse|otp.*flood|rate.?limit.*otp/i, domain: "auth" },
 ];
 
 const MEDIUM_PATTERNS: Array<{ pattern: RegExp; domain: ErrorDomain }> = [
@@ -29,6 +32,12 @@ const MEDIUM_PATTERNS: Array<{ pattern: RegExp; domain: ErrorDomain }> = [
   { pattern: /constraint|violates|duplicate key/i, domain: "data" },
   { pattern: /CORS|blocked|mixed content/i, domain: "network" },
   { pattern: /timeout|ETIMEDOUT/i, domain: "network" },
+  { pattern: /taxonomy.*mismatch|wrong.*category|invalid.*vertical/i, domain: "taxonomy" },
+  { pattern: /canonical.*conflict|canonical.*mismatch/i, domain: "taxonomy" },
+  { pattern: /render.*mismatch|template.*invalid|fallback.*render/i, domain: "rendering" },
+  { pattern: /media.*mismatch|image.*invalid|media.*rejected/i, domain: "data" },
+  { pattern: /orbit.*fail|message.*send.*fail|thread.*corrupt/i, domain: "orbit" },
+  { pattern: /wallet.*fail|topup.*fail/i, domain: "wallet" },
 ];
 
 const IGNORABLE_PATTERNS: RegExp[] = [

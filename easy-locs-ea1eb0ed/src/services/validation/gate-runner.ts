@@ -416,7 +416,7 @@ export function runAllGates(
     status,
   });
 
-  return {
+  const pipelineResult: PipelineResult = {
     entityId: entity.id,
     status,
     canonicalPath: entity.canonicalPath,
@@ -430,6 +430,16 @@ export function runAllGates(
     reviewRequired,
     auditTrail: [],
   };
+
+  if (quarantined || failedGates.length > 0) {
+    try {
+      import("@/lib/auto-protect").then(({ protectPipeline }) => {
+        protectPipeline(pipelineResult);
+      }).catch(() => {});
+    } catch {}
+  }
+
+  return pipelineResult;
 }
 
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {

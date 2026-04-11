@@ -9,14 +9,42 @@ import {
   type ObservabilityDomain,
 } from "./sentry-helpers";
 
+const otpAttemptTracker = new Map<string, { count: number; windowStart: number }>();
+const OTP_WINDOW_MS = 300_000;
+
+function trackOtpAttempt(userId: string): { count: number; windowMinutes: number } {
+  const now = Date.now();
+  let tracker = otpAttemptTracker.get(userId);
+  if (!tracker || now - tracker.windowStart > OTP_WINDOW_MS) {
+    tracker = { count: 0, windowStart: now };
+    otpAttemptTracker.set(userId, tracker);
+  }
+  tracker.count++;
+  return { count: tracker.count, windowMinutes: OTP_WINDOW_MS / 60_000 };
+}
+
 export function instrumentIdentityOTPRequest(userId: string, method: "sms" | "email") {
   addDomainBreadcrumb("identity", "otp.request", { userId, method });
+
+  const { count, windowMinutes } = trackOtpAttempt(userId);
+  if (count > 5) {
+    import("@/lib/auto-protect").then(({ protectOtpFlow }) => {
+      protectOtpFlow(userId, count, windowMinutes);
+    }).catch(() => {});
+  }
 }
 
 export function instrumentIdentityOTPVerify(userId: string, success: boolean) {
   addDomainBreadcrumb("identity", "otp.verify", { userId, success });
   if (!success) {
     captureDomainWarning("identity", "otp.verify.failed", "OTP verification failed", { userId });
+
+    const { count, windowMinutes } = trackOtpAttempt(userId);
+    if (count > 8) {
+      import("@/lib/auto-protect").then(({ protectOtpFlow }) => {
+        protectOtpFlow(userId, count, windowMinutes);
+      }).catch(() => {});
+    }
   }
 }
 
@@ -27,6 +55,11 @@ export function instrumentIdentityLogin(userId: string, userType: string, countr
 
 export function instrumentIdentitySessionRefresh(userId: string, success: boolean) {
   addDomainBreadcrumb("identity", "session.refresh", { userId, success });
+  if (!success) {
+    import("@/lib/auto-protect").then(({ protectAuthFlow }) => {
+      protectAuthFlow(userId, "Session refresh failed — possible token expiry or hijack", { success });
+    }).catch(() => {});
+  }
 }
 
 export function instrumentWalletTransfer(
@@ -34,6 +67,15 @@ export function instrumentWalletTransfer(
   recipientId: string,
   fn: () => Promise<any>,
 ) {
+  import("@/lib/auto-protect").then(({ checkRateLimit }) => {
+    const state = checkRateLimit(`wallet.transfer.submit.${senderId}`);
+    if (state.blocked) {
+      import("@/lib/auto-protect").then(({ protectWalletFlow }) => {
+        protectWalletFlow(senderId, "Transfer rate limit exceeded", { recipientId });
+      }).catch(() => {});
+    }
+  }).catch(() => {});
+
   return instrumentCriticalAction("wallet", "transfer.submit", fn, {
     senderId,
     recipientId,
@@ -53,6 +95,15 @@ export function instrumentContactSync(userId: string, fn: () => Promise<any>) {
 }
 
 export function instrumentMessageSend(conversationId: string, fn: () => Promise<any>) {
+  import("@/lib/auto-protect").then(({ checkRateLimit }) => {
+    const state = checkRateLimit("orbit.message.send");
+    if (state.blocked) {
+      import("@/lib/auto-protect").then(({ protectOrbitThread }) => {
+        protectOrbitThread(conversationId, "Message send rate limit exceeded");
+      }).catch(() => {});
+    }
+  }).catch(() => {});
+
   return instrumentCriticalAction("orbit", "message.send", fn, { conversationId });
 }
 

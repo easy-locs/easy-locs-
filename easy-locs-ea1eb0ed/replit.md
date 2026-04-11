@@ -494,10 +494,26 @@ Continuous audit system with 5 modules, all tested (17/17 vitest passing):
 - **Package**: `@sentry/react` v10.45.0
 - **Boot**: `main.tsx` → immediate `initSentry()` import (no delay)
 - **Config**: environment separation, release tagging, BrowserTracing, SessionReplay
-- **Sampling**: traces=0.2, replaysSession=0.1, replaysOnError=1.0
+- **Sampling**: Smart domain-based — 80% identity/wallet/orbit/payments, 60% taxonomy/canonical, 40% nav, 20% other
+- **Replay**: 10% normal sessions, 100% on errors. maskAllText + maskAllInputs enabled
 - **Filtering**: ResizeObserver/ChunkLoadError suppressed, browser extensions denied
+- **Privacy**: Phone/email/OTP/token/card auto-redacted via scrubSensitiveData() in beforeSend + beforeBreadcrumb
 - **Error boundaries**: AppCrashBoundary (top-level), ErrorBoundary (general), FeatureErrorBoundary (40+ routes)
 - **Activation**: Set `VITE_SENTRY_DSN` env var to activate
+- **Observability Helpers** (`src/lib/observability/sentry-helpers.ts`): 15 domains, captureDomainError/Warning/Span/Breadcrumb/Context, instrumentCriticalAction, captureRenderMismatch, capturePipelineFailure
+- **Domain Instrumentation** (`src/lib/observability/domain-instrumentation.ts`): Pre-built instrumentation for OTP, login, wallet transfers, messaging, calls, taxonomy, media, search, checkout
+
+### Auto-Protect System (`src/lib/auto-protect/`)
+Full detect → classify → react → protect → verify → report cycle across 11 domains:
+- **Domains covered**: UI, taxonomy, canonical, media, scraping, wallet, identity, orbit, public_seo, marketplace, rendering
+- **Issue Detector** (`issue-detector.ts`): 12 detector functions — render mismatch, taxonomy mismatch, media issues, pipeline issues, import issues, wallet inconsistency, OTP abuse, suspicious auth, orbit corruption, public page invalid, card broken
+- **Protection Reactor** (`protection-reactor.ts`): Domain-specific reactors with 11 action types — auto_fixed, blocked, quarantined, retried, fallback_rendered, rate_limited, challenged, frozen, hidden, escalated, review_queued
+- **Safe Auto-Fix** (`safe-auto-fix.ts`): Only safe issues auto-fixed (UI fallback, normalization, missing defaults, template fallback). NEVER auto-fixes wallet/auth/canonical/cross-vertical issues
+- **Rate Limiter** (`rate-limiter.ts`): Per-user rate limiting for OTP (5/5min), login (8/10min), wallet transfers (10/min), messages (60/min), calls (10/min). Non-mutating `peekRateLimit()` for status checks
+- **Verification** (`verification.ts`): Auto-runs after every reaction — checks action_logged, severity_appropriate, auto_fix_safe, entity_isolated, flow_halted
+- **Protection Logger** (`protection-logger.ts`): Full audit trail with Sentry integration. Critical/high → Sentry error events, medium/low → breadcrumbs. Stats: bySeverity, byAction, byDomain, healthStatus
+- **Wiring**: Integrated into rendering contracts (auto-protect on invalid render), gate-runner (auto-protect on pipeline failure), FeatureErrorBoundary (card protection), auto-heal engine (health monitoring), domain-instrumentation (OTP/auth/wallet/orbit rate limiting + abuse detection)
+- **Safety rules**: Never auto-fix critical issues, never suppress serious logic corruption, never weaken security, never allow public rendering of doubtful data, always log every action
 
 ## Engineering Audit (2026-04-10)
 Full audit report: `docs/ENGINEERING_AUDIT.md`
