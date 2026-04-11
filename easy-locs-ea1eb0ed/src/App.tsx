@@ -52,13 +52,8 @@ const LazyUnifiedPaymentProvider = lazy(() => import("@/payments/UnifiedPaymentS
 function DeferredHeavyProviders({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    const hasRIC = typeof window !== "undefined" && "requestIdleCallback" in window;
-    if (hasRIC) {
-      const id = window.requestIdleCallback(() => setReady(true), { timeout: 1500 });
-      return () => window.cancelIdleCallback(id);
-    }
-    const id = window.setTimeout(() => setReady(true), 800);
-    return () => window.clearTimeout(id);
+    const id = requestIdleCallback(() => setReady(true), { timeout: 1500 });
+    return () => cancelIdleCallback(id);
   }, []);
   if (!ready) return <>{children}</>;
   return (
@@ -73,9 +68,7 @@ function DeferredHeavyProviders({ children }: { children: React.ReactNode }) {
 }
 
 // ── Quality gates — defer to idle (never block parse) ──
-const scheduleIdle = (typeof window !== "undefined" && "requestIdleCallback" in window)
-  ? (fn: () => void) => window.requestIdleCallback(fn, { timeout: 3000 })
-  : (fn: () => void) => window.setTimeout(fn, 1500);
+const scheduleIdle = (fn: () => void) => requestIdleCallback(fn, { timeout: 3000 });
 scheduleIdle(() => { import("@/lib/quality-gates").then(m => m.initQualityGates()).catch(() => {}); });
 
 // ── Deferred boot guards — loaded 3s after first paint ──

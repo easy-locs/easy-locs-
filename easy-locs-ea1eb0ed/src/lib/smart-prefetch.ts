@@ -35,9 +35,7 @@ const ROUTE_LAZY_MAP: Record<string, () => Promise<unknown>> = {
   "/signup": () => import("@/pages/Signup"),
 };
 
-const scheduleIdle = (typeof window !== "undefined" && "requestIdleCallback" in window)
-  ? (fn: () => void, opts?: { timeout: number }) => window.requestIdleCallback(fn, opts)
-  : (fn: () => void, opts?: { timeout: number }) => window.setTimeout(fn, opts?.timeout ?? 200);
+const scheduleIdle = (fn: () => void, opts?: { timeout: number }) => requestIdleCallback(fn, opts);
 
 function prefetchRoute(route: string) {
   if (prefetchedRoutes.has(route)) return;

@@ -181,15 +181,9 @@ const loadCoreExtras = async () => {
 };
 
 if (typeof window !== "undefined") {
-  if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(() => {
-      void loadCoreExtras();
-    });
-  } else {
-    setTimeout(() => {
-      void loadCoreExtras();
-    }, 500);
-  }
+  requestIdleCallback(() => {
+    void loadCoreExtras();
+  });
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {

@@ -14,11 +14,7 @@ export function prefetchRoute(importFn: () => Promise<unknown>): void {
   const run = () => {
     importFn().catch(() => {/* silent — prefetch is best-effort */});
   };
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(run, { timeout: 5000 });
-  } else {
-    setTimeout(run, 3000);
-  }
+  requestIdleCallback(run, { timeout: 5000 });
 }
 
 /** Prefetch multiple routes with stagger */
@@ -108,11 +104,7 @@ export function useRenderCount(componentName: string): void {
  */
 export function scheduleIdle(fn: () => void, timeout = 5000): void {
   if (typeof window === "undefined") return;
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(fn, { timeout });
-  } else {
-    setTimeout(fn, 100);
-  }
+  requestIdleCallback(fn, { timeout });
 }
 
 /**
