@@ -65,19 +65,41 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const AUTH_CACHE_KEY = "easylocs_auth_cache_v1";
+
+function getCachedAuth(): { userId: string; email: string; userType: UserType; country: string; currency: string; onboardingCompleted: boolean; role: ActiveRole } | null {
+  try {
+    const raw = localStorage.getItem(AUTH_CACHE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data?.userId || Date.now() - (data.ts || 0) > 7 * 24 * 60 * 60 * 1000) return null;
+    return data;
+  } catch { return null; }
+}
+
+function setCachedAuth(userId: string, email: string, ut: UserType, country: string, currency: string, onboardingCompleted: boolean, role: ActiveRole) {
+  try {
+    localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify({ userId, email, userType: ut, country, currency, onboardingCompleted, role, ts: Date.now() }));
+  } catch {}
+}
+
+function clearCachedAuth() {
+  try { localStorage.removeItem(AUTH_CACHE_KEY); } catch {}
+}
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  // ── Initialize session lifecycle hooks (online recovery, etc.) ──
   useEffect(() => { initSessionLifecycle(); }, []);
 
+  const cached = getCachedAuth();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [orgId, setOrgId] = useState<string | null>(null);
-  const [userType, setUserType] = useState<UserType>("landlord");
-  const [userCountry, setUserCountry] = useState("FR");
-  const [userCurrency, setUserCurrency] = useState("EUR");
-  const [onboardingCompleted, setOnboardingCompleted] = useState(true);
+  const [userType, setUserType] = useState<UserType>(cached?.userType ?? "landlord");
+  const [userCountry, setUserCountry] = useState(cached?.country ?? "FR");
+  const [userCurrency, setUserCurrency] = useState(cached?.currency ?? "EUR");
+  const [onboardingCompleted, setOnboardingCompleted] = useState(cached?.onboardingCompleted ?? true);
   const [activeRole, setActiveRole] = useState<ActiveRole>("landlord");
   const [hasDualRole, setHasDualRole] = useState(false);
   const [allOrgs, setAllOrgs] = useState<{ id: string; name: string; country: string; currency: string }[]>([]);
@@ -158,6 +180,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserCurrency(data?.currency ?? "EUR");
       setOnboardingCompleted(data?.onboarding_completed ?? false);
       setProfileLoaded(true);
+      setCachedAuth(userId, "", ut, data?.country ?? "FR", data?.currency ?? "EUR", data?.onboarding_completed ?? false, ut === "landlord" ? "landlord" : "client");
     } catch (err) {
       console.warn("[AuthContext] DB slow → fetchProfileCritical fallback safe:", err);
       setUserType("client");
@@ -442,6 +465,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = useCallback(async () => {
     teardownSession();
+    clearCachedAuth();
 
     await supabase.auth.signOut();
     setUser(null);
