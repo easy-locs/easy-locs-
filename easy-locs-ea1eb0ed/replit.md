@@ -60,6 +60,31 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Config**: `.storybook/main.ts`, `.storybook/preview.ts`, `chromatic.config.json` (repo root)
 - **Backgrounds**: Navy (brand), Dark, Light, White presets for all stories
 
+## God System — Self-Auditing Infrastructure (`src/lib/god/`)
+Complete self-auditing, anti-conflict, auto-healing, continuous-monitoring infrastructure. 16 files, 5200+ lines. Boots deferred at 18s after app start via `useMasterAppBootstrap`.
+
+### Core Systems (9 engines, all extend `BaseEngine`)
+- **Canonical Content Graph** (`canonical-content-graph.ts`): 31 node types (USER through ENGINE_HEALTH), 14 edge types (BELONGS_TO through SYNCS_WITH), graph with orphan/broken-edge detection
+- **Taxonomy God Engine** (`taxonomy-god-engine.ts`): Hierarchical taxonomy with dot-path notation (GLOBAL.FOOD.RESTAURANT.PIZZA.NEAPOLITAN), 13 families, 200+ paths, alias system, conflict detection, validation
+- **State Machines** (`state-machines.ts`): 8 strict flow definitions — Listing, Order, Booking, Payment, Delivery, Message, Call, Ad Campaign. Transition validation, audit, dead-end/unreachable detection
+- **Anti-Conflict Engine** (`anti-conflict-engine.ts`): Scans taxonomy conflicts, state machine integrity, source-of-truth violations, domain boundary overlaps, graph broken edges. 7 conflict modes (PREVENT → RELEASE)
+- **Validation Pipeline** (`validation-pipeline.ts`): 11-stage pipeline: Normalize → Type → Taxonomy → Relation → Media → Geo → Time → State → Security → Quality → Conflict. Produces ACCEPTED/REJECTED/NEEDS_REVIEW verdict
+- **Continuous Audit Engine** (`continuous-audit-engine.ts`): 7 built-in checks (health ping 1min, heartbeat 3min, conflict 5min, data integrity 10min, taxonomy 15min, graph 15min, state machines 20min). Event-triggered audits on deploy/schema/migration/taxonomy changes
+- **Maintenance Engine** (`maintenance-engine.ts`): Safe auto-fix (slug, meta, index, banner expiry, thumbnail, cache) + unsafe review queue (record merge, bulk delete, payment). Dry-run + rollback support
+- **Cron Orchestrator** (`cron-orchestrator.ts`): Central job registry with 25 pre-registered jobs. Dedup, resource locking, retry with exponential backoff, dead-letter queue, conflict prevention
+- **Quality Gate Engine** (`quality-gate-engine.ts`): 10 checkpoint types (build/deploy/migration etc). Blocks on critical conflicts, broken state machines, failed audits. PASS/PASS_WITH_WARNINGS/BLOCKED verdict
+
+### Omega Extensions
+- **Observability Engine** (`observability-engine.ts`): God Score (weighted: taxonomy 15%, conflict 20%, state machines 15%, data integrity 15%, maintenance 5%, cron 10%, quality gate 10%, engines 10%). Incident management, system snapshots every 60s
+- **Hyper Optimization Engine** (`hyper-optimization-engine.ts`): Performance budget enforcement, cache intelligence (multi-layer, hit rate, stale cleanup), optimization cycles with before/after scoring. 10 performance dimensions
+- **Black Chamber** (`black-chamber.ts`): Worker identity management, policy enforcement (no-direct-db-write, no-multi-writer, no-unsafe-heal), proof trail, release gates
+- **Past Control** (`past-control.ts`): Drift detection (9 categories), snapshot comparison, regression detection with threshold-based blocking
+
+### Master Systems
+- **God Audit** (`god-audit.ts`): Full 13-section audit report (health, engines, crons, taxonomy, data integrity, flows, pages, performance, SEO, security, conflicts, maintenance, verdict). Sections derive from live engine data
+- **God Core** (`god-core.ts`): Master bootstrap orchestrating all 9 engines + 25 cron jobs. Continuous heartbeat (30s), auto-degradation detection, initial audit on boot (10s delay)
+- **Index** (`index.ts`): Public API re-exporting all engines, types, and singletons
+
 ## Canonical Content Architecture (Strict Taxonomy + Media Truth)
 - **Canonical Registry** (`src/lib/taxonomy/canonical-registry.ts`): 12 verticals (food, grocery, shops, services, health, fitness, property, stay, mobility, utility, beauty, experiences). Hierarchical: family → category → subcategory → canonical_type → canonical_subtype. Each type defines allowed media kinds, required/optional fields, allowed card templates, aliases. Index-backed lookups: `resolveAlias()`, `getNode()`, `isValidCategoryChain()`, `validateCanonicalNode()`, `getAllowedMediaKinds()`, `isCardTemplateAllowed()`.
 - **Content Pipeline Types** (`src/domains/content-pipeline/types.ts`): Full pipeline stages: RawEntity → NormalizedEntity → CanonicalEntity → ValidatedEntity → PublishedEntity. 20+ enums: EntityLifecycleStatus, MediaLifecycleStatus, ConfidenceBand, ValidationGateId, LockType, QuarantineReason, JobStatus, AuditAction. Interfaces: MediaAsset, MediaAnalysisResult, QuarantineEntry, ReclassificationRequest, ReviewQueueItem, PipelineJob, AuditLogEntry, GateCheckOutput, PipelineResult, LegacyAuditResult.
