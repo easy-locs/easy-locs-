@@ -325,43 +325,31 @@ export default function AdminControlRoomPage() {
             <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
-                  <Layers className="w-4 h-4 inline mr-1" /> Flow Closure Status
+                  <Layers className="w-4 h-4 inline mr-1" /> Engine Tier Summary
                 </CardTitle>
-                <p className="text-[10px] text-gray-500 mt-1">Derived from live engine_supervisor data — {engines.length} engines loaded</p>
+                <p className="text-[10px] text-gray-500 mt-1">Live from engine_supervisor — {engines.length} engines</p>
               </CardHeader>
               <CardContent className="space-y-1 text-xs">
                 {(() => {
-                  const engineNames = new Set(engines.map(e => e.engine_name));
-                  const flowDefs = [
-                    { flow: "Auth → Dashboard", engines: ["auth_engine", "session_engine"] },
-                    { flow: "Orbit messaging pipeline", engines: ["message_delivery_engine", "message_dedup_engine"] },
-                    { flow: "Orbit WebRTC calls", engines: ["call_engine"] },
-                    { flow: "Wallet + payments", engines: ["payment_engine", "ledger_engine"] },
-                    { flow: "Delivery pipeline", engines: ["delivery_engine", "dispatch_engine"] },
-                    { flow: "KPI + health monitoring", engines: ["kpi_engine", "health_check_engine"] },
-                    { flow: "FX + multi-currency", engines: ["fx_engine", "currency_engine"] },
-                    { flow: "Engine cron runner", engines: ["engine_cron"] },
-                    { flow: "Flight booking (airline API)", engines: ["flight_engine"] },
-                    { flow: "Push notifications (native)", engines: ["notification_engine"] },
-                  ];
-                  return flowDefs.map(f => {
-                    const matched = f.engines.filter(n => engineNames.has(n));
-                    const matchedEngines = engines.filter(e => f.engines.includes(e.engine_name));
-                    const hasEngine = matched.length > 0;
-                    const allHealthy = matchedEngines.every(e => e.enabled && e.status === "healthy");
-                    const anyError = matchedEngines.some(e => e.status === "error" || e.consecutive_failures > 0);
+                  const tiers = new Map<string, EngineRow[]>();
+                  engines.forEach(e => {
+                    const tier = e.engine_tier || "unclassified";
+                    if (!tiers.has(tier)) tiers.set(tier, []);
+                    tiers.get(tier)!.push(e);
+                  });
+                  return [...tiers.entries()].sort().map(([tier, items]) => {
+                    const okCount = items.filter(e => e.enabled && e.status === "ok").length;
+                    const errorCount = items.filter(e => e.status === "error").length;
+                    const disabledCount = items.filter(e => !e.enabled).length;
                     return (
-                      <div key={f.flow} className="flex items-center justify-between gap-2">
-                        <span className={`truncate max-w-[65%] ${hasEngine ? "text-gray-300" : "text-gray-500"}`}>{f.flow}</span>
+                      <div key={tier} className="flex items-center justify-between gap-2">
+                        <span className="text-gray-300 truncate max-w-[45%] capitalize">{tier.replace(/_/g, " ")}</span>
                         <div className="flex items-center gap-1.5">
-                          {hasEngine && matchedEngines.map(e => (
-                            <StatusBadge key={e.engine_name} status={e.enabled ? e.status : "disabled"} />
-                          ))}
-                          <span className={`text-[10px] font-bold ${
-                            !hasEngine ? "text-red-400" : anyError ? "text-amber-400" : allHealthy ? "text-emerald-400" : "text-blue-400"
-                          }`}>
-                            {!hasEngine ? "NO ENGINE" : anyError ? "DEGRADED" : allHealthy ? "HEALTHY" : matched.length + "/" + f.engines.length}
-                          </span>
+                          <span className="text-emerald-400 font-bold">{okCount}</span>
+                          <span className="text-gray-500">/</span>
+                          <span className="text-gray-300">{items.length}</span>
+                          {errorCount > 0 && <span className="text-red-400 text-[10px]">({errorCount} err)</span>}
+                          {disabledCount > 0 && <span className="text-gray-500 text-[10px]">({disabledCount} off)</span>}
                         </div>
                       </div>
                     );
