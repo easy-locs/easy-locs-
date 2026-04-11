@@ -33,7 +33,7 @@ export function useUiEngine(options: UseUiEngineOptions = {}) {
       setReport(next);
 
       if (next) {
-        platformBus.emit("ui-engine:report" as any, {
+        platformBus.emit("ui-engine:report", {
           route,
           score: next.score,
           issueCount: next.issues?.length ?? 0,
