@@ -1246,8 +1246,8 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     const twoHoursAgo = new Date(now.getTime() - 7200000).toISOString();
     const { data: recent } = await sb.from("engine_run_logs").select("status").gte("started_at", hourAgo);
     const { data: prev } = await sb.from("engine_run_logs").select("status").gte("started_at", twoHoursAgo).lt("started_at", hourAgo);
-    const recentErrors = (recent ?? []).filter((r: any) => r.status === "error").length;
-    const prevErrors = (prev ?? []).filter((r: any) => r.status === "error").length;
+    const recentErrors = (recent ?? []).filter((r: { status: string }) => r.status === "error").length;
+    const prevErrors = (prev ?? []).filter((r: { status: string }) => r.status === "error").length;
     const recentTotal = recent?.length ?? 0;
     const prevTotal = prev?.length ?? 0;
     const recentRate = recentTotal > 0 ? Math.round((1 - recentErrors / recentTotal) * 100) : 100;

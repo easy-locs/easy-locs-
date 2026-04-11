@@ -1,6 +1,6 @@
 # Final Verdict
 
-## The 8 Final Questions
+## The 6 Final Questions
 
 ---
 
@@ -122,9 +122,9 @@ The 6 deleted files had zero imports anywhere in the codebase. The 51 retained f
 
 ---
 
-### 7. Are runtime patches being converted to permanent source fixes?
+## Supplementary: Runtime Patch Conversion Status
 
-**YES.** 11 of 14 runtime patch types have been permanently eliminated by CSS and component fixes:
+11 of 14 runtime patch types have been permanently eliminated by CSS and component fixes:
 
 | Metric | Before | After |
 |--------|--------|-------|
@@ -136,35 +136,22 @@ The 6 deleted files had zero imports anywhere in the codebase. The 51 retained f
 
 **3 remaining runtime-only**: `element_overlap` (per-component), `dotted_labels` (i18n files), `untranslated_keys` (i18n files).
 
-Files modified: `index.css` (global overflow, DS-14b/c/d/e), `button.tsx` (removed whitespace-nowrap), `CardShell.tsx` (overflow-hidden on img only).
-
 Full details in `RUNTIME_PATCH_VS_SOURCE_FIX_REPORT.md`, `SOURCE_FIX_BACKLOG.md`, `COMPONENT_PERMANENT_FIX_REPORT.md`.
 
 ---
 
-### 8. Is the Control Room fully integrated?
+## Supplementary: Control Room Integration
 
-**YES.** The unified Control Room at `/admin/control-room` now has 6 tabs:
+The unified Control Room at `/admin/control-room` has 6 tabs with 7 data sources:
 
-1. **Overview**: 4 KPI cards (total/healthy/errors/disabled engines), Permanent vs Runtime card, Browser Engine Observer card (live from `engineObserver`), Latest Health snapshot, Recent Alerts (drift/fraud/blocked), Worker Groups grid.
-
-2. **Core Status**: What works permanently (live-computed from DB), What remains temporary, UI Engine coverage (10 pages using `useUiEngine`), Browser Engine Observer (live metrics + logs from `engineObserver.getReport()`), Top Impact Workers, Workers with Failures, Orphan Cleanup Progress, Stale Flow Detection, Trust Recomputes, Fraud Flags.
-
-3. **Engines**: Full engine list from `engine_supervisor` with status badges, runtime class indicators, run counts, row counts, durations.
-
-4. **Source Fixes**: Source Fix Registry (16 entries), Runtime Patch Status (14 entries), fix/patch counters.
-
-5. **Run Logs**: Last 50 engine run logs with status, effect summaries, row counts, durations.
-
-6. **Health**: Health snapshot timeline from `worker_health_snapshots`.
-
-**Data sources integrated:**
-- `db("engine_supervisor")` — backend engine status
-- `db("worker_health_snapshots")` — health timeline
-- `db("engine_run_logs")` — execution history
-- `engineObserver.getReport()` — live browser engine metrics
-- `SOURCE_FIX_REGISTRY` — permanent source fix tracking
-- `RUNTIME_PATCH_TYPES` — patch type coverage tracking
+| Tab | Data Sources |
+|-----|-------------|
+| Overview | `engine_supervisor`, `worker_health_snapshots`, `engineObserver`, `SOURCE_FIX_REGISTRY` |
+| Core Status | `engine_supervisor`, `engine_run_logs`, `engineObserver`, `platformBus("ui-engine:report")`, Sentinel workers |
+| Engines | `engine_supervisor` |
+| Source Fixes | `SOURCE_FIX_REGISTRY`, `RUNTIME_PATCH_TYPES` |
+| Run Logs | `engine_run_logs` |
+| Health | `worker_health_snapshots` |
 
 ---
 
