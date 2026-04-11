@@ -124,6 +124,81 @@ Boots all 10 engines, seeds knowledge graph with 25 domains + 37 system engines.
 ### Database (17 tables in `omega` schema)
 knowledge_nodes, knowledge_edges, memory_entries, decision_log, prediction_log, priority_queue, opportunity_signals, adaptive_ux_rules, improvement_cycles, incident_response_actions, code_evolution_suggestions, intelligence_reports, regression_log, drift_log, release_registry, baseline_registry, optimization_runs, telemetry_index
 
+## Universal Business Core (`src/lib/business-core/`)
+Single source of truth for all business verticals (hotel, restaurant, service, delivery, real estate, shop, health, flight, grocery, pet, fitness).
+
+### Types (`business-types.ts`)
+BusinessCore entity with full identity/contact/location/media/operation/meta fields. Vertical types: HotelProfile, HotelRoom, HotelRatePlan, HotelAmenity, RestaurantProfile, MenuCategory, MenuItem, MenuModifier, DeliverySettings, ServiceProfile, ServiceItem, ServiceSlot, ProviderTeamMember. Supporting: PricingRule, BusinessPolicy, Review, TrustSignals, OnboardingStep, BusinessQualityScore, MediaAsset, AvailabilityCalendar. 14-step onboarding constant (ONBOARDING_STEPS), vertical module map (VERTICAL_MODULES).
+
+### Services (`business-service.ts`)
+7 service objects: businessService (CRUD + search + status), mediaService (entity linking, primary marking), availabilityService (calendar CRUD, blackouts, bulk update), reviewService (CRUD + averages), pricingService, policyService, trustSignalService, qualityScoreService.
+
+### Onboarding Engine (`onboarding-engine.ts`)
+14-step guided wizard with per-step validators. Steps: identity, location, media, category, catalog, pricing, availability, policies, contact, hours, team, verification, review, go_live. 6 required steps gate publication. Auto-save progress, validation errors, go-live check.
+
+### Quality Score Engine (`quality-score-engine.ts`)
+4-component weighted scoring: completeness (30%), media (25%), consistency (20%), trust (25%). Visibility tier mapping (boosted/normal/limited/degraded/hidden). Publish-ready threshold: overall >= 40, completeness >= 50.
+
+## Trust / Ranking / Anti-Fake Engine (`src/lib/trust-engine/`)
+Autonomous quality system: proves business quality, ranks intelligently, detects fake/scam, auto-corrects or blocks.
+
+### Trust Score Engine (`trust-score-engine.ts`)
+6-component weighted trust: data (20%), media (20%), behavior (20%), review (20%), reliability (10%), fraud_inverse (10%). Visibility auto-update on score change. 5 visibility levels with ranking weights.
+
+### Ranking Engine (`ranking-engine.ts`)
+6-factor ranking: trust (35%), proximity (20%), popularity (15%), availability (10%), response_speed (10%), freshness (10%). Haversine distance calculation. Batch ranking with sort.
+
+### Anti-Fake Engine (`anti-fake-engine.ts`)
+5 fraud detection modules: image fraud (mismatch, stock, duplicate), data anomaly (auto-generated names, short descriptions), behavior anomaly (artificial traffic), review fraud (burst detection, same-user patterns, identical ratings), duplicate business (same phone, same address). Auto-action by severity: low→warning, medium→visibility_downgrade, high→listing_limited, critical→immediate_block.
+
+### Behavior Engine (`behavior-engine.ts`)
+6 event types tracked: click, conversion, bounce, repeat, abandonment, cancellation. User signal processing with weighted trust/fraud impact.
+
+### Proof Log Engine (`proof-log-engine.ts`)
+Total traceability: trust changes, visibility changes, fraud actions, onboarding steps. Before/after state, triggered_by (system/user/admin), timestamped.
+
+## Live System Monitor (`src/lib/live-monitor/`)
+Real-time engine activity monitoring, proof system, zero silent failure.
+
+### Engine Heartbeat (`engine-heartbeat.ts`)
+Per-engine ping tracking. Status resolution: alive (<30s), slow (30-60s), dead (>60s). In-memory + DB dual storage. Global health check.
+
+### Execution Log (`execution-log.ts`)
+Per-action logging with engine name, action type, entity ID, status, duration. Error tracking. Stats aggregation (total/success/failed/avgDuration).
+
+### System Metrics (`system-metrics.ts`)
+5-min window metrics capture: requests, executions, avg latency, error rate, queue depth. History retrieval for graphing.
+
+### Task Engine (`task-engine.ts`)
+AI-driven task creation and execution. Priority levels (low/medium/high/critical). AI decisions with confidence scoring.
+
+### Self Check (`self-check.ts`)
+Per-engine self-verification: DB access, heartbeat status, memory usage. Batch self-check across all engines.
+
+## Pro Back Office Console (`src/pages/pro/`)
+Universal professional back office for all business verticals. 16 modules under `/pro/*` route with nested layout.
+
+### Shell (`ProShell.tsx`)
+Navy/Gold sidebar layout with 16 nav items, collapsible sidebar (240px↔64px), top bar with search + quick create + notifications + user menu. Business switcher ready.
+
+### Modules (16 pages)
+- **Dashboard** (`ProDashboard.tsx`): 10 widgets (revenue, orders, response time, profile score, media quality, availability, payouts, reviews, top items, alerts) + action cards + onboarding progress
+- **Onboarding** (`ProOnboarding.tsx`): 14-step wizard with progress bar, step navigator, per-step validation, required/optional marking
+- **Profile** (`ProProfile.tsx`): Full business profile editor (identity, contact, hours, location, settings) with completeness score + trust status
+- **Media Studio** (`ProMedia.tsx`): Logo/cover upload, gallery management, quality scoring, category match warnings, 5 media sections
+- **Catalog** (`ProCatalog.tsx`): Universal item builder with categories, search, quality scores, drag-reorder
+- **Availability** (`ProAvailability.tsx`): Calendar view with month/week/day, blackout dates, peak pricing, capacity controls
+- **Pricing** (`ProPricing.tsx`): Price list, dynamic rules, tax settings, promos, minimum order, client preview
+- **Orders** (`ProOrders.tsx`): Incoming/in-progress/completed/cancelled with timeline, orbit link, revenue summary
+- **Inbox** (`ProInbox.tsx`): Orbit-powered contextual messaging with quick replies, staff assignment, conversation threading
+- **Reviews** (`ProReviews.tsx`): Rating breakdown, sentiment tags, response tools, trust metrics
+- **Wallet** (`ProWallet.tsx`): Balance, payouts, transactions, commissions, refunds, multi-currency
+- **Team** (`ProTeam.tsx`): Member management with 5 roles (Owner/Admin/Manager/Staff/Agent), permissions matrix
+- **Analytics** (`ProAnalytics.tsx`): Revenue charts, top items, traffic sources, customer insights
+- **Live Monitor** (`ProLiveMonitor.tsx`): Engine grid (12 engines), live activity stream, cron status (25 jobs), error panel, system metrics
+- **Settings** (`ProSettings.tsx`): Notifications, integrations, localization, privacy/security, data/storage
+- **Compliance** (`ProCompliance.tsx`): 6 verification steps, anti-scam protection, document upload
+
 ## God System — Self-Auditing Infrastructure (`src/lib/god/`)
 Complete self-auditing, anti-conflict, auto-healing, continuous-monitoring infrastructure. 16 files, 5200+ lines. Boots deferred at 18s after app start via `useMasterAppBootstrap`.
 

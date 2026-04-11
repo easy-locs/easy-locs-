@@ -266,6 +266,11 @@ const {
 
   // Misc
   ClaimPage, ClaimShopPage, AppNotFoundPage,
+
+  // Pro Back Office
+  ProShell, ProDashboard, ProOnboarding, ProProfile, ProMedia, ProCatalog,
+  ProAvailability, ProPricing, ProOrders, ProInbox, ProReviews, ProWallet,
+  ProTeam, ProAnalytics, ProLiveMonitor, ProSettings, ProCompliance,
 } = Pages;
 
 // City sub-page wrappers
@@ -691,6 +696,28 @@ const App = () => (
                   <Route path="/seller/boost" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><BoostDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/business" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MyBusinessHub /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/claim-shop/:merchantId" element={<ClaimShopPage />} />
+
+                  {/* ═══════════════════════════════════════════════ */}
+                  {/*  PRO BACK OFFICE CONSOLE                       */}
+                  {/* ═══════════════════════════════════════════════ */}
+                  <Route path="/pro" element={<ProtectedRoute><FeatureErrorBoundary featureName="Pro"><ProShell /></FeatureErrorBoundary></ProtectedRoute>}>
+                    <Route index element={<ProDashboard />} />
+                    <Route path="onboarding" element={<ProOnboarding />} />
+                    <Route path="profile" element={<ProProfile />} />
+                    <Route path="media" element={<ProMedia />} />
+                    <Route path="catalog" element={<ProCatalog />} />
+                    <Route path="availability" element={<ProAvailability />} />
+                    <Route path="pricing" element={<ProPricing />} />
+                    <Route path="orders" element={<ProOrders />} />
+                    <Route path="inbox" element={<ProInbox />} />
+                    <Route path="reviews" element={<ProReviews />} />
+                    <Route path="wallet" element={<ProWallet />} />
+                    <Route path="team" element={<ProTeam />} />
+                    <Route path="analytics" element={<ProAnalytics />} />
+                    <Route path="monitor" element={<ProLiveMonitor />} />
+                    <Route path="settings" element={<ProSettings />} />
+                    <Route path="compliance" element={<ProCompliance />} />
+                  </Route>
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  ADMIN PANEL                                   */}
