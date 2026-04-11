@@ -39,6 +39,7 @@ export interface SendTextCommand extends BaseCommand {
   locale?: string;
   securityLevel?: string;
   disappearTTL?: string | null;
+  _uiTempId?: string;
 }
 
 export interface SendMediaCommand extends BaseCommand {

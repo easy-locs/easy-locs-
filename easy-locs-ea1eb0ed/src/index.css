@@ -480,19 +480,20 @@ button:has(> svg:only-child),
 }
 
 /* DS-14c. Card internal layout enforcement */
-[data-card="merchant"],
-[data-card="listing"],
-[data-card="shell"],
+[data-card],
 .merchant-card,
 .restaurant-card {
   display: flex;
   flex-direction: column;
-  min-height: 120px;
+  min-height: 0;
   min-width: 0;
 }
-[data-card="merchant"] > *,
-[data-card="listing"] > *,
-[data-card="shell"] > * {
+[data-card="merchant"],
+[data-card="listing"],
+[data-card="shell"] {
+  min-height: 120px;
+}
+[data-card] > * {
   min-width: 0;
 }
 
@@ -559,6 +560,17 @@ article + article,
 /* DS-14h. Permanent untranslated key fallback — replaces runtime untranslated_keys patch */
 [data-i18n-fallback]::after {
   content: attr(data-i18n-fallback);
+}
+
+/* DS-14i. Card text overflow safety — prevent clipping in fixed-height containers */
+[data-card] [class*="line-clamp"],
+[data-card] .truncate {
+  min-width: 0;
+}
+[data-card] p,
+[data-card] span {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* DS-15. Safe heading truncation — prevent heading overflow on small screens */
