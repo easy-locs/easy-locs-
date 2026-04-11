@@ -46,7 +46,7 @@ function MeQuickActions({ merchantId }: Props) {
           >
             <action.icon className="w-4.5 h-4.5" style={{ color: action.color }} />
           </div>
-          <span className="text-[10px] font-bold text-muted-foreground leading-tight text-center truncate w-full px-0.5">
+          <span className="text-[10px] font-bold text-muted-foreground leading-tight text-center line-clamp-2 break-words w-full px-0.5">
             {action.label}
           </span>
         </button>

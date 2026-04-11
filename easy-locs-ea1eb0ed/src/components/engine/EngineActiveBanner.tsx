@@ -54,11 +54,11 @@ export default function EngineActiveBanner() {
             <button onClick={() => dismiss(c.id)} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
               <X className="w-3 h-3 text-white" />
             </button>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">{c.emoji}</span>
-              <div>
-                <p className="text-sm font-bold text-white">{c.eventName}</p>
-                <p className="text-[11px] text-white/70">Special offers active · {c.country}</p>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-2xl shrink-0">{c.emoji}</span>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-white line-clamp-1 break-words">{c.eventName}</p>
+                <p className="text-[11px] text-white/70 line-clamp-1 break-words">Special offers active · {c.country}</p>
               </div>
             </div>
             <button
@@ -89,8 +89,8 @@ export default function EngineActiveBanner() {
               <Wallet className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-foreground">{incentives[0].title}</p>
-              <p className="text-[11px] text-muted-foreground">{incentives[0].description}</p>
+              <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{incentives[0].title}</p>
+              <p className="text-[11px] text-muted-foreground line-clamp-2 break-words">{incentives[0].description}</p>
             </div>
             <Sparkles className="w-4 h-4 text-primary shrink-0" />
           </motion.button>
@@ -112,7 +112,7 @@ export default function EngineActiveBanner() {
               <MessageCircle className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-foreground">{prompts[0].message}</p>
+              <p className="text-[13px] font-semibold text-foreground line-clamp-2 break-words">{prompts[0].message}</p>
             </div>
           </motion.button>
         )}
