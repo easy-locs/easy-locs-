@@ -1095,6 +1095,59 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
 
     return { summary: `Maintenance sweep: ${actions} actions`, rows: actions, rowsRead: 0, sideEffects: actions };
   },
+
+  "health-monitor": async (sb) => {
+    const { data: engines } = await sb.from("engine_supervisor").select("engine_name, status, heartbeat, enabled, consecutive_failures, success_rate");
+    if (!engines || engines.length === 0) return { summary: "No engines found", rows: 0, rowsRead: 0, sideEffects: 0 };
+
+    const now = Date.now();
+    const staleThreshold = 5 * 60 * 1000;
+    let healthy = 0;
+    let stale = 0;
+    let errored = 0;
+    let disabled = 0;
+    const staleNames: string[] = [];
+    const errorNames: string[] = [];
+    let totalSuccessRate = 0;
+    let ratedCount = 0;
+
+    for (const e of engines) {
+      if (!e.enabled) { disabled++; continue; }
+      if (e.status === "error") { errored++; errorNames.push(e.engine_name); continue; }
+      const hb = e.heartbeat ? new Date(e.heartbeat).getTime() : 0;
+      if (hb > 0 && now - hb > staleThreshold) {
+        stale++;
+        staleNames.push(e.engine_name);
+        await sb.from("engine_supervisor").update({ status: "idle", consecutive_failures: 0 }).eq("engine_name", e.engine_name);
+      } else {
+        healthy++;
+      }
+      if (e.success_rate != null) { totalSuccessRate += e.success_rate; ratedCount++; }
+    }
+
+    const { data: recentLogs } = await sb.from("engine_run_logs").select("id").gte("started_at", new Date(now - 3600000).toISOString());
+    const runsLastHour = recentLogs?.length ?? 0;
+
+    await sb.from("worker_health_snapshots").insert({
+      snapshot_at: new Date().toISOString(),
+      total_engines: engines.length,
+      healthy_count: healthy,
+      stale_count: stale,
+      error_count: errored,
+      disabled_count: disabled,
+      stale_engines: staleNames,
+      error_engines: errorNames,
+      avg_success_rate: ratedCount > 0 ? Math.round((totalSuccessRate / ratedCount) * 100) / 100 : 0,
+      total_runs_last_hour: runsLastHour,
+    });
+
+    return {
+      summary: `Health: ${healthy} ok, ${stale} stale (recovered), ${errored} error, ${disabled} disabled | ${runsLastHour} runs/hr`,
+      rows: 1,
+      rowsRead: engines.length + (recentLogs?.length ?? 0),
+      sideEffects: stale + 1,
+    };
+  },
 };
 
 // Generic no-op handler for engines not yet wired
@@ -1118,6 +1171,18 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  const isServiceRole = authHeader === `Bearer ${serviceKey}`;
+  const isCronAuth = cronSecret && authHeader === `Bearer ${cronSecret}`;
+  if (!isServiceRole && !isCronAuth) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const sb = createClient(supabaseUrl, serviceKey);
 
   // Parse body for force mode
@@ -1222,7 +1287,7 @@ Deno.serve(async (req) => {
           last_error_message: null,
           total_runs: totalRuns,
           total_rows_affected: totalRows,
-          success_rate: Math.round((totalRuns / Math.max(totalRuns, 1)) * 10000) / 100,
+          success_rate: Math.round(((((engine.success_rate ?? 100) * Math.max(totalRuns - 1, 0)) + 100) / Math.max(totalRuns, 1)) * 100) / 100,
         }).eq("engine_name", engine.engine_name);
 
         // Persist run log
@@ -1261,6 +1326,7 @@ Deno.serve(async (req) => {
           consecutive_failures: failures,
           last_error_message: e?.message?.slice(0, 500) || "unknown",
           total_runs: totalRuns,
+          success_rate: Math.round((((engine.success_rate ?? 100) * Math.max(totalRuns - 1, 0)) / Math.max(totalRuns, 1)) * 100) / 100,
         }).eq("engine_name", engine.engine_name);
 
         await sb.from("engine_run_logs").insert({
