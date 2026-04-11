@@ -522,6 +522,27 @@ export const ClaimPage = safeLazy(() => import("@/pages/ClaimPage"), "ClaimPage"
 export const ClaimShopPage = safeLazy(() => import("@/pages/ClaimShopPage"), "ClaimShopPage");
 export const AppNotFoundPage = safeLazy(() => import("@/pages/AppNotFoundPage"), "AppNotFoundPage");
 
+// ═══════════════════════════════════════════════════════════════════
+//  PRO BACK OFFICE CONSOLE
+// ═══════════════════════════════════════════════════════════════════
+export const ProShell = safeLazy(() => import("@/pages/pro/ProShell"), "ProShell");
+export const ProDashboard = safeLazy(() => import("@/pages/pro/ProDashboard"), "ProDashboard");
+export const ProOnboarding = safeLazy(() => import("@/pages/pro/ProOnboarding"), "ProOnboarding");
+export const ProProfile = safeLazy(() => import("@/pages/pro/ProProfile"), "ProProfile");
+export const ProMedia = safeLazy(() => import("@/pages/pro/ProMedia"), "ProMedia");
+export const ProCatalog = safeLazy(() => import("@/pages/pro/ProCatalog"), "ProCatalog");
+export const ProAvailability = safeLazy(() => import("@/pages/pro/ProAvailability"), "ProAvailability");
+export const ProPricing = safeLazy(() => import("@/pages/pro/ProPricing"), "ProPricing");
+export const ProOrders = safeLazy(() => import("@/pages/pro/ProOrders"), "ProOrders");
+export const ProInbox = safeLazy(() => import("@/pages/pro/ProInbox"), "ProInbox");
+export const ProReviews = safeLazy(() => import("@/pages/pro/ProReviews"), "ProReviews");
+export const ProWallet = safeLazy(() => import("@/pages/pro/ProWallet"), "ProWallet");
+export const ProTeam = safeLazy(() => import("@/pages/pro/ProTeam"), "ProTeam");
+export const ProAnalytics = safeLazy(() => import("@/pages/pro/ProAnalytics"), "ProAnalytics");
+export const ProLiveMonitor = safeLazy(() => import("@/pages/pro/ProLiveMonitor"), "ProLiveMonitor");
+export const ProSettings = safeLazy(() => import("@/pages/pro/ProSettings"), "ProSettings");
+export const ProCompliance = safeLazy(() => import("@/pages/pro/ProCompliance"), "ProCompliance");
+
 // ── Idle prefetch critical routes ──
 const scheduleIdle = (cb: () => void) => requestIdleCallback(cb);
 scheduleIdle(() => {
