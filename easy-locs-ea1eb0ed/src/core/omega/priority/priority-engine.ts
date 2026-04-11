@@ -72,6 +72,13 @@ class PriorityEngine {
     return item;
   }
 
+  async restore(): Promise<void> {
+    const persisted = await omegaPersistence.loadPriorities();
+    for (const p of persisted) {
+      if (!this.items.has(p.item_id)) this.items.set(p.item_id, p);
+    }
+  }
+
   getByBand(band: OmegaPriority): PriorityItem[] {
     return [...this.items.values()]
       .filter((i) => i.priority_band === band)
@@ -118,9 +125,10 @@ class PriorityEngine {
     return { total_items: this.items.size, by_band: bandCounts, by_type: typeCounts };
   }
 
-  boot(): void {
+  async boot(): Promise<void> {
     this.status = "active";
     this.lastRunAt = Date.now();
+    await this.restore().catch(() => {});
     console.log(`[OMEGA] PriorityEngine booted | items: ${this.items.size}`);
   }
 

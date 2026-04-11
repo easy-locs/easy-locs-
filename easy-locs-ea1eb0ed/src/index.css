@@ -3038,6 +3038,28 @@ html {
   }
 }
 
+/* ── Landing page dark scope — premium Navy/Gold feel ── */
+.landing-dark {
+  --background: 222 47% 8%;
+  --foreground: 220 15% 90%;
+  --card: 222 42% 12%;
+  --card-foreground: 220 15% 90%;
+  --popover: 222 42% 12%;
+  --popover-foreground: 220 15% 90%;
+  --secondary: 222 30% 16%;
+  --secondary-foreground: 220 15% 88%;
+  --muted: 222 25% 15%;
+  --muted-foreground: 220 12% 62%;
+  --border: 222 20% 20%;
+  --input: 222 20% 18%;
+  --gradient-card: linear-gradient(180deg, hsl(222 42% 12%) 0%, hsl(222 42% 9%) 100%);
+  --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.15);
+  --shadow-card-hover: 0 4px 16px hsl(0 0% 0% / 0.3), 0 8px 32px hsl(0 0% 0% / 0.2);
+  background-color: hsl(222 47% 8%);
+  color: hsl(220 15% 90%);
+  color-scheme: dark;
+}
+
 /* ── Hero / Header ── */
 
 .mobile-hero {

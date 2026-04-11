@@ -44,6 +44,13 @@ class AdaptiveUXEngine {
     return rule;
   }
 
+  async restore(): Promise<void> {
+    const persisted = await omegaPersistence.loadAdaptiveRules();
+    for (const r of persisted) {
+      if (!this.rules.has(r.rule_id)) this.rules.set(r.rule_id, r);
+    }
+  }
+
   deactivateRule(ruleId: string): boolean {
     const rule = this.rules.get(ruleId);
     if (!rule) return false;
@@ -96,9 +103,10 @@ class AdaptiveUXEngine {
     return { total_rules: this.rules.size, active_rules: active, by_type: typeCounts };
   }
 
-  boot(): void {
+  async boot(): Promise<void> {
     this.status = "active";
     this.lastRunAt = Date.now();
+    await this.restore().catch(() => {});
     console.log(`[OMEGA] AdaptiveUXEngine booted | rules: ${this.rules.size}`);
   }
 

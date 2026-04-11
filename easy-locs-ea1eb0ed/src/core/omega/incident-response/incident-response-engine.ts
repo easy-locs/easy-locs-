@@ -59,6 +59,13 @@ class IncidentResponseEngine {
     return action;
   }
 
+  async restore(): Promise<void> {
+    const persisted = await omegaPersistence.loadIncidentActions();
+    for (const a of persisted) {
+      if (!this.actions.has(a.action_id)) this.actions.set(a.action_id, a);
+    }
+  }
+
   classify(actionId: string): IncidentResponseAction | null {
     const action = this.actions.get(actionId);
     if (!action || action.status !== "detected") return null;
@@ -166,9 +173,10 @@ class IncidentResponseEngine {
     };
   }
 
-  boot(): void {
+  async boot(): Promise<void> {
     this.status = "active";
     this.lastRunAt = Date.now();
+    await this.restore().catch(() => {});
     console.log(`[OMEGA] IncidentResponseEngine booted | actions: ${this.actions.size}`);
   }
 

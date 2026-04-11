@@ -75,12 +75,14 @@ class OmegaCore {
     await memoryEngine.boot();
     await decisionEngine.boot();
     await predictionEngine.boot();
-    priorityEngine.boot();
-    businessOpportunityEngine.boot();
-    adaptiveUXEngine.boot();
-    selfImprovementEngine.boot();
-    incidentResponseEngine.boot();
-    codeEvolutionEngine.boot();
+    await Promise.all([
+      priorityEngine.boot(),
+      businessOpportunityEngine.boot(),
+      adaptiveUXEngine.boot(),
+      selfImprovementEngine.boot(),
+      incidentResponseEngine.boot(),
+      codeEvolutionEngine.boot(),
+    ]);
 
     this.seedKnowledgeGraph();
 

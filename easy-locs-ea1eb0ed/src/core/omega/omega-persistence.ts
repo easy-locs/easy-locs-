@@ -326,6 +326,123 @@ export const omegaPersistence = {
     } catch { return []; }
   },
 
+  async loadOpportunities(): Promise<OpportunitySignal[]> {
+    try {
+      const { data } = await db("omega_opportunity_signals").select("*").order("created_at", { ascending: false }).limit(2000);
+      if (!data) return [];
+      return data.map((s: { signal_id: unknown; signal_type: unknown; geo_scope: unknown; category_scope: unknown; confidence_score: unknown; impact_score: unknown; evidence: unknown; recommended_action: unknown; created_at: unknown }) => ({
+        signal_id: String(s.signal_id),
+        signal_type: String(s.signal_type) as OpportunitySignal["signal_type"],
+        geo_scope: String(s.geo_scope),
+        category_scope: String(s.category_scope),
+        confidence_score: Number(s.confidence_score),
+        impact_score: Number(s.impact_score),
+        evidence: (s.evidence as OpportunityEvidence) || {},
+        recommended_action: String(s.recommended_action),
+        created_at: new Date(String(s.created_at)).getTime(),
+      }));
+    } catch { return []; }
+  },
+
+  async loadIncidentActions(): Promise<IncidentResponseAction[]> {
+    try {
+      const { data } = await db("omega_incident_actions").select("*").order("created_at", { ascending: false }).limit(2000);
+      if (!data) return [];
+      return data.map((a: { action_id: unknown; incident_id: unknown; severity: unknown; category: unknown; impacted_domains: unknown; correlated_changes: unknown; mitigation_type: unknown; mitigation_action: unknown; status: unknown; re_audit_ref: unknown; created_at: unknown }) => ({
+        action_id: String(a.action_id),
+        incident_id: String(a.incident_id),
+        severity: String(a.severity) as IncidentResponseAction["severity"],
+        category: String(a.category),
+        impacted_domains: (a.impacted_domains as string[]) || [],
+        correlated_changes: (a.correlated_changes as string[]) || [],
+        mitigation_type: String(a.mitigation_type) as IncidentResponseAction["mitigation_type"],
+        mitigation_action: String(a.mitigation_action),
+        status: String(a.status) as IncidentResponseAction["status"],
+        re_audit_ref: a.re_audit_ref ? String(a.re_audit_ref) : undefined,
+        created_at: new Date(String(a.created_at)).getTime(),
+      }));
+    } catch { return []; }
+  },
+
+  async loadPriorities(): Promise<PriorityItem[]> {
+    try {
+      const { data } = await db("omega_priority_items").select("*").order("priority_score", { ascending: false }).limit(1000);
+      if (!data) return [];
+      return data.map((p: { item_id: unknown; item_type: unknown; target_id: unknown; severity: unknown; user_impact: unknown; business_impact: unknown; recurrence: unknown; confidence: unknown; dependency_reach: unknown; priority_score: unknown; priority_band: unknown; created_at: unknown }) => ({
+        item_id: String(p.item_id),
+        item_type: String(p.item_type) as PriorityItem["item_type"],
+        target_id: String(p.target_id),
+        severity: Number(p.severity),
+        user_impact: Number(p.user_impact),
+        business_impact: Number(p.business_impact),
+        recurrence: Number(p.recurrence),
+        confidence: Number(p.confidence),
+        dependency_reach: Number(p.dependency_reach),
+        priority_score: Number(p.priority_score),
+        priority_band: String(p.priority_band) as PriorityItem["priority_band"],
+        created_at: new Date(String(p.created_at)).getTime(),
+      }));
+    } catch { return []; }
+  },
+
+  async loadAdaptiveRules(): Promise<AdaptiveUXRule[]> {
+    try {
+      const { data } = await db("omega_adaptive_ux_rules").select("*").limit(2000);
+      if (!data) return [];
+      return data.map((r: { rule_id: unknown; rule_type: unknown; context: unknown; adaptation: unknown; measurable: unknown; reversible: unknown; gradual: unknown; active: unknown; created_at: unknown }) => ({
+        rule_id: String(r.rule_id),
+        rule_type: String(r.rule_type) as AdaptiveUXRule["rule_type"],
+        context: (r.context as AdaptiveUXContext) || {},
+        adaptation: (r.adaptation as AdaptiveUXAdaptation) || {},
+        measurable: Boolean(r.measurable),
+        reversible: Boolean(r.reversible),
+        gradual: Boolean(r.gradual),
+        active: Boolean(r.active),
+        created_at: new Date(String(r.created_at)).getTime(),
+      }));
+    } catch { return []; }
+  },
+
+  async loadImprovementCycles(): Promise<SelfImprovementCycle[]> {
+    try {
+      const { data } = await db("omega_improvement_cycles").select("*").order("created_at", { ascending: false }).limit(1000);
+      if (!data) return [];
+      return data.map((c: { cycle_id: unknown; weakness_cluster: unknown; estimated_impact: unknown; estimated_risk: unknown; proposed_change: unknown; before_score: unknown; after_score: unknown; status: unknown; safe: unknown; re_audit_passed: unknown; created_at: unknown }) => ({
+        cycle_id: String(c.cycle_id),
+        weakness_cluster: String(c.weakness_cluster),
+        estimated_impact: Number(c.estimated_impact),
+        estimated_risk: Number(c.estimated_risk),
+        proposed_change: String(c.proposed_change),
+        before_score: Number(c.before_score),
+        after_score: Number(c.after_score),
+        status: String(c.status) as SelfImprovementCycle["status"],
+        safe: Boolean(c.safe),
+        re_audit_passed: Boolean(c.re_audit_passed),
+        created_at: new Date(String(c.created_at)).getTime(),
+      }));
+    } catch { return []; }
+  },
+
+  async loadCodeSuggestions(): Promise<CodeEvolutionSuggestion[]> {
+    try {
+      const { data } = await db("omega_code_suggestions").select("*").order("created_at", { ascending: false }).limit(1000);
+      if (!data) return [];
+      return data.map((s: { suggestion_id: unknown; target_file: unknown; domain: unknown; issue_type: unknown; description: unknown; risk_level: unknown; impact_estimate: unknown; safe_action: unknown; affected_domains: unknown; status: unknown; created_at: unknown }) => ({
+        suggestion_id: String(s.suggestion_id),
+        target_file: String(s.target_file),
+        domain: String(s.domain),
+        issue_type: String(s.issue_type) as CodeEvolutionSuggestion["issue_type"],
+        description: String(s.description),
+        risk_level: String(s.risk_level) as CodeEvolutionSuggestion["risk_level"],
+        impact_estimate: Number(s.impact_estimate),
+        safe_action: String(s.safe_action),
+        affected_domains: (s.affected_domains as string[]) || [],
+        status: String(s.status) as CodeEvolutionSuggestion["status"],
+        created_at: new Date(String(s.created_at)).getTime(),
+      }));
+    } catch { return []; }
+  },
+
   getWriteLog(limit = 50): PersistenceResult[] {
     return log.slice(-limit);
   },

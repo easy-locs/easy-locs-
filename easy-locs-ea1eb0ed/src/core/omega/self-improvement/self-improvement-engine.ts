@@ -73,6 +73,13 @@ class SelfImprovementEngine {
     return cycle;
   }
 
+  async restore(): Promise<void> {
+    const persisted = await omegaPersistence.loadImprovementCycles();
+    for (const c of persisted) {
+      if (!this.cycles.has(c.cycle_id)) this.cycles.set(c.cycle_id, c);
+    }
+  }
+
   simulateCycle(cycleId: string): boolean {
     const cycle = this.cycles.get(cycleId);
     if (!cycle || cycle.status !== "proposed") return false;
@@ -137,9 +144,10 @@ class SelfImprovementEngine {
     };
   }
 
-  boot(): void {
+  async boot(): Promise<void> {
     this.status = "active";
     this.lastRunAt = Date.now();
+    await this.restore().catch(() => {});
     console.log(`[OMEGA] SelfImprovementEngine booted | cycles: ${this.cycles.size} | weaknesses: ${this.weaknessQueue.length}`);
   }
 

@@ -28,8 +28,8 @@ function safeLazy(factory: () => Promise<{ default: React.ComponentType<any> }>,
 const Index = safeLazy(() => import("@/pages/Index"), "Index");
 const Dashboard = safeLazy(() => import("@/pages/Dashboard"), "Dashboard");
 
-const PageLoader = () => (
-  <div className="app-mobile-page bg-background min-h-[60dvh] px-4 pt-5">
+const PageLoader = ({ dark }: { dark?: boolean }) => (
+  <div className={`app-mobile-page min-h-[100dvh] px-4 pt-5 ${dark ? "landing-dark" : "bg-background"}`}>
     <div className="h-5 w-28 rounded-lg skeleton-premium mb-4" />
     <div className="h-32 w-full rounded-2xl skeleton-premium mb-4" />
     <div className="flex gap-2 mb-4">
@@ -62,8 +62,8 @@ function useProfileTimeout(profileLoaded: boolean, userId: string | undefined, m
 export function HomeRouter() {
   const { user, loading, profileLoaded, emailVerified } = useAuth();
   const ready = useProfileTimeout(profileLoaded, user?.id);
-  if (loading) return <PageLoader />;
-  if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
+  if (loading) return <PageLoader dark={!user} />;
+  if (!user) return <Suspense fallback={<PageLoader dark />}><Index /></Suspense>;
   if (!ready) return <PageLoader />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
@@ -73,8 +73,8 @@ export function HomeRouter() {
 export function MarketplaceHomeRouter() {
   const { user, loading, profileLoaded, emailVerified } = useAuth();
   const ready = useProfileTimeout(profileLoaded, user?.id);
-  if (loading) return <PageLoader />;
-  if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
+  if (loading) return <PageLoader dark={!user} />;
+  if (!user) return <Suspense fallback={<PageLoader dark />}><Index /></Suspense>;
   if (!ready) return <PageLoader />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
