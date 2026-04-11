@@ -32,43 +32,51 @@ export interface RenderContract {
 
 export function evaluateRenderContract(entity: RenderableEntity): RenderContract {
   if (shouldExcludeFromPublic(entity.publishStatus)) {
-    return {
+    const contract: RenderContract = {
       canRender: false,
       allowedTemplate: "GenericCard",
       fallbackReason: `Entity status "${entity.publishStatus}" is not publicly visible — only "published" entities are allowed`,
       shouldFlag: true,
       shouldHide: true,
     };
+    triggerRenderProtection(entity, contract);
+    return contract;
   }
 
   if (entity.validationStatus !== "approved" && entity.validationStatus !== "published") {
-    return {
+    const contract: RenderContract = {
       canRender: false,
       allowedTemplate: "GenericCard",
       fallbackReason: `Validation status "${entity.validationStatus}" has not been approved — entities must be validated before rendering`,
       shouldFlag: true,
       shouldHide: true,
     };
+    triggerRenderProtection(entity, contract);
+    return contract;
   }
 
   if (!isValidVertical(entity.vertical)) {
-    return {
+    const contract: RenderContract = {
       canRender: false,
       allowedTemplate: "GenericCard",
       fallbackReason: `Invalid vertical "${entity.vertical}"`,
       shouldFlag: true,
       shouldHide: true,
     };
+    triggerRenderProtection(entity, contract);
+    return contract;
   }
 
   if (!entity.canonicalType) {
-    return {
+    const contract: RenderContract = {
       canRender: false,
       allowedTemplate: getDefaultCardTemplate(entity.vertical),
       fallbackReason: "Missing canonical type",
       shouldFlag: true,
       shouldHide: false,
     };
+    triggerRenderProtection(entity, contract);
+    return contract;
   }
 
   const allowedTemplates = getAllowedCardTemplates(entity.canonicalType);
@@ -89,6 +97,14 @@ export function evaluateRenderContract(entity: RenderableEntity): RenderContract
     shouldFlag: false,
     shouldHide: false,
   };
+}
+
+function triggerRenderProtection(entity: RenderableEntity, contract: RenderContract): void {
+  try {
+    import("@/lib/auto-protect").then(({ protectRender }) => {
+      protectRender(entity, contract);
+    }).catch(() => {});
+  } catch {}
 }
 
 export function isRestaurantEntity(entity: RenderableEntity): boolean {

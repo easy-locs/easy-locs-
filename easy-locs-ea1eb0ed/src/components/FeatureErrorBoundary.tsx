@@ -50,6 +50,17 @@ export class FeatureErrorBoundary extends Component<Props, State> {
       .then(({ healError }) => healError(error))
       .catch(() => {});
 
+    void import("@/lib/auto-protect")
+      .then(({ protectCard }) => {
+        protectCard(
+          "error-boundary",
+          this.props.featureName,
+          error.message,
+          { domain: this.props.domain, retryCount: this.state.retryCount },
+        );
+      })
+      .catch(() => {});
+
     const maxRetries = this.props.maxAutoRetries ?? DEFAULT_MAX_RETRIES;
     if (this.state.retryCount < maxRetries) {
       if (this.retryTimer) clearTimeout(this.retryTimer);
