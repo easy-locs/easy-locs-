@@ -37,8 +37,15 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Image Lazy Loading**: All non-critical images use `loading="lazy"` (Orbit, Radar, Wallet, Me, Dashboard)
 - **Core Web Vitals**: `src/lib/platform/web-vitals.ts` — tracks FCP, LCP, CLS, TTFB, INP at boot
 - **No-Cache Removed**: HTTP no-cache/no-store meta tags removed from index.html for CDN compatibility
-- **Code Splitting**: Route-based + feature-based + vendor chunking via Vite manualChunks
-- **Deferred Loading**: Heavy systems (monitoring, E2EE, events) loaded 3-6s after boot
+- **Code Splitting**: Route-based + feature-based + vendor chunking via Vite manualChunks (react-core, react-dom, icons, call-engine, orbit-engine separated)
+- **Deferred Loading**: All non-critical systems use `requestIdleCallback` with timeouts (sentry 2s, web-vitals 4s, monitoring 8s, events 10s, E2EE 12s) — never blocks boot
+- **Passive Touch Listeners**: SwipeableMain uses native passive event listeners for jank-free scrolling
+- **CSS Containment**: `contain: layout style` on bottom nav + utility classes (`.contain-layout`, `.contain-paint`, `.contain-strict`)
+- **touch-action: manipulation**: Applied to all interactive elements — eliminates 300ms tap delay
+- **Content Visibility**: `.render-offscreen` for below-fold sections, `.render-critical` for above-fold
+- **GPU Scroll**: `.scroll-gpu` for smooth momentum scrolling with `overscroll-behavior: contain`
+- **Module Preload Polyfill**: Enabled in Vite build for faster chunk loading
+- **Reduced Motion**: All animations respect `prefers-reduced-motion: reduce`
 
 ## Visual Design System (Storybook + Chromatic)
 - **Storybook 8** installed with React/Vite framework, a11y addon, interactions addon

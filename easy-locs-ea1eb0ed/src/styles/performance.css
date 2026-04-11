@@ -13,6 +13,7 @@ a,
 [role="button"],
 .ultra-touch {
   -webkit-touch-callout: none;
+  touch-action: manipulation;
 }
 
 /* GPU-promoted elements — only promote when actively animating */
@@ -124,4 +125,77 @@ img[loading="lazy"] {
 
 .offscreen-hidden {
   content-visibility: hidden;
+}
+
+/* ══════ CSS Containment for heavy sections ══════ */
+.contain-layout {
+  contain: layout style;
+}
+
+.contain-paint {
+  contain: layout style paint;
+}
+
+.contain-strict {
+  contain: strict;
+  overflow: hidden;
+}
+
+/* Scroll containers — GPU-accelerated */
+.scroll-gpu {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-gpu {
+    scroll-behavior: auto;
+  }
+  .page-transition {
+    animation: none;
+  }
+  .ultra-pulse,
+  .scan-line-gpu {
+    animation: none;
+  }
+}
+
+/* Instant render for above-the-fold content */
+.render-critical {
+  contain: none;
+  content-visibility: visible;
+}
+
+/* Offscreen sections skip rendering entirely */
+.render-offscreen {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+
+/* Font rendering optimization */
+body {
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent layout shifts on images */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Hardware-accelerated transitions */
+.hw-accel {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Skeleton premium — lighter animation for reduced CPU */
+.skeleton-premium {
+  background: linear-gradient(90deg, hsl(var(--muted) / 0.08) 0%, hsl(var(--muted) / 0.15) 50%, hsl(var(--muted) / 0.08) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+  border-radius: inherit;
 }

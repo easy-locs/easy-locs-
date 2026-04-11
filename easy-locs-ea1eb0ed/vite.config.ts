@@ -64,11 +64,16 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 500,
     sourcemap: false,
     reportCompressedSize: true,
+    modulePreload: {
+      polyfill: true,
+    },
     rollupOptions: {
       external: ["@capacitor/filesystem"],
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
+            if (id.includes("react-dom")) return "vendor-react-dom";
+            if (id.includes("react/") || id.includes("react-router") || id.includes("scheduler")) return "vendor-react-core";
             if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
             if (id.includes("three") || id.includes("@react-three")) return "vendor-3d";
             if (id.includes("jspdf")) return "vendor-pdf";
@@ -85,6 +90,7 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("@tanstack")) return "vendor-tanstack";
             if (id.includes("date-fns") || id.includes("luxon")) return "vendor-date";
             if (id.includes("zod")) return "vendor-zod";
+            if (id.includes("lucide-react")) return "vendor-icons";
           }
           if (id.includes("/src/lib/i18n-data")) return "i18n-data";
           if (id.includes("/src/lib/templates/")) return "templates";
@@ -98,6 +104,8 @@ export default defineConfig(({ mode }) => ({
           if (id.includes("/src/components/delivery/")) return "components-delivery";
           if (id.includes("/src/components/map/") || id.includes("/src/lib/map/")) return "map-engine";
           if (id.includes("/src/engines/")) return "engines";
+          if (id.includes("/src/components/call/") || id.includes("/src/lib/call")) return "call-engine";
+          if (id.includes("/src/families/orbit")) return "orbit-engine";
         },
       },
     },

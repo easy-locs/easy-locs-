@@ -1,5 +1,4 @@
 import "./polyfills";
-import React from "react";
 import ReactDOM from "react-dom/client";
 import { HashRouter } from "react-router-dom";
 import RawApp from "./App";
@@ -19,28 +18,12 @@ if (typeof globalThis.crypto !== "undefined" && typeof globalThis.crypto.randomU
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element #root not found");
 
-import("@/lib/analytics/sentry").then(m => m.initSentry()).catch(() => {});
-import("@/lib/auto-heal").then(m => m.installGlobalHealer()).catch(() => {});
-
 if (typeof window !== "undefined") {
   const { pathname, hash } = window.location;
   if (pathname !== "/" && pathname !== "/index.html" && !hash) {
     window.location.hash = pathname;
   }
   (window as any).__EASYLOCS_BUILD_ID__ = APP_VERSION;
-
-  setTimeout(() => {
-    import("@/lib/platform/web-vitals").then(m => m.initWebVitals()).catch(() => {});
-  }, 3000);
-  setTimeout(() => {
-    import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});
-  }, 6000);
-  setTimeout(() => {
-    import("@/lib/events/event-init").catch(() => {});
-  }, 8000);
-  setTimeout(() => {
-    import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()).catch(() => {});
-  }, 10000);
 }
 
 try {
@@ -66,3 +49,24 @@ try {
   const msgEl = document.getElementById("boot-error-msg");
   if (msgEl) msgEl.textContent = err instanceof Error ? err.message : String(err);
 }
+
+requestIdleCallback(() => {
+  import("@/lib/analytics/sentry").then(m => m.initSentry()).catch(() => {});
+  import("@/lib/auto-heal").then(m => m.installGlobalHealer()).catch(() => {});
+}, { timeout: 2000 });
+
+requestIdleCallback(() => {
+  import("@/lib/platform/web-vitals").then(m => m.initWebVitals()).catch(() => {});
+}, { timeout: 4000 });
+
+requestIdleCallback(() => {
+  import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});
+}, { timeout: 8000 });
+
+requestIdleCallback(() => {
+  import("@/lib/events/event-init").catch(() => {});
+}, { timeout: 10000 });
+
+requestIdleCallback(() => {
+  import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()).catch(() => {});
+}, { timeout: 12000 });
