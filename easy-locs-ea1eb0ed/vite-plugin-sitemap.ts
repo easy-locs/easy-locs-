@@ -17,6 +17,7 @@ interface SitemapEntry {
   loc: string;
   changefreq: string;
   priority: string;
+  lastmod?: string;
 }
 
 export function sitemapPlugin(): any {
@@ -76,9 +77,10 @@ export function sitemapPlugin(): any {
           "helicopter-tour", "sunset-cruise",
         ];
 
+        const today = new Date().toISOString().slice(0, 10);
         const toXml = (entries: SitemapEntry[]): string => {
           const urls = entries.map(e =>
-            `  <url><loc>${e.loc}</loc><changefreq>${e.changefreq}</changefreq><priority>${e.priority}</priority></url>`
+            `  <url><loc>${e.loc}</loc><lastmod>${e.lastmod || today}</lastmod><changefreq>${e.changefreq}</changefreq><priority>${e.priority}</priority></url>`
           ).join("\n");
           return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`;
         };
@@ -150,10 +152,9 @@ export function sitemapPlugin(): any {
           totalUrls += entries.length;
         }
 
-        // Sitemap index
         const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${Object.keys(sitemaps).map(f => `  <sitemap><loc>${BASE}/${f}</loc></sitemap>`).join("\n")}
+${Object.keys(sitemaps).map(f => `  <sitemap><loc>${BASE}/${f}</loc><lastmod>${today}</lastmod></sitemap>`).join("\n")}
 </sitemapindex>`;
         fs.writeFileSync(path.resolve("dist", "sitemap.xml"), indexXml, "utf-8");
 

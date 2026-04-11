@@ -93,7 +93,7 @@ const ListingPhotoGallery = ({ photos }: Props) => {
                     <Play className="h-3 w-3 text-muted-foreground" />
                   </div>
                 ) : (
-                  <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  <img src={url} alt={`Listing photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
                 )}
               </button>
             ))}

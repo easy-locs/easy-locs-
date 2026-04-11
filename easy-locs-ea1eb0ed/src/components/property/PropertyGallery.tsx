@@ -55,7 +55,7 @@ export function PropertyGallery() {
           <div className="px-3 pb-3">
             <button onClick={() => openFullscreen(0)} className="relative w-full aspect-[16/10] rounded-xl overflow-hidden group">
               {media[0].type === "image" ? (
-                <img src={media[0].url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                <img src={media[0].url} alt="Property photo 1" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
               ) : (
                 <video src={media[0].url} className="w-full h-full object-cover" />
               )}
@@ -69,7 +69,7 @@ export function PropertyGallery() {
             {media.map((m, i) => (
               <button key={m.url} onClick={() => openFullscreen(i)} className="relative aspect-square rounded-xl overflow-hidden group">
                 {m.type === "image" ? (
-                  <img src={m.url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                  <img src={m.url} alt={`Property photo ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                 ) : (
                   <video src={m.url} className="w-full h-full object-cover" />
                 )}
@@ -83,7 +83,7 @@ export function PropertyGallery() {
           <div className="px-3 pb-3 space-y-2">
             <button onClick={() => openFullscreen(0)} className="relative w-full aspect-[16/10] rounded-xl overflow-hidden group">
               {media[0].type === "image" ? (
-                <img src={media[0].url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                <img src={media[0].url} alt="Property main photo" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
               ) : (
                 <video src={media[0].url} className="w-full h-full object-cover" />
               )}
@@ -93,7 +93,7 @@ export function PropertyGallery() {
               {media.slice(1, 4).map((m, i) => (
                 <button key={m.url} onClick={() => openFullscreen(i + 1)} className="relative aspect-square rounded-xl overflow-hidden group">
                   {m.type === "image" ? (
-                    <img src={m.url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    <img src={m.url} alt={`Property photo ${i + 2}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                   ) : (
                     <video src={m.url} className="w-full h-full object-cover" />
                   )}
