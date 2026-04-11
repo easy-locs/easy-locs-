@@ -1150,6 +1150,195 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
       sideEffects: stale + 1,
     };
   },
+
+  "source-of-truth-drift": async (sb) => {
+    let drifts = 0, checked = 0;
+    const { data: merchants } = await sb.from("seed_merchants")
+      .select("id, name, visibility_mode, visibility_score, trust_score, gate_status, verification_status")
+      .in("visibility_mode", ["full", "search_only"]).limit(100);
+    checked = merchants?.length ?? 0;
+    for (const m of merchants ?? []) {
+      const issues: string[] = [];
+      if ((m.visibility_mode === "full") && (m.visibility_score ?? 0) < 30) issues.push("full_visibility_but_low_score");
+      if ((m.visibility_mode === "full") && m.gate_status !== "passed") issues.push("full_but_gate_not_passed");
+      if ((m.trust_score ?? 0) > 80 && m.visibility_mode === "search_only") issues.push("high_trust_but_hidden");
+      if (issues.length > 0) {
+        drifts++;
+        await sb.from("engine_run_logs").insert({
+          id: crypto.randomUUID(),
+          engine_name: "source-of-truth-drift",
+          category: "drift",
+          started_at: new Date().toISOString(),
+          finished_at: new Date().toISOString(),
+          duration_ms: 0,
+          status: "warning",
+          effect_summary: `Drift on ${m.name}: ${issues.join(", ")}`,
+          metadata_json: { merchant_id: m.id, issues },
+        });
+      }
+    }
+    return { summary: `Checked ${checked}, found ${drifts} drifts`, rows: drifts, rowsRead: checked };
+  },
+
+  "incident-classify": async (sb) => {
+    let classified = 0;
+    const { data: errors } = await sb.from("engine_run_logs")
+      .select("id, engine_name, error_message, status, metadata_json")
+      .eq("status", "error")
+      .is("metadata_json->>incident_class", null)
+      .order("started_at", { ascending: false }).limit(50);
+    for (const e of errors ?? []) {
+      let severity: string = "low";
+      let category: string = "unknown";
+      const msg = (e.error_message || "").toLowerCase();
+      if (msg.includes("timeout") || msg.includes("deadline")) { severity = "medium"; category = "timeout"; }
+      else if (msg.includes("permission") || msg.includes("auth") || msg.includes("forbidden")) { severity = "high"; category = "auth"; }
+      else if (msg.includes("duplicate") || msg.includes("unique")) { severity = "medium"; category = "data_conflict"; }
+      else if (msg.includes("not found") || msg.includes("404")) { severity = "low"; category = "missing_resource"; }
+      else if (msg.includes("rate limit") || msg.includes("429")) { severity = "high"; category = "rate_limit"; }
+      else if (msg.includes("connection") || msg.includes("network")) { severity = "high"; category = "connectivity"; }
+      else { category = "runtime_error"; severity = "medium"; }
+      await sb.from("engine_run_logs").update({
+        metadata_json: { ...(e.metadata_json || {}), incident_class: category, incident_severity: severity },
+      }).eq("id", e.id);
+      classified++;
+    }
+    return { summary: `Classified ${classified} incidents`, rows: classified, rowsRead: errors?.length ?? 0 };
+  },
+
+  "pricing-integrity": async (sb) => {
+    let checked = 0, fixed = 0;
+    const { data: items } = await sb.from("menu_items")
+      .select("id, price, name, merchant_id")
+      .or("price.is.null,price.lt.0,price.gt.99999")
+      .limit(100);
+    checked = items?.length ?? 0;
+    for (const item of items ?? []) {
+      if (item.price === null || item.price < 0) {
+        await sb.from("menu_items").update({ price: 0, price_flag: "invalid_corrected" }).eq("id", item.id);
+        fixed++;
+      } else if (item.price > 99999) {
+        await sb.from("menu_items").update({ price_flag: "suspiciously_high" }).eq("id", item.id);
+        fixed++;
+      }
+    }
+    return { summary: `Checked pricing: ${checked} items, fixed ${fixed}`, rows: fixed, rowsRead: checked };
+  },
+
+  "availability-integrity": async (sb) => {
+    let checked = 0, updated = 0;
+    const { data: merchants } = await sb.from("seed_merchants")
+      .select("id, name, visibility_mode, is_open, opening_hours")
+      .in("visibility_mode", ["full", "search_only"]).limit(80);
+    checked = merchants?.length ?? 0;
+    for (const m of merchants ?? []) {
+      if (m.is_open === null && m.visibility_mode === "full") {
+        await sb.from("seed_merchants").update({ is_open: true }).eq("id", m.id);
+        updated++;
+      }
+    }
+    return { summary: `Availability check: ${checked} merchants, ${updated} corrected`, rows: updated, rowsRead: checked };
+  },
+
+  "regression-metrics": async (sb) => {
+    const now = new Date();
+    const hourAgo = new Date(now.getTime() - 3600000).toISOString();
+    const twoHoursAgo = new Date(now.getTime() - 7200000).toISOString();
+    const { data: recent } = await sb.from("engine_run_logs").select("status").gte("started_at", hourAgo);
+    const { data: prev } = await sb.from("engine_run_logs").select("status").gte("started_at", twoHoursAgo).lt("started_at", hourAgo);
+    const recentErrors = (recent ?? []).filter((r: any) => r.status === "error").length;
+    const prevErrors = (prev ?? []).filter((r: any) => r.status === "error").length;
+    const recentTotal = recent?.length ?? 0;
+    const prevTotal = prev?.length ?? 0;
+    const recentRate = recentTotal > 0 ? Math.round((1 - recentErrors / recentTotal) * 100) : 100;
+    const prevRate = prevTotal > 0 ? Math.round((1 - prevErrors / prevTotal) * 100) : 100;
+    const regressed = recentRate < prevRate - 10;
+    if (regressed) {
+      await sb.from("worker_health_snapshots").insert({
+        snapshot_at: now.toISOString(),
+        total_engines: 0,
+        healthy_count: 0,
+        stale_count: 0,
+        error_count: 0,
+        disabled_count: 0,
+        avg_success_rate: recentRate,
+        total_runs_last_hour: recentTotal,
+        metadata_json: { type: "regression_alert", prev_rate: prevRate, current_rate: recentRate },
+      });
+    }
+    return {
+      summary: `Metrics: ${recentRate}% success (prev ${prevRate}%), ${regressed ? "REGRESSION DETECTED" : "stable"}`,
+      rows: regressed ? 1 : 0,
+      rowsRead: (recent?.length ?? 0) + (prev?.length ?? 0),
+    };
+  },
+
+  "orphan-entity-cleanup": async (sb) => {
+    let cleaned = 0;
+    const { data: orphanMedia } = await sb.from("merchant_media")
+      .select("id, merchant_id")
+      .is("merchant_id", null)
+      .limit(30);
+    for (const m of orphanMedia ?? []) {
+      await sb.from("merchant_media").delete().eq("id", m.id);
+      cleaned++;
+    }
+    const { data: orphanMenuItems } = await sb.from("menu_items")
+      .select("id, merchant_id")
+      .is("merchant_id", null)
+      .limit(30);
+    for (const item of orphanMenuItems ?? []) {
+      await sb.from("menu_items").delete().eq("id", item.id);
+      cleaned++;
+    }
+    return { summary: `Orphan cleanup: ${cleaned} orphan records removed`, rows: cleaned, rowsRead: (orphanMedia?.length ?? 0) + (orphanMenuItems?.length ?? 0) };
+  },
+
+  "stale-flow-detection": async (sb) => {
+    let stale = 0;
+    const staleThreshold = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: staleBookings } = await sb.from("bookings")
+      .select("id, status, updated_at")
+      .eq("status", "pending")
+      .lt("updated_at", staleThreshold)
+      .limit(50);
+    for (const b of staleBookings ?? []) {
+      await sb.from("bookings").update({ status: "expired" }).eq("id", b.id);
+      stale++;
+    }
+    return { summary: `Stale flow detection: ${stale} expired`, rows: stale, rowsRead: staleBookings?.length ?? 0 };
+  },
+
+  "proof-log-aggregation": async (sb) => {
+    const now = new Date();
+    const hourAgo = new Date(now.getTime() - 3600000).toISOString();
+    const { data: logs } = await sb.from("engine_run_logs")
+      .select("engine_name, status, duration_ms, db_rows_affected")
+      .gte("started_at", hourAgo);
+    const byEngine = new Map<string, { runs: number; errors: number; totalRows: number; totalMs: number }>();
+    for (const log of logs ?? []) {
+      const key = log.engine_name;
+      if (!byEngine.has(key)) byEngine.set(key, { runs: 0, errors: 0, totalRows: 0, totalMs: 0 });
+      const entry = byEngine.get(key)!;
+      entry.runs++;
+      if (log.status === "error") entry.errors++;
+      entry.totalRows += log.db_rows_affected ?? 0;
+      entry.totalMs += log.duration_ms ?? 0;
+    }
+    const aggregated = Object.fromEntries(byEngine);
+    await sb.from("worker_health_snapshots").insert({
+      snapshot_at: now.toISOString(),
+      total_engines: byEngine.size,
+      healthy_count: 0,
+      stale_count: 0,
+      error_count: 0,
+      disabled_count: 0,
+      avg_success_rate: 0,
+      total_runs_last_hour: logs?.length ?? 0,
+      metadata_json: { type: "hourly_aggregation", engines: aggregated },
+    });
+    return { summary: `Aggregated ${logs?.length ?? 0} logs from ${byEngine.size} engines`, rows: 1, rowsRead: logs?.length ?? 0 };
+  },
 };
 
 // Generic no-op handler for engines not yet wired

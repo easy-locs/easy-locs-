@@ -31,8 +31,8 @@ export function CardShell({ to, className, index = 0, layout = "horizontal", chi
         className={cn(
           "min-w-0",
           layout === "vertical"
-            ? "block rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.97] transition-transform shadow-sm"
-            : "flex gap-3 p-3 rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.97] transition-transform shadow-sm min-w-0",
+            ? "block rounded-2xl border border-border/15 bg-card active:scale-[0.97] transition-transform shadow-sm [&>img]:overflow-hidden"
+            : "flex gap-3 p-3 rounded-2xl border border-border/15 bg-card active:scale-[0.97] transition-transform shadow-sm min-w-0 [&>img]:overflow-hidden",
           className,
         )}
       >
