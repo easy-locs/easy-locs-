@@ -232,29 +232,49 @@ export function initMonitoring() {
     }, 0);
   });
 
-  // Fetch/XHR error interceptor
+  const EXTERNAL_API_HOSTS = [
+    "overpass-api.de",
+    "nominatim.openstreetmap.org",
+    "api.openstreetmap.org",
+    "tile.openstreetmap.org",
+    "maps.googleapis.com",
+    "api.mapbox.com",
+  ];
+
+  function isExternalApi(url: string): boolean {
+    try {
+      const host = new URL(url).hostname;
+      return EXTERNAL_API_HOSTS.some((h) => host.includes(h));
+    } catch {
+      return false;
+    }
+  }
+
   const origFetch = window.fetch;
   window.fetch = async (...args) => {
     const url = typeof args[0] === "string" ? args[0] : (args[0] as Request)?.url || "unknown";
     const isAuditReq = url.includes("/audit_logs");
+    const isExternal = isExternalApi(url);
     try {
       const res = await origFetch(...args);
       if (res.status >= 500 && !isAuditReq) {
         pushEvent({
-          type: "error",
+          type: isExternal ? "warning" : "error",
           source: "network",
-          message: `Server error ${res.status} on ${url.split("?")[0]}`,
-          metadata: { status: res.status, url: url.split("?")[0] },
+          message: `${isExternal ? "External API" : "Server"} error ${res.status} on ${url.split("?")[0]}`,
+          severity: isExternal ? "warning" : "error",
+          metadata: { status: res.status, url: url.split("?")[0], external: isExternal },
         });
       }
       return res;
     } catch (err: any) {
       if (!isAuditReq) {
         pushEvent({
-          type: "error",
+          type: isExternal ? "warning" : "error",
           source: "network",
-          message: `Network failure: ${err.message}`,
-          metadata: { url: url.split("?")[0] },
+          message: `${isExternal ? "External API" : "Network"} failure: ${err.message}`,
+          severity: isExternal ? "warning" : "error",
+          metadata: { url: url.split("?")[0], external: isExternal },
         });
       }
       throw err;
