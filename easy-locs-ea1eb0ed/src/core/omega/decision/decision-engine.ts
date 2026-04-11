@@ -1,4 +1,5 @@
 import type { DecisionInput, DecisionOutput, OmegaDecision, OmegaEngineStatus } from "../omega-types";
+import { omegaPersistence } from "../omega-persistence";
 
 const MAX_DECISIONS = 2_000;
 let decisionIdCounter = 0;
@@ -107,6 +108,7 @@ class DecisionEngine {
     }
 
     this.lastRunAt = Date.now();
+    omegaPersistence.writeDecision(output).catch(() => {});
     return output;
   }
 
@@ -136,10 +138,15 @@ class DecisionEngine {
     return { total_decisions: this.decisions.length, by_type: counts };
   }
 
-  boot(): void {
+  async boot(): Promise<void> {
+    const persisted = await omegaPersistence.loadDecisions();
+    if (persisted.length > 0 && this.decisions.length === 0) {
+      this.decisions = persisted;
+      decisionIdCounter = persisted.length;
+    }
     this.status = "active";
     this.lastRunAt = Date.now();
-    console.log(`[OMEGA] DecisionEngine booted | decisions: ${this.decisions.length}`);
+    console.log(`[OMEGA] DecisionEngine booted | decisions: ${this.decisions.length} (${persisted.length} restored)`);
   }
 
   shutdown(): void { this.status = "stopped"; }

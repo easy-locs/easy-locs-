@@ -18,6 +18,9 @@ import type {
   OpportunitySignal,
   KnowledgeNodeType,
   KnowledgeEdgeType,
+  KnowledgeNodeMetadata,
+  OpportunityEvidence,
+  MemoryDetails,
 } from "./omega-types";
 
 type OmegaPhase = "idle" | "initializing" | "running" | "degraded" | "stopped";
@@ -68,11 +71,11 @@ class OmegaCore {
     this.phase = "initializing";
     console.log("[OMEGA CORE] Initializing Omega Intelligence Core...");
 
-    knowledgeGraphEngine.boot();
-    memoryEngine.boot();
-    decisionEngine.boot();
+    await knowledgeGraphEngine.boot();
+    await memoryEngine.boot();
+    await decisionEngine.boot();
+    await predictionEngine.boot();
     priorityEngine.boot();
-    predictionEngine.boot();
     businessOpportunityEngine.boot();
     adaptiveUXEngine.boot();
     selfImprovementEngine.boot();
@@ -222,11 +225,11 @@ class OmegaCore {
     return priorityEngine.addItem(type, targetId, sev, userImpact, bizImpact, recurrence, confidence, reach);
   }
 
-  detectOpportunity(type: Parameters<typeof businessOpportunityEngine.detectSignal>[0], geo: string, cat: string, conf: number, impact: number, evidence: Record<string, unknown>, action: string): OpportunitySignal {
+  detectOpportunity(type: Parameters<typeof businessOpportunityEngine.detectSignal>[0], geo: string, cat: string, conf: number, impact: number, evidence: OpportunityEvidence, action: string): OpportunitySignal {
     return businessOpportunityEngine.detectSignal(type, geo, cat, conf, impact, evidence, action);
   }
 
-  addKnowledgeNode(type: KnowledgeNodeType, label: string, domain: string, meta?: Record<string, unknown>) {
+  addKnowledgeNode(type: KnowledgeNodeType, label: string, domain: string, meta?: KnowledgeNodeMetadata) {
     return knowledgeGraphEngine.addNode(type, label, domain, meta);
   }
 
@@ -234,7 +237,7 @@ class OmegaCore {
     return knowledgeGraphEngine.addEdge(sourceId, targetId, edgeType, weight);
   }
 
-  recordMemory(category: Parameters<typeof memoryEngine.record>[0], domain: string, summary: string, details?: Record<string, unknown>) {
+  recordMemory(category: Parameters<typeof memoryEngine.record>[0], domain: string, summary: string, details?: MemoryDetails) {
     return memoryEngine.record(category, domain, summary, details);
   }
 

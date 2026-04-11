@@ -1,4 +1,5 @@
 import type { PredictionRecord, OmegaPredictionType, OmegaEngineStatus } from "../omega-types";
+import { omegaPersistence } from "../omega-persistence";
 
 const MAX_PREDICTIONS = 1_000;
 let predIdCounter = 0;
@@ -46,6 +47,7 @@ class PredictionEngine {
     };
     this.predictions.set(pred.prediction_id, pred);
     this.lastRunAt = Date.now();
+    omegaPersistence.writePrediction(pred).catch(() => {});
     return pred;
   }
 
@@ -127,10 +129,15 @@ class PredictionEngine {
     };
   }
 
-  boot(): void {
+  async boot(): Promise<void> {
+    const persisted = await omegaPersistence.loadPredictions();
+    if (persisted.length > 0 && this.predictions.size === 0) {
+      for (const p of persisted) this.predictions.set(p.prediction_id, p);
+      predIdCounter = persisted.length;
+    }
     this.status = "active";
     this.lastRunAt = Date.now();
-    console.log(`[OMEGA] PredictionEngine booted | predictions: ${this.predictions.size}`);
+    console.log(`[OMEGA] PredictionEngine booted | predictions: ${this.predictions.size} (${persisted.length} restored)`);
   }
 
   shutdown(): void { this.status = "stopped"; }

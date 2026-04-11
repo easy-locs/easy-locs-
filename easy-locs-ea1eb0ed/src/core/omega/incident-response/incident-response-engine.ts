@@ -1,5 +1,6 @@
 import type { IncidentResponseAction, OmegaEngineStatus } from "../omega-types";
 import type { SentinelSeverity } from "../../sentinel/types";
+import { omegaPersistence } from "../omega-persistence";
 
 const MAX_ACTIONS = 1_000;
 let actionIdCounter = 0;
@@ -54,6 +55,7 @@ class IncidentResponseEngine {
     };
     this.actions.set(action.action_id, action);
     this.lastRunAt = Date.now();
+    omegaPersistence.writeIncidentAction(action).catch(() => {});
     return action;
   }
 

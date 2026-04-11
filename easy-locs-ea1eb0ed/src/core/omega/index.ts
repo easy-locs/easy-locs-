@@ -1,4 +1,5 @@
 export { omegaCore } from "./omega-core";
+export { omegaPersistence } from "./omega-persistence";
 export { knowledgeGraphEngine } from "./knowledge-graph/knowledge-graph-engine";
 export { memoryEngine } from "./memory/memory-engine";
 export { decisionEngine } from "./decision/decision-engine";
@@ -20,15 +21,23 @@ export type {
   KnowledgeEdgeType,
   KnowledgeNode,
   KnowledgeEdge,
+  KnowledgeNodeMetadata,
+  KnowledgeEdgeMetadata,
   MemoryEntry,
+  MemoryDetails,
   DecisionInput,
   DecisionOutput,
   PredictionRecord,
   PriorityItem,
   OpportunitySignal,
+  OpportunityEvidence,
   AdaptiveUXRule,
+  AdaptiveUXContext,
+  AdaptiveUXAdaptation,
   SelfImprovementCycle,
   IncidentResponseAction,
   CodeEvolutionSuggestion,
   OmegaIntelligenceReport,
+  OmegaSubScoreKey,
+  OmegaEngineKey,
 } from "./omega-types";

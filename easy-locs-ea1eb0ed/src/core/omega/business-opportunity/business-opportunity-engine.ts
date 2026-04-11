@@ -1,4 +1,5 @@
-import type { OpportunitySignal, OmegaEngineStatus } from "../omega-types";
+import type { OpportunitySignal, OpportunityEvidence, OmegaEngineStatus } from "../omega-types";
+import { omegaPersistence } from "../omega-persistence";
 
 const MAX_SIGNALS = 1_000;
 let signalIdCounter = 0;
@@ -22,7 +23,7 @@ class BusinessOpportunityEngine {
     categoryScope: string,
     confidenceScore: number,
     impactScore: number,
-    evidence: Record<string, unknown>,
+    evidence: OpportunityEvidence,
     recommendedAction: string,
   ): OpportunitySignal {
     if (this.signals.size >= MAX_SIGNALS) {
@@ -42,6 +43,7 @@ class BusinessOpportunityEngine {
     };
     this.signals.set(signal.signal_id, signal);
     this.lastRunAt = Date.now();
+    omegaPersistence.writeOpportunity(signal).catch(() => {});
     return signal;
   }
 

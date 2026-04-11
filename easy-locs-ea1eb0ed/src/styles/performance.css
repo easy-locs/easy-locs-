@@ -192,10 +192,4 @@ img, video {
   will-change: transform;
 }
 
-/* Skeleton premium — lighter animation for reduced CPU */
-.skeleton-premium {
-  background: linear-gradient(90deg, hsl(var(--muted) / 0.08) 0%, hsl(var(--muted) / 0.15) 50%, hsl(var(--muted) / 0.08) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
-  border-radius: inherit;
-}
+/* Skeleton premium — use index.css definition (removed duplicate) */

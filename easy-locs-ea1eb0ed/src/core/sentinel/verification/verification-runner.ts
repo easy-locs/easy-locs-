@@ -21,11 +21,13 @@ import type {
   IdentityRecord,
   PolicyDecision,
   ProofRecord,
+  ProofEvidence,
   StateMachineDefinition,
   ConflictInjectionTest,
   ValidationTestCase,
   E2EFlowDefinition,
   VerificationSectionResult,
+  SectionDetails,
   EngineVerificationResult,
   CronVerificationResult,
   WorkflowVerificationResult,
@@ -38,7 +40,7 @@ let decisionCounter = 0;
 function nextProofId(): string { return `PROOF_${Date.now()}_${++proofCounter}`; }
 function nextDecisionId(): string { return `DEC_${Date.now()}_${++decisionCounter}`; }
 
-function makeSection(id: string, name: string, score: number, passed: number, failed: number, warnings: number, blockers: string[], details: Record<string, unknown>): VerificationSectionResult {
+function makeSection(id: string, name: string, score: number, passed: number, failed: number, warnings: number, blockers: string[], details: SectionDetails): VerificationSectionResult {
   return { section_id: id, section_name: name, score, passed, failed, warnings, blockers, details };
 }
 
@@ -257,7 +259,7 @@ class VerificationRunner {
     this.injectedFixtures = [];
   }
 
-  private addProof(type: ProofRecord["proof_type"], targetId: string, evidence: Record<string, unknown>, valid: boolean): ProofRecord {
+  private addProof(type: ProofRecord["proof_type"], targetId: string, evidence: ProofEvidence, valid: boolean): ProofRecord {
     const proof: ProofRecord = { proof_id: nextProofId(), proof_type: type, target_id: targetId, evidence, verified_at: Date.now(), valid };
     this.proofs.push(proof);
     return proof;

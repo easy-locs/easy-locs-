@@ -1,4 +1,5 @@
-import type { KnowledgeNode, KnowledgeNodeType, KnowledgeEdge, KnowledgeEdgeType, OmegaEngineStatus } from "../omega-types";
+import type { KnowledgeNode, KnowledgeNodeType, KnowledgeNodeMetadata, KnowledgeEdge, KnowledgeEdgeType, KnowledgeEdgeMetadata, OmegaEngineStatus } from "../omega-types";
+import { omegaPersistence } from "../omega-persistence";
 
 const MAX_NODES = 50_000;
 const MAX_EDGES = 200_000;
@@ -21,7 +22,7 @@ class KnowledgeGraphEngine {
   getStatus(): OmegaEngineStatus { return this.status; }
   getHeartbeat() { return { alive: this.status !== "stopped", lastBeat: this.lastRunAt }; }
 
-  addNode(type: KnowledgeNodeType, label: string, domain: string, metadata: Record<string, unknown> = {}): KnowledgeNode {
+  addNode(type: KnowledgeNodeType, label: string, domain: string, metadata: KnowledgeNodeMetadata = {}): KnowledgeNode {
     if (this.nodes.size >= MAX_NODES) {
       const oldest = [...this.nodes.values()].sort((a, b) => a.updated_at - b.updated_at)[0];
       if (oldest) this.removeNode(oldest.id);
@@ -33,6 +34,7 @@ class KnowledgeGraphEngine {
     this.typeIndex.get(type)!.add(id);
     if (!this.adjacency.has(id)) this.adjacency.set(id, new Set());
     if (!this.reverseAdj.has(id)) this.reverseAdj.set(id, new Set());
+    omegaPersistence.writeKnowledgeNode(node).catch(() => {});
     return node;
   }
 
@@ -51,7 +53,7 @@ class KnowledgeGraphEngine {
     return true;
   }
 
-  addEdge(sourceId: string, targetId: string, edgeType: KnowledgeEdgeType, weight = 1.0, metadata: Record<string, unknown> = {}): KnowledgeEdge | null {
+  addEdge(sourceId: string, targetId: string, edgeType: KnowledgeEdgeType, weight = 1.0, metadata: KnowledgeEdgeMetadata = {}): KnowledgeEdge | null {
     if (!this.nodes.has(sourceId) || !this.nodes.has(targetId)) return null;
     if (this.edges.size >= MAX_EDGES) {
       const oldest = [...this.edges.values()].sort((a, b) => a.created_at - b.created_at)[0];
@@ -64,6 +66,7 @@ class KnowledgeGraphEngine {
     this.adjacency.get(sourceId)!.add(id);
     if (!this.reverseAdj.has(targetId)) this.reverseAdj.set(targetId, new Set());
     this.reverseAdj.get(targetId)!.add(id);
+    omegaPersistence.writeKnowledgeEdge(edge).catch(() => {});
     return edge;
   }
 
@@ -180,10 +183,36 @@ class KnowledgeGraphEngine {
     };
   }
 
-  boot(): void {
+  async boot(): Promise<void> {
+    const [persistedNodes, persistedEdges] = await Promise.all([
+      omegaPersistence.loadKnowledgeNodes(),
+      omegaPersistence.loadKnowledgeEdges(),
+    ]);
+    if (persistedNodes.length > 0 && this.nodes.size === 0) {
+      for (const n of persistedNodes) {
+        this.nodes.set(n.id, n);
+        if (!this.typeIndex.has(n.type)) this.typeIndex.set(n.type, new Set());
+        this.typeIndex.get(n.type)!.add(n.id);
+        if (!this.adjacency.has(n.id)) this.adjacency.set(n.id, new Set());
+        if (!this.reverseAdj.has(n.id)) this.reverseAdj.set(n.id, new Set());
+      }
+      nodeIdCounter = persistedNodes.length;
+    }
+    if (persistedEdges.length > 0 && this.edges.size === 0) {
+      for (const e of persistedEdges) {
+        if (this.nodes.has(e.source_id) && this.nodes.has(e.target_id)) {
+          this.edges.set(e.id, e);
+          if (!this.adjacency.has(e.source_id)) this.adjacency.set(e.source_id, new Set());
+          this.adjacency.get(e.source_id)!.add(e.id);
+          if (!this.reverseAdj.has(e.target_id)) this.reverseAdj.set(e.target_id, new Set());
+          this.reverseAdj.get(e.target_id)!.add(e.id);
+        }
+      }
+      edgeIdCounter = persistedEdges.length;
+    }
     this.status = "active";
     this.lastRunAt = Date.now();
-    console.log(`[OMEGA] KnowledgeGraphEngine booted | nodes: ${this.nodes.size} | edges: ${this.edges.size}`);
+    console.log(`[OMEGA] KnowledgeGraphEngine booted | nodes: ${this.nodes.size} (${persistedNodes.length} restored) | edges: ${this.edges.size} (${persistedEdges.length} restored)`);
   }
 
   shutdown(): void {

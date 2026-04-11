@@ -1,4 +1,5 @@
-import type { MemoryEntry, OmegaEngineStatus } from "../omega-types";
+import type { MemoryEntry, MemoryDetails, OmegaEngineStatus } from "../omega-types";
+import { omegaPersistence } from "../omega-persistence";
 
 const MAX_MEMORIES = 5_000;
 let memIdCounter = 0;
@@ -18,7 +19,7 @@ class MemoryEngine {
   getStatus(): OmegaEngineStatus { return this.status; }
   getHeartbeat() { return { alive: this.status !== "stopped", lastBeat: this.lastRunAt }; }
 
-  record(category: MemoryCategory, domain: string, summary: string, details: Record<string, unknown> = {}, outcome: MemoryEntry["outcome"] = "pending", beforeScore = 0, afterScore = 0, rootCause?: string, relatedIds: string[] = [], ttlDays = 90): MemoryEntry {
+  record(category: MemoryCategory, domain: string, summary: string, details: MemoryDetails = {}, outcome: MemoryEntry["outcome"] = "pending", beforeScore = 0, afterScore = 0, rootCause?: string, relatedIds: string[] = [], ttlDays = 90): MemoryEntry {
     if (this.memories.size >= MAX_MEMORIES) {
       this.evictOldest();
     }
@@ -34,6 +35,7 @@ class MemoryEngine {
     this.categoryIndex.get(category)!.add(memory_id);
     if (!this.domainIndex.has(domain)) this.domainIndex.set(domain, new Set());
     this.domainIndex.get(domain)!.add(memory_id);
+    omegaPersistence.writeMemory(entry).catch(() => {});
     return entry;
   }
 
@@ -160,10 +162,21 @@ class MemoryEngine {
     };
   }
 
-  boot(): void {
+  async boot(): Promise<void> {
+    const persisted = await omegaPersistence.loadMemories();
+    if (persisted.length > 0 && this.memories.size === 0) {
+      for (const m of persisted) {
+        this.memories.set(m.memory_id, m);
+        if (!this.categoryIndex.has(m.category)) this.categoryIndex.set(m.category, new Set());
+        this.categoryIndex.get(m.category)!.add(m.memory_id);
+        if (!this.domainIndex.has(m.domain)) this.domainIndex.set(m.domain, new Set());
+        this.domainIndex.get(m.domain)!.add(m.memory_id);
+      }
+      memIdCounter = persisted.length;
+    }
     this.status = "active";
     this.lastRunAt = Date.now();
-    console.log(`[OMEGA] MemoryEngine booted | memories: ${this.memories.size}`);
+    console.log(`[OMEGA] MemoryEngine booted | memories: ${this.memories.size} (${persisted.length} restored)`);
   }
 
   shutdown(): void { this.status = "stopped"; }

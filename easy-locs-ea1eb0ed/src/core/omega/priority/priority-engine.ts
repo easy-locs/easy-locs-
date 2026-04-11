@@ -1,4 +1,5 @@
 import type { PriorityItem, OmegaPriority, OmegaEngineStatus } from "../omega-types";
+import { omegaPersistence } from "../omega-persistence";
 
 const MAX_ITEMS = 2_000;
 let priorityIdCounter = 0;
@@ -60,6 +61,7 @@ class PriorityEngine {
     };
 
     this.items.set(item.item_id, item);
+    omegaPersistence.writePriority(item).catch(() => {});
     if (this.items.size > MAX_ITEMS) {
       const sorted = [...this.items.entries()].sort((a, b) => a[1].priority_score - b[1].priority_score);
       const toRemove = sorted.slice(0, this.items.size - MAX_ITEMS);

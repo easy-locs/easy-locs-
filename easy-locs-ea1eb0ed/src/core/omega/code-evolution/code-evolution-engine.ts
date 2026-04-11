@@ -1,4 +1,5 @@
 import type { CodeEvolutionSuggestion, OmegaEngineStatus } from "../omega-types";
+import { omegaPersistence } from "../omega-persistence";
 
 const MAX_SUGGESTIONS = 500;
 let suggIdCounter = 0;
@@ -49,6 +50,7 @@ class CodeEvolutionEngine {
     };
     this.suggestions.set(suggestion.suggestion_id, suggestion);
     this.lastRunAt = Date.now();
+    omegaPersistence.writeCodeSuggestion(suggestion).catch(() => {});
     return suggestion;
   }
 
