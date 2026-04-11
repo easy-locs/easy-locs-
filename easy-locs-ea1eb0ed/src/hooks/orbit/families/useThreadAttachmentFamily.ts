@@ -13,7 +13,7 @@ import type { ConversationThread } from "@/components/communication-hub/types";
 
 /** Resolve canonical conversationId from thread (with legacy fallback) */
 function getConversationId(thread: ConversationThread | null): string | null {
-  return thread?.conversationId || null;
+  return thread?.conversationId || thread?.v2ConversationId || null;
 }
 
 export function useThreadAttachmentFamily(params: {

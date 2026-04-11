@@ -13,7 +13,7 @@ export function useHudMultiPhotoSendBridge(
     (attachments: { file: File; order: number }[], caption?: string) => {
       const sorted = [...attachments].sort((a, b) => a.order - b.order);
       const files = sorted.map((a) => a.file);
-      const convId = thread?.conversationId || thread?.id;
+      const convId = thread?.conversationId || thread?.v2ConversationId || thread?.id;
       if (!convId || !files.length) return;
 
       void (async () => {
@@ -43,7 +43,7 @@ export function useHudMultiPhotoSendBridge(
         });
       })();
     },
-    [thread?.conversationId, thread?.id, orgId],
+    [thread?.conversationId, thread?.v2ConversationId, thread?.id, orgId],
   );
 
   return { handleMultiPhotoSend };

@@ -34,7 +34,7 @@ export function useHudInlineHandlers(deps: HudInlineHandlersDeps) {
   const depsRef = useRef(deps);
   depsRef.current = deps;
 
-  const conversationKey = deps.thread?.conversationId || deps.thread?.id || "";
+  const conversationKey = deps.thread?.conversationId || deps.thread?.v2ConversationId || deps.thread?.id || "";
 
   const voiceDraftRaw = useOrbitComposerStore(s => s.voiceDrafts[conversationKey] ?? null);
   const voicePreview = voiceDraftRaw

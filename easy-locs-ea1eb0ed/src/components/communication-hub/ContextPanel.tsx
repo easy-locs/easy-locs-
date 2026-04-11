@@ -344,7 +344,7 @@ export default function ContextPanel({ thread, orgId }: Props) {
                 contextId={thread.entityId}
                 contextTitle={thread.serviceTitle || thread.listingTitle || thread.propertyLabel}
                 targetOrgId={orgId}
-                threadId={thread.conversationId || thread.id}
+                threadId={thread.conversationId || thread.v2ConversationId || thread.id}
                 isOrgMember={true}
               />
             </div>

@@ -12,6 +12,8 @@ type ThreadLike = {
   id: string;
   /** Canonical conversation UUID */
   conversationId?: string | null;
+  /** V2 conversation fallback UUID */
+  v2ConversationId?: string | null;
   peerOrbitId?: string | null;
 };
 
@@ -31,7 +33,7 @@ export function useLocationMessage(params: {
       address?: string;
       duration?: number;
     }) => {
-      const conversationId = params.thread?.conversationId;
+      const conversationId = params.thread?.conversationId || params.thread?.v2ConversationId;
       if (!conversationId) return;
 
       const authUserId = await params.resolveAuthUserId();

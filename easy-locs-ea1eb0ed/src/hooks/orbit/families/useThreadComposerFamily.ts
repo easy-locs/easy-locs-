@@ -37,7 +37,7 @@ export function useThreadComposerFamily(params: {
     setShowLocationPicker, setNewMessage, setRawMessages, t,
   } = params;
 
-  const conversationId = thread?.conversationId || thread?.id || "";
+  const conversationId = thread?.conversationId || thread?.v2ConversationId || thread?.id || "";
 
   const activeEdit = useOrbitComposerStore(s => s.edits[conversationId] ?? null);
   const replyState = useOrbitComposerStore(s => s.replies[conversationId] ?? null);

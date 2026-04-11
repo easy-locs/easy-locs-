@@ -34,6 +34,7 @@ export function useHudConversationResolver({
     const currentThread = threadRef.current;
     if (!currentThread) return null;
     if (currentThread.conversationId) return currentThread.conversationId;
+    if (currentThread.v2ConversationId) return currentThread.v2ConversationId;
     if (!currentThread.peerUserId) {
       toast.error("No conversation found. Open a thread first.");
       return null;

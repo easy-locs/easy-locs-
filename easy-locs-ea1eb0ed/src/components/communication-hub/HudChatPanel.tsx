@@ -90,7 +90,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
   const { settings: privacySettings } = usePrivacySettings();
 
   const security = useSecurityDialogs();
-  const currentConversationId = thread?.conversationId || thread?.id || "";
+  const currentConversationId = thread?.conversationId || thread?.v2ConversationId || thread?.id || "";
 
   // ── Micro-bridges ──
   const overlayBridge = useHudOverlayBridge(thread);
@@ -145,7 +145,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
   const { isInCall, isStartingCall: isStartingCallProvider } = useCall();
 
   const mediaPreviewSend = useMediaPreviewSend({
-    conversationId: thread?.conversationId ?? null,
+    conversationId: thread?.conversationId || thread?.v2ConversationId || null,
     userId: user?.id, myOrbitId,
     peerOrbitId: thread?.peerOrbitId ?? null,
     orgId: orgId || null, resolveConversationId,
@@ -368,7 +368,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
             recipientUserId={thread.peerUserId || thread.tenantId || thread.entityId || null}
             recipientName={thread.name || t("orbit.contact")}
             context={thread.entityType ? { type: thread.entityType as string, id: thread.entityId, label: thread.serviceTitle || thread.propertyLabel || thread.listingTitle } : undefined}
-            threadId={thread.conversationId || thread.id}
+            threadId={thread.conversationId || thread.v2ConversationId || thread.id}
             defaultCurrency={thread.currency?.toUpperCase()}
             onSuccess={(conf: PaymentConfirmation) => {
               payment.setPaymentLinkDialog(false);
@@ -378,7 +378,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
                 const peerId = thread.peerUserId || thread.tenantId || thread.entityId || thread.id;
                 try {
                   await sendPaymentReceiptToThread({
-                    threadId: thread.conversationId || thread.id,
+                    threadId: thread.conversationId || thread.v2ConversationId || thread.id,
                     senderId: authUserId, orgId,
                     transactionId: conf.txnId, amount: conf.amount, currency: conf.currency,
                     recipientName: conf.recipientName || thread.name,
@@ -400,14 +400,14 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
         open={payment.requestMoneyDialog}
         onClose={() => payment.setRequestMoneyDialog(false)}
         recipientId={thread.peerUserId || thread.tenantId || thread.entityId || null}
-        contextId={thread.conversationId || thread.id || null}
+        contextId={thread.conversationId || thread.v2ConversationId || thread.id || null}
         onCreated={async (req) => {
           const authUserId = await resolveAuthUserId();
           if (!authUserId || !orgId) return;
           const peerId = thread.peerUserId || thread.tenantId || thread.entityId || thread.id;
           try {
             await sendPaymentRequestMessageToThread({
-              threadId: thread.conversationId || thread.id,
+              threadId: thread.conversationId || thread.v2ConversationId || thread.id,
               senderId: authUserId, orgId, request: req,
               tenantId: thread.tenantId, bookingId: thread.bookingId, bookingType: thread.bookingType,
               contextType: thread.entityType, contextId: thread.entityId,

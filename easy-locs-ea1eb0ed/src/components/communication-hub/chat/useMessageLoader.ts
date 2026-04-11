@@ -67,7 +67,7 @@ function safeString(val: unknown): string {
 }
 
 function resolveConversationId(thread: ThreadLike | null): string | null {
-  return thread?.conversationId || null;
+  return thread?.conversationId || thread?.v2ConversationId || null;
 }
 
 function mapV2ToChat(m: any, conversationId: string): ChatMessage {

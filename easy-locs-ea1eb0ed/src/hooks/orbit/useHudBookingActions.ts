@@ -34,7 +34,7 @@ export function useHudBookingActions(
       else if (currentThread.bookingType === "seasonal")
         await bookingRepo.updateBookingRequest(currentThread.bookingId, newStatus);
 
-      const conversationId = currentThread.conversationId;
+      const conversationId = currentThread.conversationId || currentThread.v2ConversationId;
       if (conversationId) {
         const actionLabels = { confirm: "✅ Booking confirmed", cancel: "❌ Booking cancelled", complete: "🏁 Booking completed" };
         await bookingRepo.insertChatMessage(
