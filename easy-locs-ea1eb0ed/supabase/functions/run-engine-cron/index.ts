@@ -853,6 +853,248 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     }
     return { summary: `Hotel publish: ${published} published, ${blocked} blocked by firewall`, rows: published, rowsRead: data?.length ?? 0, sideEffects: blocked };
   },
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // PERMANENT CORE — TRUST, FRAUD, QUALITY, TAXONOMY, MAINTENANCE
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  "trust-ranking-recompute": async (sb) => {
+    const { data } = await sb.from("seed_merchants")
+      .select("id, name, visibility_score, trust_score, verification_status, review_count, review_avg, cover_image_url, cover_image, phone, email, address, category, subcategory, menu_items_json, created_at, visibility_mode")
+      .or("trust_score.is.null,trust_score.lt.1")
+      .limit(80);
+    let computed = 0;
+    for (const m of data ?? []) {
+      let trust = 0;
+      if (m.verification_status === "verified") trust += 25;
+      else if (m.verification_status === "pending") trust += 5;
+      const hasImage = !!(m.cover_image_url || m.cover_image);
+      if (hasImage) trust += 10;
+      if (m.phone) trust += 5;
+      if (m.email) trust += 5;
+      if (m.address) trust += 5;
+      if (m.category && !["general", "other", "unknown"].includes((m.category || "").toLowerCase())) trust += 5;
+      if (m.subcategory) trust += 3;
+      const menuCount = Array.isArray(m.menu_items_json) ? m.menu_items_json.length : 0;
+      if (menuCount >= 5) trust += 10;
+      else if (menuCount >= 1) trust += 5;
+      const reviewScore = Math.min(15, Math.round((m.review_count || 0) * (m.review_avg || 0) / 20));
+      trust += reviewScore;
+      if (m.created_at) {
+        const ageMs = Date.now() - new Date(m.created_at).getTime();
+        const ageDays = ageMs / 86400000;
+        if (ageDays > 180) trust += 7;
+        else if (ageDays > 30) trust += 3;
+      }
+      const completeness = [m.name, hasImage, m.phone, m.address, m.category, menuCount > 0].filter(Boolean).length;
+      trust += Math.min(10, completeness * 2);
+      trust = Math.min(100, Math.max(0, trust));
+      const ranking = Math.round(trust * 0.6 + (m.visibility_score || 0) * 0.4);
+      await sb.from("seed_merchants").update({ trust_score: trust, ranking_score: ranking }).eq("id", m.id);
+      computed++;
+    }
+    return { summary: `Trust recomputed for ${computed} merchants`, rows: computed, rowsRead: data?.length ?? 0, sideEffects: computed };
+  },
+
+  "fraud-anomaly-scan": async (sb) => {
+    let flagged = 0, checked = 0;
+    const { data: merchants } = await sb.from("seed_merchants")
+      .select("id, name, phone, address, latitude, longitude, visibility_mode, cover_image_url, cover_image, category, city, country")
+      .in("visibility_mode", ["full", "search_only", "live"])
+      .limit(100);
+    checked = merchants?.length ?? 0;
+
+    const nameMap = new Map<string, string[]>();
+    for (const m of merchants ?? []) {
+      const key = `${(m.name || "").toLowerCase().trim()}|${(m.city || "").toLowerCase()}|${(m.country || "").toLowerCase()}`;
+      if (!nameMap.has(key)) nameMap.set(key, []);
+      nameMap.get(key)!.push(m.id);
+    }
+    for (const [key, ids] of nameMap) {
+      if (ids.length > 1) {
+        for (let i = 1; i < ids.length; i++) {
+          await sb.from("seed_merchants").update({
+            fraud_flag: "duplicate_suspected",
+            fraud_flagged_at: new Date().toISOString(),
+            visibility_mode: "hidden",
+            blocking_reason: `Duplicate of ${ids[0]} (name+city match: ${key.split("|")[0]})`,
+          }).eq("id", ids[i]);
+          flagged++;
+        }
+      }
+    }
+
+    const { data: suspiciousPrice } = await sb.from("seed_merchants")
+      .select("id, menu_items_json")
+      .in("visibility_mode", ["full", "search_only", "live"])
+      .not("menu_items_json", "is", null)
+      .limit(50);
+    for (const m of suspiciousPrice ?? []) {
+      const items = Array.isArray(m.menu_items_json) ? m.menu_items_json : [];
+      const prices = items.map((i: any) => Number(i?.price || 0)).filter((p: number) => p > 0);
+      if (prices.length >= 3) {
+        const avg = prices.reduce((s: number, p: number) => s + p, 0) / prices.length;
+        const allSame = prices.every((p: number) => p === prices[0]);
+        if (allSame && prices.length > 5) {
+          await sb.from("seed_merchants").update({
+            fraud_flag: "suspicious_pricing",
+            fraud_flagged_at: new Date().toISOString(),
+          }).eq("id", m.id);
+          flagged++;
+        }
+        const extremeHigh = prices.filter((p: number) => p > avg * 10);
+        if (extremeHigh.length > 0) {
+          await sb.from("seed_merchants").update({
+            fraud_flag: "pricing_anomaly",
+            fraud_flagged_at: new Date().toISOString(),
+          }).eq("id", m.id);
+          flagged++;
+        }
+      }
+    }
+
+    return { summary: `Fraud scan: ${checked} checked, ${flagged} flagged`, rows: flagged, rowsRead: checked, sideEffects: flagged };
+  },
+
+  "quality-deep-scan": async (sb) => {
+    const { data } = await sb.from("seed_merchants")
+      .select("id, name, description, cover_image_url, cover_image, phone, email, address, category, subcategory, menu_items_json, latitude, longitude, city, country, website, opening_hours_json, visibility_score")
+      .limit(60);
+    let scored = 0;
+    for (const m of data ?? []) {
+      let q = 0;
+      if (m.name && m.name.length > 2) q += 8; else q += 0;
+      if (m.description && m.description.length > 30) q += 8;
+      else if (m.description && m.description.length > 10) q += 4;
+      const hasImage = !!(m.cover_image_url || m.cover_image);
+      if (hasImage) q += 12;
+      if (m.phone) q += 6;
+      if (m.email) q += 4;
+      if (m.address) q += 6;
+      if (m.website) q += 4;
+      if (m.category && !["general", "other", "unknown"].includes((m.category || "").toLowerCase())) q += 6;
+      if (m.subcategory) q += 4;
+      if (m.latitude != null && m.longitude != null) q += 8;
+      if (m.city) q += 4;
+      if (m.country) q += 2;
+      const menuCount = Array.isArray(m.menu_items_json) ? m.menu_items_json.length : 0;
+      if (menuCount >= 10) q += 12;
+      else if (menuCount >= 5) q += 8;
+      else if (menuCount >= 1) q += 4;
+      if (m.opening_hours_json) q += 6;
+      const completeness = [m.name, hasImage, m.phone, m.address, m.category, menuCount > 0, m.latitude, m.email, m.description, m.website, m.opening_hours_json].filter(Boolean).length;
+      const bonus = Math.round(completeness / 11 * 10);
+      q = Math.min(100, q + bonus);
+
+      const oldScore = m.visibility_score ?? 0;
+      const blended = Math.round(oldScore * 0.3 + q * 0.7);
+      await sb.from("seed_merchants").update({ visibility_score: blended, quality_deep_score: q, quality_scanned_at: new Date().toISOString() }).eq("id", m.id);
+      scored++;
+    }
+    return { summary: `Deep quality: ${scored} scored`, rows: scored, rowsRead: data?.length ?? 0, sideEffects: scored };
+  },
+
+  "taxonomy-enforcer": async (sb) => {
+    let fixed = 0, checked = 0;
+    const { data } = await sb.from("seed_merchants")
+      .select("id, name, description, vertical, category, subcategory")
+      .or("vertical.is.null,category.is.null,category.eq.general,category.eq.other,category.eq.unknown")
+      .limit(60);
+    checked = data?.length ?? 0;
+    for (const m of data ?? []) {
+      const fixes: Record<string, any> = {};
+      const text = `${m.name || ""} ${m.description || ""}`.toLowerCase();
+      if (!m.vertical) {
+        if (text.match(/hotel|resort|hostel|lodge|inn|motel|suites/)) fixes.vertical = "hotel";
+        else if (text.match(/restaurant|cafe|coffee|bakery|pizza|burger|sushi|grill|diner|bistro|kitchen|food/)) fixes.vertical = "food";
+        else if (text.match(/grocery|supermarket|market|mart|fresh/)) fixes.vertical = "grocery";
+        else if (text.match(/salon|spa|barber|beauty|clinic|dental|gym|fitness|laundry|cleaning/)) fixes.vertical = "services";
+        else if (text.match(/shop|store|retail|boutique|mall/)) fixes.vertical = "retail";
+        else fixes.vertical = "services";
+      }
+      const vert = fixes.vertical || m.vertical;
+      if (!m.category || ["general", "other", "unknown"].includes((m.category || "").toLowerCase())) {
+        if (vert === "food") {
+          if (text.includes("cafe") || text.includes("coffee")) fixes.category = "cafe";
+          else if (text.includes("bakery") || text.includes("pastry")) fixes.category = "bakery";
+          else if (text.includes("fast") || text.includes("burger") || text.includes("pizza")) fixes.category = "fast_food";
+          else if (text.includes("sushi") || text.includes("japanese")) fixes.category = "japanese";
+          else if (text.includes("indian") || text.includes("curry")) fixes.category = "indian";
+          else if (text.includes("chinese") || text.includes("wok")) fixes.category = "chinese";
+          else if (text.includes("italian") || text.includes("pasta")) fixes.category = "italian";
+          else fixes.category = "restaurant";
+        } else if (vert === "hotel") {
+          if (text.includes("resort")) fixes.category = "resort";
+          else if (text.includes("apartment") || text.includes("serviced")) fixes.category = "serviced_apartment";
+          else if (text.includes("hostel")) fixes.category = "hostel";
+          else fixes.category = "hotel";
+        } else if (vert === "services") {
+          if (text.includes("salon") || text.includes("beauty")) fixes.category = "beauty_salon";
+          else if (text.includes("barber")) fixes.category = "barbershop";
+          else if (text.includes("spa") || text.includes("massage")) fixes.category = "spa";
+          else if (text.includes("gym") || text.includes("fitness")) fixes.category = "gym";
+          else if (text.includes("laundry") || text.includes("cleaning")) fixes.category = "cleaning";
+          else if (text.includes("clinic") || text.includes("dental") || text.includes("medical")) fixes.category = "healthcare";
+          else fixes.category = "professional_services";
+        } else {
+          fixes.category = vert || "services";
+        }
+      }
+      if (Object.keys(fixes).length > 0) {
+        fixes.taxonomy_enforced_at = new Date().toISOString();
+        await sb.from("seed_merchants").update(fixes).eq("id", m.id);
+        fixed++;
+      }
+    }
+    return { summary: `Taxonomy enforced: ${fixed}/${checked} fixed`, rows: fixed, rowsRead: checked, sideEffects: fixed };
+  },
+
+  "maintenance-sweep": async (sb) => {
+    let actions = 0;
+    const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString();
+
+    const { data: expiredQr } = await sb.from("qr_sessions").select("id").eq("status", "pending").lt("created_at", oneHourAgo).limit(100);
+    for (const s of expiredQr ?? []) {
+      await sb.from("qr_sessions").update({ status: "expired" }).eq("id", s.id);
+      actions++;
+    }
+
+    const { data: oldNotifs } = await sb.from("notifications").select("id").eq("read", true).lt("created_at", thirtyDaysAgo).limit(200);
+    for (const n of oldNotifs ?? []) {
+      await sb.from("notifications").delete().eq("id", n.id);
+      actions++;
+    }
+
+    const { data: expiredCoupons } = await sb.from("coupons").select("id").eq("active", true).lt("expires_at", new Date().toISOString()).limit(100);
+    for (const c of expiredCoupons ?? []) {
+      await sb.from("coupons").update({ active: false }).eq("id", c.id);
+      actions++;
+    }
+
+    const { data: exhaustedBoosts } = await sb.from("boost_campaigns").select("id, spent, total_budget").eq("status", "active").limit(100);
+    for (const c of exhaustedBoosts ?? []) {
+      if (c.total_budget && c.spent >= c.total_budget) {
+        await sb.from("boost_campaigns").update({ status: "completed" }).eq("id", c.id);
+        actions++;
+      }
+    }
+
+    const { data: oldLogs } = await sb.from("engine_run_logs").select("id").lt("started_at", ninetyDaysAgo).limit(500);
+    for (const l of oldLogs ?? []) {
+      await sb.from("engine_run_logs").delete().eq("id", l.id);
+      actions++;
+    }
+
+    const { data: oldHealthSnaps } = await sb.from("worker_health_snapshots").select("id").lt("snapshot_at", thirtyDaysAgo).limit(200);
+    for (const s of oldHealthSnaps ?? []) {
+      await sb.from("worker_health_snapshots").delete().eq("id", s.id);
+      actions++;
+    }
+
+    return { summary: `Maintenance sweep: ${actions} actions`, rows: actions, rowsRead: 0, sideEffects: actions };
+  },
 };
 
 // Generic no-op handler for engines not yet wired

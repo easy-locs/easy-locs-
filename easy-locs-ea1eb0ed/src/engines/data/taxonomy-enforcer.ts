@@ -6,10 +6,13 @@ const CANONICAL_VERTICALS = new Set([
 ]);
 
 export class TaxonomyEnforcer extends BaseEngine {
+  static readonly RUNTIME_CLASS = "browser-monitor";
+  static readonly BACKEND_WORKER = "taxonomy-enforcer";
+
   constructor() {
     super({
       id: "data-taxonomy-enforcer",
-      name: "Taxonomy Enforcer",
+      name: "Taxonomy Enforcer (Monitor)",
       category: "data",
       intervalMs: 120_000,
     });

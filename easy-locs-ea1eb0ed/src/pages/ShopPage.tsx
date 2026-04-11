@@ -6,6 +6,7 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { storefrontService } from "@/services";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import SEOHead from "@/components/SEOHead";
 import { resolveCoverImage, resolveLogoImage } from "@/lib/image/dual-layer-image";
 import { getRequiredAttribution } from "@/lib/image/source-policy";
@@ -70,6 +71,7 @@ const AdvancedCheckout = lazy(() => import("@/components/storefront/AdvancedChec
 type ShopTab = "overview" | "menu" | "reviews" | "info";
 
 export default function ShopPage() {
+  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const { slug: shopSlug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

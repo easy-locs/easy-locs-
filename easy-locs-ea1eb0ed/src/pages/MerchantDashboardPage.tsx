@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import { fetchMerchantProfile, fetchMenuItems, fetchStorefrontSlug, deleteMenuItem, upsertMenuItem, translateText } from "@/repositories/merchant-dashboard.repository";
 import { updateMerchantInfo, setMerchantOpenStatus, activateMerchant } from "@/lib/merchant/claim-service";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ function MerchantOpsHub({ profileId }: { profileId: string | null }) {
 }
 
 export default function MerchantDashboardPage() {
+  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const [params] = useSearchParams();
   const profileId = params.get("id");
 

@@ -8,13 +8,16 @@ interface AnomalyRecord {
 }
 
 export class AnomalyDetector extends BaseEngine {
+  static readonly RUNTIME_CLASS = "browser-monitor";
+  static readonly BACKEND_WORKER = "fraud-anomaly-scan";
+
   private anomalies: AnomalyRecord[] = [];
   private clickHistory: number[] = [];
 
   constructor() {
     super({
       id: "sec-anomaly",
-      name: "Anomaly Detector",
+      name: "Anomaly Detector (Monitor)",
       category: "security",
       intervalMs: 15_000,
     });
