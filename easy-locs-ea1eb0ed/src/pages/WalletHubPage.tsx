@@ -412,13 +412,35 @@ export default function WalletHubPage() {
 
               {rows.length === 0 && !loading && (
                 <div className="app-card p-8 flex flex-col items-center gap-3 text-center">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.08)" }}>
-                    <Wallet className="w-8 h-8" style={{ color: "hsl(38 65% 56% / 0.5)" }} />
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: walletCreateFailed ? "hsl(0 70% 55% / 0.08)" : "hsl(38 65% 56% / 0.08)" }}>
+                    {walletCreateFailed
+                      ? <AlertCircle className="w-8 h-8" style={{ color: "hsl(0 70% 55% / 0.6)" }} />
+                      : <Wallet className="w-8 h-8" style={{ color: "hsl(38 65% 56% / 0.5)" }} />}
                   </div>
-                  <p className="text-sm font-bold text-foreground">{t("wallet.noWalletYet")}</p>
-                  <p className="text-xs text-muted-foreground">{t("wallet.createWalletDesc")}</p>
-                  <button onClick={createDefaultWallet} className="mt-2 px-6 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-transform" style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}>
-                    {t("wallet.createWallet")}
+                  <p className="text-sm font-bold text-foreground">
+                    {walletCreateFailed
+                      ? tSafe(t, "wallet.walletSetupFailed", "Wallet setup failed")
+                      : t("wallet.noWalletYet")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {walletCreateFailed
+                      ? tSafe(t, "wallet.walletSetupFailedDesc", "We couldn't create your wallet automatically. Please try again or sign in again.")
+                      : t("wallet.createWalletDesc")}
+                  </p>
+                  <button
+                    onClick={() => {
+                      walletCreateRetries.current = 0;
+                      walletCreateAttempted.current = false;
+                      setWalletCreateFailed(false);
+                      createDefaultWallet();
+                    }}
+                    className="mt-2 px-6 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center gap-2"
+                    style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+                  >
+                    {walletCreateFailed && <RefreshCw className="w-3.5 h-3.5" />}
+                    {walletCreateFailed
+                      ? tSafe(t, "wallet.tryAgain", "Try Again")
+                      : t("wallet.createWallet")}
                   </button>
                 </div>
               )}
