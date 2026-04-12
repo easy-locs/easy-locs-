@@ -45,7 +45,6 @@ export function installCrossAppReactions(): () => void {
       console.error("[cross-app] wallet notification failed", e);
     }
 
-    platformBus.emit("dashboard:refresh" as any, { source: "wallet" }, "wallet");
   };
 
   unsubs.push(
@@ -83,7 +82,6 @@ export function installCrossAppReactions(): () => void {
       console.error("[cross-app] booking→orbit message failed", e);
     }
 
-    platformBus.emit("dashboard:refresh" as any, { source: "booking" }, "system");
   };
 
   unsubs.push(
@@ -119,7 +117,6 @@ export function installCrossAppReactions(): () => void {
   unsubs.push(
     platformBus.on("marketplace:listing_published", async (event) => {
       const p = event.payload as any;
-      platformBus.emit("dashboard:refresh" as any, { source: "marketplace" }, "marketplace");
 
       const user = await getCurrentUser();
       if (!user || !p?.merchantId) return;
@@ -145,8 +142,6 @@ export function installCrossAppReactions(): () => void {
   unsubs.push(
     platformBus.on("marketplace:booking_confirmed", async (event) => {
       const p = event.payload as any;
-      platformBus.emit("dashboard:refresh" as any, { source: "booking" }, "system");
-
       const user = await getCurrentUser();
       if (!user) return;
 
@@ -165,19 +160,6 @@ export function installCrossAppReactions(): () => void {
     })
   );
 
-  // ── Radar entity selected → dashboard context update ──
-  unsubs.push(
-    platformBus.on("radar:entity_selected" as any, (event) => {
-      platformBus.emit("dashboard:refresh" as any, { source: "radar", entity: (event.payload as any)?.entityId }, "system");
-    })
-  );
-
-  // ── Radar geo updated → invalidate nearby caches ──
-  unsubs.push(
-    platformBus.on("radar:geo_updated" as any, () => {
-      platformBus.emit("dashboard:counters_refresh" as any, { source: "radar" }, "system");
-    })
-  );
 
   return () => unsubs.forEach((fn) => fn());
 }
