@@ -709,17 +709,30 @@ Full detect → classify → react → protect → verify → report cycle acros
 - **Wiring**: Integrated into rendering contracts (auto-protect on invalid render), gate-runner (auto-protect on pipeline failure), FeatureErrorBoundary (card protection), auto-heal engine (health monitoring), domain-instrumentation (OTP/auth/wallet/orbit rate limiting + abuse detection)
 - **Safety rules**: Never auto-fix critical issues, never suppress serious logic corruption, never weaken security, never allow public rendering of doubtful data, always log every action
 
-## Global Data Quality Phase
-- **Audit Engine** (`src/lib/data-quality/`): Full entity-by-entity audit system with 13 classification states (VALID, VALID_WITH_WARNINGS, SUSPICIOUS, INVALID, DUPLICATE, ORPHAN, INCOMPLETE, MISCLASSIFIED, CROSS_VERTICAL_CONTAMINATION, BROKEN_MEDIA, BROKEN_REFERENCE, LEGACY_SHADOW, QUARANTINED)
-- **Source Inventory** (`source-inventory.ts`): Maps all 9 data sources (FALLBACK_STORIES, FALLBACK_PROPERTIES, FALLBACK_HOTELS, FALLBACK_RESTAURANTS, FALLBACK_MENUS, FALLBACK_SHOPS, FALLBACK_GROCERY, FALLBACK_SERVICES, FALLBACK_SERVICE_ITEMS) with type, consumers, verticals, risk, status
-- **Entity Auditor** (`entity-auditor.ts`): Validates every entity across 8 dimensions — vertical integrity, taxonomy integrity (category tree lookup), media integrity, route/surface integrity, field completeness, reference integrity (room→hotel, menu→restaurant, service_item→provider), uniqueness/duplication (ID + slug + title dedup), cross-vertical contamination detection
-- **Quarantine System** (`quarantine.ts`): Entities classified as INVALID/CROSS_VERTICAL/BROKEN_MEDIA/BROKEN_REFERENCE/ORPHAN are quarantined and excluded from live surfaces
-- **Live Surface Sanitization**: Quarantine filter wired into `filterValidStories()` (story-taxonomy.ts) and `populateSearchIndex()` (search-index-populator.ts). Quarantined entities excluded from feeds, stories, search results, and discovery surfaces
-- **Search Index Rebuild**: After audit completes, if any entities were quarantined, search index is automatically rebuilt to exclude them
-- **Remediation Log**: Traceable before/after/reason/confidence entries for every auto-fix or quarantine action
-- **Admin Data Quality Page** (`/admin/data-quality`): Full report with Overview (stats cards, classification/vertical/severity/source breakdowns), Findings (filterable by vertical/classification/source/severity/text, expandable detail view with all issues), Sources (inventory with risk assessment), Quarantine (isolated entities with reason codes), Remediations (auto-fix log with before/after/confidence)
-- **Boot Integration**: Audit runs automatically at app boot via async import in event-init.ts
-- **Key files**: `src/lib/data-quality/types.ts`, `audit-runner.ts`, `entity-auditor.ts`, `quarantine.ts`, `source-inventory.ts`, `audit-report.ts`, `src/pages/admin/AdminDataQualityPage.tsx`
+## Phase 4B: Permanent Auto-Engines for Data Quality
+- **Engine Architecture** (`src/lib/data-quality/`): 10 permanent autonomous engines extending `DataQualityEngine` base class, registered in `EngineRegistry`, with typed run logs, deduplication, batching, priority ordering
+- **10 Engines** (`src/lib/data-quality/engines/`):
+  1. **TaxonomyIntegrityEngine** — validates vertical/category/subcategory/entity-type against canonical taxonomy
+  2. **MediaRelevanceEngine** — media-family alignment, broken/placeholder/cross-vertical media detection
+  3. **DuplicateShadowEngine** — exact/semantic duplicates, legacy/mock/shadow data leakage
+  4. **ReferenceIntegrityEngine** — orphans, broken routes, dead parent-child references
+  5. **LiveSurfaceSanitizerEngine** — protects dashboard/stories/feeds/cards/carousels/category pages/discovery/search
+  6. **SearchHygieneEngine** — cleans indexed content, excludes/downgrades quarantined/invalid from search
+  7. **DataQualityScoringEngine** — quality scores (0-100), trust levels (canonical/high/medium/low/untrusted), surface readiness
+  8. **SafeRemediationEngine** — deterministic low-risk auto-fixes via 10 typed remediation playbooks
+  9. **QuarantineEngine** — isolates unsafe data with reason codes, restore paths, full traceability
+  10. **AuditTrailEngine** — logs every detection/classification/auto-fix/quarantine/suppression with before/after evidence
+- **Decision Tiers**: SAFE_AUTOFIX, SUPPRESS_FROM_SURFACE, QUARANTINE, REVIEW_NEEDED, IGNORE_WITH_REASON — standardized across all engines
+- **Execution Modes**: DRY_RUN (scan only), SAFE_AUTO (deterministic fixes), QUARANTINE_PROTECT (isolate + protect), FULL_SWEEP (reset + scan all), INCREMENTAL (changed entities)
+- **Surface Protector** (`surface-protector.ts`): Centralized `filterForSurface()`, `filterForSearch()`, `isEntitySafeForDisplay()` — used by all live surfaces. Protection rules per surface type (10 protected surfaces with individual policies)
+- **Source Trust System** (`source-inventory.ts`): Each source has trustScore (0-100), mutationPolicy, visibilityPolicy, mayFeedLiveSurfaces, requiresSanitization
+- **Remediation Playbooks**: 10 typed playbooks (wrong_taxonomy_remap, wrong_route_remap, exact_duplicate_suppress, legacy_mock_suppress, broken_reference_isolate, broken_media_suppress, missing_field_downgrade, shadow_dataset_exclude, search_index_cleanup, surface_rebuild)
+- **17+ Reason Codes**: WRONG_VERTICAL, INVALID_CATEGORY, INVALID_SUBCATEGORY, WRONG_ENTITY_TYPE, ROUTE_MISMATCH, BROKEN_REFERENCE, BROKEN_MEDIA, PLACEHOLDER_MEDIA, DUPLICATE_EXACT, DUPLICATE_SEMANTIC, ORPHAN_ENTITY, LEGACY_SHADOW, MOCK_LEAKAGE, MISSING_REQUIRED_FIELDS, LOW_CONFIDENCE, CROSS_VERTICAL_CONTAMINATION, etc.
+- **Entity Quality Model**: EntityQualityRecord with qualityScore, trustLevel, classification, issueCodes[], remediationState, quarantineState, surfaceVisibilityState, engineFindings[]
+- **Scheduling**: Engines auto-start at boot via `runBootAudit()`, scheduled incremental sweeps every 10 minutes via `startScheduledSweeps()`, wired into God system CronOrchestrator `data_integrity_check` job
+- **Live Surface Wiring**: `filterValidStories()` checks quarantine + surface suppression; `populateSearchIndex()` checks quarantine + search exclusion + surface suppression
+- **Admin Page** (`/admin/data-quality`): 7 tabs — Overview, Engines (status/sweep logs/source trust), Findings, Sources (with trust scores), Quarantine, Remediations, Playbooks. Run mode selector (boot/dry/incremental/full sweep)
+- **Key files**: `engine-base.ts`, `engine-registry.ts`, `execution-orchestrator.ts`, `surface-protector.ts`, `engines/*.ts`, `types.ts`, `quarantine.ts`, `source-inventory.ts`, `audit-runner.ts`, `AdminDataQualityPage.tsx`
 
 ## Engineering Audit (2026-04-10)
 Full audit report: `docs/ENGINEERING_AUDIT.md`

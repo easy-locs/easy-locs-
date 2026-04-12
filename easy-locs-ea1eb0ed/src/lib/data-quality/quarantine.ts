@@ -42,6 +42,43 @@ export function getQuarantinedByClassification(): Record<EntityClassification, n
   return map;
 }
 
+export function getQuarantinedBySource(): Record<string, number> {
+  const map: Record<string, number> = {};
+  for (const entry of quarantineStore) {
+    map[entry.source] = (map[entry.source] ?? 0) + 1;
+  }
+  return map;
+}
+
+export function getQuarantinedByReason(): Record<string, number> {
+  const map: Record<string, number> = {};
+  for (const entry of quarantineStore) {
+    for (const code of entry.reasonCodes) {
+      map[code] = (map[code] ?? 0) + 1;
+    }
+  }
+  return map;
+}
+
+export function getQuarantineEntry(entityId: string, source?: string): QuarantineEntry | undefined {
+  if (source) {
+    return quarantineStore.find((e) => e.entityId === entityId && e.source === source);
+  }
+  return quarantineStore.find((e) => e.entityId === entityId);
+}
+
+export function restoreFromQuarantine(entityId: string, source: string): boolean {
+  const key = `${source}::${entityId}`;
+  if (!quarantinedIds.has(key)) return false;
+
+  quarantinedIds.delete(key);
+  const idx = quarantineStore.findIndex((e) => e.entityId === entityId && e.source === source);
+  if (idx >= 0) {
+    quarantineStore.splice(idx, 1);
+  }
+  return true;
+}
+
 export function clearQuarantine(): void {
   quarantineStore.length = 0;
   quarantinedIds.clear();

@@ -5,6 +5,8 @@ import { FALLBACK_HOTELS } from "@/data/fallback-hotels";
 import { FALLBACK_SHOPS, FALLBACK_GROCERY } from "@/data/fallback-shops";
 import { FALLBACK_SERVICES } from "@/data/fallback-services";
 import { isQuarantined } from "@/lib/data-quality/quarantine";
+import { isSearchExcluded } from "@/lib/data-quality/engines/search-hygiene-engine";
+import { isSuppressedFromSurface } from "@/lib/data-quality/engines/live-surface-sanitizer-engine";
 
 export function populateSearchIndex() {
   intentSearchIndex.clear();
@@ -150,14 +152,19 @@ export function populateSearchIndex() {
     });
   }
 
-  const clean = entities.filter((e) => !isQuarantined(e.entityId));
+  const clean = entities.filter((e) => {
+    if (isQuarantined(e.entityId)) return false;
+    if (isSearchExcluded(e.entityId)) return false;
+    if (isSuppressedFromSurface(e.entityId)) return false;
+    return true;
+  });
   intentSearchIndex.register(clean);
 
   if (import.meta.env.DEV) {
-    const quarantinedCount = entities.length - clean.length;
+    const excludedCount = entities.length - clean.length;
     console.log(
       `[search-index] Populated with ${intentSearchIndex.size} entities` +
-      (quarantinedCount > 0 ? ` (${quarantinedCount} quarantined excluded)` : "")
+      (excludedCount > 0 ? ` (${excludedCount} excluded by quarantine/surface/search filters)` : "")
     );
   }
 }

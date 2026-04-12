@@ -1,6 +1,9 @@
 import { useState, useMemo } from "react";
-import { runFullAudit, getCachedReport } from "@/lib/data-quality/audit-runner";
-import type { FullAuditReport, EntityFinding, EntityClassification, IssueSeverity } from "@/lib/data-quality/types";
+import { runFullAudit, getCachedReport, runDryScan, runFullSweep, runIncrementalSweep, getEngineStatus, getTotalSweepCount } from "@/lib/data-quality/audit-runner";
+import type { FullAuditReport, EntityFinding, IssueSeverity } from "@/lib/data-quality/types";
+import { getSourceTrustSummary } from "@/lib/data-quality/source-inventory";
+import { getPlaybooks } from "@/lib/data-quality/engines/safe-remediation-engine";
+import { getAuditTrailStats } from "@/lib/data-quality/engines/audit-trail-engine";
 
 const NAVY = "hsl(220 40% 18%)";
 const NAVY_LIGHT = "hsl(220 40% 14%)";
@@ -47,12 +50,17 @@ function AdminDataQualityPage() {
   const [filterSeverity, setFilterSeverity] = useState<string>("all");
   const [searchText, setSearchText] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "findings" | "sources" | "quarantine" | "remediations">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "engines" | "findings" | "sources" | "quarantine" | "remediations" | "playbooks">("overview");
+  const [runMode, setRunMode] = useState<"boot" | "dry" | "incremental" | "full">("boot");
 
   const handleRunAudit = () => {
     setRunning(true);
     setTimeout(() => {
-      const r = runFullAudit();
+      let r: FullAuditReport;
+      if (runMode === "dry") r = runDryScan();
+      else if (runMode === "incremental") r = runIncrementalSweep();
+      else if (runMode === "full") r = runFullSweep();
+      else r = runFullAudit();
       setReport(r);
       setRunning(false);
     }, 50);
@@ -105,23 +113,38 @@ function AdminDataQualityPage() {
               Full entity-by-entity audit, classification, remediation, and quarantine
             </p>
           </div>
-          <button
-            onClick={handleRunAudit}
-            disabled={running}
-            style={{
-              background: GOLD,
-              color: NAVY,
-              border: "none",
-              borderRadius: 8,
-              padding: "10px 24px",
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: running ? "wait" : "pointer",
-              opacity: running ? 0.6 : 1,
-            }}
-          >
-            {running ? "Running Audit..." : report ? "Re-run Audit" : "Run Full Audit"}
-          </button>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <select
+              value={runMode}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "boot" || v === "dry" || v === "incremental" || v === "full") setRunMode(v);
+              }}
+              style={{ background: NAVY_LIGHT, color: TEXT, border: `1px solid ${BORDER}`, borderRadius: 6, padding: "8px 10px", fontSize: 12 }}
+            >
+              <option value="boot">Boot Audit (Safe Auto)</option>
+              <option value="dry">Dry Run (No Mutations)</option>
+              <option value="incremental">Incremental Sweep</option>
+              <option value="full">Full Sweep (Reset)</option>
+            </select>
+            <button
+              onClick={handleRunAudit}
+              disabled={running}
+              style={{
+                background: GOLD,
+                color: NAVY,
+                border: "none",
+                borderRadius: 8,
+                padding: "10px 24px",
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: running ? "wait" : "pointer",
+                opacity: running ? 0.6 : 1,
+              }}
+            >
+              {running ? "Running..." : "Run"}
+            </button>
+          </div>
         </div>
 
         {!report && !running && (
@@ -132,8 +155,8 @@ function AdminDataQualityPage() {
 
         {report && (
           <>
-            <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-              {(["overview", "findings", "sources", "quarantine", "remediations"] as const).map((tab) => (
+            <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+              {(["overview", "engines", "findings", "sources", "quarantine", "remediations", "playbooks"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -160,6 +183,7 @@ function AdminDataQualityPage() {
             </div>
 
             {activeTab === "overview" && <OverviewTab report={report} />}
+            {activeTab === "engines" && <EnginesTab report={report} />}
             {activeTab === "findings" && (
               <FindingsTab
                 findings={filteredFindings}
@@ -184,6 +208,7 @@ function AdminDataQualityPage() {
             {activeTab === "sources" && <SourcesTab report={report} />}
             {activeTab === "quarantine" && <QuarantineTab report={report} />}
             {activeTab === "remediations" && <RemediationsTab report={report} />}
+            {activeTab === "playbooks" && <PlaybooksTab />}
           </>
         )}
       </div>
@@ -454,6 +479,110 @@ function FindingsTab({
   );
 }
 
+function EnginesTab({ report }: { report: FullAuditReport }) {
+  const status = getEngineStatus();
+  const trailStats = getAuditTrailStats();
+
+  const STATUS_COLOR: Record<string, string> = {
+    success: GREEN,
+    partial: YELLOW,
+    failed: RED,
+    never_run: TEXT_DIM,
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 }}>
+        <StatCard label="Engines" value={status.engineCount} />
+        <StatCard label="Total Sweeps" value={getTotalSweepCount()} color={BLUE} />
+        <StatCard label="Audit Trail" value={trailStats.total} color={GOLD} />
+        <StatCard label="Scheduled" value={status.scheduledActive ? "Active" : "Inactive"} color={status.scheduledActive ? GREEN : YELLOW} />
+      </div>
+
+      <h3 style={{ color: GOLD, fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Engine Status</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+        {status.engineSummaries.map((eng) => (
+          <div
+            key={eng.engineName}
+            style={{
+              background: NAVY_LIGHT,
+              border: `1px solid ${BORDER}`,
+              borderLeft: `3px solid ${STATUS_COLOR[eng.status] ?? TEXT_DIM}`,
+              borderRadius: 8,
+              padding: 14,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontWeight: 600, fontSize: 14 }}>{eng.engineName}</span>
+              <span style={{
+                fontSize: 11,
+                padding: "2px 8px",
+                borderRadius: 4,
+                background: STATUS_COLOR[eng.status] ?? TEXT_DIM,
+                color: NAVY,
+                fontWeight: 600,
+              }}>
+                {eng.status.toUpperCase()}
+              </span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4, fontSize: 12 }}>
+              <div><span style={{ color: TEXT_DIM }}>Processed:</span> {eng.entitiesProcessed}</div>
+              <div><span style={{ color: TEXT_DIM }}>Issues:</span> {eng.issuesFound}</div>
+              <div><span style={{ color: TEXT_DIM }}>Actions:</span> {eng.actionsApplied}</div>
+              <div style={{ gridColumn: "1/-1" }}><span style={{ color: TEXT_DIM }}>Last run:</span> {eng.lastRun ? new Date(eng.lastRun).toLocaleString() : "Never"}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {report.engineRuns && report.engineRuns.length > 0 && (
+        <>
+          <h3 style={{ color: GOLD, fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Last Sweep Run Logs</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {report.engineRuns.map((run, idx) => (
+              <div key={idx} style={{ background: NAVY_LIGHT, border: `1px solid ${BORDER}`, borderRadius: 8, padding: 12, fontSize: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                  <span style={{ fontWeight: 600 }}>{run.engineName}</span>
+                  <span style={{ color: STATUS_COLOR[run.status] ?? TEXT_DIM }}>{run.mode}/{run.cadence}</span>
+                </div>
+                <div style={{ display: "flex", gap: 16, color: TEXT_DIM }}>
+                  <span>Scanned: {run.entitiesScanned}</span>
+                  <span>Issues: {run.issuesFound}</span>
+                  <span style={{ color: GREEN }}>Fixed: {run.autoFixed}</span>
+                  <span style={{ color: RED }}>Quarantined: {run.quarantined}</span>
+                  <span style={{ color: YELLOW }}>Suppressed: {run.suppressed}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div style={{ marginTop: 24, background: NAVY_LIGHT, border: `1px solid ${BORDER}`, borderRadius: 10, padding: 16 }}>
+        <h3 style={{ color: GOLD, fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Source Trust Summary</h3>
+        {(() => {
+          const trust = getSourceTrustSummary();
+          return (
+            <div>
+              <div style={{ fontSize: 12, color: TEXT_DIM, marginBottom: 8 }}>Average Trust: {trust.averageTrust.toFixed(1)}/100</div>
+              {trust.sources.map((s) => (
+                <div key={s.name} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 12 }}>
+                  <span>{s.name}</span>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <span style={{ color: s.trustScore >= 80 ? GREEN : s.trustScore >= 60 ? YELLOW : RED }}>Trust: {s.trustScore}</span>
+                    <span style={{ color: TEXT_DIM }}>{s.mutationPolicy}</span>
+                    <span style={{ color: s.mayFeedLiveSurfaces ? GREEN : RED }}>{s.mayFeedLiveSurfaces ? "live" : "blocked"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+      </div>
+    </div>
+  );
+}
+
 function SourcesTab({ report }: { report: FullAuditReport }) {
   return (
     <div>
@@ -487,6 +616,10 @@ function SourcesTab({ report }: { report: FullAuditReport }) {
               <div><span style={{ color: TEXT_DIM }}>Type:</span> {src.type}</div>
               <div><span style={{ color: TEXT_DIM }}>Entities:</span> {src.entityCount}</div>
               <div><span style={{ color: TEXT_DIM }}>Status:</span> {src.status}</div>
+              <div><span style={{ color: TEXT_DIM }}>Trust:</span> <span style={{ color: src.trustScore >= 80 ? GREEN : src.trustScore >= 60 ? YELLOW : RED }}>{src.trustScore}/100</span></div>
+              <div><span style={{ color: TEXT_DIM }}>Mutation:</span> {src.mutationPolicy}</div>
+              <div><span style={{ color: TEXT_DIM }}>Visibility:</span> {src.visibilityPolicy}</div>
+              <div><span style={{ color: TEXT_DIM }}>Live:</span> <span style={{ color: src.mayFeedLiveSurfaces ? GREEN : RED }}>{src.mayFeedLiveSurfaces ? "Yes" : "No"}</span></div>
               <div><span style={{ color: TEXT_DIM }}>Verticals:</span> {src.verticalsAffected.join(", ")}</div>
               <div><span style={{ color: TEXT_DIM }}>Consumers:</span> {src.runtimeConsumers.join(", ")}</div>
               <div style={{ gridColumn: "1/-1" }}><span style={{ color: TEXT_DIM }}>Action:</span> {src.actionNeeded}</div>
@@ -593,6 +726,56 @@ function RemediationsTab({ report }: { report: FullAuditReport }) {
               <div><span style={{ color: TEXT_DIM }}>After:</span> {r.afterState}</div>
               <div style={{ gridColumn: "1/-1" }}><span style={{ color: TEXT_DIM }}>Reason:</span> {r.reason}</div>
               <div><span style={{ color: TEXT_DIM }}>Confidence:</span> {r.confidence}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PlaybooksTab() {
+  const playbooks = getPlaybooks();
+
+  const ACTION_COLOR: Record<string, string> = {
+    remapped: BLUE,
+    suppressed: YELLOW,
+    quarantined: RED,
+    auto_fixed: GREEN,
+    downgraded: ORANGE,
+  };
+
+  return (
+    <div>
+      <h3 style={{ color: GOLD, fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Remediation Playbooks ({playbooks.length})</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {playbooks.map((pb) => (
+          <div
+            key={pb.id}
+            style={{
+              background: NAVY_LIGHT,
+              border: `1px solid ${BORDER}`,
+              borderLeft: `3px solid ${ACTION_COLOR[pb.action] ?? BORDER}`,
+              borderRadius: 10,
+              padding: 16,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 14 }}>{pb.name}</span>
+              <div style={{ display: "flex", gap: 6 }}>
+                <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 4, background: ACTION_COLOR[pb.action] ?? BORDER, color: NAVY, fontWeight: 600 }}>
+                  {pb.action}
+                </span>
+                <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 4, background: BORDER, color: TEXT, fontWeight: 600 }}>
+                  {pb.decisionTier}
+                </span>
+              </div>
+            </div>
+            <p style={{ fontSize: 12, color: TEXT_DIM, margin: "0 0 8px" }}>{pb.description}</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, fontSize: 12 }}>
+              <div><span style={{ color: TEXT_DIM }}>Confidence:</span> {pb.confidenceRequired}</div>
+              <div><span style={{ color: TEXT_DIM }}>Rollback:</span> {pb.rollbackSupported ? "Supported" : "Not supported"}</div>
+              <div style={{ gridColumn: "1/-1" }}><span style={{ color: TEXT_DIM }}>Triggers:</span> {pb.triggerConditions.join("; ")}</div>
             </div>
           </div>
         ))}
