@@ -3,7 +3,7 @@ import { db } from "./db";
 
 export interface WalletAccountRow {
   id: string;
-  user_id: string;
+  owner_user_id: string;
   balance: number;
   currency: string;
   account_type: string;
@@ -26,7 +26,7 @@ export const walletService = {
   async fetchAccount(userId: string) {
     const { data, error } = await db("wallet_accounts")
       .select("*")
-      .eq("user_id", userId)
+      .eq("owner_user_id", userId)
       .eq("account_type", "main")
       .maybeSingle() as { data: WalletAccountRow | null; error: unknown };
     if (error) throw error;
@@ -35,9 +35,9 @@ export const walletService = {
 
   async fetchBalance(userId: string) {
     const { data, error } = await db("wallet_balances_v2")
-      .select("balance, currency, available")
+      .select("balance, currency")
       .eq("user_id", userId)
-      .maybeSingle() as { data: { balance: number; currency: string; available: number } | null; error: unknown };
+      .maybeSingle() as { data: { balance: number; currency: string } | null; error: unknown };
     if (error) throw error;
     return data;
   },

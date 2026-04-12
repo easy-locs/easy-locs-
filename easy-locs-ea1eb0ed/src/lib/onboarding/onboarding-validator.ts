@@ -26,7 +26,7 @@ export async function checkOnboardingStatus(userId: string): Promise<OnboardingS
 
   const [profileRes, walletRes, orbitRes, orgRes] = await Promise.all([
     supabase.from("profiles").select("id, first_name, last_name, email").eq("id", userId).maybeSingle(),
-    db("wallet_accounts").select("id").eq("user_id", userId).maybeSingle(),
+    db("wallet_accounts").select("id").eq("owner_user_id", userId).maybeSingle(),
     db("orbit_profiles_v2").select("id").eq("id", userId).maybeSingle(),
     db("org_members").select("org_id").eq("user_id", userId).limit(1),
   ]);
