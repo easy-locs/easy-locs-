@@ -17,6 +17,11 @@ const TYPE_TO_VERTICAL: Record<string, RadarVertical> = {
   shop: "shops",
   property: "property",
   hotel: "stay",
+  healthcare: "healthcare",
+  mobility: "mobility",
+  nightlife: "nightlife",
+  experiences: "experiences",
+  utility: "utility",
 };
 
 export function useDashboardRadar(limit = 5) {

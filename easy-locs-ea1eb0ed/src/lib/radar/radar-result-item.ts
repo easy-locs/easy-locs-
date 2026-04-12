@@ -1,6 +1,6 @@
 import type { RadarCategory } from "./types";
 
-export type RadarVertical = "food" | "services" | "hotel" | "property" | "taxi" | "shops" | "healthcare" | "nightlife" | "grocery" | "stay" | "mobility" | "experiences";
+export type RadarVertical = "food" | "services" | "hotel" | "property" | "taxi" | "shops" | "healthcare" | "nightlife" | "grocery" | "stay" | "mobility" | "experiences" | "utility";
 
 export interface RadarResultItem {
   id: string;

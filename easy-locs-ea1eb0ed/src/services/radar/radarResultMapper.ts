@@ -24,6 +24,7 @@ const CATEGORY_TO_VERTICAL: Record<string, RadarVertical> = {
   dentist: "healthcare", doctor: "healthcare",
   nightlife: "nightlife", bar: "nightlife", club: "nightlife", lounge: "nightlife",
   experiences: "experiences", activities: "experiences", travel: "experiences",
+  utility: "utility", atm: "utility", fuel: "utility", parking: "utility",
 };
 
 function inferVertical(point: RadarPoint): RadarVertical {

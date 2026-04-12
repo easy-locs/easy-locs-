@@ -66,7 +66,7 @@ const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; col
   { id: "food", labelKey: "radar.layer_food", icon: <Utensils className="w-3 h-3" />, color: "hsl(15 80% 55%)", emoji: radarEmoji("food"), vertical: "food" },
   { id: "stay", labelKey: "radar.layer_stay", icon: <Hotel className="w-3 h-3" />, color: "hsl(200 70% 50%)", emoji: radarEmoji("stay"), vertical: "stay" },
   { id: "services", labelKey: "radar.layer_services", icon: <Sparkles className="w-3 h-3" />, color: "hsl(270 60% 55%)", emoji: radarEmoji("services"), vertical: "services" },
-  { id: "utility", labelKey: "radar.layer_utility", icon: <ShoppingBag className="w-3 h-3" />, color: "hsl(140 50% 45%)", emoji: radarEmoji("grocery"), vertical: "grocery" },
+  { id: "utility", labelKey: "radar.layer_utility", icon: <ShoppingBag className="w-3 h-3" />, color: "hsl(140 50% 45%)", emoji: radarEmoji("utility"), vertical: "utility" },
   { id: "mobility", labelKey: "radar.layer_mobility", icon: <Car className="w-3 h-3" />, color: "hsl(30 80% 50%)", emoji: radarEmoji("mobility"), vertical: "mobility" },
   { id: "nightlife", labelKey: "radar.layer_night", icon: <Moon className="w-3 h-3" />, color: "hsl(280 70% 55%)", emoji: radarEmoji("nightlife"), vertical: "nightlife" },
   { id: "healthcare", labelKey: "radar.layer_healthcare", icon: <Heart className="w-3 h-3" />, color: "hsl(0 65% 50%)", emoji: radarEmoji("healthcare"), vertical: "healthcare" },
@@ -324,7 +324,7 @@ export default function HyperRadarPage() {
   const visibleEntities = useMemo<RadarGeoEntity[]>(() => {
     return radarItems.map(item => ({
       id: item.id,
-      type: item.type === "food" ? "restaurant" as const : item.type === "hotel" ? "service" as const : item.type === "grocery" ? "grocery" as const : item.type === "property" ? "property" as const : "shop" as const,
+      type: item.type === "food" ? "restaurant" as const : item.type === "stay" ? "hotel" as const : item.type === "hotel" ? "hotel" as const : item.type === "grocery" ? "grocery" as const : item.type === "property" ? "property" as const : item.type === "healthcare" ? "service" as const : item.type === "mobility" ? "service" as const : item.type === "nightlife" ? "restaurant" as const : item.type === "experiences" ? "service" as const : "shop" as const,
       name: item.title,
       title: item.title,
       subtitle: item.subtitle || undefined,
@@ -339,6 +339,7 @@ export default function HyperRadarPage() {
       distance: item.distanceKm ?? undefined,
       isSponsored: item.isSponsored,
       reviewsCount: item.reviewsCount,
+      vertical: item.vertical,
     }));
   }, [radarItems]);
 
@@ -358,7 +359,7 @@ export default function HyperRadarPage() {
   const handleSelectRadarItem = useCallback((item: RadarResultItem) => {
     const geo: RadarGeoEntity = {
       id: item.id,
-      type: item.type === "food" ? "restaurant" : item.type === "hotel" ? "service" : item.type === "grocery" ? "grocery" : item.type === "property" ? "property" : "shop",
+      type: item.type === "food" ? "restaurant" : item.type === "stay" ? "hotel" : item.type === "hotel" ? "hotel" : item.type === "grocery" ? "grocery" : item.type === "property" ? "property" : item.type === "healthcare" ? "service" : item.type === "mobility" ? "service" : item.type === "nightlife" ? "restaurant" : item.type === "experiences" ? "service" : "shop",
       name: item.title,
       title: item.title,
       subtitle: item.subtitle || undefined,
