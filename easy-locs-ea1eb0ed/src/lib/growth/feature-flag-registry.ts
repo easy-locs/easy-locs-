@@ -35,7 +35,8 @@ export type PlatformFlag =
   | "enable_commerce_matching"
   | "enable_commerce_suggestions"
   | "enable_religious_utilities"
-  | "enable_intelligence_shadow_validation";
+  | "enable_intelligence_shadow_validation"
+  | "enable_repair_pipeline";
 
 /** Default values — all off for safety, rollout one by one */
 const FLAG_DEFAULTS: Record<PlatformFlag, boolean> = {
@@ -69,6 +70,7 @@ const FLAG_DEFAULTS: Record<PlatformFlag, boolean> = {
   enable_commerce_suggestions: false,
   enable_religious_utilities: false,
   enable_intelligence_shadow_validation: false,
+  enable_repair_pipeline: false,
 };
 
 const FLAG_DESCRIPTIONS: Record<PlatformFlag, string> = {
@@ -102,6 +104,7 @@ const FLAG_DESCRIPTIONS: Record<PlatformFlag, string> = {
   enable_commerce_suggestions: "Suggestion delivery from social commerce matching",
   enable_religious_utilities: "Religious utility modules (prayer times, mosques — requires user opt-in)",
   enable_intelligence_shadow_validation: "Shadow-mode validation for real intelligence providers (dev only, zero user impact)",
+  enable_repair_pipeline: "Autonomous repair pipeline — taxonomy-first rollout (default OFF, requires activation sheet)",
 };
 
 // ── In-memory cache ──

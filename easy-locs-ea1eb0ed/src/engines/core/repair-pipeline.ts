@@ -1,4 +1,5 @@
 import { platformBus } from "@/lib/shared/platform-bus";
+import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
 import { engineObserver } from "./engine-observer";
 import {
   canAttemptRepair,
@@ -111,6 +112,11 @@ export async function executePipeline(input: PipelineInput): Promise<PipelineRes
   if (!pipelineEnabled) {
     pipelineBlockCount++;
     return makeBlockedResult("Pipeline disabled");
+  }
+
+  if (!isPlatformFlagEnabled("enable_repair_pipeline")) {
+    pipelineBlockCount++;
+    return makeBlockedResult("Platform flag enable_repair_pipeline is off");
   }
 
   if (isRepairStormActive()) {

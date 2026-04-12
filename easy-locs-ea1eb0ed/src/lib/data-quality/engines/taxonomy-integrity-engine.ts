@@ -9,6 +9,9 @@ import { FALLBACK_HOTELS } from "@/data/fallback-hotels";
 import { FALLBACK_RESTAURANTS } from "@/data/fallback-restaurants";
 import { FALLBACK_SHOPS, FALLBACK_GROCERY } from "@/data/fallback-shops";
 import { FALLBACK_SERVICES } from "@/data/fallback-services";
+import { platformBus } from "@/lib/shared/platform-bus";
+
+let sweepCounter = 0;
 
 const verticalSubcategoryMap = new Map<string, Set<string>>();
 const verticalCategoryMap = new Map<string, string>();
@@ -53,6 +56,7 @@ export class TaxonomyIntegrityEngine extends DataQualityEngine {
   scan(_mode: ExecutionMode): EntityFinding[] {
     const findings: EntityFinding[] = [];
     const now = new Date().toISOString();
+    const sweepId = `taxonomy-${++sweepCounter}-${Date.now()}`;
 
     for (const story of FALLBACK_STORIES) {
       const issues = this.validateTaxonomy(story.vertical, story.categoryKey, story.subcategoryKey, story.entityType);
@@ -108,7 +112,32 @@ export class TaxonomyIntegrityEngine extends DataQualityEngine {
       }
     }
 
+    this.emitTaxonomyConflicts(sweepId, findings);
+
     return findings;
+  }
+
+  private emitTaxonomyConflicts(sweepId: string, findings: EntityFinding[]): void {
+    for (const f of findings) {
+      for (const issue of f.issues) {
+        if (issue.reasonCode !== "WRONG_VERTICAL" && issue.reasonCode !== "INVALID_SUBCATEGORY" && issue.reasonCode !== "CATEGORY_VERTICAL_MISMATCH") continue;
+        platformBus.emit(
+          "taxonomy.conflict.detected" as any,
+          {
+            sweepId,
+            entityId: f.entityId,
+            source: f.source,
+            issueCode: issue.code,
+            actualVertical: issue.actual ?? f.vertical,
+            expectedVertical: issue.expected ?? "",
+            severity: issue.severity,
+            decisionTier: issue.decisionTier ?? "REVIEW_NEEDED",
+            timestamp: Date.now(),
+          },
+          "data-quality",
+        );
+      }
+    }
   }
 
   classify(findings: EntityFinding[]): EntityFinding[] {

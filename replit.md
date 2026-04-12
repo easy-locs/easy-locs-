@@ -1043,6 +1043,16 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **Financial domains excluded**: No activation sheets for wallet/payment/billing/settlement/ledger/fraud
 - **Pipeline still OFF**: pipelineEnabled = false; activation sheets registered but pipeline inert
 
+### Auto-Repair Phase 4 (First Live Taxonomy Rollout) — IMPLEMENTED
+- **repair-bridge.ts**: platformBus subscriber for `taxonomy.conflict.detected` events; always listens but checks `enable_repair_pipeline` flag per-event; 500ms debounce per sweepId; FIFO queue for concurrent sweeps; enables/disables pipeline only for duration of single execution
+- **taxonomy-integrity-engine.ts**: Emits `taxonomy.conflict.detected` on platformBus after scan for all WRONG_VERTICAL/INVALID_SUBCATEGORY/CATEGORY_VERTICAL_MISMATCH findings; sweepId generated per scan
+- **feature-flag-registry.ts**: Added `enable_repair_pipeline` flag (default OFF); DB-backed, cache-first
+- **repair-pipeline.ts**: Added `isPlatformFlagEnabled("enable_repair_pipeline")` gate after pipelineEnabled check
+- **engine-registry.ts**: `installRepairBridge()` called after activation sheets, before engine registration; teardown wired to boot cleanup
+- **Three-layer activation**: Platform flag (DB) → Pipeline enable (memory) → Activation sheet (policy) — all three must pass
+- **Pipeline completely inert**: Flag default OFF, bridge listens but discards events when flag off, pipeline blocks when flag off
+- **Phase 1/2/3 locked files untouched**: repair-safety.ts, engine-feature-flags.ts, domain-health.ts, types.ts, proof-system.ts, repair-actions.ts, domain-activation-sheets.ts, domain-repair-rules.ts
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`

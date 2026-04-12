@@ -1,5 +1,6 @@
 import { engineOrchestrator } from "./core/engine-orchestrator";
 import { registerAllActivationSheets } from "./core/domain-activation-sheets";
+import { installRepairBridge } from "./core/repair-bridge";
 
 import { ErrorClassifier } from "./self-healing/error-classifier";
 import { AutoFixEngine } from "./self-healing/auto-fix-engine";
@@ -369,6 +370,7 @@ async function loadAndStartTier3(): Promise<void> {
 
 export function bootEngineSystem(): () => void {
   registerAllActivationSheets();
+  const teardownBridge = installRepairBridge();
   registerAllEngines();
   engineOrchestrator.startAll();
 
@@ -408,6 +410,7 @@ export function bootEngineSystem(): () => void {
     if (tier2Timer) clearTimeout(tier2Timer);
     clearTimeout(tier3Timer);
     teardownAI?.();
+    teardownBridge();
     engineOrchestrator.stopAll();
   };
 }
