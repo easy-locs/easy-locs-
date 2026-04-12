@@ -1,9 +1,10 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
-import type {
-  CanonicalVertical,
-  CanonicalCategoryNode,
-  GovernanceViolation,
-  MediaAssetType,
+import {
+  isCanonicalVertical,
+  toViolationVertical,
+  type CanonicalCategoryNode,
+  type GovernanceViolation,
+  type MediaAssetType,
 } from "@/domains/shared/canonical-types";
 import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 
@@ -17,8 +18,9 @@ function buildNodeKey(vertical: string, category: string, sub: string | null): s
 function initCache(): void {
   if (categoryNodeCache.size > 0) return;
   for (const primary of CATEGORY_TREE) {
+    if (!isCanonicalVertical(primary.vertical)) continue;
     const baseNode: CanonicalCategoryNode = {
-      vertical: primary.vertical as CanonicalVertical,
+      vertical: primary.vertical,
       category: primary.key,
       subcategory: null,
       allowedMediaTypes: ["image", "video"] as MediaAssetType[],
@@ -73,7 +75,7 @@ export function validateTaxonomy(
       target: `validation`,
       message: `Category "${category}" not found in vertical "${vertical}"`,
       ownerDomain: vertical,
-      vertical: vertical as CanonicalVertical,
+      vertical: toViolationVertical(vertical),
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,
@@ -92,7 +94,7 @@ export function validateTaxonomy(
       target: `validation`,
       message: `Subcategory "${subcategory}" not found in category "${category}"`,
       ownerDomain: vertical,
-      vertical: vertical as CanonicalVertical,
+      vertical: toViolationVertical(vertical),
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,

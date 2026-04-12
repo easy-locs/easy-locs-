@@ -1,16 +1,15 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
-import type {
-  CanonicalVertical,
-  GovernanceViolation,
-  GovernanceSeverity,
+import {
+  isCanonicalVertical,
+  CANONICAL_VERTICALS,
+  toViolationVertical,
+  type CanonicalVertical,
+  type GovernanceViolation,
+  type GovernanceSeverity,
 } from "@/domains/shared/canonical-types";
 import { platformBus } from "@/lib/shared/platform-bus";
 
-const VERTICALS: CanonicalVertical[] = [
-  "food", "grocery", "hotel", "service", "property",
-  "flight", "ride", "delivery", "retail", "healthcare",
-  "events", "education", "beauty",
-];
+const VERTICALS: readonly CanonicalVertical[] = CANONICAL_VERTICALS;
 
 interface VerticalContext {
   vertical: string;
@@ -45,7 +44,7 @@ function detectContamination(
       target: `element:${element.vertical}`,
       message: `Element from vertical "${element.vertical}" rendered in "${context.vertical}" context`,
       ownerDomain: context.vertical,
-      vertical: context.vertical as CanonicalVertical,
+      vertical: toViolationVertical(context.vertical),
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,
@@ -67,7 +66,7 @@ function detectContamination(
       target: `element:${element.vertical}`,
       message: `Media from vertical "${element.mediaVertical}" attached to "${element.vertical}" entity`,
       ownerDomain: element.vertical,
-      vertical: element.vertical as CanonicalVertical,
+      vertical: toViolationVertical(element.vertical),
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,
@@ -100,7 +99,7 @@ export function getVerticalViolations(): GovernanceViolation[] {
 }
 
 export function isValidVertical(v: string): v is CanonicalVertical {
-  return VERTICALS.includes(v as CanonicalVertical);
+  return isCanonicalVertical(v);
 }
 
 export class VerticalIsolationEngine extends BaseEngine {

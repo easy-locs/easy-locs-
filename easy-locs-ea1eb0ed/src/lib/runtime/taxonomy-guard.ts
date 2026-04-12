@@ -7,27 +7,35 @@
 
 import { reportAnomaly } from "./anomaly-detector";
 import { reportHealth } from "./health-aggregator";
-
-export const CANONICAL_VERTICALS = [
-  "food", "grocery", "stay", "services", "property",
-  "shops", "mobility", "utility", "healthcare", "experiences",
-] as const;
-
-export type CanonicalVertical = typeof CANONICAL_VERTICALS[number];
+import {
+  CANONICAL_VERTICALS,
+  isCanonicalVertical,
+  type CanonicalVertical,
+} from "@/domains/shared/canonical-types";
 
 const VERTICAL_SET = new Set<string>(CANONICAL_VERTICALS);
 
-export const VERTICAL_ENTITY_TYPES: Record<CanonicalVertical, string[]> = {
+export const VERTICAL_ENTITY_TYPES: Partial<Record<CanonicalVertical, string[]>> = {
   food: ["restaurant", "cafe", "bakery", "fast_food", "cloud_kitchen", "food_truck"],
   grocery: ["supermarket", "mini_mart", "organic_store", "wholesale", "hypermarket"],
-  stay: ["hotel", "serviced_apartment", "boutique_hotel", "apart_hotel", "holiday_rental", "short_stay"],
+  hotel: ["hotel", "serviced_apartment", "boutique_hotel", "apart_hotel", "resort"],
+  service: ["salon", "barber", "spa", "cleaning", "laundry", "plumbing", "electrical", "ac_repair"],
   services: ["salon", "barber", "spa", "cleaning", "laundry", "plumbing", "electrical", "ac_repair", "car_wash", "car_repair", "handyman", "pest_control", "movers", "tailoring", "tutoring", "legal", "fitness"],
   property: ["rent", "sale", "short_stay", "commercial_lease", "villa", "apartment", "office"],
+  flight: ["domestic", "international", "charter", "cargo"],
+  ride: ["taxi", "chauffeur", "ride_hailing", "bike_rental"],
+  delivery: ["food_delivery", "grocery_delivery", "parcel", "courier", "express"],
+  retail: ["fashion", "electronics", "jewelry", "general"],
   shops: ["fashion", "electronics", "jewelry", "footwear", "home_decor", "perfume", "toys", "sports", "books", "general"],
-  mobility: ["taxi", "chauffeur", "rental", "bus", "metro", "ride_hailing", "bike_rental"],
-  utility: ["atm", "fuel", "pharmacy", "parking", "ev_charger", "post_office", "bank"],
   healthcare: ["hospital", "clinic", "dental", "pharmacy", "lab", "optical", "physiotherapy"],
+  events: ["concert", "conference", "exhibition", "sports_event", "festival"],
   experiences: ["theme_park", "museum", "concert", "desert_safari", "water_sports", "tour", "cinema", "event"],
+  education: ["school", "university", "tutoring", "online_course", "training"],
+  beauty: ["salon", "spa", "barber", "nail_salon", "skincare"],
+  mobility: ["taxi", "chauffeur", "rental", "bus", "metro", "ride_hailing", "bike_rental"],
+  stay: ["hotel", "serviced_apartment", "boutique_hotel", "apart_hotel", "holiday_rental", "short_stay"],
+  utility: ["atm", "fuel", "pharmacy", "parking", "ev_charger", "post_office", "bank"],
+  finance: ["bank", "insurance", "investment", "money_transfer", "crypto_exchange"],
 };
 
 const FORBIDDEN_CROSS_ASSIGNMENTS: Record<string, CanonicalVertical[]> = {
@@ -84,7 +92,8 @@ export function validateEntity(entity: {
     return found;
   }
 
-  const vertical = entity.vertical as CanonicalVertical;
+  const vertical = entity.vertical;
+  if (!isCanonicalVertical(vertical)) return found;
   const allowedTypes = VERTICAL_ENTITY_TYPES[vertical];
 
   if (entity.type && allowedTypes && !allowedTypes.includes(entity.type)) {
@@ -159,7 +168,7 @@ export function isValidVertical(v: string): v is CanonicalVertical {
 
 export function getVerticalForType(type: string): CanonicalVertical | null {
   for (const [vertical, types] of Object.entries(VERTICAL_ENTITY_TYPES)) {
-    if (types.includes(type)) return vertical as CanonicalVertical;
+    if (isCanonicalVertical(vertical) && types.includes(type)) return vertical;
   }
   return null;
 }

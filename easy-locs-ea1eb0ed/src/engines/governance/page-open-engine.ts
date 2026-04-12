@@ -1,7 +1,6 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
 import type {
   GovernanceViolation,
-  CanonicalVertical,
   GovernanceSeverity,
 } from "@/domains/shared/canonical-types";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -128,7 +127,7 @@ function finalizeRecord(record: PageOpenRecord): void {
       target: `route:${record.route}`,
       message: `Page open failure: ${record.failureType} on ${record.route} (${record.duration ?? 0}ms)`,
       ownerDomain: "platform",
-      vertical: "platform" as unknown as CanonicalVertical,
+      vertical: "platform",
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,

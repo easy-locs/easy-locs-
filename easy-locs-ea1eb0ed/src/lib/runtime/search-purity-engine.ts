@@ -6,7 +6,7 @@
 
 import { reportAnomaly } from "./anomaly-detector";
 import { reportHealth } from "./health-aggregator";
-import { CANONICAL_VERTICALS, type CanonicalVertical } from "./taxonomy-guard";
+import { CANONICAL_VERTICALS, type CanonicalVertical } from "@/domains/shared/canonical-types";
 
 export interface SearchPurityViolation {
   type: "cross_vertical" | "duplicate_entity" | "invalid_entity" | "polluted_index" | "missing_vertical_filter";

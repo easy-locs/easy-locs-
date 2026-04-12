@@ -1,9 +1,9 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
-import type {
-  CanonicalBannerEntity,
-  CanonicalVertical,
-  CanonicalCountryContext,
-  GovernanceViolation,
+import {
+  toViolationVertical,
+  type CanonicalBannerEntity,
+  type CanonicalCountryContext,
+  type GovernanceViolation,
 } from "@/domains/shared/canonical-types";
 
 const bannerPool = new Map<string, CanonicalBannerEntity>();
@@ -174,7 +174,7 @@ export function validateBannerPlacement(
       target: `country:${context.countryCode}`,
       message: `Banner "${banner.title}" not approved for country ${context.countryCode}`,
       ownerDomain: "platform",
-      vertical: (banner.vertical ?? "platform") as CanonicalVertical,
+      vertical: toViolationVertical(banner.vertical),
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,

@@ -1,8 +1,8 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
-import type {
-  CanonicalActionDescriptor,
-  CanonicalVertical,
-  GovernanceViolation,
+import {
+  toViolationVertical,
+  type CanonicalActionDescriptor,
+  type GovernanceViolation,
 } from "@/domains/shared/canonical-types";
 
 const actionRegistry = new Map<string, CanonicalActionDescriptor>();
@@ -47,7 +47,7 @@ export function trackActionClick(
       target: descriptor?.targetFlow ?? "unknown",
       message: `Dead click on "${descriptor?.label ?? actionId}" — no meaningful result`,
       ownerDomain: descriptor?.ownerDomain ?? "unknown",
-      vertical: (descriptor?.ownerVertical ?? "platform") as CanonicalVertical,
+      vertical: toViolationVertical(descriptor?.ownerVertical),
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,
@@ -75,7 +75,7 @@ export function validateActionWiring(actionId: string): {
       target: "registry",
       message: `Action "${actionId}" not registered — no typed contract`,
       ownerDomain: "unknown",
-      vertical: "platform" as unknown as CanonicalVertical,
+      vertical: "platform",
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,

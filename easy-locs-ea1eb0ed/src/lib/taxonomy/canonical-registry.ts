@@ -1,16 +1,5 @@
-export type CanonicalVertical =
-  | "food"
-  | "grocery"
-  | "shops"
-  | "services"
-  | "health"
-  | "fitness"
-  | "property"
-  | "stay"
-  | "mobility"
-  | "utility"
-  | "beauty"
-  | "experiences";
+export type { CanonicalVertical } from "@/domains/shared/canonical-types";
+import type { CanonicalVertical } from "@/domains/shared/canonical-types";
 
 export type MediaKind =
   | "exterior"
@@ -413,7 +402,7 @@ const STAY_FAMILY: CanonicalFamily = {
 };
 
 const HEALTH_FAMILY: CanonicalFamily = {
-  vertical: "health",
+  vertical: "healthcare",
   label: "Health & Medical",
   defaultMediaKinds: ["building", "reception", "treatment_room", "equipment", "logo"],
   defaultCardTemplate: "ClinicCard",
@@ -559,7 +548,7 @@ const HEALTH_FAMILY: CanonicalFamily = {
 };
 
 const FITNESS_FAMILY: CanonicalFamily = {
-  vertical: "fitness",
+  vertical: "beauty",
   label: "Fitness & Wellness",
   defaultMediaKinds: ["entrance", "gym_floor", "machines", "studio", "reception", "logo"],
   defaultCardTemplate: "GymCard",
@@ -1649,10 +1638,10 @@ export function validateCanonicalNode(node: {
 }
 
 export const FORBIDDEN_CROSS_ASSIGNMENTS: Record<string, CanonicalVertical[]> = {
-  restaurant: ["shops", "property", "mobility", "fitness", "health"],
-  hotel: ["food", "shops", "mobility", "fitness", "health"],
-  gym: ["food", "stay", "property", "health"],
-  clinic: ["food", "stay", "fitness", "shops"],
-  taxi: ["food", "stay", "property", "health", "fitness"],
+  restaurant: ["shops", "property", "mobility", "beauty", "healthcare"],
+  hotel: ["food", "shops", "mobility", "beauty", "healthcare"],
+  gym: ["food", "stay", "property", "healthcare"],
+  clinic: ["food", "stay", "beauty", "shops"],
+  taxi: ["food", "stay", "property", "healthcare", "beauty"],
   apartment: ["food", "stay", "shops", "mobility"],
 };

@@ -1,5 +1,5 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
-import type { GovernanceViolation, CanonicalVertical } from "@/domains/shared/canonical-types";
+import type { GovernanceViolation } from "@/domains/shared/canonical-types";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 export type RuntimeFailureClass =
@@ -98,7 +98,7 @@ function recordEvent(type: string, failureClass: RuntimeFailureClass, message: s
       target: "subscription",
       message: `Runtime failure [${failureClass}]: ${message}`,
       ownerDomain: "platform",
-      vertical: "platform" as unknown as CanonicalVertical,
+      vertical: "platform",
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,

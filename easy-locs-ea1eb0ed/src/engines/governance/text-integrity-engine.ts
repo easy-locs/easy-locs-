@@ -1,8 +1,5 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
-import type {
-  GovernanceViolation,
-  CanonicalVertical,
-} from "@/domains/shared/canonical-types";
+import type { GovernanceViolation } from "@/domains/shared/canonical-types";
 
 export type TextContext =
   | "card_title"
@@ -168,7 +165,7 @@ export function validateText(
       target: "validation",
       message: issues.map((i) => i.message).join("; "),
       ownerDomain: "platform",
-      vertical: "platform" as unknown as CanonicalVertical,
+      vertical: "platform",
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,
