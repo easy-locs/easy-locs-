@@ -5,6 +5,8 @@ type DbFn = {
   from: (table: string) => ReturnType<typeof supabase.from>;
   rpc: typeof supabase.rpc;
   storage: typeof supabase.storage;
+  functions: typeof supabase.functions;
+  auth: typeof supabase.auth;
 };
 
 const _from = (table: string) =>
@@ -16,5 +18,7 @@ export const db: DbFn = Object.assign(
     from: _from,
     rpc: (supabase as unknown as { rpc: typeof supabase.rpc }).rpc.bind(supabase),
     storage: supabase.storage,
+    functions: supabase.functions,
+    auth: supabase.auth,
   },
 );

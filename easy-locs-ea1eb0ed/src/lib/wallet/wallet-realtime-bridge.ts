@@ -1,8 +1,3 @@
-/**
- * wallet-realtime-bridge — Atomic unit: subscribe to wallet balance changes in realtime.
- * Single responsibility: realtime sync for wallet state.
- */
-import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -17,8 +12,7 @@ export function subscribeWalletRealtime(walletId: string, onUpdate: () => void):
   return registerSubscription(`wallet.balance:${walletId}`, () => {
     registerChannel(CHANNEL_NAME, "wallet");
 
-    const channel = supabase
-      .channel(`wallet-balance-${walletId}`)
+    const channel = createRealtimeChannel(`wallet-balance-${walletId}`)
       .on(
         "postgres_changes" as any,
         { event: "*", schema: "public", table: "wallet_balances_v2", filter: `wallet_id=eq.${walletId}` },
@@ -28,7 +22,15 @@ export function subscribeWalletRealtime(walletId: string, onUpdate: () => void):
           onUpdate();
         }
       )
-      .subscribe();
+      .subscribe((status: string) => {
+        if (status === "SUBSCRIBED") {
+          console.log(`[wallet-realtime] Channel subscribed for wallet ${walletId}`);
+        } else if (status === "CHANNEL_ERROR") {
+          console.error(`[wallet-realtime] Channel error for wallet ${walletId} — realtime updates unavailable`);
+        } else if (status === "TIMED_OUT") {
+          console.warn(`[wallet-realtime] Channel timed out for wallet ${walletId}`);
+        }
+      });
 
     return () => {
       unregisterChannel(CHANNEL_NAME);

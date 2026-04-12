@@ -38,14 +38,14 @@ export function useWalletBalance() {
       const { data: balRow } = await typedQueries.walletBalances.selectByUser(user.id);
 
       const { data: accRow } = await db("wallet_accounts")
-        .select("id")
+        .select("id, balance, currency")
         .eq("owner_user_id", user.id)
         .eq("status", "active")
         .limit(1)
         .maybeSingle();
 
-      const freshBalance = balRow?.balance ?? 0;
-      const freshCurrency = balRow?.currency || getWalletDefaultCurrency();
+      const freshBalance = balRow?.balance ?? (accRow as any)?.balance ?? 0;
+      const freshCurrency = balRow?.currency || (accRow as any)?.currency || getWalletDefaultCurrency();
       const freshAccountId = accRow?.id ?? null;
 
       setBalance(freshBalance);

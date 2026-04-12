@@ -3,19 +3,23 @@
  * Handles non-sensitive reads + orchestrates server-side calls.
  * Currency-aware: never hardcodes AED.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { getCurrencyFromCountry } from "@/lib/currency";
 
-// ── Server-side wallet call ───────────────────────────────
 async function walletOps(action: string, payload: Record<string, unknown> = {}) {
-  const { data, error } = await supabase.functions.invoke("wallet-ops", {
-    body: { action, ...payload },
-  });
-  if (error) throw new Error(error.message || "Wallet operation failed");
-  if (data?.error) throw new Error(data.error);
-  return data;
+  try {
+    const { data, error } = await db.functions.invoke("wallet-ops", {
+      body: { action, ...payload },
+    });
+    if (error) throw new Error(error.message || "Wallet operation failed");
+    if (data?.error) throw new Error(data.error);
+    return data;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[WALLET] walletOps(${action}) failed:`, message);
+    throw new Error(`Wallet operation "${action}" failed: ${message}`);
+  }
 }
 
 // ── 1. getOrCreateWalletAccount ───────────────────────────
@@ -42,6 +46,9 @@ export async function getOrCreateWalletAccount(params: {
       owner_profile_id: params.ownerProfileId ?? null,
       currency,
       status: "active",
+      balance: 0,
+      available_balance: 0,
+      pending_balance: 0,
       balance_cash: 0,
       balance_bonus: 0,
       balance_locked: 0,

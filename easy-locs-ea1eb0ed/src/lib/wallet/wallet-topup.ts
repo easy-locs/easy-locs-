@@ -2,7 +2,7 @@
  * wallet-topup — Atomic unit: top-up wallet via Stripe or other payment method.
  * Single responsibility: create payment intent for wallet top-up.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
@@ -31,7 +31,7 @@ export async function initiateWalletTopup(input: TopupInput): Promise<TopupResul
 
   const createStep = addStep(flow, "create_intent");
   try {
-    const { data, error } = await supabase.functions.invoke("create-wallet-topup", {
+    const { data, error } = await db.functions.invoke("create-wallet-topup", {
       body: {
         wallet_id: input.walletId,
         amount: input.amount,
