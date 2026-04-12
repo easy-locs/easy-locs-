@@ -116,22 +116,34 @@ export function mapOrgSourcesToThreads(
 function findExistingLegacyThread(
   threadMap: Map<string, ConversationThread>,
   contextId: string | undefined,
-  convId: string
+  convId: string,
+  peerUserId?: string | null
 ): [string, ConversationThread] | null {
-  if (!contextId) return null;
   const legacyPrefixes = ["marketplace-booking-", "concierge-booking-", "seasonal-booking-", "booking-", "tenant-", "lead-", "guest-"];
-  for (const [key, thread] of threadMap) {
-    if (!legacyPrefixes.some(p => key.startsWith(p))) continue;
-    if (
-      thread.entityId === contextId ||
-      thread.contextId === contextId ||
-      thread.bookingId === contextId ||
-      thread.tenantId === contextId ||
-      thread.leadId === contextId
-    ) {
-      return [key, thread];
+
+  if (contextId) {
+    for (const [key, thread] of threadMap) {
+      if (!legacyPrefixes.some(p => key.startsWith(p))) continue;
+      if (
+        thread.entityId === contextId ||
+        thread.contextId === contextId ||
+        thread.bookingId === contextId ||
+        thread.tenantId === contextId ||
+        thread.leadId === contextId
+      ) {
+        return [key, thread];
+      }
     }
   }
+
+  if (peerUserId) {
+    for (const [key, thread] of threadMap) {
+      if (thread.peerUserId === peerUserId && thread.conversationType !== "deal") {
+        return [key, thread];
+      }
+    }
+  }
+
   return null;
 }
 
@@ -162,7 +174,7 @@ export function mapV2ConversationsToThreads(
     const peerUserId = mergedParticipantIds.find((id) => id !== userId) ?? null;
     if (peerUserId) allPeerIds.add(peerUserId);
 
-    const existing = findExistingLegacyThread(threadMap, ct.context_id, ct.id);
+    const existing = findExistingLegacyThread(threadMap, ct.context_id, ct.id, peerUserId);
     if (existing) {
       const [, legacyThread] = existing;
       legacyThread.conversationId = ct.id;
