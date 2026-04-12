@@ -8,6 +8,8 @@ import {
   isOperationAllowed,
   quarantineEngine,
   scrubSensitiveData,
+  hasDomainActivationSheet,
+  isDomainOperationAllowed,
 } from "./repair-safety";
 import {
   type ProofRecord,
@@ -26,6 +28,7 @@ import {
   executeRepairAction,
   type RepairOperationType,
 } from "./repair-actions";
+import { getDomainRuleReport, matchRepairRule } from "./domain-repair-rules";
 
 export type PipelineStage = "detect" | "classify" | "localize" | "repair" | "validate" | "regress" | "accept_or_rollback";
 
@@ -133,6 +136,16 @@ export async function executePipeline(input: PipelineInput): Promise<PipelineRes
   if (!isOperationAllowed(input.suggestedOperation)) {
     pipelineBlockCount++;
     return makeBlockedResult(`Operation "${input.suggestedOperation}" not in allowlist`);
+  }
+
+  if (!hasDomainActivationSheet(input.domain)) {
+    pipelineBlockCount++;
+    return makeBlockedResult(`Domain "${input.domain}" has no activation sheet — repair not eligible`);
+  }
+
+  if (!isDomainOperationAllowed(input.domain, input.suggestedOperation, input.repairLevel)) {
+    pipelineBlockCount++;
+    return makeBlockedResult(`Operation "${input.suggestedOperation}" at ${input.repairLevel} not allowed by activation sheet for domain "${input.domain}"`);
   }
 
   const ctx = createContext(input);
@@ -276,9 +289,25 @@ function stageDetect(ctx: PipelineContext): StageOutcome {
 }
 
 function stageClassify(ctx: PipelineContext): StageOutcome {
+  const ruleMatch = matchRepairRule(ctx.input.domain, ctx.input.issueSignature);
+  if (ruleMatch) {
+    ctx.input = {
+      ...ctx.input,
+      suggestedOperation: ruleMatch.rule.operation,
+      suggestedTarget: ruleMatch.rule.target,
+      category: ruleMatch.rule.category,
+      severity: ruleMatch.rule.severity,
+      repairLevel: ruleMatch.rule.repairLevel,
+    };
+    return {
+      result: "passed",
+      detail: `Classified via rule ${ruleMatch.rule.id}: category=${ruleMatch.rule.category} severity=${ruleMatch.rule.severity} level=${ruleMatch.rule.repairLevel} op=${ruleMatch.rule.operation} (confidence=${ruleMatch.confidence})`,
+    };
+  }
+
   return {
     result: "passed",
-    detail: `Classified: category=${ctx.input.category} severity=${ctx.input.severity} level=${ctx.input.repairLevel}`,
+    detail: `Classified (no rule match): category=${ctx.input.category} severity=${ctx.input.severity} level=${ctx.input.repairLevel}`,
   };
 }
 
@@ -458,5 +487,6 @@ export function getPipelineReport() {
       pipelineTimeoutMs: PIPELINE_TIMEOUT_MS,
     },
     financialDomainsBlocked: Array.from(FINANCIAL_DOMAINS),
+    domainRules: getDomainRuleReport(),
   };
 }

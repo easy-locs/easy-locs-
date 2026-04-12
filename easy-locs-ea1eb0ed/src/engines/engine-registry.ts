@@ -1,4 +1,5 @@
 import { engineOrchestrator } from "./core/engine-orchestrator";
+import { registerAllActivationSheets } from "./core/domain-activation-sheets";
 
 import { ErrorClassifier } from "./self-healing/error-classifier";
 import { AutoFixEngine } from "./self-healing/auto-fix-engine";
@@ -367,6 +368,7 @@ async function loadAndStartTier3(): Promise<void> {
 }
 
 export function bootEngineSystem(): () => void {
+  registerAllActivationSheets();
   registerAllEngines();
   engineOrchestrator.startAll();
 

@@ -1035,6 +1035,14 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **Pipeline default OFF**: `pipelineEnabled = false`; no engine activates pipeline unless explicitly enabled
 - **Financial domains permanently blocked**: wallet, payment, billing, settlement, ledger, fraud — L3/L4 blocked at pipeline entry, all operations blocked at action level
 
+### Auto-Repair Phase 3 (Domain-Specific Repair Rules) — IMPLEMENTED
+- **domain-activation-sheets.ts**: 5 lowest-risk domains activated: dashboard, taxonomy, media, notification, marketplace — each with versioned activation sheets defining activeEngines, allowedL2Operations, requiredL3Operations, forbiddenOperations, killSwitches, rollbackTriggers, freezeTriggers; registered at boot before engine registration
+- **domain-repair-rules.ts**: 13 domain-specific repair rules (dashboard 3, taxonomy 2, media 3, notification 2, marketplace 3) — all L2 only; each rule has issuePattern regex, operation, target, repairLevel, maxRetries, cooldownMs; rule matcher requires activation sheet
+- **repair-pipeline.ts**: Added 2 activation sheet gates (hasDomainActivationSheet + isDomainOperationAllowed with repair-level-aware enforcement); classify stage integrates matchRepairRule to drive operation/target selection from domain rules; domainRules included in pipeline report
+- **repair-safety.ts**: isDomainOperationAllowed now enforces repair-level policy (L2 must be in allowedL2Operations, L3 must be in requiredL3Operations, L4+ always denied)
+- **Financial domains excluded**: No activation sheets for wallet/payment/billing/settlement/ledger/fraud
+- **Pipeline still OFF**: pipelineEnabled = false; activation sheets registered but pipeline inert
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`
