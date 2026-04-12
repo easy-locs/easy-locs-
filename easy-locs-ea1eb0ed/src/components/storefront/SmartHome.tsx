@@ -55,6 +55,9 @@ import { useDashboardRadar } from "@/hooks/useDashboardRadar";
 import { useSmartNavigation } from "@/hooks/useSmartNavigation";
 import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
 import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
+import IntelligenceTicker from "@/components/dashboard/IntelligenceTicker";
+import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
+import { isFeatureEnabled } from "@/lib/control-plane/kill-switches";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -596,6 +599,11 @@ export default function SmartHome() {
     <PillarPage noPadding className="pb-8">
       <div className="px-4 pt-4">
         <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} t={t} />
+        {isPlatformFlagEnabled("enable_global_intelligence") &&
+         isPlatformFlagEnabled("enable_intelligence_ticker") &&
+         isFeatureEnabled("intelligence_enabled") && (
+          <IntelligenceTicker country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
+        )}
         <ActiveCartBanner />
         <SmartQuickActions />
         <ContextualNudge suggestion={intelligence.quickSuggestion} />
