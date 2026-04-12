@@ -1027,6 +1027,14 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **engine-orchestrator.ts**: Manifest registration via `registerInManifest()` on engine register; `repairSafety` in safety report; `getEnginesByDomain()` helper
 - **All defaults OFF**: Zero UI exposure, triple-gated, no visible change at runtime
 
+### Auto-Repair Phase 2 (Repair Pipeline + Proof System) — IMPLEMENTED
+- **proof-system.ts**: Immutable ProofRecord schema (identity, detection signals, root cause, mutation before/after, validation/regression checks, outcome, stage trace); in-memory circular buffer (1000 records); localStorage persistence (last 100); deep-clone query APIs (by engine/domain/outcome/pipeline run); PII scrubbing on all evidence fields
+- **repair-actions.ts**: Rollback-capable executors for all 6 operations (invalidate/refresh/reset/reconnect/fallback/suppress); before/after state capture for proof; financial domain blocking (wallet/payment/billing/settlement/ledger/fraud); operation allowlist enforcement; action history tracking
+- **repair-pipeline.ts**: 7-stage pipeline orchestrator (detect→classify→localize→repair→validate→regress→accept/rollback); stage timeout (10s), pipeline timeout (30s); rollback enforced on ALL non-accepted terminal paths (timeout, failure, exception); Phase 1 safety integration (canAttemptRepair, isCircularLoop, isRepairStormActive, isOperationAllowed); validation checks state-change verification; regression gate; quarantine on rollback
+- **engine-orchestrator.ts**: Extended report with `repairPipeline` and `proofSystem` stats
+- **Pipeline default OFF**: `pipelineEnabled = false`; no engine activates pipeline unless explicitly enabled
+- **Financial domains permanently blocked**: wallet, payment, billing, settlement, ledger, fraud — L3/L4 blocked at pipeline entry, all operations blocked at action level
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`
