@@ -70,7 +70,7 @@ const FLAG_DEFAULTS: Record<PlatformFlag, boolean> = {
   enable_commerce_suggestions: false,
   enable_religious_utilities: false,
   enable_intelligence_shadow_validation: false,
-  enable_repair_pipeline: false,
+  enable_repair_pipeline: true,
 };
 
 const FLAG_DESCRIPTIONS: Record<PlatformFlag, string> = {

@@ -10,6 +10,7 @@ import {
 } from "./repair-pipeline";
 import type { RepairOperationType } from "./repair-actions";
 import type { RepairLevel } from "./proof-system";
+import { getProofsByDomain, getProofStats } from "./proof-system";
 
 export interface TaxonomyConflictPayload {
   sweepId: string;
@@ -95,8 +96,26 @@ async function flushBuffer(sweepId: string): Promise<void> {
 
     if (import.meta.env.DEV) {
       console.log(
-        `[repair-bridge] Pipeline ${result.outcome}: proofId=${result.proofId} duration=${result.durationMs}ms rolledBack=${result.rolledBack}`,
+        `[repair-bridge] Pipeline ${result.outcome}: proofId=${result.proofId} duration=${result.durationMs}ms rolledBack=${result.rolledBack} stageCount=${result.stageCount}`,
       );
+      const proofs = getProofsByDomain("taxonomy");
+      const stats = getProofStats();
+      console.log(`[repair-bridge] Proof records: ${proofs.length} taxonomy proofs`, stats);
+      if (proofs.length > 0) {
+        const latest = proofs[proofs.length - 1];
+        console.log(`[repair-bridge] Latest proof:`, {
+          id: latest.id,
+          outcome: latest.outcome,
+          stages: latest.stages.map(s => `${s.stage}:${s.result}`).join(" → "),
+          mutation: latest.mutation ? {
+            beforeLen: latest.mutation.beforeState.length,
+            afterLen: latest.mutation.afterState.length,
+            changed: latest.mutation.beforeState !== latest.mutation.afterState,
+          } : null,
+          duration: latest.durationMs,
+          rolledBack: latest.rolledBack,
+        });
+      }
     }
   } catch (err) {
     if (import.meta.env.DEV) {
