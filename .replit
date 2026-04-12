@@ -110,3 +110,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi
 VITE_SUPABASE_PROJECT_ID = "ifvuvbolrmuuugtzxsfk"
 SUPABASE_ACCESS_TOKEN_NEW = "sbp_e13f1ae04b0feb5218b77e8a01104972491de26f"
 VITE_SENTRY_DSN = "https://88cd681bd93bec06d81768e9523fdf34@o4511198237556736.ingest.de.sentry.io/4511198326161488"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 60000
