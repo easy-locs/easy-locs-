@@ -7,7 +7,7 @@
 
 ---
 
-## Table of Contents
+### Table of Contents
 
 ### Core Sections
 1. [Architecture-Only Declaration](#1-architecture-only-declaration)
@@ -2016,7 +2016,7 @@ Level 4: Per-Signal Scheduler
 
 ---
 
-## Section Compliance Checklist
+### Section Compliance Checklist
 
 | # | Required Section | Heading Anchor | Present |
 |---|-----------------|----------------|---------|
