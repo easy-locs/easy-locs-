@@ -1687,3 +1687,221 @@ export interface GovernanceViolation {
   code?: string;
   status?: "new" | "acknowledged" | "resolved";
 }
+
+// ══════════════════════════════════════════════════
+// GLOBAL INTELLIGENCE & LOCAL SOCIAL COMMERCE
+// Phase 0 Foundation — types only, no runtime effect
+// ══════════════════════════════════════════════════
+
+export type GlobalFeedCategory =
+  | "finance"
+  | "forex"
+  | "weather"
+  | "news"
+  | "traffic"
+  | "events"
+  | "government"
+  | "emergency"
+  | "religious"
+  | "local_utility";
+
+export type GlobalFeedPriority = "P0" | "P1" | "P2" | "P3" | "P4";
+
+export type GlobalFeedSourceTier = "tier_1" | "tier_2" | "tier_3";
+
+export interface CanonicalGlobalFeedItem {
+  id: string;
+  sourceId: string;
+  sourceName: string;
+  sourceTrust: number;
+  sourceTier: GlobalFeedSourceTier;
+
+  category: GlobalFeedCategory;
+  subcategory: string | null;
+  title: string;
+  summary: string;
+  body: string | null;
+  language: string;
+  originalLanguage: string;
+
+  country: string;
+  region: string | null;
+  city: string | null;
+
+  priority: GlobalFeedPriority;
+  relevanceScore: number;
+  freshnessScore: number;
+  personalRelevance: number;
+
+  publishedAt: string;
+  fetchedAt: string;
+  expiresAt: string;
+
+  tags: string[];
+  mediaUrl: string | null;
+  deepLinkUrl: string | null;
+
+  contentHash: string;
+}
+
+export type LocalListingStatus =
+  | "draft"
+  | "pending_review"
+  | "active"
+  | "reserved"
+  | "completed"
+  | "expired"
+  | "removed"
+  | "flagged"
+  | "quarantined";
+
+export type LocalListingCondition = "new" | "like_new" | "good" | "fair" | "parts";
+
+export type LocalListingPriceType = "fixed" | "negotiable" | "free" | "swap" | "contact";
+
+export interface CanonicalLocalListing {
+  id: string;
+  sellerId: string;
+  status: LocalListingStatus;
+
+  title: string;
+  description: string;
+  category: string;
+  subcategory: string | null;
+  condition: LocalListingCondition;
+
+  price: number | null;
+  currency: string;
+  priceType: LocalListingPriceType;
+
+  images: string[];
+  thumbnailUrl: string | null;
+
+  country: string;
+  region: string | null;
+  city: string;
+  district: string | null;
+  coordinates: { lat: number; lng: number } | null;
+
+  language: string;
+  tags: string[];
+
+  qualityScore: number;
+  trustScore: number;
+  freshnessScore: number;
+  relevanceRadius: number;
+
+  viewCount: number;
+  inquiryCount: number;
+
+  createdAt: string;
+  updatedAt: string;
+  expiresAt: string;
+}
+
+export type IntentSource = "explicit" | "inferred" | "behavioral";
+
+export type IntentConfidence = "high" | "medium" | "low";
+
+export interface CanonicalLocalIntent {
+  id: string;
+  userId: string;
+  source: IntentSource;
+  confidence: IntentConfidence;
+  confidenceScore: number;
+
+  category: string;
+  subcategory: string | null;
+  keywords: string[];
+  description: string | null;
+
+  maxPrice: number | null;
+  currency: string | null;
+  condition: LocalListingCondition | null;
+
+  country: string;
+  city: string;
+  district: string | null;
+  radiusKm: number;
+
+  createdAt: string;
+  expiresAt: string;
+  active: boolean;
+}
+
+export type MatchStatus =
+  | "candidate"
+  | "presented"
+  | "acknowledged"
+  | "contacted"
+  | "completed"
+  | "expired"
+  | "declined";
+
+export interface CanonicalLocalMatch {
+  id: string;
+  listingId: string;
+  intentId: string | null;
+  buyerId: string;
+  sellerId: string;
+  status: MatchStatus;
+
+  categoryMatchScore: number;
+  proximityScore: number;
+  priceCompatibilityScore: number;
+  timingRelevanceScore: number;
+  trustCompatibilityScore: number;
+  listingQualityScore: number;
+  combinedScore: number;
+
+  distanceKm: number;
+
+  createdAt: string;
+  presentedAt: string | null;
+  expiresAt: string;
+}
+
+export type ModerationStatus =
+  | "pending_review"
+  | "approved"
+  | "flagged"
+  | "quarantined"
+  | "removed";
+
+export type ModerationAction = "auto_approve" | "auto_flag" | "auto_reject" | "manual_review";
+
+export interface CanonicalModerationState {
+  entityType: "listing" | "intent" | "profile";
+  entityId: string;
+  status: ModerationStatus;
+  action: ModerationAction;
+  reason: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  appealable: boolean;
+  createdAt: string;
+}
+
+export interface CountryProfile {
+  code: string;
+  defaultLanguage: string;
+  supportedLanguages: string[];
+  defaultCurrency: string;
+  timezones: string[];
+  availableModules: string[];
+  religionModuleAvailable: boolean;
+  providerMatrix: Record<string, boolean>;
+  culturalFlags: Record<string, boolean>;
+  complianceFlags: Record<string, boolean>;
+}
+
+export interface CityProfile {
+  countryCode: string;
+  cityId: string;
+  cityName: string;
+  region: string | null;
+  timezone: string;
+  localProviders: string[];
+  localCommerceActive: boolean;
+  population: number | null;
+}

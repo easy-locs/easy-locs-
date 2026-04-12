@@ -167,3 +167,85 @@ export function getValidEventsForState<S extends string, E extends string>(
   if (!transitions) return [];
   return Object.keys(transitions) as E[];
 }
+
+// ══════════════════════════════════════════════════
+// LOCAL LISTING STATE MACHINE
+// Phase 0 Foundation — definition only, no runtime wiring
+// ══════════════════════════════════════════════════
+
+import type { LocalListingStatus, MatchStatus, ModerationStatus } from "./canonical-types";
+
+type ListingEvent =
+  | "SUBMIT"
+  | "APPROVE"
+  | "ACTIVATE"
+  | "RESERVE"
+  | "COMPLETE"
+  | "EXPIRE"
+  | "REMOVE"
+  | "FLAG"
+  | "QUARANTINE"
+  | "REINSTATE"
+  | "UNRESERVE";
+
+export const LISTING_MACHINE: Machine<LocalListingStatus, ListingEvent> = {
+  draft:          { SUBMIT: "pending_review", REMOVE: "removed" },
+  pending_review: { APPROVE: "active", FLAG: "flagged", QUARANTINE: "quarantined", REMOVE: "removed" },
+  active:         { RESERVE: "reserved", EXPIRE: "expired", REMOVE: "removed", FLAG: "flagged", QUARANTINE: "quarantined" },
+  reserved:       { COMPLETE: "completed", UNRESERVE: "active", EXPIRE: "expired", REMOVE: "removed" },
+  completed:      {},
+  expired:        { REINSTATE: "active", REMOVE: "removed" },
+  removed:        {},
+  flagged:        { REINSTATE: "active", QUARANTINE: "quarantined", REMOVE: "removed" },
+  quarantined:    { REINSTATE: "active", REMOVE: "removed" },
+};
+
+export const transitionListing = createTransition(LISTING_MACHINE);
+
+// ══════════════════════════════════════════════════
+// LOCAL MATCH STATE MACHINE
+// Phase 0 Foundation — definition only, no runtime wiring
+// ══════════════════════════════════════════════════
+
+type MatchEvent =
+  | "PRESENT"
+  | "ACKNOWLEDGE"
+  | "CONTACT"
+  | "COMPLETE"
+  | "EXPIRE"
+  | "DECLINE";
+
+export const MATCH_MACHINE: Machine<MatchStatus, MatchEvent> = {
+  candidate:    { PRESENT: "presented", EXPIRE: "expired" },
+  presented:    { ACKNOWLEDGE: "acknowledged", EXPIRE: "expired", DECLINE: "declined" },
+  acknowledged: { CONTACT: "contacted", EXPIRE: "expired", DECLINE: "declined" },
+  contacted:    { COMPLETE: "completed", EXPIRE: "expired", DECLINE: "declined" },
+  completed:    {},
+  expired:      {},
+  declined:     {},
+};
+
+export const transitionMatch = createTransition(MATCH_MACHINE);
+
+// ══════════════════════════════════════════════════
+// MODERATION STATE MACHINE
+// Phase 0 Foundation — definition only, no runtime wiring
+// ══════════════════════════════════════════════════
+
+type ModerationEvent =
+  | "AUTO_APPROVE"
+  | "AUTO_FLAG"
+  | "AUTO_REJECT"
+  | "MANUAL_APPROVE"
+  | "MANUAL_FLAG"
+  | "QUARANTINE"
+  | "REMOVE"
+  | "REINSTATE";
+
+export const MODERATION_MACHINE: Machine<ModerationStatus, ModerationEvent> = {
+  pending_review: { AUTO_APPROVE: "approved", AUTO_FLAG: "flagged", AUTO_REJECT: "removed", MANUAL_APPROVE: "approved", MANUAL_FLAG: "flagged", QUARANTINE: "quarantined" },
+  approved:       { MANUAL_FLAG: "flagged", QUARANTINE: "quarantined", REMOVE: "removed" },
+  flagged:        { REINSTATE: "approved", QUARANTINE: "quarantined", REMOVE: "removed" },
+  quarantined:    { REINSTATE: "approved", REMOVE: "removed" },
+  removed:        {},
+};
