@@ -2,6 +2,8 @@ import { BaseEngine } from "./base-engine";
 import { engineObserver } from "./engine-observer";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { registerInManifest, getRepairSafetyReport } from "./repair-safety";
+import { getPipelineReport } from "./repair-pipeline";
+import { getProofStats } from "./proof-system";
 
 class EngineOrchestrator {
   private engines: Map<string, BaseEngine> = new Map();
@@ -73,6 +75,8 @@ class EngineOrchestrator {
       },
       ...engineObserver.getReport(),
       repairSafety: getRepairSafetyReport(),
+      repairPipeline: getPipelineReport(),
+      proofSystem: getProofStats(),
     };
   }
 
