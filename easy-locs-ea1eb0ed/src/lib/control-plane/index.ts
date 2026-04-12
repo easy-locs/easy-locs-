@@ -17,6 +17,9 @@ export {
   getAllDomainHealth,
   getPlatformHealthStatus,
   resetDomainMetrics,
+  quarantineDomain,
+  liftDomainQuarantine,
+  isDomainQuarantined,
 } from "./domain-health";
 
 export {

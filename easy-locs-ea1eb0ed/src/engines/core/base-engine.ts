@@ -1,6 +1,9 @@
 import { platformBus } from "@/lib/shared/platform-bus";
 import { engineObserver, type EngineLogLevel } from "./engine-observer";
 import { isEngineEnabled } from "./engine-feature-flags";
+import { isQuarantined, isRepairStormActive, getQuarantineStatus } from "./repair-safety";
+import { isDomainQuarantined } from "@/lib/control-plane/domain-health";
+import type { ControlDomain } from "@/lib/control-plane/types";
 
 export type EngineActionLevel = "observe" | "detect" | "propose" | "act";
 
@@ -15,6 +18,7 @@ export interface EngineConfig {
   id: string;
   name: string;
   category: string;
+  domain?: string;
   intervalMs: number;
   enabled?: boolean;
 }
@@ -23,6 +27,7 @@ export abstract class BaseEngine {
   readonly id: string;
   readonly name: string;
   readonly category: string;
+  readonly domain: string;
   readonly intervalMs: number;
 
   private _timer: ReturnType<typeof setInterval> | null = null;
@@ -36,6 +41,7 @@ export abstract class BaseEngine {
     this.id = config.id;
     this.name = config.name;
     this.category = config.category;
+    this.domain = config.domain ?? config.category;
     this.intervalMs = config.intervalMs;
   }
 
@@ -48,11 +54,13 @@ export abstract class BaseEngine {
       id: this.id,
       name: this.name,
       category: this.category,
+      domain: this.domain,
       running: this._running,
       tickCount: this._tickCount,
       errorCount: this._errorCount,
       lastTick: this._lastTick,
       uptime: this._running ? Date.now() - this._startedAt : 0,
+      quarantineStatus: getQuarantineStatus(this.id),
     };
   }
 
@@ -87,6 +95,18 @@ export abstract class BaseEngine {
     if (!this._running) return;
     if (!isEngineEnabled(this.id)) {
       this.stop();
+      return;
+    }
+
+    if (isQuarantined(this.id) || isQuarantined(`domain:${this.domain}`)) {
+      return;
+    }
+
+    if (isDomainQuarantined(this.domain as ControlDomain)) {
+      return;
+    }
+
+    if (isRepairStormActive()) {
       return;
     }
 

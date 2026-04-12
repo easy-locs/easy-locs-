@@ -492,6 +492,50 @@ The autonomous repair system comprises 15 logical engine categories. Each catego
 - `AntiConflictEngine` monitors for conflicting repairs (two engines attempting to fix the same issue simultaneously).
 - `sentinel-conflict` (`SentinelConflictEngine`) detects and resolves engine conflicts at the sentinel level.
 
+#### Constraint 9: No Autonomous Code Rewriting
+
+**Rule**: No engine may rewrite, modify, generate, or structurally refactor source files at runtime. Repair actions are strictly bounded to approved remediation patterns (cache invalidation, reconnection, state reset, fallback activation). No engine may emit, inject, or execute dynamically generated code.
+
+**Enforcement**:
+- The approved repair pattern registry (`repair-safety.ts`) enumerates every permitted remediation action. Actions outside this registry are rejected.
+- `repair-proof` engine validates that every `RepairAction.mutations[].operation` is one of the allowed operations: `invalidate`, `refresh`, `reset`, `reconnect`, `fallback`, `suppress`.
+- No engine has filesystem access, `eval()`, `Function()`, dynamic `import()` of non-registered modules, or `document.write()`.
+- Any attempt to modify source files, inject scripts, or perform structural refactoring triggers an immediate engine freeze + L4 escalation.
+- Code suggestion engines (AI tier) may only propose suggestions to the proof system — never execute them autonomously.
+
+#### Constraint 10: Sensitive-Data Minimization
+
+**Rule**: All proof records, logs, traces, diagnostics, and repair evidence must redact or avoid sensitive user data. Repair evidence must be privacy-safe by design.
+
+**Enforcement**:
+- `structuredLogger` PII scrubbing (already implemented: emails, credit card numbers, JWTs) applies to all repair system output.
+- Proof records must never store: message content (Orbit), financial account numbers (Wallet), call media/transcripts (Calls), precise GPS coordinates (Radar), passwords/tokens (Auth), phone numbers, or full names.
+- Proof records store only: anonymized identifiers (hashed user IDs), aggregate metrics (count, rate, duration), structural metadata (component names, query keys, route paths), and system state (cache size, error codes, subscription status).
+- Domain-specific redaction rules:
+  - **Orbit**: Message body replaced with `[redacted]`; only message ID, timestamp, delivery status retained.
+  - **Wallet**: Transaction amounts replaced with magnitude bucket (`<10`, `10-100`, `100-1000`, `>1000`); account IDs hashed.
+  - **Calls**: No media content, no participant names; only call duration, codec, quality metrics.
+  - **Radar**: GPS coordinates rounded to city-level precision (2 decimal places) in proof records.
+  - **Auth**: No tokens, no passwords, no session secrets; only event type (login/logout/refresh) and outcome (success/failure).
+- `sentinel-audit` periodically scans proof records for PII leakage and flags violations.
+
+#### Constraint 11: Domain Activation Sheet Requirement
+
+**Rule**: Before activating any repair engine in any domain, a Domain Activation Sheet must be produced and approved. No domain may receive repair engine coverage without an explicit activation sheet.
+
+**Enforcement**:
+- The Domain Activation Sheet must define:
+  1. **Active engines**: Which of the 15 repair engines are enabled for this domain.
+  2. **Allowed L2 operations**: Exhaustive list of auto-fix actions permitted (e.g., "cache invalidation", "reconnection").
+  3. **Required L3 operations**: Actions that require human approval (e.g., "payment retry", "state machine advance").
+  4. **Forbidden operations**: Actions that must never be attempted, even at L4 (domain-specific exclusions).
+  5. **Kill switches**: Which kill switches gate this domain's repair engines.
+  6. **Rollback triggers**: Conditions that trigger automatic rollback for this domain.
+  7. **Freeze triggers**: Conditions that freeze all repair activity for this domain.
+- Activation sheets are stored as structured data in the engine manifest.
+- `EngineOrchestrator.register()` rejects engines for domains without an approved activation sheet.
+- Activation sheets are versioned and immutable once approved; updates require a new version.
+
 ### 5.2 Safety Constraint Enforcement Summary
 
 | Constraint | Primary Enforcer | Secondary Enforcer | Violation Response |
@@ -504,6 +548,9 @@ The autonomous repair system comprises 15 logical engine categories. Each catego
 | No Circular Loops | repair-proof engine | AutoFixEngine cooldowns | Quarantine + L4 |
 | No Repair Storms | EngineOrchestrator | sentinel-health | Global L1 mode + cooldown |
 | No Hidden Side Effects | repair-proof engine | AntiConflictEngine | Rollback + review |
+| No Code Rewriting | Repair pattern registry | repair-proof engine | Freeze + L4 escalation |
+| Sensitive-Data Minimization | structuredLogger PII scrub | sentinel-audit PII scan | Flag + redact |
+| Domain Activation Sheet | Engine manifest | EngineOrchestrator | Registration rejected |
 
 ---
 

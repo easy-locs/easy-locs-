@@ -1,6 +1,7 @@
 import { BaseEngine } from "./base-engine";
 import { engineObserver } from "./engine-observer";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { registerInManifest, getRepairSafetyReport } from "./repair-safety";
 
 class EngineOrchestrator {
   private engines: Map<string, BaseEngine> = new Map();
@@ -11,6 +12,7 @@ class EngineOrchestrator {
       engineObserver.log(engine.id, engine.category, "warn", "Already registered, skipping");
       return;
     }
+    registerInManifest(engine.id);
     this.engines.set(engine.id, engine);
   }
 
@@ -54,6 +56,10 @@ class EngineOrchestrator {
     return Array.from(this.engines.values()).filter(e => e.category === category);
   }
 
+  getEnginesByDomain(domain: string): BaseEngine[] {
+    return Array.from(this.engines.values()).filter(e => e.domain === domain);
+  }
+
   getAllStats() {
     return Array.from(this.engines.values()).map(e => e.stats);
   }
@@ -66,6 +72,7 @@ class EngineOrchestrator {
         runningEngines: Array.from(this.engines.values()).filter(e => e.isRunning).length,
       },
       ...engineObserver.getReport(),
+      repairSafety: getRepairSafetyReport(),
     };
   }
 
