@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export function generatePublicId(userId: string): string {
   return userId.replace(/-/g, "").substring(0, 8).toUpperCase();
@@ -27,7 +27,7 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
   let avatarUrl = input.avatarUrl ?? null;
 
   if (!userId) {
-    const { data: authData } = await supabase.auth.getUser();
+    const { data: authData } = await db.auth.getUser();
     const user = authData.user;
     if (!user) return null;
     userId = user.id;
@@ -53,8 +53,7 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
   };
   if (phone) row.phone = phone;
 
-  const { data, error } = await supabase
-    .from("orbit_profiles_v2")
+  const { data, error } = await db("orbit_profiles_v2")
     .upsert(row as any, { onConflict: "id" })
     .select()
     .single();

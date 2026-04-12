@@ -2,7 +2,7 @@
  * WebRTC ICE config loader — fetches TURN credentials from edge function.
  * No longer queries rtc_config table directly.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 const FALLBACK_CONFIG: RTCConfiguration = {
   iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
@@ -10,7 +10,7 @@ const FALLBACK_CONFIG: RTCConfiguration = {
 
 export async function getRTCConfig(): Promise<RTCConfiguration> {
   try {
-    const { data, error } = await supabase.functions.invoke("get-turn-credentials");
+    const { data, error } = await db.functions.invoke("get-turn-credentials");
     if (error || !data?.iceServers) return FALLBACK_CONFIG;
     return { iceServers: data.iceServers };
   } catch {

@@ -5,7 +5,6 @@
  * IMPORTANT: sets created_by_orbit_id and ensures orbitId is always populated
  * in participants to satisfy RLS policies on conversations_v2.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { orbitDb } from "@/lib/db/orbitDb";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { resolveOrbitId } from "@/lib/orbit/orbit-data-gateway";

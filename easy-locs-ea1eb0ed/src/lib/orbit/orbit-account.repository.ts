@@ -1,17 +1,17 @@
 /**
- * orbit-account.repository — All Supabase operations for Orbit Account section.
+ * orbit-account.repository — All DB operations for Orbit Account section.
  * Extracted from OrbitAccountSection. Zero UI logic.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 /** Upload avatar to storage, return public URL */
 export async function uploadAvatar(userId: string, file: File): Promise<string> {
   if (file.size > 5 * 1024 * 1024) throw new Error("Photo must be under 5MB");
   const ext = file.name.split(".").pop();
   const path = `${userId}/avatar.${ext}`;
-  const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+  const { error } = await db.storage.from("avatars").upload(path, file, { upsert: true });
   if (error) throw error;
-  const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+  const { data: { publicUrl } } = db.storage.from("avatars").getPublicUrl(path);
   return publicUrl;
 }
 
@@ -31,7 +31,7 @@ export async function saveProfile(userId: string, displayNameOrData: string | Pr
     ? { displayName: displayNameOrData, avatarUrl: avatarUrl ?? "" }
     : displayNameOrData;
 
-  const { error: authError } = await supabase.auth.updateUser({
+  const { error: authError } = await db.auth.updateUser({
     data: {
       full_name: data.displayName,
       display_name: data.displayName,
@@ -49,11 +49,11 @@ export async function saveProfile(userId: string, displayNameOrData: string | Pr
   if (data.firstName !== undefined) profileUpdate.first_name = data.firstName;
   if (data.lastName !== undefined) profileUpdate.last_name = data.lastName;
   if (data.phone !== undefined) profileUpdate.phone = data.phone;
-  const { error: profileError } = await supabase.from("profiles").update(profileUpdate).eq("id", userId);
+  const { error: profileError } = await db("profiles").update(profileUpdate).eq("id", userId);
   if (profileError) console.warn("[saveProfile] profiles update:", profileError.message);
 
   const orbitUpdate: Record<string, any> = { display_name: data.displayName, avatar_url: data.avatarUrl };
-  const { error: orbitError } = await supabase.from("orbit_profiles_v2" as any).update(orbitUpdate as any).eq("user_id", userId);
+  const { error: orbitError } = await db("orbit_profiles_v2" as any).update(orbitUpdate as any).eq("user_id", userId);
   if (orbitError) console.warn("[saveProfile] orbit_profiles_v2 update:", orbitError.message);
 }
 
@@ -61,7 +61,7 @@ export async function saveProfile(userId: string, displayNameOrData: string | Pr
 export async function archiveAllChats(userId: string): Promise<number> {
   const threads = await getUserThreadIds(userId);
   for (const id of threads) {
-    await supabase.from("conversation_preferences").upsert(
+    await db("conversation_preferences").upsert(
       { user_id: userId, context_id: id, archived: true },
       { onConflict: "user_id,context_id" },
     );
@@ -73,7 +73,7 @@ export async function archiveAllChats(userId: string): Promise<number> {
 export async function clearAllChats(userId: string): Promise<number> {
   const threads = await getUserThreadIds(userId);
   for (const id of threads) {
-    await supabase.from("conversation_preferences").upsert(
+    await db("conversation_preferences").upsert(
       { user_id: userId, context_id: id, cleared_at: new Date().toISOString() },
       { onConflict: "user_id,context_id" },
     );
@@ -85,7 +85,7 @@ export async function clearAllChats(userId: string): Promise<number> {
 export async function deleteAllChats(userId: string): Promise<number> {
   const threads = await getUserThreadIds(userId);
   for (const id of threads) {
-    await supabase.from("conversation_preferences").upsert(
+    await db("conversation_preferences").upsert(
       { user_id: userId, context_id: id, archived: true, cleared_at: new Date().toISOString() },
       { onConflict: "user_id,context_id" },
     );
@@ -95,8 +95,7 @@ export async function deleteAllChats(userId: string): Promise<number> {
 
 /** Export chat messages as text */
 export async function exportChatHistory(userId: string): Promise<string> {
-  const { data: messages } = await supabase
-    .from("chat_messages_v2")
+  const { data: messages } = await db("chat_messages_v2")
     .select("body, created_at, sender_user_id")
     .or(`sender_user_id.eq.${userId}`)
     .order("created_at", { ascending: true })
@@ -109,8 +108,7 @@ export async function exportChatHistory(userId: string): Promise<string> {
 
 /** Get blocked contacts count */
 export async function getBlockedCount(userId: string): Promise<number> {
-  const { count } = await supabase
-    .from("blocked_users")
+  const { count } = await db("blocked_users")
     .select("id", { count: "exact", head: true })
     .eq("blocker_id", userId);
   return count || 0;
@@ -118,8 +116,7 @@ export async function getBlockedCount(userId: string): Promise<number> {
 
 // ── Internal ──
 async function getUserThreadIds(userId: string): Promise<string[]> {
-  const { data: threads } = await supabase
-    .from("conversations_v2")
+  const { data: threads } = await db("conversations_v2")
     .select("id")
     .order("updated_at", { ascending: false })
     .limit(500);

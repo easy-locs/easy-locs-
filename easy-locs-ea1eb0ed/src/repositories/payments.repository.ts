@@ -1,66 +1,73 @@
 /**
  * payments.repository — All DB ops for payment components and pages.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 // ── Stripe intent ──
 export async function createStripeIntent(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-stripe-intent", { body });
+  const { data, error } = await db.functions.invoke("create-stripe-intent", { body });
   if (error) throw error;
   return data;
 }
 
 // ── Rent payment ──
 export async function createRentPayment(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-rent-payment", { body });
+  const { data, error } = await db.functions.invoke("create-rent-payment", { body });
   if (error) throw error;
   return data;
 }
 
 // ── Stripe checkout ──
 export async function createStripeCheckout(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-stripe-checkout" as any, { body });
+  const { data, error } = await db.functions.invoke("create-stripe-checkout" as any, { body });
   if (error) throw error;
   return data;
 }
 
 // ── Guest payment ──
 export async function verifyGuestPayment(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("verify-guest-payment", { body });
+  const { data, error } = await db.functions.invoke("verify-guest-payment", { body });
   if (error) throw error;
   return data;
 }
 
 export async function createGuestCheckout(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-guest-checkout", { body });
+  const { data, error } = await db.functions.invoke("create-guest-checkout", { body });
   if (error) throw error;
   return data;
 }
 
 // ── Wallet ──
 export async function createWalletTopup(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-wallet-topup", { body });
+  const { data, error } = await db.functions.invoke("create-wallet-topup", { body });
   if (error) throw error;
   return data;
 }
 
 export async function invokeWalletPin(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("wallet-pin", { body });
+  const { data, error } = await db.functions.invoke("wallet-pin", { body });
   if (error) throw error;
   return data;
 }
 
-// ── Orbit payment ──
+// ── Orbit payment (O5: graceful error handling) ──
 export async function invokeOrbitPayment(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("orbit-payment", { body });
-  if (error) throw error;
+  const { data, error } = await db.functions.invoke("orbit-payment", { body });
+  if (error) {
+    const message = typeof error === "object" && error !== null && "message" in error
+      ? (error as any).message
+      : String(error);
+    throw new Error(`Orbit payment failed: ${message}`);
+  }
+  if (data?.error) {
+    throw new Error(`Orbit payment rejected: ${data.error}`);
+  }
   return data;
 }
 
 // ── FX ──
 export async function invokeFXRate(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("get-fx-rate" as any, { body });
+  const { data, error } = await db.functions.invoke("get-fx-rate" as any, { body });
   if (error) throw error;
   return data;
 }
@@ -90,16 +97,14 @@ export async function fetchPaymentRequest(requestId: string) {
 
 // ── Wallet activity ──
 export async function fetchWalletActivity(userId: string) {
-  const { data: accounts, error: aErr } = await supabase
-    .from("wallet_accounts")
+  const { data: accounts, error: aErr } = await db("wallet_accounts")
     .select("id")
     .eq("owner_user_id", userId);
   if (aErr) throw aErr;
   const ids = (accounts ?? []).map((a: any) => a.id);
   if (!ids.length) return [];
 
-  const { data, error } = await supabase
-    .from("wallet_ledger_entries")
+  const { data, error } = await db("wallet_ledger_entries")
     .select("*")
     .in("wallet_account_id", ids)
     .order("created_at", { ascending: false })
@@ -110,14 +115,14 @@ export async function fetchWalletActivity(userId: string) {
 
 // ── Concierge payment ──
 export async function createConciergePayment(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-concierge-payment", { body });
+  const { data, error } = await db.functions.invoke("create-concierge-payment", { body });
   if (error) throw error;
   return data;
 }
 
 // ── Booking payment ──
 export async function createBookingPayment(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-booking-payment", { body });
+  const { data, error } = await db.functions.invoke("create-booking-payment", { body });
   if (error) throw error;
   return data;
 }

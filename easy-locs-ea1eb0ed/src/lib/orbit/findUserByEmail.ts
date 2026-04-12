@@ -3,7 +3,6 @@
  * Uses public.profiles (authoritative identity source) and resolves the real orbit_id
  * from orbit_profiles_v2 to ensure consistency with the orbit ID format.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

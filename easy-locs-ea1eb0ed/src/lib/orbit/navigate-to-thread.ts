@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { resolveUserByEmail } from "@/lib/orbit/orbit-contacts-service";
 import { toast } from "sonner";
@@ -8,7 +8,7 @@ export async function navigateToOrbitThread(opts: {
   targetUserId?: string;
   targetName?: string;
 }): Promise<string | null> {
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await db.auth.getUser();
   const currentUserId = authData?.user?.id;
   if (!currentUserId) {
     toast.error("Please sign in to send messages");

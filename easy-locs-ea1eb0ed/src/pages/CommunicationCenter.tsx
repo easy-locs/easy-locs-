@@ -33,6 +33,7 @@ import SEOHead from "@/components/SEOHead";
 import { useThreadSelectionStore } from "@/stores/orbit/thread-selection.store";
 // useOrbitCallSync removed — centralized in RealtimeHubGuard
 import { useAuth } from "@/contexts/AuthContext";
+import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 
 const VALID_SECTIONS: CommSection[] = ["chats", "calls", "groups", "you"];
 
@@ -43,10 +44,25 @@ export const CommunicationCenter = () => {
   const { conversationId: routeConversationId } = useParams<{ conversationId?: string }>();
   const userId = user?.id;
   const { t } = useI18n();
+  const [profileReady, setProfileReady] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) { setProfileReady(false); return; }
+    let cancelled = false;
+    ensureOrbitProfile({
+      userId: user.id,
+      email: user.email,
+      displayName: (user.user_metadata as any)?.display_name ?? null,
+      avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
+    })
+      .then(() => { if (!cancelled) setProfileReady(true); })
+      .catch(() => { if (!cancelled) setProfileReady(true); });
+    return () => { cancelled = true; };
+  }, [user?.id]);
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { threads, loading, error: threadError, stats, loadThreads, updateThreadLocally } = useConversationThreads();
+  const { threads, loading, error: threadError, stats, loadThreads, updateThreadLocally } = useConversationThreads({ enabled: profileReady });
   const { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread, changeStatus, markUnread } = useThreadActions({ updateThreadLocally, loadThreads });
   const selectedThread = useThreadSelectionStore(s => s.selectedThread);
   const setSelectedThread = useThreadSelectionStore(s => s.selectThread);
@@ -236,6 +252,22 @@ export const CommunicationCenter = () => {
   }, []);
 
   const showChatArea = activeSection === "chats";
+
+  if (user && !profileReady) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center gap-3"
+        style={{
+          minHeight: "calc(100dvh - 56px)",
+          width: "100%",
+          background: "hsl(var(--background))",
+        }}
+      >
+        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(38 65% 56%)", borderTopColor: "transparent" }} />
+        <span className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.setting_up") || "Setting up your profile..."}</span>
+      </div>
+    );
+  }
 
   if (!user) {
     return (

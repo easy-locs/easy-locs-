@@ -101,7 +101,7 @@ export default function OrbitSmartPayment({
     try {
       const desc = description || `Payment to ${recipientName}`;
       if (method === "locs") {
-        const { data, error: fnErr } = await paymentsRepo.invokeOrbitPayment({
+        const data = await paymentsRepo.invokeOrbitPayment({
           action: "pay_locs",
           recipient_user_id: recipientUserId,
           amount: numericAmount,
@@ -109,8 +109,6 @@ export default function OrbitSmartPayment({
           thread_id: threadId || null,
           context: context || null,
         });
-        if (fnErr) throw new Error(fnErr.message);
-        if (data?.error) throw new Error(data.error);
         const conf: PaymentConfirmation = {
           txnId: data?.tx_out_id || "locs-transfer",
           referenceCode: data?.reference_code || null,
@@ -126,7 +124,7 @@ export default function OrbitSmartPayment({
         setSuccess(true);
         setTimeout(() => onSuccess?.(conf), 1500);
       } else {
-        const { data, error: fnErr } = await paymentsRepo.invokeOrbitPayment({
+        const data = await paymentsRepo.invokeOrbitPayment({
           action: "pay_fiat",
           recipient_user_id: recipientUserId,
           recipient_name: recipientName,
@@ -136,8 +134,6 @@ export default function OrbitSmartPayment({
           thread_id: threadId || null,
           context: context || null,
         });
-        if (fnErr) throw new Error(fnErr.message);
-        if (data?.error) throw new Error(data.error);
         if (data?.url) {
           // For fiat, fire confirmation before redirect
           const conf: PaymentConfirmation = {

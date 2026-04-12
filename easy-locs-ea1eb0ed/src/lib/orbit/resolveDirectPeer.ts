@@ -3,7 +3,6 @@
  * Resolves any input (email, phone, userId, orbitId, contact object) to a canonical peer.
  * Uses ONLY orbit_profiles_v2 as the identity source.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

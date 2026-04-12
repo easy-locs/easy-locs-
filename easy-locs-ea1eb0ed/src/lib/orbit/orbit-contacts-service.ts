@@ -1,10 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { typedQueries } from "@/lib/db/typed-queries";
-
-type SupabaseTable = ReturnType<typeof supabase.from>;
-function untypedFrom(table: string): SupabaseTable {
-  return (supabase as unknown as { from: (t: string) => SupabaseTable }).from(table);
-}
 
 export async function resolveUserByEmail(email: string): Promise<{ userId: string; orbitId: string | null; avatarUrl: string | null } | null> {
   if (!email) return null;
@@ -19,7 +14,7 @@ export async function resolveUserByEmail(email: string): Promise<{ userId: strin
 export async function resolveUserByPhone(phone: string): Promise<{ userId: string; orbitId: string | null; avatarUrl: string | null } | null> {
   if (!phone) return null;
   const cleaned = phone.replace(/[\s\-\(\)]/g, "");
-  const { data } = await untypedFrom("orbit_profiles_v2")
+  const { data } = await db("orbit_profiles_v2")
     .select("id, orbit_id, avatar_url")
     .eq("phone", cleaned)
     .maybeSingle() as unknown as { data: { id: string; orbit_id: string | null; avatar_url: string | null } | null };
@@ -34,11 +29,11 @@ export async function linkContactToUser(contactId: string, userId: string, orbit
   };
   if (orbitId) patch.peer_orbit_id = orbitId;
   if (avatarUrl) patch.avatar_url = avatarUrl;
-  await untypedFrom("orbit_contacts_v2").update(patch).eq("id", contactId);
+  await db("orbit_contacts_v2").update(patch).eq("id", contactId);
 }
 
 export async function listOrbitContacts(ownerUserId: string) {
-  const { data, error } = await untypedFrom("orbit_contacts_v2")
+  const { data, error } = await db("orbit_contacts_v2")
     .select("*")
     .eq("owner_user_id", ownerUserId)
     .order("is_favorite", { ascending: false })
@@ -94,19 +89,19 @@ export async function upsertOrbitContact(input: {
   };
 
   if (resolvedUserId) {
-    const { data: existing } = await untypedFrom("orbit_contacts_v2")
+    const { data: existing } = await db("orbit_contacts_v2")
       .select("id")
       .eq("owner_user_id", input.ownerUserId)
       .eq("peer_user_id", resolvedUserId)
       .maybeSingle() as unknown as { data: { id: string } | null };
 
     if (existing) {
-      await untypedFrom("orbit_contacts_v2").update(payload).eq("id", existing.id);
+      await db("orbit_contacts_v2").update(payload).eq("id", existing.id);
       return existing.id;
     }
   }
 
-  const { data, error } = await untypedFrom("orbit_contacts_v2")
+  const { data, error } = await db("orbit_contacts_v2")
     .insert(payload)
     .select("id")
     .single() as unknown as { data: { id: string } | null; error: Error | null };
@@ -116,23 +111,23 @@ export async function upsertOrbitContact(input: {
 }
 
 export async function updateOrbitContact(contactId: string, patch: Record<string, unknown>) {
-  await untypedFrom("orbit_contacts_v2")
+  await db("orbit_contacts_v2")
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq("id", contactId);
 }
 
 export async function toggleFavoriteContact(contactId: string, isFavorite: boolean) {
-  await untypedFrom("orbit_contacts_v2")
+  await db("orbit_contacts_v2")
     .update({ is_favorite: isFavorite, updated_at: new Date().toISOString() })
     .eq("id", contactId);
 }
 
 export async function deleteOrbitContact(contactId: string) {
-  await untypedFrom("orbit_contacts_v2").delete().eq("id", contactId);
+  await db("orbit_contacts_v2").delete().eq("id", contactId);
 }
 
 export async function toggleBlockedContact(contactId: string, isBlocked: boolean) {
-  await untypedFrom("orbit_contacts_v2")
+  await db("orbit_contacts_v2")
     .update({ is_blocked: isBlocked, updated_at: new Date().toISOString() })
     .eq("id", contactId);
 }
