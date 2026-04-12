@@ -17,7 +17,7 @@ import { trackRadarEvent, resetRadarSession } from "@/services/radar/radarAnalyt
 import RadarCardDispatcher from "@/components/radar/cards/RadarCardDispatcher";
 import RadarFilters from "@/components/radar/RadarFilters";
 
-type RadarGeoEntity = GeoEntity & { isSponsored?: boolean; reviewsCount?: number };
+type RadarGeoEntity = GeoEntity & { isSponsored?: boolean; reviewsCount?: number; vertical?: string };
 import PersonalRadarPanel from "@/components/radar/PersonalRadarPanel";
 import ZoneIntelligenceSheet from "@/components/radar/ZoneIntelligenceSheet";
 import { useLocationStore } from "@/stores/locationStore";
@@ -372,11 +372,12 @@ export default function HyperRadarPage() {
       distance: item.distanceKm ?? undefined,
       isSponsored: item.isSponsored,
       reviewsCount: item.reviewsCount,
+      vertical: item.vertical,
     };
     setSelectedEntity(geo);
     setZoneClick(null);
     setPanelSnap("closed");
-    trackRadarEvent("result_clicked", { entityId: item.id, vertical: item.type, score: item.radarScore });
+    trackRadarEvent("result_clicked", { entityId: item.id, vertical: item.vertical || item.type, score: item.radarScore });
   }, []);
 
   const handleNavigateItem = useCallback((item: RadarResultItem) => {

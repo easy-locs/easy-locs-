@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useRadarResults } from "./useRadarResults";
+import { useRadarResults, type RadarEntity } from "./useRadarResults";
 import type { RadarResultItem, RadarVertical } from "@/lib/radar/radar-result-item";
 import {
   formatDistanceLabel,
@@ -26,21 +26,22 @@ export function useDashboardRadar(limit = 5) {
     if (!entities.length) return [];
 
     const mapped: RadarResultItem[] = entities.map((e) => {
-      const vertical: RadarVertical =
+      const typeVertical: RadarVertical =
         TYPE_TO_VERTICAL[e.type] || "shops";
+      const resolvedVertical = (e.vertical || typeVertical) as RadarVertical;
 
       return {
         id: e.id,
-        type: vertical,
-        vertical: String(vertical),
+        type: resolvedVertical,
+        vertical: String(resolvedVertical),
         title: e.name || e.title || "",
         subtitle: e.subtitle || e.address || null,
         priceLabel: null,
         distanceLabel: formatDistanceLabel(e.distance),
         distanceKm: e.distance ?? null,
         ratingValue: e.rating ?? null,
-        ratingLabel: formatRatingLabel(e.rating, (e as any).reviewsCount),
-        reviewsCount: (e as any).reviewsCount ?? 0,
+        ratingLabel: formatRatingLabel(e.rating, e.reviewsCount),
+        reviewsCount: e.reviewsCount ?? 0,
         statusLabel: null,
         available: true,
         image: e.imageUrl || e.image_url || null,
@@ -53,11 +54,11 @@ export function useDashboardRadar(limit = 5) {
         district: null,
         city: null,
         address: e.address || null,
-        isSponsored: (e as any).isSponsored ?? false,
+        isSponsored: e.isSponsored ?? false,
         qualityScore: computeQuickQuality(e),
         radarScore: computeQuickScore(e),
-        primaryAction: buildPrimaryAction(vertical),
-        secondaryActions: buildSecondaryActions(vertical, {
+        primaryAction: buildPrimaryAction(resolvedVertical),
+        secondaryActions: buildSecondaryActions(resolvedVertical, {
           orbitBindable: true,
           walletBindable: true,
         }),
