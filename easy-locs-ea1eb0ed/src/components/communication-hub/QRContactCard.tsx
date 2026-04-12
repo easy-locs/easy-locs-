@@ -15,6 +15,7 @@ import { playScanBeep } from "@/lib/audio/scan-beep";
 import { toast } from "sonner";
 import QRCodeLib from "qrcode";
 import { requestMediaStream } from "@/lib/device/permissions";
+import { qr, encodeQr } from "@/lib/qr-engine";
 
 interface Props {
   open: boolean;
@@ -22,10 +23,6 @@ interface Props {
   onContactAdded?: () => void;
   onSendAsAttachment?: (file: File) => void;
   initialMode?: "show" | "scan";
-}
-
-function encodeContactData(data: { userId: string; name: string; email?: string }) {
-  return JSON.stringify({ t: "el-contact", v: 1, ...data });
 }
 
 function toBase64Utf8(value: string): string {
@@ -61,17 +58,14 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
   const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const myData = user ? encodeContactData({
-    userId: user.id,
-    name: user.user_metadata?.full_name || `EL-${user.id.replace(/-/g, "").substring(0, 8).toUpperCase()}`,
-  }) : "";
+  const userName = user?.user_metadata?.full_name || `EL-${(user?.id || "").replace(/-/g, "").substring(0, 8).toUpperCase()}`;
 
-  const directAddUrl = user && typeof window !== "undefined"
-    ? `${window.location.origin}/orbit/add?userId=${user.id}`
+  const qrPayload = user
+    ? encodeQr(qr.addContact(user.id, userName))
     : "";
 
-  const qrPayload = myData && typeof window !== "undefined"
-    ? `${window.location.origin}/orbit/add?userId=${user?.id}&data=${encodeURIComponent(toBase64Utf8(myData))}`
+  const directAddUrl = user && typeof window !== "undefined"
+    ? `${window.location.origin}/#/add-contact?userId=${user.id}&name=${encodeURIComponent(userName)}`
     : "";
 
   useEffect(() => {
@@ -154,18 +148,24 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
         if (b64) {
           contactData = fromBase64Utf8(b64);
         } else if (directUserId) {
-          contactData = JSON.stringify({ t: "el-contact", v: 1, userId: directUserId, name: `User ${directUserId.substring(0, 8)}` });
+          contactData = JSON.stringify({ userId: directUserId, name: url.searchParams.get("name") || `User ${directUserId.substring(0, 8)}` });
         } else {
           throw new Error("No data");
         }
       } else if (trimmed.startsWith("{")) {
         contactData = trimmed;
       } else {
-        contactData = fromBase64Utf8(trimmed);
+        const { decodeQr } = await import("@/lib/qr-engine");
+        const qrPayload = decodeQr(trimmed);
+        if (qrPayload && qrPayload.action === "add_contact") {
+          contactData = JSON.stringify({ userId: qrPayload.userId, name: qrPayload.name || "Contact" });
+        } else {
+          contactData = fromBase64Utf8(trimmed);
+        }
       }
 
       const parsed = JSON.parse(contactData);
-      if (parsed.t !== "el-contact") throw new Error("Invalid");
+      if (!parsed.userId) throw new Error("Invalid");
       if (parsed.userId === user.id) {
         toast.info(t("orbit.qr.self_scan"));
         setAdding(false);
@@ -300,8 +300,6 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
     handleScannedData(manualLink.trim());
     setManualLink("");
   };
-
-  const userName = user?.user_metadata?.full_name || (user?.id ? `EL-${user.id.replace(/-/g, "").substring(0, 8).toUpperCase()}` : "User");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

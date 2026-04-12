@@ -50,7 +50,9 @@ export async function insertMessage(params: {
     metadata: params.metadata || null,
     reply_to_message_id: params.replyToMessageId || null,
   };
-  if (params.disappear_at) row.disappear_at = params.disappear_at;
+  if (params.disappear_at) {
+    row.metadata = { ...(row.metadata || {}), disappear_at: params.disappear_at };
+  }
   if (params.view_once) row.view_once = true;
 
   const { data, error } = await db("chat_messages_v2").insert(row).select().single();
@@ -567,8 +569,7 @@ export async function setDisappearTimer(msgId: string, seconds: number) {
   const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", msgId).single();
   const meta = (existing?.metadata as Record<string, any>) || {};
   const { error } = await db("chat_messages_v2").update({
-    disappear_at: disappearAt,
-    metadata: { ...meta, disappear_after_seconds: seconds },
+    metadata: { ...meta, disappear_after_seconds: seconds, disappear_at: disappearAt },
   }).eq("id", msgId);
   if (error) throw error;
 }

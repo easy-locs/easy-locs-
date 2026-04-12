@@ -10,6 +10,12 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Typography**: Min `text-[10px]`, `font-size: 16px` on inputs
 - **Bottom nav**: 72px height, hidden on `/login`, `/signup`, `/orbit`, `/checkout`, `/pay/`, `/order/`
 - **DB Access**: ALL database calls MUST use `db(table)` from `src/services/db.ts`
+- **Supabase Project**: `ifvuvbolrmuuugtzxsfk` (Southeast Asia/Singapore). Config.toml project_id must match.
+- **Event Bus Bridge**: NOTATION_BRIDGE in `platform-bus.ts` maps dot↔colon events. Both formats must be in PlatformEventType union.
+- **Conversation Uniqueness**: `conversations_v2` has unique index `uq_conversations_v2_direct_pair` on `metadata->>'direct_user_ids'` for `type='direct'`. Pair format: sorted UUID array. Group conversations unaffected (WHERE clause).
+- **Pair Key Separator**: All user-pair keys use `::` separator (e.g., `[userA, userB].sort().join("::") `).
+- **QR Identity**: All contact QR codes use `qr.addContact()` from `qr-engine.ts`. Legacy `el-contact` format still accepted for backward compatibility. Route: `/add-contact?userId=...&name=...`.
+- **Disappearing Messages**: `disappear_at` column does NOT exist on `chat_messages_v2`. Value stored in `metadata.disappear_at` JSONB field. Client reads both `msg.disappear_at` and `msg.metadata?.disappear_at`.
 
 ## Super App Platform Layer (Block 1)
 - **Unified Module Registry** (`src/lib/core/module-registry.ts`): 27 modules across 5 pillars, each declaring domain, ownership, capabilities, routes, canonical models, events published/consumed, dependencies, health checks, feature flags, permissions, UI surfaces, backend services. `moduleRegistry` singleton for discovery/orchestration.

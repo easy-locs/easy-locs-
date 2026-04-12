@@ -123,8 +123,9 @@ function ChatMessageBubble({
   const [expired, setExpired] = useState(false);
   useEffect(() => {
     if (shouldHideMessage(msg)) { setExpired(true); return; }
-    if (msg.disappear_at) {
-      const ms = new Date(msg.disappear_at).getTime() - Date.now();
+    const disappearAt = msg.disappear_at || (msg.metadata as any)?.disappear_at;
+    if (disappearAt) {
+      const ms = new Date(disappearAt).getTime() - Date.now();
       if (ms > 0) {
         const timer = setTimeout(() => setExpired(true), ms);
         return () => clearTimeout(timer);
@@ -132,7 +133,7 @@ function ChatMessageBubble({
         setExpired(true);
       }
     }
-  }, [msg.disappear_at]);
+  }, [msg.disappear_at, msg.metadata]);
 
   // Anti-screenshot: blur on visibility change
   const [blurred, setBlurred] = useState(false);
@@ -310,8 +311,8 @@ function ChatMessageBubble({
         )}
 
         {/* Ephemeral timer badge */}
-        {!!msg.disappear_at && !expired && (() => {
-          const remaining = new Date(msg.disappear_at).getTime() - Date.now();
+        {!!(msg.disappear_at || (msg.metadata as any)?.disappear_at) && !expired && (() => {
+          const remaining = new Date(msg.disappear_at || (msg.metadata as any)?.disappear_at).getTime() - Date.now();
           if (remaining <= 0) return null;
           const label = remaining < 60_000 ? `${Math.ceil(remaining / 1000)}s`
             : remaining < 3_600_000 ? `${Math.ceil(remaining / 60_000)}m`

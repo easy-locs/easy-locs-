@@ -66,7 +66,7 @@ export async function createOrGetDirectConversation(params: Params): Promise<Con
   }
 
   // ── FLOW GATE: prevent duplicate concurrent creation for same pair ──
-  const pairKey = [params.myUserId, params.peerUserId].sort().join(":");
+  const pairKey = [params.myUserId, params.peerUserId].sort().join("::");
   const flowKey = `conversation.openDirect:${pairKey}`;
   if (isFlowActive(flowKey)) {
     // Wait briefly for in-flight creation, then retry lookup
@@ -154,6 +154,14 @@ async function _createOrGetDirectConversationInternal(params: Params): Promise<C
   });
 
   if (error) {
+    if (error.code === "23505" || error.message?.includes("unique") || error.message?.includes("duplicate")) {
+      const { data: raceWinner } = await orbitDb.conversations
+        .list()
+        .eq("type", "direct")
+        .contains("metadata", { direct_user_ids: directUserIds })
+        .maybeSingle();
+      if (raceWinner) return raceWinner as ConversationRow;
+    }
     console.error("[createOrGetDirectConversation] insert error:", error);
     throw error;
   }

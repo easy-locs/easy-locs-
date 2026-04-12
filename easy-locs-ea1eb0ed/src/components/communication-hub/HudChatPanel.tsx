@@ -502,8 +502,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
           const qrCanvas = document.createElement("canvas");
           const contactName = thread?.name || "Contact";
           const contactId = thread?.peerUserId || thread?.tenantId || thread?.entityId || "";
-          const contactData = JSON.stringify({ t: "el-contact", v: 1, userId: contactId, name: contactName });
-          const shareUrl = `${window.location.origin}/#/add-contact?data=${encodeURIComponent(btoa(contactData))}`;
+          const shareUrl = `${window.location.origin}/#/add-contact?userId=${contactId}&name=${encodeURIComponent(contactName)}`;
           import("qrcode").then(QRCodeLib => {
             QRCodeLib.default.toDataURL(shareUrl, { width: 400, margin: 2, errorCorrectionLevel: "H" }).then(dataUrl => {
               navigator.clipboard.writeText(shareUrl).then(() => {
