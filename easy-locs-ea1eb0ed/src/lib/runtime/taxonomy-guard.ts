@@ -192,6 +192,6 @@ export function runTaxonomyGuard(): { total: number; clean: number; violations: 
     violationCount > 0 ? `${violationCount} taxonomy violations (${criticalCount} critical)` : undefined
   );
 
-  console.log(`[taxonomy-guard] Taxonomy enforcement active — 10 canonical verticals locked${violationCount > 0 ? `, ${violationCount} violations tracked` : ""}`);
+  console.log(`[taxonomy-guard] Taxonomy enforcement active — ${CANONICAL_VERTICALS.length} canonical verticals locked${violationCount > 0 ? `, ${violationCount} violations tracked` : ""}`);
   return { total: violationCount, clean: 0, violations: violationCount, critical: criticalCount };
 }
