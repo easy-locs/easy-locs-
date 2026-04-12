@@ -53,7 +53,7 @@ export async function saveProfile(userId: string, displayNameOrData: string | Pr
   if (profileError) console.warn("[saveProfile] profiles update:", profileError.message);
 
   const orbitUpdate: Record<string, any> = { display_name: data.displayName, avatar_url: data.avatarUrl };
-  const { error: orbitError } = await db("orbit_profiles_v2" as any).update(orbitUpdate as any).eq("user_id", userId);
+  const { error: orbitError } = await db("orbit_profiles_v2" as any).update(orbitUpdate as any).eq("id", userId);
   if (orbitError) console.warn("[saveProfile] orbit_profiles_v2 update:", orbitError.message);
 }
 

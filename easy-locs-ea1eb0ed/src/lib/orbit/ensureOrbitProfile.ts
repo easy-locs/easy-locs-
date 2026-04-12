@@ -51,7 +51,6 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
     role: "user",
     updated_at: new Date().toISOString(),
   };
-  if (phone) row.phone = phone;
 
   const { data, error } = await db("orbit_profiles_v2")
     .upsert(row as any, { onConflict: "id" })

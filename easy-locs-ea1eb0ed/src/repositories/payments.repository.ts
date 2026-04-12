@@ -19,7 +19,7 @@ export async function createRentPayment(body: Record<string, any>) {
 
 // ── Stripe checkout ──
 export async function createStripeCheckout(body: Record<string, any>) {
-  const { data, error } = await db.functions.invoke("create-stripe-checkout" as any, { body });
+  const { data, error } = await db.functions.invoke("create-checkout", { body });
   if (error) throw error;
   return data;
 }
@@ -67,7 +67,7 @@ export async function invokeOrbitPayment(body: Record<string, any>) {
 
 // ── FX ──
 export async function invokeFXRate(body: Record<string, any>) {
-  const { data, error } = await db.functions.invoke("get-fx-rate" as any, { body });
+  const { data, error } = await db.functions.invoke("fx-rates", { body });
   if (error) throw error;
   return data;
 }

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { typedQueries } from "@/lib/db/typed-queries";
 
 export interface UnifiedPayTarget {
@@ -48,13 +49,13 @@ async function findProfile(input: {
   }
 
   if (input.phone) {
-    const { data: orbitRow } = await supabase
-      .from("orbit_profiles_v2")
-      .select("id, display_name")
+    const { data: profileRow } = await db
+      .from("profiles")
+      .select("id")
       .eq("phone", input.phone.trim())
       .maybeSingle();
-    if (orbitRow?.id) {
-      const { data } = await typedQueries.profiles.selectById(orbitRow.id);
+    if (profileRow?.id) {
+      const { data } = await typedQueries.profiles.selectById(profileRow.id);
       const row = Array.isArray(data) ? data[0] : data;
       if (row) return { id: row.id, display_name: buildDisplayName(row as Record<string, unknown>), email: row.email ?? null };
     }

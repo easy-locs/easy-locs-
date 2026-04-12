@@ -65,7 +65,7 @@ export async function lookupOrbitProfile(userId: string): Promise<CanonicalOrbit
 
   const { data: orbitRow } = await db
     .from("orbit_profiles_v2")
-    .select("id, orbit_id, display_name, email, avatar_url, phone")
+    .select("id, orbit_id, display_name, email, avatar_url")
     .eq("id", userId)
     .maybeSingle();
   if (orbitRow) {
@@ -105,7 +105,7 @@ export async function batchLookupProfiles(userIds: string[]): Promise<Map<string
   if (missing.length > 0) {
     const { data: orbitRows } = await db
       .from("orbit_profiles_v2")
-      .select("id, orbit_id, display_name, email, avatar_url, phone")
+      .select("id, orbit_id, display_name, email, avatar_url")
       .in("id", missing);
     if (orbitRows?.length) {
       trace("batchLookup", "direct", { source: "orbit_profiles_v2", count: orbitRows.length });
@@ -150,7 +150,7 @@ export async function resolveUserByOrbitId(orbitId: string): Promise<CanonicalOr
 
   const { data: orbitRow } = await db
     .from("orbit_profiles_v2")
-    .select("id, orbit_id, display_name, email, avatar_url, phone")
+    .select("id, orbit_id, display_name, email, avatar_url")
     .eq("orbit_id", orbitId)
     .maybeSingle();
   if (orbitRow) {

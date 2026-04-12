@@ -41,7 +41,6 @@ interface OrbitProfileRow {
   display_name: string | null;
   avatar_url: string | null;
   email: string | null;
-  phone: string | null;
 }
 
 export const typedQueries = {
@@ -75,7 +74,7 @@ export const typedQueries = {
     },
     selectByUserId(userId: string) {
       return untypedFrom("orbit_profiles_v2")
-        .select("id, orbit_id, display_name, avatar_url, email, phone")
+        .select("id, orbit_id, display_name, avatar_url, email")
         .eq("id", userId)
         .maybeSingle() as unknown as PromiseLike<{ data: OrbitProfileRow | null; error: unknown }>;
     },
@@ -121,10 +120,10 @@ export const typedQueries = {
         .maybeSingle() as unknown as PromiseLike<{ data: { id: string; currency: string } | null; error: unknown }>;
     },
     selectBalanceByWallet(walletId: string) {
-      return untypedFrom("wallet_balances_v2")
-        .select("available")
-        .eq("wallet_id", walletId)
-        .maybeSingle() as unknown as PromiseLike<{ data: { available: number } | null; error: unknown }>;
+      return untypedFrom("wallet_accounts")
+        .select("balance, available_balance, currency")
+        .eq("id", walletId)
+        .maybeSingle() as unknown as PromiseLike<{ data: { balance: number; available_balance: number; currency: string } | null; error: unknown }>;
     },
   },
 

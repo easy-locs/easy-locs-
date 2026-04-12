@@ -140,7 +140,7 @@ export async function signInOrSignUpWithPhone(phone: string): Promise<{
   const normalized = normalizePhone(phone);
 
   const { data: existingProfile } = await db
-    .from("orbit_profiles_v2")
+    .from("profiles")
     .select("id")
     .eq("phone", normalized)
     .maybeSingle();
