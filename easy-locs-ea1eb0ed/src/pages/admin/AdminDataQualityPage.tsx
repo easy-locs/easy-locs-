@@ -1,0 +1,604 @@
+import { useState, useMemo } from "react";
+import { runFullAudit, getCachedReport } from "@/lib/data-quality/audit-runner";
+import type { FullAuditReport, EntityFinding, EntityClassification, IssueSeverity } from "@/lib/data-quality/types";
+
+const NAVY = "hsl(220 40% 18%)";
+const NAVY_LIGHT = "hsl(220 40% 14%)";
+const GOLD = "hsl(38 65% 56%)";
+const BORDER = "hsl(220 30% 25%)";
+const TEXT = "hsl(220 20% 85%)";
+const TEXT_DIM = "hsl(220 15% 60%)";
+const RED = "hsl(0 72% 51%)";
+const ORANGE = "hsl(25 95% 53%)";
+const YELLOW = "hsl(45 93% 47%)";
+const GREEN = "hsl(142 71% 45%)";
+const BLUE = "hsl(217 91% 60%)";
+
+const SEVERITY_COLOR: Record<IssueSeverity, string> = {
+  critical: RED,
+  high: ORANGE,
+  medium: YELLOW,
+  low: BLUE,
+  info: TEXT_DIM,
+};
+
+const CLASSIFICATION_COLOR: Record<string, string> = {
+  VALID: GREEN,
+  VALID_WITH_WARNINGS: YELLOW,
+  SUSPICIOUS: ORANGE,
+  INVALID: RED,
+  DUPLICATE: "hsl(280 60% 55%)",
+  ORPHAN: "hsl(320 60% 50%)",
+  INCOMPLETE: ORANGE,
+  MISCLASSIFIED: RED,
+  CROSS_VERTICAL_CONTAMINATION: RED,
+  BROKEN_MEDIA: RED,
+  BROKEN_REFERENCE: RED,
+  LEGACY_SHADOW: "hsl(200 40% 50%)",
+  QUARANTINED: "hsl(0 0% 50%)",
+};
+
+function AdminDataQualityPage() {
+  const [report, setReport] = useState<FullAuditReport | null>(getCachedReport());
+  const [running, setRunning] = useState(false);
+  const [filterVertical, setFilterVertical] = useState<string>("all");
+  const [filterClassification, setFilterClassification] = useState<string>("all");
+  const [filterSource, setFilterSource] = useState<string>("all");
+  const [filterSeverity, setFilterSeverity] = useState<string>("all");
+  const [searchText, setSearchText] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"overview" | "findings" | "sources" | "quarantine" | "remediations">("overview");
+
+  const handleRunAudit = () => {
+    setRunning(true);
+    setTimeout(() => {
+      const r = runFullAudit();
+      setReport(r);
+      setRunning(false);
+    }, 50);
+  };
+
+  const filteredFindings = useMemo(() => {
+    if (!report) return [];
+    return report.findings.filter((f) => {
+      if (filterVertical !== "all" && f.vertical !== filterVertical) return false;
+      if (filterClassification !== "all" && f.classification !== filterClassification) return false;
+      if (filterSource !== "all" && f.source !== filterSource) return false;
+      if (filterSeverity !== "all") {
+        const hasSeverity = f.issues.some((i) => i.severity === filterSeverity);
+        if (!hasSeverity) return false;
+      }
+      if (searchText) {
+        const q = searchText.toLowerCase();
+        return (
+          f.entityId.toLowerCase().includes(q) ||
+          f.title.toLowerCase().includes(q) ||
+          f.issues.some((i) => i.message.toLowerCase().includes(q))
+        );
+      }
+      return true;
+    });
+  }, [report, filterVertical, filterClassification, filterSource, filterSeverity, searchText]);
+
+  const verticals = useMemo(() => {
+    if (!report) return [];
+    return [...new Set(report.findings.map((f) => f.vertical))].sort();
+  }, [report]);
+
+  const sources = useMemo(() => {
+    if (!report) return [];
+    return [...new Set(report.findings.map((f) => f.source))].sort();
+  }, [report]);
+
+  const classifications = useMemo(() => {
+    if (!report) return [];
+    return [...new Set(report.findings.map((f) => f.classification))].sort();
+  }, [report]);
+
+  return (
+    <div style={{ minHeight: "100vh", background: NAVY, color: TEXT, padding: 24 }}>
+      <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 700, color: GOLD, margin: 0 }}>Data Quality Audit</h1>
+            <p style={{ color: TEXT_DIM, margin: "4px 0 0", fontSize: 14 }}>
+              Full entity-by-entity audit, classification, remediation, and quarantine
+            </p>
+          </div>
+          <button
+            onClick={handleRunAudit}
+            disabled={running}
+            style={{
+              background: GOLD,
+              color: NAVY,
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 24px",
+              fontWeight: 700,
+              fontSize: 14,
+              cursor: running ? "wait" : "pointer",
+              opacity: running ? 0.6 : 1,
+            }}
+          >
+            {running ? "Running Audit..." : report ? "Re-run Audit" : "Run Full Audit"}
+          </button>
+        </div>
+
+        {!report && !running && (
+          <div style={{ textAlign: "center", padding: 60, color: TEXT_DIM }}>
+            <p style={{ fontSize: 18 }}>No audit data yet. Click "Run Full Audit" to begin.</p>
+          </div>
+        )}
+
+        {report && (
+          <>
+            <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+              {(["overview", "findings", "sources", "quarantine", "remediations"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  style={{
+                    background: activeTab === tab ? GOLD : NAVY_LIGHT,
+                    color: activeTab === tab ? NAVY : TEXT,
+                    border: `1px solid ${activeTab === tab ? GOLD : BORDER}`,
+                    borderRadius: 6,
+                    padding: "8px 16px",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {tab}
+                  {tab === "quarantine" && report.quarantine.length > 0 && (
+                    <span style={{ marginLeft: 6, background: RED, color: "#fff", borderRadius: 10, padding: "2px 6px", fontSize: 11 }}>
+                      {report.quarantine.length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {activeTab === "overview" && <OverviewTab report={report} />}
+            {activeTab === "findings" && (
+              <FindingsTab
+                findings={filteredFindings}
+                totalFindings={report.findings.length}
+                verticals={verticals}
+                sources={sources}
+                classifications={classifications}
+                filterVertical={filterVertical}
+                setFilterVertical={setFilterVertical}
+                filterClassification={filterClassification}
+                setFilterClassification={setFilterClassification}
+                filterSource={filterSource}
+                setFilterSource={setFilterSource}
+                filterSeverity={filterSeverity}
+                setFilterSeverity={setFilterSeverity}
+                searchText={searchText}
+                setSearchText={setSearchText}
+                expandedId={expandedId}
+                setExpandedId={setExpandedId}
+              />
+            )}
+            {activeTab === "sources" && <SourcesTab report={report} />}
+            {activeTab === "quarantine" && <QuarantineTab report={report} />}
+            {activeTab === "remediations" && <RemediationsTab report={report} />}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, color }: { label: string; value: number | string; color?: string }) {
+  return (
+    <div style={{ background: NAVY_LIGHT, border: `1px solid ${BORDER}`, borderRadius: 10, padding: 16, flex: 1, minWidth: 140 }}>
+      <div style={{ fontSize: 12, color: TEXT_DIM, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 700, color: color ?? GOLD }}>{value}</div>
+    </div>
+  );
+}
+
+function OverviewTab({ report }: { report: FullAuditReport }) {
+  const s = report.summary;
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 }}>
+        <StatCard label="Total Entities" value={s.totalEntities} />
+        <StatCard label="Valid" value={s.byClassification["VALID"] ?? 0} color={GREEN} />
+        <StatCard label="With Warnings" value={s.byClassification["VALID_WITH_WARNINGS"] ?? 0} color={YELLOW} />
+        <StatCard label="Quarantined" value={s.quarantined} color={RED} />
+        <StatCard label="Auto-Fixed" value={s.autoFixed} color={BLUE} />
+        <StatCard label="Duplicates" value={s.duplicatesFound} color="hsl(280 60% 55%)" />
+        <StatCard label="Orphans" value={s.orphansFound} color="hsl(320 60% 50%)" />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+        <div style={{ background: NAVY_LIGHT, border: `1px solid ${BORDER}`, borderRadius: 10, padding: 16 }}>
+          <h3 style={{ color: GOLD, fontSize: 15, fontWeight: 700, marginBottom: 12 }}>By Classification</h3>
+          {Object.entries(s.byClassification)
+            .sort(([, a], [, b]) => b - a)
+            .map(([cls, count]) => (
+              <div key={cls} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13 }}>
+                <span style={{ color: CLASSIFICATION_COLOR[cls] ?? TEXT }}>{cls}</span>
+                <span style={{ fontWeight: 600 }}>{count}</span>
+              </div>
+            ))}
+        </div>
+
+        <div style={{ background: NAVY_LIGHT, border: `1px solid ${BORDER}`, borderRadius: 10, padding: 16 }}>
+          <h3 style={{ color: GOLD, fontSize: 15, fontWeight: 700, marginBottom: 12 }}>By Vertical</h3>
+          {Object.entries(s.byVertical)
+            .sort(([, a], [, b]) => b.issues - a.issues)
+            .map(([vert, data]) => (
+              <div key={vert} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13 }}>
+                <span>{vert}</span>
+                <span>
+                  <span style={{ color: GREEN, marginRight: 8 }}>{data.valid} ok</span>
+                  {data.issues > 0 && <span style={{ color: ORANGE }}>{data.issues} issues</span>}
+                </span>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ background: NAVY_LIGHT, border: `1px solid ${BORDER}`, borderRadius: 10, padding: 16 }}>
+          <h3 style={{ color: GOLD, fontSize: 15, fontWeight: 700, marginBottom: 12 }}>By Issue Severity</h3>
+          {(["critical", "high", "medium", "low", "info"] as IssueSeverity[]).map((sev) => {
+            const count = s.byIssueSeverity[sev] ?? 0;
+            if (count === 0) return null;
+            return (
+              <div key={sev} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13 }}>
+                <span style={{ color: SEVERITY_COLOR[sev] }}>{sev.toUpperCase()}</span>
+                <span style={{ fontWeight: 600 }}>{count}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ background: NAVY_LIGHT, border: `1px solid ${BORDER}`, borderRadius: 10, padding: 16 }}>
+          <h3 style={{ color: GOLD, fontSize: 15, fontWeight: 700, marginBottom: 12 }}>By Source</h3>
+          {Object.entries(s.bySource)
+            .sort(([, a], [, b]) => b.total - a.total)
+            .map(([src, data]) => (
+              <div key={src} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13 }}>
+                <span style={{ fontSize: 12 }}>{src}</span>
+                <span>
+                  <span style={{ color: GREEN, marginRight: 6 }}>{data.valid}</span>
+                  {data.issues > 0 && <span style={{ color: ORANGE }}>{data.issues}</span>}
+                </span>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 24, background: NAVY_LIGHT, border: `1px solid ${BORDER}`, borderRadius: 10, padding: 16 }}>
+        <h3 style={{ color: GOLD, fontSize: 15, fontWeight: 700, marginBottom: 8 }}>Audit Timestamp</h3>
+        <p style={{ fontSize: 13, color: TEXT_DIM, margin: 0 }}>{s.timestamp}</p>
+      </div>
+    </div>
+  );
+}
+
+function FindingsTab({
+  findings,
+  totalFindings,
+  verticals,
+  sources,
+  classifications,
+  filterVertical,
+  setFilterVertical,
+  filterClassification,
+  setFilterClassification,
+  filterSource,
+  setFilterSource,
+  filterSeverity,
+  setFilterSeverity,
+  searchText,
+  setSearchText,
+  expandedId,
+  setExpandedId,
+}: {
+  findings: EntityFinding[];
+  totalFindings: number;
+  verticals: string[];
+  sources: string[];
+  classifications: string[];
+  filterVertical: string;
+  setFilterVertical: (v: string) => void;
+  filterClassification: string;
+  setFilterClassification: (v: string) => void;
+  filterSource: string;
+  setFilterSource: (v: string) => void;
+  filterSeverity: string;
+  setFilterSeverity: (v: string) => void;
+  searchText: string;
+  setSearchText: (v: string) => void;
+  expandedId: string | null;
+  setExpandedId: (v: string | null) => void;
+}) {
+  const selectStyle: React.CSSProperties = {
+    background: NAVY_LIGHT,
+    color: TEXT,
+    border: `1px solid ${BORDER}`,
+    borderRadius: 6,
+    padding: "6px 10px",
+    fontSize: 12,
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
+        <select value={filterVertical} onChange={(e) => setFilterVertical(e.target.value)} style={selectStyle}>
+          <option value="all">All Verticals</option>
+          {verticals.map((v) => (
+            <option key={v} value={v}>{v}</option>
+          ))}
+        </select>
+        <select value={filterClassification} onChange={(e) => setFilterClassification(e.target.value)} style={selectStyle}>
+          <option value="all">All Classifications</option>
+          {classifications.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)} style={selectStyle}>
+          <option value="all">All Sources</option>
+          {sources.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <select value={filterSeverity} onChange={(e) => setFilterSeverity(e.target.value)} style={selectStyle}>
+          <option value="all">All Severities</option>
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <input
+          type="text"
+          placeholder="Search entities or issues..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ ...selectStyle, minWidth: 200 }}
+        />
+        <span style={{ fontSize: 12, color: TEXT_DIM, marginLeft: "auto" }}>
+          {findings.length} / {totalFindings} entities
+        </span>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {findings.slice(0, 200).map((f) => (
+          <div
+            key={`${f.source}::${f.entityId}`}
+            style={{
+              background: NAVY_LIGHT,
+              border: `1px solid ${BORDER}`,
+              borderRadius: 8,
+              borderLeft: `3px solid ${CLASSIFICATION_COLOR[f.classification] ?? BORDER}`,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              onClick={() => setExpandedId(expandedId === f.entityId ? null : f.entityId)}
+              style={{ padding: "10px 14px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+            >
+              <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 11, color: CLASSIFICATION_COLOR[f.classification] ?? TEXT, fontWeight: 700, minWidth: 60 }}>
+                  {f.classification === "VALID" ? "VALID" : f.classification.replace(/_/g, " ").slice(0, 12)}
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {f.title}
+                </span>
+                <span style={{ fontSize: 11, color: TEXT_DIM }}>{f.vertical}/{f.subcategory}</span>
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 11, color: TEXT_DIM }}>{f.source}</span>
+                {f.issues.length > 0 && (
+                  <span style={{ fontSize: 11, color: ORANGE }}>
+                    {f.issues.length} issue{f.issues.length > 1 ? "s" : ""}
+                  </span>
+                )}
+                <span style={{ fontSize: 14, color: TEXT_DIM }}>{expandedId === f.entityId ? "▲" : "▼"}</span>
+              </div>
+            </div>
+
+            {expandedId === f.entityId && (
+              <div style={{ padding: "0 14px 14px", borderTop: `1px solid ${BORDER}` }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "10px 0", fontSize: 12 }}>
+                  <div><span style={{ color: TEXT_DIM }}>Entity ID:</span> {f.entityId}</div>
+                  <div><span style={{ color: TEXT_DIM }}>Source:</span> {f.source}</div>
+                  <div><span style={{ color: TEXT_DIM }}>Vertical:</span> {f.vertical}</div>
+                  <div><span style={{ color: TEXT_DIM }}>Category:</span> {f.category}</div>
+                  <div><span style={{ color: TEXT_DIM }}>Subcategory:</span> {f.subcategory}</div>
+                  <div><span style={{ color: TEXT_DIM }}>Entity Type:</span> {f.entityType}</div>
+                  <div style={{ gridColumn: "1/-1" }}><span style={{ color: TEXT_DIM }}>Media:</span> {f.mediaSummary}</div>
+                </div>
+
+                {f.issues.length > 0 && (
+                  <div style={{ marginTop: 8 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: GOLD, marginBottom: 6 }}>Issues</div>
+                    {f.issues.map((iss, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          padding: "4px 0",
+                          fontSize: 12,
+                          borderBottom: idx < f.issues.length - 1 ? `1px solid ${BORDER}` : undefined,
+                        }}
+                      >
+                        <span style={{ color: SEVERITY_COLOR[iss.severity], fontWeight: 600, minWidth: 60, fontSize: 11 }}>
+                          {iss.severity.toUpperCase()}
+                        </span>
+                        <span style={{ color: TEXT_DIM, minWidth: 80, fontSize: 11 }}>[{iss.code}]</span>
+                        <span>{iss.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {findings.length > 200 && (
+          <div style={{ textAlign: "center", padding: 12, color: TEXT_DIM, fontSize: 13 }}>
+            Showing 200 of {findings.length} findings. Use filters to narrow.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SourcesTab({ report }: { report: FullAuditReport }) {
+  return (
+    <div>
+      <h3 style={{ color: GOLD, fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Data Source Inventory</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {report.sources.map((src) => (
+          <div
+            key={src.name}
+            style={{
+              background: NAVY_LIGHT,
+              border: `1px solid ${BORDER}`,
+              borderRadius: 10,
+              padding: 16,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 14 }}>{src.name}</span>
+              <span style={{
+                fontSize: 11,
+                padding: "2px 8px",
+                borderRadius: 4,
+                background: src.risk === "none" || src.risk === "low" ? GREEN : src.risk === "medium" ? YELLOW : RED,
+                color: NAVY,
+                fontWeight: 600,
+              }}>
+                Risk: {src.risk}
+              </span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, fontSize: 12 }}>
+              <div><span style={{ color: TEXT_DIM }}>Path:</span> {src.path}</div>
+              <div><span style={{ color: TEXT_DIM }}>Type:</span> {src.type}</div>
+              <div><span style={{ color: TEXT_DIM }}>Entities:</span> {src.entityCount}</div>
+              <div><span style={{ color: TEXT_DIM }}>Status:</span> {src.status}</div>
+              <div><span style={{ color: TEXT_DIM }}>Verticals:</span> {src.verticalsAffected.join(", ")}</div>
+              <div><span style={{ color: TEXT_DIM }}>Consumers:</span> {src.runtimeConsumers.join(", ")}</div>
+              <div style={{ gridColumn: "1/-1" }}><span style={{ color: TEXT_DIM }}>Action:</span> {src.actionNeeded}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function QuarantineTab({ report }: { report: FullAuditReport }) {
+  if (report.quarantine.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: 40, color: GREEN }}>
+        <p style={{ fontSize: 18, fontWeight: 600 }}>No entities quarantined</p>
+        <p style={{ fontSize: 13, color: TEXT_DIM }}>All data passed safety checks.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h3 style={{ color: RED, fontSize: 16, fontWeight: 700, marginBottom: 16 }}>
+        Quarantined Entities ({report.quarantine.length})
+      </h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {report.quarantine.map((q) => (
+          <div
+            key={`${q.source}::${q.entityId}`}
+            style={{
+              background: NAVY_LIGHT,
+              border: `1px solid ${RED}33`,
+              borderLeft: `3px solid ${RED}`,
+              borderRadius: 8,
+              padding: 14,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontWeight: 600, fontSize: 14 }}>{q.title}</span>
+              <span style={{ fontSize: 11, color: CLASSIFICATION_COLOR[q.classification] ?? TEXT }}>
+                {q.classification}
+              </span>
+            </div>
+            <div style={{ fontSize: 12, display: "flex", gap: 16 }}>
+              <span><span style={{ color: TEXT_DIM }}>ID:</span> {q.entityId}</span>
+              <span><span style={{ color: TEXT_DIM }}>Source:</span> {q.source}</span>
+              <span><span style={{ color: TEXT_DIM }}>Vertical:</span> {q.vertical}</span>
+            </div>
+            <div style={{ fontSize: 11, color: RED, marginTop: 6 }}>
+              Reasons: {q.reasonCodes.join(", ")}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RemediationsTab({ report }: { report: FullAuditReport }) {
+  if (report.remediations.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: 40, color: TEXT_DIM }}>
+        <p style={{ fontSize: 18 }}>No remediations applied</p>
+        <p style={{ fontSize: 13 }}>No deterministic auto-fixes were needed.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h3 style={{ color: GOLD, fontSize: 16, fontWeight: 700, marginBottom: 16 }}>
+        Remediation Log ({report.remediations.length} entries)
+      </h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {report.remediations.map((r, idx) => (
+          <div
+            key={idx}
+            style={{
+              background: NAVY_LIGHT,
+              border: `1px solid ${BORDER}`,
+              borderLeft: `3px solid ${r.action === "auto_fixed" ? GREEN : YELLOW}`,
+              borderRadius: 8,
+              padding: 14,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>{r.entityId}</span>
+              <span style={{
+                fontSize: 11,
+                padding: "2px 8px",
+                borderRadius: 4,
+                background: r.action === "auto_fixed" ? GREEN : YELLOW,
+                color: NAVY,
+                fontWeight: 600,
+              }}>
+                {r.action}
+              </span>
+            </div>
+            <div style={{ fontSize: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+              <div><span style={{ color: TEXT_DIM }}>Source:</span> {r.source}</div>
+              <div><span style={{ color: TEXT_DIM }}>Field:</span> {r.field ?? "—"}</div>
+              <div><span style={{ color: TEXT_DIM }}>Before:</span> {r.beforeState}</div>
+              <div><span style={{ color: TEXT_DIM }}>After:</span> {r.afterState}</div>
+              <div style={{ gridColumn: "1/-1" }}><span style={{ color: TEXT_DIM }}>Reason:</span> {r.reason}</div>
+              <div><span style={{ color: TEXT_DIM }}>Confidence:</span> {r.confidence}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default AdminDataQualityPage;

@@ -709,6 +709,18 @@ Full detect → classify → react → protect → verify → report cycle acros
 - **Wiring**: Integrated into rendering contracts (auto-protect on invalid render), gate-runner (auto-protect on pipeline failure), FeatureErrorBoundary (card protection), auto-heal engine (health monitoring), domain-instrumentation (OTP/auth/wallet/orbit rate limiting + abuse detection)
 - **Safety rules**: Never auto-fix critical issues, never suppress serious logic corruption, never weaken security, never allow public rendering of doubtful data, always log every action
 
+## Global Data Quality Phase
+- **Audit Engine** (`src/lib/data-quality/`): Full entity-by-entity audit system with 13 classification states (VALID, VALID_WITH_WARNINGS, SUSPICIOUS, INVALID, DUPLICATE, ORPHAN, INCOMPLETE, MISCLASSIFIED, CROSS_VERTICAL_CONTAMINATION, BROKEN_MEDIA, BROKEN_REFERENCE, LEGACY_SHADOW, QUARANTINED)
+- **Source Inventory** (`source-inventory.ts`): Maps all 9 data sources (FALLBACK_STORIES, FALLBACK_PROPERTIES, FALLBACK_HOTELS, FALLBACK_RESTAURANTS, FALLBACK_MENUS, FALLBACK_SHOPS, FALLBACK_GROCERY, FALLBACK_SERVICES, FALLBACK_SERVICE_ITEMS) with type, consumers, verticals, risk, status
+- **Entity Auditor** (`entity-auditor.ts`): Validates every entity across 8 dimensions — vertical integrity, taxonomy integrity (category tree lookup), media integrity, route/surface integrity, field completeness, reference integrity (room→hotel, menu→restaurant, service_item→provider), uniqueness/duplication (ID + slug + title dedup), cross-vertical contamination detection
+- **Quarantine System** (`quarantine.ts`): Entities classified as INVALID/CROSS_VERTICAL/BROKEN_MEDIA/BROKEN_REFERENCE/ORPHAN are quarantined and excluded from live surfaces
+- **Live Surface Sanitization**: Quarantine filter wired into `filterValidStories()` (story-taxonomy.ts) and `populateSearchIndex()` (search-index-populator.ts). Quarantined entities excluded from feeds, stories, search results, and discovery surfaces
+- **Search Index Rebuild**: After audit completes, if any entities were quarantined, search index is automatically rebuilt to exclude them
+- **Remediation Log**: Traceable before/after/reason/confidence entries for every auto-fix or quarantine action
+- **Admin Data Quality Page** (`/admin/data-quality`): Full report with Overview (stats cards, classification/vertical/severity/source breakdowns), Findings (filterable by vertical/classification/source/severity/text, expandable detail view with all issues), Sources (inventory with risk assessment), Quarantine (isolated entities with reason codes), Remediations (auto-fix log with before/after/confidence)
+- **Boot Integration**: Audit runs automatically at app boot via async import in event-init.ts
+- **Key files**: `src/lib/data-quality/types.ts`, `audit-runner.ts`, `entity-auditor.ts`, `quarantine.ts`, `source-inventory.ts`, `audit-report.ts`, `src/pages/admin/AdminDataQualityPage.tsx`
+
 ## Engineering Audit (2026-04-10)
 Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Build**: production build fixed (checkPublishBlockers import + duplicate patisserie key)

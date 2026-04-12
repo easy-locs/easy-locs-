@@ -457,6 +457,7 @@ export const AdminAIControlCenter = safeLazy(() => import("@/pages/AdminAIContro
 export const AdminMonetizationDashboard = safeLazy(() => import("@/pages/AdminMonetizationDashboard"), "AdminMonetizationDashboard");
 export const AdminBrowserRepairPage = safeLazy(() => import("@/pages/admin/AdminBrowserRepairPage"), "AdminBrowserRepairPage");
 export const AdminCentralControlPanelPage = safeLazy(() => import("@/pages/admin/CentralControlPanelPage"), "CentralControlPanelPage");
+export const AdminDataQualityPage = safeLazy(() => import("@/pages/admin/AdminDataQualityPage"), "AdminDataQualityPage");
 export const RiderPrioritySubscriptionPage = safeLazy(() => import("@/pages/RiderPrioritySubscriptionPage"), "RiderPrioritySubscriptionPage");
 
 // ═══════════════════════════════════════════════════════════════════

@@ -153,6 +153,11 @@ initCloseFlowEngine();
 installIntentBridge();
 populateSearchIndex();
 
+// ── Data Quality Audit ──
+import("@/lib/data-quality/audit-runner").then(({ runFullAudit }) => {
+  runFullAudit();
+});
+
 // ── Intelligence Layer (AI Ranking + Recommendation + Feed + Validation) ──
 import("@/lib/intelligence/intelligence-boot").then(({ bootIntelligenceLayer }) => {
   bootIntelligenceLayer();
