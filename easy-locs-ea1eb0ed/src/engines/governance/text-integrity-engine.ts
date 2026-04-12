@@ -1,6 +1,7 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
 import type { GovernanceViolation } from "@/domains/shared/canonical-types";
 import { persistViolation } from "@/services/governance/violation-persistence";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export type TextContext =
   | "card_title"
@@ -205,6 +206,21 @@ export class TextIntegrityEngine extends BaseEngine {
     const recent = textViolations.filter(
       (v) => Date.now() - new Date(v.detectedAt).getTime() < this.intervalMs
     );
+
+    if (recent.length > 0) {
+      platformBus.emit("text.integrity.violation", {
+        violations: recent.map(v => ({
+          id: v.id,
+          type: v.type,
+          severity: v.severity,
+          message: v.message,
+          source: v.source,
+          code: v.code,
+        })),
+        count: recent.length,
+        timestamp: Date.now(),
+      }, "system");
+    }
 
     return {
       level: recent.length > 0 ? "detect" : "observe",

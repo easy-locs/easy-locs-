@@ -239,7 +239,13 @@ type PlatformEventType =
   | "USER_OPEN_HOME"
   | "USER_SEARCH"
   // UI Engine (control-room telemetry)
-  | "ui-engine:report";
+  | "ui-engine:report"
+  // Governance engine violation events (repair pipeline bridging)
+  | "text.integrity.violation"
+  | "layout.integrity.violation"
+  | "i18n.localization.violation"
+  // Repair pipeline domain events
+  | "repair:pipeline:completed";
 
 export type { PlatformEventType };
 
