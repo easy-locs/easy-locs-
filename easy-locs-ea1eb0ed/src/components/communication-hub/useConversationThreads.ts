@@ -12,7 +12,7 @@ import { fetchOrgThreadSources, fetchV2Conversations, fetchDeals, fetchPreferenc
 import { filterUserConversations } from "@/lib/orbit/threads/thread-filter";
 import { mapOrgSourcesToThreads, mapV2ConversationsToThreads, mapDealsToThreads } from "@/lib/orbit/threads/thread-mapper";
 import { enrichPeerProfiles, enrichUnreadCounts, enrichLastMessages, applyPreferences } from "@/lib/orbit/threads/thread-enricher";
-import { normalizeAndSort } from "@/lib/orbit/threads/thread-sorter";
+import { normalizeAndSort, getCanonicalRenderKey } from "@/lib/orbit/threads/thread-sorter";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -196,9 +196,17 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
       const keys = Object.keys(updates) as (keyof ConversationThread)[];
       const changed = keys.some(k => existing[k] !== updates[k]);
       if (!changed) return prev;
-      const next = prev
-        .map(t => t.id === threadId ? { ...t, ...updates } : t)
-        .sort((a, b) => {
+      const updated = prev.map(t => t.id === threadId ? { ...t, ...updates } : t);
+      const seen = new Map<string, ConversationThread>();
+      for (const t of updated) {
+        const ck = getCanonicalRenderKey(t);
+        const ex = seen.get(ck);
+        if (!ex || (t.lastMessageTime || "") > (ex.lastMessageTime || "")) {
+          seen.set(ck, t);
+        }
+      }
+      const deduped = Array.from(seen.values());
+      const next = deduped.sort((a, b) => {
           if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
           if (a.unreadCount !== b.unreadCount) return b.unreadCount - a.unreadCount;
           const at = a.lastMessageTime || "";

@@ -50,8 +50,8 @@ export function mapOrgSourcesToThreads(
   }
 
   for (const b of mBookings) {
-    threadMap.set(`booking-${b.id}`, {
-      id: `booking-${b.id}`, conversationType: "booking", sourceModule: "marketplace",
+    threadMap.set(`marketplace-booking-${b.id}`, {
+      id: `marketplace-booking-${b.id}`, conversationType: "booking", sourceModule: "marketplace",
       ...withCanonicalIds("marketplace_booking", b.id),
       name: b.booker_name || "Client",
       email: b.booker_email || null, phone: b.booker_phone, bookingId: b.id,
@@ -63,8 +63,8 @@ export function mapOrgSourcesToThreads(
   }
 
   for (const o of cOrders) {
-    threadMap.set(`booking-${o.id}`, {
-      id: `booking-${o.id}`, conversationType: "booking", sourceModule: "marketplace",
+    threadMap.set(`concierge-booking-${o.id}`, {
+      id: `concierge-booking-${o.id}`, conversationType: "booking", sourceModule: "marketplace",
       ...withCanonicalIds("concierge_booking", o.id),
       name: o.guest_name || "Client",
       email: o.guest_email || null, phone: o.guest_phone, bookingId: o.id,
@@ -76,8 +76,8 @@ export function mapOrgSourcesToThreads(
   }
 
   for (const b of sBookings) {
-    threadMap.set(`booking-${b.id}`, {
-      id: `booking-${b.id}`, conversationType: "booking", sourceModule: "seasonal",
+    threadMap.set(`seasonal-booking-${b.id}`, {
+      id: `seasonal-booking-${b.id}`, conversationType: "booking", sourceModule: "seasonal",
       ...withCanonicalIds("seasonal_booking", b.id),
       name: b.guest_name || "Guest",
       email: b.guest_email || null, phone: b.guest_phone, bookingId: b.id,
@@ -119,7 +119,7 @@ function findExistingLegacyThread(
   convId: string
 ): [string, ConversationThread] | null {
   if (!contextId) return null;
-  const legacyPrefixes = ["booking-", "tenant-", "lead-", "guest-"];
+  const legacyPrefixes = ["marketplace-booking-", "concierge-booking-", "seasonal-booking-", "booking-", "tenant-", "lead-", "guest-"];
   for (const [key, thread] of threadMap) {
     if (!legacyPrefixes.some(p => key.startsWith(p))) continue;
     if (
@@ -156,7 +156,9 @@ export function mapV2ConversationsToThreads(
       ? ct.participants.map((p: any) => p?.userId || p?.user_id || p?.id).filter(Boolean) : [];
     const participantUserIds = Array.isArray(ct.participant_ids)
       ? ct.participant_ids.filter((id: unknown): id is string => typeof id === "string" && id.length > 0) : [];
-    const mergedParticipantIds = [...new Set([...participantUserIds, ...participantsJsonb])];
+    const metadataDirectIds = Array.isArray(ct.metadata?.direct_user_ids)
+      ? ct.metadata.direct_user_ids.filter((id: unknown): id is string => typeof id === "string" && id.length > 0) : [];
+    const mergedParticipantIds = [...new Set([...participantUserIds, ...participantsJsonb, ...metadataDirectIds])];
     const peerUserId = mergedParticipantIds.find((id) => id !== userId) ?? null;
     if (peerUserId) allPeerIds.add(peerUserId);
 
@@ -198,8 +200,14 @@ export function mapV2ConversationsToThreads(
     if (conv.type !== "direct") continue;
     const participants = conv.participants as any[];
     if (!Array.isArray(participants) || participants.length === 0) {
-      if (Array.isArray(conv.participant_ids) && conv.participant_ids.length === 2) {
-        const peerUserId = conv.participant_ids.find((id: string) => id !== userId);
+      const candidateIds = Array.isArray(conv.participant_ids) && conv.participant_ids.length >= 2
+        ? conv.participant_ids
+        : Array.isArray(conv.metadata?.direct_user_ids) && conv.metadata.direct_user_ids.length >= 2
+          ? conv.metadata.direct_user_ids
+          : null;
+
+      if (candidateIds) {
+        const peerUserId = candidateIds.find((id: string) => id !== userId);
         if (peerUserId) {
           allPeerIds.add(peerUserId);
           const v2Key = `v2-direct-${conv.id}`;
@@ -210,7 +218,7 @@ export function mapV2ConversationsToThreads(
               name: conv.title || "Contact", email: null,
               avatarUrl: null, threadId: conv.id,
               isV2: true, peerUserId,
-              peerOrbitId: null, participantUserIds: conv.participant_ids,
+              peerOrbitId: null, participantUserIds: candidateIds,
               unreadCount: 0, lastMessage: conv.last_message_preview || undefined,
               lastMessageTime: conv.last_message_at || conv.created_at,
             });
@@ -263,7 +271,11 @@ export function mapDealsToThreads(
     const dealKey = `deal-${deal.id}`;
 
     if (deal.booking_id) {
-      const bookingThread = threadMap.get(`booking-${deal.booking_id}`);
+      const bookingThread =
+        threadMap.get(`marketplace-booking-${deal.booking_id}`) ||
+        threadMap.get(`concierge-booking-${deal.booking_id}`) ||
+        threadMap.get(`seasonal-booking-${deal.booking_id}`) ||
+        threadMap.get(`booking-${deal.booking_id}`);
       if (bookingThread) { bookingThread.dealId = deal.id; continue; }
     }
 
