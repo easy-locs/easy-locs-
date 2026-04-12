@@ -175,7 +175,7 @@ These systems form a **cross-domain intelligence and opportunity layer** that en
 |--------|----------------|----------------------|----------------|----------------------|
 | **Dashboard** | Project summary cards, ticker modules | Own Dashboard rendering, layout, or routing | Project local opportunity cards | Replace Dashboard cards, own widget slots |
 | **Radar** | Contribute POI-style intelligence pins (weather stations, etc.) | Own Radar discovery, map rendering, or filter logic | Show local listing proximity on map | Replace Radar entity discovery, own `entityType` |
-| **Orbit** | Send intelligence notifications via governed adapters | Own thread state, message delivery, or call infrastructure | Provide safe seller/buyer chat channels | Own Orbit thread types, bypass `OrbitWiring` |
+| **Orbit** | Send intelligence notifications via `notification-engine.ts` (NOT via Orbit threads) | Own thread state, message delivery, or call infrastructure; create Orbit conversational threads | Provide safe seller/buyer chat channels via `local_exchange_chat` thread type | Own Orbit thread types beyond `local_exchange_chat`, bypass `OrbitWiring` |
 | **Wallet** | Reference currency for localized finance display | Own payment flows, ledger, transactions, or balance | Conceptually support future escrow for local exchange | Own Wallet `paymentFlow`, `billingType`, or transaction state |
 | **Me** | Contribute preference controls for intelligence modules | Own user profile fields, identity, or auth | Contribute local commerce preferences and history | Own user profile, identity, or verification |
 | **Search** | Contribute intelligence items to search results | Own search ranking, index, or query infrastructure | Contribute local listings to search discovery | Own `executeSearchIntelligence`, search index, or result rendering |
@@ -354,7 +354,7 @@ Neither system **writes** to or **owns** any shared infrastructure.
 |--------------|-----------------|
 | Ticker pollution by commerce | Local listings MUST NEVER appear in the live ticker/banner. Ticker is reserved for informational utility only. |
 | Commerce suggestions as news | Local commerce suggestions MUST be visually and semantically distinct from intelligence items. Different card types, different badges. |
-| Notification collision | System A and System B notifications MUST be independently suppressible. They MUST use different notification categories. They MUST NOT share cooldown timers. |
+| Notification collision | System A and System B notifications MUST be independently suppressible. They MUST use different notification categories. Per-category cooldown timers are independent per system. A cross-system pacing rule (Addendum C.5) governs minimum spacing between an intelligence notification and a commerce suggestion, but this is a global pacing constraint, not a shared per-category timer. |
 | Dashboard overload | Combined intelligence + commerce cards on Dashboard MUST NOT exceed a governed maximum. Priority arbitration (Addendum C) resolves conflicts. |
 | Search contamination | Intelligence items and local listings MUST be separately typed in search results. Users MUST be able to filter between informational and commercial results. |
 | Identity confusion | Both systems project the same canonical user identity through different governed projections (Addendum A). No ad-hoc profile reads. |
@@ -515,13 +515,13 @@ interface SuppressionRules {
 ### 10.1 CanonicalLocalListing
 
 **Purpose**: Represents an item or service offered for local exchange by a user.
-**Lifecycle role**: Created → Active → Reserved → Completed/Expired/Removed
+**Lifecycle role**: Draft → Pending Review → Active → Reserved → Completed/Expired/Removed. Side-states: Flagged (from moderation action), Quarantined (from moderation — listing hidden from matching and display until review).
 
 ```typescript
 interface CanonicalLocalListing {
   id: string;
   sellerId: string;
-  status: "draft" | "pending_review" | "active" | "reserved" | "completed" | "expired" | "removed" | "flagged";
+  status: "draft" | "pending_review" | "active" | "reserved" | "completed" | "expired" | "removed" | "flagged" | "quarantined";
 
   title: string;
   description: string;
@@ -853,7 +853,7 @@ interface CountryProfile {
   defaultLanguage: string;
   supportedLanguages: string[];
   defaultCurrency: string;
-  timezone: string;
+  timezones: string[];
   availableModules: string[];
   religionModuleAvailable: boolean;
   providerMatrix: ProviderAvailability;
@@ -1625,6 +1625,9 @@ Canonical User Identity (single source of truth)
   ├── Notification Display Projection
   │     └── displayName (first name or display name), language, timezone
   │
+  ├── Orbit Communication Identity Projection
+  │     └── displayName, avatar, verificationBadge (governs how users appear in local_exchange_chat threads and any future Orbit surfaces)
+  │
   └── Dashboard Summary Projection
         └── displayName, avatar, quickStats
 ```
@@ -1689,6 +1692,49 @@ Users MUST be able to independently control:
 - Local commerce suggestions (listing matches, opportunity cards)
 - Religious utilities (prayer times, adhan, calendar, mosques)
 - Finance/news/traffic modules (each independently toggleable)
+
+### B.5 Data Deletion Rights (Right to Be Forgotten)
+
+Users MUST be able to request full deletion of their personal data. This is a legal requirement in multiple jurisdictions (GDPR Article 17, CCPA, LGPD, POPIA, and equivalents). The architecture MUST support on-demand, user-triggered deletion with propagation across all layers.
+
+**Deletion Scope:**
+
+| Layer | Data Deleted | Anonymization Alternative |
+|-------|-------------|--------------------------|
+| **Intelligence layer** | Personalization signals, inferred intents, engagement metrics, attention history, search/browsing behavior used for ranking | Where deletion would break aggregate statistics, data is anonymized (user ID replaced with irreversible hash) instead of hard-deleted |
+| **Social commerce** | Listings (set to `removed`), intent signals, match history, trust/reputation scores, transaction history | Completed transaction records may be anonymized (seller/buyer IDs replaced) rather than deleted to preserve counter-party records |
+| **Notifications** | Notification history, delivery logs, preference snapshots | Delivery logs older than retention boundary (B.2) are already purged; on-demand deletion removes all remaining |
+| **Orbit conversations** | Commerce thread content where user is a participant | Messages are redacted (replaced with "[deleted]") rather than removed, to preserve thread coherence for the other party. User identity is disassociated. |
+| **Canonical identity** | All governed projections (A.3) are invalidated and purged. Canonical user record follows platform-level account deletion flow. | N/A — full deletion, not anonymization |
+| **Logs** | Application-level logs containing user-identifiable data are purged or anonymized within 30 days of deletion request | Infrastructure/security logs required for legal compliance may be retained with user ID anonymized |
+
+**Propagation Rules:**
+
+1. Deletion requests propagate through a **deletion coordinator** (future: `src/lib/platform/deletion-coordinator.ts`) that notifies every subsystem holding user data.
+2. Each subsystem acknowledges deletion completion. The coordinator tracks acknowledgments and retries failures.
+3. Maximum propagation time: **72 hours** from request to full completion across all layers.
+4. Deletion is irreversible. A confirmation gate (Me pillar) requires the user to confirm before initiating.
+
+**Retention Override:**
+
+| Override | Reason | Handling |
+|----------|--------|---------|
+| Legal hold | Active legal investigation or regulatory requirement | Deletion is suspended for the held data subset only. User is notified that some data is retained under legal obligation. |
+| Financial records | Tax/accounting requirements in certain jurisdictions | Transaction amounts and dates may be retained (anonymized) per local tax law retention periods. |
+| Safety/abuse records | Active moderation case or confirmed abuse finding | Abuse-related data is retained for platform safety. User is notified. |
+
+**Per-Country Compliance:**
+
+| Region | Key Requirements |
+|--------|-----------------|
+| **EU/EEA** | GDPR Article 17: Right to erasure. 30-day response deadline. Must confirm deletion to user. |
+| **USA (California)** | CCPA/CPRA: Right to delete. Must provide two methods for request submission. |
+| **Brazil** | LGPD: Right to deletion of unnecessary data. Must respond within 15 days. |
+| **South Africa** | POPIA: Right to request deletion of personal information. |
+| **MENA** | Varies by country. UAE PDPL, Saudi PDPL — deletion rights exist with sector-specific exceptions. `complianceFlags` per country (Section 12.4) governs specific handling. |
+| **Other jurisdictions** | Default to GDPR-equivalent handling (most restrictive) unless `complianceFlags` specifies otherwise. |
+
+**Hard Rule**: No subsystem may retain identifiable user data after a deletion request has been fully propagated, except under explicit legal override with user notification.
 
 ---
 
@@ -1917,6 +1963,47 @@ Level 4: Per-Signal Scheduler
 2. **Non-flooding**: Per-cycle output caps prevent any engine from producing unbounded content
 3. **Non-fighting**: Engines operate on separate data domains. No engine modifies another engine's state.
 4. **Convergent**: Repeated runs produce stable results. Ranking converges, not oscillates.
+
+### F.6 Central Engine Orchestrator
+
+All 15 engines (Addendum G) are coordinated through a single **Central Engine Orchestrator** — the global scheduling and execution authority for both System A and System B autonomous operations.
+
+**Responsibilities:**
+
+| Responsibility | Details |
+|----------------|---------|
+| **Global scheduling authority** | The orchestrator owns the master schedule. No engine self-schedules. Every engine's cadence (Section 22.1) is registered with and dispatched by the orchestrator. |
+| **Inter-engine coordination** | Engines declare their upstream dependencies (e.g., Priority Arbitration depends on Global Feed Ingestion output). The orchestrator ensures a downstream engine does not execute until its upstream dependency's current cycle is complete or timed out. |
+| **Dependency graph** | Explicit DAG of engine dependencies using canonical G.1 names: Global Feed Ingestion → Source Trust Evaluation → Priority Arbitration → Ticker Composition → Notification Decision. Local Match Engine → Trust/Reputation → Notification Decision. Intent Detection → Local Match Engine. Local Listing Quality → Local Match Engine. Moderation/Anomaly runs independently (no downstream dependency). Anti-Spam/Fatigue feeds into Notification Decision. |
+| **Backpressure handling** | If an upstream engine (e.g., Global Feed Ingestion) produces output exceeding its per-cycle cap (>1000 items), the orchestrator signals downstream engines to enter **throttled mode**: process at reduced batch size (50% of normal) until the backlog clears. |
+| **Throttling** | The orchestrator enforces a global concurrency limit: at most 4 engines execute simultaneously. If all 4 slots are occupied, remaining engines queue with priority ordering (Tier 1 engines first: Global Feed Ingestion, Moderation/Anomaly, Notification Decision). |
+| **Execution priority control** | Each engine has a priority tier using canonical G.1 names: **Tier 1 (Critical)** — Global Feed Ingestion (#1), Moderation/Anomaly (#12), Notification Decision (#6). **Tier 2 (High)** — Source Trust Evaluation (#2), Priority Arbitration (#4), Local Match Engine (#10), Trust/Reputation (#11). **Tier 3 (Normal)** — AI Attention Engine (#5), Ticker Composition (#7), Localization/Translation (#3), Local Listing Quality (#8), Intent Detection (#9), Anti-Spam/Fatigue (#15). **Tier 4 (Background)** — Religious Utility Timing (#13), Nearby Mosque Relevance (#14). Higher-tier engines preempt lower-tier engines for execution slots. |
+| **Failure cascade prevention** | If an engine fails 3 consecutive cycles, the orchestrator: (1) marks the engine as **degraded**, (2) emits `system.engine.degraded` event, (3) signals all downstream engines to use their fail-safe (cached output), (4) alerts the operations team (see F.7). The degraded engine retries with exponential backoff (F.4). Downstream engines never stall waiting for a permanently failed upstream. |
+| **Health tracking** | The orchestrator maintains a per-engine health score: last success time, consecutive failure count, average execution duration, output volume. This state is used for throttling decisions and degradation detection. |
+
+**What the orchestrator must NEVER do:**
+- Own any engine's business logic or output
+- Modify canonical objects (feed items, listings, matches)
+- Emit domain events on behalf of engines
+- Override an engine's fail-safe behavior
+
+**Orchestrator location**: Future implementation in `src/lib/intelligence/engine-orchestrator.ts`, sibling to `intelligence-orchestrator.ts`.
+
+### F.7 Alerting and Operations Model
+
+| Term | Definition |
+|------|-----------|
+| **"Admin"** | Three escalation tiers: (1) **Automated escalation queue** — receives all engine degradation events, applies auto-remediation rules (restart, skip, failover). (2) **Regional moderator** — human reviewer for content moderation escalations, scoped to country/region. (3) **Platform operations** — engineering on-call for infrastructure-level failures (circuit-breaker opens, orchestrator health check failures). |
+| **Alerting mechanism** | Engine degradation events (`system.engine.degraded`) route through `notification-engine.ts` to an internal operations channel. Critical alerts (P0 engine failure, orchestrator health check failure) additionally trigger platform-level alerting (future: webhook to operations dashboard). |
+| **On-call model** | Automated for Tier 1 (auto-remediation). Human for Tier 2 (moderation queue, async, regional business hours). Engineering for Tier 3 (platform incidents, 24/7 rotation — architecture only, not activated by this document). |
+
+### F.8 `__automated` vs `__bridged` Flag Interaction
+
+| Flag | Purpose | When Set |
+|------|---------|----------|
+| `__automated: true` | Marks events emitted by scheduled/autonomous engine jobs (not user-initiated). Listeners check this flag to prevent cascade loops (e.g., an automated ranking pass should not trigger another ranking pass). | Set by the Central Engine Orchestrator on every event emitted during an autonomous engine cycle. |
+| `__bridged: true` | Marks events that have crossed a system boundary (System A → System B or vice versa) through a governed bridge adapter. Prevents re-emission loops at the bridge layer. | Set by the bridge adapter when forwarding an event across system boundaries. |
+| **Both flags together** | An event can carry BOTH flags simultaneously. Example: an automated matching engine (System B) produces a match that triggers a cross-system notification (System A). The resulting notification event carries `__automated: true` (engine-originated) AND `__bridged: true` (crossed from commerce to intelligence). Listeners MUST check both flags independently — `__automated` prevents engine cascading, `__bridged` prevents bridge re-emission. |
 
 ---
 
