@@ -85,6 +85,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
   return (
     <button
       onClick={onClick}
+      data-conversation-id={conversationId}
       className="w-full text-left flex items-center gap-3 px-4 py-[14px] transition-all duration-150 active:bg-muted/5"
       style={{
         background: isActive ? "hsl(var(--primary) / 0.04)" : "transparent",

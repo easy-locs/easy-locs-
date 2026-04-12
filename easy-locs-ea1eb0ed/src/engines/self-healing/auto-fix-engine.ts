@@ -47,7 +47,7 @@ export class AutoFixEngine extends BaseEngine {
         const wasOffline = sessionStorage.getItem("el-was-offline");
         if (wasOffline) {
           sessionStorage.removeItem("el-was-offline");
-          platformBus.emit("system:online_recovered" as any, { timestamp: Date.now() });
+          platformBus.emit("system:online_recovered", { timestamp: Date.now() }, "system");
           actions.push("Online recovery triggered");
           this.cooldowns.set("offline-recovery", Date.now());
           this.fixHistory.push({ type: "offline-recovery", description: "Triggered sync after offline", result: "success", timestamp: Date.now() });

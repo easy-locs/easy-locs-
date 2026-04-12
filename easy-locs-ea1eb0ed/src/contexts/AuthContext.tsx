@@ -67,6 +67,7 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 const AUTH_CACHE_KEY = "easylocs_auth_cache_v1";
+const SESSION_RETRY_DELAYS = [2_000, 4_000, 8_000];
 
 function getCachedAuth(): { userId: string; email: string; userType: UserType; country: string; currency: string; onboardingCompleted: boolean; role: ActiveRole } | null {
   try {
@@ -88,6 +89,27 @@ function clearCachedAuth() {
   try { localStorage.removeItem(AUTH_CACHE_KEY); } catch {}
 }
 
+async function getSessionWithRetry(hasCachedAuth: boolean): Promise<{ session: import("@supabase/supabase-js").Session | null }> {
+  for (let attempt = 0; attempt <= SESSION_RETRY_DELAYS.length; attempt++) {
+    try {
+      const { data } = await supabase.auth.getSession();
+      console.log(`[AuthContext] getSession attempt ${attempt + 1}: ${data.session ? "restored" : "no session"}`);
+      if (data.session) return data;
+      if (!hasCachedAuth) return data;
+      if (attempt >= SESSION_RETRY_DELAYS.length) return data;
+      console.log(`[AuthContext] Cached auth exists but session null — retrying in ${SESSION_RETRY_DELAYS[attempt]}ms`);
+      await new Promise(r => setTimeout(r, SESSION_RETRY_DELAYS[attempt]));
+    } catch (err) {
+      console.warn(`[AuthContext] getSession attempt ${attempt + 1} failed:`, err);
+      if (attempt < SESSION_RETRY_DELAYS.length) {
+        await new Promise(r => setTimeout(r, SESSION_RETRY_DELAYS[attempt]));
+      }
+    }
+  }
+  console.error("[AuthContext] getSession exhausted all retries");
+  return { session: null };
+}
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => { initSessionLifecycle(); }, []);
 
@@ -96,6 +118,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [sessionValidating, setSessionValidating] = useState(!!cached);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [userType, setUserType] = useState<UserType>(cached?.userType ?? "landlord");
   const [userCountry, setUserCountry] = useState(cached?.country ?? "FR");
@@ -393,9 +417,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (mounted && seq === latestSeq) setLoading(false);
     };
 
-    supabase.auth.getSession().then(({ data: { session: restoredSession } }) => {
+    getSessionWithRetry(!!cached).then(({ session: restoredSession }) => {
       if (!mounted) return;
       clearTimeout(safetyTimeout);
+      setSessionValidating(false);
+      if (!restoredSession && cached) {
+        console.warn("[AuthContext] Session restore failed after retries — cache was present, marking expired");
+        setSessionExpired(true);
+        clearCachedAuth();
+        setLoading(false);
+        setProfileLoaded(true);
+        return;
+      }
       hydrateAuthState(restoredSession).catch((err) => {
         console.error("[AuthContext] hydrateAuthState crashed:", err);
         if (mounted) { setLoading(false); setProfileLoaded(true); }
@@ -403,7 +436,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }).catch((err) => {
       if (!mounted) return;
       clearTimeout(safetyTimeout);
+      setSessionValidating(false);
       console.warn("[AuthContext] getSession failed:", err);
+      if (cached) {
+        setSessionExpired(true);
+        clearCachedAuth();
+      }
       setLoading(false);
       setProfileLoaded(true);
     });
@@ -522,6 +560,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider value={contextValue}>
+      {sessionValidating && !user && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
+          background: "hsl(38 65% 56%)", color: "#fff",
+          padding: "6px 16px", fontSize: "13px", textAlign: "center",
+        }}>
+          Restoring your session…
+        </div>
+      )}
+      {sessionExpired && !user && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
+          background: "hsl(0 65% 50%)", color: "#fff",
+          padding: "8px 16px", fontSize: "13px", textAlign: "center",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: "12px",
+        }}>
+          <span>Your session has expired. Please sign in again.</span>
+          <button
+            onClick={() => { setSessionExpired(false); window.location.hash = "#/login"; }}
+            style={{
+              background: "#fff", color: "hsl(0 65% 50%)",
+              border: "none", borderRadius: "4px", padding: "4px 12px",
+              cursor: "pointer", fontWeight: 600, fontSize: "12px",
+            }}
+          >
+            Sign In
+          </button>
+        </div>
+      )}
       {children}
     </AuthContext.Provider>
   );

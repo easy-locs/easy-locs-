@@ -211,6 +211,8 @@ type PlatformEventType =
   // System
   | "system:currency_changed"
   | "system:sync_completed"
+  | "system:sync_requested"
+  | "system:online_recovered"
   | "system:user_online"
   | "system:module_status_changed"
   | "system:pipeline_completed"

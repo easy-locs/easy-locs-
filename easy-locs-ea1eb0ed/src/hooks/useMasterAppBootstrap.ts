@@ -139,6 +139,9 @@ export function useMasterAppBootstrap() {
           installRadarCacheListeners(),
           installCrossDomainPropagationHandlers(),
         );
+
+        const { installRepairConsumers } = await import("@/lib/system/repair-consumers");
+        cleanups.push(installRepairConsumers());
       } catch (e) {
         console.warn("[boot] stage-2 failed", e);
       }
