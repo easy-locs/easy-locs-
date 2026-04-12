@@ -121,17 +121,30 @@ export default function WalletHubPage() {
   const walletCreateAttempted = useRef(false);
   const walletCreateRetries = useRef(0);
   const MAX_WALLET_CREATE_RETRIES = 2;
+  const [walletCreateFailed, setWalletCreateFailed] = useState(false);
   const createDefaultWallet = useCallback(async () => {
     if (!user?.id || walletCreateAttempted.current) return;
-    if (walletCreateRetries.current >= MAX_WALLET_CREATE_RETRIES) return;
+    if (walletCreateRetries.current >= MAX_WALLET_CREATE_RETRIES) {
+      setWalletCreateFailed(true);
+      return;
+    }
     walletCreateAttempted.current = true;
     walletCreateRetries.current += 1;
     try {
       await createWalletAccount({ ownerUserId: user.id, ownerType: "user", currency: getWalletDefaultCurrency(), accountType: "fiat" });
       toast.success(t("wallet.walletCreated"));
-    } catch {
+      setWalletCreateFailed(false);
+    } catch (err: unknown) {
       walletCreateAttempted.current = false;
-      toast.error(t("wallet.walletCreateError"));
+      const message = err instanceof Error ? err.message : "Unknown error";
+      const isPermission = message.includes("RLS") || message.includes("permission") || message.includes("policy");
+      console.error("[WalletHubPage] Wallet creation failed:", message);
+      toast.error(isPermission
+        ? tSafe(t, "wallet.walletPermissionError", "Unable to create wallet — please sign in again")
+        : tSafe(t, "wallet.walletCreateError", "Unable to create wallet"));
+      if (walletCreateRetries.current >= MAX_WALLET_CREATE_RETRIES) {
+        setWalletCreateFailed(true);
+      }
     }
   }, [user?.id, t]);
 

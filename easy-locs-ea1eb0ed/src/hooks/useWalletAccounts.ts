@@ -41,7 +41,13 @@ export function useWalletAccounts(ownerUserId?: string) {
     const channel = createRealtimeChannel(`wallet-accounts:${ownerUserId}`);
     channel
       .on("postgres_changes", { event: "*", schema: "public", table: "wallet_accounts" }, load)
-      .subscribe();
+      .subscribe((status: string) => {
+        if (status === "CHANNEL_ERROR") {
+          console.error(`[useWalletAccounts] Realtime channel error for user ${ownerUserId}`);
+        } else if (status === "TIMED_OUT") {
+          console.warn(`[useWalletAccounts] Realtime channel timed out for user ${ownerUserId}`);
+        }
+      });
 
     return () => {
       mounted = false;

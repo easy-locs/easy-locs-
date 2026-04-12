@@ -8,7 +8,16 @@ SET search_path = public
 AS $$
 DECLARE
   wallet_row public.wallet_accounts%ROWTYPE;
+  calling_uid uuid;
 BEGIN
+  calling_uid := auth.uid();
+  IF calling_uid IS NULL THEN
+    RAISE EXCEPTION 'ensure_wallet_account requires an authenticated session';
+  END IF;
+  IF calling_uid <> target_user_id THEN
+    RAISE EXCEPTION 'ensure_wallet_account: caller % cannot create wallet for user %', calling_uid, target_user_id;
+  END IF;
+
   SELECT * INTO wallet_row
   FROM public.wallet_accounts
   WHERE owner_user_id = target_user_id
