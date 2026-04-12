@@ -1219,12 +1219,12 @@ Listing submitted
 
 | Aspect | System A (Intelligence) | System B (Commerce) |
 |--------|------------------------|---------------------|
-| **Thread types** | `intelligence_alert` (for critical info requiring acknowledgment) | `local_exchange_chat` (seller/buyer conversation) |
+| **Thread types** | None — intelligence uses system notification channel, not conversational threads | `local_exchange_chat` (seller/buyer conversation) |
 | **Entity link** | None (intelligence items are not Orbit entities) | `listing` (linked to `CanonicalLocalListing`) |
-| **Use cases** | Emergency alerts that need user acknowledgment; reminder-style messages | Safe seller/buyer chat; listing inquiries; exchange coordination |
-| **Message type** | System-generated, informational | User-to-user, transactional |
-| **Assistant messaging** | Optional AI assistant for intelligence queries (future) | Optional AI assistant for listing suggestions (future) |
-| **Strict rule** | Intelligence MUST NOT generate conversational threads (use notifications instead) | Commerce conversations MUST go through Orbit, never external |
+| **Use cases** | System-level notifications for critical alerts requiring user acknowledgment (delivered via `notification-engine.ts`, not Orbit threads) | Safe seller/buyer chat; listing inquiries; exchange coordination |
+| **Message type** | System-generated notifications (not conversational) | User-to-user, transactional |
+| **Assistant messaging** | N/A — intelligence surfaces through Dashboard/Ticker/Notifications, not Orbit | Optional AI assistant for listing suggestions (future) |
+| **Strict rule** | Intelligence MUST NOT generate Orbit conversational threads; all intelligence delivery uses notifications, ticker, or Dashboard cards | Commerce conversations MUST go through Orbit, never external |
 
 ### 20.2 Wallet Integration
 
@@ -1976,10 +1976,10 @@ Level 4: Per-Signal Scheduler
 
 | Aspect | Details |
 |--------|---------|
-| **What new systems may contribute** | System notification messages (intelligence alerts), seller/buyer chat threads (commerce) |
+| **What new systems may contribute** | Intelligence: system notifications via `notification-engine.ts` (not Orbit threads). Commerce: seller/buyer chat threads via `local_exchange_chat` thread type. |
 | **What they must never own** | Thread lifecycle, message delivery, call infrastructure, `OrbitWiring` definitions |
-| **Allowed surfaces** | Intelligence: system message channel. Commerce: `local_exchange_chat` thread type (new, not conflicting with existing types). |
-| **Allowed events** | Listen to `orbit.message.sent` for commerce thread analytics only; emit via `notification-engine.ts` insertion API for intelligence |
+| **Allowed surfaces** | Intelligence: notification channel only (no Orbit threads). Commerce: `local_exchange_chat` thread type (new, not conflicting with existing types). |
+| **Allowed events** | Listen to `orbit.message.sent` for commerce thread analytics only; intelligence emits via `notification-engine.ts` insertion API, never via Orbit thread creation |
 | **Identity projection** | Orbit Communication Identity (display name from governed projection) |
 | **Privacy rules** | Commerce conversations are private to parties. No message content used for intelligence or recommendations. |
 | **Ranking/suppression** | Intelligence system messages capped per day. Commerce threads follow existing Orbit limits. |
