@@ -1,13 +1,4 @@
-/**
- * Wallet ledger operations — escrow, settlement, and refund flows.
- * P2P transfers use atomic_wallet_transfer RPC (see transactionChallenge.ts).
- * These functions remain for non-P2P flows: escrow, top-up, refund, settlement.
- *
- * SECURITY: All mutations require authenticated user, amount validation,
- * and idempotency to prevent duplicate financial operations.
- * MIGRATION TARGET: These should be moved to server-side edge functions.
- */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { getWalletDefaultCurrency } from "./wallet-config";
 import { logger } from "@/lib/monitoring";
 
@@ -26,7 +17,7 @@ const MAX_SINGLE_TRANSACTION = 100_000;
 const processedIdempotencyKeys = new Set<string>();
 
 async function requireAuth(): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   if (!user) throw new Error("Wallet operation requires authentication");
   return user.id;
 }
@@ -65,8 +56,7 @@ export async function getOrCreateWalletAccount(params: {
   const currency = params.currency ?? getWalletDefaultCurrency();
   const accountType = params.accountType ?? "fiat";
 
-  const { data: existing, error: findErr } = await supabase
-    .from("wallet_accounts")
+  const { data: existing, error: findErr } = await db("wallet_accounts")
     .select("*")
     .eq("owner_user_id", params.ownerUserId)
     .eq("currency", currency)
@@ -76,14 +66,17 @@ export async function getOrCreateWalletAccount(params: {
   if (findErr) throw findErr;
   if (existing) return existing;
 
-  const { data, error } = await supabase
-    .from("wallet_accounts")
+  const { data, error } = await db("wallet_accounts")
     .insert({
       owner_user_id: params.ownerUserId,
       account_type: accountType,
       currency,
       balance: 0,
       available_balance: 0,
+      pending_balance: 0,
+      balance_cash: 0,
+      balance_bonus: 0,
+      balance_locked: 0,
       status: "active",
     } as any)
     .select("*")
@@ -128,8 +121,7 @@ export async function createLedgerEntry(params: {
     referenceId: params.referenceId,
   });
 
-  const { data, error } = await supabase
-    .from("wallet_ledger_entries")
+  const { data, error } = await db("wallet_ledger_entries")
     .insert({
       wallet_account_id: params.walletAccountId,
       direction: params.direction,
@@ -152,8 +144,7 @@ export async function createLedgerEntry(params: {
 export async function recomputeWalletBalance(walletAccountId: string) {
   await requireAuth();
 
-  const { data: entries, error } = await supabase
-    .from("wallet_ledger_entries")
+  const { data: entries, error } = await db("wallet_ledger_entries")
     .select("direction, amount, status")
     .eq("wallet_account_id", walletAccountId)
     .eq("status", "posted");
@@ -171,8 +162,7 @@ export async function recomputeWalletBalance(walletAccountId: string) {
     walletAccountId, computedBalance: safeBalance, entryCount: entries?.length ?? 0,
   });
 
-  const { data: updated, error: updateErr } = await supabase
-    .from("wallet_accounts")
+  const { data: updated, error: updateErr } = await db("wallet_accounts")
     .update({ balance: safeBalance, available_balance: safeBalance })
     .eq("id", walletAccountId)
     .select("*")

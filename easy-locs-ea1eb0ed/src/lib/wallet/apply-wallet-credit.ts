@@ -1,11 +1,3 @@
-/**
- * apply-wallet-credit — Credit/debit wallet credits for riders.
- *
- * SECURITY: Requires authenticated user, validates amounts,
- * and prevents unauthorized cross-user credit manipulation.
- * MIGRATION TARGET: Should be moved to server-side edge function.
- */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { getWalletDefaultCurrency } from "./wallet-config";
 import { logger } from "@/lib/monitoring";
@@ -23,7 +15,7 @@ export async function applyWalletCredit(params: {
 }) {
   const { userId, amount, direction, reason, contextType, contextId } = params;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   if (!user) throw new Error("Wallet credit operation requires authentication");
 
   if (!Number.isFinite(amount) || amount <= 0) {
@@ -40,8 +32,7 @@ export async function applyWalletCredit(params: {
     userId, amount, direction, reason, contextType, contextId, authUser: user.id,
   });
 
-  const { data: row } = await supabase
-    .from("user_wallet_credits" as any)
+  const { data: row } = await db("user_wallet_credits" as any)
     .select("*")
     .eq("user_id", userId)
     .single();

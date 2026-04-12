@@ -1,7 +1,4 @@
-/**
- * requestDriverPayout — Driver requests a withdrawal from earnings.
- */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function requestDriverPayout(params: {
   driverId: string;
@@ -10,8 +7,7 @@ export async function requestDriverPayout(params: {
 }) {
   const { driverId, amount, method = "manual" } = params;
 
-  const { error } = await supabase
-    .from("driver_payouts" as any)
+  const { error } = await db("driver_payouts" as any)
     .insert({
       driver_id: driverId,
       amount,

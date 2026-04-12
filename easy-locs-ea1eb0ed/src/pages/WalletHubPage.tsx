@@ -119,9 +119,13 @@ export default function WalletHubPage() {
   const hasMoreTx = paginatedTx.length < filteredTx.length;
 
   const walletCreateAttempted = useRef(false);
+  const walletCreateRetries = useRef(0);
+  const MAX_WALLET_CREATE_RETRIES = 2;
   const createDefaultWallet = useCallback(async () => {
     if (!user?.id || walletCreateAttempted.current) return;
+    if (walletCreateRetries.current >= MAX_WALLET_CREATE_RETRIES) return;
     walletCreateAttempted.current = true;
+    walletCreateRetries.current += 1;
     try {
       await createWalletAccount({ ownerUserId: user.id, ownerType: "user", currency: getWalletDefaultCurrency(), accountType: "fiat" });
       toast.success(t("wallet.walletCreated"));
@@ -129,7 +133,7 @@ export default function WalletHubPage() {
       walletCreateAttempted.current = false;
       toast.error(t("wallet.walletCreateError"));
     }
-  }, [user?.id, createWalletAccount, t]);
+  }, [user?.id, t]);
 
   useEffect(() => {
     if (!loading && rows.length === 0 && user?.id) createDefaultWallet();

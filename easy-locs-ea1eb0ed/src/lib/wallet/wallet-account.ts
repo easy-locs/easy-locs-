@@ -1,8 +1,4 @@
-/**
- * Wallet Account creation — extracted from legacy wallet-core.
- * This is the ONLY remaining function from wallet-core that is still needed.
- */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function createWalletAccount(params: {
   workspaceId?: string;
@@ -12,8 +8,7 @@ export async function createWalletAccount(params: {
   accountType?: "fiat" | "crypto" | "escrow" | "rewards";
   externalRef?: string;
 }) {
-  const { data, error } = await supabase
-    .from("wallet_accounts")
+  const { data, error } = await db("wallet_accounts")
     .insert({
       workspace_id: params.workspaceId ?? null,
       owner_user_id: params.ownerUserId ?? null,
@@ -24,6 +19,9 @@ export async function createWalletAccount(params: {
       balance: 0,
       available_balance: 0,
       pending_balance: 0,
+      balance_cash: 0,
+      balance_bonus: 0,
+      balance_locked: 0,
       status: "active",
     })
     .select("*")

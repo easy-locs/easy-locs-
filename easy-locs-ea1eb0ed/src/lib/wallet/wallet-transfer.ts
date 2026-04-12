@@ -7,7 +7,7 @@
  * always route through the Edge Function which enforces PIN hashing,
  * transfer limits, and security guards.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -51,7 +51,7 @@ export async function executeWalletTransfer(input: TransferInput): Promise<Trans
 
   const edgeFnStep = addStep(flow, "edge_function_call");
   try {
-    const { data, error } = await supabase.functions.invoke("wallet-transfer", {
+    const { data, error } = await db.functions.invoke("wallet-transfer", {
       body: {
         sender_user_id: senderId,
         receiver_user_id: receiverId,
