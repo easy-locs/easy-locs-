@@ -32,7 +32,7 @@ export function useDashboardRadar(limit = 5) {
       return {
         id: e.id,
         type: vertical,
-        vertical: (e as any).vertical || e.category || vertical,
+        vertical: e.category || vertical,
         title: e.name || e.title || "",
         subtitle: e.subtitle || e.address || null,
         priceLabel: null,

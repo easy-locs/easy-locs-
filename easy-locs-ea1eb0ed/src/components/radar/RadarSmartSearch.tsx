@@ -7,7 +7,7 @@ import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import { selectRadarPlace } from "@/lib/radar/radar-place-search-adapter";
 import type { CanonicalPlaceRow } from "@/lib/address/canonical-address-resolver";
 import type { RadarLayer } from "@/lib/engines/hyper-radar-engine";
-import { RADAR_QUICK_CATEGORIES } from "@/lib/taxonomy/world-class-taxonomy";
+import { RADAR_QUICK_CATEGORIES, type RadarMainCategory } from "@/lib/taxonomy/world-class-taxonomy";
 
 const HISTORY_KEY = "radar_search_history";
 const MAX_HISTORY = 8;

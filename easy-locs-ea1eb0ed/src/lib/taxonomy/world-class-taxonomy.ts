@@ -476,7 +476,7 @@ export const RADAR_CATEGORIES: { value: RadarMainCategory; label: string; emoji:
   { value: "utility", label: "Utility", emoji: "🏧" },
 ];
 
-export const RADAR_QUICK_CATEGORIES: { id: string; emoji: string; labelKey: string }[] =
+export const RADAR_QUICK_CATEGORIES: { id: RadarMainCategory; emoji: string; labelKey: string }[] =
   RADAR_CATEGORIES
     .filter(c => c.value !== "all" && c.value !== "utility")
     .map(c => ({ id: c.value, emoji: c.emoji, labelKey: `radar.layer_${c.value}` }));

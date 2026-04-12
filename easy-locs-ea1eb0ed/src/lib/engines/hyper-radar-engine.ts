@@ -4,7 +4,7 @@
  * V2: weighted scoring, seasonal awareness, result caching, richer guidance.
  */
 
-export type RadarLayer = "food" | "stay" | "services" | "utility" | "mobility" | "nightlife" | "healthcare" | "shops" | "property";
+export type RadarLayer = "food" | "stay" | "services" | "utility" | "mobility" | "nightlife" | "healthcare" | "shops" | "property" | "grocery" | "experiences";
 export type VibeType = "calm" | "active" | "nightlife" | "business" | "family" | "luxury";
 export type TimeSlot = "morning" | "lunch" | "afternoon" | "evening" | "night" | "late_night";
 
@@ -55,14 +55,16 @@ export interface RadarStats {
 
 const CATEGORY_SETS: Record<RadarLayer, string[]> = {
   food: ["restaurant", "food", "cafe", "bakery", "fast_food", "coffee", "pizza", "sushi", "burger", "bistro", "brasserie", "patisserie"],
-  stay: ["hotel", "hostel", "resort", "property", "apartment", "guesthouse", "villa", "riad", "airbnb", "lodge"],
-  services: ["service", "salon", "spa", "laundry", "repair", "veterinary"],
-  utility: ["atm", "pharmacy", "bank", "supermarket", "grocery", "exchange", "post_office", "gas_station"],
-  mobility: ["driver", "taxi", "bus", "mobility", "rental", "parking", "station", "airport", "metro", "tram"],
+  grocery: ["grocery", "supermarket", "mini_mart", "organic_store", "fruits_vegetables", "butcher", "dairy", "fish_market", "health_food"],
+  stay: ["hotel", "hostel", "resort", "guesthouse", "villa", "riad", "airbnb", "lodge", "motel", "bed_breakfast", "glamping", "serviced_apartment"],
+  services: ["service", "salon", "spa", "laundry", "repair", "veterinary", "cleaning", "handyman", "plumbing", "electrical"],
+  utility: ["atm", "pharmacy", "bank", "exchange", "post_office", "gas_station", "fuel", "parking", "public_toilet"],
+  mobility: ["driver", "taxi", "bus", "mobility", "rental", "car_rental", "station", "airport", "metro", "tram", "scooter", "bike"],
   nightlife: ["bar", "club", "lounge", "nightclub", "pub", "karaoke", "rooftop", "cocktail", "brewery"],
-  healthcare: ["hospital", "clinic", "doctor", "dentist", "healthcare", "medical", "emergency", "optician", "physiotherapy"],
+  healthcare: ["hospital", "clinic", "doctor", "dentist", "healthcare", "medical", "emergency", "optician", "physiotherapy", "mental_health"],
   shops: ["shop", "store", "boutique", "mall", "market", "retail", "clothing", "electronics", "jewelry", "fashion"],
   property: ["property", "real_estate", "apartment", "villa", "penthouse", "townhouse", "duplex", "studio", "office", "warehouse", "land", "commercial", "residential"],
+  experiences: ["experience", "tour", "activity", "adventure", "safari", "diving", "hiking", "museum", "theme_park", "concert", "sports", "cruise", "water_sports"],
 };
 
 let _slotCache: { h: number; slot: TimeSlot } | null = null;
