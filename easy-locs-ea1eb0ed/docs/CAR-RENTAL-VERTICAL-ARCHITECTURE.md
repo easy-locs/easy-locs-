@@ -1,178 +1,219 @@
 # Car Rental Vertical — Architecture Document
 
-> **Status**: Design-only. No code changes accompany this document.
+> **Status**: Architecture-only. No code changes, no runtime modifications, no schema activations accompany this document.
 > **Author**: Architecture team
 > **Date**: 2026-04-12
-> **Scope**: Defines the complete technical architecture for elevating Car Rental from a mobility subcategory to a first-class travel vertical within the Easy-Locs super-app.
+> **Scope**: Complete technical architecture for introducing Car Rental as a first-class Travel booking vertical in the Easy-Locs super-app.
 
 ---
 
 ## Table of Contents
 
-1. [Mandatory Declaration](#1-mandatory-declaration)
-2. [Current State Audit](#2-current-state-audit)
-3. [Comparison: Car Rental vs Existing Verticals](#3-comparison-car-rental-vs-existing-verticals)
-4. [Domain Boundaries](#4-domain-boundaries)
-5. [Taxonomy Reclassification Recommendation](#5-taxonomy-reclassification-recommendation)
-6. [Canonical Data Models](#6-canonical-data-models)
-7. [Booking Lifecycle & State Machine](#7-booking-lifecycle--state-machine)
-8. [Search, Discovery & Flow](#8-search-discovery--flow)
-9. [5-Pillar Integration (Dashboard, Radar, Orbit, Wallet, Me)](#9-5-pillar-integration-dashboard-radar-orbit-wallet-me)
-10. [Provider Adapter Architecture](#10-provider-adapter-architecture)
-11. [Event Model & Platform Bus](#11-event-model--platform-bus)
-12. [Anti-Conflict & Coexistence Rules](#12-anti-conflict--coexistence-rules)
-13. [Taxonomy, Routing & Security](#13-taxonomy-routing--security)
-14. [Migration Without Runtime Disruption](#14-migration-without-runtime-disruption)
-15. [Multi-Provider Strategy, Phasing & Risks](#15-multi-provider-strategy-phasing--risks)
-16. [Final Recommendation & Decision Matrix](#16-final-recommendation--decision-matrix)
+1. [Mandatory Declaration & Executive Summary](#1-mandatory-declaration--executive-summary)
+2. [Domain Positioning with Comparison Tables](#2-domain-positioning-with-comparison-tables)
+3. [Domain Boundaries](#3-domain-boundaries)
+4. [Canonical Vertical Recommendation](#4-canonical-vertical-recommendation)
+5. [Canonical Model Designs](#5-canonical-model-designs)
+6. [Entity Lifecycle & Booking State Model](#6-entity-lifecycle--booking-state-model)
+7. [Search/Discovery Position & End-to-End Flow](#7-searchdiscovery-position--end-to-end-flow)
+8. [Wallet/Orbit/Dashboard Integration Points](#8-walletorbitdashboard-integration-points)
+9. [Provider Adapter Architecture](#9-provider-adapter-architecture)
+10. [Data Ownership, Event Model & Platform Bus Alignment](#10-data-ownership-event-model--platform-bus-alignment)
+11. [Anti-Conflict Rules](#11-anti-conflict-rules)
+12. [Taxonomy/Routing Guardrails & Security Boundary](#12-taxonomyrouting-guardrails--security-boundary)
+13. [Migration Without Runtime Disruption](#13-migration-without-runtime-disruption)
+14. [Multi-Provider Strategy, Implementation Phasing & Risks](#14-multi-provider-strategy-implementation-phasing--risks)
+15. [Final Recommendation & Closing Declaration](#15-final-recommendation--closing-declaration)
 
 ---
 
-## 1. Mandatory Declaration
+## 1. Mandatory Declaration & Executive Summary
 
-This document is **architecture-only**. It prescribes no runtime code changes, no database migrations, and no file edits to any existing source. Every recommendation in this document MUST be implemented through a separate, tracked task with its own code review cycle.
+**This document is architecture-only.** It prescribes no runtime code changes, no database migrations, no file edits, no feature flag activations, no event emissions, no route exposures, and no provider API integrations. Every recommendation herein is a design artifact. Implementation requires separate, tracked tasks with their own code review cycles.
 
-All proposed types, state machines, wiring declarations, routes, and event schemas described herein are **design artifacts**. They represent the target state and carry no side effects on the running application.
+**No implementation has been performed.** This document describes the target state only.
+
+### Executive Summary
+
+Car Rental is a **date-range booking product** — users search by pickup/return dates and locations, compare offers from multiple providers (Hertz, Avis, Sixt, local fleets), and book a vehicle for a multi-day period. This is fundamentally a **Travel booking** pattern, identical in structure to Flights and Stays, and categorically different from the **real-time dispatch** pattern used by Taxi/Mobility.
+
+Car Rental currently lives as a subcategory under `mobility/taxi` across 5 taxonomy files plus 3 derived contract surfaces. Every inherited behavior (fare hold, job context, live tracking, per-ride billing, proximity discovery) is semantically incorrect. This document defines the architecture for reclassifying Car Rental as a first-class vertical with its own `VerticalKey`, canonical models, state machine, provider adapter layer, and 5-pillar wiring.
 
 ---
 
-## 2. Current State Audit
+## 2. Domain Positioning with Comparison Tables
 
-Car Rental currently exists as a **subcategory** nested under the `taxi` primary category in the mobility vertical. It appears in **5 canonical files** plus **3 derived contract surfaces** that must also be updated:
+### 2.1 Current State Audit
 
-### Primary Files (Direct References)
+Car Rental appears in **5 primary files** and **3 derived contract surfaces**:
 
 | File | Location | Current Shape |
 |------|----------|---------------|
-| `category-tree.ts:526` | `CATEGORY_TREE[7].subcategories[2]` | `{ value: "car_rental", label: "Car Rental", emoji: "🚗", cluster: "transport" }` |
+| `category-tree.ts:526` | `CATEGORY_TREE[7].subcategories[2]` | `{ value: "car_rental", label: "Car Rental", emoji: "🚗", cluster: "transport" }` under taxi primary |
 | `classification-engine.ts:133-135` | Brand rules | Maps Hertz, Avis, Sixt → `category: "taxi"`, `subcategory: "car_rental"` |
-| `canonical-registry.ts:1244-1262` | `MOBILITY_FAMILY.categories[1]` | Own category key `"rental"` with single subcategory `car_rental` under MOBILITY_FAMILY |
+| `canonical-registry.ts:1244-1262` | `MOBILITY_FAMILY.categories[1]` | Own category key `"rental"` with subcategory `car_rental` under MOBILITY_FAMILY |
 | `world-class-taxonomy.ts:217` | `SERVICE_MODE_ENRICHMENT` | `car_rental: ["onsite"]` |
-| `module-wiring.ts:452` | `taxi.dashboard.shortcuts` | Listed as `"car_rental"` shortcut alongside taxi, chauffeur, premium |
+| `module-wiring.ts:452` | `taxi.dashboard.shortcuts` | `"car_rental"` listed alongside taxi, chauffeur, premium |
 
-### Derived Contract Surfaces (Must Also Be Updated)
+Derived contract surfaces requiring update:
 
 | File | Location | Issue |
 |------|----------|-------|
-| `category-tree.ts:22-32` | `ArchitectureType` union | Does NOT include `"rental_booking"` — new value must be added to the union |
-| `category-tree.ts:34-43` | `FulfillmentType` union | Does NOT include `"rental_contract"` — new value must be added to the union |
-| `world-class-taxonomy.ts:348-366` | `mapCategoryKeyToVertical()` | Hardcoded key map has no `car_rental` entry — would fallback to `"services"` |
-| `module-wiring.ts:946-967` | `getVerticalForCategoryKey()` | Hardcoded key map has no `car_rental` entry — would return `null` |
+| `category-tree.ts:22-32` | `ArchitectureType` union | Missing `"rental_booking"` value |
+| `category-tree.ts:34-43` | `FulfillmentType` union | Missing `"rental_contract"` value |
+| `world-class-taxonomy.ts:348-366` | `mapCategoryKeyToVertical()` | No `car_rental` key — falls back to `"services"` |
+| `module-wiring.ts:946-967` | `getVerticalForCategoryKey()` | No `car_rental` key — returns `null` |
 
-### Inherited (Incorrect) Behaviors
+### 2.2 Strict Comparison: Car Rental vs Mobility (Taxi)
 
-Because `car_rental` inherits from the `taxi` primary, it currently receives:
+| Dimension | Mobility / Taxi | Car Rental | Hard Separation |
+|-----------|----------------|------------|-----------------|
+| **User intent** | "Get me from A to B now" | "Rent a vehicle for N days starting on date X" | Car Rental is NOT a ride request. It is NOT dispatched. |
+| **Inventory type** | Available drivers (live GPS pool) | Fleet vehicles (calendar availability) | Car Rental has NO driver pool and NO real-time matching. |
+| **Fulfillment model** | Dispatch → pickup → ride → dropoff (minutes) | Reserve → pickup → self-drive → return (days) | Car Rental users DRIVE THEMSELVES. No driver is assigned. |
+| **Pricing model** | Dynamic fare (distance + time + surge) | Daily rate × days + extras + insurance | Car Rental has NO surge pricing and NO distance-based fares. |
+| **Booking behavior** | Real-time, no advance search | Date-range search, days/weeks in advance | Car Rental is ALWAYS pre-booked. Never on-demand. |
+| **State model** | `draft → searching → accepted → picked_up → completed` | `draft → booking_started → payment_authorized → confirmed → active → completed` | Car Rental has NO driver acceptance step. |
+| **Provider relationship** | Platform assigns from driver pool | Multi-provider aggregation (Hertz, Avis, Sixt) | Car Rental aggregates EXTERNAL providers. Not internal pool. |
+| **Map behavior** | Live vehicle tracking | Branch/pickup location pins | Car Rental has NO live tracking. |
+| **Wallet flow** | `fare_hold` (real-time capture) | `booking_deposit` (deposit + balance at pickup) | Car Rental NEVER uses fare hold. |
+| **Orbit context** | `job` entity link | `booking` entity link | Car Rental threads are bookings, NOT jobs. |
 
-| Dimension | Inherited Value | Correct Value for Car Rental |
-|-----------|----------------|------------------------------|
-| `architecture` | `mobility_taxi` | `calendar_booking` or `rental_booking` |
-| `fulfillment` | `taxi` | `rental_contract` |
-| `walletFlow` | `fare_hold` | `booking_deposit` |
-| `orbitContext` | `job` | `booking` |
-| `mapBehavior` | `live_tracking` | `listing_pins` |
-| `billingType` | `per_ride` | `per_booking` |
-| `entityLink` | `job` | `booking` |
-| `previewWidget` | `orders` | `bookings` |
-| `discoveryMode` | `proximity` (ETA-based) | `search` (date-range + location) |
+**Hard separation**: Car Rental MUST NOT inherit any behavior from the Mobility vertical. It MUST NOT use `mobility_taxi` architecture, `taxi` fulfillment, `fare_hold` wallet flow, `job` orbit context, `vehicle` map pins, or `per_ride` billing.
 
-**Conclusion**: Car Rental is fundamentally a **date-range booking** product (like Stay/Flights), not a **real-time dispatch** product (like Taxi). Every inherited behavior from the mobility/taxi vertical is semantically wrong.
+### 2.3 Strict Comparison: Car Rental vs Hotel/Stay
+
+| Dimension | Hotel / Stay | Car Rental | Separation |
+|-----------|-------------|------------|------------|
+| **User intent** | "Book accommodation for N nights" | "Rent a vehicle for N days" | Different asset type; same booking pattern |
+| **Inventory type** | Room-night calendar | Vehicle-day calendar | Structurally identical (calendar-based) |
+| **Fulfillment model** | Check-in → stay → check-out | Pickup → self-drive → return | Same shape: start-date fulfillment → end-date return |
+| **Pricing model** | Nightly rate × nights + taxes | Daily rate × days + extras + insurance | Nearly identical; Car Rental adds extras/insurance layer |
+| **Provider relationship** | OTA + direct booking | Multi-provider aggregation | Similar pattern |
+| **Wallet flow** | `booking_deposit` | `booking_deposit` | Identical |
+| **Orbit context** | `booking` | `booking` | Identical |
+
+**Relationship**: Car Rental and Stay share the **highest structural affinity** (8/10). They use the same booking pattern, wallet flow, orbit context, and calendar-based inventory. They differ in asset type (room vs vehicle) and extras model.
+
+### 2.4 Strict Comparison: Car Rental vs Seasonal Rental
+
+| Dimension | Seasonal Rental (Long-term property) | Car Rental | Hard Separation |
+|-----------|-------------------------------------|------------|-----------------|
+| **User intent** | "Lease a property for months/years" | "Rent a vehicle for days/weeks" | Different asset, different duration, different legal framework |
+| **Inventory type** | Property units (lease calendar) | Fleet vehicles (daily calendar) | Seasonal Rental is property-based with lease contracts |
+| **Fulfillment model** | Lease signing → move-in → occupancy → move-out | Reserve → pickup → self-drive → return | Seasonal Rental has legal lease contracts, deposits, maintenance |
+| **Pricing model** | Monthly rent + deposit + agency fees | Daily rate × days + insurance + extras | Seasonal Rental operates on monthly billing cycles |
+| **Duration** | Months to years | Days to weeks (rarely >30 days) | Car Rental is SHORT-TERM. Seasonal is LONG-TERM. |
+| **Legal framework** | Tenancy law, lease agreements, property law | Rental agreement, insurance, traffic law | Completely different legal domains |
+| **State model** | `draft → pending_signature → active → late → terminated → expired` | `draft → booking_started → confirmed → active → completed` | Seasonal has lease-specific states (late, terminated) |
+
+**Hard separation**: Car Rental MUST NOT share state models, billing types, or document types with Seasonal/Property Rental. They operate in entirely different legal and temporal domains. Car Rental is a Travel booking; Seasonal Rental is a Property management function.
+
+### 2.5 Strict Comparison: Car Rental vs Flight
+
+| Dimension | Flight | Car Rental | Separation |
+|-----------|--------|------------|------------|
+| **User intent** | "Fly from A to B on date X" | "Rent a vehicle at location A for N days" | Different asset; both are Travel bookings |
+| **Inventory type** | Seat inventory (GDS) | Fleet inventory (calendar) | Both calendar-bounded; different granularity |
+| **Fulfillment model** | Ticket issuance → check-in → board → fly | Reserve → pickup → self-drive → return | Flight fulfillment is ticket-based; Car Rental is possession-based |
+| **Provider relationship** | GDS/NDC aggregation (Amadeus, Sabre) | Brand API aggregation (Hertz, Avis, Sixt) | Same multi-provider adapter pattern |
+| **Pricing model** | Fare classes + taxes + baggage | Daily rate × days + extras + insurance | Both have complex pricing with add-ons |
+| **Cancellation** | Fare rules (refundable/non) | Policy-based (free cancellation window) | Similar pattern; different specifics |
+| **Payment** | Full prepay or hold | Deposit + balance at pickup | Different payment timing |
+
+**Relationship**: Car Rental and Flight share 7/10 affinity. Both are Travel bookings with multi-provider aggregation, complex cancellation policies, and date-range search. They differ in fulfillment (ticket vs possession) and payment timing.
+
+### 2.6 Affinity Summary
+
+| Vertical | Affinity Score | Key Pattern Match |
+|----------|---------------|-------------------|
+| Stay | 8/10 | Calendar inventory, daily pricing, deposit flow, check-in/check-out pattern |
+| Flight | 7/10 | Multi-provider aggregation, date-range search, cancellation policies |
+| Services | 4/10 | Booking concept exists but slot-based, not date-range |
+| Seasonal Rental | 3/10 | Both involve "renting" but different asset, duration, legal framework |
+| Taxi/Mobility | 2/10 | Same "vehicle" concept but completely different in every other dimension |
 
 ---
 
-## 3. Comparison: Car Rental vs Existing Verticals
+## 3. Domain Boundaries
 
-### 3.1 Behavioral Affinity Matrix
-
-| Dimension | Taxi | Flight | Stay | Services | **Car Rental** |
-|-----------|------|--------|------|----------|---------------|
-| Booking model | Real-time dispatch | Date-range search → book | Date-range search → book | Slot-based | **Date-range search → book** |
-| Pricing model | Dynamic fare (distance + surge) | Fare classes + taxes | Nightly rate × nights | Quoted/fixed | **Daily rate × days + extras** |
-| Inventory | Driver availability (live) | Seat inventory (GDS) | Room inventory (calendar) | Time slots | **Fleet inventory (calendar)** |
-| Fulfillment | Ride (pickup → dropoff) | Ticket issuance | Check-in → check-out | Appointment | **Pickup → return** |
-| Cancellation | Free until accepted | Fare rules (refundable/non) | Policy-based (free period) | Policy-based | **Policy-based (free period)** |
-| Payment | Fare hold → capture | Full prepay or hold | Deposit → balance | Deposit → balance | **Deposit → balance at pickup** |
-| Multi-provider | Single driver match | Amadeus, Sabre, etc. | Booking.com, direct | Single provider | **Hertz, Avis, Sixt, local** |
-| Map behavior | Live tracking | None (airport pins) | Listing pins | Provider pins | **Location/branch pins** |
-| Duration | Minutes | Hours (flight time) | Days (nights) | Hours | **Days (rental period)** |
-
-### 3.2 Affinity Score
-
-| Vertical | Affinity to Car Rental (0-10) | Reasoning |
-|----------|-------------------------------|-----------|
-| Taxi | 2 | Same "vehicle" concept, but completely different booking/fulfillment model |
-| Flight | 7 | Multi-provider aggregation, date-range search, complex cancellation policies |
-| Stay | 8 | Calendar-based inventory, daily pricing, deposit flow, check-in/check-out ≈ pickup/return |
-| Services | 4 | Booking concept exists, but services are slot-based not date-range |
-
-**Highest affinity: Stay (8/10), then Flight (7/10)**. Car Rental should share architectural patterns with Stay/Flight, not Taxi.
-
----
-
-## 4. Domain Boundaries
-
-### 4.1 Bounded Context: `car-rental`
+### 3.1 Bounded Context: `car-rental`
 
 ```
 src/domains/car-rental/
-├── car-rental-types.ts          # Canonical types (§6)
-├── car-rental-state-machine.ts  # Booking lifecycle (§7)
-├── car-rental-provider.ts       # Provider adapter interface (§10)
-├── car-rental-search.ts         # Search orchestration (§8)
-├── car-rental-events.ts         # Event schemas (§11)
-└── car-rental-wiring.ts         # 5-pillar wiring constants (§9)
+├── car-rental-types.ts          # Canonical types (§5)
+├── car-rental-state-machine.ts  # Booking lifecycle (§6)
+├── car-rental-provider.ts       # Provider adapter interface (§9)
+├── car-rental-search.ts         # Search orchestration (§7)
+├── car-rental-events.ts         # Event schemas (§10)
+└── car-rental-wiring.ts         # 5-pillar wiring constants (§8)
 ```
 
-### 4.2 What Car Rental OWNS
+### 3.2 What Car Rental OWNS
 
-- Vehicle offer/quote model
-- Rental booking lifecycle (state machine)
-- Provider adapter interface (multi-provider)
-- Search parameters (pickup location, dates, vehicle class)
-- Rental-specific extras (insurance, GPS, child seat, additional driver)
+- `CanonicalCarRentalOffer` — normalized vehicle offer from any provider
+- `CanonicalCarRentalBooking` — booking entity with full lifecycle
+- `CanonicalCarRentalSearchIntent` — search parameters and context
+- `CanonicalCarRentalBookingSummary` — lightweight projection for Dashboard/Me
+- `CanonicalCarRentalPolicySnapshot` — immutable snapshot of cancellation/insurance/mileage policies at booking time
+- Provider adapter interface (multi-provider aggregation)
+- Vehicle class taxonomy (within the `car_rental` primary category)
+- Rental-specific extras model (insurance, GPS, child seat, additional driver)
 - Pickup/return location management
 - Rental agreement/contract document type
 
-### 4.3 What Car Rental DOES NOT OWN (Shared Platform)
+### 3.3 What Car Rental DOES NOT OWN (Shared Platform)
 
-- Payment processing → Wallet vertical (`booking_deposit` flow)
+- Payment processing → Wallet vertical (`booking_deposit` flow, `per_booking` billing)
 - Messaging/support → Orbit vertical (`booking` entity link)
-- User identity & documents → Me vertical
+- User identity, documents, preferences → Me vertical
 - Map rendering → Radar shared map layer (`listing_pins`)
-- Notifications → Platform bus
-- Currency/locale → Shared i18n
-- Classification engine → Taxonomy layer
-- State machine infrastructure → `Machine<S, E>` from `state-machines.ts`
+- Notifications → Platform bus notification reactions
+- Currency/locale/i18n → Shared i18n infrastructure
+- Classification engine → `classification-engine.ts` (Car Rental provides rules; engine executes)
+- State machine infrastructure → `safeTransition` from `state-machines.ts`
+- Auth/RBAC → Shared auth layer
 
-### 4.4 Integration Seams
+### 3.4 What Car Rental MUST NEVER OWN
+
+- Taxi/ride dispatch logic
+- Driver pool management or driver assignment
+- Surge/dynamic pricing calculations
+- Hotel room inventory or property lease management
+- Flight ticketing or GDS integration
+- Raw payment card processing (Wallet handles this)
+- Provider API credentials storage (environment secrets only)
+
+### 3.5 Integration Seams
 
 | Seam | Direction | Contract |
 |------|-----------|----------|
-| Car Rental → Wallet | Outbound | `booking_deposit` payment flow; `per_booking` billing |
-| Car Rental → Orbit | Outbound | Thread type `rental_support`; entity link `booking` |
-| Car Rental → Platform Bus | Bidirectional | Emits `car_rental.*` events; listens for `payment.*` reactions |
-| Car Rental → Classification Engine | Inbound | Engine routes Hertz/Avis/Sixt to `travel:car_rental` |
-| Car Rental → Radar | Outbound | Provides `rental_branch` entity type for map discovery |
-| Car Rental → Dashboard | Outbound | `bookings` preview widget |
-| Car Rental → Me | Outbound | `rental_history` history type |
+| Car Rental → Wallet | Outbound | `booking_deposit` payment flow; `per_booking` billing. Sends deposit request, receives `commerce:payment_captured` / `wallet.payment.failed`. |
+| Car Rental → Orbit | Outbound | Thread types: `rental_support`, `booking_modification`, `damage_report`, `extension_request`. Entity link: `booking`. |
+| Car Rental → Platform Bus | Bidirectional | Emits `car_rental.*` events (§10). Listens for `commerce:payment_captured`, `wallet.payment.failed`, `commerce:payment_reversed`. |
+| Car Rental → Classification Engine | Inbound | Engine routes Hertz/Avis/Sixt brands to `category: "car_rental"`. |
+| Car Rental → Radar | Outbound | Provides `rental_branch` entity type for map discovery. |
+| Car Rental → Dashboard | Outbound | `CanonicalCarRentalBookingSummary` for upcoming bookings widget. |
+| Car Rental → Me | Outbound | Rental history, favorite providers, license info, frequent renter numbers. |
 
 ---
 
-## 5. Taxonomy Reclassification Recommendation
+## 4. Canonical Vertical Recommendation
 
-### 5.1 Option Analysis
+### 4.1 Firm Recommendation
 
-| Option | Description | Pros | Cons |
-|--------|-------------|------|------|
-| **A. Stay under `taxi`** | Keep as-is | Zero changes | All behaviors wrong; will confuse every consumer |
-| **B. New subcategory under `travel`** | Add to existing `travel` primary | Natural fit with flights; `travel` already exists in `VerticalKey` | `travel` primary doesn't exist in `category-tree.ts` (flights are handled differently) |
-| **C. New primary category `car_rental`** | Top-level primary in `CATEGORY_TREE` | Clean separation; own architecture/fulfillment/wallet | Proliferates primaries; may not justify standalone primary |
-| **D. New primary under `travel` umbrella** | Create `travel_car_rental` primary, vertical `"travel"` | Shares `travel` vertical with flights; clean wiring | Requires adding category-tree entry; `VerticalKey` already has `"travel"` |
+Car Rental MUST be a **first-class vertical** with its own `VerticalKey` of `"car_rental"` and a new top-level primary category in `CATEGORY_TREE`.
 
-### 5.2 Recommendation: **Option D — New Primary Category, Travel Vertical**
+This is NOT negotiable for the following reasons:
+1. Every pillar wiring value (wallet, orbit, radar, dashboard, me) differs from both `taxi` and `travel`
+2. The current `MODULE_WIRING` model is one entry per `VerticalKey` — car rental cannot share the `"travel"` key with flights because they have incompatible wiring (flights have no map pins; car rental has branch pins; flights use ticket fulfillment; car rental uses calendar booking)
+3. The `getVerticalForCategoryKey()` function returns a single `VerticalKey` per category key — car rental needs its own mapping
 
-Create a new `CATEGORY_TREE` entry.
+### 4.2 Taxonomy Placement
 
-> **Type Union Prerequisites**: Before this entry can be added, the `ArchitectureType` union in `category-tree.ts:22` must be extended with `| "rental_booking"`, and the `FulfillmentType` union at line 34 must be extended with `| "rental_contract"`. Without these additions, TypeScript will reject the new primary entry.
+**Category-tree primary entry** (design only — not yet added):
+
+> **Type Union Prerequisites**: `ArchitectureType` union (`category-tree.ts:22`) must be extended with `| "rental_booking"`. `FulfillmentType` union (`category-tree.ts:34`) must be extended with `| "rental_contract"`. `VerticalKey` union (`module-wiring.ts:16`) must be extended with `| "car_rental"`.
 
 ```typescript
 {
@@ -180,8 +221,8 @@ Create a new `CATEGORY_TREE` entry.
   label: "Car Rental",
   emoji: "🚗",
   vertical: "travel",
-  architecture: "rental_booking",   // NEW — must be added to ArchitectureType union
-  fulfillment: "rental_contract",   // NEW — must be added to FulfillmentType union
+  architecture: "rental_booking",
+  fulfillment: "rental_contract",
   mobilityJobType: null,
   walletFlow: "booking_deposit",
   orbitContext: "booking",
@@ -215,36 +256,296 @@ Create a new `CATEGORY_TREE` entry.
 }
 ```
 
-### 5.3 Files Requiring Taxonomy Updates (Implementation Phase Only)
+### 4.3 Entity Families
 
-All changes in this table MUST land in a single atomic PR (see §14, Phase M3).
+| Entity | Canonical Name | Role |
+|--------|---------------|------|
+| Search parameters | `CanonicalCarRentalSearchIntent` | Captures user search context: locations, dates, preferences |
+| Vehicle offer | `CanonicalCarRentalOffer` | Normalized offer from any provider |
+| Booking | `CanonicalCarRentalBooking` | Full booking entity with lifecycle state |
+| Booking summary | `CanonicalCarRentalBookingSummary` | Lightweight projection for Dashboard/Me/history |
+| Policy snapshot | `CanonicalCarRentalPolicySnapshot` | Immutable snapshot of policies at booking time |
+| Provider | `CarRentalProviderConfig` | Provider configuration and capabilities |
+
+### 4.4 Files Requiring Updates (Implementation Phase Only)
+
+All changes MUST land in a single atomic PR (see §13, Phase M3).
 
 | File | Change |
 |------|--------|
-| `category-tree.ts:22-32` | Extend `ArchitectureType` union: add `\| "rental_booking"` |
-| `category-tree.ts:34-43` | Extend `FulfillmentType` union: add `\| "rental_contract"` |
-| `category-tree.ts` (CATEGORY_TREE) | Add new primary entry (§5.2). Remove `car_rental` from `taxi.subcategories`. |
-| `classification-engine.ts` | Update Hertz/Avis/Sixt brand rules: `category: "car_rental"` (not `"taxi"`). |
-| `canonical-registry.ts` | Move `car_rental` from `MOBILITY_FAMILY` to new `CAR_RENTAL_FAMILY` (or `TRAVEL_FAMILY`). |
-| `world-class-taxonomy.ts:348-366` | Add `car_rental: "experiences"` to `mapCategoryKeyToVertical()` key map (or better: map to a new `"car_rental"` Vertical if extending the Vertical type). Update `SERVICE_MODE_ENRICHMENT["car_rental"]` to `["onsite", "delivery"]`. |
-| `module-wiring.ts:452` | Remove `"car_rental"` from `taxi.dashboard.shortcuts`. |
-| `module-wiring.ts:946-967` | Add `car_rental: "travel"` to `getVerticalForCategoryKey()` key map. |
+| `category-tree.ts:22-32` | Extend `ArchitectureType`: add `\| "rental_booking"` |
+| `category-tree.ts:34-43` | Extend `FulfillmentType`: add `\| "rental_contract"` |
+| `category-tree.ts` (CATEGORY_TREE) | Add new primary entry (§4.2). Remove `car_rental` from `taxi.subcategories`. |
+| `classification-engine.ts:133-135` | Update brand rules: `category: "car_rental"` (not `"taxi"`) for Hertz/Avis/Sixt |
+| `canonical-registry.ts:1244-1262` | Remove `car_rental` from `MOBILITY_FAMILY`. Add new `CAR_RENTAL_FAMILY`. |
+| `world-class-taxonomy.ts:217` | Update `SERVICE_MODE_ENRICHMENT["car_rental"]` to `["onsite", "delivery"]` |
+| `world-class-taxonomy.ts:348-366` | Add `car_rental: "car_rental"` to `mapCategoryKeyToVertical()` (requires extending `Vertical` type with `"car_rental"`) |
+| `module-wiring.ts:16-19` | Add `"car_rental"` to `VerticalKey` union |
+| `module-wiring.ts:452` | Remove `"car_rental"` from `taxi.dashboard.shortcuts` |
+| `module-wiring.ts:946-967` | Add `car_rental: "car_rental"` to `getVerticalForCategoryKey()` |
+| `module-wiring.ts` (MODULE_WIRING) | Add `MODULE_WIRING["car_rental"]` entry (§8) |
 
 ---
 
-## 6. Canonical Data Models
+## 5. Canonical Model Designs
 
-### 6.1 Core Types
+### 5.1 CanonicalCarRentalSearchIntent
+
+**Purpose**: Captures the user's search context. Created at search time, referenced throughout the booking flow. Immutable after creation.
+
+**Lifecycle role**: Created at Step 1 (search). Referenced by offers. Stored in booking for traceability.
 
 ```typescript
-type RentalBookingStatus =
-  | "searching"
-  | "quoted"
-  | "selected"
-  | "booking_pending"
+interface CanonicalCarRentalSearchIntent {
+  // Required — immutable after creation
+  readonly intentId: string;
+  readonly userId: string;
+  readonly pickupLocation: string;
+  readonly pickupLocationType: PickupReturnType;
+  readonly pickupCoordinates: { lat: number; lng: number };
+  readonly returnLocation: string;
+  readonly returnLocationType: PickupReturnType;
+  readonly returnCoordinates: { lat: number; lng: number };
+  readonly pickupDate: string;           // ISO 8601
+  readonly pickupTime: string;           // HH:mm
+  readonly returnDate: string;           // ISO 8601
+  readonly returnTime: string;           // HH:mm
+  readonly currency: string;
+  readonly createdAt: string;
+
+  // Optional — immutable after creation
+  readonly vehicleClass?: VehicleClass;
+  readonly transmission?: TransmissionType;
+  readonly fuelType?: FuelType;
+  readonly minSeats?: number;
+  readonly locale?: string;
+  readonly driverAge?: number;
+  readonly extras?: RentalExtra[];
+  readonly providerIds?: string[];
+}
+```
+
+**Forbidden provider leaks**: No provider-specific search parameters. All provider API peculiarities are handled by adapters.
+
+### 5.2 CanonicalCarRentalOffer
+
+**Purpose**: Normalized vehicle offer from any provider. Provider-agnostic — no raw provider data leaks to consumers.
+
+**Lifecycle role**: Created by provider adapters during search. Selected by user. Embedded (snapshotted) in booking.
+
+```typescript
+interface CanonicalCarRentalOffer {
+  // Required — immutable
+  readonly offerId: string;
+  readonly providerId: string;
+  readonly providerOfferRef: string;        // opaque ref for provider communication
+  readonly vehicle: {
+    readonly vehicleClass: VehicleClass;
+    readonly make: string;
+    readonly model: string;
+    readonly transmission: TransmissionType;
+    readonly fuelType: FuelType;
+    readonly seats: number;
+    readonly doors: number;
+    readonly bags: { large: number; small: number };
+    readonly airConditioning: boolean;
+  };
+  readonly pickup: {
+    readonly locationId: string;
+    readonly locationName: string;
+    readonly locationType: PickupReturnType;
+    readonly address: string;
+    readonly coordinates: { lat: number; lng: number };
+    readonly dateTime: string;
+  };
+  readonly return: {
+    readonly locationId: string;
+    readonly locationName: string;
+    readonly locationType: PickupReturnType;
+    readonly address: string;
+    readonly coordinates: { lat: number; lng: number };
+    readonly dateTime: string;
+  };
+  readonly pricing: {
+    readonly dailyRate: number;
+    readonly totalDays: number;
+    readonly subtotal: number;
+    readonly taxes: number;
+    readonly fees: number;
+    readonly extrasTotal: number;
+    readonly totalPrice: number;
+    readonly currency: string;
+    readonly depositAmount: number;
+    readonly includedExtras: RentalExtra[];
+    readonly availableExtras: { extra: RentalExtra; price: number }[];
+  };
+  readonly validUntil: string;
+
+  // Optional — immutable
+  readonly vehicle_year?: number;
+  readonly vehicle_imageUrl?: string;
+  readonly pickup_instructions?: string;
+  readonly return_instructions?: string;
+  readonly providerRating?: number;
+  readonly providerReviewCount?: number;
+}
+```
+
+**Forbidden provider leaks**: No raw provider JSON, no provider-specific IDs in public fields (only `providerOfferRef` which is opaque), no provider error codes, no provider session tokens.
+
+**Relationship to shared layers**: `currency` field uses the shared `CurrencyCode` type. `coordinates` uses the shared `GeoPoint` pattern. `VehicleClass`, `RentalExtra`, etc. are car-rental-owned types.
+
+### 5.3 CanonicalCarRentalBooking
+
+**Purpose**: The primary booking entity. Tracks the full lifecycle from creation to completion/cancellation.
+
+**Lifecycle role**: Created at booking submission. Mutated through state machine transitions. Contains immutable offer snapshot and mutable status/payment fields.
+
+```typescript
+interface CanonicalCarRentalBooking {
+  // Required — immutable after creation
+  readonly bookingId: string;
+  readonly userId: string;
+  readonly providerId: string;
+  readonly offer: CanonicalCarRentalOffer;           // snapshot at booking time
+  readonly searchIntent: CanonicalCarRentalSearchIntent;  // original search context
+  readonly policySnapshot: CanonicalCarRentalPolicySnapshot;  // policies frozen at booking
+  readonly driver: {
+    readonly firstName: string;
+    readonly lastName: string;
+    readonly email: string;
+    readonly phone: string;
+    readonly dateOfBirth: string;
+    readonly licenseNumber: string;
+    readonly licenseCountry: string;
+    readonly licenseExpiry: string;
+  };
+  readonly selectedExtras: RentalExtra[];
+  readonly selectedInsurance: InsuranceType;
+  readonly paymentMode: PaymentMode;
+  readonly totalAmount: number;
+  readonly depositAmount: number;
+  readonly currency: string;
+  readonly platformFee: number;
+  readonly providerAmount: number;
+  readonly createdAt: string;
+
+  // Mutable — updated through lifecycle
+  status: CarRentalBookingStatus;
+  providerBookingRef?: string;
+  paymentRef?: string;
+  holdExpiresAt?: string;
+  confirmationNumber?: string;
+  contractDocumentUrl?: string;
+  failureReason?: string;
+  retryCount: number;
+  updatedAt: string;
+
+  // Optional — mutable
+  additionalDrivers?: {
+    firstName: string;
+    lastName: string;
+    licenseNumber: string;
+    licenseCountry: string;
+  }[];
+  metadata?: Record<string, unknown>;
+}
+```
+
+**Forbidden provider leaks**: `providerBookingRef` is opaque. No raw provider status strings, no provider session IDs, no provider API keys in metadata.
+
+### 5.4 CanonicalCarRentalBookingSummary
+
+**Purpose**: Lightweight projection of a booking for Dashboard upcoming-bookings widget, Me history list, and Orbit thread context. Contains only display-relevant fields.
+
+**Lifecycle role**: Derived from `CanonicalCarRentalBooking`. Read-only projection. Never written to directly.
+
+```typescript
+interface CanonicalCarRentalBookingSummary {
+  readonly bookingId: string;
+  readonly status: CarRentalBookingStatus;
+  readonly vehicleClass: VehicleClass;
+  readonly vehicleMake: string;
+  readonly vehicleModel: string;
+  readonly pickupLocationName: string;
+  readonly pickupDateTime: string;
+  readonly returnLocationName: string;
+  readonly returnDateTime: string;
+  readonly totalPrice: number;
+  readonly currency: string;
+  readonly providerName: string;
+  readonly confirmationNumber?: string;
+  readonly createdAt: string;
+}
+```
+
+**Relationship to Dashboard/Me**: This is the shape that Dashboard's `bookings` preview widget and Me's `rentals` history list consume. No full offer or driver PII in this projection.
+
+### 5.5 CanonicalCarRentalPolicySnapshot
+
+**Purpose**: Immutable snapshot of all policies (cancellation, insurance, mileage) at the moment of booking. Protects against retroactive policy changes by the provider.
+
+**Lifecycle role**: Created at booking time from the selected offer. NEVER modified after creation. Used for dispute resolution, refund calculations, and customer support.
+
+```typescript
+interface CanonicalCarRentalPolicySnapshot {
+  // All fields immutable — frozen at booking time
+  readonly snapshotId: string;
+  readonly bookingId: string;
+  readonly capturedAt: string;
+
+  readonly cancellation: {
+    readonly freeCancellationUntil: string | null;
+    readonly cancellationFee: number | null;
+    readonly cancellationFeePct: number | null;
+    readonly refundable: boolean;
+  };
+
+  readonly insurance: {
+    readonly selectedType: InsuranceType;
+    readonly excessAmount: number;
+    readonly coverageDescription: string;
+  };
+
+  readonly mileage: {
+    readonly policy: MileagePolicy;
+    readonly includedKm: number | null;
+    readonly excessRatePerKm: number | null;
+  };
+
+  readonly pricing: {
+    readonly dailyRate: number;
+    readonly totalDays: number;
+    readonly totalPrice: number;
+    readonly depositAmount: number;
+    readonly currency: string;
+  };
+
+  readonly providerTermsUrl?: string;
+}
+```
+
+**Forbidden mutations**: Once created, no field may be updated. If a provider changes their terms after booking, the snapshot remains authoritative for that booking. This is critical for refund disputes.
+
+---
+
+## 6. Entity Lifecycle & Booking State Model
+
+### 6.1 State Machine Definition
+
+Following the canonical `Machine<S, E>` pattern from `src/domains/shared/state-machines.ts`.
+
+> **Implementation note**: The `Machine<S, E>` type in `state-machines.ts` is file-local (not exported). Implementation must either (a) duplicate the type locally, or (b) export it from `state-machines.ts` in a preparatory PR. Option (b) is recommended. The `safeTransition` function IS exported and works with any conforming machine.
+
+```typescript
+type CarRentalBookingStatus =
+  | "draft"
+  | "booking_started"
   | "payment_pending"
-  | "payment_confirmed"
+  | "payment_authorized"
+  | "provider_confirmation_pending"
   | "confirmed"
+  | "modification_pending"
   | "pickup_ready"
   | "active"
   | "return_pending"
@@ -254,297 +555,103 @@ type RentalBookingStatus =
   | "refund_pending"
   | "refunded";
 
-type VehicleClass =
-  | "economy" | "compact" | "midsize" | "standard"
-  | "fullsize" | "premium" | "luxury" | "suv"
-  | "minivan" | "van" | "convertible" | "electric"
-  | "pickup_truck" | "sports";
-
-type TransmissionType = "automatic" | "manual";
-
-type FuelType = "petrol" | "diesel" | "electric" | "hybrid" | "plugin_hybrid";
-
-type InsuranceType = "basic" | "standard" | "premium" | "full_coverage";
-
-type MileagePolicy = "unlimited" | "limited";
-
-type RentalExtra =
-  | "gps" | "child_seat" | "additional_driver" | "wifi"
-  | "snow_chains" | "roof_rack" | "roadside_assistance"
-  | "full_insurance" | "young_driver_surcharge"
-  | "cross_border" | "one_way_fee";
-
-type PickupReturnType = "branch" | "airport" | "hotel_delivery" | "custom_address";
-
-type PaymentMode = "platform" | "provider_direct" | "hybrid";
-```
-
-### 6.2 Search Parameters
-
-```typescript
-interface CarRentalSearchParams {
-  pickupLocation: string;
-  pickupLocationType: PickupReturnType;
-  pickupCoordinates?: { lat: number; lng: number };
-  returnLocation: string;
-  returnLocationType: PickupReturnType;
-  returnCoordinates?: { lat: number; lng: number };
-  pickupDate: string;          // ISO 8601
-  pickupTime: string;          // HH:mm
-  returnDate: string;          // ISO 8601
-  returnTime: string;          // HH:mm
-  vehicleClass?: VehicleClass;
-  transmission?: TransmissionType;
-  fuelType?: FuelType;
-  minSeats?: number;
-  currency: string;
-  locale?: string;
-  driverAge?: number;
-  extras?: RentalExtra[];
-  providerIds?: string[];      // filter to specific providers
-}
-```
-
-### 6.3 Vehicle Offer
-
-```typescript
-interface CarRentalOffer {
-  offerId: string;
-  providerId: string;
-  providerOfferRef: string;
-  vehicle: {
-    vehicleClass: VehicleClass;
-    make: string;
-    model: string;
-    year?: number;
-    transmission: TransmissionType;
-    fuelType: FuelType;
-    seats: number;
-    doors: number;
-    bags: { large: number; small: number };
-    airConditioning: boolean;
-    imageUrl?: string;
-  };
-  pickup: {
-    locationId: string;
-    locationName: string;
-    locationType: PickupReturnType;
-    address: string;
-    coordinates: { lat: number; lng: number };
-    dateTime: string;
-    instructions?: string;
-  };
-  return: {
-    locationId: string;
-    locationName: string;
-    locationType: PickupReturnType;
-    address: string;
-    coordinates: { lat: number; lng: number };
-    dateTime: string;
-    instructions?: string;
-  };
-  pricing: {
-    dailyRate: number;
-    totalDays: number;
-    subtotal: number;
-    taxes: number;
-    fees: number;
-    extrasTotal: number;
-    totalPrice: number;
-    currency: string;
-    depositAmount: number;
-    includedExtras: RentalExtra[];
-    availableExtras: { extra: RentalExtra; price: number }[];
-  };
-  insurance: {
-    included: InsuranceType;
-    excessAmount: number;
-    upgradeOptions: { type: InsuranceType; additionalCost: number }[];
-  };
-  mileage: {
-    policy: MileagePolicy;
-    includedKm?: number;
-    excessRatePerKm?: number;
-  };
-  cancellation: {
-    freeCancellationUntil?: string;
-    cancellationFee?: number;
-    cancellationFeePct?: number;
-    refundable: boolean;
-  };
-  validUntil: string;
-  providerRating?: number;
-  providerReviewCount?: number;
-}
-```
-
-### 6.4 Rental Booking
-
-```typescript
-interface CarRentalBooking {
-  bookingId: string;
-  userId: string;
-  status: RentalBookingStatus;
-  providerId: string;
-  providerBookingRef?: string;
-  offer: CarRentalOffer;
-  driver: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    dateOfBirth: string;
-    licenseNumber: string;
-    licenseCountry: string;
-    licenseExpiry: string;
-  };
-  additionalDrivers?: {
-    firstName: string;
-    lastName: string;
-    licenseNumber: string;
-    licenseCountry: string;
-  }[];
-  selectedExtras: RentalExtra[];
-  selectedInsurance: InsuranceType;
-  paymentMode: PaymentMode;
-  paymentRef?: string;
-  depositAmount: number;
-  totalAmount: number;
-  currency: string;
-  platformFee: number;
-  providerAmount: number;
-  holdExpiresAt?: string;
-  confirmationNumber?: string;
-  contractDocumentUrl?: string;
-  failureReason?: string;
-  retryCount: number;
-  createdAt: string;
-  updatedAt: string;
-  metadata?: Record<string, unknown>;
-}
-```
-
-### 6.5 Provider Configuration
-
-```typescript
-interface CarRentalProviderConfig {
-  providerId: string;
-  name: string;
-  enabled: boolean;
-  apiBaseUrl: string;
-  supportedCountries?: string[];
-  supportedCurrencies?: string[];
-  paymentMode: PaymentMode;
-  commissionPct: number;
-  timeout: number;
-  retryAttempts: number;
-  webhookSecret?: string;
-  priority: number;
-  features: {
-    supportsOneWay: boolean;
-    supportsDelivery: boolean;
-    supportsCrossBorder: boolean;
-    supportsYoungDriver: boolean;
-    minDriverAge: number;
-    maxDriverAge?: number;
-  };
-}
-```
-
----
-
-## 7. Booking Lifecycle & State Machine
-
-### 7.1 State Machine Definition
-
-Following the canonical `Machine<S, E>` pattern from `src/domains/shared/state-machines.ts`:
-
-```typescript
-type RentalEvent =
-  | "SEARCH"
-  | "QUOTE"
-  | "SELECT"
-  | "SUBMIT_BOOKING"
+type CarRentalEvent =
+  | "START_BOOKING"
   | "REQUEST_PAYMENT"
-  | "CONFIRM_PAYMENT"
-  | "CONFIRM_BOOKING"
+  | "AUTHORIZE_PAYMENT"
+  | "SEND_TO_PROVIDER"
+  | "PROVIDER_CONFIRM"
+  | "PROVIDER_REJECT"
   | "MARK_PICKUP_READY"
   | "ACTIVATE"
   | "INITIATE_RETURN"
   | "COMPLETE"
+  | "REQUEST_MODIFICATION"
+  | "CONFIRM_MODIFICATION"
+  | "REJECT_MODIFICATION"
   | "CANCEL"
   | "FAIL"
+  | "TIMEOUT"
   | "REQUEST_REFUND"
   | "PROCESS_REFUND";
 
-const CAR_RENTAL_MACHINE: Machine<RentalBookingStatus, RentalEvent> = {
-  searching:         { QUOTE: "quoted", FAIL: "failed", CANCEL: "cancelled" },
-  quoted:            { SELECT: "selected", CANCEL: "cancelled" },
-  selected:          { SUBMIT_BOOKING: "booking_pending", CANCEL: "cancelled" },
-  booking_pending:   { REQUEST_PAYMENT: "payment_pending", FAIL: "failed", CANCEL: "cancelled" },
-  payment_pending:   { CONFIRM_PAYMENT: "payment_confirmed", FAIL: "failed", CANCEL: "cancelled" },
-  payment_confirmed: { CONFIRM_BOOKING: "confirmed", FAIL: "failed" },
-  confirmed:         { MARK_PICKUP_READY: "pickup_ready", CANCEL: "cancelled" },
-  pickup_ready:      { ACTIVATE: "active", CANCEL: "cancelled" },
-  active:            { INITIATE_RETURN: "return_pending" },
-  return_pending:    { COMPLETE: "completed" },
-  completed:         { REQUEST_REFUND: "refund_pending" },
-  cancelled:         {},
-  failed:            {},
-  refund_pending:    { PROCESS_REFUND: "refunded", FAIL: "failed" },
-  refunded:          {},
+const CAR_RENTAL_MACHINE: Machine<CarRentalBookingStatus, CarRentalEvent> = {
+  draft:                          { START_BOOKING: "booking_started", CANCEL: "cancelled" },
+  booking_started:                { REQUEST_PAYMENT: "payment_pending", CANCEL: "cancelled", FAIL: "failed" },
+  payment_pending:                { AUTHORIZE_PAYMENT: "payment_authorized", FAIL: "failed", CANCEL: "cancelled", TIMEOUT: "failed" },
+  payment_authorized:             { SEND_TO_PROVIDER: "provider_confirmation_pending", FAIL: "failed" },
+  provider_confirmation_pending:  { PROVIDER_CONFIRM: "confirmed", PROVIDER_REJECT: "failed", TIMEOUT: "failed" },
+  confirmed:                      { MARK_PICKUP_READY: "pickup_ready", REQUEST_MODIFICATION: "modification_pending", CANCEL: "cancelled" },
+  modification_pending:           { CONFIRM_MODIFICATION: "confirmed", REJECT_MODIFICATION: "confirmed", TIMEOUT: "confirmed", CANCEL: "cancelled" },
+  pickup_ready:                   { ACTIVATE: "active", CANCEL: "cancelled" },
+  active:                         { INITIATE_RETURN: "return_pending" },
+  return_pending:                 { COMPLETE: "completed" },
+  completed:                      { REQUEST_REFUND: "refund_pending" },
+  cancelled:                      {},
+  failed:                         {},
+  refund_pending:                 { PROCESS_REFUND: "refunded", FAIL: "failed" },
+  refunded:                       {},
 };
 ```
 
-### 7.2 State Diagram
+### 6.2 Critical Rule: Payment Success ≠ Booking Confirmed
 
+**`payment_authorized` → `provider_confirmation_pending` → `confirmed`**
+
+After the Wallet captures payment, Car Rental MUST send the booking to the provider for confirmation. Only when the provider confirms availability does the booking transition to `confirmed`. If the provider rejects (vehicle no longer available), the booking transitions to `failed` and a refund is initiated.
+
+This is the same pattern as Flight (`payment_confirmed` → `ticketing_in_progress` → `ticketed`). Payment capture alone does NOT guarantee fulfillment.
+
+### 6.3 Forbidden Transitions
+
+The following transitions are explicitly **forbidden** and must never be added to the machine:
+
+| From | To | Why Forbidden |
+|------|----|---------------|
+| `draft` | `confirmed` | Cannot skip payment and provider confirmation |
+| `draft` | `active` | Cannot skip entire booking flow |
+| `payment_pending` | `confirmed` | Cannot skip payment authorization and provider confirmation |
+| `payment_authorized` | `confirmed` | Cannot skip provider confirmation (see §6.2) |
+| `active` | `cancelled` | Cannot cancel after vehicle pickup (use modification/return instead) |
+| `active` | `draft` | Cannot revert to draft after activation |
+| `completed` | `active` | Cannot reactivate a completed rental |
+| `cancelled` | Any state | Terminal. No resurrection. |
+| `failed` | Any state | Terminal. No resurrection. |
+| `refunded` | Any state | Terminal. No resurrection. |
+
+### 6.4 Timeout Points
+
+| State | Timeout | Action |
+|-------|---------|--------|
+| `payment_pending` | 15 minutes | If no payment authorization received, `TIMEOUT` → `failed`. Release hold. |
+| `provider_confirmation_pending` | 5 minutes | If no provider response, `TIMEOUT` → `failed`. Initiate refund. |
+| `modification_pending` | 10 minutes | If no provider response to modification, `TIMEOUT` → `confirmed` (revert to original). |
+| `pickup_ready` | 24 hours after scheduled pickup | If user doesn't pick up, system may auto-`CANCEL` (no-show policy). |
+
+### 6.5 Snapshot vs Operational State
+
+| Aspect | Snapshot (Immutable) | Operational (Mutable) |
+|--------|---------------------|-----------------------|
+| Offer details | `CanonicalCarRentalOffer` embedded in booking | — |
+| Policies | `CanonicalCarRentalPolicySnapshot` | — |
+| Search context | `CanonicalCarRentalSearchIntent` | — |
+| Driver info | `driver` in booking | — |
+| Booking status | — | `status: CarRentalBookingStatus` |
+| Payment ref | — | `paymentRef`, `holdExpiresAt` |
+| Provider ref | — | `providerBookingRef`, `confirmationNumber` |
+| Failure info | — | `failureReason`, `retryCount` |
+
+### 6.6 TERMINAL_STATES Registration
+
+Add to the `TERMINAL_STATES` record in `state-machines.ts`:
+
+```typescript
+car_rental: new Set(["completed", "cancelled", "failed", "refunded"]),
 ```
-searching → quoted → selected → booking_pending → payment_pending
-                                                        ↓
-                                               payment_confirmed
-                                                        ↓
-                                                    confirmed
-                                                        ↓
-                                                  pickup_ready
-                                                        ↓
-                                                      active
-                                                        ↓
-                                                 return_pending
-                                                        ↓
-                                                    completed → refund_pending → refunded
-                                                    
-Any non-terminal state → cancelled (via CANCEL)
-Any pre-confirmation state → failed (via FAIL)
-```
 
-### 7.3 Terminal vs Near-Terminal States
+Note: `completed` is registered as terminal for `isTerminal()` purposes (it represents successful fulfillment), even though it has one outbound transition (`REQUEST_REFUND` → `refund_pending`) for post-completion refund flows.
 
-**True Terminal States** (no outbound transitions):
-- `cancelled` — Cancelled by user or provider
-- `failed` — System/provider failure
-- `refunded` — Refund processed after completion
-
-**Near-Terminal State** (limited outbound):
-- `completed` — Rental finished successfully. Has one outbound transition (`REQUEST_REFUND` → `refund_pending`) because post-completion refunds are a valid business flow. For `isTerminal()` purposes, `completed` should be registered as terminal since it represents successful fulfillment.
-
-Register in `TERMINAL_STATES` (§7.6) as: `car_rental: new Set(["completed", "cancelled", "failed", "refunded"])`
-
-### 7.4 Comparison with Flight Machine
-
-| Aspect | Flight | Car Rental | Delta |
-|--------|--------|------------|-------|
-| Pre-booking states | `searching → priced → selected` | `searching → quoted → selected` | Semantic rename only |
-| Payment flow | `payment_pending → payment_confirmed` | Same | Identical |
-| Fulfillment | `ticketing_in_progress → ticketed` | `confirmed → pickup_ready → active → return_pending → completed` | Car Rental has richer post-confirmation lifecycle |
-| Post-completion | `refund_pending → refunded` | Same | Identical |
-
-### 7.5 Integration with `safeTransition`
-
-> **Note**: The `Machine<S, E>` type and `createTransition` helper in `state-machines.ts` are file-local (not exported). The car rental state machine file (`car-rental-state-machine.ts`) must either:
-> (a) Duplicate the `Machine<S, E>` type locally (small, acceptable duplication), or
-> (b) Export the type from `state-machines.ts` in a preparatory PR.
->
-> Option (b) is recommended for consistency. The `safeTransition` function IS exported and accepts any machine conforming to the `Record<S, Partial<Record<E, S>>>` shape.
+### 6.7 Integration with `safeTransition`
 
 ```typescript
 import { safeTransition } from "@/domains/shared/state-machines";
@@ -555,26 +662,52 @@ const result = safeTransition(
   currentStatus,
   event
 );
-```
-
-### 7.6 TERMINAL_STATES Registration
-
-Add to the `TERMINAL_STATES` record in `state-machines.ts`:
-
-```typescript
-car_rental: new Set(["completed", "cancelled", "failed", "refunded"]),
+// result: { next: CarRentalBookingStatus | null; blocked: boolean; reason?: string }
 ```
 
 ---
 
-## 8. Search, Discovery & Flow
+## 7. Search/Discovery Position & End-to-End Flow
 
-### 8.1 Search Flow Architecture
+### 7.1 Where Car Rental Appears
+
+| Surface | Appears? | How |
+|---------|----------|-----|
+| Travel Hub (`/travel`) | Yes | Card alongside Flights and Stays |
+| Travel Search | Yes | Own search form at `/travel/car-rental` |
+| Dashboard — upcoming bookings | Yes | `CanonicalCarRentalBookingSummary` in bookings widget |
+| Me — booking history | Yes | Past rentals in `rentals` history type |
+| Radar — map view | Yes | Rental branch pins (pickup locations) |
+| Mobility surfaces | **NO** | Never appears in taxi/delivery/mobility UI |
+| Hotel/Stay surfaces | **NO** | Never appears in hotel search or stay results |
+| Property/Seasonal surfaces | **NO** | Never appears in property listings |
+| Dispatch/driver surfaces | **NO** | Never appears in driver matching or ride tracking |
+
+### 7.2 End-to-End Flow (14 Steps)
+
+| Step | Screen/Action | Responsible Domain | Inputs | Outputs | State Transition |
+|------|--------------|-------------------|--------|---------|-----------------|
+| 1 | User opens Car Rental search | Car Rental UI | — | Search form rendered | — |
+| 2 | User fills search form and submits | Car Rental UI → Search | Pickup/return location + dates + preferences | `CanonicalCarRentalSearchIntent` created | — |
+| 3 | Fan-out to providers | Car Rental Search | `CanonicalCarRentalSearchIntent` | Raw provider responses | Emit `car_rental.search.requested` |
+| 4 | Normalize and rank offers | Car Rental Search | Raw provider responses | `CanonicalCarRentalOffer[]` | Emit `car_rental.search.completed` |
+| 5 | Display offer list | Car Rental UI | `CanonicalCarRentalOffer[]` | User sees sorted offers | — |
+| 6 | User selects offer | Car Rental UI | Selected offer ID | Offer detail page | Emit `car_rental.offer.selected` |
+| 7 | User fills driver info and extras | Car Rental UI | Driver details, extras, insurance | Booking input assembled | — |
+| 8 | Submit booking | Car Rental Booking | All booking inputs | `CanonicalCarRentalBooking` created | `draft` → `booking_started` |
+| 9 | Request payment | Car Rental → Wallet | Deposit amount, currency | Payment intent | `booking_started` → `payment_pending` |
+| 10 | Payment authorized | Wallet → Car Rental | Payment confirmation | Payment ref stored | `payment_pending` → `payment_authorized` |
+| 11 | Send to provider | Car Rental → Provider Adapter | Booking details | Provider booking ref | `payment_authorized` → `provider_confirmation_pending` |
+| 12 | Provider confirms | Provider → Car Rental (webhook) | Confirmation number | Booking confirmed | `provider_confirmation_pending` → `confirmed` |
+| 13 | Pickup & rental period | Car Rental Booking | Provider signals or user action | Active rental | `confirmed` → `pickup_ready` → `active` |
+| 14 | Return & completion | Car Rental Booking | Return confirmation | Booking complete | `active` → `return_pending` → `completed` |
+
+### 7.3 Search Architecture
 
 ```
 User Input (location, dates, class, extras)
         ↓
-  CarRentalSearch.execute(params)
+  CarRentalSearch.execute(searchIntent)
         ↓
   ┌─────────────────────────────────┐
   │  Provider Adapter Fan-Out       │
@@ -584,62 +717,79 @@ User Input (location, dates, class, extras)
   │  └── LocalFleetAdapter.search() │
   └─────────────────────────────────┘
         ↓
-  Offer Normalization (→ CarRentalOffer[])
+  Offer Normalization (→ CanonicalCarRentalOffer[])
         ↓
   Deduplication & Ranking
         ↓
   Return sorted offers to UI
 ```
 
-### 8.2 Search Orchestration Rules
+**Rules**:
+1. Parallel fan-out with individual per-provider timeouts
+2. Partial results accepted (if Provider A responds and B times out, show A's results)
+3. Every provider response normalized to `CanonicalCarRentalOffer` before reaching UI
+4. Deduplication: same vehicle class + same pickup + price within 2% = deduplicate, prefer higher-priority provider
+5. Default sort: `totalPrice ASC`. Alternatives: `vehicleClass`, `providerRating`, `freeCancellation`
 
-1. **Parallel fan-out**: All enabled providers are queried simultaneously with individual timeouts.
-2. **Partial results**: If Provider A responds and Provider B times out, return Provider A's results with a degradation notice.
-3. **Normalization**: Every provider response is mapped to the canonical `CarRentalOffer` type before reaching the UI.
-4. **Deduplication**: Same vehicle class + same pickup location + price within 2% tolerance = deduplicate, prefer higher-priority provider.
-5. **Ranking**: Default sort by `totalPrice ASC`. Alternative sorts: `vehicleClass`, `providerRating`, `freeCancellation`.
-
-### 8.3 Search vs Flight/Stay Comparison
-
-| Dimension | Flight | Stay | Car Rental |
-|-----------|--------|------|------------|
-| Primary key | Origin + Destination + Dates | Location + Check-in/out | Pickup Location + Pickup/Return Dates |
-| Secondary filters | Cabin class, stops, airlines | Star rating, amenities, property type | Vehicle class, transmission, fuel, extras |
-| Inventory unit | Seat | Room-night | Vehicle-day |
-| Multi-provider | Yes (GDS) | Yes (OTA + direct) | Yes (brand APIs + local) |
-| Price model | Fare class | Nightly rate | Daily rate |
-
-### 8.4 UI Flow (Route Sequence)
+### 7.4 UI Route Sequence
 
 ```
 /travel/car-rental                    → CarRentalHub (search form)
 /travel/car-rental/results            → CarRentalResults (offer list)
-/travel/car-rental/offer/:offerId     → CarRentalOfferDetail (vehicle detail + extras)
-/travel/car-rental/book/:offerId      → CarRentalDriverInfo (driver/license form)
+/travel/car-rental/offer/:offerId     → CarRentalOfferDetail (vehicle + extras)
+/travel/car-rental/book/:offerId      → CarRentalDriverInfo (driver/license)
 /travel/car-rental/payment/:bookingId → CarRentalPayment (deposit payment)
-/travel/car-rental/confirm/:bookingId → CarRentalConfirmation (booking confirmed)
+/travel/car-rental/confirm/:bookingId → CarRentalConfirmation (confirmed)
 ```
 
 ---
 
-## 9. 5-Pillar Integration (Dashboard, Radar, Orbit, Wallet, Me)
+## 8. Wallet/Orbit/Dashboard Integration Points
 
-### 9.1 Proposed Module Wiring
+### 8.1 Wallet Integration
 
-Since car rental maps to the `"travel"` vertical (which already exists in `VerticalKey`), the question arises: how does car rental's wiring coexist with flights under a single `MODULE_WIRING["travel"]` entry?
+**What Car Rental sends to Wallet**:
+- Deposit payment request at `booking_started` → `payment_pending`: `{ amount: depositAmount, currency, bookingId, vertical: "car_rental", billingType: "per_booking" }`
+- Refund request on cancellation or post-completion: `{ bookingId, refundAmount, reason }`
 
-**Resolution**: The current `MODULE_WIRING` is one entry per `VerticalKey`. Car rental and flights share the `"travel"` key but have fundamentally different pillar behaviors (flights have no map pins; car rental has branch pins; flights use ticket-based fulfillment; car rental uses calendar booking). Two approaches:
+**What Car Rental receives from Wallet**:
+- `commerce:payment_captured` → triggers `AUTHORIZE_PAYMENT` event on booking
+- `wallet.payment.failed` → triggers `FAIL` event on booking
+- `commerce:payment_reversed` → triggers `PROCESS_REFUND` on refund_pending bookings
 
-1. **Preferred — Add `"car_rental"` to `VerticalKey`**: This is cleanest. Add `"car_rental"` to the `VerticalKey` union in `module-wiring.ts:16-19` and create a dedicated `MODULE_WIRING["car_rental"]` entry. The `travel` key continues to serve flights/activities. This avoids overloading a single wiring entry with conflicting values.
+**Payment flow**: `booking_deposit` (same as Stay/Services). Deposit at booking, balance at pickup (handled by provider directly or via platform depending on `paymentMode`).
 
-2. **Alternative — Sub-wiring dispatch**: Keep single `travel` entry but add a `getSubVerticalWiring(categoryKey)` function that returns category-specific overrides. This is more complex and creates implicit coupling.
+### 8.2 Orbit Integration
 
-**Recommendation**: Option 1. Add `"car_rental"` to `VerticalKey`. The `getVerticalForCategoryKey("car_rental")` would return `"car_rental"` (not `"travel"`).
+**Thread types**:
+- `rental_support` — General booking support
+- `booking_modification` — Date/vehicle change requests
+- `damage_report` — Post-rental damage documentation
+- `extension_request` — Extend rental period
 
-Below is the **car-rental-specific wiring entry** for `MODULE_WIRING["car_rental"]`:
+**Entity link**: `booking` (same as Stay/Services/Beauty/Health, NOT `job` like Taxi)
+
+**Use cases**:
+- User contacts provider about pickup instructions → `rental_support` thread linked to `booking:{bookingId}`
+- User requests date change → `booking_modification` thread, triggers `REQUEST_MODIFICATION` on state machine
+- User reports damage after return → `damage_report` thread with attachment support
+
+### 8.3 Dashboard Integration
+
+**Booking summary projection shape** (`CanonicalCarRentalBookingSummary`):
+- Displayed in Dashboard's `bookings` preview widget alongside Stay and Flight bookings
+- Shows: vehicle class, pickup location, pickup date, return date, status, provider name, confirmation number
+- Quick action: "Manage rental" → `/travel/car-rental/confirm/{bookingId}`
+- Active indicator: bookings in `confirmed`, `pickup_ready`, or `active` status
+
+### 8.4 Proposed Module Wiring Entry
 
 ```typescript
-const CAR_RENTAL_WIRING = {
+// In MODULE_WIRING, key: "car_rental"
+{
+  vertical: "car_rental",
+  label: "Car Rental",
+  emoji: "🚗",
   dashboard: {
     shortcuts: ["economy_car", "suv", "luxury_car", "van_minibus"],
     recentItemType: "rental_booking",
@@ -652,14 +802,13 @@ const CAR_RENTAL_WIRING = {
     showRecommendations: true,
     showActiveOrders: false,
     showUpcomingBookings: true,
-    previewWidget: "bookings" as const,
+    previewWidget: "bookings",
   },
-
   radar: {
-    discoveryMode: "search" as const,
+    discoveryMode: "search",
     entityType: "rental_branch",
     primaryFilters: ["vehicle_class", "price", "pickup_date", "return_date", "transmission", "provider"],
-    mapPinType: "poi" as const,
+    mapPinType: "poi",
     showAvailability: true,
     showPricing: true,
     showRating: true,
@@ -668,17 +817,15 @@ const CAR_RENTAL_WIRING = {
     defaultSortBy: "price",
     radarCategory: "services",
   },
-
   orbit: {
     threadTypes: ["rental_support", "booking_modification", "damage_report", "extension_request"],
     contactLabel: "Contact rental provider",
-    entityLink: "booking" as const,
+    entityLink: "booking",
     supportsGroupThread: false,
     supportsAttachments: true,
     supportsLocation: true,
     supportsMeta: true,
   },
-
   wallet: {
     paymentFlow: "booking_deposit",
     supportsTips: false,
@@ -686,69 +833,34 @@ const CAR_RENTAL_WIRING = {
     supportsRefund: true,
     supportsInstallment: false,
     supportsSubscription: false,
-    billingType: "per_booking" as const,
+    billingType: "per_booking",
     currencyAware: true,
   },
-
   me: {
     historyType: "rentals",
     favoritesType: "rental_providers",
-    preferencesKeys: [
-      "preferred_vehicle_class",
-      "preferred_transmission",
-      "preferred_insurance",
-      "license_info",
-      "frequent_renter_numbers",
-    ],
+    preferencesKeys: ["preferred_vehicle_class", "preferred_transmission", "preferred_insurance", "license_info", "frequent_renter_numbers"],
     documentsType: "rental_documents",
-    addressRelevance: "travel" as const,
+    addressRelevance: "travel",
     showInProfile: true,
   },
-};
+}
 ```
-
-### 9.2 Pillar Behavior Summary
-
-| Pillar | Car Rental Behavior |
-|--------|-------------------|
-| **Dashboard** | Shows upcoming rental bookings in the `bookings` widget. Quick action to "Rent a car" → `/travel/car-rental`. |
-| **Radar** | Search-mode discovery (not proximity). Map shows rental branch pins. Filters by date range, vehicle class, price. |
-| **Orbit** | `booking` entity link (like Stay, not `job` like Taxi). Thread types for support, modifications, damage reports, extensions. |
-| **Wallet** | `booking_deposit` flow (deposit at booking, balance at pickup). `per_booking` billing. Supports refund. No tips. |
-| **Me** | `rentals` history. Stores license info, frequent renter numbers, preferred vehicle class. `rental_documents` document type for contracts/receipts. |
-
-### 9.3 Comparison with Current Taxi Wiring vs Proposed
-
-| Field | Taxi (current, inherited) | Car Rental (proposed) | Changed? |
-|-------|--------------------------|----------------------|----------|
-| `walletFlow` | `fare_hold` | `booking_deposit` | Yes |
-| `orbitContext` / `entityLink` | `job` | `booking` | Yes |
-| `discoveryMode` | `proximity` | `search` | Yes |
-| `mapPinType` | `vehicle` | `poi` | Yes |
-| `showETA` | `true` | `false` | Yes |
-| `billingType` | `per_ride` | `per_booking` | Yes |
-| `previewWidget` | `orders` | `bookings` | Yes |
-| `addressRelevance` | `none` | `travel` | Yes |
-| `documentsType` | `null` | `rental_documents` | Yes |
-
-**Every single pillar behavior changes.** This confirms the reclassification is architecturally necessary.
 
 ---
 
-## 10. Provider Adapter Architecture
+## 9. Provider Adapter Architecture
 
-### 10.1 Adapter Interface
-
-Following the Flight vertical's `FlightProviderConfig` pattern:
+### 9.1 Adapter Interface (Amadeus-Style)
 
 ```typescript
 interface CarRentalProviderAdapter {
   readonly providerId: string;
   readonly priority: number;
 
-  search(params: CarRentalSearchParams): Promise<CarRentalOffer[]>;
+  search(params: CanonicalCarRentalSearchIntent): Promise<CanonicalCarRentalOffer[]>;
 
-  getOfferDetail(offerId: string): Promise<CarRentalOffer | null>;
+  getOfferDetail(offerId: string): Promise<CanonicalCarRentalOffer | null>;
 
   priceCheck(offerId: string): Promise<{
     available: boolean;
@@ -759,8 +871,8 @@ interface CarRentalProviderAdapter {
   }>;
 
   createBooking(
-    offer: CarRentalOffer,
-    driver: CarRentalBooking["driver"],
+    offer: CanonicalCarRentalOffer,
+    driver: CanonicalCarRentalBooking["driver"],
     extras: RentalExtra[],
     insurance: InsuranceType
   ): Promise<{ providerBookingRef: string; confirmationNumber: string }>;
@@ -778,76 +890,119 @@ interface CarRentalProviderAdapter {
 
   getBookingStatus(providerBookingRef: string): Promise<{
     providerStatus: string;
-    mappedStatus: RentalBookingStatus;
+    mappedStatus: CarRentalBookingStatus;
   }>;
 }
 ```
 
-### 10.2 Provider Adapter Implementations (Planned)
+### 9.2 Adapter Responsibilities
+
+| Responsibility | Adapter | Platform |
+|---------------|---------|----------|
+| Translate search params to provider format | Adapter | — |
+| Call provider API with credentials | Adapter | Credentials from env secrets |
+| Map provider response to `CanonicalCarRentalOffer` | Adapter (canonical mapper) | — |
+| Handle provider-specific error codes | Adapter (error normalizer) | — |
+| Store provider booking reference | Adapter returns ref | Platform stores in booking |
+| Validate webhook signatures | — | Platform validates HMAC |
+| Rate limiting per provider | Adapter | — |
+| Retry on transient failures | Adapter | Config from `CarRentalProviderConfig` |
+
+### 9.3 Backend-Only Secret Boundary
+
+Provider API credentials MUST be stored as environment secrets and accessed only on the server side. The adapter layer is a **backend-only** component.
+
+**Forbidden patterns**:
+- Provider API keys in client-side code
+- Provider API keys in any TypeScript import accessible from browser bundles
+- Provider session tokens passed to the frontend
+- Provider webhook secrets in client-accessible configuration
+- Raw provider error messages exposed to users (normalize to canonical error types)
+- Provider-specific data structures leaking past the adapter boundary
+
+### 9.4 Canonical Mapper
+
+Each adapter implements a canonical mapper that converts provider-specific types to `CanonicalCarRentalOffer`. The mapper:
+
+1. Maps provider vehicle categories to `VehicleClass` enum
+2. Converts provider pricing to canonical `pricing` structure (daily rate, taxes, fees, extras)
+3. Normalizes location data to canonical pickup/return format
+4. Maps provider cancellation policies to canonical `cancellation` structure
+5. Strips provider-internal fields (session IDs, tracking codes, affiliate data)
+
+### 9.5 Error Normalization
+
+Provider errors are mapped to canonical error types:
+
+| Provider Error | Canonical Error | User-Facing Message |
+|---------------|----------------|---------------------|
+| HTTP 404 / No availability | `no_availability` | "No vehicles available for these dates" |
+| HTTP 400 / Invalid params | `invalid_search` | "Please check your search details" |
+| HTTP 401 / Auth failure | `provider_error` | "This provider is temporarily unavailable" |
+| HTTP 500 / Server error | `provider_error` | "This provider is temporarily unavailable" |
+| Timeout | `provider_timeout` | "This provider took too long to respond" |
+| Price changed | `price_changed` | "The price has changed since your search" |
+| Booking rejected | `booking_rejected` | "The provider could not confirm this booking" |
+
+### 9.6 Multi-Provider Expansion
 
 | Provider | API Type | Coverage | Priority |
 |----------|----------|----------|----------|
-| **Hertz** | REST API | Global (150+ countries) | 1 |
-| **Avis/Budget** | REST API | Global (180+ countries) | 2 |
-| **Sixt** | REST API | Europe + Americas | 3 |
-| **Europcar** | REST API | Europe + Africa + Asia | 4 |
-| **Local Fleet** | Internal API | Per-market direct partners | 5 |
-| **CarTrawler** | Aggregator API | Global aggregation (backup) | 10 |
+| Hertz | REST API | Global (150+ countries) | 1 |
+| Avis/Budget | REST API | Global (180+ countries) | 2 |
+| Sixt | REST API | Europe + Americas | 3 |
+| Europcar | REST API | Europe + Africa + Asia | 4 |
+| Local Fleet | Internal API | Per-market direct partners | 5 |
+| CarTrawler | Aggregator API | Global (backup aggregator) | 10 |
 
-### 10.3 Adapter Orchestration
+### 9.7 Provider Reference Storage
 
-```
-CarRentalSearch.execute(params)
-    │
-    ├── Filter: enabled providers for pickup country
-    ├── Fan-out: Promise.allSettled(adapters.map(a => a.search(params)))
-    ├── Timeout: per-provider (from CarRentalProviderConfig.timeout)
-    ├── Normalize: map each result to CarRentalOffer[]
-    ├── Merge: flatten + deduplicate
-    ├── Rank: sort by user preference (default: price)
-    └── Return: { offers: CarRentalOffer[], providers: { id, status }[] }
-```
-
-### 10.4 Error Handling per Provider
-
-| Scenario | Behavior |
-|----------|----------|
-| Provider timeout | Exclude from results, log warning, include in `providers` status array |
-| Provider API error | Exclude from results, log error, retry up to `retryAttempts` |
-| Provider returns 0 results | Include in status as `no_availability`, surface to UI as "Provider X has no cars for these dates" |
-| All providers fail | Return empty results with error status, emit `car_rental.search.all_providers_failed` event |
+The `providerBookingRef` stored in `CanonicalCarRentalBooking` is an opaque string. It encodes whatever the provider needs for future API calls (booking ID, confirmation code, etc.). The platform never parses, validates, or logs this reference beyond storing it.
 
 ---
 
-## 11. Event Model & Platform Bus
+## 10. Data Ownership, Event Model & Platform Bus Alignment
 
-### 11.1 Event Naming Convention
+### 10.1 Data Source of Truth
 
-Following platform bus conventions (dot notation for canonical events, colon notation for platform reactions):
+| Data Domain | Source of Truth | Secondary Stores |
+|-------------|----------------|------------------|
+| Search intents | Car Rental domain (in-memory or short-lived cache) | Analytics pipeline |
+| Offers | Provider adapters (ephemeral, expires per `validUntil`) | — |
+| Bookings | Car Rental domain (`car_rental_bookings` table via `db()`) | Dashboard summary cache |
+| Policy snapshots | Car Rental domain (immutable, co-located with booking) | — |
+| Payment state | Wallet domain | Car Rental mirrors via events |
+| User preferences | Me domain | Car Rental reads via Me API |
+| Provider config | Environment secrets + config | — |
 
-```
-car_rental.search.initiated
-car_rental.search.completed
-car_rental.search.all_providers_failed
-car_rental.offer.selected
-car_rental.offer.price_changed
-car_rental.booking.created
-car_rental.booking.payment_pending
-car_rental.booking.payment_confirmed
-car_rental.booking.confirmed
-car_rental.booking.pickup_ready
-car_rental.booking.activated
-car_rental.booking.return_pending
-car_rental.booking.completed
-car_rental.booking.cancelled
-car_rental.booking.failed
-car_rental.refund.requested
-car_rental.refund.processed
-car_rental.provider.webhook_received
-car_rental.provider.status_sync
-```
+### 10.2 Complete Event Set
 
-### 11.2 Platform Reactions (Colon Notation)
+Following platform bus conventions: dot notation for canonical events, colon notation for platform reactions, `__bridged` flag prevents bridge loops.
+
+| Event | Emitter | Payload Concept | Correlation ID | Downstream Consumers |
+|-------|---------|----------------|----------------|---------------------|
+| `car_rental.search.requested` | Search orchestrator | `{ intentId, userId, pickupLocation, dates }` | `intentId` | Analytics |
+| `car_rental.search.completed` | Search orchestrator | `{ intentId, offerCount, providerStatuses }` | `intentId` | Analytics, Dashboard |
+| `car_rental.search.failed` | Search orchestrator | `{ intentId, reason, failedProviders }` | `intentId` | Analytics, Monitoring |
+| `car_rental.offer.selected` | Booking flow | `{ offerId, bookingId, providerId }` | `bookingId` | Analytics |
+| `car_rental.offer.price_changed` | Price check | `{ offerId, oldPrice, newPrice }` | `offerId` | UI notification |
+| `car_rental.booking.created` | Booking service | `{ bookingId, userId, providerId, status }` | `bookingId` | Analytics, Orbit |
+| `car_rental.booking.payment_pending` | Booking service | `{ bookingId, depositAmount, currency }` | `bookingId` | Wallet |
+| `car_rental.booking.payment_authorized` | Booking service | `{ bookingId, paymentRef }` | `bookingId` | Analytics |
+| `car_rental.booking.provider_pending` | Booking service | `{ bookingId, providerId }` | `bookingId` | Monitoring |
+| `car_rental.booking.confirmed` | Booking service | `{ bookingId, confirmationNumber }` | `bookingId` | Dashboard, Me, Notification |
+| `car_rental.booking.modification_requested` | Booking service | `{ bookingId, modifications }` | `bookingId` | Provider adapter |
+| `car_rental.booking.pickup_ready` | Provider webhook | `{ bookingId }` | `bookingId` | Notification |
+| `car_rental.booking.activated` | Booking service | `{ bookingId }` | `bookingId` | Dashboard |
+| `car_rental.booking.return_pending` | Booking service | `{ bookingId }` | `bookingId` | Dashboard |
+| `car_rental.booking.completed` | Booking service | `{ bookingId, finalAmount }` | `bookingId` | Me, Analytics, Dashboard |
+| `car_rental.booking.cancelled` | Booking service | `{ bookingId, reason, refundAmount }` | `bookingId` | Wallet, Dashboard, Notification |
+| `car_rental.booking.failed` | Booking service | `{ bookingId, reason }` | `bookingId` | Notification, Analytics |
+| `car_rental.booking.refund_requested` | Booking service | `{ bookingId, reason, amount }` | `bookingId` | Wallet |
+| `car_rental.booking.refund_processed` | Wallet reaction | `{ bookingId, refundAmount }` | `bookingId` | Notification, Me |
+| `car_rental.provider.webhook_received` | Webhook handler | `{ providerId, eventType }` | `providerRef` | Booking service |
+
+### 10.3 Platform Reactions (Colon Notation)
 
 ```
 car_rental:notify_user          — Push notification on booking status change
@@ -857,130 +1012,134 @@ car_rental:log_analytics        — Log event to analytics pipeline
 car_rental:send_confirmation    — Send email/SMS confirmation
 ```
 
-### 11.3 Event Payload Schema
+### 10.4 Cross-Vertical Event Listening
 
-```typescript
-interface CarRentalEvent {
-  type: string;                    // e.g., "car_rental.booking.confirmed"
-  bookingId: string;
-  userId: string;
-  providerId: string;
-  status: RentalBookingStatus;
-  timestamp: string;
-  data: Record<string, unknown>;
-  __bridged?: boolean;             // Prevents bridge loops (platform bus convention)
-}
-```
+Car rental listens to **actual** platform bus event names:
 
-### 11.4 Cross-Vertical Event Listening
+| Car Rental Listens To | Actual Bus Event | Purpose |
+|----------------------|-----------------|---------|
+| Payment captured | `commerce:payment_captured` | `AUTHORIZE_PAYMENT` on booking |
+| Payment failed | `wallet.payment.failed` | `FAIL` on booking |
+| Payment reversed | `commerce:payment_reversed` | `PROCESS_REFUND` on refund_pending bookings |
 
-Car rental must listen to the **actual** platform bus event names (not hypothetical ones). Current bus event names from `platform-bus.ts`:
+The bridge in `platform-bus.ts` auto-converts between dot and colon notation. Car rental handlers must check `__bridged` to prevent infinite loops.
 
-| Car Rental Listens To | Actual Bus Event Name | Purpose |
-|----------------------|----------------------|---------|
-| Payment captured | `commerce:payment_captured` | Transition booking from `payment_pending` → `payment_confirmed` |
-| Payment failed | `wallet.payment.failed` | Transition booking to `failed` |
-| Payment completed | `wallet.payment.completed` | Confirm payment flow completion |
-| Payment reversed | `commerce:payment_reversed` | Handle refund/chargeback |
+### 10.5 Collision-Avoidance Rules
 
-| Other Verticals Listen To | Purpose |
-|--------------------------|---------|
-| `car_rental.booking.confirmed` | Dashboard updates upcoming bookings widget |
-| `car_rental.booking.completed` | Me vertical updates rental history |
-| `car_rental.booking.cancelled` | Wallet triggers refund flow |
-
-> **Important**: The bridge in `platform-bus.ts` auto-converts between dot and colon notation (e.g., `wallet.payment.completed` ↔ `wallet:payment_completed`). Car rental event handlers must check for `__bridged` flag to prevent infinite bridge loops.
-
-### 11.5 Listener Budget
-
-Per platform bus conventions: `MAX_LISTENERS_PER_EVENT = 50`, `MAX_GLOBAL_LISTENERS = 30`.
-
-Car rental adds approximately 6 new event types with listeners. Current global listener count must be audited before implementation to ensure headroom.
+1. **Namespace isolation**: All car rental events use `car_rental.*` prefix. No event may use `mobility.car_rental.*`, `taxi.rental.*`, or `travel.car_rental.*`.
+2. **No shadowing**: Car rental events must not duplicate event names from other verticals (e.g., must not emit `booking.confirmed` without the `car_rental.` prefix).
+3. **Correlation ID discipline**: Every event carries `bookingId` as correlation ID. Search events use `intentId`. Provider events use `providerRef`.
+4. **Listener budget**: `MAX_LISTENERS_PER_EVENT = 50`, `MAX_GLOBAL_LISTENERS = 30`. Car rental adds ~20 event types. Audit current global listener count before implementation.
+5. **Idempotent handlers**: All event handlers must be idempotent. Duplicate events (e.g., provider webhook retry) must not create duplicate state transitions.
 
 ---
 
-## 12. Anti-Conflict & Coexistence Rules
+## 11. Anti-Conflict Rules
 
-### 12.1 Taxonomy Coexistence
+These are **hard rules**, not suggestions. Violation of any rule is a blocking code review finding.
 
-During migration, `car_rental` will exist in TWO places temporarily:
-1. **Old**: `taxi.subcategories[2]` in `category-tree.ts`
-2. **New**: Top-level `car_rental` primary in `category-tree.ts`
+### 11.1 Car Rental vs Mobility
 
-**Rule**: The old entry MUST be removed in the same PR that adds the new entry. There must never be a deployed state where `car_rental` resolves to two different primaries simultaneously.
+| Rule # | Rule | Rationale |
+|--------|------|-----------|
+| M-1 | Car Rental MUST NOT use `MobilityContext`, `UnifiedMobilityJobInput`, or any type from `unified-mobility.types.ts` | Car Rental is not a mobility job |
+| M-2 | Car Rental MUST NOT use `MOBILITY_STATUSES` or any status from `status-machine.ts` (mobility) | Car Rental has its own state machine |
+| M-3 | Car Rental MUST NOT appear in Mobility Hub (`/mobility/*`) routes or UI | Wrong vertical |
+| M-4 | Car Rental MUST NOT use `fare_hold` wallet flow | Car Rental uses `booking_deposit` |
+| M-5 | Car Rental MUST NOT use `job` orbit entity link | Car Rental uses `booking` |
+| M-6 | Car Rental MUST NOT use `vehicle` map pin type | Car Rental uses `poi` for branch pins |
+| M-7 | Car Rental MUST NOT use `per_ride` billing type | Car Rental uses `per_booking` |
+| M-8 | Car Rental MUST NOT appear in `taxi.dashboard.shortcuts` | Wrong vertical association |
+| M-9 | No mobility event may carry a `car_rental` booking reference | Namespace isolation |
+| M-10 | No car rental event may carry a mobility `job_id` | Namespace isolation |
 
-### 12.2 Classification Engine Conflict Prevention
+### 11.2 Car Rental vs Hotel/Stay
 
-The classification engine (`classification-engine.ts`) uses brand-matching rules. Current rules:
+| Rule # | Rule | Rationale |
+|--------|------|-----------|
+| S-1 | Car Rental MUST NOT share canonical types with Stay (no `Room`, `RoomNight`, `CheckIn`) | Different inventory unit |
+| S-2 | Car Rental MUST NOT appear in Stay search results or hotel listing pages | Wrong asset type |
+| S-3 | Car Rental MAY use the same wallet flow (`booking_deposit`) and orbit link (`booking`) | These are shared platform patterns, not Stay-specific |
+| S-4 | Car Rental MUST have its own subcategory taxonomy (`vehicle_class` cluster, not `hospitality`) | Different domain |
+| S-5 | Car Rental booking summaries MUST be distinguishable from Stay summaries in Dashboard | Different `vehicleClass` vs `roomType` fields |
 
-```typescript
-// Lines 133-135
-{ pattern: /hertz/i, category: "taxi", subcategory: "car_rental" },
-{ pattern: /avis/i, category: "taxi", subcategory: "car_rental" },
-{ pattern: /sixt/i, category: "taxi", subcategory: "car_rental" },
-```
+### 11.3 Car Rental vs Seasonal Rental (Property)
 
-**Rule**: These rules MUST be updated atomically with the category-tree change:
+| Rule # | Rule | Rationale |
+|--------|------|-----------|
+| R-1 | Car Rental MUST NOT use property types (`Lease`, `Tenant`, `Landlord`, `PropertyUnit`) | Different asset, different legal framework |
+| R-2 | Car Rental MUST NOT use property state machine (`LeaseStatus`) | Different lifecycle |
+| R-3 | Car Rental MUST NOT appear in property listing or management surfaces | Wrong vertical |
+| R-4 | Car Rental MUST NOT use property payment types (`rent`, `agency_fee`, `maintenance_cost`) | Different billing model |
+| R-5 | Car Rental MUST NOT use `PropertyDocument` types | Car Rental has `rental_documents` |
 
-```typescript
-{ pattern: /hertz/i, category: "car_rental", subcategory: "economy_car" },
-{ pattern: /avis/i, category: "car_rental", subcategory: "economy_car" },
-{ pattern: /sixt/i, category: "car_rental", subcategory: "economy_car" },
-```
+### 11.4 Car Rental vs Flight
 
-The default subcategory `economy_car` is used because the classification engine operates on brand name alone (no vehicle-class signal at classification time). Proper subcategory assignment happens at search/offer time.
+| Rule # | Rule | Rationale |
+|--------|------|-----------|
+| F-1 | Car Rental MUST NOT use `FlightStatus`, `FlightBooking`, `FlightOffer`, or flight types | Different asset |
+| F-2 | Car Rental MUST NOT use `FlightSegment` or segment-based models | Vehicles are not segmented |
+| F-3 | Car Rental MAY follow the same multi-provider adapter pattern as Flight | Shared architectural pattern |
+| F-4 | Car Rental MAY appear alongside Flight in the Travel Hub | Both are Travel bookings |
+| F-5 | Car Rental MUST have its own state machine (not reuse `FLIGHT_MACHINE`) | Different lifecycle stages |
 
-### 12.3 Canonical Registry Conflict Prevention
+### 11.5 Car Rental vs Wallet
 
-`MOBILITY_FAMILY` in `canonical-registry.ts` currently contains a `rental` category with `car_rental` subcategory. This MUST be removed when the new standalone family is added.
+| Rule # | Rule | Rationale |
+|--------|------|-----------|
+| W-1 | Car Rental MUST NOT process payments directly | Wallet owns payment processing |
+| W-2 | Car Rental MUST NOT store card numbers or payment tokens | Wallet handles PCI compliance |
+| W-3 | Car Rental MUST communicate with Wallet exclusively via platform bus events | Decoupled architecture |
+| W-4 | Car Rental MUST listen to `commerce:payment_captured` and `wallet.payment.failed`, not invent custom payment events | Use existing bus conventions |
 
-**Rule**: The canonical registry MUST NOT contain the same `key` in two families. The implementation PR must include a runtime assertion that no duplicate keys exist across families.
+### 11.6 Car Rental vs Orbit
 
-### 12.4 Module Wiring Conflict Prevention
+| Rule # | Rule | Rationale |
+|--------|------|-----------|
+| O-1 | Car Rental MUST use `booking` entity link, not `job`, `order`, or `inquiry` | Correct entity relationship |
+| O-2 | Car Rental thread types MUST be prefixed or namespaced to avoid collision | `rental_support` not `support` |
+| O-3 | Car Rental MUST NOT create Orbit thread types that collide with Stay (`hotel_support`) or Mobility (`ride_support`) | Namespace isolation |
 
-The `taxi` wiring in `module-wiring.ts` currently lists `"car_rental"` in `dashboard.shortcuts`. This creates a false association.
+### 11.7 Car Rental vs Dashboard
 
-**Rule**: Remove `"car_rental"` from `taxi.dashboard.shortcuts` in the same PR. The `travel` vertical wiring will carry car rental dashboard behavior.
+| Rule # | Rule | Rationale |
+|--------|------|-----------|
+| D-1 | Car Rental MUST use `CanonicalCarRentalBookingSummary` for Dashboard, not full booking objects | Lightweight projection |
+| D-2 | Car Rental bookings MUST appear in the `bookings` widget, not the `orders` widget | Bookings not orders |
+| D-3 | Car Rental MUST NOT inject custom widgets outside the standard pillar framework | Maintain Dashboard consistency |
 
-### 12.5 Event Namespace Isolation
+### 11.8 Car Rental vs Search
 
-Car rental events MUST use the `car_rental.*` prefix exclusively. No event may use `mobility.car_rental.*` or `taxi.rental.*` to prevent confusion with the mobility vertical's event namespace.
+| Rule # | Rule | Rationale |
+|--------|------|-----------|
+| X-1 | Car Rental search MUST be accessible only from Travel Hub and `/travel/car-rental/*` routes | Route isolation |
+| X-2 | Car Rental offers MUST NOT appear in general Radar proximity search results | Different discovery mode |
+| X-3 | Car Rental MUST NOT interfere with food/grocery/services search indexes | Domain isolation |
 
-### 12.6 Route Namespace Isolation
+### 11.9 Car Rental vs Provider Schemas
 
-Car rental routes MUST live under `/travel/car-rental/*`. No routes under `/mobility/*` may reference car rental. If deep links currently point to `/mobility/car-rental`, a redirect must be implemented in the route registry.
+| Rule # | Rule | Rationale |
+|--------|------|-----------|
+| P-1 | Raw provider response data MUST NOT leak past the adapter boundary | Canonical types only |
+| P-2 | Provider-specific error codes MUST be normalized to canonical errors (§9.5) | Consistent UX |
+| P-3 | Provider API credentials MUST be environment secrets, never in code | Security boundary |
+| P-4 | Provider booking references (`providerBookingRef`) MUST be treated as opaque strings | No parsing/validation |
 
 ---
 
-## 13. Taxonomy, Routing & Security
+## 12. Taxonomy/Routing Guardrails & Security Boundary
 
-### 13.1 Route Registry Entries
+### 12.1 Taxonomy Root
 
-New entries for `app-route-registry.tsx`:
+Car Rental's taxonomy root is the `car_rental` primary category key in `CATEGORY_TREE`. All subcategories live under the `vehicle_class` cluster. Car Rental MUST NOT define subcategories that overlap with other verticals (e.g., no `hotel_car`, no `taxi_rental`).
 
-```typescript
-// Radar — Travel / Car Rental
-export const CarRentalHub = safeLazy(
-  () => import("@/pages/travel/CarRentalHub"), "CarRentalHub"
-);
-export const CarRentalResults = safeLazy(
-  () => import("@/pages/travel/CarRentalResults"), "CarRentalResults"
-);
-export const CarRentalOfferDetail = safeLazy(
-  () => import("@/pages/travel/CarRentalOfferDetail"), "CarRentalOfferDetail"
-);
-export const CarRentalDriverInfo = safeLazy(
-  () => import("@/pages/travel/CarRentalDriverInfo"), "CarRentalDriverInfo"
-);
-export const CarRentalPayment = safeLazy(
-  () => import("@/pages/travel/CarRentalPayment"), "CarRentalPayment"
-);
-export const CarRentalConfirmation = safeLazy(
-  () => import("@/pages/travel/CarRentalConfirmation"), "CarRentalConfirmation"
-);
-```
+### 12.2 Vehicle Class Taxonomy Ownership
 
-Route declarations (in router configuration):
+The `vehicle_class` cluster is owned exclusively by the Car Rental vertical. Values: `economy_car`, `midsize_car`, `suv`, `luxury_car`, `van_minibus`, `convertible`, `electric_car`, `pickup_truck`. No other vertical may define subcategories with these values.
+
+### 12.3 Route Namespace
+
+All Car Rental routes MUST live under `/travel/car-rental/*`:
 
 ```
 /travel/car-rental                    → CarRentalHub
@@ -991,257 +1150,247 @@ Route declarations (in router configuration):
 /travel/car-rental/confirm/:bookingId → CarRentalConfirmation
 ```
 
-### 13.2 Navigation Integration
+### 12.4 Forbidden Route/Category Collisions
 
-The TravelHub (`/travel`) should gain a car rental entry card alongside flights and stays:
+- No routes under `/mobility/*` may reference car rental
+- No routes under `/stay/*` or `/property/*` may reference car rental
+- If legacy deep links exist pointing to `/mobility/car-rental`, implement a 301 redirect to `/travel/car-rental`
+- No Car Rental page may import from `@/pages/mobility/*` or `@/pages/property/*`
 
+### 12.5 Route Registry Entries
+
+New entries for `app-route-registry.tsx`:
+
+```typescript
+export const CarRentalHub = safeLazy(() => import("@/pages/travel/CarRentalHub"), "CarRentalHub");
+export const CarRentalResults = safeLazy(() => import("@/pages/travel/CarRentalResults"), "CarRentalResults");
+export const CarRentalOfferDetail = safeLazy(() => import("@/pages/travel/CarRentalOfferDetail"), "CarRentalOfferDetail");
+export const CarRentalDriverInfo = safeLazy(() => import("@/pages/travel/CarRentalDriverInfo"), "CarRentalDriverInfo");
+export const CarRentalPayment = safeLazy(() => import("@/pages/travel/CarRentalPayment"), "CarRentalPayment");
+export const CarRentalConfirmation = safeLazy(() => import("@/pages/travel/CarRentalConfirmation"), "CarRentalConfirmation");
 ```
-TravelHub
-├── Flights  → /travel/flights
-├── Stays    → /travel/stays
-└── Car Rental → /travel/car-rental  [NEW]
-```
 
-### 13.3 Security Considerations
+### 12.6 Security Boundary
 
-| Concern | Mitigation |
-|---------|------------|
-| **Driver license PII** | Encrypted at rest. License number and expiry stored in user's Me profile with `rental_documents` document type. Never logged in events. |
-| **Payment data** | Handled entirely by Wallet vertical. Car rental domain never sees raw card numbers. |
-| **Provider API keys** | Stored as environment secrets (never in code). Accessed via `CarRentalProviderConfig`. |
-| **Cross-user booking access** | Booking queries MUST filter by `userId`. No admin endpoint bypasses this without explicit RBAC check. |
-| **Provider webhook validation** | Each provider's `webhookSecret` used to validate HMAC signatures on inbound webhooks. Invalid signatures rejected with 401. |
-| **Rate limiting** | Search endpoint rate-limited per user (e.g., 10 searches/minute) to prevent provider API abuse. |
-
-### 13.4 i18n / Currency
-
-- All prices stored in provider's quoted currency
-- Display currency conversion handled by the shared i18n/currency layer
-- Vehicle class labels, extras labels, and insurance descriptions must have translation keys in the i18n system
-- 31 languages supported (platform-wide)
+| Concern | Rule |
+|---------|------|
+| **Provider API credentials** | Backend-only. Stored as environment secrets. Never in client-accessible code. Never in TypeScript imports reachable from browser bundles. |
+| **Provider tokens/sessions** | Never passed to frontend. Adapter layer is server-side only. |
+| **Driver license PII** | Encrypted at rest. Stored in booking entity. Never logged in events. Never in `CanonicalCarRentalBookingSummary`. |
+| **Payment data** | Handled entirely by Wallet. Car Rental never sees raw card numbers. |
+| **Cross-user access** | All booking queries MUST filter by `userId`. No admin bypass without explicit RBAC check. |
+| **Provider webhook validation** | HMAC signature validation using `webhookSecret` from config. Invalid signatures rejected with 401. |
+| **Rate limiting** | Search endpoint: 10 searches/minute/user. Booking endpoint: 5 bookings/minute/user. |
+| **Logging/redaction** | License numbers, payment refs, and provider booking refs MUST be redacted in application logs. Only `bookingId` may appear in plain text. |
 
 ---
 
-## 14. Migration Without Runtime Disruption
+## 13. Migration Without Runtime Disruption
 
-This section defines the **exact migration sequence** to reclassify car rental from `mobility/taxi` to `travel/car_rental` without breaking any running feature.
+### 13.1 Migration Principles
 
-### 14.1 Migration Principles
+1. **No dual-resolution window**: At no point should `car_rental` resolve to two different primaries simultaneously
+2. **Atomic taxonomy swap**: Old subcategory removal and new primary addition in a single PR/deploy
+3. **Feature-flag gated**: New routes gated until all backend wiring validated
+4. **Zero downtime**: No migration step requires restart or database downtime
+5. **Reversible**: Every phase has a defined rollback
 
-1. **Atomic taxonomy swap**: The old subcategory removal and new primary addition happen in a single PR/deploy.
-2. **No dual-resolution window**: At no point should `car_rental` resolve to two different verticals simultaneously.
-3. **Backward-compatible classification**: Any data already classified as `category: "taxi", subcategory: "car_rental"` must remain queryable during and after migration.
-4. **Zero downtime**: No migration step requires application restart or database downtime.
-5. **Feature-flag gated**: New car rental UI routes are gated behind a feature flag until all backend wiring is validated.
-
-### 14.2 Migration Phases
+### 13.2 Migration Phases
 
 #### Phase M1: Domain Scaffolding (No Taxonomy Changes)
 
 **Changes**:
-- Add `CarRentalProviderAdapter` interface and types to `src/domains/car-rental/`
-- Add `CAR_RENTAL_MACHINE` to `car-rental-state-machine.ts`
-- Add car rental routes to `app-route-registry.tsx` (behind feature flag, routes return placeholder UI)
+- Add canonical types to `src/domains/car-rental/car-rental-types.ts`
+- Add `CAR_RENTAL_MACHINE` to `src/domains/car-rental/car-rental-state-machine.ts`
+- Add car rental routes to `app-route-registry.tsx` (behind feature flag, placeholder UI)
 
-**Does NOT change**:
-- NO taxonomy files touched (no category-tree, no classification engine, no canonical-registry, no world-class-taxonomy, no module-wiring)
-- No `TERMINAL_STATES` update yet (machine not connected to production flows)
+**Does NOT change**: No taxonomy files. No `TERMINAL_STATES`. No module wiring. No classification engine.
 
-**Key principle**: No new `car_rental` primary key exists anywhere in the taxonomy. Zero dual-resolution risk.
+**Key principle**: No `car_rental` primary key exists in taxonomy. Zero dual-resolution risk.
 
-**Validation**: Application boots, all existing tests pass, new domain types compile, feature-flagged routes render placeholder.
+**Validation**: App boots, existing tests pass, feature-flagged routes render placeholder.
 
 #### Phase M2: Provider Adapters + Search (Isolated)
 
 **Changes**:
-- Implement mock provider adapter conforming to `CarRentalProviderAdapter`
-- Create search orchestrator (fan-out, normalize, rank)
-- Wire feature-flagged UI pages to search orchestrator
-- Car rental events registered in platform bus (but only emitted from feature-flagged code paths)
+- Implement mock provider adapter
+- Create search orchestrator
+- Wire feature-flagged UI pages to search
+- Register car rental events in platform bus (emitted only from feature-flagged paths)
 
-**Does NOT change**:
-- NO taxonomy files touched
-- Classification engine unchanged
-- Module wiring unchanged
-- Existing mobility flows unaffected
+**Does NOT change**: No taxonomy files. No classification engine. No module wiring.
 
-**Validation**: Behind feature flag, car rental search returns mock results. Booking lifecycle works end-to-end with mock provider.
+**Validation**: Behind flag, search returns mock results. Booking lifecycle works with mock provider.
 
-#### Phase M3: Atomic Taxonomy Cutover (Single PR, Single Deploy)
+#### Phase M3: Atomic Taxonomy Cutover (Single PR)
 
-**All changes in a SINGLE PR — this is the critical migration step**:
-
-1. Extend `ArchitectureType` union: add `| "rental_booking"`
-2. Extend `FulfillmentType` union: add `| "rental_contract"`
-3. Add new `car_rental` primary entry to `CATEGORY_TREE` (§5.2)
-4. **Simultaneously** remove `car_rental` from `taxi.subcategories` in `category-tree.ts`
-5. Remove `car_rental` from `MOBILITY_FAMILY` in `canonical-registry.ts`; add to new `CAR_RENTAL_FAMILY`
-6. Update classification engine rules: `category: "taxi"` → `category: "car_rental"` for Hertz/Avis/Sixt
-7. Add `car_rental: "car_rental"` to `mapCategoryKeyToVertical()` in `world-class-taxonomy.ts`
+**All in ONE PR**:
+1. Extend `ArchitectureType`: add `| "rental_booking"`
+2. Extend `FulfillmentType`: add `| "rental_contract"`
+3. Add new `car_rental` primary to `CATEGORY_TREE`
+4. **Simultaneously** remove `car_rental` from `taxi.subcategories`
+5. Remove `car_rental` from `MOBILITY_FAMILY` in `canonical-registry.ts`; add `CAR_RENTAL_FAMILY`
+6. Update classification engine: Hertz/Avis/Sixt → `category: "car_rental"`
+7. Add `car_rental` to `mapCategoryKeyToVertical()` in `world-class-taxonomy.ts` (extend `Vertical` type)
 8. Add `"car_rental"` to `VerticalKey` union in `module-wiring.ts`
-9. Add `MODULE_WIRING["car_rental"]` entry (§9.1)
-10. Add `car_rental: "car_rental"` to `getVerticalForCategoryKey()` in `module-wiring.ts`
-11. Remove `"car_rental"` from `taxi.dashboard.shortcuts` in `module-wiring.ts`
-12. Add `car_rental` to `TERMINAL_STATES` in `state-machines.ts`
-13. Add data migration to re-classify any existing records with `category: "taxi", subcategory: "car_rental"` to `category: "car_rental"`
+9. Add `MODULE_WIRING["car_rental"]` entry
+10. Add `car_rental: "car_rental"` to `getVerticalForCategoryKey()`
+11. Remove `"car_rental"` from `taxi.dashboard.shortcuts`
+12. Add `car_rental` to `TERMINAL_STATES`
+13. Data migration: re-classify existing `category='taxi', subcategory='car_rental'` records
 
-**Why atomic**: Steps 3 and 4 MUST be in the same commit. If only step 3 lands, `resolveSubcategory("car_rental")` finds two primaries. If only step 4 lands, `car_rental` disappears from the taxonomy entirely. The single-PR constraint eliminates any dual-resolution window.
+**Why atomic**: Steps 3+4 must be in same commit. If only 3 lands, two primaries resolve `car_rental`. If only 4 lands, `car_rental` disappears.
 
-**Validation**: 
-- `resolveSubcategory("car_rental")` returns the new primary, not taxi
-- `getVerticalForCategoryKey("car_rental")` returns `"car_rental"`
-- `mapCategoryKeyToVertical("car_rental")` returns correct vertical
-- Classification engine routes Hertz → `car_rental` primary
-- No `car_rental` reference remains in mobility/taxi taxonomy
-- Existing taxi flows unaffected (taxi, chauffeur, premium, bike, scooter still work)
-- TypeScript compiles cleanly (no type errors from new union members)
+**Validation**: `resolveSubcategory("car_rental")` returns new primary. `getVerticalForCategoryKey("car_rental")` returns `"car_rental"`. Classification routes Hertz → `car_rental`. No `car_rental` in mobility taxonomy. Taxi flows unaffected.
 
 #### Phase M4: Remove Feature Flag & Go Live
 
-**Changes**:
-- Remove feature flag gate on car rental routes
-- Add car rental card to TravelHub
-- Enable real provider adapters (Hertz, Avis, etc.)
-- Monitor event bus for listener budget compliance
+**Changes**: Remove feature flag. Add car rental card to TravelHub. Enable real providers. Monitor bus listeners.
 
-**Validation**: Full end-to-end user flow works in production. Search → select → book → pay → confirm → pickup → return → complete.
+**Validation**: Full e2e flow in production.
 
-### 14.3 Rollback Plan
+### 13.3 Rollback Plan
 
 | Phase | Rollback |
 |-------|----------|
-| M1 | Remove new domain files. No taxonomy impact, no data impact. |
-| M2 | Disable feature flag. Remove provider adapters and search orchestrator. No taxonomy impact, no data impact. |
-| M3 | Revert single PR. `car_rental` returns to `taxi.subcategories`. Type unions revert. Key maps revert. Re-classify any migrated records back to `category: "taxi", subcategory: "car_rental"`. |
-| M4 | Re-enable feature flag (hide routes). Disable provider adapters. Taxonomy remains (M3 is not reverted). |
+| M1 | Remove domain files. Zero data impact. |
+| M2 | Disable feature flag. Remove adapters/search. Zero data impact. |
+| M3 | Revert single PR. `car_rental` returns to taxi. Re-classify migrated records. |
+| M4 | Re-enable feature flag. Disable providers. Taxonomy stays (M3 not reverted). |
 
-### 14.4 Data Migration Details
-
-If any records exist in the database with `category = 'taxi'` AND `subcategory = 'car_rental'`:
+### 13.4 Data Migration
 
 ```sql
--- Phase M3 migration (run as part of deploy)
 UPDATE listings
-SET category = 'car_rental',
-    subcategory = 'economy_car',
-    vertical = 'travel'
-WHERE category = 'taxi'
-  AND subcategory = 'car_rental';
+SET category = 'car_rental', subcategory = 'economy_car', vertical = 'car_rental'
+WHERE category = 'taxi' AND subcategory = 'car_rental';
 ```
 
-This query must be:
-- Idempotent (safe to run multiple times)
-- Audited (log count of affected rows)
-- Reversible (store old values in metadata or audit table before update)
+Requirements: idempotent, audited (log affected row count), reversible (store old values before update).
 
 ---
 
-## 15. Multi-Provider Strategy, Phasing & Risks
+## 14. Multi-Provider Strategy, Implementation Phasing & Risks
 
-### 15.1 Provider Integration Phases
+### 14.1 Multi-Provider Design
 
-| Phase | Providers | Timeline Estimate | Description |
-|-------|-----------|-------------------|-------------|
-| P1 | Mock Adapter | Week 1-2 | Full lifecycle with simulated responses. Validates state machine, events, UI flow. |
-| P2 | Single Real Provider (Hertz or CarTrawler) | Week 3-6 | First real API integration. Validates normalization, error handling, payment flow. |
-| P3 | Multi-Provider (2-3 providers) | Week 7-10 | Fan-out search, deduplication, ranking. Validates orchestration layer. |
-| P4 | Full Provider Suite | Week 11+ | All planned providers. Local fleet partners. Market-specific providers. |
+Car Rental is designed for world-scale multi-provider support from day one:
+- Adapter interface abstracts provider differences (§9)
+- Fan-out search queries all enabled providers in parallel
+- Canonical types prevent provider lock-in
+- Provider priority system enables market-specific optimization
+- Per-provider circuit breakers prevent cascade failures
 
-### 15.2 Risk Assessment
+### 14.2 Implementation Phasing
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| **Provider API instability** | Medium | High | Per-provider circuit breaker with fallback to cached results. Retry with exponential backoff. |
-| **Price discrepancy at booking** | High | Medium | Mandatory `priceCheck()` call before `createBooking()`. If price changed >5%, require user re-confirmation. |
-| **Taxonomy dual-resolution** | Low (if Phase M3 is atomic) | Critical | Single-PR atomic swap. CI test that asserts no duplicate keys across primaries. |
-| **Platform bus listener overflow** | Low | Medium | Audit current listener count before adding car rental events. Car rental adds ~6 event types, well within budget. |
-| **Driver license validation** | Medium | Medium | License validation is provider-side. Platform stores but does not validate license numbers. Provider rejection surfaces as booking failure. |
-| **Cross-border rental complexity** | Medium | Low | `supportsCrossBorder` flag in provider config. If not supported, hide cross-border option in UI for that provider. |
-| **Currency mismatch** | Low | Medium | Provider quotes in their currency. Platform converts at display time. Booking amount locked in provider currency at selection time. |
-| **Existing `car_rental` data orphaned** | Low | High | Phase M3 includes explicit data migration query. Rollback plan includes reverse migration. |
+| Phase | Scope | Description |
+|-------|-------|-------------|
+| P1 | Mock Adapter | Full lifecycle with simulated responses. Validates state machine, events, UI flow. |
+| P2 | Single Provider | First real API (Hertz or CarTrawler). Validates normalization, error handling, payment. |
+| P3 | Multi-Provider | 2-3 providers. Validates fan-out, dedup, ranking. |
+| P4 | Full Suite | All providers. Local fleet. Market-specific. |
 
-### 15.3 Monitoring & Observability
+### 14.3 What Is Done Now (This Document)
 
-| Metric | Source | Alert Threshold |
-|--------|--------|----------------|
-| Search success rate | `car_rental.search.completed` vs `car_rental.search.all_providers_failed` | <90% success → warning |
-| Booking conversion rate | `car_rental.offer.selected` → `car_rental.booking.confirmed` | <20% conversion → investigate |
-| Provider response time (p95) | Per-provider timer in adapter | >5s p95 → warning |
-| Payment failure rate | `car_rental.booking.failed` with payment reason | >5% → critical |
-| State machine violations | `safeTransition` blocked=true count | >0/hour → investigate |
+- Architecture design for all components
+- Canonical model definitions
+- State machine design
+- Event model design
+- Anti-conflict rules
+- Migration plan
+- Provider adapter interface
+- 5-pillar wiring specification
+
+### 14.4 What May Be Done Later (After Approval)
+
+- Phase M1: Domain scaffolding (types, state machine, placeholder routes)
+- Phase M2: Provider adapters and search orchestration
+- Phase M3: Atomic taxonomy cutover
+- Phase M4: Feature flag removal and go-live
+- Provider P1-P4: Progressive provider integration
+
+### 14.5 What MUST NOT Be Done Now
+
+- No code changes to any existing file
+- No modifications to `category-tree.ts`, `classification-engine.ts`, `canonical-registry.ts`, `world-class-taxonomy.ts`, or `module-wiring.ts`
+- No runtime activation, feature flag creation, or event emission
+- No provider API integration or credential setup
+- No database schema changes or migrations
+- No changes to existing Flight, Hotel, Seasonal, Mobility, Wallet, Orbit, or Dashboard flows
+- No route exposure or UI deployment
+
+### 14.6 Risks & Guardrails
+
+| Risk | Likelihood | Impact | Guardrail |
+|------|-----------|--------|-----------|
+| **Mobility/Taxi overlap** | Medium | High | Anti-conflict rules M-1 through M-10 (§11.1). Code review blocking on any mobility import. |
+| **Taxonomy contamination** | Low (if M3 atomic) | Critical | Single-PR atomic swap. CI assertion: no duplicate keys across primaries. |
+| **Event collision** | Low | Medium | `car_rental.*` namespace enforced. Collision-avoidance rules (§10.5). |
+| **Provider lock-in** | Low | Medium | Adapter interface enforces canonical types. No provider-specific types leak past adapter. |
+| **Provider API instability** | Medium | High | Per-provider circuit breaker. Timeout + retry from config. Partial results on degradation. |
+| **Price discrepancy at booking** | High | Medium | Mandatory `priceCheck()` before `createBooking()`. >5% change requires re-confirmation. |
+| **Platform bus listener overflow** | Low | Medium | Audit listener count pre-implementation. Car rental adds ~20 events within budget. |
+| **Driver license PII exposure** | Low | High | Encrypted at rest. Redacted in logs. Never in summary projections or events. |
+| **Dual-resolution during migration** | Low | Critical | Phase M3 is atomic. No intermediate deploy between add and remove. |
+| **Existing car_rental data orphaned** | Low | High | Phase M3 includes explicit data migration query. Rollback includes reverse migration. |
+| **Cross-border rental complexity** | Medium | Low | `supportsCrossBorder` flag per provider. Hidden in UI when not supported. |
+
+### 14.7 Monitoring & Observability
+
+| Metric | Alert Threshold |
+|--------|----------------|
+| Search success rate | <90% → warning |
+| Booking conversion (offer → confirmed) | <20% → investigate |
+| Provider response time (p95) | >5s → warning |
+| Payment failure rate | >5% → critical |
+| State machine violations (`safeTransition` blocked) | >0/hour → investigate |
+| Provider webhook failure rate | >10% → warning |
 
 ---
 
-## 16. Final Recommendation & Decision Matrix
+## 15. Final Recommendation & Closing Declaration
 
-### 16.1 Architectural Decision Record
+### 15.1 Architectural Decisions
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| **Vertical placement** | Own `VerticalKey` `"car_rental"` (not under `mobility` or shared `travel`) | Car rental needs dedicated 5-pillar wiring incompatible with both taxi (dispatch) and flight (ticket-based) patterns. Own `VerticalKey` is cleanest. |
-| **Category-tree treatment** | New top-level primary `car_rental` with `vertical: "travel"` | Own architecture (`rental_booking`), fulfillment (`rental_contract`), wallet flow, orbit context. Cannot share taxi's settings. |
-| **State machine** | `Machine<RentalBookingStatus, RentalEvent>` | Follows canonical pattern from `state-machines.ts`. 14 states, 15 events. |
+| **Vertical placement** | Own `VerticalKey` `"car_rental"` with category-tree `vertical: "travel"` | Needs dedicated 5-pillar wiring incompatible with taxi (dispatch) and flight (ticket-based). Own `VerticalKey` is cleanest. |
+| **Category-tree treatment** | New top-level primary with `architecture: "rental_booking"`, `fulfillment: "rental_contract"` | Cannot share taxi's settings. Requires new type union members. |
+| **State machine** | 15 states, 18 events following `Machine<S, E>` pattern | Includes `provider_confirmation_pending` (payment ≠ confirmed), `modification_pending`, and explicit `TIMEOUT` events |
 | **Wallet flow** | `booking_deposit` | Deposit at booking, balance at pickup. Same as Stay/Services. |
-| **Orbit context** | `booking` entity link | Same as Stay/Services/Beauty/Health. Not `job` (taxi). |
-| **Discovery mode** | `search` (date-range) | Not `proximity` (ETA-based). Users search by date range + location. |
-| **Provider pattern** | Adapter interface with fan-out orchestration | Same multi-provider pattern as Flight. Provider-agnostic canonical types. |
-| **Event namespace** | `car_rental.*` | Clean separation from `mobility.*` namespace. |
-| **Route namespace** | `/travel/car-rental/*` | Under travel umbrella with flights and stays. |
-| **Migration strategy** | 4-phase with atomic taxonomy swap (M3) | Zero downtime. Feature-flag gated. Atomic to prevent dual-resolution. |
+| **Orbit context** | `booking` entity link | Same as Stay/Services. Not `job` (taxi). |
+| **Discovery mode** | `search` (date-range) | Not `proximity`. Users search by dates + location. |
+| **Provider pattern** | Adapter interface with Amadeus-style fan-out | Multi-provider from day one. Backend-only secret boundary. |
+| **Event namespace** | `car_rental.*` | Clean separation from `mobility.*`, `flight.*`, `stay.*` |
+| **Route namespace** | `/travel/car-rental/*` | Under Travel umbrella alongside flights and stays. |
+| **Canonical models** | 5 canonical types with immutable snapshots | `CanonicalCarRentalOffer`, `CanonicalCarRentalBooking`, `CanonicalCarRentalSearchIntent`, `CanonicalCarRentalBookingSummary`, `CanonicalCarRentalPolicySnapshot` |
+| **Migration strategy** | 4-phase with atomic taxonomy swap at M3 | Zero downtime. Feature-flag gated. No dual-resolution window. |
 
-### 16.2 Implementation Priority
+### 15.2 Implementation Priority
 
-1. **Types & State Machine** — Foundation for everything else
-2. **Provider Adapter Interface** — Enables mock and real provider work in parallel
-3. **Taxonomy Reclassification** — Must happen before UI work (atomic swap)
-4. **Search Orchestration** — Core user-facing feature
-5. **5-Pillar Wiring** — Dashboard, Radar, Orbit, Wallet, Me integration
-6. **UI Routes & Pages** — User-facing flow
-7. **Real Provider Integration** — Hertz/Avis/Sixt adapters
-8. **Observability & Monitoring** — Production readiness
+1. Types & State Machine (foundation)
+2. Provider Adapter Interface (enables parallel provider work)
+3. Search Orchestration (core user feature)
+4. 5-Pillar Wiring (Dashboard, Radar, Orbit, Wallet, Me)
+5. UI Routes & Pages
+6. Atomic Taxonomy Cutover (Phase M3)
+7. Real Provider Integration (P2-P4)
+8. Observability & Monitoring
 
-### 16.3 Non-Goals (Explicitly Out of Scope)
+### 15.3 Non-Goals (Explicitly Out of Scope)
 
-- **Peer-to-peer car sharing** (e.g., Turo model) — Different business model, different architecture. Separate vertical if needed.
-- **Long-term leasing** (30+ days) — Different contract structure, different payment cadence. May be a future extension.
-- **Vehicle purchase** — Belongs in shops/marketplace vertical.
-- **Chauffeur-driven rentals** — Remains in mobility/taxi vertical (real-time dispatch model applies).
-- **Motorcycle/scooter rental** — Could be a future subcategory under car rental, but not in initial scope.
+- Peer-to-peer car sharing (Turo model) — different business model
+- Long-term vehicle leasing (30+ days) — different contract structure
+- Vehicle purchase — belongs in shops/marketplace
+- Chauffeur-driven rentals — remains in mobility/taxi (dispatch model)
+- Motorcycle/scooter rental — future extension, not initial scope
 
----
+### 15.4 Final Declaration
 
-## Appendix A: Type Cross-Reference
+**No implementation has been performed.** This document is a design artifact. No code has been changed, no files have been modified, no database schemas have been altered, no feature flags have been created, no events have been emitted, no routes have been exposed, and no provider APIs have been integrated.
 
-| Car Rental Type | Analogous Flight Type | Analogous Stay Type |
-|----------------|----------------------|---------------------|
-| `CarRentalSearchParams` | `FlightSearchParams` | (hotel search params) |
-| `CarRentalOffer` | `FlightOffer` | (hotel room offer) |
-| `CarRentalBooking` | `FlightBooking` | (hotel booking) |
-| `CarRentalProviderConfig` | `FlightProviderConfig` | — |
-| `RentalBookingStatus` | `FlightStatus` | — |
-| `CarRentalProviderAdapter` | (flight provider interface) | — |
-
-## Appendix B: Event Catalog
-
-| Event | Emitter | Listeners |
-|-------|---------|-----------|
-| `car_rental.search.initiated` | Search orchestrator | Analytics |
-| `car_rental.search.completed` | Search orchestrator | Analytics, Dashboard |
-| `car_rental.offer.selected` | UI/Booking flow | Analytics |
-| `car_rental.offer.price_changed` | Price check | UI notification |
-| `car_rental.booking.created` | Booking service | Analytics, Orbit |
-| `car_rental.booking.payment_pending` | Booking service | Wallet |
-| `car_rental.booking.payment_confirmed` | Wallet (via payment.captured) | Booking service |
-| `car_rental.booking.confirmed` | Booking service | Dashboard, Me, Notification |
-| `car_rental.booking.pickup_ready` | Provider webhook | Notification |
-| `car_rental.booking.activated` | Provider webhook | Dashboard |
-| `car_rental.booking.return_pending` | Provider webhook | Dashboard |
-| `car_rental.booking.completed` | Booking service | Me, Analytics, Dashboard |
-| `car_rental.booking.cancelled` | Booking service | Wallet, Dashboard, Notification |
-| `car_rental.booking.failed` | Booking service | Notification, Analytics |
-| `car_rental.refund.requested` | User/Support | Wallet |
-| `car_rental.refund.processed` | Wallet | Notification, Me |
+All recommendations require separate implementation tasks with their own code review cycles. The atomic taxonomy cutover (Phase M3) is the highest-risk step and requires the most rigorous review.
 
 ---
 
-*End of Architecture Document*
+*End of Architecture Document — No Implementation Performed*
