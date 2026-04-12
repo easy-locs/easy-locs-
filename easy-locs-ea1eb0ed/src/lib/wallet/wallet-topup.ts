@@ -46,6 +46,14 @@ export async function initiateWalletTopup(input: TopupInput): Promise<TopupResul
       return { success: false, error: error.message };
     }
 
+    if (data?.error) {
+      const appError = typeof data.error === "string" ? data.error : "Top-up request rejected";
+      failStep(flow, createStep, appError);
+      endFlow(flow, "failed");
+      trace("topup", "error", { appError });
+      return { success: false, error: appError };
+    }
+
     completeStep(flow, createStep, { intentId: data?.intent_id });
     endFlow(flow, "success");
     trace("topup", "output", { intentId: data?.intent_id });

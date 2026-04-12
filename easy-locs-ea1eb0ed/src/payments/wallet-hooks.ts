@@ -44,9 +44,10 @@ export function useWalletBalance() {
         .limit(1)
         .maybeSingle();
 
-      const freshBalance = balRow?.balance ?? (accRow as any)?.balance ?? 0;
-      const freshCurrency = balRow?.currency || (accRow as any)?.currency || getWalletDefaultCurrency();
-      const freshAccountId = accRow?.id ?? null;
+      const accTyped = accRow as { id?: string; balance?: number; currency?: string } | null;
+      const freshBalance = balRow?.balance ?? accTyped?.balance ?? 0;
+      const freshCurrency = balRow?.currency || accTyped?.currency || getWalletDefaultCurrency();
+      const freshAccountId = accTyped?.id ?? null;
 
       setBalance(freshBalance);
       setCurrency(freshCurrency);
@@ -71,7 +72,13 @@ export function useWalletBalance() {
           table: "wallet_balances_v2",
           filter: `user_id=eq.${user.id}`,
         }, () => load())
-        .subscribe();
+        .subscribe((status: string) => {
+          if (status === "CHANNEL_ERROR") {
+            console.error(`[useWalletBalance] Realtime channel error for user ${user.id}`);
+          } else if (status === "TIMED_OUT") {
+            console.warn(`[useWalletBalance] Realtime channel timed out for user ${user.id}`);
+          }
+        });
       return () => removeRealtimeChannel(channel);
     });
     return () => { unsubRegistry(); };
