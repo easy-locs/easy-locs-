@@ -53,6 +53,20 @@ import { HotelNormalizer } from "./data/hotel-normalizer";
 import { TaxonomyEnforcer } from "./data/taxonomy-enforcer";
 import { CurrencyPolicyEngine } from "./data/currency-policy-engine";
 
+import { VerticalIsolationEngine } from "./governance/vertical-isolation-engine";
+import { TaxonomyGovernanceEngine } from "./governance/taxonomy-governance-engine";
+import { MediaRelevanceEngine } from "./governance/media-relevance-engine";
+import { TextIntegrityEngine } from "./governance/text-integrity-engine";
+import { LayoutIntegrityEngine } from "./governance/layout-integrity-engine";
+import { PageOpenEngine } from "./governance/page-open-engine";
+import { ActionWiringEngine } from "./governance/action-wiring-engine";
+import { RuntimeHealthEngine } from "./governance/runtime-health-engine";
+import { FlowClosureEngine } from "./governance/flow-closure-engine";
+import { BannerStrategyEngine } from "./governance/banner-strategy-engine";
+import { LocalizationEngine } from "./governance/localization-engine";
+import { AutoRemediationEngine } from "./governance/auto-remediation-engine";
+import { AntiConflictEngine } from "./governance/anti-conflict-engine";
+
 let tier1Done = false;
 
 export function registerAllEngines(): void {
@@ -112,6 +126,20 @@ export function registerAllEngines(): void {
     new HotelNormalizer(),
     new TaxonomyEnforcer(),
     new CurrencyPolicyEngine(),
+
+    new VerticalIsolationEngine(),
+    new TaxonomyGovernanceEngine(),
+    new MediaRelevanceEngine(),
+    new TextIntegrityEngine(),
+    new LayoutIntegrityEngine(),
+    new PageOpenEngine(),
+    new ActionWiringEngine(),
+    new RuntimeHealthEngine(),
+    new FlowClosureEngine(),
+    new BannerStrategyEngine(),
+    new LocalizationEngine(),
+    new AutoRemediationEngine(),
+    new AntiConflictEngine(),
   ]);
 }
 

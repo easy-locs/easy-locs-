@@ -371,7 +371,7 @@ export interface CanonicalListing {
   description: string;
   category: string;
   subcategory: string | null;
-  vertical: "food" | "hotel" | "service" | "property" | "product" | "vehicle";
+  vertical: CanonicalVertical;
   status: ListingStatus;
   price: number;
   currency: CurrencyCode;
@@ -763,4 +763,559 @@ export interface IdempotencyHeader {
   version?: number;
   retryCount?: number;
   lastError?: string;
+}
+
+// ══════════════════════════════════════════════════
+// CANONICAL VERTICAL — Closed set of verticals
+// ══════════════════════════════════════════════════
+
+export type CanonicalVertical =
+  | "food"
+  | "grocery"
+  | "hotel"
+  | "service"
+  | "services"
+  | "property"
+  | "flight"
+  | "ride"
+  | "delivery"
+  | "retail"
+  | "shops"
+  | "healthcare"
+  | "events"
+  | "experiences"
+  | "education"
+  | "beauty"
+  | "mobility"
+  | "stay"
+  | "utility"
+  | "finance";
+
+// ══════════════════════════════════════════════════
+// PER-VERTICAL CANONICAL ENTITIES — Phase 1
+// ══════════════════════════════════════════════════
+
+export interface CanonicalFoodEntity {
+  id: string;
+  vertical: "food";
+  providerId: string;
+  providerName: string;
+  category: string;
+  subcategory: string;
+  menuItems: CanonicalMenuItem[];
+  cuisineType: string[];
+  dietaryTags: string[];
+  prepTimeMinutes: number | null;
+  minimumOrder: number | null;
+  deliveryFee: number;
+  currency: CurrencyCode;
+  rating: number | null;
+  reviewCount: number;
+  isOpen: boolean;
+  operatingHours: Record<string, { open: string; close: string }>;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  halal: boolean;
+  kosher: boolean;
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalMenuItem {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  currency: CurrencyCode;
+  category: string;
+  imageUrl: string | null;
+  available: boolean;
+  modifiers: CanonicalMenuModifier[];
+  dietaryTags: string[];
+  prepTimeMinutes: number | null;
+}
+
+export interface CanonicalMenuModifier {
+  id: string;
+  name: string;
+  options: { label: string; price: number }[];
+  required: boolean;
+  maxSelections: number;
+}
+
+export interface CanonicalHotelEntity {
+  id: string;
+  vertical: "hotel";
+  providerId: string;
+  providerName: string;
+  category: string;
+  subcategory: string;
+  starRating: number;
+  roomTypes: CanonicalRoomType[];
+  amenities: string[];
+  checkInTime: string;
+  checkOutTime: string;
+  cancellationPolicy: string;
+  currency: CurrencyCode;
+  pricePerNightFrom: number;
+  rating: number | null;
+  reviewCount: number;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalRoomType {
+  id: string;
+  name: string;
+  description: string | null;
+  maxGuests: number;
+  bedType: string;
+  pricePerNight: number;
+  currency: CurrencyCode;
+  available: boolean;
+  amenities: string[];
+  images: string[];
+}
+
+export interface CanonicalServiceEntity {
+  id: string;
+  vertical: "service";
+  providerId: string;
+  providerName: string;
+  category: string;
+  subcategory: string;
+  serviceType: string;
+  packages: CanonicalServicePackage[];
+  qualifications: string[];
+  yearsExperience: number | null;
+  currency: CurrencyCode;
+  priceFrom: number;
+  pricingModel: "fixed" | "hourly" | "project" | "custom";
+  rating: number | null;
+  reviewCount: number;
+  availableSlots: boolean;
+  serviceArea: string[];
+  address: CanonicalAddress | null;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalServicePackage {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  currency: CurrencyCode;
+  durationMinutes: number;
+  includes: string[];
+}
+
+export interface CanonicalPropertyEntity {
+  id: string;
+  vertical: "property";
+  ownerId: string;
+  title: string;
+  description: string;
+  propertyType: "apartment" | "house" | "villa" | "studio" | "office" | "land" | "commercial" | "warehouse";
+  listingType: "rent" | "sale" | "seasonal";
+  bedrooms: number | null;
+  bathrooms: number | null;
+  areaSqm: number | null;
+  floor: number | null;
+  totalFloors: number | null;
+  furnished: boolean;
+  amenities: string[];
+  price: number;
+  currency: CurrencyCode;
+  priceType: "monthly" | "yearly" | "total" | "daily";
+  availableFrom: string | null;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  virtualTourUrl: string | null;
+  status: ListingStatus;
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalFlightEntity {
+  id: string;
+  vertical: "flight";
+  airline: string;
+  flightNumber: string;
+  origin: CanonicalAirport;
+  destination: CanonicalAirport;
+  departureAt: string;
+  arrivalAt: string;
+  durationMinutes: number;
+  stops: number;
+  cabinClass: "economy" | "premium_economy" | "business" | "first";
+  price: number;
+  currency: CurrencyCode;
+  seatsAvailable: number;
+  baggageIncluded: boolean;
+  refundable: boolean;
+  operatedBy: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalAirport {
+  code: string;
+  name: string;
+  city: string;
+  country: string;
+  position: CanonicalGeoPosition | null;
+}
+
+export interface CanonicalRideEntity {
+  id: string;
+  vertical: "ride";
+  driverId: string;
+  driverName: string;
+  vehicleType: "economy" | "comfort" | "premium" | "xl" | "moto" | "van" | "luxury";
+  vehicleMake: string | null;
+  vehicleModel: string | null;
+  vehiclePlate: string | null;
+  vehicleColor: string | null;
+  rating: number | null;
+  totalTrips: number;
+  position: CanonicalGeoPosition | null;
+  available: boolean;
+  currency: CurrencyCode;
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalDeliveryEntity {
+  id: string;
+  vertical: "delivery";
+  courierId: string | null;
+  courierName: string | null;
+  packageType: "small" | "medium" | "large" | "fragile" | "food" | "document";
+  pickupAddress: CanonicalAddress;
+  deliveryAddress: CanonicalAddress;
+  weight: number | null;
+  dimensions: { l: number; w: number; h: number } | null;
+  estimatedPrice: number;
+  currency: CurrencyCode;
+  priority: "standard" | "express" | "same_day" | "scheduled";
+  scheduledPickupAt: string | null;
+  specialInstructions: string | null;
+  requiresSignature: boolean;
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalMerchantEntity {
+  id: string;
+  userId: string;
+  vertical: CanonicalVertical;
+  businessName: string;
+  description: string | null;
+  category: string;
+  subcategory: string | null;
+  type: ProviderType;
+  status: ProviderStatus;
+  avatarUrl: string | null;
+  coverImageUrl: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  rating: number;
+  reviewCount: number;
+  completedOrders: number;
+  walletId: string | null;
+  commissionRate: number;
+  verified: boolean;
+  operatingHours: Record<string, { open: string; close: string }>;
+  tags: string[];
+  images: string[];
+  currency: CurrencyCode;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+// ══════════════════════════════════════════════════
+// CANONICAL MEDIA — Phase 1 (replaces generic media)
+// ══════════════════════════════════════════════════
+
+export type MediaValidationStatus = "pending" | "approved" | "quarantined" | "rejected";
+
+export interface CanonicalMediaEntity {
+  id: string;
+  ownerId: string;
+  type: MediaAssetType;
+  url: string;
+  thumbnailUrl: string | null;
+  posterUrl: string | null;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  width: number | null;
+  height: number | null;
+  durationMs: number | null;
+  vertical: CanonicalVertical | null;
+  category: string | null;
+  subcategory: string | null;
+  contextType: string | null;
+  contextId: string | null;
+  validationStatus: MediaValidationStatus;
+  relevanceScore: number | null;
+  conflictReason: string | null;
+  displayAllowed: boolean;
+  countryCode: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+// ══════════════════════════════════════════════════
+// CANONICAL BANNER — Phase 1
+// ══════════════════════════════════════════════════
+
+export type BannerType = "hero" | "inline" | "card" | "micro" | "fullscreen" | "interstitial";
+export type BannerPriority = "low" | "medium" | "high" | "critical";
+
+export interface CanonicalBannerEntity {
+  id: string;
+  type: BannerType;
+  priority: BannerPriority;
+  title: string;
+  subtitle: string | null;
+  imageUrl: string;
+  ctaLabel: string | null;
+  ctaAction: string | null;
+  vertical: CanonicalVertical | null;
+  category: string | null;
+  audienceDefinition: BannerAudience;
+  triggerConditions: BannerTrigger;
+  exclusionConditions: string[];
+  validFrom: string;
+  validTo: string | null;
+  localeVariants: Record<string, { title: string; subtitle: string | null; imageUrl: string }>;
+  approvedVisualPool: string[];
+  approvedCopyPool: string[];
+  ctaPolicy: string | null;
+  fallbackPolicy: string | null;
+  performanceTracking: { impressions: number; clicks: number; conversions: number };
+  metadata: Record<string, unknown>;
+}
+
+export interface BannerAudience {
+  countries: string[];
+  cities: string[];
+  locales: string[];
+  verticals: CanonicalVertical[];
+  userTypes: AppRole[];
+  segments: string[];
+}
+
+export interface BannerTrigger {
+  timeOfDay: string[];
+  daysOfWeek: number[];
+  seasons: string[];
+  events: string[];
+  religions: string[];
+  cuisines: string[];
+  weatherContexts: string[];
+  campaignIds: string[];
+}
+
+// ══════════════════════════════════════════════════
+// CANONICAL CATEGORY NODE — Phase 1
+// ══════════════════════════════════════════════════
+
+export interface CanonicalCategoryNode {
+  vertical: CanonicalVertical;
+  category: string;
+  subcategory: string | null;
+  allowedMediaTypes: MediaAssetType[];
+  allowedCardTemplates: string[];
+  allowedCTAFamilies: string[];
+  allowedSearchFacets: string[];
+  allowedBannerContexts: string[];
+  allowedLocaleVariants: string[];
+}
+
+// ══════════════════════════════════════════════════
+// CANONICAL CONTEXT — Country, Locale, Currency
+// ══════════════════════════════════════════════════
+
+export interface CanonicalCountryContext {
+  countryCode: string;
+  countryName: string;
+  defaultLocale: string;
+  defaultCurrency: CurrencyCode;
+  supportedCurrencies: CurrencyCode[];
+  supportedLocales: string[];
+  timezone: string;
+  writingDirection: "ltr" | "rtl";
+  unitSystem: "metric" | "imperial";
+  calendarType: "gregorian" | "hijri" | "both";
+  legalDisclosures: string[];
+  culturalFlags: string[];
+}
+
+export interface CanonicalLocaleContext {
+  locale: string;
+  language: string;
+  region: string;
+  writingDirection: "ltr" | "rtl";
+  numberFormat: string;
+  dateFormat: string;
+  currencyFormat: string;
+  culturalWording: Record<string, string>;
+  seasonalTiming: Record<string, string>;
+  promoTone: string;
+}
+
+export interface CanonicalCurrencyContext {
+  code: CurrencyCode;
+  name: string;
+  symbol: string;
+  decimalPlaces: number;
+  thousandSeparator: string;
+  decimalSeparator: string;
+  symbolPosition: "before" | "after";
+  minimumAmount: number;
+  maximumAmount: number;
+}
+
+// ══════════════════════════════════════════════════
+// CANONICAL DESCRIPTORS — Action, Page, Flow
+// ══════════════════════════════════════════════════
+
+export type ActionResultType = "navigation" | "mutation" | "modal" | "toast" | "external" | "download" | "share";
+
+export interface CanonicalActionDescriptor {
+  actionId: string;
+  ownerDomain: string;
+  ownerVertical: CanonicalVertical | "platform";
+  label: string;
+  targetFlow: string;
+  targetRoute: string | null;
+  resultType: ActionResultType;
+  successState: string;
+  failureState: string;
+  analyticsEvent: string;
+  auditLog: boolean;
+  permissionRule: string | null;
+  fallbackRule: string | null;
+  requiresAuth: boolean;
+  metadata: Record<string, unknown>;
+}
+
+export type PageFamily =
+  | "list"
+  | "detail"
+  | "dashboard"
+  | "composer"
+  | "checkout"
+  | "chat"
+  | "settings"
+  | "admin"
+  | "auth"
+  | "onboarding"
+  | "search"
+  | "map";
+
+export interface CanonicalPageDescriptor {
+  pageId: string;
+  route: string;
+  ownerDomain: string;
+  ownerVertical: CanonicalVertical | "platform";
+  pageFamily: PageFamily;
+  requiredData: string[];
+  allowedCards: string[];
+  allowedActions: string[];
+  allowedBanners: BannerType[];
+  failureBehaviors: PageFailureBehavior[];
+  seoMeta: { title: string; description: string; canonical: string } | null;
+}
+
+export interface PageFailureBehavior {
+  condition: "no_data" | "auth_required" | "not_found" | "server_error" | "network_error";
+  action: "redirect" | "show_error" | "show_empty" | "retry" | "fallback";
+  target: string | null;
+}
+
+export type FlowState =
+  | "idle"
+  | "validating"
+  | "loading"
+  | "processing"
+  | "success"
+  | "failed"
+  | "retrying"
+  | "blocked"
+  | "cancelled";
+
+export interface CanonicalFlowDescriptor {
+  flowId: string;
+  ownerDomain: string;
+  ownerVertical: CanonicalVertical | "platform";
+  startTrigger: string;
+  states: FlowState[];
+  currentState: FlowState;
+  successCriteria: string;
+  failureCriteria: string;
+  retryPolicy: { maxRetries: number; backoffMs: number; retryOn: string[] };
+  analyticsMapping: Record<string, string>;
+  auditMapping: Record<string, string>;
+  requiredPermissions: string[];
+  timeout: number;
+}
+
+// ══════════════════════════════════════════════════
+// VERTICAL TYPE MAP — Union discriminator
+// ══════════════════════════════════════════════════
+
+export type CanonicalVerticalEntity =
+  | CanonicalFoodEntity
+  | CanonicalHotelEntity
+  | CanonicalServiceEntity
+  | CanonicalPropertyEntity
+  | CanonicalFlightEntity
+  | CanonicalRideEntity
+  | CanonicalDeliveryEntity;
+
+export function isVerticalEntity<V extends CanonicalVertical>(
+  entity: CanonicalVerticalEntity,
+  vertical: V
+): entity is Extract<CanonicalVerticalEntity, { vertical: V }> {
+  return entity.vertical === vertical;
+}
+
+// ══════════════════════════════════════════════════
+// GOVERNANCE VALIDATION — Phase 1
+// ══════════════════════════════════════════════════
+
+export type GovernanceViolationType =
+  | "cross_vertical_contamination"
+  | "invalid_media"
+  | "invalid_category"
+  | "missing_canonical_field"
+  | "dead_action"
+  | "unclosed_flow"
+  | "layout_overflow"
+  | "text_integrity"
+  | "banner_conflict"
+  | "localization_mismatch";
+
+export type GovernanceSeverity = "info" | "warning" | "error" | "critical";
+
+export interface GovernanceViolation {
+  id: string;
+  type: GovernanceViolationType;
+  severity: GovernanceSeverity;
+  source: string;
+  target: string;
+  message: string;
+  ownerDomain: string;
+  vertical: CanonicalVertical | "platform";
+  detectedAt: string;
+  resolvedAt: string | null;
+  autoRemediated: boolean;
+  metadata: Record<string, unknown>;
 }

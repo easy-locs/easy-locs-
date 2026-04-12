@@ -15,6 +15,12 @@ import { toast } from "sonner";
 import { engineObserver } from "@/engines/core/engine-observer";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { SOURCE_FIX_REGISTRY, RUNTIME_PATCH_TYPES, UI_ENGINE_PAGES } from "@/lib/control-room/source-fix-config";
+import { getGovernanceSummary, getAllGovernanceViolations } from "@/engines/governance/anti-conflict-engine";
+import { getPageOpenStats } from "@/engines/governance/page-open-engine";
+import { getActionStats } from "@/engines/governance/action-wiring-engine";
+import { getRuntimeStats } from "@/engines/governance/runtime-health-engine";
+import { getFlowClosureStats } from "@/engines/governance/flow-closure-engine";
+import { getRemediationStats } from "@/engines/governance/auto-remediation-engine";
 
 interface EngineRow {
   engine_name: string;
@@ -83,7 +89,7 @@ function timeAgo(iso: string | null): string {
   return `${Math.round(ms / 86400_000)}d ago`;
 }
 
-type TabKey = "overview" | "engines" | "logs" | "health" | "core" | "fixes";
+type TabKey = "overview" | "engines" | "logs" | "health" | "core" | "fixes" | "governance";
 
 interface UiEnginePageReport {
   route: string;
@@ -200,6 +206,7 @@ export default function AdminControlRoomPage() {
     { key: "fixes" as const, label: "Source Fixes (Reference)", icon: Wrench },
     { key: "logs" as const, label: "Run Logs", icon: Clock },
     { key: "health" as const, label: "Health", icon: Heart },
+    { key: "governance" as const, label: "Governance", icon: Layers },
   ];
 
   return (
@@ -784,7 +791,213 @@ export default function AdminControlRoomPage() {
             {healthSnaps.length === 0 && <p className="text-gray-500 text-sm">No health snapshots yet</p>}
           </div>
         )}
+
+        {tab === "governance" && <GovernancePanel />}
       </div>
     </DashboardLayout>
+  );
+}
+
+function GovernancePanel() {
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const summary = useMemo(() => getGovernanceSummary(), [refreshKey]);
+  const pageStats = useMemo(() => getPageOpenStats(), [refreshKey]);
+  const actionStats = useMemo(() => getActionStats(), [refreshKey]);
+  const runtimeStats = useMemo(() => getRuntimeStats(), [refreshKey]);
+  const flowStats = useMemo(() => getFlowClosureStats(), [refreshKey]);
+  const remediationStats = useMemo(() => getRemediationStats(), [refreshKey]);
+  const violations = useMemo(() => getAllGovernanceViolations().slice(-20).reverse(), [refreshKey]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setRefreshKey((k) => k + 1), 10_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const govEngines = [
+    { name: "Vertical Isolation", id: "vertical-isolation" },
+    { name: "Taxonomy Governance", id: "taxonomy-governance" },
+    { name: "Media Relevance", id: "media-relevance" },
+    { name: "Text Integrity", id: "text-integrity" },
+    { name: "Layout Integrity", id: "layout-integrity" },
+    { name: "Page Open Reliability", id: "page-open-reliability" },
+    { name: "Action Wiring", id: "action-wiring" },
+    { name: "Runtime Health", id: "runtime-health" },
+    { name: "Flow Closure", id: "flow-closure" },
+    { name: "Banner Strategy", id: "banner-strategy" },
+    { name: "Localization", id: "localization-governance" },
+    { name: "Auto-Remediation", id: "auto-remediation" },
+    { name: "Anti-Conflict", id: "anti-conflict" },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Total Violations", value: summary.totalViolations, color: "text-amber-400" },
+          { label: "Unresolved", value: summary.unresolvedCount, color: summary.unresolvedCount > 0 ? "text-red-400" : "text-emerald-400" },
+          { label: "Auto-Remediated", value: summary.autoRemediatedCount, color: "text-blue-400" },
+          { label: "Arch Debt", value: summary.architectureDebt, color: summary.architectureDebt > 0 ? "text-amber-400" : "text-emerald-400" },
+        ].map((s) => (
+          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+            <CardContent className="p-4 text-center">
+              <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+              <p className="text-xs text-gray-400">{s.label}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <Eye className="w-4 h-4 inline mr-1" /> Page Open
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-gray-400">Total tracked</span><span className="text-white font-bold">{pageStats.total}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Successful</span><span className="text-emerald-400 font-bold">{pageStats.successful}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Failed</span><span className="text-red-400 font-bold">{pageStats.failed}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Avg duration</span><span className="text-blue-400 font-bold">{Math.round(pageStats.avgDuration)}ms</span></div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <Activity className="w-4 h-4 inline mr-1" /> Action Wiring
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-gray-400">Registered</span><span className="text-white font-bold">{actionStats.totalRegistered}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Total clicks</span><span className="text-blue-400 font-bold">{actionStats.totalClicks}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Dead clicks</span><span className="text-red-400 font-bold">{actionStats.deadClicks}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Dead rate</span><span className={`font-bold ${actionStats.deadClickRate > 0.05 ? "text-red-400" : "text-emerald-400"}`}>{(actionStats.deadClickRate * 100).toFixed(1)}%</span></div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <Heart className="w-4 h-4 inline mr-1" /> Runtime
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-gray-400">Active subs</span><span className="text-emerald-400 font-bold">{runtimeStats.activeSubscriptions}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Stale subs</span><span className="text-amber-400 font-bold">{runtimeStats.staleSubscriptions}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Error subs</span><span className="text-red-400 font-bold">{runtimeStats.errorSubscriptions}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Fatal events</span><span className={`font-bold ${runtimeStats.fatalEvents > 0 ? "text-red-400" : "text-emerald-400"}`}>{runtimeStats.fatalEvents}</span></div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <ArrowRight className="w-4 h-4 inline mr-1" /> Flow Closure
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-gray-400">Total flows</span><span className="text-white font-bold">{flowStats.totalFlows}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Active</span><span className="text-blue-400 font-bold">{flowStats.activeFlows}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Failed</span><span className="text-red-400 font-bold">{flowStats.failedFlows}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Blocked</span><span className="text-amber-400 font-bold">{flowStats.blockedFlows}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Closure rate</span><span className={`font-bold ${flowStats.closureRate < 0.9 ? "text-amber-400" : "text-emerald-400"}`}>{(flowStats.closureRate * 100).toFixed(0)}%</span></div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <Wrench className="w-4 h-4 inline mr-1" /> Auto-Remediation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-gray-400">Total remediations</span><span className="text-white font-bold">{remediationStats.total}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Auto-fix rate</span><span className={`font-bold ${remediationStats.autoRemediationRate > 0.5 ? "text-emerald-400" : "text-amber-400"}`}>{(remediationStats.autoRemediationRate * 100).toFixed(0)}%</span></div>
+            {Object.entries(remediationStats.byAction).slice(0, 4).map(([action, count]) => (
+              <div key={action} className="flex justify-between">
+                <span className="text-gray-400 text-xs">{action.replace(/_/g, " ")}</span>
+                <span className="text-blue-400 font-bold text-xs">{count}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <Layers className="w-4 h-4 inline mr-1" /> Governance Engines (13)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {govEngines.map((eng) => (
+              <div
+                key={eng.id}
+                className="flex items-center gap-2 p-2 rounded-lg border border-white/5"
+                style={{ backgroundColor: "hsl(220 40% 12%)" }}
+              >
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                <span className="text-xs text-gray-300 truncate">{eng.name}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {violations.length > 0 && (
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <AlertTriangle className="w-4 h-4 inline mr-1" /> Recent Violations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              {violations.map((v) => (
+                <div
+                  key={v.id}
+                  className="flex items-start gap-2 p-2 rounded border border-white/5 text-xs"
+                  style={{ backgroundColor: "hsl(220 40% 12%)" }}
+                >
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                    v.severity === "critical" ? "bg-red-500/20 text-red-400" :
+                    v.severity === "error" ? "bg-orange-500/20 text-orange-400" :
+                    v.severity === "warning" ? "bg-amber-500/20 text-amber-400" :
+                    "bg-blue-500/20 text-blue-400"
+                  }`}>{v.severity}</span>
+                  <span className="text-gray-300 flex-1">{v.message}</span>
+                  <span className="text-gray-500 text-[10px] whitespace-nowrap">{v.type}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {Object.keys(summary.byType).length > 0 && (
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              Violations by Type
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
+              {Object.entries(summary.byType).map(([type, count]) => (
+                <div key={type} className="flex justify-between p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 12%)" }}>
+                  <span className="text-gray-400 text-xs">{type.replace(/_/g, " ")}</span>
+                  <span className="text-white font-bold text-xs">{count}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
