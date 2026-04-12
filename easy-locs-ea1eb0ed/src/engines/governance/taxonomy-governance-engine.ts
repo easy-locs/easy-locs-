@@ -81,6 +81,10 @@ export function validateTaxonomy(
       resolvedAt: null,
       autoRemediated: false,
       metadata: { vertical, category, subcategory },
+      engine: "taxonomy-governance",
+      code: "CATEGORY_NOT_FOUND",
+      dedupKey: `tax:${vertical}:${category}`,
+      status: "new",
     };
     taxonomyViolations.push(v);
     persistViolation(v);
@@ -101,6 +105,10 @@ export function validateTaxonomy(
       resolvedAt: null,
       autoRemediated: false,
       metadata: { vertical, category, subcategory },
+      engine: "taxonomy-governance",
+      code: "SUBCATEGORY_NOT_FOUND",
+      dedupKey: `tax:${vertical}:${category}:${subcategory}`,
+      status: "new",
     };
     taxonomyViolations.push(v);
     persistViolation(v);

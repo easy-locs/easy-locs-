@@ -104,6 +104,10 @@ function recordEvent(type: string, failureClass: RuntimeFailureClass, message: s
       resolvedAt: null,
       autoRemediated: false,
       metadata: { type, failureClass },
+      engine: "runtime-health",
+      code: `RUNTIME_${failureClass.toUpperCase()}`,
+      dedupKey: `runtime:${type}:${failureClass}`,
+      status: "new",
     };
     runtimeViolations.push(v);
     persistViolation(v);

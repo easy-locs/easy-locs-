@@ -3,6 +3,7 @@ import { flightBookingService } from "./flight-booking-service";
 import { flightTicketingService } from "./flight-ticketing-service";
 import { resolvePaymentMode } from "./flight-provider-adapter";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { reportRuntimeFailure } from "@/engines/governance/runtime-health-engine";
 
 export interface FlightPaymentRequest {
   bookingId: string;
@@ -33,6 +34,7 @@ function startPaymentTimeout(bookingId: string): void {
       if (booking?.status === "payment_pending") {
         await flightBookingService.cancelBooking(bookingId, "Payment timeout — booking expired");
         platformBus.emit("flight:payment_timeout", { bookingId, userId: booking.userId });
+        reportRuntimeFailure("flight_payment_timeout", "consistency_risk", `Flight payment timed out for booking ${bookingId}`);
       }
     } catch {
       /* expiry best-effort */
@@ -90,10 +92,12 @@ export const flightPaymentOrchestrator = {
         const tickets = await flightTicketingService.issueTickets(bookingId);
         ticketNumbers = tickets.map((t) => t.ticketNumber);
       } catch (ticketErr) {
+        const ticketReason = ticketErr instanceof Error ? ticketErr.message : "Ticketing deferred";
         platformBus.emit("flight:ticketing_deferred", {
           bookingId,
-          reason: ticketErr instanceof Error ? ticketErr.message : "Ticketing deferred",
+          reason: ticketReason,
         });
+        reportRuntimeFailure("flight_ticketing_deferred", "retriable", `Ticketing deferred for ${bookingId}: ${ticketReason}`);
       }
 
       platformBus.emit("flight:booking_completed", {
@@ -139,6 +143,7 @@ export const flightPaymentOrchestrator = {
       bookingId,
       reason,
     });
+    reportRuntimeFailure("flight_payment_failed", "consistency_risk", `Flight payment failed for ${bookingId}: ${reason}`);
   },
 
   getPaymentMode(booking: FlightBooking): PaymentMode {

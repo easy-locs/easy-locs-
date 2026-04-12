@@ -98,6 +98,10 @@ export function validateLocalization(
       resolvedAt: null,
       autoRemediated: false,
       metadata: { locale, countryCode, supportedLocales: country.supportedLocales },
+      engine: "localization-governance",
+      code: "LOCALE_UNSUPPORTED",
+      dedupKey: `l10n:${locale}:${countryCode}`,
+      status: "new",
     };
     localizationViolations.push(v);
     persistViolation(v);

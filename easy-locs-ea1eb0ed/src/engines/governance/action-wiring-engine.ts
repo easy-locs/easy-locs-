@@ -57,6 +57,11 @@ export function trackActionClick(
         targetRoute: descriptor?.targetRoute,
         targetFlow: descriptor?.targetFlow,
       },
+      engine: "action-wiring",
+      route: descriptor?.targetRoute,
+      code: "DEAD_CLICK",
+      dedupKey: `deadclick:${actionId}`,
+      status: "new",
     };
     actionViolations.push(v);
     persistViolation(v);
@@ -83,6 +88,10 @@ export function validateActionWiring(actionId: string): {
       resolvedAt: null,
       autoRemediated: false,
       metadata: { actionId },
+      engine: "action-wiring",
+      code: "UNREGISTERED_ACTION",
+      dedupKey: `unreg:${actionId}`,
+      status: "new",
     };
     actionViolations.push(v);
     persistViolation(v);

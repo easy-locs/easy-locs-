@@ -133,6 +133,11 @@ function finalizeRecord(record: PageOpenRecord): void {
       resolvedAt: null,
       autoRemediated: false,
       metadata: { pageId: record.pageId, route: record.route, failureType: record.failureType, duration: record.duration },
+      engine: "page-open-reliability",
+      route: record.route,
+      code: `PAGE_OPEN_${record.failureType?.toUpperCase() ?? "UNKNOWN"}`,
+      dedupKey: `pageopen:${record.route}:${record.failureType}`,
+      status: "new",
     };
     pageOpenViolations.push(v);
     persistViolation(v);

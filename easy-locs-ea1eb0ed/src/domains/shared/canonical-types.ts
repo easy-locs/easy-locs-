@@ -1678,4 +1678,12 @@ export interface GovernanceViolation {
   resolvedAt: string | null;
   autoRemediated: boolean;
   metadata: Record<string, unknown>;
+  engine?: string;
+  route?: string;
+  correlationId?: string;
+  dedupKey?: string;
+  entityType?: string;
+  entityId?: string;
+  code?: string;
+  status?: "new" | "acknowledged" | "resolved";
 }

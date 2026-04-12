@@ -21,6 +21,7 @@ import {
   type PrimaryCTA,
 } from "@/lib/action-priority";
 import { trackActionClick } from "@/engines/governance/action-wiring-engine";
+import { isClickDuplicate } from "@/services/governance/governance-dedup";
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {
   open: <ExternalLink className="h-4 w-4" />,
@@ -88,8 +89,9 @@ export default function UniversalActionButtons({
 
   const executeAction = useCallback(
     async (actionType: UniversalActionType) => {
+      const actionKey = `${entityType}:${entityId}:${actionType}`;
+      isClickDuplicate(actionKey);
       setBusyAction(actionType);
-      const actionKey = `${entityType}:${actionType}`;
 
       try {
         const input: UniversalActionInput = {

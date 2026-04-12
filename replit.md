@@ -941,33 +941,59 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 
 ### Key Types
 - **CanonicalVertical**: Closed union of 20 verticals (food, grocery, hotel, service, services, property, flight, ride, delivery, retail, shops, healthcare, events, experiences, education, beauty, mobility, stay, utility, finance)
-- **GovernanceViolation**: `id`, `type` (10 GovernanceViolationType values), `severity` (info/warning/error/critical), `source`, `target`, `message`, `ownerDomain`, `vertical`, `detectedAt`, `resolvedAt`, `autoRemediated`, `metadata`
+- **GovernanceViolation**: `id`, `type` (10 GovernanceViolationType values), `severity` (info/warning/error/critical), `source`, `target`, `message`, `ownerDomain`, `vertical`, `detectedAt`, `resolvedAt`, `autoRemediated`, `metadata` + Phase 3 fields: `engine?`, `route?`, `correlationId?`, `dedupKey?`, `entityType?`, `entityId?`, `code?`, `status?` (new/acknowledged/resolved)
 - **Per-vertical entities**: CanonicalFoodEntity, CanonicalHotelEntity, CanonicalServiceEntity, CanonicalPropertyEntity, CanonicalFlightEntity, CanonicalRideEntity, CanonicalDeliveryEntity, CanonicalMerchantEntity
 
-### Runtime Wiring (Phase 2 Complete)
-- **SmartCoreTracker** → `trackPageOpen`/`updatePageState` on every route change (page open reliability)
-- **UniversalActionButtons** → `trackActionClick` on every CTA execution (dead click detection)
+### Runtime Wiring (Phase 2 Complete + Phase 3 Coverage Gaps Fixed)
+- **SmartCoreTracker** → `trackPageOpen`/`updatePageState` on every route change (page open reliability) + dedup guard via `createPageOpenDedupKey`
+- **UniversalActionButtons** → `trackActionClick` on every CTA execution (dead click detection) + `isClickDuplicate` guard
 - **media-utils** → `validateMedia` governance check on every file upload (observational, never blocks)
 - **order-lifecycle** → `registerFlow`/`updateFlowState` on every order transition (flow closure tracking)
 - **send-text pipeline** → `validateText` governance check on every message send (observational, never blocks)
+- **AuthContext** → `reportRuntimeFailure` on DB health down, hydration timeout, sign-out errors (Phase 3 coverage gap fix)
+- **walletStore** → `reportRuntimeFailure` on payment failures (Phase 3 coverage gap fix)
+- **flight-payment-orchestrator** → `reportRuntimeFailure` on payment timeout, ticketing deferred, payment failure (Phase 3 coverage gap fix)
 - All wiring is **observational/advisory only** — governance never blocks user actions or rendering
 
-### Violation Persistence (Phase 2 Complete)
-- **DB Table**: `governance_violations` (migration `20260412200000`) — id, type, severity, source, target, message, owner_domain, vertical, detected_at, resolved_at, auto_remediated, metadata (JSONB)
-- **Persistence Service**: `src/services/governance/violation-persistence.ts` — `persistViolation()`, `persistViolations()`, `fetchViolations()`, `fetchViolationCount()`
-- All 11 violation-producing engines call `persistViolation()` fire-and-forget alongside in-memory push
-- Persistence failure logs error but never crashes engine or blocks user flow
+### Anti-Duplication System (Phase 3)
+- **Dedup Service**: `src/services/governance/governance-dedup.ts`
+  - `isDuplicateViolation(dedupKey)` — 5s sliding window, 2000 max cache
+  - `computeDedupKey(v)` — generates key from type+source+target+severity
+  - `isClickDuplicate(actionKey)` — 1s click dedup for UIs
+  - `createPageOpenDedupKey(route)` — dedup guard for React double-effect remounts
+  - Automatic cache cleanup via interval timer
+- **Persistence-level dedup**: `persistViolation()` calls `isDuplicateViolation()` before DB write; also handles `23505` unique constraint gracefully
+- **All 13 engines emit `dedupKey`** in every violation — enables DB-level unique constraint on `(dedup_key) WHERE status = 'new'`
+
+### Violation Persistence (Phase 2 + Phase 3 Hardened)
+- **DB Table**: `governance_violations` (base migration `20260412200000` + hardening migration `20260413000000`)
+  - Base columns: id, type, severity, source, target, message, owner_domain, vertical, detected_at, resolved_at, auto_remediated, metadata (JSONB)
+  - Phase 3 columns: engine, route, correlation_id, dedup_key, entity_type, entity_id, code, status (new/acknowledged/resolved), acknowledged_at
+  - Phase 3 indexes: engine, route, correlation_id, dedup_key (unique where status='new'), code, status, created_at
+  - RLS: authenticated users can SELECT/INSERT/UPDATE
+- **Persistence Service**: `src/services/governance/violation-persistence.ts`
+  - `persistViolation()` — dedup-aware, maps all new fields to DB columns
+  - `persistViolations()` — batch with dedup filtering
+  - `fetchViolations()` — supports all filter fields (severity, type, engine, route, code, status, vertical, ownerDomain)
+  - `fetchViolationCount()`, `fetchViolationsByEngine()`, `fetchViolationsBySeverity()`
+  - `acknowledgeViolation(id)`, `resolveViolation(id)` — status lifecycle management
 - Uses `db()` helper exclusively (never imports supabase directly)
 
-### Control Room Integration
-- Admin Control Room has "Governance" tab (7th tab) with live metrics from all engines
-- Uses `getGovernanceSummary()`, `getPageOpenStats()`, `getActionStats()`, `getRuntimeStats()`, `getFlowClosureStats()`, `getRemediationStats()`
-- Control Room merges in-memory + DB-persisted violations (deduped by ID, sorted by detectedAt)
-- DB violations survive page refresh; in-memory violations provide instant feedback
-- All engines emit via `platformBus.emit("ui-engine:report")`
+### Control Room Pro (Phase 3)
+- Admin Control Room "Governance" tab with full violation management:
+  - **Summary cards**: Total violations, Unresolved, Auto-Remediated, Arch Debt, Dedup Cache Size
+  - **Per-engine stats**: Page Open, Action Wiring, Runtime Health, Flow Closure, Auto-Remediation
+  - **Violations by Engine**: Breakdown showing critical/error/warning/info counts per engine
+  - **Engine grid**: 13 engines with violation counts, clickable to filter
+  - **Filterable violation list**: Filter by severity, engine, status, free-text search
+  - **Expandable detail view**: Full violation metadata, engine, code, dedupKey, route, correlationId, entityType/Id
+  - **Action buttons**: Acknowledge / Resolve status transitions with DB persistence
+  - Merges in-memory + DB violations (deduped by ID, sorted by detectedAt)
+  - Auto-refreshes every 10 seconds
 
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`
 - `getAllGovernanceViolations()` aggregates violations from all 11 violation-producing engines
 - `CanonicalListing.vertical` uses `CanonicalVertical` type (unified with CATEGORY_TREE vocabulary)
+- All violations MUST include `engine`, `code`, `dedupKey`, `status` fields (Phase 3 standard)

@@ -2,13 +2,13 @@
  * SmartCoreTracker — Mounts inside Router to track route visits + dwell time.
  * Also initializes session on first mount.
  * Wired to governance: trackPageOpen on route enter, updatePageState on paint.
+ * Dedup-safe: guards against React double-effect and rapid remounts.
  */
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { trackRouteVisit, trackDwell, startSession } from "@/lib/smart-core";
 import { trackPageOpen, updatePageState } from "@/engines/governance/page-open-engine";
-
-let pageCounter = 0;
+import { createPageOpenDedupKey } from "@/services/governance/governance-dedup";
 
 export default function SmartCoreTracker() {
   const location = useLocation();
@@ -16,6 +16,7 @@ export default function SmartCoreTracker() {
   const prevRouteRef = useRef(location.pathname);
   const initialized = useRef(false);
   const activePageIdRef = useRef<string | null>(null);
+  const lastTrackedRoute = useRef<string | null>(null);
 
   useEffect(() => {
     if (!initialized.current) {
@@ -36,7 +37,12 @@ export default function SmartCoreTracker() {
     entryRef.current = now;
     trackRouteVisit(location.pathname);
 
-    const pageId = `page-${++pageCounter}`;
+    if (lastTrackedRoute.current === location.pathname) return;
+    lastTrackedRoute.current = location.pathname;
+
+    const { pageId, isDuplicate } = createPageOpenDedupKey(location.pathname);
+    if (isDuplicate) return;
+
     activePageIdRef.current = pageId;
     trackPageOpen(pageId, location.pathname);
 
@@ -47,6 +53,10 @@ export default function SmartCoreTracker() {
         }
       });
     });
+
+    return () => {
+      lastTrackedRoute.current = null;
+    };
   }, [location.pathname]);
 
   return null;
