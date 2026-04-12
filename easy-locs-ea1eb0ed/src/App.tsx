@@ -243,6 +243,7 @@ const {
   AdminQaCommandPage, AdminMenuQualityControlPage, AdminUxLiveTestPage, AdminEngineCockpit, ControlPlanePage,
   AdminAIControlCenter, AdminMonetizationDashboard,
   AdminBrowserRepairPage, AdminCentralControlPanelPage,
+  AdminDataQualityPage,
   RiderPrioritySubscriptionPage,
 
   // Deep-link
@@ -835,6 +836,7 @@ const App = () => (
                   <Route path="/admin/menu-quality-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMenuQualityControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/ux-live-test" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUxLiveTestPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/qa-command" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminQaCommandPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/data-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
 

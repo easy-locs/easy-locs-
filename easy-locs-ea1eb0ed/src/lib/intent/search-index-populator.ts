@@ -4,6 +4,7 @@ import { FALLBACK_PROPERTIES } from "@/data/fallback-properties";
 import { FALLBACK_HOTELS } from "@/data/fallback-hotels";
 import { FALLBACK_SHOPS, FALLBACK_GROCERY } from "@/data/fallback-shops";
 import { FALLBACK_SERVICES } from "@/data/fallback-services";
+import { isQuarantined } from "@/lib/data-quality/quarantine";
 
 export function populateSearchIndex() {
   intentSearchIndex.clear();
@@ -149,9 +150,18 @@ export function populateSearchIndex() {
     });
   }
 
-  intentSearchIndex.register(entities);
+  const clean = entities.filter((e) => !isQuarantined(e.entityId));
+  intentSearchIndex.register(clean);
 
   if (import.meta.env.DEV) {
-    console.log(`[search-index] Populated with ${intentSearchIndex.size} entities`);
+    const quarantinedCount = entities.length - clean.length;
+    console.log(
+      `[search-index] Populated with ${intentSearchIndex.size} entities` +
+      (quarantinedCount > 0 ? ` (${quarantinedCount} quarantined excluded)` : "")
+    );
   }
+}
+
+export function rebuildSearchIndex() {
+  populateSearchIndex();
 }
