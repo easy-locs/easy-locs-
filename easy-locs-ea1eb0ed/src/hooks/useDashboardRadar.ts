@@ -9,7 +9,6 @@ import {
   buildSecondaryActions,
 } from "@/lib/radar/radar-result-item";
 import { filterAndDemoteResults } from "@/lib/radar/radar-quality-gate";
-import { normalizeVertical } from "@/lib/taxonomy/world-class-taxonomy";
 
 const TYPE_TO_VERTICAL: Record<string, RadarVertical> = {
   restaurant: "food",
@@ -33,7 +32,7 @@ export function useDashboardRadar(limit = 5) {
       return {
         id: e.id,
         type: vertical,
-        vertical: normalizeVertical(e.category) || vertical,
+        vertical: String(vertical),
         title: e.name || e.title || "",
         subtitle: e.subtitle || e.address || null,
         priceLabel: null,
