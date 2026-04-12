@@ -71,6 +71,8 @@ const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; col
   { id: "nightlife", labelKey: "radar.layer_night", icon: <Moon className="w-3 h-3" />, color: "hsl(280 70% 55%)", emoji: radarEmoji("nightlife"), vertical: "nightlife" },
   { id: "healthcare", labelKey: "radar.layer_healthcare", icon: <Heart className="w-3 h-3" />, color: "hsl(0 65% 50%)", emoji: radarEmoji("healthcare"), vertical: "healthcare" },
   { id: "shops", labelKey: "radar.layer_shops", icon: <Store className="w-3 h-3" />, color: "hsl(38 65% 56%)", emoji: radarEmoji("shops"), vertical: "shops" },
+  { id: "grocery", labelKey: "radar.layer_grocery", icon: <ShoppingBag className="w-3 h-3" />, color: "hsl(90 50% 45%)", emoji: radarEmoji("grocery"), vertical: "grocery" },
+  { id: "experiences", labelKey: "radar.layer_experiences", icon: <Sparkles className="w-3 h-3" />, color: "hsl(340 65% 55%)", emoji: radarEmoji("experiences"), vertical: "experiences" },
   { id: "property", labelKey: "radar.layer_property", icon: <Building2 className="w-3 h-3" />, color: "hsl(220 40% 38%)", emoji: radarEmoji("property"), vertical: "property" },
 ];
 
@@ -88,6 +90,7 @@ const CATEGORY_TO_LAYER: Record<string, RadarLayer> = {
   food: "food", stay: "stay", services: "services",
   utility: "utility", mobility: "mobility", nightlife: "nightlife",
   healthcare: "healthcare", shops: "shops", property: "property",
+  grocery: "grocery", experiences: "experiences",
 };
 
 const PILLAR_LINKS = [
