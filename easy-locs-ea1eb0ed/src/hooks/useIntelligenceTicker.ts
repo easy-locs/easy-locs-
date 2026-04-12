@@ -2,22 +2,12 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
 import { isFeatureEnabled } from "@/lib/control-plane/kill-switches";
 import { composeTicker, advanceTicker, getCurrentTickerItem } from "@/lib/intelligence/global/ticker-engine";
-import { registerProvider } from "@/lib/intelligence/global/provider-adapter";
-import { weatherProviderStub } from "@/lib/intelligence/global/weather-provider-stub";
-import { forexProviderStub } from "@/lib/intelligence/global/forex-provider-stub";
+import { bootProviders, executeShadowValidation } from "@/lib/intelligence/global/provider-boot";
+import { fetchFromAllProviders } from "@/lib/intelligence/global/provider-adapter";
 import type { TickerItem, TickerState } from "@/lib/intelligence/global/ticker-engine";
 
 const ROTATION_INTERVAL_MS = 8_000;
 const REFRESH_INTERVAL_MS = 300_000;
-
-let providersRegistered = false;
-
-function ensureProviders(): void {
-  if (providersRegistered) return;
-  registerProvider(weatherProviderStub);
-  registerProvider(forexProviderStub);
-  providersRegistered = true;
-}
 
 export function useIntelligenceTicker(country: string, city?: string) {
   const [tickerState, setTickerState] = useState<TickerState | null>(null);
@@ -41,11 +31,15 @@ export function useIntelligenceTicker(country: string, city?: string) {
       setVisible(false);
       return;
     }
-    ensureProviders();
+    bootProviders();
     const state = composeTicker(country, city);
     setTickerState(state);
     setCurrentItem(getCurrentTickerItem(state));
     setVisible(!state.gated && state.items.length > 0);
+    if (!state.gated && state.items.length > 0) {
+      const raw = fetchFromAllProviders(country, city);
+      executeShadowValidation(raw);
+    }
   }, [country, city, isGated]);
 
   useEffect(() => {
