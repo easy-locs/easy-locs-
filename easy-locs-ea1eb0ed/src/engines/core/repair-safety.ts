@@ -391,11 +391,23 @@ export function getAllActivationSheets(): DomainActivationSheet[] {
   return Array.from(activationSheets.values());
 }
 
-export function isDomainOperationAllowed(domain: string, operation: string): boolean {
+export function isDomainOperationAllowed(domain: string, operation: string, repairLevel?: string): boolean {
   const sheet = activationSheets.get(domain);
   if (!sheet) return false;
   if (sheet.forbiddenOperations.includes(operation)) return false;
-  return isOperationAllowed(operation);
+  if (!isOperationAllowed(operation)) return false;
+
+  const level = repairLevel ?? "L2";
+
+  if (level === "L2") {
+    return sheet.allowedL2Operations.includes(operation as RepairOperation);
+  }
+
+  if (level === "L3") {
+    return sheet.requiredL3Operations.includes(operation);
+  }
+
+  return false;
 }
 
 const SENSITIVE_PATTERNS = [
