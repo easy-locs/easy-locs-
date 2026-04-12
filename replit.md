@@ -1011,6 +1011,14 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
   - **All defaults OFF**: `enable_global_intelligence`, `enable_intelligence_ticker`, `enable_intelligence_shadow_validation` = false; `intelligence_enabled` in DISABLED_BY_DEFAULT set
   - **DO NOT MODIFY Phase 2 files**
 
+### Autonomous Self-Repair Engine Architecture (Document)
+- **Architecture plan document**: `docs/AUTONOMOUS-SELF-REPAIR-ENGINE-ARCHITECTURE.md`
+- Covers 15 sections: global objective, 15-engine stack, domain coverage (10+ verticals), repair level matrix (L1–L4), 8 safety constraints, 7-stage repair pipeline, rollback/containment, proof system, observability, world-class standard, implementation roadmap (5 phases), core financial safety, autonomy graduation model (5 stages), no-hidden-expansion rules, final compilation
+- All 15 repair engines map to existing BaseEngine implementations
+- Financial safety: permanent L4 for balance/ledger/settlement/fraud; L3 for supervised financial ops; L2 only for read-only/display financial operations
+- Autonomy graduation: Stage 1 (detect-only) → Stage 5 (broader autonomy) with measurable criteria per stage
+- No code implementation — architecture plan only
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`
