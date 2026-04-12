@@ -1,5 +1,6 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import type { RadarResultItem } from "@/lib/radar/radar-result-item";
+import { verticalToRadarCategory } from "@/lib/taxonomy/world-class-taxonomy";
 import RadarFoodCard from "./RadarFoodCard";
 import RadarHotelCard from "./RadarHotelCard";
 import RadarPropertyCard from "./RadarPropertyCard";
@@ -19,24 +20,25 @@ interface Props {
 
 function RadarCardDispatcher({ item, rank, selected, onSelect, onNavigate, onMessage, onSave }: Props) {
   const commonProps = { item, rank, selected, onSelect, onNavigate, onMessage, onSave };
-  const vertical = item.vertical || item.type;
+  const radarCategory = useMemo(
+    () => verticalToRadarCategory(item.vertical || item.type),
+    [item.vertical, item.type]
+  );
 
-  switch (vertical) {
+  switch (radarCategory) {
     case "food":
     case "grocery":
     case "nightlife":
       return <RadarFoodCard {...commonProps} />;
     case "stay":
-    case "hotel":
       return <RadarHotelCard {...commonProps} />;
     case "property":
       return <RadarPropertyCard {...commonProps} />;
     case "services":
     case "healthcare":
     case "experiences":
-    case "mobility":
       return <RadarServiceCard {...commonProps} />;
-    case "taxi":
+    case "mobility":
       return <RadarTaxiCard {...commonProps} />;
     case "shops":
     default:

@@ -80,7 +80,7 @@ export function mapPointToResultItem(
   return {
     id: point.id,
     type: vertical,
-    vertical: point.category || vertical,
+    vertical: point.category || String(vertical),
     title: point.title,
     subtitle: point.subtitle ?? null,
     priceLabel: null,
