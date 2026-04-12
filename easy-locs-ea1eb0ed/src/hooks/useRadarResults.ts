@@ -18,6 +18,8 @@ const CATEGORY_TO_TYPE: Record<string, GeoEntity["type"]> = {
   healthcare: "service",
   mobility: "service",
   experiences: "service",
+  stay: "hotel",
+  nightlife: "restaurant",
 };
 
 export function useRadarResults(opts?: { type?: string; surface?: "radar" | "map" | "search" | "discover" | "home" }) {
@@ -44,6 +46,7 @@ export function useRadarResults(opts?: { type?: string; surface?: "radar" | "map
         const mapped = points.map((p) => ({
           id: p.id,
           type: (CATEGORY_TO_TYPE[p.category] || "shop") as GeoEntity["type"],
+          vertical: p.category,
           name: p.title,
           title: p.title,
           subtitle: p.subtitle || undefined,

@@ -1,10 +1,11 @@
 import type { RadarCategory } from "./types";
 
-export type RadarVertical = "food" | "services" | "hotel" | "property" | "taxi" | "shops" | "healthcare" | "nightlife" | "grocery";
+export type RadarVertical = "food" | "services" | "hotel" | "property" | "taxi" | "shops" | "healthcare" | "nightlife" | "grocery" | "stay" | "mobility" | "experiences";
 
 export interface RadarResultItem {
   id: string;
   type: RadarVertical;
+  vertical: string;
   title: string;
   subtitle: string | null;
   priceLabel: string | null;
@@ -61,17 +62,22 @@ export function buildRoute(item: { slug?: string | null; id: string; type?: stri
 export function buildPrimaryAction(type: RadarVertical): RadarAction {
   switch (type) {
     case "food":
+    case "nightlife":
       return { type: "order", label: "Order", icon: "ShoppingBag", enabled: true };
     case "hotel":
+    case "stay":
       return { type: "book", label: "Book", icon: "Calendar", enabled: true };
     case "property":
       return { type: "view", label: "View", icon: "Eye", enabled: true };
     case "taxi":
+    case "mobility":
       return { type: "book", label: "Request", icon: "Car", enabled: true };
     case "services":
       return { type: "book", label: "Book", icon: "Calendar", enabled: true };
     case "healthcare":
       return { type: "book", label: "Appointment", icon: "Calendar", enabled: true };
+    case "experiences":
+      return { type: "book", label: "Book", icon: "Calendar", enabled: true };
     default:
       return { type: "view", label: "View", icon: "Eye", enabled: true };
   }
@@ -84,10 +90,10 @@ export function buildSecondaryActions(type: RadarVertical, flags: { orbitBindabl
     { type: "save", label: "Save", icon: "Heart", enabled: true },
     { type: "share", label: "Share", icon: "Share2", enabled: true },
   ];
-  if (type === "property" || type === "hotel") {
+  if (type === "property" || type === "hotel" || type === "stay") {
     actions.push({ type: "compare", label: "Compare", icon: "GitCompare", enabled: true });
   }
-  if (flags.walletBindable && (type === "food" || type === "services" || type === "hotel")) {
+  if (flags.walletBindable && (type === "food" || type === "services" || type === "hotel" || type === "stay" || type === "healthcare")) {
     actions.push({ type: "pay", label: "Pay", icon: "Wallet", enabled: true });
   }
   return actions;

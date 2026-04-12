@@ -41,7 +41,12 @@ export type RadarMainCategory =
   | "shops"
   | "services"
   | "property"
-  | "utility";
+  | "utility"
+  | "stay"
+  | "healthcare"
+  | "mobility"
+  | "nightlife"
+  | "experiences";
 
 export type ServiceMode =
   | "delivery"
@@ -373,10 +378,10 @@ function mapVerticalToRadar(vertical: Vertical): RadarMainCategory {
     shops: "shops",
     services: "services",
     property: "property",
-    stay: "property",
-    healthcare: "services",
-    mobility: "services",
-    experiences: "services",
+    stay: "stay",
+    healthcare: "healthcare",
+    mobility: "mobility",
+    experiences: "experiences",
     utility: "utility",
     education: "services",
     finance: "utility",
@@ -462,9 +467,19 @@ export const RADAR_CATEGORIES: { value: RadarMainCategory; label: string; emoji:
   { value: "grocery", label: "Grocery", emoji: "🛒" },
   { value: "shops", label: "Shops", emoji: "🛍️" },
   { value: "services", label: "Services", emoji: "🛠️" },
+  { value: "stay", label: "Stay", emoji: "🏨" },
+  { value: "healthcare", label: "Healthcare", emoji: "🏥" },
+  { value: "mobility", label: "Mobility", emoji: "🚗" },
+  { value: "nightlife", label: "Nightlife", emoji: "🌙" },
+  { value: "experiences", label: "Experiences", emoji: "🎭" },
   { value: "property", label: "Property", emoji: "🏠" },
   { value: "utility", label: "Utility", emoji: "🏧" },
 ];
+
+export const RADAR_QUICK_CATEGORIES: { id: string; emoji: string; labelKey: string }[] =
+  RADAR_CATEGORIES
+    .filter(c => c.value !== "all" && c.value !== "utility")
+    .map(c => ({ id: c.value, emoji: c.emoji, labelKey: `radar.layer_${c.value}` }));
 
 // ═══════════════════════════════════════════════════════════
 //  NORMALIZATION (aliases for classification/import)
