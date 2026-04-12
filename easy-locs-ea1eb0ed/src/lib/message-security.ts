@@ -216,9 +216,9 @@ export function shouldHideMessage(msg: any): boolean {
   // Destroyed
   if (msg.destroyed_at) return true;
   
-  // Expired (client-side check for immediate masking)
-  if (msg.disappear_at) {
-    const expiry = new Date(msg.disappear_at).getTime();
+  const disappearAt = msg.disappear_at || msg.metadata?.disappear_at;
+  if (disappearAt) {
+    const expiry = new Date(disappearAt).getTime();
     if (Date.now() > expiry) return true;
   }
 

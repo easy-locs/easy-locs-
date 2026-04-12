@@ -176,7 +176,7 @@ export function resolveRoute(payload: UniversalQrPayload): string | null {
     case "profile":
       return `/u/${payload.userId}`;
     case "add_contact":
-      return `/u/${payload.userId}`;
+      return `/add-contact?userId=${payload.userId}${payload.name ? `&name=${encodeURIComponent(payload.name)}` : ""}`;
     case "login_verify":
       return null; // handled by security flow
     case "device_link":

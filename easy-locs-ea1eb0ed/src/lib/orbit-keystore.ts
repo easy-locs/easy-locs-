@@ -134,7 +134,7 @@ export async function getOrDeriveSessionKey(
   peerId: string,
   peerPublicKeyBase64: string
 ): Promise<CryptoKey | null> {
-  const sessionId = [userId, peerId].sort().join(":");
+  const sessionId = [userId, peerId].sort().join("::");
   
   // Try cache first
   const cached = await dbGet<{ keyJwk: JsonWebKey }>(STORE_SESSIONS, sessionId);

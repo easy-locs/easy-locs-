@@ -1,6 +1,8 @@
 /**
- * AddContactPage — Handles /add-contact?data=... deep links from QR contact cards.
- * Decodes the base64 contact payload, adds to contacts, redirects to Orbit.
+ * AddContactPage — Handles /add-contact deep links from QR contact cards.
+ * Supports two input formats:
+ * 1. Canonical QR engine: /add-contact?userId=...&name=...
+ * 2. Legacy el-contact: /add-contact?data=<base64>
  */
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -17,6 +19,47 @@ function fromBase64Utf8(value: string): string {
   return new TextDecoder().decode(bytes);
 }
 
+function getHashSearchParams(): URLSearchParams {
+  const hash = window.location.hash || "";
+  const qIdx = hash.indexOf("?");
+  return qIdx >= 0 ? new URLSearchParams(hash.slice(qIdx + 1)) : new URLSearchParams();
+}
+
+function resolveContactPayload(searchParams: URLSearchParams): { userId: string; name: string; orbitId?: string; email?: string } | null {
+  const hashParams = getHashSearchParams();
+
+  const directUserId = searchParams.get("userId") || hashParams.get("userId");
+  if (directUserId) {
+    return {
+      userId: directUserId,
+      name: searchParams.get("name") || hashParams.get("name") || "Contact",
+      orbitId: searchParams.get("orbitId") || hashParams.get("orbitId") || undefined,
+      email: searchParams.get("email") || hashParams.get("email") || undefined,
+    };
+  }
+
+  let data = searchParams.get("data") || hashParams.get("data");
+  if (!data) {
+    const fallback = new URLSearchParams(window.location.search);
+    data = fallback.get("data");
+  }
+  if (!data) return null;
+
+  try {
+    const decoded = fromBase64Utf8(data);
+    const parsed = JSON.parse(decoded);
+    if ((!parsed.t || parsed.t === "el-contact") && parsed.userId) {
+      return {
+        userId: parsed.userId,
+        name: parsed.name || "Contact",
+        orbitId: parsed.orbitId,
+        email: parsed.email,
+      };
+    }
+  } catch {}
+  return null;
+}
+
 export default function AddContactPage() {
   const { user, orgId } = useAuth();
   const [searchParams] = useSearchParams();
@@ -26,37 +69,31 @@ export default function AddContactPage() {
 
   useEffect(() => {
     if (!user?.id) return;
-    let data = searchParams.get("data");
-    if (!data) {
-      const fallback = new URLSearchParams(window.location.search);
-      data = fallback.get("data");
+
+    const payload = resolveContactPayload(searchParams);
+    if (!payload) { setStatus("error"); return; }
+
+    if (payload.userId === user.id) {
+      toast.info("That's your own contact code!");
+      navigate("/orbit?section=contacts", { replace: true });
+      return;
     }
-    if (!data) { setStatus("error"); return; }
+
+    setContactName(payload.name);
 
     (async () => {
       try {
-        const decoded = fromBase64Utf8(data);
-        const parsed = JSON.parse(decoded);
-        if (parsed.t !== "el-contact" || !parsed.userId) throw new Error("Invalid");
-        if (parsed.userId === user.id) {
-          toast.info("That's your own contact code!");
-          navigate("/orbit?section=contacts", { replace: true });
-          return;
-        }
-
-        setContactName(parsed.name || "Contact");
-
         await upsertOrbitContact({
           ownerUserId: user.id,
-          peerUserId: parsed.userId || null,
-          peerOrbitId: parsed.orbitId || null,
-          displayName: parsed.name || "Contact",
-          email: parsed.email || null,
+          peerUserId: payload.userId,
+          peerOrbitId: payload.orbitId || null,
+          displayName: payload.name,
+          email: payload.email || null,
           source: "qr_link",
           metadata: { qr: true },
         });
 
-        toast.success(`${parsed.name || "Contact"} added!`);
+        toast.success(`${payload.name} added!`);
         setStatus("success");
         setTimeout(() => navigate("/orbit?section=contacts", { replace: true }), 1500);
       } catch {

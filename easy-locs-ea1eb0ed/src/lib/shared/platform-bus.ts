@@ -25,6 +25,7 @@ type PlatformEventType =
   | "wallet.payment.success"
   | "wallet.payment.failed"
   | "wallet.payment.completed"
+  | "wallet.top_up"
   // Orbit / Communication
   | "orbit:message_sent"
   | "orbit:message_received"
@@ -52,6 +53,7 @@ type PlatformEventType =
   | "marketplace:listing_shared"
   | "marketplace:provider_went_live"
   | "marketplace:provider_went_offline"
+  | "marketplace:contact_opened"
   | "marketplace.merchant.live"
   | "marketplace.contact.opened"
   // Storefront / Commerce (PASS123)
@@ -591,7 +593,8 @@ export function installPlatformReactions(): () => void {
     "radar.location.shared": "radar:location_shared",
     "radar.pin.selected": "radar:pin_selected",
     "marketplace.merchant.live": "marketplace:provider_went_live",
-    "marketplace.contact.opened": "marketplace:booking_created",
+    "marketplace.contact.opened": "marketplace:contact_opened",
+    "wallet.top_up": "wallet:top_up",
     "property.unit.created": "property:unit_created",
   };
 

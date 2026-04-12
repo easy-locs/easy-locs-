@@ -192,7 +192,7 @@ export async function createDirectConversation(input: {
   searchFn: (pair: string[]) => Promise<any | null>;
   createFn: (pair: string[]) => Promise<any>;
 }): Promise<{ ok: boolean; conversation?: any; error?: string }> {
-  const pairKey = [input.myUserId, input.peerUserId].sort().join(":");
+  const pairKey = [input.myUserId, input.peerUserId].sort().join("::");
   const flowKey = `service.conversation.openDirect:${pairKey}`;
   if (isFlowActive(flowKey)) return { ok: false, error: "flow_active" };
 

@@ -109,7 +109,7 @@ export function useOrbitEncryption(userId: string | undefined): UseOrbitEncrypti
   userIdRef.current = userId;
 
   const getSessionId = useCallback((uid: string, peerId: string) => {
-    return [uid, peerId].sort().join(":") + `:${deviceIdRef.current}`;
+    return [uid, peerId].sort().join("::") + `::${deviceIdRef.current}`;
   }, []);
 
   const fetchPeerPublicKey = useCallback(async (peerId: string): Promise<string | null> => {
