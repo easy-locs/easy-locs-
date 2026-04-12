@@ -17,6 +17,8 @@ import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runti
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
 
+export type RealtimeStatus = "connected" | "connecting" | "disconnected";
+
 export function useConversationThreads(opts?: { enabled?: boolean }) {
   const { user, orgId } = useAuth();
   const enabled = opts?.enabled !== false;
@@ -24,6 +26,7 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({ unread: 0, pending_docs: 0, overdue: 0, maintenance: 0 });
+  const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>("connecting");
   const loadingRef = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -169,9 +172,14 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, () => debouncedReload())
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_preferences", filter: `user_id=eq.${userId}` }, () => debouncedReload())
       .subscribe((status) => {
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        if (status === "SUBSCRIBED") {
+          setRealtimeStatus("connected");
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
           console.warn(`[orbit-threads] Realtime channel status: ${status}`);
           reportHealth("orbit", "degraded", undefined, `realtime_${status.toLowerCase()}`);
+          setRealtimeStatus("disconnected");
+        } else if (status === "CLOSED") {
+          setRealtimeStatus("disconnected");
         }
       });
 
@@ -217,6 +225,7 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
     loading,
     error,
     stats,
+    realtimeStatus,
     loadThreads,
     updateThreadLocally,
   };
