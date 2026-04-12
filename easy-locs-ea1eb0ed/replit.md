@@ -734,6 +734,16 @@ Full detect → classify → react → protect → verify → report cycle acros
 - **Admin Page** (`/admin/data-quality`): 7 tabs — Overview, Engines (status/sweep logs/source trust), Findings, Sources (with trust scores), Quarantine, Remediations, Playbooks. Run mode selector (boot/dry/incremental/full sweep)
 - **Key files**: `engine-base.ts`, `engine-registry.ts`, `execution-orchestrator.ts`, `surface-protector.ts`, `engines/*.ts`, `types.ts`, `quarantine.ts`, `source-inventory.ts`, `audit-runner.ts`, `AdminDataQualityPage.tsx`
 
+## Autonomous Self-Repair Engine (Phases 1-4)
+- **Architecture** (`src/engines/core/`): 4-phase self-repair pipeline — safety foundation, repair pipeline + proof system, domain-specific repair rules, live taxonomy repair rollout
+- **Phase 1 (Safety Foundation)**: `repair-safety.ts` — storm detection (>50 repairs/10min), loop prevention (>3 same-issue/5min), SafeRepairContext tracking, abort triggers. `engine-feature-flags.ts` — typed platform flags with in-memory + DB persistence. `domain-health.ts` — per-domain health scoring. `types.ts` — repair system type definitions
+- **Phase 2 (Pipeline + Proof)**: `repair-pipeline.ts` — 5-stage pipeline (detect → classify → plan → execute → verify), global on/off gate, execution reports. `proof-system.ts` — immutable proof records with cryptographic hashing, mutation snapshots (before/after state), stage-level traceability, per-domain retrieval, stats aggregation
+- **Phase 3 (Domain Rules)**: `repair-actions.ts` — operation registry (invalidate/refresh/fallback/restart/escalate) with allowlists per repair level (L0-L4). `domain-activation-sheets.ts` — 5 domain activation sheets (taxonomy/media/canonical/search/governance) defining allowed operations and safety constraints. `domain-repair-rules.ts` — 13 typed rules mapping issue signatures to repair operations with confidence thresholds and cooldowns
+- **Phase 4 (Live Taxonomy Rollout)**: `repair-bridge.ts` — platformBus subscriber for `taxonomy.conflict.detected` events with 500ms debounce, FIFO pending queue, per-event flag check. `enable_repair_pipeline` platform flag (default ON). TaxonomyIntegrityEngine emits conflict events after DQE scan. Catchup scan in `bootEngineSystem()` re-runs taxonomy scan after bridge install (fixes boot timing — DQE sweep fires before engine system boots). Dev-mode diagnostic timer stores proof stats in `window.__REPAIR_DIAG`
+- **Kill switch**: `togglePlatformFlag("enable_repair_pipeline", false)` → immediate in-memory + DB
+- **LOCKED files (DO NOT MODIFY)**: repair-safety.ts, engine-feature-flags.ts, domain-health.ts, types.ts, proof-system.ts, repair-actions.ts, domain-activation-sheets.ts, domain-repair-rules.ts
+- **Key files**: `src/engines/core/repair-bridge.ts`, `src/engines/core/repair-pipeline.ts`, `src/engines/core/proof-system.ts`, `src/engines/core/domain-activation-sheets.ts`, `src/engines/core/domain-repair-rules.ts`, `src/engines/core/repair-safety.ts`, `src/engines/engine-registry.ts`, `src/lib/growth/feature-flag-registry.ts`
+
 ## Engineering Audit (2026-04-10)
 Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Build**: production build fixed (checkPublishBlockers import + duplicate patisserie key)

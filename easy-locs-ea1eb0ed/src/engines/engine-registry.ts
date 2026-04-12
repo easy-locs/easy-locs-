@@ -1,6 +1,8 @@
 import { engineOrchestrator } from "./core/engine-orchestrator";
 import { registerAllActivationSheets } from "./core/domain-activation-sheets";
-import { installRepairBridge } from "./core/repair-bridge";
+import { installRepairBridge, getRepairBridgeReport } from "./core/repair-bridge";
+import { getProofsByDomain, getProofStats } from "./core/proof-system";
+import { getPipelineReport } from "./core/repair-pipeline";
 
 import { ErrorClassifier } from "./self-healing/error-classifier";
 import { AutoFixEngine } from "./self-healing/auto-fix-engine";
@@ -377,6 +379,37 @@ export function bootEngineSystem(): () => void {
   let disposed = false;
   let teardownAI: (() => void) | null = null;
 
+  const catchupTimer = setTimeout(() => {
+    if (disposed) return;
+    import("@/lib/data-quality/engines/taxonomy-integrity-engine").then(
+      ({ TaxonomyIntegrityEngine }) => {
+        if (disposed) return;
+        const engine = new TaxonomyIntegrityEngine();
+        engine.scan("SAFE_AUTO");
+      },
+    ).catch(() => {});
+  }, 500);
+
+  const diagnosticTimer = import.meta.env.DEV ? setTimeout(() => {
+    if (disposed) return;
+    const bridge = getRepairBridgeReport();
+    const pipeline = getPipelineReport();
+    const proofs = getProofsByDomain("taxonomy");
+    const stats = getProofStats();
+    let diag = `REPAIR: proofs=${proofs.length} runs=${pipeline.totalRuns} blocked=${pipeline.totalBlocked}`;
+    if (proofs.length > 0) {
+      const p = proofs[proofs.length - 1];
+      const changed = p.mutation ? p.mutation.beforeState !== p.mutation.afterState : false;
+      diag += ` | outcome=${p.outcome} dur=${p.durationMs}ms rb=${p.rolledBack} changed=${changed}`;
+      diag += ` | stages=${p.stages.map(s => `${s.stage}:${s.result}`).join("→")}`;
+    }
+    diag += ` | bridge=${JSON.stringify(bridge)}`;
+    console.warn(`[REPAIR-DIAGNOSTIC] ${diag}`);
+    if (typeof window !== "undefined") {
+      (window as any).__REPAIR_DIAG = { diag, stats, proofs: proofs.length, bridge, pipeline: { runs: pipeline.totalRuns, blocked: pipeline.totalBlocked } };
+    }
+  }, 5000) : null;
+
   const tier2Timer = import.meta.env.DEV ? setTimeout(() => {
     if (disposed) return;
     loadAndStartTier2().catch(e =>
@@ -407,6 +440,8 @@ export function bootEngineSystem(): () => void {
 
   return () => {
     disposed = true;
+    clearTimeout(catchupTimer);
+    if (diagnosticTimer) clearTimeout(diagnosticTimer);
     if (tier2Timer) clearTimeout(tier2Timer);
     clearTimeout(tier3Timer);
     teardownAI?.();
