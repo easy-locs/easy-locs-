@@ -174,7 +174,7 @@ export function mapV2ConversationsToThreads(
     const peerUserId = mergedParticipantIds.find((id) => id !== userId) ?? null;
     if (peerUserId) allPeerIds.add(peerUserId);
 
-    const existing = findExistingLegacyThread(threadMap, ct.context_id, ct.id, peerUserId);
+    const existing = findExistingLegacyThread(threadMap, ct.context_id, ct.id);
     if (existing) {
       const [, legacyThread] = existing;
       legacyThread.conversationId = ct.id;
