@@ -22,8 +22,10 @@ const CATEGORY_TO_TYPE: Record<string, GeoEntity["type"]> = {
   nightlife: "restaurant",
 };
 
+export type RadarEntity = GeoEntity & { isSponsored?: boolean; reviewsCount?: number; vertical?: string };
+
 export function useRadarResults(opts?: { type?: string; surface?: "radar" | "map" | "search" | "discover" | "home" }) {
-  const [entities, setEntities] = useState<(GeoEntity & { isSponsored?: boolean; reviewsCount?: number })[]>([]);
+  const [entities, setEntities] = useState<RadarEntity[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocationStore((s) => s.currentLocation);
   const selectedPlace = useRadarPlaceStore((s) => s.selectedPlace);
