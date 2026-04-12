@@ -323,9 +323,18 @@ export interface PlatformEvent<T = unknown> {
   userId?: string;
   orgId?: string;
   timestamp: number;
+  correlationId?: string;
 }
 
 type EventListener = (event: PlatformEvent) => void;
+
+const MAX_LISTENERS_PER_EVENT = 50;
+const MAX_GLOBAL_LISTENERS = 30;
+
+let _correlationCounter = 0;
+export function generateCorrelationId(prefix = "evt"): string {
+  return `${prefix}-${Date.now()}-${++_correlationCounter}`;
+}
 
 class PlatformBus {
   private listeners = new Map<string, Set<EventListener>>();
@@ -337,16 +346,35 @@ class PlatformBus {
     if (!this.listeners.has(type)) {
       this.listeners.set(type, new Set());
     }
-    this.listeners.get(type)!.add(listener);
+    const set = this.listeners.get(type)!;
+    if (set.size >= MAX_LISTENERS_PER_EVENT) {
+      if (import.meta.env.DEV) {
+        console.warn(`[platform-bus] Fan-out limit reached for "${type}" (${MAX_LISTENERS_PER_EVENT}), listener not added`);
+      }
+      return () => {};
+    }
+    set.add(listener);
     return () => this.listeners.get(type)?.delete(listener);
   }
 
   onAll(listener: EventListener): () => void {
+    if (this.globalListeners.size >= MAX_GLOBAL_LISTENERS) {
+      if (import.meta.env.DEV) {
+        console.warn(`[platform-bus] Global listener limit reached (${MAX_GLOBAL_LISTENERS}), listener not added`);
+      }
+      return () => {};
+    }
     this.globalListeners.add(listener);
     return () => this.globalListeners.delete(listener);
   }
 
   onPrefix(prefix: string, listener: EventListener): () => void {
+    if (this.globalListeners.size >= MAX_GLOBAL_LISTENERS) {
+      if (import.meta.env.DEV) {
+        console.warn(`[platform-bus] Global listener limit reached (${MAX_GLOBAL_LISTENERS}), prefix listener for "${prefix}" not added`);
+      }
+      return () => {};
+    }
     const wrappedListener: EventListener = (event) => {
       if (event.type.startsWith(prefix)) listener(event);
     };
@@ -358,7 +386,7 @@ class PlatformBus {
     type: PlatformEventType | string,
     payload: T,
     source: PlatformEvent["source"] | string,
-    meta?: { userId?: string; orgId?: string }
+    meta?: { userId?: string; orgId?: string; correlationId?: string }
   ): void {
     const event: PlatformEvent<T> = {
       type: type as PlatformEventType,
@@ -367,6 +395,7 @@ class PlatformBus {
       userId: meta?.userId,
       orgId: meta?.orgId,
       timestamp: Date.now(),
+      correlationId: meta?.correlationId,
     };
 
     this.eventLog.push(event);
@@ -400,6 +429,16 @@ class PlatformBus {
 
   getRegisteredEvents(): string[] {
     return Array.from(this.listeners.keys());
+  }
+
+  getListenerStats(): { totalTyped: number; totalGlobal: number; byEvent: Record<string, number> } {
+    let totalTyped = 0;
+    const byEvent: Record<string, number> = {};
+    for (const [type, set] of this.listeners) {
+      byEvent[type] = set.size;
+      totalTyped += set.size;
+    }
+    return { totalTyped, totalGlobal: this.globalListeners.size, byEvent };
   }
 
   clearLogs(): void {

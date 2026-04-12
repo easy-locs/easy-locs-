@@ -107,3 +107,63 @@ export {
   FLIGHT_STATUS_META,
 } from "@/domains/flight/flight-state-machine";
 export type { FlightEvent } from "@/domains/flight/flight-state-machine";
+
+const lastTransitionMap = new Map<string, { state: string; event: string; at: number }>();
+const DUPLICATE_GUARD_MS = 200;
+
+export function safeTransition<S extends string, E extends string>(
+  machine: Machine<S, E>,
+  flowId: string,
+  current: S,
+  event: E,
+): { next: S | null; blocked: boolean; reason?: string } {
+  const now = Date.now();
+  const last = lastTransitionMap.get(flowId);
+  if (last && last.state === current && last.event === event && now - last.at < DUPLICATE_GUARD_MS) {
+    return { next: null, blocked: true, reason: "duplicate_event" };
+  }
+
+  const next = machine[current]?.[event] ?? null;
+  if (next === null) {
+    return { next: null, blocked: true, reason: "forbidden_transition" };
+  }
+
+  lastTransitionMap.set(flowId, { state: current, event, at: now });
+
+  if (lastTransitionMap.size > 500) {
+    const cutoff = now - 60_000;
+    for (const [k, v] of lastTransitionMap) {
+      if (v.at < cutoff) lastTransitionMap.delete(k);
+    }
+    if (lastTransitionMap.size > 500) {
+      const entries = [...lastTransitionMap.entries()].sort((a, b) => a[1].at - b[1].at);
+      const toRemove = entries.slice(0, entries.length - 250);
+      for (const [k] of toRemove) lastTransitionMap.delete(k);
+    }
+  }
+
+  return { next, blocked: false };
+}
+
+const TERMINAL_STATES: Record<string, Set<string>> = {
+  payment: new Set(["failed", "refunded", "cancelled"]),
+  order: new Set(["delivered", "cancelled", "failed"]),
+  driver: new Set([]),
+  message: new Set(["read"]),
+  call: new Set(["ended", "missed", "declined"]),
+  upload: new Set(["completed", "cancelled"]),
+  notification: new Set(["read", "dismissed"]),
+};
+
+export function isTerminal(machineType: string, state: string): boolean {
+  return TERMINAL_STATES[machineType]?.has(state) ?? false;
+}
+
+export function getValidEventsForState<S extends string, E extends string>(
+  machine: Machine<S, E>,
+  state: S,
+): E[] {
+  const transitions = machine[state];
+  if (!transitions) return [];
+  return Object.keys(transitions) as E[];
+}

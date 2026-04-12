@@ -991,6 +991,15 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
   - Merges in-memory + DB violations (deduped by ID, sorted by detectedAt)
   - Auto-refreshes every 10 seconds
 
+### Phase 5: Runtime Excellence + Zero-Conflict Automation (COMPLETE)
+- **Runtime Safety Layer** (`src/lib/runtime/runtime-safety.ts`): Centralized coordination — sweep lock, cooldown (5s), circuit breaker (3 fails → 60s open), loop detector (10/30s), singleton registry, event dedup (500ms), bounded retry, flow timeouts, convergence proof runner
+- **Engine Execution Hardening**: `execution-orchestrator.ts` wired with acquireSweepLock/releaseSweepLock, shouldSkipIncrementalSweep gates both scheduled + CronOrchestrator paths, performance timing
+- **Non-Blocking Guarantees**: All surface-protector + story-taxonomy + search-index-populator methods wrapped in try/catch → fallback show all (never crash user flow)
+- **Event Bus Discipline**: Bounded fan-out (MAX_LISTENERS_PER_EVENT=50, MAX_GLOBAL_LISTENERS=30), correlationId on PlatformEvent, __bridged loop prevention, listener stats via getListenerStats()
+- **State Machine Hardening**: `safeTransition()` with duplicate event guard (200ms), `isTerminal()`, `getValidEventsForState()` in `state-machines.ts`
+- **Admin Runtime Tab**: 9 metric cards + 14 zero-conflict guarantee checkmarks + 10-row automation conflict matrix + convergence proof test runner
+- **Proof Report**: `docs/PHASE5-RUNTIME-EXCELLENCE-PROOF.md`
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`

@@ -14,34 +14,50 @@ export function filterForSurface<T extends { id: string }>(
   entities: T[],
   options: SurfaceFilterOptions
 ): T[] {
-  return entities.filter((entity) => {
-    if (isQuarantined(entity.id)) return false;
-    if (isSuppressedFromSurface(entity.id)) return false;
-    return shouldShowOnSurface(entity.id, options.surface);
-  });
+  try {
+    return entities.filter((entity) => {
+      if (isQuarantined(entity.id)) return false;
+      if (isSuppressedFromSurface(entity.id)) return false;
+      return shouldShowOnSurface(entity.id, options.surface);
+    });
+  } catch {
+    return entities;
+  }
 }
 
 export function filterForSearch<T extends { id: string }>(entities: T[]): T[] {
-  return entities.filter((entity) => {
-    if (isQuarantined(entity.id)) return false;
-    if (isSearchExcluded(entity.id)) return false;
-    return true;
-  });
+  try {
+    return entities.filter((entity) => {
+      if (isQuarantined(entity.id)) return false;
+      if (isSearchExcluded(entity.id)) return false;
+      return true;
+    });
+  } catch {
+    return entities;
+  }
 }
 
 export function getSearchRankingPenalty(entityId: string): number {
-  if (isSearchDowngraded(entityId)) return 0.5;
-  const score = getEntityQualityScore(entityId);
-  if (score < 50) return 0.3;
-  if (score < 70) return 0.7;
-  return 1.0;
+  try {
+    if (isSearchDowngraded(entityId)) return 0.5;
+    const score = getEntityQualityScore(entityId);
+    if (score < 50) return 0.3;
+    if (score < 70) return 0.7;
+    return 1.0;
+  } catch {
+    return 1.0;
+  }
 }
 
 export function isEntitySafeForDisplay(entityId: string): boolean {
-  if (isQuarantined(entityId)) return false;
-  if (isSuppressedFromSurface(entityId)) return false;
-  const trust = getEntityTrustLevel(entityId);
-  return trust !== "quarantined" && trust !== "untrusted";
+  try {
+    if (isQuarantined(entityId)) return false;
+    if (isSuppressedFromSurface(entityId)) return false;
+    const trust = getEntityTrustLevel(entityId);
+    return trust !== "quarantined" && trust !== "untrusted";
+  } catch {
+    return true;
+  }
 }
 
 export function getEntityDisplayStatus(entityId: string): {
@@ -52,12 +68,23 @@ export function getEntityDisplayStatus(entityId: string): {
   qualityScore: number;
   trustLevel: string;
 } {
-  return {
-    safe: isEntitySafeForDisplay(entityId),
-    quarantined: isQuarantined(entityId),
-    suppressed: isSuppressedFromSurface(entityId),
-    searchExcluded: isSearchExcluded(entityId),
-    qualityScore: getEntityQualityScore(entityId),
-    trustLevel: getEntityTrustLevel(entityId),
-  };
+  try {
+    return {
+      safe: isEntitySafeForDisplay(entityId),
+      quarantined: isQuarantined(entityId),
+      suppressed: isSuppressedFromSurface(entityId),
+      searchExcluded: isSearchExcluded(entityId),
+      qualityScore: getEntityQualityScore(entityId),
+      trustLevel: getEntityTrustLevel(entityId),
+    };
+  } catch {
+    return {
+      safe: true,
+      quarantined: false,
+      suppressed: false,
+      searchExcluded: false,
+      qualityScore: 100,
+      trustLevel: "unknown",
+    };
+  }
 }

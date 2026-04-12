@@ -7,6 +7,11 @@ import { rebuildSearchIndex } from "@/lib/intent/search-index-populator";
 import { resetSurfaceSuppressions } from "./engines/live-surface-sanitizer-engine";
 import { resetSearchState } from "./engines/search-hygiene-engine";
 import {
+  acquireSweepLock,
+  releaseSweepLock,
+  shouldSkipIncrementalSweep,
+} from "@/lib/runtime/runtime-safety";
+import {
   TaxonomyIntegrityEngine,
   MediaRelevanceEngine,
   DuplicateShadowEngine,
@@ -45,54 +50,71 @@ function ensureEnginesRegistered(): void {
 export function runOrchestrated(mode: ExecutionMode, cadence: SweepCadence = "manual"): FullAuditReport {
   ensureEnginesRegistered();
 
-  if (mode === "FULL_SWEEP" || mode === "DRY_RUN") {
-    clearQuarantine();
-    resetSurfaceSuppressions();
-    resetSearchState();
-    for (const engine of engineRegistry.getAll()) {
-      engine.resetFindingDedup();
+  if (!acquireSweepLock()) {
+    if (import.meta.env.DEV) {
+      console.warn(`[data-quality] Sweep blocked (lock/cooldown/circuit) — mode=${mode} cadence=${cadence}`);
     }
+    if (cachedReport) return cachedReport;
+    return generateFullReport([], [], buildSourceInventory());
   }
 
-  const engineLogs = engineRegistry.runAll(mode, cadence);
+  const startMs = performance.now();
+  let success = false;
 
-  const sources = buildSourceInventory();
-  const allFindings = engineRegistry.getAllFindings();
-  const allRemediations = engineRegistry.getAllRemediations();
-
-  const report = generateFullReport(allFindings, allRemediations, sources);
-  report.engineRuns = engineLogs;
-  report.summary.executionMode = mode;
-  report.summary.engineRunSummaries = engineRegistry.getSummaries();
-
-  cachedReport = report;
-
-  if (cadence === "scheduled" || cadence === "manual") {
-    lastFullSweep = new Date().toISOString();
-  } else {
-    lastIncrementalSweep = new Date().toISOString();
-  }
-
-  sweepCount++;
-
-  if (mode !== "DRY_RUN" && getQuarantineCount() > 0) {
-    try {
-      rebuildSearchIndex();
-    } catch {
+  try {
+    if (mode === "FULL_SWEEP" || mode === "DRY_RUN") {
+      clearQuarantine();
+      resetSurfaceSuppressions();
+      resetSearchState();
+      for (const engine of engineRegistry.getAll()) {
+        engine.resetFindingDedup();
+      }
     }
-  }
 
-  if (import.meta.env.DEV) {
-    const s = report.summary;
-    console.log(
-      `[data-quality] Engine sweep #${sweepCount} (${mode}/${cadence}) — ` +
-      `${s.totalEntities} entities, ${s.byClassification["VALID"] ?? 0} valid, ` +
-      `${s.quarantined} quarantined, ${s.autoFixed} auto-fixed, ` +
-      `${engineLogs.length} engines ran`
-    );
-  }
+    const engineLogs = engineRegistry.runAll(mode, cadence);
 
-  return report;
+    const sources = buildSourceInventory();
+    const allFindings = engineRegistry.getAllFindings();
+    const allRemediations = engineRegistry.getAllRemediations();
+
+    const report = generateFullReport(allFindings, allRemediations, sources);
+    report.engineRuns = engineLogs;
+    report.summary.executionMode = mode;
+    report.summary.engineRunSummaries = engineRegistry.getSummaries();
+
+    cachedReport = report;
+
+    if (cadence === "scheduled" || cadence === "manual") {
+      lastFullSweep = new Date().toISOString();
+    } else {
+      lastIncrementalSweep = new Date().toISOString();
+    }
+
+    sweepCount++;
+    success = true;
+
+    if (mode !== "DRY_RUN" && getQuarantineCount() > 0) {
+      try {
+        rebuildSearchIndex();
+      } catch {}
+    }
+
+    if (import.meta.env.DEV) {
+      const s = report.summary;
+      const durationMs = Math.round(performance.now() - startMs);
+      console.log(
+        `[data-quality] Engine sweep #${sweepCount} (${mode}/${cadence}) — ` +
+        `${s.totalEntities} entities, ${s.byClassification["VALID"] ?? 0} valid, ` +
+        `${s.quarantined} quarantined, ${s.autoFixed} auto-fixed, ` +
+        `${engineLogs.length} engines ran (${durationMs}ms)`
+      );
+    }
+
+    return report;
+  } finally {
+    const durationMs = Math.round(performance.now() - startMs);
+    releaseSweepLock(cachedReport, durationMs, success);
+  }
 }
 
 export function runDryScan(): FullAuditReport {
@@ -100,6 +122,13 @@ export function runDryScan(): FullAuditReport {
 }
 
 export function runIncrementalSweep(): FullAuditReport {
+  if (shouldSkipIncrementalSweep()) {
+    if (import.meta.env.DEV) {
+      console.debug("[data-quality] Incremental sweep skipped (cooldown/in-progress/circuit)");
+    }
+    if (cachedReport) return cachedReport;
+    return generateFullReport([], [], buildSourceInventory());
+  }
   return runOrchestrated("INCREMENTAL", "incremental");
 }
 
@@ -116,6 +145,12 @@ export function startScheduledSweeps(intervalMinutes: number = 10): void {
 
   scheduledInterval = setInterval(() => {
     try {
+      if (shouldSkipIncrementalSweep()) {
+        if (import.meta.env.DEV) {
+          console.debug("[data-quality] Scheduled sweep skipped (safety check)");
+        }
+        return;
+      }
       runOrchestrated("SAFE_AUTO", "scheduled");
     } catch (err) {
       if (import.meta.env.DEV) {
