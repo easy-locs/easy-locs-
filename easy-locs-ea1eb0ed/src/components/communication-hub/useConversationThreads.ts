@@ -153,9 +153,6 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
   useEffect(() => {
     if (!userId) return;
 
-    const unsubMessage = platformBus.on("orbit:message_received", () => debouncedReload());
-    const unsubMessageSent = platformBus.on("orbit:message_sent", () => debouncedReload());
-    const unsubThread = platformBus.on("orbit:thread_created", () => debouncedReload());
     const unsubThreadUpdate = platformBus.on("orbit:thread_updated", () => debouncedReload());
 
     const channel = createRealtimeChannel("hub-live");
@@ -184,9 +181,6 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
       });
 
     return () => {
-      unsubMessage();
-      unsubMessageSent();
-      unsubThread();
       unsubThreadUpdate();
       if (debounceRef.current) clearTimeout(debounceRef.current);
       removeRealtimeChannel(channel);

@@ -22,7 +22,7 @@ export type { OrbitModuleState } from "./store-types";
 const moduleTimers: Partial<Record<OrbitModule, ReturnType<typeof setTimeout>>> = {};
 
 /** Staleness threshold: skip refresh if module was refreshed < N ms ago */
-const STALE_THRESHOLD_MS = 5_000;
+const STALE_THRESHOLD_MS = 10_000;
 
 export const useOrbitEngine = create<OrbitModuleState>((set, get) => ({
   unreadMessages: 0,

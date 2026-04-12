@@ -482,15 +482,14 @@ export function installPlatformReactions(): () => void {
   };
 
   // ── Wallet events → refresh wallet module only ──
+  // NOTE: Only colon-notation prefix. Dot-notation events are bridged to colon by the notation bridge below.
   unsubs.push(
-    platformBus.onPrefix("wallet:", () => refreshModule("wallet")),
-    platformBus.onPrefix("wallet.", () => refreshModule("wallet"))
+    platformBus.onPrefix("wallet:", () => refreshModule("wallet"))
   );
 
   // ── Marketplace events → refresh business module ──
   unsubs.push(
-    platformBus.onPrefix("marketplace:", () => refreshModule("business")),
-    platformBus.onPrefix("marketplace.", () => refreshModule("business"))
+    platformBus.onPrefix("marketplace:", () => refreshModule("business"))
   );
 
   // ── PM events → refresh business module ──
@@ -510,30 +509,24 @@ export function installPlatformReactions(): () => void {
 
   // ── Orbit communication events → refresh communication module ──
   unsubs.push(
-    platformBus.onPrefix("orbit:", () => refreshModule("communication")),
-    platformBus.onPrefix("orbit.", () => refreshModule("communication"))
+    platformBus.onPrefix("orbit:", () => refreshModule("communication"))
   );
 
   // ── Booking events → refresh business module ──
+  // Bridge converts booking.* dot-notation to marketplace:booking_* colon, caught by marketplace: prefix above.
   unsubs.push(
-    platformBus.onPrefix("booking.", () => refreshModule("business"))
+    platformBus.onPrefix("booking:", () => refreshModule("business"))
   );
 
   // ── Radar events → refresh business module ──
   unsubs.push(
-    platformBus.onPrefix("radar.", () => refreshModule("business"))
+    platformBus.onPrefix("radar:", () => refreshModule("business"))
   );
 
-  // ── Dashboard refresh events → wallet + business + communication ──
+  // ── Dashboard refresh events → business only (wallet/communication refreshed by their own prefix listeners) ──
   unsubs.push(
-    platformBus.onPrefix("dashboard.", () => {
-      refreshModule("business");
-      refreshModule("wallet");
-      refreshModule("communication");
-    })
+    platformBus.onPrefix("dashboard:", () => refreshModule("business"))
   );
-
-  // (tracking:completed and tracking:started now handled by tracking: prefix below)
 
   // ── Storefront events → refresh business module ──
   unsubs.push(
@@ -552,12 +545,12 @@ export function installPlatformReactions(): () => void {
 
   // ── Listing events → refresh business module ──
   unsubs.push(
-    platformBus.onPrefix("listing.", () => refreshModule("business"))
+    platformBus.onPrefix("listing:", () => refreshModule("business"))
   );
 
   // ── Rent/PM payment events → refresh wallet + business ──
   unsubs.push(
-    platformBus.onPrefix("rent.", () => {
+    platformBus.onPrefix("rent:", () => {
       refreshModule("wallet");
       refreshModule("business");
     })
@@ -575,9 +568,9 @@ export function installPlatformReactions(): () => void {
     })
   );
 
-  // ── TRANSITION BRIDGE: dot ↔ colon notation ──
-  // Maps dot-notation events to colon equivalents and vice versa.
-  // Uses a single __bridged flag to prevent loops (dot→colon→STOP).
+  // ── TRANSITION BRIDGE: dot → colon notation (one-way) ──
+  // Maps dot-notation events to colon equivalents.
+  // One-way only: dot→colon. Colon events are NOT re-emitted as dot (prevents double-fire).
   const NOTATION_BRIDGE: Record<string, string> = {
     "dashboard.refresh": "dashboard:refresh",
     "dashboard.counters.refresh": "dashboard:counters_refresh",
@@ -598,25 +591,23 @@ export function installPlatformReactions(): () => void {
     "marketplace.contact.opened": "marketplace:contact_opened",
     "wallet.top_up": "wallet:top_up",
     "property.unit.created": "property:unit_created",
+    "listing.created": "listing:created",
+    "listing.updated": "listing:updated",
+    "listing.published": "listing:published",
+    "rent.payment.created": "rent:payment_created",
+    "rent.payment.required": "rent:payment_required",
+    "rent.payment.paid": "rent:payment_paid",
+    "rent.paid": "rent:paid",
+    "rent.partial_payment": "rent:partial_payment",
   };
-
-  const REVERSE_BRIDGE: Record<string, string> = {};
-  for (const [dot, colon] of Object.entries(NOTATION_BRIDGE)) {
-    REVERSE_BRIDGE[colon] = dot;
-  }
 
   unsubs.push(
     platformBus.onAll((event) => {
       if ((event.payload as Record<string, unknown>)?.__bridged) return;
-      const bridgedPayload = { ...(typeof event.payload === "object" && event.payload ? event.payload : {}), __bridged: true };
       const colon = NOTATION_BRIDGE[event.type];
       if (colon) {
+        const bridgedPayload = { ...(typeof event.payload === "object" && event.payload ? event.payload : {}), __bridged: true };
         platformBus.emit(colon as PlatformEventType, bridgedPayload, event.source);
-        return;
-      }
-      const dot = REVERSE_BRIDGE[event.type];
-      if (dot) {
-        platformBus.emit(dot as PlatformEventType, bridgedPayload, event.source);
       }
     })
   );
