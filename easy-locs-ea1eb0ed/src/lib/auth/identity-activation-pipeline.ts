@@ -63,11 +63,16 @@ export async function runIdentityActivation(input: ActivationInput): Promise<Act
 
     if (isNewUser) {
       await db
-        .from("orbit_profiles_v2")
+        .from("profiles")
         .update({
           phone: normalized,
-          phone_verified: true,
-          verification_level: "phone_verified",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", userId);
+      await db
+        .from("orbit_profiles_v2")
+        .update({
+          verification_level: 1,
           updated_at: new Date().toISOString(),
         })
         .eq("id", userId);
@@ -75,7 +80,7 @@ export async function runIdentityActivation(input: ActivationInput): Promise<Act
       await db
         .from("orbit_profiles_v2")
         .update({
-          phone_verified: true,
+          verification_level: 1,
           updated_at: new Date().toISOString(),
         })
         .eq("id", userId);
@@ -178,7 +183,7 @@ export async function checkPhoneAvailability(phone: string): Promise<{
 }> {
   const normalized = normalizePhone(phone);
   const { data } = await db
-    .from("orbit_profiles_v2")
+    .from("profiles")
     .select("id")
     .eq("phone", normalized)
     .maybeSingle();

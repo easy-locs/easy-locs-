@@ -63,8 +63,8 @@ export async function guardWalletReady(userId: string): Promise<WalletGuardResul
   const result: WalletGuardResult = {
     valid: true,
     walletId: data.id,
-    balance: bal?.available ?? 0,
-    currency: data.currency ?? WALLET_FALLBACK_CURRENCY,
+    balance: bal?.available_balance ?? bal?.balance ?? 0,
+    currency: bal?.currency ?? data.currency ?? WALLET_FALLBACK_CURRENCY,
   };
 
   trace("guard.ready", "output", { ...result });

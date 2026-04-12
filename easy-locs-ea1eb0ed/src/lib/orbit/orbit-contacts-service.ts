@@ -14,12 +14,16 @@ export async function resolveUserByEmail(email: string): Promise<{ userId: strin
 export async function resolveUserByPhone(phone: string): Promise<{ userId: string; orbitId: string | null; avatarUrl: string | null } | null> {
   if (!phone) return null;
   const cleaned = phone.replace(/[\s\-\(\)]/g, "");
-  const { data } = await db("orbit_profiles_v2")
-    .select("id, orbit_id, avatar_url")
+  const { data: profileRow } = await db("profiles")
+    .select("id")
     .eq("phone", cleaned)
+    .maybeSingle() as unknown as { data: { id: string } | null };
+  if (!profileRow?.id) return null;
+  const { data: orbitRow } = await db("orbit_profiles_v2")
+    .select("id, orbit_id, avatar_url")
+    .eq("id", profileRow.id)
     .maybeSingle() as unknown as { data: { id: string; orbit_id: string | null; avatar_url: string | null } | null };
-  if (data?.id) return { userId: data.id, orbitId: data.orbit_id ?? null, avatarUrl: data.avatar_url ?? null };
-  return null;
+  return { userId: profileRow.id, orbitId: orbitRow?.orbit_id ?? null, avatarUrl: orbitRow?.avatar_url ?? null };
 }
 
 export async function linkContactToUser(contactId: string, userId: string, orbitId: string | null, avatarUrl: string | null) {

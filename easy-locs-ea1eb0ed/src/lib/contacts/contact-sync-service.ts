@@ -45,15 +45,29 @@ export async function syncPhoneContacts(
     const batchSize = 100;
     for (let i = 0; i < phoneList.length; i += batchSize) {
       const batch = phoneList.slice(i, i + batchSize);
-      const { data } = await db
-        .from("orbit_profiles_v2")
-        .select("id, phone, orbit_id, avatar_url, display_name")
+      const { data: profileRows } = await db
+        .from("profiles")
+        .select("id, phone")
         .in("phone", batch);
 
-      if (data) {
-        for (const user of data) {
-          if (user.phone) {
-            platformUsers.set(normalizePhone(user.phone), user as any);
+      if (profileRows?.length) {
+        const profileIds = profileRows.map((p: any) => p.id);
+        const { data: orbitRows } = await db
+          .from("orbit_profiles_v2")
+          .select("id, orbit_id, avatar_url, display_name")
+          .in("id", profileIds);
+
+        const orbitMap = new Map((orbitRows ?? []).map((o: any) => [o.id, o]));
+        for (const prof of profileRows) {
+          if (prof.phone) {
+            const orbit = orbitMap.get(prof.id);
+            platformUsers.set(normalizePhone(prof.phone), {
+              id: prof.id,
+              phone: prof.phone,
+              orbit_id: orbit?.orbit_id ?? null,
+              avatar_url: orbit?.avatar_url ?? null,
+              display_name: orbit?.display_name ?? null,
+            } as any);
           }
         }
       }
@@ -130,11 +144,25 @@ export async function discoverPlatformContacts(
 
   if (!phones.length) return [];
 
-  const { data: users } = await db
-    .from("orbit_profiles_v2")
-    .select("id, phone, orbit_id, avatar_url, display_name")
+  const { data: profileRows } = await db
+    .from("profiles")
+    .select("id, phone")
     .in("phone", phones)
     .neq("id", ownerUserId);
+
+  const profileIds = (profileRows ?? []).map((p: any) => p.id);
+  const { data: orbitRows } = profileIds.length > 0
+    ? await db.from("orbit_profiles_v2").select("id, orbit_id, avatar_url, display_name").in("id", profileIds)
+    : { data: [] as any[] };
+
+  const orbitMap = new Map((orbitRows ?? []).map((o: any) => [o.id, o]));
+  const users = (profileRows ?? []).map((p: any) => ({
+    id: p.id,
+    phone: p.phone,
+    orbit_id: orbitMap.get(p.id)?.orbit_id ?? null,
+    avatar_url: orbitMap.get(p.id)?.avatar_url ?? null,
+    display_name: orbitMap.get(p.id)?.display_name ?? null,
+  }));
 
   if (!users?.length) return [];
 
