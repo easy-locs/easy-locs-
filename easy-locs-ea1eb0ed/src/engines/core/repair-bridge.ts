@@ -95,11 +95,11 @@ async function flushBuffer(sweepId: string): Promise<void> {
     const result = await executePipeline(input);
 
     if (import.meta.env.DEV) {
+      const proofs = getProofsByDomain("taxonomy");
+      const stats = getProofStats();
       console.log(
         `[repair-bridge] Pipeline ${result.outcome}: proofId=${result.proofId} duration=${result.durationMs}ms rolledBack=${result.rolledBack} stageCount=${result.stageCount}`,
       );
-      const proofs = getProofsByDomain("taxonomy");
-      const stats = getProofStats();
       console.log(`[repair-bridge] Proof records: ${proofs.length} taxonomy proofs`, stats);
       if (proofs.length > 0) {
         const latest = proofs[proofs.length - 1];
@@ -116,10 +116,46 @@ async function flushBuffer(sweepId: string): Promise<void> {
           rolledBack: latest.rolledBack,
         });
       }
+      try {
+        const diagPayload = JSON.stringify({
+          ts: Date.now(),
+          outcome: result.outcome,
+          proofId: result.proofId,
+          durationMs: result.durationMs,
+          rolledBack: result.rolledBack,
+          stageCount: result.stageCount,
+          totalProofs: proofs.length,
+          stats,
+          proofs: proofs.map(p => ({
+            id: p.id,
+            outcome: p.outcome,
+            durationMs: p.durationMs,
+            rolledBack: p.rolledBack,
+            domain: p.domain,
+            engineId: p.engineId,
+            repairLevel: p.repairLevel,
+            stages: p.stages.map(s => ({ stage: s.stage, result: s.result })),
+            quarantineTriggered: !!p.quarantineTriggered,
+            safetyAbort: !!p.safetyAbort,
+            mutationChanged: p.mutation ? p.mutation.beforeState !== p.mutation.afterState : null,
+            mutationBeforeLen: p.mutation?.beforeState?.length ?? null,
+            mutationAfterLen: p.mutation?.afterState?.length ?? null,
+          })),
+          bridge: getRepairBridgeReport(),
+        });
+        localStorage.setItem("__repair_diag", diagPayload);
+        fetch("/__repair_diag_write", { method: "POST", body: diagPayload }).catch(() => {});
+      } catch {}
     }
   } catch (err) {
     if (import.meta.env.DEV) {
       console.warn("[repair-bridge] Pipeline execution error:", err);
+      try {
+        fetch("/__repair_diag_write", {
+          method: "POST",
+          body: JSON.stringify({ ts: Date.now(), error: String(err), bridge: getRepairBridgeReport() }),
+        }).catch(() => {});
+      } catch {}
     }
   } finally {
     disablePipeline();

@@ -1,9 +1,35 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import fs from "fs";
 import { componentTagger } from "lovable-tagger";
 import { sitemapPlugin } from "./vite-plugin-sitemap";
 import { VitePWA } from "vite-plugin-pwa";
+
+function repairDiagPlugin() {
+  return {
+    name: "repair-diag",
+    configureServer(server: any) {
+      server.middlewares.use("/__repair_diag_write", (req: any, res: any) => {
+        if (req.method === "POST") {
+          let body = "";
+          req.on("data", (c: string) => { body += c; });
+          req.on("end", () => {
+            try { fs.writeFileSync("/tmp/repair-diag.json", body); } catch {}
+            res.writeHead(200); res.end("ok");
+          });
+          return;
+        }
+        try {
+          const data = fs.readFileSync("/tmp/repair-diag.json", "utf-8");
+          res.writeHead(200, { "Content-Type": "application/json" }); res.end(data);
+        } catch {
+          res.writeHead(404); res.end("no data");
+        }
+      });
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -21,6 +47,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
+    mode === "development" && repairDiagPlugin(),
     sitemapPlugin(),
     VitePWA({ disable: true }),
   ].filter(Boolean),
