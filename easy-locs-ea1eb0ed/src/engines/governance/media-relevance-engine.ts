@@ -1,9 +1,9 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
-import type {
-  CanonicalMediaEntity,
-  CanonicalVertical,
-  GovernanceViolation,
-  MediaValidationStatus,
+import {
+  toViolationVertical,
+  type CanonicalMediaEntity,
+  type GovernanceViolation,
+  type MediaValidationStatus,
 } from "@/domains/shared/canonical-types";
 import { validateTaxonomy } from "./taxonomy-governance-engine";
 
@@ -158,7 +158,7 @@ function createViolation(
     target: `validation`,
     message,
     ownerDomain: media.vertical ?? "platform",
-    vertical: (media.vertical as CanonicalVertical) ?? "platform",
+    vertical: toViolationVertical(media.vertical),
     detectedAt: new Date().toISOString(),
     resolvedAt: null,
     autoRemediated: false,

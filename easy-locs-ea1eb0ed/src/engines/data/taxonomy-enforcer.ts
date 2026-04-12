@@ -1,9 +1,7 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
+import { CANONICAL_VERTICALS as CV_ARRAY, isCanonicalVertical } from "@/domains/shared/canonical-types";
 
-const CANONICAL_VERTICALS = new Set([
-  "food", "grocery", "services", "beauty", "health", "fitness",
-  "hotel", "property", "travel", "coffee", "shops",
-]);
+const CANONICAL_VERTICALS = new Set(CV_ARRAY);
 
 export class TaxonomyEnforcer extends BaseEngine {
   static readonly RUNTIME_CLASS = "browser-monitor";

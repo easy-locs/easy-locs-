@@ -1,9 +1,9 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
-import type {
-  CanonicalFlowDescriptor,
-  CanonicalVertical,
-  FlowState,
-  GovernanceViolation,
+import {
+  toViolationVertical,
+  type CanonicalFlowDescriptor,
+  type FlowState,
+  type GovernanceViolation,
 } from "@/domains/shared/canonical-types";
 import { platformBus } from "@/lib/shared/platform-bus";
 
@@ -49,7 +49,7 @@ export function updateFlowState(flowId: string, state: FlowState): void {
       target: flow.ownerDomain,
       message: `Flow "${flowId}" entered ${state} state`,
       ownerDomain: flow.ownerDomain,
-      vertical: flow.ownerVertical as CanonicalVertical,
+      vertical: toViolationVertical(flow.ownerVertical),
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,

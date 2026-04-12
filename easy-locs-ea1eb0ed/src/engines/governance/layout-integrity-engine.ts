@@ -1,7 +1,6 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
 import type {
   GovernanceViolation,
-  CanonicalVertical,
   PageFamily,
 } from "@/domains/shared/canonical-types";
 
@@ -133,7 +132,7 @@ export function reportLayoutIssue(issue: LayoutIssue): GovernanceViolation {
     target: issue.pageFamily ?? "unknown",
     message: `[${issue.type}] ${issue.message}`,
     ownerDomain: "platform",
-    vertical: "platform" as unknown as CanonicalVertical,
+    vertical: "platform",
     detectedAt: new Date().toISOString(),
     resolvedAt: null,
     autoRemediated: false,

@@ -5,7 +5,6 @@ import type {
   CanonicalCurrencyContext,
   CurrencyCode,
   GovernanceViolation,
-  CanonicalVertical,
 } from "@/domains/shared/canonical-types";
 
 const countryRegistry = new Map<string, CanonicalCountryContext>();
@@ -93,7 +92,7 @@ export function validateLocalization(
       target: `country:${countryCode}`,
       message: `Locale "${locale}" not supported in ${country.countryName}`,
       ownerDomain: "platform",
-      vertical: "platform" as unknown as CanonicalVertical,
+      vertical: "platform",
       detectedAt: new Date().toISOString(),
       resolvedAt: null,
       autoRemediated: false,

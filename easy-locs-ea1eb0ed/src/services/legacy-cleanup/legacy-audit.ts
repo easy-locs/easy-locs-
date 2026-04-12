@@ -13,7 +13,7 @@ import type {
   LegacyAuditResult,
   EntityLifecycleStatus,
 } from "@/domains/content-pipeline/types";
-import type { CanonicalVertical } from "@/lib/taxonomy/canonical-registry";
+import { isCanonicalVertical, type CanonicalVertical } from "@/domains/shared/canonical-types";
 
 export interface LegacyEntity {
   id: string;
@@ -81,7 +81,7 @@ export function auditLegacyEntity(
       const mediaResult = validateMediaForEntity(
         { url },
         entity.name,
-        mappingResult.vertical as CanonicalVertical,
+        isCanonicalVertical(mappingResult.vertical) ? mappingResult.vertical : "food",
         mappingResult.canonicalType,
       );
 

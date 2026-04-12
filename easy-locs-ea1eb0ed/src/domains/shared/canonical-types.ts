@@ -142,6 +142,65 @@ export interface CanonicalAddress {
   placeId: string | null;
 }
 
+export type GeoResolutionConfidence = "high" | "medium" | "low" | "unresolved";
+
+export interface GeoContext {
+  countryCode: string;
+  countryName: string;
+  regionCode: string | null;
+  regionName: string | null;
+  cityId: string | null;
+  cityName: string | null;
+  districtId: string | null;
+  districtName: string | null;
+  postalCode: string | null;
+  coordinates: CanonicalGeoPosition | null;
+  radiusKm: number;
+  timezone: string;
+  writingDirection: "ltr" | "rtl";
+  unitSystem: "metric" | "imperial";
+  calendarType: "gregorian" | "hijri" | "both";
+  defaultLocale: string;
+  defaultCurrency: CurrencyCode;
+  confidence: GeoResolutionConfidence;
+  resolvedAt: string;
+  source: "gps" | "ip" | "address" | "manual" | "fallback";
+}
+
+export interface GeoContextUnresolved {
+  countryCode: null;
+  countryName: null;
+  regionCode: null;
+  regionName: null;
+  cityId: null;
+  cityName: null;
+  districtId: null;
+  districtName: null;
+  postalCode: null;
+  coordinates: CanonicalGeoPosition | null;
+  radiusKm: null;
+  timezone: null;
+  writingDirection: null;
+  unitSystem: null;
+  calendarType: null;
+  defaultLocale: null;
+  defaultCurrency: null;
+  confidence: "unresolved";
+  resolvedAt: string;
+  source: "gps" | "ip" | "address" | "manual" | "fallback";
+  failureReason: string;
+}
+
+export type ResolvedGeoContext = GeoContext | GeoContextUnresolved;
+
+export interface GeoHierarchyLevel {
+  level: "country" | "region" | "city" | "district" | "postal";
+  code: string;
+  name: string;
+  parentCode: string | null;
+  metadata: Record<string, unknown>;
+}
+
 export interface CanonicalRadarEntity {
   id: string;
   type: string;
@@ -769,27 +828,38 @@ export interface IdempotencyHeader {
 // CANONICAL VERTICAL — Closed set of verticals
 // ══════════════════════════════════════════════════
 
-export type CanonicalVertical =
-  | "food"
-  | "grocery"
-  | "hotel"
-  | "service"
-  | "services"
-  | "property"
-  | "flight"
-  | "ride"
-  | "delivery"
-  | "retail"
-  | "shops"
-  | "healthcare"
-  | "events"
-  | "experiences"
-  | "education"
-  | "beauty"
-  | "mobility"
-  | "stay"
-  | "utility"
-  | "finance";
+export const CANONICAL_VERTICALS = [
+  "food",
+  "grocery",
+  "hotel",
+  "service",
+  "services",
+  "property",
+  "flight",
+  "ride",
+  "delivery",
+  "retail",
+  "shops",
+  "healthcare",
+  "events",
+  "experiences",
+  "education",
+  "beauty",
+  "mobility",
+  "stay",
+  "utility",
+  "finance",
+] as const;
+
+export type CanonicalVertical = (typeof CANONICAL_VERTICALS)[number];
+
+export function isCanonicalVertical(v: string | undefined | null): v is CanonicalVertical {
+  return typeof v === "string" && (CANONICAL_VERTICALS as readonly string[]).includes(v);
+}
+
+export function toViolationVertical(v: string | undefined | null): CanonicalVertical | "platform" {
+  return isCanonicalVertical(v) ? v : "platform";
+}
 
 // ══════════════════════════════════════════════════
 // PER-VERTICAL CANONICAL ENTITIES — Phase 1
@@ -1003,6 +1073,283 @@ export interface CanonicalDeliveryEntity {
   scheduledPickupAt: string | null;
   specialInstructions: string | null;
   requiresSignature: boolean;
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalGroceryEntity {
+  id: string;
+  vertical: "grocery";
+  providerId: string;
+  providerName: string;
+  category: string;
+  subcategory: string;
+  storeType: "supermarket" | "mini_mart" | "organic" | "wholesale" | "hypermarket";
+  departments: string[];
+  deliveryAvailable: boolean;
+  deliveryFee: number;
+  minimumOrder: number | null;
+  currency: CurrencyCode;
+  rating: number | null;
+  reviewCount: number;
+  isOpen: boolean;
+  operatingHours: Record<string, { open: string; close: string }>;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalServicesEntity {
+  id: string;
+  vertical: "services";
+  providerId: string;
+  providerName: string;
+  category: string;
+  subcategory: string;
+  serviceType: string;
+  packages: CanonicalServicePackage[];
+  qualifications: string[];
+  yearsExperience: number | null;
+  currency: CurrencyCode;
+  priceFrom: number;
+  pricingModel: "fixed" | "hourly" | "project" | "custom";
+  rating: number | null;
+  reviewCount: number;
+  availableSlots: boolean;
+  serviceArea: string[];
+  address: CanonicalAddress | null;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalRetailEntity {
+  id: string;
+  vertical: "retail";
+  providerId: string;
+  providerName: string;
+  category: string;
+  subcategory: string;
+  storeType: "fashion" | "electronics" | "jewelry" | "general" | "specialty";
+  onlineAvailable: boolean;
+  deliveryAvailable: boolean;
+  currency: CurrencyCode;
+  rating: number | null;
+  reviewCount: number;
+  isOpen: boolean;
+  operatingHours: Record<string, { open: string; close: string }>;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalShopsEntity {
+  id: string;
+  vertical: "shops";
+  providerId: string;
+  providerName: string;
+  category: string;
+  subcategory: string;
+  shopType: string;
+  currency: CurrencyCode;
+  rating: number | null;
+  reviewCount: number;
+  isOpen: boolean;
+  operatingHours: Record<string, { open: string; close: string }>;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalHealthcareEntity {
+  id: string;
+  vertical: "healthcare";
+  providerId: string;
+  providerName: string;
+  category: string;
+  subcategory: string;
+  facilityType: "hospital" | "clinic" | "dental" | "pharmacy" | "lab" | "optical" | "physiotherapy";
+  specialties: string[];
+  acceptsInsurance: boolean;
+  insuranceProviders: string[];
+  emergencyAvailable: boolean;
+  currency: CurrencyCode;
+  consultationFee: number | null;
+  rating: number | null;
+  reviewCount: number;
+  isOpen: boolean;
+  operatingHours: Record<string, { open: string; close: string }>;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalEventsEntity {
+  id: string;
+  vertical: "events";
+  organizerId: string;
+  organizerName: string;
+  title: string;
+  description: string;
+  eventType: "concert" | "conference" | "exhibition" | "sports_event" | "festival" | "workshop";
+  venue: string;
+  startAt: string;
+  endAt: string;
+  ticketPrice: number | null;
+  currency: CurrencyCode;
+  capacity: number | null;
+  ticketsAvailable: number | null;
+  ageRestriction: number | null;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalExperiencesEntity {
+  id: string;
+  vertical: "experiences";
+  providerId: string;
+  providerName: string;
+  title: string;
+  description: string;
+  experienceType: "theme_park" | "museum" | "tour" | "adventure" | "water_sports" | "desert_safari" | "cinema";
+  durationMinutes: number | null;
+  pricePerPerson: number;
+  currency: CurrencyCode;
+  groupSizeMin: number;
+  groupSizeMax: number;
+  includes: string[];
+  rating: number | null;
+  reviewCount: number;
+  address: CanonicalAddress | null;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalEducationEntity {
+  id: string;
+  vertical: "education";
+  institutionId: string;
+  institutionName: string;
+  category: string;
+  subcategory: string;
+  educationType: "school" | "university" | "tutoring" | "online_course" | "training" | "certification";
+  subjects: string[];
+  level: "primary" | "secondary" | "undergraduate" | "postgraduate" | "professional" | "all";
+  format: "in_person" | "online" | "hybrid";
+  durationWeeks: number | null;
+  currency: CurrencyCode;
+  tuitionFee: number | null;
+  rating: number | null;
+  reviewCount: number;
+  accredited: boolean;
+  address: CanonicalAddress | null;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalBeautyEntity {
+  id: string;
+  vertical: "beauty";
+  providerId: string;
+  providerName: string;
+  category: string;
+  subcategory: string;
+  beautyType: "salon" | "spa" | "barber" | "nail_salon" | "skincare" | "cosmetic";
+  services: CanonicalServicePackage[];
+  genderFocus: "male" | "female" | "unisex";
+  currency: CurrencyCode;
+  priceFrom: number;
+  rating: number | null;
+  reviewCount: number;
+  isOpen: boolean;
+  operatingHours: Record<string, { open: string; close: string }>;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalMobilityEntity {
+  id: string;
+  vertical: "mobility";
+  providerId: string;
+  providerName: string;
+  mobilityType: "taxi" | "chauffeur" | "rental" | "bus" | "metro" | "ride_hailing" | "bike_rental";
+  vehicleTypes: string[];
+  currency: CurrencyCode;
+  baseFare: number;
+  perKmRate: number;
+  surgeMultiplier: number;
+  rating: number | null;
+  reviewCount: number;
+  available: boolean;
+  serviceArea: string[];
+  position: CanonicalGeoPosition | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalStayEntity {
+  id: string;
+  vertical: "stay";
+  providerId: string;
+  providerName: string;
+  category: string;
+  subcategory: string;
+  stayType: "hotel" | "serviced_apartment" | "boutique_hotel" | "apart_hotel" | "holiday_rental" | "short_stay";
+  roomTypes: CanonicalRoomType[];
+  amenities: string[];
+  checkInTime: string;
+  checkOutTime: string;
+  cancellationPolicy: string;
+  currency: CurrencyCode;
+  pricePerNightFrom: number;
+  rating: number | null;
+  reviewCount: number;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  images: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalUtilityEntity {
+  id: string;
+  vertical: "utility";
+  providerId: string;
+  providerName: string;
+  utilityType: "atm" | "fuel" | "pharmacy" | "parking" | "ev_charger" | "post_office" | "bank";
+  brand: string | null;
+  isOpen: boolean;
+  operatingHours: Record<string, { open: string; close: string }>;
+  address: CanonicalAddress;
+  position: CanonicalGeoPosition | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface CanonicalFinanceEntity {
+  id: string;
+  vertical: "finance";
+  providerId: string;
+  providerName: string;
+  financeType: "bank" | "insurance" | "investment" | "money_transfer" | "crypto_exchange";
+  services: string[];
+  regulatedBy: string | null;
+  licenseNumber: string | null;
+  supportedCurrencies: CurrencyCode[];
+  currency: CurrencyCode;
+  rating: number | null;
+  reviewCount: number;
+  isOpen: boolean;
+  operatingHours: Record<string, { open: string; close: string }>;
+  address: CanonicalAddress | null;
+  position: CanonicalGeoPosition | null;
+  images: string[];
   metadata: Record<string, unknown>;
 }
 
@@ -1273,12 +1620,25 @@ export interface CanonicalFlowDescriptor {
 
 export type CanonicalVerticalEntity =
   | CanonicalFoodEntity
+  | CanonicalGroceryEntity
   | CanonicalHotelEntity
   | CanonicalServiceEntity
+  | CanonicalServicesEntity
   | CanonicalPropertyEntity
   | CanonicalFlightEntity
   | CanonicalRideEntity
-  | CanonicalDeliveryEntity;
+  | CanonicalDeliveryEntity
+  | CanonicalRetailEntity
+  | CanonicalShopsEntity
+  | CanonicalHealthcareEntity
+  | CanonicalEventsEntity
+  | CanonicalExperiencesEntity
+  | CanonicalEducationEntity
+  | CanonicalBeautyEntity
+  | CanonicalMobilityEntity
+  | CanonicalStayEntity
+  | CanonicalUtilityEntity
+  | CanonicalFinanceEntity;
 
 export function isVerticalEntity<V extends CanonicalVertical>(
   entity: CanonicalVerticalEntity,

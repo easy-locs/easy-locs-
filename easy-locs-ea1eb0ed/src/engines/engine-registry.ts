@@ -66,6 +66,7 @@ import { BannerStrategyEngine } from "./governance/banner-strategy-engine";
 import { LocalizationEngine } from "./governance/localization-engine";
 import { AutoRemediationEngine } from "./governance/auto-remediation-engine";
 import { AntiConflictEngine } from "./governance/anti-conflict-engine";
+import { GeoHierarchyEngine } from "./geo/geo-hierarchy-engine";
 
 let tier1Done = false;
 
@@ -140,6 +141,8 @@ export function registerAllEngines(): void {
     new LocalizationEngine(),
     new AutoRemediationEngine(),
     new AntiConflictEngine(),
+
+    new GeoHierarchyEngine(),
   ]);
 }
 
