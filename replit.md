@@ -400,6 +400,13 @@ Single entry point re-exporting all types, computation functions, country config
 ### Updated Monetization Config (`src/lib/monetization-config.ts`)
 Expanded from 8 to 21 revenue streams, 7 to 18 commission rate types, 5 to 12 display entries. Aligned with global revenue engine.
 
+## World-Scale Architecture Plan
+`WORLD_SCALE_ARCHITECTURE_PLAN.md` (1,476 lines) — Full 12-section strategic architecture plan + 3 addendums:
+- **12 Sections**: Current Reality Audit, Platform Danger Map, Dependency Graph, Safe Target Architecture, Modular Engine Blueprint, Next-Gen Differentiators, Guardrails, Phased Roadmap (0-9), Risk Matrix (11 risks), First Implementation Batch, No-Go Areas, Final Strategic Recommendation
+- **3 Addendums**: (A) Data Architecture — operational/analytical separation, CanonicalEvent schema, retention/privacy, consent boundaries, canonical IDs, data prerequisites for AI; (B) Country Rollout Framework — 5-category checklist, 4-stage activation, rollback with emergency exceptions; (C) Engine Ownership Matrix — all 6 engine families with read deps, write permissions, block/remediate capabilities, rollback switches
+- **Recommended Path**: Path D — "Smart Foundation with Strategic Differentiation" — Phases 0-5, 14-18 weeks
+- **Key Rules**: Governance engines are OBSERVATIONAL/ADVISORY only (except AutoRemediation scoped to restarts/cache). No "fallback to hardcoded" — shadow-mode comparison only. Geo Hierarchy is FOUNDATION-CRITICAL (8 downstream deps, schema must freeze before consumers wire). Country rollback: active orders complete unless legal/fraud/payment-critical emergency.
+
 ## Key Directories
 ```
 easy-locs-ea1eb0ed/
