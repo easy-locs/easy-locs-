@@ -23,7 +23,9 @@ export type ControlDomain =
   | "admin"
   | "realtime"
   | "cron"
-  | "taxonomy";
+  | "taxonomy"
+  | "intelligence"
+  | "local_commerce";
 
 export type HealthStatus = "healthy" | "degraded" | "unhealthy" | "unknown";
 

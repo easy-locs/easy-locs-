@@ -24,7 +24,14 @@ const DEFAULT_SWITCHES: { feature: string; domain: ControlDomain }[] = [
   { feature: "otp_enabled", domain: "auth" },
   { feature: "contact_sync_enabled", domain: "identity" },
   { feature: "notifications_enabled", domain: "notification" },
+  { feature: "intelligence_enabled", domain: "intelligence" },
+  { feature: "local_commerce_enabled", domain: "local_commerce" },
 ];
+
+const DISABLED_BY_DEFAULT: Set<string> = new Set([
+  "intelligence_enabled",
+  "local_commerce_enabled",
+]);
 
 function initDefaults(): void {
   for (const sw of DEFAULT_SWITCHES) {
@@ -33,7 +40,7 @@ function initDefaults(): void {
         id: `ks_${sw.feature}`,
         domain: sw.domain,
         feature: sw.feature,
-        enabled: true,
+        enabled: !DISABLED_BY_DEFAULT.has(sw.feature),
         toggled_at: new Date().toISOString(),
         toggled_by: "system",
       });

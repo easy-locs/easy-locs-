@@ -25,7 +25,16 @@ export type PlatformFlag =
   | "enable_property_automation"
   | "enable_property_workflows"
   | "enable_resilience_layer"
-  | "enable_durable_workflows";
+  | "enable_durable_workflows"
+  | "enable_global_intelligence"
+  | "enable_local_social_commerce"
+  | "enable_intelligence_ingestion"
+  | "enable_intelligence_ranking"
+  | "enable_intelligence_ticker"
+  | "enable_commerce_listings"
+  | "enable_commerce_matching"
+  | "enable_commerce_suggestions"
+  | "enable_religious_utilities";
 
 /** Default values — all off for safety, rollout one by one */
 const FLAG_DEFAULTS: Record<PlatformFlag, boolean> = {
@@ -49,6 +58,15 @@ const FLAG_DEFAULTS: Record<PlatformFlag, boolean> = {
   enable_property_workflows: false,
   enable_resilience_layer: true,  // already built
   enable_durable_workflows: false,
+  enable_global_intelligence: false,
+  enable_local_social_commerce: false,
+  enable_intelligence_ingestion: false,
+  enable_intelligence_ranking: false,
+  enable_intelligence_ticker: false,
+  enable_commerce_listings: false,
+  enable_commerce_matching: false,
+  enable_commerce_suggestions: false,
+  enable_religious_utilities: false,
 };
 
 const FLAG_DESCRIPTIONS: Record<PlatformFlag, string> = {
@@ -72,6 +90,15 @@ const FLAG_DESCRIPTIONS: Record<PlatformFlag, string> = {
   enable_property_workflows: "Durable workflows for property operations (create, publish, lease, payment)",
   enable_resilience_layer: "Resilience patterns (double-click guard, offline queue, session guards)",
   enable_durable_workflows: "Step-based durable workflow engine with retry/rollback/persistence",
+  enable_global_intelligence: "Master gate — Global Country/City Intelligence Layer (System A)",
+  enable_local_social_commerce: "Master gate — Zero-Search Local Social Commerce Engine (System B)",
+  enable_intelligence_ingestion: "Feed ingestion pipeline for global intelligence data sources",
+  enable_intelligence_ranking: "Feed ranking and scoring engine for intelligence items",
+  enable_intelligence_ticker: "Ticker surface contribution from intelligence layer",
+  enable_commerce_listings: "Local listing creation and management for social commerce",
+  enable_commerce_matching: "Zero-search matching engine execution for local commerce",
+  enable_commerce_suggestions: "Suggestion delivery from social commerce matching",
+  enable_religious_utilities: "Religious utility modules (prayer times, mosques — requires user opt-in)",
 };
 
 // ── In-memory cache ──

@@ -27,6 +27,8 @@ const DEFAULT_FLAGS: Omit<FeatureFlag, "id">[] = [
   { name: "e2ee_enabled", domain: "orbit", enabled: true, rollout_percentage: 30, environments: ["development", "staging"] },
   { name: "ai_assistant_enabled", domain: "dashboard", enabled: true, rollout_percentage: 100, environments: ["development", "staging", "production"] },
   { name: "session_replay_enabled", domain: "dashboard", enabled: false, rollout_percentage: 0, environments: [] },
+  { name: "global_intelligence_enabled", domain: "intelligence", enabled: false, rollout_percentage: 0, environments: [] },
+  { name: "local_social_commerce_enabled", domain: "local_commerce", enabled: false, rollout_percentage: 0, environments: [] },
 ];
 
 function initFlags(): void {
