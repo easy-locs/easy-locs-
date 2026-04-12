@@ -381,13 +381,17 @@ export function bootEngineSystem(): () => void {
 
   const catchupTimer = setTimeout(() => {
     if (disposed) return;
+    fetch("/__repair_diag_write", { method: "POST", body: JSON.stringify({ step: "catchup_start", ts: Date.now() }) }).catch(() => {});
     import("@/lib/data-quality/engines/taxonomy-integrity-engine").then(
       ({ TaxonomyIntegrityEngine }) => {
         if (disposed) return;
         const engine = new TaxonomyIntegrityEngine();
-        engine.scan("SAFE_AUTO");
+        const findings = engine.scan("SAFE_AUTO");
+        fetch("/__repair_diag_write", { method: "POST", body: JSON.stringify({ step: "catchup_scan_done", ts: Date.now(), findingsCount: findings.length, issueCount: findings.reduce((n, f) => n + f.issues.length, 0) }) }).catch(() => {});
       },
-    ).catch(() => {});
+    ).catch((e) => {
+      fetch("/__repair_diag_write", { method: "POST", body: JSON.stringify({ step: "catchup_error", ts: Date.now(), error: String(e) }) }).catch(() => {});
+    });
   }, 500);
 
   const diagnosticTimer = import.meta.env.DEV ? setTimeout(() => {
