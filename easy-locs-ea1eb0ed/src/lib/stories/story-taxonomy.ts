@@ -355,11 +355,15 @@ export function validateFeedPurity(feedKey: string, stories: Story[]): StoryVali
 
 export function filterValidStories(stories: Story[], feedKey?: string): Story[] {
   let result = stories.filter((story) => {
-    if (isQuarantined(story.id) || isQuarantined(story.entityId)) {
-      return false;
-    }
-    if (isSuppressedFromSurface(story.id) || isSuppressedFromSurface(story.entityId)) {
-      return false;
+    try {
+      if (isQuarantined(story.id) || isQuarantined(story.entityId)) {
+        return false;
+      }
+      if (isSuppressedFromSurface(story.id) || isSuppressedFromSurface(story.entityId)) {
+        return false;
+      }
+    } catch {
+      return true;
     }
     const validation = validateStoryTaxonomy(story);
     if (!validation.valid) {

@@ -191,6 +191,10 @@ class GodCore {
         health_probe: () => true,
         execute: async () => {
           try {
+            const { shouldSkipIncrementalSweep } = await import("@/lib/runtime/runtime-safety");
+            if (shouldSkipIncrementalSweep()) {
+              return { success: true, duration_ms: 0, findings: 0, actions: ["skipped: sweep in progress or cooldown"] };
+            }
             const { runIncrementalSweep } = await import("@/lib/data-quality/audit-runner");
             const report = runIncrementalSweep();
             return { success: true, duration_ms: 0, findings: report.summary.totalEntities, actions: [`${report.summary.quarantined} quarantined`, `${report.summary.autoFixed} auto-fixed`] };

@@ -152,12 +152,17 @@ export function populateSearchIndex() {
     });
   }
 
-  const clean = entities.filter((e) => {
-    if (isQuarantined(e.entityId)) return false;
-    if (isSearchExcluded(e.entityId)) return false;
-    if (isSuppressedFromSurface(e.entityId)) return false;
-    return true;
-  });
+  let clean: SearchableEntity[];
+  try {
+    clean = entities.filter((e) => {
+      if (isQuarantined(e.entityId)) return false;
+      if (isSearchExcluded(e.entityId)) return false;
+      if (isSuppressedFromSurface(e.entityId)) return false;
+      return true;
+    });
+  } catch {
+    clean = entities;
+  }
   intentSearchIndex.register(clean);
 
   if (import.meta.env.DEV) {
