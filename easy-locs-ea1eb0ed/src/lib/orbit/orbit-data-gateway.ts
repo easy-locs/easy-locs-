@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 
@@ -74,8 +73,7 @@ export async function lookupOrbitProfile(userId: string): Promise<CanonicalOrbit
     return toCanonical(orbitRow);
   }
 
-  const { data: profileRow } = await supabase
-    .from("profiles")
+  const { data: profileRow } = await db("profiles")
     .select("id, email, first_name, last_name, name, phone")
     .eq("id", userId)
     .maybeSingle();
@@ -120,8 +118,7 @@ export async function batchLookupProfiles(userIds: string[]): Promise<Map<string
 
   const stillMissing = unique.filter(id => !result.has(id));
   if (stillMissing.length > 0) {
-    const { data: profileRows } = await supabase
-      .from("profiles")
+    const { data: profileRows } = await db("profiles")
       .select("id, email, first_name, last_name, name, phone")
       .in("id", stillMissing);
     if (profileRows?.length) {
@@ -181,8 +178,8 @@ export async function resolveCallTarget(rawTargetId: string, callerUserId: strin
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normalized);
 
   if (isUuid) {
-    const { data: profileRow } = await supabase
-      .from("profiles").select("id").eq("id", normalized).maybeSingle();
+    const { data: profileRow } = await db("profiles")
+      .select("id").eq("id", normalized).maybeSingle();
     if (profileRow?.id && profileRow.id !== callerUserId) {
       const profile = await lookupOrbitProfile(profileRow.id);
       return { user_id: profileRow.id, orbit_id: profile.orbit_id, display_name: profile.display_name, strategy: "direct_profile" };
@@ -197,22 +194,22 @@ export async function resolveCallTarget(rawTargetId: string, callerUserId: strin
   }
 
   if (isUuid) {
-    const { data: ownerMembership } = await supabase
-      .from("org_members").select("user_id, role").eq("org_id", normalized).eq("role", "owner").limit(1).maybeSingle();
+    const { data: ownerMembership } = await db("org_members")
+      .select("user_id, role").eq("org_id", normalized).eq("role", "owner").limit(1).maybeSingle();
     if (ownerMembership?.user_id && ownerMembership.user_id !== callerUserId) {
       const profile = await lookupOrbitProfile(ownerMembership.user_id);
       return { user_id: ownerMembership.user_id, orbit_id: profile.orbit_id, display_name: profile.display_name, strategy: "org_owner" };
     }
 
-    const { data: org } = await supabase
-      .from("orgs").select("owner_user_id").eq("id", normalized).maybeSingle();
+    const { data: org } = await db("orgs")
+      .select("owner_user_id").eq("id", normalized).maybeSingle();
     if (org?.owner_user_id && org.owner_user_id !== callerUserId) {
       const profile = await lookupOrbitProfile(org.owner_user_id);
       return { user_id: org.owner_user_id, orbit_id: profile.orbit_id, display_name: profile.display_name, strategy: "orgs_owner" };
     }
 
-    const { data: otherMember } = await supabase
-      .from("org_members").select("user_id").eq("org_id", normalized).neq("user_id", callerUserId).limit(1).maybeSingle();
+    const { data: otherMember } = await db("org_members")
+      .select("user_id").eq("org_id", normalized).neq("user_id", callerUserId).limit(1).maybeSingle();
     if (otherMember?.user_id) {
       const profile = await lookupOrbitProfile(otherMember.user_id);
       return { user_id: otherMember.user_id, orbit_id: profile.orbit_id, display_name: profile.display_name, strategy: "org_member" };

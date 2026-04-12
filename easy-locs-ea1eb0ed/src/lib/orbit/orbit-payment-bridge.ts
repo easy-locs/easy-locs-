@@ -5,7 +5,6 @@
  * FIXED: Uses platformBus (not dead eventBus) + sendSystemMessage (not chatStore)
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { sendSystemMessage } from "@/lib/orbit/sendSystemMessage";

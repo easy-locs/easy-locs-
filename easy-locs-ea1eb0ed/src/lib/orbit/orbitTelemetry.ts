@@ -5,7 +5,6 @@
  * NEVER displays raw data to users — this is internal-only.
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export type OrbitEventName =
@@ -69,7 +68,7 @@ async function flushTelemetry() {
   if (_persistQueue.length === 0) return;
   const batch = _persistQueue.splice(0, _persistQueue.length);
   try {
-    const { data: sessionData } = await supabase.auth.getUser();
+    const { data: sessionData } = await db.auth.getUser();
     const userId = sessionData?.user?.id || null;
     if (!userId) return;
     const rows = batch.map(e => ({

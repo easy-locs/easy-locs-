@@ -17,8 +17,9 @@ import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runti
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
 
-export function useConversationThreads() {
+export function useConversationThreads(opts?: { enabled?: boolean }) {
   const { user, orgId } = useAuth();
+  const enabled = opts?.enabled !== false;
   const [threads, setThreads] = useState<ConversationThread[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +30,7 @@ export function useConversationThreads() {
   const userId = user?.id ?? null;
 
   const loadThreads = useCallback(async () => {
+    if (!enabled) return;
     if (!userId) {
       setThreads([]);
       setStats({ unread: 0, pending_docs: 0, overdue: 0, maintenance: 0 });
@@ -47,21 +49,32 @@ export function useConversationThreads() {
     try {
       const hasOrg = !!orgId;
 
-      // ── Step 1: Fetch org sources ──
+      // ── Step 1: Fetch org sources (isolated — failure does not block threads) ──
       if (hasOrg) {
         const s1 = addStep(flow, "fetch_org_sources");
-        const orgSources = await fetchOrgThreadSources(orgId!);
-        mapOrgSourcesToThreads(orgSources, threadMap);
-        completeStep(flow, s1, { threads: threadMap.size });
+        try {
+          const orgSources = await fetchOrgThreadSources(orgId!);
+          mapOrgSourcesToThreads(orgSources, threadMap);
+          completeStep(flow, s1, { threads: threadMap.size });
+        } catch (orgErr) {
+          failStep(flow, s1, orgErr instanceof Error ? orgErr.message : String(orgErr));
+          console.warn("[orbit-threads] fetchOrgThreadSources failed (isolated):", orgErr);
+        }
       }
 
-      // ── Step 2: Fetch v2 conversations + deals + preferences in parallel ──
+      // ── Step 2: Fetch v2 conversations + deals + preferences in parallel (each isolated) ──
       const s2 = addStep(flow, "fetch_v2_deals_prefs");
-      const [rawConvs, deals, prefs] = await Promise.all([
+      const [rawConvsResult, dealsResult, prefsResult] = await Promise.allSettled([
         fetchV2Conversations(userId!, hasOrg),
         hasOrg ? fetchDeals(orgId!) : Promise.resolve([]),
         fetchPreferences(userId!),
       ]);
+      const rawConvs = rawConvsResult.status === "fulfilled" ? rawConvsResult.value : [];
+      const deals = dealsResult.status === "fulfilled" ? dealsResult.value : [];
+      const prefs = prefsResult.status === "fulfilled" ? prefsResult.value : [];
+      if (rawConvsResult.status === "rejected") console.warn("[orbit-threads] fetchV2Conversations failed (isolated):", rawConvsResult.reason);
+      if (dealsResult.status === "rejected") console.warn("[orbit-threads] fetchDeals failed (isolated):", dealsResult.reason);
+      if (prefsResult.status === "rejected") console.warn("[orbit-threads] fetchPreferences failed (isolated):", prefsResult.reason);
       completeStep(flow, s2, { rawConvs: rawConvs.length, deals: deals.length, prefs: prefs.length });
 
       // ── Step 3: Filter + Map ──
@@ -72,13 +85,17 @@ export function useConversationThreads() {
       mapDealsToThreads(deals, threadMap);
       completeStep(flow, s3, { filtered: allConvs.length, peers: allPeerIds.size });
 
-      // ── Step 4: Enrich in parallel ──
+      // ── Step 4: Enrich in parallel (each isolated) ──
       const s4 = addStep(flow, "enrich");
-      await Promise.all([
+      const enrichResults = await Promise.allSettled([
         enrichPeerProfiles(threadMap, allPeerIds),
         enrichUnreadCounts(threadMap, userId!),
         enrichLastMessages(threadMap, userId!),
       ]);
+      const enrichLabels = ["enrichPeerProfiles", "enrichUnreadCounts", "enrichLastMessages"];
+      enrichResults.forEach((r, i) => {
+        if (r.status === "rejected") console.warn(`[orbit-threads] ${enrichLabels[i]} failed (isolated):`, r.reason);
+      });
       completeStep(flow, s4);
 
       // ── Step 5: Apply preferences ──
@@ -103,7 +120,7 @@ export function useConversationThreads() {
       setLoading(false);
       loadingRef.current = false;
     }
-  }, [orgId, userId]);
+  }, [orgId, userId, enabled]);
 
   const loadStats = useCallback(async () => {
     if (!orgId) return;
@@ -151,7 +168,12 @@ export function useConversationThreads() {
       .on("postgres_changes", { event: "*", schema: "public", table: "conversations_v2" }, () => debouncedReload())
       .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, () => debouncedReload())
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_preferences", filter: `user_id=eq.${userId}` }, () => debouncedReload())
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn(`[orbit-threads] Realtime channel status: ${status}`);
+          reportHealth("orbit", "degraded", undefined, `realtime_${status.toLowerCase()}`);
+        }
+      });
 
     return () => {
       unsubMessage();

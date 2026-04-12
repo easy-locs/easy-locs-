@@ -4,7 +4,6 @@
  * Every business object (order, rent, payment, travel, service, delivery)
  * generates a dedicated Orbit thread. This is the single entry point.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 /* ═══════════════════════════════════════════════════

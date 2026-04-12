@@ -2,7 +2,8 @@
  * Orbit WebRTC signaling via Supabase Realtime — with self-filter + dedupe.
  * Migrated to registerSubscription for anti-duplication.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
+import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";
 
 const handledSignalIds = new Set<string>();
@@ -14,7 +15,7 @@ export async function sendSignal(params: {
   type: "offer" | "answer" | "ice";
   payload: any;
 }) {
-  await supabase.from("rtc_signaling_messages" as any).insert({
+  await db("rtc_signaling_messages" as any).insert({
     call_session_id: params.callSessionId,
     sender_id: params.senderId ?? null,
     workspace_id: params.workspaceId ?? null,
@@ -29,8 +30,7 @@ export function subscribeToSignals(params: {
   onMessage: (msg: any) => void;
 }): () => void {
   return registerSubscription(`orbit.call.signal:${params.callSessionId}`, () => {
-    const channel = supabase
-      .channel(`rtc:${params.callSessionId}`)
+    const channel = createRealtimeChannel(`rtc:${params.callSessionId}`)
       .on(
         "postgres_changes",
         {
@@ -49,6 +49,6 @@ export function subscribeToSignals(params: {
         }
       )
       .subscribe();
-    return () => supabase.removeChannel(channel);
+    return () => removeRealtimeChannel(channel);
   });
 }
