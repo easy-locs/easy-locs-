@@ -1000,6 +1000,17 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **Admin Runtime Tab**: 9 metric cards + 14 zero-conflict guarantee checkmarks + 10-row automation conflict matrix + convergence proof test runner
 - **Proof Report**: `docs/PHASE5-RUNTIME-EXCELLENCE-PROOF.md`
 
+### Global Intelligence Layer — Phase Status
+- **Phase 0 (Foundation)**: LOCKED — Types, state machines, kill switches, feature flags
+- **Phase 1 (Stubs)**: LOCKED — Country profile registry, stub providers, triple-gated ticker engine, `useIntelligenceTicker` hook, `IntelligenceTicker` component (runtime-invisible, defaults OFF)
+- **Phase 2 (Real Providers)**: LOCKED — Provider-agnostic architecture with resilience layer:
+  - **New files (5)**: `provider-resilience.ts` (circuit breaker, LRU cache, dedup, rate limiter, retry), `weather-provider-openmeteo.ts` (Open-Meteo free API), `forex-provider-frankfurter.ts` (Frankfurter ECB API), `timezone-resolver.ts` (Intl API), `provider-boot.ts` (idempotent registration with real→stub fallback)
+  - **Modified files (3)**: `feature-flag-registry.ts` (+shadow validation flag), `useIntelligenceTicker.ts` (bootProviders + shadow validation), `shadow-validation.ts` (9-check validation suite)
+  - **Resilience**: Timeout 5s, circuit breaker (5 failures/60s cooldown/1 probe), dedup (in-flight Map), rate limiter (200/session, 10/country/5min, 20/min), retry (max 2, backoff 1-2s, 5xx only)
+  - **Fallback chain**: fresh cache → real fetch → stale cache → stub providers → empty
+  - **All defaults OFF**: `enable_global_intelligence`, `enable_intelligence_ticker`, `enable_intelligence_shadow_validation` = false; `intelligence_enabled` in DISABLED_BY_DEFAULT set
+  - **DO NOT MODIFY Phase 2 files**
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`
