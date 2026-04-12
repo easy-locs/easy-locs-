@@ -913,3 +913,37 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **Flex children**: Always `min-w-0` on text containers inside flex parents that use `truncate`
 - **EssentialServicesStrip**: `w-[58px]` items, `text-[9px]` labels, `gap-2`
 - **CategoryGrid**: `w-[76px]` cards, `text-[10px]` labels with `break-words`
+
+## Platform Governance System (18-Phase Rebuild)
+13 governance engines in `src/engines/governance/`, all registered in engine-registry Tier 1:
+
+### Engines
+1. **VerticalIsolationEngine** — Cross-vertical contamination detection/blocking
+2. **TaxonomyGovernanceEngine** — Category validation against CATEGORY_TREE
+3. **MediaRelevanceEngine** — Stock/watermark/quality/format/cross-vertical media checks
+4. **TextIntegrityEngine** — 18 text contexts, length/encoding/placeholder/overflow rules
+5. **LayoutIntegrityEngine** — DS token enforcement, overflow/touch-target detection, page-family rules
+6. **PageOpenEngine** — Route→paint lifecycle tracking, timeout classification, violation generation
+7. **ActionWiringEngine** — CTA registry, dead-click tracking, wiring validation
+8. **RuntimeHealthEngine** — Subscription health, heartbeat, failure classification with violation generation
+9. **FlowClosureEngine** — Typed state machine, 36 critical flows, closure rate tracking
+10. **BannerStrategyEngine** — Country/religion/season/cuisine-aware banner scoring (10+ national events)
+11. **LocalizationEngine** — 10 countries, 12 currencies, RTL/calendar/unit system support
+12. **AutoRemediationEngine** — 5 auto-remediation rules with logged remediation actions
+13. **AntiConflictEngine** — Unified governance summary from all 13 engines, architecture debt tracking
+
+### Key Types
+- **CanonicalVertical**: Closed union of 20 verticals (food, grocery, hotel, service, services, property, flight, ride, delivery, retail, shops, healthcare, events, experiences, education, beauty, mobility, stay, utility, finance)
+- **GovernanceViolation**: `id`, `type` (10 GovernanceViolationType values), `severity` (info/warning/error/critical), `source`, `target`, `message`, `ownerDomain`, `vertical`, `detectedAt`, `resolvedAt`, `autoRemediated`, `metadata`
+- **Per-vertical entities**: CanonicalFoodEntity, CanonicalHotelEntity, CanonicalServiceEntity, CanonicalPropertyEntity, CanonicalFlightEntity, CanonicalRideEntity, CanonicalDeliveryEntity, CanonicalMerchantEntity
+
+### Control Room Integration
+- Admin Control Room has "Governance" tab (7th tab) with live metrics from all engines
+- Uses `getGovernanceSummary()`, `getPageOpenStats()`, `getActionStats()`, `getRuntimeStats()`, `getFlowClosureStats()`, `getRemediationStats()`
+- All engines emit via `platformBus.emit("ui-engine:report")`
+
+### Architecture Rules
+- All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
+- Barrel export at `src/engines/governance/index.ts`
+- `getAllGovernanceViolations()` aggregates violations from all 11 violation-producing engines
+- `CanonicalListing.vertical` uses `CanonicalVertical` type (unified with CATEGORY_TREE vocabulary)
