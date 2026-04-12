@@ -29,7 +29,32 @@ import {
   executeRepairAction,
   type RepairOperationType,
 } from "./repair-actions";
-import { getDomainRuleReport, matchRepairRule } from "./domain-repair-rules";
+import { getDomainRuleReport, matchRepairRule, type DomainRepairRule } from "./domain-repair-rules";
+import {
+  type RepairPriority,
+  type RejectionReason,
+  type StormLevel,
+  type ConfidenceSignals,
+  type ConfidenceResult,
+  type WrapperValidationResult,
+  evaluateConfidence,
+  buildConfidenceSignals,
+  getStormLevel,
+  getConfidenceThresholdForStorm,
+  shouldSuppressByPriority,
+  recordStormEvent,
+  isElementOnCooldown,
+  isElementQuarantined,
+  recordElementMutation,
+  getCooldownState,
+  canAffordMutation,
+  consumeBudget,
+  skipBudget,
+  getBudgetState,
+  validateWrapperForRepair,
+  validateWrapperImprovement,
+  getWrapperThreshold,
+} from "./repair-hardening";
 
 export type PipelineStage = "detect" | "classify" | "localize" | "repair" | "validate" | "regress" | "accept_or_rollback";
 
@@ -58,6 +83,9 @@ export interface PipelineInput {
   suggestedOperation: RepairOperationType;
   suggestedTarget: string;
   repairLevel: RepairLevel;
+  elementId?: string;
+  detectorCertainty?: number;
+  corroboratingSignals?: number;
 }
 
 interface StageOutcome {
@@ -80,6 +108,11 @@ interface PipelineContext {
   mutation: { operation: string; target: string; beforeState: string; afterState: string; appliedAt: number; rolledBackAt: number | null } | null;
   outcome: ProofOutcome | null;
   abortReason: string | null;
+  matchedRule: DomainRepairRule | null;
+  confidence: ConfidenceResult | null;
+  stormLevel: StormLevel;
+  rejectionReason: RejectionReason | null;
+  wrapperValidation: WrapperValidationResult | null;
 }
 
 export interface PipelineResult {
@@ -90,11 +123,13 @@ export interface PipelineResult {
   durationMs: number;
   stageCount: number;
   rolledBack: boolean;
+  rejectionReason: RejectionReason | null;
 }
 
 let pipelineEnabled = false;
 let pipelineRunCount = 0;
 let pipelineBlockCount = 0;
+let pipelineRejectCount = 0;
 
 export function enablePipeline(): void {
   pipelineEnabled = true;
@@ -108,51 +143,57 @@ export function isPipelineEnabled(): boolean {
   return pipelineEnabled;
 }
 
+function successRateForTarget(target: string): number {
+  return 0.7;
+}
+
 export async function executePipeline(input: PipelineInput): Promise<PipelineResult> {
   if (!pipelineEnabled) {
     pipelineBlockCount++;
-    return makeBlockedResult("Pipeline disabled");
+    return makeBlockedResult("Pipeline disabled", "pipeline_disabled");
   }
 
   if (!isPlatformFlagEnabled("enable_repair_pipeline")) {
     pipelineBlockCount++;
-    return makeBlockedResult("Platform flag enable_repair_pipeline is off");
+    return makeBlockedResult("Platform flag enable_repair_pipeline is off", "pipeline_disabled");
   }
 
   if (isRepairStormActive()) {
     pipelineBlockCount++;
-    return makeBlockedResult("Repair storm active");
+    return makeBlockedResult("Repair storm active", "storm_suppressed");
   }
 
   if (FINANCIAL_DOMAINS.has(input.domain) && (input.repairLevel === "L3" || input.repairLevel === "L4")) {
     pipelineBlockCount++;
-    return makeBlockedResult(`Financial domain "${input.domain}" blocked from L3/L4 repair`);
+    return makeBlockedResult(`Financial domain "${input.domain}" blocked from L3/L4 repair`, "domain_blocked");
   }
 
   if (!canAttemptRepair(input.engineId, input.domain, input.issueSignature)) {
     pipelineBlockCount++;
-    return makeBlockedResult("Repair attempt blocked by safety limits");
+    return makeBlockedResult("Repair attempt blocked by safety limits", "storm_suppressed");
   }
 
   if (isCircularLoop(input.repairChainId)) {
     pipelineBlockCount++;
-    return makeBlockedResult(`Circular loop detected for chain ${input.repairChainId}`);
+    return makeBlockedResult(`Circular loop detected for chain ${input.repairChainId}`, "cooldown_active");
   }
 
   if (!isOperationAllowed(input.suggestedOperation)) {
     pipelineBlockCount++;
-    return makeBlockedResult(`Operation "${input.suggestedOperation}" not in allowlist`);
+    return makeBlockedResult(`Operation "${input.suggestedOperation}" not in allowlist`, "domain_blocked");
   }
 
   if (!hasDomainActivationSheet(input.domain)) {
     pipelineBlockCount++;
-    return makeBlockedResult(`Domain "${input.domain}" has no activation sheet — repair not eligible`);
+    return makeBlockedResult(`Domain "${input.domain}" has no activation sheet — repair not eligible`, "domain_blocked");
   }
 
   if (!isDomainOperationAllowed(input.domain, input.suggestedOperation, input.repairLevel)) {
     pipelineBlockCount++;
-    return makeBlockedResult(`Operation "${input.suggestedOperation}" at ${input.repairLevel} not allowed by activation sheet for domain "${input.domain}"`);
+    return makeBlockedResult(`Operation "${input.suggestedOperation}" at ${input.repairLevel} not allowed`, "domain_blocked");
   }
+
+  recordStormEvent(input.domain);
 
   const ctx = createContext(input);
   pipelineRunCount++;
@@ -189,9 +230,14 @@ export async function executePipeline(input: PipelineInput): Promise<PipelineRes
 
   recordRepairAttempt(input.engineId, input.domain, input.issueSignature, input.repairChainId);
 
+  if (ctx.outcome === "accepted" && ctx.matchedRule && input.elementId) {
+    const stateHash = ctx.mutation?.afterState?.slice(0, 32) ?? "unknown";
+    const policyClass = ctx.matchedRule.wrapperMutation ? "wrapper" : input.domain;
+    recordElementMutation(input.elementId, ctx.matchedRule.id, stateHash, policyClass);
+  }
+
   const proof = buildProofRecord(ctx);
   recordProof(proof);
-
   emitPipelineEvent(ctx, proof);
 
   const rolledBack = ctx.outcome === "rolled_back" || ctx.outcome === "failed_validation" || ctx.outcome === "failed_regression";
@@ -204,6 +250,7 @@ export async function executePipeline(input: PipelineInput): Promise<PipelineRes
     durationMs: Date.now() - ctx.startedAt,
     stageCount: ctx.stages.length,
     rolledBack,
+    rejectionReason: ctx.rejectionReason,
   };
 }
 
@@ -230,6 +277,11 @@ function createContext(input: PipelineInput): PipelineContext {
     mutation: null,
     outcome: null,
     abortReason: null,
+    matchedRule: null,
+    confidence: null,
+    stormLevel: getStormLevel(),
+    rejectionReason: null,
+    wrapperValidation: null,
   };
 }
 
@@ -288,15 +340,26 @@ async function runStage(ctx: PipelineContext, stage: PipelineStage): Promise<Sta
 }
 
 function stageDetect(ctx: PipelineContext): StageOutcome {
+  const storm = getStormLevel();
+  ctx.stormLevel = storm;
+
+  if (storm === "quarantined") {
+    ctx.outcome = "rejected";
+    ctx.rejectionReason = "storm_suppressed";
+    ctx.abortReason = "Storm quarantine active — all auto-mutations suspended";
+    return { result: "failed", detail: "Rejected: storm quarantine active" };
+  }
+
   return {
     result: "passed",
-    detail: `Detected: ${ctx.input.category}/${ctx.input.severity} — ${scrubSensitiveData(ctx.input.rawSignal).slice(0, 200)}`,
+    detail: `Detected: ${ctx.input.category}/${ctx.input.severity} — ${scrubSensitiveData(ctx.input.rawSignal).slice(0, 200)} [storm=${storm}]`,
   };
 }
 
 function stageClassify(ctx: PipelineContext): StageOutcome {
   const ruleMatch = matchRepairRule(ctx.input.domain, ctx.input.issueSignature);
   if (ruleMatch) {
+    ctx.matchedRule = ruleMatch.rule;
     ctx.input = {
       ...ctx.input,
       suggestedOperation: ruleMatch.rule.operation,
@@ -305,29 +368,114 @@ function stageClassify(ctx: PipelineContext): StageOutcome {
       severity: ruleMatch.rule.severity,
       repairLevel: ruleMatch.rule.repairLevel,
     };
+
+    if (shouldSuppressByPriority(ruleMatch.rule.priority, ctx.stormLevel)) {
+      ctx.outcome = "rejected";
+      ctx.rejectionReason = "storm_suppressed";
+      ctx.abortReason = `Priority ${ruleMatch.rule.priority} suppressed under storm level ${ctx.stormLevel}`;
+      pipelineRejectCount++;
+      return { result: "failed", detail: `Rejected: priority suppressed (${ruleMatch.rule.priority} in ${ctx.stormLevel})` };
+    }
+
+    if (ctx.input.elementId && isElementQuarantined(ctx.input.elementId)) {
+      ctx.outcome = "rejected";
+      ctx.rejectionReason = "oscillation_quarantined";
+      ctx.abortReason = `Element ${ctx.input.elementId} quarantined for oscillation`;
+      pipelineRejectCount++;
+      return { result: "failed", detail: `Rejected: element quarantined for oscillation` };
+    }
+
+    if (ctx.input.elementId && isElementOnCooldown(ctx.input.elementId, ruleMatch.rule.id)) {
+      const cs = getCooldownState(ctx.input.elementId, ruleMatch.rule.id);
+      ctx.outcome = "rejected";
+      ctx.rejectionReason = "cooldown_active";
+      ctx.abortReason = `Cooldown active for element ${ctx.input.elementId} / rule ${ruleMatch.rule.id} (${cs.cooldownRemainingMs}ms remaining, ${cs.mutationCount} prior mutations)`;
+      pipelineRejectCount++;
+      return { result: "failed", detail: `Rejected: cooldown active (${cs.cooldownRemainingMs}ms remaining)` };
+    }
+
+    const detectorCertainty = ctx.input.detectorCertainty ?? ruleMatch.confidence;
+    const corroboratingCount = ctx.input.corroboratingSignals ?? 1;
+    const priorSuccess = successRateForTarget(ruleMatch.rule.target);
+
+    const signals = buildConfidenceSignals(
+      detectorCertainty,
+      null,
+      priorSuccess,
+      corroboratingCount,
+    );
+
+    const baseThreshold = ruleMatch.rule.wrapperMutation
+      ? Math.max(ruleMatch.rule.minConfidence, getWrapperThreshold())
+      : ruleMatch.rule.minConfidence;
+    const adjustedThreshold = getConfidenceThresholdForStorm(baseThreshold, ctx.stormLevel);
+
+    ctx.confidence = evaluateConfidence(signals, adjustedThreshold);
+
+    if (!ctx.confidence.passed) {
+      ctx.outcome = "rejected";
+      ctx.rejectionReason = "insufficient_confidence";
+      ctx.abortReason = `Confidence ${ctx.confidence.score.toFixed(3)} below threshold ${adjustedThreshold.toFixed(3)} for rule ${ruleMatch.rule.id}`;
+      pipelineRejectCount++;
+      return { result: "failed", detail: `Rejected: confidence ${ctx.confidence.score.toFixed(3)} < ${adjustedThreshold.toFixed(3)}` };
+    }
+
+    if (!canAffordMutation(ruleMatch.rule.mutationCost)) {
+      ctx.outcome = "rejected";
+      ctx.rejectionReason = "budget_exceeded";
+      const bs = getBudgetState();
+      ctx.abortReason = `Budget exhausted: cost=${ruleMatch.rule.mutationCost} remaining=${bs.remaining}`;
+      pipelineRejectCount++;
+      skipBudget();
+      return { result: "failed", detail: `Rejected: budget exceeded (cost=${ruleMatch.rule.mutationCost} remaining=${bs.remaining})` };
+    }
+
     return {
       result: "passed",
-      detail: `Classified via rule ${ruleMatch.rule.id}: category=${ruleMatch.rule.category} severity=${ruleMatch.rule.severity} level=${ruleMatch.rule.repairLevel} op=${ruleMatch.rule.operation} (confidence=${ruleMatch.confidence})`,
+      detail: `Classified via rule ${ruleMatch.rule.id}: priority=${ruleMatch.rule.priority} confidence=${ctx.confidence.score.toFixed(3)}/${adjustedThreshold.toFixed(3)} cost=${ruleMatch.rule.mutationCost} level=${ruleMatch.rule.repairLevel}`,
     };
   }
 
+  ctx.outcome = "rejected";
+  ctx.rejectionReason = "insufficient_confidence";
+  ctx.abortReason = `No matching repair rule for domain=${ctx.input.domain} signature=${ctx.input.issueSignature} — pipeline requires rule match`;
+  pipelineRejectCount++;
+
   return {
-    result: "passed",
-    detail: `Classified (no rule match): category=${ctx.input.category} severity=${ctx.input.severity} level=${ctx.input.repairLevel}`,
+    result: "failed",
+    detail: `Rejected: no matching rule — pipeline authority requires rule-based approval for all mutations`,
   };
 }
 
 function stageLocalize(ctx: PipelineContext): StageOutcome {
+  const confidenceVal = ctx.confidence?.score ?? 0.8;
+
   ctx.rootCause = {
     component: ctx.input.suggestedTarget,
     category: ctx.input.category,
     description: `Root cause localized to ${ctx.input.suggestedTarget} in domain ${ctx.input.domain}`,
-    confidence: 0.8,
+    confidence: confidenceVal,
   };
+
+  if (ctx.matchedRule?.wrapperMutation && typeof document !== "undefined") {
+    const targetEl = document.querySelector(`[data-repair-target="${ctx.input.elementId}"]`) as HTMLElement | null;
+    if (targetEl) {
+      const wrapperResult = validateWrapperForRepair(targetEl);
+      ctx.wrapperValidation = wrapperResult;
+
+      if (!wrapperResult.safe) {
+        ctx.outcome = "rejected";
+        ctx.rejectionReason = wrapperResult.reason;
+        ctx.abortReason = `Wrapper validation failed: ${wrapperResult.reason}`;
+        pipelineRejectCount++;
+        return { result: "failed", detail: `Rejected: wrapper unsafe — ${wrapperResult.reason}` };
+      }
+    }
+  }
 
   return {
     result: "passed",
-    detail: `Localized to: ${ctx.input.suggestedTarget}`,
+    detail: `Localized to: ${ctx.input.suggestedTarget} (confidence=${confidenceVal.toFixed(3)})`,
   };
 }
 
@@ -337,6 +485,16 @@ function stageRepair(ctx: PipelineContext): StageOutcome {
     ctx.outcome = "blocked";
     ctx.abortReason = check.reason;
     return { result: "failed", detail: `Blocked: ${check.reason}` };
+  }
+
+  if (ctx.matchedRule) {
+    if (!consumeBudget(ctx.matchedRule.id, ctx.matchedRule.mutationCost)) {
+      ctx.outcome = "rejected";
+      ctx.rejectionReason = "budget_exceeded";
+      ctx.abortReason = "Budget consumption failed at repair stage";
+      pipelineRejectCount++;
+      return { result: "failed", detail: "Rejected: budget consumption failed" };
+    }
   }
 
   const result = executeRepairAction(
@@ -372,6 +530,40 @@ function stageValidate(ctx: PipelineContext): StageOutcome {
     checkedAt: Date.now(),
   };
   ctx.validationChecks.push(check);
+
+  if (ctx.matchedRule?.wrapperMutation && mutationApplied && stateChanged) {
+    let wrapperImproved = false;
+
+    if (ctx.wrapperValidation?.overflowConfirmed && typeof document !== "undefined") {
+      const targetEl = document.querySelector(`[data-repair-target="${ctx.input.elementId}"]`) as HTMLElement | null;
+      if (targetEl) {
+        wrapperImproved = validateWrapperImprovement(targetEl, 0, 0);
+      }
+    }
+
+    const wrapperCheck: ValidationCheck = {
+      name: "wrapper_improvement_check",
+      passed: ctx.wrapperValidation?.overflowConfirmed ? wrapperImproved : false,
+      detail: ctx.wrapperValidation?.overflowConfirmed
+        ? wrapperImproved
+          ? "Wrapper improvement confirmed via measured post-mutation check"
+          : "Wrapper improvement not confirmed — overflow not reduced after mutation"
+        : "Wrapper improvement not confirmed — overflow was not originally confirmed",
+      checkedAt: Date.now(),
+    };
+    ctx.validationChecks.push(wrapperCheck);
+
+    if (!wrapperCheck.passed) {
+      ctx.outcome = "failed_validation";
+      ctx.rejectionReason = "layout_improvement_not_confirmed";
+      ctx.abortReason = wrapperCheck.detail;
+      if (ctx.rollbackFn) {
+        ctx.rollbackFn();
+        ctx.outcome = "rolled_back";
+      }
+      return { result: "failed", detail: wrapperCheck.detail };
+    }
+  }
 
   if (!check.passed && mutationApplied) {
     ctx.outcome = "failed_validation";
@@ -431,6 +623,8 @@ function stageAcceptOrRollback(ctx: PipelineContext): StageOutcome {
 
 function buildProofRecord(ctx: PipelineContext): ProofRecord {
   const now = Date.now();
+  const budget = getBudgetState();
+
   return {
     id: ctx.proofId,
     repairChainId: ctx.input.repairChainId,
@@ -450,11 +644,26 @@ function buildProofRecord(ctx: PipelineContext): ProofRecord {
     durationMs: now - ctx.startedAt,
     rollbackCapable: ctx.rollbackFn !== null,
     rolledBack: ctx.outcome === "rolled_back" || ctx.outcome === "failed_validation" || ctx.outcome === "failed_regression",
+    ruleId: ctx.matchedRule?.id ?? null,
+    priority: ctx.matchedRule?.priority ?? null,
+    confidence: ctx.confidence?.score ?? null,
+    confidenceThreshold: ctx.confidence?.threshold ?? null,
+    confidenceSignals: ctx.confidence?.signals ?? null,
+    budgetCost: ctx.matchedRule?.mutationCost ?? null,
+    budgetRemaining: budget.remaining,
+    cooldownState: ctx.input.elementId
+      ? (ctx.matchedRule
+          ? getCooldownState(ctx.input.elementId, ctx.matchedRule.id).onCooldown ? "active" : "clear"
+          : null)
+      : null,
+    stormState: ctx.stormLevel,
+    rejectionReason: ctx.rejectionReason,
+    elementId: ctx.input.elementId ?? null,
   };
 }
 
 function emitPipelineEvent(ctx: PipelineContext, proof: ProofRecord): void {
-  platformBus.emit("repair:pipeline:completed" as any, {
+  platformBus.emit("repair:pipeline:completed", {
     proofId: proof.id,
     pipelineRunId: proof.pipelineRunId,
     engineId: proof.engineId,
@@ -462,15 +671,56 @@ function emitPipelineEvent(ctx: PipelineContext, proof: ProofRecord): void {
     outcome: proof.outcome,
     durationMs: proof.durationMs,
     rolledBack: proof.rolledBack,
+    rejectionReason: proof.rejectionReason,
+    confidence: proof.confidence,
+    priority: proof.priority,
+    stormState: proof.stormState,
   });
 
   engineObserver.log("repair-pipeline", "repair-pipeline",
-    proof.outcome === "accepted" ? "info" : "warn",
-    `Pipeline ${proof.outcome}: engine=${proof.engineId} domain=${proof.domain} op=${ctx.input.suggestedOperation} (${proof.durationMs}ms)`,
+    proof.outcome === "accepted" ? "info" : proof.outcome === "rejected" ? "debug" : "warn",
+    `Pipeline ${proof.outcome}: engine=${proof.engineId} domain=${proof.domain} op=${ctx.input.suggestedOperation} ` +
+    `rule=${proof.ruleId ?? "none"} confidence=${proof.confidence?.toFixed(3) ?? "n/a"} ` +
+    `storm=${proof.stormState} rejection=${proof.rejectionReason ?? "none"} (${proof.durationMs}ms)`,
   );
 }
 
-function makeBlockedResult(_reason: string): PipelineResult {
+function makeBlockedResult(reason: string, rejectionReason: RejectionReason | null = null): PipelineResult {
+  if (rejectionReason) {
+    const proof: ProofRecord = {
+      id: generateProofId(),
+      repairChainId: "",
+      pipelineRunId: "",
+      engineId: "",
+      domain: "",
+      repairLevel: "L2",
+      detection: { engineId: "", domain: "", issueSignature: "", severity: "low", detectedAt: Date.now(), rawSignal: reason },
+      rootCause: null,
+      mutation: null,
+      validationChecks: [],
+      regressionChecks: [],
+      outcome: "blocked",
+      stages: [],
+      startedAt: Date.now(),
+      completedAt: Date.now(),
+      durationMs: 0,
+      rollbackCapable: false,
+      rolledBack: false,
+      ruleId: null,
+      priority: null,
+      confidence: null,
+      confidenceThreshold: null,
+      confidenceSignals: null,
+      budgetCost: null,
+      budgetRemaining: null,
+      cooldownState: null,
+      stormState: getStormLevel(),
+      rejectionReason,
+      elementId: null,
+    };
+    recordProof(proof);
+  }
+
   return {
     success: false,
     outcome: "blocked",
@@ -479,6 +729,7 @@ function makeBlockedResult(_reason: string): PipelineResult {
     durationMs: 0,
     stageCount: 0,
     rolledBack: false,
+    rejectionReason,
   };
 }
 
@@ -487,6 +738,7 @@ export function getPipelineReport() {
     enabled: pipelineEnabled,
     totalRuns: pipelineRunCount,
     totalBlocked: pipelineBlockCount,
+    totalRejected: pipelineRejectCount,
     stages: PIPELINE_STAGES,
     timeouts: {
       stageTimeoutMs: STAGE_TIMEOUT_MS,

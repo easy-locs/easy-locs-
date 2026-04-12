@@ -1053,6 +1053,17 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **Pipeline completely inert**: Flag default OFF, bridge listens but discards events when flag off, pipeline blocks when flag off
 - **Phase 1/2/3 locked files untouched**: repair-safety.ts, engine-feature-flags.ts, domain-health.ts, types.ts, proof-system.ts, repair-actions.ts, domain-activation-sheets.ts, domain-repair-rules.ts
 
+### Auto-Repair Phase 5A (UI/Text/i18n/Layout DOM Bridging) — IMPLEMENTED
+- **Phase A of 3-phase rollout** (A: UI/Text/i18n/Layout, B: Actions/Cards, C: Flows/Production)
+- **domain-activation-sheets.ts**: 4 new sheets added (ui, text, i18n, layout) — total 9 domains registered
+- **domain-repair-rules.ts**: 7 new rules added (ui:overflow:fix, ui:tap_target:fix, text:truncation:fix, text:encoding:fix, i18n:untranslated:fix, layout:card:normalize, layout:overlap:fix) — all L2 only
+- **repair-actions.ts**: DOM repair capability added alongside existing localStorage repairs; DOM mutation cap of 10 per pipeline run; WeakMap-based rollback snapshots; safety boundaries: only patches within `#root`, skips `data-repair-frozen` elements, blocks auth/payment/wallet/modal/dialog selectors; 7 DOM repair executors (el-ui-dom-patches, el-ui-tap-targets, el-text-integrity, el-text-encoding, el-i18n-patches, el-layout-cards, el-layout-overlaps)
+- **ui-repair-bridge.ts**: New bridge listening on platformBus for `ui-engine:report`, `text.integrity.violation`, `layout.integrity.violation`, `i18n.localization.violation`; 1s debounce; batches by domain/target; resets DOM mutation count per pipeline run; max 20 pending batches
+- **Governance engines wired**: TextIntegrityEngine, LayoutIntegrityEngine, LocalizationEngine now emit structured violation events on platformBus during tick()
+- **platform-bus.ts**: Added 4 new event types (text.integrity.violation, layout.integrity.violation, i18n.localization.violation, repair:pipeline:completed)
+- **engine-registry.ts**: `installUiRepairBridge()` called at boot alongside `installRepairBridge()`; teardown wired
+- **RepairDiagPage.tsx**: Updated to show all domains, UI repair bridge status, proofs by domain breakdown
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`

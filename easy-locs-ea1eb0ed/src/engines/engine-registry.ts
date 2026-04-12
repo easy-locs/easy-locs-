@@ -1,6 +1,7 @@
 import { engineOrchestrator } from "./core/engine-orchestrator";
 import { registerAllActivationSheets } from "./core/domain-activation-sheets";
 import { installRepairBridge, getRepairBridgeReport } from "./core/repair-bridge";
+import { installUiRepairBridge, getUiRepairBridgeReport } from "./core/ui-repair-bridge";
 import { getProofsByDomain, getProofStats } from "./core/proof-system";
 import { getPipelineReport } from "./core/repair-pipeline";
 
@@ -373,6 +374,7 @@ async function loadAndStartTier3(): Promise<void> {
 export function bootEngineSystem(): () => void {
   registerAllActivationSheets();
   const teardownBridge = installRepairBridge();
+  const teardownUiBridge = installUiRepairBridge();
   registerAllEngines();
   engineOrchestrator.startAll();
 
@@ -407,10 +409,12 @@ export function bootEngineSystem(): () => void {
       diag += ` | outcome=${p.outcome} dur=${p.durationMs}ms rb=${p.rolledBack} changed=${changed}`;
       diag += ` | stages=${p.stages.map(s => `${s.stage}:${s.result}`).join("→")}`;
     }
+    const uiBridge = getUiRepairBridgeReport();
     diag += ` | bridge=${JSON.stringify(bridge)}`;
+    diag += ` | uiBridge=${JSON.stringify(uiBridge)}`;
     console.warn(`[REPAIR-DIAGNOSTIC] ${diag}`);
     if (typeof window !== "undefined") {
-      (window as any).__REPAIR_DIAG = { diag, stats, proofs: proofs.length, bridge, pipeline: { runs: pipeline.totalRuns, blocked: pipeline.totalBlocked } };
+      (window as any).__REPAIR_DIAG = { diag, stats, proofs: proofs.length, bridge, uiBridge, pipeline: { runs: pipeline.totalRuns, blocked: pipeline.totalBlocked } };
     }
   }, 5000) : null;
 
@@ -449,6 +453,7 @@ export function bootEngineSystem(): () => void {
     if (tier2Timer) clearTimeout(tier2Timer);
     clearTimeout(tier3Timer);
     teardownAI?.();
+    teardownUiBridge();
     teardownBridge();
     engineOrchestrator.stopAll();
   };

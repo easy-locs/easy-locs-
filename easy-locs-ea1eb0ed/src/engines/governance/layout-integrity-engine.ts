@@ -4,6 +4,7 @@ import type {
   PageFamily,
 } from "@/domains/shared/canonical-types";
 import { persistViolation } from "@/services/governance/violation-persistence";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export interface LayoutToken {
   spaceXs: string;
@@ -196,6 +197,22 @@ export class LayoutIntegrityEngine extends BaseEngine {
           findings.push(`Touch target too small: ${rect.height}px (min ${CONTAINER_RULES.touchTarget}px)`);
         }
       });
+    }
+
+    if (recent.length > 0 || findings.length > 0) {
+      platformBus.emit("layout.integrity.violation", {
+        violations: recent.map(v => ({
+          id: v.id,
+          type: v.type,
+          severity: v.severity,
+          message: v.message,
+          source: v.source,
+          code: v.code,
+        })),
+        findings,
+        count: recent.length + findings.length,
+        timestamp: Date.now(),
+      }, "system");
     }
 
     return {

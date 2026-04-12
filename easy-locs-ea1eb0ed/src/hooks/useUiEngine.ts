@@ -37,7 +37,14 @@ export function useUiEngine(options: UseUiEngineOptions = {}) {
           route,
           score: next.score,
           issueCount: next.issues?.length ?? 0,
-          patchCount: next.patches?.length ?? 0,
+          patchCount: next.patchedCount ?? 0,
+          issues: (next.issues ?? []).map(i => ({
+            id: i.id,
+            type: i.type,
+            message: i.message,
+            severity: i.severity,
+            patchable: i.patchable,
+          })),
           timestamp: Date.now(),
         });
       }

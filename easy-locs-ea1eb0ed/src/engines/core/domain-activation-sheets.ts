@@ -95,12 +95,77 @@ const MARKETPLACE_SHEET: DomainActivationSheet = {
   approvedBy: "architecture-phase3",
 };
 
+const UI_SHEET: DomainActivationSheet = {
+  domain: "ui",
+  version: 1,
+  activeEngines: [
+    "layout-integrity",
+    "layout-consistency",
+    "design-regression",
+    "accessibility",
+  ],
+  allowedL2Operations: ["invalidate", "refresh", "fallback"],
+  requiredL3Operations: ["reset"],
+  forbiddenOperations: ["suppress"],
+  killSwitches: ["ui:repair:kill"],
+  rollbackTriggers: ["ui:dom:cascade_failure"],
+  freezeTriggers: ["ui:consecutive_rollback:3"],
+  approvedAt: Date.now(),
+  approvedBy: "architecture-phase-a",
+};
+
+const TEXT_SHEET: DomainActivationSheet = {
+  domain: "text",
+  version: 1,
+  activeEngines: ["text-integrity"],
+  allowedL2Operations: ["invalidate", "refresh"],
+  requiredL3Operations: ["reset"],
+  forbiddenOperations: ["suppress", "reconnect"],
+  killSwitches: ["text:repair:kill"],
+  rollbackTriggers: ["text:encoding:cascade_failure"],
+  freezeTriggers: ["text:consecutive_rollback:3"],
+  approvedAt: Date.now(),
+  approvedBy: "architecture-phase-a",
+};
+
+const I18N_SHEET: DomainActivationSheet = {
+  domain: "i18n",
+  version: 1,
+  activeEngines: ["localization"],
+  allowedL2Operations: ["refresh", "fallback"],
+  requiredL3Operations: ["reset"],
+  forbiddenOperations: ["suppress", "invalidate"],
+  killSwitches: ["i18n:repair:kill"],
+  rollbackTriggers: ["i18n:locale:cascade_failure"],
+  freezeTriggers: ["i18n:consecutive_rollback:3"],
+  approvedAt: Date.now(),
+  approvedBy: "architecture-phase-a",
+};
+
+const LAYOUT_SHEET: DomainActivationSheet = {
+  domain: "layout",
+  version: 1,
+  activeEngines: ["layout-integrity", "layout-consistency"],
+  allowedL2Operations: ["invalidate", "refresh", "fallback"],
+  requiredL3Operations: ["reset"],
+  forbiddenOperations: ["suppress"],
+  killSwitches: ["layout:repair:kill"],
+  rollbackTriggers: ["layout:dom:cascade_failure"],
+  freezeTriggers: ["layout:consecutive_rollback:3"],
+  approvedAt: Date.now(),
+  approvedBy: "architecture-phase-a",
+};
+
 const ALL_ACTIVATION_SHEETS: DomainActivationSheet[] = [
   DASHBOARD_SHEET,
   TAXONOMY_SHEET,
   MEDIA_SHEET,
   NOTIFICATION_SHEET,
   MARKETPLACE_SHEET,
+  UI_SHEET,
+  TEXT_SHEET,
+  I18N_SHEET,
+  LAYOUT_SHEET,
 ];
 
 export function registerAllActivationSheets(): void {
