@@ -4,7 +4,8 @@
  * Rejects invalid data before it enters the system.
  */
 
-import { isValidVertical, CANONICAL_VERTICALS } from "./taxonomy-guard";
+import { isValidVertical } from "./taxonomy-guard";
+import { CANONICAL_VERTICALS } from "@/domains/shared/canonical-types";
 import { reportAnomaly } from "./anomaly-detector";
 
 export interface GuardResult {
@@ -264,6 +265,6 @@ export function getGuardMetrics() {
 }
 
 export function runEntryGuards(): { status: string; guardCount: number; totalCalls: number; totalRejections: number } {
-  console.log(`[entry-guards] Synchronous entry guards active — 10 types, ${totalGuardCalls} calls, ${totalRejections} rejections`);
+  console.log(`[entry-guards] Synchronous entry guards active — ${CANONICAL_VERTICALS.length} types, ${totalGuardCalls} calls, ${totalRejections} rejections`);
   return { status: "active", guardCount: 10, totalCalls: totalGuardCalls, totalRejections };
 }
