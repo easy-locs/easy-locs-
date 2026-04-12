@@ -10,7 +10,7 @@ const CATEGORY_TO_VERTICAL: Record<string, RadarVertical> = {
   food: "food", restaurant: "food", cafe: "food", bakery: "food",
   fast_food: "food", coffee: "food", pizza: "food", sushi: "food",
   hotel: "hotel", resort: "hotel", hostel: "hotel",
-  stay: "hotel", accommodation: "hotel",
+  stay: "stay", accommodation: "stay",
   property: "property", real_estate: "property", apartment: "property",
   villa: "property", townhouse: "property",
   services: "services", repair: "services", cleaning: "services",
@@ -19,9 +19,11 @@ const CATEGORY_TO_VERTICAL: Record<string, RadarVertical> = {
   electronics: "shops", supermarket: "grocery",
   grocery: "grocery", market: "grocery", pharmacy: "grocery",
   taxi: "taxi", ride: "taxi", driver: "taxi", courier: "taxi",
+  mobility: "mobility", transport: "mobility", car_rental: "mobility",
   healthcare: "healthcare", clinic: "healthcare", hospital: "healthcare",
   dentist: "healthcare", doctor: "healthcare",
   nightlife: "nightlife", bar: "nightlife", club: "nightlife", lounge: "nightlife",
+  experiences: "experiences", activities: "experiences", travel: "experiences",
 };
 
 function inferVertical(point: RadarPoint): RadarVertical {
@@ -78,6 +80,7 @@ export function mapPointToResultItem(
   return {
     id: point.id,
     type: vertical,
+    vertical: point.category || vertical,
     title: point.title,
     subtitle: point.subtitle ?? null,
     priceLabel: null,

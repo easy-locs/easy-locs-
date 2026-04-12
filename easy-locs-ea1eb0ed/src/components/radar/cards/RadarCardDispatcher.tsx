@@ -19,18 +19,22 @@ interface Props {
 
 function RadarCardDispatcher({ item, rank, selected, onSelect, onNavigate, onMessage, onSave }: Props) {
   const commonProps = { item, rank, selected, onSelect, onNavigate, onMessage, onSave };
+  const vertical = item.vertical || item.type;
 
-  switch (item.type) {
+  switch (vertical) {
     case "food":
     case "grocery":
     case "nightlife":
       return <RadarFoodCard {...commonProps} />;
+    case "stay":
     case "hotel":
       return <RadarHotelCard {...commonProps} />;
     case "property":
       return <RadarPropertyCard {...commonProps} />;
     case "services":
     case "healthcare":
+    case "experiences":
+    case "mobility":
       return <RadarServiceCard {...commonProps} />;
     case "taxi":
       return <RadarTaxiCard {...commonProps} />;

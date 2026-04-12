@@ -46,8 +46,9 @@ export function RadarFilterMenu() {
             ALL
           </button>
 
-          {RADAR_CATEGORIES.filter(c => c.value !== "all").map(({ value, emoji }, i) => {
-            const angle = (i * 72 - 90) * (Math.PI / 180);
+          {RADAR_CATEGORIES.filter(c => c.value !== "all").map(({ value, emoji }, i, arr) => {
+            const step = 360 / arr.length;
+            const angle = (i * step - 90) * (Math.PI / 180);
             const r = 95;
             const x = 130 + r * Math.cos(angle) - 24;
             const y = 130 + r * Math.sin(angle) - 24;

@@ -7,6 +7,7 @@ import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import { selectRadarPlace } from "@/lib/radar/radar-place-search-adapter";
 import type { CanonicalPlaceRow } from "@/lib/address/canonical-address-resolver";
 import type { RadarLayer } from "@/lib/engines/hyper-radar-engine";
+import { RADAR_QUICK_CATEGORIES } from "@/lib/taxonomy/world-class-taxonomy";
 
 const HISTORY_KEY = "radar_search_history";
 const MAX_HISTORY = 8;
@@ -18,17 +19,6 @@ interface HistoryItem {
   lng: number;
   timestamp: number;
 }
-
-const QUICK_CATEGORIES: { id: RadarLayer; emoji: string; labelKey: string }[] = [
-  { id: "food", emoji: "🍽️", labelKey: "radar.layer_food" },
-  { id: "stay", emoji: "🏨", labelKey: "radar.layer_stay" },
-  { id: "shops", emoji: "🛍️", labelKey: "radar.layer_shops" },
-  { id: "services", emoji: "✨", labelKey: "radar.layer_services" },
-  { id: "mobility", emoji: "🚗", labelKey: "radar.layer_mobility" },
-  { id: "healthcare", emoji: "🏥", labelKey: "radar.layer_healthcare" },
-  { id: "nightlife", emoji: "🌙", labelKey: "radar.layer_night" },
-  { id: "property", emoji: "🏠", labelKey: "radar.layer_property" },
-];
 
 function loadHistory(): HistoryItem[] {
   try {
@@ -199,10 +189,10 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, cla
 
       {!focused && !query && onCategorySelect && (
         <div className="flex gap-1.5 overflow-x-auto scrollbar-none mt-2 pb-0.5">
-          {QUICK_CATEGORIES.map(cat => (
+          {RADAR_QUICK_CATEGORIES.map(cat => (
             <button
               key={cat.id}
-              onClick={() => onCategorySelect(cat.id)}
+              onClick={() => onCategorySelect(cat.id as RadarLayer)}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border shrink-0 active:scale-95 transition-all"
               style={{
                 background: "hsl(var(--card) / 0.85)",

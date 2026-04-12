@@ -56,10 +56,10 @@ type SortMode = "smart" | "nearest" | "best_rated" | "trending";
 
 const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; color: string; emoji: string; vertical: RadarVertical }[] = [
   { id: "food", labelKey: "radar.layer_food", icon: <Utensils className="w-3 h-3" />, color: "hsl(15 80% 55%)", emoji: "🍽️", vertical: "food" },
-  { id: "stay", labelKey: "radar.layer_stay", icon: <Hotel className="w-3 h-3" />, color: "hsl(200 70% 50%)", emoji: "🏨", vertical: "hotel" },
+  { id: "stay", labelKey: "radar.layer_stay", icon: <Hotel className="w-3 h-3" />, color: "hsl(200 70% 50%)", emoji: "🏨", vertical: "stay" },
   { id: "services", labelKey: "radar.layer_services", icon: <Sparkles className="w-3 h-3" />, color: "hsl(270 60% 55%)", emoji: "✨", vertical: "services" },
   { id: "utility", labelKey: "radar.layer_utility", icon: <ShoppingBag className="w-3 h-3" />, color: "hsl(140 50% 45%)", emoji: "🛒", vertical: "grocery" },
-  { id: "mobility", labelKey: "radar.layer_mobility", icon: <Car className="w-3 h-3" />, color: "hsl(30 80% 50%)", emoji: "🚗", vertical: "taxi" },
+  { id: "mobility", labelKey: "radar.layer_mobility", icon: <Car className="w-3 h-3" />, color: "hsl(30 80% 50%)", emoji: "🚗", vertical: "mobility" },
   { id: "nightlife", labelKey: "radar.layer_night", icon: <Moon className="w-3 h-3" />, color: "hsl(280 70% 55%)", emoji: "🌙", vertical: "nightlife" },
   { id: "healthcare", labelKey: "radar.layer_healthcare", icon: <Heart className="w-3 h-3" />, color: "hsl(0 65% 50%)", emoji: "🏥", vertical: "healthcare" },
   { id: "shops", labelKey: "radar.layer_shops", icon: <Store className="w-3 h-3" />, color: "hsl(38 65% 56%)", emoji: "🛍️", vertical: "shops" },
