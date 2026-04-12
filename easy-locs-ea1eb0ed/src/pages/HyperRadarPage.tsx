@@ -50,7 +50,7 @@ import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { Z } from "@/lib/ui/z-index";
 import SEOHead from "@/components/SEOHead";
-import { RADAR_CATEGORIES, type RadarMainCategory } from "@/lib/taxonomy/world-class-taxonomy";
+import { RADAR_CATEGORIES } from "@/lib/taxonomy/world-class-taxonomy";
 
 const RADAR_EMOJI_LOOKUP: Record<string, string> = Object.fromEntries(
   RADAR_CATEGORIES.map(c => [c.value, c.emoji])
