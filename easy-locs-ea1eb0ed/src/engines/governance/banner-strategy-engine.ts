@@ -180,6 +180,10 @@ export function validateBannerPlacement(
       resolvedAt: null,
       autoRemediated: false,
       metadata: { bannerId: banner.id, country: context.countryCode },
+      engine: "banner-strategy",
+      code: "BANNER_COUNTRY_MISMATCH",
+      dedupKey: `banner:${banner.id}:${context.countryCode}`,
+      status: "new",
     };
     bannerViolations.push(v);
     persistViolation(v);

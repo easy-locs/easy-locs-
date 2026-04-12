@@ -170,6 +170,12 @@ function createViolation(
       url: media.url,
       mimeType: media.mimeType,
     },
+    engine: "media-relevance",
+    code: `MEDIA_${type === "cross_vertical_contamination" ? "CROSS_VERTICAL" : "INVALID"}`,
+    dedupKey: `media:${media.id ?? "unknown"}:${type}`,
+    entityType: "media",
+    entityId: media.id ?? undefined,
+    status: "new",
   };
 }
 

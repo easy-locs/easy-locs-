@@ -55,6 +55,10 @@ export function updateFlowState(flowId: string, state: FlowState): void {
       resolvedAt: null,
       autoRemediated: false,
       metadata: { flowId, state, trigger: flow.startTrigger },
+      engine: "flow-closure",
+      code: state === "failed" ? "FLOW_FAILED" : "FLOW_BLOCKED",
+      dedupKey: `flow:${flowId}:${state}`,
+      status: "new",
     };
     flowViolations.push(v);
     persistViolation(v);

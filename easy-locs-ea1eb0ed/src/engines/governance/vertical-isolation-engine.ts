@@ -50,6 +50,12 @@ function detectContamination(
       resolvedAt: null,
       autoRemediated: false,
       metadata: { elementId: element.id, cardTemplate: element.cardTemplate },
+      engine: "vertical-isolation",
+      code: "CROSS_VERTICAL_CONTEXT",
+      dedupKey: `vi:${context.vertical}:${element.vertical}:${element.id}`,
+      entityType: "element",
+      entityId: element.id,
+      status: "new",
     };
     violations.push(v);
     persistViolation(v);
@@ -73,6 +79,12 @@ function detectContamination(
       resolvedAt: null,
       autoRemediated: false,
       metadata: { elementId: element.id },
+      engine: "vertical-isolation",
+      code: "CROSS_VERTICAL_MEDIA",
+      dedupKey: `vi-media:${element.mediaVertical}:${element.vertical}:${element.id}`,
+      entityType: "element",
+      entityId: element.id,
+      status: "new",
     };
     violations.push(v);
     persistViolation(v);

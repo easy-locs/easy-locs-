@@ -138,6 +138,10 @@ export function reportLayoutIssue(issue: LayoutIssue): GovernanceViolation {
     resolvedAt: null,
     autoRemediated: false,
     metadata: { issueType: issue.type, element: issue.element },
+    engine: "layout-integrity",
+    code: `LAYOUT_${issue.type.toUpperCase()}`,
+    dedupKey: `layout:${issue.element}:${issue.type}`,
+    status: "new",
   };
   layoutViolations.push(v);
   persistViolation(v);

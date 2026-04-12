@@ -171,6 +171,10 @@ export function validateText(
       resolvedAt: null,
       autoRemediated: false,
       metadata: { context, locale, originalLength: text.length },
+      engine: "text-integrity",
+      code: `TEXT_${issues[0]?.type?.toUpperCase() ?? "UNKNOWN"}`,
+      dedupKey: `text:${context}:${issues[0]?.type ?? "unknown"}`,
+      status: "new",
     };
     textViolations.push(v);
     persistViolation(v);
