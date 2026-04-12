@@ -1,5 +1,6 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
 import type { GovernanceViolation } from "@/domains/shared/canonical-types";
+import { persistViolation } from "@/services/governance/violation-persistence";
 
 export type TextContext =
   | "card_title"
@@ -157,7 +158,7 @@ export function validateText(
   const hasErrors = issues.some((i) => i.severity === "error");
 
   if (hasErrors) {
-    textViolations.push({
+    const v: GovernanceViolation = {
       id: `text-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       type: "text_integrity",
       severity: "error",
@@ -170,7 +171,9 @@ export function validateText(
       resolvedAt: null,
       autoRemediated: false,
       metadata: { context, locale, originalLength: text.length },
-    });
+    };
+    textViolations.push(v);
+    persistViolation(v);
   }
 
   return { valid: !hasErrors, issues, sanitized, lineClamp };

@@ -1,4 +1,5 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
+import { persistViolation } from "@/services/governance/violation-persistence";
 import type {
   CanonicalCountryContext,
   CanonicalLocaleContext,
@@ -99,6 +100,7 @@ export function validateLocalization(
       metadata: { locale, countryCode, supportedLocales: country.supportedLocales },
     };
     localizationViolations.push(v);
+    persistViolation(v);
     return { valid: false, violation: v };
   }
 

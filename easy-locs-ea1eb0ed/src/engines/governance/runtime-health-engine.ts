@@ -1,6 +1,7 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
 import type { GovernanceViolation } from "@/domains/shared/canonical-types";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { persistViolation } from "@/services/governance/violation-persistence";
 
 export type RuntimeFailureClass =
   | "transient"
@@ -90,7 +91,7 @@ function recordEvent(type: string, failureClass: RuntimeFailureClass, message: s
   }
 
   if (failureClass === "fatal" || failureClass === "consistency_risk") {
-    runtimeViolations.push({
+    const v: GovernanceViolation = {
       id: `runtime-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       type: "unclosed_flow",
       severity: failureClass === "fatal" ? "critical" : "error",
@@ -103,7 +104,9 @@ function recordEvent(type: string, failureClass: RuntimeFailureClass, message: s
       resolvedAt: null,
       autoRemediated: false,
       metadata: { type, failureClass },
-    });
+    };
+    runtimeViolations.push(v);
+    persistViolation(v);
   }
 }
 

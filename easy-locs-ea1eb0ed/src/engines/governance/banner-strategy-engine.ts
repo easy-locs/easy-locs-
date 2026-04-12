@@ -5,6 +5,7 @@ import {
   type CanonicalCountryContext,
   type GovernanceViolation,
 } from "@/domains/shared/canonical-types";
+import { persistViolation } from "@/services/governance/violation-persistence";
 
 const bannerPool = new Map<string, CanonicalBannerEntity>();
 const bannerViolations: GovernanceViolation[] = [];
@@ -181,6 +182,7 @@ export function validateBannerPlacement(
       metadata: { bannerId: banner.id, country: context.countryCode },
     };
     bannerViolations.push(v);
+    persistViolation(v);
     return { valid: false, violation: v };
   }
 

@@ -3,6 +3,7 @@ import type {
   GovernanceViolation,
   PageFamily,
 } from "@/domains/shared/canonical-types";
+import { persistViolation } from "@/services/governance/violation-persistence";
 
 export interface LayoutToken {
   spaceXs: string;
@@ -139,6 +140,7 @@ export function reportLayoutIssue(issue: LayoutIssue): GovernanceViolation {
     metadata: { issueType: issue.type, element: issue.element },
   };
   layoutViolations.push(v);
+  persistViolation(v);
   return v;
 }
 

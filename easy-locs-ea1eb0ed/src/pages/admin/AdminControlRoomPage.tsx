@@ -21,6 +21,7 @@ import { getActionStats } from "@/engines/governance/action-wiring-engine";
 import { getRuntimeStats } from "@/engines/governance/runtime-health-engine";
 import { getFlowClosureStats } from "@/engines/governance/flow-closure-engine";
 import { getRemediationStats } from "@/engines/governance/auto-remediation-engine";
+import { fetchViolations } from "@/services/governance/violation-persistence";
 
 interface EngineRow {
   engine_name: string;
@@ -807,7 +808,27 @@ function GovernancePanel() {
   const runtimeStats = useMemo(() => getRuntimeStats(), [refreshKey]);
   const flowStats = useMemo(() => getFlowClosureStats(), [refreshKey]);
   const remediationStats = useMemo(() => getRemediationStats(), [refreshKey]);
-  const violations = useMemo(() => getAllGovernanceViolations().slice(-20).reverse(), [refreshKey]);
+  const memoryViolations = useMemo(() => getAllGovernanceViolations().slice(-20).reverse(), [refreshKey]);
+
+  const { data: dbViolations = [] } = useQuery({
+    queryKey: ["governance-violations-db", refreshKey],
+    queryFn: () => fetchViolations({ limit: 50 }),
+    staleTime: 10_000,
+  });
+
+  const violations = useMemo(() => {
+    const seen = new Set(memoryViolations.map((v) => v.id));
+    const merged = [...memoryViolations];
+    for (const v of dbViolations) {
+      if (!seen.has(v.id)) {
+        merged.push(v);
+        seen.add(v.id);
+      }
+    }
+    return merged
+      .sort((a, b) => new Date(b.detectedAt).getTime() - new Date(a.detectedAt).getTime())
+      .slice(0, 50);
+  }, [memoryViolations, dbViolations]);
 
   useEffect(() => {
     const interval = setInterval(() => setRefreshKey((k) => k + 1), 10_000);

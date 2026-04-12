@@ -20,6 +20,7 @@ import {
   type EntityContext,
   type PrimaryCTA,
 } from "@/lib/action-priority";
+import { trackActionClick } from "@/engines/governance/action-wiring-engine";
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {
   open: <ExternalLink className="h-4 w-4" />,
@@ -88,30 +89,45 @@ export default function UniversalActionButtons({
   const executeAction = useCallback(
     async (actionType: UniversalActionType) => {
       setBusyAction(actionType);
+      const actionKey = `${entityType}:${actionType}`;
 
-      const input: UniversalActionInput = {
-        entityType,
-        action: actionType,
-        entityId,
-        slug,
-        amount,
-        currency,
-        title,
-        subtitle,
-        recipientId,
-        recipientName,
-        metadata,
-      };
+      try {
+        const input: UniversalActionInput = {
+          entityType,
+          action: actionType,
+          entityId,
+          slug,
+          amount,
+          currency,
+          title,
+          subtitle,
+          recipientId,
+          recipientName,
+          metadata,
+        };
 
-      const result = await executeUniversalAction(input, {
-        navigate,
-        openPayment,
-        currentUserId: user?.id,
-        currentOrgId: orgId,
-      });
+        const result = await executeUniversalAction(input, {
+          navigate,
+          openPayment,
+          currentUserId: user?.id,
+          currentOrgId: orgId,
+        });
 
-      setBusyAction(null);
-      onActionComplete?.(actionType, result.ok);
+        const clickResult = result.ok
+          ? "success"
+          : result.error === "no_handler" || result.error === "not_implemented"
+            ? "dead"
+            : "failed";
+        trackActionClick(actionKey, clickResult);
+
+        onActionComplete?.(actionType, result.ok);
+      } catch (err) {
+        console.error(`[action] ${actionKey} threw:`, err);
+        trackActionClick(actionKey, "dead");
+        onActionComplete?.(actionType, false);
+      } finally {
+        setBusyAction(null);
+      }
     },
     [entityType, entityId, slug, amount, currency, title, subtitle, recipientId, recipientName, metadata, navigate, openPayment, user?.id, orgId, onActionComplete],
   );
