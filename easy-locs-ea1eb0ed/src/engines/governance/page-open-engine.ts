@@ -4,6 +4,7 @@ import type {
   GovernanceSeverity,
 } from "@/domains/shared/canonical-types";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { persistViolation } from "@/services/governance/violation-persistence";
 
 export type PageOpenState =
   | "route_enter"
@@ -134,6 +135,7 @@ function finalizeRecord(record: PageOpenRecord): void {
       metadata: { pageId: record.pageId, route: record.route, failureType: record.failureType, duration: record.duration },
     };
     pageOpenViolations.push(v);
+    persistViolation(v);
 
     platformBus.emit("ui-engine:report" as any, {
       engineId: "page-open-reliability",

@@ -6,6 +6,7 @@ import {
   type GovernanceViolation,
 } from "@/domains/shared/canonical-types";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { persistViolation } from "@/services/governance/violation-persistence";
 
 const flowRegistry = new Map<string, CanonicalFlowDescriptor>();
 const flowViolations: GovernanceViolation[] = [];
@@ -56,6 +57,7 @@ export function updateFlowState(flowId: string, state: FlowState): void {
       metadata: { flowId, state, trigger: flow.startTrigger },
     };
     flowViolations.push(v);
+    persistViolation(v);
     if (flowViolations.length > MAX_VIOLATIONS) {
       flowViolations.splice(0, flowViolations.length - MAX_VIOLATIONS);
     }

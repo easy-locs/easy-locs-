@@ -1,6 +1,9 @@
 /**
  * Shared utilities for photo + video media handling.
+ * Wired to governance: validateMedia runs observational quality checks on every upload.
  */
+import { validateMedia } from "@/engines/governance/media-relevance-engine";
+import type { CanonicalVertical, CanonicalMediaEntity } from "@/domains/shared/canonical-types";
 
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".avi", ".mkv", ".m4v"];
 const VIDEO_MIME_PREFIXES = ["video/"];
@@ -29,11 +32,31 @@ export function isVideoFile(file: File): boolean {
   return VIDEO_MIME_PREFIXES.some((p) => file.type.startsWith(p));
 }
 
-export function validateMediaFile(file: File): string | null {
+export function validateMediaFile(file: File, contextVertical?: CanonicalVertical): string | null {
   if (isVideoFile(file)) {
     if (file.size > MAX_VIDEO_SIZE) return `Video too large (max 50 MB)`;
   } else {
     if (file.size > MAX_IMAGE_SIZE) return `Image too large (max 10 MB)`;
   }
+
+  try {
+    const mediaPartial: Partial<CanonicalMediaEntity> = {
+      url: `pending://${file.name}`,
+      fileName: file.name,
+      mimeType: file.type,
+      sizeBytes: file.size,
+      type: isVideoFile(file) ? "video" : "image",
+    };
+    const govResult = validateMedia(mediaPartial, contextVertical);
+    if (govResult.violations.length > 0) {
+      console.warn(
+        `[governance][media] ${govResult.violations.length} issue(s) for "${file.name}":`,
+        govResult.violations.map((v) => v.message)
+      );
+    }
+  } catch (err) {
+    console.error("[governance][media] Observational check failed:", err);
+  }
+
   return null;
 }

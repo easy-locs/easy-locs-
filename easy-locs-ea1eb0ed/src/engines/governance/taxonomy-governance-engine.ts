@@ -6,6 +6,7 @@ import {
   type GovernanceViolation,
   type MediaAssetType,
 } from "@/domains/shared/canonical-types";
+import { persistViolation } from "@/services/governance/violation-persistence";
 import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 
 const categoryNodeCache = new Map<string, CanonicalCategoryNode>();
@@ -82,6 +83,7 @@ export function validateTaxonomy(
       metadata: { vertical, category, subcategory },
     };
     taxonomyViolations.push(v);
+    persistViolation(v);
     return { valid: false, node: null, violation: v };
   }
 
@@ -101,6 +103,7 @@ export function validateTaxonomy(
       metadata: { vertical, category, subcategory },
     };
     taxonomyViolations.push(v);
+    persistViolation(v);
     return { valid: false, node: parentNode, violation: v };
   }
 

@@ -4,6 +4,7 @@ import {
   type CanonicalActionDescriptor,
   type GovernanceViolation,
 } from "@/domains/shared/canonical-types";
+import { persistViolation } from "@/services/governance/violation-persistence";
 
 const actionRegistry = new Map<string, CanonicalActionDescriptor>();
 const actionViolations: GovernanceViolation[] = [];
@@ -39,7 +40,7 @@ export function trackActionClick(
 
   if (result === "dead") {
     const descriptor = actionRegistry.get(actionId);
-    actionViolations.push({
+    const v: GovernanceViolation = {
       id: `action-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       type: "dead_action",
       severity: "critical",
@@ -56,7 +57,9 @@ export function trackActionClick(
         targetRoute: descriptor?.targetRoute,
         targetFlow: descriptor?.targetFlow,
       },
-    });
+    };
+    actionViolations.push(v);
+    persistViolation(v);
   }
 }
 
@@ -82,6 +85,7 @@ export function validateActionWiring(actionId: string): {
       metadata: { actionId },
     };
     actionViolations.push(v);
+    persistViolation(v);
     return { valid: false, descriptor: null, violation: v };
   }
 

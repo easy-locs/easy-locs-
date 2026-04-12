@@ -944,9 +944,26 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **GovernanceViolation**: `id`, `type` (10 GovernanceViolationType values), `severity` (info/warning/error/critical), `source`, `target`, `message`, `ownerDomain`, `vertical`, `detectedAt`, `resolvedAt`, `autoRemediated`, `metadata`
 - **Per-vertical entities**: CanonicalFoodEntity, CanonicalHotelEntity, CanonicalServiceEntity, CanonicalPropertyEntity, CanonicalFlightEntity, CanonicalRideEntity, CanonicalDeliveryEntity, CanonicalMerchantEntity
 
+### Runtime Wiring (Phase 2 Complete)
+- **SmartCoreTracker** → `trackPageOpen`/`updatePageState` on every route change (page open reliability)
+- **UniversalActionButtons** → `trackActionClick` on every CTA execution (dead click detection)
+- **media-utils** → `validateMedia` governance check on every file upload (observational, never blocks)
+- **order-lifecycle** → `registerFlow`/`updateFlowState` on every order transition (flow closure tracking)
+- **send-text pipeline** → `validateText` governance check on every message send (observational, never blocks)
+- All wiring is **observational/advisory only** — governance never blocks user actions or rendering
+
+### Violation Persistence (Phase 2 Complete)
+- **DB Table**: `governance_violations` (migration `20260412200000`) — id, type, severity, source, target, message, owner_domain, vertical, detected_at, resolved_at, auto_remediated, metadata (JSONB)
+- **Persistence Service**: `src/services/governance/violation-persistence.ts` — `persistViolation()`, `persistViolations()`, `fetchViolations()`, `fetchViolationCount()`
+- All 11 violation-producing engines call `persistViolation()` fire-and-forget alongside in-memory push
+- Persistence failure logs error but never crashes engine or blocks user flow
+- Uses `db()` helper exclusively (never imports supabase directly)
+
 ### Control Room Integration
 - Admin Control Room has "Governance" tab (7th tab) with live metrics from all engines
 - Uses `getGovernanceSummary()`, `getPageOpenStats()`, `getActionStats()`, `getRuntimeStats()`, `getFlowClosureStats()`, `getRemediationStats()`
+- Control Room merges in-memory + DB-persisted violations (deduped by ID, sorted by detectedAt)
+- DB violations survive page refresh; in-memory violations provide instant feedback
 - All engines emit via `platformBus.emit("ui-engine:report")`
 
 ### Architecture Rules

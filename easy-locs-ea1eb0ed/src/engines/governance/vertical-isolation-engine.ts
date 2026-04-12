@@ -8,6 +8,7 @@ import {
   type GovernanceSeverity,
 } from "@/domains/shared/canonical-types";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { persistViolation } from "@/services/governance/violation-persistence";
 
 const VERTICALS: readonly CanonicalVertical[] = CANONICAL_VERTICALS;
 
@@ -51,6 +52,7 @@ function detectContamination(
       metadata: { elementId: element.id, cardTemplate: element.cardTemplate },
     };
     violations.push(v);
+    persistViolation(v);
     return v;
   }
 
@@ -73,6 +75,7 @@ function detectContamination(
       metadata: { elementId: element.id },
     };
     violations.push(v);
+    persistViolation(v);
     return v;
   }
 

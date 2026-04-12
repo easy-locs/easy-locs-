@@ -8,6 +8,8 @@ import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackPropagation } from "@/lib/runtime/propagation-validator";
 import { APP_EVENTS } from "@/lib/platform/events";
+import { registerFlow, updateFlowState } from "@/engines/governance/flow-closure-engine";
+import type { CanonicalFlowDescriptor } from "@/domains/shared/canonical-types";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -46,12 +48,32 @@ export async function transitionOrder(input: TransitionInput): Promise<Transitio
   const flow = startFlow("orders", "transition");
   trace("transition", "input", { ...input });
 
+  const govFlowId = `order-transition-${input.orderId}-${Date.now()}`;
+  const govFlow: CanonicalFlowDescriptor = {
+    flowId: govFlowId,
+    ownerDomain: "orders",
+    ownerVertical: "platform",
+    startTrigger: `transition:${input.fromStatus}→${input.toStatus}`,
+    states: ["idle", "validating", "processing", "success", "failed"],
+    currentState: "validating",
+    successCriteria: "db_write_confirmed",
+    failureCriteria: "invalid_transition_or_db_error",
+    retryPolicy: { maxRetries: 0, backoffMs: 0, retryOn: [] },
+    analyticsMapping: { transition: `${input.fromStatus}_to_${input.toStatus}` },
+    auditMapping: { actor: input.actorId, order: input.orderId },
+    requiredPermissions: [],
+    timeout: 30_000,
+  };
+  registerFlow(govFlow);
+  updateFlowState(govFlowId, "validating");
+
   // Validate
   const validateStep = addStep(flow, "validate");
   if (!validateTransition(input.fromStatus, input.toStatus)) {
     const err = `Invalid transition: ${input.fromStatus} → ${input.toStatus}`;
     failStep(flow, validateStep, err);
     endFlow(flow, "failed");
+    updateFlowState(govFlowId, "failed");
     return { success: false, error: err };
   }
   completeStep(flow, validateStep);
@@ -73,6 +95,7 @@ export async function transitionOrder(input: TransitionInput): Promise<Transitio
       failStep(flow, writeStep, error.message);
       reportHealth("orders", "degraded", undefined, error.message);
       endFlow(flow, "failed");
+      updateFlowState(govFlowId, "failed");
       return { success: false, error: error.message };
     }
 
@@ -90,12 +113,14 @@ export async function transitionOrder(input: TransitionInput): Promise<Transitio
 
     reportHealth("orders", "ok", flow.totalLatencyMs);
     endFlow(flow, "success");
+    updateFlowState(govFlowId, "success");
     trace("transition", "output", { success: true });
     return { success: true };
   } catch (err: any) {
     failStep(flow, writeStep, err.message);
     reportHealth("orders", "down", undefined, err.message);
     endFlow(flow, "failed");
+    updateFlowState(govFlowId, "failed");
     return { success: false, error: err.message };
   }
 }

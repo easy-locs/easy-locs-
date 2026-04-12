@@ -1,11 +1,13 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
 import {
   toViolationVertical,
+  type CanonicalVertical,
   type CanonicalMediaEntity,
   type GovernanceViolation,
   type MediaValidationStatus,
 } from "@/domains/shared/canonical-types";
 import { validateTaxonomy } from "./taxonomy-governance-engine";
+import { persistViolations } from "@/services/governance/violation-persistence";
 
 const QUALITY_THRESHOLDS = {
   minWidth: 200,
@@ -134,6 +136,7 @@ export function validateMedia(
   }
 
   mediaViolations.push(...violations);
+  if (violations.length > 0) persistViolations(violations);
 
   return {
     status,

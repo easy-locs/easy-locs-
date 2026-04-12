@@ -13,6 +13,7 @@
 import type { OrbitMessage } from "../../types";
 import { generateIdempotencyKey, markMessageSeen, reconcileTempToServer } from "@/lib/dedup/message-dedup";
 import { normalizeTextInput, validateTextInput as validateTextRaw } from "../../resolvers/text.resolver";
+import { validateText } from "@/engines/governance/text-integrity-engine";
 
 export interface SendTextInput {
   conversationId: string;
@@ -35,10 +36,22 @@ export interface SendTextResult {
 export function validateTextInput(input: SendTextInput): string | null {
   if (!input.conversationId) return "missing_conversation_id";
   if (!input.senderId) return "missing_sender_id";
-  // Delegate text validation to canonical resolver
   const normalized = normalizeTextInput(input.body);
   if (!normalized) return "empty_body";
   if (normalized.length > 10_000) return "body_too_long";
+
+  try {
+    const govResult = validateText(normalized, "card_body");
+    if (!govResult.valid) {
+      console.warn(
+        `[governance][text] ${govResult.issues.length} issue(s) in message:`,
+        govResult.issues.map((i) => i.message)
+      );
+    }
+  } catch (err) {
+    console.error("[governance][text] Observational check failed:", err);
+  }
+
   return null;
 }
 
