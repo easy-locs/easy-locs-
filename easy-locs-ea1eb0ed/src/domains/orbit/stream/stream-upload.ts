@@ -4,7 +4,7 @@
  *
  * Threshold: >1MB → chunked, ≤1MB → single shot.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 const CHUNK_THRESHOLD = 1 * 1024 * 1024; // 1MB
 const CHUNK_SIZE = 256 * 1024; // 256KB
@@ -26,12 +26,12 @@ export async function streamUpload(
   // Small files: single shot (fastest)
   if (file.size <= CHUNK_THRESHOLD) {
     onProgress?.(50);
-    const { data, error } = await supabase.storage
+    const { data, error } = await db.storage
       .from(bucket)
       .upload(filePath, file, { upsert: true });
     if (error) throw error;
     onProgress?.(100);
-    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
+    const { data: urlData } = db.storage.from(bucket).getPublicUrl(data.path);
     return { url: urlData.publicUrl, path: data.path };
   }
 
@@ -59,7 +59,7 @@ async function chunkedUpload(
   }, 200);
 
   try {
-    const { data, error } = await supabase.storage
+    const { data, error } = await db.storage
       .from(bucket)
       .upload(filePath, file, { upsert: true });
     
@@ -68,7 +68,7 @@ async function chunkedUpload(
     if (error) throw error;
     
     onProgress?.(100);
-    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
+    const { data: urlData } = db.storage.from(bucket).getPublicUrl(data.path);
     return { url: urlData.publicUrl, path: data.path };
   } catch (err) {
     clearInterval(progressInterval);

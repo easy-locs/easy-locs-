@@ -13,7 +13,6 @@
  * - Anti-spam: throttle + dedup
  * - Flow-gate protected: no duplicate concurrent calls
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { isFlowActive } from "@/domains/orbit/flow-gate";
 

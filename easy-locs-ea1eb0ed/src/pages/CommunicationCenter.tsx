@@ -46,23 +46,30 @@ export const CommunicationCenter = () => {
   const { t } = useI18n();
   const [profileReady, setProfileReady] = useState(false);
 
+  const [profileError, setProfileError] = useState(false);
+
   useEffect(() => {
-    if (!user?.id) { setProfileReady(false); return; }
+    if (!user?.id) { setProfileReady(false); setProfileError(false); return; }
     let cancelled = false;
+    setProfileError(false);
     ensureOrbitProfile({
       userId: user.id,
       email: user.email,
       displayName: (user.user_metadata as any)?.display_name ?? null,
       avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
     })
-      .then(() => { if (!cancelled) setProfileReady(true); })
-      .catch(() => { if (!cancelled) setProfileReady(true); });
+      .then((result) => {
+        if (cancelled) return;
+        if (result) { setProfileReady(true); }
+        else { setProfileError(true); }
+      })
+      .catch(() => { if (!cancelled) setProfileError(true); });
     return () => { cancelled = true; };
   }, [user?.id]);
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { threads, loading, error: threadError, stats, loadThreads, updateThreadLocally } = useConversationThreads({ enabled: profileReady });
+  const { threads, loading, error: threadError, stats, realtimeStatus, loadThreads, updateThreadLocally } = useConversationThreads({ enabled: profileReady });
   const { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread, changeStatus, markUnread } = useThreadActions({ updateThreadLocally, loadThreads });
   const selectedThread = useThreadSelectionStore(s => s.selectedThread);
   const setSelectedThread = useThreadSelectionStore(s => s.selectThread);
@@ -263,8 +270,36 @@ export const CommunicationCenter = () => {
           background: "hsl(var(--background))",
         }}
       >
-        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(38 65% 56%)", borderTopColor: "transparent" }} />
-        <span className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.setting_up") || "Setting up your profile..."}</span>
+        {profileError ? (
+          <>
+            <span className="text-sm font-medium" style={{ color: "hsl(var(--destructive))" }}>
+              {t("orbit.profile_setup_failed") || "Profile setup failed"}
+            </span>
+            <Button
+              size="sm"
+              className="mt-2 h-10 px-6 rounded-xl font-semibold"
+              style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+              onClick={() => {
+                setProfileError(false);
+                ensureOrbitProfile({
+                  userId: user.id,
+                  email: user.email,
+                  displayName: (user.user_metadata as any)?.display_name ?? null,
+                  avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
+                })
+                  .then((result) => { if (result) setProfileReady(true); else setProfileError(true); })
+                  .catch(() => setProfileError(true));
+              }}
+            >
+              {t("orbit.retry") || "Retry"}
+            </Button>
+          </>
+        ) : (
+          <>
+            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(38 65% 56%)", borderTopColor: "transparent" }} />
+            <span className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.setting_up") || "Setting up your profile..."}</span>
+          </>
+        )}
       </div>
     );
   }
@@ -387,6 +422,16 @@ export const CommunicationCenter = () => {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {realtimeStatus === "disconnected" && (
+          <div
+            className="px-4 py-1.5 text-xs shrink-0 flex items-center gap-2"
+            style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)", borderBottom: "1px solid hsl(38 65% 56% / 0.15)" }}
+          >
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: "hsl(38 65% 56%)" }} />
+            {t("orbit.reconnecting") || "Reconnecting..."}
           </div>
         )}
 
