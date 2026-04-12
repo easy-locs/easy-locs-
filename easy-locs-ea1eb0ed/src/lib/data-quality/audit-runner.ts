@@ -1,49 +1,43 @@
 import type { FullAuditReport } from "./types";
-import { clearQuarantine, getQuarantineCount } from "./quarantine";
-import { buildSourceInventory } from "./source-inventory";
-import { auditAllEntities, resetAuditState } from "./entity-auditor";
-import { generateFullReport } from "./audit-report";
-import { rebuildSearchIndex } from "@/lib/intent/search-index-populator";
+import {
+  runBootAudit,
+  runDryScan,
+  runFullSweep,
+  runIncrementalSweep,
+  getCachedReport as getOrchestratedReport,
+  startScheduledSweeps,
+  stopScheduledSweeps,
+  getOrchestratorStatus,
+  getSweepCount,
+  getLastFullSweep,
+  getLastIncrementalSweep,
+} from "./execution-orchestrator";
 
-let cachedReport: FullAuditReport | null = null;
 let lastRunTimestamp: string | null = null;
 
 export function runFullAudit(): FullAuditReport {
-  clearQuarantine();
-  resetAuditState();
-
-  const sources = buildSourceInventory();
-  const { findings, remediations } = auditAllEntities();
-  const report = generateFullReport(findings, remediations, sources);
-
-  cachedReport = report;
+  const report = runBootAudit();
   lastRunTimestamp = report.summary.timestamp;
 
-  if (getQuarantineCount() > 0) {
-    rebuildSearchIndex();
-  }
-
-  if (import.meta.env.DEV) {
-    const s = report.summary;
-    console.log(
-      `[data-quality] Audit complete — ${s.totalEntities} entities, ` +
-      `${s.byClassification["VALID"] ?? 0} valid, ` +
-      `${s.quarantined} quarantined, ` +
-      `${s.autoFixed} auto-fixed, ` +
-      `${s.duplicatesFound} duplicates, ` +
-      `${s.orphansFound} orphans, ` +
-      `${s.crossVerticalCount} cross-vertical, ` +
-      `${s.brokenMediaCount} broken media`
-    );
-  }
+  startScheduledSweeps(10);
 
   return report;
 }
 
+export { runDryScan, runFullSweep, runIncrementalSweep, startScheduledSweeps, stopScheduledSweeps };
+
 export function getCachedReport(): FullAuditReport | null {
-  return cachedReport;
+  return getOrchestratedReport();
 }
 
 export function getLastRunTimestamp(): string | null {
-  return lastRunTimestamp;
+  return lastRunTimestamp ?? getLastFullSweep() ?? getLastIncrementalSweep();
+}
+
+export function getEngineStatus() {
+  return getOrchestratorStatus();
+}
+
+export function getTotalSweepCount(): number {
+  return getSweepCount();
 }

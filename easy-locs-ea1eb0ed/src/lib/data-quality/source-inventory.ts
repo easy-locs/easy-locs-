@@ -20,6 +20,11 @@ export function buildSourceInventory(): DataSource[] {
       safeToMutate: true,
       shouldExist: true,
       actionNeeded: "Audit taxonomy, media, cross-vertical purity",
+      trustScore: 70,
+      mutationPolicy: "safe_auto",
+      visibilityPolicy: "fallback_only",
+      mayFeedLiveSurfaces: true,
+      requiresSanitization: true,
     },
     {
       name: "FALLBACK_PROPERTIES",
@@ -33,6 +38,11 @@ export function buildSourceInventory(): DataSource[] {
       safeToMutate: true,
       shouldExist: true,
       actionNeeded: "Validate taxonomy, field completeness",
+      trustScore: 80,
+      mutationPolicy: "safe_auto",
+      visibilityPolicy: "fallback_only",
+      mayFeedLiveSurfaces: true,
+      requiresSanitization: false,
     },
     {
       name: "FALLBACK_HOTELS",
@@ -46,6 +56,11 @@ export function buildSourceInventory(): DataSource[] {
       safeToMutate: true,
       shouldExist: true,
       actionNeeded: "Validate taxonomy, room references, media",
+      trustScore: 80,
+      mutationPolicy: "safe_auto",
+      visibilityPolicy: "fallback_only",
+      mayFeedLiveSurfaces: true,
+      requiresSanitization: false,
     },
     {
       name: "FALLBACK_RESTAURANTS",
@@ -59,6 +74,11 @@ export function buildSourceInventory(): DataSource[] {
       safeToMutate: true,
       shouldExist: true,
       actionNeeded: "Validate taxonomy, menu references, media",
+      trustScore: 85,
+      mutationPolicy: "safe_auto",
+      visibilityPolicy: "fallback_only",
+      mayFeedLiveSurfaces: true,
+      requiresSanitization: false,
     },
     {
       name: "FALLBACK_MENUS",
@@ -72,6 +92,11 @@ export function buildSourceInventory(): DataSource[] {
       safeToMutate: true,
       shouldExist: true,
       actionNeeded: "Validate shop_id references, media, field completeness",
+      trustScore: 85,
+      mutationPolicy: "safe_auto",
+      visibilityPolicy: "fallback_only",
+      mayFeedLiveSurfaces: true,
+      requiresSanitization: false,
     },
     {
       name: "FALLBACK_SHOPS",
@@ -85,6 +110,11 @@ export function buildSourceInventory(): DataSource[] {
       safeToMutate: true,
       shouldExist: true,
       actionNeeded: "Validate taxonomy, media, field completeness",
+      trustScore: 80,
+      mutationPolicy: "safe_auto",
+      visibilityPolicy: "fallback_only",
+      mayFeedLiveSurfaces: true,
+      requiresSanitization: false,
     },
     {
       name: "FALLBACK_GROCERY",
@@ -98,6 +128,11 @@ export function buildSourceInventory(): DataSource[] {
       safeToMutate: true,
       shouldExist: true,
       actionNeeded: "Validate taxonomy, media, field completeness",
+      trustScore: 80,
+      mutationPolicy: "safe_auto",
+      visibilityPolicy: "fallback_only",
+      mayFeedLiveSurfaces: true,
+      requiresSanitization: false,
     },
     {
       name: "FALLBACK_SERVICES",
@@ -111,6 +146,11 @@ export function buildSourceInventory(): DataSource[] {
       safeToMutate: true,
       shouldExist: true,
       actionNeeded: "Validate taxonomy, media, service item references",
+      trustScore: 80,
+      mutationPolicy: "safe_auto",
+      visibilityPolicy: "fallback_only",
+      mayFeedLiveSurfaces: true,
+      requiresSanitization: false,
     },
     {
       name: "FALLBACK_SERVICE_ITEMS",
@@ -124,6 +164,36 @@ export function buildSourceInventory(): DataSource[] {
       safeToMutate: true,
       shouldExist: true,
       actionNeeded: "Validate provider_id references, media, field completeness",
+      trustScore: 75,
+      mutationPolicy: "safe_auto",
+      visibilityPolicy: "fallback_only",
+      mayFeedLiveSurfaces: true,
+      requiresSanitization: false,
     },
   ];
+}
+
+export function getSourceTrustSummary() {
+  const sources = buildSourceInventory();
+  return {
+    totalSources: sources.length,
+    sources: sources.map((s) => ({
+      name: s.name,
+      type: s.type,
+      trustScore: s.trustScore,
+      mutationPolicy: s.mutationPolicy,
+      visibilityPolicy: s.visibilityPolicy,
+      mayFeedLiveSurfaces: s.mayFeedLiveSurfaces,
+      requiresSanitization: s.requiresSanitization,
+      risk: s.risk,
+      entityCount: s.entityCount,
+    })),
+    byType: sources.reduce<Record<string, number>>((acc, s) => {
+      acc[s.type] = (acc[s.type] ?? 0) + 1;
+      return acc;
+    }, {}),
+    averageTrust: sources.reduce((sum, s) => sum + s.trustScore, 0) / sources.length,
+    sanitizationRequired: sources.filter((s) => s.requiresSanitization).map((s) => s.name),
+    dangerousSources: sources.filter((s) => s.visibilityPolicy === "dangerous" || s.risk === "critical").map((s) => s.name),
+  };
 }

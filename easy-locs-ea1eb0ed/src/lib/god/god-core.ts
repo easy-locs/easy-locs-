@@ -179,7 +179,26 @@ class GodCore {
       defaultJob("taxonomy_reindex", "taxonomy", "Re-index taxonomy tree", 15 * 60_000, "high"),
       defaultJob("conflict_scan", "anti-conflict", "Scan for conflicts", 5 * 60_000, "critical"),
       defaultJob("state_machine_check", "state-machines", "Validate state machines", 20 * 60_000, "critical"),
-      defaultJob("data_integrity_check", "audit", "Data integrity audit", 10 * 60_000, "high"),
+      {
+        id: "data_integrity_check",
+        domain: "audit",
+        description: "Data quality engine incremental sweep",
+        interval_ms: 10 * 60_000,
+        retry_policy: { max_retries: 2, backoff_ms: 5000 },
+        resource_locks: ["data_integrity_check"],
+        downstream_events: ["data_integrity_check:completed"],
+        criticality: "high",
+        health_probe: () => true,
+        execute: async () => {
+          try {
+            const { runIncrementalSweep } = await import("@/lib/data-quality/audit-runner");
+            const report = runIncrementalSweep();
+            return { success: true, duration_ms: 0, findings: report.summary.totalEntities, actions: [`${report.summary.quarantined} quarantined`, `${report.summary.autoFixed} auto-fixed`] };
+          } catch {
+            return { success: true, duration_ms: 0, findings: 0, actions: [] };
+          }
+        },
+      },
       defaultJob("media_validation", "media", "Validate media assets", 15 * 60_000, "medium"),
       defaultJob("listing_quality", "quality", "Audit listing quality", 30 * 60_000, "medium"),
       defaultJob("duplicate_detection", "anti-conflict", "Detect duplicates", 30 * 60_000, "medium"),

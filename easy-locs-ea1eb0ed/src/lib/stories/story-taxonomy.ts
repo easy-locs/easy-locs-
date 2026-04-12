@@ -1,6 +1,7 @@
 import type { Story } from "./story-types";
 import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 import { isQuarantined } from "@/lib/data-quality/quarantine";
+import { isSuppressedFromSurface } from "@/lib/data-quality/engines/live-surface-sanitizer-engine";
 
 export type StoryIntentType =
   | "buy"
@@ -355,9 +356,9 @@ export function validateFeedPurity(feedKey: string, stories: Story[]): StoryVali
 export function filterValidStories(stories: Story[], feedKey?: string): Story[] {
   let result = stories.filter((story) => {
     if (isQuarantined(story.id) || isQuarantined(story.entityId)) {
-      if (import.meta.env.DEV) {
-        console.warn(`[story-taxonomy] QUARANTINED story ${story.id} excluded from feed`);
-      }
+      return false;
+    }
+    if (isSuppressedFromSurface(story.id) || isSuppressedFromSurface(story.entityId)) {
       return false;
     }
     const validation = validateStoryTaxonomy(story);
