@@ -116,34 +116,34 @@ export function mapOrgSourcesToThreads(
 function findExistingLegacyThread(
   threadMap: Map<string, ConversationThread>,
   contextId: string | undefined,
-  convId: string,
-  peerUserId?: string | null
+  convId: string
 ): [string, ConversationThread] | null {
+  if (!contextId) return null;
   const legacyPrefixes = ["marketplace-booking-", "concierge-booking-", "seasonal-booking-", "booking-", "tenant-", "lead-", "guest-"];
-
-  if (contextId) {
-    for (const [key, thread] of threadMap) {
-      if (!legacyPrefixes.some(p => key.startsWith(p))) continue;
-      if (
-        thread.entityId === contextId ||
-        thread.contextId === contextId ||
-        thread.bookingId === contextId ||
-        thread.tenantId === contextId ||
-        thread.leadId === contextId
-      ) {
-        return [key, thread];
-      }
+  for (const [key, thread] of threadMap) {
+    if (!legacyPrefixes.some(p => key.startsWith(p))) continue;
+    if (
+      thread.entityId === contextId ||
+      thread.contextId === contextId ||
+      thread.bookingId === contextId ||
+      thread.tenantId === contextId ||
+      thread.leadId === contextId
+    ) {
+      return [key, thread];
     }
   }
+  return null;
+}
 
-  if (peerUserId) {
-    for (const [key, thread] of threadMap) {
-      if (thread.peerUserId === peerUserId && thread.conversationType !== "deal") {
-        return [key, thread];
-      }
+function findExistingDirectThread(
+  threadMap: Map<string, ConversationThread>,
+  peerUserId: string
+): [string, ConversationThread] | null {
+  for (const [key, thread] of threadMap) {
+    if (thread.conversationType === "direct" && thread.peerUserId === peerUserId) {
+      return [key, thread];
     }
   }
-
   return null;
 }
 
@@ -222,18 +222,33 @@ export function mapV2ConversationsToThreads(
         const peerUserId = candidateIds.find((id: string) => id !== userId);
         if (peerUserId) {
           allPeerIds.add(peerUserId);
-          const v2Key = `v2-direct-${conv.id}`;
-          if (!threadMap.has(v2Key)) {
-            threadMap.set(v2Key, {
-              id: v2Key, conversationType: "direct", sourceModule: "direct",
-              ...withCanonicalIds("direct", conv.id, conv.id),
-              name: conv.title || "Contact", email: null,
-              avatarUrl: null, threadId: conv.id,
-              isV2: true, peerUserId,
-              peerOrbitId: null, participantUserIds: candidateIds,
-              unreadCount: 0, lastMessage: conv.last_message_preview || undefined,
-              lastMessageTime: conv.last_message_at || conv.created_at,
-            });
+          const existingDirect = findExistingDirectThread(threadMap, peerUserId);
+          if (existingDirect) {
+            const [, existing] = existingDirect;
+            existing.conversationId = conv.id;
+            existing.v2ConversationId = conv.id;
+            existing.threadId = conv.id;
+            existing.isV2 = true;
+            if (conv.last_message_at && (!existing.lastMessageTime || conv.last_message_at > existing.lastMessageTime)) {
+              existing.lastMessageTime = conv.last_message_at;
+            }
+            if (conv.last_message_preview && !existing.lastMessage) {
+              existing.lastMessage = conv.last_message_preview;
+            }
+          } else {
+            const v2Key = `v2-direct-${conv.id}`;
+            if (!threadMap.has(v2Key)) {
+              threadMap.set(v2Key, {
+                id: v2Key, conversationType: "direct", sourceModule: "direct",
+                ...withCanonicalIds("direct", conv.id, conv.id),
+                name: conv.title || "Contact", email: null,
+                avatarUrl: null, threadId: conv.id,
+                isV2: true, peerUserId,
+                peerOrbitId: null, participantUserIds: candidateIds,
+                unreadCount: 0, lastMessage: conv.last_message_preview || undefined,
+                lastMessageTime: conv.last_message_at || conv.created_at,
+              });
+            }
           }
         }
       }
@@ -257,19 +272,35 @@ export function mapV2ConversationsToThreads(
     if (!peer.userId || peer.userId === userId) continue;
 
     allPeerIds.add(peer.userId);
-    const v2Key = `v2-direct-${conv.id}`;
-
-    if (!threadMap.has(v2Key)) {
-      threadMap.set(v2Key, {
-        id: v2Key, conversationType: "direct", sourceModule: "direct",
-        ...withCanonicalIds("direct", conv.id, conv.id),
-        name: peer.displayName || "Contact", email: peer.email || null,
-        avatarUrl: peer.avatarUrl || null, threadId: conv.id,
-        isV2: true, peerUserId: peer.userId,
-        peerOrbitId: peer.orbitId, participantUserIds: normalized.map((p) => p.userId).filter(Boolean) as string[],
-        unreadCount: 0, lastMessage: conv.title || undefined,
-        lastMessageTime: conv.last_message_at || conv.created_at,
-      });
+    const existingDirect = findExistingDirectThread(threadMap, peer.userId);
+    if (existingDirect) {
+      const [, existing] = existingDirect;
+      existing.conversationId = conv.id;
+      existing.v2ConversationId = conv.id;
+      existing.threadId = conv.id;
+      existing.isV2 = true;
+      if (peer.displayName && existing.name === "Contact") existing.name = peer.displayName;
+      if (peer.email && !existing.email) existing.email = peer.email;
+      if (peer.avatarUrl && !existing.avatarUrl) existing.avatarUrl = peer.avatarUrl;
+      if (peer.orbitId && !existing.peerOrbitId) existing.peerOrbitId = peer.orbitId;
+      existing.participantUserIds = normalized.map((p) => p.userId).filter(Boolean) as string[];
+      if (conv.last_message_at && (!existing.lastMessageTime || conv.last_message_at > existing.lastMessageTime)) {
+        existing.lastMessageTime = conv.last_message_at;
+      }
+    } else {
+      const v2Key = `v2-direct-${conv.id}`;
+      if (!threadMap.has(v2Key)) {
+        threadMap.set(v2Key, {
+          id: v2Key, conversationType: "direct", sourceModule: "direct",
+          ...withCanonicalIds("direct", conv.id, conv.id),
+          name: peer.displayName || "Contact", email: peer.email || null,
+          avatarUrl: peer.avatarUrl || null, threadId: conv.id,
+          isV2: true, peerUserId: peer.userId,
+          peerOrbitId: peer.orbitId, participantUserIds: normalized.map((p) => p.userId).filter(Boolean) as string[],
+          unreadCount: 0, lastMessage: conv.title || undefined,
+          lastMessageTime: conv.last_message_at || conv.created_at,
+        });
+      }
     }
   }
 }
