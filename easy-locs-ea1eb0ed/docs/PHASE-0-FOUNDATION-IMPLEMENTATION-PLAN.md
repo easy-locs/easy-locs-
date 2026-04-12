@@ -8,6 +8,19 @@
 
 ---
 
+## Phase 0 Safety Guarantees
+
+The following guarantees apply to every component in this phase without exception:
+
+| Guarantee | Status |
+|-----------|--------|
+| **No runtime events are emitted.** Event type definitions (interfaces, payload shapes) are created as TypeScript types only. No call to `platformBus.emit()` or `platformBus.on()` is made. No listener is registered. No event reaches any subscriber. | CONFIRMED |
+| **No real platform bus wiring is introduced.** The `global_intelligence.*` and `local_social_commerce.*` namespaces are defined as type-level constants only. They are not registered in `APP_EVENTS`, not wired in `installPlatformReactions()`, and produce zero bus activity. | CONFIRMED |
+| **No database writes or schema dependencies are introduced.** No new tables are created. No calls to `db()` from `src/services/db.ts` are made for new entities. No migrations are generated. No Supabase schema changes are performed. All data is in-memory mock data used exclusively by the shadow validator. | CONFIRMED |
+| **All modules remain stub/skeleton/shadow-only.** Every service function checks its feature flag (which defaults to `false`) and returns immediately with an empty/no-op result. No business logic executes. No side effects occur. No external API calls are made. | CONFIRMED |
+
+---
+
 ## Part 1 — Implementation Strategy
 
 ### 1.1 Minimal Viable Activation Scope
@@ -70,7 +83,25 @@ Every component built in Phase 0 is gated behind feature flags that default to `
 | 8 | Matching service skeleton | System B | New: `src/lib/commerce/local-social/matching-service.ts` | Types (#1), Flags (#3) | Zero — stub functions, no execution, fully gated |
 | 9 | Shadow validation harness | Shared | New: `src/lib/intelligence/global/shadow-validator.ts` | All above | Zero — internal-only validation, no side effects |
 
-### 2.2 What Each Module Contains
+### 2.2 Per-Module Live Pillar Impact Confirmation
+
+Every module is foundation-only. None can affect any live pillar:
+
+| # | Module | Dashboard | Orbit | Wallet | Radar | Me | Bus Events | DB Writes | Notifications |
+|---|--------|-----------|-------|--------|-------|----|------------|-----------|---------------|
+| 1 | Canonical type extensions | No impact | No impact | No impact | No impact | No impact | None | None | None |
+| 2 | State machine definitions | No impact | No impact | No impact | No impact | No impact | None | None | None |
+| 3 | Feature flag registration | No impact | No impact | No impact | No impact | No impact | None | None | None |
+| 4 | Event type definitions | No impact | No impact | No impact | No impact | No impact | None (types only, no emit/listen) | None | None |
+| 5 | Country profile registry | No impact | No impact | No impact | No impact | No impact | None | None | None |
+| 6 | Feed ingestion skeleton | No impact | No impact | No impact | No impact | No impact | None | None | None |
+| 7 | Listing service skeleton | No impact | No impact | No impact | No impact | No impact | None | None | None |
+| 8 | Matching service skeleton | No impact | No impact | No impact | No impact | No impact | None | None | None |
+| 9 | Shadow validation harness | No impact | No impact | No impact | No impact | No impact | None | None | None |
+
+**Confirmation**: All 9 modules produce zero impact on all 5 pillars (Dashboard, Orbit, Wallet, Radar, Me), zero platform bus activity, zero database writes, and zero notifications. Every module is either a pure type definition (erased at compile time) or a flag-gated stub that returns immediately.
+
+### 2.3 What Each Module Contains
 
 **Module 1 — Canonical Type Extensions**
 
