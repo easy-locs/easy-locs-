@@ -1,3 +1,5 @@
+import { isInManifest } from "./repair-safety";
+
 const STORAGE_KEY = "el-engine-flags";
 const FLAG_VERSION = 1;
 
@@ -32,6 +34,7 @@ function saveFlags(): void {
 }
 
 export function isEngineEnabled(engineId: string): boolean {
+  if (!isInManifest(engineId)) return false;
   const store = loadFlags();
   return store.flags[engineId] !== false;
 }

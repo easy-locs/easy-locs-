@@ -27,7 +27,7 @@ export type ControlDomain =
   | "intelligence"
   | "local_commerce";
 
-export type HealthStatus = "healthy" | "degraded" | "unhealthy" | "unknown";
+export type HealthStatus = "healthy" | "degraded" | "unhealthy" | "quarantined" | "unknown";
 
 export type IncidentPriority = "P0" | "P1" | "P2" | "P3";
 

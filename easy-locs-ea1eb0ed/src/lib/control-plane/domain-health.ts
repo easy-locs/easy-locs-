@@ -1,6 +1,12 @@
 import { structuredLogger } from "@/lib/observability/structured-logger";
 import type { ControlDomain, DomainHealthSnapshot, HealthStatus } from "./types";
 
+interface QuarantineState {
+  reason: string;
+  startedAt: string;
+  quarantinedBy: string;
+}
+
 interface DomainMetrics {
   total_actions: number;
   failed_actions: number;
@@ -8,6 +14,7 @@ interface DomainMetrics {
   failing_actions: Map<string, number>;
   last_error_at?: string;
   window_start: string;
+  quarantine?: QuarantineState;
 }
 
 const HEALTH_WINDOW_MS = 5 * 60 * 1000;
@@ -65,7 +72,8 @@ function computeP95(latencies: number[]): number {
   return sorted[Math.min(idx, sorted.length - 1)];
 }
 
-function computeHealthStatus(errorRate: number, p95: number): HealthStatus {
+function computeHealthStatus(errorRate: number, p95: number, quarantine?: QuarantineState): HealthStatus {
+  if (quarantine) return "quarantined";
   if (errorRate > 0.2 || p95 > 10000) return "unhealthy";
   if (errorRate > 0.05 || p95 > 3000) return "degraded";
   return "healthy";
@@ -91,7 +99,7 @@ export function getDomainHealth(domain: ControlDomain): DomainHealthSnapshot {
   const errorRate = m.total_actions > 0 ? m.failed_actions / m.total_actions : 0;
   const successRate = 1 - errorRate;
   const p95 = computeP95(m.latencies_ms);
-  const status = computeHealthStatus(errorRate, p95);
+  const status = computeHealthStatus(errorRate, p95, m.quarantine);
 
   const topFailing = [...m.failing_actions.entries()]
     .sort((a, b) => b[1] - a[1])
@@ -128,8 +136,41 @@ export function getPlatformHealthStatus(): HealthStatus {
   const active = snapshots.filter((s) => s.status !== "unknown");
   if (active.length === 0) return "unknown";
   if (active.some((s) => s.status === "unhealthy")) return "unhealthy";
+  if (active.some((s) => s.status === "quarantined")) return "degraded";
   if (active.some((s) => s.status === "degraded")) return "degraded";
   return "healthy";
+}
+
+export function quarantineDomain(domain: ControlDomain, reason: string, by = "repair-system"): void {
+  const m = ensureMetrics(domain);
+  m.quarantine = {
+    reason,
+    startedAt: new Date().toISOString(),
+    quarantinedBy: by,
+  };
+  structuredLogger.warn(
+    domain as any,
+    "domain.quarantined",
+    `Domain ${domain} quarantined: ${reason}`,
+    { payload_summary: { domain, reason, by } }
+  );
+}
+
+export function liftDomainQuarantine(domain: ControlDomain): void {
+  const m = domainMetrics.get(domain);
+  if (m?.quarantine) {
+    delete m.quarantine;
+    structuredLogger.info(
+      domain as any,
+      "domain.quarantine_lifted",
+      `Domain ${domain} quarantine lifted`
+    );
+  }
+}
+
+export function isDomainQuarantined(domain: ControlDomain): boolean {
+  const m = domainMetrics.get(domain);
+  return !!m?.quarantine;
 }
 
 export function resetDomainMetrics(domain?: ControlDomain): void {

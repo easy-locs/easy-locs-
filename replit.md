@@ -1013,11 +1013,19 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 
 ### Autonomous Self-Repair Engine Architecture (Document)
 - **Architecture plan document**: `docs/AUTONOMOUS-SELF-REPAIR-ENGINE-ARCHITECTURE.md`
-- Covers 15 sections: global objective, 15-engine stack, domain coverage (10+ verticals), repair level matrix (L1–L4), 8 safety constraints, 7-stage repair pipeline, rollback/containment, proof system, observability, world-class standard, implementation roadmap (5 phases), core financial safety, autonomy graduation model (5 stages), no-hidden-expansion rules, final compilation
+- Covers 15 sections: global objective, 15-engine stack, domain coverage (10+ verticals), repair level matrix (L1–L4), 11 safety constraints, 7-stage repair pipeline, rollback/containment, proof system, observability, world-class standard, implementation roadmap (5 phases), core financial safety, autonomy graduation model (5 stages), no-hidden-expansion rules, final compilation
 - All 15 repair engines map to existing BaseEngine implementations
 - Financial safety: permanent L4 for balance/ledger/settlement/fraud; L3 for supervised financial ops; L2 only for read-only/display financial operations
 - Autonomy graduation: Stage 1 (detect-only) → Stage 5 (broader autonomy) with measurable criteria per stage
-- No code implementation — architecture plan only
+- **Constraints C9-C11**: No Autonomous Code Rewriting (C9), Sensitive-Data Minimization with PII redaction (C10), Domain Activation Sheet Requirement (C11)
+
+### Auto-Repair Phase 1 (Safety Foundation) — IMPLEMENTED
+- **repair-safety.ts**: Global repair counter (50/60s storm limit), per-engine (10/5min), per-domain (20/5min), per-issue (3/5min) limits; repairChainId circular loop detection (3-iteration threshold); quarantine manager (engine + domain scope, 30min auto-recovery, freeze at 3/5/10 consecutive rollbacks); engine manifest (fail-closed); operation allowlist (`invalidate|refresh|reset|reconnect|fallback|suppress`); Domain Activation Sheet data model + registry; PII scrubbing (email, card, JWT, phone patterns)
+- **engine-feature-flags.ts**: Fail-closed — `isEngineEnabled()` returns false for engines not in manifest via `isInManifest()`. Backward compatible via auto-registration through `EngineOrchestrator.register()`
+- **domain-health.ts**: `quarantineDomain()`, `liftDomainQuarantine()`, `isDomainQuarantined()` — exported from control-plane index; HealthStatus type includes `"quarantined"`
+- **base-engine.ts**: Added `domain` property (defaults to `category`); `executeTick()` checks engine quarantine, domain quarantine (both repair-safety and control-plane), and repair storm before running tick
+- **engine-orchestrator.ts**: Manifest registration via `registerInManifest()` on engine register; `repairSafety` in safety report; `getEnginesByDomain()` helper
+- **All defaults OFF**: Zero UI exposure, triple-gated, no visible change at runtime
 
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
