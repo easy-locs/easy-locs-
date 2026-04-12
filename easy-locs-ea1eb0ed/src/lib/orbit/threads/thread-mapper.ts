@@ -225,12 +225,13 @@ export function mapV2ConversationsToThreads(
           const existingDirect = findExistingDirectThread(threadMap, peerUserId);
           if (existingDirect) {
             const [, existing] = existingDirect;
-            existing.conversationId = conv.id;
-            existing.v2ConversationId = conv.id;
-            existing.threadId = conv.id;
             existing.isV2 = true;
-            if (conv.last_message_at && (!existing.lastMessageTime || conv.last_message_at > existing.lastMessageTime)) {
-              existing.lastMessageTime = conv.last_message_at;
+            const incomingTime = conv.last_message_at || conv.created_at;
+            if (incomingTime && (!existing.lastMessageTime || incomingTime > existing.lastMessageTime)) {
+              existing.conversationId = conv.id;
+              existing.v2ConversationId = conv.id;
+              existing.threadId = conv.id;
+              existing.lastMessageTime = incomingTime;
             }
             if (conv.last_message_preview && !existing.lastMessage) {
               existing.lastMessage = conv.last_message_preview;
@@ -275,17 +276,18 @@ export function mapV2ConversationsToThreads(
     const existingDirect = findExistingDirectThread(threadMap, peer.userId);
     if (existingDirect) {
       const [, existing] = existingDirect;
-      existing.conversationId = conv.id;
-      existing.v2ConversationId = conv.id;
-      existing.threadId = conv.id;
       existing.isV2 = true;
       if (peer.displayName && existing.name === "Contact") existing.name = peer.displayName;
       if (peer.email && !existing.email) existing.email = peer.email;
       if (peer.avatarUrl && !existing.avatarUrl) existing.avatarUrl = peer.avatarUrl;
       if (peer.orbitId && !existing.peerOrbitId) existing.peerOrbitId = peer.orbitId;
       existing.participantUserIds = normalized.map((p) => p.userId).filter(Boolean) as string[];
-      if (conv.last_message_at && (!existing.lastMessageTime || conv.last_message_at > existing.lastMessageTime)) {
-        existing.lastMessageTime = conv.last_message_at;
+      const incomingTime = conv.last_message_at || conv.created_at;
+      if (incomingTime && (!existing.lastMessageTime || incomingTime > existing.lastMessageTime)) {
+        existing.conversationId = conv.id;
+        existing.v2ConversationId = conv.id;
+        existing.threadId = conv.id;
+        existing.lastMessageTime = incomingTime;
       }
     } else {
       const v2Key = `v2-direct-${conv.id}`;
