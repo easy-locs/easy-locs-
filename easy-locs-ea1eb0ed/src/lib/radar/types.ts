@@ -4,7 +4,12 @@ export type RadarCategory =
   | "shops"
   | "grocery"
   | "property"
-  | "services";
+  | "services"
+  | "stay"
+  | "healthcare"
+  | "mobility"
+  | "nightlife"
+  | "experiences";
 
 export type RadarSubCategory =
   | "pizza"
