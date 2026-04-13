@@ -15,9 +15,8 @@ import { I18nProvider } from "@/lib/i18n";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 // ── Shell & system (critical — loaded eagerly for app tree) ──
-import ErrorBoundary from "@/components/ErrorBoundary";
 import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary";
-import { AppCrashBoundary } from "@/components/system/AppCrashBoundary";
+import { GlobalErrorBoundary } from "@/components/system/GlobalErrorBoundary";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 
 // ── UI chrome (critical — minimal for first paint) ──
@@ -332,9 +331,8 @@ const PageLoader = () => (
 
 const App = () => (
   <LazyMotion features={domAnimation} strict={false}>
-  <AppCrashBoundary>
+  <GlobalErrorBoundary>
   <ChunkRecoveryBoundary>
-  <ErrorBoundary>
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
   <QueryClientProvider client={queryClient}>
   <I18nProvider>
@@ -940,9 +938,8 @@ const App = () => (
   </I18nProvider>
   </QueryClientProvider>
   </ThemeProvider>
-  </ErrorBoundary>
   </ChunkRecoveryBoundary>
-  </AppCrashBoundary>
+  </GlobalErrorBoundary>
   </LazyMotion>
 );
 

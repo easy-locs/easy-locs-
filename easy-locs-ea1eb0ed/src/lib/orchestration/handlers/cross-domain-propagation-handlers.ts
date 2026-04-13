@@ -1,3 +1,16 @@
+/**
+ * Cross-Domain Propagation Handlers — Domain-boundary side effects.
+ *
+ * CONSOLIDATION (Task 1 & 2):
+ * Each handler calls only the specific invalidators it needs. The redundant
+ * re-emissions of DASHBOARD_COUNTERS_REFRESH have been removed — the
+ * installDashboardCacheListener already reacts to DASHBOARD_COUNTERS_REFRESH and
+ * installSuperAppBridge reacts to dashboard:counters_refresh. Double-emitting caused
+ * 3× cascade invalidation for every action.
+ *
+ * Rule: call invalidateXxxCaches() directly; never re-emit a secondary refresh event
+ * from within a primary event handler.
+ */
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { invalidateOrderCaches } from "@/lib/orders/order-cache-invalidator";
@@ -13,18 +26,15 @@ export function installCrossDomainPropagationHandlers(): () => void {
   unsubs.push(
     platformBus.on(APP_EVENTS.ORDER_CREATED, () => {
       invalidateDashboardCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
     platformBus.on(APP_EVENTS.PAYMENT_SUCCESS, () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
     platformBus.on(APP_EVENTS.ORDER_COMPLETED, () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
       invalidateDeliveryCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
     platformBus.on(APP_EVENTS.ORDER_CONFIRMED, () => {
       invalidateDashboardCaches();
@@ -36,7 +46,6 @@ export function installCrossDomainPropagationHandlers(): () => void {
     platformBus.on(APP_EVENTS.ORDER_CANCELLED, () => {
       invalidateOrderCaches();
       invalidateDashboardCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
   );
 
@@ -45,7 +54,6 @@ export function installCrossDomainPropagationHandlers(): () => void {
       invalidateOrderCaches();
       invalidateDashboardCaches();
       invalidateDeliveryCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
     platformBus.on(APP_EVENTS.MISSION_COMPLETED, () => {
       invalidateOrderCaches();
@@ -63,7 +71,6 @@ export function installCrossDomainPropagationHandlers(): () => void {
     platformBus.on(APP_EVENTS.REFUND_REQUESTED, () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
   );
 
@@ -78,7 +85,7 @@ export function installCrossDomainPropagationHandlers(): () => void {
 
   unsubs.push(
     platformBus.on(APP_EVENTS.ORBIT_MESSAGE_RECEIVED, () => {
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
+      invalidateDashboardCaches();
     }),
   );
 
@@ -86,7 +93,6 @@ export function installCrossDomainPropagationHandlers(): () => void {
     platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED, () => {
       invalidateOrderCaches();
       invalidateDashboardCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
     platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED, () => {
       invalidateOrderCaches();
@@ -109,7 +115,6 @@ export function installCrossDomainPropagationHandlers(): () => void {
     platformBus.on("marketplace:booking_paid", () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
     platformBus.on("marketplace:vente_completed", (event) => {
       const p = event.payload as Record<string, unknown>;
@@ -132,12 +137,10 @@ export function installCrossDomainPropagationHandlers(): () => void {
           currency: p.currency,
         }, "wallet");
       }
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
     platformBus.on("marketplace:booking_cancelled", () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
     platformBus.on("marketplace:review_submitted", () => {
       invalidateDashboardCaches();
@@ -190,7 +193,6 @@ export function installCrossDomainPropagationHandlers(): () => void {
         merchantId: p?.ownerId,
       }, "marketplace");
       invalidateDashboardCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
   );
 
@@ -204,7 +206,6 @@ export function installCrossDomainPropagationHandlers(): () => void {
   unsubs.push(
     platformBus.on("onboarding:completed", () => {
       invalidateDashboardCaches();
-      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
     platformBus.on("publish:gate_passed", () => {
       invalidateDashboardCaches();
