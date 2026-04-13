@@ -491,9 +491,24 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("wallet:", () => refreshModule("wallet"))
   );
 
-  // ── Property events (includes pm, deal, listing, rent) → refresh business module ──
+  // ── Marketplace events → refresh business module ──
+  unsubs.push(
+    platformBus.onPrefix("marketplace:", () => refreshModule("business"))
+  );
+
+  // ── PM events → refresh business module ──
+  unsubs.push(
+    platformBus.onPrefix("pm:", () => refreshModule("business"))
+  );
+
+  // ── Property events → refresh business module ──
   unsubs.push(
     platformBus.onPrefix("property:", () => refreshModule("business"))
+  );
+
+  // ── Deal events → refresh business module ──
+  unsubs.push(
+    platformBus.onPrefix("deal:", () => refreshModule("business"))
   );
 
   // ── Orbit communication events → refresh communication module ──
@@ -553,8 +568,6 @@ export function installPlatformReactions(): () => void {
     "orbit.call.ended": "orbit:call_ended",
     "booking.created": "marketplace:booking_created",
     "booking.confirmed": "marketplace:booking_confirmed",
-    "radar.location.shared": "radar:location_shared",
-    "radar.pin.selected": "radar:pin_selected",
     "marketplace.merchant.live": "marketplace:provider_went_live",
     "marketplace.contact.opened": "marketplace:contact_opened",
     "wallet.top_up": "wallet:top_up",
