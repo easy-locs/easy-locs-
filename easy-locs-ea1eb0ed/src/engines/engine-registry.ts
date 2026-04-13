@@ -6,10 +6,6 @@ import { getProofsByDomain, getProofStats } from "./core/proof-system";
 import { getPipelineReport } from "./core/repair-pipeline";
 
 import { AutoFixEngine } from "./self-healing/auto-fix-engine";
-import { SyncRepairEngine } from "./realtime/sync-repair-engine";
-import { UnreadIntegrityEngine } from "./realtime/unread-integrity-engine";
-import { ConversationConsistencyEngine } from "./orbit/conversation-consistency-engine";
-import { TaxonomyRuntimeEngine } from "./data/taxonomy-runtime-engine";
 
 let registered = false;
 
@@ -19,10 +15,6 @@ export function registerAllEngines(): void {
 
   engineOrchestrator.registerAll([
     new AutoFixEngine(),
-    new SyncRepairEngine(),
-    new UnreadIntegrityEngine(),
-    new ConversationConsistencyEngine(),
-    new TaxonomyRuntimeEngine(),
   ]);
 }
 
