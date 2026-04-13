@@ -92,6 +92,14 @@ const PILLAR_IDLE_STATE: Record<Pillar, PillarState> = {
   me: "ME_IDLE",
 };
 
+const ALL_IDLE_STATES: PillarState[] = [
+  "DASHBOARD_IDLE",
+  "RADAR_IDLE",
+  "ORBIT_IDLE",
+  "WALLET_IDLE",
+  "ME_IDLE",
+];
+
 const ALLOWED_TRANSITIONS: Record<PillarState, PillarState[]> = {
   DASHBOARD_IDLE: [
     "DASHBOARD_PREVIEW",
@@ -151,6 +159,7 @@ const ALLOWED_TRANSITIONS: Record<PillarState, PillarState[]> = {
     "RADAR_SEARCHING",
     "RADAR_DETAIL_PREVIEW",
     "DASHBOARD_IDLE",
+    "ORBIT_IDLE",
     "ORBIT_ACTIVE",
     "ORBIT_CONVERSATION",
     "WALLET_IDLE",
@@ -195,6 +204,7 @@ const ALLOWED_TRANSITIONS: Record<PillarState, PillarState[]> = {
     "RADAR_DETAIL_PREVIEW",
     "WALLET_IDLE",
     "WALLET_PAYMENT",
+    "ME_IDLE",
   ],
 
   WALLET_IDLE: [
@@ -202,19 +212,23 @@ const ALLOWED_TRANSITIONS: Record<PillarState, PillarState[]> = {
     "WALLET_CONFIRMATION",
     "DASHBOARD_IDLE",
     "RADAR_IDLE",
+    "ORBIT_IDLE",
     "ORBIT_ACTIVE",
     "ME_IDLE",
   ],
   WALLET_PAYMENT: [
     "WALLET_IDLE",
     "WALLET_CONFIRMATION",
+    ...ALL_IDLE_STATES,
   ],
   WALLET_CONFIRMATION: [
     "WALLET_IDLE",
     "DASHBOARD_IDLE",
     "RADAR_IDLE",
     "RADAR_RESULTS",
+    "ORBIT_IDLE",
     "ORBIT_ACTIVE",
+    "ME_IDLE",
   ],
 
   ME_IDLE: [
@@ -222,17 +236,19 @@ const ALLOWED_TRANSITIONS: Record<PillarState, PillarState[]> = {
     "ME_ANALYTICS",
     "DASHBOARD_IDLE",
     "RADAR_IDLE",
+    "ORBIT_IDLE",
     "ORBIT_ACTIVE",
     "WALLET_IDLE",
   ],
   ME_EDIT: [
     "ME_IDLE",
     "ME_ANALYTICS",
+    ...ALL_IDLE_STATES,
   ],
   ME_ANALYTICS: [
     "ME_IDLE",
     "ME_EDIT",
-    "DASHBOARD_IDLE",
+    ...ALL_IDLE_STATES,
   ],
 };
 

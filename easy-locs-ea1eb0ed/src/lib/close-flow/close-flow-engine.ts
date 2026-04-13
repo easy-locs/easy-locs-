@@ -125,26 +125,26 @@ export function initCloseFlowEngine() {
   eventBus.on("ride.completed", (payload: any) => {
     const { jobId, customerUserId, riderUserId, currentPrice, currency } = payload;
 
-    // 1. Emit payment
-    void eventBus.emit("wallet.payment.required", {
-      context_type: "mobility_ride",
-      context_id: jobId,
-      user_id: customerUserId,
+    // 1. Emit payment via platformBus (triggers wallet:payment_requested handler in super-app-bridge)
+    platformBus.emit("wallet:payment_requested", {
+      referenceType: "mobility_ride",
+      referenceId: jobId,
+      userId: customerUserId,
       amount: currentPrice ?? 0,
       currency: currency ?? "AED",
       metadata: { rider_user_id: riderUserId },
-    });
+    }, "wallet");
 
-    // 2. Start close flow after brief delay (let payment process)
-    setTimeout(() => {
+    // 2. Start close flow on next animation frame (let payment process first)
+    requestAnimationFrame(() => {
       useCloseFlowStore.getState().start({
         domain: "ride",
         entityId: jobId,
         returnTo: getReturnRoute("ride"),
-        skipPayment: true, // payment already emitted above
+        skipPayment: true,
         metadata: { customerUserId, riderUserId, amount: currentPrice, currency },
       });
-    }, 2000);
+    });
   });
 
   // ── ORDER COMPLETED ──
@@ -152,7 +152,7 @@ export function initCloseFlowEngine() {
     const { orderId, shopId } = payload;
     if (!orderId) return;
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       useCloseFlowStore.getState().start({
         domain: "order",
         entityId: orderId,
@@ -160,7 +160,7 @@ export function initCloseFlowEngine() {
         skipPayment: true,
         metadata: { shopId },
       });
-    }, 1500);
+    });
   });
 
   // ── DELIVERY COMPLETED ──
@@ -169,7 +169,7 @@ export function initCloseFlowEngine() {
     const entityId = jobId || orderId;
     if (!entityId) return;
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       useCloseFlowStore.getState().start({
         domain: "delivery",
         entityId,
@@ -177,15 +177,18 @@ export function initCloseFlowEngine() {
         skipPayment: true,
         metadata: payload,
       });
-    }, 1500);
+    });
   });
 
   // ── BOOKING COMPLETED ──
-  eventBus.on("marketplace:booking_completed", (payload: any) => {
-    const { bookingId } = payload;
-    if (!bookingId) return;
-
-    setTimeout(() => {
+  // Two canonical platformBus events can signal booking completion:
+  //   - marketplace:booking_completed  (from notation-bridge: booking.completed → marketplace:booking_completed)
+  //   - booking:completed              (emitted directly by store / service layer)
+  // Both are handled identically with deduplication on entityId.
+  const handleBookingCompleted = (bookingId: string, payload: Record<string, unknown>) => {
+    const alreadyActive = useCloseFlowStore.getState().active?.entityId === bookingId;
+    if (alreadyActive) return;
+    requestAnimationFrame(() => {
       useCloseFlowStore.getState().start({
         domain: "booking",
         entityId: bookingId,
@@ -193,7 +196,19 @@ export function initCloseFlowEngine() {
         skipPayment: true,
         metadata: payload,
       });
-    }, 1500);
+    });
+  };
+
+  platformBus.on("marketplace:booking_completed", (event) => {
+    const payload = event.payload as Record<string, unknown>;
+    const bookingId = payload?.bookingId as string | undefined;
+    if (bookingId) handleBookingCompleted(bookingId, payload);
+  });
+
+  platformBus.on("booking:completed", (event) => {
+    const payload = event.payload as Record<string, unknown>;
+    const bookingId = (payload?.bookingId ?? payload?.id) as string | undefined;
+    if (bookingId) handleBookingCompleted(bookingId, payload);
   });
 
   if (import.meta.env.DEV) console.log("[close-flow] Engine initialized — all domains active");

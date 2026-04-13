@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   resolveNavigationIntent,
@@ -14,7 +14,17 @@ import {
   useNavigationStateMachine,
   PILLAR_IDLE_STATE,
   type PillarState,
+  type PillarContext,
 } from "@/stores/navigationStateMachine";
+import { platformBus } from "@/lib/shared/platform-bus";
+
+const PILLAR_ROOT_PATHS: Record<Pillar, string[]> = {
+  dashboard: ["/", "/dashboard"],
+  radar: ["/radar"],
+  orbit: ["/orbit", "/orbit/threads"],
+  wallet: ["/wallet"],
+  me: ["/me"],
+};
 
 export interface SmartNavigationState {
   activeOverlay: OverlayType | null;
@@ -37,6 +47,11 @@ export function useSmartNavigation() {
   const fsmUpdateCtx = useNavigationStateMachine((s) => s.updatePillarContext);
   const fsmCurrentState = useNavigationStateMachine((s) => s.currentState);
   const fsmActivePillar = useNavigationStateMachine((s) => s.activePillar);
+  const fsmGetCtx = useNavigationStateMachine((s) => s.getPillarContext);
+  const fsmPillarContexts = useNavigationStateMachine((s) => s.pillarContexts);
+
+  const prevPillarRef = useRef<Pillar | null>(null);
+  const prevPathRef = useRef<string>(location.pathname);
 
   useEffect(() => {
     const pillar = routeToPillar(location.pathname);
@@ -44,6 +59,44 @@ export function useSmartNavigation() {
       fsmForceSync(pillar);
     }
   }, [location.pathname, fsmActivePillar, fsmForceSync]);
+
+  useEffect(() => {
+    const pillar = routeToPillar(location.pathname);
+    const prevPillar = prevPillarRef.current;
+    const prevPath = prevPathRef.current;
+
+    if (prevPillar !== null && prevPillar !== pillar) {
+      // ── Save context for the pillar we're leaving ──
+      fsmUpdateCtx(prevPillar, {
+        lastRoute: prevPath,
+        lastScroll: window.scrollY,
+      });
+
+      // ── Restore context for the pillar we're entering (only at root) ──
+      const isAtPillarRoot = PILLAR_ROOT_PATHS[pillar].some(
+        (root) => location.pathname === root
+      );
+      if (isAtPillarRoot) {
+        const ctx = fsmGetCtx(pillar);
+        if (ctx.lastRoute && ctx.lastRoute !== location.pathname) {
+          navigate(ctx.lastRoute, { replace: true });
+        } else if (ctx.lastScroll !== undefined && ctx.lastScroll > 0) {
+          requestAnimationFrame(() => window.scrollTo({ top: ctx.lastScroll!, behavior: "instant" }));
+        }
+        if (ctx.lastPosition) {
+          platformBus.emit("radar:geo_updated", {
+            lat: ctx.lastPosition.lat,
+            lng: ctx.lastPosition.lng,
+            zoom: ctx.lastPosition.zoom,
+            _restoreContext: true,
+          }, "system");
+        }
+      }
+    }
+
+    prevPathRef.current = location.pathname;
+    prevPillarRef.current = pillar;
+  }, [location.pathname, fsmGetCtx, fsmUpdateCtx, navigate]);
 
   const [overlayState, setOverlayState] = useState<SmartNavigationState>({
     activeOverlay: null,
@@ -130,9 +183,18 @@ export function useSmartNavigation() {
     if (route && pillar) {
       haptic("medium");
       setReturnOrigin(location.pathname);
-      setTimeout(() => navigate(route), 150);
+      requestAnimationFrame(() => navigate(route));
     }
   }, [overlayState.overlayRoute, fsmUpgradeOverlay, navigate, location.pathname]);
+
+  const currentPillarContext: PillarContext = fsmPillarContexts[currentPillar] ?? {};
+
+  const savePillarContext = useCallback(
+    (ctx: Partial<PillarContext>) => {
+      fsmUpdateCtx(currentPillar, ctx);
+    },
+    [currentPillar, fsmUpdateCtx]
+  );
 
   return {
     smartNavigate,
@@ -140,6 +202,8 @@ export function useSmartNavigation() {
     closeOverlay,
     upgradeToFull,
     currentPillar,
+    currentPillarContext,
+    savePillarContext,
   };
 }
 
