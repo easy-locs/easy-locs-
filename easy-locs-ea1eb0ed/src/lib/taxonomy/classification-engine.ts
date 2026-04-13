@@ -4,12 +4,9 @@
  * Multi-layer classifier: Rules → Scoring → Confidence → Learning
  * Replaces basic fallback-to-services logic.
  */
-import {
-  type Vertical,
-  CANONICAL_VERTICALS,
-  normalizeSubcategory,
-  getParentVertical,
-} from "@/lib/taxonomy/world-class-taxonomy";
+import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
+import { CANONICAL_VERTICALS } from "@/lib/taxonomy/world-class-taxonomy";
+import { normalizeSubcategory, getParentVertical } from "./taxonomy-aliases";
 
 // ═══════════════════════════════════════════════════════════
 //  TYPES

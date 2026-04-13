@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import type { RadarResultItem } from "@/lib/radar/radar-result-item";
-import { verticalToRadarCategory } from "@/lib/taxonomy/world-class-taxonomy";
+import { verticalToRadarCategory } from "@/lib/taxonomy/taxonomy-aliases";
 import RadarFoodCard from "./RadarFoodCard";
 import RadarHotelCard from "./RadarHotelCard";
 import RadarPropertyCard from "./RadarPropertyCard";

@@ -4,12 +4,12 @@
  * Integrates source-based visibility caps.
  * Returns score, status, blockers, warnings, and gate flags.
  */
+import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 import {
   normalizeVertical,
   getCanonicalVertical,
   getClusterForSubcategory,
-  type Vertical,
-} from "@/lib/taxonomy/world-class-taxonomy";
+} from "@/lib/taxonomy/taxonomy-aliases";
 import { applySourceVisibility } from "@/lib/source/source-hygiene";
 
 export type ShopAuditResult = {

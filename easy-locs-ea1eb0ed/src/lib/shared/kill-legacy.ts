@@ -4,11 +4,6 @@ const FORBIDDEN_TABLES = [
   "messages",
   "conversation_threads",
   "chat_threads",
-  "legacy_notifications",
-  "orbit_messages",
-  "orbit_threads",
-  "message_reactions",
-  "message_reads",
 ] as const;
 
 const FORBIDDEN_SET = new Set<string>(FORBIDDEN_TABLES);

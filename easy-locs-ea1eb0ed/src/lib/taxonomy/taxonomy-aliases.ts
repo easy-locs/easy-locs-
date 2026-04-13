@@ -1,5 +1,12 @@
 import { getAllSubcategoryValues } from "@/lib/taxonomy/category-tree";
-import type { Vertical } from "./world-class-taxonomy";
+import type {
+  Vertical,
+  RadarMainCategory,
+  TaxonomyVertical,
+  TaxonomySubcategory,
+  TaxonomyCluster,
+} from "./world-class-taxonomy";
+import { CANONICAL_VERTICALS } from "./world-class-taxonomy";
 
 const ALL_SUBS = new Set(getAllSubcategoryValues());
 
@@ -272,4 +279,96 @@ export function normalizeSubcategory(raw?: string | null): string | null {
   const alias = SUBCATEGORY_ALIASES[rawKey] ?? SUBCATEGORY_ALIASES[cleanKey];
   if (alias) return alias;
   return cleanKey;
+}
+
+export function verticalToRadarCategory(vertical: string): RadarMainCategory {
+  const norm = normalizeVertical(vertical);
+  const found = CANONICAL_VERTICALS.find((v) => v.value === norm);
+  return found?.radarCategory ?? "shops";
+}
+
+export function getCanonicalVertical(value: string): TaxonomyVertical | undefined {
+  const norm = normalizeVertical(value);
+  return CANONICAL_VERTICALS.find((v) => v.value === norm);
+}
+
+export function getCanonicalSubcategory(value: string): TaxonomySubcategory | undefined {
+  const norm = normalizeSubcategory(value);
+  if (!norm) return undefined;
+  for (const vertical of CANONICAL_VERTICALS) {
+    const found = vertical.subcategories.find((s) => s.value === norm);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+export function getParentVertical(subValue: string): TaxonomyVertical | undefined {
+  const norm = normalizeSubcategory(subValue);
+  if (!norm) return undefined;
+  return CANONICAL_VERTICALS.find((v) =>
+    v.subcategories.some((s) => s.value === norm)
+  );
+}
+
+export function getClustersForVertical(vertical: string): TaxonomyCluster[] {
+  const found = getCanonicalVertical(vertical);
+  return found?.clusters ?? [];
+}
+
+export function getSubcategoriesForVertical(vertical: string): TaxonomySubcategory[] {
+  const found = getCanonicalVertical(vertical);
+  return found?.subcategories ?? [];
+}
+
+export function getSubcategoriesForCluster(
+  vertical: string,
+  cluster: string
+): TaxonomySubcategory[] {
+  const found = getCanonicalVertical(vertical);
+  if (!found) return [];
+  return found.subcategories.filter((s) => s.cluster === cluster);
+}
+
+export function hierarchyMatchScore(
+  pointSub: string | null | undefined,
+  targetSub?: string | null,
+  targetVertical?: string | null
+): number {
+  if (!pointSub) return 0;
+  const normPoint = normalizeSubcategory(pointSub);
+  if (!normPoint) return 0;
+
+  if (targetSub) {
+    const normTarget = normalizeSubcategory(targetSub);
+    if (normPoint === normTarget) return 3;
+  }
+
+  const pointVertical = getParentVertical(normPoint);
+  if (!pointVertical) return 0;
+
+  if (targetSub) {
+    const normTarget = normalizeSubcategory(targetSub);
+    if (normTarget) {
+      const targetInfo = pointVertical.subcategories.find((s) => s.value === normTarget);
+      const pointInfo = pointVertical.subcategories.find((s) => s.value === normPoint);
+      if (targetInfo && pointInfo && targetInfo.cluster === pointInfo.cluster) return 2;
+    }
+  }
+
+  if (targetVertical) {
+    const normVert = normalizeVertical(targetVertical);
+    if (pointVertical.value === normVert) return 1;
+  }
+
+  return 0;
+}
+
+export function getClusterForSubcategory(subValue: string): string | null {
+  const norm = normalizeSubcategory(subValue);
+  if (!norm) return null;
+  for (const v of CANONICAL_VERTICALS) {
+    const found = v.subcategories.find((s) => s.value === norm);
+    if (found) return found.cluster;
+  }
+  return null;
 }

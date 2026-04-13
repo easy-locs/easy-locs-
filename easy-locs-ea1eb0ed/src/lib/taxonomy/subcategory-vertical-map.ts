@@ -3,7 +3,8 @@
  * Uses the canonical taxonomy to derive the correct vertical from a subcategory.
  * Used at ingestion time AND for bulk correction of misclassified shops.
  */
-import { getParentVertical, normalizeVertical, type Vertical } from "./world-class-taxonomy";
+import type { Vertical } from "./world-class-taxonomy";
+import { getParentVertical, normalizeVertical } from "./taxonomy-aliases";
 
 /**
  * Hard overrides for subcategories that don't exist in the canonical taxonomy

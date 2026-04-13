@@ -23,7 +23,7 @@ import {
   normalizeSubcategory,
   getClusterForSubcategory,
   getParentVertical,
-} from "@/lib/taxonomy/world-class-taxonomy";
+} from "@/lib/taxonomy/taxonomy-aliases";
 import { fetchOSMPlaces, osmCategoryToRadarCategory } from "@/lib/geo/osm-places-engine";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";
 import { FALLBACK_RESTAURANTS } from "@/data/fallback-restaurants";

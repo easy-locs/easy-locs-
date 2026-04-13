@@ -11,7 +11,7 @@ export type {
   TaxonomySubcategory as SubcategoryDef,
 } from "@/lib/taxonomy/world-class-taxonomy";
 
-import { getCanonicalSubcategory } from "@/lib/taxonomy/world-class-taxonomy";
+import { getCanonicalSubcategory } from "@/lib/taxonomy/taxonomy-aliases";
 
 export function getSubcategoryLabel(vertical: string, sub: string): string {
   const info = getCanonicalSubcategory(sub);
