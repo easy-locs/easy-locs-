@@ -25,10 +25,10 @@ export function invalidateStorefrontCaches() {
 
 export function installStorefrontCacheListener(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED as any, () => invalidateStorefrontCaches()),
-    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED as any, () => invalidateStorefrontCaches()),
-    platformBus.on(APP_EVENTS.STOREFRONT_PRODUCT_UPDATED as any, () => invalidateStorefrontCaches()),
-    platformBus.on(APP_EVENTS.STOREFRONT_MENU_UPDATED as any, () => invalidateStorefrontCaches()),
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED, () => invalidateStorefrontCaches()),
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED, () => invalidateStorefrontCaches()),
+    platformBus.on(APP_EVENTS.STOREFRONT_PRODUCT_UPDATED, () => invalidateStorefrontCaches()),
+    platformBus.on(APP_EVENTS.STOREFRONT_MENU_UPDATED, () => invalidateStorefrontCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

@@ -94,11 +94,11 @@ export function useSeasonalData() {
     if (editingId) {
       await notifyReservation(t("page.seasonal.modified_reservation_notif"), t("page.seasonal.modified_reservation_msg").replace("{name}", record.guest_name), bookingEmail || undefined);
       toast({ title: t("page.seasonal.booking_modified") });
-      platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_UPDATED as any, { bookingId: editingId }, "seasonal");
+      platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_UPDATED, { bookingId: editingId }, "seasonal");
     } else {
       await notifyReservation(t("page.seasonal.new_reservation_notif"), t("page.seasonal.new_reservation_msg").replace("{name}", record.guest_name), bookingEmail || undefined);
       toast({ title: t("page.seasonal.booking_added") });
-      platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_CREATED as any, {}, "seasonal");
+      platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_CREATED, {}, "seasonal");
     }
     await load();
     return true;
@@ -107,7 +107,7 @@ export function useSeasonalData() {
   const deleteBooking = useCallback(async (id: string) => {
     await seasonalRepo.deleteSeasonalBooking(id);
     toast({ title: t("page.seasonal.booking_deleted") });
-    platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_CANCELLED as any, { bookingId: id }, "seasonal");
+    platformBus.emit(APP_EVENTS.SEASONAL_BOOKING_CANCELLED, { bookingId: id }, "seasonal");
     await load();
   }, [toast, t, load]);
 
@@ -125,7 +125,7 @@ export function useSeasonalData() {
     }));
     if (newBookings.length === 0) { toast({ title: t("page.seasonal.all_exist") }); return 0; }
     await seasonalRepo.insertSeasonalBookings(newBookings);
-    platformBus.emit(APP_EVENTS.SEASONAL_ICAL_SYNCED as any, { count: newBookings.length }, "seasonal");
+    platformBus.emit(APP_EVENTS.SEASONAL_ICAL_SYNCED, { count: newBookings.length }, "seasonal");
     await load();
     return newBookings.length;
   }, [orgId, user, bookings, t, toast, load]);
@@ -142,7 +142,7 @@ export function useSeasonalData() {
     }));
     if (newBookings.length === 0) { toast({ title: t("page.seasonal.all_exist") }); return 0; }
     await seasonalRepo.insertSeasonalBookings(newBookings);
-    platformBus.emit(APP_EVENTS.SEASONAL_ICAL_SYNCED as any, { count: newBookings.length }, "seasonal");
+    platformBus.emit(APP_EVENTS.SEASONAL_ICAL_SYNCED, { count: newBookings.length }, "seasonal");
     await load();
     return newBookings.length;
   }, [orgId, user, bookings, t, toast, load]);

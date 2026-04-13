@@ -27,6 +27,37 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Runtime Data Pipeline** (`src/lib/platform/runtime-pipeline.ts`): Real-time event intake, normalization (12 categories), prioritization (4 levels), enrichment, deduplication (5s TTL), retry (exponential backoff, 3 max), dead-letter queue, telemetry (throughput/latency/category breakdown), audit log (500 entries), replay capability. `runtimePipeline` singleton.
 - **Module Health System** (`src/lib/platform/module-health-system.ts`): Per-module health (online/degraded/offline), latency tracking, error rate, missing dependencies, data freshness, queue backlog, failed events, broken UI surfaces, broken actions, policy violations, security warnings. Global snapshot across all pillars. `moduleHealthSystem` singleton.
 
+## 25 Critical System Layers (`src/lib/systems/`)
+All layers import from canonical `platform-bus`, emit colon-notation events, zero `as any` casts, zero duplicates.
+- **L1 Design System**: Spacing/typography/color/elevation/animation/grid/radius tokens, component registry, breakpoints
+- **L2 Navigation System**: 5 pillars (dashboard/radar/orbit/wallet/me), deep link patterns, quick actions, transition history
+- **L3 Permission Framework**: 10 roles, 13 permissions, 11 scopes, ownership rules per resource, visibility levels
+- **L4 Pricing Engine**: Commission tables per vertical+seller type, delivery fees, tax rates (14 countries), loyalty discounts, refund calculator
+- **L5 Growth Engine**: Loyalty tiers (bronze→platinum), referral system, coupon validation, abandoned cart detection
+- **L6 Seller OS**: Dashboard metrics, performance scoring, seller levels, payout calculation, milestone events, low stock alerts
+- **L7 Delivery System**: Courier dispatch (nearest/round_robin/broadcast), ETA calculation, proof-of-delivery, position tracking
+- **L8 Realtime Engine**: WebSocket channels, presence tracking, message dedup, ordered delivery, exponential reconnect backoff
+- **L9 Offline System**: Pending action queue, cache TTLs, conflict resolution (server/client/merge), sync status
+- **L10 Search Engine**: Cross-vertical search, 8 ranking factors, trust scoring, personalization, tokenization
+- **L11 Analytics Engine**: Event buffer, 3 standard funnels, feature flags, A/B testing, bus listener auto-tracking
+- **L12 i18n System**: 30+ locales, 21 currencies, 14 country configs, RTL detection, address formats, phone formatting, currency conversion
+- **L13 Compliance Engine**: 5 KYC levels, AML screening, transaction limits, GDPR exportable fields, data retention policies
+- **L14 Admin System**: 7 admin roles, audit logging, support tickets with SLA deadlines, platform metrics dashboard
+- **L15 Notification System**: 13 templates, 5 channels (push/in_app/sms/email/whatsapp), quiet hours, throttling, batch send
+- **L16 Identity Graph**: Multi-provider identity, trust/risk scoring, device fingerprinting, identity merge, suspicious activity detection
+- **L17 Moderation System**: Content policies per target type, strike system, priority calculation, ban/mute/shadowban
+- **L18 Catalog Engine**: Cross-vertical catalog validation, required attributes per vertical, inventory alerts, SEO slugs, cross-listing
+- **L19 SLA Engine**: 3 default policies (support/delivery/seller), escalation chains, penalty rules, breach detection
+- **L20 Smart Home**: IoT devices (9 categories), guest access codes, automation rules, device health monitoring
+- **L21 Component Library**: Toast/bottom-sheet/empty-state/skeleton/stepper/filter-chip/pull-to-refresh/infinite-scroll/swipe-action configs
+- **L22 Automation Engine**: 4 built-in workflows (order lifecycle/delivery tracking/seller payout/KYC review), trigger conditions, step chaining
+- **L23 Multi-tenant System**: 5 plan tiers (free→enterprise), quotas, team members with 5 roles, branding, trial management
+- **L24 API Gateway**: 15 REST endpoints, 4 rate limit tiers, API keys with scopes, webhook subscriptions, metrics
+- **L25 Premium UX**: 6 page transitions, 8 micro-interactions, 7 gesture configs, haptic patterns, skeleton shimmer
+
+**Schema Registry**: 58 total entries (33 original + 25 system layers) in `src/lib/schema/schema-registry.ts`
+**Canonical Events**: 195+ events in `src/lib/schema/canonical-events.ts` — all colon notation, zero dot notation
+
 ## Multi-Platform + Dual-Experience Architecture (Block 2)
 - **Platform Capability Layer** (`src/lib/platform/platform-capability-layer.ts`): Unified device abstraction for 15 capabilities (camera, mic, geo, push notifications, file upload, contact sync, QR scan, biometric auth, share, clipboard, deep links, payment methods, vibration, orientation, network info). Each capability: detection, permission request, fallback method, status tracking. `platformCapabilities` singleton. `executeWithFallback()` for graceful degradation.
 - **Responsive System** (`src/lib/platform/responsive-system.ts`): Breakpoint-aware layout engine (xs/sm/md/lg/xl/2xl). 3 device classes (mobile/tablet/desktop), 3 layout modes (mobile_stack/tablet_hybrid/desktop_multi). Auto-installed resize/orientation listeners. Hooks: `useDeviceContext()`, `useLayoutConfig()`, `useBreakpoint()`, `useIsDesktop()`, `useIsMobileDevice()`, `useIsTablet()`. Utilities: `responsiveValue()`, `getResponsiveColumns()`, `getResponsiveSpacing()`, `getTypography()`. Typography scale per device class.

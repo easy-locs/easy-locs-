@@ -6,49 +6,65 @@ export function initRealEstateEngines(): void {
   if (initialized) return;
   initialized = true;
 
-  platformBus.on("rent.paid", (_payload) => {
-    platformBus.emit("automation.action.generate_receipt", _payload);
-  });
+  platformBus.on("pm:payment_received", (event) => {
+    const data = event.payload as Record<string, unknown>;
+    const paymentId = (data.paymentId as string) ?? "";
+    const amount = (data.amount as number) ?? 0;
+    const currency = (data.currency as string) ?? "AED";
+    const leaseId = (data.leaseId as string) ?? "";
+    const status = (data.status as string) ?? "pending";
+    const isFull = data.full === true;
 
-  platformBus.on("lease.generated", (_payload) => {
-    platformBus.emit("automation.action.compliance_check", _payload);
-  });
-
-  platformBus.on("rent.partial_payment", (_payload) => {
-    platformBus.emit("orbit.notify", {
-      userId: (_payload as Record<string, unknown>).landlordId,
-      type: "partial_payment",
-      title: "Partial rent payment received",
-      body: `Partial payment for ${(_payload as Record<string, unknown>).period}`,
-      data: _payload,
-    });
-  });
-
-  platformBus.on("compliance.report_generated", (_payload) => {
-    const data = _payload as Record<string, unknown>;
-    if (data.overallStatus === "non_compliant") {
-      platformBus.emit("orbit.notify", {
-        userId: data.landlordId,
-        type: "compliance_alert",
-        title: "Property compliance issue",
-        body: `${data.missingCount} missing document(s) for property`,
-        data,
-      });
+    if (status === "paid" || isFull) {
+      const receiptNumber = `RCPT-${paymentId.replace("rent_", "")}`;
+      platformBus.emit("wallet:receipt_generated", {
+        receiptNumber,
+        paymentId,
+        amount,
+        currency,
+        leaseId,
+        tenantId: data.tenantOrbitId ?? data.tenantId,
+        landlordId: data.ownerOrbitId ?? data.landlordId,
+        period: data.period ?? new Date().toISOString().slice(0, 7),
+        generatedAt: new Date().toISOString(),
+      }, "pm");
+    } else {
+      platformBus.emit("notification:created", {
+        userId: data.ownerOrbitId ?? data.landlordId,
+        type: "rent_payment_pending",
+        title: "Rent payment recorded",
+        body: `Payment of ${amount} ${currency} for lease ${leaseId} is ${status}`,
+        data: { paymentId, amount, currency, leaseId, status },
+      }, "pm");
     }
   });
 
-  platformBus.on("receipt.generated", (_payload) => {
-    const data = _payload as Record<string, unknown>;
-    platformBus.emit("orbit.notify", {
+  platformBus.on("pm:lease_created", (event) => {
+    const data = event.payload as Record<string, unknown>;
+    platformBus.emit("notification:created", {
+      userId: data.tenantId,
+      type: "lease_created",
+      title: "New lease agreement",
+      body: `Lease created for property ${data.propertyId}`,
+      data: { leaseId: data.leaseId, propertyId: data.propertyId },
+    }, "pm");
+  });
+
+  platformBus.on("wallet:receipt_generated", (event) => {
+    const data = event.payload as Record<string, unknown>;
+    if (!data.tenantId || !data.receiptNumber) return;
+    platformBus.emit("notification:created", {
       userId: data.tenantId,
       type: "receipt_available",
       title: "Rent receipt available",
-      body: `Receipt ${data.receiptNumber} for ${data.period}`,
-      data,
-    });
+      body: `Receipt ${data.receiptNumber} for ${data.period ?? "current period"}`,
+      data: { receiptNumber: data.receiptNumber, period: data.period },
+    }, "wallet");
   });
 
-  platformBus.emit("engines.real_estate.initialized", {
+  platformBus.emit("system:module_status_changed", {
+    module: "real-estate-engines",
+    status: "online",
     engines: [
       "lease-generator",
       "rent-call",
@@ -57,5 +73,5 @@ export function initRealEstateEngines(): void {
       "legal-engine",
     ],
     timestamp: Date.now(),
-  });
+  }, "system");
 }

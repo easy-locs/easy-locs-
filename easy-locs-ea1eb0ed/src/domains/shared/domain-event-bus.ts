@@ -52,7 +52,7 @@ export function publishDomainEvent(event: DomainEvent): void {
 
   // Bridge to platformBus (sync, for UI reactivity)
   try {
-    platformBus.emit(event.type as any, event.payload as any, event.source as any);
+    platformBus.emit(event.type, event.payload, event.source);
   } catch {
     // platformBus type mismatch is non-fatal during migration
   }

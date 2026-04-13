@@ -329,9 +329,9 @@ export function installUiRepairBridge(): () => void {
 
   unsubscribers.push(
     platformBus.on("ui-engine:report", (event) => handleUiEngineReport(event.payload as UiEngineReportPayload)),
-    platformBus.on("text.integrity.violation", (event) => handleTextViolation(event.payload as ViolationPayload)),
-    platformBus.on("layout.integrity.violation", (event) => handleLayoutViolation(event.payload as ViolationPayload)),
-    platformBus.on("i18n.localization.violation", (event) => handleI18nViolation(event.payload as ViolationPayload)),
+    platformBus.on("text:integrity_violation", (event) => handleTextViolation(event.payload as ViolationPayload)),
+    platformBus.on("layout:integrity_violation", (event) => handleLayoutViolation(event.payload as ViolationPayload)),
+    platformBus.on("i18n:localization_violation", (event) => handleI18nViolation(event.payload as ViolationPayload)),
   );
 
   if (import.meta.env.DEV) {

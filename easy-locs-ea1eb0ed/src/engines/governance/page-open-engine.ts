@@ -142,7 +142,7 @@ function finalizeRecord(record: PageOpenRecord): void {
     pageOpenViolations.push(v);
     persistViolation(v);
 
-    platformBus.emit("ui-engine:report" as any, {
+    platformBus.emit("ui-engine:report", {
       engineId: "page-open-reliability",
       failure: {
         pageId: record.pageId,

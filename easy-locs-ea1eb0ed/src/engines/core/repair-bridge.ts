@@ -200,7 +200,7 @@ function handleTaxonomyConflict(event: { payload: TaxonomyConflictPayload }): vo
 
 export function installRepairBridge(): () => void {
   if (!unsubscribe) {
-    unsubscribe = platformBus.on("taxonomy.conflict.detected", handleTaxonomyConflict as any);
+    unsubscribe = platformBus.on("taxonomy:conflict_detected", handleTaxonomyConflict);
   }
 
   if (import.meta.env.DEV) {

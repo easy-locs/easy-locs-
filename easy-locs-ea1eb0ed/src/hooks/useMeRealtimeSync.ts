@@ -60,7 +60,7 @@ export function useMeRealtimeSync() {
       void loadProfile();
     });
 
-    const unsub3 = platformBus.on("orbit:profile_updated" as any, () => {
+    const unsub3 = platformBus.on("orbit:profile_updated", () => {
       void loadProfile();
     });
 

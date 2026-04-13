@@ -25,14 +25,14 @@ export function invalidateDashboardCaches() {
 
 export function installDashboardCacheListener(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.DASHBOARD_REFRESH as any, () => invalidateDashboardCaches()),
-    platformBus.on(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH as any, () => invalidateDashboardCaches()),
-    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED as any, () => invalidateDashboardCaches()),
-    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED as any, () => invalidateDashboardCaches()),
-    platformBus.on(APP_EVENTS.ORDER_COMPLETED as any, () => invalidateDashboardCaches()),
-    platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS as any, () => invalidateDashboardCaches()),
-    platformBus.on(APP_EVENTS.RENTAL_RENT_CALL_PAID as any, () => invalidateDashboardCaches()),
-    platformBus.on(APP_EVENTS.DELIVERY_COMPLETED as any, () => invalidateDashboardCaches()),
+    platformBus.on(APP_EVENTS.DASHBOARD_REFRESH, () => invalidateDashboardCaches()),
+    platformBus.on(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, () => invalidateDashboardCaches()),
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED, () => invalidateDashboardCaches()),
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED, () => invalidateDashboardCaches()),
+    platformBus.on(APP_EVENTS.ORDER_COMPLETED, () => invalidateDashboardCaches()),
+    platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS, () => invalidateDashboardCaches()),
+    platformBus.on(APP_EVENTS.RENTAL_RENT_CALL_PAID, () => invalidateDashboardCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_COMPLETED, () => invalidateDashboardCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

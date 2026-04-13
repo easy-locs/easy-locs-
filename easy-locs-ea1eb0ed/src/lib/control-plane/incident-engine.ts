@@ -1,5 +1,5 @@
 import { structuredLogger } from "@/lib/observability/structured-logger";
-import { platformBus, PLATFORM_EVENTS } from "@/lib/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { ControlDomain, Incident, IncidentPriority, IncidentStatus } from "./types";
 
 const activeIncidents: Incident[] = [];
@@ -94,12 +94,12 @@ export function createIncident(opts: {
     }
   );
 
-  platformBus.emit("system.incident.created", "system", {
+  platformBus.emit("sla:warning", {
     incident_id: incident.id,
     domain: opts.domain,
     priority,
     title: opts.title,
-  });
+  }, "system");
 
   if (activeIncidents.length > 100) {
     const resolved = activeIncidents.findIndex((i) => i.status === "resolved");

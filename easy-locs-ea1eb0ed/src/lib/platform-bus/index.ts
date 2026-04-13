@@ -242,8 +242,8 @@ export const PLATFORM_EVENTS = {
   SCRAPING_IMAGE_MISMATCH: "scraping.image.mismatch",
   SCRAPING_ENTITY_MISMATCH: "scraping.entity.mismatch",
 
-  TAXONOMY_CONFLICT_DETECTED: "taxonomy.conflict.detected",
-  TAXONOMY_MISMATCH_FIXED: "taxonomy.mismatch.fixed",
+  TAXONOMY_CONFLICT_DETECTED: "taxonomy:conflict_detected",
+  TAXONOMY_MISMATCH_FIXED: "taxonomy:mismatch_fixed",
 
   SYSTEM_HEALTH_CHECK: "system.health.check",
   SYSTEM_KILL_SWITCH_TOGGLED: "system.kill_switch.toggled",

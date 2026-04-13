@@ -6,6 +6,23 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
 
+## Canonical Schema Library (`src/lib/schema/`)
+A complete canonical schema registry covering all platform domains:
+- **canonical-schemas.ts**: 48 TypeScript interfaces (Identity, Organization, Listing, Transaction, Payment, Conversation, Message, etc.)
+- **status-enums.ts**: 17 canonical status enums (EntityStatus, TransactionStatus, PublicationStatus, PaymentStatus, etc.)
+- **relation-map.ts**: 79 canonical relations between schemas (belongs_to, has_many, has_one)
+- **canonical-events.ts**: 130+ canonical event constants (colon-notation only)
+- **schema-registry.ts**: 33 top-level schema registry entries with SSOT, verdicts (KEEP/MERGE/REBUILD), duplicates, conflicts
+- **SCHEMA_AUDIT_REPORT.md**: Full audit report with duplicate/conflict/notation/domain reconnection status
+
+## Event System Architecture
+- **Platform Bus**: `src/lib/shared/platform-bus.ts` — Single nervous system for all domains
+- **Event Notation**: Canonical colon notation (`wallet:payment_completed`), legacy dot notation auto-bridged
+- **Notation Bridge**: ONE-WAY dot→colon bridge in `installPlatformReactions` (67 mappings). No colon→dot re-emission.
+- **Cross-Domain Propagation**: `src/lib/orchestration/handlers/cross-domain-propagation-handlers.ts` — Marketplace→Wallet vente flow, Property→Marketplace publication, Onboarding→Dashboard
+- **Notification Bridge**: `src/lib/notifications/notification-event-bridge.ts` — 25+ event→notification consumers
+- **Super App Bridge**: `src/lib/super-app-bridge.ts` — Cache invalidation for all domain events
+
 ## Architecture (Super-App v3)
 - **Frontend**: React 18 + Vite + Tailwind CSS + Framer Motion
 - **Backend**: Supabase (PostgreSQL + Auth + Storage + RPC)

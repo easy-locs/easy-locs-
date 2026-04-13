@@ -39,7 +39,7 @@ export function emitWithPriority(
 ) {
   const emittedAt = performance.now();
 
-  platformBus.emit(type as any, payload, source);
+  platformBus.emit(type, payload, source);
 
   const consumedAt = performance.now();
   const latencyMs = Math.round(consumedAt - emittedAt);

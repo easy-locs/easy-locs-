@@ -18,10 +18,10 @@ export function invalidateRadarCaches() {
 
 export function installRadarCacheListeners(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.RADAR_GEO_UPDATED as any, () => invalidateRadarCaches()),
-    platformBus.on(APP_EVENTS.RADAR_VIEW_CHANGED as any, () => invalidateRadarCaches()),
-    platformBus.on(APP_EVENTS.DELIVERY_DRIVER_ASSIGNED as any, () => invalidateRadarCaches()),
-    platformBus.on(APP_EVENTS.DELIVERY_COMPLETED as any, () => invalidateRadarCaches()),
+    platformBus.on(APP_EVENTS.RADAR_GEO_UPDATED, () => invalidateRadarCaches()),
+    platformBus.on(APP_EVENTS.RADAR_VIEW_CHANGED, () => invalidateRadarCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_DRIVER_ASSIGNED, () => invalidateRadarCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_COMPLETED, () => invalidateRadarCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

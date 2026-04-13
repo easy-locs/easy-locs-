@@ -100,7 +100,7 @@ export function validateVerticalIsolation(
 ): { valid: boolean; violation: GovernanceViolation | null } {
   const violation = detectContamination(context, element);
   if (violation) {
-    platformBus.emit("ui-engine:report" as any, {
+    platformBus.emit("ui-engine:report", {
       engineId: "vertical-isolation",
       violation,
     });

@@ -7,10 +7,10 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { LayerRegistry } from "./layer-registry";
 
 const MAP_EVENTS = {
-  ENTITY_SELECTED: "map.entity.selected",
-  ENTITY_HOVERED: "map.entity.hovered",
-  MAP_CLICKED: "map.clicked",
-  ENTITY_DESELECTED: "map.entity.deselected",
+  ENTITY_SELECTED: "map:entity_selected",
+  ENTITY_HOVERED: "map:entity_hovered",
+  MAP_CLICKED: "map:clicked",
+  ENTITY_DESELECTED: "map:entity_deselected",
 } as const;
 
 let currentHoverId: string | null = null;
@@ -26,17 +26,17 @@ export function setupInteractions(
     if (features.length > 0) {
       const f = features[0];
       const entityId = (f.properties?.id || f.id || "") as string;
-      platformBus.emit(MAP_EVENTS.ENTITY_SELECTED as any, {
+      platformBus.emit(MAP_EVENTS.ENTITY_SELECTED, {
         entityId,
         entityType: f.properties?.type || f.properties?.category || "",
         lngLat: { lng: e.lngLat.lng, lat: e.lngLat.lat },
       }, "map");
       onSelect?.(f, e.lngLat);
     } else {
-      platformBus.emit(MAP_EVENTS.MAP_CLICKED as any, {
+      platformBus.emit(MAP_EVENTS.MAP_CLICKED, {
         lngLat: { lng: e.lngLat.lng, lat: e.lngLat.lat },
       }, "map");
-      platformBus.emit(MAP_EVENTS.ENTITY_DESELECTED as any, {}, "map");
+      platformBus.emit(MAP_EVENTS.ENTITY_DESELECTED, {}, "map");
     }
   });
 
@@ -48,7 +48,7 @@ export function setupInteractions(
       const entityId = (features[0].properties?.id || "") as string;
       if (entityId !== currentHoverId) {
         currentHoverId = entityId;
-        platformBus.emit(MAP_EVENTS.ENTITY_HOVERED as any, {
+        platformBus.emit(MAP_EVENTS.ENTITY_HOVERED, {
           entityId,
           lngLat: { lng: e.lngLat.lng, lat: e.lngLat.lat },
         }, "map");

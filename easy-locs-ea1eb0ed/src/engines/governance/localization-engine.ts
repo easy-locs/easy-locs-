@@ -144,7 +144,7 @@ export class LocalizationEngine extends BaseEngine {
     );
 
     if (recent.length > 0) {
-      platformBus.emit("i18n.localization.violation", {
+      platformBus.emit("i18n:localization_violation", {
         violations: recent.map(v => ({
           id: v.id,
           type: v.type,

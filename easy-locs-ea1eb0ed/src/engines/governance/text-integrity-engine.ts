@@ -208,7 +208,7 @@ export class TextIntegrityEngine extends BaseEngine {
     );
 
     if (recent.length > 0) {
-      platformBus.emit("text.integrity.violation", {
+      platformBus.emit("text:integrity_violation", {
         violations: recent.map(v => ({
           id: v.id,
           type: v.type,

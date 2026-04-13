@@ -46,7 +46,7 @@ class GeoService {
         error: reason,
       });
 
-      platformBus.emit("geo.position.updated", {
+      platformBus.emit("geo:position_updated", {
         lat: ip.lat,
         lng: ip.lng,
         source: "ip",
@@ -100,7 +100,7 @@ class GeoService {
         error: permission === "denied" ? "Location access denied" : null,
       });
 
-      platformBus.emit("geo.permission.changed", { permission }, "geo-service");
+      platformBus.emit("geo:permission_changed", { permission }, "geo-service");
 
       if (permission === "denied") {
         await this.applyFallback("Location access denied");
@@ -133,13 +133,13 @@ class GeoService {
           error: null,
         });
 
-        platformBus.emit("geo.position.updated", {
+        platformBus.emit("geo:position_updated", {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
           accuracy: pos.coords.accuracy,
           source: "gps",
         }, "geo-service");
-        platformBus.emit("geo.permission.changed", { permission: "granted" }, "geo-service");
+        platformBus.emit("geo:permission_changed", { permission: "granted" }, "geo-service");
 
         // Clear any pending retry
         if (this._retryTimer) {
@@ -166,7 +166,7 @@ class GeoService {
           error: err.message || "Location error",
         });
 
-        platformBus.emit("geo.permission.changed", { permission }, "geo-service");
+        platformBus.emit("geo:permission_changed", { permission }, "geo-service");
 
         // Apply fallback for denied or timeout
         void this.applyFallback(err.message || "Location error");

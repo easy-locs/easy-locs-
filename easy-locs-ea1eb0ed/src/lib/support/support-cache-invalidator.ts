@@ -25,10 +25,10 @@ export function invalidateSupportCaches() {
 
 export function installSupportCacheListener(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.REFUND_REQUESTED as any, () => invalidateSupportCaches()),
-    platformBus.on(APP_EVENTS.SUPPORT_TICKET_CREATED as any, () => invalidateSupportCaches()),
-    platformBus.on(APP_EVENTS.SUPPORT_TICKET_REPLIED as any, () => invalidateSupportCaches()),
-    platformBus.on(APP_EVENTS.SUPPORT_TICKET_RESOLVED as any, () => invalidateSupportCaches()),
+    platformBus.on(APP_EVENTS.REFUND_REQUESTED, () => invalidateSupportCaches()),
+    platformBus.on(APP_EVENTS.SUPPORT_TICKET_CREATED, () => invalidateSupportCaches()),
+    platformBus.on(APP_EVENTS.SUPPORT_TICKET_REPLIED, () => invalidateSupportCaches()),
+    platformBus.on(APP_EVENTS.SUPPORT_TICKET_RESOLVED, () => invalidateSupportCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

@@ -18,7 +18,7 @@ export function emitMessageSent(conversationId: string, messageId: string, previ
 }
 
 export function emitCallStarted(callId: string, isVideo: boolean, peerName?: string) {
-  platformBus.emit("call:started", { callId, role: "caller", isVideo, peerName }, "orbit");
+  platformBus.emit("orbit:call_started", { callId, role: "caller", isVideo, peerName }, "orbit");
 }
 
 export function emitCallEnded(callId: string, status: string) {
@@ -26,5 +26,5 @@ export function emitCallEnded(callId: string, status: string) {
 }
 
 export function emitProfileLoaded(orbitId: string, userId: string) {
-  platformBus.emit("orbit:profile_loaded", { orbitId, userId }, "orbit");
+  platformBus.emit("orbit:profile_updated", { orbitId, userId }, "orbit");
 }

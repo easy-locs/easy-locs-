@@ -107,7 +107,7 @@ export function warnIfDeprecatedReintroduced(symbol: string, callerHint: string)
     console.warn(message);
   }
   try {
-    platformBus.emit("ui-engine:report" as any, {
+    platformBus.emit("ui-engine:report", {
       engineId: "canonical-resolution-guard",
       severity: "warn",
       symbol, callerHint,
