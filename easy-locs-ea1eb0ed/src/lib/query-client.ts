@@ -18,3 +18,14 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+export const STALE_TIMES = {
+  REALTIME: 30 * 1000,
+  WALLET: 60 * 1000,
+  MESSAGES: 30 * 1000,
+  FEEDS: 2 * 60 * 1000,
+  STANDARD: 10 * 60 * 1000,
+  TAXONOMY: 30 * 60 * 1000,
+  PROFILE: 30 * 60 * 1000,
+  STATIC: 60 * 60 * 1000,
+} as const;

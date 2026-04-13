@@ -527,7 +527,7 @@ export default function CommContactsSection() {
         <HeaderAction icon={Share2} label={t("wallet.shareNearby")} onClick={async () => {
           if (!user?.id) return;
           const profileUrl = `${window.location.origin}/orbit/add?userId=${user.id}`;
-          const displayName = user.user_metadata?.full_name || user.user_metadata?.display_name || user.email?.split("@")[0] || t("orbit.contact");
+          const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || t("orbit.contact");
           if (navigator.share) {
             try {
               await navigator.share({ title: `${displayName} — Easy-Locs`, text: t("wallet.nearbyDesc"), url: profileUrl });

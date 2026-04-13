@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { typedQueries } from "@/lib/db/typed-queries";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useWalletBalance, useWalletTransactions } from "@/payments/wallet-hooks";
@@ -38,6 +39,7 @@ export default function WalletHubPage() {
   useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { displayName: accountName, accountLabel: accountTypeLabel, accountType } = useAccountIdentity();
   const { t } = useI18n();
   const { rows, loading } = useWalletAccounts(user?.id);
   const { balance: walletBalance, currency: walletCurrency, loading: balanceLoading, error: walletError, reload: reloadWallet } = useWalletBalance();
@@ -245,13 +247,14 @@ export default function WalletHubPage() {
                 }} />
 
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "hsl(38 65% 56% / 0.7)" }}>{t("wallet.totalBalance")}</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{accountName}</p>
                     <div className="flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
                       <Globe className="w-3 h-3" style={{ color: "hsl(38 65% 56% / 0.6)" }} />
                       <span className="text-[10px] font-bold" style={{ color: "hsl(38 65% 56% / 0.7)" }}>{mainCurrency}</span>
                     </div>
                   </div>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "hsl(38 65% 56% / 0.5)" }}>{accountTypeLabel} · {t("wallet.totalBalance")}</p>
                   <div className="flex items-end gap-3 mb-1">
                     <p className="text-[2.5rem] font-extrabold tracking-tight leading-none tabular-nums" style={{ color: "hsl(0 0% 100%)" }}>
                       {showBalance ? <AnimatedCounter value={totalBalance} decimals={2} duration={1000} /> : "••••••"}
@@ -387,7 +390,9 @@ export default function WalletHubPage() {
                       const accBalance = Number(acc.balance || 0);
                       const ownerType = (acc.owner_type as string) || "user";
                       const isBusiness = ownerType === "workspace" || ownerType === "merchant";
-                      const accountLabel = isBusiness ? tSafe(t, "wallet.business", "Business") : tSafe(t, "wallet.personal", "Personal");
+                      const accountLabel = isBusiness
+                        ? `${accountName} · ${tSafe(t, "wallet.business", "Business")}`
+                        : `${accountName} · ${tSafe(t, "wallet.personal", "Personal")}`;
                       let formattedBalance = "••••";
                       if (showBalance) {
                         try { formattedBalance = new Intl.NumberFormat(undefined, { style: "currency", currency: accCurrency, minimumFractionDigits: 2 }).format(accBalance); }

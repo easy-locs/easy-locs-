@@ -65,6 +65,16 @@ App.tsx routes are organized into clean, labeled sections:
 - **Section mb-4 → mb-5**: 58 section-level violations fixed across SEO pages, landing pages, admin dashboard, rental management, real estate detail, documents, platform vision, communication hub
 - **Files affected**: 100+ files across all 5 pillars, travel, delivery, admin, orbit, mobility, marketplace, communication, landing, SEO components
 
+## Unified Account Identity System
+- **Single source of truth**: `useAccountIdentity()` hook (`src/hooks/useAccountIdentity.ts`) provides consistent identity across ALL app sections
+- **Fallback chain**: orbit.displayName → display_name → full_name → name → first_name+last_name → username → email local-part → "User"
+- **Account type**: `accountType` ("personal" | "business") + `accountLabel` ("Personal" | "Business") derived from userType/activeRole
+- **Integrated in**: WalletHubPage (wallet card shows name + type), ReceiveQrPanel, MeQuickSheet, MeCommandCenter, OrbitStatusSection, WalletTransferPage, WalletRequestPage
+- **Canonical identity resolution**: `resolveCanonicalDisplayIdentity()` in `canonical-helpers.ts` supports display_name, name, first_name+last_name, username, email-prefix fallbacks
+- **`useResolvedIdentity`**: Enhanced with first_name, last_name, username, phone tracking in memo deps
+- **`ensureOrbitProfile`**: Falls back to profiles.name when auth metadata has no display name
+- **Rule**: All new UI that shows current user identity MUST use `useAccountIdentity()`. For peer/entity identity, use `useResolvedIdentity()`.
+
 ## Continuous Stability Hardening (Auto-Correction Workflow)
 - **Non-null assertion cleanup**: 113 `user!.id` → `user?.id` across 64 files, 30 `org!.id` → `org?.id` across 6 files, `myProvider!.id` → `myProvider?.id`, `deal!.id` → `deal?.id`, `data!.` → `data?.`, `pc!.` → `pc?.` in WebRTC call manager, `meta.ui!.` → `meta.ui.` in normalize-message, `mapRef.current!` → `mapRef.current`, `channel!.` → `channel?.` in signaling
 - **Error state coverage**: 43 user-facing pages (customer/driver/merchant/support/me) now have `isError` destructured from useQuery with proper error UI fallbacks

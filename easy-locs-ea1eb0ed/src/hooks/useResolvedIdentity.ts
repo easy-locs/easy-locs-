@@ -13,6 +13,8 @@ import { resolveCanonicalDisplayIdentity, type CanonicalDisplayIdentity } from "
 export function useResolvedIdentity(entity: {
   display_name?: string | null;
   name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   email?: string | null;
   phone?: string | null;
   avatar_url?: string | null;
@@ -22,6 +24,7 @@ export function useResolvedIdentity(entity: {
   id?: string | null;
   user_id?: string | null;
   orbit_id?: string | null;
+  username?: string | null;
 } | null | undefined): CanonicalDisplayIdentity {
   return useMemo(() => {
     if (!entity) {
@@ -38,7 +41,11 @@ export function useResolvedIdentity(entity: {
   }, [
     entity?.display_name,
     entity?.name,
+    entity?.first_name,
+    entity?.last_name,
+    entity?.username,
     entity?.email,
+    entity?.phone,
     entity?.avatar_url,
     entity?.avatarUrl,
     entity?.id,

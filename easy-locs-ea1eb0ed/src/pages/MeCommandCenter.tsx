@@ -4,6 +4,7 @@ import { getMeHistoryTypes, getMeFavoritesTypes } from "@/lib/taxonomy/wiring-he
 import { useAuth } from "@/contexts/AuthContext";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
+import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { typedQueries } from "@/lib/db/typed-queries";
 import { countActiveOrders } from "@/repositories/customer-orders.repository";
 import { getMerchantDashboardSnapshot } from "@/lib/merchant/merchantDashboard";
@@ -447,11 +448,12 @@ export default function MeCommandCenter() {
     });
   }, [sections, isMerchant, isPropertyManager, hasDriverRole, hasProviderRole]);
 
-  const avatarUrl = profile?.avatarUrl || user?.user_metadata?.avatar_url;
-  const displayName = profile?.displayName || user?.user_metadata?.display_name || t("me.user_fallback");
-  const initials = displayName.split(/[\s@]/).map((w: string) => w[0]?.toUpperCase()).join("").slice(0, 2);
+  const acctId = useAccountIdentity();
+  const avatarUrl = acctId.avatarUrl || profile?.avatarUrl || user?.user_metadata?.avatar_url;
+  const displayName = acctId.displayName;
+  const initials = acctId.initials;
 
-  const isBusiness = isMerchant || isPropertyManager || hasDriverRole || hasProviderRole;
+  const isBusiness = acctId.accountType === "business" || isMerchant || isPropertyManager || hasDriverRole || hasProviderRole;
 
   const isInitialLoading = shopsLoading && !shops;
 

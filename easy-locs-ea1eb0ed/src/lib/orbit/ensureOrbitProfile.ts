@@ -32,9 +32,17 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
     if (!user) return null;
     userId = user.id;
     email = email ?? user.email?.trim().toLowerCase() ?? null;
-    phone = phone ?? (user.user_metadata as any)?.phone ?? user.phone ?? null;
-    displayName = displayName ?? (user.user_metadata as any)?.display_name ?? null;
-    avatarUrl = avatarUrl ?? (user.user_metadata as any)?.avatar_url ?? null;
+    const meta = user.user_metadata as Record<string, any> | undefined;
+    phone = phone ?? meta?.phone ?? user.phone ?? null;
+    displayName = displayName ?? meta?.display_name ?? meta?.full_name ?? meta?.name ?? null;
+    avatarUrl = avatarUrl ?? meta?.avatar_url ?? null;
+  }
+
+  if (!displayName && userId) {
+    try {
+      const { data: profileRow } = await db("profiles").select("name").eq("id", userId).maybeSingle();
+      if (profileRow?.name) displayName = profileRow.name;
+    } catch {}
   }
 
   // Skip DB call if already ensured this session

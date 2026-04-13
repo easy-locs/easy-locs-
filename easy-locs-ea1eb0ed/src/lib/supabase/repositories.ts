@@ -103,7 +103,7 @@ export const walletRepo = {
 
 export const listingRepo = {
   async listPublished(): Promise<PropertyListingV2[]> {
-    const { data, error } = await db("property_listings_v2").select("*").eq("status", "published").order("created_at", { ascending: false });
+    const { data, error } = await db("property_listings_v2").select("*").eq("status", "published").order("created_at", { ascending: false }).limit(100);
     if (error) throw error;
     return (data ?? []) as PropertyListingV2[];
   },
@@ -141,7 +141,7 @@ export const bookingRepo = {
   },
 
   async listByListing(listingId: string): Promise<BookingRecordV2[]> {
-    const { data, error } = await db("bookings_v2").select("*").eq("listing_id", listingId);
+    const { data, error } = await db("bookings_v2").select("*").eq("listing_id", listingId).order("created_at", { ascending: false }).limit(200);
     if (error) throw error;
     return (data ?? []) as BookingRecordV2[];
   },
@@ -228,7 +228,8 @@ export const chatRepo = {
       .from("chat_messages_v2")
       .select("*")
       .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .limit(100);
     if (error) throw error;
     return (data ?? []).map((row: any) => ({
       id: row.id,

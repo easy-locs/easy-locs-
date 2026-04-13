@@ -117,8 +117,9 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("@radix-ui")) return "vendor-radix";
             if (id.includes("@tanstack")) return "vendor-tanstack";
             if (id.includes("date-fns") || id.includes("luxon")) return "vendor-date";
-            if (id.includes("zod")) return "vendor-zod";
+            if (id.includes("zod") || id.includes("class-variance-authority") || id.includes("clsx") || id.includes("tailwind-merge")) return "vendor-utils";
             if (id.includes("lucide-react")) return "vendor-icons";
+            if (id.includes("i18next") || id.includes("react-i18next")) return "vendor-i18n";
           }
           if (id.includes("/src/lib/i18n-data")) return "i18n-data";
           if (id.includes("/src/lib/templates/")) return "templates";

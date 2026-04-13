@@ -14,21 +14,21 @@ import { useCall } from "@/components/call/CallProvider";
 import { useI18n } from "@/lib/i18n";
 import {
   Phone, PhoneMissed, Video, Search, ArrowDownLeft, ArrowUpRight,
-  MessageSquare, Trash2, Clock, Info, PhoneCall, CalendarClock,
+  MessageSquare, Clock, Info, PhoneCall, CalendarClock,
   User, Loader2, X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
-import SwipeableCallItem from "./SwipeableCallItem";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { isUUID } from "@/lib/orbit/message-formatter";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 import { formatOrbitTimestamp, formatCallStatusLabel } from "@/lib/orbit/canonical-helpers";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format, addDays, setHours, setMinutes } from "date-fns";
+import { format, setHours, setMinutes } from "date-fns";
+import { CallRow } from "./CallRow";
+import { QuickAction } from "./QuickAction";
 
 type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
@@ -979,146 +979,5 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-import { memo } from "react";
-
-const CallRow = memo(function CallRow({
-  call, primaryLabel, secondaryLabel, friendlyId, callIcon, isInCall, isStartingCall,
-  redialLabel, deleteFailLabel, deletedLabel, contactFallback,
-  onRedial, onOpenDetail, onOpenThread, onDelete, nameCache,
-}: {
-  call: CallLog;
-  primaryLabel: string;
-  secondaryLabel: string | null;
-  friendlyId: string;
-  callIcon: React.ReactNode;
-  isInCall: boolean;
-  isStartingCall: boolean;
-  redialLabel: string;
-  deleteFailLabel: string;
-  deletedLabel: string;
-  contactFallback: string;
-  onRedial: (c: CallLog) => void;
-  onOpenDetail: (c: CallLog) => void;
-  onOpenThread?: (peerId: string, peerName: string) => void;
-  onDelete: (id: string) => void;
-  nameCache: Record<string, string>;
-}) {
-  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pressedRef = useRef(false);
-
-  const handlePointerDown = () => {
-    pressedRef.current = false;
-    longPressRef.current = setTimeout(() => {
-      pressedRef.current = true;
-      onOpenDetail(call);
-    }, 500);
-  };
-
-  const handlePointerUp = () => {
-    if (longPressRef.current) clearTimeout(longPressRef.current);
-  };
-
-  const handleClick = () => {
-    if (pressedRef.current) return;
-    const peerId = call.direction === "outgoing" ? call.receiver_orbit_id : call.caller_orbit_id;
-    const peerName = nameCache[peerId] || contactFallback;
-    if (onOpenThread) {
-      onOpenThread(peerId, peerName);
-    } else {
-      void onRedial(call);
-    }
-  };
-
-  const handleDeleteCall = async () => {
-    try {
-      await deleteCallLog(call.id);
-    } catch { toast.error(deleteFailLabel); return; }
-    onDelete(call.id);
-    toast.success(deletedLabel);
-  };
-
-  return (
-    <SwipeableCallItem onDelete={handleDeleteCall}>
-      <button
-        type="button"
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onClick={handleClick}
-        disabled={isInCall || isStartingCall}
-        className="w-full flex items-center gap-2.5 px-3 py-2.5 transition-colors text-left disabled:opacity-60"
-        style={{ background: "hsl(var(--background))" }}
-        onMouseEnter={e => (e.currentTarget.style.background = "hsl(var(--card) / 0.3)")}
-        onMouseLeave={e => (e.currentTarget.style.background = "hsl(var(--background))")}
-      >
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-          style={{
-            background: call.status === "missed"
-              ? "hsl(var(--hud-danger) / 0.08)"
-              : "hsl(var(--card))",
-          }}
-        >
-          {callIcon}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-1 min-w-0">
-            <span
-              className="text-[13.5px] font-semibold truncate"
-              style={{ color: call.status === "missed" ? "hsl(var(--hud-danger))" : "hsl(var(--foreground))" }}
-            >
-              {primaryLabel}
-            </span>
-            {primaryLabel !== friendlyId && (
-              <span className="text-[9.5px] font-medium truncate max-w-[72px]" style={{ color: "hsl(var(--muted-foreground) / 0.35)" }}>
-                {friendlyId}
-              </span>
-            )}
-          </div>
-          {secondaryLabel && (
-            <span className="text-[11px] mt-0.5 block" style={{ color: "hsl(var(--muted-foreground) / 0.45)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
-              {secondaryLabel}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1 shrink-0 pl-1">
-          <span className="text-[10.5px] tabular-nums whitespace-nowrap" style={{ color: "hsl(var(--muted-foreground) / 0.35)" }}>
-            {formatCallTime(call.created_at)}
-          </span>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); void onRedial(call); }}
-            disabled={isInCall || isStartingCall}
-            className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 transition-colors"
-            title={redialLabel}
-          >
-            {call.call_type === "video" ? (
-              <Video className="h-[14px] w-[14px]" style={{ color: "hsl(var(--primary))" }} />
-            ) : (
-              <Phone className="h-[14px] w-[14px]" style={{ color: "hsl(var(--hud-success))" }} />
-            )}
-          </button>
-        </div>
-      </button>
-    </SwipeableCallItem>
-  );
-});
-
-function QuickAction({ icon, label, color, onClick }: { icon: React.ReactNode; label: string; color: string; onClick: () => void }) {
-  return (
-    <button onClick={onClick} className="flex flex-col items-center gap-1.5 active:scale-95 transition-transform">
-      <div
-        className="w-12 h-12 rounded-full flex items-center justify-center"
-        style={{ background: `${color.replace(")", " / 0.1)")}`, color }}
-      >
-        {icon}
-      </div>
-      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
-        {label}
-      </span>
-    </button>
   );
 }

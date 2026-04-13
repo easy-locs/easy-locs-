@@ -9,24 +9,15 @@ import {
   Activity, CheckCircle, Clock, Cpu, Heart,
   RefreshCw, XCircle, Pause, Shield, Wrench,
   AlertTriangle, ArrowRight, Layers, Eye, Monitor,
-  Zap, RotateCcw, TrendingDown, AlertCircle,
+  Zap, RotateCcw, TrendingDown, AlertCircle, Brain,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { engineObserver } from "@/engines/core/engine-observer";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { engineOrchestrator } from "@/engines/core/engine-orchestrator";
 import { SOURCE_FIX_REGISTRY, RUNTIME_PATCH_TYPES, UI_ENGINE_PAGES } from "@/lib/control-room/source-fix-config";
-import { Brain } from "lucide-react";
-import { getGovernanceSummary, getAllGovernanceViolations } from "@/engines/governance/anti-conflict-engine";
-import { getPageOpenStats } from "@/engines/governance/page-open-engine";
-import { getActionStats } from "@/engines/governance/action-wiring-engine";
-import { getRuntimeStats } from "@/engines/governance/runtime-health-engine";
-import { getFlowClosureStats } from "@/engines/governance/flow-closure-engine";
-import { getRemediationStats } from "@/engines/governance/auto-remediation-engine";
-import { fetchViolations, acknowledgeViolation, resolveViolation } from "@/services/governance/violation-persistence";
-import { getDedupCacheSize } from "@/services/governance/governance-dedup";
-import { Filter, ChevronDown, ChevronUp, Search } from "lucide-react";
+import { GovernancePanel } from "./GovernancePanel";
+import { EngineMemoryPanel } from "./EngineMemoryPanel";
 
 interface EngineRow {
   engine_name: string;
