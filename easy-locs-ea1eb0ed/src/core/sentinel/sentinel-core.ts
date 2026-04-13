@@ -21,6 +21,7 @@ import { sentinelInvariantEngine } from "./invariants/invariant-engine";
 import { sentinelSourceOfTruthRegistry } from "./registry/source-of-truth-registry";
 import { verificationRunner } from "./verification/verification-runner";
 import type { VerificationFinalReport } from "./verification/verification-types";
+import { bootCommandCenter, shutdownCommandCenter, getCommandCenterStatus } from "@/core/command-center";
 
 type SentinelPhase = "idle" | "initializing" | "running" | "degraded" | "stopped";
 
@@ -40,6 +41,15 @@ class SentinelCore {
     this._bootedAt = Date.now();
 
     sentinelTelemetryEngine.emit("sentinel:boot_start", "sentinel-core");
+
+    const ccReport = bootCommandCenter();
+    if (ccReport.blockedCount > 0) {
+      sentinelTelemetryEngine.emit("sentinel:command_center_boot_warnings", "sentinel-core", {
+        blocked: ccReport.blockedCount,
+        errors: ccReport.errors.slice(0, 5),
+      });
+    }
+    structuredLogger.info("system", "sentinel_command_center_boot", `CC booted | registered: ${ccReport.registeredCount} | approved: ${ccReport.approvedCount} | blocked: ${ccReport.blockedCount}`);
 
     this.registerCoreEngines();
     this.registerSourceOfTruth();
@@ -464,6 +474,7 @@ class SentinelCore {
     this._phase = "stopped";
     sentinelAuditEngine.stop();
     sentinelCronOrchestrator.stopAll();
+    shutdownCommandCenter();
     if (this._heartbeatTimer) {
       clearInterval(this._heartbeatTimer);
       this._heartbeatTimer = null;
@@ -473,6 +484,10 @@ class SentinelCore {
       this._initialAuditTimer = null;
     }
     sentinelTelemetryEngine.emit("sentinel:shutdown", "sentinel-core", { uptime_ms: this.uptime });
+  }
+
+  getCommandCenterStatus() {
+    return getCommandCenterStatus();
   }
 
   getStatus(): {

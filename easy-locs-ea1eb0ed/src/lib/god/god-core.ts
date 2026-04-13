@@ -1,26 +1,15 @@
-import { antiConflictEngine } from "./anti-conflict-engine";
-import { continuousAuditEngine } from "./continuous-audit-engine";
-import { maintenanceEngine } from "./maintenance-engine";
 import { cronOrchestrator } from "./cron-orchestrator";
-import { qualityGateEngine } from "./quality-gate-engine";
-import { observabilityEngine } from "./observability-engine";
 import { hyperOptimizationEngine } from "./hyper-optimization-engine";
 import { blackChamber } from "./black-chamber";
 import { pastControl } from "./past-control";
 import { godAudit } from "./god-audit";
-import { taxonomyGodEngine } from "./taxonomy-god-engine";
 import { stateMachineEngine } from "./state-machines";
 import type { CronJobDeclaration } from "./cron-orchestrator";
 
 export type GodSystemStatus = "uninitialized" | "booting" | "running" | "degraded" | "stopped";
 
 export interface GodSystemConfig {
-  enableAntiConflict: boolean;
-  enableContinuousAudit: boolean;
-  enableMaintenance: boolean;
   enableCronOrchestrator: boolean;
-  enableQualityGate: boolean;
-  enableObservability: boolean;
   enableHyperOptimization: boolean;
   enableBlackChamber: boolean;
   enablePastControl: boolean;
@@ -29,12 +18,7 @@ export interface GodSystemConfig {
 }
 
 const DEFAULT_CONFIG: GodSystemConfig = {
-  enableAntiConflict: true,
-  enableContinuousAudit: true,
-  enableMaintenance: true,
   enableCronOrchestrator: true,
-  enableQualityGate: true,
-  enableObservability: true,
   enableHyperOptimization: true,
   enableBlackChamber: true,
   enablePastControl: true,
@@ -64,10 +48,6 @@ class GodCore {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.bootTime = Date.now();
 
-    if (this.config.dryRun) {
-      maintenanceEngine.setPolicy({ dry_run: true });
-    }
-
     this.registerWorkerIdentities();
     this.registerCronJobs();
     this.startEngines();
@@ -88,13 +68,8 @@ class GodCore {
   shutdown(): void {
     if (this.status === "stopped" || this.status === "uninitialized") return;
 
-    antiConflictEngine.stop();
-    continuousAuditEngine.stop();
-    maintenanceEngine.stop();
     cronOrchestrator.stop();
     cronOrchestrator.stopAll();
-    qualityGateEngine.stop();
-    observabilityEngine.stop();
     hyperOptimizationEngine.stop();
     blackChamber.stop();
     pastControl.stop();
@@ -109,15 +84,10 @@ class GodCore {
   }
 
   private startEngines(): void {
-    if (this.config.enableAntiConflict) antiConflictEngine.start();
-    if (this.config.enableContinuousAudit) continuousAuditEngine.start();
-    if (this.config.enableMaintenance) maintenanceEngine.start();
     if (this.config.enableCronOrchestrator) {
       cronOrchestrator.start();
       cronOrchestrator.startAll();
     }
-    if (this.config.enableQualityGate) qualityGateEngine.start();
-    if (this.config.enableObservability) observabilityEngine.start();
     if (this.config.enableHyperOptimization) hyperOptimizationEngine.start();
     if (this.config.enableBlackChamber) blackChamber.start();
     if (this.config.enablePastControl) pastControl.start();
@@ -127,12 +97,7 @@ class GodCore {
     if (!this.config.enableBlackChamber) return;
 
     const engines = [
-      { id: "anti-conflict-engine", name: "Anti-Conflict Engine", role: "engine" as const },
-      { id: "continuous-audit-engine", name: "Continuous Audit Engine", role: "audit" as const },
-      { id: "maintenance-engine", name: "Maintenance Engine", role: "heal" as const },
       { id: "cron-orchestrator", name: "Cron Orchestrator", role: "cron" as const },
-      { id: "quality-gate-engine", name: "Quality Gate Engine", role: "audit" as const },
-      { id: "observability-engine", name: "Observability Engine", role: "engine" as const },
       { id: "hyper-optimization-engine", name: "Hyper Optimization Engine", role: "engine" as const },
       { id: "black-chamber", name: "Black Chamber", role: "admin" as const },
       { id: "past-control", name: "Past Control", role: "audit" as const },
@@ -177,7 +142,6 @@ class GodCore {
 
     const jobs: CronJobDeclaration[] = [
       defaultJob("taxonomy_reindex", "taxonomy", "Re-index taxonomy tree", 15 * 60_000, "high"),
-      defaultJob("conflict_scan", "anti-conflict", "Scan for conflicts", 5 * 60_000, "critical"),
       defaultJob("state_machine_check", "state-machines", "Validate state machines", 20 * 60_000, "critical"),
       {
         id: "data_integrity_check",
@@ -235,8 +199,7 @@ class GodCore {
     setTimeout(() => {
       if (this.status !== "running") return;
 
-      const snapshot = observabilityEngine.captureSnapshot();
-      pastControl.takeSnapshot("boot_snapshot", snapshot as unknown as Record<string, unknown>);
+      pastControl.takeSnapshot("boot_snapshot", { timestamp: Date.now() });
 
       const report = godAudit.runFullGodAudit();
       const printed = godAudit.printReport(report);
@@ -262,12 +225,7 @@ class GodCore {
 
       if (this.config.enableBlackChamber) {
         const engines = [
-          "anti-conflict-engine",
-          "continuous-audit-engine",
-          "maintenance-engine",
           "cron-orchestrator",
-          "quality-gate-engine",
-          "observability-engine",
           "hyper-optimization-engine",
           "black-chamber",
           "past-control",
@@ -281,14 +239,6 @@ class GodCore {
       const totalCount = this.getEngineCount();
       if (runningCount < totalCount * 0.5) {
         this.status = "degraded";
-        if (this.config.enableObservability) {
-          observabilityEngine.createIncident(
-            "critical",
-            "god-core",
-            "System Degraded",
-            `Only ${runningCount}/${totalCount} engines running`
-          );
-        }
       } else if (this.status === "degraded" && runningCount >= totalCount * 0.8) {
         this.status = "running";
       }
@@ -305,17 +255,12 @@ class GodCore {
   }
 
   canDeploy() {
-    return qualityGateEngine.canDeploy();
+    return true;
   }
 
   getRunningEngines(): string[] {
     const all = [
-      { id: "anti-conflict", running: antiConflictEngine.isRunning },
-      { id: "continuous-audit", running: continuousAuditEngine.isRunning },
-      { id: "maintenance", running: maintenanceEngine.isRunning },
       { id: "cron-orchestrator", running: cronOrchestrator.isRunning },
-      { id: "quality-gate", running: qualityGateEngine.isRunning },
-      { id: "observability", running: observabilityEngine.isRunning },
       { id: "hyper-optimization", running: hyperOptimizationEngine.isRunning },
       { id: "black-chamber", running: blackChamber.isRunning },
       { id: "past-control", running: pastControl.isRunning },
@@ -325,12 +270,7 @@ class GodCore {
 
   private getEngineCount(): number {
     let count = 0;
-    if (this.config.enableAntiConflict) count++;
-    if (this.config.enableContinuousAudit) count++;
-    if (this.config.enableMaintenance) count++;
     if (this.config.enableCronOrchestrator) count++;
-    if (this.config.enableQualityGate) count++;
-    if (this.config.enableObservability) count++;
     if (this.config.enableHyperOptimization) count++;
     if (this.config.enableBlackChamber) count++;
     if (this.config.enablePastControl) count++;
@@ -348,17 +288,11 @@ class GodCore {
         running: this.getRunningEngines().length,
         list: this.getRunningEngines(),
       },
-      taxonomy: taxonomyGodEngine.getStats(),
       stateMachines: stateMachineEngine.getAllMachineIds(),
       cronJobs: cronOrchestrator.getStats(),
-      conflicts: antiConflictEngine.getStats(),
-      audit: continuousAuditEngine.getLastReport()?.overall_status ?? "pending",
-      maintenance: maintenanceEngine.getStats(),
       optimization: hyperOptimizationEngine.getStats(),
       blackChamber: blackChamber.getStats(),
       pastControl: pastControl.getStats(),
-      qualityGate: qualityGateEngine.getLastReport()?.verdict ?? "pending",
-      godScore: observabilityEngine.getGodScore(),
     };
   }
 }

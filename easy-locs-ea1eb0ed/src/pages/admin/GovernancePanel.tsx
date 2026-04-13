@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { getGovernanceSummary, getAllGovernanceViolations } from "@/engines/governance/anti-conflict-engine";
 import { getPageOpenStats } from "@/engines/governance/page-open-engine";
 import { getActionStats } from "@/engines/governance/action-wiring-engine";
-import { getRuntimeStats } from "@/engines/governance/runtime-health-engine";
 import { getFlowClosureStats } from "@/engines/governance/flow-closure-engine";
 import { getRemediationStats } from "@/engines/governance/auto-remediation-engine";
 import { fetchViolations, acknowledgeViolation, resolveViolation } from "@/services/governance/violation-persistence";
@@ -28,7 +27,6 @@ export function GovernancePanel() {
   const summary = useMemo(() => getGovernanceSummary(), [refreshKey]);
   const pageStats = useMemo(() => getPageOpenStats(), [refreshKey]);
   const actionStats = useMemo(() => getActionStats(), [refreshKey]);
-  const runtimeStats = useMemo(() => getRuntimeStats(), [refreshKey]);
   const flowStats = useMemo(() => getFlowClosureStats(), [refreshKey]);
   const remediationStats = useMemo(() => getRemediationStats(), [refreshKey]);
   const dedupCacheSize = useMemo(() => getDedupCacheSize(), [refreshKey]);
@@ -184,10 +182,8 @@ export function GovernancePanel() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-gray-400">Active subs</span><span className="text-emerald-400 font-bold">{runtimeStats.activeSubscriptions}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Stale subs</span><span className="text-amber-400 font-bold">{runtimeStats.staleSubscriptions}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Error subs</span><span className="text-red-400 font-bold">{runtimeStats.errorSubscriptions}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Fatal events</span><span className={`font-bold ${runtimeStats.fatalEvents > 0 ? "text-red-400" : "text-emerald-400"}`}>{runtimeStats.fatalEvents}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Engine</span><span className="text-red-400 font-bold">PURGED (ENG-044)</span></div>
+            <div className="text-xs text-gray-500 mt-1">Runtime health delegated to Sentinel Health System and structured-logger.</div>
           </CardContent>
         </Card>
       </div>

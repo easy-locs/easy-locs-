@@ -1,5 +1,6 @@
 import type { EngineRegistryEntry, SentinelStatus, EngineCriticality, EngineHealthSnapshot } from "../types";
 import type { SentinelEngineContract, EngineHeartbeat } from "../contracts";
+import { registerNewEngine } from "@/core/command-center";
 
 class SentinelEngineRegistry {
   private engines = new Map<string, EngineRegistryEntry>();
@@ -11,6 +12,10 @@ class SentinelEngineRegistry {
     this.engines.set(entry.engine_id, { ...entry, created_at: entry.created_at || Date.now(), updated_at: Date.now() });
     if (contract) {
       this.contracts.set(entry.engine_id, contract);
+    }
+    const ccResult = registerNewEngine(entry.engine_id, entry.engine_name, entry.engine_id);
+    if (!ccResult.success) {
+      console.warn(`[SentinelEngineRegistry] CC blocked engine ${entry.engine_id}: ${ccResult.blockedReason}`);
     }
   }
 

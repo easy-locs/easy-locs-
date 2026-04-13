@@ -8,6 +8,7 @@ import { applyKnownFixes, type ApplyContext } from "./apply-known-fixes";
 import { engineMemory } from "./engine-memory";
 import { computeIssueSignature } from "./issue-signature";
 import { engineHealthMonitor } from "./engine-health-monitor";
+import { requestEngineRunApproval, reportEngineRunSuccess, reportEngineRunError } from "@/core/command-center";
 
 export type EngineActionLevel = "observe" | "detect" | "propose" | "act";
 
@@ -140,6 +141,12 @@ export abstract class BaseEngine {
       return;
     }
 
+    const ccApproval = requestEngineRunApproval(this.id);
+    if (!ccApproval.approved) {
+      this.log("warn", `Command Center denied run: ${ccApproval.reason}`);
+      return;
+    }
+
     const activeSignatures = this.collectActiveSignatures();
     if (activeSignatures.length > 0) {
       applyKnownFixes({ engineId: this.id, domain: this.domain, activeSignatures });
@@ -155,6 +162,7 @@ export abstract class BaseEngine {
       const duration = Math.round(performance.now() - start);
 
       engineObserver.recordTick(this.id, this.category, result, duration);
+      reportEngineRunSuccess(this.id);
 
       if (result.findings > 0 || result.actions.length > 0) {
         this.log("info", `Tick #${this._tickCount}: ${result.level} — ${result.findings} findings, ${result.actions.length} actions (${duration}ms)`);
@@ -162,9 +170,11 @@ export abstract class BaseEngine {
     } catch (err) {
       this._errorCount++;
       const duration = Math.round(performance.now() - start);
-      this.log("error", `Tick failed (${duration}ms): ${err instanceof Error ? err.message : String(err)}`);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      this.log("error", `Tick failed (${duration}ms): ${errMsg}`);
       engineObserver.recordError(this.id, this.category, err);
       engineHealthMonitor.recordEngineError(this.id);
+      reportEngineRunError(this.id, errMsg);
     } finally {
       this._tickInFlight = false;
       this._tickStartedAt = 0;

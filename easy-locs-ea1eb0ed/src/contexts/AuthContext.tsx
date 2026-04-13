@@ -15,7 +15,7 @@ import type { User, Session } from "@supabase/supabase-js";
 import { useAuthStore } from "@/stores/auth.store";
 import { useSubscriptionLoader, defaultSubscription, type SubscriptionState } from "@/hooks/useSubscription";
 import { authLog, authWarn, authError, getActiveTrace } from "@/lib/auth/auth-trace";
-import { reportRuntimeFailure } from "@/engines/governance/runtime-health-engine";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 type UserType = "landlord" | "tenant" | "client";
 type ActiveRole = "landlord" | "tenant" | "client";
@@ -153,7 +153,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
         traceId, step: "DB_HEALTH", status: "DOWN",
       });
-      reportRuntimeFailure("auth_db_health_down", "consistency_risk", "DB health check failed during login hydration");
+      structuredLogger.error("auth", "runtime_failure", "DB health check failed during login hydration");
       return false;
     }
   }, [withTimeout]);
@@ -299,7 +299,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const safetyTimeout = window.setTimeout(() => {
       if (!mounted) return;
       console.warn("[AuthContext] safety timeout reached — unblocking loading state");
-      reportRuntimeFailure("auth_hydration_timeout", "ux_degradation", "Auth hydration safety timeout reached (2500ms)");
+      structuredLogger.warn("auth", "runtime_failure", "Auth hydration safety timeout reached (2500ms)");
       setLoading(false);
       setProfileLoaded(true);
     }, 2500);
@@ -513,7 +513,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     clearCachedAuth();
 
     await supabase.auth.signOut().catch((err) => {
-      reportRuntimeFailure("auth_signout_error", "retriable", err instanceof Error ? err.message : "Sign-out error");
+      structuredLogger.warn("auth", "runtime_failure", err instanceof Error ? err.message : "Sign-out error");
     });
     setUser(null);
     setSession(null);

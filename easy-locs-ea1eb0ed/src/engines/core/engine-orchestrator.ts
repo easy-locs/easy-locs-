@@ -10,6 +10,7 @@ import { engineStormGuard } from "./engine-storm-guard";
 import { engineSharedContext } from "./engine-shared-context";
 import { engineOptimizer } from "./engine-optimizer";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { registerNewEngine } from "@/core/command-center";
 
 const CRITICAL_DOMAINS = new Set(["auth", "orbit", "payment", "payments", "wallet", "billing", "fraud"]);
 const STATE_STORAGE_KEY = "el-engine-orchestrator-state";
@@ -54,6 +55,7 @@ interface OrchestratorState {
 
 class EngineOrchestrator {
   private engines: Map<string, BaseEngine> = new Map();
+  private blockedEngineIds: Set<string> = new Set();
   private _booted = false;
   private _bootedAt = 0;
 
@@ -70,6 +72,12 @@ class EngineOrchestrator {
     const isCritical = CRITICAL_DOMAINS.has(engine.domain) || engine.intervalMs <= 5_000;
     if (isCritical) {
       engineStormGuard.registerCriticalEngine(engine.id);
+    }
+
+    const ccResult = registerNewEngine(engine.id, engine.name, engine.id);
+    if (!ccResult.success) {
+      this.blockedEngineIds.add(engine.id);
+      engineObserver.log(engine.id, engine.category, "warn", `Command Center blocked engine registration — engine will not start: ${ccResult.blockedReason}`);
     }
   }
 
@@ -103,6 +111,10 @@ class EngineOrchestrator {
 
     let started = 0;
     for (const engine of this.engines.values()) {
+      if (this.blockedEngineIds.has(engine.id)) {
+        engineObserver.log(engine.id, engine.category, "warn", "Skipped start — blocked by Command Center at registration");
+        continue;
+      }
       engine.start();
       if (engine.isRunning) {
         started++;

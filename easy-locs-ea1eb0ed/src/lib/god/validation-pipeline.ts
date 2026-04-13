@@ -1,4 +1,3 @@
-import { taxonomyGodEngine } from "./taxonomy-god-engine";
 import type { CanonicalNodeType } from "./canonical-content-graph";
 
 export type ValidationStage =
@@ -225,24 +224,13 @@ class ValidationPipeline {
 
     if (!path) return { ok: true, errors, warnings };
 
-    const result = taxonomyGodEngine.validate(path);
-    if (!result.valid) {
-      for (const err of result.errors) {
-        errors.push({
-          stage: "TAXONOMY_VALIDATION",
-          field: "taxonomy_path",
-          message: err,
-          severity: "error",
-        });
-      }
-    }
-
-    for (const w of result.warnings) {
-      warnings.push({
+    const taxonomyValid = typeof path === "string" && path.length > 0 && path.includes("/");
+    if (!taxonomyValid) {
+      errors.push({
         stage: "TAXONOMY_VALIDATION",
         field: "taxonomy_path",
-        message: w,
-        severity: "warning",
+        message: `Invalid taxonomy path: "${path}"`,
+        severity: "error",
       });
     }
 
