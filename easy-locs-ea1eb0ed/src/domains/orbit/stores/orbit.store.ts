@@ -247,16 +247,24 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
     set((s) => {
       const nextMessages = { ...s.messages };
       const nextByConv = { ...s.messagesByConversation };
+      const nextTempIdMap = { ...s.tempIdMap };
 
       for (const msg of msgs) {
-        // HARD GUARD: skip messages without conversationId
         if (!msg.conversationId) {
           console.error("[orbitStore.mergeMessages] REJECTED — missing conversationId", { id: msg.id });
           continue;
         }
-        if (msg.tempId && s.tempIdMap[msg.tempId] && s.tempIdMap[msg.tempId] !== msg.id) {
+        if (msg.tempId && nextTempIdMap[msg.tempId] && nextTempIdMap[msg.tempId] !== msg.id) {
           continue;
         }
+
+        if (msg.tempId && msg.id !== msg.tempId && nextMessages[msg.tempId]) {
+          delete nextMessages[msg.tempId];
+          const convMsgs = nextByConv[msg.conversationId] || [];
+          nextByConv[msg.conversationId] = convMsgs.filter((id) => id !== msg.tempId);
+          nextTempIdMap[msg.tempId] = msg.id;
+        }
+
         nextMessages[msg.id] = msg;
         const convMsgs = nextByConv[msg.conversationId] || [];
         if (!convMsgs.includes(msg.id)) {
@@ -264,7 +272,7 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
         }
       }
 
-      return { messages: nextMessages, messagesByConversation: nextByConv };
+      return { messages: nextMessages, messagesByConversation: nextByConv, tempIdMap: nextTempIdMap };
     }),
 
   updateMessageStatus: (id, status) =>
