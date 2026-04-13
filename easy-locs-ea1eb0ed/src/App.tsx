@@ -44,11 +44,20 @@ function AppLockGuardShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ── Deferred heavy providers — mount 1.5s after first paint ──
-const LazyCallProvider = lazy(() => import("@/components/call/CallProvider").then(m => ({ default: m.CallProvider })));
-const LazyUnifiedPaymentProvider = lazy(() => import("@/payments/UnifiedPaymentSystem").then(m => ({ default: m.UnifiedPaymentProvider })));
+// ── Deferred services provider — single lazy wrapper for call + payments ──
+const LazyDeferredServices = lazy(async () => {
+  const [{ CallProvider }, { UnifiedPaymentProvider }] = await Promise.all([
+    import("@/components/call/CallProvider"),
+    import("@/payments/UnifiedPaymentSystem"),
+  ]);
+  return {
+    default: ({ children }: { children: React.ReactNode }) => (
+      <CallProvider><UnifiedPaymentProvider>{children}</UnifiedPaymentProvider></CallProvider>
+    ),
+  };
+});
 
-function DeferredHeavyProviders({ children }: { children: React.ReactNode }) {
+function DeferredServicesProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     const id = requestIdleCallback(() => setReady(true), { timeout: 1500 });
@@ -57,11 +66,7 @@ function DeferredHeavyProviders({ children }: { children: React.ReactNode }) {
   if (!ready) return <>{children}</>;
   return (
     <Suspense fallback={<>{children}</>}>
-      <LazyCallProvider>
-        <LazyUnifiedPaymentProvider>
-          {children}
-        </LazyUnifiedPaymentProvider>
-      </LazyCallProvider>
+      <LazyDeferredServices>{children}</LazyDeferredServices>
     </Suspense>
   );
 }
@@ -338,7 +343,7 @@ const App = () => (
     <Toaster />
     <Sonner />
     <AuthProvider>
-    <DeferredHeavyProviders>
+    <DeferredServicesProvider>
     <AppLockGuardShell>
       <Suspense fallback={null}>
         <IntentNavigateProvider />
@@ -927,7 +932,7 @@ const App = () => (
           <SmartCloseFlowSheet />
         </Suspense>
     </AppLockGuardShell>
-    </DeferredHeavyProviders>
+    </DeferredServicesProvider>
     <Suspense fallback={null}><GlobalOverlayRenderer /></Suspense>
     </AuthProvider>
   </I18nProvider>
