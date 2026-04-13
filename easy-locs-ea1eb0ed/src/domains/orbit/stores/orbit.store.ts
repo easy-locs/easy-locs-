@@ -60,6 +60,10 @@ interface OrbitStoreState {
   mergeMessage: (msg: OrbitMessage) => void;
   mergeMessages: (msgs: OrbitMessage[]) => void;
   updateMessageStatus: (id: string, status: MessageStatus) => void;
+  /** Apply a local optimistic patch to an existing message. Bypasses version
+   *  guard since these are local mutations (edit/delete/star/translation),
+   *  not server reconciliation events. */
+  patchMessage: (id: string, patch: Partial<Omit<OrbitMessage, "id" | "conversationId" | "senderId">>) => void;
   reconcileMessage: (tempId: string, serverMsg: OrbitMessage) => void;
   removeMessage: (id: string) => void;
   softDeleteMessage: (id: string) => void;
@@ -292,6 +296,13 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
         console.debug("[orbitStore.updateMessageStatus]", { id, from: msg.status, to: status });
       }
       return { messages: { ...s.messages, [id]: { ...msg, status } } };
+    }),
+
+  patchMessage: (id, patch) =>
+    set((s) => {
+      const msg = s.messages[id];
+      if (!msg) return s;
+      return { messages: { ...s.messages, [id]: { ...msg, ...patch } } };
     }),
 
   reconcileMessage: (tempId, serverMsg) =>

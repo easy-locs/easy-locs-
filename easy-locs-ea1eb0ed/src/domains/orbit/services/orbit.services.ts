@@ -1,46 +1,28 @@
 /**
- * Orbit Canonical Services — SINGLE WRITE PATH for all Orbit actions.
- * 
- * FLOW GATE INTEGRATED:
- *   sendTextMessage → withFlowGate("message.sendText") → pipeline → orbitStore
- *   sendMediaMessage → withFlowGate("media.send") → pipeline → orbitStore
- *   sendVoiceMessage → withFlowGate("voice.send") → pipeline → orbitStore
+ * Orbit Canonical Services — Thin dispatch wrappers over orbitDispatch.
  *
- * Every write goes through here. No other entry point allowed.
- * 
- * Pattern per action:
- *   flowGate → validate → buildOptimistic → insertStore → enqueue → execute → reconcile
+ * ALL send operations route through the canonical orbitDispatch pipeline:
+ *   sendTextMessage → orbitDispatch({ type: "send_text", ... })
+ *
+ * For media/voice sends, callers must use orbitDispatch directly since they
+ * require caller-provided uploadFn and pathPrefix (see orbit-commands.ts).
+ *
+ * Non-send helpers (createDirectConversation, reconcileServerMessage,
+ * transitionMessageStatus, markConversationRead) remain here as they do
+ * not overlap with the dispatch pipeline.
  */
 import type {
   OrbitMessage,
   MessageStatus,
 } from "@/domains/orbit/types";
 import { useOrbitMessagingStore } from "@/domains/orbit/stores/orbit.store";
-import {
-  validateTextInput,
-  buildOptimisticTextMessage,
-  reconcileTextMessage,
-  type SendTextInput,
-} from "@/domains/orbit/pipelines/message/send-text.pipeline";
-import {
-  validateMediaInput,
-  buildLocalAttachment,
-  buildOptimisticMediaMessage,
-  type SendMediaInput,
-} from "@/domains/orbit/pipelines/message/send-media.pipeline";
-import {
-  validateVoiceInput,
-  buildLocalVoiceAttachment,
-  buildOptimisticVoiceMessage,
-  type SendVoiceInput,
-} from "@/domains/orbit/pipelines/message/send-voice.pipeline";
+import { orbitDispatch } from "@/families/orbit-dispatch/orbit-dispatch";
 import { findOrCreateDirect } from "@/domains/orbit/pipelines/conversation/find-or-create-direct.pipeline";
-import { acquireSubmitLock, isContentDuplicate } from "@/domains/orbit/guards/send-guard";
-import { logMessageSendStarted, logMessageReconciled } from "@/lib/observability/orbit-observability";
+import { logMessageReconciled } from "@/lib/observability/orbit-observability";
 import { isFlowActive, enterFlow, exitFlow } from "@/domains/orbit/flow-gate/orbit-flow-gate";
 
 // ══════════════════════════════════════════════
-// TEXT MESSAGE — Flow-gated
+// TEXT MESSAGE — Routes through orbitDispatch
 // ══════════════════════════════════════════════
 
 export async function sendTextMessage(input: {
@@ -50,136 +32,13 @@ export async function sendTextMessage(input: {
   text: string;
   replyToId?: string | null;
 }): Promise<{ ok: boolean; tempId?: string; error?: string }> {
-  const flowKey = `service.message.sendText:${input.conversationId}`;
-  if (isFlowActive(flowKey)) return { ok: false, error: "flow_active" };
-
-  if (!acquireSubmitLock(input.conversationId)) {
-    return { ok: false, error: "submit_locked" };
-  }
-  if (isContentDuplicate(input.conversationId, input.text)) {
-    return { ok: false, error: "content_duplicate" };
-  }
-
-  enterFlow(flowKey);
-  try {
-    const pipelineInput: SendTextInput = {
-      conversationId: input.conversationId,
-      senderId: input.senderId,
-      senderOrbitId: input.senderOrbitId,
-      body: input.text,
-      replyToId: input.replyToId ?? null,
-    };
-
-    const validationError = validateTextInput(pipelineInput);
-    if (validationError) {
-      return { ok: false, error: validationError };
-    }
-
-    const optimistic = buildOptimisticTextMessage(pipelineInput);
-    useOrbitMessagingStore.getState().mergeMessage(optimistic);
-    logMessageSendStarted(input.conversationId, optimistic.tempId ?? optimistic.id);
-
-    return { ok: true, tempId: optimistic.tempId ?? optimistic.id };
-  } finally {
-    exitFlow(flowKey);
-  }
-}
-
-// ══════════════════════════════════════════════
-// MEDIA MESSAGE — Flow-gated
-// ══════════════════════════════════════════════
-
-export async function sendMediaMessage(input: {
-  conversationId: string;
-  senderId: string;
-  senderOrbitId: string;
-  file: File;
-  caption?: string;
-}): Promise<{ ok: boolean; tempId?: string; attachmentId?: string; error?: string }> {
-  const flowKey = `service.media.send:${input.conversationId}`;
-  if (isFlowActive(flowKey)) return { ok: false, error: "flow_active" };
-
-  if (!acquireSubmitLock(input.conversationId)) {
-    return { ok: false, error: "submit_locked" };
-  }
-
-  enterFlow(flowKey);
-  try {
-    const pipelineInput: SendMediaInput = {
-      conversationId: input.conversationId,
-      senderId: input.senderId,
-      senderOrbitId: input.senderOrbitId,
-      file: input.file,
-      caption: input.caption,
-    };
-
-    const validationError = validateMediaInput(pipelineInput);
-    if (validationError) {
-      return { ok: false, error: validationError };
-    }
-
-    const previewUrl = input.file.type.startsWith("image/") ? URL.createObjectURL(input.file) : null;
-    const attachment = buildLocalAttachment(pipelineInput, previewUrl);
-    const optimistic = buildOptimisticMediaMessage(pipelineInput, attachment);
-
-    const store = useOrbitMessagingStore.getState();
-    store.mergeAttachment(attachment);
-    store.mergeMessage(optimistic);
-    logMessageSendStarted(input.conversationId, optimistic.tempId ?? optimistic.id);
-
-    return { ok: true, tempId: optimistic.tempId ?? optimistic.id, attachmentId: attachment.id };
-  } finally {
-    exitFlow(flowKey);
-  }
-}
-
-// ══════════════════════════════════════════════
-// VOICE MESSAGE — Flow-gated
-// ══════════════════════════════════════════════
-
-export async function sendVoiceMessage(input: {
-  conversationId: string;
-  senderId: string;
-  senderOrbitId: string;
-  blob: Blob;
-  durationSeconds: number;
-  localUrl: string;
-}): Promise<{ ok: boolean; tempId?: string; error?: string }> {
-  const flowKey = `service.voice.send:${input.conversationId}`;
-  if (isFlowActive(flowKey)) return { ok: false, error: "flow_active" };
-
-  if (!acquireSubmitLock(input.conversationId)) {
-    return { ok: false, error: "submit_locked" };
-  }
-
-  enterFlow(flowKey);
-  try {
-    const pipelineInput: SendVoiceInput = {
-      conversationId: input.conversationId,
-      senderId: input.senderId,
-      senderOrbitId: input.senderOrbitId,
-      blob: input.blob,
-      durationSeconds: input.durationSeconds,
-      localUrl: input.localUrl,
-    };
-
-    const validationError = validateVoiceInput(pipelineInput);
-    if (validationError) {
-      return { ok: false, error: validationError };
-    }
-
-    const attachment = buildLocalVoiceAttachment(pipelineInput);
-    const optimistic = buildOptimisticVoiceMessage(pipelineInput, attachment);
-
-    const store = useOrbitMessagingStore.getState();
-    store.mergeAttachment(attachment);
-    store.mergeMessage(optimistic);
-    logMessageSendStarted(input.conversationId, optimistic.tempId ?? optimistic.id);
-
-    return { ok: true, tempId: optimistic.tempId ?? optimistic.id };
-  } finally {
-    exitFlow(flowKey);
-  }
+  const result = await orbitDispatch({
+    type: "send_text",
+    conversationId: input.conversationId,
+    body: input.text,
+    replyToMessageId: input.replyToId ?? null,
+  });
+  return { ok: result.ok, tempId: result.messageId, error: result.error };
 }
 
 // ══════════════════════════════════════════════
@@ -213,7 +72,7 @@ export async function createDirectConversation(input: {
 }
 
 // ══════════════════════════════════════════════
-// MARK READ — delegates to receipt controller
+// MARK READ — delegates to store
 // ══════════════════════════════════════════════
 
 export function markConversationRead(conversationId: string): void {

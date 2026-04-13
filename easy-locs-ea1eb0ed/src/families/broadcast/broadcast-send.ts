@@ -2,9 +2,8 @@
  * broadcast.send — Canonical broadcast fan-out send pipeline.
  * Sends one message to many recipients as separate private deliveries.
  */
-import { sendText } from "@/families/send/send-text";
+import { orbitDispatch } from "@/families/orbit-dispatch/orbit-dispatch";
 import { getOrCreateCanonicalDirectConversation } from "@/families/threads";
-import type { SendContext } from "@/families/send/send-context";
 
 export interface BroadcastDelivery {
   recipientId: string;
@@ -36,13 +35,7 @@ export const BroadcastSend = {
         const conversationId = conv?.conversationId;
         if (!conversationId) throw new Error("Could not resolve conversation");
 
-        const ctx: SendContext = {
-          conversationId,
-          senderUserId,
-          senderOrbitId,
-        };
-
-        await sendText(ctx, body, { category: opts?.category || "broadcast" });
+        await orbitDispatch({ type: "send_text", conversationId, body, category: opts?.category || "broadcast" });
         deliveries.push({ recipientId, success: true });
       } catch (err: any) {
         deliveries.push({ recipientId, success: false, error: err.message });

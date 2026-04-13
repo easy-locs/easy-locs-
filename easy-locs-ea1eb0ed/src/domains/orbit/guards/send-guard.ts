@@ -1,53 +1,39 @@
 /**
- * Send Guards — Prevent invalid/duplicate sends.
- * Anti double-tap, anti double-submit, anti spam.
+ * Send Guards — Thin delegation layer over the canonical send-locks system.
+ * All guard state is now unified in families/orbit-dispatch/send-locks.ts.
+ * This file preserves the legacy API surface for existing callers.
  */
-
-const SUBMIT_LOCK_TTL = 650; // ms
-const CONTENT_DEDUP_TTL = 1200; // ms
-
-const submitLocks = new Map<string, number>();
-const contentHashes = new Map<string, number>();
+import {
+  acquireSubmitLock as canonicalAcquireSubmitLock,
+  checkIdempotencyGuard,
+} from "@/families/orbit-dispatch/send-locks";
+import type { OrbitCommand } from "@/families/orbit-dispatch/orbit-commands";
 
 /**
  * Check and acquire submit lock for a conversation.
  * Returns true if lock acquired (send allowed).
+ * Delegates to the canonical send-locks guard.
  */
 export function acquireSubmitLock(conversationId: string): boolean {
-  const now = Date.now();
-  const last = submitLocks.get(conversationId) || 0;
-  if (now - last < SUBMIT_LOCK_TTL) return false;
-  submitLocks.set(conversationId, now);
-  return true;
+  const cmd = { type: "send_text", conversationId, body: "" } as OrbitCommand;
+  return canonicalAcquireSubmitLock(cmd) !== null;
 }
 
 /**
  * Check content dedup — prevent identical content within window.
+ * Delegates to the canonical idempotency guard in send-locks.
  */
 export function isContentDuplicate(
   conversationId: string,
   content: string,
 ): boolean {
-  const key = `${conversationId}::${content.trim().slice(0, 100)}`;
-  const now = Date.now();
-  const last = contentHashes.get(key) || 0;
-  if (now - last < CONTENT_DEDUP_TTL) return true;
-  contentHashes.set(key, now);
-
-  // Cleanup old entries periodically
-  if (contentHashes.size > 500) {
-    const cutoff = now - CONTENT_DEDUP_TTL * 2;
-    for (const [k, ts] of contentHashes) {
-      if (ts < cutoff) contentHashes.delete(k);
-    }
-  }
-
-  return false;
+  const cmd = { type: "send_text", conversationId, body: content } as OrbitCommand;
+  return !checkIdempotencyGuard(cmd);
 }
 
 /**
- * Release submit lock (e.g., after failure).
+ * Release submit lock (no-op in the canonical system; TTL handles expiry).
  */
-export function releaseSubmitLock(conversationId: string): void {
-  submitLocks.delete(conversationId);
+export function releaseSubmitLock(_conversationId: string): void {
+  // The canonical lock system uses TTL-based expiry — no manual release needed.
 }

@@ -1,19 +1,17 @@
 /**
- * Orbit Services — INTERNAL write paths.
- * 
- * ⚠️ These functions are INTERNAL to the orbit-dispatch pipeline.
- * UI/hooks/components MUST NOT import from this module.
- * Use orbitDispatch({ type: '...' }) instead.
- * 
+ * Orbit Services — Dispatch-backed write paths.
+ *
+ * sendTextMessage now routes through orbitDispatch (canonical pipeline).
+ * For media/voice, use orbitDispatch({ type: "send_media"|"send_voice", ... }) directly.
+ * Use orbitDispatch({ type: '...' }) for all UI-initiated sends.
+ *
  * Only reconcileServerMessage and transitionMessageStatus are
  * re-exported for realtime/transport layers.
  */
 
-// Internal functions — consumed only by orbit-dispatch executors
+// Internal functions — available for orbit-dispatch pipeline and service layers
 export {
   sendTextMessage as _sendTextMessage,
-  sendMediaMessage as _sendMediaMessage,
-  sendVoiceMessage as _sendVoiceMessage,
   createDirectConversation as _createDirectConversation,
   markConversationRead as _markConversationRead,
 } from "./orbit.services";

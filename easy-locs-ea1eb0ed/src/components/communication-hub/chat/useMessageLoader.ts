@@ -1,20 +1,30 @@
 /**
  * useMessageLoader — V2-ONLY canonical message loader.
- * Reads from chat_messages_v2 exclusively. No legacy path.
+ * 
+ * Architecture:
+ *   - Initial load: DB fetch → normalizeOrbitMessage → orbitStore.mergeMessages
+ *   - Realtime: exclusively via orbit-realtime-owner.ts (subscribeConversationMessages)
+ *   - rawMessages: derived from useOrbitMessagingStore via selector (single source of truth)
+ *   - Broadcast channel: kept for instant peer sound notifications + thread preview updates
+ *   - Typing channel: kept for presence indicators
+ * 
+ * No direct chat_messages_v2 realtime subscription here.
  * Read receipts delegated to receipt.controller (single write path).
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { subscribeInstantMessages } from "@/lib/realtime-broadcast";
+import { subscribeConversationMessages } from "@/domains/orbit/realtime/orbit-realtime-owner";
+import { useOrbitMessagingStore } from "@/domains/orbit/stores/orbit.store";
+import { normalizeOrbitMessage } from "@/domains/orbit/normalizers";
 import {
   markConversationMessagesRead,
-  markSingleMessageRead,
   clearMarkedUnread,
 } from "@/domains/orbit/controllers/receipt.controller";
 import { playMessageSound } from "@/lib/notifications/sounds";
-
+import type { OrbitMessage } from "@/domains/orbit/types";
 
 
 type ThreadLike = {
@@ -70,10 +80,11 @@ function resolveConversationId(thread: ThreadLike | null): string | null {
   return thread?.conversationId || thread?.v2ConversationId || null;
 }
 
-function mapV2ToChat(m: any, conversationId: string): ChatMessage {
-  const meta = m.metadata ?? {};
+/** Map OrbitMessage (store format) to ChatMessage (UI format). */
+function mapOrbitToChat(m: OrbitMessage, conversationId: string): ChatMessage {
+  const meta = (m.metadata ?? {}) as Record<string, any>;
   const mediaUrl = meta.media?.url ?? meta.media?.remote_url ?? null;
-  const rawAtts = Array.isArray(m.attachments) ? m.attachments : [];
+  const rawAtts = Array.isArray(meta.attachments) ? meta.attachments : [];
   const firstAttUrl = rawAtts[0]?.url ?? rawAtts[0]?.remote_url ?? null;
   const resolvedAttachmentUrl = mediaUrl || firstAttUrl || null;
 
@@ -95,10 +106,10 @@ function mapV2ToChat(m: any, conversationId: string): ChatMessage {
 
   return {
     id: m.id,
-    sender_id: m.sender_user_id,
-    content: safeString(m.body),
-    created_at: m.created_at,
-    read: !!m.read_at,
+    sender_id: m.senderId,
+    content: safeString(m.text),
+    created_at: m.createdAt,
+    read: m.status === "read",
     category: (meta.category as string) || "general",
     tenant_id: null,
     translated_content: null,
@@ -107,26 +118,24 @@ function mapV2ToChat(m: any, conversationId: string): ChatMessage {
     message_type: msgType,
     context_type: "direct",
     context_id: conversationId,
-    pending: false,
-    failed: !!m.failed_at,
-    reply_to_message_id: m.reply_to_message_id ?? null,
+    pending: m.status === "sending",
+    failed: m.status === "failed",
+    reply_to_message_id: m.replyToId ?? null,
     metadata: meta,
     metadata_json: meta,
-    contact_name: safeString(meta.contact_name || m.sender_display_name),
+    contact_name: safeString(meta.contact_name || m.senderOrbitId),
     attachment_url: resolvedAttachmentUrl,
     attachments: rawAtts,
-    audio_url: msgType === "voice" ? resolvedAttachmentUrl : (m.audio_url || null),
+    audio_url: msgType === "voice" ? resolvedAttachmentUrl : null,
     audio_duration_seconds: meta.media?.duration ?? meta.duration ?? null,
     video_duration_seconds: meta.media?.duration ?? meta.duration ?? null,
-    view_once: !!m.view_once || !!meta.media?.viewOnce,
-    media_kind: meta.media?.media_kind || meta.media?.kind || m.media_kind || null,
-    media_count: m.media_count || 0,
-    attachment_summary: m.attachment_summary || null,
+    view_once: !!m.metadata?.view_once || !!meta.media?.viewOnce,
+    media_kind: meta.media?.media_kind || meta.media?.kind || m.type || null,
+    media_count: meta.media_count || 0,
+    attachment_summary: meta.attachment_summary || null,
     conversation_id: conversationId,
   } as any;
 }
-
-const messageCache = new Map<string, ChatMessage[]>();
 
 export function useMessageLoader({
   thread,
@@ -147,7 +156,6 @@ export function useMessageLoader({
   const entityId = thread?.entityId ?? null;
   const isOnline = offline.isOnline;
 
-  const [rawMessages, setRawMessages] = useState<ChatMessage[]>([]);
   const [pendingOffline, setPendingOffline] = useState<any[]>([]);
   const [convStatus, setConvStatus] = useState("active");
   const [typingIndicator, setTypingIndicator] = useState(false);
@@ -158,9 +166,6 @@ export function useMessageLoader({
   const markedReadForRef = useRef<string | null>(null);
   const loadInFlightForRef = useRef<string | null>(null);
   const prevConversationIdRef = useRef<string | null>(null);
-
-  const realtimeTrace = useCallback((_step: string, _phase: string, _payload?: Record<string, unknown>) => {}, []);
-  const loadCountRef = useRef({ cid: "", count: 0, ts: 0 });
   const readReceiptsRef = useRef(readReceipts);
   readReceiptsRef.current = readReceipts;
   const userIdRef = useRef(userId);
@@ -170,8 +175,137 @@ export function useMessageLoader({
     prevConversationIdRef.current = conversationId;
     markedReadForRef.current = null;
     loadInFlightForRef.current = null;
-    loadCountRef.current = { cid: conversationId || "", count: 0, ts: Date.now() };
   }
+
+  // ── Store-driven rawMessages (single source of truth) ──
+  const storeMessages = useOrbitMessagingStore(
+    useCallback(
+      (s) => conversationId ? s.getMessagesForConversation(conversationId) : [],
+      [conversationId]
+    )
+  );
+
+  const rawMessages = useMemo<ChatMessage[]>(
+    () => conversationId
+      ? storeMessages.map((m) => mapOrbitToChat(m, conversationId))
+      : [],
+    [storeMessages, conversationId]
+  );
+
+  // setRawMessages is kept for backward-compat (optimistic UI: insert, edit, delete, star,
+  // translation, pending/failed transitions from useThreadMessageFamily and mutation bridge).
+  // All mutations are applied to the orbit store so they propagate through the selector above.
+  const setRawMessages = useCallback((updater: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => {
+    const store = useOrbitMessagingStore.getState();
+    if (!conversationId) return;
+
+    const current = store.getMessagesForConversation(conversationId);
+    const currentMapped = current.map((m) => mapOrbitToChat(m, conversationId));
+    const next = typeof updater === "function" ? updater(currentMapped) : updater;
+
+    next.forEach((chatMsg) => {
+      const existingOrbit = current.find((m) => m.id === chatMsg.id);
+
+      if (!existingOrbit) {
+        // New message (optimistic insert)
+        const meta = (chatMsg.metadata ?? {}) as Record<string, unknown>;
+        const orbitMsg: OrbitMessage = {
+          id: chatMsg.id,
+          tempId: (meta._tempId as string | null) ?? null,
+          conversationId,
+          senderId: chatMsg.sender_id ?? "",
+          senderOrbitId: null,
+          type: (chatMsg.message_type as OrbitMessage["type"]) || "text",
+          text: chatMsg.content,
+          attachmentIds: [],
+          replyToId: chatMsg.reply_to_message_id ?? null,
+          reactionSummary: null,
+          createdAt: chatMsg.created_at,
+          updatedAt: null,
+          status: chatMsg.pending ? "sending" : chatMsg.failed ? "failed" : "sent",
+          isDeleted: false,
+          isEdited: false,
+          metadata: meta,
+        };
+        store.mergeMessage(orbitMsg);
+        return;
+      }
+
+      // Existing message — build a partial patch with only changed fields.
+      // patchMessage bypasses the version guard (local optimistic mutation, not server data).
+      const patch: Partial<Omit<OrbitMessage, "id" | "conversationId" | "senderId">> = {};
+      let hasPatch = false;
+
+      // text / content
+      if (chatMsg.content !== existingOrbit.text) {
+        patch.text = chatMsg.content;
+        hasPatch = true;
+      }
+
+      // type
+      const incomingType = (chatMsg.message_type as OrbitMessage["type"]) || "text";
+      if (incomingType !== existingOrbit.type) {
+        patch.type = incomingType;
+        hasPatch = true;
+      }
+
+      // deleted_for_all → isDeleted
+      const incomingDeleted = !!(chatMsg as Record<string, unknown>).deleted_for_all;
+      if (incomingDeleted !== existingOrbit.isDeleted) {
+        patch.isDeleted = incomingDeleted;
+        hasPatch = true;
+      }
+
+      // edited_at → isEdited
+      const incomingEdited = !!(chatMsg as Record<string, unknown>).edited_at;
+      if (incomingEdited && !existingOrbit.isEdited) {
+        patch.isEdited = true;
+        hasPatch = true;
+      }
+
+      // pending / failed → status (optimistic, bypass status machine)
+      const incomingStatus: OrbitMessage["status"] = chatMsg.pending
+        ? "sending"
+        : chatMsg.failed
+          ? "failed"
+          : existingOrbit.status;
+      if (incomingStatus !== existingOrbit.status) {
+        patch.status = incomingStatus;
+        hasPatch = true;
+      }
+
+      // metadata field updates: starred, translated_content, translated_locale
+      const prevMeta = existingOrbit.metadata ?? {};
+      const incomingStarred = (chatMsg as Record<string, unknown>).starred;
+      const incomingTranslated = (chatMsg as Record<string, unknown>).translated_content;
+      const incomingTranslatedLocale = (chatMsg as Record<string, unknown>).translated_locale;
+      const metaChanged =
+        incomingStarred !== undefined && incomingStarred !== prevMeta.starred ||
+        incomingTranslated !== undefined && incomingTranslated !== prevMeta.translated_content ||
+        incomingTranslatedLocale !== undefined && incomingTranslatedLocale !== prevMeta.translated_locale;
+      if (metaChanged) {
+        patch.metadata = {
+          ...prevMeta,
+          ...(incomingStarred !== undefined ? { starred: incomingStarred } : {}),
+          ...(incomingTranslated !== undefined ? { translated_content: incomingTranslated } : {}),
+          ...(incomingTranslatedLocale !== undefined ? { translated_locale: incomingTranslatedLocale } : {}),
+        };
+        hasPatch = true;
+      }
+
+      if (hasPatch) {
+        store.patchMessage(chatMsg.id, patch);
+      }
+    });
+
+    // Handle removals: if the updater produced a shorter list, remove IDs absent from `next`.
+    const nextIds = new Set(next.map((m) => m.id));
+    current.forEach((orbitMsg) => {
+      if (!nextIds.has(orbitMsg.id)) {
+        store.removeMessage(orbitMsg.id);
+      }
+    });
+  }, [conversationId]);
 
   const loadMessages = useCallback(async () => {
     const cid = prevConversationIdRef.current;
@@ -181,46 +315,28 @@ export function useMessageLoader({
     const uid = userIdRef.current;
 
     if (!cid) {
-      setRawMessages(prev => prev.length === 0 ? prev : []);
-      setPendingOffline(prev => prev.length === 0 ? prev : []);
       setMessagesLoading(false);
       return;
     }
 
     if (loadInFlightForRef.current === cid) return;
-
-    const lc = loadCountRef.current;
-    if (lc.cid === cid) {
-      const elapsed = Date.now() - lc.ts;
-      if (elapsed < 2000 && lc.count >= 3) {
-        console.warn("[MessageLoader] Rate limit hit — skipping load for", cid);
-        return;
-      }
-      if (elapsed >= 2000) { lc.count = 0; lc.ts = Date.now(); }
-      lc.count++;
-    } else {
-      loadCountRef.current = { cid, count: 1, ts: Date.now() };
-    }
-
     loadInFlightForRef.current = cid;
 
     try {
-      const cached = messageCache.get(cid);
-      if (cached?.length) {
-        setRawMessages(cached);
-        setMessagesLoading(false);
-      } else {
-        setMessagesLoading(true);
-      }
-
       if (!offlineRef.current.isOnline) {
         const offCached = await offlineRef.current.getCachedMessages();
         const pending = await offlineRef.current.getThreadPending();
-        setRawMessages((offCached ?? []) as ChatMessage[]);
+        const store = useOrbitMessagingStore.getState();
+        (offCached ?? []).forEach((m: any) => {
+          const normalized = normalizeOrbitMessage({ ...m, conversation_id: cid });
+          store.mergeMessage(normalized);
+        });
         setPendingOffline(pending ?? []);
         setMessagesLoading(false);
         return;
       }
+
+      setMessagesLoading(true);
 
       const { data, error } = await db
         .from("chat_messages_v2")
@@ -236,19 +352,17 @@ export function useMessageLoader({
         return;
       }
 
-      const mapped = (data ?? []).reverse().map((m: any) => mapV2ToChat(m, cid));
-      const dbIds = new Set(mapped.map((m: ChatMessage) => m.id));
-      setRawMessages((prev) => {
-        const pendingOptimistic = prev.filter(m => m.pending && !dbIds.has(m.id));
-        return pendingOptimistic.length > 0 ? [...mapped, ...pendingOptimistic] : mapped;
-      });
-      messageCache.set(cid, mapped);
-      offlineRef.current.cacheMessages(mapped);
+      const rows = (data ?? []).reverse();
+      const store = useOrbitMessagingStore.getState();
+      const normalized = rows.map((m: any) => normalizeOrbitMessage(m));
+      store.mergeMessages(normalized);
+
+      offlineRef.current.cacheMessages(rows);
       setMessagesLoading(false);
-      setPendingOffline(prev => prev.length === 0 ? prev : []);
+      setPendingOffline((prev) => (prev.length === 0 ? prev : []));
 
       if (readReceiptsRef.current && uid && markedReadForRef.current !== cid) {
-        const unreadIds = (data ?? [])
+        const unreadIds = rows
           .filter((m: any) => !m.read_at && m.sender_user_id !== uid)
           .map((m: any) => m.id);
 
@@ -276,67 +390,31 @@ export function useMessageLoader({
 
   const conversationIdRef = useRef(conversationId);
   useEffect(() => {
-    if (conversationIdRef.current !== conversationId) {
-      conversationIdRef.current = conversationId;
-    }
+    conversationIdRef.current = conversationId;
     void loadMessages();
+  }, [conversationId]);
+
+  // ── Canonical realtime subscription (orbit-realtime-owner) ──
+  useEffect(() => {
+    if (!conversationId) return;
+    const unsub = subscribeConversationMessages(conversationId);
+    return unsub;
   }, [conversationId]);
 
   useEffect(() => {
     const cid = prevConversationIdRef.current;
     if (!wasOnlineRef.current && isOnline && cid) {
-      loadCountRef.current = { cid, count: 0, ts: Date.now() };
       void loadMessagesRef.current();
     }
     wasOnlineRef.current = isOnline;
   }, [isOnline]);
 
+  // ── Broadcast channel: instant peer notification + thread preview ──
   useEffect(() => {
     if (!conversationId) return;
 
     const cleanup = subscribeInstantMessages(conversationId, (broadcastMsg) => {
       const isOwn = isOutgoingMessage(broadcastMsg, userId);
-
-      realtimeTrace("message.broadcast.instant", "output", {
-        id: broadcastMsg.id,
-        sender: broadcastMsg.senderUserId,
-        conversationId,
-        isOwn,
-      });
-
-      const mapped = mapV2ToChat({
-        id: broadcastMsg.id,
-        sender_user_id: broadcastMsg.senderUserId,
-        sender_orbit_id: broadcastMsg.senderOrbitId,
-        body: broadcastMsg.body,
-        type: broadcastMsg.type,
-        metadata: broadcastMsg.metadata,
-        created_at: broadcastMsg.createdAt,
-        conversation_id: conversationId,
-      }, conversationId);
-
-      setRawMessages((prev) => {
-        if (prev.some((m) => m.id === mapped.id)) return prev;
-        if (isOwn) {
-          let matched = false;
-          const incomingTempId = (broadcastMsg.metadata as any)?._tempId ?? null;
-          const reconciled = prev.filter(m => {
-            if ((!m.pending && !m.failed) || m.sender_id !== userId || matched) return true;
-            const myTempId = (m.metadata as any)?._tempId ?? null;
-            if (incomingTempId && myTempId && incomingTempId === myTempId) {
-              matched = true;
-              return false;
-            }
-            if (m.pending && m.content === safeString(broadcastMsg.body)) {
-              matched = true;
-              return false;
-            }
-            return true;
-          });
-          return [...reconciled, mapped];
-        }
-        return [...prev, mapped];
-      });
 
       if (!isOwn) {
         playMessageSound();
@@ -351,105 +429,11 @@ export function useMessageLoader({
     });
 
     return cleanup;
-  }, [conversationId, userId, realtimeTrace]);
+  }, [conversationId, userId]);
 
+  // ── Typing presence channel ──
   useEffect(() => {
     if (!conversationId) return;
-
-    realtimeTrace("message.realtime.echo", "input", { conversationId, channel: `rt:v2:${conversationId}` });
-
-    const channel = createRealtimeChannel(`rt:v2:${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "chat_messages_v2",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          const msg = payload.new as any;
-          if (!msg?.id) return;
-          const isOwn = msg.sender_user_id === userId;
-
-          realtimeTrace("message.postgres.insert", "output", {
-            id: msg.id,
-            sender: msg.sender_user_id,
-            conversationId,
-            isOwn,
-          });
-
-          const mapped = mapV2ToChat(msg, conversationId);
-          setRawMessages((prev) => {
-            if (prev.some((m) => m.id === mapped.id)) return prev;
-            if (isOwn) {
-              let matched = false;
-              const incomingTempId = (msg.metadata as any)?._tempId ?? null;
-              const reconciled = prev.filter(m => {
-                if ((!m.pending && !m.failed) || m.sender_id !== userId || matched) return true;
-                const myTempId = (m.metadata as any)?._tempId ?? null;
-                if (incomingTempId && myTempId && incomingTempId === myTempId) {
-                  matched = true;
-                  return false;
-                }
-                if (m.pending && m.content === safeString(msg.body)) {
-                  matched = true;
-                  return false;
-                }
-                return true;
-              });
-              return [...reconciled, mapped];
-            }
-            return [...prev, mapped];
-          });
-
-          if (!isOwn) {
-            const currentThread = threadRef.current;
-            if (currentThread?.id) {
-              onThreadUpdateRef.current(currentThread.id, {
-                lastMessageTime: msg.created_at,
-                lastMessagePreview: (msg.body || "").slice(0, 120),
-              });
-            }
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "chat_messages_v2",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          const msg = payload.new as any;
-          if (!msg?.id) return;
-
-          setRawMessages((prev) => {
-            if (msg.deleted_at) return prev.filter((m) => m.id !== msg.id);
-
-            let anyChange = false;
-            const next = prev.map((m) => {
-              if (m.id !== msg.id) return m;
-              const newContent = msg.body;
-              const newRead = !!msg.read_at;
-              const newFailed = !!msg.failed_at;
-              const newReplyTo = msg.reply_to_message_id ?? null;
-              if (
-                m.content === newContent &&
-                m.read === newRead &&
-                m.failed === newFailed &&
-                m.reply_to_message_id === newReplyTo
-              ) return m;
-              anyChange = true;
-              return { ...m, content: newContent, read: newRead, failed: newFailed, reply_to_message_id: newReplyTo, metadata: msg.metadata ?? {} };
-            });
-            return anyChange ? next : prev;
-          });
-        }
-      )
-      .subscribe();
 
     const typingChannel = createRealtimeChannel(`rt:typing:v2:${conversationId}`);
 
@@ -468,10 +452,9 @@ export function useMessageLoader({
     return () => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingChannelRef.current = null;
-      removeRealtimeChannel(channel);
       removeRealtimeChannel(typingChannel);
     };
-  }, [conversationId, userId, realtimeTrace]);
+  }, [conversationId, userId]);
 
   const broadcastTyping = useCallback(
     (typingEnabled: boolean) => {

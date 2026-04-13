@@ -21,7 +21,7 @@ import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { sendText } from "@/families/send/send-text";
+import { orbitDispatch } from "@/families/orbit-dispatch/orbit-dispatch";
 import { sendLocation } from "@/families/send/send-location";
 import type { SendContext } from "@/families/send/send-context";
 
@@ -121,7 +121,7 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
     if (!ctx) return;
     const text = input.trim();
     setInput("");
-    await sendText(ctx, text);
+    await orbitDispatch({ type: "send_text", conversationId: ctx.conversationId, body: text });
   }, [input, buildCtx]);
 
   const shareLocation = useCallback(async () => {
