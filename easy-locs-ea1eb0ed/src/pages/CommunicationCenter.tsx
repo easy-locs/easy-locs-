@@ -455,6 +455,8 @@ export const CommunicationCenter = () => {
               <HudConversationList
                 threads={threads}
                 loading={loading}
+                error={threadError}
+                onRetry={loadThreads}
                 selectedThread={selectedThread}
                 onSelectThread={handleSelectThread}
                 onDeleteThread={handleDeleteThread}

@@ -39,6 +39,19 @@ export interface DirectPeerInput {
   } | null;
 }
 
+const peerCache = new Map<string, { result: ResolvedDirectPeer; ts: number }>();
+const PEER_CACHE_TTL = 60_000;
+
+function getCacheKey(input: DirectPeerInput): string | null {
+  const userId = input.userId || input.contact?.userId || input.contact?.user_id || input.contact?.id || null;
+  if (userId) return `uid:${userId}`;
+  const orbitId = input.orbitId || input.contact?.orbitId || input.contact?.orbit_id || null;
+  if (orbitId) return `oid:${orbitId}`;
+  const email = input.email || input.contact?.email || null;
+  if (email) return `email:${email.trim().toLowerCase()}`;
+  return null;
+}
+
 const UNRESOLVABLE: ResolvedDirectPeer = {
   peerUserId: null,
   peerOrbitId: null,
@@ -55,6 +68,24 @@ const UNRESOLVABLE: ResolvedDirectPeer = {
  * Returns a canonical ResolvedDirectPeer or unresolvable result.
  */
 export async function resolveDirectPeer(input: DirectPeerInput): Promise<ResolvedDirectPeer> {
+  const cacheKey = getCacheKey(input);
+  if (cacheKey) {
+    const cached = peerCache.get(cacheKey);
+    if (cached && (Date.now() - cached.ts) < PEER_CACHE_TTL) return cached.result;
+  }
+
+  const result = await _resolveDirectPeerUncached(input);
+
+  if (cacheKey) {
+    peerCache.set(cacheKey, { result, ts: Date.now() });
+    if (result.peerUserId && cacheKey !== `uid:${result.peerUserId}`) {
+      peerCache.set(`uid:${result.peerUserId}`, { result, ts: Date.now() });
+    }
+  }
+  return result;
+}
+
+async function _resolveDirectPeerUncached(input: DirectPeerInput): Promise<ResolvedDirectPeer> {
   // Flatten contact object into top-level fields
   const userId = input.userId || input.contact?.userId || input.contact?.user_id || input.contact?.id || null;
   const orbitId = input.orbitId || input.contact?.orbitId || input.contact?.orbit_id || null;

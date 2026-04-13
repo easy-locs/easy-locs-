@@ -2,7 +2,7 @@
  * FAMILY: MESSAGE — Canonical message loading, sending, actions, translation, scroll.
  * Single source of truth for all message-related logic in a thread.
  */
-import { useRef, useMemo, useCallback } from "react";
+import { useRef, useMemo, useCallback, useEffect } from "react";
 import { useMessageLoader } from "@/components/communication-hub/chat/useMessageLoader";
 import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
 import { useOrbitDispatch } from "@/families/orbit-dispatch/useOrbitDispatch";
@@ -109,6 +109,43 @@ export function useThreadMessageFamily(params: {
     },
   }), [thread?.conversationId, thread?.v2ConversationId, locale, dispatch, disappearTTL, userId]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setRawMessagesRef.current((prev: ChatMessage[]) => {
+        const stale = prev.some(m => m.pending && !m.failed && (now - new Date(m.created_at).getTime()) > 10_000);
+        if (!stale) return prev;
+        return prev.map(m =>
+          m.pending && !m.failed && (now - new Date(m.created_at).getTime()) > 10_000
+            ? { ...m, pending: false, failed: true, status: "failed" as const }
+            : m
+        );
+      });
+    }, 3_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const retryMessage = useCallback(async (msg: ChatMessage) => {
+    const conversationId = thread?.conversationId || thread?.v2ConversationId || "";
+    if (!conversationId || !msg.content?.trim()) return;
+    setRawMessagesRef.current((prev: ChatMessage[]) =>
+      prev.map(m => m.id === msg.id ? { ...m, pending: true, failed: false, status: "sending" as const, created_at: new Date().toISOString() } : m)
+    );
+    const result = await dispatch({
+      type: "send_text",
+      conversationId,
+      body: msg.content.trim(),
+      locale,
+      category: (msg.category as any) || "general",
+      _uiTempId: msg.id,
+    });
+    if (!result.ok) {
+      setRawMessagesRef.current((prev: ChatMessage[]) =>
+        prev.map(m => m.id === msg.id ? { ...m, pending: false, failed: true, status: "failed" as const } : m)
+      );
+    }
+  }, [thread?.conversationId, thread?.v2ConversationId, locale, dispatch]);
+
   const loadMessagesRef = useRef(loader.loadMessages);
   loadMessagesRef.current = loader.loadMessages;
   const stableOnAfterChange = useCallback(() => { loadMessagesRef.current(); }, []);
@@ -149,6 +186,7 @@ export function useThreadMessageFamily(params: {
     messages,
     viewModels,
     messageSender,
+    retryMessage,
     messageActions,
     showOriginal,
     translatingMsgId,

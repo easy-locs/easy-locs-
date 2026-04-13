@@ -314,6 +314,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
               onTranslate={msgFamily.handleTranslateMessage}
               onContextMenu={stableContextMenu}
               onToggleSelect={selection.toggleMsgSelect}
+              onRetryMessage={msgFamily.retryMessage}
               getCategoryIcon={msgFamily.getCategoryIcon}
               t={t}
               conversationId={currentConversationId}
