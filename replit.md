@@ -928,7 +928,7 @@ Engine system trimmed from 135+ detect-only engines to **5 active engines** that
 1. **AutoFixEngine** (`sh-auto-fix`, 45s) — Offline→online recovery, active stale-query refetch after idle threshold (300s), memory pressure detection
 2. **SyncRepairEngine** (`rt-sync-repair`, 45s) — Detects sync gaps >5min, removes stale Supabase channels, triggers targeted reconnect (max 3 retries with cooldown)
 3. **UnreadIntegrityEngine** (`rt-unread-integrity`, 60s) — Detects/corrects unrealistic unread counts (>9999→0), fixes negative badge counts
-4. **ConversationConsistencyEngine** (`orbit-conversation-consistency`, 30s) — Detects duplicate DOM conversation nodes, hides duplicates immediately, signals re-dedup; forces full reload after 3 consecutive duplicate cycles
+4. **ConversationConsistencyEngine** (`orbit-conversation-consistency`, 30s) — Detects duplicate DOM conversation nodes, signals re-dedup via orbit:thread_updated; escalates to orbit:force_reload (immediate full thread rebuild bypassing debounce) after 3 consecutive duplicate cycles
 5. **TaxonomyRuntimeEngine** (`data-taxonomy-runtime`, 30s) — Corrects wrong category emojis in DOM, detects unknown categories/verticals using RADAR_CATEGORIES as SSOT
 
 ### Disabled Engines (130+, files retained)
