@@ -763,6 +763,31 @@ Full detect → classify → react → protect → verify → report cycle acros
 - **Key files**: `src/engines/core/repair-hardening.ts`, `src/engines/core/repair-pipeline.ts`, `src/engines/core/repair-actions.ts`, `src/engines/core/ui-repair-bridge.ts`, `src/engines/core/proof-system.ts`, `src/engines/core/domain-repair-rules.ts`, `src/engines/core/domain-activation-sheets.ts`, `src/engines/core/repair-safety.ts`, `src/engines/core/repair-bridge.ts`
 - **Diag page**: `/repair-diag` — shows storm state, budget, cooldown entries, oscillation quarantines, rejection breakdowns, per-proof confidence/priority/budget details
 
+## Engine Wiring Verification & Enforcement (WiringVerifier)
+
+- **Module**: `src/engines/core/wiring-verifier.ts`
+- **Admin UI**: `src/pages/admin/AdminWiringReportPage.tsx` — route `/admin/wiring-report`
+- **Invocation**: Explicitly triggered via the Admin UI (user-initiated). NOT auto-triggered at boot. This prevents runtime side-effects (proof contamination, learning signal pollution) during normal operation.
+- **Purpose**: Validates all 13 phase gates in strict sequential order. Any phase that FAILs blocks all subsequent phases (BLOCKED_BY_PREV_PHASE). Produces a WIRING_REPORT with per-phase PASS/FAIL/WARN/BLOCKED_BY_PREV_PHASE verdicts, evidence, and remediation actions.
+- **ENGINE_MASTER_REGISTRY**: 19 engines with canonical IDs derived directly from engine constructor configs in `engine-registry.ts` → `registerAllEngines()`. IDs match exactly what engines report at runtime (no invented IDs).
+- **Remediation loop**: `runWiringRemediationPass()` applies auto-applicable remediations (sealManifest, enablePipeline) and re-runs verification up to 3 rounds until PASS or no progress.
+
+| Phase | Gate | Hard-Fail Conditions |
+|-------|------|----------------------|
+| Phase 0 | Freeze | repair storm active, manifest not sealed, duplicate bus listeners >3, no kill switches |
+| Phase 1 | Registry | engine missing from orchestrator, wrong domain, duplicate IDs, orphan/phantom entries |
+| Phase 2 | Version Lock | v1/v2 coexistence per domain, versioned bus event names, auth/orbit domains degraded |
+| Phase 3 | Taxonomy Lock | runTaxonomyGuard() throws/critical violations, runEntryGuards() throws/no guards active, alias conflicts |
+| Phase 4 | Contracts | missing EngineContract, allowedInputs/allowedOutputs/forbiddenActions/deps validation errors, critical engines missing contract |
+| Phase 5 | Orchestrator | not booted, <80% in RUNNING, lifecycle bypass (quarantined but running), circular repair loops |
+| Phase 6 | Repair Pipeline | pipeline disabled, missing required stages, 10-stage spec uncovered (propose/simulate/apply = FAIL) |
+| Phase 7 | Proof System | <70% proofs with root cause, <70% with confidence, rollback rate >30% |
+| Phase 8 | Observability | zero orchestrator engines, zero observer tracking, zero engine health entries |
+| Phase 9 | E2E Flows | >1 domain probe not "accepted" (executePipeline() = accepted only), >2 metadata flows missing |
+| Phase 10 | Learning | running during repair storm, more low performers than high performers |
+| Phase 11 | Optimization | duplicate/inactive flagged engines |
+| Phase 12 | Hardening | storm active, circular loops, duplicate IDs, invalid proof rate >30% |
+
 ## Engineering Audit (2026-04-10)
 Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Build**: production build fixed (checkPublishBlockers import + duplicate patisserie key)

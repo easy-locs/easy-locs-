@@ -931,6 +931,29 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **EssentialServicesStrip**: `w-[58px]` items, `text-[9px]` labels, `gap-2`
 - **CategoryGrid**: `w-[76px]` cards, `text-[10px]` labels with `break-words`
 
+## Engine Wiring Verifier (Task 39)
+A `WiringVerifier` module (`src/engines/core/wiring-verifier.ts`) validates the full 13-phase engine chain in strict sequence, producing a structured `WIRING_REPORT` with PASS/FAIL/WARN per phase.
+
+### 13 Phases Validated
+- **Phase 0 (Freeze)**: Repair storm inactive, manifest sealed, no high-multiplicity bus listeners, kill switches configured
+- **Phase 1 (Registry)**: Every engine registered in orchestrator with unique ID/domain/category, no orphan/phantom engines in sentinel
+- **Phase 2 (Version Lock)**: No v1/v2 coexistence per domain, no versioned bus event names, domain health tracked
+- **Phase 3 (Taxonomy Lock)**: Taxonomy registry populated, no conflicting aliases, no orphan taxonomy entries
+- **Phase 4 (Contracts)**: All sentinel engines have complete SentinelEngineContract (11 required methods), critical engines prioritized
+- **Phase 5 (Orchestrator)**: Orchestrator booted, ≥80% engines running, no circular loops, storm inactive
+- **Phase 6 (Repair Pipeline)**: Pipeline enabled, all 7 stages present, proof stats healthy, repair rate below storm threshold
+- **Phase 7 (Proof System)**: Proofs generated with root cause, low rollback rate, validation failures below threshold
+- **Phase 8 (Observability)**: All engines have tick metrics, observer tracking, health monitor active, activation sheets present
+- **Phase 9 (E2E Flows)**: Core flows (login, session, chat, message, media, call, wallet, notification) have engine/bus coverage
+- **Phase 10 (Learning)**: Learning pipeline not in storm, high-performers outweigh low-performers, memory stats clean
+- **Phase 11 (Optimization)**: Optimizer ran, no flagged duplicates or inactive engines
+- **Phase 12 (Hardening)**: No storm, no loops, no duplicates, rollback rate ≤20%, invalid proof rate ≤30%
+
+### Key Files
+- `src/engines/core/wiring-verifier.ts` — WiringVerifier class, runWiringVerification(), getWiringReport()
+- `src/pages/admin/AdminWiringReportPage.tsx` — Admin UI at `/admin/wiring-report`
+- `src/engines/engine-registry.ts` — Auto-runs verification 15s after boot
+
 ## Engine System (Phase 1.5 — Active Only)
 Engine system trimmed from 135+ detect-only engines to **5 active engines** that produce real corrections. All passive/monitoring engines disabled (files retained for future Phase 2 reactivation). Registered in `src/engines/engine-registry.ts`.
 
