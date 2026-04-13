@@ -57,11 +57,14 @@ export async function executeSendText(
 
     // ── Phase 3: INSTANT STORE INSERT — bubble visible NOW (T0+0ms) ──
     enterPhase(trace, "instant_insert");
-    const optimistic = buildOptimisticTextMessage(input);
+    const optimistic = buildOptimisticTextMessage({ ...input, _uiTempId: cmd._uiTempId });
     const store = useOrbitMessagingStore.getState();
-    store.mergeMessage(optimistic);
+    const uiTempId = cmd._uiTempId ?? optimistic.tempId ?? optimistic.id;
+    const existingInStore = cmd._uiTempId && store.messages[cmd._uiTempId];
+    if (!existingInStore) {
+      store.mergeMessage(optimistic);
+    }
     const tempId = optimistic.tempId ?? optimistic.id;
-    const uiTempId = cmd._uiTempId ?? tempId;
     const metadata = { ...baseMeta, _tempId: uiTempId };
 
     if (import.meta.env.DEV) {

@@ -58,8 +58,8 @@ export function validateTextInput(input: SendTextInput): string | null {
 /**
  * Step 2: Build optimistic message.
  */
-export function buildOptimisticTextMessage(input: SendTextInput): OrbitMessage {
-  const tempId = crypto.randomUUID();
+export function buildOptimisticTextMessage(input: SendTextInput & { _uiTempId?: string }): OrbitMessage {
+  const tempId = input._uiTempId || crypto.randomUUID();
   const idempotencyKey = generateIdempotencyKey(input.senderId, input.conversationId, tempId);
 
   // Pre-mark in dedup to prevent realtime echo
