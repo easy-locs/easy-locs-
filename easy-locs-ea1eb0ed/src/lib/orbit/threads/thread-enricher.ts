@@ -13,16 +13,13 @@ function getConversationId(thread: ConversationThread): string | undefined {
   return thread.conversationId;
 }
 
-let _enrichPeerCache: PeerCacheInstance | null = null;
-
 export async function enrichPeerProfiles(
   threadMap: Map<string, ConversationThread>,
-  allPeerIds: Set<string>
+  allPeerIds: Set<string>,
+  peerCache?: PeerCacheInstance
 ): Promise<void> {
   if (allPeerIds.size === 0) return;
   trace("enrich.profiles", "input", { peerCount: allPeerIds.size });
-
-  if (!_enrichPeerCache) _enrichPeerCache = createPeerCache();
 
   const peerIdArr = Array.from(allPeerIds);
   const profileMap = await batchLookupProfiles(peerIdArr);
@@ -45,7 +42,7 @@ export async function enrichPeerProfiles(
     const uniqueMissed = [...new Set(missedPeerIds)];
     trace("enrich.profiles.fallback", "input", { missedCount: uniqueMissed.length });
     for (const peerId of uniqueMissed) {
-      const resolved = await resolveDirectPeer({ userId: peerId }, _enrichPeerCache);
+      const resolved = await resolveDirectPeer({ userId: peerId }, peerCache);
       if (!resolved.resolvable) continue;
       for (const thread of threadMap.values()) {
         if (thread.peerUserId !== peerId) continue;
