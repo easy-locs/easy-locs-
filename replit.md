@@ -921,30 +921,23 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **EssentialServicesStrip**: `w-[58px]` items, `text-[9px]` labels, `gap-2`
 - **CategoryGrid**: `w-[76px]` cards, `text-[10px]` labels with `break-words`
 
-## Platform Governance System (18-Phase Rebuild)
-13 governance engines in `src/engines/governance/`, all registered in engine-registry Tier 1:
+## Engine System (Phase 1.5 — Active Only)
+Engine system trimmed from 135+ detect-only engines to **5 active engines** that produce real corrections. All passive/monitoring engines disabled (files retained for future Phase 2 reactivation). Registered in `src/engines/engine-registry.ts`.
 
-### Engines
-1. **VerticalIsolationEngine** — Cross-vertical contamination detection/blocking
-2. **TaxonomyGovernanceEngine** — Category validation against CATEGORY_TREE
-3. **MediaRelevanceEngine** — Stock/watermark/quality/format/cross-vertical media checks
-4. **TextIntegrityEngine** — 18 text contexts, length/encoding/placeholder/overflow rules
-5. **LayoutIntegrityEngine** — DS token enforcement, overflow/touch-target detection, page-family rules
-6. **PageOpenEngine** — Route→paint lifecycle tracking, timeout classification, violation generation
-7. **ActionWiringEngine** — CTA registry, dead-click tracking, wiring validation
-8. **RuntimeHealthEngine** — Subscription health, heartbeat, failure classification with violation generation
-9. **FlowClosureEngine** — Typed state machine, 36 critical flows, closure rate tracking
-10. **BannerStrategyEngine** — Country/religion/season/cuisine-aware banner scoring (10+ national events)
-11. **LocalizationEngine** — 10 countries, 12 currencies, RTL/calendar/unit system support
-12. **AutoRemediationEngine** — 5 auto-remediation rules with logged remediation actions
-13. **AntiConflictEngine** — Unified governance summary from all 13 engines, architecture debt tracking
+### Active Engines (5)
+1. **AutoFixEngine** (`sh-auto-fix`, 45s) — Offline→online recovery, active stale-query refetch after idle threshold (300s), memory pressure detection
+2. **SyncRepairEngine** (`rt-sync-repair`, 45s) — Detects sync gaps >5min, removes stale Supabase channels, triggers targeted reconnect (max 3 retries with cooldown)
+3. **UnreadIntegrityEngine** (`rt-unread-integrity`, 60s) — Detects/corrects unrealistic unread counts (>9999→0), fixes negative badge counts
+4. **ConversationConsistencyEngine** (`orbit-conversation-consistency`, 30s) — Detects duplicate DOM conversation nodes, hides duplicates immediately, signals re-dedup; forces full reload after 3 consecutive duplicate cycles
+5. **TaxonomyRuntimeEngine** (`data-taxonomy-runtime`, 30s) — Corrects wrong category emojis in DOM, detects unknown categories/verticals using RADAR_CATEGORIES as SSOT
 
-### Key Types
-- **CanonicalVertical**: Closed union of 20 verticals (food, grocery, hotel, service, services, property, flight, ride, delivery, retail, shops, healthcare, events, experiences, education, beauty, mobility, stay, utility, finance)
-- **GovernanceViolation**: `id`, `type` (10 GovernanceViolationType values), `severity` (info/warning/error/critical), `source`, `target`, `message`, `ownerDomain`, `vertical`, `detectedAt`, `resolvedAt`, `autoRemediated`, `metadata` + Phase 3 fields: `engine?`, `route?`, `correlationId?`, `dedupKey?`, `entityType?`, `entityId?`, `code?`, `status?` (new/acknowledged/resolved)
-- **Per-vertical entities**: CanonicalFoodEntity, CanonicalHotelEntity, CanonicalServiceEntity, CanonicalPropertyEntity, CanonicalFlightEntity, CanonicalRideEntity, CanonicalDeliveryEntity, CanonicalMerchantEntity
+### Disabled Engines (130+, files retained)
+- Tier 1 passive: ErrorClassifier, RollbackEngine, SilentRecoveryService, PerfAnalyzer, RenderOptimizer, QueryOptimizer, CachePolicyEngine, NetworkLatencyEngine, PresenceHealthEngine, MessageReconcileEngine, RetryReplayEngine, LedgerIntegrityEngine, ReconciliationEngine, FraudWatchEngine, PayoutSafetyEngine, FXConsistencyEngine, ZeroTrustEngine, SessionRiskEngine, DeviceTrustEngine, PolicyHardener, AnomalyDetector, MessageDeliveryEngine, MediaFlowEngine, GroupIntegrityEngine, OptimisticUIEngine, CallHealthEngine, NetworkAdaptationEngine, ReconnectEngine, MediaQualityEngine, LocationIntegrityEngine, GeocodeRepairEngine, ProviderMatchingEngine, RoutingQualityEngine, ETAAccuracyEngine, MenuNormalizer, ServiceNormalizer, PropertyNormalizer, HotelNormalizer, TaxonomyEnforcer, CurrencyPolicyEngine, all 13 governance engines, GeoHierarchyEngine
+- Tier 2 (DEV-only, 36 engines): architecture, code-quality, uiux, business, support, observability, release, AI scan engines
+- Tier 3 (quality, 22 engines): taxonomy, canonical-mapping, profile, address, module-link, routing, UI polish, data cleaning, SEO, dead code/flow, wallet/orbit/radar quality, property, country rules, automation, observability, test enforcement, feature flags, quality score
+- AI subsystem (agent-intelligence, automation-pipeline): no longer auto-started from registry; still dynamically importable from AdminAIControlCenter
 
-### Runtime Wiring (Phase 2 Complete + Phase 3 Coverage Gaps Fixed)
+### Legacy Governance Types (retained, not actively enforced)
 - **SmartCoreTracker** → `trackPageOpen`/`updatePageState` on every route change (page open reliability) + dedup guard via `createPageOpenDedupKey`
 - **UniversalActionButtons** → `trackActionClick` on every CTA execution (dead click detection) + `isClickDuplicate` guard
 - **media-utils** → `validateMedia` governance check on every file upload (observational, never blocks)
