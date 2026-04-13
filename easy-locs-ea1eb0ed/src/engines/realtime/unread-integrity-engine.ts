@@ -43,10 +43,6 @@ export class UnreadIntegrityEngine extends BaseEngine {
           const count = parseInt(el.getAttribute("data-unread-count") || "0", 10);
           if (count > 9999) {
             el.setAttribute("data-unread-count", "0");
-            if (el instanceof HTMLElement) {
-              el.textContent = "";
-              el.style.display = "none";
-            }
           }
         });
         platformBus.emit("orbit:unread_corrected", {
@@ -64,7 +60,6 @@ export class UnreadIntegrityEngine extends BaseEngine {
       const count = parseInt(el.getAttribute("data-unread-count") || "0", 10);
       if (count < 0) {
         el.setAttribute("data-unread-count", "0");
-        if (el instanceof HTMLElement) el.textContent = "";
         findings.push(`Negative unread count corrected: ${count} → 0`);
         actions.push(`Fixed negative unread badge`);
       }
