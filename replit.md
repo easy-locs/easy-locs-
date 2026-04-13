@@ -1057,6 +1057,17 @@ Engine system trimmed from 135+ detect-only engines to **5 active engines** that
 - **engine-registry.ts**: `installUiRepairBridge()` called at boot alongside `installRepairBridge()`; teardown wired
 - **RepairDiagPage.tsx**: Updated to show all domains, UI repair bridge status, proofs by domain breakdown
 
+### Engine Memory System — Auto-Apprentissage Permanent (Phase 6)
+- **Supabase table `engine_memory`**: Persistent storage for all validated fixes (migration `20260413300000_engine_memory.sql`). Columns: id, type, issue_signature (unique indexed), root_cause, fix_applied, fix_function, confidence, auto_apply, applied_count, success_count, failure_count, avg_fix_duration_ms, recurrence_after_fix, score, disabled. RLS enabled.
+- **issue-signature.ts**: Deterministic signature generator using djb2 hash. Input: type + pattern + domain + category. Output: `sig-{type}-{domain}-{hash}`. Case-insensitive, stable across sessions.
+- **engine-memory.ts**: Singleton service with Map<signature, EngineMemoryRecord> cache. Loads from Supabase at boot, falls back to localStorage if offline. CRUD: recordFix, recordFailure, recordRecurrence, getKnownFix, getAllFixes, getTopFixes, toggleFix, persistLearningUpdate. Score formula: 50% success rate + 20% fix speed + 30% recurrence eliminated.
+- **apply-known-fixes.ts**: Pre-tick hook called in BaseEngine.executeTick() before main tick. Loads auto_apply=true fixes from cache, matches by domain/engineId, executes repair actions via executeRepairAction. Records failures. Anti-regression: checkAntiRegression() detects known bugs reappearing, emits critical event on platformBus, forces re-apply.
+- **engine-learning.ts**: Periodic learning cycle (every 5 minutes). Adjusts confidence scores based on success rates, disables ineffective fixes (success < 30%), promotes high performers to auto-apply (success >= 85%, confidence >= 0.7, zero recurrence). Consolidates similar fix groups. Persists mutations to Supabase + localStorage.
+- **repair-pipeline.ts integration**: stageDetect checks anti-regression on every issue. stageAcceptOrRollback records accepted fixes to engine memory with full metadata (type, signature, root cause, fix, confidence, duration).
+- **platform-bus.ts**: Added `engine:memory:regression` event type for anti-regression alerts.
+- **AdminControlRoomPage.tsx**: 8th tab "Engine Memory" with: total fixes learned, auto-applied count (24h), recurring bugs (target: 0), avg score, scoring breakdown per fix (success rate / speed / recurrence bars), fix toggle, by-type/by-domain breakdowns, learning engine stats.
+- **useMasterAppBootstrap.ts**: Stage 4 loads engine_memory from Supabase + starts learning cycle at boot.
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`
