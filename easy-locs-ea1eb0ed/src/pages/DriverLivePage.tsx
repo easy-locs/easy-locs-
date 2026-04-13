@@ -22,7 +22,9 @@ export default function DriverLivePage() {
       workspaceId: activeWorkspace.id,
       serviceMode: "delivery",
       vehicleType: "bike",
-    }).then(setDriver).catch(console.error);
+    }).then(setDriver).catch(() => {
+      toast.error("Failed to load driver profile");
+    });
   }, [activeWorkspace?.id]);
 
   const { coords, error } = useDriverLiveMode({

@@ -131,6 +131,12 @@ export default function QrResolvePage() {
     );
   }
 
-  // Fallback — navigated via resolveRoute already
-  return null;
+  return (
+    <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+        <p className="text-xs text-muted-foreground">Redirecting…</p>
+      </div>
+    </div>
+  );
 }

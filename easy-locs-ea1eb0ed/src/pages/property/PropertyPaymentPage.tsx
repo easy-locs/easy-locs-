@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Button } from "@/components/ui/button";
@@ -25,9 +25,16 @@ export default function PropertyPaymentPage() {
   const { booking, pricing, confirmPayment, loading, error, clearError } = usePropertyBooking();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("wallet");
 
+  useEffect(() => {
+    if (!booking || !pricing) navigate("/property/search", { replace: true });
+  }, [booking, pricing, navigate]);
+
   if (!booking || !pricing) {
-    navigate("/property/search");
-    return null;
+    return (
+      <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   const handlePay = useCallback(async () => {

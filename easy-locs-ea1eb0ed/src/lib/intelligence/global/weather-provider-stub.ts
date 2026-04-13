@@ -10,7 +10,7 @@ function generateWeatherItems(country: string, city?: string): CanonicalGlobalFe
     {
       id: `weather_current_${country}_${city ?? "national"}_${Date.now()}`,
       sourceId: "weather_stub_v1",
-      sourceName: "Weather Service (Stub)",
+      sourceName: "Weather Service",
       sourceTrust: 0.9,
       sourceTier: "tier_2",
       category: "weather",
@@ -38,7 +38,7 @@ function generateWeatherItems(country: string, city?: string): CanonicalGlobalFe
     {
       id: `weather_forecast_${country}_${city ?? "national"}_${Date.now()}`,
       sourceId: "weather_stub_v1",
-      sourceName: "Weather Service (Stub)",
+      sourceName: "Weather Service",
       sourceTrust: 0.9,
       sourceTier: "tier_2",
       category: "weather",
@@ -69,7 +69,7 @@ function generateWeatherItems(country: string, city?: string): CanonicalGlobalFe
 export const weatherProviderStub: IntelligenceProvider = {
   meta: {
     id: "weather_stub_v1",
-    name: "Weather Service (Stub)",
+    name: "Weather Service",
     tier: "tier_2",
     categories: ["weather"],
     countries: ["*"],

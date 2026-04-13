@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Button } from "@/components/ui/button";
@@ -15,9 +16,16 @@ export default function PropertyConfirmationPage() {
   const navigate = useNavigate();
   const { booking, pricing, selectedListing, reset } = usePropertyBooking();
 
+  useEffect(() => {
+    if (!booking || booking.status !== "confirmed") navigate("/property/search", { replace: true });
+  }, [booking, navigate]);
+
   if (!booking || booking.status !== "confirmed") {
-    navigate("/property/search");
-    return null;
+    return (
+      <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+      </div>
+    );
   }
 
   const listing = selectedListing;
