@@ -84,6 +84,7 @@ export function bootEngineSystem(): () => void {
     ).catch(() => {});
   }, 500);
 
+
   const diagnosticTimer = import.meta.env.DEV ? setTimeout(() => {
     if (disposed) return;
     const bridge = getRepairBridgeReport();

@@ -251,7 +251,7 @@ const {
   AdminFraudDetectionPage, AdminOrderTimelinePage, AdminMerchantApprovalQueuePage,
   AdminFailedPaymentsPage, AdminSupportSlaPage, AdminDeliveryIncidentsPage,
   AdminGrowthDashboardPage, AdminGrowthEnginePage, AdminCouponOversightPage,
-  AdminActiveSessionsPage, AdminFraudMonitorPage, AdminCoreEnginePage, AdminOrderAuditPage,
+  AdminActiveSessionsPage, AdminFraudMonitorPage, AdminCoreEnginePage, AdminWiringReportPage, AdminOrderAuditPage,
   AdminRefundQueuePage, AdminPlatformHealthPage, AdminRuntimeCockpitPage,
   AdminSystemLivePanelPage, AdminRestaurantFillPage, AdminMasterControlPage, AdminControlRoomPage,
   EngineControlRoomPage,
@@ -800,6 +800,7 @@ const App = () => (
                   <Route path="/admin/ai-control-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAIControlCenter /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/monetization" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMonetizationDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/core-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCoreEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/wiring-report" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWiringReportPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/home-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminHomeEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/map-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMapEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/notification-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
