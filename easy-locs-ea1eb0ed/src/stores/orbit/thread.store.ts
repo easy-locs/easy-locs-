@@ -9,7 +9,7 @@
 import { db } from "@/services/db";
 import { create } from "zustand";
 import type { ConversationRecord, ConversationType, ConversationParticipant } from "@/lib/types/comms";
-import { chatRepoExtended } from "@/lib/db/chat-repo-extended";
+import { chatRepoExtended } from "@/lib/supabase/chat-repo-extended";
 import { resolveOrbitProfile, createConversation as createConv } from "@/repositories/communication.repository";
 import { getAuthUser } from "@/repositories/tenant-portal.repository";
 import type { OrbitConversation } from "@/domains/orbit/types/canonical-entities";

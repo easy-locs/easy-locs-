@@ -13,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import * as rcptRepo from "@/repositories/receipts.repository";
 import { formatCurrency } from "@/lib/country-config";
-import type { Json } from "@/integrations/db/types";
+import type { Json } from "@/integrations/supabase/types";
 
 interface DBDocument {
   id: string;

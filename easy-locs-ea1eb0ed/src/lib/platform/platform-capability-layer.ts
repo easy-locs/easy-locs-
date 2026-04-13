@@ -209,7 +209,7 @@ class PlatformCapabilityLayer {
         break;
 
       case "contact_sync": {
-        const navC = navigator as Navigator & { contacts?: { select: Function } };
+        const navC = navigator as Navigator & { contacts?: { select: (...args: unknown[]) => Promise<Array<{ name?: string[]; tel?: string[]; email?: string[] }>> } };
         base.supported = typeof navC.contacts?.select === "function";
         base.requiresPermission = true;
         base.status = base.supported ? "prompt" : "unavailable";
