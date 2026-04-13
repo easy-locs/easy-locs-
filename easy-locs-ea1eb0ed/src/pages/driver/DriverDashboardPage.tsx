@@ -25,7 +25,7 @@ function getDriverGreeting(): { greeting: string; tip: string; icon: typeof Brai
 export default function DriverDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: profile, refetch } = useDriverLive(user?.id);
+  const { data: profile, refetch, isLoading: profileLoading } = useDriverLive(user?.id);
 
   const model = useMemo(() => projectDriverDashboard(profile), [profile]);
   const smartTip = useMemo(() => getDriverGreeting(), []);
@@ -59,11 +59,17 @@ export default function DriverDashboardPage() {
     { key: "heatmap", label: "Demand Map", icon: Flame, path: "/driver/heatmap", color: "bg-orange-600 text-white", desc: "Hot zones" },
   ];
 
+  const loadingPlaceholder = profileLoading ? "…" : "—";
+  const todayEarnings = profile?.today_earnings != null ? `${profile.today_earnings} AED` : loadingPlaceholder;
+  const todayTrips = profile?.today_trips != null ? String(profile.today_trips) : loadingPlaceholder;
+  const rating = profile?.rating != null ? String(profile.rating) : loadingPlaceholder;
+  const completionRate = profile?.completion_rate != null ? `${profile.completion_rate}%` : "—";
+
   const STATS = [
-    { label: "Completion", value: "98%", icon: CheckCircle2, color: "text-emerald-500" },
-    { label: "Rating", value: "4.9", icon: Star, color: "text-amber-500" },
-    { label: "Today", value: "0 AED", icon: DollarSign, color: "text-primary" },
-    { label: "Trips", value: "0", icon: BarChart3, color: "text-violet-500" },
+    { label: "Completion", value: completionRate, icon: CheckCircle2, color: "text-emerald-500" },
+    { label: "Rating", value: rating, icon: Star, color: "text-amber-500" },
+    { label: "Today", value: todayEarnings, icon: DollarSign, color: "text-primary" },
+    { label: "Trips", value: todayTrips, icon: BarChart3, color: "text-violet-500" },
   ];
 
   return (
@@ -187,8 +193,18 @@ export default function DriverDashboardPage() {
           </div>
           <div className="px-4 pb-4 space-y-3">
             {[
-              { label: "This week", amount: "0 AED", sub: "0 trips", trend: "neutral" },
-              { label: "This month", amount: "0 AED", sub: "0 trips", trend: "neutral" },
+              {
+                label: "This week",
+                amount: profile?.weekly_earnings != null ? `${profile.weekly_earnings} AED` : loadingPlaceholder,
+                sub: profile?.weekly_trips != null ? `${profile.weekly_trips} trips` : loadingPlaceholder,
+                trend: "neutral",
+              },
+              {
+                label: "This month",
+                amount: profile?.monthly_earnings != null ? `${profile.monthly_earnings} AED` : loadingPlaceholder,
+                sub: profile?.monthly_trips != null ? `${profile.monthly_trips} trips` : loadingPlaceholder,
+                trend: "neutral",
+              },
             ].map(row => (
               <div key={row.label} className="flex items-center justify-between py-2 border-t border-border/10 first:border-0">
                 <div>

@@ -3,7 +3,7 @@
  * 3-layer discovery: Firecrawl map → crawl → seed URLs.
  * NEVER publishes live directly. All intake starts hidden/pending.
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { firecrawlMap, firecrawlCrawl, firecrawlScrape } from "../_shared/firecrawl.ts";
 
 const corsHeaders = {

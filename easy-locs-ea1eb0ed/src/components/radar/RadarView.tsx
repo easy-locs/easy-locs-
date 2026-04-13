@@ -28,6 +28,7 @@ import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import RadarPlaceSearch from "@/components/radar/RadarPlaceSearch";
 import { RadarOpportunityFeed } from "@/components/radar/RadarOpportunityFeed";
+import { RADAR_GPS_FALLBACK_CENTER } from "@/lib/radar/radar-defaults";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
   TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal, MessageCircle,
@@ -96,7 +97,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
 
   // ── Radar Engines (decoupled) ──
   const radarEngines = useRadarEngines({
-    initialCenter: { lat: 25.2048, lng: 55.2708 },
+    initialCenter: RADAR_GPS_FALLBACK_CENTER,
     enableRealtime: true,
   });
 
@@ -140,9 +141,15 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const type = activeType === "all" ? undefined : activeType;
   const { entities: rawResults, loading, location } = useRadarResults({ type });
 
-  // When a place is selected from search, use its coordinates; otherwise use GPS
-  const userLat = selectedPlace?.lat ?? location?.lat ?? 25.2;
-  const userLng = selectedPlace?.lng ?? location?.lng ?? 55.27;
+  const usingFallback = !selectedPlace && !location;
+  useEffect(() => {
+    if (usingFallback) {
+      console.warn("[RadarView] GPS position unavailable — using fallback center:", RADAR_GPS_FALLBACK_CENTER);
+    }
+  }, [usingFallback]);
+
+  const userLat = selectedPlace?.lat ?? location?.lat ?? RADAR_GPS_FALLBACK_CENTER.lat;
+  const userLng = selectedPlace?.lng ?? location?.lng ?? RADAR_GPS_FALLBACK_CENTER.lng;
   const mapZoom = selectedPlace?.viewport?.recommended_zoom ?? undefined;
 
   // ── Filters + Ranking ──
