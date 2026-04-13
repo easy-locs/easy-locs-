@@ -23,8 +23,8 @@ async function getCurrentUser() {
 export function installCrossAppReactions(): () => void {
   const unsubs: (() => void)[] = [];
 
-  // ── Wallet payment completed → inject system message in Orbit chat ──
-  // Listens on BOTH notations to catch events from any source
+  // ── Wallet payment completed → notification ──
+  // Covers merchant payments, QR payments, checkout flows
   const handleWalletPayment = async (event: any) => {
     const p = event.payload as any;
 
@@ -49,6 +49,39 @@ export function installCrossAppReactions(): () => void {
 
   unsubs.push(
     platformBus.on("wallet:payment_completed", handleWalletPayment),
+  );
+
+  // ── Wallet payment_success → notification ──
+  // Covers flows that emit APP_EVENTS.WALLET_PAYMENT_SUCCESS ("wallet:payment_success")
+  // e.g. wallet-flow-bridge smartWalletTransfer
+  unsubs.push(
+    platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS, handleWalletPayment),
+  );
+
+  // ── P2P Transfer completed → notification ──
+  // wallet-transfer.ts and wallet-flow-bridge.ts emit wallet:transfer_completed.
+  // Without this listener, P2P transfers produce no user-facing notification.
+  unsubs.push(
+    platformBus.on(APP_EVENTS.WALLET_TRANSFER_COMPLETED, async (event: any) => {
+      const p = event.payload as any;
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      try {
+        await createAppNotification({
+          userId: user.id,
+          scope: "wallet",
+          title: "Transfer completed",
+          body: p.amount && p.currency
+            ? `${p.amount} ${p.currency} sent successfully`
+            : "Your transfer was sent successfully",
+          route: "/wallet",
+          severity: "success",
+        });
+      } catch (e) {
+        console.error("[cross-app] P2P transfer notification failed", e);
+      }
+    }),
   );
 
   // ── Booking created → inject system message in Orbit chat ──

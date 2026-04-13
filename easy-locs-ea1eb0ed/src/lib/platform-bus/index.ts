@@ -171,83 +171,15 @@ export const platformBus = {
   },
 };
 
-export const PLATFORM_EVENTS = {
-  IDENTITY_OTP_REQUESTED: "identity.otp.requested",
-  IDENTITY_OTP_VERIFIED: "identity.otp.verified",
-  IDENTITY_OTP_FAILED: "identity.otp.failed",
-  IDENTITY_ACTIVATED: "identity.activated",
-  IDENTITY_CONTACT_SYNC_COMPLETED: "identity.contact.sync.completed",
-  IDENTITY_CONTACT_SYNC_FAILED: "identity.contact.sync.failed",
-  IDENTITY_SESSION_RESTORED: "identity.session.restored",
-  IDENTITY_LOGOUT: "identity.logout",
-
-  ORBIT_THREAD_CREATED: "orbit.thread.created",
-  ORBIT_THREAD_OPENED: "orbit.thread.opened",
-  ORBIT_MESSAGE_SENT: "orbit.message.sent",
-  ORBIT_MESSAGE_DELIVERED: "orbit.message.delivered",
-  ORBIT_MESSAGE_READ: "orbit.message.read",
-  ORBIT_MESSAGE_FAILED: "orbit.message.failed",
-  ORBIT_CALL_STARTED: "orbit.call.started",
-  ORBIT_CALL_ANSWERED: "orbit.call.answered",
-  ORBIT_CALL_REJECTED: "orbit.call.rejected",
-  ORBIT_CALL_ENDED: "orbit.call.ended",
-  ORBIT_CALL_FAILED: "orbit.call.failed",
-  ORBIT_CONTACT_LINKED: "orbit.contact.linked",
-  ORBIT_REALTIME_CONNECTED: "orbit.realtime.connected",
-  ORBIT_REALTIME_DISCONNECTED: "orbit.realtime.disconnected",
-
-  WALLET_OPENED: "wallet.opened",
-  WALLET_BALANCE_FETCHED: "wallet.balance.fetched",
-  WALLET_TOPUP_INITIATED: "wallet.topup.initiated",
-  WALLET_TOPUP_CONFIRMED: "wallet.topup.confirmed",
-  WALLET_TOPUP_FAILED: "wallet.topup.failed",
-  WALLET_PAYMENT_INITIATED: "wallet.payment.initiated",
-  WALLET_PAYMENT_CONFIRMED: "wallet.payment.confirmed",
-  WALLET_PAYMENT_FAILED: "wallet.payment.failed",
-  WALLET_TRANSFER_INITIATED: "wallet.transfer.initiated",
-  WALLET_TRANSFER_COMPLETED: "wallet.transfer.completed",
-  WALLET_TRANSFER_FAILED: "wallet.transfer.failed",
-  WALLET_QR_PAYMENT: "wallet.qr.payment",
-  WALLET_CONVERSION_REQUESTED: "wallet.conversion.requested",
-  WALLET_PAYOUT_REQUESTED: "wallet.payout.requested",
-  WALLET_INTEGRITY_ALERT: "wallet.integrity.alert",
-
-  LISTING_PUBLISH_REQUESTED: "listing.publish.requested",
-  LISTING_PUBLISH_APPROVED: "listing.publish.approved",
-  LISTING_PUBLISH_BLOCKED: "listing.publish.blocked",
-  LISTING_QUARANTINED: "listing.quarantined",
-  LISTING_UPDATED: "listing.updated",
-
-  DASHBOARD_CARD_CLICKED: "dashboard.card.clicked",
-  DASHBOARD_CARD_LOADED: "dashboard.card.loaded",
-  DASHBOARD_CARD_ERROR: "dashboard.card.error",
-  DASHBOARD_CARD_DEAD_CLICK: "dashboard.card.dead_click",
-
-  RADAR_SEARCH_EXECUTED: "radar.search.executed",
-  RADAR_RESULT_OPENED: "radar.result.opened",
-  RADAR_MAP_LOADED: "radar.map.loaded",
-
-  BOOKING_FOOD_CREATED: "booking.food.created",
-  BOOKING_HOTEL_CONFIRMED: "booking.hotel.confirmed",
-  BOOKING_SERVICE_CREATED: "booking.service.created",
-  BOOKING_FLIGHT_TICKETED: "booking.flight.ticketed",
-  BOOKING_CANCELLED: "booking.cancelled",
-
-  PROVIDER_PROFILE_UPDATED: "provider.profile.updated",
-  PROVIDER_CATALOG_UPDATED: "provider.catalog.updated",
-  PROVIDER_PUBLISH_FAILED: "provider.publish.failed",
-
-  SCRAPING_IMPORT_STARTED: "scraping.import.started",
-  SCRAPING_IMPORT_COMPLETED: "scraping.import.completed",
-  SCRAPING_IMAGE_MISMATCH: "scraping.image.mismatch",
-  SCRAPING_ENTITY_MISMATCH: "scraping.entity.mismatch",
-
-  TAXONOMY_CONFLICT_DETECTED: "taxonomy:conflict_detected",
-  TAXONOMY_MISMATCH_FIXED: "taxonomy:mismatch_fixed",
-
-  SYSTEM_HEALTH_CHECK: "system.health.check",
-  SYSTEM_KILL_SWITCH_TOGGLED: "system.kill_switch.toggled",
-  SYSTEM_RELEASE_DEPLOYED: "system.release.deployed",
-} as const;
-
-export type PlatformEventName = typeof PLATFORM_EVENTS[keyof typeof PLATFORM_EVENTS];
+/**
+ * PLATFORM_EVENTS — canonical event constants.
+ *
+ * DEDUPLICATION: This previously held a parallel dot-notation event dictionary that conflicted
+ * with APP_EVENTS (colon-notation) in @/lib/platform/events.ts.
+ * The dot-notation variant has been removed. PLATFORM_EVENTS now re-exports APP_EVENTS as the
+ * single canonical source of truth for all event name constants.
+ *
+ * Emitters and listeners MUST use APP_EVENTS (or this re-export) — never raw strings.
+ */
+export { APP_EVENTS as PLATFORM_EVENTS } from "@/lib/platform/events";
+export type { AppEventKey as PlatformEventName } from "@/lib/platform/events";
