@@ -2,7 +2,7 @@ import { memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Clock } from "lucide-react";
 import { motion } from "framer-motion";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { ContinueItem } from "./explore.view-model";
 
 interface ExploreContinueProps {
@@ -28,19 +28,19 @@ export const ExploreContinue = memo(function ExploreContinue({ items }: ExploreC
   const handleContinue = useCallback((item: ContinueItem) => {
     if (item.id && item.vertical) {
       const entityType = VERTICAL_TO_ENTITY_TYPE[item.vertical] ?? "merchant";
-      eventBus.emit("entity.click", {
+      platformBus.emit("explore:entity_clicked", {
         entityId: item.id,
         entityType,
         vertical: item.vertical,
         surface: "explore",
-      });
+      }, "explore");
     } else {
-      eventBus.emit("explore.continue.clicked", {
+      platformBus.emit("explore:continue_clicked", {
         entityId: item.id,
         vertical: item.vertical,
         route: item.route,
         surface: "explore",
-      });
+      }, "explore");
       navigate(item.route);
     }
   }, [navigate]);

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { UniverseCard } from "@/components/cards/UniverseCard";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { HomeShopPreview } from "@/hooks/useHomeSections";
 
 interface ExploreEntitySectionProps {
@@ -51,13 +51,13 @@ export const ExploreEntitySection = memo(function ExploreEntitySection({
 }: ExploreEntitySectionProps) {
   const handleCardClick = useCallback((item: HomeShopPreview) => {
     const entityType = resolveEntityType(item.vertical);
-    eventBus.emit("entity.click", {
+    platformBus.emit("explore:entity_clicked", {
       entityId: item.id,
       entityType,
       vertical: item.vertical ?? "",
       surface: "explore",
       slug: item.slug,
-    });
+    }, "explore");
   }, []);
 
   if (!items || items.length === 0) {

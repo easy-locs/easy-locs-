@@ -2,7 +2,7 @@ import { useRadarStore } from "@/stores/radarStore";
 import type { RadarCategory } from "@/lib/radar/types";
 import { RadarSweep } from "@/components/radar/RadarSweep";
 import { ultraHaptic } from "@/lib/performance/useUltraFast";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/world-class-taxonomy";
 
 export function RadarFilterMenu() {
@@ -20,14 +20,14 @@ export function RadarFilterMenu() {
     ultraHaptic("light");
     setCategory(cat);
     setSubCategory(null);
-    eventBus.emit("RADAR_FILTER_CHANGED", { category: cat });
+    platformBus.emit("radar:filter_changed", { category: cat }, "radar");
     if (cat === "all") closeMenu();
   };
 
   const pickSub = (subValue: string) => {
     ultraHaptic("light");
     setSubCategory(subValue);
-    eventBus.emit("RADAR_FILTER_CHANGED", { category, subcategory: subValue });
+    platformBus.emit("radar:filter_changed", { category, subcategory: subValue }, "radar");
     closeMenu();
   };
 

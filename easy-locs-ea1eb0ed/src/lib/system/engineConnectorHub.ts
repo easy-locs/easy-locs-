@@ -134,18 +134,47 @@ export async function runSingleOrderConnector(orderId: string) {
   return results;
 }
 
+function resolveOrderIdFromPayment(payload: Record<string, unknown>): string | null {
+  if (payload.orderId && typeof payload.orderId === "string") return payload.orderId;
+  if (payload.referenceId && payload.referenceType === "order") return payload.referenceId as string;
+  if (typeof payload.reference === "string") {
+    if (payload.reference.startsWith("order:")) return payload.reference.slice(6);
+    if (/^[0-9a-f-]{36}$/i.test(payload.reference)) return payload.reference;
+  }
+  return null;
+}
+
 let hubInstalled = false;
 
 export function installEngineConnectorHub() {
   if (hubInstalled) return;
   hubInstalled = true;
 
-  // ── Payment captured → Escrow ──
-  platformBus.on("PAYMENT_SUCCESS", async (event) => {
+  // ── Payment captured → Escrow (wallet:payment_success is the canonical event from walletStore) ──
+  platformBus.on("wallet:payment_success", async (event) => {
+    const payload = event.payload as Record<string, unknown>;
+    const orderId = resolveOrderIdFromPayment(payload);
+    if (!orderId) return;
+    await syncOrderPaymentToEscrow(orderId).catch((e) => {
+      console.error("[EngineHub] escrow sync failed:", orderId, e instanceof Error ? e.message : e);
+    });
+  });
+
+  platformBus.on("wallet:payment_completed", async (event) => {
+    const payload = event.payload as Record<string, unknown>;
+    if (payload?.stage !== "captured") return;
+    const orderId = resolveOrderIdFromPayment(payload);
+    if (!orderId) return;
+    await syncOrderPaymentToEscrow(orderId).catch((e) => {
+      console.error("[EngineHub] escrow sync (payment_completed) failed:", orderId, e instanceof Error ? e.message : e);
+    });
+  });
+
+  platformBus.on("storefront:order_paid", async (event) => {
     const payload = event.payload as Record<string, unknown>;
     if (!payload?.orderId) return;
     await syncOrderPaymentToEscrow(payload.orderId as string).catch((e) => {
-      console.error("[EngineHub] escrow sync failed:", payload.orderId, e instanceof Error ? e.message : e);
+      console.error("[EngineHub] escrow sync (storefront:order_paid) failed:", payload.orderId, e instanceof Error ? e.message : e);
     });
   });
 
@@ -168,6 +197,15 @@ export function installEngineConnectorHub() {
   });
 
   // ── Order completed → Full chain: settlement + commission + notification + review trigger + loyalty ──
+  platformBus.on("booking:completed", async (event) => {
+    const payload = event.payload as Record<string, unknown>;
+    const orderId = (payload?.bookingId ?? payload?.orderId) as string | undefined;
+    if (!orderId) return;
+    await syncCompletedOrderToSettlement(orderId).catch((e) => {
+      console.error("[EngineHub] settlement sync (booking:completed) failed:", orderId, e instanceof Error ? e.message : e);
+    });
+  });
+
   platformBus.on("ORDER_COMPLETED", async (event) => {
     const payload = event.payload as Record<string, unknown>;
     if (!payload?.orderId) return;

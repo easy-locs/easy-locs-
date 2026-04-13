@@ -448,6 +448,22 @@ type PlatformEventType =
   | "deal:offer_sent"
   // ENTITY_OPENED (legacy compat)
   | "ENTITY_OPENED"
+  // Radar (telemetry)
+  | "radar:scan_completed"
+  | "radar:filter_changed"
+  // Map (actions)
+  | "map:route_focus"
+  | "map:center_request"
+  | "map:order_requested"
+  // Explore (telemetry)
+  | "explore:section_viewed"
+  | "explore:quick_action_clicked"
+  | "explore:ai_suggestion_clicked"
+  | "explore:continue_clicked"
+  | "explore:entity_clicked"
+  | "explore:search_executed"
+  // Dashboard (telemetry)
+  | "dashboard:sections_refreshed"
   // Close-flow dynamic events
   | `${string}:flow_closed`
 ;

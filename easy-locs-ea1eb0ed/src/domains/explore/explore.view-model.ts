@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback } from "react";
 import { useLocationStore } from "@/stores/locationStore";
 import { useHomeSections, type HomeShopPreview } from "@/hooks/useHomeSections";
 import { useStoryFeed } from "@/hooks/useStoryFeed";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { getIntelligenceOrchestrator } from "@/lib/intelligence/intelligence-orchestrator";
 import type { Story } from "@/lib/stories/story-types";
 
@@ -162,7 +162,7 @@ export function useExploreViewModel(): ExploreViewModel {
   ], [forYouItems, nearYouItems, trendingItems]);
 
   const emitExploreEvent = useCallback((event: string, payload: Record<string, unknown>) => {
-    eventBus.emit(event, payload);
+    platformBus.emit(event as any, payload, "explore");
   }, []);
 
   const onLocationTap = useCallback(() => setAddressSheetOpen(true), []);

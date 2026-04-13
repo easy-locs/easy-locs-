@@ -1,7 +1,7 @@
 import { memo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { useExploreViewModel } from "./explore.view-model";
 import { ExploreHeader } from "./ExploreHeader";
 import { ExploreStoryRails } from "./ExploreStoryRails";
@@ -14,7 +14,7 @@ export const ExploreScreen = memo(function ExploreScreen() {
   const vm = useExploreViewModel();
 
   useEffect(() => {
-    eventBus.emit("explore.section.viewed", { surface: "explore", timestamp: Date.now() });
+    platformBus.emit("explore:section_viewed", { surface: "explore", timestamp: Date.now() }, "explore");
   }, []);
 
   return (
