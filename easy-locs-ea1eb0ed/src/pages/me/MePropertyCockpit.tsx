@@ -186,7 +186,7 @@ export default function MePropertyCockpit() {
                   </div>
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: navy }}>{prop.title}</p>
+                  <p className="text-sm font-medium line-clamp-1 break-words" style={{ color: navy }}>{prop.title}</p>
                   <p className="text-xs truncate" style={{ color: "#999" }}>{prop.address.city}, {prop.address.country}</p>
                 </div>
                 <span

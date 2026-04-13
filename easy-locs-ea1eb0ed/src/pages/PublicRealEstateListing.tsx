@@ -389,7 +389,7 @@ export default function PublicRealEstateListing() {
                     <s.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" style={{ color: "hsl(38 65% 56%)" }} />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[10px] sm:text-[11px] text-muted-foreground uppercase tracking-wider font-semibold truncate">{s.label}</div>
+                    <div className="text-[10px] sm:text-[11px] text-muted-foreground uppercase tracking-wider font-semibold line-clamp-1 break-words">{s.label}</div>
                     <div className="font-extrabold text-foreground text-lg sm:text-xl">{s.value}</div>
                   </div>
                 </div>

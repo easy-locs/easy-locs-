@@ -17,7 +17,7 @@ export default function YouLocationPage({ onBack }: Props) {
           <ChevronRight className="h-4 w-4 rotate-180" style={{ color: "hsl(var(--muted-foreground))" }} />
         </button>
         <MapPin className="h-5 w-5 text-primary" />
-        <h2 className="text-base font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.location_title")}</h2>
+        <h2 className="text-base font-semibold break-words" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.location_title")}</h2>
       </div>
       <div className="space-y-1 mt-4">
         <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.default_duration")}</p>

@@ -523,7 +523,7 @@ export default function MeCommandCenter() {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-base font-bold text-foreground truncate">{displayName}</p>
+            <p className="text-base font-bold text-foreground line-clamp-1 break-words">{displayName}</p>
             <p className="text-[11px] text-muted-foreground truncate font-mono mt-0.5">
               EL-{(user?.id || "").replace(/-/g, "").substring(0, 8).toUpperCase()}
             </p>
@@ -619,7 +619,7 @@ export default function MeCommandCenter() {
                 style={{ background: `${kpi.color}08`, borderColor: `${kpi.color}14` }}
               >
                 <p className="text-lg font-extrabold text-foreground leading-none tabular-nums">{kpi.value}</p>
-                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-1 truncate">{kpi.label}</p>
+                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-1 line-clamp-2 break-words">{kpi.label}</p>
               </button>
             ))}
           </motion.div>
@@ -642,8 +642,8 @@ export default function MeCommandCenter() {
                 <Store className="w-4 h-4" style={{ color: A.gold }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-foreground truncate">{t("me.open_shop")}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{t("me.open_shop_sub")}</p>
+                <p className="text-xs font-bold text-foreground line-clamp-2 break-words">{t("me.open_shop")}</p>
+                <p className="text-[10px] text-muted-foreground line-clamp-2 break-words">{t("me.open_shop_sub")}</p>
               </div>
             </button>
             <button
@@ -655,8 +655,8 @@ export default function MeCommandCenter() {
                 <Compass className="w-4 h-4" style={{ color: A.cyan }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-foreground truncate">{t("me.become_provider")}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{t("me.become_provider_sub")}</p>
+                <p className="text-xs font-bold text-foreground line-clamp-2 break-words">{t("me.become_provider")}</p>
+                <p className="text-[10px] text-muted-foreground line-clamp-2 break-words">{t("me.become_provider_sub")}</p>
               </div>
             </button>
           </motion.div>
@@ -724,8 +724,8 @@ export default function MeCommandCenter() {
                   <item.icon style={{ color: item.accent }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="text-[13px] font-semibold text-foreground block leading-tight truncate">{item.label}</span>
-                  <span className="text-[10px] text-muted-foreground/60 leading-tight truncate block">{item.subtitle}</span>
+                  <span className="text-[13px] font-semibold text-foreground block leading-tight line-clamp-1 break-words">{item.label}</span>
+                  <span className="text-[10px] text-muted-foreground/60 leading-tight line-clamp-1 break-words block">{item.subtitle}</span>
                 </div>
                 {item.badge != null && Number(item.badge) > 0 && (
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0" style={{ background: `${A.gold}1A`, color: A.gold }}>

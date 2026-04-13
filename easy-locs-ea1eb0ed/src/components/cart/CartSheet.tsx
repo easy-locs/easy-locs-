@@ -124,7 +124,7 @@ export default function CartSheet() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-semibold truncate">{item.name}</h4>
+                  <h4 className="text-sm font-semibold line-clamp-2 break-words">{item.name}</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">{fmt(item.unitPrice * item.quantity)}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <button

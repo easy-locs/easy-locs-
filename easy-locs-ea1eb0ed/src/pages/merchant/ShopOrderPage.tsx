@@ -195,7 +195,7 @@ export default function ShopOrderPage() {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <h1 className="text-lg font-bold text-foreground truncate">{shop.name}</h1>
+                <h1 className="text-lg font-bold text-foreground break-words">{shop.name}</h1>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   {shop.city && (
                     <span className="flex items-center gap-0.5">
@@ -262,7 +262,7 @@ export default function ShopOrderPage() {
                   <img src={product.image_url} alt={product.name} className="w-20 h-20 rounded-xl object-cover shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{product.name}</p>
+                  <p className="text-sm font-semibold text-foreground line-clamp-2 break-words">{product.name}</p>
                   {product.description && (
                     <p className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">{product.description}</p>
                   )}
@@ -321,7 +321,7 @@ export default function ShopOrderPage() {
                 {cartItems.map((item: any) => (
                   <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
+                      <p className="text-sm font-medium text-foreground line-clamp-2 break-words">{item.name}</p>
                       <p className="text-xs text-muted-foreground">{fmtPrice((item.price || 0) * item.qty, currency)}</p>
                     </div>
                     <div className="flex items-center gap-1">

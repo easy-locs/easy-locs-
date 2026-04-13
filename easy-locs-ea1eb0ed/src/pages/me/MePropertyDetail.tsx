@@ -145,8 +145,8 @@ export default function MePropertyDetail() {
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-foreground truncate">{property.label}</h1>
-            <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+            <h1 className="text-lg font-bold text-foreground break-words">{property.label}</h1>
+            <p className="text-[11px] text-muted-foreground line-clamp-1 break-words flex items-center gap-1">
               <MapPin className="w-3 h-3 shrink-0" /> {property.address}, {property.city}
             </p>
           </div>
@@ -265,7 +265,7 @@ function OverviewTab({ property, activeTenants, propTenants, leases, fmt, cc }: 
                 <Users className="w-4 h-4" style={{ color: "hsl(var(--primary))" }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{t.name}</p>
+                <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{t.name}</p>
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                   {t.email && <span className="flex items-center gap-0.5"><Mail className="w-2.5 h-2.5" /> {t.email}</span>}
                   {t.phone && <span className="flex items-center gap-0.5"><Phone className="w-2.5 h-2.5" /> {t.phone}</span>}
@@ -285,7 +285,7 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ComponentType<{ cla
     <div className="flex items-center gap-2">
       <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
       <span className="text-[11px] text-muted-foreground">{label}:</span>
-      <span className="text-[11px] font-semibold text-foreground truncate">{value}</span>
+      <span className="text-[11px] font-semibold text-foreground line-clamp-1 break-words">{value}</span>
     </div>
   );
 }

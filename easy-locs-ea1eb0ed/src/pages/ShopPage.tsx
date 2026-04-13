@@ -308,7 +308,7 @@ export default function ShopPage() {
             </>
           )}
           <ChevronRight className="w-3 h-3 shrink-0" />
-          <span className="text-foreground font-medium truncate">{shop.name}</span>
+          <span className="text-foreground font-medium line-clamp-1 break-words">{shop.name}</span>
         </nav>
 
         {/* ═══ HERO ═══ */}
@@ -353,7 +353,7 @@ export default function ShopPage() {
               )}
               <div className="flex-1 min-w-0 pb-0.5">
                 <div className="flex items-center gap-1.5">
-                  <h1 className="text-lg font-bold text-foreground truncate leading-tight">
+                  <h1 className="text-lg font-bold text-foreground break-words leading-tight">
                     {shopT.t("name", shop.name)}
                   </h1>
                   {shop.is_verified && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
@@ -704,7 +704,7 @@ export default function ShopPage() {
                   <div key={ci.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/20">
                     {ci.photo_url && <img src={ci.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{ci.title || "Item"}</p>
+                      <p className="text-sm font-medium line-clamp-2 break-words">{ci.title || "Item"}</p>
                       <p className="text-xs text-muted-foreground">{fx.formatPrice(ci.unit_price, shop.currency)}</p>
                     </div>
                     <div className="flex items-center gap-1">

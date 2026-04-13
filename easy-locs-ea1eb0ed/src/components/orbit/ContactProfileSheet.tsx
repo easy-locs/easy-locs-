@@ -119,7 +119,7 @@ export function ContactProfileSheet({
                     style={{ background: "hsl(var(--hud-success))", borderColor: "hsl(var(--background))" }} />
                 )}
               </div>
-              <h2 className="text-xl font-bold mt-3 text-center truncate max-w-[80%]" style={{ color: "hsl(var(--foreground))" }}>
+              <h2 className="text-xl font-bold mt-3 text-center break-words max-w-[80%]" style={{ color: "hsl(var(--foreground))" }}>
                 {vm.displayName}
               </h2>
               <p className="text-xs mt-0.5 font-medium" style={{

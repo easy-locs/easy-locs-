@@ -513,7 +513,7 @@ export const CommunicationCenter = () => {
         <Sheet open={mobileContextOpen} onOpenChange={setMobileContextOpen}>
           <SheetContent side="bottom" className="h-[80dvh] p-0 rounded-t-2xl" style={{ background: "hsl(var(--background))" }}>
             <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border) / 0.1)" }}>
-              <SheetTitle className="text-sm truncate" style={{ color: "hsl(var(--foreground))" }}>
+              <SheetTitle className="text-sm break-words" style={{ color: "hsl(var(--foreground))" }}>
                 {typeof selectedThread.name === "string" ? selectedThread.name : t("orbit.contact")}
               </SheetTitle>
             </SheetHeader>

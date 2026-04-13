@@ -221,7 +221,7 @@ export default function WalletHubPage() {
                 <div className="app-card p-4 flex items-center gap-3" style={{ borderColor: "hsl(var(--destructive) / 0.15)", background: "hsl(var(--destructive) / 0.04)" }}>
                   <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-foreground truncate">{tSafe(t, "wallet.loadError", "Unable to load wallet")}</p>
+                    <p className="text-[13px] font-semibold text-foreground line-clamp-1 break-words">{tSafe(t, "wallet.loadError", "Unable to load wallet")}</p>
                     <p className="text-[10px] text-muted-foreground">{walletError}</p>
                   </div>
                   <button onClick={reloadWallet} className="app-page-header-btn shrink-0">

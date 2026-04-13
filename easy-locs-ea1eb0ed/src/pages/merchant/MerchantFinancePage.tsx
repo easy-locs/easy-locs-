@@ -87,8 +87,8 @@ function KpiCard({ label, value, icon: Icon, color, trend }: {
           <span className="text-[10px] font-bold text-emerald-500">{trend}</span>
         )}
       </div>
-      <p className="text-[11px] text-muted-foreground font-medium truncate">{label}</p>
-      <p className="text-lg font-extrabold text-foreground tabular-nums truncate">{value}</p>
+      <p className="text-[11px] text-muted-foreground font-medium line-clamp-2 break-words">{label}</p>
+      <p className="text-lg font-extrabold text-foreground tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">{value}</p>
     </motion.div>
   );
 }
@@ -372,7 +372,7 @@ export default function MerchantFinancePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <p className="text-sm font-semibold text-foreground truncate">
+                      <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">
                         {tx.title || config.label}
                       </p>
                       {statusIcon(tx.status)}

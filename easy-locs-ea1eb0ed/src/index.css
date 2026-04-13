@@ -44,6 +44,62 @@
 }
 
 /* ══════════════════════════════════════════════════
+   TRUNCATION RULES — Canonical rules by component type
+   ══════════════════════════════════════════════════
+   Card listing (ExploreListingCard, RadarResultCard, HyperRadarPage cards):
+     - Card title:        line-clamp-2  (2 lines, allows reading full short title)
+     - Card description:  line-clamp-2  (2 lines on cards, full in detail views)
+     - Card address/meta: line-clamp-1  (single line, location/meta info)
+     - Card price:        nowrap + tabular-nums (never wrap price)
+     - Card badges:       nowrap + ellipsis (pill format)
+
+   Conversation list (HudConversationCard, ConversationList):
+     - Sender name:    truncate / line-clamp-1  (single line, messenger convention)
+     - Message preview: truncate / line-clamp-1 (single line, messenger convention)
+     - Timestamp:       nowrap                  (always fully visible)
+
+   List rows (ListRow, TransactionRow, InvoiceList):
+     - Row title:    line-clamp-2  (allow 2 lines for long names)
+     - Row subtitle: line-clamp-1  (secondary info, single line)
+     - Row amount:   nowrap + tabular-nums (financial values never wrap)
+
+   KPI / stat cards (StatCard, MeBusinessKpis):
+     - KPI value:  nowrap + tabular-nums (never wrap numbers)
+     - KPI label:  line-clamp-2 (allow 2 lines for translated labels)
+
+   Headers / page titles / modal titles (SheetTitle, DialogTitle):
+     - Section heading: wrap freely (word-break: break-word, no truncation)
+     - Detail page title: wrap freely
+     - Modal/Sheet header: wrap freely — never truncate with ellipsis
+
+   Badges / chips:
+     - nowrap + ellipsis + max-width: 100%
+
+   Quick action labels (MeQuickActions, SmartActionCard, SmartShortcuts):
+     - line-clamp-2 break-words (allow 2 lines for translated labels)
+
+   Suggestion cards (SmartSuggestions, dashboard cards):
+     - title:       line-clamp-2 break-words
+     - description: line-clamp-2 break-words
+
+   Cart / order items (CartSheet, ShopOrderPage, MerchantMenuPage):
+     - item name:   line-clamp-2 break-words (products can have long descriptive names)
+     - item price:  nowrap + tabular-nums
+
+   Deep-link / profile sidebar (ProductPage, UserProfilePage):
+     - entity name: line-clamp-1 break-words (compact row beside icon)
+
+   Breadcrumb nav items:
+     - name: line-clamp-1 break-words (never overflow nav bar)
+
+   Ad/boost banners (CanonicalBoostBanner):
+     - headline: line-clamp-1 break-words
+
+   URLs / monospace identifiers (websites, IDs, phone numbers):
+     - truncate is intentional — long strings that should not wrap
+   ══════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════
    LAYOUT PROTECTION ENGINE — Anti-clipping, anti-truncation, anti-overlap
    ══════════════════════════════════════════════════ */
 
@@ -1706,7 +1762,7 @@ select {
     @apply p-3 flex flex-col gap-1;
   }
   .card-listing .card-title {
-    @apply text-sm font-semibold text-foreground line-clamp-1;
+    @apply text-sm font-semibold text-foreground line-clamp-2 break-words;
   }
   .card-listing .card-meta {
     @apply text-[11px] text-muted-foreground line-clamp-1;

@@ -46,7 +46,7 @@ const OrderCard = memo(function OrderCard({ order, onAction }: { order: Merchant
   return (
     <div className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.08)" }}>
       <div className="flex items-center justify-between mb-2.5">
-        <span className="text-sm font-bold truncate" style={{ color: "hsl(var(--foreground))" }}>{order.guest_name}</span>
+        <span className="text-sm font-bold line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>{order.guest_name}</span>
         <span className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
           {new Date(order.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </span>

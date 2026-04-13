@@ -43,7 +43,7 @@ export default function YouNotificationsPage({ onBack }: Props) {
           <ChevronRight className="h-4 w-4 rotate-180" style={{ color: "hsl(var(--muted-foreground))" }} />
         </button>
         <Bell className="h-5 w-5 text-primary" />
-        <h2 className="text-base font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.notif_title")}</h2>
+        <h2 className="text-base font-semibold break-words" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.notif_title")}</h2>
       </div>
 
       <div className="space-y-1 mt-4">

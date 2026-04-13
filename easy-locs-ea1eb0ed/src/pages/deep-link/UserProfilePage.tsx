@@ -120,7 +120,7 @@ export default function UserProfilePage() {
                 <Store className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{shop.name}</p>
+                <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{shop.name}</p>
                 <p className="text-xs text-muted-foreground">View shop</p>
               </div>
             </Link>

@@ -242,7 +242,7 @@ export default function StorePage() {
                       </div>
                     )}
                     <CardContent className="p-4 space-y-2">
-                      <h3 className="font-semibold text-foreground truncate">{s.title}</h3>
+                      <h3 className="font-semibold text-foreground line-clamp-2 break-words">{s.title}</h3>
                       <div className="flex items-center justify-between">
                         <Badge variant="secondary" className="text-xs">{s.category}</Badge>
                         <span className="font-bold text-accent">{fmtPrice(s.price, s.currency)}</span>

@@ -186,7 +186,7 @@ export default function WalletRequestPage() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-foreground truncate">{resolvedTarget.name}</p>
+                    <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{resolvedTarget.name}</p>
                     {selectedContact.phone && (
                       <p className="text-[11px] text-muted-foreground truncate">{selectedContact.phone}</p>
                     )}

@@ -222,7 +222,7 @@ function PropertyCard({ property, fmt, onClick }: {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-bold text-foreground truncate">{property.label}</p>
+            <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{property.label}</p>
             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
               isOccupied ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"
             }`}>
@@ -303,7 +303,7 @@ function TenantDashboard({ tenantProfile, fmt, navigate }: {
                   <Home className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground truncate">{prop?.label || "Mon logement"}</p>
+                  <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{prop?.label || "Mon logement"}</p>
                   <p className="text-[11px] text-muted-foreground truncate">{prop?.address}, {prop?.city}</p>
                 </div>
               </div>

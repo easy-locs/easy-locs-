@@ -72,8 +72,8 @@ const PropertyFiscalCard = ({ propertyId, propertyLabel, propertyAddress, proper
           <div className="flex items-center gap-3 min-w-0">
             <span className="text-xl">{config.flag}</span>
             <div className="min-w-0">
-              <CardTitle className="text-base truncate">{propertyLabel}</CardTitle>
-              <p className="text-xs text-muted-foreground truncate">{propertyAddress}, {propertyCity} • {config.formName}</p>
+              <CardTitle className="text-base line-clamp-2 break-words">{propertyLabel}</CardTitle>
+              <p className="text-xs text-muted-foreground line-clamp-1 break-words">{propertyAddress}, {propertyCity} • {config.formName}</p>
             </div>
           </div>
           <div className="flex items-center gap-4 shrink-0">

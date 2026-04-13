@@ -62,7 +62,7 @@ export default function QrPickupPage() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground truncate">{shop.name}</p>
+                  <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{shop.name}</p>
                   {(shop.address || shop.city) && (
                     <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
                       <MapPin className="w-3 h-3" /> {shop.address || shop.city}

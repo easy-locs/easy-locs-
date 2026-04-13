@@ -207,7 +207,7 @@ export default function ChatHeader({
             </button>
 
             <div className="min-w-0 flex-1 overflow-hidden" onClick={handleIdentityTap} style={{ cursor: "pointer" }}>
-              <p className="text-[13px] font-semibold leading-tight truncate" style={{ color: "hsl(var(--foreground))" }}>
+              <p className="text-[13px] font-semibold leading-tight line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>
                 {displayName}
               </p>
               <p className="text-[10.5px] leading-tight mt-0.5" style={{

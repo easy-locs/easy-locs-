@@ -415,7 +415,7 @@ export default function CheckoutPage() {
               <div className="flex-1 text-left">
                 <p className="text-[11px] text-muted-foreground font-medium">Deliver to</p>
                 {selectedLocation ? (
-                  <p className="text-sm font-semibold text-foreground truncate">{selectedLocation.label}</p>
+                  <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{selectedLocation.label}</p>
                 ) : (
                   <p className="text-sm font-semibold text-destructive">Select address (required)</p>
                 )}
@@ -437,7 +437,7 @@ export default function CheckoutPage() {
                 style={idx < cart.items.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.08)" } : undefined}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
+                  <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{item.name}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{fmt(item.unitPrice * item.quantity)}</p>
                 </div>
                 <div className="flex items-center gap-1.5">

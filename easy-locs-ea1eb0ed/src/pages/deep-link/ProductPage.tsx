@@ -111,7 +111,7 @@ export default function ProductPage() {
                   }
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground truncate">{shop.name}</p>
+                  <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{shop.name}</p>
                   <p className="text-[10px] text-muted-foreground">View shop</p>
                 </div>
               </Link>

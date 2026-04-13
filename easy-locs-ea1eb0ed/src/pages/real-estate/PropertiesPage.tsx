@@ -73,7 +73,7 @@ export default function PropertiesPage() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-sm truncate">{p.label}</h3>
+                    <h3 className="font-semibold text-sm line-clamp-2 break-words">{p.label}</h3>
                     <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                       <MapPin className="w-3 h-3 shrink-0" />
                       <span className="truncate">{p.address}, {p.city}</span>

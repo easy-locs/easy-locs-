@@ -119,7 +119,7 @@ export default function MePropertyListPage() {
                   <Home size={20} style={{ color: "#bbb" }} />
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: navy }}>{prop.title}</p>
+                  <p className="text-sm font-semibold line-clamp-1 break-words" style={{ color: navy }}>{prop.title}</p>
                   <div className="flex items-center gap-1 mt-0.5">
                     <MapPin size={10} style={{ color: "#999" }} />
                     <p className="text-xs truncate" style={{ color: "#999" }}>

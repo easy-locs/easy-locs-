@@ -187,7 +187,7 @@ export function ContactPickerSheet({
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">
+                        <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">
                           {c.display_name || "Contact"}
                         </p>
                         {c.phone && (
@@ -246,7 +246,7 @@ export function ContactPickerSheet({
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">
+                        <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">
                           {c.display_name || "Contact"}
                         </p>
                         {c.phone && (

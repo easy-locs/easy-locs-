@@ -85,7 +85,7 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
               <Building2 size={16} style={{ color: gold }} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold truncate" style={{ color: navy }}>{p.title}</div>
+              <div className="text-xs font-semibold line-clamp-1 break-words" style={{ color: navy }}>{p.title}</div>
               <div className="text-[10px]" style={{ color: "#999" }}>{p.address.city}, {p.address.country}</div>
             </div>
             <span

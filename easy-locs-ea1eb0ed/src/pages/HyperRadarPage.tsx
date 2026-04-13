@@ -823,8 +823,8 @@ export default function HyperRadarPage() {
                               if (entity) handleSelectEntity(entity);
                             }}
                           >
-                            <p className="text-[11px] font-bold text-foreground truncate">{g.title}</p>
-                            <p className="text-[10px] text-muted-foreground truncate mt-0.5">{g.subtitle}</p>
+                            <p className="text-[11px] font-bold text-foreground line-clamp-1 break-words">{g.title}</p>
+                            <p className="text-[10px] text-muted-foreground line-clamp-1 break-words mt-0.5">{g.subtitle}</p>
                           </motion.div>
                         ))}
                       </div>

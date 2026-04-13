@@ -96,7 +96,7 @@ export default function FlightPassengerPage() {
           <div className="p-3 rounded-xl flex items-center gap-2" style={{ background: `${NAVY}06`, border: `1px solid ${NAVY}10` }}>
             <span className="text-sm">✈️</span>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-foreground truncate">
+              <p className="text-xs font-bold text-foreground line-clamp-1 break-words">
                 {selectedOffer.segments[0].origin} → {selectedOffer.segments[selectedOffer.segments.length - 1].destination}
               </p>
               <p className="text-[10px] text-muted-foreground tabular-nums">

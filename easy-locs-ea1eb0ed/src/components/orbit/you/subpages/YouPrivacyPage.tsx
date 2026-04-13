@@ -37,7 +37,7 @@ export default function YouPrivacyPage({ onBack }: Props) {
           <ChevronRight className="h-4 w-4 rotate-180" style={{ color: "hsl(var(--muted-foreground))" }} />
         </button>
         <Eye className="h-5 w-5 text-primary" />
-        <h2 className="text-base font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.privacy_title")}</h2>
+        <h2 className="text-base font-semibold break-words" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.privacy_title")}</h2>
       </div>
 
       <div className="mt-4 mb-4">

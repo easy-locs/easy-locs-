@@ -93,7 +93,7 @@ function UniversalEntityCardInner({
 
         {/* Info */}
         <div className="flex-1 min-w-0 overflow-hidden">
-          <p className="text-sm font-semibold text-foreground truncate leading-snug">{title}</p>
+          <p className="text-sm font-semibold text-foreground line-clamp-1 break-words leading-snug">{title}</p>
           {subtitle && (
             <p className="text-[11px] text-muted-foreground line-clamp-1 break-words leading-snug">{subtitle}</p>
           )}

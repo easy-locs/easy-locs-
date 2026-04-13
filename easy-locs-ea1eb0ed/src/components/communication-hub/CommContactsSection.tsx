@@ -112,7 +112,7 @@ const ContactRow = memo(function ContactRow({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{contact.name}</span>
+            <span className="text-sm font-semibold line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>{contact.name}</span>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); haptic("light"); onToggleFavorite(contact); }}
@@ -773,7 +773,7 @@ export default function CommContactsSection() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <SheetTitle className="text-lg font-bold truncate" style={{ color: "hsl(var(--foreground))" }}>{detailContact.name}</SheetTitle>
+                    <SheetTitle className="text-lg font-bold break-words" style={{ color: "hsl(var(--foreground))" }}>{detailContact.name}</SheetTitle>
                     {detailContact.contact_user_id && (
                       <p className="text-xs truncate mt-0.5 font-mono" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
                         EL-{detailContact.contact_user_id.replace(/-/g, "").substring(0, 8).toUpperCase()}
@@ -808,7 +808,7 @@ export default function CommContactsSection() {
                   >
                     <MessageCircle className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.contacts.send_message")}</p>
+                      <p className="text-sm line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.contacts.send_message")}</p>
                       <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.contacts.in_app")}</p>
                     </div>
                   </button>
@@ -822,7 +822,7 @@ export default function CommContactsSection() {
                   >
                     <PhoneCall className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.contacts.call_inapp")}</p>
+                      <p className="text-sm line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.contacts.call_inapp")}</p>
                       <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.contacts.free_call")}</p>
                     </div>
                   </button>

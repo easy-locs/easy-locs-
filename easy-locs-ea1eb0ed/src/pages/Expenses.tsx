@@ -146,7 +146,7 @@ const Expenses = () => {
                   <div key={ct.cat} className="flex items-center gap-2">
                     <div className="flex-1">
                       <div className="flex justify-between text-xs mb-0.5">
-                        <span className="text-foreground font-medium truncate">{ct.label}</span>
+                        <span className="text-foreground font-medium line-clamp-1 break-words">{ct.label}</span>
                         <span className="text-muted-foreground">{fmt(ct.amount)}</span>
                       </div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden">

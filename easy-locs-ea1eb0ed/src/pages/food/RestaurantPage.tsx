@@ -213,7 +213,7 @@ export default function RestaurantPage() {
             </>
           )}
           <ChevronRight className="w-3 h-3 shrink-0" />
-          <span className="text-foreground font-medium truncate">{shop.name}</span>
+          <span className="text-foreground font-medium line-clamp-1 break-words">{shop.name}</span>
         </nav>
       )}
 
@@ -380,7 +380,7 @@ export default function RestaurantPage() {
                       )}
                       <div className="flex-1 min-w-0 py-0.5 flex flex-col justify-between">
                         <div>
-                          <h3 className="text-sm font-semibold text-foreground truncate">{item.name}</h3>
+                          <h3 className="text-sm font-semibold text-foreground line-clamp-2 break-words">{item.name}</h3>
                           {item.description && <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">{item.description}</p>}
                         </div>
                         <div className="flex items-center justify-between mt-1">

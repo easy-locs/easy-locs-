@@ -633,7 +633,7 @@ export default function QrScannerPage() {
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{pendingPayment.recipientName}</p>
+                        <p className="text-sm font-bold line-clamp-1 break-words" style={{ color: "hsl(0 0% 100%)" }}>{pendingPayment.recipientName}</p>
                         <p className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.45)" }}>{pendingPayment.kind === "shop" ? "Merchant" : "User"} · {pendingPayment.currency}</p>
                       </div>
                     </div>

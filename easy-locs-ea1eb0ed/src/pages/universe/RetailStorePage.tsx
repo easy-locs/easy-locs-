@@ -33,8 +33,8 @@ export default function RetailStorePage() {
           <ArrowLeft className="h-5 w-5 text-foreground" />
         </button>
         <div className="min-w-0">
-          <h1 className="text-lg font-bold text-foreground truncate">{store?.name ?? "Store"}</h1>
-          <p className="text-xs text-muted-foreground truncate">{store?.subcategory?.replace(/_/g, " ") ?? "Retail"}</p>
+          <h1 className="text-lg font-bold text-foreground break-words">{store?.name ?? "Store"}</h1>
+          <p className="text-xs text-muted-foreground line-clamp-1 break-words">{store?.subcategory?.replace(/_/g, " ") ?? "Retail"}</p>
         </div>
       </header>
 

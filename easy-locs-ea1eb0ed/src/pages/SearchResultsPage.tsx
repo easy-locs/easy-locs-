@@ -118,7 +118,7 @@ export default function SearchResultsPage() {
                       <div className="w-10 h-10 rounded-xl bg-muted shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{row.title}</p>
+                      <p className="text-sm font-medium text-foreground line-clamp-1 break-words">{row.title}</p>
                       <p className="text-[11px] text-muted-foreground truncate">{row.subtitle}</p>
                     </div>
                     <span className="text-xs font-bold text-primary shrink-0">
@@ -213,7 +213,7 @@ function ShopCard({
         <div className="w-12 h-12 rounded-xl bg-muted shrink-0 flex items-center justify-center text-lg">🏪</div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-foreground truncate">{row.title}</p>
+        <p className="text-sm font-bold text-foreground line-clamp-2 break-words">{row.title}</p>
         <p className="text-[11px] text-muted-foreground truncate">{row.subtitle}</p>
         <div className="flex items-center gap-2 mt-0.5">
           {row.rating != null && (
