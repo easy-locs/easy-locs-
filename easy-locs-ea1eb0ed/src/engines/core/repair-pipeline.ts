@@ -30,6 +30,9 @@ import {
   type RepairOperationType,
 } from "./repair-actions";
 import { getDomainRuleReport, matchRepairRule, type DomainRepairRule } from "./domain-repair-rules";
+import { engineMemory } from "./engine-memory";
+import { signatureFromProof } from "./issue-signature";
+import { checkAntiRegression } from "./apply-known-fixes";
 import {
   type RepairPriority,
   type RejectionReason,
@@ -350,9 +353,18 @@ function stageDetect(ctx: PipelineContext): StageOutcome {
     return { result: "failed", detail: "Rejected: storm quarantine active" };
   }
 
+  const memSig = signatureFromProof(
+    ctx.input.engineId,
+    ctx.input.domain,
+    ctx.input.issueSignature,
+    ctx.input.category,
+  );
+  const isRegression = checkAntiRegression(memSig, ctx.input.engineId, ctx.input.domain);
+  const regressionNote = isRegression ? " [REGRESSION DETECTED — forcing re-apply]" : "";
+
   return {
     result: "passed",
-    detail: `Detected: ${ctx.input.category}/${ctx.input.severity} — ${scrubSensitiveData(ctx.input.rawSignal).slice(0, 200)} [storm=${storm}]`,
+    detail: `Detected: ${ctx.input.category}/${ctx.input.severity} — ${scrubSensitiveData(ctx.input.rawSignal).slice(0, 200)} [storm=${storm}]${regressionNote}`,
   };
 }
 
@@ -604,7 +616,32 @@ function stageAcceptOrRollback(ctx: PipelineContext): StageOutcome {
 
   if (allValidationsPassed && allRegressionsPassed) {
     ctx.outcome = "accepted";
-    return { result: "passed", detail: "All checks passed — repair accepted" };
+
+    const memSig = signatureFromProof(
+      ctx.input.engineId,
+      ctx.input.domain,
+      ctx.input.issueSignature,
+      ctx.input.category,
+    );
+    const memType = (["ui", "data", "orbit", "flow", "performance", "security"].includes(ctx.input.category)
+      ? ctx.input.category
+      : "data") as import("./engine-memory").EngineMemoryType;
+
+    void engineMemory.recordFix({
+      type: memType,
+      issueSignature: memSig,
+      rootCause: ctx.rootCause?.description ?? null,
+      fixApplied: ctx.mutation ? `${ctx.input.suggestedOperation} on ${ctx.input.suggestedTarget}` : null,
+      fixFunction: ctx.matchedRule?.id ?? null,
+      confidence: ctx.confidence?.score ?? 0.5,
+      domain: ctx.input.domain,
+      category: ctx.input.category,
+      engineId: ctx.input.engineId,
+      ruleId: ctx.matchedRule?.id ?? null,
+      durationMs: Date.now() - ctx.startedAt,
+    });
+
+    return { result: "passed", detail: "All checks passed — repair accepted (recorded to engine memory)" };
   }
 
   if (ctx.rollbackFn) {

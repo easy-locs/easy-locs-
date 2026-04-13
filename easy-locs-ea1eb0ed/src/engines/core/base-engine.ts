@@ -4,6 +4,9 @@ import { isEngineEnabled } from "./engine-feature-flags";
 import { isQuarantined, isRepairStormActive, getQuarantineStatus } from "./repair-safety";
 import { isDomainQuarantined } from "@/lib/control-plane/domain-health";
 import type { ControlDomain } from "@/lib/control-plane/types";
+import { applyKnownFixes, type ApplyContext } from "./apply-known-fixes";
+import { engineMemory } from "./engine-memory";
+import { computeIssueSignature } from "./issue-signature";
 
 export type EngineActionLevel = "observe" | "detect" | "propose" | "act";
 
@@ -73,7 +76,7 @@ export abstract class BaseEngine {
     this._running = true;
     this._startedAt = Date.now();
     this.log("info", `Started (interval: ${this.intervalMs}ms)`);
-    platformBus.emit("engine:started" as any, { engineId: this.id, category: this.category });
+    platformBus.emit("engine:started", { engineId: this.id, category: this.category }, "system");
 
     setTimeout(() => this.executeTick(), 2000 + Math.random() * 3000);
 
@@ -88,7 +91,7 @@ export abstract class BaseEngine {
       this._timer = null;
     }
     this.log("info", `Stopped after ${this._tickCount} ticks`);
-    platformBus.emit("engine:stopped" as any, { engineId: this.id });
+    platformBus.emit("engine:stopped", { engineId: this.id }, "system");
   }
 
   private async executeTick(): Promise<void> {
@@ -108,6 +111,11 @@ export abstract class BaseEngine {
 
     if (isRepairStormActive()) {
       return;
+    }
+
+    const activeSignatures = this.collectActiveSignatures();
+    if (activeSignatures.length > 0) {
+      applyKnownFixes({ engineId: this.id, domain: this.domain, activeSignatures });
     }
 
     const start = performance.now();
@@ -135,10 +143,18 @@ export abstract class BaseEngine {
   }
 
   protected emit(event: string, payload?: Record<string, unknown>): void {
-    platformBus.emit(`engine:${this.category}:${event}` as any, {
+    platformBus.emit(`engine:${this.category}:${event}`, {
       engineId: this.id,
       ...payload,
-    });
+    }, "system");
+  }
+
+  private collectActiveSignatures(): string[] {
+    if (!engineMemory.isLoaded) return [];
+    const autoFixes = engineMemory.getAutoApplyFixes();
+    return autoFixes
+      .filter(f => f.domain === this.domain || f.engine_id === this.id)
+      .map(f => f.issue_signature);
   }
 
   abstract tick(): Promise<EngineTickResult>;

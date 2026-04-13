@@ -180,6 +180,16 @@ export function useMasterAppBootstrap() {
 
     const t4 = setTimeout(async () => {
       try {
+        const { engineMemory } = await import("@/engines/core/engine-memory");
+        await engineMemory.loadFromSupabase();
+
+        const { startLearningCycle } = await import("@/engines/core/engine-learning");
+        cleanups.push(startLearningCycle());
+      } catch (e) {
+        console.warn("[boot] engine-memory failed", e);
+      }
+
+      try {
         const { bootEngineSystem } = await import("@/engines/engine-registry");
         const cleanup = bootEngineSystem();
         if (cleanup) cleanups.push(cleanup);

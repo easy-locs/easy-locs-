@@ -253,7 +253,8 @@ type PlatformEventType =
   | "layout.integrity.violation"
   | "i18n.localization.violation"
   // Repair pipeline domain events
-  | "repair:pipeline:completed";
+  | "repair:pipeline:completed"
+  | "engine:memory:regression";
 
 export type { PlatformEventType };
 
