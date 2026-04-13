@@ -1,16 +1,50 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useEngineDebugSnapshot, EngineSupervisorRow } from "@/hooks/useEngineDebugSnapshot";
 import { triggerEngineCron, toggleEngineStatus } from "@/repositories/admin-ops.repository";
 
+interface PipelineStats {
+  enabled: boolean;
+  totalRuns: number;
+  totalBlocked: number;
+  totalRejected: number;
+  domainCount: number;
+}
+
+async function fetchPipelineStats(): Promise<PipelineStats> {
+  try {
+    const { getPipelineReport } = await import("@/engines/core/repair-pipeline");
+    const report = getPipelineReport();
+    const domains = Object.keys(report.domainRules ?? {});
+    return {
+      enabled: report.enabled ?? false,
+      totalRuns: report.totalRuns ?? 0,
+      totalBlocked: report.totalBlocked ?? 0,
+      totalRejected: report.totalRejected ?? 0,
+      domainCount: domains.length,
+    };
+  } catch {
+    return { enabled: false, totalRuns: 0, totalBlocked: 0, totalRejected: 0, domainCount: 0 };
+  }
+}
+
 export default function CentralControlPanelPage() {
   const navigate = useNavigate();
   const { rows, loading } = useEngineDebugSnapshot();
+  const [pipeline, setPipeline] = useState<PipelineStats>({ enabled: false, totalRuns: 0, totalBlocked: 0, totalRejected: 0, domainCount: 0 });
+
+  useEffect(() => {
+    fetchPipelineStats().then(setPipeline);
+    const interval = setInterval(() => fetchPipelineStats().then(setPipeline), 10_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleTriggerCron = async () => {
     try {
       const data = await triggerEngineCron();
       toast.success(`Engine run: ${data?.engines ?? 0} engines, ${data?.errors ?? 0} errors`);
+      setTimeout(() => fetchPipelineStats().then(setPipeline), 1000);
     } catch (e: any) {
       toast.error(e.message || "Cron trigger failed");
     }
@@ -24,6 +58,7 @@ export default function CentralControlPanelPage() {
   const okCount = rows.filter((r) => r.status === "ok").length;
   const errorCount = rows.filter((r) => r.status === "error").length;
   const enabledCount = rows.filter((r) => r.enabled).length;
+  const correctionsApplied = Math.max(0, pipeline.totalRuns - pipeline.totalBlocked - pipeline.totalRejected);
 
   const tierColors: Record<string, string> = {
     critical: "text-red-400",
@@ -61,6 +96,37 @@ export default function CentralControlPanelPage() {
         <div className="rounded-2xl border border-border/20 bg-card p-3 text-center">
           <div className="text-xs text-muted-foreground">Enabled</div>
           <div className="text-lg font-bold">{enabledCount}</div>
+        </div>
+      </div>
+
+      {/* Repair Pipeline Status */}
+      <div className="rounded-2xl border border-border/20 bg-card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-bold">Repair Pipeline</span>
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${pipeline.enabled ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-muted-foreground"}`}>
+            {pipeline.enabled ? "ACTIVE" : "INACTIVE"}
+          </span>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          <div className="text-center">
+            <div className="text-[10px] text-muted-foreground">Runs</div>
+            <div className="text-sm font-bold">{pipeline.totalRuns}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-[10px] text-muted-foreground">Blocked</div>
+            <div className="text-sm font-bold text-amber-500">{pipeline.totalBlocked}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-[10px] text-muted-foreground">Rejected</div>
+            <div className="text-sm font-bold text-red-400">{pipeline.totalRejected}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-[10px] text-muted-foreground">Domains</div>
+            <div className="text-sm font-bold text-blue-400">{pipeline.domainCount}</div>
+          </div>
+        </div>
+        <div className="text-[10px] text-muted-foreground">
+          Corrections applied: <span className="font-bold text-emerald-500">{correctionsApplied}</span>
         </div>
       </div>
 
