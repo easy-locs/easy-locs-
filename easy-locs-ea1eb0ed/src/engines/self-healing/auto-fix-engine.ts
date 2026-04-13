@@ -48,7 +48,7 @@ export class AutoFixEngine extends BaseEngine {
           const lastRefetch = Number(sessionStorage.getItem("el-last-stale-refetch") || "0");
           const sinceRefetch = Date.now() - lastRefetch;
           if (sinceRefetch > STALE_REFETCH_COOLDOWN_MS) {
-            platformBus.emit("system:stale_queries_detected" as any, {
+            platformBus.emit("system:stale_queries_detected", {
               timestamp: Date.now(),
               timeSinceLoad: Math.round(timeSinceLoad),
               reason: "idle_threshold",
@@ -82,7 +82,7 @@ export class AutoFixEngine extends BaseEngine {
       const mem = (performance as any).memory;
       if (mem && mem.usedJSHeapSize / mem.jsHeapSizeLimit > 0.85) {
         findings.push("Memory pressure detected (>85%)");
-        platformBus.emit("system:memory_pressure" as any, {
+        platformBus.emit("system:memory_pressure", {
           timestamp: Date.now(),
           usedBytes: mem.usedJSHeapSize,
           limitBytes: mem.jsHeapSizeLimit,

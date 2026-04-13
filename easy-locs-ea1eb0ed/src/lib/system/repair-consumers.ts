@@ -130,7 +130,32 @@ export function installRepairConsumers(): () => void {
     }
   }));
 
-  console.log("[repair-consumer] Installed guarded consumers for system:sync_requested, system:online_recovered");
+  unsubs.push(platformBus.on("system:stale_queries_detected", async () => {
+    const key = "system:stale_queries_detected";
+    const check = canRun(key);
+    if (!check.allowed) {
+      console.log(`[repair-consumer] ${key} — action: invalidate_stale_queries, attempt: ${getState(key).attempts}, result: skipped_cooldown (${check.reason})`);
+      return;
+    }
+
+    try {
+      const { queryClient: qc } = await import("@/lib/query-client");
+
+      if (qc && typeof qc.invalidateQueries === "function") {
+        await qc.invalidateQueries();
+        console.log(`[repair-consumer] ${key} — action: invalidate_stale_queries, attempt: ${getState(key).attempts + 1}, result: success`);
+        recordRun(key, "success");
+      } else {
+        console.log(`[repair-consumer] ${key} — action: invalidate_stale_queries, attempt: ${getState(key).attempts + 1}, result: success (no query client, skipped)`);
+        recordRun(key, "success");
+      }
+    } catch (err) {
+      recordRun(key, "failed");
+      console.error(`[repair-consumer] ${key} — error:`, err);
+    }
+  }));
+
+  console.log("[repair-consumer] Installed guarded consumers for system:sync_requested, system:online_recovered, system:stale_queries_detected");
 
   return () => unsubs.forEach(fn => fn());
 }

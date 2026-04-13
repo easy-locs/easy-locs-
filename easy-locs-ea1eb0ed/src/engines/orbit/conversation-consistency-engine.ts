@@ -29,35 +29,25 @@ export class ConversationConsistencyEngine extends BaseEngine {
       findings.push("Conversation list dropped to 0 — possible render failure");
     }
 
-    const duplicateCheck = new Map<string, Element[]>();
+    const duplicateCheck = new Map<string, number>();
     convItems.forEach(el => {
       const id = el.getAttribute("data-conversation-id") || "";
-      const arr = duplicateCheck.get(id) ?? [];
-      arr.push(el);
-      duplicateCheck.set(id, arr);
+      duplicateCheck.set(id, (duplicateCheck.get(id) || 0) + 1);
     });
 
     const duplicateIds: string[] = [];
-    for (const [id, elements] of duplicateCheck) {
-      if (elements.length > 1) {
-        findings.push(`Duplicate conversation rendered: ${id} (${elements.length}x)`);
+    for (const [id, count] of duplicateCheck) {
+      if (count > 1) {
+        findings.push(`Duplicate conversation rendered: ${id} (${count}x)`);
         duplicateIds.push(id);
-
-        for (let i = 1; i < elements.length; i++) {
-          const el = elements[i];
-          if (el instanceof HTMLElement) {
-            el.style.display = "none";
-            el.setAttribute("data-dedup-hidden", "true");
-          }
-        }
-        actions.push(`Hid ${elements.length - 1} duplicate DOM node(s) for ${id}`);
       }
     }
 
     if (duplicateIds.length > 0) {
       this.consecutiveDupCycles++;
+
       platformBus.emit(
-        "orbit:thread_updated" as any,
+        "orbit:thread_updated",
         { reason: "duplicate_detected", duplicateIds, timestamp: Date.now() },
         "orbit"
       );
@@ -65,7 +55,7 @@ export class ConversationConsistencyEngine extends BaseEngine {
 
       if (this.consecutiveDupCycles >= 3) {
         platformBus.emit(
-          "orbit:force_reload" as any,
+          "orbit:force_reload",
           { reason: "persistent_duplicates", duplicateIds, cycles: this.consecutiveDupCycles, timestamp: Date.now() },
           "orbit"
         );

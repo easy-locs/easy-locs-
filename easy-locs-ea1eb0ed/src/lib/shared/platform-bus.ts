@@ -217,6 +217,10 @@ type PlatformEventType =
   | "system:module_status_changed"
   | "system:pipeline_completed"
   | "system:pipeline_error"
+  | "system:stale_queries_detected"
+  | "system:memory_pressure"
+  | "orbit:unread_corrected"
+  | "orbit:force_reload"
   // Orchestration engine (UPPERCASE legacy — merged from lib/orchestration)
   | "ORDER_CREATED"
   | "ORDER_CONFIRMED"
