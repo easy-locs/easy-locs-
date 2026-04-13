@@ -33,6 +33,7 @@ export interface RadarResultItem {
   secondaryActions: RadarAction[];
   orbitBindable: boolean;
   walletBindable: boolean;
+  isOnline?: boolean;
   meta: Record<string, unknown>;
 }
 

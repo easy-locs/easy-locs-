@@ -23,6 +23,8 @@ type RadarStore = {
   loading: boolean;
   menuOpen: boolean;
   mapMode: "list" | "map";
+  /** Real-time merchant online/offline status: merchantId → isOnline */
+  merchantStatus: Record<string, boolean>;
 
   setUserLocation: (loc: UserGeoPoint | null) => void;
   /** Writes to discoveryStore (SSOT) and mirrors locally for compat */
@@ -36,6 +38,8 @@ type RadarStore = {
   closeMenu: () => void;
   /** Recomputes filtered using discoveryStore as SSOT for category/subcategory */
   refreshFiltered: () => void;
+  /** Update real-time merchant online/offline status */
+  setMerchantStatus: (merchantId: string, online: boolean) => void;
 };
 
 export const useRadarStore = create<RadarStore>((set, get) => ({
@@ -48,6 +52,7 @@ export const useRadarStore = create<RadarStore>((set, get) => ({
   loading: false,
   menuOpen: false,
   mapMode: "list",
+  merchantStatus: {},
 
   setUserLocation: (loc) => {
     set({ userLocation: loc });
@@ -99,5 +104,11 @@ export const useRadarStore = create<RadarStore>((set, get) => ({
     });
     // Mirror to local state for compat reads
     set({ filtered: sorted, category: category as RadarCategory, subcategory: subcategory as RadarSubCategory | null });
+  },
+
+  setMerchantStatus: (merchantId, online) => {
+    set((state) => ({
+      merchantStatus: { ...state.merchantStatus, [merchantId]: online },
+    }));
   },
 }));

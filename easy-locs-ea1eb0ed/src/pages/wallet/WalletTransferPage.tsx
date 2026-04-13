@@ -7,6 +7,7 @@ import { useWalletBalance } from "@/payments/wallet-hooks";
 import { executeWalletTransfer } from "@/lib/wallet/wallet-transfer";
 import { emitTransferCompleted } from "@/lib/super-app-bridge";
 import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
+import { resolveEntityOwner } from "@/lib/radar/owner-resolver";
 import { guardWalletReady } from "@/lib/wallet/wallet-guard";
 import { ensureWalletBinding } from "@/lib/wallet/wallet-identity-binding";
 import { getDeviceFingerprint } from "@/lib/orbit-keystore";
@@ -96,12 +97,23 @@ export default function WalletTransferPage() {
   useEffect(() => {
     const to = searchParams.get("to");
     const orbitId = searchParams.get("orbitId");
-    if (!to && !orbitId) return;
+    const entityId = searchParams.get("entity");
+    if (!to && !orbitId && !entityId) return;
 
     void (async () => {
       setSearching(true);
       try {
-        const resolved = await resolvePayTarget({ userId: to ?? undefined, orbitId: orbitId ?? undefined });
+        let resolvedUserId: string | undefined = to ?? undefined;
+        if (!resolvedUserId && entityId) {
+          const ownerResult = await resolveEntityOwner(entityId, undefined);
+          if (ownerResult?.ownerUserId) {
+            resolvedUserId = ownerResult.ownerUserId;
+          }
+        }
+        const resolved = await resolvePayTarget({
+          userId: resolvedUserId,
+          orbitId: orbitId ?? undefined,
+        });
         if (resolved) {
           setTarget(resolved);
           if (resolved.currency && resolved.currency !== currency) {

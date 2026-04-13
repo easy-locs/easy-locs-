@@ -1,4 +1,9 @@
 /**
+ * @deprecated contactBridge is superseded by `useRadarContact` hook (src/hooks/useRadarContact.ts).
+ * All active Radar entry points (HyperRadarPage, RadarEntitySheet, RadarView) now use
+ * `useRadarContact` exclusively. This file is kept for reference only and must not be
+ * imported in new code. It will be removed in a future cleanup pass.
+ *
  * contactBridge — Radar contact → Orbit thread bridge.
  * Uses orbitDb for conversation resolution, canonical send family for auto-messages.
  * Zero inline Supabase inserts.
@@ -125,7 +130,7 @@ export async function contactFromDiscovery(params: {
     });
 
     if (conversationId) {
-      params.navigate(`/orbit?conversation=${conversationId}`);
+      params.navigate(`/orbit?thread=${conversationId}`);
     }
   } catch (err: any) {
     console.error("[contactBridge] contactFromDiscovery error:", err);

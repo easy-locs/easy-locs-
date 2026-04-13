@@ -43,7 +43,8 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
     onOpenChange(false);
     setReturnOrigin(window.location.pathname);
     const params = new URLSearchParams();
-    if (entityContext?.entityId) params.set("to", entityContext.entityId);
+    const recipient = entityContext?.ownerUserId ?? entityContext?.entityId;
+    if (recipient) params.set("to", recipient);
     if (entityContext?.entityName) params.set("name", entityContext.entityName);
     if (entityContext?.amount) params.set("amount", String(entityContext.amount));
     if (entityContext?.note) params.set("note", entityContext.note);

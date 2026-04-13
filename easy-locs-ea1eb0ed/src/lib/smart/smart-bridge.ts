@@ -211,7 +211,10 @@ export function resolveSmartActions(
       label: "Book",
       icon: "🏨",
       available: true,
-      handler: async () => navigate("/stay"),
+      handler: async () => {
+        const path = entity.shopSlug ? `/s/${entity.shopSlug}` : `/browse/stay?id=${entity.id}`;
+        navigate(path);
+      },
     });
   }
 
@@ -221,7 +224,10 @@ export function resolveSmartActions(
       label: "Visit",
       icon: "🏠",
       available: true,
-      handler: async () => navigate("/property"),
+      handler: async () => {
+        const path = entity.shopSlug ? `/s/${entity.shopSlug}` : `/browse/property?id=${entity.id}`;
+        navigate(path);
+      },
     });
   }
 

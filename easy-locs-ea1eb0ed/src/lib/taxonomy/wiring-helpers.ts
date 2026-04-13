@@ -32,6 +32,10 @@ const VERTICAL_HERO_COLORS: Record<VerticalKey, string> = {
   utility: "hsl(140 50% 45%)",
   education: "hsl(220 70% 55%)",
   finance: "hsl(152 60% 42%)",
+  nightlife: "hsl(280 70% 55%)",
+  experiences: "hsl(340 65% 55%)",
+  mobility: "hsl(30 80% 50%)",
+  healthcare: "hsl(0 65% 50%)",
 };
 
 const HERO_VERTICALS: VerticalKey[] = [
@@ -78,6 +82,11 @@ const RADAR_LAYER_COLORS: Record<string, string> = {
   services: "hsl(270 60% 55%)",
   property: "hsl(220 40% 38%)",
   utility: "hsl(140 50% 45%)",
+  stay: "hsl(200 70% 50%)",
+  nightlife: "hsl(280 70% 55%)",
+  experiences: "hsl(340 65% 55%)",
+  mobility: "hsl(30 80% 50%)",
+  healthcare: "hsl(0 65% 50%)",
 };
 
 export function getRadarLayerDefs(): RadarLayerDef[] {
