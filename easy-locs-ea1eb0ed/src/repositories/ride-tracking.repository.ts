@@ -1,7 +1,6 @@
 /**
  * ride-tracking.repository — DB operations for TrackRidePage.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
@@ -11,7 +10,7 @@ export async function fetchMobilityJob(jobId: string) {
 }
 
 export function subscribeToJob(jobId: string, onUpdate: (payload: any) => void) {
-  const ch = supabase
+  const ch = db
     .channel(`track-job-${jobId}`)
     .on("postgres_changes", {
       event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${jobId}`,

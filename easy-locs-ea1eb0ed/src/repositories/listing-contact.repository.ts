@@ -1,7 +1,6 @@
 /**
  * listing-contact.repository — DB operations for ListingContactButtons.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function trackContactClick(channel: string, opts: { listingId?: string | null; serviceId?: string | null; orgId?: string | null }) {
@@ -15,14 +14,14 @@ export async function trackContactClick(channel: string, opts: { listingId?: str
 }
 
 export async function checkInquiryQuota(userId: string) {
-  const { data } = await supabase.rpc("check_inquiry_quota", { _user_id: userId }) as { data: any };
+  const { data } = await db.rpc("check_inquiry_quota", { _user_id: userId }) as { data: any };
   return data;
 }
 
 export async function secureRevealContact(revealType: string, opts: {
   orgId?: string | null; listingId?: string | null; serviceId?: string | null; source?: string;
 }): Promise<{ value: string | null; remaining: number }> {
-  const { data, error } = await supabase.functions.invoke("reveal-contact", {
+  const { data, error } = await db.functions.invoke("reveal-contact", {
     body: {
       reveal_type: revealType,
       org_id: opts.orgId || null,

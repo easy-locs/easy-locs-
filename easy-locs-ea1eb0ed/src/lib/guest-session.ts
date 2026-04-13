@@ -3,17 +3,14 @@
  * send media, and communicate with providers.
  * Also provides simple guest ID for unauthenticated cart/loyalty/payment flows.
  */
-
-const STORAGE_KEY = "easylocs_guest_session";
-const GUEST_ID_KEY = "easylocs_guest_id";
+import { localStore } from "@/services/local-store";
 
 /** Get or create a persistent guest ID (simple localStorage identity for non-auth flows) */
 export function getGuestId(): string {
-  let id: string | null = null;
-  try { id = localStorage.getItem(GUEST_ID_KEY); } catch { /* */ }
+  let id = localStore.get("system", "guest_id");
   if (!id) {
     id = crypto.randomUUID();
-    try { localStorage.setItem(GUEST_ID_KEY, id); } catch { /* */ }
+    localStore.set("system", "guest_id", id);
   }
   return id;
 }
@@ -25,9 +22,8 @@ export function isGuestUser(user: any): boolean {
 
 /** Clear guest identity (e.g. after account creation) */
 export function clearGuestId(): void {
-  try { localStorage.removeItem(GUEST_ID_KEY); } catch { /* */ }
+  localStore.remove("system", "guest_id");
 }
-const FINGERPRINT_KEY = "easylocs_fp";
 
 export interface GuestSession {
   id: string;
@@ -48,7 +44,7 @@ interface SessionLimits {
 /** Simple browser fingerprint (non-tracking, just for rate limiting) */
 export function getBrowserFingerprint(): string {
   try {
-    const stored = sessionStorage.getItem(FINGERPRINT_KEY);
+    const stored = localStore.get("system", "fp");
     if (stored) return stored;
     const fp = [
       navigator.userAgent,
@@ -57,7 +53,7 @@ export function getBrowserFingerprint(): string {
       new Date().getTimezoneOffset(),
     ].join("|");
     const hash = Array.from(fp).reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0).toString(36);
-    sessionStorage.setItem(FINGERPRINT_KEY, hash);
+    localStore.set("system", "fp", hash);
     return hash;
   } catch {
     return "unknown";
@@ -67,11 +63,10 @@ export function getBrowserFingerprint(): string {
 /** Get cached guest session if still valid */
 export function getCachedSession(): GuestSession | null {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const session: GuestSession = JSON.parse(raw);
+    const session = localStore.getJson<GuestSession>("system", "guest_session");
+    if (!session) return null;
     if (new Date(session.expires_at) < new Date()) {
-      sessionStorage.removeItem(STORAGE_KEY);
+      localStore.remove("system", "guest_session");
       return null;
     }
     return session;
@@ -81,9 +76,7 @@ export function getCachedSession(): GuestSession | null {
 }
 
 function cacheSession(session: GuestSession) {
-  try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-  } catch { /* ignore */ }
+  localStore.setJson("system", "guest_session", session);
 }
 
 const invokeGuestSession = async (body: Record<string, unknown>) => {
@@ -167,19 +160,15 @@ export async function getGuestMessages(token: string) {
   return invokeGuestSession({ action: "get_messages", token });
 }
 
-/** Upload media as guest (uses anon key directly) */
+/** Upload media as guest (uses shared singleton) */
 export async function uploadGuestMedia(file: File, sessionId: string): Promise<string> {
-  const { createClient } = await import("@supabase/supabase-js");
-  const supabase = createClient(
-    import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-  );
+  const { db } = await import("@/services/db");
 
   const ext = file.name.split(".").pop() || "bin";
   const path = `guest/${sessionId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const { error } = await supabase.storage.from("chat-media").upload(path, file);
+  const { error } = await db.storage.from("chat-media").upload(path, file);
   if (error) throw error;
 
-  const { data } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 30);
+  const { data } = await db.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 30);
   return data?.signedUrl || path;
 }

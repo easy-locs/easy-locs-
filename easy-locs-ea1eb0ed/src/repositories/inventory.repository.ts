@@ -1,7 +1,6 @@
 /**
  * inventory.repository — All DB operations for inventory reports.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchInventoryReport(reportId: string) {
@@ -47,9 +46,9 @@ export async function insertItems(items: Record<string, any>[]) {
 export async function uploadInventoryPhoto(orgId: string, reportId: string, roomId: string, itemId: string, file: File) {
   const ext = file.name.split(".").pop();
   const path = `${orgId}/${reportId || "new"}/${roomId}/${itemId}_${Date.now()}.${ext}`;
-  const { error } = await supabase.storage.from("rental-docs").upload(path, file);
+  const { error } = await db.storage.from("rental-docs").upload(path, file);
   if (error) throw error;
-  const { data } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
+  const { data } = await db.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
   return data?.signedUrl || path;
 }
 
@@ -70,7 +69,7 @@ export async function fetchTenantName(tenantId: string) {
 
 // ── Send email ──
 export async function invokeSendEmail(body: Record<string, any>) {
-  const { error } = await supabase.functions.invoke("send-email", { body });
+  const { error } = await db.functions.invoke("send-email", { body });
   if (error) throw error;
 }
 

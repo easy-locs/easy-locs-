@@ -4,7 +4,6 @@
  *         delivery_disputes, delivery_ratings, delivery_proofs,
  *         trip_live_state, trip_location_points, merchant_profiles
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { getCurrentUserIdOrNull } from "@/families/identity";
@@ -73,7 +72,7 @@ function isTransportError(err: any): boolean {
 }
 
 export async function invokeDispatchRide(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("dispatch-ride", { body });
+  const { data, error } = await db.functions.invoke("dispatch-ride", { body });
   if (error) {
     if (isTransportError(error) && body.action === "create_job") {
       return createJobFallback(body);
@@ -135,7 +134,7 @@ async function createJobFallback(body: Record<string, any>) {
 }
 
 export async function invokeDispatchDelivery(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("dispatch-delivery", { body });
+  const { data, error } = await db.functions.invoke("dispatch-delivery", { body });
   if (error) {
     if (isTransportError(error) && body.action === "create_job") {
       return createJobFallback(body);
@@ -148,7 +147,7 @@ export async function invokeDispatchDelivery(body: Record<string, any>) {
 
 // ─── Rider Profiles & Presence ───
 export async function fetchRiderProfile(userId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("rider_profiles")
     .select("id, vehicle_type, rider_mode, is_online, is_available")
     .eq("user_id", userId)
@@ -157,7 +156,7 @@ export async function fetchRiderProfile(userId: string) {
 }
 
 export async function fetchRiderPresence(riderProfileId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("rider_presence").select("*").eq("rider_profile_id", riderProfileId).maybeSingle();
   return data;
 }
@@ -171,26 +170,26 @@ export async function updateRiderProfile(profileId: string, updates: Record<stri
 }
 
 export async function fetchOnlineRiders(limit = 20) {
-  const { data } = await supabase
+  const { data } = await db
     .from("rider_presence").select("*").eq("is_online", true).limit(limit);
   return data ?? [];
 }
 
 export async function fetchAvailableRiders(limit = 20) {
-  const { data } = await supabase
+  const { data } = await db
     .from("rider_presence").select("*").eq("is_online", true).eq("is_available", true).limit(limit);
   return data ?? [];
 }
 
 export async function fetchRiderPresenceByUserId(userId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("rider_presence").select("lat, lng, vehicle_type").eq("user_id", userId).maybeSingle();
   return data;
 }
 
 // ─── Job Offers ───
 export async function fetchPendingOffers(riderUserId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("mobility_job_offers")
     .select("*, job:mobility_jobs(*)")
     .eq("rider_user_id", riderUserId)
@@ -201,7 +200,7 @@ export async function fetchPendingOffers(riderUserId: string) {
 
 // ─── Delivery Disputes ───
 export async function fetchDeliveryDisputes(orgId: string, limit = 100) {
-  const { data } = await supabase
+  const { data } = await db
     .from("delivery_disputes").select("*").eq("org_id", orgId)
     .order("created_at", { ascending: false }).limit(limit);
   return data ?? [];
@@ -219,7 +218,7 @@ export async function updateDeliveryDispute(id: string, updates: Record<string, 
 
 // ─── Delivery Ratings ───
 export async function fetchDeliveryRatings(riderUserId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("delivery_ratings").select("rating, created_at").eq("driver_id", riderUserId);
   return data ?? [];
 }
@@ -243,7 +242,7 @@ export async function insertDeliveryOffer(payload: Record<string, any>) {
 
 // ─── Trip Live State ───
 export async function fetchTripLiveState(jobId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("trip_live_state").select("*").eq("job_id", jobId).maybeSingle();
   return data;
 }
@@ -258,7 +257,7 @@ export async function insertTripLocationPoint(payload: Record<string, any>) {
 
 // ─── Merchant Profiles ───
 export async function fetchMerchantProfileByUserId(userId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("merchant_profiles").select("id").eq("user_id", userId).maybeSingle();
   return data;
 }
@@ -266,7 +265,7 @@ export async function fetchMerchantProfileByUserId(userId: string) {
 // ─── Profiles (name resolution) ───
 export async function fetchProfileNames(userIds: string[]) {
   if (userIds.length === 0) return new Map<string, string>();
-  const { data } = await supabase
+  const { data } = await db
     .from("profiles").select("id, name, first_name, last_name").in("id", userIds);
   const map = new Map<string, string>();
   (data ?? []).forEach((p: any) => {
@@ -304,7 +303,7 @@ export async function uploadDocument(path: string, file: File) {
 
 // ─── Realtime helpers ───
 export function subscribeToTable(channelName: string, table: string, filter: string, callback: (payload: any) => void) {
-  const ch = supabase
+  const ch = db
     .channel(channelName)
     .on("postgres_changes", { event: "*", schema: "public", table, filter }, callback)
     .subscribe();

@@ -36,7 +36,7 @@ export async function createOrderEscrow(input: CreateEscrowInput) {
 
   if (error) throw error;
 
-  const { error: orderErr } = await supabase
+  const { error: orderErr } = await db
     .from("orders")
     .update({
       payment_status: "captured",
@@ -130,7 +130,7 @@ export async function releaseOrderEscrow(params: {
   if (settlErr) console.error("[escrow] settlement_ledger insert failed:", settlErr.message);
 
   // 4. Update order
-  const { error: orderErr } = await supabase
+  const { error: orderErr } = await db
     .from("orders")
     .update({
       settlement_status: "released",
@@ -201,7 +201,7 @@ export async function refundOrderEscrow(params: {
 
   if (error) throw error;
 
-  const { error: orderErr } = await supabase
+  const { error: orderErr } = await db
     .from("orders")
     .update({
       status: "refunded",

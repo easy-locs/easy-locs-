@@ -1,7 +1,6 @@
 /**
  * rent-payment.repository — Rent call update ops.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function markRentCallPaid(rentCallId: string, amount: number) {

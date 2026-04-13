@@ -2,7 +2,6 @@
  * deals.repository.ts — Single source of truth for all Deal Room DB operations.
  * Merged from deal.repository.ts + deals.repository.ts.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 // ── Read operations (from deal.repository.ts) ──
@@ -42,7 +41,7 @@ export async function updateMarketplaceBooking(bookingId: string, updates: Recor
 }
 
 export async function invokeRefund(bookingId: string, bookingType: string, reason: string) {
-  const { data, error } = await supabase.functions.invoke("process-refund", {
+  const { data, error } = await db.functions.invoke("process-refund", {
     body: { booking_id: bookingId, booking_type: bookingType, reason },
   });
   if (error) throw error;
@@ -75,16 +74,16 @@ export async function uploadDealDocument(dealId: string, file: File) {
   const path = `deals/${dealId}/${Date.now()}-${file.name}`;
   const buckets = ["chat-media", "property-photos"];
   for (const bucket of buckets) {
-    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
+    const { error } = await db.storage.from(bucket).upload(path, file, { upsert: false });
     if (error) continue;
-    const { data: signedData } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
+    const { data: signedData } = await db.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
     if (signedData?.signedUrl) return signedData.signedUrl;
   }
   throw new Error("Upload failed");
 }
 
 export async function invokeDealPayment(action: string, dealId: string) {
-  const { data, error } = await supabase.functions.invoke("orbit-payment", {
+  const { data, error } = await db.functions.invoke("orbit-payment", {
     body: { action, deal_id: dealId },
   });
   if (error) throw error;

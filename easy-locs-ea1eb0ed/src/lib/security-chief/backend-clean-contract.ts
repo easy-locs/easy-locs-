@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import type {
   BackendSecurityContract,
   DeviceAttestationRecord,
@@ -107,7 +106,7 @@ export class SupabaseBackendSecurityContract implements BackendSecurityContract 
     };
 
     try {
-      const { data, error } = await supabase.functions.invoke("get-turn-credentials");
+      const { data, error } = await db.functions.invoke("get-turn-credentials");
       if (error || !data?.iceServers) return FALLBACK;
       return {
         iceServers: data.iceServers,

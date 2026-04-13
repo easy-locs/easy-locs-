@@ -1,7 +1,6 @@
 /**
  * candidates.repository — DB operations for Candidates page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchCandidatesAndProperties(orgId: string) {

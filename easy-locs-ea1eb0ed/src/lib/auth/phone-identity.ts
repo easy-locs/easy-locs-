@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { normalizePhone } from "@/lib/security/otp-hardened";
 
@@ -66,7 +65,7 @@ export async function sendPhoneVerification(phone: string): Promise<PhoneOtpResu
   if (error) throw error;
 
   try {
-    await supabase.functions.invoke("send-otp", {
+    await db.functions.invoke("send-otp", {
       body: { phone: normalized, otp },
     });
   } catch (e) {
@@ -146,7 +145,7 @@ export async function signInOrSignUpWithPhone(phone: string): Promise<{
     .maybeSingle();
 
   if (existingProfile?.id) {
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithOtp({
+    const { data: signInData, error: signInError } = await db.auth.signInWithOtp({
       phone: normalized,
     });
     if (signInError) {
@@ -156,7 +155,7 @@ export async function signInOrSignUpWithPhone(phone: string): Promise<{
     return { userId: existingProfile.id, isNewUser: false };
   }
 
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+  const { data: signUpData, error: signUpError } = await db.auth.signUp({
     phone: normalized,
     password: crypto.randomUUID(),
     options: {

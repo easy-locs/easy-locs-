@@ -2,7 +2,6 @@
  * useRadarLiveContext — Realtime subscriptions for radar layers.
  * Subscribes to geo_live_context, rider_runtime_state, zone_events.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
@@ -53,14 +52,14 @@ export function useRadarLiveContext(mode: RadarMode = "client") {
     fetchAll();
 
     // Realtime subscriptions
-    const geoChannel = supabase
+    const geoChannel = db
       .channel("radar-geo-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "geo_live_context" }, () => {
         fetchAll();
       })
       .subscribe();
 
-    const eventsChannel = supabase
+    const eventsChannel = db
       .channel("radar-zone-events")
       .on("postgres_changes", { event: "*", schema: "public", table: "zone_events" }, () => {
         fetchAll();
@@ -70,7 +69,7 @@ export function useRadarLiveContext(mode: RadarMode = "client") {
     channelsRef.current = [geoChannel, eventsChannel];
 
     if (mode === "rider" || mode === "admin") {
-      const riderChannel = supabase
+      const riderChannel = db
         .channel("radar-riders")
         .on("postgres_changes", { event: "*", schema: "public", table: "rider_runtime_state" }, () => {
           fetchAll();

@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type {
   OrbitProfile,
@@ -75,7 +74,7 @@ export const walletRepo = {
 
   async createTransaction(tx: WalletTransaction): Promise<WalletTransaction> {
     // Get current user for sender_id
-    const { data: authData } = await supabase.auth.getUser();
+    const { data: authData } = await db.auth.getUser();
     const userId = authData?.user?.id;
 
     const { data, error } = await db("unified_wallet_transactions").insert({
@@ -153,7 +152,7 @@ export const bookingRepo = {
  */
 export const chatRepo = {
   async createConversation(conversation: ConversationRecord): Promise<ConversationRecord> {
-    const { data: authData } = await supabase.auth.getUser();
+    const { data: authData } = await db.auth.getUser();
     const userId = authData?.user?.id;
     if (!userId) throw new Error("Not authenticated");
 
@@ -185,7 +184,7 @@ export const chatRepo = {
 
   async createMessage(message: ChatMessageRecord): Promise<ChatMessageRecord> {
     // Get current user id for sender_user_id (required NOT NULL column)
-    const { data: authData } = await supabase.auth.getUser();
+    const { data: authData } = await db.auth.getUser();
     const userId = authData?.user?.id;
     if (!userId) throw new Error("Not authenticated");
 

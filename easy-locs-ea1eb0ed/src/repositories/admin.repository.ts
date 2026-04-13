@@ -1,11 +1,10 @@
 /**
  * admin.repository — All DB operations for AdminDashboard page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function checkAdminRole(userId: string): Promise<boolean> {
-  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+  const { data } = await db.rpc("has_role", { _user_id: userId, _role: "admin" });
   return !!data;
 }
 
@@ -102,7 +101,7 @@ export async function insertAppNotification(record: Record<string, any>) {
 
 // ── Bulk Seed ──
 export async function getAuthUser() {
-  const { data } = await supabase.auth.getUser();
+  const { data } = await db.auth.getUser();
   return data.user;
 }
 

@@ -3,7 +3,7 @@ import { heroCover } from "./category-covers";
  * Hero Diversity Guard — prevents duplicate hero images across shops.
  * Used at import time to ensure visual uniqueness.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { SUBCATEGORY_HERO_MAP } from "./subcategory-heroes";
 
 /**

@@ -1,7 +1,7 @@
 /**
  * Wallet Domain — Concrete adapters wiring existing repositories to DDD ports.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import type {
   WalletRepository, LedgerRepository, PaymentGatewayPort,
   WalletSecurityPort, WalletAccount, LedgerEntry,

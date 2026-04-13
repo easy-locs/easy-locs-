@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { exchangeCodeForSession } from "@/repositories/auth.repository";
 import { getPostLoginRoute, waitForAuthenticatedUser } from "@/lib/auth-redirect";
 import {
   authLog, authError as authErrorLog, authTraceSummary,
@@ -54,7 +54,7 @@ export default function AuthCallbackPage() {
           authLog("OAUTH_CALLBACK_CODE_EXCHANGE", { traceId, method: "code_in_url" });
           setMessage("Exchanging code…");
 
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          const { data, error } = await exchangeCodeForSession(code);
 
           if (error) {
             authErrorLog("OAUTH_CALLBACK_CODE_EXCHANGE_FAILED", { traceId, error: error.message });

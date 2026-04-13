@@ -1,11 +1,10 @@
 /**
  * receipts.repository — DB operations for Receipts page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchReceipts(orgId: string, countryFilter?: string | null) {
-  let query = supabase
+  let query = db
     .from("documents")
     .select("id, title, doc_type, data_json, created_at")
     .eq("org_id", orgId)

@@ -12,7 +12,7 @@
  * No more: markV1AuthActive() / syncFromV1() / dual-listener pattern.
  */
 import { create } from "zustand";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import type { User, Session } from "@supabase/supabase-js";
 
 type AuthStore = {

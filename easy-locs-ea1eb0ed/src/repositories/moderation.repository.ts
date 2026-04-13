@@ -1,7 +1,6 @@
 /**
  * moderation.repository — DB operations for AdminModerationPanel.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchModerationData() {

@@ -1,7 +1,6 @@
 /**
  * merchant.repository — All DB ops for merchant pages (menu, performance).
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchFirstSeedMerchant() {
@@ -10,7 +9,7 @@ export async function fetchFirstSeedMerchant() {
 }
 
 export async function fetchSeedProducts(merchantId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("seed_products")
     .select("*")
     .eq("merchant_id", merchantId)
@@ -20,7 +19,7 @@ export async function fetchSeedProducts(merchantId: string) {
 }
 
 export async function toggleProductAvailability(productId: string, isAvailable: boolean) {
-  const { error } = await supabase
+  const { error } = await db
     .from("seed_products")
     .update({ is_available: isAvailable })
     .eq("id", productId);

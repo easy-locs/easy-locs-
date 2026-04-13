@@ -1,7 +1,6 @@
 /**
  * seasonal-repository — All seasonal rental DB reads/writes.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchSeasonalBookings(orgId: string) {
@@ -15,7 +14,7 @@ export async function fetchSeasonalBookings(orgId: string) {
 }
 
 export async function createSeasonalBooking(orgId: string, userId: string, form: Record<string, any>) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("stay_bookings")
     .insert({ ...form, org_id: orgId, user_id: userId } as any)
     .select()
@@ -35,7 +34,7 @@ export async function deleteSeasonalBooking(id: string) {
 }
 
 export async function fetchSeasonalProperties(orgId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("properties")
     .select("id, label, photo_urls")
     .eq("org_id", orgId)

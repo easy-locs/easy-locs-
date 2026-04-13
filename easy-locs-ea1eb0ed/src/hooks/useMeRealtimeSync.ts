@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
@@ -59,7 +58,7 @@ export function useMeRealtimeSync() {
     if (!user?.id) return;
 
     const unsubRegistry = registerSubscription(`me.profile:${user.id}`, () => {
-      const channel = supabase
+      const channel = db
         .channel(`me-profile:${user.id}`)
         .on(
           "postgres_changes",

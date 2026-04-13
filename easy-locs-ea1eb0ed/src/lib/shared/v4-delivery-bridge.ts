@@ -8,7 +8,7 @@
  * and manual delivery creation for wallet-only transactions.
  */
 import { platformBus, type StorefrontOrderPayload, type WalletPaymentPayload } from "@/lib/shared/platform-bus";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 /**
  * Install V4 delivery bridge reactions.

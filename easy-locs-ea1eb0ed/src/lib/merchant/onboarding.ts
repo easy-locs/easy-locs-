@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 import { checkNewShopDuplicate } from "@/lib/dedup/dedup-engine";
 import { pickDiverseHero } from "@/lib/image/hero-diversity-guard";

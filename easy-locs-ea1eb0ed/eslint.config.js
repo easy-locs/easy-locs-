@@ -37,4 +37,47 @@ export default tseslint.config(
       "no-case-declarations": "off",
     },
   },
+  {
+    files: ["**/*.{ts,tsx}"],
+    ignores: [
+      "src/services/db.ts",
+      "src/integrations/supabase/client.ts",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/integrations/supabase/client", "*/integrations/supabase/client"],
+              message:
+                "Direct Supabase client import is forbidden. Use `import { db } from '@/services/db'` instead.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    ignores: [
+      "src/services/local-store.ts",
+      "src/integrations/supabase/client.ts",
+    ],
+    rules: {
+      "no-restricted-globals": [
+        "warn",
+        {
+          name: "localStorage",
+          message:
+            "Direct localStorage access is discouraged. Use `localStore` from '@/services/local-store' with a pillar namespace instead.",
+        },
+        {
+          name: "sessionStorage",
+          message:
+            "Direct sessionStorage access is discouraged. Use `sessionStore` from '@/services/local-store' with a pillar namespace instead.",
+        },
+      ],
+    },
+  },
 );

@@ -1,7 +1,6 @@
 /**
  * documents.repository — All DB ops for document management components.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 // ── Document Builder ──
@@ -26,18 +25,18 @@ export async function insertAuditLog(record: Record<string, any>) {
 
 // ── Document Center ──
 export async function createSignedUrl(bucket: string, path: string, expiresIn = 3600) {
-  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn);
+  const { data, error } = await db.storage.from(bucket).createSignedUrl(path, expiresIn);
   if (error) throw error;
   return data?.signedUrl ?? null;
 }
 
 export async function sendEmailViaFunction(body: Record<string, any>) {
-  await supabase.functions.invoke("send-email", { body });
+  await db.functions.invoke("send-email", { body });
 }
 
 // ── Signature ──
 export async function uploadSignature(path: string, blob: Blob) {
-  const { error } = await supabase.storage.from("rental-docs").upload(path, blob, { contentType: "image/png" });
+  const { error } = await db.storage.from("rental-docs").upload(path, blob, { contentType: "image/png" });
   if (error) throw error;
 }
 
@@ -56,18 +55,18 @@ export async function insertNotification(record: Record<string, any>) {
 
 // ── Storage general ──
 export async function uploadToStorage(bucket: string, path: string, file: File | Blob, options?: Record<string, any>) {
-  const { error } = await supabase.storage.from(bucket).upload(path, file, options);
+  const { error } = await db.storage.from(bucket).upload(path, file, options);
   if (error) throw error;
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  const { data } = db.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
 
 export async function removeFromStorage(bucket: string, paths: string[]) {
-  await supabase.storage.from(bucket).remove(paths);
+  await db.storage.from(bucket).remove(paths);
 }
 
 export async function downloadFromStorage(bucket: string, path: string) {
-  const { data, error } = await supabase.storage.from(bucket).download(path);
+  const { data, error } = await db.storage.from(bucket).download(path);
   if (error) throw error;
   return data;
 }
@@ -117,15 +116,15 @@ export async function deleteInventoryItem(id: string) {
 }
 
 export async function uploadInventoryPhoto(path: string, file: File) {
-  const { error } = await supabase.storage.from("rental-docs").upload(path, file, { upsert: true });
+  const { error } = await db.storage.from("rental-docs").upload(path, file, { upsert: true });
   if (error) throw error;
-  const { data } = supabase.storage.from("rental-docs").getPublicUrl(path);
+  const { data } = db.storage.from("rental-docs").getPublicUrl(path);
   return data.publicUrl;
 }
 
 // ── DocumentCenter extras ──
 export async function fetchDocumentsForOrg(orgId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("documents")
     .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at, country")
     .eq("org_id", orgId)

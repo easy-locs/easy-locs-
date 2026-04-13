@@ -2,7 +2,6 @@
  * search.fetch.storefronts — Fetches storefront_pages results.
  * Single responsibility: query construction + execution.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { SearchState, SearchResult } from "../search-types";
 import { governStorefrontQuery } from "@/lib/discovery/query-governance";

@@ -8,7 +8,7 @@
  *
  * All uploads go through this engine. No other module uploads directly.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 type SupabaseStorageClient = {
   from(bucket: string): {

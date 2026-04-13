@@ -1,7 +1,6 @@
 /**
  * useFinancialRecon — Realtime financial reconciliation rows.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { db } from "@/services/db";
 
@@ -24,7 +23,7 @@ export function useFinancialRecon() {
 
     load();
 
-    const sub = supabase
+    const sub = db
       .channel("financial-reconciliation-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "financial_reconciliation" }, () => load())
       .subscribe();

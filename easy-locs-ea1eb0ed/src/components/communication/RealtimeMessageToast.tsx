@@ -4,7 +4,6 @@
  * V3: Migrated to chat_messages_v2.
  */
 import { db } from "@/services/db";
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef } from "react";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";
@@ -21,7 +20,7 @@ export default function RealtimeMessageToast() {
     if (!user) return;
 
     const unsub = registerSubscription(`orbit.toast:${user.id}`, () => {
-      const channel = supabase
+      const channel = db
         .channel("msg-toast-listener")
         .on(
           "postgres_changes",

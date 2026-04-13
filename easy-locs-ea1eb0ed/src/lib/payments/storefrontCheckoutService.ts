@@ -2,7 +2,7 @@
  * storefrontCheckoutService — Frontend service for backend-validated storefront checkout.
  * Calls create-storefront-checkout edge function instead of inserting directly.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export interface StorefrontCheckoutInput {
   shopId: string;

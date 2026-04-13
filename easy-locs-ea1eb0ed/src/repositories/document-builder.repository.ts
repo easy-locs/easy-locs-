@@ -1,7 +1,6 @@
 /**
  * document-builder.repository — DB operations for DocumentBuilder.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -33,7 +32,7 @@ export async function insertDocument(doc: Record<string, any>) {
 }
 
 export async function sendDocEmail(body: Record<string, any>) {
-  supabase.functions.invoke("send-email", { body }).catch(() => {});
+  db.functions.invoke("send-email", { body }).catch(() => {});
 }
 
 export async function insertDocAuditLog(orgId: string, userId: string, metadata: Record<string, any>) {

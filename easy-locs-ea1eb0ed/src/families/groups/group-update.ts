@@ -1,8 +1,7 @@
 /**
  * group.update — Canonical group update pipeline.
  */
-import { supabase } from "@/integrations/supabase/client";
-import { v2db } from "@/lib/shared/db-v2";
+import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 
@@ -20,7 +19,7 @@ export async function updateOrbitGroup(params: {
   if (params.avatarUrl !== undefined) updates.avatar_url = params.avatarUrl;
 
   if (Object.keys(updates).length > 0) {
-    const { error } = await v2db("conversations_v2")
+    const { error } = await db("conversations_v2")
       .update(updates)
       .eq("id", params.conversationId);
     if (error) throw error;

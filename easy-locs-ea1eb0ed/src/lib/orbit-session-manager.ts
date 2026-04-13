@@ -8,7 +8,6 @@
  * to prevent 189+ ghost sessions from accumulating.
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { structuredLogger } from "@/lib/observability/structured-logger";
 import { getDeviceFingerprint } from "./orbit-keystore";
@@ -204,7 +203,7 @@ export async function revokeSession(sessionId: string): Promise<boolean> {
     return false;
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   if (user) {
     const fingerprint = await getDeviceFingerprint();
     await db("login_events").insert({
@@ -226,7 +225,7 @@ export async function revokeAllOtherSessions(userId: string): Promise<boolean> {
   const fingerprint = await getDeviceFingerprint();
 
   // CRITICAL: Actually revoke auth tokens server-side
-  const { error: signOutError } = await supabase.auth.signOut({ scope: "others" });
+  const { error: signOutError } = await db.auth.signOut({ scope: "others" });
   if (signOutError) {
     structuredLogger.error("auth", "revoke_all_failed", `Failed to revoke other auth sessions: ${signOutError.message}`);
     return false;

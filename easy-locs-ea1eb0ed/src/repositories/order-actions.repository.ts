@@ -1,7 +1,6 @@
 /**
  * order-actions.repository — All storefront order mutation ops.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function updateOrderStatus(orderId: string, status: string) {
@@ -14,7 +13,7 @@ export async function updatePaymentStatus(orderId: string, updates: Record<strin
 }
 
 export async function invokeDispatchRide(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("dispatch-ride", { body });
+  const { data, error } = await db.functions.invoke("dispatch-ride", { body });
   if (error) throw error;
   return data;
 }

@@ -3,7 +3,6 @@
  * 3-layer architecture: canonical base → auto-generated draft → merchant override
  * Ensures automation never overwrites merchant manual changes.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

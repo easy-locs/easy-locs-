@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { getGuestId } from "@/lib/guest-session";
 import { checkOtpAbuse } from "@/lib/security/fraud-otp";
@@ -55,7 +54,7 @@ export async function sendPhoneOtp(params: { phone: string }) {
 
   // Send via edge function (dev: logs to console, prod: Twilio/SMS)
   try {
-    await supabase.functions.invoke("send-otp", {
+    await db.functions.invoke("send-otp", {
       body: { phone: params.phone, otp: otpCode },
     });
   } catch (e) {

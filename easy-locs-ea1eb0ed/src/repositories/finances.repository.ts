@@ -1,20 +1,19 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function checkConnectStatus() {
-  const { data, error } = await supabase.functions.invoke("check-connect-status");
+  const { data, error } = await db.functions.invoke("check-connect-status");
   if (error) throw error;
   return data as { connected: boolean; onboarding_complete: boolean; charges_enabled?: boolean; payouts_enabled?: boolean };
 }
 
 export async function createConnectAccount() {
-  const { data, error } = await supabase.functions.invoke("create-connect-account");
+  const { data, error } = await db.functions.invoke("create-connect-account");
   if (error) throw error;
   return data as { url?: string };
 }
 
 export async function disconnectStripe() {
-  const { data, error } = await supabase.functions.invoke("disconnect-stripe");
+  const { data, error } = await db.functions.invoke("disconnect-stripe");
   if (error) throw error;
   return data;
 }

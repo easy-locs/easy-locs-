@@ -1,7 +1,6 @@
 /**
  * onboarding-checklist.repository — DB counts for OnboardingChecklist widget.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchChecklistCounts(orgId: string) {

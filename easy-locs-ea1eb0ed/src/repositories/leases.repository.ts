@@ -1,8 +1,7 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchLeases(orgId: string, countryFilter?: string | null) {
-  let query = supabase
+  let query = db
     .from("leases")
     .select("*, tenants(name, email), properties(label, address, city, country)")
     .eq("org_id", orgId)

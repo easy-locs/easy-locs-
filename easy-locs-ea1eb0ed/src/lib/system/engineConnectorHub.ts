@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { assignMatchedDriver } from "@/lib/core/driverMatchingEngine";
@@ -12,7 +11,7 @@ type SyncResult = {
 };
 
 async function getOrderById(orderId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("orders")
     .select("*")
     .eq("id", orderId)

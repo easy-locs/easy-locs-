@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchMerchantProfile(profileId: string) {
@@ -49,7 +48,7 @@ export async function upsertMenuItem(item: { id?: string; isNew?: boolean; merch
 }
 
 export async function translateText(text: string, fromLocale: string, toLocale: string) {
-  const { data } = await supabase.functions.invoke("translate-message", {
+  const { data } = await db.functions.invoke("translate-message", {
     body: { text, from_locale: fromLocale, to_locale: toLocale },
   });
   return data?.translated as string | undefined;

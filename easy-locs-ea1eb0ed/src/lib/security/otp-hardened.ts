@@ -1,7 +1,6 @@
 /**
  * Hardened OTP system — hash-based, expiring, attempt-limited.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 /** Simple hash for OTP (client-side). In production, hash server-side. */
@@ -70,7 +69,7 @@ export async function createOtpSession(
 
   // Send via edge function (phone) or log (email)
   if (channel === "phone") {
-    await supabase.functions.invoke("send-otp", { body: { phone: target, otp } });
+    await db.functions.invoke("send-otp", { body: { phone: target, otp } });
   } else {
     console.log(`[EMAIL OTP] Code ${otp} → ${target}`);
   }

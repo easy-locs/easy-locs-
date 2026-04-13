@@ -1,8 +1,7 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function getCurrentUser() {
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await db.auth.getUser();
   if (error) throw error;
   return data.user;
 }
@@ -33,7 +32,7 @@ export async function getMyProfile() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("user_profiles" as any)
     .select("*")
     .eq("id", user.id)
@@ -62,7 +61,7 @@ export async function updateMyProfile(params: {
   if (typeof params.locale === "string") patch.locale = params.locale;
   if (typeof params.timezone === "string") patch.timezone = params.timezone;
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("user_profiles" as any)
     .update(patch)
     .eq("id", user.id)

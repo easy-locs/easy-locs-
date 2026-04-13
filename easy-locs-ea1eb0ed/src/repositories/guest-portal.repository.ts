@@ -1,18 +1,17 @@
 /**
  * guest-portal.repository — All DB operations for GuestPortal page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchGuestPortalData(bookingId: string) {
-  const { data: b } = await supabase
+  const { data: b } = await db
     .from("seasonal_bookings" as any).select("*").eq("id", bookingId).maybeSingle();
 
   let bookingData: any = b;
   let source = "seasonal";
 
   if (!b) {
-    const { data: br } = await supabase
+    const { data: br } = await db
       .from("booking_requests").select("*").eq("id", bookingId).maybeSingle() as any;
     if (!br) return null;
     bookingData = br;
@@ -59,7 +58,7 @@ export async function notifyOrgOwner(orgId: string, title: string, body: string,
 }
 
 export async function sendGuestEmail(orgEmail: string, guestName: string, guestEmail: string, message: string, propertyLabel: string, checkIn: string, checkOut: string) {
-  await supabase.functions.invoke("send-email", {
+  await db.functions.invoke("send-email", {
     body: {
       to: orgEmail,
       subject: `💬 Message from ${guestName}`,

@@ -1,7 +1,6 @@
 /**
  * concierge.repository — Single source of truth for all concierge DB operations.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
@@ -56,7 +55,7 @@ export async function updateConciergeOrderField(orderId: string, fields: Record<
 
 // ── Showcase (public) ──
 export async function fetchShowcaseBySlug(slug: string) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("landlord_profiles")
     .select("*, orgs!landlord_profiles_org_id_fkey(id, brand_name, logo_url, city, country, email, phone)")
     .eq("slug", slug)
@@ -78,9 +77,9 @@ export async function fetchShowcaseListings(orgId: string) {
 
 // ── Storage ──
 export async function uploadConciergeFile(bucket: string, path: string, file: File | Blob) {
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+  const { error } = await db.storage.from(bucket).upload(path, file, { upsert: true });
   if (error) throw error;
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  const { data } = db.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -101,7 +100,7 @@ export async function updatePreferredCurrency(userId: string, currency: string) 
 
 // ── Realtime ──
 export function subscribeConciergeOrders(orgId: string, onChange: () => void) {
-  const channel = supabase
+  const channel = db
     .channel('concierge-orders-sync')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'concierge_orders', filter: `org_id=eq.${orgId}` }, onChange)
     .subscribe();
@@ -142,7 +141,7 @@ export async function fetchBookingTasks(orgId: string) {
 
 // ── Merchant Orders (all orders, no org filter) ──
 export async function fetchAllConciergeOrders() {
-  const { data } = await supabase
+  const { data } = await db
     .from("concierge_orders")
     .select("id, status, guest_name, total_price, currency, created_at, notes")
     .order("created_at", { ascending: false })
@@ -151,7 +150,7 @@ export async function fetchAllConciergeOrders() {
 }
 
 export function subscribeMerchantOrders(onInsert: (payload: any) => void) {
-  const channel = supabase
+  const channel = db
     .channel("merchant-orders")
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "concierge_orders" }, (payload) => onInsert(payload.new))
     .subscribe();

@@ -2,7 +2,6 @@
  * MerchantKitchenQueue — Real-time kitchen display for incoming orders.
  * Uses storefront_orders as source of truth with realtime subscriptions.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { db } from "@/services/db";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
@@ -54,7 +53,7 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
   useEffect(() => {
     fetchOrders();
 
-    const channel = supabase
+    const channel = db
       .channel(`kitchen-${shopId}`)
       .on("postgres_changes", {
         event: "*",

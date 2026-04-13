@@ -1,7 +1,6 @@
 /**
  * Groups Repository — All group/channel/community DB operations.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchUserGroupIds(userId: string) {

@@ -1,12 +1,11 @@
 /**
  * tenant-portal.repository — All DB operations for tenant portal pages.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 // ── Documents ──
 export async function fetchTenantUploadedDocs(tenantId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("tenant_documents")
     .select("id, label, filename, file_url, status")
     .eq("tenant_id", tenantId)
@@ -15,7 +14,7 @@ export async function fetchTenantUploadedDocs(tenantId: string) {
 }
 
 export async function fetchLandlordDocs(orgId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("documents")
     .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at")
     .eq("org_id", orgId)
@@ -28,7 +27,7 @@ export async function fetchLandlordDocs(orgId: string) {
 
 export async function uploadTenantDoc(tenantId: string, orgId: string, userId: string, file: File, docType: string, label: string) {
   const path = `${orgId}/${tenantId}/${Date.now()}_${file.name}`;
-  const { error: upErr } = await supabase.storage.from("rental-docs").upload(path, file);
+  const { error: upErr } = await db.storage.from("rental-docs").upload(path, file);
   if (upErr) throw upErr;
   const { error } = await db("tenant_documents").insert({
     tenant_id: tenantId, org_id: orgId, uploaded_by: userId,
@@ -43,14 +42,14 @@ export async function getDocLeaseId(docId: string) {
 }
 
 export async function createSignedUrl(bucket: string, path: string, expiresIn = 3600) {
-  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn);
+  const { data, error } = await db.storage.from(bucket).createSignedUrl(path, expiresIn);
   if (error) throw error;
   return data?.signedUrl ?? null;
 }
 
 // ── Receipts ──
 export async function fetchTenantReceipts(tenantId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("rent_calls")
     .select("id, month, rent_amount, charges_amount, total_amount, paid, receipt_pdf_url, receipt_validated")
     .eq("tenant_id", tenantId)
@@ -60,14 +59,14 @@ export async function fetchTenantReceipts(tenantId: string) {
 }
 
 export async function downloadFromStorage(bucket: string, path: string) {
-  const { data, error } = await supabase.storage.from(bucket).download(path);
+  const { data, error } = await db.storage.from(bucket).download(path);
   if (error) throw error;
   return data;
 }
 
 // ── Requests ──
 export async function fetchDocumentRequests(tenantId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("document_requests")
     .select("*")
     .eq("tenant_id", tenantId)
@@ -92,7 +91,7 @@ export async function insertNotification(record: Record<string, any>) {
 }
 
 export async function invokeEmail(body: Record<string, any>) {
-  await supabase.functions.invoke("send-email", { body });
+  await db.functions.invoke("send-email", { body });
 }
 
 // ── Reviews ──
@@ -150,14 +149,14 @@ export async function insertChatMessage(record: Record<string, any>) {
 
 export async function uploadChatFile(orgId: string, tenantId: string, file: File) {
   const path = `${orgId}/messages/${tenantId}/${Date.now()}-${file.name}`;
-  const { error } = await supabase.storage.from("rental-docs").upload(path, file);
+  const { error } = await db.storage.from("rental-docs").upload(path, file);
   if (error) throw error;
-  const { data } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
+  const { data } = await db.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
   return data?.signedUrl || path;
 }
 
 export async function invokeTranslation(text: string, fromLocale: string, toLocale: string) {
-  const { data } = await supabase.functions.invoke("translate-message", {
+  const { data } = await db.functions.invoke("translate-message", {
     body: { text, from_locale: fromLocale, to_locale: toLocale },
   });
   return data?.translated ?? null;

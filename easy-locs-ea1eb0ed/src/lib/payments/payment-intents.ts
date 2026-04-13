@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { getGuestId } from "@/lib/guest-session";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -8,7 +7,7 @@ import { notifyPaymentSuccess, notifyPaymentFailed } from "@/lib/engines/notific
 
 async function tryGetCurrentUserId(): Promise<string | null> {
   try {
-    const { data } = await supabase.auth.getUser();
+    const { data } = await db.auth.getUser();
     return data.user?.id ?? null;
   } catch {
     return null;

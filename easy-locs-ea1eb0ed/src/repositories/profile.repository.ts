@@ -1,7 +1,6 @@
 /**
  * Profile Repository — Global profile load/save operations.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchBaseProfile(userId: string) {
@@ -81,7 +80,7 @@ export async function fetchOrgsByIds(orgIds: string[]): Promise<{ id: string; na
 
 /** Fetch critical profile fields for auth hydration */
 export async function fetchProfileCriticalFields(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("profiles")
     .select("user_type, onboarding_completed, country, currency")
     .eq("id", userId)

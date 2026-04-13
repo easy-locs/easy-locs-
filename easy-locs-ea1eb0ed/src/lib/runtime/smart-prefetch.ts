@@ -2,7 +2,6 @@
  * smart-prefetch — Intelligent data prefetching based on route + context.
  * Preloads data the user is likely to need next.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { queryClient } from "@/lib/query-client";
 import { db } from "@/services/db";
 

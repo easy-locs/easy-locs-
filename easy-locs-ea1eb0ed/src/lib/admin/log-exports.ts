@@ -1,11 +1,10 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function createLogExportJob(params: {
   exportType: "audit_logs" | "alerts" | "incidents" | "settlements";
   filters?: Record<string, any>;
 }) {
-  const { data: userData } = await supabase.auth.getUser();
+  const { data: userData } = await db.auth.getUser();
 
   const { data, error } = await db
     .from("log_export_jobs")

@@ -1,7 +1,6 @@
 /**
  * country-workspace.repository — DB operations for CountryWorkspace page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchCountryStats(orgId: string, country: string) {

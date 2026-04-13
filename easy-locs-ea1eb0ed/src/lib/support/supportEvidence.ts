@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 /**
  * Add proof/evidence to a support ticket as a message with metadata.

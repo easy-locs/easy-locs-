@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { useEffect, useMemo, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { fetchLiveOps } from "@/lib/admin/fetch-live-ops";

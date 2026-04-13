@@ -2,7 +2,7 @@
  * realtime-intelligence — Smart realtime with throttling, reconnection, health tracking.
  * Replaces dumb "subscribe to everything" with intelligent channel management.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerChannel, recordEvent, unregisterChannel, checkStaleness } from "./realtime-monitor";
 import { reportHealth } from "./health-aggregator";

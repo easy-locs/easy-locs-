@@ -1,7 +1,7 @@
 /**
  * mfa.repository — MFA operations via supabase.auth.mfa
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export async function listFactors() {
   const { data } = await supabase.auth.mfa.listFactors();

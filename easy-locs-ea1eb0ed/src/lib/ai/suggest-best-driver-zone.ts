@@ -1,17 +1,16 @@
 /**
  * suggest-best-driver-zone — AI-powered zone recommendation combining demand + cluster data.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function suggestBestDriverZone(driverId: string) {
-  const { data: zones } = await supabase
+  const { data: zones } = await db
     .from("demand_zones" as any)
     .select("*")
     .order("surge_multiplier", { ascending: false })
     .limit(10);
 
-  const { data: clusters } = await supabase
+  const { data: clusters } = await db
     .from("driver_clusters" as any)
     .select("*");
 

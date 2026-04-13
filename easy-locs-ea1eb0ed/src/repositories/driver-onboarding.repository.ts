@@ -1,7 +1,6 @@
 /**
  * driver-onboarding.repository — DB operations for DriverOnboardingFlow.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function upsertRiderPresence(userId: string, vehicleType: string) {
@@ -21,8 +20,8 @@ export async function markOnboardingComplete(userId: string) {
 }
 
 export async function uploadDriverDoc(path: string, file: File) {
-  const { error } = await supabase.storage.from("documents").upload(path, file);
+  const { error } = await db.storage.from("documents").upload(path, file);
   if (error) throw error;
-  const { data: { publicUrl } } = supabase.storage.from("documents").getPublicUrl(path);
+  const { data: { publicUrl } } = db.storage.from("documents").getPublicUrl(path);
   return publicUrl;
 }

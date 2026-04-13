@@ -2,7 +2,6 @@
  * booking.repository — All booking/service DB operations.
  * Single source for concierge_orders, marketplace_bookings reads/writes.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export interface BookingOrderPayload {
@@ -91,7 +90,7 @@ export async function sendBookingNotificationEmail(params: {
   currency: string;
 }) {
   try {
-    await supabase.functions.invoke("send-notification-email", {
+    await db.functions.invoke("send-notification-email", {
       body: {
         event_type: "booking_request",
         recipient_email: null,
@@ -124,7 +123,7 @@ export async function createConciergePaymentCheckout(params: {
   origin: string;
   bookingSlug: string;
 }) {
-  const { data, error } = await supabase.functions.invoke("create-concierge-payment", {
+  const { data, error } = await db.functions.invoke("create-concierge-payment", {
     body: {
       order_id: params.orderId,
       service_id: params.serviceId,

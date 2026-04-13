@@ -12,7 +12,7 @@
  * - radar merchant layers
  */
 import { eventBus } from "@/lib/core/event-bus";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 eventBus.on("merchant.visibility.refresh", async (payload) => {
   const zoneKey = payload.zoneKey || payload.zone_key;

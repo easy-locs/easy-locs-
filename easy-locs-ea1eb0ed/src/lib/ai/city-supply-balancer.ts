@@ -1,18 +1,17 @@
 /**
  * city-supply-balancer — Detect supply gaps and log rebalance needs.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function runCitySupplyBalancer(params: {
   city?: string;
 }) {
-  const { data: zones } = await supabase
+  const { data: zones } = await db
     .from("demand_zones" as any)
     .select("*")
     .order("predicted_demand", { ascending: false });
 
-  const { data: clusters } = await supabase
+  const { data: clusters } = await db
     .from("driver_clusters" as any)
     .select("*");
 

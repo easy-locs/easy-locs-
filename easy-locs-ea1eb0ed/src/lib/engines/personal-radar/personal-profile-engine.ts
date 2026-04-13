@@ -1,7 +1,6 @@
 /**
  * Personal Profile Engine — Builds & maintains user radar profile from behavior signals.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export interface UserRadarProfile {
@@ -24,7 +23,7 @@ const DEFAULT_PROFILE: UserRadarProfile = {
 
 /** Load or create user radar profile */
 export async function loadRadarProfile(userId: string): Promise<UserRadarProfile> {
-  const { data } = await supabase
+  const { data } = await db
     .from("user_radar_profiles")
     .select("*")
     .eq("user_id", userId)
@@ -46,7 +45,7 @@ export async function loadRadarProfile(userId: string): Promise<UserRadarProfile
 export async function refreshRadarProfile(userId: string): Promise<UserRadarProfile> {
   // Get recent events (last 30 days)
   const since = new Date(Date.now() - 30 * 86400000).toISOString();
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("user_radar_events")
     .select("event_type, category, subcategory, context")
     .eq("user_id", userId)

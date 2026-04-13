@@ -3,7 +3,6 @@
  * PASS83-Y: Buyer Dashboard
  * HARDENED: Real escrow status from server, confirmation code display, dropoff coords for GPS check.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Package, MapPin, Clock, CheckCircle2, Loader2, Eye, RefreshCw } from "lucide-react";
@@ -98,7 +97,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
   // Subscribe to realtime updates
   useEffect(() => {
     if (!user) return;
-    const channel = supabase
+    const channel = db
       .channel(`buyer-orders-${user.id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs" }, () => {
         refresh();

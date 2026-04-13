@@ -1,7 +1,6 @@
 /**
  * activity-log.repository — DB operations for EntityActivityLog.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchMessages(entityType: string, entityId: string, maxItems: number) {

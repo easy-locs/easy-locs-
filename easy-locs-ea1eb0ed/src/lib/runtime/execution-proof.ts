@@ -6,7 +6,7 @@
  * Produces structured proof reports for each domain flow.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { getAllHealth } from "./health-aggregator";
 import { getDeadEvents, getMismatchedEvents, getAllEventRecords } from "./event-audit";
 import { getBrokenPropagations, getPropagationStats } from "./propagation-validator";

@@ -2,7 +2,6 @@
  * Chat repo extended — Uses real tables: conversations_v2 + chat_messages_v2.
  * This replaces the old broken version that queried non-existent tables.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { ConversationRecord, ChatMessageRecord } from "@/lib/types/domain";
 

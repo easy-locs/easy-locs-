@@ -1,7 +1,6 @@
 /**
  * tasks.repository — All DB operations for Tasks page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchTasksData(orgId: string) {

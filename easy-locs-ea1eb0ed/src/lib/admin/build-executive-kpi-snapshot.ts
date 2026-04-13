@@ -2,7 +2,6 @@
  * Executive KPI snapshot builder — daily aggregate of platform metrics.
  * Canonical: reads mobility_jobs, ride_disputes, driver_payouts, geo_live_zone_overlays.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function buildExecutiveKPISnapshot(date = new Date()) {
@@ -35,7 +34,7 @@ export async function buildExecutiveKPISnapshot(date = new Date()) {
   const completedJobs = jobsData.filter((r) => r.status === "completed").length;
   const conversionRate = jobsData.length > 0 ? completedJobs / jobsData.length : 0;
 
-  const { error } = await supabase
+  const { error } = await db
     .from("executive_kpi_snapshots" as any)
     .upsert({
       snapshot_date: snapshotDate,

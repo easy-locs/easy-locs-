@@ -1,7 +1,7 @@
 /**
  * Refund request engine — creates refund requests with auto-approval logic.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { shouldAutoApproveRefund } from "@/lib/refunds/auto-refund-policy";
 import { applyWalletCredit } from "@/lib/wallet/apply-wallet-credit";
 

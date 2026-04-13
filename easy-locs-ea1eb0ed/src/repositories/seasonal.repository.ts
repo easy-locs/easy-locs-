@@ -1,10 +1,9 @@
 /**
  * seasonal.repository.ts — Single source of truth for ALL seasonal DB operations.
- * Replaces inline supabase in: useSeasonalData, useSeasonalBookings,
+ * Replaces inline db in: useSeasonalData, useSeasonalBookings,
  * useSeasonalBookingRepository, useSeasonalBookingActions, useSeasonalRequestActions,
  * useICalService, ListingManager, PropertyPhotos, SeasonalShowcase.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
@@ -113,14 +112,14 @@ export async function fetchOrgForNotification(orgId: string) {
 
 // ─── Email ───
 export async function invokeSendEmail(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("send-email", { body });
+  const { data, error } = await db.functions.invoke("send-email", { body });
   if (error) throw error;
   return data;
 }
 
 // ─── Booking Payment ───
 export async function invokeBookingPayment(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-booking-payment", { body });
+  const { data, error } = await db.functions.invoke("create-booking-payment", { body });
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
   return data;
@@ -130,20 +129,20 @@ export async function invokeBookingPayment(body: Record<string, any>) {
 export async function uploadPropertyPhoto(orgId: string, propertyId: string, file: File) {
   const ext = file.name.split(".").pop();
   const path = `${orgId}/${propertyId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const { error } = await supabase.storage.from("property-photos").upload(path, file);
+  const { error } = await db.storage.from("property-photos").upload(path, file);
   if (error) throw error;
-  const { data: urlData } = supabase.storage.from("property-photos").getPublicUrl(path);
+  const { data: urlData } = db.storage.from("property-photos").getPublicUrl(path);
   return urlData.publicUrl;
 }
 
 export async function deletePropertyPhoto(url: string) {
   const path = url.split("/property-photos/")[1];
-  if (path) await supabase.storage.from("property-photos").remove([path]);
+  if (path) await db.storage.from("property-photos").remove([path]);
 }
 
 // ─── Realtime ───
 export function subscribeToBookingRequests(orgId: string, onEvent: () => void) {
-  const channel = supabase
+  const channel = db
     .channel("seasonal-rt")
     .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests", filter: `org_id=eq.${orgId}` }, onEvent)
     .subscribe();

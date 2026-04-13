@@ -1,7 +1,7 @@
 /**
  * escrow.repository — Edge function calls for escrow delivery validation.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export async function fetchEscrowStatus(jobId: string) {
   const { data } = await supabase.functions.invoke("dispatch-delivery", {

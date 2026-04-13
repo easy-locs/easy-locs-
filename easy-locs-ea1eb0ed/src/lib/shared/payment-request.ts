@@ -6,7 +6,7 @@
  * 
  * Easy-Locs never collects operational payments — clients pay orgs directly.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { sendCommunicationEvent } from "./communication-pipeline";
 import { createDeepLinkMeta } from "./notification-engine";
 

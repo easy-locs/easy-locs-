@@ -3,7 +3,6 @@
  * and writes to app_notifications via insertNotification.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { insertNotification } from "@/lib/notification-service/notification-service";
 
@@ -52,7 +51,7 @@ platformBus.on("orbit:message_sent", (event) => {
 platformBus.on("wallet:transaction_created", (event) => {
   const { transaction, walletBalance } = event.payload as WalletTransactionPayload;
   if (!transaction) return;
-  supabase.auth.getUser().then(({ data }) => {
+  db.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
     const currency = transaction.currency ?? "AED";
@@ -74,7 +73,7 @@ platformBus.on("wallet:transaction_created", (event) => {
 // ── Payment success → notify ──
 platformBus.on("wallet:payment_success", (event) => {
   const p = event.payload as PaymentPayload;
-  supabase.auth.getUser().then(({ data }) => {
+  db.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
     const currency = p.currency ?? "AED";
@@ -95,7 +94,7 @@ platformBus.on("wallet:payment_success", (event) => {
 // ── Payment failed → notify ──
 platformBus.on("wallet:payment_failed", (event) => {
   const p = event.payload as PaymentPayload;
-  supabase.auth.getUser().then(({ data }) => {
+  db.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
     void insertNotification({
@@ -115,7 +114,7 @@ platformBus.on("wallet:payment_failed", (event) => {
 platformBus.on("booking:requested", (event) => {
   const { booking } = event.payload as BookingPayload;
   if (!booking) return;
-  supabase.auth.getUser().then(({ data }) => {
+  db.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
     void insertNotification({
@@ -132,7 +131,7 @@ platformBus.on("booking:requested", (event) => {
 
 platformBus.on("booking:confirmed", (event) => {
   const p = event.payload as BookingPayload;
-  supabase.auth.getUser().then(({ data }) => {
+  db.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
     void insertNotification({
@@ -149,7 +148,7 @@ platformBus.on("booking:confirmed", (event) => {
 
 platformBus.on("booking:cancelled", (event) => {
   const p = event.payload as BookingPayload;
-  supabase.auth.getUser().then(({ data }) => {
+  db.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
     void insertNotification({
@@ -200,7 +199,7 @@ platformBus.on("ORDER_COMPLETED", (event) => {
 // ── QR payment completed ──
 platformBus.on("qr:payment_completed", (event) => {
   const p = event.payload as QrPaymentPayload;
-  supabase.auth.getUser().then(({ data }) => {
+  db.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
     void insertNotification({

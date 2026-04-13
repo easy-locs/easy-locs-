@@ -1,5 +1,5 @@
 import type { AuditIssue } from "../types";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 /** Marketplace audit — listings, providers, booking flow, payment completeness */
 export async function runMarketplaceAudit(): Promise<AuditIssue[]> {

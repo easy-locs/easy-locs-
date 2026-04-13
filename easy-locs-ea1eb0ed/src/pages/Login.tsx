@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  signInWithPassword, signInWithOtp, verifyEmailOtp,
+  getSession, onAuthStateChange, getUser,
+} from "@/repositories/auth.repository";
 import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AppLogo from "@/components/AppLogo";
@@ -73,7 +76,7 @@ const Login = () => {
     try {
       authLog("LOGIN_SUPABASE_REQUEST_STARTED", { traceId, attempt: 0 });
       const reqStart = Date.now();
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await signInWithPassword(email, password);
       const durationMs = Date.now() - reqStart;
 
       if (error) {
@@ -158,7 +161,7 @@ const Login = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await getSession();
       if (session?.user) {
         const resumeTraceId = crypto.randomUUID();
         authLog("LOGIN_SESSION_DETECTED", { traceId: resumeTraceId, userId: session.user.id, source: "existing_session" });
@@ -167,7 +170,7 @@ const Login = () => {
     };
     void checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+    const { data: { subscription } } = onAuthStateChange(async (event, nextSession) => {
       if (event === "SIGNED_IN" && nextSession?.user) {
         const eventTraceId = crypto.randomUUID();
         authLog("LOGIN_SESSION_DETECTED", { traceId: eventTraceId, userId: nextSession.user.id, source: "auth_state_change" });
@@ -185,10 +188,7 @@ const Login = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false, emailRedirectTo: buildAppUrl("/login?otp=1") },
-    });
+    const { error } = await signInWithOtp(email, { shouldCreateUser: false, emailRedirectTo: buildAppUrl("/login?otp=1") });
     setLoading(false);
     if (error) {
       console.error("[Auth] OTP send:", error.message);
@@ -206,7 +206,7 @@ const Login = () => {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
+    const { data, error } = await verifyEmailOtp(email, otp);
     setLoading(false);
     if (error) {
       console.error("[Auth] OTP verify:", error.message);
@@ -239,7 +239,7 @@ const Login = () => {
         throw new Error(activation.error || "Identity activation failed");
       }
 
-      const { data: { user: confirmedUser } } = await supabase.auth.getUser();
+      const { data: { user: confirmedUser } } = await getUser();
       if (!confirmedUser) {
         authWarn("PHONE_LOGIN_NO_SESSION", { traceId, userId });
       }

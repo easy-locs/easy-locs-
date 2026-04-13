@@ -1,7 +1,6 @@
 /**
  * Buildings Repository — DB access for Buildings page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export interface BuildingRecord {
@@ -16,7 +15,7 @@ export interface BuildingRecord {
 }
 
 export async function fetchBuildings(orgId: string): Promise<BuildingRecord[]> {
-  const { data } = await supabase
+  const { data } = await db
     .from("buildings")
     .select("*")
     .eq("org_id", orgId)

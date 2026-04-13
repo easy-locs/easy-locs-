@@ -1,16 +1,15 @@
 /**
  * photo-uploader.repository — Storage operations for RealEstatePhotoUploader.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function uploadPropertyPhoto(path: string, file: File) {
-  const { error } = await supabase.storage.from("property-photos").upload(path, file);
+  const { error } = await db.storage.from("property-photos").upload(path, file);
   if (error) throw error;
 }
 
 export function getPublicUrl(path: string) {
-  const { data } = supabase.storage.from("property-photos").getPublicUrl(path);
+  const { data } = db.storage.from("property-photos").getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -19,5 +18,5 @@ export async function updateListingPhotos(listingId: string, photos: string[]) {
 }
 
 export async function removeStorageFile(path: string) {
-  await supabase.storage.from("property-photos").remove([path]);
+  await db.storage.from("property-photos").remove([path]);
 }

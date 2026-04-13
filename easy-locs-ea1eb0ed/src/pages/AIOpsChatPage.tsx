@@ -2,7 +2,6 @@
  * AIOpsChatPage — AI-powered ops assistant chat.
  */
 import { db } from "@/services/db";
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { createAIThread, sendAIMessage } from "@/lib/ai/ops-chat";
@@ -36,7 +35,7 @@ export default function AIOpsChatPage() {
         setMessages((data as any[]) ?? []);
       });
 
-    const sub = supabase
+    const sub = db
       .channel(`ai:${threadId}`)
       .on(
         "postgres_changes",

@@ -1,7 +1,7 @@
 /**
  * Listing Checkout — Frontend helpers for paid renew/boost via Stripe Checkout.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export type BoostTier = "basic" | "premium" | "featured";
 

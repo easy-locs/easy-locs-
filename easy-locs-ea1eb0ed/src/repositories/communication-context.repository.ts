@@ -1,7 +1,6 @@
 /**
  * communication-context.repository — DB operations for communication hub context panels.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchPropertyContext(orgId: string, tenantId: string) {

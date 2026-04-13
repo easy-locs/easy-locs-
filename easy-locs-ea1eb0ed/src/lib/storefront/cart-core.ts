@@ -1,13 +1,12 @@
 /**
  * Cart core — guest-aware cart for storefront ordering.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { getGuestId } from "@/lib/guest-session";
 
 async function tryGetCurrentUserId(): Promise<string | null> {
   try {
-    const { data } = await supabase.auth.getUser();
+    const { data } = await db.auth.getUser();
     return data.user?.id ?? null;
   } catch {
     return null;

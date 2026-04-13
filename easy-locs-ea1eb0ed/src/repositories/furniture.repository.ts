@@ -1,7 +1,6 @@
 /**
  * furniture.repository — All DB operations for FurnitureInventory page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchFurnitureData(orgId: string, countryFilter: string | null) {
@@ -42,16 +41,16 @@ export async function updateFurniturePhotoUrl(itemId: string, photoUrl: string) 
 export async function uploadFurniturePhoto(orgId: string, itemId: string, file: File): Promise<string | null> {
   const ext = file.name.split(".").pop() || "jpg";
   const path = `${orgId}/furniture/${itemId}.${ext}`;
-  const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
+  const { error } = await db.storage.from("property-photos").upload(path, file, { upsert: true });
   if (error) return null;
-  const { data } = supabase.storage.from("property-photos").getPublicUrl(path);
+  const { data } = db.storage.from("property-photos").getPublicUrl(path);
   return data.publicUrl;
 }
 
 export async function deleteFurnitureItem(id: string, orgId: string) {
   const { error } = await db("furniture_items").delete().eq("id", id);
   if (error) throw error;
-  await supabase.storage.from("property-photos").remove([
+  await db.storage.from("property-photos").remove([
     `${orgId}/furniture/${id}.jpg`, `${orgId}/furniture/${id}.png`, `${orgId}/furniture/${id}.webp`,
   ]);
 }

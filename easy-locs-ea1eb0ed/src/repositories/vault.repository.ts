@@ -1,7 +1,6 @@
 /**
  * vault.repository — DB operations for Vault page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchVaultFiles(orgId: string) {
@@ -10,7 +9,7 @@ export async function fetchVaultFiles(orgId: string) {
 }
 
 export async function uploadVaultFile(path: string, file: File) {
-  const { error } = await supabase.storage.from("vault").upload(path, file);
+  const { error } = await db.storage.from("vault").upload(path, file);
   if (error) throw error;
 }
 
@@ -19,13 +18,13 @@ export async function insertVaultFileRecord(record: Record<string, any>) {
 }
 
 export async function downloadVaultFile(path: string) {
-  const { data, error } = await supabase.storage.from("vault").download(path);
+  const { data, error } = await db.storage.from("vault").download(path);
   if (error) throw error;
   return data;
 }
 
 export async function deleteVaultFile(id: string, storagePath: string) {
-  await supabase.storage.from("vault").remove([storagePath]);
+  await db.storage.from("vault").remove([storagePath]);
   const { error } = await db("vault_files").delete().eq("id", id);
   if (error) throw error;
 }

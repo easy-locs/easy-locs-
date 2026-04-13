@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function logAdminAction(params: {
@@ -9,7 +8,7 @@ export async function logAdminAction(params: {
   summary?: string;
 }) {
   try {
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: userData } = await db.auth.getUser();
     await db("audit_logs").insert({
       action: `${params.actionType}:${params.entityType}:${params.entityId}`,
       user_id: userData.user?.id ?? null,

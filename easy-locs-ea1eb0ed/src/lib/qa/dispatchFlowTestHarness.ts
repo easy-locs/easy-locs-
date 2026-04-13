@@ -20,7 +20,7 @@ export async function runDispatchFlowSmokeTest() {
       message: `${online} online / ${available} available drivers`,
     });
 
-    const { data: orders, error: orderErr } = await supabase
+    const { data: orders, error: orderErr } = await db
       .from("orders")
       .select("id,status")
       .in("status", ["ready_for_pickup", "driver_search", "driver_assigned", "on_the_way"])

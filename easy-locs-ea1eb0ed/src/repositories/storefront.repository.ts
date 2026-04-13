@@ -2,7 +2,6 @@
  * storefront.repository — All DB operations for storefront components.
  * Covers deal rooms, digital products, returns/refunds.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 // ── Deal Room ──
@@ -147,15 +146,15 @@ export async function updateShop(id: string, updates: Record<string, any>) {
 
 // ── Product media ──
 export async function uploadProductMedia(path: string, file: File) {
-  const { error } = await supabase.storage.from("storefront-media").upload(path, file, { upsert: true });
+  const { error } = await db.storage.from("storefront-media").upload(path, file, { upsert: true });
   if (error) throw error;
-  const { data } = supabase.storage.from("storefront-media").getPublicUrl(path);
+  const { data } = db.storage.from("storefront-media").getPublicUrl(path);
   return data.publicUrl;
 }
 
 // ── AI ──
 export async function invokeAIAssistant(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("ai-assistant", { body });
+  const { data, error } = await db.functions.invoke("ai-assistant", { body });
   if (error) throw error;
   return data;
 }
@@ -183,46 +182,46 @@ export async function fetchShopsByUser(userId: string) {
 
 // ── Storage: catalog-photos ──
 export async function uploadCatalogPhoto(path: string, file: File) {
-  const { error } = await supabase.storage.from("catalog-photos").upload(path, file);
+  const { error } = await db.storage.from("catalog-photos").upload(path, file);
   if (error) throw error;
-  const { data } = supabase.storage.from("catalog-photos").getPublicUrl(path);
+  const { data } = db.storage.from("catalog-photos").getPublicUrl(path);
   return data.publicUrl;
 }
 
 // ── Storage: products bucket ──
 export async function uploadProductFile(path: string, file: File) {
-  const { error } = await supabase.storage.from("products").upload(path, file, {
+  const { error } = await db.storage.from("products").upload(path, file, {
     cacheControl: "3600", upsert: false,
   });
   if (error) throw error;
-  const { data } = supabase.storage.from("products").getPublicUrl(path);
+  const { data } = db.storage.from("products").getPublicUrl(path);
   return data.publicUrl;
 }
 
 // ── AI proxy (smart builders) ──
 export async function invokeAIProxy(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("ai-proxy", { body });
+  const { data, error } = await db.functions.invoke("ai-proxy", { body });
   if (error) throw error;
   return data;
 }
 
 // ── AI category suggest ──
 export async function invokeAICategorySuggest(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("ai-category-suggest", { body });
+  const { data, error } = await db.functions.invoke("ai-category-suggest", { body });
   if (error) throw error;
   return data;
 }
 
 // ── AI shopping chat ──
 export async function invokeAIShoppingChat(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("ai-shopping-chat", { body });
+  const { data, error } = await db.functions.invoke("ai-shopping-chat", { body });
   if (error) throw error;
   return data;
 }
 
 // ── Dispatch ride (storefront delivery) ──
 export async function invokeDispatchRide(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("dispatch-ride", { body });
+  const { data, error } = await db.functions.invoke("dispatch-ride", { body });
   if (error) throw error;
   return data;
 }

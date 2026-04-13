@@ -1,6 +1,6 @@
 /**
  * wallet-repository — Canonical data access for wallet domain.
- * No UI component should import supabase directly for wallet operations.
+ * No UI component should import db directly for wallet operations.
  */
 import { db } from "@/services/db";
 

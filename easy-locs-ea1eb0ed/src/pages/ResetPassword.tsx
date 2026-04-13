@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { updateUserPassword } from "@/repositories/auth.repository";
 import { Loader2, Lock, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
@@ -36,7 +36,7 @@ const ResetPassword = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await updateUserPassword(password);
     setLoading(false);
     if (error) {
       toast({ title: t("common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });

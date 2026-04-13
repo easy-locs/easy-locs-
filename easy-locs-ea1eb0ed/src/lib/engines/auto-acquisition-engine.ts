@@ -1,7 +1,7 @@
 /**
  * auto-acquisition-engine — Discovers, creates ghost listings, and manages merchant claims.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
 
 export interface DiscoveredMerchant {

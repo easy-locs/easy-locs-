@@ -2,7 +2,6 @@
  * Canonical Notification Service — app_notifications table.
  * SINGLE write + read path for all platform notifications.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

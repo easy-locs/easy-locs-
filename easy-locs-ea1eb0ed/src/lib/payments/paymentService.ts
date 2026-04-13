@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type {
   CreateCheckoutPaymentInput,

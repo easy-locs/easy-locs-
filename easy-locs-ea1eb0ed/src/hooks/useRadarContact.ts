@@ -15,7 +15,7 @@ import { useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { orbitDispatch } from "@/families/orbit-dispatch/orbit-dispatch";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { toast } from "sonner";

@@ -2,7 +2,7 @@
  * notification-dispatcher-v2 — Atomic unit: dispatch a single notification.
  * Single responsibility: write one notification to DB + emit event.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackPropagation } from "@/lib/runtime/propagation-validator";

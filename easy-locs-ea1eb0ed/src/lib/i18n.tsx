@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo, type ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { interpolate, resolvePlural, trackMissingKey } from "./i18n-utils";
 import { landingKeysEn, landingKeysFr } from "./i18n-landing";
@@ -217,9 +216,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const syncLocale = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await db.auth.getSession();
       if (!session?.user) return;
-      const { data } = await supabase
+      const { data } = await db
         .from("profiles")
         .select("locale")
         .eq("id", session.user.id)
@@ -246,7 +245,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       document.documentElement.dir = (l === "ar" || l === "he") ? "rtl" : "ltr";
     }
     loadLocaleExtras(l);
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await db.auth.getSession();
     if (session?.user) {
       await db("profiles").update({ locale: l }).eq("id", session.user.id);
     }

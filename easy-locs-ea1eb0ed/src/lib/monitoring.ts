@@ -6,7 +6,6 @@
  * Unified with Sentry + module_health for full observability.
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { initUnifiedMonitoring } from "@/lib/monitoring/unified-monitor";
 
@@ -147,7 +146,7 @@ async function persistToAuditLog(evt: MonitoringEvent) {
   if (_persistingAudit) return;
   _persistingAudit = true;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await db.auth.getSession();
     if (!session) return;
     await db("audit_logs").insert([{
       action: `monitoring:${evt.type}`,
@@ -364,7 +363,7 @@ export async function runSyncHealthChecks(): Promise<SyncCheckResult[]> {
       return { name: "Marketplace Booking Sync", status: (data?.length || 0) > 10 ? "warning" as const : "ok" as const, message: `${data?.length || 0} awaiting payment`, checkedAt: now };
     }),
     timedCheck("Edge Functions", async () => {
-      const { error } = await supabase.functions.invoke("check-subscription", { body: {} });
+      const { error } = await db.functions.invoke("check-subscription", { body: {} });
       return { name: "Edge Functions", status: error ? "warning" as const : "ok" as const, message: error ? `Error: ${error.message}` : "Responding", checkedAt: now };
     }),
   ]);

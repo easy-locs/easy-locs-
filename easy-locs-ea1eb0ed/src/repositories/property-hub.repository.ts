@@ -1,7 +1,6 @@
 /**
  * property-hub.repository — All DB operations for PropertyDetailHub page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchPropertyHubData(propertyId: string, orgId: string) {

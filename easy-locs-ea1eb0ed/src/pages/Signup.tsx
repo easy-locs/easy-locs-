@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+import { signUpWithEmail } from "@/repositories/auth.repository";
 import { Loader2, Mail, Lock, User, Eye, EyeOff, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
@@ -37,13 +37,9 @@ const Signup = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: buildAppUrl("/"),
-        data: { name },
-      },
+    const { error } = await signUpWithEmail(email, password, {
+      emailRedirectTo: buildAppUrl("/"),
+      data: { name },
     });
     setLoading(false);
     if (error) {

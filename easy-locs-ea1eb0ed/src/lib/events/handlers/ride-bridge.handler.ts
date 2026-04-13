@@ -6,7 +6,7 @@
  * Listens to canonical ride lifecycle events.
  */
 import { eventBus } from "@/lib/core/event-bus";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 // ── Orbit Bridge: Create ride chat on driver assignment ──
 eventBus.on("ride.driver.assigned", async (payload) => {

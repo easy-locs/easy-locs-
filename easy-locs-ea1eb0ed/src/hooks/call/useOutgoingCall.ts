@@ -3,7 +3,7 @@
  * Single responsibility: auth → resolve → RPC → CallManager → media.
  */
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";

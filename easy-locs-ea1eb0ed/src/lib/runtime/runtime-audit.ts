@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 declare const __BUILD_TIMESTAMP__: string;
@@ -62,7 +61,7 @@ function fail(label: string, key: string, detail?: string): RuntimeAuditCheck {
 async function checkSupabaseConnection(): Promise<RuntimeAuditCheck> {
   try {
     // Use auth.getSession() first — it doesn't hit PostgREST/RLS at all
-    const { data, error: authErr } = await supabase.auth.getSession();
+    const { data, error: authErr } = await db.auth.getSession();
     if (authErr) return fail("Supabase connection", "supabase", authErr.message);
     // Auth reachable means Supabase is connected
     return pass("Supabase connection", "supabase", data.session ? "Authenticated session active" : "Reachable (no active session)");

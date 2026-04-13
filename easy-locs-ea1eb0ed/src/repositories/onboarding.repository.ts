@@ -1,7 +1,6 @@
 /**
  * onboarding.repository — All DB operations for onboarding wizard.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchOnboardingProgress(userId: string) {
@@ -66,7 +65,7 @@ export async function upsertOtaConnection(orgId: string, userId: string, provide
 }
 
 export async function syncIcal(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("sync-ical", { body });
+  const { data, error } = await db.functions.invoke("sync-ical", { body });
   if (error) throw error;
   return data;
 }

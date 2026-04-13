@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { computeTrustScore } from "@/lib/trust/compute-trust-score";
 import { computeUserTrustScore, getDefaultSignals, type TrustSignals } from "@/lib/trust/user-trust-engine";
 import { getTrustLevel } from "@/lib/trust/trust-levels";
