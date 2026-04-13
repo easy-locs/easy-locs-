@@ -481,48 +481,7 @@ export const RADAR_QUICK_CATEGORIES: { id: RadarMainCategory; emoji: string; lab
     .filter(c => c.value !== "all" && c.value !== "utility")
     .map(c => ({ id: c.value, emoji: c.emoji, labelKey: `radar.layer_${c.value}` }));
 
-// ═══════════════════════════════════════════════════════════
-//  NORMALIZATION — split to taxonomy-aliases.ts for bundle separation
-// ═══════════════════════════════════════════════════════════
-export {
-  VERTICAL_ALIASES,
-  SUBCATEGORY_ALIASES,
-  normalizeVertical,
-  normalizeSubcategory,
-} from "./taxonomy-aliases";
-
-export function verticalToRadarCategory(vertical: string): RadarMainCategory {
-  const norm = normalizeVertical(vertical);
-  const found = CANONICAL_VERTICALS.find((v) => v.value === norm);
-  return found?.radarCategory ?? "shops";
-}
-
-// ═══════════════════════════════════════════════════════════
-//  LOOKUP HELPERS
-// ═══════════════════════════════════════════════════════════
-
-export function getCanonicalVertical(value: string) {
-  const norm = normalizeVertical(value);
-  return CANONICAL_VERTICALS.find((v) => v.value === norm);
-}
-
-export function getCanonicalSubcategory(value: string) {
-  const norm = normalizeSubcategory(value);
-  if (!norm) return undefined;
-  for (const vertical of CANONICAL_VERTICALS) {
-    const found = vertical.subcategories.find((s) => s.value === norm);
-    if (found) return found;
-  }
-  return undefined;
-}
-
-export function getParentVertical(subValue: string) {
-  const norm = normalizeSubcategory(subValue);
-  if (!norm) return undefined;
-  return CANONICAL_VERTICALS.find((v) =>
-    v.subcategories.some((s) => s.value === norm)
-  );
-}
+export const ALL_SUBCATEGORY_VALUES = getAllSubcategoryValues();
 
 export function getSubcategoriesForRadarCategory(
   cat: RadarMainCategory
@@ -531,73 +490,4 @@ export function getSubcategoriesForRadarCategory(
   return CANONICAL_VERTICALS
     .filter((v) => v.radarCategory === cat)
     .flatMap((v) => v.subcategories);
-}
-
-export function getClustersForVertical(vertical: string): TaxonomyCluster[] {
-  const found = getCanonicalVertical(vertical);
-  return found?.clusters ?? [];
-}
-
-export function getSubcategoriesForVertical(vertical: string): TaxonomySubcategory[] {
-  const found = getCanonicalVertical(vertical);
-  return found?.subcategories ?? [];
-}
-
-export function getSubcategoriesForCluster(
-  vertical: string,
-  cluster: string
-): TaxonomySubcategory[] {
-  const found = getCanonicalVertical(vertical);
-  if (!found) return [];
-  return found.subcategories.filter((s) => s.cluster === cluster);
-}
-
-export const ALL_SUBCATEGORY_VALUES = getAllSubcategoryValues();
-
-// ═══════════════════════════════════════════════════════════
-//  DEEP HIERARCHY HELPERS
-// ═══════════════════════════════════════════════════════════
-
-export function hierarchyMatchScore(
-  pointSub: string | null | undefined,
-  targetSub?: string | null,
-  targetVertical?: string | null
-): number {
-  if (!pointSub) return 0;
-  const normPoint = normalizeSubcategory(pointSub);
-  if (!normPoint) return 0;
-
-  if (targetSub) {
-    const normTarget = normalizeSubcategory(targetSub);
-    if (normPoint === normTarget) return 3;
-  }
-
-  const pointVertical = getParentVertical(normPoint);
-  if (!pointVertical) return 0;
-
-  if (targetSub) {
-    const normTarget = normalizeSubcategory(targetSub);
-    if (normTarget) {
-      const targetInfo = pointVertical.subcategories.find((s) => s.value === normTarget);
-      const pointInfo = pointVertical.subcategories.find((s) => s.value === normPoint);
-      if (targetInfo && pointInfo && targetInfo.cluster === pointInfo.cluster) return 2;
-    }
-  }
-
-  if (targetVertical) {
-    const normVert = normalizeVertical(targetVertical);
-    if (pointVertical.value === normVert) return 1;
-  }
-
-  return 0;
-}
-
-export function getClusterForSubcategory(subValue: string): string | null {
-  const norm = normalizeSubcategory(subValue);
-  if (!norm) return null;
-  for (const v of CANONICAL_VERTICALS) {
-    const found = v.subcategories.find((s) => s.value === norm);
-    if (found) return found.cluster;
-  }
-  return null;
 }

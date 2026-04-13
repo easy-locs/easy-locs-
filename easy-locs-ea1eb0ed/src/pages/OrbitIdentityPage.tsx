@@ -1,39 +1,33 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useOrbitProfileStore } from "@/stores/orbit-profile.internal";
 
-/**
- * OrbitIdentityPage — displays canonical orbit profile from orbit_profiles_v2.
- * NOTE: This page uses orbitStore directly because it needs loadProfile, loading,
- * and verificationLevel which are not on the OrbitIdentity interface.
- * Will be fully migrated when OrbitIdentity is extended or a dedicated page hook is created.
- */
 export default function OrbitIdentityPage() {
   const { user } = useAuth();
-  const profile = useOrbitProfileStore((s) => s.profile);
+  const identity = useOrbitIdentity();
   const loading = useOrbitProfileStore((s) => s.loading);
   const loadProfile = useOrbitProfileStore((s) => s.loadProfile);
 
   useEffect(() => {
-    if (user?.id && !profile) {
+    if (user?.id && !identity) {
       void loadProfile(user.id);
     }
-  }, [user?.id, profile, loadProfile]);
+  }, [user?.id, identity, loadProfile]);
 
   return (
     <div className="app-mobile-page bg-background p-4 space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-foreground">Orbit ID</h1>
         {loading && <p className="text-muted-foreground">Loading...</p>}
-        {!!profile && (
+        {!!identity && (
           <div className="space-y-1 text-sm text-muted-foreground">
-            <p>Orbit ID: {profile.orbitId}</p>
-            <p>Name: {profile.displayName ?? "—"}</p>
-            <p>Role: {profile.role}</p>
-            <p>Verification: Level {profile.verificationLevel}</p>
+            <p>Orbit ID: {identity.orbitId}</p>
+            <p>Name: {identity.displayName ?? "—"}</p>
+            <p>Role: {identity.role}</p>
           </div>
         )}
-        {!loading && !profile && (
+        {!loading && !identity && (
           <p className="text-muted-foreground">No Orbit profile found. Sign in to create one.</p>
         )}
       </div>

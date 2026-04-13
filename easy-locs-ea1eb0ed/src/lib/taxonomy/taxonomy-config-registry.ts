@@ -11,11 +11,8 @@
  */
 
 import { CATEGORY_TREE, type PrimaryCategory, resolveSubcategory } from "./category-tree";
-import {
-  normalizeVertical,
-  normalizeSubcategory,
-  type Vertical,
-} from "./world-class-taxonomy";
+import type { Vertical } from "./world-class-taxonomy";
+import { normalizeVertical, normalizeSubcategory } from "./taxonomy-aliases";
 
 // ═══════════════════════════════════════════════════════════
 //  UI CONFIG — per vertical/subcategory

@@ -15,7 +15,7 @@
  *   3. Action Model — not mixed in (scan, pay, etc. stay separate)
  */
 
-import { hierarchyMatchScore } from "@/lib/taxonomy/world-class-taxonomy";
+import { hierarchyMatchScore } from "@/lib/taxonomy/taxonomy-aliases";
 
 // ═══════════════════════════════════════════════════════════
 //  UNIVERSAL RANKABLE ENTITY

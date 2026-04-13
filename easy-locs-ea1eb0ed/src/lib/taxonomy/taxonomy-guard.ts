@@ -2,13 +2,13 @@
  * Taxonomy Guard — Validates and enforces canonical taxonomy coherence.
  * Used at write time to prevent incoherent vertical/cluster/subcategory combos.
  */
+import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 import {
   normalizeVertical,
   normalizeSubcategory,
   getCanonicalVertical,
   getClusterForSubcategory,
-  type Vertical,
-} from "@/lib/taxonomy/world-class-taxonomy";
+} from "./taxonomy-aliases";
 
 export interface TaxonomyValidation {
   valid: boolean;
