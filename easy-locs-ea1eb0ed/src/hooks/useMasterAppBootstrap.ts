@@ -192,8 +192,12 @@ export function useMasterAppBootstrap() {
     timers.push(t4);
 
     let idleCbId: number | undefined;
-    const t5 = setTimeout(() => {
-      if (document.hidden) return;
+    const scheduleLateBoot = () => {
+      if (document.hidden) {
+        const onVisible = () => { document.removeEventListener("visibilitychange", onVisible); scheduleLateBoot(); };
+        document.addEventListener("visibilitychange", onVisible);
+        return;
+      }
       idleCbId = requestIdleCallback(async () => {
         try {
           const { runPlatformRecovery } = await import("@/lib/platform/platform-recovery-engine");
@@ -227,7 +231,8 @@ export function useMasterAppBootstrap() {
           console.warn("[boot] omega-core failed", e);
         }
       }, { timeout: 30_000 });
-    }, 15_000);
+    };
+    const t5 = setTimeout(scheduleLateBoot, 15_000);
     timers.push(t5);
 
     return () => {
