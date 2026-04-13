@@ -92,10 +92,10 @@ function UniversalEntityCardInner({
         </div>
 
         {/* Info */}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground truncate">{title}</p>
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <p className="text-sm font-semibold text-foreground truncate leading-snug">{title}</p>
           {subtitle && (
-            <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
+            <p className="text-[11px] text-muted-foreground line-clamp-1 break-words leading-snug">{subtitle}</p>
           )}
         </div>
 
@@ -135,9 +135,9 @@ function UniversalEntityCardInner({
             ENTITY_ICONS[entityType]
           )}
         </div>
-        <p className="text-lg font-bold text-foreground">{title}</p>
+        <p className="text-lg font-bold text-foreground break-words leading-snug">{title}</p>
         {subtitle && (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+          <p className="text-xs text-muted-foreground break-words leading-snug">{subtitle}</p>
         )}
       </div>
 

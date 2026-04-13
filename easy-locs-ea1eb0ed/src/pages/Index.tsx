@@ -71,7 +71,14 @@ function DeferredSection({ children }: { children: React.ReactNode }) {
 }
 
 const SectionLoader = memo(() => (
-  <div className="min-h-[48px]" />
+  <div className="min-h-[80px] px-4 py-3">
+    <div className="h-5 w-1/3 rounded-lg skeleton-premium mb-3" />
+    <div className="flex gap-3 overflow-hidden">
+      {[0, 1, 2].map(i => (
+        <div key={i} className="shrink-0 w-[160px] h-[120px] rounded-2xl skeleton-premium" />
+      ))}
+    </div>
+  </div>
 ));
 
 const jsonLd = {

@@ -143,12 +143,12 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           </div>
         )}
 
-        <h3 className="font-bold line-clamp-2 leading-snug text-sm break-words" style={{ color: "hsl(var(--foreground))" }}>{service.title}</h3>
-        {service.description && <p className="text-xs line-clamp-3 leading-relaxed break-words" style={{ color: "hsl(var(--muted-foreground))" }}>{service.description}</p>}
+        <h3 className="font-bold line-clamp-2 leading-snug text-sm break-words min-w-0" style={{ color: "hsl(var(--foreground))" }}>{service.title}</h3>
+        {service.description && <p className="text-xs line-clamp-3 leading-relaxed break-words min-w-0" style={{ color: "hsl(var(--muted-foreground))" }}>{service.description}</p>}
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
           {service.city && (
-            <span className="flex items-center gap-1 break-words"><MapPin className="h-3 w-3 shrink-0" style={{ color: GOLD }} /> {service.city}, {service.country}</span>
+            <span className="flex items-center gap-1 min-w-0"><MapPin className="h-3 w-3 shrink-0" style={{ color: GOLD }} /><span className="truncate max-w-[140px]">{service.city}, {service.country}</span></span>
           )}
           {service.duration_minutes && (
             <span className="flex items-center gap-1"><Clock className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.7)" }} /> {service.duration_minutes}min</span>

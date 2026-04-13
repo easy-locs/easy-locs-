@@ -81,10 +81,10 @@ export default function MerchantCard({
               </span>
             )}
           </div>
-          <div className="p-3 space-y-1">
-            <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words transition-colors" style={{ color: "hsl(var(--foreground))", textWrap: "balance" } as React.CSSProperties}>{name}</h3>
-            {category && <p className="text-xs leading-snug line-clamp-3 break-words" style={{ color: "hsl(var(--muted-foreground))" }}>{category}</p>}
-            <div className="flex items-center gap-3 pt-0.5">
+          <div className="p-3 space-y-1 min-w-0">
+            <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words transition-colors min-w-0" style={{ color: "hsl(var(--foreground))", textWrap: "balance" } as React.CSSProperties}>{name}</h3>
+            {category && <p className="text-xs leading-snug line-clamp-3 break-words min-w-0" style={{ color: "hsl(var(--muted-foreground))" }}>{category}</p>}
+            <div className="flex items-center gap-2 flex-wrap pt-0.5">
               {rating != null && (
                 <span className="flex items-center gap-1 text-xs font-bold">
                   <Star className="h-3 w-3 fill-current" style={{ color: GOLD }} /> {rating.toFixed(1)}
@@ -133,10 +133,10 @@ export default function MerchantCard({
           )}
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
-          <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words transition-colors"
+          <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words transition-colors min-w-0"
             style={{ color: "hsl(var(--foreground))", textWrap: "balance" } as React.CSSProperties}>{name}</h3>
-          {category && <p className="text-xs line-clamp-3 break-words leading-snug" style={{ color: "hsl(var(--muted-foreground))" }}>{category}</p>}
-          <div className="flex items-center gap-3 mt-0.5">
+          {category && <p className="text-xs line-clamp-2 break-words leading-snug min-w-0" style={{ color: "hsl(var(--muted-foreground))" }}>{category}</p>}
+          <div className="flex items-center gap-2 flex-wrap mt-0.5">
             {rating != null && (
               <span className="flex items-center gap-1 text-xs font-bold">
                 <Star className="h-3 w-3 fill-current" style={{ color: GOLD }} /> {rating.toFixed(1)}

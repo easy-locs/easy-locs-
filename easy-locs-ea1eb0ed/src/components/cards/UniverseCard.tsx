@@ -127,7 +127,7 @@ export const UniverseCard = memo(function UniverseCard({
     extraClass,
   );
 
-  const cardStyle = !extraClass?.includes("w-") ? { width: "clamp(140px, 40vw, 220px)" } : undefined;
+  const cardStyle = !extraClass?.includes("w-") ? { width: "clamp(160px, 42vw, 220px)" } : undefined;
 
   if (to) return <Link to={to} className={cls} style={cardStyle} data-card-hover>{content}</Link>;
   return <button type="button" onClick={onClick} className={cn(cls, "text-left")} style={cardStyle} data-card-hover>{content}</button>;
