@@ -7,6 +7,7 @@ export interface NavigationContext {
   entityName?: string;
   entityType?: string;
   entityImage?: string;
+  ownerUserId?: string;
   amount?: number;
   currency?: string;
   note?: string;

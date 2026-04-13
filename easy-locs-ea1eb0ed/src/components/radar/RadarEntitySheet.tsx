@@ -6,6 +6,8 @@ import { entityUrl } from "@/lib/entity/entity-url";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import type { NavigationContext } from "@/lib/navigation/navigation-intent";
+import { useRadarContact } from "@/hooks/useRadarContact";
+import { resolveEntityOwner } from "@/lib/radar/owner-resolver";
 
 interface RadarEntity {
   id: string;
@@ -33,6 +35,7 @@ interface Props {
 export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: Props) {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { contact } = useRadarContact();
   const img = entity.imageUrl || entity.image_url;
   const dist = entity.distance;
   const distLabel = dist != null
@@ -62,24 +65,30 @@ export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: P
 
   const handleMessage = () => {
     haptic("light");
-    if (onSmartNavigate) {
-      onSmartNavigate("/orbit", "contact_entity", entityCtx);
-    } else {
-      onClose();
-      import("@/lib/orbit/navigate-to-thread").then(async ({ navigateToOrbitThread }) => {
-        const path = await navigateToOrbitThread({ targetName: entity.name });
-        if (path) navigate(path);
-      });
-    }
+    onClose();
+    contact({
+      entityId: entity.id,
+      entityName: entity.name,
+      entityType: entity.type,
+      autoMessage: `Hi, I'm interested in ${entity.name}.`,
+    });
   };
 
-  const handlePay = () => {
+  const handlePay = async () => {
     haptic("light");
+    const ownerResult = await resolveEntityOwner(entity.id, entity.type);
     if (onSmartNavigate) {
-      onSmartNavigate("/wallet", "pay_entity", entityCtx);
+      onSmartNavigate("/wallet", "pay_entity", {
+        ...entityCtx,
+        ownerUserId: ownerResult?.ownerUserId ?? undefined,
+      });
+      return;
+    }
+    onClose();
+    if (ownerResult?.ownerUserId) {
+      navigate(`/wallet/transfer?to=${encodeURIComponent(ownerResult.ownerUserId)}&name=${encodeURIComponent(entity.name)}`);
     } else {
-      onClose();
-      navigate(`/wallet/transfer?to=${encodeURIComponent(entity.id)}&name=${encodeURIComponent(entity.name)}`);
+      navigate(`/wallet/transfer?entity=${encodeURIComponent(entity.id)}&name=${encodeURIComponent(entity.name)}`);
     }
   };
 

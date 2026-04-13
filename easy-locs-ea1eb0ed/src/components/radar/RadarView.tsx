@@ -16,7 +16,7 @@ import {
   type LayerToggles,
 } from "@/components/radar/RadarLiveLayers";
 import { predictDemand } from "@/lib/radar/predictive-demand-engine";
-import { contactFromDiscovery } from "@/lib/radar/contactBridge";
+import { useRadarContact } from "@/hooks/useRadarContact";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import UnifiedMap from "@/components/map/UnifiedMap";
@@ -111,6 +111,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const [showFilters, setShowFilters] = useState(false);
   const [layers, setLayers] = useState<LayerToggles>(DEFAULT_LAYERS);
   const currentUser = useAuthStore((s) => s.user);
+  const { contact } = useRadarContact();
 
   const selectedPlace = useRadarPlaceStore((s) => s.selectedPlace);
 
@@ -221,16 +222,13 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
 
   const handleContact = useCallback((entity: GeoEntity) => {
     if (!currentUser?.id) return;
-    contactFromDiscovery({
-      currentUserId: currentUser.id,
+    contact({
       entityId: entity.id,
-      entityType: "shop",
+      entityType: entity.type || "shop",
       entityName: entity.title || entity.name || "",
-      navigate,
-      source: "radar",
       autoMessage: `Hi, I found your business "${entity.title || entity.name}" on the platform and I'd like to know more.`,
     });
-  }, [currentUser?.id, navigate]);
+  }, [currentUser?.id, contact]);
 
   const selected = results.find(e => e.id === selectedId);
 

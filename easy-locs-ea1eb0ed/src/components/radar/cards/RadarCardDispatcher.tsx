@@ -25,25 +25,44 @@ function RadarCardDispatcher({ item, rank, selected, onSelect, onNavigate, onMes
     [item.vertical, item.type]
   );
 
+  let card: React.ReactNode;
   switch (radarCategory) {
     case "food":
     case "grocery":
     case "nightlife":
-      return <RadarFoodCard {...commonProps} />;
+      card = <RadarFoodCard {...commonProps} />;
+      break;
     case "stay":
-      return <RadarHotelCard {...commonProps} />;
+      card = <RadarHotelCard {...commonProps} />;
+      break;
     case "property":
-      return <RadarPropertyCard {...commonProps} />;
+      card = <RadarPropertyCard {...commonProps} />;
+      break;
     case "services":
     case "healthcare":
     case "experiences":
-      return <RadarServiceCard {...commonProps} />;
+      card = <RadarServiceCard {...commonProps} />;
+      break;
     case "mobility":
-      return <RadarTaxiCard {...commonProps} />;
+      card = <RadarTaxiCard {...commonProps} />;
+      break;
     case "shops":
     default:
-      return <RadarShopCard {...commonProps} />;
+      card = <RadarShopCard {...commonProps} />;
   }
+
+  return (
+    <div className="relative">
+      {card}
+      {item.isOnline !== undefined && (
+        <span
+          className="absolute top-2 right-2 w-2 h-2 rounded-full border border-background"
+          style={{ background: item.isOnline ? "hsl(142 70% 45%)" : "hsl(0 0% 60%)" }}
+          title={item.isOnline ? "Online" : "Offline"}
+        />
+      )}
+    </div>
+  );
 }
 
 export default memo(RadarCardDispatcher);

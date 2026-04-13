@@ -34,6 +34,8 @@ import RadarSmartSearch from "@/components/radar/RadarSmartSearch";
 import { entityUrl } from "@/lib/entity/entity-url";
 import { useAuth } from "@/contexts/AuthContext";
 import { haptic } from "@/lib/haptics";
+import { eventBus } from "@/lib/core/event-bus";
+import type { RadarDecision } from "@/lib/radar/radar-brain-orchestrator";
 import {
   Radio, X, Search, Crosshair,
   Utensils, Hotel, Car, Sparkles, Moon, ShoppingBag, Building2,
@@ -47,6 +49,8 @@ import { useSmartNavigation } from "@/hooks/useSmartNavigation";
 import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
 import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
+import { useRadarContact } from "@/hooks/useRadarContact";
+import { useRadarStore } from "@/stores/radarStore";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { Z } from "@/lib/ui/z-index";
 import SEOHead from "@/components/SEOHead";
@@ -71,19 +75,16 @@ const LAYER_ICON_MAP: Record<string, React.ReactNode> = {
   utility: <ShoppingBag className="w-3 h-3" />,
   shops: <Store className="w-3 h-3" />,
   grocery: <ShoppingBag className="w-3 h-3" />,
+  stay: <Hotel className="w-3 h-3" />,
+  mobility: <Car className="w-3 h-3" />,
+  nightlife: <Moon className="w-3 h-3" />,
+  healthcare: <Heart className="w-3 h-3" />,
+  experiences: <Sparkles className="w-3 h-3" />,
 };
-
-const EXTRA_VISUAL_LAYERS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; color: string; emoji: string; vertical: RadarVertical }[] = [
-  { id: "stay", labelKey: "radar.layer_stay", icon: <Hotel className="w-3 h-3" />, color: "hsl(200 70% 50%)", emoji: radarEmoji("stay"), vertical: "stay" },
-  { id: "mobility", labelKey: "radar.layer_mobility", icon: <Car className="w-3 h-3" />, color: "hsl(30 80% 50%)", emoji: radarEmoji("mobility"), vertical: "mobility" },
-  { id: "nightlife", labelKey: "radar.layer_night", icon: <Moon className="w-3 h-3" />, color: "hsl(280 70% 55%)", emoji: radarEmoji("nightlife"), vertical: "nightlife" },
-  { id: "healthcare", labelKey: "radar.layer_healthcare", icon: <Heart className="w-3 h-3" />, color: "hsl(0 65% 50%)", emoji: radarEmoji("healthcare"), vertical: "healthcare" },
-  { id: "experiences", labelKey: "radar.layer_experiences", icon: <Sparkles className="w-3 h-3" />, color: "hsl(340 65% 55%)", emoji: radarEmoji("experiences"), vertical: "experiences" },
-];
 
 const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; color: string; emoji: string; vertical: RadarVertical }[] = (() => {
   const wiringLayers = getWiringRadarLayers();
-  const fromWiring = wiringLayers.map(wl => ({
+  return wiringLayers.map(wl => ({
     id: wl.id as RadarLayer,
     labelKey: wl.labelKey,
     icon: LAYER_ICON_MAP[wl.id] ?? <Sparkles className="w-3 h-3" />,
@@ -91,9 +92,6 @@ const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; col
     emoji: wl.emoji,
     vertical: wl.id as RadarVertical,
   }));
-  const wiringIds = new Set(fromWiring.map(l => l.id));
-  const extras = EXTRA_VISUAL_LAYERS.filter(l => !wiringIds.has(l.id));
-  return [...fromWiring, ...extras];
 })();
 
 const SORT_OPTIONS: { value: SortMode; icon: React.ReactNode; labelKey: string }[] = [
@@ -107,14 +105,9 @@ const RADIUS_PRESETS = [0.5, 1, 2, 5, 10, 25];
 const MAX_VISIBLE_PINS = 80;
 
 const WIRING_CATEGORY_MAP = getRadarCategoryToLayerMap();
-const CATEGORY_TO_LAYER: Record<string, RadarLayer> = {
-  ...Object.fromEntries(Object.entries(WIRING_CATEGORY_MAP).map(([k, v]) => [k, v as RadarLayer])),
-  stay: "stay" as RadarLayer,
-  mobility: "mobility" as RadarLayer,
-  nightlife: "nightlife" as RadarLayer,
-  healthcare: "healthcare" as RadarLayer,
-  experiences: "experiences" as RadarLayer,
-};
+const CATEGORY_TO_LAYER: Record<string, RadarLayer> = Object.fromEntries(
+  Object.entries(WIRING_CATEGORY_MAP).map(([k, v]) => [k, v as RadarLayer])
+);
 
 const PILLAR_LINKS = [
   { path: "/", icon: <Home className="w-4 h-4" />, labelKey: "radar.pillar_home", label: "Home" },
@@ -163,6 +156,8 @@ export default function HyperRadarPage() {
   const deferredSearch = useDeferredValue(searchQuery);
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
   const { smartNavigate, overlayState, closeOverlay } = useSmartNavigation();
+  const { contact: contactEntity } = useRadarContact();
+  const merchantStatus = useRadarStore(s => s.merchantStatus);
   const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
   const weather = useLiveWeatherStation({ lat: location?.lat, lng: location?.lng });
   const fsmSetSubState = useNavigationStateMachine((s) => s.setPillarSubState);
@@ -195,6 +190,38 @@ export default function HyperRadarPage() {
   }, [deferredSearch, filterValues, selectedEntity, fsmUpdateCtx]);
   const [showSearchHere, setShowSearchHere] = useState(false);
   const lastSearchCenter = useRef<{ lat: number; lng: number } | null>(null);
+  const [radarAlerts, setRadarAlerts] = useState<RadarDecision[]>([]);
+
+  useEffect(() => {
+    const decisionTypes = [
+      "radar.decision.weather_alert",
+      "radar.decision.surge_pricing",
+      "radar.decision.block_zone",
+      "radar.decision.demand_alert",
+    ];
+    const getZoneKey = (d: RadarDecision): string =>
+      "zoneKey" in d ? `${d.type}:${d.zoneKey}` : d.type;
+
+    const handlers: Array<{ event: string; handler: (payload: unknown) => void }> = [];
+    for (const eventType of decisionTypes) {
+      const handler = (payload: unknown) => {
+        const decision = payload as RadarDecision;
+        setRadarAlerts(prev => {
+          const key = getZoneKey(decision);
+          if (prev.some(a => getZoneKey(a) === key)) return prev;
+          return [...prev, decision].slice(-3);
+        });
+        setTimeout(() => {
+          setRadarAlerts(prev => prev.filter(a => a !== decision));
+        }, 8000);
+      };
+      eventBus.on(eventType, handler);
+      handlers.push({ event: eventType, handler });
+    }
+    return () => {
+      handlers.forEach(({ event, handler }) => eventBus.off(event, handler));
+    };
+  }, []);
 
   useEffect(() => {
     resetRadarSession();
@@ -338,6 +365,15 @@ export default function HyperRadarPage() {
     return items;
   }, [entities, activeLayers, deferredSearch, urlSubcategory, sortBy, location, mapCenter, activeVertical, filterValues]);
 
+  const radarItemsWithStatus = useMemo(() => {
+    if (!merchantStatus || Object.keys(merchantStatus).length === 0) return radarItems;
+    return radarItems.map(item => {
+      const online = merchantStatus[item.id];
+      if (online === undefined) return item;
+      return { ...item, isOnline: online };
+    });
+  }, [radarItems, merchantStatus]);
+
   useEffect(() => {
     trackRadarEvent("search_completed", {
       total: radarItems.length,
@@ -348,7 +384,7 @@ export default function HyperRadarPage() {
   }, [radarItems.length, activeVertical, sortBy, deferredSearch]);
 
   const visibleEntities = useMemo<RadarGeoEntity[]>(() => {
-    return radarItems.map(item => ({
+    return radarItemsWithStatus.map(item => ({
       id: item.id,
       type: item.type === "food" ? "restaurant" as const : item.type === "stay" ? "hotel" as const : item.type === "hotel" ? "hotel" as const : item.type === "grocery" ? "grocery" as const : item.type === "property" ? "property" as const : item.type === "healthcare" ? "service" as const : item.type === "mobility" ? "service" as const : item.type === "nightlife" ? "restaurant" as const : item.type === "experiences" ? "service" as const : "shop" as const,
       name: item.title,
@@ -366,8 +402,9 @@ export default function HyperRadarPage() {
       isSponsored: item.isSponsored,
       reviewsCount: item.reviewsCount,
       vertical: item.vertical,
+      isOnline: item.isOnline,
     }));
-  }, [radarItems]);
+  }, [radarItemsWithStatus]);
 
   const handleZoneClick = useCallback((lat: number, lng: number) => {
     setZoneClick({ lat, lng });
@@ -417,14 +454,14 @@ export default function HyperRadarPage() {
   const handleMessageItem = useCallback(async (item: RadarResultItem) => {
     if (!user?.id) { navigate("/login"); return; }
     haptic("light");
-    smartNavigate("/orbit", "contact_entity", {
+    await contactEntity({
       entityId: item.id,
       entityName: item.title,
       entityType: item.type,
-      entityImage: item.image || undefined,
+      autoMessage: `Hi, I found "${item.title}" on Easy-Locs and I'd like to know more.`,
     });
     trackRadarEvent("cta_used", { action: "message", entityId: item.id });
-  }, [user?.id, navigate, smartNavigate]);
+  }, [user?.id, navigate, contactEntity]);
 
   const handleNavigateEntity = useCallback((entity: RadarGeoEntity) => {
     haptic("medium");
@@ -435,13 +472,13 @@ export default function HyperRadarPage() {
   const handleMessageEntity = useCallback(async (entity: RadarGeoEntity) => {
     if (!user?.id) { navigate("/login"); return; }
     haptic("light");
-    smartNavigate("/orbit", "contact_entity", {
+    await contactEntity({
       entityId: entity.id,
       entityName: entity.name,
       entityType: entity.type,
-      entityImage: entity.imageUrl || entity.image_url || undefined,
+      autoMessage: `Hi, I found "${entity.name}" on Easy-Locs and I'd like to know more.`,
     });
-  }, [user?.id, navigate, smartNavigate]);
+  }, [user?.id, navigate, contactEntity]);
 
   const handleCategorySelect = useCallback((layer: RadarLayer) => {
     haptic("light");
@@ -581,7 +618,7 @@ export default function HyperRadarPage() {
           </button>
         </div>
       )}
-      {radarItems.map((item, idx) => (
+      {radarItemsWithStatus.map((item, idx) => (
         <RadarCardDispatcher
           key={item.id}
           item={item}
@@ -867,6 +904,22 @@ export default function HyperRadarPage() {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {radarAlerts.length > 0 && (
+          <motion.div
+            className="absolute left-3 right-3 flex flex-col gap-1.5 pointer-events-none"
+            style={{ zIndex: Z.overlay + 2, top: viewMode === "map" ? 170 : 60 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {radarAlerts.map((alert, idx) => (
+              <RadarDecisionAlertBanner key={`${alert.type}-${idx}`} decision={alert} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <PillarOverlayHost
         activeOverlay={overlayState.activeOverlay}
         overlayRoute={overlayState.overlayRoute}
@@ -874,6 +927,51 @@ export default function HyperRadarPage() {
         onClose={closeOverlay}
       />
     </div>
+  );
+}
+
+function RadarDecisionAlertBanner({ decision }: { decision: RadarDecision }) {
+  let icon = "⚡";
+  let label = "";
+
+  if (decision.type === "weather_alert") {
+    const isSevere = decision.weatherType === "flood" || decision.weatherType === "storm";
+    icon = isSevere ? "🌩️" : "🌧️";
+    label = decision.severity === "critical"
+      ? `⚠️ Severe ${decision.weatherType} — zone may be restricted`
+      : `Rain detected — delays possible`;
+  } else if (decision.type === "surge_pricing") {
+    icon = "💰";
+    label = `High demand — ${Math.round((decision.multiplier - 1) * 100)}% surge pricing active`;
+  } else if (decision.type === "block_zone") {
+    icon = "🚫";
+    label = `Zone restricted: ${decision.reason}`;
+  } else if (decision.type === "demand_alert") {
+    icon = "📈";
+    label = `Demand rising — ${decision.trend} trend in this area`;
+  }
+
+  if (!label) return null;
+
+  const bgStyle = decision.type === "block_zone" || (decision.type === "weather_alert" && decision.severity === "critical")
+    ? { background: "hsl(0 70% 55% / 0.15)", border: "1px solid hsl(0 70% 55% / 0.3)" }
+    : decision.type === "surge_pricing"
+      ? { background: "hsl(38 65% 56% / 0.15)", border: "1px solid hsl(38 65% 56% / 0.3)" }
+      : decision.type === "demand_alert"
+        ? { background: "hsl(160 60% 45% / 0.15)", border: "1px solid hsl(160 60% 45% / 0.3)" }
+        : { background: "hsl(200 70% 50% / 0.15)", border: "1px solid hsl(200 70% 50% / 0.3)" };
+
+  return (
+    <motion.div
+      className="flex items-center gap-2 px-3 py-2 rounded-xl backdrop-blur-md pointer-events-auto"
+      style={bgStyle}
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+    >
+      <span className="text-sm shrink-0">{icon}</span>
+      <span className="text-[11px] font-semibold text-foreground leading-snug">{label}</span>
+    </motion.div>
   );
 }
 

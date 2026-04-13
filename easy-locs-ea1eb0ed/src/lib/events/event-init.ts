@@ -38,6 +38,7 @@ import { initCloseFlowEngine } from "@/lib/close-flow/close-flow-engine";
 import { installIntentBridge } from "@/lib/intent/intent-event-bridge";
 import { populateSearchIndex } from "@/lib/intent/search-index-populator";
 import "@/lib/radar/signal-ingestor";
+import "./handlers/radar-merchant-status.handler";
 
 /**
  * Bridge: forward platformBus (colon-notation) events to core eventBus (dot-notation).
@@ -87,8 +88,13 @@ const BRIDGE_MAP: Record<string, string[]> = {
   "ORDER_DELIVERED":              ["order.completed"],
   "ORDER_CONFIRMED":              ["order.confirmed"],
   "ORDER_READY":                  ["order.ready"],
-  "PAYMENT_SUCCESS":              ["wallet.balance.refresh", "wallet.updated"],
   "qr:payment_completed":         ["wallet.balance.refresh", "wallet.updated"],
+  "merchant:online":              ["merchant.online"],
+  "merchant:offline":             ["merchant.offline"],
+  "radar:decision_weather_alert": ["radar.decision.weather_alert"],
+  "radar:decision_surge_pricing": ["radar.decision.surge_pricing"],
+  "radar:decision_block_zone":    ["radar.decision.block_zone"],
+  "radar:decision_demand_alert":  ["radar.decision.demand_alert"],
   "ENTITY_OPENED":                ["entity.click"],
   "ENTITY_CLASSIFIED":            ["entity.classified"],
   "FOOD_MENU_NORMALIZED":         ["entity.normalized"],
