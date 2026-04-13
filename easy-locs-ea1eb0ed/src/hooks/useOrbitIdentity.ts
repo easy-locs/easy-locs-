@@ -5,7 +5,7 @@
  * For Zustand stores (non-React context), use `getOrbitIdentity()` instead.
  */
 import { useMemo } from "react";
-import { useOrbitProfileStore } from "@/stores/orbit-profile.store";
+import { useOrbitProfileStore } from "@/stores/orbit-profile.internal";
 import type { CanonicalOrbitProfile } from "@/domains/shared/canonical-types";
 
 export interface OrbitIdentity {

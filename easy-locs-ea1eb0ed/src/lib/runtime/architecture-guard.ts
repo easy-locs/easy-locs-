@@ -128,7 +128,7 @@ function checkSSOT(): ArchGuardCheck[] {
     name: "orbit-store-ssot",
     category: "state",
     status: "pass",
-    detail: "Profile store (useOrbitProfileStore from orbit-profile.store) and messaging store (useOrbitMessagingStore) are fully disambiguated. orbitStore.ts deleted.",
+    detail: "Profile store (useOrbitProfileStore from orbit-profile.internal) and messaging store (useOrbitMessagingStore) are fully disambiguated. orbitStore.ts deleted.",
   });
 
   return checks;

@@ -3,6 +3,18 @@
  * Quality-first approach: only index cities/countries with genuine differentiated content.
  * This file does NOT modify any core application logic.
  */
+import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
+
+const _treeIcons: Record<string, string> = {};
+for (const primary of CATEGORY_TREE) {
+  for (const sub of primary.subcategories) {
+    _treeIcons[sub.value] = sub.emoji;
+  }
+}
+function treeIcon(slug: string, fallback: string): string {
+  const normalized = slug.replace(/-/g, "_");
+  return _treeIcons[normalized] ?? fallback;
+}
 
 export interface SEOCountry {
   slug: string;
@@ -44,25 +56,25 @@ export interface SEOServiceCategory {
 
 // ─── SERVICE CATEGORIES ──────────────────────────────────
 export const SEO_SERVICE_CATEGORIES: SEOServiceCategory[] = [
-  { slug: "cleaning", label: "Cleaning", icon: "🧼", description: "Professional cleaning services for rental properties", keywords: ["cleaning", "maid service", "housekeeping"] },
-  { slug: "maintenance", label: "Property Maintenance", icon: "🔧", description: "Property maintenance and repair services", keywords: ["maintenance", "repair", "handyman"] },
+  { slug: "cleaning", label: "Cleaning", icon: treeIcon("cleaning", "🧼"), description: "Professional cleaning services for rental properties", keywords: ["cleaning", "maid service", "housekeeping"] },
+  { slug: "maintenance", label: "Property Maintenance", icon: treeIcon("handyman", "🔧"), description: "Property maintenance and repair services", keywords: ["maintenance", "repair", "handyman"] },
   { slug: "construction", label: "Construction / Renovation", icon: "🏗️", description: "Construction, renovation and remodeling services", keywords: ["construction", "renovation", "remodeling", "building"] },
-  { slug: "transport", label: "Transport", icon: "🚐", description: "Private transport and shuttle services", keywords: ["transport", "shuttle", "driver"] },
-  { slug: "car-rental", label: "Car Rental", icon: "🚗", description: "Car rental and vehicle hire services", keywords: ["car rental", "vehicle hire", "rent a car"] },
-  { slug: "tours", label: "Tours & Activities", icon: "🗺️", description: "Guided tours, excursions and sightseeing", keywords: ["tours", "sightseeing", "excursions"] },
+  { slug: "transport", label: "Transport", icon: treeIcon("taxi", "🚐"), description: "Private transport and shuttle services", keywords: ["transport", "shuttle", "driver"] },
+  { slug: "car-rental", label: "Car Rental", icon: treeIcon("car_rental", "🚗"), description: "Car rental and vehicle hire services", keywords: ["car rental", "vehicle hire", "rent a car"] },
+  { slug: "tours", label: "Tours & Activities", icon: treeIcon("city_tour", "🗺️"), description: "Guided tours, excursions and sightseeing", keywords: ["tours", "sightseeing", "excursions"] },
   { slug: "airport-transfer", label: "Airport Transfer", icon: "✈️", description: "Airport pickup and drop-off services", keywords: ["airport transfer", "airport pickup", "airport shuttle"] },
-  { slug: "spa", label: "Wellness & Spa", icon: "🧖", description: "Spa treatments, massage and wellness", keywords: ["spa", "massage", "wellness"] },
+  { slug: "spa", label: "Wellness & Spa", icon: treeIcon("spa", "🧖"), description: "Spa treatments, massage and wellness", keywords: ["spa", "massage", "wellness"] },
   { slug: "sports-coach", label: "Sports Coach", icon: "🏋️", description: "Personal training, fitness coaching and sports lessons", keywords: ["sports coach", "personal trainer", "fitness", "gym"] },
-  { slug: "water-sport", label: "Water Sports", icon: "🚤", description: "Water sports, boat tours and marine activities", keywords: ["water sports", "boat tour", "yacht rental"] },
-  { slug: "restaurant", label: "Restaurant", icon: "🍽️", description: "Restaurant reservations and private dining", keywords: ["restaurant", "dining", "food tour"] },
+  { slug: "water-sport", label: "Water Sports", icon: treeIcon("water_sports", "🚤"), description: "Water sports, boat tours and marine activities", keywords: ["water sports", "boat tour", "yacht rental"] },
+  { slug: "restaurant", label: "Restaurant", icon: treeIcon("restaurant", "🍽️"), description: "Restaurant reservations and private dining", keywords: ["restaurant", "dining", "food tour"] },
   { slug: "coworking", label: "Coworking", icon: "💻", description: "Coworking spaces and remote work facilities", keywords: ["coworking", "office space", "remote work"] },
-  { slug: "legal", label: "Legal / Advocate", icon: "⚖️", description: "Legal advice, advocacy and notary services", keywords: ["legal", "lawyer", "advocate", "notary", "attorney"] },
-  { slug: "business-services", label: "Business Services", icon: "💼", description: "Accounting, administration and business support", keywords: ["business services", "accounting", "administration", "bookkeeping"] },
-  { slug: "consulting", label: "Professional Consulting", icon: "📊", description: "Strategy, management and professional consulting", keywords: ["consulting", "strategy", "management", "advisory"] },
-  { slug: "personal", label: "Personal Services", icon: "💆", description: "Personal care and concierge services", keywords: ["personal services", "concierge", "private chef"] },
-  { slug: "event", label: "Events & Tickets", icon: "🎫", description: "Event tickets, shows and entertainment", keywords: ["events", "tickets", "entertainment"] },
+  { slug: "legal", label: "Legal / Advocate", icon: treeIcon("legal", "⚖️"), description: "Legal advice, advocacy and notary services", keywords: ["legal", "lawyer", "advocate", "notary", "attorney"] },
+  { slug: "business-services", label: "Business Services", icon: treeIcon("accounting", "💼"), description: "Accounting, administration and business support", keywords: ["business services", "accounting", "administration", "bookkeeping"] },
+  { slug: "consulting", label: "Professional Consulting", icon: treeIcon("consulting", "📊"), description: "Strategy, management and professional consulting", keywords: ["consulting", "strategy", "management", "advisory"] },
+  { slug: "personal", label: "Personal Services", icon: treeIcon("beauty", "💆"), description: "Personal care and concierge services", keywords: ["personal services", "concierge", "private chef"] },
+  { slug: "event", label: "Events & Tickets", icon: treeIcon("concert", "🎫"), description: "Event tickets, shows and entertainment", keywords: ["events", "tickets", "entertainment"] },
   { slug: "yacht-rental", label: "Yacht Rental", icon: "🛥️", description: "Yacht charter and luxury boat rentals", keywords: ["yacht rental", "boat charter", "luxury cruise"] },
-  { slug: "private-chef", label: "Private Chef", icon: "👨‍🍳", description: "Private chef and catering services", keywords: ["private chef", "catering", "personal cook"] },
+  { slug: "private-chef", label: "Private Chef", icon: treeIcon("catering", "👨‍🍳"), description: "Private chef and catering services", keywords: ["private chef", "catering", "personal cook"] },
 ];
 
 // ─── ACTIVITY TYPES ──────────────────────────────────

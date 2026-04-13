@@ -25,8 +25,8 @@ const CANONICAL_RESOLUTIONS = [
   {
     issueSignature: "orbit_store_consolidated",
     rootCause: "orbitStore.ts (profile) and domains/orbit/stores/orbit.store.ts (messaging) both exported useOrbitStore, causing naming collisions. OrbitProfileV2 type alias implied a deprecated v1 existed.",
-    fixApplied: "Created orbit-profile.store.ts as canonical profile store. orbitStore.ts deleted. All consumers import from orbit-profile.store. OrbitProfileV2 alias removed; use CanonicalOrbitProfile.",
-    fixFunction: "src/stores/orbit-profile.store.ts → useOrbitProfileStore",
+    fixApplied: "Created orbit-profile.internal.ts as canonical profile store. orbitStore.ts deleted. All consumers import from orbit-profile.internal. OrbitProfileV2 alias removed; use CanonicalOrbitProfile.",
+    fixFunction: "src/stores/orbit-profile.internal.ts → useOrbitProfileStore",
     domain: "orbit",
     category: "store_unification",
     bannedSymbols: ["OrbitProfileV2"],
