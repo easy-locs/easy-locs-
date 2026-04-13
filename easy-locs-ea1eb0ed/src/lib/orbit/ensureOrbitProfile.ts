@@ -80,8 +80,10 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
       const code = (error as any).code;
       if (code === "42P01") {
         console.error("[ensureOrbitProfile] TABLE MISSING: orbit_profiles_v2 does not exist — run migrations");
+        throw new Error("Orbit profile table is missing. Please contact support.");
       } else if (code === "42501") {
         console.error("[ensureOrbitProfile] RLS DENIED: check orbit_profiles_v2 policies for authenticated users");
+        throw new Error("Orbit profile access denied. Please contact support.");
       }
       console.warn("[ensureOrbitProfile] non-blocking upsert error:", error.message, "code:", code);
       return { id: resolvedUserId, orbit_id: row.orbit_id };
@@ -90,7 +92,11 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
     ensuredCache.add(resolvedUserId);
     return data;
   } catch (err) {
-    console.warn("[ensureOrbitProfile] caught exception — returning synthetic profile:", err instanceof Error ? err.message : err);
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("Please contact support")) {
+      throw err;
+    }
+    console.warn("[ensureOrbitProfile] caught exception — returning synthetic profile:", msg);
     if (!resolvedUserId) return null;
     return { id: resolvedUserId, orbit_id: input.orbitId || `orbit_${resolvedUserId.replace(/-/g, "").substring(0, 8)}` };
   }
