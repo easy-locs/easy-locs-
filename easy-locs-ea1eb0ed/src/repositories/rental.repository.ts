@@ -56,7 +56,7 @@ export async function insertRentalMessage(record: Record<string, any>) {
 export function subscribeRentalMessages(orgId: string, onInsert: (msg: any) => void) {
   const { createRealtimeChannel, removeRealtimeChannel } = require("@/lib/realtime");
   const channel = createRealtimeChannel(`rental-msgs-${orgId}`)
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, (payload: any) => {
+    .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "chat_messages_v2" }, (payload: any) => {
       const msg = payload.new as any;
       if (msg?.conversation_id?.startsWith(`tenant_${orgId}_`)) onInsert(msg);
     })

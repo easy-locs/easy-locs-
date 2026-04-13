@@ -239,7 +239,7 @@ Deno.serve(async (req) => {
       }
 
       if (scenario.key === "me_chain") {
-        const s1 = await simpleTableCheck("orbit_profiles_v2", "auth_profile_tables");
+        const s1 = await simpleTableCheck("profiles", "auth_profile_tables");
         await pushScenario({ key: scenario.key, moduleKey: scenario.moduleKey, routeKey: scenario.routeKey, area: scenario.area, status: s1.status === "pass" ? "pass" : "degraded", severity: scenario.severityIfFail, summary: "Me profile shell chain", autoFixApplied: false, durationMs: Date.now() - st, steps: [s1] });
         continue;
       }

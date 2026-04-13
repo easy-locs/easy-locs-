@@ -190,15 +190,15 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
 
     if (orgId) {
       channel
-        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "marketplace_bookings", filter: `org_id=eq.${orgId}` }, () => debouncedReload())
-        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "concierge_orders", filter: `org_id=eq.${orgId}` }, () => debouncedReload())
+        .on("postgres_changes", { event: "UPDATE", schema: "commerce", table: "bookings", filter: `org_id=eq.${orgId}` }, () => debouncedReload())
+        .on("postgres_changes", { event: "UPDATE", schema: "commerce", table: "transactions", filter: `org_id=eq.${orgId}` }, () => debouncedReload())
         .on("postgres_changes", { event: "*", schema: "public", table: "deal_rooms", filter: `org_id=eq.${orgId}` }, () => debouncedReload());
     }
 
     channel
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "conversations_v2" }, () => debouncedReload())
-      .on("postgres_changes", { event: "DELETE", schema: "public", table: "conversations_v2" }, () => debouncedReload())
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations_v2" }, (payload: any) => {
+      .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "conversations_v2" }, () => debouncedReload())
+      .on("postgres_changes", { event: "DELETE", schema: "orbit", table: "conversations_v2" }, () => debouncedReload())
+      .on("postgres_changes", { event: "UPDATE", schema: "orbit", table: "conversations_v2" }, (payload: any) => {
         const row = payload.new;
         if (!row?.id) { debouncedReload(); return; }
         const threadId = Array.from(threadMapRef.current.values()).find(
@@ -214,7 +214,7 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
           debouncedReload();
         }
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, () => debouncedReload())
+      .on("postgres_changes", { event: "*", schema: "orbit", table: "call_logs" }, () => debouncedReload())
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_preferences", filter: `user_id=eq.${userId}` }, () => debouncedReload())
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {

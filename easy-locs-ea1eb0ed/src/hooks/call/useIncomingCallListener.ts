@@ -51,8 +51,8 @@ export function useIncomingCallListener(
     let channel = createRealtimeChannel(channelName);
     for (const rid of receiverIds) {
       channel = channel
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "call_logs", filter: `receiver_orbit_id=eq.${rid}` }, handleInsert)
-        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "call_logs", filter: `receiver_orbit_id=eq.${rid}` }, handleUpdate);
+        .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "call_logs", filter: `receiver_orbit_id=eq.${rid}` }, handleInsert)
+        .on("postgres_changes", { event: "UPDATE", schema: "orbit", table: "call_logs", filter: `receiver_orbit_id=eq.${rid}` }, handleUpdate);
     }
 
     channel.subscribe((status, err) => {

@@ -35,7 +35,7 @@ export function subscribeWalletRealtime(walletId: string, onUpdate: () => void):
     const channel = createRealtimeChannel(`wallet-accounts-${walletId}`)
       .on(
         "postgres_changes" as any,
-        { event: "*", schema: "public", table: "wallet_accounts", filter: `id=eq.${walletId}` },
+        { event: "*", schema: "wallet", table: "wallet_accounts", filter: `id=eq.${walletId}` },
         handleChange
       )
       // Secondary subscription: wallet_balances_v2 (view — only fires if RLS/trigger writes there)

@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     // 1. Auto-renew eligible listings (expiring within 24h, auto_renew_enabled)
     const { data: autoRenewable } = await supabase
-      .from("marketplace_services")
+      .from("listings")
       .select("id")
       .eq("auto_renew_enabled", true)
       .eq("active", true)
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     if (autoRenewable && autoRenewable.length > 0) {
       const newExpiry = new Date(Date.now() + 30 * 86400000).toISOString();
       const { error } = await supabase
-        .from("marketplace_services")
+        .from("listings")
         .update({
           listing_expires_at: newExpiry,
           last_renewed_at: now,
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
 
     // 2. Expire active listings past their expiry date
     const { data: expired } = await supabase
-      .from("marketplace_services")
+      .from("listings")
       .select("id, title, user_id")
       .eq("auto_expire", true)
       .eq("active", true)
@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     if (expired && expired.length > 0) {
       const ids = expired.map((l: any) => l.id);
       await supabase
-        .from("marketplace_services")
+        .from("listings")
         .update({
           active: false,
           status: "archived" as any,
@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     // 3. Archive long-expired listings (60+ days since archived)
     const archiveCutoff = new Date(Date.now() - 60 * 86400000).toISOString();
     const { data: toArchive } = await supabase
-      .from("marketplace_services")
+      .from("listings")
       .select("id")
       .eq("active", false)
       .eq("status", "archived" as any)

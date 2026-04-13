@@ -167,31 +167,13 @@ Deno.serve(async (req) => {
         if (!storefront) {
           const slug = key || `shop-${seed.id.substring(0, 8)}`;
           const vis = seed.cover_image ? "search_only" : "coming_soon";
-          const { data: created } = await supabase.from("storefront_pages").insert({
-            org_id: "55e39dc1-8aac-4e74-a1e5-002149314033",
-            user_id: "2d71d5bd-12e1-4c20-871d-291178ae3f4c",
+          const { data: created, error: createErr } = await supabase.from("organizations").insert({
             name: seed.name,
-            slug,
-            description: seed.description ?? `${seed.name} in ${seed.city ?? "Dubai"}`,
-            vertical: seed.vertical ?? "food",
-            category: seed.category ?? "restaurant",
-            subcategory: seed.subcategory,
+            owner_id: "2d71d5bd-12e1-4c20-871d-291178ae3f4c",
             city: seed.city ?? "Dubai",
             country: seed.country ?? "AE",
-            contact_phone: seed.phone ?? seed.support_phone,
-            banner_url: seed.cover_image,
-            logo_url: seed.logo_image,
-            latitude: seed.latitude,
-            longitude: seed.longitude,
-            visibility_mode: vis,
-            route_status: "valid",
-            ranking_score: Number(seed.overall_quality_score ?? seed.visibility_score ?? 50),
-            active: true,
-            has_photo: !!seed.cover_image,
-            onboarding_completed: true,
-            readiness_status: seed.cover_image ? "partial" : "draft",
-            launch_status: seed.cover_image ? "ready" : "draft",
-          } as any).select("id, slug, name, banner_url, logo_url, visibility_mode, vertical, category, subcategory, products_count, has_menu").single();
+          } as any).select("id, name").single();
+          if (createErr) console.error("[engine-cron] organizations INSERT failed:", createErr.message);
           if (created) {
             storefront = created;
             storefrontByKey.set(key, storefront);
@@ -236,10 +218,9 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         };
 
-        // ── FIREWALL GUARD on storefront visibility writes ──
         const fwResult = await guardedUpdateLocal(
           "concrete-surface-sync",
-          "storefront_pages",
+          "organizations",
           storefront.id,
           patch,
           { ranking_score: storefront.ranking_score, visibility_mode: storefront.visibility_mode }

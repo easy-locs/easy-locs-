@@ -90,7 +90,7 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
       .channel(`delivery-chat-${thread.id}`)
       .on("postgres_changes", {
         event: "INSERT",
-        schema: "public",
+        schema: "orbit",
         table: "chat_messages_v2",
         filter: `conversation_id=eq.${thread.id}`,
       }, () => {

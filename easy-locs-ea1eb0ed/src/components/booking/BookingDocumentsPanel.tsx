@@ -1,6 +1,6 @@
 /**
  * BookingDocumentsPanel — Reusable document upload/view panel for any booking type.
- * Works with both seasonal booking_requests and concierge_orders.
+ * Works with both canonical bookings and concierge_orders.
  */
 import { useState, useCallback } from "react";
 import { uploadBookingDocumentFile, getBookingDocumentPublicUrl, updateDocumentUrls } from "@/repositories/rental.repository";
@@ -12,8 +12,8 @@ import { FileText, Upload, Eye, Trash2, Search } from "lucide-react";
 interface BookingDocumentsPanelProps {
   bookingId: string;
   orgId: string;
-  /** Table to update: "booking_requests" or "concierge_orders" */
-  tableName: "booking_requests" | "concierge_orders";
+  /** Table to update: "bookings" or "concierge_orders" */
+  tableName: "bookings" | "concierge_orders";
   /** Current document URLs */
   documentUrls: string[];
   /** Called after upload/delete to refresh parent data */

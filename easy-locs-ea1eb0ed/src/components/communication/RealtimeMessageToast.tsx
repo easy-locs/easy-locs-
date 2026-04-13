@@ -24,7 +24,7 @@ export default function RealtimeMessageToast() {
         .channel("msg-toast-listener")
         .on(
           "postgres_changes",
-          { event: "INSERT", schema: "public", table: "chat_messages_v2" },
+          { event: "INSERT", schema: "orbit", table: "chat_messages_v2" },
           (payload) => {
             const msg = payload.new as any;
             if (isOutgoingMessage(msg, user.id)) return;

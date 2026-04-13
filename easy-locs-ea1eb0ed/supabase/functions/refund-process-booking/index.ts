@@ -39,7 +39,7 @@ serve(async (req) => {
     const { refundRequestId } = await req.json();
 
     const { data: orbit } = await admin
-      .from("orbit_profiles_v2")
+      .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
@@ -51,7 +51,7 @@ serve(async (req) => {
       .eq("id", refundRequestId)
       .single();
     if (!refundRequest) throw new Error("Refund request not found");
-    if (refundRequest.owner_orbit_id !== orbit.orbit_id) throw new Error("Only owner can process");
+    if (refundRequest.owner_orbit_id !== orbit.id) throw new Error("Only owner can process");
     if (!refundRequest.stripe_payment_intent_id) throw new Error("Missing payment intent");
 
     const refund = await stripe.refunds.create({

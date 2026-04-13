@@ -38,8 +38,8 @@ export function useUnreadMessages() {
 
     const unsubRegistry = registerSubscription(`orbit.unread:${user.id}`, () => {
       const channel = createRealtimeChannel("unread-v2-only")
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, fetchCount)
-        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages_v2" }, fetchCount)
+        .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "chat_messages_v2" }, fetchCount)
+        .on("postgres_changes", { event: "UPDATE", schema: "orbit", table: "chat_messages_v2" }, fetchCount)
         .subscribe();
       return () => removeRealtimeChannel(channel);
     });

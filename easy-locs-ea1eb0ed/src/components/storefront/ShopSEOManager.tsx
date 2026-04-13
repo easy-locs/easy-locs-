@@ -51,13 +51,6 @@ export default function ShopSEOManager({ shopId, shopSlug, currentData }: ShopSE
         seoDesc && setMerchantValue(shopId, "seo_description", seoDesc),
         ogImage && setMerchantValue(shopId, "og_image_url", ogImage),
       ]);
-      // Also write directly for immediate effect
-      await db("storefront_pages").update({
-        seo_title: seoTitle || null,
-        seo_description: seoDesc || null,
-        og_image_url: ogImage || null,
-        updated_at: new Date().toISOString(),
-      }).eq("id", shopId);
       toast.success("SEO settings saved");
     } catch {
       toast.error("Failed to save");

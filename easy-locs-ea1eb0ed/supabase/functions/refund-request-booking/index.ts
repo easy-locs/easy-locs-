@@ -33,7 +33,7 @@ serve(async (req) => {
     const { bookingId, reason } = await req.json();
 
     const { data: orbit } = await admin
-      .from("orbit_profiles_v2")
+      .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
@@ -47,7 +47,7 @@ serve(async (req) => {
     if (!booking) throw new Error("Booking not found");
 
     const isParticipant =
-      booking.owner_orbit_id === orbit.orbit_id || booking.buyer_orbit_id === orbit.orbit_id;
+      booking.owner_orbit_id === orbit.id || booking.buyer_orbit_id === orbit.id;
     if (!isParticipant) throw new Error("Not allowed");
 
     const now = new Date().toISOString();

@@ -16,7 +16,7 @@ export async function updateConciergeOrder(bookingId: string, status: string, ac
 }
 
 export async function updateBookingRequest(bookingId: string, status: string) {
-  await db("booking_requests").update({ status }).eq("id", bookingId);
+  await db("bookings").update({ status }).eq("id", bookingId);
 }
 
 export async function insertChatMessage(conversationId: string, senderUserId: string, senderOrbitId: string, body: string, metadata: Record<string, any>) {

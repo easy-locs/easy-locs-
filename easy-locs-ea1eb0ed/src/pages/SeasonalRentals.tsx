@@ -513,7 +513,7 @@ const SeasonalRentals = () => {
                 <BookingDocumentsPanel
                   bookingId={focusedRequest.id}
                   orgId={orgId}
-                  tableName="booking_requests"
+                  tableName="bookings"
                   documentUrls={Array.isArray(focusedRequest.document_urls) ? focusedRequest.document_urls : []}
                   onUpdate={load}
                   compact

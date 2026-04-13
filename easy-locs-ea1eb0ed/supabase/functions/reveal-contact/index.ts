@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
       }
     } else if (source === "marketplace" && service_id) {
       const { data: svc } = await adminClient
-        .from("marketplace_services")
+        .from("listings")
         .select("source_contact_phone, contact_whatsapp, source_contact_email, contact_email")
         .eq("id", service_id)
         .eq("active", true)

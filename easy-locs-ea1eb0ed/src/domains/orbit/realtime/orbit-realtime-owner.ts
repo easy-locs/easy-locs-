@@ -70,7 +70,7 @@ export function subscribeConversationMessages(conversationId: string): () => voi
       "postgres_changes",
       {
         event: "INSERT",
-        schema: "public",
+        schema: "orbit",
         table: "chat_messages_v2",
         filter: `conversation_id=eq.${conversationId}`,
       },
@@ -129,7 +129,7 @@ export function subscribeConversationMessages(conversationId: string): () => voi
       "postgres_changes",
       {
         event: "UPDATE",
-        schema: "public",
+        schema: "orbit",
         table: "chat_messages_v2",
         filter: `conversation_id=eq.${conversationId}`,
       },
@@ -199,7 +199,7 @@ export function subscribeUserConversations(orbitId: string): () => void {
       "postgres_changes",
       {
         event: "*",
-        schema: "public",
+        schema: "orbit",
         table: "conversations_v2",
         filter: `orbit_id=eq.${orbitId}`,
       },

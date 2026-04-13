@@ -30,7 +30,8 @@ export function useMarketplaceData(orgId: string | undefined, displayCurrency: s
   });
 
   useRealtimeSubscription({
-    table: "marketplace_bookings",
+    table: "bookings",
+    schema: "commerce",
     channelName: `marketplace-bookings-rt-${orgId}`,
     filter: orgId ? `org_id=eq.${orgId}` : undefined,
     queryKeys: [["my_marketplace_bookings", orgId]],
