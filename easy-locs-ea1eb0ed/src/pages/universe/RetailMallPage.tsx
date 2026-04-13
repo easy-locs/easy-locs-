@@ -77,7 +77,7 @@ export default function RetailMallPage() {
                   className="flex items-center gap-3 p-3.5 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all active:scale-[0.97]"
                 >
                   <span className="text-xl">{sub.emoji}</span>
-                  <span className="text-sm font-medium text-foreground truncate">{sub.label}</span>
+                  <span className="text-sm font-medium text-foreground line-clamp-1 break-words">{sub.label}</span>
                 </Link>
               ))}
             </div>

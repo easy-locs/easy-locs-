@@ -130,7 +130,7 @@ export function CanonicalBoostBanner({
                 Sponsored
               </Badge>
             </div>
-            <p className="text-sm font-semibold truncate">{match.creative.title}</p>
+            <p className="text-sm font-semibold line-clamp-1 break-words">{match.creative.title}</p>
             {match.creative.subtitle && (
               <p className="text-xs text-muted-foreground line-clamp-1">{match.creative.subtitle}</p>
             )}

@@ -92,7 +92,7 @@ function LocationCard({ envelope, isMe }: Props) {
             {isLive && (
               <span className="h-2 w-2 rounded-full animate-pulse" style={{ background: "hsl(var(--destructive))" }} />
             )}
-            <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>
+            <p className="text-xs font-semibold line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>
               {isLive ? "Live location" : (geo?.label || "Location")}
             </p>
           </div>

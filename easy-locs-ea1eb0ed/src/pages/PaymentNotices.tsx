@@ -287,7 +287,7 @@ const PaymentNotices = () => {
                           <div className="flex items-center gap-3 px-5 py-3 bg-muted/30 border-b border-border/30">
                             <Building className="h-4 w-4 text-accent" />
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-semibold text-foreground truncate">
+                              <h3 className="text-sm font-semibold text-foreground line-clamp-2 break-words">
                                 {data.prop ? `${data.prop.label} — ${data.prop.city}` : "Bien non assigné"}
                               </h3>
                             </div>

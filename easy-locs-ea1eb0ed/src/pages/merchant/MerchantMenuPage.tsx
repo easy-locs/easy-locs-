@@ -57,7 +57,7 @@ export default function MerchantMenuPage() {
           <div key={product.id} className="rounded-2xl border border-border/20 bg-card p-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{product.name}</p>
+                <p className="text-sm font-semibold line-clamp-2 break-words">{product.name}</p>
                 <p className="text-xs text-muted-foreground">{product.category}</p>
                 <p className="text-xs font-bold mt-1">{formatMoneyByCountry(Number(product.price), null, product.currency)}</p>
               </div>

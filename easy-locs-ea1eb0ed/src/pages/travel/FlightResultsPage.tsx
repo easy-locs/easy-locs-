@@ -47,7 +47,7 @@ function FlightCard({ offer, onSelect, loading }: { offer: FlightOffer; onSelect
           <Plane className="h-3.5 w-3.5" style={{ color: NAVY }} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-foreground truncate">{firstSeg.airline}</p>
+          <p className="text-xs font-bold text-foreground line-clamp-1 break-words">{firstSeg.airline}</p>
           <p className="text-[10px] text-muted-foreground">{firstSeg.flightNumber} · {firstSeg.aircraft ?? firstSeg.cabinClass}</p>
         </div>
         <div className="text-right shrink-0">

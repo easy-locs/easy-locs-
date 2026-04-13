@@ -231,7 +231,7 @@ export default function POSPage() {
                           className="h-auto min-h-[60px] flex flex-col items-start gap-1 p-3 rounded-xl active:scale-95 transition-transform text-left"
                           onClick={() => addToCart(item.title, item.price || 0)}
                         >
-                          <span className="text-xs font-semibold truncate w-full">{item.title}</span>
+                          <span className="text-xs font-semibold line-clamp-2 break-words w-full">{item.title}</span>
                           <span className="text-sm font-bold text-primary tabular-nums">{(item.price || 0).toFixed(2)} L</span>
                           {item.stock_quantity != null && (
                             <span className="text-[10px] text-muted-foreground">Stock: {item.stock_quantity}</span>
@@ -297,7 +297,7 @@ export default function POSPage() {
                       {cart.map(item => (
                         <div key={item.id} className="flex items-center gap-3 bg-muted/30 rounded-xl p-3">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{item.title}</p>
+                            <p className="text-sm font-medium line-clamp-2 break-words">{item.title}</p>
                             <p className="text-xs text-muted-foreground">{fmtPrice(item.price)} each</p>
                           </div>
                           <div className="flex items-center gap-1">

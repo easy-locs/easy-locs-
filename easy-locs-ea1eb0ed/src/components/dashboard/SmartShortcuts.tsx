@@ -73,7 +73,7 @@ const SmartShortcuts = memo(({ topRoutes }: Props) => {
             }}
           >
             <Icon className="w-3.5 h-3.5 shrink-0" style={{ color }} />
-            <span className="text-[10px] font-bold text-foreground truncate">{tSafe(t, labelKey, fallback)}</span>
+            <span className="text-[10px] font-bold text-foreground line-clamp-2 break-words">{tSafe(t, labelKey, fallback)}</span>
           </Link>
         ))}
       </div>

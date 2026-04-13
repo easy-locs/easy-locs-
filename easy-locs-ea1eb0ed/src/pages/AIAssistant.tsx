@@ -516,7 +516,7 @@ const AIAssistant = () => {
                           <span className={`text-sm font-bold ${scoreColor(h.score)}`}>{h.score}</span>
                         </div>
                         <div className="min-w-0">
-                          <h3 className="text-sm font-semibold text-foreground truncate">{h.label}</h3>
+                          <h3 className="text-sm font-semibold text-foreground line-clamp-2 break-words">{h.label}</h3>
                           <p className="text-xs text-muted-foreground">{h.country}</p>
                         </div>
                       </div>

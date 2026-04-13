@@ -55,7 +55,7 @@ export default memo(function TransactionRow({ id, title, amount, currency, type,
         <Icon style={{ color: config.color }} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-foreground leading-snug truncate">{title}</p>
+        <p className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 break-words">{title}</p>
         <div className="flex items-center gap-1.5 mt-0.5">
           <p className="text-[10px] text-muted-foreground">{timeStr}</p>
           {status === "pending" && (

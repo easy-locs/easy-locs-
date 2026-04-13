@@ -46,8 +46,8 @@ function MerchantOpsHub({ profileId }: { profileId: string | null }) {
             <op.icon className="w-4.5 h-4.5 text-primary" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold text-foreground truncate">{op.label}</p>
-            <p className="text-[10px] text-muted-foreground truncate">{op.desc}</p>
+            <p className="text-xs font-bold text-foreground line-clamp-2 break-words">{op.label}</p>
+            <p className="text-[10px] text-muted-foreground line-clamp-2 break-words">{op.desc}</p>
           </div>
         </button>
       ))}
@@ -240,8 +240,8 @@ export default function MerchantDashboardPage() {
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="min-w-0">
-            <h1 className="text-lg font-bold text-foreground truncate">{merchant.merchant_name}</h1>
-            {merchant.name_ar && <p className="text-xs text-muted-foreground truncate" dir="rtl">{merchant.name_ar}</p>}
+            <h1 className="text-lg font-bold text-foreground break-words">{merchant.merchant_name}</h1>
+            {merchant.name_ar && <p className="text-xs text-muted-foreground line-clamp-1 break-words" dir="rtl">{merchant.name_ar}</p>}
             <Badge variant={statusColor} className="text-[10px]">{merchant.onboarding_status}</Badge>
           </div>
           <div className="flex items-center gap-3">

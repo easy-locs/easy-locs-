@@ -461,12 +461,12 @@ export default function OrbitStatusSection() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1">
-                    <p className="text-[13px] font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>
+                    <p className="text-[13px] font-semibold line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>
                       {ch.name}
                     </p>
                     <span className="text-[10px] shrink-0" style={{ color: "hsl(var(--primary))" }}>&#10003;</span>
                   </div>
-                  <p className="text-[11px] truncate" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+                  <p className="text-[11px] line-clamp-1 break-words" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
                     {ch.subscribers}
                   </p>
                 </div>
@@ -671,7 +671,7 @@ export default function OrbitStatusSection() {
             <div className="flex items-center gap-3 px-4 py-3 shrink-0">
               <IdentityAvatar avatarUrl={viewingGroup.userAvatar} name={viewingGroup.userName} size="sm" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{viewingGroup.userName}</p>
+                <p className="text-sm font-semibold text-white line-clamp-1 break-words">{viewingGroup.userName}</p>
                 <p className="text-[10px] text-white/50">{timeAgo(currentStatus.created_at)}</p>
               </div>
               <button

@@ -118,7 +118,7 @@ function RadarResultCard({ entity, variant = "row", rank, selected, onSelect, on
 
       <div className="flex-1 min-w-0 text-left overflow-hidden">
         <div className="flex items-center gap-1.5">
-          <p className="text-sm font-bold text-foreground line-clamp-1 leading-snug break-words min-w-0">{name}</p>
+          <p className="text-sm font-bold text-foreground line-clamp-2 leading-snug break-words min-w-0">{name}</p>
           {entity.isSponsored && (
             <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(38 65% 56% / 0.12)", color: "hsl(38 65% 56%)" }}>
               Ad

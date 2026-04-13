@@ -224,7 +224,7 @@ export default function PropertyManagementHub() {
                             >
                               <span className="text-2xl shrink-0">{c.flag}</span>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-foreground truncate">{c.name}</p>
+                                <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{c.name}</p>
                                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                                   <span className="flex items-center gap-0.5"><Building className="h-3 w-3" /> {c.count}</span>
                                   {c.tenants > 0 && <span className="flex items-center gap-0.5"><Users className="h-3 w-3" /> {c.tenants}</span>}
@@ -265,7 +265,7 @@ export default function PropertyManagementHub() {
                           <Icon className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1 text-left min-w-0">
-                          <p className="text-sm font-semibold truncate">{item.label}</p>
+                          <p className="text-sm font-semibold line-clamp-1 break-words">{item.label}</p>
                           <p className="text-[10px] text-muted-foreground truncate">{item.desc}</p>
                         </div>
                         <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-all shrink-0" />

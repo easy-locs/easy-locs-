@@ -178,7 +178,7 @@ export default function HotelCheckout() {
                 <Star key={i} className="h-3 w-3 fill-warning text-warning" />
               ))}
             </div>
-            <h2 className="text-sm font-bold text-foreground truncate">{hotel.name}</h2>
+            <h2 className="text-sm font-bold text-foreground break-words">{hotel.name}</h2>
             <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
               <MapPin className="h-3 w-3" /> {hotel.city}, {hotel.country}
             </p>

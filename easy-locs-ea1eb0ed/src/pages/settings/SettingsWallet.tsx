@@ -25,7 +25,7 @@ export default function SettingsWallet() {
         </button>
         <div className="flex items-center gap-2">
           <Wallet className="w-5 h-5 text-primary" />
-          <h1 className="text-lg font-bold truncate">{tSafe(t, "wallet.walletSettings", "Wallet Settings")}</h1>
+          <h1 className="text-lg font-bold break-words">{tSafe(t, "wallet.walletSettings", "Wallet Settings")}</h1>
         </div>
       </header>
 

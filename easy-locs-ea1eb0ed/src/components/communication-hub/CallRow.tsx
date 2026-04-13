@@ -119,7 +119,7 @@ export const CallRow = memo(function CallRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-1 min-w-0">
             <span
-              className="text-[13.5px] font-semibold truncate"
+              className="text-[13.5px] font-semibold line-clamp-1 break-words"
               style={{ color: call.status === "missed" ? "hsl(var(--hud-danger))" : "hsl(var(--foreground))" }}
             >
               {primaryLabel}

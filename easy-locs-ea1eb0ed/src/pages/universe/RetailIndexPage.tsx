@@ -59,7 +59,7 @@ export default function RetailIndexPage() {
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-2xl">{mall.emoji}</span>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{mall.name}</p>
+                      <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{mall.name}</p>
                       <p className="text-xs text-muted-foreground">{mall.stores} stores</p>
                     </div>
                   </div>

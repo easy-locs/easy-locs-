@@ -419,10 +419,10 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <div className="min-w-0">
-          <h1 className="text-xl font-bold text-foreground truncate">
+          <h1 className="text-xl font-bold text-foreground break-words">
             {reportType === "entry" ? t("page.inventory.entry") : t("page.inventory.exit")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5 truncate">{propertyLabel}{tenantName && ` — ${tenantName}`}</p>
+          <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1 break-words">{propertyLabel}{tenantName && ` — ${tenantName}`}</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto shrink-0">
           <button onClick={() => handleSave(false)} disabled={saving}
@@ -551,7 +551,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
                   return (
                     <div key={item.id} className="bg-muted/20 rounded-lg p-3">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2.5 gap-1">
-                        <span className="text-sm font-medium text-foreground truncate">{item.element_name}</span>
+                        <span className="text-sm font-medium text-foreground line-clamp-1 break-words">{item.element_name}</span>
                         <div className="flex items-center gap-1 flex-wrap shrink-0">
                           {(["good", "average", "bad"] as const).map(c => {
                             const cl = conditionLabels[c];

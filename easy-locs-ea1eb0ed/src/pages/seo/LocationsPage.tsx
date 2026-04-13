@@ -98,7 +98,7 @@ const LocationsPage = () => {
               >
                 <MapPin className="h-4 w-4 text-muted-foreground group-hover:text-primary shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{city.name}</p>
+                  <p className="text-sm font-medium text-foreground line-clamp-1 break-words">{city.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{city.country}</p>
                 </div>
               </Link>

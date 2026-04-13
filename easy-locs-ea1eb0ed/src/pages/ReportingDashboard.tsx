@@ -258,7 +258,7 @@ const ReportingDashboard = () => {
                             <CardContent className="py-3 px-4">
                               <div className="flex items-center justify-between gap-3">
                                 <div className="min-w-0">
-                                  <p className="font-medium text-sm text-foreground truncate">{p.label}</p>
+                                  <p className="font-medium text-sm text-foreground line-clamp-1 break-words">{p.label}</p>
                                   <p className="text-xs text-muted-foreground">{p.country}</p>
                                 </div>
                                 <div className="flex items-center gap-4 text-right text-xs shrink-0">

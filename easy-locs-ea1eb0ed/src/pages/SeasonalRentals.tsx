@@ -539,7 +539,7 @@ const SeasonalRentals = () => {
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <span className="text-xs text-muted-foreground block">{t("page.seasonal.guest")}</span>
-                        <span className="font-medium text-foreground truncate block">{req.guest_name}</span>
+                        <span className="font-medium text-foreground line-clamp-1 break-words block">{req.guest_name}</span>
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground block">Email</span>

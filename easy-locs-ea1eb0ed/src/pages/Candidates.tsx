@@ -139,7 +139,7 @@ const Candidates = () => {
                   <div key={c.id} className="bg-card rounded-xl border border-border/50 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold text-foreground truncate">{c.name}</p>
+                        <p className="font-semibold text-foreground line-clamp-1 break-words">{c.name}</p>
                         {c.score > 0 && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">{c.score}/100</span>}
                       </div>
                       <p className="text-xs text-muted-foreground">{c.profession || "—"} · {c.monthly_income > 0 ? `${c.monthly_income} €/mois` : "—"} · {propName(c.property_id)}</p>

@@ -307,7 +307,7 @@ export default function RealEstateListings() {
                         )}
                       </div>
                       <CardContent className="p-4 space-y-2">
-                        <h3 className="font-semibold text-foreground truncate">{listing.title}</h3>
+                        <h3 className="font-semibold text-foreground line-clamp-2 break-words">{listing.title}</h3>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <MapPin className="h-3 w-3" /> {listing.city}{listing.country ? `, ${listing.country}` : ""}
                         </div>

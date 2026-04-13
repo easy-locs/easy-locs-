@@ -126,7 +126,7 @@ export default function PaymentConfirmPage() {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-foreground truncate">{target.displayName || "Unknown"}</p>
+                <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{target.displayName || "Unknown"}</p>
                 <p className="text-xs text-muted-foreground truncate">{target.targetUserId}</p>
               </div>
             </AppCard>

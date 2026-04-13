@@ -72,7 +72,7 @@ export const MarketplaceHubPage = () => {
                 className="flex items-center gap-2 p-3 bg-background rounded-lg border border-border hover:border-primary/50 transition-all"
               >
                 <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground truncate">{city.name}</span>
+                <span className="text-sm font-medium text-foreground line-clamp-1 break-words">{city.name}</span>
               </Link>
             ))}
           </div>

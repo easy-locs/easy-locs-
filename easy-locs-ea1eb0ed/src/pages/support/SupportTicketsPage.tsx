@@ -56,7 +56,7 @@ export default function SupportTicketsPage() {
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0 space-y-1">
-                <p className="text-sm font-semibold text-foreground truncate">
+                <p className="text-sm font-semibold text-foreground line-clamp-2 break-words">
                   {ticket.subject || "Support request"}
                 </p>
                 <p className="text-[11px] text-muted-foreground">

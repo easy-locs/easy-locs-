@@ -482,7 +482,7 @@ export default function PropertyCalendar() {
                         <div className={`w-1 rounded-full shrink-0 ${s.bar}`} />
                         <div className="flex-1 min-w-0 space-y-1.5">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-foreground truncate">{ev.title || ev.guestName || "Blocked"}</span>
+                            <span className="font-semibold text-foreground line-clamp-1 break-words">{ev.title || ev.guestName || "Blocked"}</span>
                             <SourceBadge source={ev.source} />
                             <StatusBadge status={ev.status} />
                           </div>

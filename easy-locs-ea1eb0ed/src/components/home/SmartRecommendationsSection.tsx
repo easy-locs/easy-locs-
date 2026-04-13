@@ -46,7 +46,7 @@ export default function SmartRecommendationsSection() {
               </div>
 
               <div className="p-3 min-w-0">
-                <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{row.name}</p>
+                <p className="text-sm font-bold text-foreground line-clamp-2 break-words">{row.name}</p>
                 <p className="text-xs text-muted-foreground line-clamp-1 break-words">
                   {row.subcategory || row.category} · {row.area || row.city || "Dubai"}
                 </p>

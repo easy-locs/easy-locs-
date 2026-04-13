@@ -343,7 +343,7 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ComponentType<{ cla
     <div className="flex items-center gap-2">
       <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
       <span className="text-[11px] text-muted-foreground">{label}:</span>
-      <span className="text-[11px] font-semibold text-foreground truncate">{value}</span>
+      <span className="text-[11px] font-semibold text-foreground line-clamp-1 break-words">{value}</span>
     </div>
   );
 }
