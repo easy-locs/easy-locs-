@@ -19,7 +19,7 @@ export function useDriverStatusCard(): CardContract<{
   const { data: profile, error } = useDriverLive(user?.id ?? null);
 
   return useMemo(() => {
-    const p = profile as any;
+    const p = profile as { is_online?: boolean; is_available?: boolean; current_status?: string } | null | undefined;
     return buildCardContract({
       id: "driver_status",
       domain: "delivery",
