@@ -22,6 +22,13 @@ vi.mock("@/integrations/supabase/client", () => ({
       unsubscribe: vi.fn(),
     }),
     removeChannel: vi.fn(),
+    removeAllChannels: vi.fn(),
+    storage: {
+      from: vi.fn().mockReturnValue({
+        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "" } }),
+      }),
+    },
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     functions: {
       invoke: vi.fn().mockResolvedValue({ data: { subscribed: true, plan: "unlimited" }, error: null }),
     },

@@ -1,28 +1,33 @@
-/**
- * CROSS-DOMAIN TESTS — Verify domains interact only via bus/contracts.
- * Tests the critical cross-flows:
- * - Order → Chat → Payment
- * - Permission → Radar/Orbit
- * - Dashboard read-only guarantee
- */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { CANONICAL_EVENTS } from "@/domains/shared/canonical-events";
 import { transitionPayment, transitionOrder, transitionDriver } from "@/domains/shared/state-machines";
 
+const unsubs: (() => void)[] = [];
+
+beforeEach(() => {
+  platformBus.clear();
+  platformBus.clearLogs();
+});
+
+afterEach(() => {
+  unsubs.forEach((u) => u());
+  unsubs.length = 0;
+  platformBus.clear();
+  platformBus.clearLogs();
+});
+
 describe("Cross-domain: Order → Payment flow", () => {
   it("order submission triggers payment via event, not direct import", () => {
     const handler = vi.fn();
-    const unsub = platformBus.on(CANONICAL_EVENTS.WALLET_TRANSACTION_CREATED, handler);
+    unsubs.push(platformBus.on(CANONICAL_EVENTS.WALLET_TRANSACTION_CREATED, handler));
 
-    // Simulate: order accepted → payment intent created
     const orderStatus = transitionOrder("draft", "SUBMIT");
     expect(orderStatus).toBe("submitted");
 
     const paymentStatus = transitionPayment("created", "CONFIRM");
     expect(paymentStatus).toBe("pending_confirmation");
 
-    // Event emitted (simulated)
     platformBus.emit(
       CANONICAL_EVENTS.WALLET_TRANSACTION_CREATED,
       { transactionId: "tx-1", orderId: "order-1" },
@@ -30,24 +35,20 @@ describe("Cross-domain: Order → Payment flow", () => {
     );
 
     expect(handler).toHaveBeenCalledTimes(1);
-    unsub();
   });
 });
 
 describe("Cross-domain: Order → Driver → Delivery", () => {
   it("order ready triggers driver assignment via state machine", () => {
-    // Order progresses to ready
     let orderStatus = transitionOrder("draft", "SUBMIT");
     orderStatus = transitionOrder(orderStatus!, "ACCEPT");
     orderStatus = transitionOrder(orderStatus!, "PREPARE");
     orderStatus = transitionOrder(orderStatus!, "READY");
     expect(orderStatus).toBe("ready");
 
-    // Driver gets assigned
     let driverStatus = transitionDriver("available", "ASSIGN");
     expect(driverStatus).toBe("assigned");
 
-    // Order moves to assigned
     orderStatus = transitionOrder(orderStatus!, "ASSIGN");
     expect(orderStatus).toBe("assigned");
   });
@@ -74,47 +75,36 @@ describe("Cross-domain: Payment refund flow", () => {
     p = transitionPayment(p!, "REFUND");
     expect(p).toBe("refunded");
 
-    // Refunded is terminal — no double refund
     p = transitionPayment(p!, "REFUND");
     expect(p).toBeNull();
   });
 });
 
 describe("Cross-domain: Event bus isolation", () => {
-  beforeEach(() => {
-    // Clear all listeners for clean test
-  });
-
   it("wallet events don't leak to orbit listeners", () => {
     const orbitHandler = vi.fn();
     const walletHandler = vi.fn();
 
-    const u1 = platformBus.on(CANONICAL_EVENTS.MESSAGE_SENT, orbitHandler);
-    const u2 = platformBus.on(CANONICAL_EVENTS.WALLET_PAYMENT_SUCCESS, walletHandler);
+    unsubs.push(platformBus.on(CANONICAL_EVENTS.MESSAGE_SENT, orbitHandler));
+    unsubs.push(platformBus.on(CANONICAL_EVENTS.WALLET_PAYMENT_SUCCESS, walletHandler));
 
     platformBus.emit(CANONICAL_EVENTS.WALLET_PAYMENT_SUCCESS, { txId: "tx-1" }, "wallet");
 
     expect(walletHandler).toHaveBeenCalledTimes(1);
     expect(orbitHandler).not.toHaveBeenCalled();
-
-    u1();
-    u2();
   });
 
   it("multiple domains can listen to the same event independently", () => {
     const h1 = vi.fn();
     const h2 = vi.fn();
 
-    const u1 = platformBus.on(CANONICAL_EVENTS.ORDER_CREATED, h1);
-    const u2 = platformBus.on(CANONICAL_EVENTS.ORDER_CREATED, h2);
+    unsubs.push(platformBus.on(CANONICAL_EVENTS.ORDER_CREATED, h1));
+    unsubs.push(platformBus.on(CANONICAL_EVENTS.ORDER_CREATED, h2));
 
     platformBus.emit(CANONICAL_EVENTS.ORDER_CREATED, { orderId: "o-1" }, "marketplace");
 
     expect(h1).toHaveBeenCalledTimes(1);
     expect(h2).toHaveBeenCalledTimes(1);
-
-    u1();
-    u2();
   });
 
   it("unsubscribed handlers don't fire", () => {

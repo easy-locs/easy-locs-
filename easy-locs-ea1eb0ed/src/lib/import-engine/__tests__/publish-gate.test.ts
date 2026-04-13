@@ -74,8 +74,8 @@ describe("Publish Gate", () => {
     expect(decision.reasons.some(r => r.includes("menu"))).toBe(true);
   });
 
-  it("blocks hotel entity with no photos", () => {
-    const entity = makeEntity({ vertical: "hotel", menuItems: [], photos: [] });
+  it("blocks stay entity with no photos", () => {
+    const entity = makeEntity({ vertical: "stay", menuItems: [], photos: [] });
     const quality = scoreQuality(entity);
     const decision = evaluatePublishGate(entity, quality);
     expect(decision.allowed).toBe(false);

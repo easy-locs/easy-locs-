@@ -18,12 +18,13 @@ export const callDeviceController = {
     const call = useCallStore.getState().activeCall;
     if (!call) return;
 
-    // Apply hardware route change
     CallAudioRoute.toggleSpeaker();
 
-    // Sync callStore for UI
     const newSpeakerState = useAudioRouteStore.getState().activeOutput === "speaker";
-    useCallStore.getState().toggleSpeaker();
+    const currentCall = useCallStore.getState().activeCall;
+    if (currentCall) {
+      useCallStore.setState({ activeCall: { ...currentCall, speakerOn: newSpeakerState } });
+    }
 
     if (import.meta.env.DEV) {
       console.debug("[callDeviceController] toggleSpeaker", {
@@ -70,11 +71,9 @@ export const callDeviceController = {
 
     useAudioRouteStore.getState().setOutput(device);
 
-    // Update callStore speaker state for UI consistency
     const isSpeaker = device === "speaker";
-    const currentSpeaker = call.speakerOn;
-    if (isSpeaker !== currentSpeaker) {
-      useCallStore.getState().toggleSpeaker();
+    if (isSpeaker !== call.speakerOn) {
+      useCallStore.setState({ activeCall: { ...useCallStore.getState().activeCall!, speakerOn: isSpeaker } });
     }
 
     if (import.meta.env.DEV) {

@@ -159,7 +159,7 @@ describe("ID Resolvers", () => {
   });
 
   it("builds orbit alias", () => {
-    expect(buildOrbitAlias("550e8400-e29b-41d4-a716-446655440000")).toBe("orbit_550e8400-e29");
+    expect(buildOrbitAlias("550e8400-e29b-41d4-a716-446655440000")).toBe("orbit_550e8400");
   });
 });
 

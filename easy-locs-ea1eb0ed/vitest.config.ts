@@ -10,6 +10,11 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     testTimeout: 15000,
+    sequence: {
+      shuffle: true,
+      seed: 42,
+    },
+    clearMocks: true,
   },
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },

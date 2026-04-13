@@ -49,9 +49,9 @@ describe("Legacy vertical-classifier facade", () => {
     expect(result.confidence).toBeGreaterThan(30);
   });
 
-  it("classifies hotel from source type", () => {
+  it("classifies stay from source type", () => {
     const result = classifyVertical({ businessName: "Some Place", sourceType: "booking" });
-    expect(result.vertical).toBe("hotel");
+    expect(result.vertical).toBe("stay");
     expect(result.confidence).toBe(90);
   });
 });

@@ -4,29 +4,42 @@
  * These simulate real user paths without a browser.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { cleanup } from "@testing-library/react";
+
+afterEach(() => {
+  cleanup();
+});
 
 // ── Auth Flow Integration ────────────────────────────────────────────
 
 describe("E2E: Authentication Flow", () => {
   it("login page component renders without crash", async () => {
-    const { render, screen } = await import("@testing-library/react");
+    const { render, act } = await import("@testing-library/react");
     const { BrowserRouter } = await import("react-router-dom");
     const { I18nProvider } = await import("@/lib/i18n");
     const React = await import("react");
 
-    // Login page should render in isolation
     const LoginModule = await import("@/pages/Login");
     const Login = LoginModule.default;
 
-    const { container } = render(
-      React.createElement(BrowserRouter, null,
-        React.createElement(I18nProvider, null,
-          React.createElement(Login)
+    let container: HTMLElement;
+    let unmount: () => void;
+    await act(async () => {
+      const result = render(
+        React.createElement(BrowserRouter, null,
+          React.createElement(I18nProvider, null,
+            React.createElement(Login)
+          )
         )
-      )
-    );
-    expect(container.innerHTML.length).toBeGreaterThan(0);
+      );
+      container = result.container;
+      unmount = result.unmount;
+    });
+    expect(container!.innerHTML.length).toBeGreaterThan(0);
+    await act(async () => {
+      unmount!();
+    });
   });
 });
 

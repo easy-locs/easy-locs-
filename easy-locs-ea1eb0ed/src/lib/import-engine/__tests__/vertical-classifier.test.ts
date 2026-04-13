@@ -8,9 +8,9 @@ describe("Vertical Classifier", () => {
     expect(r.confidence).toBe(90);
   });
 
-  it("classifies by source type (booking → hotel)", () => {
+  it("classifies by source type (booking → stay)", () => {
     const r = classifyVertical({ businessName: "Hilton", sourceType: "booking" });
-    expect(r.vertical).toBe("hotel");
+    expect(r.vertical).toBe("stay");
     expect(r.confidence).toBe(90);
   });
 
@@ -25,9 +25,9 @@ describe("Vertical Classifier", () => {
     expect(r.confidence).toBeGreaterThan(40);
   });
 
-  it("classifies by keywords (hotel → hotel)", () => {
+  it("classifies by keywords (resort → stay)", () => {
     const r = classifyVertical({ businessName: "JW Marriott Resort" });
-    expect(r.vertical).toBe("hotel");
+    expect(r.vertical).toBe("stay");
   });
 
   it("classifies by keywords (salon → services)", () => {

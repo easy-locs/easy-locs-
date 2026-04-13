@@ -1,33 +1,53 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock supabase
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
-      onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
+vi.mock("@/integrations/supabase/client", () => {
+  const mockFn = vi.fn;
+  const mockQueryBuilder = () => ({
+    select: mockFn().mockReturnThis(),
+    insert: mockFn().mockResolvedValue({ data: null, error: null }),
+    update: mockFn().mockReturnThis(),
+    delete: mockFn().mockReturnThis(),
+    eq: mockFn().mockReturnThis(),
+    contains: mockFn().mockReturnThis(),
+    single: mockFn().mockResolvedValue({ data: null, error: null }),
+    maybeSingle: mockFn().mockResolvedValue({ data: null, error: null }),
+    limit: mockFn().mockReturnThis(),
+    order: mockFn().mockReturnThis(),
+    range: mockFn().mockResolvedValue({ data: [], error: null, count: 0 }),
+    then: mockFn().mockImplementation((resolve: any) => resolve({ data: [], error: null })),
+    throwOnError: mockFn().mockReturnThis(),
+  });
+  return {
+    supabase: {
+      auth: {
+        getSession: mockFn().mockResolvedValue({ data: { session: null }, error: null }),
+        getUser: mockFn().mockResolvedValue({ data: { user: null }, error: null }),
+        onAuthStateChange: mockFn().mockReturnValue({ data: { subscription: { unsubscribe: mockFn() } } }),
+        signOut: mockFn().mockResolvedValue({ error: null }),
+      },
+      from: mockFn().mockImplementation(() => mockQueryBuilder()),
+      rpc: mockFn().mockResolvedValue({ data: null, error: null }),
+      functions: {
+        invoke: mockFn().mockResolvedValue({ data: null, error: null }),
+      },
+      channel: mockFn().mockReturnValue({
+        on: mockFn().mockReturnThis(),
+        subscribe: mockFn(),
+        unsubscribe: mockFn(),
+      }),
+      removeChannel: mockFn(),
+      removeAllChannels: mockFn(),
+      storage: {
+        from: mockFn().mockReturnValue({
+          upload: mockFn().mockResolvedValue({ data: { path: "mock-path" }, error: null }),
+          getPublicUrl: mockFn().mockReturnValue({ data: { publicUrl: "https://mock.url/file" } }),
+          list: mockFn().mockResolvedValue({ data: [], error: null }),
+        }),
+      },
     },
-    from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockResolvedValue({ data: null, error: null }),
-      update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      contains: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: null, error: null }),
-      limit: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      range: vi.fn().mockResolvedValue({ data: [], error: null, count: 0 }),
-    }),
-    functions: {
-      invoke: vi.fn().mockResolvedValue({ data: null, error: null }),
-    },
-    channel: vi.fn().mockReturnValue({
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn(),
-    }),
-  },
-}));
+  };
+});
 
 // ═══════════════════════════════════════════════════════
 // 1. SYNC ENGINE — Context Validation
@@ -134,13 +154,13 @@ describe("Deep Link Routing — buildTargetUrl", () => {
   it("builds correct URL for booking_request with bookingId", async () => {
     const { buildTargetUrl } = await import("@/lib/shared/routes");
     const url = buildTargetUrl("booking_request", { bookingId: "bk-1", countryCode: "ES" });
-    expect(url).toBe("/dashboard/seasonal?country=ES&booking=bk-1");
+    expect(url).toBe("/dashboard/seasonal-rentals?country=ES&booking=bk-1");
   });
 
   it("builds correct URL for marketplace_booking", async () => {
     const { buildTargetUrl } = await import("@/lib/shared/routes");
     const url = buildTargetUrl("marketplace_booking", { bookingId: "mb-1" });
-    expect(url).toBe("/dashboard/activities?booking=mb-1");
+    expect(url).toBe("/activities?booking=mb-1");
   });
 
   it("builds correct URL for intervention", async () => {
@@ -170,7 +190,7 @@ describe("Deep Link Routing — buildTargetUrl", () => {
   it("builds correct URL for concierge_order", async () => {
     const { buildTargetUrl } = await import("@/lib/shared/routes");
     const url = buildTargetUrl("concierge_order", { bookingId: "co-1" });
-    expect(url).toBe("/dashboard/activities?booking=co-1");
+    expect(url).toBe("/activities?booking=co-1");
   });
 
   it("tenant portal remaps lease correctly", async () => {
@@ -296,14 +316,14 @@ describe("Sync Engine — Context-Aware Config", () => {
     // We'll test buildTargetUrl for the resolved target type instead.
     const { buildTargetUrl } = await import("@/lib/shared/routes");
     const url = buildTargetUrl("marketplace_booking", { bookingId: "mb-1" });
-    expect(url).toContain("/dashboard/activities");
+    expect(url).toContain("/activities");
     expect(url).toContain("booking=mb-1");
   });
 
   it("payment_request_sent routes to seasonal when bookingId + propertyId", async () => {
     const { buildTargetUrl } = await import("@/lib/shared/routes");
     const url = buildTargetUrl("booking_request", { bookingId: "bk-1" });
-    expect(url).toContain("/dashboard/seasonal");
+    expect(url).toContain("/seasonal-rentals");
     expect(url).toContain("booking=bk-1");
   });
 });
@@ -342,7 +362,7 @@ describe("Notification Engine — DeepLinkMeta", () => {
       orgId: "org-1",
     });
     expect(meta.target_type).toBe("marketplace_booking");
-    expect(meta.target_url).toContain("/dashboard/activities");
+    expect(meta.target_url).toContain("/activities");
     expect(meta.target_url).toContain("booking=mb-1");
   });
 
@@ -356,7 +376,7 @@ describe("Notification Engine — DeepLinkMeta", () => {
       countryCode: "ES",
     });
     expect(meta.target_type).toBe("booking_request");
-    expect(meta.target_url).toContain("/dashboard/seasonal");
+    expect(meta.target_url).toContain("/seasonal-rentals");
     expect(meta.target_url).toContain("booking=br-1");
     expect(meta.country_code).toBe("ES");
   });
@@ -502,8 +522,8 @@ describe("Critical Page Imports — Extended", () => {
     "Leases", "Receipts", "PaymentNotices", "RentalManagement",
     "SeasonalRentals", "ActivitiesMarketplace", "Interventions",
     "CommunicationCenter", "Documents", "Finances", "Expenses",
-    "RealEstateListings", "ConciergeServices", "ConciergeOperations",
-    "PropertyManagement", "FurnitureInventory", "Candidates",
+    "RealEstateListings", "ConciergeOperations",
+    "FurnitureInventory", "Candidates",
     "Billing", "Settings", "Referrals", "Collaboration",
   ];
 

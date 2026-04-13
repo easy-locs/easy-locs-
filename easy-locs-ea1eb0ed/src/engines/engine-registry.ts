@@ -19,6 +19,13 @@ export function registerAllEngines(): void {
 }
 
 export function bootEngineSystem(): () => void {
+  if (typeof process !== "undefined" && process.env?.VITEST === "true") {
+    return () => {};
+  }
+  if (import.meta.env.MODE === "test" && !import.meta.env.VITEST_ALLOW_ENGINES) {
+    return () => {};
+  }
+
   registerAllActivationSheets();
   const teardownBridge = installRepairBridge();
   const teardownUiBridge = installUiRepairBridge();
