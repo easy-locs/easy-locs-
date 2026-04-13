@@ -191,50 +191,45 @@ export function useMasterAppBootstrap() {
     }, 8000);
     timers.push(t4);
 
-    const t5 = setTimeout(async () => {
-      try {
-        const { runPlatformRecovery } = await import("@/lib/platform/platform-recovery-engine");
-        void runPlatformRecovery("boot");
-      } catch (e) {
-        console.warn("[boot] recovery failed", e);
-      }
-    }, 15000);
+    let idleCbId: number | undefined;
+    const t5 = setTimeout(() => {
+      idleCbId = requestIdleCallback(async () => {
+        try {
+          const { runPlatformRecovery } = await import("@/lib/platform/platform-recovery-engine");
+          void runPlatformRecovery("boot");
+        } catch (e) {
+          console.warn("[boot] recovery failed", e);
+        }
+
+        try {
+          const { godCore } = await import("@/lib/god/god-core");
+          godCore.boot();
+        } catch (e) {
+          console.warn("[boot] god-system failed", e);
+        }
+
+        try {
+          const { sentinelCore } = await import("@/core/sentinel");
+          await sentinelCore.boot();
+          cleanups.push(() => sentinelCore.shutdown());
+        } catch (e) {
+          console.warn("[boot] sentinel-core failed", e);
+        }
+
+        try {
+          const { omegaCore } = await import("@/core/omega");
+          await omegaCore.boot();
+          cleanups.push(() => { omegaCore.shutdown(); });
+        } catch (e) {
+          console.warn("[boot] omega-core failed", e);
+        }
+      }, { timeout: 30_000 });
+    }, 15_000);
     timers.push(t5);
-
-    const t6 = setTimeout(async () => {
-      try {
-        const { godCore } = await import("@/lib/god/god-core");
-        godCore.boot();
-      } catch (e) {
-        console.warn("[boot] god-system failed", e);
-      }
-    }, 18000);
-    timers.push(t6);
-
-    const t7 = setTimeout(async () => {
-      try {
-        const { sentinelCore } = await import("@/core/sentinel");
-        await sentinelCore.boot();
-        cleanups.push(() => sentinelCore.shutdown());
-      } catch (e) {
-        console.warn("[boot] sentinel-core failed", e);
-      }
-    }, 22000);
-    timers.push(t7);
-
-    const t8 = setTimeout(async () => {
-      try {
-        const { omegaCore } = await import("@/core/omega");
-        await omegaCore.boot();
-        cleanups.push(() => { omegaCore.shutdown(); });
-      } catch (e) {
-        console.warn("[boot] omega-core failed", e);
-      }
-    }, 28000);
-    timers.push(t8);
 
     return () => {
       timers.forEach(clearTimeout);
+      if (idleCbId !== undefined) cancelIdleCallback(idleCbId);
       cleanups.forEach((fn) => fn());
       booted = false;
     };

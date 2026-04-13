@@ -22,7 +22,6 @@ import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 // ── UI chrome (critical — minimal for first paint) ──
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import SwipeableMain from "@/components/navigation/SwipeableMain";
 import { HomeRouter, MarketplaceHomeRouter } from "@/components/app/AppRouters";
 
@@ -77,8 +76,15 @@ scheduleIdle(() => { import("@/lib/quality-gates").then(m => m.initQualityGates(
 function DeferredBootGuards() {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setReady(true), 3000);
-    return () => clearTimeout(t);
+    const activate = () => setReady(true);
+    if (document.readyState === "complete") {
+      const t = setTimeout(activate, 500);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(activate, 1500);
+    const onLoad = () => { clearTimeout(t); setTimeout(activate, 200); };
+    window.addEventListener("load", onLoad, { once: true });
+    return () => { clearTimeout(t); window.removeEventListener("load", onLoad); };
   }, []);
   if (!ready) return null;
   return (
@@ -329,7 +335,6 @@ const App = () => (
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
   <QueryClientProvider client={queryClient}>
   <I18nProvider>
-  <TooltipProvider>
     <Toaster />
     <Sonner />
     <AuthProvider>
@@ -925,7 +930,6 @@ const App = () => (
     </DeferredHeavyProviders>
     <Suspense fallback={null}><GlobalOverlayRenderer /></Suspense>
     </AuthProvider>
-  </TooltipProvider>
   </I18nProvider>
   </QueryClientProvider>
   </ThemeProvider>

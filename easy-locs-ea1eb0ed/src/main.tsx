@@ -61,12 +61,6 @@ requestIdleCallback(() => {
 
 requestIdleCallback(() => {
   import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});
-}, { timeout: 8000 });
-
-requestIdleCallback(() => {
   import("@/lib/events/event-init").catch(() => {});
-}, { timeout: 10000 });
-
-requestIdleCallback(() => {
   import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()).catch(() => {});
-}, { timeout: 12000 });
+}, { timeout: 8000 });

@@ -522,11 +522,6 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("booking:", () => refreshModule("business"))
   );
 
-  // ── Radar events → refresh business module ──
-  unsubs.push(
-    platformBus.onPrefix("radar:", () => refreshModule("business"))
-  );
-
   // ── Dashboard refresh events → business only (wallet/communication refreshed by their own prefix listeners) ──
   unsubs.push(
     platformBus.onPrefix("dashboard:", () => refreshModule("business"))
@@ -535,16 +530,6 @@ export function installPlatformReactions(): () => void {
   // ── Storefront events → refresh business module ──
   unsubs.push(
     platformBus.onPrefix("storefront:", () => refreshModule("business"))
-  );
-
-  // ── Commerce events → refresh wallet module ──
-  unsubs.push(
-    platformBus.onPrefix("commerce:", () => refreshModule("wallet"))
-  );
-
-  // ── Tracking position/status → refresh business ──
-  unsubs.push(
-    platformBus.onPrefix("tracking:", () => refreshModule("business"))
   );
 
   // ── Listing events → refresh business module ──
@@ -558,11 +543,6 @@ export function installPlatformReactions(): () => void {
       refreshModule("wallet");
       refreshModule("business");
     })
-  );
-
-  // ── Growth events → refresh business ──
-  unsubs.push(
-    platformBus.onPrefix("growth:", () => refreshModule("business"))
   );
 
   // ── Currency changed → propagate via custom event for legacy components ──
