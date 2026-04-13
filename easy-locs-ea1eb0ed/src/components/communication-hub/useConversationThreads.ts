@@ -13,6 +13,7 @@ import { filterUserConversations } from "@/lib/orbit/threads/thread-filter";
 import { mapOrgSourcesToThreads, mapV2ConversationsToThreads, mapDealsToThreads } from "@/lib/orbit/threads/thread-mapper";
 import { enrichPeerProfiles, enrichUnreadCounts, enrichLastMessages, applyPreferences } from "@/lib/orbit/threads/thread-enricher";
 import { normalizeAndSort, getCanonicalRenderKey } from "@/lib/orbit/threads/thread-sorter";
+import { createPeerCache, type PeerCacheInstance } from "@/lib/orbit/resolveDirectPeer";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -30,6 +31,7 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
   const loadingRef = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const threadMapRef = useRef(new Map<string, ConversationThread>());
+  const peerCacheRef = useRef<PeerCacheInstance>(createPeerCache());
 
   const userId = user?.id ?? null;
 
@@ -102,7 +104,7 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
       // ── Step 4: Enrich in parallel (each isolated) ──
       const s4 = addStep(flow, "enrich");
       const enrichResults = await Promise.allSettled([
-        enrichPeerProfiles(threadMap, allPeerIds),
+        enrichPeerProfiles(threadMap, allPeerIds, peerCacheRef.current),
         enrichUnreadCounts(threadMap, userId!),
         enrichLastMessages(threadMap, userId!),
       ]);
