@@ -19,7 +19,6 @@ export function useMasterAppBootstrap() {
           { installOrchestrationEngine },
           { installSmartFlowBridge },
           { installOrbitCacheListener, registerQueryClient },
-          { installDeadEventConsumers },
           { registerWalletQueryClient },
           { registerDashboardQueryClient },
           { registerDeliveryQueryClient },
@@ -30,7 +29,6 @@ export function useMasterAppBootstrap() {
           import("@/lib/orchestration/orchestrator"),
           import("@/lib/runtime/smart-flow-bridge"),
           import("@/lib/orbit/orbit-cache-invalidator"),
-          import("@/lib/shared/dead-event-consumers"),
           import("@/lib/wallet/wallet-cache-invalidator"),
           import("@/lib/dashboard/dashboard-cache-invalidator"),
           import("@/lib/delivery/delivery-cache-invalidator"),
@@ -50,7 +48,7 @@ export function useMasterAppBootstrap() {
         installOrchestrationEngine();
         cleanups.push(installSmartFlowBridge());
         cleanups.push(installOrbitCacheListener());
-        cleanups.push(installDeadEventConsumers());
+        
       } catch (e) {
         console.warn("[boot] stage-0 failed", e);
       }

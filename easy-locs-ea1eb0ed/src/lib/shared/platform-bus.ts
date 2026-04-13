@@ -355,6 +355,8 @@ class PlatformBus {
   private globalListeners = new Set<EventListener>();
   private eventLog: PlatformEvent[] = [];
   private readonly MAX_LOG = 150;
+  private _devEmitCount = 0;
+  private _devEmitTimer: ReturnType<typeof setInterval> | null = null;
 
   on(type: PlatformEventType | string, listener: EventListener): () => void {
     if (!this.listeners.has(type)) {
@@ -415,6 +417,18 @@ class PlatformBus {
     this.eventLog.push(event);
     if (this.eventLog.length > this.MAX_LOG) {
       this.eventLog.splice(0, this.eventLog.length - this.MAX_LOG);
+    }
+
+    if (import.meta.env.DEV) {
+      this._devEmitCount++;
+      if (!this._devEmitTimer) {
+        this._devEmitTimer = setInterval(() => {
+          if (this._devEmitCount > 0) {
+            console.debug(`[platform-bus] ${this._devEmitCount} events/sec`);
+          }
+          this._devEmitCount = 0;
+        }, 1000);
+      }
     }
 
     this.listeners.get(type)?.forEach((fn) => {
@@ -501,11 +515,6 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("pm:", () => refreshModule("business"))
   );
 
-  // ── Property events → refresh business module ──
-  unsubs.push(
-    platformBus.onPrefix("property:", () => refreshModule("business"))
-  );
-
   // ── Deal events → refresh business module ──
   unsubs.push(
     platformBus.onPrefix("deal:", () => refreshModule("business"))
@@ -519,29 +528,6 @@ export function installPlatformReactions(): () => void {
   // ── Booking events → refresh business module ──
   unsubs.push(
     platformBus.onPrefix("booking:", () => refreshModule("business"))
-  );
-
-  // ── Dashboard refresh events → business only ──
-  unsubs.push(
-    platformBus.onPrefix("dashboard:", () => refreshModule("business"))
-  );
-
-  // ── Storefront events → refresh business module ──
-  unsubs.push(
-    platformBus.onPrefix("storefront:", () => refreshModule("business"))
-  );
-
-  // ── Listing events → refresh business module ──
-  unsubs.push(
-    platformBus.onPrefix("listing:", () => refreshModule("business"))
-  );
-
-  // ── Rent/PM payment events → refresh wallet + business ──
-  unsubs.push(
-    platformBus.onPrefix("rent:", () => {
-      refreshModule("wallet");
-      refreshModule("business");
-    })
   );
 
   // ── Currency changed → propagate via custom event for legacy components ──
@@ -582,23 +568,12 @@ export function installPlatformReactions(): () => void {
     "rent.partial_payment": "rent:partial_payment",
   };
 
-  unsubs.push(
-    platformBus.onAll((event) => {
-      if ((event.payload as Record<string, unknown>)?.__bridged) return;
-      const colon = NOTATION_BRIDGE[event.type];
-      if (colon) {
-        const bridgedPayload = { ...(typeof event.payload === "object" && event.payload ? event.payload : {}), __bridged: true };
-        platformBus.emit(colon as PlatformEventType, bridgedPayload, event.source);
-      }
-    })
-  );
-
-  if (import.meta.env.DEV) {
+  for (const [dotEvent, colonEvent] of Object.entries(NOTATION_BRIDGE)) {
     unsubs.push(
-      platformBus.onAll((event) => {
-        if (!(event.payload as Record<string, unknown>)?.__bridged) {
-          console.debug(`[platform-bus] ${event.type}`, event.payload);
-        }
+      platformBus.on(dotEvent as PlatformEventType, (event) => {
+        if ((event.payload as Record<string, unknown>)?.__bridged) return;
+        const bridgedPayload = { ...(typeof event.payload === "object" && event.payload ? event.payload : {}), __bridged: true };
+        platformBus.emit(colonEvent as PlatformEventType, bridgedPayload, event.source);
       })
     );
   }
