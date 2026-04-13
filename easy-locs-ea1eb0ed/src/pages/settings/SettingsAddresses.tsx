@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Plus, Home, Briefcase, Pencil, Trash2, Check, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/services/db";
+import { userService } from "@/services/user.service";
 import { toast } from "sonner";
 
 interface SavedAddress {
@@ -148,7 +149,7 @@ export default function SettingsAddresses() {
 
   const removeAddr = async (id: string) => {
     if (!id.startsWith("temp-")) {
-      await db.from("user_addresses").delete().eq("id", id);
+      await userService.deleteUserAddress(id);
     }
     setAddresses(prev => prev.filter(a => a.id !== id));
     toast.success("Address removed");

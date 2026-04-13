@@ -269,13 +269,6 @@ export function useMasterAppBootstrap() {
         if (document.hidden || hookDisposed) return;
 
         try {
-          const { godCore } = await import("@/lib/god/god-core");
-          godCore.boot();
-        } catch (e) {
-          console.warn("[boot] god-system failed", e);
-        }
-
-        try {
           const { sentinelCore } = await import("@/core/sentinel");
           await sentinelCore.boot();
           cleanups.push(() => sentinelCore.shutdown());
@@ -283,6 +276,10 @@ export function useMasterAppBootstrap() {
           console.warn("[boot] sentinel-core failed", e);
         }
 
+        // omegaCore is the platform-wide AI intelligence layer (knowledge graph, decision engine,
+        // memory, priority, prediction). It is DISTINCT from the deleted god-core (which was a
+        // universal system bypass). omegaCore is governed by the command-center permission model
+        // (requestEngineRunApproval). Boot is deferred to idle-time and is non-blocking.
         try {
           const { omegaCore } = await import("@/core/omega");
           await omegaCore.boot();

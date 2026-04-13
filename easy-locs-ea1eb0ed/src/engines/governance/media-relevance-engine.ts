@@ -6,7 +6,7 @@ import {
   type GovernanceViolation,
   type MediaValidationStatus,
 } from "@/domains/shared/canonical-types";
-import { validateTaxonomy } from "./taxonomy-governance-engine";
+
 import { persistViolations } from "@/services/governance/violation-persistence";
 
 const QUALITY_THRESHOLDS = {
@@ -111,17 +111,6 @@ export function validateMedia(
         media
       )
     );
-  }
-
-  if (contextVertical && contextCategory) {
-    const taxResult = validateTaxonomy(
-      contextVertical,
-      contextCategory,
-      media.subcategory ?? null
-    );
-    if (!taxResult.valid) {
-      score -= 20;
-    }
   }
 
   score = Math.max(0, Math.min(100, score));

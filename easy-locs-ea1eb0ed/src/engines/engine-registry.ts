@@ -4,6 +4,8 @@ import { installRepairBridge, getRepairBridgeReport } from "./core/repair-bridge
 import { installUiRepairBridge, getUiRepairBridgeReport } from "./core/ui-repair-bridge";
 import { getProofsByDomain, getProofStats } from "./core/proof-system";
 import { enablePipeline, getPipelineReport } from "./core/repair-pipeline";
+import { sentinelEngineRegistry } from "@/core/sentinel/registry/engine-registry";
+import type { BaseEngine } from "./core/base-engine";
 
 import { AutoFixEngine } from "./self-healing/auto-fix-engine";
 import { AutoPublishOrchEngine } from "./lifecycle/auto-publish-orch-engine";
@@ -28,11 +30,30 @@ import { registerCanonicalResolutions } from "@/lib/canonical-resolution-guard";
 
 let registered = false;
 
+function bridgeEngineToSentinel(engine: BaseEngine): void {
+  sentinelEngineRegistry.register({
+    engine_id: engine.id,
+    engine_name: engine.name,
+    engine_domain: engine.category,
+    engine_type: "domain",
+    owner_domain: engine.domain,
+    criticality: "medium",
+    enabled: true,
+    heartbeat_interval_sec: Math.max(1, Math.round(engine.intervalMs / 1000)),
+    last_heartbeat_at: 0,
+    status: "healthy",
+    version: "1.0.0",
+    source_of_truth: "engine-registry",
+    created_at: Date.now(),
+    updated_at: Date.now(),
+  });
+}
+
 export function registerAllEngines(): void {
   if (registered) return;
   registered = true;
 
-  engineOrchestrator.registerAll([
+  const engines = [
     new AutoFixEngine(),
     new AutoPublishOrchEngine(),
     new AutoUnpublishOrchEngine(),
@@ -52,7 +73,10 @@ export function registerAllEngines(): void {
     new PublishGateServiceOrchEngine(),
     new FlowIntegrityEngine(),
     new GovernanceAuditEngine(),
-  ]);
+  ];
+
+  engineOrchestrator.registerAll(engines);
+  engines.forEach(bridgeEngineToSentinel);
 }
 
 export function bootEngineSystem(): () => void {
@@ -99,14 +123,6 @@ export function bootEngineSystem(): () => void {
     };
   });
 
-  engineOrchestrator.registerStartupTask("god-core-init", () => {
-    let cancelled = false;
-    import("@/lib/god/god-core").then(({ godCore }) => {
-      if (!cancelled) godCore.boot();
-    }).catch(() => {});
-    return () => { cancelled = true; };
-  }, { phase: "late" });
-
   engineOrchestrator.registerStartupTask("sentinel-core-init", () => {
     let cancelled = false;
     let shutdown: (() => void) | null = null;
@@ -115,18 +131,6 @@ export function bootEngineSystem(): () => void {
       await sentinelCore.boot();
       if (cancelled) { sentinelCore.shutdown(); return; }
       shutdown = () => sentinelCore.shutdown();
-    }).catch(() => {});
-    return () => { cancelled = true; if (shutdown) { shutdown(); shutdown = null; } };
-  }, { phase: "late" });
-
-  engineOrchestrator.registerStartupTask("omega-core-init", () => {
-    let cancelled = false;
-    let shutdown: (() => void) | null = null;
-    import("@/core/omega").then(async ({ omegaCore }) => {
-      if (cancelled) return;
-      await omegaCore.boot();
-      if (cancelled) { omegaCore.shutdown(); return; }
-      shutdown = () => omegaCore.shutdown();
     }).catch(() => {});
     return () => { cancelled = true; if (shutdown) { shutdown(); shutdown = null; } };
   }, { phase: "late" });

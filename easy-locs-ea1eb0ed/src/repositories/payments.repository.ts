@@ -12,7 +12,7 @@ export async function createStripeIntent(body: Record<string, any>) {
 
 // ── Rent payment ──
 export async function createRentPayment(body: Record<string, any>) {
-  const { data, error } = await db.functions.invoke("create-rent-payment", { body });
+  const { data, error } = await db.functions.invoke("rent-payment", { body: { ...body, mode: "checkout" } });
   if (error) throw error;
   return data;
 }

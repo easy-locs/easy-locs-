@@ -22,7 +22,7 @@ export async function getIceServers(forceRefresh = false): Promise<RTCIceServer[
   }
 
   try {
-    const { data, error } = await supabase.functions.invoke("turn-credentials", {
+    const { data, error } = await supabase.functions.invoke("get-turn-credentials", {
       body: { purpose: "orbit_call" },
     });
 

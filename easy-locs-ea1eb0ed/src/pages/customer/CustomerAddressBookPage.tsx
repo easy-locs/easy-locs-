@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Plus, Home, Briefcase, MapPin, Star, Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/services/db";
+import { userService } from "@/services/user.service";
 
 type AddressRow = {
   id: string;
@@ -152,7 +153,7 @@ export default function CustomerAddressBookPage() {
 
   const removeAddress = async (id: string) => {
     if (!id.startsWith("temp-")) {
-      await db.from("user_addresses").delete().eq("id", id);
+      await userService.deleteUserAddress(id);
     }
     setRows((prev) => prev.filter((row) => row.id !== id));
     if (editingId === id) setEditingId(null);
@@ -162,8 +163,7 @@ export default function CustomerAddressBookPage() {
   const makeDefault = async (id: string) => {
     if (!user?.id) return;
     if (!id.startsWith("temp-")) {
-      await db.from("user_addresses").update({ is_default: false }).eq("user_id", user.id);
-      await db.from("user_addresses").update({ is_default: true }).eq("id", id);
+      await userService.setDefaultUserAddress(user.id, id);
     }
     setRows((prev) => prev.map((row) => ({ ...row, isDefault: row.id === id })));
     toast.success("Default address updated");

@@ -108,4 +108,20 @@ export const userService = {
       }, { onConflict: "user_id" });
     if (error) throw error;
   },
+
+  async deleteUserAddress(id: string) {
+    const { error } = await db("user_addresses").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async setDefaultUserAddress(userId: string, id: string) {
+    const { error: clearErr } = await db("user_addresses")
+      .update({ is_default: false })
+      .eq("user_id", userId);
+    if (clearErr) throw clearErr;
+    const { error: setErr } = await db("user_addresses")
+      .update({ is_default: true })
+      .eq("id", id);
+    if (setErr) throw setErr;
+  },
 };

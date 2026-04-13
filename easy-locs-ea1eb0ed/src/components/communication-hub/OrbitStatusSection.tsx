@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { useI18n } from "@/lib/i18n";
 import { db } from "@/services/db";
+import { orbitService } from "@/services/orbit.service";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
@@ -121,23 +122,16 @@ export default function OrbitStatusSection() {
     if (!user?.id) { setStatuses([]); setLoading(false); return; }
     setLoading(true);
     try {
-      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await db("orbit_statuses")
-        .select("*")
-        .gte("expires_at", new Date().toISOString())
-        .gte("created_at", cutoff)
-        .order("created_at", { ascending: false })
-        .limit(100);
-
-      if (error) {
-        if (error.code === "42P01" || error.message?.includes("does not exist")) {
+      const data = await orbitService.fetchAllActiveStatuses(100).catch((error: any) => {
+        if (error?.code === "42P01" || error?.message?.includes("does not exist")) {
           setStatuses([]);
           setLoading(false);
-          return;
+          return null;
         }
         throw error;
-      }
-      setStatuses((data || []) as unknown as Status[]);
+      });
+      if (data === null) return;
+      setStatuses(data as unknown as Status[]);
     } catch {
       setStatuses([]);
     } finally {
@@ -223,20 +217,13 @@ export default function OrbitStatusSection() {
       let mediaType: "text" | "image" | "video" = "text";
 
       if ((composeMode === "photo" || composeMode === "video") && mediaFile) {
-        const ext = mediaFile.name.split(".").pop() || "bin";
-        const path = `statuses/${user.id}/${Date.now()}_${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}.${ext}`;
-        const { error: uploadErr } = await db.storage
-          .from("chat-media")
-          .upload(path, mediaFile, { contentType: mediaFile.type });
-        if (uploadErr) throw uploadErr;
-        const { data: urlData } = db.storage.from("chat-media").getPublicUrl(path);
-        mediaUrl = urlData?.publicUrl || null;
+        mediaUrl = await orbitService.uploadStatusMedia(user.id, mediaFile);
         mediaType = mediaIsVideo ? "video" : "image";
       }
 
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-      const { error } = await db("orbit_statuses").insert({
+      await orbitService.publishStatus({
         user_id: user.id,
         content: composeText.trim() || "",
         media_url: mediaUrl,
@@ -246,16 +233,14 @@ export default function OrbitStatusSection() {
         view_count: 0,
         user_name: myName,
         user_avatar: myAvatar,
-      } as any);
-
-      if (error) {
-        if (error.code === "42P01" || error.message?.includes("does not exist")) {
+      }).catch((error: any) => {
+        if (error?.code === "42P01" || error?.message?.includes("does not exist")) {
           toast.info(t("orbit.status.table_missing") || "Status feature is being set up");
           setShowCompose(false);
           return;
         }
         throw error;
-      }
+      });
 
       toast.success(t("orbit.status.posted") || "Status posted!");
       haptic("success");

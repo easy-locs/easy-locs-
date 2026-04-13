@@ -223,40 +223,31 @@ const {
   SupportTicketsPage, SupportTicketDetailPage, PermissionCenterPage,
   TeamCommandCenterPage, TeamPermissionsPage,
 
-  // Admin
-  AdminDashboard, AIQualityDashboard, AdminDisputesPage, AdminFraudPage,
-  AdminLiveOpsPage, AdminSLAPage, AdminTrustGraphPage, ExecutiveKPIBoardPage,
-  AIOpsChatPage, FinancialReconPage, ReconAlertsPage, ExecutiveDashboard,
-  ConciergeOperations, WorkspaceBootstrapPage, MerchantOnboardingAdminPage,
-  MenuAdminPage, SupportInboxPage, KpiChartsPage,
-  AdminRealtimeControlPage, DeploymentChecklistPage, AdminAlertCenterPage,
-  AdminOutreachPage, AdminWalletDiagnosticsPage, ExecutionProofPage,
-  AdminReviewQueuePage, RouteAuditPage, AdminRestaurantTestSeederPage,
-  AdminRuntimeAuditPage, AdminRuntimeQuickLinksPage, AdminMasterDebugPage,
-  AdminUiEnginePage, AdminMarketplaceOpsPage, AdminOpsDashboardPage, AdminOrchestrationPage,
-  AdminPipelinePage, AdminEnginesDashboardPage, QualityEnginesDashboardPage, AdminBackendTruthPage, AdminGaragePage,
-  AdminSupportOpsPage, AdminDeliveryOpsPage, AdminMerchantAutofillPage, AdminBulkSeedPage,
-  AdminSuperDashboardPage, AdminPaymentsOpsPage, AdminBulkMerchantImportPage,
+  // Admin — canonical set (duplicates removed; old URLs redirect below)
+  AdminDashboard, AdminDisputesPage, FinancialReconPage,
+  ConciergeOperations,
+  MenuAdminPage, SupportInboxPage,
+  AdminRealtimeControlPage, AdminAlertCenterPage,
+  AdminWalletDiagnosticsPage, ExecutionProofPage,
+  AdminReviewQueuePage,
+  AdminUiEnginePage, AdminMarketplaceOpsPage, AdminOpsDashboardPage,
+  AdminPipelinePage, AdminEnginesDashboardPage,
+  AdminSupportOpsPage, AdminDeliveryOpsPage,
+  AdminPaymentsOpsPage,
   AdminSeedToolsPage, AdminContentOpsPage, AdminAnalyticsOpsPage, AdminQualityOpsPage,
-  AdminUaeOpsDashboard, AdminCrmOpsPage, AdminHomeEnginePage, AdminMapEnginePage,
-  AdminNotificationEnginePage, OwnerCockpitPage, OnboardingQualityDashboardPage,
-  UnifiedGlobalEnginePage, AIDecisionsDashboardPage, UrlImportPage,
+  AdminCrmOpsPage,
   AdminGrowthOpsPage, AdminRetentionOpsPage, AdminMerchantHealthPage,
-  AdminPlatformRecoveryPage, AdminShopImportPage, AdminVisualQualityPage,
-  AdminRankingControlPage, AdminShopQualityPage, AdminCoherenceControlPage, AdminSourceAuditPage,
+  AdminShopImportPage,
+  AdminShopQualityPage, AdminSourceAuditPage,
   AdminDriverMonitorPage, AdminUserLookupPage, AdminNotificationOpsPage, AdminFinanceSummaryPage,
-  AdminPlatformAlertsPage, AdminOrderWatchPage, AdminSearchWatchPage, AdminMerchantPromoWatchPage,
-  AdminRefundWatchPage, AdminDriverHeatmapPage, AdminWalletWatchPage, AdminSystemHealthPage,
-  AdminFraudDetectionPage, AdminOrderTimelinePage, AdminMerchantApprovalQueuePage,
-  AdminFailedPaymentsPage, AdminSupportSlaPage, AdminDeliveryIncidentsPage,
-  AdminGrowthDashboardPage, AdminGrowthEnginePage, AdminCouponOversightPage,
-  AdminActiveSessionsPage, AdminFraudMonitorPage, AdminCoreEnginePage, AdminWiringReportPage, AdminOrderAuditPage,
-  AdminRefundQueuePage, AdminPlatformHealthPage, AdminRuntimeCockpitPage,
-  AdminSystemLivePanelPage, AdminRestaurantFillPage, AdminMasterControlPage, AdminControlRoomPage,
+  AdminOrderWatchPage, AdminSystemHealthPage,
+  AdminFraudDetectionPage,
+  AdminMerchantApprovalQueuePage,
+  AdminSupportSlaPage,
+  AdminRefundQueuePage, AdminPlatformHealthPage,
+  AdminMasterControlPage, AdminControlRoomPage,
   EngineControlRoomPage,
-  AdminQaCommandPage, AdminMenuQualityControlPage, AdminUxLiveTestPage, AdminEngineCockpit, ControlPlanePage,
-  AdminAIControlCenter, AdminMonetizationDashboard,
-  AdminBrowserRepairPage, AdminCentralControlPanelPage,
+  AdminAIControlCenter,
   AdminDataQualityPage,
   RiderPrioritySubscriptionPage,
 
@@ -731,85 +722,41 @@ const App = () => (
                   </Route>
 
                   {/* ═══════════════════════════════════════════════ */}
-                  {/*  ADMIN PANEL                                   */}
+                  {/*  ADMIN PANEL — Canonical routes only           */}
+                  {/*  (Duplicate/redundant routes removed; legacy   */}
+                  {/*   URLs redirect to canonical equivalents)      */}
                   {/* ═══════════════════════════════════════════════ */}
                   <Route path="/admin" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/super-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSuperDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/executive-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ExecutiveDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/executive-kpi" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ExecutiveKPIBoardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/engine-control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><EngineControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/ops-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOpsDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/ai-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AIQualityDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/ai-ops-chat" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AIOpsChatPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/ai-decisions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AIDecisionsDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/disputes" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDisputesPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/fraud" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFraudPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/fraud-detection" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFraudDetectionPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/fraud-monitor" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFraudMonitorPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/live-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminLiveOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/sla" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSLAPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/support-sla" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSupportSlaPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/trust-graph" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminTrustGraphPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/disputes" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDisputesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/financial-recon" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FinancialReconPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/recon-alerts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ReconAlertsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/merchant-onboarding" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><MerchantOnboardingAdminPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/workspace-bootstrap" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><WorkspaceBootstrapPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/menu" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><MenuAdminPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/support-inbox" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><SupportInboxPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/kpi-charts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><KpiChartsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/driver-heatmap" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDriverHeatmapPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/driver-live" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DriverLivePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/driver-monitor" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDriverMonitorPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/realtime-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRealtimeControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/deployment-checklist" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeploymentChecklistPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/loyalty-redeem" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><LoyaltyRedeemPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/alerts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAlertCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/outreach" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOutreachPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWalletDiagnosticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/wallet-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWalletWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/execution-proof" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ExecutionProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/review-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminReviewQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/growth" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGrowthDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/growth-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGrowthEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/growth-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGrowthOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/qr-generate" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><QrGeneratePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/route-audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><RouteAuditPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/test-restaurants" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRestaurantTestSeederPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/runtime-audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRuntimeAuditPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/runtime-links" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRuntimeQuickLinksPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/runtime-cockpit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRuntimeCockpitPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/master-debug" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMasterDebugPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/master-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMasterControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/engine-control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><EngineControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/central-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCentralControlPanelPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/ui-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUiEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/marketplace-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMarketplaceOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/orchestration" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOrchestrationPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/pipeline" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPipelinePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/quality-engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><QualityEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/engine-cockpit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEngineCockpit /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/control-plane" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ControlPlanePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/ai-control-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAIControlCenter /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/monetization" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMonetizationDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/core-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCoreEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/wiring-report" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWiringReportPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/home-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminHomeEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/map-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMapEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/notification-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/unified-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><UnifiedGlobalEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/backend-truth" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminBackendTruthPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/garage" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGaragePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/browser-repair" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminBrowserRepairPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/support-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSupportOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/delivery-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDeliveryOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/delivery-incidents" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDeliveryIncidentsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/merchant-autofill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantAutofillPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/merchant-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/merchant-approval-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantApprovalQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/merchant-promo-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantPromoWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/bulk-seed" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminBulkSeedPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/bulk-merchant-import" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminBulkMerchantImportPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/payments-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPaymentsOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/notification-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/seed-tools" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSeedToolsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/shop-import" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShopImportPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/shop-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShopQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -818,40 +765,89 @@ const App = () => (
                   <Route path="/admin/quality-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminQualityOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/crm-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCrmOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/retention-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRetentionOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/payments-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPaymentsOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/notification-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/uae-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUaeOpsDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/owner-cockpit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><OwnerCockpitPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/onboarding-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><OnboardingQualityDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/url-import" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><UrlImportPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/platform-recovery" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformRecoveryPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/platform-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/platform-alerts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformAlertsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/visual-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminVisualQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/ranking-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRankingControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/coherence-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCoherenceControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/support-sla" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSupportSlaPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/source-audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSourceAuditPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/user-lookup" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUserLookupPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/finance-summary" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFinanceSummaryPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/order-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOrderWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/order-audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOrderAuditPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/order-timeline" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOrderTimelinePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/search-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSearchWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/refund-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRefundWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/refund-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRefundQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/system-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSystemHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/system-live" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSystemLivePanelPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/active-sessions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminActiveSessionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/failed-payments" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFailedPaymentsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/coupon-oversight" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCouponOversightPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/restaurant-autofill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRestaurantFillPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/menu-quality-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMenuQualityControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/ux-live-test" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUxLiveTestPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/qa-command" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminQaCommandPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/platform-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/data-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/repair-diag" element={<Suspense fallback={<div>Loading...</div>}><RepairDiagLazy /></Suspense>} />
                   <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
+
+                  {/* ── Admin legacy redirects (consolidated) ── */}
+                  <Route path="/admin/super-dashboard" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/executive-dashboard" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/executive-kpi" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/kpi-charts" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/runtime-audit" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/runtime-links" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/runtime-cockpit" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/central-control" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/control-plane" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/master-debug" element={<Navigate to="/admin/master-control" replace />} />
+                  <Route path="/admin/workspace-bootstrap" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/deployment-checklist" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/route-audit" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/qa-command" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/garage" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/engine-cockpit" element={<Navigate to="/admin/engine-control-room" replace />} />
+                  <Route path="/admin/core-engine" element={<Navigate to="/admin/engine-control-room" replace />} />
+                  <Route path="/admin/unified-engine" element={<Navigate to="/admin/engine-control-room" replace />} />
+                  <Route path="/admin/home-engine" element={<Navigate to="/admin/engine-control-room" replace />} />
+                  <Route path="/admin/map-engine" element={<Navigate to="/admin/engine-control-room" replace />} />
+                  <Route path="/admin/quality-engines" element={<Navigate to="/admin/engines" replace />} />
+                  <Route path="/admin/wiring-report" element={<Navigate to="/admin/engines" replace />} />
+                  <Route path="/admin/fraud" element={<Navigate to="/admin/fraud-detection" replace />} />
+                  <Route path="/admin/fraud-monitor" element={<Navigate to="/admin/fraud-detection" replace />} />
+                  <Route path="/admin/trust-graph" element={<Navigate to="/admin/fraud-detection" replace />} />
+                  <Route path="/admin/live-ops" element={<Navigate to="/admin/ops-dashboard" replace />} />
+                  <Route path="/admin/search-watch" element={<Navigate to="/admin/ops-dashboard" replace />} />
+                  <Route path="/admin/uae-ops" element={<Navigate to="/admin/ops-dashboard" replace />} />
+                  <Route path="/admin/recon-alerts" element={<Navigate to="/admin/financial-recon" replace />} />
+                  <Route path="/admin/monetization" element={<Navigate to="/admin/financial-recon" replace />} />
+                  <Route path="/admin/sla" element={<Navigate to="/admin/support-sla" replace />} />
+                  <Route path="/admin/ai-quality" element={<Navigate to="/admin/ai-control-center" replace />} />
+                  <Route path="/admin/ai-ops-chat" element={<Navigate to="/admin/ai-control-center" replace />} />
+                  <Route path="/admin/ai-decisions" element={<Navigate to="/admin/ai-control-center" replace />} />
+                  <Route path="/admin/system-live" element={<Navigate to="/admin/system-health" replace />} />
+                  <Route path="/admin/platform-recovery" element={<Navigate to="/admin/system-health" replace />} />
+                  <Route path="/admin/platform-alerts" element={<Navigate to="/admin/system-health" replace />} />
+                  <Route path="/admin/active-sessions" element={<Navigate to="/admin/system-health" replace />} />
+                  <Route path="/admin/browser-repair" element={<Navigate to="/admin/system-health" replace />} />
+                  <Route path="/admin/growth" element={<Navigate to="/admin/growth-ops" replace />} />
+                  <Route path="/admin/growth-engine" element={<Navigate to="/admin/growth-ops" replace />} />
+                  <Route path="/admin/growth-dashboard" element={<Navigate to="/admin/growth-ops" replace />} />
+                  <Route path="/admin/driver-heatmap" element={<Navigate to="/admin/driver-monitor" replace />} />
+                  <Route path="/admin/delivery-incidents" element={<Navigate to="/admin/delivery-ops" replace />} />
+                  <Route path="/admin/order-audit" element={<Navigate to="/admin/order-watch" replace />} />
+                  <Route path="/admin/order-timeline" element={<Navigate to="/admin/order-watch" replace />} />
+                  <Route path="/admin/refund-watch" element={<Navigate to="/admin/refund-queue" replace />} />
+                  <Route path="/admin/wallet-watch" element={<Navigate to="/admin/wallet-diagnostics" replace />} />
+                  <Route path="/admin/backend-truth" element={<Navigate to="/admin/source-audit" replace />} />
+                  <Route path="/admin/coherence-control" element={<Navigate to="/admin/source-audit" replace />} />
+                  <Route path="/admin/visual-quality" element={<Navigate to="/admin/shop-quality" replace />} />
+                  <Route path="/admin/ranking-control" element={<Navigate to="/admin/shop-quality" replace />} />
+                  <Route path="/admin/failed-payments" element={<Navigate to="/admin/payments-ops" replace />} />
+                  <Route path="/admin/merchant-promo-watch" element={<Navigate to="/admin/marketplace-ops" replace />} />
+                  <Route path="/admin/merchant-autofill" element={<Navigate to="/admin/marketplace-ops" replace />} />
+                  <Route path="/admin/owner-cockpit" element={<Navigate to="/admin/marketplace-ops" replace />} />
+                  <Route path="/admin/coupon-oversight" element={<Navigate to="/admin/marketplace-ops" replace />} />
+                  <Route path="/admin/restaurant-autofill" element={<Navigate to="/admin/marketplace-ops" replace />} />
+                  <Route path="/admin/test-restaurants" element={<Navigate to="/admin/marketplace-ops" replace />} />
+                  <Route path="/admin/merchant-onboarding" element={<Navigate to="/admin/merchant-approval-queue" replace />} />
+                  <Route path="/admin/onboarding-quality" element={<Navigate to="/admin/merchant-approval-queue" replace />} />
+                  <Route path="/admin/bulk-merchant-import" element={<Navigate to="/admin/shop-import" replace />} />
+                  <Route path="/admin/url-import" element={<Navigate to="/admin/shop-import" replace />} />
+                  <Route path="/admin/bulk-seed" element={<Navigate to="/admin/seed-tools" replace />} />
+                  <Route path="/admin/menu-quality-control" element={<Navigate to="/admin/menu" replace />} />
+                  <Route path="/admin/ux-live-test" element={<Navigate to="/admin/ui-engine" replace />} />
+                  <Route path="/admin/notification-engine" element={<Navigate to="/admin/notification-ops" replace />} />
+                  <Route path="/admin/outreach" element={<Navigate to="/admin/crm-ops" replace />} />
+                  <Route path="/admin/orchestration" element={<Navigate to="/admin/pipeline" replace />} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  DEEP LINKS · QR · PUBLIC                      */}

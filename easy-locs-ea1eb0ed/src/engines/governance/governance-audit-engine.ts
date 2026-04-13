@@ -11,18 +11,12 @@
  * Single engine replaces two separate aggregator engines.
  */
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
-import type { GovernanceViolation, CanonicalVertical } from "@/domains/shared/canonical-types";
+import type { GovernanceViolation } from "@/domains/shared/canonical-types";
 import { getPublishGateGovernanceViolations } from "@/lib/engines/publish-gate-base";
-import { getVerticalViolations } from "./vertical-isolation-engine";
-import { getTaxonomyViolations } from "./taxonomy-governance-engine";
 import { getMediaViolations } from "./media-relevance-engine";
 import { getTextViolations } from "./text-integrity-engine";
-import { getLayoutViolations } from "./layout-integrity-engine";
-import { getActionViolations } from "./flow-integrity-engine";
-import { getBannerViolations } from "./banner-strategy-engine";
-import { getLocalizationViolations } from "./localization-engine";
+import { getActionViolations, getFlowViolations } from "./flow-integrity-engine";
 import { getPageOpenViolations } from "./page-open-engine";
-import { getFlowViolations } from "./flow-integrity-engine";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 // ── Architecture Debt (from anti-conflict) ───────────────────────────────────
@@ -77,14 +71,9 @@ export function getUnresolvedDebt(): ArchitectureDebt[] {
 
 export function getAllGovernanceViolations(): GovernanceViolation[] {
   return [
-    ...getVerticalViolations(),
-    ...getTaxonomyViolations(),
     ...getMediaViolations(),
     ...getTextViolations(),
-    ...getLayoutViolations(),
     ...getActionViolations(),
-    ...getBannerViolations(),
-    ...getLocalizationViolations(),
     ...getPageOpenViolations(),
     ...getFlowViolations(),
     ...getPublishGateGovernanceViolations(),
@@ -182,10 +171,7 @@ export function getRemediationStats() {
 
   const allViolations = [
     ...getMediaViolations(),
-    ...getVerticalViolations(),
     ...getActionViolations(),
-    ...getBannerViolations(),
-    ...getLayoutViolations(),
   ];
 
   const autoRemediated = allViolations.filter((v) => v.autoRemediated).length;
@@ -220,10 +206,7 @@ export class GovernanceAuditEngine extends BaseEngine {
 
     const unremediated = [
       ...getMediaViolations(),
-      ...getVerticalViolations(),
       ...getActionViolations(),
-      ...getBannerViolations(),
-      ...getLayoutViolations(),
     ].filter((v) => !v.autoRemediated && !v.resolvedAt);
 
     let remediatedCount = 0;

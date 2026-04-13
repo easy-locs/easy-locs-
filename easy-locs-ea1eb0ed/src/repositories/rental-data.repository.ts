@@ -172,7 +172,7 @@ export function subscribeToRentalChat(tenantId: string, onInsert: (msg: any) => 
 
 // ─── Stripe Rent Payment ───
 export async function invokeRentPayment(body: Record<string, any>) {
-  const { data, error } = await db.functions.invoke("create-rent-payment", { body });
+  const { data, error } = await db.functions.invoke("rent-payment", { body: { ...body, mode: "checkout" } });
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
   return data;
