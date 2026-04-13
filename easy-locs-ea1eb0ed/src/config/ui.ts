@@ -344,3 +344,62 @@ export function getAccuracyLevel(meters: number | null | undefined) {
   if (meters <= GPS_ACCURACY.approximate.max) return GPS_ACCURACY.approximate;
   return GPS_ACCURACY.poor;
 }
+
+/* ══════════════════════════════════════════════════
+   COLOR — Brand & semantic tokens (CSS variable-backed)
+   ══════════════════════════════════════════════════ */
+export const COLOR = {
+  gold: "hsl(var(--gold))",
+  goldLight: "hsl(var(--gold-light))",
+  goldDark: "hsl(var(--gold-dark))",
+  navy: "hsl(var(--navy))",
+  navyDeep: "hsl(var(--navy-deep))",
+  navyLight: "hsl(var(--navy-light))",
+
+  success: "hsl(var(--success))",
+  warning: "hsl(var(--warning))",
+  info: "hsl(var(--info))",
+  destructive: "hsl(var(--destructive))",
+
+  foreground: "hsl(var(--foreground))",
+  mutedForeground: "hsl(var(--muted-foreground))",
+  background: "hsl(var(--background))",
+  card: "hsl(var(--card))",
+  border: "hsl(var(--border))",
+  muted: "hsl(var(--muted))",
+} as const;
+
+export const ACCENT = {
+  blue: "hsl(210 80% 52%)",
+  rose: "hsl(350 65% 55%)",
+  amber: "hsl(38 92% 50%)",
+  emerald: "hsl(152 60% 42%)",
+  violet: "hsl(270 60% 55%)",
+  cyan: "hsl(190 75% 46%)",
+  slate: "hsl(220 15% 50%)",
+  orange: "hsl(25 90% 52%)",
+  navy: "hsl(220 40% 18%)",
+  gold: "hsl(38 65% 56%)",
+} as const;
+
+/* ══════════════════════════════════════════════════
+   LINE HEIGHT — Semantic scale
+   ══════════════════════════════════════════════════ */
+export const LINE_HEIGHT = {
+  none: 1,
+  tight: 1.15,
+  snug: 1.3,
+  normal: 1.4,
+  relaxed: 1.5,
+  loose: 1.8,
+} as const;
+
+/* ══════════════════════════════════════════════════
+   DENSITY — Card & list content density presets
+   ══════════════════════════════════════════════════ */
+export const DENSITY = {
+  compact: { padding: "p-2.5", gap: "gap-1.5", minHeight: "min-h-[80px]" },
+  default: { padding: "p-3", gap: "gap-2", minHeight: "min-h-[100px]" },
+  comfortable: { padding: "p-4", gap: "gap-3", minHeight: "min-h-[120px]" },
+  spacious: { padding: "p-5", gap: "gap-4", minHeight: "min-h-[140px]" },
+} as const;

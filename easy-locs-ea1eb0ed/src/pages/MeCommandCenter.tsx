@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useI18n, tSafe } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
+import { ACCENT } from "@/config/ui";
 import MeBusinessSwitcher from "@/components/me/MeBusinessSwitcher";
 import MeProfileQuality from "@/components/me/MeProfileQuality";
 import MeBusinessKpis from "@/components/me/MeBusinessKpis";
@@ -46,18 +47,7 @@ interface MeSection {
   cta?: { label: string; path: string };
 }
 
-const A = {
-  blue: "hsl(210 80% 52%)",
-  rose: "hsl(350 65% 55%)",
-  amber: "hsl(38 92% 50%)",
-  emerald: "hsl(152 60% 42%)",
-  violet: "hsl(270 60% 55%)",
-  cyan: "hsl(190 75% 46%)",
-  slate: "hsl(220 15% 50%)",
-  orange: "hsl(25 90% 52%)",
-  navy: "hsl(220 40% 18%)",
-  gold: "hsl(38 65% 56%)",
-};
+const A = ACCENT;
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.03 } } };
 const fadeUp = {
