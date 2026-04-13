@@ -57,6 +57,8 @@ export interface CanonicalDisplayIdentity {
 export function resolveCanonicalDisplayIdentity(entity: {
   display_name?: string | null;
   name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   email?: string | null;
   phone?: string | null;
   avatar_url?: string | null;
@@ -66,11 +68,13 @@ export function resolveCanonicalDisplayIdentity(entity: {
   id?: string | null;
   user_id?: string | null;
   orbit_id?: string | null;
+  username?: string | null;
 }): CanonicalDisplayIdentity {
-  const name = entity.display_name || entity.name || null;
+  const compositeName = [entity.first_name, entity.last_name].filter(Boolean).join(" ") || null;
+  const name = entity.display_name || entity.name || compositeName || entity.username || null;
   const phone = entity.phone || null;
 
-  const displayName = name || phone || "Contact";
+  const displayName = name || (entity.email ? entity.email.split("@")[0] : null) || phone || "Contact";
 
   const subtitle = entity.company || entity.role || "";
 

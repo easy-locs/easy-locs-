@@ -47,7 +47,7 @@ const LegalDisclaimer = lazy(() => import("@/components/landing/LegalDisclaimer"
 const SmartRecommendationsSection = lazy(() => import("@/components/home/SmartRecommendationsSection"));
 const HomePromoCarousel = lazy(() => import("@/components/promo/HomePromoCarousel"));
 
-/** Deferred section — only renders when scrolled near */
+/** Deferred section — only renders when scrolled near, with smooth reveal */
 function DeferredSection({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -60,7 +60,14 @@ function DeferredSection({ children }: { children: React.ReactNode }) {
     observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
-  return <div ref={ref}>{visible ? children : <div className="min-h-[48px]" />}</div>;
+  return (
+    <div
+      ref={ref}
+      className={visible ? "scroll-reveal visible" : "scroll-reveal"}
+    >
+      {visible ? children : <div className="min-h-[48px]" />}
+    </div>
+  );
 }
 
 const SectionLoader = memo(() => (

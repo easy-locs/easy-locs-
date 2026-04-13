@@ -77,7 +77,7 @@ export default function ReverseAuctionRFQ({ shopId, mode = "buyer" }: Props) {
     await db("storefront_rfq_quotes").insert({
       rfq_id: rfqId, vendor_id: user.id, price: parseFloat(qf.price),
       delivery_days: parseInt(qf.delivery_days) || null, message: qf.message || null,
-      vendor_name: user.user_metadata?.display_name || user.user_metadata?.full_name || "Vendor",
+      vendor_name: user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Vendor",
     });
     qc.invalidateQueries({ queryKey: ["rfq-quotes", shopId, rfqId] });
     setQuoteForm(prev => ({ ...prev, [rfqId]: { price: "", delivery_days: "", message: "" } }));

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { useI18n } from "@/lib/i18n";
 import { db } from "@/services/db";
 import { haptic } from "@/lib/haptics";
@@ -114,8 +115,7 @@ export default function OrbitStatusSection() {
   const [mediaIsVideo, setMediaIsVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const myName = user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.email?.split("@")[0] || "You";
-  const myAvatar = user?.user_metadata?.avatar_url || null;
+  const { displayName: myName, avatarUrl: myAvatar } = useAccountIdentity();
 
   const loadStatuses = useCallback(async () => {
     if (!user?.id) { setStatuses([]); setLoading(false); return; }

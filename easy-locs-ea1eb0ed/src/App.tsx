@@ -7,6 +7,7 @@ import { Suspense, lazy, useState, useEffect, memo } from "react";
 import { Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
+import { LazyMotion, domAnimation } from "framer-motion";
 
 // ── Auth & providers ──
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -334,6 +335,7 @@ const PageLoader = () => (
 );
 
 const App = () => (
+  <LazyMotion features={domAnimation} strict={false}>
   <AppCrashBoundary>
   <ChunkRecoveryBoundary>
   <ErrorBoundary>
@@ -943,6 +945,7 @@ const App = () => (
   </ErrorBoundary>
   </ChunkRecoveryBoundary>
   </AppCrashBoundary>
+  </LazyMotion>
 );
 
 export default App;

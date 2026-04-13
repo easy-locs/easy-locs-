@@ -3,6 +3,7 @@ import { Copy, Check, Share2 } from "lucide-react";
 import BrandedQR from "@/components/qr/BrandedQR";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { qr, toResolveUrl } from "@/lib/qr-engine";
 import { formatMoney } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,12 @@ const QUICK_AMOUNTS = [5, 10, 20, 50, 100, 250];
 
 export default function ReceiveQrPanel() {
   const { user, userCurrency } = useAuth();
+  const { displayName } = useAccountIdentity();
   const { currency: walletCurrency } = useWalletBalance();
   const [amount, setAmount] = useState<string>("");
   const [copied, setCopied] = useState(false);
 
   const currency = walletCurrency || userCurrency || getWalletDefaultCurrency();
-  const displayName = user?.user_metadata?.name || "Me";
 
   const payload = useMemo(() => {
     const numAmount = parseFloat(amount);

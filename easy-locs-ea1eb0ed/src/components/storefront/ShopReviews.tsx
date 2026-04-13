@@ -73,7 +73,7 @@ export default function ShopReviews({ shopId, shopOwnerId }: ShopReviewsProps) {
       const { error } = await db("storefront_reviews").insert({
         shop_id: shopId,
         reviewer_id: user.id,
-        reviewer_name: user.user_metadata?.display_name || user.user_metadata?.full_name || "User",
+        reviewer_name: user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "User",
         rating: newRating,
         comment: newComment.trim(),
       });

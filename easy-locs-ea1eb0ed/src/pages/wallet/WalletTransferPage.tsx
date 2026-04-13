@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { toast } from "sonner";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { executeWalletTransfer } from "@/lib/wallet/wallet-transfer";
@@ -40,6 +41,7 @@ export default function WalletTransferPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const accountIdentity = useAccountIdentity();
   const { t } = useI18n();
   const { balance, currency, reload: reloadBalance, optimisticAdjust } = useWalletBalance();
   const { returnToOrigin, hasOrigin } = useReturnToOrigin("/wallet");
@@ -237,7 +239,7 @@ export default function WalletTransferPage() {
         amount: numAmount,
         currency,
         description: note.trim() || undefined,
-        senderName: user.user_metadata?.display_name || user.email || undefined,
+        senderName: accountIdentity.displayName || user.email || undefined,
         receiverName: displayName || undefined,
       });
 

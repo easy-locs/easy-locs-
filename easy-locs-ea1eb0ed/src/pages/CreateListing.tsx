@@ -294,7 +294,7 @@ const CreateListing = () => {
 
       // First ensure provider exists
       const provider = await ensureMarketplaceProvider(orgId, user.id, {
-        display_name: user.user_metadata?.display_name || user.user_metadata?.full_name || "Provider",
+        display_name: user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Provider",
         slug: `provider-${orgId.slice(0, 8)}`,
         city: form.city, country: form.country,
         categories: [form.category],

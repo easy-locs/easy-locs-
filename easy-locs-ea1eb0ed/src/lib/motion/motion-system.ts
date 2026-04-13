@@ -8,11 +8,11 @@ import { type Variants, type Transition } from "framer-motion";
 // ── Core Tokens ──
 
 export const MOTION_DURATION = {
-  instant: 0.1,
-  fast: 0.2,
-  normal: 0.3,
-  smooth: 0.45,
-  slow: 0.6,
+  instant: 0.08,
+  fast: 0.15,
+  normal: 0.25,
+  smooth: 0.35,
+  slow: 0.5,
 } as const;
 
 export const MOTION_EASE = {
@@ -82,13 +82,26 @@ export const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
+    transition: { staggerChildren: 0.04, delayChildren: 0.02 },
   },
 };
 
 export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: TRANSITIONS.smooth },
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: TRANSITIONS.fast },
+};
+
+export const staggerContainerFast: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.025, delayChildren: 0 },
+  },
+};
+
+export const staggerItemFast: Variants = {
+  hidden: { opacity: 0, y: 4 },
+  visible: { opacity: 1, y: 0, transition: { duration: MOTION_DURATION.fast, ease: MOTION_EASE.decel } },
 };
 
 /** Hero image reveal */
@@ -121,9 +134,9 @@ export const badgePulse: Variants = {
 // ── Page Transition Wrapper ──
 
 export const pageTransition: Variants = {
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease: MOTION_EASE.smooth } },
-  exit: { opacity: 0, y: -4, transition: { duration: 0.15 } },
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.2, ease: MOTION_EASE.smooth } },
+  exit: { opacity: 0, transition: { duration: 0.1 } },
 };
 
 // ── Reduced Motion Helper ──
@@ -156,3 +169,17 @@ export function safeVariants(v: Variants): Variants {
   }
   return v;
 }
+
+/** Tab swap — minimal, fast content switch */
+export const tabSwap: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: MOTION_DURATION.fast, ease: MOTION_EASE.decel } },
+  exit: { opacity: 0, transition: { duration: MOTION_DURATION.instant } },
+};
+
+/** Bottom sheet entry */
+export const sheetEntry: Variants = {
+  hidden: { y: "100%", opacity: 0.8 },
+  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 400, damping: 35 } },
+  exit: { y: "100%", opacity: 0, transition: { duration: MOTION_DURATION.fast } },
+};

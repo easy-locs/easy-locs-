@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { User, Settings, Store, CreditCard, ShieldCheck, ArrowUpRight, ChevronRight, BarChart3, FileText } from "lucide-react";
 import { AppBottomSheet } from "@/components/ui/system/AppBottomSheet";
 import { useI18n, tSafe } from "@/lib/i18n";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { haptic } from "@/lib/haptics";
 
 interface Props {
@@ -24,11 +24,7 @@ const ME_QUICK_LINKS = [
 function MeQuickSheet({ open, onOpenChange, onGoFull }: Props) {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { user } = useAuth();
-
-  const displayName = user?.user_metadata?.display_name || user?.email?.split("@")[0] || "User";
-  const avatarUrl = user?.user_metadata?.avatar_url;
-  const email = user?.email || "";
+  const { displayName, avatarUrl, email, accountLabel } = useAccountIdentity();
 
   const handleAction = (route: string) => {
     haptic("medium");
@@ -60,7 +56,7 @@ function MeQuickSheet({ open, onOpenChange, onGoFull }: Props) {
               <div className="flex items-center gap-1 mt-1">
                 <ShieldCheck className="w-3 h-3" style={{ color: "hsl(160 60% 45%)" }} />
                 <span className="text-[9px] font-bold" style={{ color: "hsl(160 60% 45%)" }}>
-                  {tSafe(t, "me.verified", "Verified")}
+                  {accountLabel} · {tSafe(t, "me.verified", "Verified")}
                 </span>
               </div>
             </div>

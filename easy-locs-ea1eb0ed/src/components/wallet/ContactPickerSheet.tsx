@@ -360,7 +360,7 @@ export function InviteContactSheet({
 
     setSending(true);
     try {
-      const senderName = user.user_metadata?.display_name || user.user_metadata?.full_name || "Someone";
+      const senderName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Someone";
       const link = await createInvitePaymentLink({
         senderId: user.id,
         recipientPhone: contact.phone,

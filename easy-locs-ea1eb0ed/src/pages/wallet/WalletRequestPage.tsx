@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ function formatCurrencyAmount(amount: number, currency: string): string {
 export default function WalletRequestPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const accountIdentity = useAccountIdentity();
   const { t } = useI18n();
   const { currency: walletCurrency } = useWalletBalance();
   const currency = walletCurrency ?? getWalletDefaultCurrency();
@@ -106,7 +108,7 @@ export default function WalletRequestPage() {
     try {
       setSaving(true);
 
-      const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || "User";
+      const displayName = accountIdentity.displayName;
 
       const { error } = await typedQueries.walletTransactions.insertRequest({
         sender_id: resolvedTarget.id,
