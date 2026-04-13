@@ -73,10 +73,20 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
         hasOrg ? fetchDeals(orgId!) : Promise.resolve([]),
         fetchPreferences(userId!),
       ]);
-      const rawConvs = rawConvsResult.status === "fulfilled" ? rawConvsResult.value : [];
+      if (rawConvsResult.status === "rejected") {
+        const errMsg = rawConvsResult.reason instanceof Error ? rawConvsResult.reason.message : String(rawConvsResult.reason);
+        console.error("[orbit-threads] fetchV2Conversations failed — surfacing error:", errMsg);
+        failStep(flow, s2, errMsg);
+        reportHealth("orbit", "degraded", undefined, `v2_conversations_failed: ${errMsg}`);
+        endFlow(flow, "failed");
+        setError(`Conversations unavailable: ${errMsg}`);
+        setLoading(false);
+        loadingRef.current = false;
+        return;
+      }
+      const rawConvs = rawConvsResult.value;
       const deals = dealsResult.status === "fulfilled" ? dealsResult.value : [];
       const prefs = prefsResult.status === "fulfilled" ? prefsResult.value : [];
-      if (rawConvsResult.status === "rejected") console.warn("[orbit-threads] fetchV2Conversations failed (isolated):", rawConvsResult.reason);
       if (dealsResult.status === "rejected") console.warn("[orbit-threads] fetchDeals failed (isolated):", dealsResult.reason);
       if (prefsResult.status === "rejected") console.warn("[orbit-threads] fetchPreferences failed (isolated):", prefsResult.reason);
       completeStep(flow, s2, { rawConvs: rawConvs.length, deals: deals.length, prefs: prefs.length });

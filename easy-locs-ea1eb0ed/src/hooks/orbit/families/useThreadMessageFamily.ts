@@ -136,7 +136,7 @@ export function useThreadMessageFamily(params: {
       conversationId,
       body: msg.content.trim(),
       locale,
-      category: (msg.category as any) || "general",
+      category: msg.category || "general",
       _uiTempId: msg.id,
     });
     if (!result.ok) {
