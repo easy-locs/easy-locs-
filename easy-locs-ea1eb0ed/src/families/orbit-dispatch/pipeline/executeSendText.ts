@@ -19,6 +19,7 @@ import {
   type SendTextInput,
 } from "@/domains/orbit/pipelines/message/send-text.pipeline";
 import { encryptMessageBody } from "@/stores/orbit/crypto.bridge";
+import { markMessageSeen } from "@/lib/dedup/message-dedup";
 
 export async function executeSendText(
   ctx: ResolvedContext,
@@ -119,7 +120,13 @@ export async function executeSendText(
 
         // Reconcile: tempId → serverId
         const serverId = data?.id;
-        if (serverId && serverId !== tempId) {
+        if (serverId) {
+          markMessageSeen({ id: serverId, tempId });
+        }
+        const alreadyReconciled = useOrbitMessagingStore.getState().tempIdMap[tempId];
+        if (alreadyReconciled) {
+          // Realtime already reconciled — skip to avoid overwriting server data
+        } else if (serverId && serverId !== tempId) {
           store.reconcileMessage(tempId, { ...optimistic, id: serverId, status: "sent" });
         } else {
           store.updateMessageStatus(tempId, "sent");

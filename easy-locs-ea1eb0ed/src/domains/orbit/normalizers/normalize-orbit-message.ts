@@ -15,7 +15,7 @@ export function normalizeOrbitMessage(raw: any): OrbitMessage {
 
   return {
     id: raw.id || "",
-    tempId: raw.tempId || raw.temp_id || raw.metadata?.optimistic_id || null,
+    tempId: raw.tempId || raw.temp_id || raw.metadata?.optimistic_id || raw.metadata?._tempId || null,
     conversationId: raw.conversation_id || raw.conversationId || "",
     senderId: raw.sender_user_id || raw.sender_id || raw.senderId || "",
     senderOrbitId: raw.sender_orbit_id || raw.senderOrbitId || null,
