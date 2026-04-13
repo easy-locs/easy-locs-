@@ -49,7 +49,7 @@ export class UnreadIntegrityEngine extends BaseEngine {
             }
           }
         });
-        platformBus.emit("orbit:unread_corrected" as any, {
+        platformBus.emit("orbit:unread_corrected", {
           timestamp: now,
           previousCount: totalBadgeUnread,
           correctedTo: 0,

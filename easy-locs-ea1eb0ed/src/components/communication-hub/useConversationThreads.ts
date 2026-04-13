@@ -154,6 +154,9 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
     if (!userId) return;
 
     const unsubThreadUpdate = platformBus.on("orbit:thread_updated", () => debouncedReload());
+    const unsubForceReload = platformBus.on("orbit:force_reload", () => {
+      loadThreads();
+    });
 
     const channel = createRealtimeChannel("hub-live");
 
@@ -182,6 +185,7 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
 
     return () => {
       unsubThreadUpdate();
+      unsubForceReload();
       if (debounceRef.current) clearTimeout(debounceRef.current);
       removeRealtimeChannel(channel);
     };
