@@ -33,18 +33,18 @@ serve(async (req) => {
     const { amount, currency, destinationType, destinationRef, note } = await req.json();
 
     const { data: orbit } = await admin
-      .from("orbit_profiles_v2")
+      .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
     if (!orbit) throw new Error("No orbit profile");
 
-    const walletId = `wallet_${orbit.orbit_id}`;
+    const walletId = `wallet_${orbit.id}`;
     const now = new Date().toISOString();
 
     const payoutRequest = {
       id: `payout_${crypto.randomUUID().slice(0, 8)}`,
-      owner_orbit_id: orbit.orbit_id,
+      owner_orbit_id: orbit.id,
       wallet_id: walletId,
       amount,
       currency,

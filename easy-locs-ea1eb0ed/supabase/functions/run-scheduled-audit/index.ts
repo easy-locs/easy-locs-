@@ -65,7 +65,7 @@ serve(async (req) => {
     // ─── 2. Stale bookings (pending > 7 days) ───
     const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
     const { data: staleBookings } = await supabase
-      .from("booking_requests")
+      .from("bookings")
       .select("id")
       .eq("status", "pending")
       .lt("created_at", sevenDaysAgo)
@@ -151,7 +151,7 @@ serve(async (req) => {
 
     // ─── 7. Marketplace services without photos ───
     const { data: servicesNoPhotos } = await supabase
-      .from("marketplace_services")
+      .from("listings")
       .select("id")
       .eq("active", true)
       .or("photo_urls.is.null,photo_urls.eq.[]")

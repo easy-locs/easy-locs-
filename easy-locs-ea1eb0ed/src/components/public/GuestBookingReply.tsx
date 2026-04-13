@@ -91,7 +91,7 @@ export default function GuestBookingReply({ bookingId, guestName, guestEmail }: 
 
       // Notify host via app_notifications
       const { data: booking } = await db
-        .from("booking_requests")
+        .from("bookings")
         .select("org_id")
         .eq("id", bookingId)
         .maybeSingle();

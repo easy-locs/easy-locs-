@@ -52,8 +52,8 @@ export function useAppHealthCheck() {
       try {
         const start = performance.now();
         const { data, error, status } = await supabase
-          .from("storefront_pages")
-          .select("id")
+          .from("organizations")
+          .select("org_id")
           .limit(1);
         const elapsed = (performance.now() - start).toFixed(1);
 

@@ -1,3 +1,28 @@
+/**
+ * canonical-schemas.ts
+ *
+ * TypeScript interfaces for every canonical database entity in the Easy-Locs
+ * platform. Each interface maps 1-to-1 to a PostgreSQL table owned by its
+ * domain schema (Task #56 — Domain Schema Architecture).
+ *
+ * Domain schema ownership (pg_schema → canonical table):
+ *   identity     → profiles, organizations, organization_members
+ *   wallet       → wallet_accounts, wallet_transactions, wallet_ledger_entries
+ *   orbit        → conversations_v2, messages_v2, conversation_participants_v2,
+ *                  orbit_contacts_v2, ghost_call_sessions
+ *   marketplace  → listings, listing_details, listing_attributes,
+ *                  categories, verticals, reviews, favorites
+ *   commerce     → bookings, transactions, carts, receipts, payout_requests
+ *   property     → properties, units, leases
+ *   onboarding   → onboarding_sessions, import_jobs, staging_entities
+ *   support      → support_tickets
+ *   notification → app_notifications, user_notification_preferences, user_push_tokens
+ *   system       → engine_supervisor, engine_run_logs, worker_health_snapshots
+ *   analytics    → user_radar_events, user_radar_profiles
+ *
+ * Public compatibility views mirror every moved table under the original name
+ * in the `public` schema. Use domain-schemas.ts for programmatic schema lookups.
+ */
 import type {
   EntityStatus, TransactionStatus, PublicationStatus, PaymentStatus,
   FulfillmentStatus, KycStatus, ConversationStatus, MessageStatus,

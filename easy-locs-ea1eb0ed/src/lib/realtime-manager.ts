@@ -19,7 +19,7 @@ type TableName =
   | "call_logs"
   | "chat_messages_v2"
   | "app_notifications"
-  | "booking_requests"
+  | "bookings"
   | "concierge_orders"
   | "deal_rooms"
   | "conversations_v2";
@@ -223,15 +223,15 @@ class RealtimeManager {
 
     const msgChannel = createRealtimeChannel(`rt:thread:${threadId}`)
       .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "chat_messages_v2",
+        event: "INSERT", schema: "orbit", table: "chat_messages_v2",
         filter: `conversation_id=eq.${threadId}`,
       }, (p) => opts.onMessage?.(p))
       .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "chat_messages_v2",
+        event: "UPDATE", schema: "orbit", table: "chat_messages_v2",
         filter: `conversation_id=eq.${threadId}`,
       }, (p) => opts.onUpdate?.(p))
       .on("postgres_changes", {
-        event: "DELETE", schema: "public", table: "chat_messages_v2",
+        event: "DELETE", schema: "orbit", table: "chat_messages_v2",
         filter: `conversation_id=eq.${threadId}`,
       }, (p) => opts.onDelete?.(p))
       .subscribe();
@@ -275,7 +275,7 @@ class RealtimeManager {
   private initUserChannel() {
     if (!this.userId) return;
 
-    const tables: { table: TableName; filter?: string }[] = [
+    const tables: { table: TableName; filter?: string; schema?: string }[] = [
       // call_logs: no org filter needed — user sees calls they participate in
       { table: "call_logs" },
       // chat_messages_v2: V2 canonical messages
@@ -283,7 +283,7 @@ class RealtimeManager {
       // app_notifications: always filter by user
       { table: "app_notifications", filter: `user_id=eq.${this.userId}` },
       // org-scoped tables: filter when org available
-      { table: "booking_requests", filter: this.orgId ? `org_id=eq.${this.orgId}` : undefined },
+      { table: "bookings", schema: "commerce", filter: this.orgId ? `org_id=eq.${this.orgId}` : undefined },
       { table: "concierge_orders", filter: this.orgId ? `org_id=eq.${this.orgId}` : undefined },
       { table: "deal_rooms", filter: this.orgId ? `org_id=eq.${this.orgId}` : undefined },
       // conversations_v2: V2 canonical conversations
@@ -292,8 +292,8 @@ class RealtimeManager {
 
     let ch = createRealtimeChannel(`rt:user:${this.userId}`);
 
-    for (const { table, filter } of tables) {
-      const config: any = { event: "*", schema: "public", table };
+    for (const { table, filter, schema } of tables) {
+      const config: any = { event: "*", schema: schema ?? "public", table };
       if (filter) config.filter = filter;
       ch = ch.on("postgres_changes", config, (payload) => {
         this.emit({

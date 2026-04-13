@@ -40,7 +40,7 @@ export function useWalletAccounts(ownerUserId?: string) {
 
     const channel = createRealtimeChannel(`wallet-accounts:${ownerUserId}`);
     channel
-      .on("postgres_changes", { event: "*", schema: "public", table: "wallet_accounts" }, load)
+      .on("postgres_changes", { event: "*", schema: "wallet", table: "wallet_accounts" }, load)
       .subscribe((status: string) => {
         if (status === "CHANNEL_ERROR") {
           console.error(`[useWalletAccounts] Realtime channel error for user ${ownerUserId}`);

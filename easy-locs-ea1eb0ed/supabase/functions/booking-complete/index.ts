@@ -35,13 +35,13 @@ serve(async (req) => {
     const { bookingId } = await req.json();
 
     const { data: ownerOrbit } = await admin
-      .from("orbit_profiles_v2").select("*").eq("id", userId).single();
+      .from("profiles").select("*").eq("id", userId).single();
 
     const { data: booking } = await admin
       .from("bookings_v2").select("*").eq("id", bookingId).single();
 
     if (!booking) throw new Error("Booking not found");
-    if (booking.owner_orbit_id !== ownerOrbit.orbit_id) throw new Error("Not allowed");
+    if (booking.owner_orbit_id !== ownerOrbit.id) throw new Error("Not allowed");
 
     const now = new Date().toISOString();
 
@@ -57,7 +57,7 @@ serve(async (req) => {
       await admin.from("chat_messages_v2").insert({
         id: crypto.randomUUID(),
         conversation_id: booking.conversation_id,
-        sender_orbit_id: ownerOrbit.orbit_id,
+        sender_orbit_id: ownerOrbit.id,
         type: "system",
         body: "Owner marked the stay as completed",
         metadata: { bookingId },

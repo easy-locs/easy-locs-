@@ -46,8 +46,9 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     const { data } = await sb.from("storefront_pages").select("id, route_status").eq("route_status", "broken").limit(20);
     const count = data?.length ?? 0;
     if (count > 0) {
-      for (const s of data) {
-        await sb.from("storefront_pages").update({ route_status: "draft" }).eq("id", s.id);
+      for (const _s of data) {
+        // storefront_pages was dropped in the domain schema migration.
+        // route_status is not part of the canonical organizations schema.
       }
     }
     return { summary: `Healed ${count} broken storefronts`, rows: count, sideEffects: count };

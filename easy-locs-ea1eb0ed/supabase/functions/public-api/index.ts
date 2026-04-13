@@ -170,7 +170,7 @@ Deno.serve(async (req) => {
 
       case "reservations": {
         if (method === "GET") {
-          const query = supabaseAdmin.from("booking_requests").select("*").eq("org_id", orgId);
+          const query = supabaseAdmin.from("bookings").select("*").eq("org_id", orgId);
           if (resourceId) query.eq("id", resourceId);
           const { data, error } = await query;
           if (error) return json({ error: error.message }, 400);

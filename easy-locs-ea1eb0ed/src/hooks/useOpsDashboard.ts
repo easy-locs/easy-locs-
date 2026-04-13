@@ -219,7 +219,7 @@ export function useOpsDashboard() {
     queryKey: ["ops-dashboard-shops"],
     queryFn: async () => {
       const { data, error } = await db
-        .from("storefront_pages").select("*")
+        .from("organizations").select("*")
         .order("created_at", { ascending: false }).limit(1000);
       if (error) throw error;
       return (data || []) as ShopRow[];

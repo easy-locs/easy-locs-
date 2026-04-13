@@ -15,14 +15,15 @@ import { MessageSquare } from "lucide-react";
 import React from "react";
 import { isOutgoingMessage } from "@/domains/orbit/resolvers";
 
-// V3: Map V2 canonical tables to orbit modules
+// V4: Map canonical domain-schema tables to orbit modules
+// Tables are now physically in their domain schemas (Task #56).
 const TABLE_TO_MODULE: Record<string, OrbitModule> = {
   call_logs: "communication",
   chat_messages_v2: "communication",
   conversations_v2: "communication",
   app_notifications: "notifications",
-  booking_requests: "business",
-  concierge_orders: "business",
+  bookings: "business",
+  transactions: "business",
   deal_rooms: "business",
 };
 
@@ -41,7 +42,7 @@ const TABLE_TO_PLATFORM_EVENT: Record<string, Record<string, string>> = {
     UPDATE: "orbit:call_ended",
   },
   app_notifications: {},
-  booking_requests: {
+  bookings: {
     INSERT: "marketplace:booking_created",
     UPDATE: "marketplace:booking_confirmed",
   },
@@ -141,7 +142,7 @@ export function useRealtimeHub() {
         break;
       }
 
-      case "booking_requests": {
+      case "bookings": {
         queryClient.invalidateQueries({ queryKey: ["booking-requests"] });
         if (eventType === "INSERT" && row) {
           addAlertRef.current({

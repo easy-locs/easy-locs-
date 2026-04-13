@@ -32,7 +32,7 @@ export async function fetchPricingRules(orgId: string) {
 export async function fetchChannelReservations(orgId: string) {
   const [{ data: seasonalData }, { data: requestsData }] = await Promise.all([
     db("seasonal_bookings").select("*").eq("org_id", orgId),
-    db("booking_requests").select("*").eq("org_id", orgId),
+    db("bookings").select("*").eq("org_id", orgId),
   ]);
 
   const seasonal = (seasonalData || []).map((b: any) => ({
@@ -90,7 +90,7 @@ export async function cancelReservation(res: { id: string; source_table: string;
   if (res.source_table === "seasonal_bookings") {
     await db("seasonal_bookings").update({ status: "cancelled" } as any).eq("id", res.id);
   } else {
-    await db("booking_requests").update({ status: "cancelled" } as any).eq("id", res.id);
+    await db("bookings").update({ status: "cancelled" } as any).eq("id", res.id);
     await db("seasonal_bookings").delete()
       .eq("org_id", orgId).eq("property_id", res.property_id)
       .eq("check_in", res.check_in).eq("check_out", res.check_out)
@@ -125,7 +125,7 @@ export async function modifyReservationDates(
   if (res.source_table === "seasonal_bookings") {
     await db("seasonal_bookings").update({ check_in: newCheckIn, check_out: newCheckOut } as any).eq("id", res.id);
   } else {
-    await db("booking_requests").update({ check_in: newCheckIn, check_out: newCheckOut } as any).eq("id", res.id);
+    await db("bookings").update({ check_in: newCheckIn, check_out: newCheckOut } as any).eq("id", res.id);
     await db("seasonal_bookings").update({ check_in: newCheckIn, check_out: newCheckOut } as any)
       .eq("org_id", orgId).eq("property_id", res.property_id)
       .eq("check_in", res.check_in).eq("check_out", res.check_out)

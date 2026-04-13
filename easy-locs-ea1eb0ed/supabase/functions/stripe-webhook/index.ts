@@ -514,7 +514,7 @@ async function handleOrbitPaymentCompleted(supabase: any, session: Stripe.Checko
       logStep("Cross-sync: rent_call updated", { contextId });
     } else if (contextType === "booking_request") {
       await supabase
-        .from("booking_requests")
+        .from("bookings")
         .update({ status: "paid" })
         .eq("id", contextId);
       logStep("Cross-sync: booking_request updated", { contextId });
@@ -634,7 +634,7 @@ async function handleMarketplacePayment(supabase: any, metadata: Record<string, 
 
   // Fetch service details
   const { data: service } = await supabase
-    .from("marketplace_services")
+    .from("listings")
     .select("title, category, country, currency")
     .eq("id", booking.service_id)
     .single();
@@ -697,13 +697,14 @@ async function handleBookingPayment(supabase: any, metadata: Record<string, stri
   logStep("Processing booking payment", { bookingRequestId });
 
   const { data: br } = await supabase
-    .from("booking_requests")
+    .from("bookings")
     .select("*")
     .eq("id", bookingRequestId)
     .single();
-  if (!br) { logStep("Booking request not found"); return; }
+  if (!br) { logStep("Booking not found"); return; }
 
-  await supabase.from("booking_requests").update({ status: "paid" }).eq("id", bookingRequestId);
+  const { error: bkUpdateErr } = await supabase.from("bookings").update({ status: "paid" }).eq("id", bookingRequestId);
+  if (bkUpdateErr) console.error("[stripe-webhook] bookings UPDATE failed:", bkUpdateErr.message);
 
   const { data: listing } = await supabase
     .from("public_listings")
@@ -1288,7 +1289,7 @@ async function handleListingRenewal(supabase: any, session: Stripe.Checkout.Sess
   const newExpiry = new Date(now.getTime() + 30 * 86400000).toISOString();
 
   await supabase
-    .from("marketplace_services")
+    .from("listings")
     .update({
       status: "published",
       active: true,
@@ -1365,7 +1366,7 @@ async function handleListingBoost(supabase: any, session: Stripe.Checkout.Sessio
   const boostExpiry = new Date(now.getTime() + cfg.days * 86400000).toISOString();
 
   await supabase
-    .from("marketplace_services")
+    .from("listings")
     .update({
       boost_enabled: true,
       boost_multiplier: cfg.multiplier,

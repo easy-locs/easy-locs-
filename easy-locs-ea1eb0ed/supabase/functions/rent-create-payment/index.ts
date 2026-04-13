@@ -32,51 +32,54 @@ serve(async (req) => {
     if (claimsError || !claimsData?.claims) throw new Error("Not authenticated");
     const userId = claimsData.claims.sub;
 
-    const { bookingId } = await req.json();
+    const { leaseId, dueDate, reference } = await req.json();
 
     const { data: ownerOrbit } = await admin
       .from("profiles").select("*").eq("id", userId).single();
 
-    const { data: booking } = await admin
-      .from("bookings_v2").select("*").eq("id", bookingId).single();
+    const { data: lease } = await admin
+      .from("leases").select("*").eq("id", leaseId).single();
 
-    if (!booking) throw new Error("Booking not found");
-    if (booking.owner_orbit_id !== ownerOrbit.id) throw new Error("Not allowed");
+    if (!lease) throw new Error("Lease not found");
+    if (lease.owner_orbit_id !== ownerOrbit.id) throw new Error("Not allowed");
 
     const now = new Date().toISOString();
+    const paymentId = crypto.randomUUID();
 
-    const { data: updated, error: uErr } = await admin
-      .from("bookings_v2")
-      .update({ status: "cancelled", updated_at: now })
-      .eq("id", bookingId)
+    const payment = {
+      id: paymentId,
+      lease_id: lease.id,
+      property_id: lease.property_id,
+      org_id: lease.org_id,
+      tenant_id: lease.tenant_id,
+      amount: lease.rent_amount,
+      currency: lease.currency ?? "AED",
+      due_date: dueDate,
+      status: "pending",
+      reference: reference ?? null,
+      created_at: now,
+      updated_at: now,
+    };
+
+    const { data: created, error: pErr } = await admin
+      .from("rent_calls")
+      .insert(payment)
       .select()
       .single();
-    if (uErr) throw uErr;
-
-    if (booking.conversation_id) {
-      await admin.from("chat_messages_v2").insert({
-        id: crypto.randomUUID(),
-        conversation_id: booking.conversation_id,
-        sender_orbit_id: ownerOrbit.id,
-        type: "system",
-        body: "Owner rejected the booking request",
-        metadata: { bookingId },
-        created_at: now,
-      });
-    }
+    if (pErr) throw pErr;
 
     await admin.from("notifications").insert({
       id: crypto.randomUUID(),
-      user_id: booking.buyer_user_id,
-      type: "booking",
-      title: "Booking rejected",
-      body: `Booking ${bookingId} has been rejected`,
+      user_id: userId,
+      type: "rent",
+      title: "Rent payment created",
+      body: `Payment ${paymentId} scheduled for ${dueDate}`,
       read: false,
-      metadata_json: { bookingId },
+      metadata_json: { paymentId, leaseId },
     });
 
     return new Response(
-      JSON.stringify({ booking: updated }),
+      JSON.stringify({ payment: created }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (e: unknown) {

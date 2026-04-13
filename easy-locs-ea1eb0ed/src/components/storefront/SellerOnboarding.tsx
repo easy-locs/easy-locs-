@@ -59,9 +59,6 @@ export default function SellerOnboarding({ shopId, onDismiss }: Props) {
   const allDone = completedSteps.length === STEPS.length;
 
   const dismiss = async () => {
-    await db("storefront_pages")
-      .update({ onboarding_completed: true })
-      .eq("id", shopId);
     qc.invalidateQueries({ queryKey: ["seller-onboarding", shopId] });
     qc.invalidateQueries({ queryKey: ["my-storefront"] });
     toast.success("🚀 Onboarding complete!");

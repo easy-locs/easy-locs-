@@ -145,7 +145,7 @@ serve(async (req) => {
     // Date overlap validation
     if (booking_request_id) {
       const { data: br } = await supabaseClient
-        .from("booking_requests")
+        .from("bookings")
         .select("property_id, check_in, check_out")
         .eq("id", booking_request_id)
         .single();
@@ -219,7 +219,7 @@ serve(async (req) => {
 
     if (booking_request_id) {
       await supabaseClient
-        .from("booking_requests")
+        .from("bookings")
         .update({ status: "payment_pending" } as any)
         .eq("id", booking_request_id);
     }

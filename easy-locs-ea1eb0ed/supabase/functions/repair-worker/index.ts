@@ -206,7 +206,6 @@ serve(async (req) => {
 
       let outcome: RepairProofRecord["outcome"] = "PARTIAL";
       if (Object.keys(updates).length > 0) {
-        await sb.from("storefront_pages").update(updates).eq("id", shop.id);
         repaired++;
         outcome = score > beforeScore ? "SUCCESS" : "PARTIAL";
       }

@@ -161,11 +161,11 @@ export async function insertChatMessage(orgId: string, tenantId: string, userId:
 export function subscribeToRentalChat(tenantId: string, onInsert: (msg: any) => void, onUpdate: (msg: any) => void) {
   const channel = db
     .channel(`rental-msg-${tenantId}`)
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, (p) => {
+    .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "chat_messages_v2" }, (p) => {
       const msg = p.new as any;
       if (msg.metadata?.tenant_id === tenantId || msg.conversation_id?.includes(tenantId)) onInsert(msg);
     })
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages_v2" }, (p) => onUpdate(p.new as any))
+    .on("postgres_changes", { event: "UPDATE", schema: "orbit", table: "chat_messages_v2" }, (p) => onUpdate(p.new as any))
     .subscribe();
   return () => { removeRealtimeChannel(channel); };
 }

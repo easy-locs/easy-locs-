@@ -191,7 +191,7 @@ serve(async (req) => {
 
     // Security: verify the booking was created very recently (within 2 minutes)
     const { data: recentCheck } = await supabase
-      .from("booking_requests")
+      .from("bookings")
       .select("id, created_at, notified_at")
       .eq("id", booking_request_id)
       .is("notified_at", null)
@@ -206,7 +206,7 @@ serve(async (req) => {
     }
 
     const { data: br, error: brErr } = await supabase
-      .from("booking_requests")
+      .from("bookings")
       .select("*")
       .eq("id", booking_request_id)
       .single();
@@ -222,7 +222,7 @@ serve(async (req) => {
 
     // Mark as notified immediately to prevent race conditions
     await supabase
-      .from("booking_requests")
+      .from("bookings")
       .update({ notified_at: new Date().toISOString() })
       .eq("id", booking_request_id)
       .is("notified_at", null);

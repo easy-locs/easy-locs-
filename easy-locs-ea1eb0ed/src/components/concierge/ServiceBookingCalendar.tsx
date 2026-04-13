@@ -122,8 +122,8 @@ function useServiceAvailability(serviceId: string) {
     load();
     const channel = db
       .channel(`booking-calendar-${serviceId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "concierge_orders", filter: `service_id=eq.${serviceId}` }, () => load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "marketplace_bookings", filter: `service_id=eq.${serviceId}` }, () => load())
+      .on("postgres_changes", { event: "*", schema: "commerce", table: "transactions", filter: `service_id=eq.${serviceId}` }, () => load())
+      .on("postgres_changes", { event: "*", schema: "commerce", table: "bookings", filter: `service_id=eq.${serviceId}` }, () => load())
       .subscribe();
     return () => { removeRealtimeChannel(channel); };
   }, [serviceId]);

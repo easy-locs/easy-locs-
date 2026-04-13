@@ -158,11 +158,11 @@ export async function sendRentalNotification(tenantUserId: string, title: string
 export function subscribeRentalMessages(tenantId: string, onInsert: (msg: any) => void, onUpdate: (msg: any) => void) {
   const channel = db
     .channel(`rental-msg-${tenantId}`)
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, (payload) => {
+    .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "chat_messages_v2" }, (payload) => {
       const newMsg = payload.new as any;
       if (newMsg.metadata?.tenant_id === tenantId || newMsg.conversation_id?.includes(tenantId)) onInsert(newMsg);
     })
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages_v2" }, (payload) => {
+    .on("postgres_changes", { event: "UPDATE", schema: "orbit", table: "chat_messages_v2" }, (payload) => {
       onUpdate(payload.new as any);
     })
     .subscribe();

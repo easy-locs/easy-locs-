@@ -1,3 +1,19 @@
+/**
+ * typed-queries.ts
+ *
+ * Canonical typed query helpers for the Easy-Locs platform.
+ *
+ * All table references use canonical table names that now resolve through
+ * public compatibility views to their respective domain schemas
+ * (Task #56 — Domain Schema Architecture):
+ *
+ *   profiles            → identity.profiles      (was: orbit_profiles_v2)
+ *   wallet_accounts     → wallet.wallet_accounts  (was: wallet_balances_v2)
+ *   organizations       → identity.organizations  (was: storefront_pages)
+ *   listings            → marketplace.listings    (was: marketplace_services)
+ *   conversations_v2    → orbit.conversations_v2
+ *   chat_messages_v2    → orbit.chat_messages_v2
+ */
 import { db as supabase } from "@/services/db";
 
 interface ProfileRow {
@@ -9,10 +25,13 @@ interface ProfileRow {
   email: string | null;
 }
 
-interface WalletBalanceRow {
-  user_id: string;
+interface WalletAccountRow {
+  id: string;
+  owner_user_id: string;
   balance: number;
+  available_balance: number;
   currency: string;
+  status: string;
 }
 
 interface UnifiedWalletTxRow {
@@ -44,6 +63,10 @@ interface OrbitProfileRow {
 }
 
 export const typedQueries = {
+  /**
+   * identity.profiles — canonical identity record.
+   * (previously also queried via orbit_profiles_v2, which is now a compat view)
+   */
   profiles: {
     selectById(ids: string | string[]) {
       const idList = Array.isArray(ids) ? ids : [ids];
@@ -63,29 +86,55 @@ export const typedQueries = {
         .eq("email", email)
         .maybeSingle() as unknown as PromiseLike<{ data: { id: string } | null; error: unknown }>;
     },
+    /**
+     * Select display-oriented profile fields.
+     * Replaces the old orbit_profiles_v2 query pattern.
+     */
+    selectDisplayByUserId(userId: string) {
+      return untypedFrom("profiles")
+        .select("id, full_name, avatar_url, email")
+        .eq("id", userId)
+        .maybeSingle() as unknown as PromiseLike<{ data: Pick<OrbitProfileRow, "id" | "display_name" | "avatar_url" | "email"> | null; error: unknown }>;
+    },
+    selectDisplayByOrbitId(orbitId: string) {
+      return untypedFrom("profiles")
+        .select("id, full_name, avatar_url")
+        .eq("id", orbitId)
+        .maybeSingle() as unknown as PromiseLike<{ data: Pick<OrbitProfileRow, "id" | "display_name" | "avatar_url"> | null; error: unknown }>;
+    },
   },
 
+  /**
+   * @deprecated Use typedQueries.profiles.selectDisplayByUserId instead.
+   * This shim queries identity.profiles via the orbit_profiles_v2 compat view.
+   */
   orbitProfiles: {
     selectByOrbitId(orbitId: string) {
-      return untypedFrom("orbit_profiles_v2")
-        .select("id, orbit_id, display_name, avatar_url")
-        .eq("orbit_id", orbitId)
+      return untypedFrom("profiles")
+        .select("id, full_name as display_name, avatar_url")
+        .eq("id", orbitId)
         .maybeSingle() as unknown as PromiseLike<{ data: Pick<OrbitProfileRow, "id" | "orbit_id" | "display_name" | "avatar_url"> | null; error: unknown }>;
     },
     selectByUserId(userId: string) {
-      return untypedFrom("orbit_profiles_v2")
-        .select("id, orbit_id, display_name, avatar_url, email")
+      return untypedFrom("profiles")
+        .select("id, full_name as display_name, avatar_url, email")
         .eq("id", userId)
         .maybeSingle() as unknown as PromiseLike<{ data: OrbitProfileRow | null; error: unknown }>;
     },
   },
 
+  /**
+   * wallet.wallet_accounts — canonical wallet balance source.
+   * @deprecated walletBalances name kept for backward compatibility.
+   *   wallet_balances_v2 was dropped. This now queries wallet_accounts directly.
+   */
   walletBalances: {
     selectByUser(userId: string) {
-      return untypedFrom("wallet_balances_v2")
-        .select("balance, currency")
-        .eq("user_id", userId)
-        .maybeSingle() as unknown as PromiseLike<{ data: Pick<WalletBalanceRow, "balance" | "currency"> | null; error: unknown }>;
+      return untypedFrom("wallet_accounts")
+        .select("available_balance as balance, currency")
+        .eq("owner_user_id", userId)
+        .eq("status", "active")
+        .maybeSingle() as unknown as PromiseLike<{ data: { balance: number; currency: string } | null; error: unknown }>;
     },
   },
 
@@ -112,12 +161,15 @@ export const typedQueries = {
     },
   },
 
+  /**
+   * wallet.wallet_accounts — canonical wallet record.
+   */
   walletAccounts: {
     selectByUser(userId: string) {
       return untypedFrom("wallet_accounts")
-        .select("id, currency")
+        .select("id, currency, available_balance")
         .eq("owner_user_id", userId)
-        .maybeSingle() as unknown as PromiseLike<{ data: { id: string; currency: string } | null; error: unknown }>;
+        .maybeSingle() as unknown as PromiseLike<{ data: { id: string; currency: string; available_balance: number } | null; error: unknown }>;
     },
     selectBalanceByWallet(walletId: string) {
       return untypedFrom("wallet_accounts")
@@ -127,15 +179,19 @@ export const typedQueries = {
     },
   },
 
+  /**
+   * identity.organizations — canonical org record.
+   * Replaces the old storefront_pages query pattern.
+   */
   storefrontPages: {
     countByOwner(userId: string) {
-      return untypedFrom("storefront_pages")
-        .select("id", { count: "exact", head: true })
+      return untypedFrom("organizations")
+        .select("org_id", { count: "exact", head: true })
         .eq("owner_user_id", userId) as unknown as PromiseLike<{ count: number | null; error: unknown }>;
     },
     selectByOwner(userId: string) {
-      return untypedFrom("storefront_pages")
-        .select("id, name, slug, logo_url, banner_url, description, contact_email, contact_phone, address, city, country, latitude, longitude, shop_visibility, is_verified, active, rating, reviews_count, views_count, currency, theme_color")
+      return untypedFrom("organizations")
+        .select("org_id as id, display_name as name, NULL::text as slug, city, country, status, created_at, updated_at")
         .eq("owner_user_id", userId)
         .order("created_at", { ascending: false }) as unknown as PromiseLike<{ data: Record<string, unknown>[] | null; error: unknown }>;
     },
@@ -158,6 +214,10 @@ export const typedQueries = {
     },
   },
 
+  /**
+   * marketplace.listings — canonical listing record.
+   * countServicesByUser now queries marketplace.listings via the compat view.
+   */
   marketplaceProviders: {
     existsByUser(userId: string) {
       return untypedFrom("marketplace_providers")
@@ -166,9 +226,10 @@ export const typedQueries = {
         .maybeSingle() as unknown as PromiseLike<{ data: { id: string } | null; error: unknown }>;
     },
     countServicesByUser(userId: string) {
-      return untypedFrom("marketplace_services")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", userId) as unknown as PromiseLike<{ count: number | null; error: unknown }>;
+      return untypedFrom("listings")
+        .select("listing_id", { count: "exact", head: true })
+        .eq("seller_id", userId)
+        .in("listing_type", ["service", "activity"]) as unknown as PromiseLike<{ count: number | null; error: unknown }>;
     },
   },
 
@@ -192,4 +253,6 @@ export const typedQueries = {
   },
 };
 
-export type { ProfileRow, WalletBalanceRow, UnifiedWalletTxRow };
+export type { ProfileRow, WalletAccountRow, UnifiedWalletTxRow };
+/** @deprecated Use WalletAccountRow */
+export type WalletBalanceRow = Pick<WalletAccountRow, "currency"> & { balance: number };

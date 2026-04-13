@@ -1,5 +1,18 @@
 project_id = "ifvuvbolrmuuugtzxsfk"
 
+[api]
+# Expose domain schemas to PostgREST so that domainDb.schema.from() calls
+# can target domain tables directly when desired. Public compat views ensure
+# that existing .from("table") calls still work during the transition period.
+schemas = [
+  "public",
+  "identity", "wallet", "orbit",
+  "marketplace", "commerce", "property",
+  "onboarding", "support", "notification",
+  "system", "analytics"
+]
+extra_search_path = ["public", "extensions"]
+
 [functions.create-checkout]
 verify_jwt = false
 

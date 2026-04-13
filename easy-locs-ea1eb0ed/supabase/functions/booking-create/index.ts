@@ -49,7 +49,7 @@ serve(async (req) => {
     const { listingId, checkIn, checkOut, guestInfo } = body;
 
     const { data: buyerOrbit, error: boErr } = await admin
-      .from("orbit_profiles_v2")
+      .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
@@ -89,7 +89,7 @@ serve(async (req) => {
       id: conversationId,
       type: "booking",
       participants: [
-        { orbitId: buyerOrbit.orbit_id, role: "buyer" },
+        { orbitId: buyerOrbit.id, role: "buyer" },
         { orbitId: listing.owner_orbit_id, role: "owner" },
       ],
       title: `Booking ${listing.title}`,
@@ -103,7 +103,7 @@ serve(async (req) => {
     const booking = {
       id: bookingId,
       listing_id: listingId,
-      buyer_orbit_id: buyerOrbit.orbit_id,
+      buyer_orbit_id: buyerOrbit.id,
       buyer_user_id: userId,
       owner_orbit_id: listing.owner_orbit_id,
       owner_user_id: listing.owner_user_id,

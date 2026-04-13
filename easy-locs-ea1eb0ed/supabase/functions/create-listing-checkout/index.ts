@@ -73,7 +73,7 @@ serve(async (req) => {
 
     // Validate listing exists and belongs to user
     const { data: listing, error: listingErr } = await supabase
-      .from("marketplace_services")
+      .from("listings")
       .select("id, user_id, title, status, active, listing_expires_at, boost_enabled")
       .eq("id", listingId)
       .maybeSingle();

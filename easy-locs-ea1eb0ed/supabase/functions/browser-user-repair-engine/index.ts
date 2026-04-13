@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
     // ═══════════════════════════════════════════════════
     await runScenario("orbit_load", "/orbit", "orbit_init", "orbit", "orbit", "critical", async () => {
       const step = await timedCheck("profiles_accessible", async () => {
-        const { count, error } = await supabase.from("orbit_profiles_v2").select("id", { count: "exact", head: true });
+        const { count, error } = await supabase.from("profiles").select("id", { count: "exact", head: true });
         return { ok: !error && (count ?? 0) > 0, details: { profileCount: count } };
       });
       return { status: step.status === "pass" ? "pass" : "fail", summary: `Profiles: ${step.details?.profileCount ?? 0}`, steps: [step] };
@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
 
     await runScenario("orbit_contacts_open", "/orbit", "contacts", "contacts", "orbit", "critical", async () => {
       const step = await timedCheck("contacts_count", async () => {
-        const { count, error } = await supabase.from("orbit_profiles_v2").select("id", { count: "exact", head: true });
+        const { count, error } = await supabase.from("profiles").select("id", { count: "exact", head: true });
         return { ok: !error && (count ?? 0) > 0, details: { count } };
       });
       return { status: step.status === "pass" ? "pass" : "degraded", summary: `${step.details?.count ?? 0} contacts`, steps: [step] };
@@ -153,8 +153,8 @@ Deno.serve(async (req) => {
 
     await runScenario("orbit_contact_search", "/orbit", "search", "contacts", "orbit", "warning", async () => {
       const step = await timedCheck("search_query", async () => {
-        const { data, error } = await supabase.from("orbit_profiles_v2").select("id, display_name").limit(3);
-        const hasNames = (data ?? []).filter((p: any) => p.display_name).length;
+        const { data, error } = await supabase.from("profiles").select("id, name").limit(3);
+        const hasNames = (data ?? []).filter((p: any) => p.name).length;
         return { ok: !error, details: { sampleSize: data?.length ?? 0, withNames: hasNames } };
       });
       return { status: step.status === "pass" ? "pass" : "fail", summary: "Contact search accessible", steps: [step] };
@@ -266,7 +266,7 @@ Deno.serve(async (req) => {
 
     await runScenario("marketplace_open_shop_detail", "/marketplace/shop", "shop_detail", "marketplace", "marketplace", "warning", async () => {
       const step = await timedCheck("shop_fields", async () => {
-        const { data } = await supabase.from("storefront_pages").select("id, name, category").eq("active", true).limit(10);
+        const { data } = await supabase.from("storefront_pages").select("id, name").eq("active", true).limit(10);
         const broken = (data ?? []).filter((s: any) => !s.name);
         return { ok: broken.length === 0, details: { checked: data?.length ?? 0, missingName: broken.length } };
       });

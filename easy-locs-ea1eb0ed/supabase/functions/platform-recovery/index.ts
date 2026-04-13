@@ -91,7 +91,7 @@ async function runMasterAuditServer(supabase: any): Promise<ModuleCheck> {
     const checks = await Promise.all([
       supabase.from("storefront_pages").select("id", { count: "exact", head: true }),
       supabase.from("seed_merchants").select("id", { count: "exact", head: true }),
-      supabase.from("orbit_profiles_v2").select("id", { count: "exact", head: true }),
+      supabase.from("profiles").select("id", { count: "exact", head: true }),
       supabase.from("wallet_accounts").select("id", { count: "exact", head: true }).eq("status", "active"),
     ]);
     
@@ -257,7 +257,7 @@ serve(async (req) => {
     ["db.boost_slots", "boost_slots"],
     ["db.boost_leads", "boost_leads"],
     ["db.orders", "orders"],
-    ["db.orbit_profiles_v2", "orbit_profiles_v2"],
+    ["db.orbit_profiles_v2", "profiles"],
     ["db.driver_profiles", "driver_profiles"],
     ["db.notifications", "notifications"],
     ["db.support_tickets", "support_tickets"],
