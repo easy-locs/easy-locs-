@@ -1,5 +1,6 @@
 import type { DataQualityEngine } from "./engine-base";
 import type { EngineRunLog, EngineRunSummary, ExecutionMode, SweepCadence } from "./types";
+import { registerNewEngine } from "@/core/command-center";
 
 class EngineRegistry {
   private engines = new Map<string, DataQualityEngine>();
@@ -7,6 +8,10 @@ class EngineRegistry {
 
   register(engine: DataQualityEngine): void {
     this.engines.set(engine.name, engine);
+    const ccResult = registerNewEngine(engine.name, engine.name, engine.name);
+    if (!ccResult.success) {
+      console.warn(`[data-quality-registry] CC blocked engine ${engine.name}: ${ccResult.blockedReason}`);
+    }
   }
 
   get(name: string): DataQualityEngine | undefined {

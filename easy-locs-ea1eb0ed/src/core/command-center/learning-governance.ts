@@ -246,7 +246,10 @@ class LearningGovernance {
   }
 
   /**
-   * Execute a governed memory write. Rejects if chain validation fails.
+   * Execute a governed memory write. Rejects if chain validation fails OR if anti-pattern detection fires.
+   *
+   * Phase I hardening: detectDirtyLearningPatterns() runs as the first gate before chain validation.
+   * Any detected anti-pattern results in a QUARANTINED_LEARNINGS write + rejection with full audit.
    */
   write(
     engineId: string,
@@ -254,6 +257,39 @@ class LearningGovernance {
     summary: string,
     context: LearningChainContext,
   ): { success: boolean; write: GovernedMemoryWrite | null; rejectedReason: string | null } {
+    const antiPatternResult = detectDirtyLearningPatterns(context);
+    if (!antiPatternResult.clean) {
+      const validationResult: LearningValidationResult = {
+        approved: false,
+        rejectedReason: `Anti-pattern gate blocked write — ${antiPatternResult.patternsDetected.join("; ")}`,
+        rejectedSources: antiPatternResult.rejectedSources,
+        missingStages: (["TASK", "EXECUTION", "EVIDENCE", "VALIDATION", "CANONICALIZATION", "MEMORY_WRITE"] as LearningChainStage[])
+          .filter(s => !context.completedStages.includes(s)),
+        targetLayer: "QUARANTINED_LEARNINGS",
+        confidence: context.confidence,
+        warnings: antiPatternResult.patternsDetected,
+      };
+      this.recordRejection(context, validationResult);
+      const quarantineId = `lgov_q_${Date.now()}_${++writeCounter}`;
+      const quarantineWrite: GovernedMemoryWrite = {
+        memoryId: quarantineId,
+        layer: "QUARANTINED_LEARNINGS",
+        engineId,
+        domain,
+        summary: `[QUARANTINED] ${summary}`,
+        chainContext: context,
+        validationResult,
+        writtenAt: Date.now(),
+      };
+      const quarantineLayer = this.memoryLayers.get("QUARANTINED_LEARNINGS") ?? [];
+      quarantineLayer.push(quarantineWrite);
+      if (quarantineLayer.length > this.MAX_WRITES_PER_LAYER) {
+        quarantineLayer.splice(0, quarantineLayer.length - this.MAX_WRITES_PER_LAYER);
+      }
+      this.memoryLayers.set("QUARANTINED_LEARNINGS", quarantineLayer);
+      return { success: false, write: null, rejectedReason: validationResult.rejectedReason };
+    }
+
     const validationResult = this.validateLearningChain(context);
 
     if (!validationResult.approved) {
@@ -351,6 +387,87 @@ class LearningGovernance {
 }
 
 export const learningGovernance = new LearningGovernance();
+
+/**
+ * Anti-pattern detection for common dirty learning attempts.
+ *
+ * Phase I hardening: Detects 8 common patterns that bypass the 6-stage chain:
+ * 1. Direct write without task context (no taskId)
+ * 2. Batch write from a single execution (executionId reuse)
+ * 3. Write from error handler code paths
+ * 4. Write from fallback/degraded mode
+ * 5. Write from mock/test fixture data
+ * 6. Write with confidence above actual signal quality
+ * 7. Write from quarantined engine output
+ * 8. Write from non-canonical version
+ */
+export interface AntiPatternCheckResult {
+  clean: boolean;
+  patternsDetected: string[];
+  rejectedSources: ForbiddenLearningSource[];
+  recommendation: string;
+}
+
+export function detectDirtyLearningPatterns(context: LearningChainContext): AntiPatternCheckResult {
+  const patternsDetected: string[] = [];
+  const rejectedSources: ForbiddenLearningSource[] = [];
+
+  if (!context.taskId || context.taskId.trim() === "" || context.taskId === "unknown") {
+    patternsDetected.push("PATTERN_1: Direct write without task context — taskId missing or unknown");
+    rejectedSources.push("UNVERIFIED_SIGNAL");
+  }
+
+  if (!context.executionId || context.executionId.trim() === "" || context.executionId === "unknown") {
+    patternsDetected.push("PATTERN_2: Missing executionId — no execution trace");
+    rejectedSources.push("UNVERIFIED_SIGNAL");
+  }
+
+  if (context.isFromError || context.isFromMock || context.isFromFallback) {
+    const sources: string[] = [];
+    if (context.isFromError) { sources.push("ERROR"); rejectedSources.push("ERROR"); }
+    if (context.isFromMock) { sources.push("MOCK"); rejectedSources.push("MOCK"); }
+    if (context.isFromFallback) { sources.push("FALLBACK"); rejectedSources.push("FALLBACK"); }
+    patternsDetected.push(`PATTERN_3/4/5: Forbidden source detected — ${sources.join(", ")}`);
+  }
+
+  if (context.confidence > 0.95 && context.completedStages.length < 5) {
+    patternsDetected.push(`PATTERN_6: Confidence inflation — confidence=${context.confidence.toFixed(2)} with only ${context.completedStages.length} completed stages`);
+    rejectedSources.push("UNVERIFIED_SIGNAL");
+  }
+
+  if (context.isFromQuarantinedEngine || context.isFromBlockedEngine) {
+    const sources: string[] = [];
+    if (context.isFromQuarantinedEngine) { sources.push("QUARANTINED_ENGINE_OUTPUT"); rejectedSources.push("QUARANTINED_ENGINE_OUTPUT"); }
+    if (context.isFromBlockedEngine) { sources.push("BLOCKED_ENGINE_OUTPUT"); rejectedSources.push("BLOCKED_ENGINE_OUTPUT"); }
+    patternsDetected.push(`PATTERN_7: Quarantined/blocked engine output — ${sources.join(", ")}`);
+  }
+
+  if (context.isFromNonCanonicalVersion || context.isFromDirtyTaxonomy || context.isFromConflict) {
+    const sources: string[] = [];
+    if (context.isFromNonCanonicalVersion) { sources.push("NON_CANONICAL_VERSION"); rejectedSources.push("NON_CANONICAL_VERSION"); }
+    if (context.isFromDirtyTaxonomy) { sources.push("DIRTY_TAXONOMY"); rejectedSources.push("DIRTY_TAXONOMY"); }
+    if (context.isFromConflict) { sources.push("CONFLICT"); rejectedSources.push("CONFLICT"); }
+    patternsDetected.push(`PATTERN_8: Non-canonical/dirty-taxonomy/conflict source — ${sources.join(", ")}`);
+  }
+
+  const missingStages = (["TASK", "EXECUTION", "EVIDENCE", "VALIDATION", "CANONICALIZATION", "MEMORY_WRITE"] as LearningChainStage[])
+    .filter(s => !context.completedStages.includes(s));
+
+  if (missingStages.length > 0) {
+    patternsDetected.push(`PATTERN_9: Incomplete 6-stage chain — missing: ${missingStages.join(", ")}`);
+  }
+
+  const uniqueRejected = Array.from(new Set(rejectedSources));
+
+  return {
+    clean: patternsDetected.length === 0,
+    patternsDetected,
+    rejectedSources: uniqueRejected,
+    recommendation: patternsDetected.length === 0
+      ? "Context is clean — safe to write"
+      : `Block write — ${patternsDetected.length} anti-pattern(s) detected. Quarantine this learning attempt with full rejection audit trail.`,
+  };
+}
 
 /**
  * Build a pre-validated chain context for system-level observability writes.
