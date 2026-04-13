@@ -4,11 +4,9 @@
  */
 export {
   CANONICAL_VERTICALS as VERTICALS,
-  getCanonicalVertical as getVertical,
 } from "@/lib/taxonomy/world-class-taxonomy";
 export type {
-  TaxonomyVertical as VerticalDef,
-  TaxonomySubcategory as SubcategoryDef,
+  VerticalSummary as VerticalDef,
 } from "@/lib/taxonomy/world-class-taxonomy";
 
 import { strictGetCanonicalSubcategory } from "@/lib/taxonomy/world-class-taxonomy";

@@ -6,7 +6,8 @@ import type {
   TaxonomySubcategory,
   TaxonomyCluster,
 } from "./world-class-taxonomy";
-import { CANONICAL_VERTICALS } from "./world-class-taxonomy";
+
+import { CANONICAL_VERTICALS } from "./world-taxonomy-data";
 
 const ALL_SUBS = new Set(getAllSubcategoryValues());
 

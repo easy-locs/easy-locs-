@@ -7,7 +7,7 @@
  * This engine is consumed by all discovery surfaces: VerticalHubPage, SearchResults,
  * Radar, Home recommendations, PremiumVerticalHero, PremiumMerchantCard.
  */
-import { WORLD_TAXONOMY, type Vertical, type TaxonomyVertical } from "@/lib/taxonomy/world-class-taxonomy";
+import { CANONICAL_VERTICALS, type Vertical, type VerticalSummary } from "@/lib/taxonomy/world-class-taxonomy";
 import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
 import { getSubcategoryTheme } from "@/lib/discovery/subcategory-themes";
 import { td, getVerticalI18n, getSubcategoryI18n } from "@/lib/i18n-discovery";
@@ -199,7 +199,7 @@ function buildCanonicalRoute(vertical: string, subcategory?: string | null): str
 
 /** Build breadcrumb chain */
 function buildBreadcrumbs(
-  vertical: TaxonomyVertical,
+  vertical: VerticalSummary,
   subcategory?: string | null,
 ): { label: string; path: string }[] {
   const vertI18n = getVerticalI18n(vertical.value);
@@ -230,8 +230,8 @@ export function resolveCanonicalUI(
   verticalKey: string,
   subcategoryKey?: string | null,
 ): CanonicalUISpec {
-  const verticalDef = WORLD_TAXONOMY.find(v => v.value === verticalKey);
-  const fallbackVertical = WORLD_TAXONOMY[0]; // food as ultimate fallback
+  const verticalDef = CANONICAL_VERTICALS.find(v => v.value === verticalKey);
+  const fallbackVertical = CANONICAL_VERTICALS[0];
   const vert = verticalDef || fallbackVertical;
 
   const subDef = subcategoryKey
@@ -288,7 +288,7 @@ export { VERTICAL_ROUTES };
 
 /** Get all canonical vertical routes for navigation/sitemap */
 export function getAllCanonicalRoutes(): { vertical: string; label: string; route: string; emoji: string }[] {
-  return WORLD_TAXONOMY.map(v => ({
+  return CANONICAL_VERTICALS.map(v => ({
     vertical: v.value,
     label: v.label,
     route: VERTICAL_ROUTES[v.value] || `/${v.value}`,

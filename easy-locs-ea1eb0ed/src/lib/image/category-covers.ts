@@ -1,10 +1,16 @@
 import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 
 const _treeEmojis: Record<string, string> = {};
+const _verticalEmojis: Record<string, string> = {};
 for (const primary of CATEGORY_TREE) {
+  _verticalEmojis[primary.vertical] = primary.emoji;
   for (const sub of primary.subcategories) {
     _treeEmojis[sub.value] = sub.emoji;
   }
+}
+
+function treeVerticalEmoji(key: string, fallback: string): string {
+  return _verticalEmojis[key] ?? fallback;
 }
 
 function treeEmoji(key: string, fallback: string): string {
@@ -12,17 +18,17 @@ function treeEmoji(key: string, fallback: string): string {
 }
 
 const CATEGORY_THEMES: Record<string, { gradient: string; emoji: string; label: string }> = {
-  buy_apartment: { gradient: "135deg, #1a365d, #2d3748", emoji: "🏢", label: "Apartment" },
-  buy_villa: { gradient: "135deg, #1a365d, #234e52", emoji: "🏡", label: "Villa" },
-  buy_penthouse: { gradient: "135deg, #1a202c, #2d3748", emoji: "🌇", label: "Penthouse" },
-  buy_townhouse: { gradient: "135deg, #2d3748, #1a365d", emoji: "🏘️", label: "Townhouse" },
-  buy_land: { gradient: "135deg, #2d3748, #234e52", emoji: "🗺️", label: "Land" },
-  buy_office: { gradient: "135deg, #1a365d, #1a202c", emoji: "🏛️", label: "Office" },
-  rent_apartment: { gradient: "135deg, #2c5282, #2b6cb0", emoji: "🔑", label: "Rental" },
-  rent_villa: { gradient: "135deg, #2c5282, #276749", emoji: "🔑", label: "Villa Rental" },
-  rent_office: { gradient: "135deg, #2c5282, #2d3748", emoji: "🏢", label: "Office Rental" },
-  developer_project: { gradient: "135deg, #2d3748, #4a5568", emoji: "🏗️", label: "Off-Plan" },
-  investment: { gradient: "135deg, #1a365d, #4a5568", emoji: "📈", label: "Investment" },
+  buy_apartment: { gradient: "135deg, #1a365d, #2d3748", emoji: treeEmoji("buy_apartment", "🏢"), label: "Apartment" },
+  buy_villa: { gradient: "135deg, #1a365d, #234e52", emoji: treeEmoji("buy_villa", "🏡"), label: "Villa" },
+  buy_penthouse: { gradient: "135deg, #1a202c, #2d3748", emoji: treeEmoji("buy_penthouse", "🌆"), label: "Penthouse" },
+  buy_townhouse: { gradient: "135deg, #2d3748, #1a365d", emoji: treeEmoji("buy_townhouse", "🏘️"), label: "Townhouse" },
+  buy_land: { gradient: "135deg, #2d3748, #234e52", emoji: treeEmoji("buy_land", "🌍"), label: "Land" },
+  buy_office: { gradient: "135deg, #1a365d, #1a202c", emoji: treeEmoji("buy_office", "🏢"), label: "Office" },
+  rent_apartment: { gradient: "135deg, #2c5282, #2b6cb0", emoji: treeEmoji("rent_apartment", "🏢"), label: "Rental" },
+  rent_villa: { gradient: "135deg, #2c5282, #276749", emoji: treeEmoji("rent_villa", "🏡"), label: "Villa Rental" },
+  rent_office: { gradient: "135deg, #2c5282, #2d3748", emoji: treeEmoji("rent_office", "🏢"), label: "Office Rental" },
+  developer_project: { gradient: "135deg, #2d3748, #4a5568", emoji: treeEmoji("developer_project", "🏙️"), label: "Off-Plan" },
+  investment: { gradient: "135deg, #1a365d, #4a5568", emoji: treeEmoji("investment", "📈"), label: "Investment" },
   hotel: { gradient: "135deg, #44337a, #553c9a", emoji: treeEmoji("hotel", "🏨"), label: "Hotel" },
   resort: { gradient: "135deg, #234e52, #285e61", emoji: treeEmoji("resort", "🏖️"), label: "Resort" },
   holiday_rental: { gradient: "135deg, #2c5282, #2b6cb0", emoji: treeEmoji("holiday_rental", "🌴"), label: "Holiday Home" },
@@ -47,13 +53,13 @@ const CATEGORY_THEMES: Record<string, { gradient: string; emoji: string; label: 
   japanese: { gradient: "135deg, #2d3748, #c53030", emoji: treeEmoji("japanese", "🍥"), label: "Japanese" },
   supermarket: { gradient: "135deg, #276749, #38a169", emoji: treeEmoji("supermarket", "🏬"), label: "Supermarket" },
   organic: { gradient: "135deg, #276749, #48bb78", emoji: treeEmoji("organic_store", "🌿"), label: "Organic" },
-  atm: { gradient: "135deg, #2c5282, #2b6cb0", emoji: "🏧", label: "ATM" },
-  fuel: { gradient: "135deg, #c05621, #dd6b20", emoji: "⛽", label: "Fuel" },
+  atm: { gradient: "135deg, #2c5282, #2b6cb0", emoji: treeEmoji("atm", "🏧"), label: "ATM" },
+  fuel: { gradient: "135deg, #c05621, #dd6b20", emoji: treeEmoji("fuel_station", "⛽"), label: "Fuel" },
   pharmacy: { gradient: "135deg, #276749, #38a169", emoji: treeEmoji("pharmacy", "💊"), label: "Pharmacy" },
-  parking: { gradient: "135deg, #2c5282, #4299e1", emoji: "🅿️", label: "Parking" },
+  parking: { gradient: "135deg, #2c5282, #4299e1", emoji: treeEmoji("parking", "🅿️"), label: "Parking" },
   taxi: { gradient: "135deg, #b7791f, #d69e2e", emoji: treeEmoji("taxi", "🚕"), label: "Taxi" },
   chauffeur: { gradient: "135deg, #1a202c, #2d3748", emoji: treeEmoji("chauffeur", "🚘"), label: "Chauffeur" },
-  delivery: { gradient: "135deg, #2c5282, #4299e1", emoji: "📦", label: "Delivery" },
+  delivery: { gradient: "135deg, #2c5282, #4299e1", emoji: treeEmoji("parcel_delivery", "📦"), label: "Delivery" },
   fashion: { gradient: "135deg, #b83280, #d53f8c", emoji: treeEmoji("fashion", "👗"), label: "Fashion" },
   electronics: { gradient: "135deg, #2c5282, #4299e1", emoji: treeEmoji("electronics", "📱"), label: "Electronics" },
   cosmetics: { gradient: "135deg, #b83280, #ed64a6", emoji: treeEmoji("cosmetics", "💄"), label: "Cosmetics" },
@@ -72,22 +78,22 @@ const CATEGORY_THEMES: Record<string, { gradient: string; emoji: string; label: 
   car_wash: { gradient: "135deg, #2b6cb0, #4299e1", emoji: treeEmoji("car_wash", "🚘"), label: "Car Wash" },
   pest_control: { gradient: "135deg, #276749, #38a169", emoji: treeEmoji("pest_control", "🐜"), label: "Pest Control" },
   laundry: { gradient: "135deg, #2b6cb0, #3182ce", emoji: treeEmoji("laundry", "🧺"), label: "Laundry" },
-  fitness: { gradient: "135deg, #c53030, #e53e3e", emoji: "💪", label: "Fitness" },
+  fitness: { gradient: "135deg, #c53030, #e53e3e", emoji: treeEmoji("sports", "💪"), label: "Fitness" },
   tutoring: { gradient: "135deg, #2c5282, #4299e1", emoji: treeEmoji("tutoring", "📚"), label: "Tutoring" },
-  gym: { gradient: "135deg, #c53030, #e53e3e", emoji: "🏋️", label: "Gym" },
+  gym: { gradient: "135deg, #c53030, #e53e3e", emoji: treeEmoji("sports", "🏋️"), label: "Gym" },
 };
 
 const VERTICAL_THEMES: Record<string, { gradient: string; emoji: string; label: string }> = {
-  property: { gradient: "135deg, #1a365d, #2d3748", emoji: "🏠", label: "Property" },
-  stay: { gradient: "135deg, #44337a, #553c9a", emoji: "🏨", label: "Stay" },
-  food: { gradient: "135deg, #b7791f, #dd6b20", emoji: "🍽️", label: "Food" },
-  grocery: { gradient: "135deg, #276749, #38a169", emoji: "🛒", label: "Grocery" },
-  utility: { gradient: "135deg, #2c5282, #4299e1", emoji: "⚙️", label: "Utility" },
-  mobility: { gradient: "135deg, #b7791f, #d69e2e", emoji: "🚗", label: "Mobility" },
-  shops: { gradient: "135deg, #553c9a, #805ad5", emoji: "🛍️", label: "Shop" },
-  services: { gradient: "135deg, #2c5282, #4299e1", emoji: "🔧", label: "Service" },
-  healthcare: { gradient: "135deg, #276749, #38a169", emoji: "🏥", label: "Healthcare" },
-  experiences: { gradient: "135deg, #553c9a, #805ad5", emoji: "✨", label: "Experiences" },
+  property: { gradient: "135deg, #1a365d, #2d3748", emoji: treeVerticalEmoji("property", "🏠"), label: "Property" },
+  stay: { gradient: "135deg, #44337a, #553c9a", emoji: treeVerticalEmoji("stay", "🏨"), label: "Stay" },
+  food: { gradient: "135deg, #b7791f, #dd6b20", emoji: treeVerticalEmoji("food", "🍽️"), label: "Food" },
+  grocery: { gradient: "135deg, #276749, #38a169", emoji: treeVerticalEmoji("grocery", "🛒"), label: "Grocery" },
+  utility: { gradient: "135deg, #2c5282, #4299e1", emoji: treeVerticalEmoji("utility", "⚙️"), label: "Utility" },
+  mobility: { gradient: "135deg, #b7791f, #d69e2e", emoji: treeVerticalEmoji("mobility", "🚗"), label: "Mobility" },
+  shops: { gradient: "135deg, #553c9a, #805ad5", emoji: treeVerticalEmoji("shops", "🛍️"), label: "Shop" },
+  services: { gradient: "135deg, #2c5282, #4299e1", emoji: treeVerticalEmoji("services", "🔧"), label: "Service" },
+  healthcare: { gradient: "135deg, #276749, #38a169", emoji: treeVerticalEmoji("healthcare", "🏥"), label: "Healthcare" },
+  experiences: { gradient: "135deg, #553c9a, #805ad5", emoji: treeVerticalEmoji("experiences", "✨"), label: "Experiences" },
 };
 
 function buildSvg(
