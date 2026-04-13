@@ -178,10 +178,10 @@ const CATEGORY_MAP: Record<string, { vertical: string; subcategory: string }> = 
   florist: { vertical: "shops", subcategory: "florist" },
 };
 
-function mapTaxonomy(rawCat?: string | null, rawSub?: string | null): { vertical: string; subcategory: string | null } {
+async function mapTaxonomy(rawCat?: string | null, rawSub?: string | null): Promise<{ vertical: string; subcategory: string | null }> {
   const normalized = (rawSub ?? rawCat ?? "").toLowerCase().trim().replace(/[\s-]+/g, "_");
   if (CATEGORY_MAP[normalized]) return CATEGORY_MAP[normalized];
-  const vertical = resolveVerticalFromSubcategory(normalized);
+  const vertical = await resolveVerticalFromSubcategory(normalized);
   return { vertical, subcategory: normalized || null };
 }
 
@@ -526,7 +526,7 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
       const city = normalizeText(item.city) || config.city || "Dubai";
       const country = item.country || config.country || "AE";
       const zone = normalizeText(item.area);
-      const { vertical, subcategory } = mapTaxonomy(item.category, item.subcategory);
+      const { vertical, subcategory } = await mapTaxonomy(item.category, item.subcategory);
 
       // Dedup
       const dedup = await checkDuplicate(name, phone, item.lat ?? null, item.lng ?? null, item.source_external_id);

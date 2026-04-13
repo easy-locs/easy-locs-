@@ -97,10 +97,10 @@ function isSuspiciousPhone(phone: string): boolean {
   return false;
 }
 
-export function evaluateScrapeDecision(
+export async function evaluateScrapeDecision(
   record: SourceEntityRecord,
   existingNames?: Set<string>,
-): ScrapeDecision {
+): Promise<ScrapeDecision> {
   const flags: ScrapeFlag[] = [];
   const reasons: string[] = [];
   const name = record.name?.trim() ?? "";
@@ -132,7 +132,7 @@ export function evaluateScrapeDecision(
   let classificationConfidence = 0;
 
   if (name) {
-    const classification = classifyBusiness({
+    const classification = await classifyBusiness({
       businessName: name,
       sourceCategory: record.categories?.[0] ?? null,
       sourceSubcategory: record.subcategories?.[0] ?? null,
@@ -203,14 +203,14 @@ export function evaluateScrapeDecision(
   };
 }
 
-export function evaluateBatchScrapeDecisions(
+export async function evaluateBatchScrapeDecisions(
   records: SourceEntityRecord[],
-): {
+): Promise<{
   accepted: SourceEntityRecord[];
   rejected: SourceEntityRecord[];
   decisions: ScrapeDecision[];
   summary: { total: number; accepted: number; rejected: number; topFlags: Record<string, number> };
-} {
+}> {
   const existingNames = new Set<string>();
   const accepted: SourceEntityRecord[] = [];
   const rejected: SourceEntityRecord[] = [];
@@ -218,7 +218,7 @@ export function evaluateBatchScrapeDecisions(
   const flagCounts: Record<string, number> = {};
 
   for (const record of records) {
-    const decision = evaluateScrapeDecision(record, existingNames);
+    const decision = await evaluateScrapeDecision(record, existingNames);
     decisions.push(decision);
 
     if (decision.accepted) {

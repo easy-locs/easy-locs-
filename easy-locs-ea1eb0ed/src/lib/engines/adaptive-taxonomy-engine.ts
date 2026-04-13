@@ -87,7 +87,7 @@ export async function classifySingleEntity(input: AdaptiveTaxonomyInput): Promis
       tags: input.tags,
       address: input.address,
     };
-    const classification = classifyBusiness(classInput);
+    const classification = await classifyBusiness(classInput);
     if (classification && classification.confidence_score >= 30) {
       return classificationToOutput(classification);
     }

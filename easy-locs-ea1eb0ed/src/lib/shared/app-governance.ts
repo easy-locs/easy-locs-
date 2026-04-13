@@ -22,11 +22,6 @@ export const APP_GOVERNANCE = {
     "messages",
     "conversation_threads",
     "chat_threads",
-    "legacy_notifications",
-    "orbit_messages",
-    "orbit_threads",
-    "message_reactions",
-    "message_reads",
   ],
 
   isolatedLegacyZones: [

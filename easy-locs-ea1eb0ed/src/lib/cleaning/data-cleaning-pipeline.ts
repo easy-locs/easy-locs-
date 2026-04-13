@@ -92,9 +92,9 @@ export async function dedupeShops(shops: any[], result: CleaningResult, onProgre
 // ══════════════════════════════════════════
 //  STEP B: Normalize Taxonomy
 // ══════════════════════════════════════════
-export function normalizeTaxonomy(shop: any): Record<string, any> | null {
+export async function normalizeTaxonomy(shop: any): Promise<Record<string, any> | null> {
   if (!shop.vertical && !shop.cluster && !shop.subcategory) return null;
-  const tax = canonicalTaxonomyPayload(shop.vertical, shop.cluster, shop.subcategory);
+  const tax = await canonicalTaxonomyPayload(shop.vertical, shop.cluster, shop.subcategory);
   const updates: Record<string, any> = {};
   if (tax.vertical !== shop.vertical) updates.vertical = tax.vertical;
   if (tax.cluster && tax.cluster !== shop.cluster) updates.cluster = tax.cluster;
@@ -234,7 +234,7 @@ export async function runFullCleaningPipeline(
       const allUpdates: Record<string, any> = {};
 
       // B: Taxonomy
-      const taxFix = normalizeTaxonomy(shop);
+      const taxFix = await normalizeTaxonomy(shop);
       if (taxFix) { Object.assign(allUpdates, taxFix); result.taxonomyFixed++; }
 
       // C: Cover fixes
@@ -250,7 +250,7 @@ export async function runFullCleaningPipeline(
 
       // Audit recalc
       const mergedShop = { ...shop, ...allUpdates };
-      const audit = auditShop(mergedShop);
+      const audit = await auditShop(mergedShop);
       allUpdates.audit_score = audit.score;
       allUpdates.readiness_status = audit.status;
       allUpdates.data_freshness_at = new Date().toISOString();

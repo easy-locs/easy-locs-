@@ -3,12 +3,13 @@
  * Used at write time to prevent incoherent vertical/cluster/subcategory combos.
  */
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
-import {
-  normalizeVertical,
-  normalizeSubcategory,
-  getCanonicalVertical,
-  getClusterForSubcategory,
-} from "./taxonomy-aliases";
+
+let _aliasCache: Awaited<ReturnType<typeof _load>> | null = null;
+const _load = () => import("./taxonomy-aliases");
+async function aliases() {
+  if (!_aliasCache) _aliasCache = await _load();
+  return _aliasCache;
+}
 
 export interface TaxonomyValidation {
   valid: boolean;
@@ -19,19 +20,15 @@ export interface TaxonomyValidation {
   errors: string[];
 }
 
-/**
- * Validates and auto-corrects taxonomy fields.
- * Returns canonical values — always use the returned values for DB writes.
- */
-export function validateAndCorrectTaxonomy(
+export async function validateAndCorrectTaxonomy(
   rawVertical?: string | null,
   rawCluster?: string | null,
   rawSubcategory?: string | null
-): TaxonomyValidation {
+): Promise<TaxonomyValidation> {
+  const { normalizeVertical, normalizeSubcategory, getCanonicalVertical, getClusterForSubcategory } = await aliases();
   const corrections: string[] = [];
   const errors: string[] = [];
 
-  // 1. Normalize vertical
   const vertical = normalizeVertical(rawVertical);
   if (rawVertical && vertical !== rawVertical?.toLowerCase().trim()) {
     corrections.push(`Vertical normalized: "${rawVertical}" → "${vertical}"`);
@@ -43,14 +40,12 @@ export function validateAndCorrectTaxonomy(
     return { valid: false, vertical, cluster: null, subcategory: null, corrections, errors };
   }
 
-  // 2. Normalize subcategory
   let subcategory: string | null = null;
   if (rawSubcategory) {
     subcategory = normalizeSubcategory(rawSubcategory);
     if (subcategory) {
       const subExists = verticalDef.subcategories.some(s => s.value === subcategory);
       if (!subExists) {
-        // Check if it belongs to a different vertical — reject it
         const correctCluster = getClusterForSubcategory(subcategory);
         if (correctCluster) {
           errors.push(`Subcategory "${subcategory}" does not belong to vertical "${vertical}"`);
@@ -63,11 +58,9 @@ export function validateAndCorrectTaxonomy(
     }
   }
 
-  // 3. Resolve cluster — always canonical, never free text
   let cluster: string | null = null;
 
   if (subcategory) {
-    // Cluster MUST match the subcategory's canonical cluster
     const canonicalCluster = getClusterForSubcategory(subcategory);
     if (canonicalCluster) {
       cluster = canonicalCluster;
@@ -76,12 +69,10 @@ export function validateAndCorrectTaxonomy(
       }
     }
   } else if (rawCluster) {
-    // Validate cluster exists in this vertical
     const clusterExists = verticalDef.clusters.some(c => c.value === rawCluster);
     if (clusterExists) {
       cluster = rawCluster;
     } else {
-      // Try to find a matching cluster
       const normalized = rawCluster.toLowerCase().trim().replace(/[\s-]+/g, "_");
       const found = verticalDef.clusters.find(c => c.value === normalized);
       if (found) {
@@ -103,16 +94,12 @@ export function validateAndCorrectTaxonomy(
   };
 }
 
-/**
- * Strict taxonomy payload — returns only canonical values for DB insert/update.
- * Call this before any storefront_pages write.
- */
-export function canonicalTaxonomyPayload(
+export async function canonicalTaxonomyPayload(
   rawVertical?: string | null,
   rawCluster?: string | null,
   rawSubcategory?: string | null
-): { vertical: string; cluster: string | null; subcategory: string | null } {
-  const result = validateAndCorrectTaxonomy(rawVertical, rawCluster, rawSubcategory);
+): Promise<{ vertical: string; cluster: string | null; subcategory: string | null }> {
+  const result = await validateAndCorrectTaxonomy(rawVertical, rawCluster, rawSubcategory);
   return {
     vertical: result.vertical,
     cluster: result.cluster,
