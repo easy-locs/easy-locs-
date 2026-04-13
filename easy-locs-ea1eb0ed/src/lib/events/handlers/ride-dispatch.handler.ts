@@ -4,37 +4,50 @@
  */
 import { eventBus } from "@/lib/core/event-bus";
 import { dispatchRide } from "@/lib/mobility/dispatch-engine";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
+import { structuredLogger } from "@/lib/observability/structured-logger";
+
+interface DispatchPayload {
+  pickup_lat: number;
+  pickup_lng: number;
+  dropoff_lat: number;
+  dropoff_lng: number;
+  rider_id: string;
+  vehicle_type?: string;
+}
+
+interface DispatchResult {
+  pricing: { finalPrice: number; surge: number };
+  drivers: Array<{ user_id: string }>;
+}
 
 export function initRideDispatchHandler() {
-  eventBus.on("ride.dispatch.legacy", async (payload: any) => {
-    const result = await dispatchRide(payload);
+  eventBus.on("ride.dispatch.legacy", async (payload: DispatchPayload) => {
+    const result: DispatchResult = await dispatchRide(payload);
 
-    const { data: job } = await supabase
-      .from("mobility_jobs")
+    const { data: job } = await db("mobility_jobs")
       .insert({
         ...payload,
         status: "searching",
         current_price: result.pricing.finalPrice,
         surge_multiplier: result.pricing.surge,
-      } as any)
+      })
       .select()
       .single();
 
     if (!job) return;
 
+    const jobRecord = job as Record<string, unknown>;
+
     for (const driver of result.drivers) {
       await db("mobility_job_offers").insert({
-        job_id: (job as any).id,
+        job_id: jobRecord.id,
         rider_user_id: driver.user_id,
         status: "pending",
         eta_minutes: 5,
-      } as any);
+      });
     }
 
-    if (import.meta.env.DEV) {
-      console.log("[ride-dispatch] Legacy dispatched", (job as any).id);
-    }
+    structuredLogger.debug("rider", "legacy_dispatch", `Legacy dispatched ${jobRecord.id}`);
   });
 }

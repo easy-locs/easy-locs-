@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
 import { scoreUnifiedDrivers } from "./unified-driver-scorer";
 import { computeUnifiedPricing } from "./unified-pricing-engine";
@@ -98,7 +98,7 @@ export async function smartDispatch(
     computeUnifiedETA({ job: enrichedJob, driverPosition: null }),
   ];
 
-  const { data: createdJob } = await supabase
+  const { data: createdJob } = await db
     .from("mobility_jobs")
     .insert({
       job_type: job.context,
@@ -131,7 +131,7 @@ export async function smartDispatch(
 
   const jobId = (createdJob as any).id;
 
-  await supabase.from("mobility_pricing_snapshots").insert({
+  await db.from("mobility_pricing_snapshots").insert({
     job_id: jobId,
     zone_key: zone.zoneKey ?? null,
     distance_km: roadDistanceKm,
@@ -155,7 +155,7 @@ export async function smartDispatch(
   if (scoredDrivers.length === 0) {
     const expanded = await expandSearchRadius(enrichedJob, jobId);
     if (expanded.length === 0) {
-      await supabase
+      await db
         .from("mobility_jobs")
         .update({ status: "failed_no_rider" } as any)
         .eq("id", jobId);
@@ -216,7 +216,7 @@ async function expandSearchRadius(
   for (let r = 1; r < SEARCH_RADIUS_KM.length; r++) {
     const radius = SEARCH_RADIUS_KM[r];
 
-    const { data: drivers } = await supabase
+    const { data: drivers } = await db
       .from("rider_presence")
       .select("user_id, lat, lng, is_online, is_available, vehicle_type, zone_key")
       .eq("is_online", true)
@@ -246,7 +246,7 @@ async function createDispatchRun(
   zoneKey: string | null,
   drivers: UnifiedDriverScore[],
 ) {
-  await supabase
+  await db
     .from("mobility_dispatch_runs")
     .insert({
       job_id: jobId,
@@ -281,7 +281,7 @@ async function dispatchWaveIntelligent(
 
   const expiresAt = new Date(Date.now() + wave.expireSec * 1000).toISOString();
 
-  await supabase.from("mobility_job_offers").insert(
+  await db.from("mobility_job_offers").insert(
     selected.map((d) => ({
       job_id: jobId,
       rider_user_id: d.rider_user_id,
@@ -321,7 +321,7 @@ export async function handleOfferResponse(
     return assigned;
   }
 
-  await supabase
+  await db
     .from("mobility_job_offers")
     .update({ status: "rejected", responded_at: new Date().toISOString() } as any)
     .eq("id", offerId);
@@ -332,7 +332,7 @@ export async function handleOfferResponse(
 }
 
 export async function handleRideComplete(jobId: string) {
-  const { data: job } = await supabase
+  const { data: job } = await db
     .from("mobility_jobs")
     .select("*")
     .eq("id", jobId)
@@ -340,7 +340,7 @@ export async function handleRideComplete(jobId: string) {
 
   if (!job) return;
 
-  await supabase
+  await db
     .from("mobility_jobs")
     .update({
       status: "completed",
@@ -354,7 +354,7 @@ export async function handleRideComplete(jobId: string) {
 }
 
 export async function escalateDispatch(jobId: string) {
-  const { data: run } = await supabase
+  const { data: run } = await db
     .from("mobility_dispatch_runs")
     .select("*")
     .eq("job_id", jobId)
@@ -366,12 +366,12 @@ export async function escalateDispatch(jobId: string) {
   const nextWaveIndex = currentWave;
 
   if (nextWaveIndex >= WAVE_CONFIGS.length) {
-    await supabase
+    await db
       .from("mobility_dispatch_runs")
       .update({ status: "failed", updated_at: new Date().toISOString() } as any)
       .eq("id", (run as any).id);
 
-    await supabase
+    await db
       .from("mobility_jobs")
       .update({ status: "failed_no_rider" } as any)
       .eq("id", jobId);
@@ -381,7 +381,7 @@ export async function escalateDispatch(jobId: string) {
     return;
   }
 
-  const { data: scores } = await supabase
+  const { data: scores } = await db
     .from("mobility_driver_scores")
     .select("*")
     .eq("job_id", jobId)
@@ -403,7 +403,7 @@ export async function escalateDispatch(jobId: string) {
     explanation_json: s.explanation_json ?? {},
   }));
 
-  await supabase
+  await db
     .from("mobility_dispatch_runs")
     .update({
       current_wave: nextWaveIndex + 1,
@@ -423,7 +423,7 @@ export function startSmartDispatchCron(intervalMs = 5000) {
   cronInterval = setInterval(async () => {
     try {
       const nowIso = new Date().toISOString();
-      const { data: expired } = await supabase
+      const { data: expired } = await db
         .from("mobility_job_offers")
         .select("id,job_id")
         .eq("status", "pending")
@@ -432,7 +432,7 @@ export function startSmartDispatchCron(intervalMs = 5000) {
 
       if (!expired?.length) return;
 
-      await supabase
+      await db
         .from("mobility_job_offers")
         .update({ status: "expired", responded_at: nowIso } as any)
         .in("id", expired.map((o: any) => o.id));
@@ -440,7 +440,7 @@ export function startSmartDispatchCron(intervalMs = 5000) {
       const jobIds = [...new Set(expired.map((o: any) => o.job_id))];
 
       for (const jobId of jobIds) {
-        const { data: accepted } = await supabase
+        const { data: accepted } = await db
           .from("mobility_job_offers")
           .select("id")
           .eq("job_id", jobId)

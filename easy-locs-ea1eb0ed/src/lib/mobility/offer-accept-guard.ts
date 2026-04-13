@@ -1,10 +1,10 @@
 /**
  * offer-accept-guard — Safe offer acceptance with ownership + state validation.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export async function acceptOfferSafely(offerId: string, riderUserId: string) {
-  const { data: offer } = await supabase
+  const { data: offer } = await db
     .from("mobility_job_offers")
     .select("id,job_id,status,rider_user_id")
     .eq("id", offerId)
@@ -14,7 +14,7 @@ export async function acceptOfferSafely(offerId: string, riderUserId: string) {
   if ((offer as any).status !== "pending") throw new Error("Offer no longer available");
   if ((offer as any).rider_user_id !== riderUserId) throw new Error("Offer ownership mismatch");
 
-  const { data: acceptedExisting } = await supabase
+  const { data: acceptedExisting } = await db
     .from("mobility_job_offers")
     .select("id")
     .eq("job_id", (offer as any).job_id)
@@ -26,7 +26,7 @@ export async function acceptOfferSafely(offerId: string, riderUserId: string) {
     throw new Error("Ride already assigned");
   }
 
-  const { error: offerError } = await supabase
+  const { error: offerError } = await db
     .from("mobility_job_offers")
     .update({
       status: "accepted",
@@ -37,7 +37,7 @@ export async function acceptOfferSafely(offerId: string, riderUserId: string) {
 
   if (offerError) throw offerError;
 
-  const { error: jobError } = await supabase
+  const { error: jobError } = await db
     .from("mobility_jobs")
     .update({
       status: "accepted",
@@ -50,7 +50,7 @@ export async function acceptOfferSafely(offerId: string, riderUserId: string) {
   if (jobError) throw jobError;
 
   // Expire remaining pending offers for this job
-  await supabase
+  await db
     .from("mobility_job_offers")
     .update({
       status: "expired",

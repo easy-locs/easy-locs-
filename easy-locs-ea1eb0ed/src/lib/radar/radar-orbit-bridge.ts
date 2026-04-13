@@ -6,7 +6,7 @@
  *   id, type, title, participants (jsonb), listing_id, booking_id,
  *   lease_id, last_message_at, created_at, updated_at, created_by_orbit_id
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
 
 export interface RadarEntity {
@@ -31,8 +31,7 @@ export async function openOrbitFromRadar(
 ): Promise<string | null> {
   try {
     // First get the user's orbit_id
-    const { data: orbitProfile } = await supabase
-      .from("orbit_profiles_v2")
+    const { data: orbitProfile } = await db("orbit_profiles_v2")
       .select("orbit_id")
       .eq("id", userId)
       .maybeSingle();
@@ -41,13 +40,12 @@ export async function openOrbitFromRadar(
 
     // Check if conversation already exists for this entity + user
     // conversations_v2.participants is JSONB — search for user's orbit_id or user_id
-    const { data: existing } = await (supabase
-      .from("conversations_v2" as any)
+    const { data: existing } = await (db("conversations_v2")
       .select("id")
       .eq("type", "entity")
       .eq("title", entity.name)
       .contains("participants", [userOrbitId])
-      .maybeSingle()) as any;
+      .maybeSingle()) as { data: { id: string } | null };
 
     if (existing?.id) {
       eventBus.emit("CONTACT_INITIATED", {
@@ -59,8 +57,7 @@ export async function openOrbitFromRadar(
       return existing.id;
     }
 
-    const { data: newThread, error } = await (supabase
-      .from("conversations_v2" as any)
+    const { data: newThread, error } = await (db("conversations_v2")
       .insert({
         type: "entity",
         title: entity.name,
@@ -68,7 +65,7 @@ export async function openOrbitFromRadar(
         created_by_orbit_id: userOrbitId,
       })
       .select("id")
-      .single()) as any;
+      .single()) as { data: { id: string } | null; error: unknown };
 
     if (error || !newThread) {
       console.error("[radar-orbit] Failed to create thread:", error);

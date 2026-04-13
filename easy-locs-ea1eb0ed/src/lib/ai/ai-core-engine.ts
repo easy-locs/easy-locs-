@@ -12,8 +12,8 @@
  * never injects fake data. All actions logged in ai_decision_log.
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 
 
@@ -353,9 +353,7 @@ export async function runAiCore(limit = 30): Promise<AiCoreResult> {
 
   const duration = Date.now() - start;
 
-  console.log(
-    `[ai-core] Mode=${currentMode} | Cleaned=${dataCleaner.cleaned} | Classified=${categoryClassifier.corrected} | Photos=${photoAnalyzer.flagged} | Boosted=${qualityBooster.boosted} | Dupes=${duplicateDetector.candidates} | ${duration}ms`
-  );
+  structuredLogger.info("system", "aiCoreRun", `Mode=${currentMode} | Cleaned=${dataCleaner.cleaned} | Classified=${categoryClassifier.corrected} | Photos=${photoAnalyzer.flagged} | Boosted=${qualityBooster.boosted} | Dupes=${duplicateDetector.candidates} | ${duration}ms`);
 
   return {
     mode: currentMode,

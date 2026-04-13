@@ -3,7 +3,7 @@
  * 
  * Architecture: UI → Hooks → Domain Service → Adapter → Repository → DB
  */
-import { supabase } from "@/integrations/supabase/client";
+import { v2db } from "@/lib/shared/db-v2";
 import type {
   LeaseRepository, RentCallRepository, PropertyRepository,
   RentalNotificationPort, Lease, RentCall, Property,
@@ -77,14 +77,12 @@ export const rentCallAdapter: RentCallRepository = {
 // ── Property Adapter ──
 export const propertyAdapter: PropertyRepository = {
   async findById(id: string): Promise<Property | null> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase.from("properties").select("*").eq("id", id).maybeSingle();
+    const { data } = await v2db("properties").select("*").eq("id", id).maybeSingle();
     return data ? mapProperty(data) : null;
   },
 
   async findByOrg(orgId: string): Promise<Property[]> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase.from("properties").select("*").eq("org_id", orgId);
+    const { data } = await v2db("properties").select("*").eq("org_id", orgId);
     return (data ?? []).map(mapProperty);
   },
 };
@@ -102,7 +100,42 @@ export const rentalNotifications: RentalNotificationPort = {
 };
 
 // ── Mappers (DB row → Domain aggregate) ──
-function mapLease(row: any): Lease {
+interface LeaseRow {
+  id: string;
+  tenant_id: string;
+  property_id: string;
+  org_id: string;
+  start_date: string;
+  end_date: string;
+  rent_amount: number | null;
+  currency: string | null;
+  status: string | null;
+  created_at: string;
+}
+
+interface RentCallRow {
+  id: string;
+  lease_id: string | null;
+  month: string;
+  rent_amount: number | null;
+  currency: string | null;
+  paid: boolean;
+  paid_at: string | null;
+}
+
+interface PropertyRow {
+  id: string;
+  org_id: string | null;
+  label: string | null;
+  name: string | null;
+  address: string | null;
+  country: string | null;
+  city: string | null;
+  property_type: string | null;
+  type: string | null;
+}
+
+function mapLease(row: LeaseRow): Lease {
   return {
     id: row.id,
     tenantId: row.tenant_id,
@@ -111,12 +144,12 @@ function mapLease(row: any): Lease {
     startDate: row.start_date,
     endDate: row.end_date,
     monthlyRent: { amount: row.rent_amount ?? 0, currency: row.currency ?? "XOF" },
-    status: row.status ?? "active",
+    status: (row.status as Lease["status"]) ?? "active",
     createdAt: row.created_at,
   };
 }
 
-function mapRentCall(row: any): RentCall {
+function mapRentCall(row: RentCallRow): RentCall {
   return {
     id: row.id,
     leaseId: row.lease_id ?? "",
@@ -127,7 +160,7 @@ function mapRentCall(row: any): RentCall {
   };
 }
 
-function mapProperty(row: any): Property {
+function mapProperty(row: PropertyRow): Property {
   return {
     id: row.id,
     orgId: row.org_id ?? "",

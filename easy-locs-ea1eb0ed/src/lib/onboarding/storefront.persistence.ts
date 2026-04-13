@@ -1,7 +1,6 @@
 /**
  * Storefront Persistence — Upserts canonical records into storefront_pages.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { StorefrontDraftPayload } from "./storefront-output.types";
 

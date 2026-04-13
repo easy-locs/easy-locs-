@@ -3,7 +3,6 @@
  * Uses orbitDb for conversation resolution, canonical send family for auto-messages.
  * Zero inline Supabase inserts.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { toast } from "sonner";
 import { sendText } from "@/families/send/send-text";

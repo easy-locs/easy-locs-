@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export interface OrderTimelineItem {
@@ -29,7 +28,7 @@ const STATUS_LABELS: Record<string, string> = {
 export async function getOrderTimeline(orderId: string): Promise<OrderTimelineItem[]> {
   const [{ data: order, error: orderErr }, { data: events, error: eventErr }] =
     await Promise.all([
-      supabase.from("orders").select("*").eq("id", orderId).maybeSingle(),
+      db("orders").select("*").eq("id", orderId).maybeSingle(),
       db
         .from("activity_logs")
         .select("*")

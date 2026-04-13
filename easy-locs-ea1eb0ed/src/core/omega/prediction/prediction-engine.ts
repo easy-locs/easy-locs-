@@ -1,5 +1,6 @@
 import type { PredictionRecord, OmegaPredictionType, OmegaEngineStatus } from "../omega-types";
 import { omegaPersistence } from "../omega-persistence";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 const MAX_PREDICTIONS = 1_000;
 let predIdCounter = 0;
@@ -137,7 +138,7 @@ class PredictionEngine {
     }
     this.status = "active";
     this.lastRunAt = Date.now();
-    console.log(`[OMEGA] PredictionEngine booted | predictions: ${this.predictions.size} (${persisted.length} restored)`);
+    structuredLogger.info("system", "omega_engine_boot", `PredictionEngine booted | predictions: ${this.predictions.size} (${persisted.length} restored)`);
   }
 
   shutdown(): void { this.status = "stopped"; }

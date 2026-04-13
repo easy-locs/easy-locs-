@@ -2,7 +2,6 @@
  * persistence.import_run.write — Persists the import run metadata.
  * ONE thing: write import run to DB.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { RawInput } from "../contracts";
 

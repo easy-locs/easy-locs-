@@ -1,7 +1,7 @@
 /**
  * driver-ai-scorer — Multi-dimensional driver scoring for intelligent dispatch.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 type DriverCandidate = {
   user_id: string;
@@ -67,7 +67,7 @@ export interface ScoredDriver {
 }
 
 export async function scoreDriversForJob(input: JobInput): Promise<ScoredDriver[]> {
-  const { data: drivers } = await supabase
+  const { data: drivers } = await db
     .from("rider_presence")
     .select("user_id, lat, lng, is_online, is_available, vehicle_type, zone_key")
     .eq("is_online", true)
@@ -76,7 +76,7 @@ export async function scoreDriversForJob(input: JobInput): Promise<ScoredDriver[
 
   if (!drivers?.length) return [];
 
-  const { data: statsRows } = await supabase
+  const { data: statsRows } = await db
     .from("mobility_driver_stats")
     .select("*")
     .in(
@@ -141,7 +141,7 @@ export async function scoreDriversForJob(input: JobInput): Promise<ScoredDriver[
 
   // Persist scores
   if (scored.length) {
-    await supabase.from("mobility_driver_scores").insert(
+    await db("mobility_driver_scores").insert(
       scored.map((s) => ({
         job_id: input.jobId,
         rider_user_id: s.rider_user_id,

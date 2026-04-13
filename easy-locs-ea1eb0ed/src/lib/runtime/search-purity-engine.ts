@@ -6,6 +6,7 @@
 
 import { reportAnomaly } from "./anomaly-detector";
 import { reportHealth } from "./health-aggregator";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 import { CANONICAL_VERTICALS, type CanonicalVertical } from "@/domains/shared/canonical-types";
 
 export interface SearchPurityViolation {
@@ -152,6 +153,6 @@ export function runSearchPurityEngine(): { status: "clean" | "violations"; viola
     violationCount > 0 ? `${violationCount} search purity violations (${criticalCount} critical)` : undefined
   );
 
-  console.log(`[search-purity] Search purity enforcement active — ${status === "clean" ? "vertical isolation locked" : `${violationCount} violations detected`}`);
+  structuredLogger.info("search", "enforceSearchPurity", `Search purity enforcement active — ${status === "clean" ? "vertical isolation locked" : `${violationCount} violations detected`}`);
   return { status, violationCount };
 }

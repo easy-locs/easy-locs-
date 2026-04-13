@@ -1,7 +1,6 @@
 /**
  * Seed Merchant Persistence — Upserts canonical records into seed_merchants.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { StorefrontDraftPayload } from "./storefront-output.types";
 

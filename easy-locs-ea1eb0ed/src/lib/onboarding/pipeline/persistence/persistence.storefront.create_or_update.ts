@@ -2,7 +2,6 @@
  * persistence.storefront.create_or_update — Creates or updates storefront pages.
  * ONE thing: upsert into storefront_pages.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { StorefrontPayload } from "../contracts";
 

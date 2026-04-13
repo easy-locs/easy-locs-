@@ -10,6 +10,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -114,12 +115,12 @@ class RealtimeManager {
     if (this.userId && this.isLeaderTab) {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!session?.access_token) return;
-        supabase.from("user_presence").upsert({
+        db("user_presence").upsert({
           user_id: this.userId,
           status: "offline",
           last_seen_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        } as any, { onConflict: "user_id" }).then(() => {}, () => {});
+        }, { onConflict: "user_id" }).then(() => {}, () => {});
       }).catch(() => {});
     }
 
@@ -329,13 +330,13 @@ class RealtimeManager {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.access_token) return;
-        await supabase.from("user_presence").upsert({
+        await db("user_presence").upsert({
           user_id: this.userId,
           status: currentStatus,
           last_seen_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           device_type: deviceType,
-        } as any, { onConflict: "user_id" });
+        }, { onConflict: "user_id" });
         this.lastPresenceStatus = currentStatus;
         this.lastHeartbeatAt = Date.now();
       } catch { /* non-critical */ }
@@ -355,13 +356,13 @@ class RealtimeManager {
         // Validate session before writing to prevent RLS 401
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.access_token) return;
-        supabase.from("user_presence").upsert({
+        db("user_presence").upsert({
           user_id: this.userId,
           status,
           last_seen_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           device_type: deviceType,
-        } as any, { onConflict: "user_id" }).then(() => {
+        }, { onConflict: "user_id" }).then(() => {
           this.lastPresenceStatus = status;
           this.lastHeartbeatAt = Date.now();
         }, () => {});

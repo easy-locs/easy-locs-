@@ -11,6 +11,7 @@
  * RULE: GPS updates inform global context but never override category-specific contexts.
  */
 import { eventBus } from "@/lib/core/event-bus";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 import { setActiveAddressContext, getActiveAddressContext } from "./canonical-address-resolver";
 import { fromGPS, computeZoneKey, type AddressContextType } from "./canonical-place";
 import { reverseGeocode } from "@/lib/location/geocode";
@@ -47,7 +48,7 @@ export async function syncGPSToGlobal(userId: string, lat: number, lng: number):
       });
     }
   } catch (e) {
-    console.error("[geo-sync] GPS sync failed:", e);
+    structuredLogger.error("maps", "syncFromGPS", `GPS sync failed: ${e}`);
   }
 }
 
@@ -98,7 +99,7 @@ export function initGeoSyncListeners(): () => void {
       eventBus.emit("merchant.visibility.refresh", { zoneKey });
 
       if (import.meta.env.DEV) {
-        console.log(`[geo-sync] Context-specific propagation: ${contextType} → zone=${zoneKey}`);
+        structuredLogger.debug("maps", "geoSyncListener", `Context-specific propagation: ${contextType} → zone=${zoneKey}`);
       }
     }
   };

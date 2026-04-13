@@ -1,7 +1,7 @@
 /**
  * ride-ai-orchestrator — Central orchestrator: idempotency → pricing → scoring → dispatch waves.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { scoreDriversForJob, type ScoredDriver } from "./driver-ai-scorer";
 import { computeAIPricing, type PricingAIResult } from "./pricing-ai-engine";
 import { createDispatchRun, dispatchWave } from "./dispatch-wave-engine";
@@ -53,7 +53,7 @@ export async function orchestrateRideAI(payload: any): Promise<RideAIResult> {
   });
 
   // 2. Create job with idempotency key
-  const { data: job } = await supabase
+  const { data: job } = await db
     .from("mobility_jobs")
     .insert({
       job_type: "taxi",
@@ -76,7 +76,7 @@ export async function orchestrateRideAI(payload: any): Promise<RideAIResult> {
   if (!job) throw new Error("Failed to create mobility job");
 
   // 3. Persist pricing snapshot
-  await supabase.from("mobility_pricing_snapshots").insert({
+  await db("mobility_pricing_snapshots").insert({
     job_id: (job as any).id,
     zone_key: payload.zone_key ?? null,
     distance_km: distKm,

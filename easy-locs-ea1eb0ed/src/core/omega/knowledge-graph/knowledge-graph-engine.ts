@@ -1,5 +1,6 @@
 import type { KnowledgeNode, KnowledgeNodeType, KnowledgeNodeMetadata, KnowledgeEdge, KnowledgeEdgeType, KnowledgeEdgeMetadata, OmegaEngineStatus } from "../omega-types";
 import { omegaPersistence } from "../omega-persistence";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 const MAX_NODES = 50_000;
 const MAX_EDGES = 200_000;
@@ -212,7 +213,7 @@ class KnowledgeGraphEngine {
     }
     this.status = "active";
     this.lastRunAt = Date.now();
-    console.log(`[OMEGA] KnowledgeGraphEngine booted | nodes: ${this.nodes.size} (${persistedNodes.length} restored) | edges: ${this.edges.size} (${persistedEdges.length} restored)`);
+    structuredLogger.info("system", "omega_engine_boot", `KnowledgeGraphEngine booted | nodes: ${this.nodes.size} (${persistedNodes.length} restored) | edges: ${this.edges.size} (${persistedEdges.length} restored)`);
   }
 
   shutdown(): void {

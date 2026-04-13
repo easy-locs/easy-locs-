@@ -1,3 +1,4 @@
+import { structuredLogger } from "@/lib/observability/structured-logger";
 import { sentinelEngineRegistry } from "./registry/engine-registry";
 import { sentinelCronRegistry } from "./registry/cron-registry";
 import { sentinelTaxonomyRegistry } from "./registry/taxonomy-registry";
@@ -456,7 +457,7 @@ class SentinelCore {
       invariants: sentinelInvariantEngine.getAll().length,
     });
 
-    console.log(`[SENTINEL CORE] Initial audit: ${report.verdict} | Global Score: ${scores.global_score} | Engines: ${sentinelEngineRegistry.size} | Crons: ${sentinelCronRegistry.getAll().length}`);
+    structuredLogger.info("system", "sentinel_initial_audit", `Initial audit: ${report.verdict} | Global Score: ${scores.global_score} | Engines: ${sentinelEngineRegistry.size} | Crons: ${sentinelCronRegistry.getAll().length}`);
   }
 
   shutdown(): void {
@@ -529,7 +530,7 @@ class SentinelCore {
       tests_failed: report.total_tests_failed,
       blockers: report.critical_blockers.length,
     });
-    console.log(`[SENTINEL VERIFICATION] ${report.verdict} | Score: ${report.global_score}/100 | Tests: ${report.total_tests_passed}/${report.total_tests_run} | Phases: ${report.phases_completed.length}/8 | Blockers: ${report.critical_blockers.length} | Proofs: ${report.proofs.length}`);
+    structuredLogger.info("system", "sentinel_verification", `${report.verdict} | Score: ${report.global_score}/100 | Tests: ${report.total_tests_passed}/${report.total_tests_run} | Phases: ${report.phases_completed.length}/8 | Blockers: ${report.critical_blockers.length} | Proofs: ${report.proofs.length}`);
     return report;
   }
 }

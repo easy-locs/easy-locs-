@@ -1,7 +1,6 @@
 /**
  * Onboarding Persistence — Saves pipeline results to the database.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { OnboardingRequest, OnboardingPipelineResult } from "./onboarding-orchestrator";
 

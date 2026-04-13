@@ -5,6 +5,7 @@
 
 import { reportAnomaly } from "./anomaly-detector";
 import { reportHealth } from "./health-aggregator";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 export interface ContentViolation {
   entityId: string;
@@ -156,6 +157,6 @@ export function runContentGovernance(entities: Array<{
     criticalCount > 0 ? `${criticalCount} critical content violations` : undefined
   );
 
-  console.log(`[content-governance] ${entities.length} entities scanned — ${clean} clean, ${withViolations} with violations, ${criticalCount} critical`);
+  structuredLogger.info("system", "governContent", `${entities.length} entities scanned — ${clean} clean, ${withViolations} with violations, ${criticalCount} critical`);
   return { total: entities.length, clean, withViolations, criticalCount };
 }

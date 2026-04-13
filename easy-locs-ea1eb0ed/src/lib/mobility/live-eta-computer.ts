@@ -53,7 +53,7 @@ const ROAD_FACTOR = 1.35;
  */
 export async function computeLiveETA(jobId: string): Promise<LiveETA | null> {
   // 1. Get driver's current position from trip_live_state
-  const { data: liveState } = await supabase
+  const { data: liveState } = await db
     .from("trip_live_state")
     .select("lat, lng, speed, heading, updated_at")
     .eq("job_id", jobId)
@@ -73,7 +73,7 @@ export async function computeLiveETA(jobId: string): Promise<LiveETA | null> {
   // 3. Get traffic factor from zone overlay
   let trafficLevel = "moderate";
   if (job.zone_key) {
-    const { data: overlay } = await supabase
+    const { data: overlay } = await db
       .from("geo_live_zone_overlays")
       .select("traffic_level, traffic_speed_factor")
       .eq("zone_key", job.zone_key as string)

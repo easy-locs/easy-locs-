@@ -2,7 +2,7 @@
  * Order Actions — Status transitions with orchestration bus integration.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { canTransition, type OrderStatus } from "./order-status";
 import { platformBus } from "@/lib/shared/platform-bus";
 
@@ -20,8 +20,7 @@ export async function setOrderStatus(params: {
     throw new Error(`Invalid status transition: ${params.currentStatus} → ${params.nextStatus}`);
   }
 
-  const { error } = await supabase
-    .from("orders")
+  const { error } = await db("orders")
     .update({
       status: params.nextStatus,
       updated_at: new Date().toISOString(),

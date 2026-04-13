@@ -5,6 +5,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 
 
@@ -132,7 +133,7 @@ export async function sendNotification(payload: NotificationPayload): Promise<{ 
 
   // Fallback: if no template, write a raw notification directly
   if (!template) {
-    console.warn(`[NotificationEngine] No template for event: ${payload.event_type}, using fallback`);
+    structuredLogger.warn("notification", "sendNotification", `No template for event: ${payload.event_type}, using fallback`);
     const vars = payload.variables ?? {};
     const fallbackTitle = String(vars.title || payload.event_type.replace(/_/g, " "));
     const fallbackBody = String(vars.body || vars.message || "");
@@ -158,10 +159,10 @@ export async function sendNotification(payload: NotificationPayload): Promise<{ 
       .select("id")
       .single();
     if (fbErr) {
-      console.error("[NotificationEngine] fallback insert error:", fbErr.message);
+      structuredLogger.error("notification", "sendNotification", `Fallback insert error: ${fbErr.message}`);
       return { success: false, reason: fbErr.message };
     }
-    console.log("[NotificationEngine] fallback notification sent:", fb?.id);
+    structuredLogger.info("notification", "sendNotification", `Fallback notification sent: ${fb?.id}`);
     return { success: true, id: fb?.id };
   }
 
@@ -223,7 +224,7 @@ export async function sendNotification(payload: NotificationPayload): Promise<{ 
     .single();
 
   if (error) {
-    console.error("[NotificationEngine] insert error:", error.message);
+    structuredLogger.error("notification", "sendNotification", `Insert error: ${error.message}`);
     return { success: false, reason: error.message };
   }
 

@@ -1,5 +1,22 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
+
+interface MobilityJobRow {
+  status: string;
+  created_at: string | null;
+  accepted_at: string | null;
+  completed_at: string | null;
+  current_price: number | null;
+}
+
+interface DriverStatsRow {
+  rider_user_id: string;
+  total_trips: number;
+  total_cancelled: number;
+  total_offered: number;
+  avg_response_seconds: number;
+  avg_trip_completion_rate: number;
+}
 
 export interface DispatchMetrics {
   totalDispatches: number;
@@ -39,12 +56,12 @@ export async function recordDispatchOutcome(
     recentOutcomes.splice(0, recentOutcomes.length - MAX_OUTCOMES);
   }
 
-  await supabase.from("mobility_dispatch_outcomes").insert({
+  await db("mobility_dispatch_outcomes").insert({
     job_id: jobId,
     outcome,
     latency_ms: Math.round(latencyMs),
     recorded_at: new Date().toISOString(),
-  } as any);
+  });
 
   if (recentOutcomes.length % 50 === 0) {
     void runLearningCycle();
@@ -101,14 +118,14 @@ export async function runLearningCycle() {
     });
   }
 
-  await supabase.from("mobility_learning_snapshots").insert({
+  await db("mobility_learning_snapshots").insert({
     snapshot_type: "hourly",
     metrics: metrics,
     total_outcomes: recent.length,
     window_start: new Date(now - windowMs).toISOString(),
     window_end: new Date().toISOString(),
     created_at: new Date().toISOString(),
-  } as any);
+  });
 
   void eventBus.emit("dispatch.learning.cycle_complete", {
     cycle: learningCycles,
@@ -117,26 +134,26 @@ export async function runLearningCycle() {
 }
 
 export async function updateDriverStats(riderId: string, jobId: string) {
-  const { data: job } = await supabase
-    .from("mobility_jobs")
+  const { data: jobData } = await db("mobility_jobs")
     .select("status, created_at, accepted_at, completed_at, current_price")
     .eq("id", jobId)
     .maybeSingle();
 
-  if (!job) return;
+  const jobRow = jobData as MobilityJobRow | null;
+  if (!jobRow) return;
 
-  const { data: existing } = await supabase
-    .from("mobility_driver_stats")
+  const { data: existingData } = await db("mobility_driver_stats")
     .select("*")
     .eq("rider_user_id", riderId)
     .maybeSingle();
 
-  const isCompleted = (job as any).status === "completed";
-  const isCancelled = (job as any).status === "cancelled";
+  const existing = existingData as DriverStatsRow | null;
+  const isCompleted = jobRow.status === "completed";
+  const isCancelled = jobRow.status === "cancelled";
 
-  const totalTrips = ((existing as any)?.total_trips ?? 0) + (isCompleted ? 1 : 0);
-  const totalCancelled = ((existing as any)?.total_cancelled ?? 0) + (isCancelled ? 1 : 0);
-  const totalOffered = ((existing as any)?.total_offered ?? 0) + 1;
+  const totalTrips = (existing?.total_trips ?? 0) + (isCompleted ? 1 : 0);
+  const totalCancelled = (existing?.total_cancelled ?? 0) + (isCancelled ? 1 : 0);
+  const totalOffered = (existing?.total_offered ?? 0) + 1;
 
   const acceptanceRate = totalOffered > 0
     ? Math.round(((totalTrips + totalCancelled) / totalOffered) * 100)
@@ -146,10 +163,10 @@ export async function updateDriverStats(riderId: string, jobId: string) {
     ? Math.round((totalCancelled / (totalTrips + totalCancelled)) * 100)
     : 0;
 
-  let responseSeconds = (existing as any)?.avg_response_seconds ?? 20;
-  if ((job as any).created_at && (job as any).accepted_at) {
-    const created = new Date((job as any).created_at).getTime();
-    const accepted = new Date((job as any).accepted_at).getTime();
+  let responseSeconds = existing?.avg_response_seconds ?? 20;
+  if (jobRow.created_at && jobRow.accepted_at) {
+    const created = new Date(jobRow.created_at).getTime();
+    const accepted = new Date(jobRow.accepted_at).getTime();
     const thisResponse = (accepted - created) / 1000;
     responseSeconds = Math.round((responseSeconds * 0.8 + thisResponse * 0.2));
   }
@@ -171,12 +188,11 @@ export async function updateDriverStats(riderId: string, jobId: string) {
   };
 
   if (existing) {
-    await supabase
-      .from("mobility_driver_stats")
-      .update(statsUpdate as any)
+    await db("mobility_driver_stats")
+      .update(statsUpdate)
       .eq("rider_user_id", riderId);
   } else {
-    await supabase.from("mobility_driver_stats").insert(statsUpdate as any);
+    await db("mobility_driver_stats").insert(statsUpdate);
   }
 }
 

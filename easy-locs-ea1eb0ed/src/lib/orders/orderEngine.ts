@@ -2,7 +2,6 @@
  * orderEngine — Authoritative order creation and status management.
  * Uses storefront_orders + storefront_order_items as the single source of truth.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { CartItem } from "@/stores/cartStore";
 import { notifyOrderCreated, notifyOrderDelivered } from "@/lib/engines/notification-event-dispatcher";
@@ -27,7 +26,7 @@ export interface CreateOrderInput {
 }
 
 export async function createStorefrontOrder(input: CreateOrderInput) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
   if (input.idempotencyKey) {
@@ -126,7 +125,7 @@ export async function updateStorefrontOrderStatus(params: {
   actorType?: string;
   notes?: string;
 }) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
 
   const patch: Record<string, any> = {
     status: params.status,
@@ -199,7 +198,7 @@ export async function getOrderStatusHistory(orderId: string) {
 }
 
 export async function listCustomerOrders(limit = 50) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   if (!user) return [];
 
   const { data } = await db

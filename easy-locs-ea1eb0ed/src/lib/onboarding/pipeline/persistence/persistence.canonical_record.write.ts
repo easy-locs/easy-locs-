@@ -2,7 +2,6 @@
  * persistence.canonical_record.write — Persists canonical records.
  * ONE thing: write canonical entity records to DB.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { CanonicalOnboardingRecord } from "../../types";
 

@@ -5,7 +5,7 @@
  * and idempotency checks to prevent duplicate charges or credits.
  * MIGRATION TARGET: Should be moved to server-side edge function.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
 import { logger } from "@/lib/monitoring";
 
@@ -15,7 +15,7 @@ const MAX_COMMISSION_RATE = 0.40;
 const PLATFORM_COMMISSION_RATE = 0.20;
 
 async function requireAuth(): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   if (!user) throw new Error("Wallet operation requires authentication");
   return user.id;
 }
@@ -48,8 +48,7 @@ export async function bridgeWalletOnComplete(
       jobId, customerId, amount, currency, authUser: authUserId,
     });
 
-    const { data: existing } = await supabase
-      .from("wallet_transactions")
+    const { data: existing } = await db("wallet_transactions")
       .select("id")
       .eq("reference_id", `ride_${jobId}`)
       .limit(1)
@@ -60,23 +59,23 @@ export async function bridgeWalletOnComplete(
       return;
     }
 
-    const { data: wallet } = await supabase
-      .from("wallets")
+    const { data: wallet } = await db("wallets")
       .select("id, balance, currency")
       .eq("user_id", customerId)
       .maybeSingle();
 
-    const walletBalance = wallet ? Number((wallet as any).balance ?? 0) : 0;
+    const walletRow = wallet as { id: string; balance: number; currency: string } | null;
+    const walletBalance = walletRow ? Number(walletRow.balance ?? 0) : 0;
 
     let paymentMethod: "wallet" | "card" | "cash" = "card";
     let walletDeducted = 0;
     let cardCharged = amount;
 
-    if (wallet && walletBalance >= amount) {
+    if (walletRow && walletBalance >= amount) {
       paymentMethod = "wallet";
       walletDeducted = amount;
       cardCharged = 0;
-    } else if (wallet && walletBalance > 0) {
+    } else if (walletRow && walletBalance > 0) {
       walletDeducted = walletBalance;
       cardCharged = Number((amount - walletBalance).toFixed(2));
     }
@@ -99,42 +98,39 @@ export async function bridgeWalletOnComplete(
       created_at: new Date().toISOString(),
     };
 
-    const { error: txnError } = await supabase
-      .from("wallet_transactions")
-      .insert(txnRecord as any);
+    const { error: txnError } = await db("wallet_transactions")
+      .insert(txnRecord);
 
     if (txnError) {
       logger.error("[WALLET] Failed to record ride transaction", { jobId, error: txnError.message });
       return;
     }
 
-    if (wallet && walletDeducted > 0) {
+    if (walletRow && walletDeducted > 0) {
       const newBalance = Math.max(0, Number((walletBalance - walletDeducted).toFixed(2)));
-      await supabase
-        .from("wallets")
+      await db("wallets")
         .update({
           balance: newBalance,
           updated_at: new Date().toISOString(),
-        } as any)
-        .eq("id", (wallet as any).id);
+        })
+        .eq("id", walletRow.id);
 
       logger.info("[WALLET_AUDIT] Customer wallet debited for ride", {
-        customerId, walletId: (wallet as any).id, deducted: walletDeducted, newBalance,
+        customerId, walletId: walletRow.id, deducted: walletDeducted, newBalance,
       });
     }
 
-    const { data: job } = await supabase
-      .from("mobility_jobs")
+    const { data: job } = await db("mobility_jobs")
       .select("rider_user_id")
       .eq("id", jobId)
       .maybeSingle();
 
-    if (job && (job as any).rider_user_id) {
-      const riderUserId = (job as any).rider_user_id;
+    const jobRow = job as { rider_user_id: string | null } | null;
+    if (jobRow?.rider_user_id) {
+      const riderUserId = jobRow.rider_user_id;
       const riderEarnings = Number((amount * (1 - PLATFORM_COMMISSION_RATE)).toFixed(2));
 
-      const { data: existingEarning } = await supabase
-        .from("wallet_transactions")
+      const { data: existingEarning } = await db("wallet_transactions")
         .select("id")
         .eq("reference_id", `ride_earning_${jobId}`)
         .limit(1)
@@ -145,13 +141,12 @@ export async function bridgeWalletOnComplete(
         return;
       }
 
-      const { data: riderWallet } = await supabase
-        .from("wallets")
+      const { data: riderWallet } = await db("wallets")
         .select("id, balance")
         .eq("user_id", riderUserId)
         .maybeSingle();
 
-      await supabase.from("wallet_transactions").insert({
+      await db("wallet_transactions").insert({
         user_id: riderUserId,
         type: "ride_earning",
         amount: riderEarnings,
@@ -167,21 +162,21 @@ export async function bridgeWalletOnComplete(
           auth_user: authUserId,
         },
         created_at: new Date().toISOString(),
-      } as any);
+      });
 
-      if (riderWallet) {
-        const currentRiderBalance = Number((riderWallet as any).balance ?? 0);
+      const riderWalletRow = riderWallet as { id: string; balance: number } | null;
+      if (riderWalletRow) {
+        const currentRiderBalance = Number(riderWalletRow.balance ?? 0);
         const newRiderBalance = Number((currentRiderBalance + riderEarnings).toFixed(2));
-        await supabase
-          .from("wallets")
+        await db("wallets")
           .update({
             balance: newRiderBalance,
             updated_at: new Date().toISOString(),
-          } as any)
-          .eq("id", (riderWallet as any).id);
+          })
+          .eq("id", riderWalletRow.id);
 
         logger.info("[WALLET_AUDIT] Rider wallet credited", {
-          riderUserId, walletId: (riderWallet as any).id, credited: riderEarnings, newBalance: newRiderBalance,
+          riderUserId, walletId: riderWalletRow.id, credited: riderEarnings, newBalance: newRiderBalance,
         });
       }
 
@@ -210,13 +205,12 @@ export async function estimateWalletCoverage(
   customerId: string,
   estimatedFare: number,
 ): Promise<{ canCover: boolean; walletBalance: number; remaining: number }> {
-  const { data: wallet } = await supabase
-    .from("wallets")
+  const { data: walletData } = await db("wallets")
     .select("balance")
     .eq("user_id", customerId)
     .maybeSingle();
 
-  const balance = wallet ? Number((wallet as any).balance ?? 0) : 0;
+  const balance = walletData ? Number((walletData as { balance: number }).balance ?? 0) : 0;
 
   return {
     canCover: balance >= estimatedFare,

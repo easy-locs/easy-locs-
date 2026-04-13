@@ -1,5 +1,6 @@
 import type { DecisionInput, DecisionOutput, OmegaDecision, OmegaEngineStatus } from "../omega-types";
 import { omegaPersistence } from "../omega-persistence";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 const MAX_DECISIONS = 2_000;
 let decisionIdCounter = 0;
@@ -146,7 +147,7 @@ class DecisionEngine {
     }
     this.status = "active";
     this.lastRunAt = Date.now();
-    console.log(`[OMEGA] DecisionEngine booted | decisions: ${this.decisions.length} (${persisted.length} restored)`);
+    structuredLogger.info("system", "omega_engine_boot", `DecisionEngine booted | decisions: ${this.decisions.length} (${persisted.length} restored)`);
   }
 
   shutdown(): void { this.status = "stopped"; }

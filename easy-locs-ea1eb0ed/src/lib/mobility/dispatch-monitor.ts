@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { getDispatchMetrics } from "./dispatch-learning-engine";
 import { computeZoneHeatMap } from "./smart-zone-manager";
 import { eventBus } from "@/lib/core/event-bus";
@@ -25,19 +25,19 @@ export async function getDispatchHealth(): Promise<DispatchHealthReport> {
     { data: onlineRiders },
     { data: failedJobs },
   ] = await Promise.all([
-    supabase
+    db
       .from("mobility_jobs")
       .select("id", { count: "exact", head: true })
       .in("status", ["searching", "offered", "accepted", "rider_arriving_pickup", "picked_up", "in_progress"]),
-    supabase
+    db
       .from("mobility_job_offers")
       .select("id", { count: "exact", head: true })
       .eq("status", "pending"),
-    supabase
+    db
       .from("rider_presence")
       .select("user_id, is_available", { count: "exact" })
       .eq("is_online", true),
-    supabase
+    db
       .from("mobility_jobs")
       .select("id", { count: "exact", head: true })
       .eq("status", "failed_no_rider")

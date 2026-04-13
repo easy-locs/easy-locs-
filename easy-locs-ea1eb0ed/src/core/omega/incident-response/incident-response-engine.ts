@@ -1,6 +1,7 @@
 import type { IncidentResponseAction, OmegaEngineStatus } from "../omega-types";
 import type { SentinelSeverity } from "../../sentinel/types";
 import { omegaPersistence } from "../omega-persistence";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 const MAX_ACTIONS = 1_000;
 let actionIdCounter = 0;
@@ -177,7 +178,7 @@ class IncidentResponseEngine {
     this.status = "active";
     this.lastRunAt = Date.now();
     await this.restore().catch(() => {});
-    console.log(`[OMEGA] IncidentResponseEngine booted | actions: ${this.actions.size}`);
+    structuredLogger.info("system", "omega_engine_boot", `IncidentResponseEngine booted | actions: ${this.actions.size}`);
   }
 
   shutdown(): void { this.status = "stopped"; }

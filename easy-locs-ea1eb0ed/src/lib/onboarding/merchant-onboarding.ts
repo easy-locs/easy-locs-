@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { OnboardingVertical } from "@/data/onboarding-templates";
 
@@ -221,7 +220,7 @@ export async function activateMerchantProfile(idOrPayload: string | ActivationPa
 
   const completeness = computeCompletenessScore(p);
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   if (!user) return { success: false };
 
   const slug = p.name

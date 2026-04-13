@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export interface DriverCoordsInput {
   latitude: number;
@@ -14,7 +14,7 @@ export async function pushDriverLocation(
 ) {
   const now = new Date().toISOString();
 
-  await supabase.from("trip_live_state").upsert({
+  await db("trip_live_state").upsert({
     job_id: jobId,
     rider_user_id: riderUserId,
     lat: coords.latitude,
@@ -22,9 +22,9 @@ export async function pushDriverLocation(
     heading: coords.heading ?? 0,
     speed: coords.speed ?? 0,
     updated_at: now,
-  } as any);
+  });
 
-  await supabase.from("trip_location_points").insert({
+  await db("trip_location_points").insert({
     job_id: jobId,
     rider_user_id: riderUserId,
     lat: coords.latitude,
@@ -32,5 +32,5 @@ export async function pushDriverLocation(
     heading: coords.heading ?? 0,
     speed: coords.speed ?? 0,
     recorded_at: now,
-  } as any);
+  });
 }

@@ -1,3 +1,4 @@
+import { structuredLogger } from "@/lib/observability/structured-logger";
 import { knowledgeGraphEngine } from "./knowledge-graph/knowledge-graph-engine";
 import { memoryEngine } from "./memory/memory-engine";
 import { decisionEngine } from "./decision/decision-engine";
@@ -69,7 +70,7 @@ class OmegaCore {
   async boot(): Promise<void> {
     if (this.phase === "running") return;
     this.phase = "initializing";
-    console.log("[OMEGA CORE] Initializing Omega Intelligence Core...");
+    structuredLogger.info("system", "omega_boot", "Initializing Omega Intelligence Core...");
 
     await knowledgeGraphEngine.boot();
     await memoryEngine.boot();
@@ -88,7 +89,7 @@ class OmegaCore {
 
     this.phase = "running";
     this.lastRunAt = Date.now();
-    console.log(`[OMEGA CORE] All 10 engines booted | Phase: RUNNING`);
+    structuredLogger.info("system", "omega_boot_complete", "All 10 engines booted | Phase: RUNNING");
 
     this.startIntelligenceLoop();
   }
@@ -104,7 +105,7 @@ class OmegaCore {
     this.loopCount = 0;
     this.seeded = false;
     this.phase = "stopped";
-    console.log("[OMEGA CORE] Shutdown complete");
+    structuredLogger.info("system", "omega_shutdown", "Shutdown complete");
   }
 
   private seeded = false;
@@ -326,7 +327,7 @@ class OmegaCore {
       next_actions: this.computeNextActions(),
     };
 
-    console.log(`[OMEGA CORE] Intelligence Report | Score: ${globalScore}/100 | Verdict: ${verdict} | Blockers: ${criticalBlockers.length} | Warnings: ${warnings.length}`);
+    structuredLogger.info("system", "omega_report", `Intelligence Report | Score: ${globalScore}/100 | Verdict: ${verdict} | Blockers: ${criticalBlockers.length} | Warnings: ${warnings.length}`);
     return report;
   }
 

@@ -2,7 +2,7 @@
  * ride-live-route-engine — Computes live route geometry + ETA + traffic for active rides.
  * Reads mobility_jobs + trip_live_state, calls Mapbox directions for polyline.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { getDirections } from "@/lib/location/geocode";
 
 export type RideTrafficLevel = "low" | "moderate" | "heavy" | "unknown";
@@ -63,13 +63,11 @@ function makeFallback(
 
 export async function computeRideLiveRoute(jobId: string): Promise<RideLiveRoute | null> {
   const [{ data: job }, { data: live }] = await Promise.all([
-    supabase
-      .from("mobility_jobs")
+    db("mobility_jobs")
       .select("id,status,pickup_lat,pickup_lng,dropoff_lat,dropoff_lng")
       .eq("id", jobId)
       .maybeSingle(),
-    supabase
-      .from("trip_live_state")
+    db("trip_live_state")
       .select("job_id,lat,lng,updated_at")
       .eq("job_id", jobId)
       .maybeSingle(),

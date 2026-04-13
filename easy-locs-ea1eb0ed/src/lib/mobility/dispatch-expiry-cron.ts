@@ -1,13 +1,13 @@
 /**
  * dispatch-expiry-cron — Expires timed-out offers and escalates to next wave.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { processDispatchTimeouts } from "./dispatch-reassign-engine";
 
 export async function runDispatchExpiryCron() {
   const nowIso = new Date().toISOString();
 
-  const { data: expiredOffers } = await supabase
+  const { data: expiredOffers } = await db
     .from("mobility_job_offers")
     .select("id,job_id,status")
     .eq("status", "pending")
@@ -19,7 +19,7 @@ export async function runDispatchExpiryCron() {
   const jobIds = [...new Set(expiredOffers.map((o: any) => o.job_id))];
 
   // Expire the offers
-  await supabase
+  await db
     .from("mobility_job_offers")
     .update({
       status: "expired",
@@ -32,7 +32,7 @@ export async function runDispatchExpiryCron() {
 
   // Process each job for wave escalation
   for (const jobId of jobIds) {
-    const { data: scores } = await supabase
+    const { data: scores } = await db
       .from("mobility_driver_scores")
       .select("rider_user_id,rank_index,score_total")
       .eq("job_id", jobId)
