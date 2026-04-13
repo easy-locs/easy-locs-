@@ -5,7 +5,7 @@
 import { platformBus } from "@/lib/shared/platform-bus";
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
-import { insertNotification } from "@/lib/notifications-v2/notification-service";
+import { insertNotification } from "@/lib/notification-service/notification-service";
 
 interface WalletTransactionPayload {
   transaction: {

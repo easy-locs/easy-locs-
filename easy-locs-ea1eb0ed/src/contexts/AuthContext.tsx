@@ -12,7 +12,7 @@ import {
 import { logAudit } from "@/lib/audit";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import type { User, Session } from "@supabase/supabase-js";
-import { markV1AuthActive, useV2AuthStore } from "@/stores/v2AuthStore";
+import { useAuthStore } from "@/stores/auth.store";
 import { useSubscriptionLoader, defaultSubscription, type SubscriptionState } from "@/hooks/useSubscription";
 import { authLog, authWarn, authError, getActiveTrace } from "@/lib/auth/auth-trace";
 import { reportRuntimeFailure } from "@/engines/governance/runtime-health-engine";
@@ -304,8 +304,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setProfileLoaded(true);
     }, 2500);
 
-    markV1AuthActive();
-
     const hydrateAuthState = async (nextSession: Session | null) => {
       const seq = ++latestSeq;
       const { traceId } = getActiveTrace();
@@ -313,7 +311,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
-      useV2AuthStore.getState().syncFromV1(nextSession);
+      useAuthStore.getState().syncFromAuth(nextSession);
 
       if (nextSession?.user) {
         const userId = nextSession.user.id;

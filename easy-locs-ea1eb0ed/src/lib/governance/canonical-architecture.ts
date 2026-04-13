@@ -75,8 +75,8 @@ export const ID_POLICY = {
 // ═══════════════════════════════════════════════════════════════
 
 export const STATE_OWNERSHIP = {
-  auth: "v2AuthStore",
-  orbitProfile: "orbitStore",
+  auth: "auth.store",
+  orbitProfile: "orbit-profile.store",
   threads: "orbit/thread.store",
   calls: "orbit/call.store",
   composer: "orbit/composer.store",
@@ -84,7 +84,7 @@ export const STATE_OWNERSHIP = {
   selection: "orbit/selection.store",
   engineMetrics: "orbit-engine",
   wallet: "walletStore",
-  notifications: "notificationV2Store",
+  notifications: "notification.store",
   location: "locationStore",
   map: "mapStore",
   radar: "radarStore",

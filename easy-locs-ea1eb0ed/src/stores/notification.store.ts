@@ -1,6 +1,7 @@
 /**
- * Canonical Notification Store — notifications_v2 only.
- * Replaces unifiedNotificationStore for all notification UI.
+ * notification.store — Canonical notification store.
+ * Single source of truth for all notification state.
+ * Reads from notifications_v2 table only.
  */
 import { create } from "zustand";
 import {
@@ -11,14 +12,14 @@ import {
   dismissNotification as svcDismiss,
   markClicked as svcMarkClicked,
   type NotificationRow,
-} from "@/lib/notifications-v2/notification-service";
-import { subscribeNotifications, unsubscribeNotifications } from "@/lib/notifications-v2/notification-realtime";
-import { resolveDeliveryPolicy } from "@/lib/notifications-v2/notification-delivery-policy";
+} from "@/lib/notification-service/notification-service";
+import { subscribeNotifications, unsubscribeNotifications } from "@/lib/notification-service/notification-realtime";
+import { resolveDeliveryPolicy } from "@/lib/notification-service/notification-delivery-policy";
 import { toast } from "sonner";
 import { NotificationSound } from "@/families/notifications/notification-sound";
 import { NotificationVibration } from "@/families/notifications/notification-vibration";
 
-interface NotificationV2State {
+interface NotificationState {
   notifications: NotificationRow[];
   unreadCount: number;
   loading: boolean;
@@ -34,7 +35,7 @@ interface NotificationV2State {
   clear: () => void;
 }
 
-export const useNotificationV2Store = create<NotificationV2State>((set, get) => ({
+export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
   loading: false,
@@ -56,10 +57,8 @@ export const useNotificationV2Store = create<NotificationV2State>((set, get) => 
   startRealtime: (userId) => {
     subscribeNotifications(userId, (notif) => {
       set((s) => {
-        // Deduplicate
         if (s.notifications.some((n) => n.id === notif.id)) return s;
         const policy = resolveDeliveryPolicy(notif.priority, notif.type);
-        // Toast
         if (policy.showToast) {
           toast(notif.title, {
             description: notif.body,
@@ -68,15 +67,12 @@ export const useNotificationV2Store = create<NotificationV2State>((set, get) => 
               : undefined,
           });
         }
-        // Sound — via canonical notification sound family
         if (policy.playSound) {
           NotificationSound.play("notification", 0.3);
         }
-        // Vibrate — via canonical notification vibration family
         if (policy.vibrate) {
           NotificationVibration.once([150, 80, 150]);
         }
-
         return {
           notifications: [notif, ...s.notifications].slice(0, 100),
           unreadCount: s.unreadCount + 1,

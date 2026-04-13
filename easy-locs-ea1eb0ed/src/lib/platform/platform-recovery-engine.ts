@@ -160,7 +160,7 @@ export async function runPlatformRecovery(
     results.push({ module: "store.geo", group: "state", status: "error", detail: "import failed", durationMs: 0 });
   }
   try {
-    const { useOrbitProfileStore: useOrbitStore } = await import("@/stores/orbitStore");
+    const { useOrbitProfileStore: useOrbitStore } = await import("@/stores/orbit-profile.store");
     results.push(checkStore("store.orbit", () => useOrbitStore.getState()));
   } catch {
     results.push({ module: "store.orbit", group: "state", status: "error", detail: "import failed", durationMs: 0 });

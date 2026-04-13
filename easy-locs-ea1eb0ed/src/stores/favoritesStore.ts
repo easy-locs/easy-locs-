@@ -1,9 +1,7 @@
 import { create } from "zustand";
 import { db } from "@/services/db";
-import { useV2AuthStore } from "@/stores/v2AuthStore";
+import { useAuthStore } from "@/stores/auth.store";
 import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
-
- 
 
 
 type FavoriteRow = {
@@ -28,7 +26,7 @@ export const useFavoritesStore = create<FavoritesStore>((set, get) => ({
   loading: false,
 
   hydrate: async () => {
-    const user = useV2AuthStore.getState().user;
+    const user = useAuthStore.getState().user;
     if (!user) return;
 
     set({ loading: true });
@@ -49,7 +47,7 @@ export const useFavoritesStore = create<FavoritesStore>((set, get) => ({
   },
 
   addFavorite: async (listingId) => {
-    const user = useV2AuthStore.getState().user;
+    const user = useAuthStore.getState().user;
     const orbit = getOrbitIdentity();
     if (!user || !orbit) return;
 
@@ -78,7 +76,7 @@ export const useFavoritesStore = create<FavoritesStore>((set, get) => ({
   },
 
   removeFavorite: async (listingId) => {
-    const user = useV2AuthStore.getState().user;
+    const user = useAuthStore.getState().user;
     if (!user) return;
 
     const { error } = await db

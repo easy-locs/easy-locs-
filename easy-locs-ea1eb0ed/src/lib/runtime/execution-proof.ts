@@ -188,9 +188,9 @@ function proofRealtimePropagation(): FlowProof {
 function proofNotificationFlow(): FlowProof {
   const steps: FlowStep[] = [
     { name: "Trigger: sendInAppNotification", layer: "service", status: "connected", detail: "Delegates to canonical V2 insertNotification() — no duplicate DB path", file: "src/lib/notifications/notification-dispatcher.ts" },
-    { name: "V2 Service: insertNotification", layer: "repository", status: "connected", detail: "Single DB write path to app_notifications with dedup support", file: "src/lib/notifications-v2/notification-service.ts" },
-    { name: "Realtime: app_notifications subscription", layer: "realtime", status: "connected", detail: "notificationV2Store subscribes for new rows → updates badge count" },
-    { name: "UI: NotificationCenterPage", layer: "ui", status: "connected", detail: "Reads from notificationV2Store, mark-read delegates to V2 markAsRead", file: "src/pages/NotificationCenterPage.tsx" },
+    { name: "V2 Service: insertNotification", layer: "repository", status: "connected", detail: "Single DB write path to app_notifications with dedup support", file: "src/lib/notification-service/notification-service.ts" },
+    { name: "Realtime: app_notifications subscription", layer: "realtime", status: "connected", detail: "notification.store (useNotificationStore) subscribes for new rows → updates badge count" },
+    { name: "UI: NotificationCenterPage", layer: "ui", status: "connected", detail: "Reads from notification.store (useNotificationStore), mark-read delegates to markAsRead", file: "src/pages/NotificationCenterPage.tsx" },
   ];
   return { flow: "Notification SSOT", domain: "notifications", status: "proven", steps, timestamp: new Date().toISOString() };
 }

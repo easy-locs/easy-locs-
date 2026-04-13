@@ -1,14 +1,14 @@
 /**
  * useNotificationsCenter — canonical hook for notification center UI.
- * Reads from notifications_v2 via notificationV2Store.
+ * Reads from notifications_v2 via notification.store (useNotificationStore).
  */
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNotificationV2Store } from "@/stores/notificationV2Store";
+import { useNotificationStore } from "@/stores/notification.store";
 
 export function useNotificationsCenter() {
   const { user } = useAuth();
-  const store = useNotificationV2Store();
+  const store = useNotificationStore();
 
   useEffect(() => {
     if (!user?.id) return;

@@ -15,7 +15,7 @@ import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNotificationsCenter } from "@/hooks/useNotificationsCenter";
-import type { NotificationRow } from "@/lib/notifications-v2/notification-service";
+import type { NotificationRow } from "@/lib/notification-service/notification-service";
 
 const dateFnsLocaleMap: Record<string, DfLocale> = {
   fr, en: enUS, es, de, it, pt, nl, pl, tr, ja, ko, zh: zhCN,
