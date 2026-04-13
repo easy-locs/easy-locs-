@@ -98,11 +98,11 @@ function OrderNotificationAlert({ order, onAccept, onReject }: Props) {
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.8, y: 40 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="w-full max-w-sm rounded-3xl overflow-hidden"
-            style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}
+            className="w-full max-w-sm rounded-3xl overflow-hidden flex flex-col"
+            style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.15)", maxHeight: "90dvh" }}
           >
-            {/* Header */}
-            <div className="px-5 pt-5 pb-3">
+            {/* Header — scrollable if content overflows */}
+            <div className="px-5 pt-5 pb-3 overflow-y-auto flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center animate-pulse" style={{ background: "hsl(var(--hud-success) / 0.15)" }}>
                   <ShoppingBag className="w-6 h-6" style={{ color: "hsl(var(--hud-success))" }} />

@@ -1079,7 +1079,7 @@ const CallRow = memo(function CallRow({
             )}
           </div>
           {secondaryLabel && (
-            <span className="text-[11px] mt-0.5 block truncate" style={{ color: "hsl(var(--muted-foreground) / 0.45)" }}>
+            <span className="text-[11px] mt-0.5 block" style={{ color: "hsl(var(--muted-foreground) / 0.45)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
               {secondaryLabel}
             </span>
           )}

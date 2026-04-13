@@ -1,7 +1,7 @@
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Star, Clock, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 
 interface MerchantCardProps {
@@ -82,9 +82,8 @@ export default function MerchantCard({
             )}
           </div>
           <div className="p-3 space-y-1">
-            <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words transition-colors"
-              style={{ color: "hsl(var(--foreground))" }}>{name}</h3>
-            {category && <p className="text-xs leading-snug line-clamp-1 break-words" style={{ color: "hsl(var(--muted-foreground))" }}>{category}</p>}
+            <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words transition-colors" style={{ color: "hsl(var(--foreground))", textWrap: "balance" } as React.CSSProperties}>{name}</h3>
+            {category && <p className="text-xs leading-snug line-clamp-3 break-words" style={{ color: "hsl(var(--muted-foreground))" }}>{category}</p>}
             <div className="flex items-center gap-3 pt-0.5">
               {rating != null && (
                 <span className="flex items-center gap-1 text-xs font-bold">
@@ -135,8 +134,8 @@ export default function MerchantCard({
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
           <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words transition-colors"
-            style={{ color: "hsl(var(--foreground))" }}>{name}</h3>
-          {category && <p className="text-xs line-clamp-1 break-words leading-snug" style={{ color: "hsl(var(--muted-foreground))" }}>{category}</p>}
+            style={{ color: "hsl(var(--foreground))", textWrap: "balance" } as React.CSSProperties}>{name}</h3>
+          {category && <p className="text-xs line-clamp-3 break-words leading-snug" style={{ color: "hsl(var(--muted-foreground))" }}>{category}</p>}
           <div className="flex items-center gap-3 mt-0.5">
             {rating != null && (
               <span className="flex items-center gap-1 text-xs font-bold">

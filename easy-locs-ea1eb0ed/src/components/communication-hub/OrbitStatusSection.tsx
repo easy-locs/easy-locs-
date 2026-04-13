@@ -417,7 +417,8 @@ export default function OrbitStatusSection() {
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 px-2 pb-2 pt-6"
                     style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.7))" }}>
-                    <p className="text-[11px] font-semibold text-white truncate">{group.userName}</p>
+                    <p className="text-[11px] font-semibold text-white" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, maxWidth: "100%", minInlineSize: "min(6ch, 100%)" }}
+                      title={group.userName}>{group.userName}</p>
                     <p className="text-[10px] text-white/60">{timeAgo(group.lastUpdated)}</p>
                   </div>
                 </button>
