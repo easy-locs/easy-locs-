@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/auth.store";
 import { invalidateIdentityCache } from "@/lib/canonical-identity";
-import { useOrbitProfileStore } from "@/stores/orbit-profile.internal";
+import { getOrbitIdentity, loadOrbitProfile, clearOrbitProfile } from "@/hooks/useOrbitIdentity";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
 import { ensureWalletBinding } from "@/lib/wallet/wallet-identity-binding";
@@ -17,15 +17,9 @@ import { PresencePipeline } from "@/families/presence";
 import { logger } from "@/lib/monitoring";
 import { registerCanonicalResolutions } from "@/lib/canonical-resolution-guard";
 
-/**
- * AppInit — initializes auth store, hydrates orbit profile, wallet, favorites and saved searches.
- * Wallet loads in parallel with Orbit (not sequential).
- */
 export function AppInit() {
   const user = useAuthStore((s) => s.user);
   const initialized = useAuthStore((s) => s.initialized);
-  const loadProfile = useOrbitProfileStore((s) => s.loadProfile);
-  const clear = useOrbitProfileStore((s) => s.clear);
 
   useAutoEngineCron();
 
@@ -43,7 +37,7 @@ export function AppInit() {
     invalidateIdentityCache();
 
     if (!user) {
-      clear();
+      clearOrbitProfile();
       PresencePipeline.disconnect();
       useWalletStore.setState({ wallet: null, transactions: [], loading: false });
       useFavoritesStore.setState({ items: [], loading: false });
@@ -67,10 +61,10 @@ export function AppInit() {
     void (async () => {
       try {
         await ensureOrbitProfile();
-        await loadProfile(user.id);
+        await loadOrbitProfile(user.id);
 
-        const profile = useOrbitProfileStore.getState().profile;
-        const displayName = profile?.displayName || user.user_metadata?.full_name || `EL-${user.id.replace(/-/g, "").substring(0, 8).toUpperCase()}`;
+        const identity = getOrbitIdentity();
+        const displayName = identity?.displayName || user.user_metadata?.full_name || `EL-${user.id.replace(/-/g, "").substring(0, 8).toUpperCase()}`;
         PresencePipeline.connect(user.id, displayName);
 
         await Promise.all([
@@ -79,7 +73,7 @@ export function AppInit() {
         ]);
       } catch (e) { logger.error("AppInit", "Profile/Orbit setup failed — messaging may be unavailable", { error: e instanceof Error ? e.message : String(e), userId: user.id }); }
     })();
-  }, [initialized, user?.id, loadProfile, clear]);
+  }, [initialized, user?.id]);
 
   return null;
 }

@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { buildCardContract, type CardContract } from "../card-contract";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletStore } from "@/stores/walletStore";
-import { useOrbitProfileStore } from "@/stores/orbit-profile.internal";
+import { useOrbitIdentity, useOrbitLoading } from "@/hooks/useOrbitIdentity";
 import { useNotificationStore } from "@/stores/notification.store";
 
 // ── Wallet Balance Card — REACTIVE via zustand hook selector ──
@@ -48,12 +48,12 @@ export function useOrbitRecentChatsCard(): CardContract<{
 }> {
   const { user } = useAuth();
   // Reactive subscription — re-renders when orbit profile changes
-  const profile = useOrbitProfileStore((s) => s.profile);
-  const loading = useOrbitProfileStore((s) => s.loading);
+  const identity = useOrbitIdentity();
+  const loading = useOrbitLoading();
 
   return useMemo(() => {
-    const data = profile
-      ? { hasProfile: true, displayName: (profile as any).displayName || (profile as any).display_name || null }
+    const data = identity
+      ? { hasProfile: true, displayName: identity.displayName || null }
       : null;
 
     return buildCardContract({
@@ -70,7 +70,7 @@ export function useOrbitRecentChatsCard(): CardContract<{
         run: () => { window.location.href = "/orbit"; },
       },
     });
-  }, [profile, loading, user?.id]);
+  }, [identity, loading, user?.id]);
 }
 
 // ── Notifications Badge Card — REACTIVE via zustand hook selector ──

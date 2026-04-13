@@ -1,12 +1,8 @@
 import { create } from "zustand";
 import { uploadFile, getPublicFileUrl } from "@/lib/storage/uploadFile";
 import { db } from "@/services/db";
-import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
-import { useOrbitProfileStore } from "@/stores/orbit-profile.internal";
+import { requireOrbitIdentity, getOrbitProfile, patchOrbitProfile } from "@/hooks/useOrbitIdentity";
 import { propagateIdentityChange } from "@/families/identity/identity-propagation";
-
- 
-
 
 type AvatarStore = {
   uploading: boolean;
@@ -18,7 +14,7 @@ export const useAvatarStore = create<AvatarStore>((set) => ({
 
   uploadAvatar: async (file) => {
     const orbit = requireOrbitIdentity();
-    const fullProfile = useOrbitProfileStore.getState().profile;
+    const fullProfile = getOrbitProfile();
     if (!fullProfile) throw new Error("Missing orbit profile");
 
     set({ uploading: true });
@@ -41,11 +37,8 @@ export const useAvatarStore = create<AvatarStore>((set) => ({
       .eq("id", orbit.userId);
 
     if (!error) {
-      useOrbitProfileStore.setState({
-        profile: { ...fullProfile, avatarUrl: publicUrl },
-      });
+      patchOrbitProfile({ avatarUrl: publicUrl });
 
-      // Propagate to ALL surfaces
       propagateIdentityChange({
         userId: orbit.userId,
         orbitId: orbit.orbitId,
