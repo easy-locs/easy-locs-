@@ -185,12 +185,51 @@ export function useMessageLoader({
     )
   );
 
-  const rawMessages = useMemo<ChatMessage[]>(
-    () => conversationId
-      ? storeMessages.map((m) => mapOrbitToChat(m, conversationId))
-      : [],
-    [storeMessages, conversationId]
-  );
+  const rawMessages = useMemo<ChatMessage[]>(() => {
+    if (!conversationId) return [];
+    const mapped = storeMessages.map((m) => mapOrbitToChat(m, conversationId));
+    const seenIds = new Set<string>();
+    const deduped: ChatMessage[] = [];
+    const contentIndex = new Map<string, number>();
+    for (const msg of mapped) {
+      if (seenIds.has(msg.id)) {
+        if (import.meta.env.DEV) {
+          console.warn("[useMessageLoader] DUPLICATE id filtered", { id: msg.id });
+        }
+        continue;
+      }
+      seenIds.add(msg.id);
+
+      const contentKey = `${msg.sender_id}:${msg.content}:${msg.created_at?.slice(0, 16)}`;
+      const existingIdx = contentIndex.get(contentKey);
+      if (existingIdx !== undefined && msg.content && msg.content.length > 0) {
+        const existing = deduped[existingIdx];
+        const existingIsPending = existing.pending || existing.failed;
+        const incomingIsPending = msg.pending || msg.failed;
+        if (existingIsPending && !incomingIsPending) {
+          deduped[existingIdx] = msg;
+          if (import.meta.env.DEV) {
+            console.warn("[useMessageLoader] CONTENT DUPLICATE — kept server version", { kept: msg.id, removed: existing.id });
+          }
+        } else if (!existingIsPending && incomingIsPending) {
+          if (import.meta.env.DEV) {
+            console.warn("[useMessageLoader] CONTENT DUPLICATE — kept server version", { kept: existing.id, removed: msg.id });
+          }
+        } else {
+          deduped.push(msg);
+          if (import.meta.env.DEV) {
+            console.warn("[useMessageLoader] CONTENT DUPLICATE — both same status, keeping both", { id1: existing.id, id2: msg.id });
+          }
+        }
+        continue;
+      }
+      if (msg.content && msg.content.length > 0) {
+        contentIndex.set(contentKey, deduped.length);
+      }
+      deduped.push(msg);
+    }
+    return deduped;
+  }, [storeMessages, conversationId]);
 
   // setRawMessages is kept for backward-compat (optimistic UI: insert, edit, delete, star,
   // translation, pending/failed transitions from useThreadMessageFamily and mutation bridge).

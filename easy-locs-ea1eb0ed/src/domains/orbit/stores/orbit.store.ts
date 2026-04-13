@@ -529,9 +529,15 @@ export const useOrbitStore = create<OrbitStoreState>((set, get) => ({
   getMessagesForConversation: (conversationId) => {
     const s = get();
     const ids = s.messagesByConversation[conversationId] || [];
-    return ids
-      .map((id) => s.messages[id])
-      .filter((m): m is OrbitMessage => !!m && m.conversationId === conversationId);
+    const seen = new Set<string>();
+    const result: OrbitMessage[] = [];
+    for (const id of ids) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const m = s.messages[id];
+      if (m && m.conversationId === conversationId) result.push(m);
+    }
+    return result;
   },
 
   getAttachmentsForConversation: (conversationId) => {
