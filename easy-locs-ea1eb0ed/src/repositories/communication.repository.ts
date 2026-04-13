@@ -56,7 +56,15 @@ export async function insertMessage(params: {
   if (params.view_once) row.view_once = true;
 
   const { data, error } = await db("chat_messages_v2").insert(row).select().single();
-  if (error) throw error;
+  if (error) {
+    const code = (error as any).code;
+    if (code === "42P01") {
+      console.error("[insertMessage] TABLE MISSING: chat_messages_v2 does not exist — run migrations");
+    } else if (code === "42501") {
+      console.error("[insertMessage] RLS DENIED: check chat_messages_v2 insert policies");
+    }
+    throw error;
+  }
   return data;
 }
 

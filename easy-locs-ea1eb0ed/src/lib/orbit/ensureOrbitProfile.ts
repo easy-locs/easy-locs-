@@ -77,7 +77,13 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
     );
 
     if (error) {
-      console.warn("[ensureOrbitProfile] non-blocking upsert error:", error.message);
+      const code = (error as any).code;
+      if (code === "42P01") {
+        console.error("[ensureOrbitProfile] TABLE MISSING: orbit_profiles_v2 does not exist — run migrations");
+      } else if (code === "42501") {
+        console.error("[ensureOrbitProfile] RLS DENIED: check orbit_profiles_v2 policies for authenticated users");
+      }
+      console.warn("[ensureOrbitProfile] non-blocking upsert error:", error.message, "code:", code);
       return { id: resolvedUserId, orbit_id: row.orbit_id };
     }
 

@@ -93,7 +93,14 @@ export async function fetchV2Conversations(userId: string, _hasOrg: boolean): Pr
     .limit(300);
 
   if (error) {
-    trace("fetch.v2conversations", "error", { message: error.message, code: (error as any).code });
+    const code = (error as any).code;
+    if (code === "42P01") {
+      trace("fetch.v2conversations", "error", { message: "TABLE MISSING: conversations_v2 — run migrations", code });
+    } else if (code === "42501") {
+      trace("fetch.v2conversations", "error", { message: "RLS DENIED: check conversations_v2 select policies", code });
+    } else {
+      trace("fetch.v2conversations", "error", { message: error.message, code });
+    }
     throw new Error(`conversations_v2 query failed: ${error.message}`);
   }
 
