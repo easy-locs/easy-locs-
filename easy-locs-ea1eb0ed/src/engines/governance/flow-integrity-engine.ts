@@ -192,7 +192,7 @@ export function updateFlowState(flowId: string, state: FlowState): void {
     if (flowViolations.length > MAX_FLOW_VIOLATIONS) {
       flowViolations.splice(0, flowViolations.length - MAX_FLOW_VIOLATIONS);
     }
-    platformBus.emit("ui-engine:report" as any, { engineId: "flow-integrity", violation: v });
+    platformBus.emit("ui-engine:report", { engineId: "flow-integrity", violation: v });
   }
 
   if (state === "success") flow.currentState = "idle";

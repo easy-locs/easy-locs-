@@ -39,7 +39,7 @@ const BUILT_IN_RULES: AutomationRule[] = [
     ],
     actions: [
       { type: "notify", params: { template: "rent_reminder", channel: "push" } },
-      { type: "emit_event", params: { event: "automation.rent_reminder" } },
+      { type: "emit_event", params: { event: "automation:rent_reminder" } },
     ],
     enabled: true,
     cooldownMs: 86400000,
@@ -54,7 +54,7 @@ const BUILT_IN_RULES: AutomationRule[] = [
     ],
     actions: [
       { type: "notify", params: { template: "document_expiry", channel: "push" } },
-      { type: "emit_event", params: { event: "automation.document_expiry" } },
+      { type: "emit_event", params: { event: "automation:document_expiry" } },
     ],
     enabled: true,
     cooldownMs: 604800000,
@@ -84,7 +84,7 @@ const BUILT_IN_RULES: AutomationRule[] = [
     ],
     actions: [
       { type: "notify", params: { template: "vacancy_alert", channel: "push" } },
-      { type: "emit_event", params: { event: "automation.vacancy_alert" } },
+      { type: "emit_event", params: { event: "automation:vacancy_alert" } },
     ],
     enabled: true,
     cooldownMs: 604800000,
@@ -92,7 +92,7 @@ const BUILT_IN_RULES: AutomationRule[] = [
   {
     id: "lead_score_auto",
     name: "Auto-score leads on activity",
-    trigger: { type: "event", eventName: "lead.activity" },
+    trigger: { type: "event", eventName: "lead:activity" },
     conditions: [],
     actions: [
       { type: "score_lead", params: {} },
@@ -124,7 +124,7 @@ const BUILT_IN_RULES: AutomationRule[] = [
     ],
     actions: [
       { type: "notify", params: { template: "incomplete_listing", channel: "push" } },
-      { type: "emit_event", params: { event: "automation.incomplete_listing" } },
+      { type: "emit_event", params: { event: "automation:incomplete_listing" } },
     ],
     enabled: true,
     cooldownMs: 259200000,
@@ -139,7 +139,7 @@ const BUILT_IN_RULES: AutomationRule[] = [
     ],
     actions: [
       { type: "notify", params: { template: "sla_breach", channel: "push", escalate: true } },
-      { type: "emit_event", params: { event: "automation.sla_breach" } },
+      { type: "emit_event", params: { event: "automation:sla_breach" } },
     ],
     enabled: true,
     cooldownMs: 14400000,
@@ -162,12 +162,12 @@ const BUILT_IN_RULES: AutomationRule[] = [
   {
     id: "auto_receipt_on_payment",
     name: "Auto-generate rent receipt on payment",
-    trigger: { type: "event", eventName: "rent.paid" },
+    trigger: { type: "event", eventName: "rent:paid" },
     conditions: [],
     actions: [
       { type: "generate_receipt", params: {} },
       { type: "notify", params: { template: "receipt_generated", channel: "push" } },
-      { type: "emit_event", params: { event: "automation.receipt_generated" } },
+      { type: "emit_event", params: { event: "automation:receipt_generated" } },
     ],
     enabled: true,
   },
@@ -180,7 +180,7 @@ const BUILT_IN_RULES: AutomationRule[] = [
     ],
     actions: [
       { type: "trigger_rent_call", params: {} },
-      { type: "emit_event", params: { event: "automation.rent_calls_generated" } },
+      { type: "emit_event", params: { event: "automation:rent_calls_generated" } },
     ],
     enabled: true,
     cooldownMs: 2592000000,
@@ -188,11 +188,11 @@ const BUILT_IN_RULES: AutomationRule[] = [
   {
     id: "lease_renewal_compliance_check",
     name: "Compliance check before lease renewal",
-    trigger: { type: "event", eventName: "lease.renewal_initiated" },
+    trigger: { type: "event", eventName: "lease:renewal_initiated" },
     conditions: [],
     actions: [
       { type: "compliance_check", params: { scope: "full" } },
-      { type: "emit_event", params: { event: "automation.compliance_checked" } },
+      { type: "emit_event", params: { event: "automation:compliance_checked" } },
     ],
     enabled: true,
   },
@@ -207,7 +207,7 @@ const BUILT_IN_RULES: AutomationRule[] = [
     ],
     actions: [
       { type: "notify", params: { template: "overdue_relance", channel: "orbit" } },
-      { type: "emit_event", params: { event: "automation.overdue_relance" } },
+      { type: "emit_event", params: { event: "automation:overdue_relance" } },
     ],
     enabled: true,
     cooldownMs: 259200000,
@@ -237,7 +237,7 @@ const BUILT_IN_RULES: AutomationRule[] = [
     ],
     actions: [
       { type: "notify", params: { template: "partial_payment_followup", channel: "push" } },
-      { type: "emit_event", params: { event: "automation.partial_payment_followup" } },
+      { type: "emit_event", params: { event: "automation:partial_payment_followup" } },
     ],
     enabled: true,
     cooldownMs: 259200000,
@@ -252,7 +252,7 @@ const BUILT_IN_RULES: AutomationRule[] = [
     ],
     actions: [
       { type: "notify", params: { template: "insurance_expiry", channel: "push" } },
-      { type: "emit_event", params: { event: "automation.insurance_expiry" } },
+      { type: "emit_event", params: { event: "automation:insurance_expiry" } },
     ],
     enabled: true,
     cooldownMs: 604800000,
@@ -292,17 +292,27 @@ export function executeActions(
   for (const action of actions) {
     switch (action.type) {
       case "emit_event":
-        platformBus.emit(action.params.event as string, context);
+        platformBus.emit(action.params.event as string, context, "system");
         break;
       case "notify":
-        platformBus.emit("automation.notification", {
+        platformBus.emit("notification:created", {
           template: action.params.template,
           channel: action.params.channel,
           context,
-        });
+        }, "system");
         break;
       default:
-        platformBus.emit(`automation.action.${action.type}`, { ...action.params, context });
+        platformBus.emit("notification:created", {
+          type: "automation_step",
+          title: `Automation action: ${action.type}`,
+          body: JSON.stringify(action.params),
+          data: { actionType: action.type, ...action.params, context },
+        }, "system");
+        platformBus.emit("admin:audit_logged", {
+          action: `automation.action.${action.type}`,
+          params: action.params,
+          context,
+        }, "system");
     }
   }
 }
@@ -319,12 +329,17 @@ export function fireRule(rule: AutomationRule, context: Record<string, unknown>)
   executeActions(rule.actions, context);
   rule.lastFiredAt = Date.now();
 
-  platformBus.emit("automation.rule.fired", { ruleId: rule.id, ruleName: rule.name });
+  platformBus.emit("admin:audit_logged", {
+    action: "automation_rule_fired",
+    ruleId: rule.id,
+    ruleName: rule.name,
+    timestamp: Date.now(),
+  }, "system");
   return true;
 }
 
 export function initPropertyAutomation(): void {
   if (initialized) return;
   initialized = true;
-  platformBus.emit("automation.property.initialized", { ruleCount: BUILT_IN_RULES.length });
+  platformBus.emit("system:module_status_changed", { module: "property-automation", status: "online", ruleCount: BUILT_IN_RULES.length }, "system");
 }

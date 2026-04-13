@@ -17,8 +17,8 @@ export function invalidateConciergeCaches() {
 
 export function installConciergeCacheListeners(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.CONCIERGE_SERVICE_BOOKED as any, () => invalidateConciergeCaches()),
-    platformBus.on(APP_EVENTS.CONCIERGE_BOOKING_UPDATED as any, () => invalidateConciergeCaches()),
+    platformBus.on(APP_EVENTS.CONCIERGE_SERVICE_BOOKED, () => invalidateConciergeCaches()),
+    platformBus.on(APP_EVENTS.CONCIERGE_BOOKING_UPDATED, () => invalidateConciergeCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

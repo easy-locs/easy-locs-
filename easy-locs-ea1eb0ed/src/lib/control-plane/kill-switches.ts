@@ -1,5 +1,5 @@
 import { structuredLogger } from "@/lib/observability/structured-logger";
-import { platformBus, PLATFORM_EVENTS } from "@/lib/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { ControlDomain, KillSwitch } from "./types";
 
 const killSwitches = new Map<string, KillSwitch>();
@@ -82,12 +82,13 @@ export function toggleKillSwitch(
     }
   );
 
-  platformBus.emit(PLATFORM_EVENTS.SYSTEM_KILL_SWITCH_TOGGLED, "system", {
+  platformBus.emit("system:module_status_changed", {
     feature,
     enabled,
     reason,
     domain: existing.domain,
-  });
+    action: "kill_switch_toggled",
+  }, "system");
 }
 
 export function getKillSwitch(feature: string): KillSwitch | undefined {

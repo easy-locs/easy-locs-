@@ -88,11 +88,11 @@ export const createPropertyWorkflow: WorkflowDefinition<CreatePropertyCtx> = {
       id: "emit_event",
       name: "Emit creation event",
       execute: async (ctx) => {
-        platformBus.emit("property.created", {
+        platformBus.emit("property:unit_created", {
           propertyId: ctx.propertyId,
           userId: ctx.userId,
           qualityScore: ctx.qualityScore,
-        });
+        }, "pm");
         return ctx;
       },
     },
@@ -138,10 +138,10 @@ export const publishPropertyWorkflow: WorkflowDefinition<PublishPropertyCtx> = {
       name: "Emit publication event",
       condition: (ctx) => ctx.canPublish === true,
       execute: async (ctx) => {
-        platformBus.emit("property.published", {
+        platformBus.emit("property:published_to_marketplace", {
           propertyId: ctx.propertyId,
           userId: ctx.userId,
-        });
+        }, "pm");
         return ctx;
       },
     },
@@ -194,13 +194,13 @@ export const viewingWorkflow: WorkflowDefinition<ViewingCtx> = {
       id: "notify_parties",
       name: "Notify agent and lead",
       execute: async (ctx) => {
-        platformBus.emit("viewing.requested", {
+        platformBus.emit("marketplace:booking_created", {
           viewingId: ctx.viewingId,
           propertyId: ctx.propertyId,
           leadId: ctx.leadId,
           agentId: ctx.agentId,
           dateTime: ctx.dateTime,
-        });
+        }, "marketplace");
         return ctx;
       },
     },
@@ -253,11 +253,11 @@ export const maintenanceWorkflow: WorkflowDefinition<MaintenanceCtx> = {
       id: "notify",
       name: "Emit maintenance event",
       execute: async (ctx) => {
-        platformBus.emit("maintenance.created", {
+        platformBus.emit("pm:intervention_created", {
           ticketId: ctx.ticketId,
           propertyId: ctx.propertyId,
           priority: ctx.priority,
-        });
+        }, "pm");
         return ctx;
       },
     },
@@ -308,12 +308,12 @@ export const leaseWorkflow: WorkflowDefinition<LeaseCtx> = {
       name: "Create lease record",
       canRetry: true,
       execute: async (ctx) => {
-        platformBus.emit("lease.created", {
+        platformBus.emit("pm:lease_created", {
           propertyId: ctx.propertyId,
           tenantId: ctx.tenantId,
           startDate: ctx.startDate,
           rentAmount: ctx.rentAmount,
-        });
+        }, "pm");
         return ctx;
       },
     },
@@ -360,11 +360,11 @@ export const rentPaymentWorkflow: WorkflowDefinition<RentPaymentCtx> = {
       canRetry: true,
       maxRetries: 3,
       execute: async (ctx) => {
-        platformBus.emit("payment.rent.processing", {
+        platformBus.emit("pm:rent_call_created", {
           leaseId: ctx.leaseId,
           amount: ctx.amount,
           currency: ctx.currency,
-        });
+        }, "pm");
         return ctx;
       },
     },
@@ -372,11 +372,11 @@ export const rentPaymentWorkflow: WorkflowDefinition<RentPaymentCtx> = {
       id: "confirm",
       name: "Confirm payment",
       execute: async (ctx) => {
-        platformBus.emit("payment.rent.completed", {
+        platformBus.emit("pm:payment_received", {
           paymentId: ctx.paymentId,
           leaseId: ctx.leaseId,
           amount: ctx.amount,
-        });
+        }, "pm");
         return ctx;
       },
     },
@@ -408,10 +408,10 @@ export const documentComplianceWorkflow: WorkflowDefinition<DocumentComplianceCt
       name: "Emit compliance alerts",
       condition: (ctx) => (ctx.expiringCount ?? 0) > 0,
       execute: async (ctx) => {
-        platformBus.emit("documents.expiring", {
+        platformBus.emit("pm:document_shared", {
           userId: ctx.userId,
           count: ctx.expiringCount,
-        });
+        }, "pm");
         return ctx;
       },
     },

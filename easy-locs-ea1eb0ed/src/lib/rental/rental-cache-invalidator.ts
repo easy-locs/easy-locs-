@@ -20,15 +20,15 @@ export function invalidateRentalCaches() {
 
 export function installRentalCacheListeners(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.RENTAL_PROPERTY_CREATED as any, () => invalidateRentalCaches()),
-    platformBus.on(APP_EVENTS.RENTAL_PROPERTY_UPDATED as any, () => invalidateRentalCaches()),
-    platformBus.on(APP_EVENTS.RENTAL_TENANT_CREATED as any, () => invalidateRentalCaches()),
-    platformBus.on(APP_EVENTS.RENTAL_TENANT_UPDATED as any, () => invalidateRentalCaches()),
-    platformBus.on(APP_EVENTS.RENTAL_RENT_CALL_CREATED as any, () => invalidateRentalCaches()),
-    platformBus.on(APP_EVENTS.RENTAL_RENT_CALL_PAID as any, () => invalidateRentalCaches()),
-    platformBus.on(APP_EVENTS.RENTAL_RECEIPT_GENERATED as any, () => invalidateRentalCaches()),
-    platformBus.on(APP_EVENTS.RENTAL_LEASE_GENERATED as any, () => invalidateRentalCaches()),
-    platformBus.on(APP_EVENTS.RENTAL_MESSAGE_SENT as any, () => invalidateRentalCaches()),
+    platformBus.on(APP_EVENTS.RENTAL_PROPERTY_CREATED, () => invalidateRentalCaches()),
+    platformBus.on(APP_EVENTS.RENTAL_PROPERTY_UPDATED, () => invalidateRentalCaches()),
+    platformBus.on(APP_EVENTS.RENTAL_TENANT_CREATED, () => invalidateRentalCaches()),
+    platformBus.on(APP_EVENTS.RENTAL_TENANT_UPDATED, () => invalidateRentalCaches()),
+    platformBus.on(APP_EVENTS.RENTAL_RENT_CALL_CREATED, () => invalidateRentalCaches()),
+    platformBus.on(APP_EVENTS.RENTAL_RENT_CALL_PAID, () => invalidateRentalCaches()),
+    platformBus.on(APP_EVENTS.RENTAL_RECEIPT_GENERATED, () => invalidateRentalCaches()),
+    platformBus.on(APP_EVENTS.RENTAL_LEASE_GENERATED, () => invalidateRentalCaches()),
+    platformBus.on(APP_EVENTS.RENTAL_MESSAGE_SENT, () => invalidateRentalCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

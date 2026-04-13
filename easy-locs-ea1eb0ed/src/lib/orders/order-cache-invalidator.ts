@@ -25,17 +25,17 @@ export function invalidateOrderCaches() {
 
 export function installOrderCacheListener(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.ORDER_CREATED as any, () => invalidateOrderCaches()),
-    platformBus.on(APP_EVENTS.ORDER_CONFIRMED as any, () => invalidateOrderCaches()),
-    platformBus.on(APP_EVENTS.ORDER_READY as any, () => invalidateOrderCaches()),
-    platformBus.on(APP_EVENTS.ORDER_COMPLETED as any, () => invalidateOrderCaches()),
-    platformBus.on(APP_EVENTS.ORDER_CANCELLED as any, () => invalidateOrderCaches()),
-    platformBus.on(APP_EVENTS.ORDER_REFUNDED as any, () => invalidateOrderCaches()),
-    platformBus.on(APP_EVENTS.PAYMENT_SUCCESS as any, () => invalidateOrderCaches()),
-    platformBus.on(APP_EVENTS.MISSION_ACCEPTED as any, () => invalidateOrderCaches()),
-    platformBus.on(APP_EVENTS.MISSION_COMPLETED as any, () => invalidateOrderCaches()),
-    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED as any, () => invalidateOrderCaches()),
-    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED as any, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_CREATED, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_CONFIRMED, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_READY, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_COMPLETED, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_CANCELLED, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.ORDER_REFUNDED, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.PAYMENT_SUCCESS, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.MISSION_ACCEPTED, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.MISSION_COMPLETED, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED, () => invalidateOrderCaches()),
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED, () => invalidateOrderCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

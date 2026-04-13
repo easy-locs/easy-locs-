@@ -124,7 +124,7 @@ export async function runIdentityActivation(input: ActivationInput): Promise<Act
       elapsed_ms: elapsed,
     });
 
-    platformBus.emit("identity:activated" as any, {
+    platformBus.emit("identity:activated", {
       userId,
       phone: normalized,
       orbitId,

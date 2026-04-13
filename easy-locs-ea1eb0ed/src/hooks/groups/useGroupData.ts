@@ -104,7 +104,7 @@ export function useGroupData() {
     if (!created) { toast.error("Failed to create"); return null; }
     await groupsRepo.insertGroupMember(created.id, user.id, "admin");
     haptic("success");
-    platformBus.emit(APP_EVENTS.GROUP_CREATED as any, { groupId: created.id }, "groups");
+    platformBus.emit(APP_EVENTS.GROUP_CREATED, { groupId: created.id }, "groups");
     toast.success(groupType === "channel" ? "Channel created" : groupType === "community" ? "Community created" : (t("orbit.groups.created") || "Group created"));
     await loadGroups();
     return { id: created.id, name: created.title || name.trim(), description: null, photo_url: null, created_by: created.created_by_orbit_id || user.id, created_at: created.created_at, group_type: (created.type || groupType) as GroupType, posting_permission: created.type === "channel" ? "admins_only" as const : "everyone" as const, member_count: 1, last_message: null as string | null | undefined, last_message_at: created.created_at } as Group;
@@ -121,7 +121,7 @@ export function useGroupData() {
     if (data) {
       setMessages(prev => prev.some(m => m.id === data.id) ? prev : [...prev, { id: data.id, sender_id: data.sender_user_id, content: data.body, created_at: data.created_at, sender_name: "You", is_pinned: false } as GroupMessage]);
       await groupsRepo.updateConversation(activeGroup.id, { last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() });
-      platformBus.emit(APP_EVENTS.GROUP_MESSAGE_SENT as any, { groupId: activeGroup.id }, "groups");
+      platformBus.emit(APP_EVENTS.GROUP_MESSAGE_SENT, { groupId: activeGroup.id }, "groups");
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
       return true;
     }

@@ -6,7 +6,7 @@
  */
 
 type PlatformEventType =
-  // Wallet
+  // Wallet (canonical colon-notation)
   | "wallet:balance_updated"
   | "wallet:payment_completed"
   | "wallet:payment_failed"
@@ -19,31 +19,28 @@ type PlatformEventType =
   | "wallet:transaction_created"
   | "wallet:loaded"
   | "wallet:top_up"
-  // Wallet (dot-notation — emitted by walletStore)
-  | "wallet.loaded"
-  | "wallet.transaction.created"
-  | "wallet.payment.success"
-  | "wallet.payment.failed"
-  | "wallet.payment.completed"
-  | "wallet.top_up"
-  // Orbit / Communication
+  | "wallet:receipt_generated"
+  | "wallet:commission_split"
+  // Orbit / Communication (canonical colon-notation)
   | "orbit:message_sent"
   | "orbit:message_received"
+  | "orbit:message_read"
   | "orbit:call_started"
   | "orbit:call_ended"
   | "orbit:thread_created"
   | "orbit:thread_updated"
   | "orbit:notification_created"
   | "orbit:profile_updated"
-  // Orbit (dot-notation — emitted by orbitStore / V2 cross-app)
-  | "orbit.profile.loaded"
-  | "orbit.message.sent"
-  | "orbit.message.received"
-  | "orbit.call.started"
-  | "orbit.call.ended"
-  // Marketplace
+  | "orbit:presence_changed"
+  | "orbit:session_restored"
+  | "orbit:media_attached"
+  | "orbit:unread_corrected"
+  | "orbit:force_reload"
+  // Marketplace (canonical colon-notation)
   | "marketplace:listing_published"
   | "marketplace:listing_paused"
+  | "marketplace:listing_unpublished"
+  | "marketplace:listing_sold"
   | "marketplace:booking_created"
   | "marketplace:booking_confirmed"
   | "marketplace:booking_paid"
@@ -54,9 +51,11 @@ type PlatformEventType =
   | "marketplace:provider_went_live"
   | "marketplace:provider_went_offline"
   | "marketplace:contact_opened"
-  | "marketplace.merchant.live"
-  | "marketplace.contact.opened"
-  // Storefront / Commerce (PASS123)
+  | "marketplace:vente_completed"
+  | "marketplace:stock_updated"
+  | "marketplace:reservation_created"
+  | "marketplace:availability_updated"
+  // Storefront / Commerce
   | "storefront:order_placed"
   | "storefront:order_paid"
   | "storefront:order_shipped"
@@ -75,7 +74,7 @@ type PlatformEventType =
   | "storefront:return_requested"
   | "storefront:return_processed"
   | "storefront:crm_updated"
-  // Commerce Lifecycle (Orbit orchestration)
+  // Commerce Lifecycle
   | "commerce:order_created"
   | "commerce:intent_prepared"
   | "commerce:payment_authorized"
@@ -104,7 +103,6 @@ type PlatformEventType =
   // Automation
   | "automation:workflow_created"
   | "automation:workflow_started"
-  | "automation:step_executed"
   | "automation:step_failed"
   | "automation:workflow_completed"
   | "automation:workflow_stopped"
@@ -115,12 +113,16 @@ type PlatformEventType =
   | "automation:exception_resolved"
   | "automation:scheduler_started"
   | "automation:scheduler_stopped"
-  // Order lifecycle (colon-notation)
+  // Order lifecycle
   | "order:status_changed"
-  // Payment lifecycle (colon-notation)
+  // Payment lifecycle
   | "payment:intent_created"
-  // Property (colon-notation)
+  // Property
   | "property:unit_created"
+  | "property:published_to_marketplace"
+  | "property:device_state_changed"
+  | "property:access_granted"
+  | "property:automation_triggered"
   // Property Management
   | "pm:lease_created"
   | "pm:lease_activated"
@@ -129,75 +131,66 @@ type PlatformEventType =
   | "pm:receipt_generated"
   | "pm:intervention_created"
   | "pm:document_shared"
-  // Listing (dot-notation — emitted by listingStore)
-  | "listing.created"
-  | "listing.updated"
-  | "listing.published"
-  // Booking (dot-notation — emitted by bookingStore/reactions)
-  | "booking.requested"
-  | "booking.payment.required"
-  | "booking.confirmation.required"
-  | "booking.confirmed"
-  | "booking.cancelled"
-  | "booking.completed"
-  | "booking.created"
-  // Conversation / Message (dot-notation — emitted by chatStore)
-  | "conversation.created"
-  | "message.sent"
-  | "contact.opened"
-  // Property Management (dot-notation — emitted by propertyManagementStore)
-  | "property.unit.created"
-  | "lease.created"
-  | "rent.payment.created"
-  | "rent.payment.required"
-  | "rent.payment.paid"
-  // Geo (dot-notation)
-  | "geo.permission.changed"
-  | "geo.position.updated"
-  // Call (dot-notation)
-  | "call.started"
-  | "call.ended"
-  | "call.request"
-  // UI (dot-notation — emitted by uiShellStore/cameraStore)
-  | "ui.panel.changed"
-  | "camera.opened"
-  | "camera.closed"
-  // QR (dot-notation — emitted by QrScannerPage / qr-engine)
-  | "qr.scan.started"
-  | "qr.scan.decoded"
-  | "qr.scan.failed"
-  | "qr.scan.expired"
-  | "qr.resolve.started"
-  | "qr.resolve.completed"
-  | "qr.payment.initiated"
-  | "qr.payment.completed"
-  | "qr.payment.failed"
-  | "qr.navigation"
-  // Attachment / Gallery (dot-notation — emitted by gallery-save.service)
-  | "attachment.event.gallery_saved"
-  | "attachment.event.gallery_failed"
-  | "attachment.event.preview_ready"
-  | "attachment.event.uploaded"
-  | "attachment.event.reconciled"
-  // Message lifecycle (dot-notation — emitted by command-bus)
-  | "message.event.created_optimistic"
-  | "message.event.persisted"
-  | "message.event.reconciled"
-  | "message.event.failed"
-  // Radar (colon-notation)
+  // Listing (canonical colon-notation)
+  | "listing:created"
+  | "listing:updated"
+  | "listing:published"
+  | "listing:viewed"
+  // Booking (canonical colon-notation)
+  | "booking:requested"
+  | "booking:payment_required"
+  | "booking:confirmation_required"
+  | "booking:confirmed"
+  | "booking:cancelled"
+  | "booking:completed"
+  | "booking:created"
+  // Conversation / Message (canonical colon-notation)
+  | "conversation:created"
+  | "message:sent"
+  | "contact:opened"
+  // Geo (canonical colon-notation)
+  | "geo:permission_changed"
+  | "geo:position_updated"
+  // Call (canonical colon-notation)
+  | "call:started"
+  | "call:ended"
+  | "call:request"
+  // UI
+  | "ui:panel_changed"
+  | "ui:interaction_performed"
+  | "ui:gesture_detected"
+  | "camera:opened"
+  | "camera:closed"
+  // QR (canonical colon-notation)
+  | "qr:scan_started"
+  | "qr:scan_decoded"
+  | "qr:scan_failed"
+  | "qr:scan_expired"
+  | "qr:resolve_started"
+  | "qr:resolve_completed"
+  | "qr:payment_initiated"
+  | "qr:payment_completed"
+  | "qr:payment_failed"
+  | "qr:navigation"
+  // Attachment / Gallery (canonical colon-notation)
+  | "attachment:gallery_saved"
+  | "attachment:gallery_failed"
+  | "attachment:preview_ready"
+  | "attachment:uploaded"
+  | "attachment:reconciled"
+  // Message lifecycle (canonical colon-notation)
+  | "message:created_optimistic"
+  | "message:persisted"
+  | "message:reconciled"
+  | "message:failed"
+  // Radar
   | "radar:location_shared"
   | "radar:pin_selected"
   | "radar:entity_selected"
   | "radar:geo_updated"
-  // Radar (dot-notation — V2 cross-app)
-  | "radar.location.shared"
-  | "radar.pin.selected"
-  // Dashboard (colon-notation)
+  // Dashboard
   | "dashboard:refresh"
   | "dashboard:counters_refresh"
-  // Dashboard (dot-notation — V2 cross-app)
-  | "dashboard.refresh"
-  | "dashboard.counters.refresh"
   // Deals
   | "deal:created"
   | "deal:offer_sent"
@@ -219,9 +212,70 @@ type PlatformEventType =
   | "system:pipeline_error"
   | "system:stale_queries_detected"
   | "system:memory_pressure"
-  | "orbit:unread_corrected"
-  | "orbit:force_reload"
-  // Orchestration engine (UPPERCASE legacy — merged from lib/orchestration)
+  // Onboarding
+  | "onboarding:started"
+  | "onboarding:step_completed"
+  | "onboarding:completed"
+  | "onboarding:failed"
+  // Import
+  | "import:started"
+  | "import:completed"
+  | "import:failed"
+  // Publish Gate
+  | "publish:gate_passed"
+  | "publish:gate_blocked"
+  // Transaction
+  | "transaction:created"
+  | "transaction:confirmed"
+  | "transaction:completed"
+  | "transaction:cancelled"
+  | "transaction:failed"
+  | "transaction:refunded"
+  // Notification
+  | "notification:created"
+  | "notification:read"
+  // Support
+  | "support:ticket_created"
+  | "support:ticket_resolved"
+  | "support:ticket_escalated"
+  // KYC / Compliance
+  | "kyc:status_changed"
+  | "compliance:aml_alert"
+  // Admin
+  | "admin:audit_logged"
+  | "admin:user_action"
+  // Moderation
+  | "moderation:action_taken"
+  | "moderation:content_flagged"
+  | "taxonomy:conflict_detected"
+  // SLA
+  | "sla:warning"
+  | "sla:breached"
+  | "sla:escalated"
+  // Multi-tenant
+  | "tenant:created"
+  | "tenant:plan_upgraded"
+  | "tenant:member_invited"
+  | "tenant:quota_warning"
+  // API Gateway
+  | "api:request_completed"
+  | "api:rate_limit_hit"
+  | "api:webhook_delivered"
+  // Orbit extensions
+  | "orbit:message_edited_optimistic"
+  | "orbit:message_deleted"
+  | "orbit:identity_updated"
+  | "orbit:group_updated"
+  | "orbit:group_created"
+  | "orbit:ephemeral_timer_changed"
+  | "orbit:contacts_updated"
+  | "orbit:profile_loaded"
+  // Media / Location
+  | "media:viewer_open"
+  | "media:viewer_close"
+  | "location:live_update"
+  | "location:live_stopped"
+  // Orchestration engine (UPPERCASE legacy — kept for backward compat, to be deprecated)
   | "ORDER_CREATED"
   | "ORDER_CONFIRMED"
   | "ORDER_READY"
@@ -234,7 +288,7 @@ type PlatformEventType =
   | "MISSION_CREATED"
   | "MISSION_ACCEPTED"
   | "MISSION_COMPLETED"
-  // Vertical pipeline events (strict separation)
+  // Vertical pipeline events
   | "ENTITY_CLASSIFIED"
   | "FOOD_MENU_NORMALIZED"
   | "HOTEL_INVENTORY_NORMALIZED"
@@ -248,10 +302,10 @@ type PlatformEventType =
   | "USER_SEARCH"
   // UI Engine (control-room telemetry)
   | "ui-engine:report"
-  // Governance engine violation events (repair pipeline bridging)
-  | "text.integrity.violation"
-  | "layout.integrity.violation"
-  | "i18n.localization.violation"
+  // Governance engine violation events
+  | "text:integrity_violation"
+  | "layout:integrity_violation"
+  | "i18n:localization_violation"
   // Repair pipeline domain events
   | "repair:pipeline:completed"
   | "engine:memory:regression"
@@ -276,7 +330,127 @@ type PlatformEventType =
   | "repair:storm:detected"
   | "repair:loop:detected"
   | "repair:quarantine:entered"
-  | "repair:quarantine:lifted";
+  | "repair:quarantine:lifted"
+  // Orbit media/voice upload lifecycle (emitted by send-media/send-voice)
+  | "orbit:voice_upload_completed"
+  | "orbit:media_upload_completed"
+  | "orbit:payment_received"
+  // Story/Radar bridge (emitted by story-radar-bridge)
+  | "story:radar_revoke"
+  | "radar:open_location"
+  // App lifecycle
+  | "app:bootstrapped"
+  | "app:ready"
+  // Wallet (canonical)
+  | "wallet:transaction_created"
+  | "wallet:payment_success"
+  | "wallet:payment_failed"
+  | "wallet:payment_completed"
+  | "wallet:transfer_completed"
+  | "wallet:balance_updated"
+  | "wallet:qr_scanned"
+  | "wallet:pos_updated"
+  | "wallet:topup_initiated"
+  | "wallet:top_up"
+  | "wallet:loaded"
+  // Order (canonical)
+  | "order:created"
+  | "order:confirmed"
+  | "order:preparing"
+  | "order:ready"
+  | "order:assigned"
+  | "order:delivering"
+  | "order:completed"
+  | "order:cancelled"
+  | "order:refunded"
+  // Payment (canonical)
+  | "payment:success"
+  | "payment:failed"
+  // Delivery (canonical additions)
+  | "delivery:pickup"
+  | "delivery:delivering"
+  // Mission
+  | "mission:accepted"
+  | "mission:completed"
+  // Orbit (canonical additions)
+  | "orbit:message_sent"
+  | "orbit:message_received"
+  | "orbit:call_started"
+  | "orbit:call_ended"
+  | "orbit:thread_selected"
+  | "orbit:message_read"
+  | "orbit:thread_updated"
+  | "orbit:thread_created"
+  | "orbit:profile_updated"
+  // Rental
+  | "rental:property_created"
+  | "rental:property_updated"
+  | "rental:tenant_created"
+  | "rental:tenant_updated"
+  | "rental:rent_call_created"
+  | "rental:rent_call_paid"
+  | "rental:receipt_generated"
+  | "rental:lease_generated"
+  | "rental:message_sent"
+  // Seasonal
+  | "seasonal:booking_created"
+  | "seasonal:booking_updated"
+  | "seasonal:booking_cancelled"
+  | "seasonal:ical_synced"
+  // Concierge
+  | "concierge:service_booked"
+  | "concierge:booking_updated"
+  // Groups / Channels
+  | "group:created"
+  | "group:message_sent"
+  | "channel:updated"
+  // Storefront (canonical additions)
+  | "storefront:order_placed"
+  | "storefront:order_completed"
+  | "storefront:product_updated"
+  | "storefront:menu_updated"
+  // Support (canonical additions)
+  | "support:ticket_replied"
+  | "refund:requested"
+  // Radar (canonical additions)
+  | "radar:view_changed"
+  // Dashboard (canonical additions)
+  | "dashboard:counters_refresh"
+  // Notifications / Me
+  | "notifications:refresh"
+  | "me:refresh"
+  // Watchdog / Repair
+  | "watchdog:alert"
+  | "watchdog:status_changed"
+  | "browser_repair:run_completed"
+  | "browser_repair:issue_found"
+  | "browser_repair:completed"
+  // Identity / Contacts
+  | "identity:activated"
+  | "contacts:synced"
+  // Map
+  | "map:entity_selected"
+  | "map:entity_hovered"
+  | "map:clicked"
+  | "map:entity_deselected"
+  | "map:rt_drivers_updated"
+  | "map:rt_orders_updated"
+  // Marketplace (canonical additions)
+  | "marketplace:contact_opened"
+  | "marketplace:provider_went_live"
+  | "marketplace:booking_confirmed"
+  | "marketplace:booking_completed"
+  | "marketplace:booking_cancelled"
+  | "marketplace:booking_created"
+  | "marketplace:vente_completed"
+  // Deal (canonical additions)
+  | "deal:counter_offer"
+  | "deal:offer_sent"
+  // ENTITY_OPENED (legacy compat)
+  | "ENTITY_OPENED"
+  // Close-flow dynamic events
+  | `${string}:flow_closed`
+;
 
 export type { PlatformEventType };
 
@@ -559,47 +733,6 @@ export function installPlatformReactions(): () => void {
       window.dispatchEvent(new CustomEvent("currency:changed", { detail: event.payload }));
     })
   );
-
-  // ── TRANSITION BRIDGE: dot → colon notation (one-way) ──
-  // Maps dot-notation events to colon equivalents.
-  // One-way only: dot→colon. Colon events are NOT re-emitted as dot (prevents double-fire).
-  const NOTATION_BRIDGE: Record<string, string> = {
-    "dashboard.refresh": "dashboard:refresh",
-    "wallet.payment.completed": "wallet:payment_completed",
-    "wallet.payment.success": "wallet:payment_success",
-    "wallet.payment.failed": "wallet:payment_failed",
-    "wallet.transaction.created": "wallet:transaction_created",
-    "wallet.top_up": "wallet:top_up",
-    "orbit.message.sent": "orbit:message_sent",
-    "orbit.message.received": "orbit:message_received",
-    "orbit.call.started": "orbit:call_started",
-    "orbit.call.ended": "orbit:call_ended",
-    "booking.created": "marketplace:booking_created",
-    "booking.confirmed": "marketplace:booking_confirmed",
-    "booking.completed": "marketplace:booking_completed",
-    "marketplace.merchant.live": "marketplace:provider_went_live",
-    "marketplace.contact.opened": "marketplace:contact_opened",
-    "storefront.review_posted": "storefront:review_posted",
-    "property.unit.created": "property:unit_created",
-    "listing.created": "listing:created",
-    "listing.updated": "listing:updated",
-    "listing.published": "listing:published",
-    "rent.payment.created": "rent:payment_created",
-    "rent.payment.required": "rent:payment_required",
-    "rent.payment.paid": "rent:payment_paid",
-    "rent.paid": "rent:paid",
-    "rent.partial_payment": "rent:partial_payment",
-  };
-
-  for (const [dotEvent, colonEvent] of Object.entries(NOTATION_BRIDGE)) {
-    unsubs.push(
-      platformBus.on(dotEvent as PlatformEventType, (event) => {
-        if ((event.payload as Record<string, unknown>)?.__bridged) return;
-        const bridgedPayload = { ...(typeof event.payload === "object" && event.payload ? event.payload : {}), __bridged: true };
-        platformBus.emit(colonEvent as PlatformEventType, bridgedPayload, event.source);
-      })
-    );
-  }
 
   try {
     import("@/lib/platform-bus").then(({ platformBus: canonicalBus }) => {

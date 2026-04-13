@@ -122,7 +122,7 @@ export class TaxonomyIntegrityEngine extends DataQualityEngine {
       for (const issue of f.issues) {
         if (issue.reasonCode !== "WRONG_VERTICAL" && issue.reasonCode !== "INVALID_SUBCATEGORY" && issue.reasonCode !== "CATEGORY_VERTICAL_MISMATCH") continue;
         platformBus.emit(
-          "taxonomy.conflict.detected" as any,
+          "taxonomy:conflict_detected",
           {
             sweepId,
             entityId: f.entityId,

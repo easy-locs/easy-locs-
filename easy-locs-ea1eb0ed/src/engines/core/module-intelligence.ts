@@ -93,7 +93,7 @@ export function installModuleIntelligence() {
   _installed = true;
 
   for (const eventType of Object.keys(CROSS_REFRESH_MAP)) {
-    platformBus.on(eventType as any, () => handleCrossModuleEvent(eventType));
+    platformBus.on(eventType, () => handleCrossModuleEvent(eventType));
   }
 
 }

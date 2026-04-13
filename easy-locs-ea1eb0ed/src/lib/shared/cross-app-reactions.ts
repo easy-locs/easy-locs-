@@ -90,7 +90,7 @@ export function installCrossAppReactions(): () => void {
 
   // ── Radar location shared → inject location message in Orbit chat ──
   unsubs.push(
-    platformBus.on("radar:location_shared" as any, async (event) => {
+    platformBus.on("radar:location_shared", async (event) => {
       const p = event.payload as any;
       if (!p?.conversationId) return;
 

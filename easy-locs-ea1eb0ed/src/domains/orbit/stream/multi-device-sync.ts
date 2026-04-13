@@ -28,7 +28,7 @@ export function getDeviceId(): string {
 export function installMultiDeviceSync(
   onMessage: (msg: any, conversationId: string) => void,
 ): () => void {
-  const unsub = platformBus.on("orbit:message_sent" as any, (event) => {
+  const unsub = platformBus.on("orbit:message_sent", (event) => {
     const payload = event.payload as any;
     
     // Skip events from this device
@@ -48,7 +48,7 @@ export function installMultiDeviceSync(
  * Broadcast a message to other devices/tabs.
  */
 export function broadcastToDevices(conversationId: string, message: any): void {
-  platformBus.emit("orbit:message_sent" as any, {
+  platformBus.emit("orbit:message_sent", {
     conversationId,
     message,
     deviceId: DEVICE_ID,

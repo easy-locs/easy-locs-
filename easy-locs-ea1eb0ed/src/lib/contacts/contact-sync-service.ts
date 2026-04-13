@@ -113,7 +113,7 @@ export async function syncPhoneContacts(
     }
   }
 
-  platformBus.emit("contacts:synced" as any, {
+  platformBus.emit("contacts:synced", {
     userId: ownerUserId,
     synced,
     matched: matchedContacts.length,

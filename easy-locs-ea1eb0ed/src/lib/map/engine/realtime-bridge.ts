@@ -8,10 +8,10 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { shouldThrottleRealtimeUpdate } from "../engine/performance-engine";
 
 const MAP_RT_EVENTS = {
-  DRIVERS_UPDATED: "map.rt.drivers.updated",
-  ORDERS_UPDATED: "map.rt.orders.updated",
-  MERCHANTS_UPDATED: "map.rt.merchants.updated",
-  WEATHER_UPDATED: "map.rt.weather.updated",
+  DRIVERS_UPDATED: "map:rt_drivers_updated",
+  ORDERS_UPDATED: "map:rt_orders_updated",
+  MERCHANTS_UPDATED: "map:rt_merchants_updated",
+  WEATHER_UPDATED: "map:rt_weather_updated",
 } as const;
 
 let channels: any[] = [];
@@ -22,7 +22,7 @@ export function startMapRealtimeBridge() {
       event: "*", schema: "public", table: "rider_presence",
     }, (payload) => {
       if (shouldThrottleRealtimeUpdate("map-drivers", 300)) return;
-      platformBus.emit(MAP_RT_EVENTS.DRIVERS_UPDATED as any, payload, "map");
+      platformBus.emit(MAP_RT_EVENTS.DRIVERS_UPDATED, payload, "map");
     })
     .subscribe();
   channels.push(driverChannel);
@@ -32,7 +32,7 @@ export function startMapRealtimeBridge() {
       event: "*", schema: "public", table: "trip_live_state",
     }, (payload) => {
       if (shouldThrottleRealtimeUpdate("map-orders", 500)) return;
-      platformBus.emit(MAP_RT_EVENTS.ORDERS_UPDATED as any, payload, "map");
+      platformBus.emit(MAP_RT_EVENTS.ORDERS_UPDATED, payload, "map");
     })
     .subscribe();
   channels.push(orderChannel);

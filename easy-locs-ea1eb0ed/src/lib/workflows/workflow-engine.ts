@@ -107,7 +107,7 @@ export async function startWorkflow<TCtx extends Record<string, unknown>>(
   activeWorkflows.set(workflowId, state as WorkflowState);
   persistWorkflow(state as WorkflowState);
 
-  platformBus.emit("workflow.started", { workflowId, name: definition.name });
+  platformBus.emit("automation:workflow_started", { workflowId, name: definition.name }, "system");
 
   try {
     for (let i = 0; i < definition.steps.length; i++) {
@@ -159,7 +159,7 @@ export async function startWorkflow<TCtx extends Record<string, unknown>>(
     state.completedAt = Date.now();
     persistWorkflow(state as WorkflowState);
 
-    platformBus.emit("workflow.completed", { workflowId, name: definition.name });
+    platformBus.emit("automation:workflow_completed", { workflowId, name: definition.name }, "system");
     if (definition.onComplete) await definition.onComplete(state.context);
 
   } catch (e) {
@@ -169,7 +169,7 @@ export async function startWorkflow<TCtx extends Record<string, unknown>>(
     state.completedAt = Date.now();
     persistWorkflow(state as WorkflowState);
 
-    platformBus.emit("workflow.failed", { workflowId, name: definition.name, error: err.message });
+    platformBus.emit("automation:workflow_failed", { workflowId, name: definition.name, error: err.message }, "system");
     if (definition.onError) await definition.onError(state.context, err);
 
     const completedSteps = definition.steps.slice(0, state.currentStepIndex).reverse();

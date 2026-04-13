@@ -45,7 +45,7 @@ export function createPreview(input: {
  * Emit preview via platformBus for instant cross-component sync.
  */
 export function emitPreview(msg: PreviewMessage): void {
-  platformBus.emit("orbit:message_sent" as any, {
+  platformBus.emit("orbit:message_sent", {
     conversationId: msg.conversationId,
     messageId: msg.id,
     preview: true,
@@ -57,7 +57,7 @@ export function emitPreview(msg: PreviewMessage): void {
  * Emit progress update for upload previews.
  */
 export function emitProgress(messageId: string, conversationId: string, progress: number): void {
-  platformBus.emit("orbit:message_sent" as any, {
+  platformBus.emit("orbit:message_sent", {
     conversationId,
     messageId,
     progress,
@@ -74,7 +74,7 @@ export function emitReconcile(
   conversationId: string,
   serverUrl?: string | null,
 ): void {
-  platformBus.emit("orbit:message_sent" as any, {
+  platformBus.emit("orbit:message_sent", {
     conversationId,
     tempId,
     serverId,

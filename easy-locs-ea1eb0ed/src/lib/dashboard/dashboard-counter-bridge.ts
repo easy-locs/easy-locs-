@@ -26,13 +26,13 @@ export function subscribeCounters(fn: CounterListener): () => void {
 
 export function installCounterBridge(): () => void {
   const unsubs = [
-    platformBus.on("storefront:order_placed" as any, () => {
-      notifyCounters({ pendingOrders: 1 }); // signal increment
+    platformBus.on("storefront:order_placed", () => {
+      notifyCounters({ pendingOrders: 1 });
     }),
     platformBus.on(APP_EVENTS.ORBIT_MESSAGE_RECEIVED, () => {
       notifyCounters({ unreadMessages: 1 });
     }),
-    platformBus.on("delivery:driver_assigned" as any, () => {
+    platformBus.on("delivery:driver_assigned", () => {
       notifyCounters({ activeDeliveries: 1 });
     }),
     platformBus.on(APP_EVENTS.WALLET_PAYMENT_FAILED, () => {

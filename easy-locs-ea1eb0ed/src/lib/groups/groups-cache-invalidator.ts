@@ -17,9 +17,9 @@ export function invalidateGroupCaches() {
 
 export function installGroupCacheListeners(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.GROUP_CREATED as any, () => invalidateGroupCaches()),
-    platformBus.on(APP_EVENTS.GROUP_MESSAGE_SENT as any, () => invalidateGroupCaches()),
-    platformBus.on(APP_EVENTS.CHANNEL_UPDATED as any, () => invalidateGroupCaches()),
+    platformBus.on(APP_EVENTS.GROUP_CREATED, () => invalidateGroupCaches()),
+    platformBus.on(APP_EVENTS.GROUP_MESSAGE_SENT, () => invalidateGroupCaches()),
+    platformBus.on(APP_EVENTS.CHANNEL_UPDATED, () => invalidateGroupCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

@@ -166,7 +166,7 @@ export function attemptRemediation(violation: GovernanceViolation): RemediationR
   violation.autoRemediated = true;
   violation.resolvedAt = new Date().toISOString();
 
-  platformBus.emit("ui-engine:report" as any, { engineId: "governance-audit", remediation: record });
+  platformBus.emit("ui-engine:report", { engineId: "governance-audit", remediation: record });
   return record;
 }
 

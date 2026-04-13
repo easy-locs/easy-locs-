@@ -17,11 +17,11 @@ export function invalidateDealCaches() {
 
 export function installDealCacheListeners(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.DEAL_CREATED as any, () => invalidateDealCaches()),
-    platformBus.on(APP_EVENTS.DEAL_OFFER_SENT as any, () => invalidateDealCaches()),
-    platformBus.on(APP_EVENTS.DEAL_COUNTER_OFFER as any, () => invalidateDealCaches()),
-    platformBus.on(APP_EVENTS.DEAL_ACCEPTED as any, () => invalidateDealCaches()),
-    platformBus.on(APP_EVENTS.DEAL_CANCELLED as any, () => invalidateDealCaches()),
+    platformBus.on(APP_EVENTS.DEAL_CREATED, () => invalidateDealCaches()),
+    platformBus.on(APP_EVENTS.DEAL_OFFER_SENT, () => invalidateDealCaches()),
+    platformBus.on(APP_EVENTS.DEAL_COUNTER_OFFER, () => invalidateDealCaches()),
+    platformBus.on(APP_EVENTS.DEAL_ACCEPTED, () => invalidateDealCaches()),
+    platformBus.on(APP_EVENTS.DEAL_CANCELLED, () => invalidateDealCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

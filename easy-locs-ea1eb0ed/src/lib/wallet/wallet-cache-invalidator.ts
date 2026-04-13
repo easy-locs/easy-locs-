@@ -26,10 +26,10 @@ export function invalidateWalletCaches() {
 
 export function installWalletCacheListener(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS as any, () => invalidateWalletCaches()),
-    platformBus.on(APP_EVENTS.WALLET_PAYMENT_FAILED as any, () => invalidateWalletCaches()),
-    platformBus.on(APP_EVENTS.WALLET_TRANSFER_COMPLETED as any, () => invalidateWalletCaches()),
-    platformBus.on(APP_EVENTS.WALLET_TOPUP_INITIATED as any, () => invalidateWalletCaches()),
+    platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS, () => invalidateWalletCaches()),
+    platformBus.on(APP_EVENTS.WALLET_PAYMENT_FAILED, () => invalidateWalletCaches()),
+    platformBus.on(APP_EVENTS.WALLET_TRANSFER_COMPLETED, () => invalidateWalletCaches()),
+    platformBus.on(APP_EVENTS.WALLET_TOPUP_INITIATED, () => invalidateWalletCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

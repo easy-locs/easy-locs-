@@ -119,14 +119,27 @@ export function runPropertyComplianceCheck(
     generatedAt: new Date().toISOString(),
   };
 
-  platformBus.emit("compliance.report_generated", {
+  platformBus.emit("admin:audit_logged", {
+    action: "compliance_report_generated",
     propertyId: property.id,
     landlordId: (property as Record<string, unknown>).landlordId ?? "unknown",
     countryCode,
     overallStatus,
     score,
     missingCount: missingDocuments.length,
-  });
+    timestamp: Date.now(),
+  }, "system");
+
+  if (overallStatus === "non_compliant") {
+    platformBus.emit("compliance:aml_alert", {
+      propertyId: property.id,
+      landlordId: (property as Record<string, unknown>).landlordId ?? "unknown",
+      countryCode,
+      overallStatus,
+      score,
+      missingCount: missingDocuments.length,
+    }, "system");
+  }
 
   return report;
 }

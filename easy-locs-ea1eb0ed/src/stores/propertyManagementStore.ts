@@ -142,7 +142,12 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       },
     });
 
-    platformBus.emit("lease:created", { lease }, "pm");
+    platformBus.emit("pm:lease_created", {
+      leaseId: lease.id,
+      tenantId: lease.tenantOrbitId,
+      propertyId: lease.listingId,
+      lease,
+    }, "pm");
 
     return lease;
   },
@@ -173,12 +178,12 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       rentPayments: [payment, ...state.rentPayments],
     }));
 
-    platformBus.emit("rent:payment_created", { payment }, "pm");
-    platformBus.emit("rent:payment_required", {
+    platformBus.emit("pm:payment_received", {
       paymentId: payment.id,
       amount: payment.amount,
       currency: payment.currency,
       leaseId: payment.leaseId,
+      status: "pending",
     }, "pm");
 
     return payment;
@@ -214,9 +219,13 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       ),
     }));
 
-    platformBus.emit("rent:payment_paid", {
+    platformBus.emit("pm:payment_received", {
       paymentId,
       transactionId: tx.id,
+      amount: payment.amount,
+      currency: payment.currency,
+      leaseId: payment.leaseId,
+      status: "paid",
     }, "pm");
   },
 

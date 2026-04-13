@@ -391,8 +391,81 @@ export function installSuperAppBridge() {
     invalidate("wallet-transactions", "dashboard-live-stats");
   });
 
-  platformBus.on("wallet:payment_requested", () => {
+  platformBus.on("wallet:payment_requested", (event) => {
     invalidate("wallet-transactions", "threads");
+    const p = event.payload as Record<string, unknown>;
+    const correlationId = event.correlationId;
+    const amount = (p?.amount as number) ?? 0;
+    const currency = (p?.currency as string) ?? "AED";
+    const referenceType = (p?.referenceType as string) ?? (p?.context as string) ?? "payment";
+    const referenceId = (p?.referenceId as string) ?? (p?.threadId as string) ?? "";
+
+    (async () => {
+      try {
+        const { useWalletStore } = await import("@/stores/walletStore");
+        const store = useWalletStore.getState();
+
+        const wallet = store.wallet;
+        if (!wallet) {
+          platformBus.emit("wallet:payment_failed", {
+            reason: "No wallet loaded — please load wallet before paying",
+            amount, currency, referenceType, referenceId, correlationId,
+          }, "wallet", { correlationId: correlationId ?? undefined });
+          return;
+        }
+
+        if (wallet.availableBalance !== undefined && wallet.availableBalance < amount) {
+          platformBus.emit("wallet:payment_failed", {
+            reason: "Insufficient wallet balance",
+            amount, currency, referenceType, referenceId, correlationId,
+            availableBalance: wallet.availableBalance,
+          }, "wallet", { correlationId: correlationId ?? undefined });
+          return;
+        }
+
+        const tx = await store.createTransaction({
+          type: "payment",
+          amount: -Math.abs(amount),
+          currency: currency as import("@/lib/types/domain").CurrencyCode,
+          reference: `${referenceType}:${referenceId}`,
+          status: "pending",
+        });
+
+        try {
+          const { createLedgerEntry } = await import("@/lib/wallet/ledger");
+          await createLedgerEntry({
+            walletAccountId: wallet.walletId,
+            direction: "out",
+            amount: Math.abs(amount),
+            currency,
+            entryType: "payment",
+            referenceId: tx.id,
+            referenceType,
+            note: `Payment for ${referenceType}:${referenceId}`,
+          });
+        } catch {
+          // Ledger posting is best-effort in client context (requires auth);
+          // walletStore transaction is the primary record for UI flows
+        }
+
+        store.markTransactionSuccess(tx.id);
+
+        platformBus.emit("wallet:payment_success", {
+          transactionId: tx.id,
+          amount,
+          currency,
+          referenceType,
+          referenceId,
+          correlationId,
+        }, "wallet", { correlationId: correlationId ?? undefined });
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : "Payment processing failed";
+        platformBus.emit("wallet:payment_failed", {
+          reason,
+          amount, currency, referenceType, referenceId, correlationId,
+        }, "wallet", { correlationId: correlationId ?? undefined });
+      }
+    })();
   });
 
   platformBus.on("orbit:message_sent", () => {
@@ -508,6 +581,288 @@ export function installSuperAppBridge() {
   platformBus.on("payment:intent_created", () => {
     invalidate("wallet-balance", "wallet-transactions");
     moduleRegistry.activateModule("payments-core");
+  });
+
+  platformBus.on("marketplace:vente_completed", () => {
+    invalidate("wallet-balance", "wallet-transactions", "my-orders", "dashboard-live-stats");
+    moduleRegistry.activateModule("marketplace-core");
+    moduleRegistry.activateModule("wallet-core");
+  });
+
+  platformBus.on("marketplace:stock_updated", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("marketplace:reservation_created", () => {
+    invalidate("my-bookings", "dashboard-live-stats");
+    moduleRegistry.activateModule("marketplace-core");
+  });
+
+  platformBus.on("marketplace:availability_updated", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("wallet:receipt_generated", () => {
+    invalidate("wallet-transactions");
+  });
+
+  platformBus.on("wallet:commission_split", () => {
+    invalidate("wallet-balance", "wallet-transactions", "dashboard-live-stats");
+  });
+
+  platformBus.on("orbit:presence_changed", () => {
+    invalidate("contacts");
+  });
+
+  platformBus.on("property:published_to_marketplace", () => {
+    invalidate("properties", "dashboard-live-stats");
+    moduleRegistry.activateModule("property-core");
+    moduleRegistry.activateModule("marketplace-core");
+  });
+
+  platformBus.on("onboarding:completed", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("import:completed", () => {
+    invalidate("dashboard-live-stats", "marketplace-listings");
+  });
+
+  platformBus.on("transaction:created", () => {
+    invalidate("wallet-balance", "wallet-transactions", "my-orders", "dashboard-live-stats");
+  });
+
+  platformBus.on("transaction:completed", () => {
+    invalidate("wallet-balance", "wallet-transactions", "my-orders", "dashboard-live-stats");
+  });
+
+  platformBus.on("admin:audit_logged", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("admin:user_action", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("support:ticket_created", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("support:ticket_escalated", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("kyc:status_changed", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("compliance:aml_alert", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("moderation:action_taken", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("moderation:content_flagged", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("sla:warning", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("sla:breached", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("sla:escalated", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("automation:workflow_started", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("automation:workflow_completed", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("automation:workflow_failed", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("tenant:created", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("tenant:plan_upgraded", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("tenant:member_invited", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("tenant:quota_warning", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("api:request_completed", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("api:rate_limit_hit", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("api:webhook_delivered", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("property:device_state_changed", () => {
+    invalidate("properties", "dashboard-live-stats");
+  });
+
+  platformBus.on("property:access_granted", () => {
+    invalidate("properties");
+  });
+
+  platformBus.on("property:automation_triggered", () => {
+    invalidate("properties");
+  });
+
+  platformBus.on("storefront:loyalty_earned", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("storefront:growth_milestone", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("listing:viewed", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("orbit:session_restored", () => {
+    invalidate("threads", "contacts", "unread-counts");
+    moduleRegistry.activateModule("orbit-chat");
+  });
+
+  platformBus.on("orbit:media_attached", () => {
+    invalidate("threads");
+  });
+
+  platformBus.on("ui:interaction_performed", () => {
+    /* analytics only — no cache invalidation needed */
+  });
+
+  platformBus.on("ui:gesture_detected", () => {
+    /* analytics only — no cache invalidation needed */
+  });
+
+  platformBus.on("storefront:order_paid", () => {
+    invalidate("my-orders", "wallet-balance", "wallet-transactions", "dashboard-live-stats");
+  });
+
+  platformBus.on("storefront:order_shipped", () => {
+    invalidate("my-orders", "dashboard-live-stats");
+  });
+
+  platformBus.on("storefront:order_cancelled", () => {
+    invalidate("my-orders", "wallet-balance", "dashboard-live-stats");
+  });
+
+  platformBus.on("delivery:dispatched", () => {
+    invalidate("my-orders", "dashboard-live-stats");
+  });
+
+  platformBus.on("delivery:validated", () => {
+    invalidate("my-orders", "wallet-balance", "wallet-transactions", "dashboard-live-stats");
+  });
+
+  platformBus.on("notification:created", () => {
+    invalidate("notifications", "unread-counts");
+  });
+
+  platformBus.on("dashboard:counters_refresh", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("orbit:profile_loaded", () => {
+    invalidate("contacts");
+  });
+
+  platformBus.on("system:online_recovered", () => {
+    invalidate("wallet-balance", "threads", "contacts", "dashboard-live-stats");
+  });
+
+  platformBus.on("tracking:position_updated", () => {
+    invalidate("my-orders");
+  });
+
+  platformBus.on("location:live_update", () => {
+    invalidate("threads");
+  });
+
+  platformBus.on("location:live_stopped", () => {
+    invalidate("threads");
+  });
+
+  platformBus.on("orbit:message_edited_optimistic", () => {
+    invalidate("threads");
+  });
+
+  platformBus.on("orbit:message_deleted", () => {
+    invalidate("threads", "unread-counts");
+  });
+
+  platformBus.on("orbit:group_updated", () => {
+    invalidate("threads", "contacts");
+  });
+
+  platformBus.on("orbit:group_created", () => {
+    invalidate("threads", "contacts");
+  });
+
+  platformBus.on("orbit:contacts_updated", () => {
+    invalidate("contacts");
+  });
+
+  platformBus.on("orbit:identity_updated", () => {
+    invalidate("contacts");
+  });
+
+  platformBus.on("orbit:ephemeral_timer_changed", () => {
+    invalidate("threads");
+  });
+
+  platformBus.on("media:viewer_open", () => {
+    /* UI-only — no cache invalidation */
+  });
+
+  platformBus.on("media:viewer_close", () => {
+    /* UI-only — no cache invalidation */
+  });
+
+  platformBus.on("orbit:profile_updated", () => {
+    invalidate("contacts", "threads");
+  });
+
+  platformBus.on("system:module_status_changed", () => {
+    invalidate("dashboard-live-stats");
+  });
+
+  platformBus.on("system:sync_completed", () => {
+    invalidate("wallet-balance", "my-orders", "threads", "contacts", "dashboard-live-stats");
+  });
+
+  platformBus.on("ui:panel_changed", () => {
+    /* UI navigation — no cache invalidation */
+  });
+
+  platformBus.on("USER_SEARCH" as PlatformEventType, () => {
+    /* legacy uppercase event — analytics tracking only */
   });
 
   console.info("[super-app-bridge] Cross-section bridge + module lifecycle + runtime pipeline + health system installed");

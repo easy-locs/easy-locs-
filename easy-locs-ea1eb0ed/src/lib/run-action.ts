@@ -78,7 +78,7 @@ export async function runAction<T>(config: ActionConfig<T>): Promise<ActionResul
     // ── Step 2: Emit platform event ──
     if (config.event) {
       const eventStep = addStep(flow, "event_emit");
-      platformBus.emit(config.event, config.eventPayload ?? {}, domain as any);
+      platformBus.emit(config.event, config.eventPayload ?? {}, domain);
       completeStep(flow, eventStep, { event: config.event });
 
       // Track propagation: event emitted, expect consumption

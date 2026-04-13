@@ -200,7 +200,7 @@ export class LayoutIntegrityEngine extends BaseEngine {
     }
 
     if (recent.length > 0 || findings.length > 0) {
-      platformBus.emit("layout.integrity.violation", {
+      platformBus.emit("layout:integrity_violation", {
         violations: recent.map(v => ({
           id: v.id,
           type: v.type,

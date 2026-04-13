@@ -24,12 +24,12 @@ export function invalidateDeliveryCaches() {
 
 export function installDeliveryCacheListener(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.DELIVERY_DISPATCHED as any, () => invalidateDeliveryCaches()),
-    platformBus.on(APP_EVENTS.DELIVERY_COMPLETED as any, () => invalidateDeliveryCaches()),
-    platformBus.on(APP_EVENTS.DELIVERY_FAILED as any, () => invalidateDeliveryCaches()),
-    platformBus.on(APP_EVENTS.DELIVERY_DRIVER_ASSIGNED as any, () => invalidateDeliveryCaches()),
-    platformBus.on(APP_EVENTS.DELIVERY_PICKUP as any, () => invalidateDeliveryCaches()),
-    platformBus.on(APP_EVENTS.DELIVERY_DELIVERING as any, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_DISPATCHED, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_COMPLETED, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_FAILED, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_DRIVER_ASSIGNED, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_PICKUP, () => invalidateDeliveryCaches()),
+    platformBus.on(APP_EVENTS.DELIVERY_DELIVERING, () => invalidateDeliveryCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }

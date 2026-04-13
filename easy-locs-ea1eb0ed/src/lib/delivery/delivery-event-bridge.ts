@@ -7,7 +7,7 @@ import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { trackPropagation } from "@/lib/runtime/propagation-validator";
 
 export function emitDeliveryDispatched(payload: { jobId: string; driverId?: string; orderId?: string }) {
-  platformBus.emit("delivery:dispatched" as any, payload, "delivery");
+  platformBus.emit("delivery:dispatched", payload, "delivery");
   reportHealth("delivery", "ok");
 
   trackPropagation({
@@ -21,7 +21,7 @@ export function emitDeliveryDispatched(payload: { jobId: string; driverId?: stri
 }
 
 export function emitDeliveryCompleted(payload: { jobId: string; orderId?: string }) {
-  platformBus.emit("delivery:completed" as any, payload, "delivery");
+  platformBus.emit("delivery:completed", payload, "delivery");
   reportHealth("delivery", "ok");
 
   trackPropagation({
@@ -35,6 +35,6 @@ export function emitDeliveryCompleted(payload: { jobId: string; orderId?: string
 }
 
 export function emitDeliveryFailed(payload: { jobId: string; reason: string }) {
-  platformBus.emit("delivery:failed" as any, payload, "delivery");
+  platformBus.emit("delivery:failed", payload, "delivery");
   reportHealth("delivery", "degraded", undefined, payload.reason);
 }

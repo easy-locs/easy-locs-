@@ -118,24 +118,37 @@ export function markRentCallPaid(
   };
 
   if (isFullyPaid) {
-    events.push("rent.paid");
-    platformBus.emit("rent.paid", {
+    events.push("pm:payment_received");
+    platformBus.emit("pm:payment_received", {
+      paymentId: `rent_${call.leaseId}_${call.periodLabel}`,
       leaseId: call.leaseId,
       tenantId: call.tenantId,
+      tenantOrbitId: call.tenantId,
+      ownerOrbitId: call.landlordId,
       landlordId: call.landlordId,
       amount: call.totalAmount,
+      currency: "AED",
       period: call.periodLabel,
-    });
+      status: "paid",
+      full: true,
+    }, "pm");
   } else {
-    events.push("rent.partial_payment");
-    platformBus.emit("rent.partial_payment", {
+    events.push("pm:payment_received");
+    platformBus.emit("pm:payment_received", {
+      paymentId: `rent_${call.leaseId}_${call.periodLabel}_partial`,
       leaseId: call.leaseId,
       tenantId: call.tenantId,
+      tenantOrbitId: call.tenantId,
+      ownerOrbitId: call.landlordId,
       landlordId: call.landlordId,
       paidAmount: newPaidAmount,
+      amount: newPaidAmount,
+      currency: "AED",
       remaining: call.totalAmount - newPaidAmount,
       period: call.periodLabel,
-    });
+      status: "partial",
+      full: false,
+    }, "pm");
   }
 
   const receiptRequired = isFullyPaid && isRentReceiptMandatory(countryCode);

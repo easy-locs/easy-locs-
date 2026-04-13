@@ -18,10 +18,10 @@ export function invalidateSeasonalCaches() {
 
 export function installSeasonalCacheListeners(): () => void {
   const unsubs = [
-    platformBus.on(APP_EVENTS.SEASONAL_BOOKING_CREATED as any, () => invalidateSeasonalCaches()),
-    platformBus.on(APP_EVENTS.SEASONAL_BOOKING_UPDATED as any, () => invalidateSeasonalCaches()),
-    platformBus.on(APP_EVENTS.SEASONAL_BOOKING_CANCELLED as any, () => invalidateSeasonalCaches()),
-    platformBus.on(APP_EVENTS.SEASONAL_ICAL_SYNCED as any, () => invalidateSeasonalCaches()),
+    platformBus.on(APP_EVENTS.SEASONAL_BOOKING_CREATED, () => invalidateSeasonalCaches()),
+    platformBus.on(APP_EVENTS.SEASONAL_BOOKING_UPDATED, () => invalidateSeasonalCaches()),
+    platformBus.on(APP_EVENTS.SEASONAL_BOOKING_CANCELLED, () => invalidateSeasonalCaches()),
+    platformBus.on(APP_EVENTS.SEASONAL_ICAL_SYNCED, () => invalidateSeasonalCaches()),
   ];
   return () => unsubs.forEach(u => u());
 }
