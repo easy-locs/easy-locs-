@@ -110,6 +110,10 @@ export class AutoFixEngine extends BaseEngine {
       this.tickConversationConsistency(findings, actions);
     }
 
+    await this.tickRuntimeRepair(findings, actions);
+    await this.tickStaleCacheScan(findings, actions);
+    await this.tickRealtimeHealth(findings);
+
     return {
       level: actions.length > 0 ? "act" : findings.length > 0 ? "detect" : "observe",
       findings: findings.length,
@@ -216,5 +220,56 @@ export class AutoFixEngine extends BaseEngine {
     }
 
     this.lastConversationCount = ids.size;
+  }
+
+  private async tickRuntimeRepair(findings: string[], actions: string[]): Promise<void> {
+    if (!this.canRun("runtime-repair-cycle", 40_000)) return;
+    try {
+      const { runAutoRepairCycle } = await import("@/lib/runtime/auto-repair-engine");
+      const repairActions = await runAutoRepairCycle();
+      for (const a of repairActions) {
+        if (a.result === "fixed") actions.push(`[repair] ${a.module}: ${a.action}`);
+        else if (a.result === "failed") findings.push(`[repair-fail] ${a.module}: ${a.action}`);
+        else findings.push(`[repair-skip] ${a.module}: ${a.action}`);
+      }
+      this.recordFix("runtime-repair-cycle", `${repairActions.length} repair actions`, "success");
+    } catch {
+      this.recordFix("runtime-repair-cycle", "Runtime repair cycle failed", "failed");
+    }
+  }
+
+  private async tickStaleCacheScan(findings: string[], actions: string[]): Promise<void> {
+    if (!this.canRun("stale-cache-scan", 55_000)) return;
+    try {
+      const { scanForStaleCache } = await import("@/lib/runtime/stale-cache-detector");
+      const report = scanForStaleCache();
+      if (report.staleEntries > 0) {
+        findings.push(`Stale cache: ${report.staleEntries} entries in domains [${report.staleDomains.join(", ")}]`);
+        actions.push(`Stale cache scan found ${report.staleEntries} entry(ies)`);
+      }
+      this.recordFix("stale-cache-scan", "Stale cache scan complete", "success");
+    } catch {
+      this.recordFix("stale-cache-scan", "Stale cache scan failed", "failed");
+    }
+  }
+
+  private async tickRealtimeHealth(findings: string[]): Promise<void> {
+    if (!this.canRun("realtime-health-check", 25_000)) return;
+    try {
+      const [{ checkStaleness }, { reportHealth }] = await Promise.all([
+        import("@/lib/runtime/realtime-monitor"),
+        import("@/lib/runtime/health-aggregator"),
+      ]);
+      const stale = checkStaleness();
+      if (stale.length > 0) {
+        findings.push(`Realtime: ${stale.length} stale channel(s)`);
+        reportHealth("realtime", "degraded", undefined, `${stale.length} stale channels`);
+      } else {
+        reportHealth("realtime", "ok");
+      }
+      this.recordFix("realtime-health-check", "Realtime health check complete", "success");
+    } catch {
+      this.recordFix("realtime-health-check", "Realtime health check failed", "failed");
+    }
   }
 }

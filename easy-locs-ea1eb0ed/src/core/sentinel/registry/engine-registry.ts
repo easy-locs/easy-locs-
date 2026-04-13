@@ -14,7 +14,7 @@ class SentinelEngineRegistry {
       this.contracts.set(entry.engine_id, contract);
     }
     const ccResult = registerNewEngine(entry.engine_id, entry.engine_name, entry.engine_id);
-    if (!ccResult.success) {
+    if (!ccResult.success && import.meta.env.DEV) {
       console.warn(`[SentinelEngineRegistry] CC blocked engine ${entry.engine_id}: ${ccResult.blockedReason}`);
     }
   }

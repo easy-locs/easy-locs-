@@ -12,6 +12,7 @@
  */
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
 import type { GovernanceViolation, CanonicalVertical } from "@/domains/shared/canonical-types";
+import { getPublishGateGovernanceViolations } from "@/lib/engines/publish-gate-base";
 import { getVerticalViolations } from "./vertical-isolation-engine";
 import { getTaxonomyViolations } from "./taxonomy-governance-engine";
 import { getMediaViolations } from "./media-relevance-engine";
@@ -86,6 +87,7 @@ export function getAllGovernanceViolations(): GovernanceViolation[] {
     ...getLocalizationViolations(),
     ...getPageOpenViolations(),
     ...getFlowViolations(),
+    ...getPublishGateGovernanceViolations(),
   ];
 }
 
