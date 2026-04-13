@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 let booted = false;
+
 
 export function useMasterAppBootstrap() {
   const queryClient = useQueryClient();
@@ -9,11 +11,15 @@ export function useMasterAppBootstrap() {
   useEffect(() => {
     if (booted) return;
     booted = true;
+    const bootStart = performance.now();
+    console.log("[boot] master-bootstrap started");
 
     const cleanups: Array<() => void> = [];
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     const t0 = setTimeout(async () => {
+      const t = performance.now() - bootStart;
+      console.log(`[boot] stage-0 orchestration (${t.toFixed(0)}ms)`);
       try {
         const [
           { installOrchestrationEngine },
@@ -56,6 +62,8 @@ export function useMasterAppBootstrap() {
     timers.push(t0);
 
     const t1 = setTimeout(async () => {
+      const t = performance.now() - bootStart;
+      console.log(`[boot] stage-1 platform reactions (${t.toFixed(0)}ms)`);
       try {
         const [
           { installPlatformReactions },
@@ -91,6 +99,8 @@ export function useMasterAppBootstrap() {
     timers.push(t1);
 
     const t2 = setTimeout(async () => {
+      const t = performance.now() - bootStart;
+      console.log(`[boot] stage-2 cache listeners (${t.toFixed(0)}ms)`);
       try {
         const [
           { installWalletCacheListener },
@@ -147,38 +157,63 @@ export function useMasterAppBootstrap() {
     timers.push(t2);
 
     const t3 = setTimeout(async () => {
+      const t = performance.now() - bootStart;
+      console.log(`[boot] stage-3 core engines (${t.toFixed(0)}ms)`);
       try {
         const [
           { initCoreFlowRegistry },
           { startStaleCacheScanner },
           { startAutoRepairEngine },
           { startRealtimeHealthCheck },
-          { initPropertyAutomation },
-          { initRealEstateEngines },
         ] = await Promise.all([
           import("@/lib/runtime/flow-completeness-validator"),
           import("@/lib/runtime/stale-cache-detector"),
           import("@/lib/runtime/auto-repair-engine"),
           import("@/lib/runtime/realtime-intelligence"),
-          import("@/lib/engines/property-automation-engine"),
-          import("@/lib/engines/real-estate-engine-registry"),
         ]);
 
         initCoreFlowRegistry();
-        initPropertyAutomation();
-        initRealEstateEngines();
         cleanups.push(
           startStaleCacheScanner(60_000),
           startAutoRepairEngine(45_000),
           startRealtimeHealthCheck(30_000),
         );
+
+        // Auth-gated: property/real-estate engines only needed for authenticated users
+        const { data: { session: s3 } } = await supabase.auth.getSession();
+        if (s3) {
+          const [{ initPropertyAutomation }, { initRealEstateEngines }] = await Promise.all([
+            import("@/lib/engines/property-automation-engine"),
+            import("@/lib/engines/real-estate-engine-registry"),
+          ]);
+          initPropertyAutomation();
+          initRealEstateEngines();
+        }
       } catch (e) {
         console.warn("[boot] stage-3 failed", e);
       }
     }, 5000);
     timers.push(t3);
 
-    const t4 = setTimeout(async () => {
+    const t4 = setTimeout(async () => { // Reduced from 8000ms to 6000ms for faster engine boot
+      const t = performance.now() - bootStart;
+      console.log(`[boot] stage-4 engine system (${t.toFixed(0)}ms)`);
+      // Engine system (data quality on public entities) runs for all users
+      try {
+        const { bootEngineSystem } = await import("@/engines/engine-registry");
+        const cleanup = bootEngineSystem();
+        if (cleanup) cleanups.push(cleanup);
+      } catch (e) {
+        console.warn("[boot] stage-4 failed", e);
+      }
+
+      // Auth-gated: engine memory, learning cycle, command center only for authenticated users
+      const { data: { session: s4 } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+      if (!s4) {
+        console.log("[boot] stage-4 auth-gated ops skipped — no authenticated user");
+        return;
+      }
+
       try {
         const { engineMemory } = await import("@/engines/core/engine-memory");
         await engineMemory.loadFromSupabase();
@@ -195,15 +230,7 @@ export function useMasterAppBootstrap() {
       } catch (e) {
         console.warn("[boot] command-center failed", e);
       }
-
-      try {
-        const { bootEngineSystem } = await import("@/engines/engine-registry");
-        const cleanup = bootEngineSystem();
-        if (cleanup) cleanups.push(cleanup);
-      } catch (e) {
-        console.warn("[boot] stage-4 failed", e);
-      }
-    }, 8000);
+    }, 6000);
     timers.push(t4);
 
     let idleCbId: number | undefined;

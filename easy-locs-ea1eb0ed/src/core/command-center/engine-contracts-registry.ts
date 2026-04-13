@@ -1044,6 +1044,18 @@ export const ALL_ENGINE_CONTRACTS: Record<string, EngineContract> = {
   "publish-gate-grocery": createDefaultContract("publish-gate-grocery", "gates", "Gate grocery-vertical publish operations pending quality checks."),
   "publish-gate-service": createDefaultContract("publish-gate-service", "gates", "Gate service-vertical publish operations pending quality checks."),
   "flow-integrity": createDefaultContract("flow-integrity", "governance", "Detect and report UI-flow integrity violations across all verticals."),
+
+  // ── Data Quality lib engines (registered by name from DataQualityEngine subclasses) ─
+  "TaxonomyIntegrityEngine": createDefaultContract("TaxonomyIntegrityEngine", "quality", "Validate entities against canonical vertical/category/subcategory/entity-type rules."),
+  "MediaRelevanceEngine": createDefaultContract("MediaRelevanceEngine", "quality", "Validate media-family alignment, detect broken/placeholder/cross-vertical media."),
+  "DuplicateShadowEngine": createDefaultContract("DuplicateShadowEngine", "quality", "Detect exact/semantic duplicates, legacy/mock/shadow data leakage."),
+  "ReferenceIntegrityEngine": createDefaultContract("ReferenceIntegrityEngine", "quality", "Detect orphan entities, broken route targets, dead links, broken parent-child references."),
+  "DataQualityScoringEngine": createDefaultContract("DataQualityScoringEngine", "quality", "Assign confidence/quality scores, trust levels, and surface readiness per entity."),
+  "AuditTrailEngine": createDefaultContract("AuditTrailEngine", "quality", "Log every detection, classification, auto-fix, quarantine, suppression, and review decision."),
+  "LiveSurfaceSanitizerEngine": createDefaultContract("LiveSurfaceSanitizerEngine", "quality", "Protect dashboard, stories, feeds, and discovery surfaces from bad data."),
+  "QuarantineEngine": createDefaultContract("QuarantineEngine", "quality", "Isolate unsafe, suspicious, invalid, or structurally broken data with full traceability."),
+  "SafeRemediationEngine": createDefaultContract("SafeRemediationEngine", "quality", "Apply deterministic low-risk fixes and reclassify obvious taxonomy-safe cases."),
+  "SearchHygieneEngine": createDefaultContract("SearchHygieneEngine", "quality", "Clean indexed content, remove/downgrade quarantined/invalid/shadow entities from search."),
 };
 
 export function getEngineContract(engineId: string): EngineContract | undefined {

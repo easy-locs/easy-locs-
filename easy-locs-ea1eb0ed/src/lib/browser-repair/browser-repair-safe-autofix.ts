@@ -1,8 +1,7 @@
-import { db } from "@/services/db";
+import { v2db } from "@/lib/shared/db-v2";
 
 export async function safeAutoFixLiveMerchantIntegrity() {
-  const { data: broken } = await db
-    .from("seed_merchants")
+  const { data: broken } = await v2db("seed_merchants")
     .select("id")
     .eq("visibility_mode", "live")
     .or("name.is.null,category.is.null,vertical.is.null")
@@ -11,8 +10,7 @@ export async function safeAutoFixLiveMerchantIntegrity() {
   let fixed = 0;
 
   for (const row of broken ?? []) {
-    const { error } = await db
-      .from("seed_merchants")
+    const { error } = await v2db("seed_merchants")
       .update({
         visibility_mode: "hidden",
         blocking_reason: "browser_repair:missing_required_fields",
@@ -27,8 +25,7 @@ export async function safeAutoFixLiveMerchantIntegrity() {
 }
 
 export async function safeAutoFixBrokenGroups() {
-  const { data: rows } = await db
-    .from("conversations_v2")
+  const { data: rows } = await v2db("conversations_v2")
     .select("id, participants, type")
     .eq("type", "group")
     .limit(50);
@@ -39,8 +36,7 @@ export async function safeAutoFixBrokenGroups() {
     const participants = Array.isArray(row.participants) ? row.participants : [];
     if (participants.length >= 2) continue;
 
-    const { error } = await db
-      .from("conversations_v2")
+    const { error } = await v2db("conversations_v2")
       .update({
         type: "direct",
         updated_at: new Date().toISOString(),
@@ -54,15 +50,13 @@ export async function safeAutoFixBrokenGroups() {
 }
 
 export async function safeAutoFixStuckEngines() {
-  const { data: rows } = await db
-    .from("engine_supervisor")
+  const { data: rows } = await v2db("engine_supervisor")
     .select("engine_name, status")
     .eq("status", "running");
 
   if (!rows?.length) return 0;
 
-  const { error } = await db
-    .from("engine_supervisor")
+  const { error } = await v2db("engine_supervisor")
     .update({
       status: "idle",
       updated_at: new Date().toISOString(),
