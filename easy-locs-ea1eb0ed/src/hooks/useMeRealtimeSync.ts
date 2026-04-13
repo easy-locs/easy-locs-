@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,7 @@ export function useMeRealtimeSync() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const prevPrefsRef = useRef<{ currency?: string; theme?: string; language?: string }>({});
 
   const loadProfile = useCallback(async () => {
     if (!user?.id) {
@@ -28,6 +29,28 @@ export function useMeRealtimeSync() {
 
     setProfile(data ?? null);
     setLoading(false);
+
+    if (data) {
+      const prev = prevPrefsRef.current;
+      const currency = data.preferred_currency ?? data.currency;
+      const theme = data.theme ?? data.preferred_theme;
+      const language = data.preferred_language ?? data.language ?? data.locale;
+
+      if (currency && currency !== prev.currency) {
+        platformBus.emit("system:currency_changed", { currency, userId: user.id }, "system");
+        prevPrefsRef.current = { ...prevPrefsRef.current, currency };
+      }
+
+      if (theme && theme !== prev.theme) {
+        platformBus.emit("system:sync_completed", { domain: "theme", theme, userId: user.id }, "system");
+        prevPrefsRef.current = { ...prevPrefsRef.current, theme };
+      }
+
+      if (language && language !== prev.language) {
+        platformBus.emit("system:sync_completed", { domain: "language", language, userId: user.id }, "system");
+        prevPrefsRef.current = { ...prevPrefsRef.current, language };
+      }
+    }
   }, [user?.id]);
 
   useEffect(() => {
@@ -64,11 +87,21 @@ export function useMeRealtimeSync() {
       void loadProfile();
     });
 
+    const unsub4 = platformBus.on(APP_EVENTS.IDENTITY_ACTIVATED, () => {
+      void loadProfile();
+    });
+
+    const unsub5 = platformBus.on(APP_EVENTS.CONTACTS_SYNCED, () => {
+      void loadProfile();
+    });
+
     return () => {
       unsubRegistry();
       unsub1();
       unsub2();
       unsub3();
+      unsub4();
+      unsub5();
     };
   }, [loadProfile, user?.id]);
 

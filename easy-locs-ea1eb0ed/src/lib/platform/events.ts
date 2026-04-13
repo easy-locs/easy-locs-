@@ -20,6 +20,7 @@ export const APP_EVENTS = {
   // Wallet
   WALLET_PAYMENT_SUCCESS: "wallet:payment_success",
   WALLET_PAYMENT_FAILED: "wallet:payment_failed",
+  WALLET_PAYMENT_REQUESTED: "wallet:payment_requested",
   WALLET_BALANCE_UPDATED: "wallet:balance_updated",
   WALLET_QR_SCANNED: "wallet:qr_scanned",
   WALLET_POS_UPDATED: "wallet:pos_updated",
@@ -98,6 +99,7 @@ export const APP_EVENTS = {
   RADAR_ENTITY_SELECTED: "radar:entity_selected",
   RADAR_VIEW_CHANGED: "radar:view_changed",
   RADAR_GEO_UPDATED: "radar:geo_updated",
+  RADAR_SCAN_COMPLETED: "radar:scan_completed",
 
   // Dashboard
   DASHBOARD_REFRESH: "dashboard:refresh",
@@ -106,6 +108,13 @@ export const APP_EVENTS = {
   // System
   NOTIFICATIONS_REFRESH: "notifications:refresh",
   ME_REFRESH: "me:refresh",
+
+  // Wallet security
+  WALLET_INTEGRITY_ALERT: "wallet:integrity_alert",
+
+  // Identity / Contacts
+  IDENTITY_ACTIVATED: "identity:activated",
+  CONTACTS_SYNCED: "contacts:synced",
 
   // Watchdog / Repair
   WATCHDOG_ALERT: "watchdog:alert",
