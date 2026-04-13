@@ -34,7 +34,7 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 
 ## 25 Critical System Layers (`src/lib/systems/`)
 All layers import from canonical `platform-bus`, emit colon-notation events, zero `as any` casts, zero duplicates.
-- **L1 Design System**: Spacing/typography/color/elevation/animation/grid/radius tokens, component registry, breakpoints
+- **L1 Design System**: Spacing/typography/color/elevation/animation/grid/radius tokens, component registry, breakpoints. Design system barrel: `src/components/ui/design-system.ts` — canonical exports for AppCard, AppText, AppPrice, AppChip, AppSection, AppToolbar, AppBottomBar, Badge, StatCard, EmptyState, ErrorState, LoadingState, PageShell, ResponsiveGrid, SmartActionCard, SectionHeader, Skeleton*, StatusChip, ListRow, SectionBlock, QuickActionGrid. Design tokens: `src/config/ui.ts` exports COLOR (CSS-var backed brand+semantic), ACCENT (10-color palette), LINE_HEIGHT, DENSITY, TEXT, ICON, BUTTON, CARD, etc. CSS: `src/index.css` (4186+ lines) — full card type system, text clamping, grid system, responsive utilities, unified harmony layer. ESLint: `AppPageShell` deprecated (warns), direct Supabase/localStorage access forbidden.
 - **L2 Navigation System**: 5 pillars (dashboard/radar/orbit/wallet/me), deep link patterns, quick actions, transition history
 - **L3 Permission Framework**: 10 roles, 13 permissions, 11 scopes, ownership rules per resource, visibility levels
 - **L4 Pricing Engine**: Commission tables per vertical+seller type, delivery fees, tax rates (14 countries), loyalty discounts, refund calculator

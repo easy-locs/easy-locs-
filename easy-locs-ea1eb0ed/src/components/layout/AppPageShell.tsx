@@ -1,15 +1,16 @@
+import { PageShell } from "@/components/ui/page-shell";
+
+/**
+ * @deprecated Use `PageShell` from `@/components/ui/page-shell` instead.
+ */
 export function AppPageShell(props: {
   title: string;
   children: React.ReactNode;
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 p-4 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">{props.title}</h1>
-        {props.actions}
-      </div>
+    <PageShell title={props.title} actions={props.actions} maxWidth="xl">
       {props.children}
-    </div>
+    </PageShell>
   );
 }

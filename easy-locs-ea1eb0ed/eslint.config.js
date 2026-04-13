@@ -53,6 +53,11 @@ export default tseslint.config(
               message:
                 "Direct Supabase client import is forbidden. Use `import { db } from '@/services/db'` instead.",
             },
+            {
+              group: ["@/components/layout/AppPageShell"],
+              message:
+                "AppPageShell is deprecated. Use `PageShell` from '@/components/ui/page-shell' instead.",
+            },
           ],
         },
       ],

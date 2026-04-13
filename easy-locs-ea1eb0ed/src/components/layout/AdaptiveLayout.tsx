@@ -121,14 +121,14 @@ export function AdaptiveModal({ children, open, onClose, title, maxWidth = 560 }
         display: "flex",
         alignItems: isFullscreen ? "stretch" : "center",
         justifyContent: "center",
-        background: isFullscreen ? "transparent" : "rgba(0,0,0,0.5)",
+        background: isFullscreen ? "transparent" : "hsl(var(--foreground) / 0.5)",
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="bg-card text-card-foreground"
         style={{
-          background: "#fff",
-          borderRadius: isFullscreen ? 0 : 12,
+          borderRadius: isFullscreen ? 0 : "var(--card-radius)",
           width: isFullscreen ? "100%" : `min(${maxWidth}px, 90vw)`,
           height: isFullscreen ? "100%" : "auto",
           maxHeight: isFullscreen ? "100%" : "85vh",
@@ -139,9 +139,9 @@ export function AdaptiveModal({ children, open, onClose, title, maxWidth = 560 }
       >
         {title && (
           <div
+            className="border-b border-border"
             style={{
               padding: "16px 20px",
-              borderBottom: "1px solid #e5e7eb",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -151,12 +151,12 @@ export function AdaptiveModal({ children, open, onClose, title, maxWidth = 560 }
             <h2 style={{ margin: 0, fontSize: ctx.isMobile ? 18 : 20, fontWeight: 600 }}>{title}</h2>
             <button
               onClick={onClose}
+              className="text-muted-foreground hover:text-foreground transition-colors"
               style={{
                 background: "none",
                 border: "none",
                 fontSize: 20,
                 cursor: "pointer",
-                color: "#6b7280",
                 padding: 4,
               }}
             >
@@ -200,20 +200,17 @@ export function AdaptiveList<T>({
     return (
       <div style={{ width: "100%", overflow: "auto" }}>
         {renderHeader && (
-          <div style={{
+          <div className="bg-muted/30 border-b border-border text-muted-foreground" style={{
             display: "flex",
             padding: "8px 16px",
-            background: "#f9fafb",
-            borderBottom: "1px solid #e5e7eb",
             fontWeight: 600,
             fontSize: 13,
-            color: "#6b7280",
           }}>
             {renderHeader()}
           </div>
         )}
         {items.map((item, i) => (
-          <div key={i} style={{ borderBottom: "1px solid #f3f4f6" }}>
+          <div key={i} className="border-b border-border/20">
             {renderRow(item, i)}
           </div>
         ))}
@@ -247,14 +244,13 @@ export function AdaptiveNav({ items, onSelect }: AdaptiveNavProps) {
 
   return (
     <nav
+      className="bg-background border-t border-border"
       style={{
         position: "fixed",
         bottom: 0,
         left: 0,
         right: 0,
         height: 72,
-        background: "#fff",
-        borderTop: "1px solid #e5e7eb",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-around",
@@ -267,6 +263,7 @@ export function AdaptiveNav({ items, onSelect }: AdaptiveNavProps) {
         <button
           key={item.id}
           onClick={() => onSelect(item.id)}
+          className={item.active ? "text-accent" : "text-muted-foreground"}
           style={{
             display: "flex",
             flexDirection: "column",
@@ -276,7 +273,6 @@ export function AdaptiveNav({ items, onSelect }: AdaptiveNavProps) {
             border: "none",
             cursor: "pointer",
             padding: "8px 12px",
-            color: item.active ? "hsl(38 65% 56%)" : "#9ca3af",
             position: "relative",
             minWidth: 44,
             minHeight: 44,
@@ -288,12 +284,11 @@ export function AdaptiveNav({ items, onSelect }: AdaptiveNavProps) {
           </span>
           {item.badge && item.badge > 0 && (
             <span
+              className="bg-destructive text-destructive-foreground"
               style={{
                 position: "absolute",
                 top: 4,
                 right: 4,
-                background: "#ef4444",
-                color: "#fff",
                 fontSize: 9,
                 fontWeight: 700,
                 borderRadius: 8,
