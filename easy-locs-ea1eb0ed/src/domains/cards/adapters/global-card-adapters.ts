@@ -6,8 +6,8 @@ import { useMemo } from "react";
 import { buildCardContract, type CardContract } from "../card-contract";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletStore } from "@/stores/walletStore";
-import { useOrbitProfileStore } from "@/stores/orbitStore";
-import { useNotificationV2Store } from "@/stores/notificationV2Store";
+import { useOrbitProfileStore } from "@/stores/orbit-profile.store";
+import { useNotificationStore } from "@/stores/notification.store";
 
 // ── Wallet Balance Card — REACTIVE via zustand hook selector ──
 export function useWalletBalanceCard(): CardContract<{ balance: number; currency: string }> {
@@ -77,8 +77,8 @@ export function useOrbitRecentChatsCard(): CardContract<{
 export function useNotificationsBadgeCard(): CardContract<{ count: number }> {
   const { user } = useAuth();
   // Reactive subscription — re-renders when unreadCount changes
-  const unreadCount = useNotificationV2Store((s) => s.unreadCount);
-  const hydrated = useNotificationV2Store((s) => s.hydrated);
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
+  const hydrated = useNotificationStore((s) => s.hydrated);
 
   return useMemo(
     () =>

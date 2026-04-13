@@ -12,7 +12,7 @@ import { useI18n } from "@/lib/i18n";
 import { useUnifiedSearchStore } from "@/lib/search-engine/search-store";
 import { saveToHistory } from "@/lib/search-engine/search-suggestions";
 import { useLocationStore } from "@/stores/locationStore";
-import { useV2AuthStore } from "@/stores/v2AuthStore";
+import { useAuthStore } from "@/stores/auth.store";
 import type { AutocompleteGroup, SearchResult, SearchSuggestion } from "@/lib/search-engine/search-types";
 
 type Variant = "hero" | "compact" | "fullscreen";
@@ -49,7 +49,7 @@ export default function UnifiedSearchBar({
   const search = useUnifiedSearchStore((s) => s.search);
   const setFilters = useUnifiedSearchStore((s) => s.setFilters);
 
-  const user = useV2AuthStore((s) => s.user);
+  const user = useAuthStore((s) => s.user);
   const location = useLocationStore((s) => s.currentLocation);
   const { t } = useI18n();
 

@@ -6,7 +6,7 @@ import { Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useEffect, lazy, Suspense } from "react";
-import { useNotificationV2Store } from "@/stores/notificationV2Store";
+import { useNotificationStore } from "@/stores/notification.store";
 
 
 const CartSheet = lazy(() => import("@/components/cart/CartSheet"));
@@ -24,7 +24,7 @@ export default function OrbitAppShell({ children }: { children?: React.ReactNode
 
   useEffect(() => {
     if (!user?.id) return;
-    const cleanup = useNotificationV2Store.getState().startRealtime(user.id);
+    const cleanup = useNotificationStore.getState().startRealtime(user.id);
     return () => { if (typeof cleanup === "function") cleanup(); };
   }, [user?.id]);
 

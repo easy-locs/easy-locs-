@@ -9,7 +9,7 @@
 export { useNotificationsCenter } from "@/hooks/useNotificationsCenter";
 
 // ── Notification store ──
-export { useNotificationV2Store } from "@/stores/notificationV2Store";
+export { useNotificationStore } from "@/stores/notification.store";
 
 // ── Notification dispatcher ──
 export { sendInAppNotification } from "@/lib/notifications/notification-dispatcher";

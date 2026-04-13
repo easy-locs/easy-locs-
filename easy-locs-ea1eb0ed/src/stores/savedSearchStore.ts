@@ -6,7 +6,7 @@
  */
 import { db } from "@/services/db";
 import { create } from "zustand";
-import { useV2AuthStore } from "@/stores/v2AuthStore";
+import { useAuthStore } from "@/stores/auth.store";
 import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import type { ListingSearchFilters } from "@/lib/types/search";
 import {
@@ -29,7 +29,7 @@ export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
   loading: false,
 
   hydrate: async () => {
-    const user = useV2AuthStore.getState().user;
+    const user = useAuthStore.getState().user;
     if (!user) return;
 
     set({ loading: true });
@@ -39,7 +39,7 @@ export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
   },
 
   saveSearch: async (name, filters) => {
-    const user = useV2AuthStore.getState().user;
+    const user = useAuthStore.getState().user;
     const orbit = getOrbitIdentity();
     if (!user || !orbit) return;
 

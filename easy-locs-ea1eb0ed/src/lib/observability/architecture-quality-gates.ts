@@ -14,7 +14,7 @@ export function validateSingleSourceOfTruth(): QualityGateResult[] {
     gate: "identity.ssot",
     passed: true,
     severity: "info",
-    message: "Identity flows through v2AuthStore + AuthContext",
+    message: "Identity flows through auth.store (useAuthStore) + AuthContext",
   });
 
   results.push({

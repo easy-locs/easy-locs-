@@ -4,11 +4,11 @@
  *
  * SSOT rules enforced here:
  *   - walletBalance → reads useWalletStore first, DB fallback when store not hydrated
- *   - pendingNotifications → reads useNotificationV2Store first, triggers hydration if needed
+ *   - pendingNotifications → reads useNotificationStore first, triggers hydration if needed
  */
 import { db } from "@/services/db";
 import { useWalletStore } from "@/stores/walletStore";
-import { useNotificationV2Store } from "@/stores/notificationV2Store";
+import { useNotificationStore } from "@/stores/notification.store";
 import type { CommunicationState, BusinessState, NotificationCountState, WalletCountState } from "./types";
 
 async function safeCount(table: string, build: (q: any) => any): Promise<number> {
@@ -68,12 +68,12 @@ export async function fetchBusinessCounters(orgId?: string): Promise<BusinessSta
 }
 
 /**
- * SSOT: reads useNotificationV2Store (notifications_v2 table).
+ * SSOT: reads useNotificationStore (notifications_v2 table).
  * Falls back to triggering hydration if store not yet populated.
  * Previously read app_notifications — corrected to canonical table.
  */
 export async function fetchNotificationCount(userId: string): Promise<NotificationCountState> {
-  const store = useNotificationV2Store.getState();
+  const store = useNotificationStore.getState();
 
   // If store is already hydrated, return its count directly (no DB round-trip)
   if ((store as any).hydrated || store.notifications?.length > 0) {

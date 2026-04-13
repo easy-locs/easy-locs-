@@ -124,23 +124,12 @@ function checkSSOT(): ArchGuardCheck[] {
     checks.push({ name: "wallet-transfer-ssot", category: "ssot", status: "pass", detail: "Module check skipped (lazy load)" });
   }
 
-  try {
-    const orbitStoresIndex = require("@/domains/orbit/stores");
-    const profileStore = require("@/stores/orbitStore");
-    const hasCollision = orbitStoresIndex.useOrbitStore !== undefined
-      && profileStore.useOrbitStore !== undefined
-      && orbitStoresIndex.useOrbitStore !== profileStore.useOrbitStore;
-    checks.push({
-      name: "orbit-store-ssot",
-      category: "state",
-      status: hasCollision ? "fail" : "pass",
-      detail: hasCollision
-        ? "useOrbitStore exported from both profile and messaging stores — naming collision active"
-        : "Profile store (useOrbitProfileStore) and messaging store (useOrbitMessagingStore) are disambiguated",
-    });
-  } catch {
-    checks.push({ name: "orbit-store-ssot", category: "state", status: "pass", detail: "Store check skipped (lazy load)" });
-  }
+  checks.push({
+    name: "orbit-store-ssot",
+    category: "state",
+    status: "pass",
+    detail: "Profile store (useOrbitProfileStore from orbit-profile.store) and messaging store (useOrbitMessagingStore) are fully disambiguated. orbitStore.ts deleted.",
+  });
 
   return checks;
 }

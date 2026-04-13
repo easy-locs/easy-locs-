@@ -1,13 +1,13 @@
 /**
  * app-notification-service — SSOT adapter.
- * All writes delegate to the canonical notification-service (notifications-v2 path).
+ * All writes delegate to the canonical notification-service (notification-service path).
  * Do NOT add direct Supabase calls here; use insertNotification() only.
  */
 import {
   insertNotification,
   markAsRead,
   dismissNotification as svcDismiss,
-} from "@/lib/notifications-v2/notification-service";
+} from "@/lib/notification-service/notification-service";
 
 export type AppNotificationInput = {
   userId: string;

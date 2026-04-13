@@ -8,7 +8,7 @@ import { useOrbitSessionInit } from "@/hooks/useOrbitSessionInit";
 import { useRealtimeHub } from "@/hooks/useRealtimeHub";
 import { useAppHealthCheck } from "@/hooks/useAppHealthCheck";
 import { SystemHealthBanner } from "@/components/system/SystemHealthBanner";
-import { useNotificationV2Store } from "@/stores/notificationV2Store";
+import { useNotificationStore } from "@/stores/notification.store";
 
 /** Registers device session + suspicious login detection */
 export const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
@@ -21,7 +21,7 @@ export const NotificationsRealtimeGuard = () => {
   const { user } = useAuth();
   useEffect(() => {
     if (!user?.id) return;
-    const store = useNotificationV2Store.getState();
+    const store = useNotificationStore.getState();
     store.hydrate(user.id);
     store.startRealtime(user.id);
     return () => store.stopRealtime();

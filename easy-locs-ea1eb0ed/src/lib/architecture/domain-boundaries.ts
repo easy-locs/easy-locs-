@@ -22,7 +22,7 @@ export const DOMAIN_BOUNDARIES: DomainBoundaryRule[] = [
   },
   {
     domain: "identity",
-    allowed_imports: ["@/lib/auth", "@/stores/v2AuthStore", "@/lib/contacts", "@/lib/control-plane", "@/lib/observability", "@/lib/platform-bus"],
+    allowed_imports: ["@/lib/auth", "@/stores/auth.store", "@/lib/contacts", "@/lib/control-plane", "@/lib/observability", "@/lib/platform-bus"],
     forbidden_imports: [],
     owns: ["src/lib/auth/", "src/components/auth/", "src/lib/contacts/"],
   },

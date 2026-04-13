@@ -2,7 +2,7 @@ import type { AuditResult, AuditViolation } from "./types";
 
 const EXEMPT_PATTERNS = [
   /contexts\/Auth/,
-  /stores\/v2AuthStore/,
+  /stores\/auth\.store/,
   /lib\/i18n\.tsx/,
   /lib\/auth\//,
   /lib\/realtime/,

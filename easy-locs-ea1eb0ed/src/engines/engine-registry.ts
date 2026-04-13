@@ -22,6 +22,9 @@ import { FullStackLinkageOrchEngine } from "./infra/full-stack-linkage-orch-engi
 import { PublishGateFoodOrchEngine } from "./gates/publish-gate-food-orch-engine";
 import { PublishGateGroceryOrchEngine } from "./gates/publish-gate-grocery-orch-engine";
 import { PublishGateServiceOrchEngine } from "./gates/publish-gate-service-orch-engine";
+import { FlowIntegrityEngine } from "./governance/flow-integrity-engine";
+import { GovernanceAuditEngine } from "./governance/governance-audit-engine";
+import { registerCanonicalResolutions } from "@/lib/canonical-resolution-guard";
 
 let registered = false;
 
@@ -47,6 +50,8 @@ export function registerAllEngines(): void {
     new PublishGateFoodOrchEngine(),
     new PublishGateGroceryOrchEngine(),
     new PublishGateServiceOrchEngine(),
+    new FlowIntegrityEngine(),
+    new GovernanceAuditEngine(),
   ]);
 }
 
@@ -64,6 +69,7 @@ export function bootEngineSystem(): () => void {
   const teardownUiBridge = installUiRepairBridge();
   registerAllEngines();
   engineOrchestrator.startAll();
+  registerCanonicalResolutions().catch(() => {});
 
   let disposed = false;
 

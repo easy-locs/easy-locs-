@@ -7,7 +7,7 @@ import {
   insertNotification,
   markAsRead,
   markAllAsRead,
-} from "@/lib/notifications-v2/notification-service";
+} from "@/lib/notification-service/notification-service";
 
 export type NotifyInput = {
   userId: string;

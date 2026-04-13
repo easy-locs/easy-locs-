@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { uploadFile, getPublicFileUrl } from "@/lib/storage/uploadFile";
 import { db } from "@/services/db";
 import { requireOrbitIdentity } from "@/hooks/useOrbitIdentity";
-import { useOrbitProfileStore } from "@/stores/orbitStore";
+import { useOrbitProfileStore } from "@/stores/orbit-profile.store";
 import { propagateIdentityChange } from "@/families/identity/identity-propagation";
 
  

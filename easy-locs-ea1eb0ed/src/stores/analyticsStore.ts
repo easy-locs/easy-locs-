@@ -1,9 +1,8 @@
 import { create } from "zustand";
 import { db } from "@/services/db";
-import { useV2AuthStore } from "@/stores/v2AuthStore";
+import { useAuthStore } from "@/stores/auth.store";
 import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
- 
 
 
 type ListingViewRow = {
@@ -43,7 +42,7 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
   loading: false,
 
   trackListingView: async (listingId, source) => {
-    const user = useV2AuthStore.getState().user;
+    const user = useAuthStore.getState().user;
     const orbit = getOrbitIdentity();
 
     const row = {

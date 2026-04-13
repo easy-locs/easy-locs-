@@ -1,6 +1,6 @@
 /**
  * notification-reader — SSOT adapter (read path).
- * All reads delegate to the canonical notification-service (notifications-v2 path).
+ * All reads delegate to the canonical notification-service (notification-service path).
  * Do NOT add direct Supabase calls here; use getUserNotifications / markAsRead / etc.
  */
 import { reportHealth } from "@/lib/runtime/health-aggregator";
@@ -9,7 +9,7 @@ import {
   markAsRead,
   dismissNotification as svcDismiss,
   markAllAsRead,
-} from "@/lib/notifications-v2/notification-service";
+} from "@/lib/notification-service/notification-service";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;

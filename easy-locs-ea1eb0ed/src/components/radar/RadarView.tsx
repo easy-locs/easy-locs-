@@ -24,7 +24,7 @@ import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
 import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
-import { useV2AuthStore } from "@/stores/v2AuthStore";
+import { useAuthStore } from "@/stores/auth.store";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import RadarPlaceSearch from "@/components/radar/RadarPlaceSearch";
 import { RadarOpportunityFeed } from "@/components/radar/RadarOpportunityFeed";
@@ -109,7 +109,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const [showPromotedOnly, setShowPromotedOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [layers, setLayers] = useState<LayerToggles>(DEFAULT_LAYERS);
-  const currentUser = useV2AuthStore((s) => s.user);
+  const currentUser = useAuthStore((s) => s.user);
 
   const selectedPlace = useRadarPlaceStore((s) => s.selectedPlace);
 

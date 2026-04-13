@@ -1,10 +1,10 @@
 /**
- * useCanonicalNotificationsBridge — reads from notificationV2Store.
+ * useCanonicalNotificationsBridge — reads from notification.store (useNotificationStore).
  * No duplicate realtime channels or platformBus listeners.
  */
-import { useNotificationV2Store } from "@/stores/notificationV2Store";
+import { useNotificationStore } from "@/stores/notification.store";
 
 export function useCanonicalNotificationsBridge() {
-  const unreadCount = useNotificationV2Store((s) => s.unreadCount);
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
   return { canonicalNotificationCount: unreadCount };
 }

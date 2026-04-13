@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useV2AuthStore } from "@/stores/v2AuthStore";
+import { useAuthStore } from "@/stores/auth.store";
 import {
   getActiveAddressContext,
   getUserSavedAddresses,
@@ -29,7 +29,7 @@ interface UseCanonicalAddressResult {
 }
 
 export function useCanonicalAddress(contextType: AddressContextType = "global"): UseCanonicalAddressResult {
-  const userId = useV2AuthStore((s) => s.user?.id);
+  const userId = useAuthStore((s) => s.user?.id);
   const [activeContext, setActiveContext] = useState<ActiveAddressContext | null>(null);
   const [savedAddresses, setSavedAddresses] = useState<UserSavedAddress[]>([]);
   const [loading, setLoading] = useState(true);
