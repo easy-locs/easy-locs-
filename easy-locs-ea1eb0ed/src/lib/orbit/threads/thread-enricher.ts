@@ -1,6 +1,6 @@
 import { batchLookupProfiles } from "@/lib/orbit/orbit-data-gateway";
 import { resolveDisplayName, resolveAvatar } from "@/domains/orbit/resolvers";
-import { resolveDirectPeer, createPeerCache, type PeerCacheInstance } from "@/lib/orbit/resolveDirectPeer";
+import { resolveDirectPeer, type PeerCacheInstance } from "@/lib/orbit/resolveDirectPeer";
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { db } from "@/services/db";
 
