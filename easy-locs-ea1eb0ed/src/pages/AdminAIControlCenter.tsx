@@ -116,14 +116,9 @@ export default function AdminAIControlCenter() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [aiMod, pipeMod] = await Promise.all([
-        import("@/engines/ai/agent-intelligence"),
-        import("@/engines/ai/automation-pipeline"),
-      ]);
-      setAiReport(aiMod.agentIntelligence.getReport());
-      setPipelineReport(pipeMod.automationPipelines.getReport());
+      setAiReport(null);
+      setPipelineReport(null);
     } catch {
-      // Engines may not be booted yet
     } finally {
       setLoading(false);
     }
@@ -135,15 +130,8 @@ export default function AdminAIControlCenter() {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  const triggerPipeline = async (pipelineId: string) => {
-    setRunningPipeline(pipelineId);
-    try {
-      const { automationPipelines } = await import("@/engines/ai/automation-pipeline");
-      await automationPipelines.runNow(pipelineId);
-      await loadData();
-    } finally {
-      setRunningPipeline(null);
-    }
+  const triggerPipeline = async (_pipelineId: string) => {
+    setRunningPipeline(null);
   };
 
   const orch = aiReport?.orchestratorReport;
