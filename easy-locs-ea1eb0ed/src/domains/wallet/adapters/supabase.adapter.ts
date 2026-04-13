@@ -35,8 +35,17 @@ export const walletAccountAdapter: WalletRepository = {
   },
 
   async updateBalance(accountId: string, available: number, escrow: number): Promise<void> {
-    log.info("balance_update", { accountId, available, escrow });
-    // Balance updates go through ledger entries, not direct writes
+    // GUARD: Direct balance writes are NOT permitted from the client.
+    // All balance mutations must go through wallet-ops edge function or ledger entries
+    // to preserve atomicity, audit trail, and server-side security guards.
+    // If you need to update a balance, use walletOps("debit" | "credit") via wallet-engine.ts.
+    log.warn("balance_update_rejected", { accountId, available, escrow,
+      reason: "Direct client-side balance writes are forbidden — route through ledger or edge function" });
+    throw new Error(
+      `[wallet] updateBalance is not supported on the client. ` +
+      `Balance changes must go through the wallet-ops edge function or a ledger entry. ` +
+      `Account: ${accountId}`
+    );
   },
 };
 
@@ -84,8 +93,19 @@ export const paymentGateway: PaymentGatewayPort = {
   },
 
   async confirmPayment(intentId: string): Promise<boolean> {
-    log.info("confirm_payment", { intentId });
-    return true; // Stripe webhook handles actual confirmation
+    // GUARD: Client-side payment confirmation is NOT supported.
+    // Stripe payment intent confirmation is handled exclusively by server-side Stripe webhooks
+    // which post to the wallet-ops edge function. The client never directly confirms an intent.
+    // Callers should NOT rely on this method — listen to webhook-triggered events instead
+    // (e.g. wallet:payment_success, commerce:payment_settled).
+    log.warn("confirm_payment_blocked", { intentId,
+      reason: "Client cannot confirm server-side Stripe intents — confirmation is webhook-only" });
+    throw new Error(
+      `[wallet] confirmPayment is not supported on the client. ` +
+      `Payment confirmation is handled by Stripe webhooks (server-side only). ` +
+      `Listen for wallet:payment_success or commerce:payment_settled events instead. ` +
+      `Intent: ${intentId}`
+    );
   },
 };
 
@@ -101,20 +121,52 @@ export const walletSecurity: WalletSecurityPort = {
   },
 
   async assessRisk(userId: string, amount: number) {
-    // Simple risk assessment — real engine is in edge functions
+    // CLIENT-SIDE PRE-SCREENING ONLY.
+    // This provides a fast, optimistic risk score to gate the UI (e.g. show MFA prompt early).
+    // The authoritative risk decision is made server-side in the wallet-ops edge function,
+    // which runs the full fraud-detection pipeline. Never use this score to bypass security.
+    // Thresholds (in smallest currency unit, e.g. fils/centimes):
+    //   > 500,000 → high risk, require MFA
+    //   > 100,000 → medium risk
+    //   ≤ 100,000 → low risk
+    const score = amount > 500_000 ? 70 : amount > 100_000 ? 40 : 10;
+    log.info("assess_risk_client", { userId, amount, score, note: "client-side pre-screen only" });
     return {
-      score: amount > 500000 ? 70 : amount > 100000 ? 40 : 10,
-      requireMfa: amount > 500000,
+      score,
+      requireMfa: amount > 500_000,
     };
   },
 };
 
+// Validated currencies supported by the platform (must match atoms/currency-config).
+// XOF is NOT in this list — its presence as a ?? fallback was a bug.
+// To add a new currency, update this set AND the currency atoms/config.
+const SUPPORTED_CURRENCIES = new Set(["AED", "USD", "EUR", "SAR", "GBP"]);
+
+function assertCurrency(currency: string | undefined | null, context: string, rowId?: string): string {
+  if (!currency) {
+    throw new Error(
+      `[wallet] ${context} row ${rowId ?? "unknown"} has no currency — cannot map. ` +
+      `Supported currencies: ${[...SUPPORTED_CURRENCIES].join(", ")}`
+    );
+  }
+  if (!SUPPORTED_CURRENCIES.has(currency)) {
+    throw new Error(
+      `[wallet] ${context} row ${rowId ?? "unknown"} has unsupported currency "${currency}". ` +
+      `Supported currencies: ${[...SUPPORTED_CURRENCIES].join(", ")}. ` +
+      `To add a new currency, update SUPPORTED_CURRENCIES in supabase.adapter.ts and the currency atoms.`
+    );
+  }
+  return currency;
+}
+
 // ── Mappers ──
 function mapWalletAccount(row: any): WalletAccount {
+  const currency = assertCurrency(row.currency, "wallet_accounts", row.id);
   return {
     id: row.id,
     ownerUserId: row.owner_user_id,
-    currency: row.currency ?? "XOF",
+    currency,
     availableBalance: row.available_balance ?? row.balance ?? 0,
     escrowBalance: row.escrow_balance ?? 0,
     pendingBalance: row.pending_balance ?? 0,
@@ -123,12 +175,13 @@ function mapWalletAccount(row: any): WalletAccount {
 }
 
 function mapLedgerEntry(row: any): LedgerEntry {
+  const currency = assertCurrency(row.currency, "wallet_ledger_entries", row.id);
   return {
     id: row.id,
     walletAccountId: row.wallet_account_id,
     type: row.type ?? "credit",
     amount: row.amount ?? 0,
-    currency: row.currency ?? "XOF",
+    currency,
     reference: row.reference ?? "",
     description: row.description,
     createdAt: row.created_at,

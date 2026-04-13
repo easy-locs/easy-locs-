@@ -82,9 +82,9 @@ export const MASTER_SCHEMA_REGISTRY: SchemaRegistryEntry[] = [
     relations: ["All domains (emitters)", "proof_record (consumer)"],
     required_fields: ["event_id", "event_name", "domain", "actor_id", "target_id", "trace_id"],
     fields_to_remove: [],
-    duplicates_detected: ["APP_EVENTS (platform/events.ts) vs PLATFORM_EVENTS (platform-bus/index.ts) vs PlatformEventType — 3 event constant sources"],
-    conflicts_detected: ["Dot vs colon notation split across the codebase"],
-    verdict: "MERGE",
+    duplicates_detected: [],
+    conflicts_detected: [],
+    verdict: "KEEP",
   },
   {
     name: "listing",

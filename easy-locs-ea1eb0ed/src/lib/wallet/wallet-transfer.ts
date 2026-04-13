@@ -12,6 +12,7 @@ import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runti
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackPropagation } from "@/lib/runtime/propagation-validator";
+import { APP_EVENTS } from "@/lib/platform/events";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -89,13 +90,13 @@ export async function executeWalletTransfer(input: TransferInput): Promise<Trans
 
     completeStep(flow, edgeFnStep, { transferId });
 
-    platformBus.emit("wallet:transfer_completed", {
+    platformBus.emit(APP_EVENTS.WALLET_TRANSFER_COMPLETED, {
       transactionId: transferId, amount: input.amount, currency: input.currency,
     }, "wallet");
 
     trackPropagation({
       flowId: flow.flowId, domain: "wallet", action: "transfer",
-      dbWriteSuccess: true, eventEmitted: "wallet:transfer_completed", cacheInvalidated: ["wallet-balance"],
+      dbWriteSuccess: true, eventEmitted: APP_EVENTS.WALLET_TRANSFER_COMPLETED, cacheInvalidated: ["wallet-balance"],
     });
 
     reportHealth("wallet", "ok", flow.totalLatencyMs);
