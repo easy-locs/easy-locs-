@@ -515,11 +515,6 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("pm:", () => refreshModule("business"))
   );
 
-  // ── Deal events → refresh business module ──
-  unsubs.push(
-    platformBus.onPrefix("deal:", () => refreshModule("business"))
-  );
-
   // ── Orbit communication events → refresh communication module ──
   unsubs.push(
     platformBus.onPrefix("orbit:", () => refreshModule("communication"))
@@ -542,12 +537,12 @@ export function installPlatformReactions(): () => void {
   // One-way only: dot→colon. Colon events are NOT re-emitted as dot (prevents double-fire).
   const NOTATION_BRIDGE: Record<string, string> = {
     "dashboard.refresh": "dashboard:refresh",
-    "dashboard.counters.refresh": "dashboard:counters_refresh",
     "wallet.payment.completed": "wallet:payment_completed",
     "wallet.payment.success": "wallet:payment_success",
     "wallet.payment.failed": "wallet:payment_failed",
     "wallet.transaction.created": "wallet:transaction_created",
     "wallet.loaded": "wallet:loaded",
+    "wallet.top_up": "wallet:top_up",
     "orbit.message.sent": "orbit:message_sent",
     "orbit.message.received": "orbit:message_received",
     "orbit.call.started": "orbit:call_started",
@@ -555,17 +550,6 @@ export function installPlatformReactions(): () => void {
     "booking.created": "marketplace:booking_created",
     "booking.confirmed": "marketplace:booking_confirmed",
     "marketplace.merchant.live": "marketplace:provider_went_live",
-    "marketplace.contact.opened": "marketplace:contact_opened",
-    "wallet.top_up": "wallet:top_up",
-    "property.unit.created": "property:unit_created",
-    "listing.created": "listing:created",
-    "listing.updated": "listing:updated",
-    "listing.published": "listing:published",
-    "rent.payment.created": "rent:payment_created",
-    "rent.payment.required": "rent:payment_required",
-    "rent.payment.paid": "rent:payment_paid",
-    "rent.paid": "rent:paid",
-    "rent.partial_payment": "rent:partial_payment",
   };
 
   for (const [dotEvent, colonEvent] of Object.entries(NOTATION_BRIDGE)) {
