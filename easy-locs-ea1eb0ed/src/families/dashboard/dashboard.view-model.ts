@@ -12,6 +12,14 @@ import { useLivingPage } from "@/hooks/useLivingPage";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { SmartCategory, SmartHero } from "@/lib/smart-home-engine";
 import type { ContextBanner } from "@/lib/context-banner/context-banner-engine";
+import type { HomeShopPreview } from "@/hooks/useHomeSections";
+
+export interface DashboardSections {
+  trending: HomeShopPreview[];
+  bestRated: HomeShopPreview[];
+  newest: HomeShopPreview[];
+  nearYou: HomeShopPreview[];
+}
 
 export interface DashboardViewModel {
   // Hero
@@ -27,13 +35,8 @@ export interface DashboardViewModel {
   // Categories
   categories: SmartCategory[];
 
-  // Sections (data-driven)
-  sections: {
-    trending: any[];
-    bestRated: any[];
-    newest: any[];
-    nearYou: any[];
-  };
+  // Sections (data-driven, fully typed)
+  sections: DashboardSections;
 
   // Context Banners
   contextBanners: ContextBanner[];
@@ -44,6 +47,13 @@ export interface DashboardViewModel {
   onLocationTap: () => void;
   onAddressSheetChange: (open: boolean) => void;
 }
+
+const EMPTY_SECTIONS: DashboardSections = {
+  trending: [],
+  bestRated: [],
+  newest: [],
+  nearYou: [],
+};
 
 export function useDashboardViewModel(): DashboardViewModel {
   const { currentLocation, isFallback } = useLocationSelectors();
@@ -63,7 +73,7 @@ export function useDashboardViewModel(): DashboardViewModel {
         .then((res) => {
           const place = res?.features?.[0];
           if (place) {
-            const cityCtx = place.context?.find((c: any) => c.id?.startsWith("place"));
+            const cityCtx = place.context?.find((c: { id?: string }) => c.id?.startsWith("place"));
             const cityName = cityCtx?.text || place.text;
             if (cityName) {
               setCity(cityName);
@@ -81,7 +91,7 @@ export function useDashboardViewModel(): DashboardViewModel {
 
   // ── Sections from canonical pipeline ──
   const { data: rawSections } = useHomeSections();
-  const sections = rawSections ?? { trending: [], bestRated: [], newest: [], nearYou: [] };
+  const sections: DashboardSections = rawSections ?? EMPTY_SECTIONS;
 
   useEffect(() => {
     if (rawSections) {

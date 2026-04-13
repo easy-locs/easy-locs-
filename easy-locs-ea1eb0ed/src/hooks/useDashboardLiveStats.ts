@@ -11,6 +11,8 @@ export interface DashboardLiveStats {
   walletCurrency: string;
   unreadMessages: number;
   activeOrders: number;
+  /** Whether the current user has uploaded at least one identity/profile document. */
+  hasDocuments: boolean;
   loading: boolean;
 }
 
@@ -32,11 +34,27 @@ export function useDashboardLiveStats(): DashboardLiveStats {
     },
   });
 
+  // Check if the user has at least one profile/identity document uploaded.
+  // property_documents is the canonical user-linked document table (user_id FK).
+  const { data: hasDocuments = false, isLoading: docsLoading } = useQuery({
+    queryKey: ["dashboard-live-stats", "has-documents", user?.id],
+    enabled: !!user?.id,
+    staleTime: 5 * 60_000, // 5 min — documents change infrequently
+    queryFn: async () => {
+      const { count } = await db("property_documents")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user?.id)
+        .limit(1);
+      return (count ?? 0) > 0;
+    },
+  });
+
   return {
     walletBalance: balance,
-    walletCurrency: currency || "AED",
+    walletCurrency: currency || "EUR",
     unreadMessages,
     activeOrders,
-    loading: walletLoading || ordersLoading,
+    hasDocuments,
+    loading: walletLoading || ordersLoading || docsLoading,
   };
 }

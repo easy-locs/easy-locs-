@@ -53,6 +53,44 @@ export function projectContextBanners(
 const ACTIVE_ORDER_STATUSES = ["paid", "confirmed", "preparing", "driver_search", "driver_assigned", "on_the_way"] as const;
 const FAILED_ORDER_STATUSES = ["cancelled", "disputed"] as const;
 
+/** Minimal shape of an order row used by the ops dashboard projection. */
+export interface OpsOrderRow {
+  status: string;
+  payment_status?: string | null;
+  total_amount?: number | string | null;
+}
+
+/** Minimal shape of a merchant row used by ops dashboard projection. */
+export interface OpsMerchantRow {
+  is_active?: boolean | null;
+  is_open?: boolean | null;
+  promo_active?: boolean | null;
+}
+
+/** Minimal shape of a support ticket row. */
+export interface OpsTicketRow {
+  status: string;
+}
+
+/** Minimal shape of a driver row used by super dashboard. */
+export interface OpsDriverRow {
+  is_online?: boolean | null;
+  is_available?: boolean | null;
+}
+
+/** Minimal shape of a ledger entry row. */
+export interface OpsLedgerRow {
+  direction: "in" | "out" | string;
+  amount?: number | string | null;
+}
+
+/** Minimal shape of a driver profile row. */
+export interface DriverProfileRow {
+  is_online?: boolean | null;
+  is_available?: boolean | null;
+  current_status?: string | null;
+}
+
 export interface OpsMetricModel {
   title: string;
   value: string;
@@ -63,9 +101,10 @@ export interface OpsDashboardModel {
 }
 
 export function projectOpsDashboard(
-  orders: any[],
-  merchants: any[],
-  tickets: any[],
+  orders: OpsOrderRow[],
+  merchants: OpsMerchantRow[],
+  tickets: OpsTicketRow[],
+  currency = "EUR",
 ): OpsDashboardModel {
   const activeMerchants = merchants.filter((m) => m.is_active).length;
   const openTickets = tickets.filter((t) => t.status === "open").length;
@@ -83,7 +122,7 @@ export function projectOpsDashboard(
       { title: "Active Orders", value: String(activeOrders) },
       { title: "Failed Orders", value: String(failedOrders) },
       { title: "Open Tickets", value: String(openTickets) },
-      { title: "Gross Volume", value: `${gross.toFixed(0)} AED` },
+      { title: "Gross Volume", value: `${gross.toFixed(0)} ${currency}` },
       { title: "Total Orders", value: String(orders.length) },
     ],
   };
@@ -100,11 +139,12 @@ export interface SuperDashboardModel {
 }
 
 export function projectSuperDashboard(
-  orders: any[],
-  merchants: any[],
-  drivers: any[],
-  tickets: any[],
-  ledger: any[],
+  orders: OpsOrderRow[],
+  merchants: OpsMerchantRow[],
+  drivers: OpsDriverRow[],
+  tickets: OpsTicketRow[],
+  ledger: OpsLedgerRow[],
+  currency = "EUR",
 ): SuperDashboardModel {
   const gross = orders.reduce((sum: number, o) => sum + Number(o.total_amount ?? 0), 0);
   const activeOrders = orders.filter((o) =>
@@ -128,7 +168,7 @@ export function projectSuperDashboard(
 
   return {
     metrics: [
-      { title: "Gross GMV", value: `${gross.toFixed(0)} AED` },
+      { title: "Gross GMV", value: `${gross.toFixed(0)} ${currency}` },
       { title: "Active Orders", value: String(activeOrders) },
       { title: "Paid Orders", value: String(paidOrders) },
       { title: "Active Merchants", value: String(activeMerchants) },
@@ -137,8 +177,8 @@ export function projectSuperDashboard(
       { title: "Online Drivers", value: String(onlineDrivers) },
       { title: "Available Drivers", value: String(availableDrivers) },
       { title: "Open Tickets", value: String(openTickets) },
-      { title: "Ledger In", value: `${totalIn.toFixed(0)} AED` },
-      { title: "Ledger Out", value: `${totalOut.toFixed(0)} AED` },
+      { title: "Ledger In", value: `${totalIn.toFixed(0)} ${currency}` },
+      { title: "Ledger Out", value: `${totalOut.toFixed(0)} ${currency}` },
       { title: "Total Orders", value: String(orders.length) },
     ],
   };
@@ -154,7 +194,7 @@ export interface DriverDashboardModel {
   currentStatus: string;
 }
 
-export function projectDriverDashboard(profile: any): DriverDashboardModel {
+export function projectDriverDashboard(profile: DriverProfileRow | null | undefined): DriverDashboardModel {
   return {
     isOnline: !!profile?.is_online,
     isAvailable: !!profile?.is_available,
@@ -223,8 +263,16 @@ export interface WalletSummaryModel {
   totalConverted: number;
 }
 
+/** Minimal order row shape used by the currency wallet widget. */
+export interface CurrencyOrderRow {
+  currency: string;
+  total_price: number | string;
+  payment_status: string;
+  status: string;
+}
+
 export function projectCurrencyWallets(
-  orders: Array<{ currency: string; total_price: number; payment_status: string; status: string }>,
+  orders: CurrencyOrderRow[],
   preferredCurrency: string,
   computeRate: (from: string, to: string) => number,
 ): WalletSummaryModel {

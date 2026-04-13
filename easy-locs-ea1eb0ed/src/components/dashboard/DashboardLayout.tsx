@@ -66,6 +66,34 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   const FREE_NAV_SECTIONS = new Set(["dashboard", "listings", "marketplace", "orbit", "settings"]);
 
+  // Role-aware section visibility: which nav sections each role can access.
+  // activeRole covers: "landlord" | "tenant" | "client" (from AuthContext)
+  // userType also used: "landlord" | "tenant" | "client"
+  // admin is detected from user metadata or subscription plan.
+  // Merchant / driver roles are detected from user_metadata.role.
+  const metaRole = (user?.user_metadata?.role as string | undefined) ?? "";
+  const isAdmin = subscription.plan === "admin" || metaRole === "admin";
+  const isMerchant = metaRole === "merchant" || metaRole === "seller";
+  const isDriver = metaRole === "driver";
+  const isTenant = activeRole === "tenant";
+
+  /**
+   * Compute role-hidden sections.
+   * - Admin: no restrictions
+   * - Merchant/Seller: no property management, no tenant sections; see shops + marketplace + orbit + wallet
+   * - Driver: no property, no shops, no marketplace; see wallet + orbit + settings only
+   * - Tenant: no property management write access, no shops, no marketplace
+   * - Landlord (default): all sections
+   */
+  const ROLE_HIDDEN_SECTIONS: Set<string> = (() => {
+    if (isAdmin) return new Set<string>();
+    if (isDriver) return new Set<string>(["property", "shops", "marketplace"]);
+    if (isMerchant) return new Set<string>(["property"]);
+    if (isTenant) return new Set<string>(["property", "shops", "marketplace"]);
+    // landlord / client — show everything
+    return new Set<string>();
+  })();
+
   const navSections: NavSection[] = [
     // ── A. Dashboard ──
     {
@@ -148,9 +176,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Settings, label: t("nav.settings") || "Settings", path: "/dashboard/settings" },
         { icon: BrainCircuit, label: t("nav.ai_assistant") || "AI Assistant", path: "/dashboard/ai" },
-        { icon: Shield, label: t("nav.system_audit") || "System Audit", path: "/admin/audit-debug" },
-        { icon: Activity, label: t("nav.runtime_audit") || "Runtime Audit", path: "/admin/runtime-audit" },
-        { icon: Bug, label: t("nav.master_debug") || "Master Debug", path: "/admin/master-debug" },
+        // Admin-only debug/audit routes — only visible to admin role
+        ...(isAdmin ? [
+          { icon: Shield, label: t("nav.system_audit") || "System Audit", path: "/admin/audit-debug" },
+          { icon: Activity, label: t("nav.runtime_audit") || "Runtime Audit", path: "/admin/runtime-audit" },
+          { icon: Bug, label: t("nav.master_debug") || "Master Debug", path: "/admin/master-debug" },
+        ] : []),
       ],
     },
   ];
@@ -330,6 +361,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
             // Hide restricted sections entirely for free accounts
             if (sectionLocked) return null;
+
+            // Hide sections that are not relevant for the current user role
+            if (ROLE_HIDDEN_SECTIONS.has(section.key)) return null;
 
             if (isSingleItem) {
               const item = allItems[0];

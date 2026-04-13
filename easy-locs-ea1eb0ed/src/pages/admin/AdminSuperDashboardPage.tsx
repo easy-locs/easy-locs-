@@ -10,6 +10,8 @@ import {
   fetchSuperDashboardLedger,
 } from "@/repositories/admin-ops.repository";
 import { projectSuperDashboard } from "@/families/dashboard/dashboard.read-model";
+import { useWalletStore } from "@/stores/walletStore";
+import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 
 const ADMIN_NAV_LINKS = [
   { label: "Marketplace Ops", path: "/admin/ops-dashboard" },
@@ -32,9 +34,11 @@ export default function AdminSuperDashboardPage() {
   const { data: tickets = [] } = useQuery({ queryKey: ["super-dashboard-tickets"], queryFn: fetchSuperDashboardTickets, staleTime: 10000 });
   const { data: ledger = [] } = useQuery({ queryKey: ["super-dashboard-ledger"], queryFn: fetchSuperDashboardLedger, staleTime: 10000 });
 
+  const walletCurrency = useWalletStore((s) => s.wallet?.currency) ?? getWalletDefaultCurrency();
+
   const model = useMemo(
-    () => projectSuperDashboard(orders, merchants, drivers, tickets, ledger),
-    [orders, merchants, drivers, tickets, ledger],
+    () => projectSuperDashboard(orders, merchants, drivers, tickets, ledger, walletCurrency),
+    [orders, merchants, drivers, tickets, ledger, walletCurrency],
   );
 
   return (

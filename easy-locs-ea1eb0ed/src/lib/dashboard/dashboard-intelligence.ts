@@ -1,4 +1,5 @@
 import { getSmartCoreState } from "@/lib/smart-core";
+import { WALLET_LOW_BALANCE_CRITICAL, WALLET_LOW_BALANCE_WARNING } from "@/lib/wallet/wallet-config";
 
 export type DayPart = "early_morning" | "morning" | "lunch" | "afternoon" | "evening" | "night" | "late_night";
 export type DayType = "weekday" | "weekend" | "holiday";
@@ -10,11 +11,22 @@ export interface DashboardContext {
   userId: string | null;
   hasWallet: boolean;
   walletBalance: number;
+  walletCurrency: string;
   unreadMessages: number;
   activeOrders: number;
   hasProfile: boolean;
   profileComplete: boolean;
   hasOrbit: boolean;
+  profileFields?: ProfileFields;
+}
+
+/** Fields used to compute real profile completion percentage. */
+export interface ProfileFields {
+  hasName: boolean;
+  hasAvatar: boolean;
+  hasPhone: boolean;
+  hasDocuments: boolean;
+  hasPaymentMethod: boolean;
 }
 
 export interface ContinueItem {
@@ -77,6 +89,77 @@ export interface SectionPriority {
   reason: string;
 }
 
+// ── Dashboard Configuration Constants ──────────────────────────────────────────
+// Extract magic numbers here so thresholds can be tuned without touching logic.
+
+/** Balance below this value triggers a "high urgency" low-balance warning. Sourced from wallet config. */
+export const DASHBOARD_LOW_BALANCE_CRITICAL = WALLET_LOW_BALANCE_CRITICAL;
+
+/** Balance below this value triggers a "medium urgency" low-balance reminder. Sourced from wallet config. */
+export const DASHBOARD_LOW_BALANCE_WARNING = WALLET_LOW_BALANCE_WARNING;
+
+/** Unread messages above this count boosts the orbit_preview section. */
+export const DASHBOARD_UNREAD_ORBIT_BOOST_THRESHOLD = 3;
+
+/** Resume items: minimum score to appear in continue section. */
+export const DASHBOARD_RESUMABLE_MIN_SCORE = 2;
+
+/** Resume items: must have been used within this many hours to appear. */
+export const DASHBOARD_RESUMABLE_MAX_HOURS = 24;
+
+/** Resume items: must be older than this many hours to avoid immediate re-suggestion. */
+export const DASHBOARD_RESUMABLE_MIN_HOURS = 0.5;
+
+// ── Section base weights ────────────────────────────────────────────────────────
+export const SECTION_BASE_WEIGHTS: Record<DashboardSectionId, number> = {
+  continue: 100,
+  quick_actions: 95,
+  suggested_payments: 85,
+  pending_actions: 80,
+  live_stats: 75,
+  orbit_preview: 70,
+  property_widget: 40,
+  stories: 50,
+  trending: 60,
+  best_rated: 55,
+  newest: 45,
+  near_you: 65,
+  featured_hotels: 35,
+  categories: 30,
+  radar_preview: 50,
+};
+
+const TIME_BOOSTS: Record<DayPart, Partial<Record<DashboardSectionId, number>>> = {
+  early_morning: { quick_actions: 10 },
+  morning: { quick_actions: 10, near_you: 5 },
+  lunch: { trending: 15, near_you: 10, stories: 5 },
+  afternoon: { categories: 5, radar_preview: 10 },
+  evening: { trending: 10, near_you: 15, featured_hotels: 10 },
+  night: { suggested_payments: 5, featured_hotels: 15 },
+  late_night: { continue: 5 },
+};
+
+const WEEKEND_BOOSTS: Partial<Record<DashboardSectionId, number>> = {
+  featured_hotels: 20,
+  near_you: 10,
+  stories: 10,
+  trending: 5,
+  radar_preview: 10,
+};
+
+// ── Routes that can be resumed ──────────────────────────────────────────────────
+
+export const RESUMABLE_ROUTES: Record<string, { title: string; subtitle: string; icon: string; type: ContinueItem["type"] }> = {
+  "/merchant/onboarding": { title: "Continue shop setup", subtitle: "Your shop is almost ready", icon: "🏪", type: "onboarding" },
+  "/wallet/transfer": { title: "Complete your transfer", subtitle: "You started a payment", icon: "💸", type: "payment" },
+  "/wallet/request": { title: "Finish your request", subtitle: "Send your payment request", icon: "📩", type: "payment" },
+  "/checkout": { title: "Complete your order", subtitle: "Items are waiting in your cart", icon: "🛒", type: "cart" },
+  "/stay": { title: "Continue browsing hotels", subtitle: "Find your perfect stay", icon: "🏨", type: "booking" },
+  "/browse/food": { title: "Continue ordering food", subtitle: "Pick up where you left off", icon: "🍽️", type: "booking" },
+};
+
+// ── Pure functions ──────────────────────────────────────────────────────────────
+
 export function getDayPart(hour: number): DayPart {
   if (hour >= 5 && hour < 7) return "early_morning";
   if (hour >= 7 && hour < 11) return "morning";
@@ -92,23 +175,61 @@ export function getDayType(): DayType {
   return day === 0 || day === 6 ? "weekend" : "weekday";
 }
 
+/**
+ * Compute real profile completion percentage from actual profile fields.
+ * Each completed field contributes equally to the total score.
+ */
+export function computeProfileCompletion(fields: ProfileFields): number {
+  const checks = [
+    fields.hasName,
+    fields.hasAvatar,
+    fields.hasPhone,
+    fields.hasDocuments,
+    fields.hasPaymentMethod,
+  ];
+  const completed = checks.filter(Boolean).length;
+  return Math.round((completed / checks.length) * 100);
+}
+
 export function buildDashboardContext(params: {
   userId: string | null;
   hasWallet: boolean;
   walletBalance: number;
+  walletCurrency?: string;
   unreadMessages: number;
   activeOrders: number;
   hasProfile: boolean;
   profileComplete: boolean;
   hasOrbit: boolean;
+  profileFields?: ProfileFields;
 }): DashboardContext {
   const hour = new Date().getHours();
+  // Derive dynamic currency from wallet store when not passed explicitly
+  const walletCurrency = params.walletCurrency ?? _getActiveCurrency();
   return {
     hour,
     dayPart: getDayPart(hour),
     dayType: getDayType(),
     ...params,
+    walletCurrency,
   };
+}
+
+/** Resolve the active display currency from wallet store or locale. */
+function _getActiveCurrency(): string {
+  try {
+    const { useWalletStore } = require("@/stores/walletStore");
+    const wallet = useWalletStore.getState()?.wallet;
+    if (wallet?.currency) return wallet.currency;
+  } catch {
+    // store not available in non-browser env
+  }
+  try {
+    const { getWalletDefaultCurrency } = require("@/lib/wallet/wallet-config");
+    return getWalletDefaultCurrency();
+  } catch {
+    return "EUR";
+  }
 }
 
 export function getContinueItems(ctx: DashboardContext): ContinueItem[] {
@@ -116,6 +237,10 @@ export function getContinueItems(ctx: DashboardContext): ContinueItem[] {
   const now = Date.now();
 
   if (!ctx.profileComplete && ctx.hasProfile) {
+    // Use real completion percentage if profile fields are available
+    const progress = ctx.profileFields
+      ? computeProfileCompletion(ctx.profileFields)
+      : 0;
     items.push({
       id: "continue-profile",
       type: "profile",
@@ -123,7 +248,7 @@ export function getContinueItems(ctx: DashboardContext): ContinueItem[] {
       subtitle: "Add photo and details to unlock full features",
       route: "/me/edit-profile",
       icon: "👤",
-      progress: 60,
+      progress,
       urgency: "medium",
       timestamp: now,
     });
@@ -157,28 +282,26 @@ export function getContinueItems(ctx: DashboardContext): ContinueItem[] {
     });
   }
 
+  // Wire resume items to real navigation history from smart-core
   const smartState = getSmartCoreState();
+
+  // Also check sessionStorage for incomplete form state
+  const sessionResumable = _getSessionStorageResumable();
+
   const recentRoutes = Object.entries(smartState.featureUsage)
     .filter(([_route, data]) => {
       const last = data.lastUsed ?? 0;
       const hoursSince = (now - last) / (1000 * 60 * 60);
-      return hoursSince < 24 && hoursSince > 0.5 && data.score >= 2;
+      return hoursSince < DASHBOARD_RESUMABLE_MAX_HOURS && hoursSince > DASHBOARD_RESUMABLE_MIN_HOURS && data.score >= DASHBOARD_RESUMABLE_MIN_SCORE;
     })
     .sort((a, b) => (b[1].lastUsed ?? 0) - (a[1].lastUsed ?? 0))
     .slice(0, 2);
 
-  const RESUMABLE_ROUTES: Record<string, { title: string; subtitle: string; icon: string; type: ContinueItem["type"] }> = {
-    "/merchant/onboarding": { title: "Continue shop setup", subtitle: "Your shop is almost ready", icon: "🏪", type: "onboarding" },
-    "/wallet/transfer": { title: "Complete your transfer", subtitle: "You started a payment", icon: "💸", type: "payment" },
-    "/wallet/request": { title: "Finish your request", subtitle: "Send your payment request", icon: "📩", type: "payment" },
-    "/checkout": { title: "Complete your order", subtitle: "Items are waiting in your cart", icon: "🛒", type: "cart" },
-    "/stay": { title: "Continue browsing hotels", subtitle: "Find your perfect stay", icon: "🏨", type: "booking" },
-    "/browse/food": { title: "Continue ordering food", subtitle: "Pick up where you left off", icon: "🍽️", type: "booking" },
-  };
-
   for (const [route] of recentRoutes) {
-    const meta = RESUMABLE_ROUTES[route];
+    const meta = RESUMABLE_ROUTES[route] ?? sessionResumable[route];
     if (meta) {
+      // Use real progress from session storage if available, else 50 as neutral indicator
+      const savedProgress = _getRouteProgress(route);
       items.push({
         id: `continue-${route.replace(/\//g, "-")}`,
         type: meta.type,
@@ -186,7 +309,7 @@ export function getContinueItems(ctx: DashboardContext): ContinueItem[] {
         subtitle: meta.subtitle,
         route,
         icon: meta.icon,
-        progress: 50,
+        progress: savedProgress,
         urgency: "low",
         timestamp: smartState.featureUsage[route]?.lastUsed ?? now,
       });
@@ -196,8 +319,51 @@ export function getContinueItems(ctx: DashboardContext): ContinueItem[] {
   return items.slice(0, 3);
 }
 
+/**
+ * Read any additional resumable routes stored in sessionStorage.
+ * Components can write `dashboard_resumable_<route>` keys to register custom resume entries.
+ */
+function _getSessionStorageResumable(): Record<string, { title: string; subtitle: string; icon: string; type: ContinueItem["type"] }> {
+  const result: Record<string, { title: string; subtitle: string; icon: string; type: ContinueItem["type"] }> = {};
+  try {
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key?.startsWith("dashboard_resumable_")) {
+        const route = key.replace("dashboard_resumable_", "/");
+        const raw = sessionStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          result[route] = parsed;
+        }
+      }
+    }
+  } catch {
+    // Non-browser or parse error
+  }
+  return result;
+}
+
+/**
+ * Read saved form progress for a route from sessionStorage.
+ * Components can write `dashboard_progress_<route>` with a 0-100 value.
+ */
+function _getRouteProgress(route: string): number {
+  try {
+    const key = `dashboard_progress_${route.replace(/\//g, "_")}`;
+    const raw = sessionStorage.getItem(key);
+    if (raw !== null) {
+      const val = Number(raw);
+      if (!isNaN(val) && val >= 0 && val <= 100) return val;
+    }
+  } catch {
+    // Non-browser
+  }
+  return 50;
+}
+
 export function getSuggestedPayments(ctx: DashboardContext): SuggestedPayment[] {
   const payments: SuggestedPayment[] = [];
+  const currency = ctx.walletCurrency;
 
   if (ctx.activeOrders > 0) {
     payments.push({
@@ -206,7 +372,7 @@ export function getSuggestedPayments(ctx: DashboardContext): SuggestedPayment[] 
       title: "Active orders",
       subtitle: `${ctx.activeOrders} order${ctx.activeOrders > 1 ? "s" : ""} in progress`,
       amount: null,
-      currency: "AED",
+      currency,
       route: "/my-orders/active",
       icon: "📦",
       dueDate: null,
@@ -214,29 +380,30 @@ export function getSuggestedPayments(ctx: DashboardContext): SuggestedPayment[] 
     });
   }
 
-  if (ctx.hasWallet && ctx.walletBalance > 0 && ctx.walletBalance < 50) {
+  if (ctx.hasWallet && ctx.walletBalance > 0 && ctx.walletBalance < DASHBOARD_LOW_BALANCE_WARNING) {
+    const isCritical = ctx.walletBalance < DASHBOARD_LOW_BALANCE_CRITICAL;
     payments.push({
       id: "pay-low-balance",
       type: "reminder",
       title: "Top up wallet",
-      subtitle: `Balance is low (${ctx.walletBalance.toFixed(0)} ${ctx.walletBalance < 20 ? "— may not cover next payment" : ""})`,
+      subtitle: `Balance is low (${ctx.walletBalance.toFixed(0)} ${currency}${isCritical ? " — may not cover next payment" : ""})`,
       amount: null,
-      currency: "AED",
+      currency,
       route: "/wallet",
       icon: "💳",
       dueDate: null,
-      urgency: ctx.walletBalance < 20 ? "high" : "medium",
+      urgency: isCritical ? "high" : "medium",
     });
   }
 
-  if (ctx.unreadMessages > 3) {
+  if (ctx.unreadMessages > DASHBOARD_UNREAD_ORBIT_BOOST_THRESHOLD) {
     payments.push({
       id: "pay-pending-messages",
       type: "pending_request",
       title: "Payment requests waiting",
       subtitle: "You may have pending payment requests in messages",
       amount: null,
-      currency: "AED",
+      currency,
       route: "/orbit",
       icon: "💬",
       dueDate: null,
@@ -279,42 +446,6 @@ export function getPendingActions(ctx: DashboardContext): PendingAction[] {
   return actions.slice(0, 3);
 }
 
-const SECTION_BASE_WEIGHTS: Record<DashboardSectionId, number> = {
-  continue: 100,
-  quick_actions: 95,
-  suggested_payments: 85,
-  pending_actions: 80,
-  live_stats: 75,
-  orbit_preview: 70,
-  property_widget: 40,
-  stories: 50,
-  trending: 60,
-  best_rated: 55,
-  newest: 45,
-  near_you: 65,
-  featured_hotels: 35,
-  categories: 30,
-  radar_preview: 50,
-};
-
-const TIME_BOOSTS: Record<DayPart, Partial<Record<DashboardSectionId, number>>> = {
-  early_morning: { quick_actions: 10 },
-  morning: { quick_actions: 10, near_you: 5 },
-  lunch: { trending: 15, near_you: 10, stories: 5 },
-  afternoon: { categories: 5, radar_preview: 10 },
-  evening: { trending: 10, near_you: 15, featured_hotels: 10 },
-  night: { suggested_payments: 5, featured_hotels: 15 },
-  late_night: { continue: 5 },
-};
-
-const WEEKEND_BOOSTS: Partial<Record<DashboardSectionId, number>> = {
-  featured_hotels: 20,
-  near_you: 10,
-  stories: 10,
-  trending: 5,
-  radar_preview: 10,
-};
-
 export function prioritizeSections(ctx: DashboardContext): SectionPriority[] {
   const priorities: SectionPriority[] = [];
 
@@ -349,11 +480,11 @@ export function prioritizeSections(ctx: DashboardContext): SectionPriority[] {
       weight += 20;
       reason = "active orders urgency";
     }
-    if (id === "suggested_payments" && ctx.walletBalance < 20) {
+    if (id === "suggested_payments" && ctx.walletBalance < DASHBOARD_LOW_BALANCE_CRITICAL) {
       weight += 15;
       reason = "low balance urgency";
     }
-    if (id === "orbit_preview" && ctx.unreadMessages > 3) {
+    if (id === "orbit_preview" && ctx.unreadMessages > DASHBOARD_UNREAD_ORBIT_BOOST_THRESHOLD) {
       weight += 15;
       reason = "unread messages urgency";
     }

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { fetchOpsDashboardData } from "@/repositories/admin-ops.repository";
 import { projectOpsDashboard } from "@/families/dashboard/dashboard.read-model";
 import { useMemo } from "react";
+import { useWalletStore } from "@/stores/walletStore";
+import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 import { Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -11,9 +13,11 @@ export default function AdminOpsDashboardPage() {
 
   const { data, isLoading, error, refetch } = useQuery({ queryKey: ["admin-ops-dashboard"], queryFn: fetchOpsDashboardData, staleTime: 15_000 });
 
+  const walletCurrency = useWalletStore((s) => s.wallet?.currency) ?? getWalletDefaultCurrency();
+
   const model = useMemo(
-    () => projectOpsDashboard(data?.orders ?? [], data?.merchants ?? [], data?.tickets ?? []),
-    [data],
+    () => projectOpsDashboard(data?.orders ?? [], data?.merchants ?? [], data?.tickets ?? [], walletCurrency),
+    [data, walletCurrency],
   );
 
   return (
