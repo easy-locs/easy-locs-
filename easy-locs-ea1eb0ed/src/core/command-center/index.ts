@@ -34,12 +34,14 @@ export {
   learningGovernance,
   buildLearningChainContext,
   buildSystemChainContext,
+  detectDirtyLearningPatterns,
   type LearningChainContext,
   type LearningChainStage,
   type MemoryLayer,
   type ForbiddenLearningSource,
   type LearningValidationResult,
   type GovernedMemoryWrite,
+  type AntiPatternCheckResult,
 } from "./learning-governance";
 
 export {
