@@ -9,11 +9,13 @@ import {
   Activity, CheckCircle, Clock, Cpu, Heart,
   RefreshCw, XCircle, Pause, Shield, Wrench,
   AlertTriangle, ArrowRight, Layers, Eye, Monitor,
+  Zap, RotateCcw, TrendingDown, AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { engineObserver } from "@/engines/core/engine-observer";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { engineOrchestrator } from "@/engines/core/engine-orchestrator";
 import { SOURCE_FIX_REGISTRY, RUNTIME_PATCH_TYPES, UI_ENGINE_PAGES } from "@/lib/control-room/source-fix-config";
 import { Brain } from "lucide-react";
 import { getGovernanceSummary, getAllGovernanceViolations } from "@/engines/governance/anti-conflict-engine";
@@ -93,7 +95,7 @@ function timeAgo(iso: string | null): string {
   return `${Math.round(ms / 86400_000)}d ago`;
 }
 
-type TabKey = "overview" | "engines" | "logs" | "health" | "core" | "fixes" | "governance" | "memory";
+type TabKey = "overview" | "engines" | "logs" | "health" | "core" | "fixes" | "governance" | "memory" | "runtime";
 
 interface UiEnginePageReport {
   route: string;
@@ -103,9 +105,16 @@ interface UiEnginePageReport {
   timestamp: number;
 }
 
+function timeAgoMs(ms: number): string {
+  if (ms < 60_000) return `${Math.round(ms / 1000)}s ago`;
+  if (ms < 3_600_000) return `${Math.round(ms / 60_000)}m ago`;
+  return `${Math.round(ms / 3_600_000)}h ago`;
+}
+
 export default function AdminControlRoomPage() {
   const [tab, setTab] = useState<TabKey>("overview");
   const [uiReports, setUiReports] = useState<Map<string, UiEnginePageReport>>(new Map());
+  const [runtimeStats, setRuntimeStats] = useState<ReturnType<typeof engineOrchestrator.getEngineRuntimeStats> | null>(null);
 
   const handleUiReport = useCallback((report: UiEnginePageReport) => {
     setUiReports(prev => {
@@ -121,6 +130,13 @@ export default function AdminControlRoomPage() {
     });
     return () => { if (typeof unsub === "function") unsub(); };
   }, [handleUiReport]);
+
+  useEffect(() => {
+    const refresh = () => setRuntimeStats(engineOrchestrator.getEngineRuntimeStats());
+    refresh();
+    const interval = setInterval(refresh, 5_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: engines = [], refetch: refetchEngines } = useQuery({
     queryKey: ["control-room-engines"],
@@ -205,6 +221,7 @@ export default function AdminControlRoomPage() {
 
   const navItems = [
     { key: "overview" as const, label: "Overview", icon: Activity },
+    { key: "runtime" as const, label: "Runtime 24/7", icon: Zap },
     { key: "core" as const, label: "Core Status", icon: Shield },
     { key: "engines" as const, label: "Engines", icon: Cpu },
     { key: "fixes" as const, label: "Source Fixes (Reference)", icon: Wrench },
@@ -800,8 +817,278 @@ export default function AdminControlRoomPage() {
         {tab === "governance" && <GovernancePanel />}
 
         {tab === "memory" && <EngineMemoryPanel />}
+
+        {tab === "runtime" && <RuntimeEnginePanel runtimeStats={runtimeStats} />}
       </div>
     </DashboardLayout>
+  );
+}
+
+interface RuntimeEnginePanelProps {
+  runtimeStats: ReturnType<typeof engineOrchestrator.getEngineRuntimeStats> | null;
+}
+
+function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
+  const now = Date.now();
+
+  if (!runtimeStats) {
+    return (
+      <div className="text-center py-12 text-gray-500 text-sm">
+        <Cpu className="w-8 h-8 mx-auto mb-2 opacity-30" />
+        Engine runtime data not available — orchestrator may not be booted.
+      </div>
+    );
+  }
+
+  const { engines, health, scheduler, storm, optimizer, recentIncidents } = runtimeStats;
+
+  function statusBg(status: string): string {
+    switch (status) {
+      case "running": return "bg-emerald-500/15 text-emerald-400";
+      case "crashed": return "bg-red-500/15 text-red-400";
+      case "frozen": return "bg-orange-500/15 text-orange-400";
+      case "restarting": return "bg-blue-500/15 text-blue-400";
+      case "safe_mode": return "bg-purple-500/15 text-purple-400";
+      default: return "bg-gray-500/15 text-gray-400";
+    }
+  }
+
+  function incidentColor(type: string): string {
+    switch (type) {
+      case "crash": return "text-red-400";
+      case "freeze": return "text-orange-400";
+      case "timeout": return "text-amber-400";
+      case "restart": return "text-blue-400";
+      case "safe_mode": return "text-purple-400";
+      default: return "text-gray-400";
+    }
+  }
+
+  const globalHealthScore = health.healthScore;
+  const correctionsPerMin = storm.globalCorrectionsPerMinute;
+  const isStormActive = storm.globallyPaused;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Active Engines", value: `${health.running}/${health.totalEngines}`, icon: Zap, color: "text-emerald-400" },
+          { label: "Health Score", value: `${globalHealthScore}%`, icon: Heart, color: globalHealthScore >= 80 ? "text-emerald-400" : globalHealthScore >= 50 ? "text-amber-400" : "text-red-400" },
+          { label: "Corrections/min", value: correctionsPerMin, icon: RotateCcw, color: isStormActive ? "text-red-400" : "text-amber-400" },
+          { label: "Safe Mode", value: health.safeModes, icon: Shield, color: health.safeModes > 0 ? "text-purple-400" : "text-gray-500" },
+        ].map(s => (
+          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+            <CardContent className="p-4 flex items-center gap-3">
+              <s.icon className={`w-7 h-7 ${s.color}`} />
+              <div>
+                <p className="text-xl font-bold text-white">{s.value}</p>
+                <p className="text-xs text-gray-400">{s.label}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {(health.crashed > 0 || health.frozen > 0 || isStormActive) && (
+        <Card className="border-red-500/20" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-red-400">
+              <AlertCircle className="w-4 h-4 inline mr-1" /> Active Alerts
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1 text-xs">
+            {health.crashed > 0 && (
+              <div className="text-red-400"><XCircle className="w-3 h-3 inline mr-1" />{health.crashed} engine(s) crashed</div>
+            )}
+            {health.frozen > 0 && (
+              <div className="text-orange-400"><AlertTriangle className="w-3 h-3 inline mr-1" />{health.frozen} engine(s) frozen</div>
+            )}
+            {isStormActive && (
+              <div className="text-purple-400"><Shield className="w-3 h-3 inline mr-1" />Global storm pause active — non-critical engines paused until {storm.globalPausedUntil ? new Date(storm.globalPausedUntil).toLocaleTimeString() : "—"}</div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <Activity className="w-4 h-4 inline mr-1" /> Scheduler
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1 text-xs">
+            <div className="flex justify-between"><span className="text-gray-400">Status</span><span className={scheduler.enabled ? "text-emerald-400" : "text-gray-500"}>{scheduler.enabled ? "Active" : "Stopped"}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Total scheduled</span><span className="text-white">{scheduler.totalScheduled}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Avg tick</span><span className="text-white">{scheduler.avgTickDurationMs}ms</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Active locks</span><span className="text-amber-400">{scheduler.activeDomainLocks.length}</span></div>
+            {Object.entries(scheduler.byFrequency || {}).map(([freq, count]) => (
+              <div key={freq} className="flex justify-between text-[10px]"><span className="text-gray-500 capitalize">{freq}</span><span className="text-gray-300">{String(count)}</span></div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <Shield className="w-4 h-4 inline mr-1" /> Storm Guard
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1 text-xs">
+            <div className="flex justify-between"><span className="text-gray-400">Status</span><span className={isStormActive ? "text-red-400 font-bold" : "text-emerald-400"}>{storm.status}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Corrections/min</span><span className={correctionsPerMin > storm.globalThreshold * 0.7 ? "text-amber-400" : "text-white"}>{correctionsPerMin}/{storm.globalThreshold}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Critical engines</span><span className="text-blue-400">{(storm.criticalEngines || []).length}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Per-engine limit</span><span className="text-gray-300">{storm.limits?.perEnginePerMinute}/min</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Loop detection</span><span className="text-gray-300">{storm.limits?.loopDetectionCount}x in {(storm.limits?.loopDetectionWindowMs ?? 0) / 1000}s</span></div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <TrendingDown className="w-4 h-4 inline mr-1" /> Optimizer
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1 text-xs">
+            <div className="flex justify-between"><span className="text-gray-400">Last run</span><span className="text-white">{optimizer.lastRunAt ? timeAgoMs(now - optimizer.lastRunAt) : "Never"}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Actions taken</span><span className="text-amber-400">{optimizer.totalActions}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Slow tick threshold</span><span className="text-gray-300">{optimizer.thresholds?.slowTickMs}ms</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Error rate threshold</span><span className="text-gray-300">{optimizer.thresholds?.highErrorRatePercent}%</span></div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <Cpu className="w-4 h-4 inline mr-1" /> All Engines — Real-time Status
+          </CardTitle>
+          <p className="text-[10px] text-gray-500 mt-1">Auto-refreshes every 5 seconds</p>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-white/5 text-gray-500">
+                  <th className="text-left py-2 pr-4">Engine</th>
+                  <th className="text-left py-2 pr-4">Status</th>
+                  <th className="text-left py-2 pr-4">Last Tick</th>
+                  <th className="text-left py-2 pr-4">Success Rate</th>
+                  <th className="text-left py-2 pr-4">Avg Tick</th>
+                  <th className="text-left py-2 pr-4">Restarts</th>
+                  <th className="text-left py-2 pr-4">Auto-Fixes</th>
+                  <th className="text-left py-2 pr-4">Priority</th>
+                  <th className="text-left py-2">Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                {engines.length === 0 && (
+                  <tr><td colSpan={9} className="py-4 text-center text-gray-500">No engines registered</td></tr>
+                )}
+                {engines.map(engine => {
+                  const lastTickAgo = engine.lastTick > 0 ? now - engine.lastTick : null;
+                  const successRatePct = Math.round(engine.successRate * 100);
+                  return (
+                    <tr key={engine.id} className="border-b border-white/5 hover:bg-white/2">
+                      <td className="py-2 pr-4">
+                        <div className="font-medium text-white truncate max-w-[160px]">{engine.name}</div>
+                        <div className="text-gray-500 text-[10px]">{engine.domain}</div>
+                      </td>
+                      <td className="py-2 pr-4">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${statusBg(engine.status)}`}>
+                          {engine.status}
+                        </span>
+                        {engine.inSafeMode && <span className="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-purple-500/15 text-purple-400">safe</span>}
+                      </td>
+                      <td className="py-2 pr-4">
+                        {lastTickAgo !== null
+                          ? <span className={lastTickAgo > engine.intervalMs * 3 ? "text-amber-400" : "text-gray-300"}>{timeAgoMs(lastTickAgo)}</span>
+                          : <span className="text-gray-600">never</span>
+                        }
+                      </td>
+                      <td className="py-2 pr-4">
+                        <span className={successRatePct >= 80 ? "text-emerald-400" : successRatePct >= 50 ? "text-amber-400" : "text-red-400"}>
+                          {engine.tickCount > 0 ? `${successRatePct}%` : "—"}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-4">
+                        <span className={engine.avgTickDurationMs > 500 ? "text-amber-400" : "text-gray-300"}>
+                          {engine.avgTickDurationMs > 0 ? `${engine.avgTickDurationMs}ms` : "—"}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-4">
+                        <span className={engine.totalRestarts > 0 ? "text-amber-400" : "text-gray-500"}>{engine.totalRestarts}</span>
+                        {engine.consecutiveFailures > 0 && <span className="ml-1 text-red-400 text-[10px]">({engine.consecutiveFailures} fails)</span>}
+                      </td>
+                      <td className="py-2 pr-4">
+                        <span className={engine.correctionsApplied > 0 ? "text-sky-400" : "text-gray-500"}>
+                          {engine.correctionsApplied}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-4">
+                        <span className={engine.priorityLevel === "critical" ? "text-red-400" : engine.priorityLevel === "high" ? "text-amber-400" : "text-gray-400"}>
+                          {engine.priorityLevel}
+                        </span>
+                      </td>
+                      <td className="py-2">
+                        <span className="text-gray-400">{engine.frequencyLevel}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {recentIncidents.length > 0 && (
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <AlertTriangle className="w-4 h-4 inline mr-1" /> Incident History (last 100)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1 max-h-64 overflow-y-auto">
+              {[...recentIncidents].reverse().map(incident => (
+                <div key={incident.id} className="flex items-start gap-2 text-xs py-1 border-b border-white/5">
+                  <span className={`shrink-0 font-medium capitalize ${incidentColor(incident.type)}`}>[{incident.type}]</span>
+                  <span className="text-gray-300 truncate">{incident.engineId}</span>
+                  <span className="text-gray-500 shrink-0">{timeAgoMs(now - incident.timestamp)}</span>
+                  <span className="text-gray-600 truncate">{incident.detail}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {optimizer.recentActions && optimizer.recentActions.length > 0 && (
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <TrendingDown className="w-4 h-4 inline mr-1" /> Recent Optimizer Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              {optimizer.recentActions.slice().reverse().map((action: { action: string; engineId: string; previousValue?: string; newValue?: string; reason: string; timestamp: number }, idx: number) => (
+                <div key={idx} className="flex items-center gap-2 text-xs py-1 border-b border-white/5">
+                  <span className="text-amber-400 shrink-0 capitalize">{action.action?.replace(/_/g, " ")}</span>
+                  <span className="text-gray-300 truncate">{action.engineId}</span>
+                  {action.previousValue && action.newValue && (
+                    <span className="text-gray-500 shrink-0">{action.previousValue} → {action.newValue}</span>
+                  )}
+                  <span className="text-gray-600 truncate flex-1">{action.reason}</span>
+                  <span className="text-gray-600 shrink-0">{timeAgoMs(now - action.timestamp)}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
 

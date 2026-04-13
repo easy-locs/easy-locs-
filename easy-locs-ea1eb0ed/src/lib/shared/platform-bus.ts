@@ -257,7 +257,26 @@ type PlatformEventType =
   | "engine:memory:regression"
   // Dashboard card audit/repair events
   | "dashboard:card_audit_completed"
-  | "dashboard:card_repair_completed";
+  | "dashboard:card_repair_completed"
+  // Engine orchestrator lifecycle events
+  | "engine:orchestrator:booted"
+  | "engine:stopped"
+  // Engine health monitor events
+  | "engine:health:crash"
+  | "engine:health:freeze"
+  | "engine:health:timeout"
+  | "engine:health:restarted"
+  | "engine:health:safe_mode"
+  // Engine storm guard events
+  | "engine:storm:global_pause"
+  | "engine:storm:engine_paused"
+  // Engine optimizer events
+  | "engine:optimizer:run"
+  // Repair safety events
+  | "repair:storm:detected"
+  | "repair:loop:detected"
+  | "repair:quarantine:entered"
+  | "repair:quarantine:lifted";
 
 export type { PlatformEventType };
 

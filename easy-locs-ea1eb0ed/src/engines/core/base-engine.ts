@@ -7,6 +7,7 @@ import type { ControlDomain } from "@/lib/control-plane/types";
 import { applyKnownFixes, type ApplyContext } from "./apply-known-fixes";
 import { engineMemory } from "./engine-memory";
 import { computeIssueSignature } from "./issue-signature";
+import { engineHealthMonitor } from "./engine-health-monitor";
 
 export type EngineActionLevel = "observe" | "detect" | "propose" | "act";
 
@@ -39,6 +40,9 @@ export abstract class BaseEngine {
   private _tickCount = 0;
   private _errorCount = 0;
   private _startedAt = 0;
+  private _tickInFlight = false;
+  private _tickStartedAt = 0;
+  private _managedByScheduler = false;
 
   constructor(config: EngineConfig) {
     this.id = config.id;
@@ -50,6 +54,14 @@ export abstract class BaseEngine {
 
   get isRunning(): boolean {
     return this._running;
+  }
+
+  get tickInFlight(): boolean {
+    return this._tickInFlight;
+  }
+
+  get tickStartedAt(): number {
+    return this._tickStartedAt;
   }
 
   get stats() {
@@ -64,7 +76,14 @@ export abstract class BaseEngine {
       lastTick: this._lastTick,
       uptime: this._running ? Date.now() - this._startedAt : 0,
       quarantineStatus: getQuarantineStatus(this.id),
+      tickInFlight: this._tickInFlight,
+      tickStartedAt: this._tickStartedAt,
+      managedByScheduler: this._managedByScheduler,
     };
+  }
+
+  enableSchedulerMode(): void {
+    this._managedByScheduler = true;
   }
 
   start(): void {
@@ -76,23 +95,30 @@ export abstract class BaseEngine {
     }
     this._running = true;
     this._startedAt = Date.now();
-    this.log("info", `Started (interval: ${this.intervalMs}ms)`);
+    this.log("info", `Started (interval: ${this.intervalMs}ms, managed: ${this._managedByScheduler})`);
     platformBus.emit("engine:started", { engineId: this.id, category: this.category }, "system");
 
-    setTimeout(() => this.executeTick(), 2000 + Math.random() * 3000);
-
-    this._timer = setInterval(() => this.executeTick(), this.intervalMs);
+    if (!this._managedByScheduler) {
+      setTimeout(() => this.executeTick(), 2000 + Math.random() * 3000);
+      this._timer = setInterval(() => this.executeTick(), this.intervalMs);
+    }
   }
 
   stop(): void {
     if (!this._running) return;
     this._running = false;
+    this._tickInFlight = false;
+    this._tickStartedAt = 0;
     if (this._timer) {
       clearInterval(this._timer);
       this._timer = null;
     }
     this.log("info", `Stopped after ${this._tickCount} ticks`);
     platformBus.emit("engine:stopped", { engineId: this.id }, "system");
+  }
+
+  async executeManagedTick(): Promise<void> {
+    await this.executeTick();
   }
 
   private async executeTick(): Promise<void> {
@@ -120,6 +146,8 @@ export abstract class BaseEngine {
     }
 
     const start = performance.now();
+    this._tickInFlight = true;
+    this._tickStartedAt = Date.now();
     try {
       const result = await this.tick();
       this._tickCount++;
@@ -136,6 +164,10 @@ export abstract class BaseEngine {
       const duration = Math.round(performance.now() - start);
       this.log("error", `Tick failed (${duration}ms): ${err instanceof Error ? err.message : String(err)}`);
       engineObserver.recordError(this.id, this.category, err);
+      engineHealthMonitor.recordEngineError(this.id);
+    } finally {
+      this._tickInFlight = false;
+      this._tickStartedAt = 0;
     }
   }
 
