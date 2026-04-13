@@ -24,6 +24,7 @@ import { ContactPickerSheet, InviteContactSheet, type PickableContact } from "@/
 import { useReturnToOrigin } from "@/hooks/useReturnToOrigin";
 import { useI18n } from "@/lib/i18n";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
+import { AppText } from "@/components/ui/AppText";
 
 function formatCurrencyAmount(amount: number, currency: string): string {
   try {
@@ -350,13 +351,13 @@ export default function WalletTransferPage() {
                       <Users className="w-5 h-5" style={{ color: "hsl(38 65% 56%)" }} />
                     </div>
                   )}
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-semibold text-foreground">
+                  <div className="flex-1 min-w-0 text-left">
+                    <AppText as="p" size="sm" lines={1} className="font-semibold">
                       {searching ? (t("wallet.searching") || "Searching…") : (t("wallet.chooseContact") || "Choose a contact")}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
+                    </AppText>
+                    <AppText as="p" size="xs" lines={1} muted className="mt-0.5">
                       {t("wallet.tapToSelect") || "Tap to select from your contacts"}
-                    </p>
+                    </AppText>
                   </div>
                 </button>
               </motion.div>

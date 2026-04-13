@@ -115,7 +115,7 @@ function PhaseCard({ phase, expanded, onToggle }: { phase: WiringPhaseResult; ex
                 {phase.evidence.map((ev, i) => (
                   <div key={i} className="text-xs bg-muted/20 rounded-lg px-2.5 py-1.5">
                     <span className="text-muted-foreground/70">{ev.key}: </span>
-                    <span className="text-foreground font-mono break-all">
+                    <span className="text-foreground font-mono break-words">
                       {Array.isArray(ev.value)
                         ? ev.value.length === 0
                           ? "[]"

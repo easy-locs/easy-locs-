@@ -6,6 +6,7 @@ import { AppBottomSheet } from "@/components/ui/system/AppBottomSheet";
 import { useI18n, tSafe } from "@/lib/i18n";
 import RadarCardDispatcher from "@/components/radar/cards/RadarCardDispatcher";
 import { haptic } from "@/lib/haptics";
+import { AppCardTitle } from "@/components/ui/AppText";
 import { buildRadarRoute, type EngagementState } from "@/lib/radar/radar-engagement";
 import type { RadarVertical, RadarResultItem } from "@/lib/radar/radar-result-item";
 
@@ -139,9 +140,9 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
               <Compass className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground leading-tight">
+              <AppCardTitle as="h2" lines={1} className="font-bold leading-tight">
                 {tSafe(t, "dashboard.radar_explorer", "Explore Nearby")}
-              </h2>
+              </AppCardTitle>
               <p className="text-[10px] text-muted-foreground leading-tight">
                 {filteredItems.length} {tSafe(t, "dashboard.results_found", "results")}
                 {totalCount > 20 && ` · ${totalCount}+ ${tSafe(t, "dashboard.total_available", "total")}`}

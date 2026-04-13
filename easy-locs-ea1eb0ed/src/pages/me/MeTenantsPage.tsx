@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { realEstateTenantService } from "@/services/real-estate.service";
+import { AppText } from "@/components/ui/AppText";
 import type { Tenant } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Users, MessageCircle, Phone, ChevronRight, UserPlus } from "lucide-react";
 
@@ -66,8 +67,8 @@ export default function MeTenantsPage() {
                   {(tenant.name?.[0] ?? "T").toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold" style={{ color: navy }}>{tenant.name}</p>
-                  {tenant.email && <p className="text-xs truncate" style={{ color: "#999" }}>{tenant.email}</p>}
+                  <AppText as="p" size="sm" lines={1} className="font-semibold" style={{ color: navy }}>{tenant.name}</AppText>
+                  {tenant.email && <AppText as="p" size="xs" lines={1} className="text-label-safe" style={{ color: "#999" }}>{tenant.email}</AppText>}
                 </div>
                 <span
                   className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize"

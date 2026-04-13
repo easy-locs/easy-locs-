@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { AppCardTitle } from "@/components/ui/AppText";
 
 type Tab = "overview" | "bail" | "appels" | "quittances" | "paiements";
 
@@ -314,7 +315,7 @@ function BailTab({ leases, bailDocs, fmt, navigate, activeTenants, autoGenerateL
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-foreground">Baux</h3>
+        <AppCardTitle lines={1}>Baux</AppCardTitle>
         <button
           onClick={handleAutoGenerate}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold active:scale-95 transition-transform"
@@ -367,7 +368,7 @@ function AppelsTab({ propRentCalls, fmt, generateMonthlyRentCalls }: any) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-foreground">Appels de loyer</h3>
+        <AppCardTitle lines={1}>Appels de loyer</AppCardTitle>
         <button
           onClick={generateMonthlyRentCalls}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold active:scale-95 transition-transform"
@@ -423,7 +424,7 @@ function QuittancesTab({ quittances, paidCalls, fmt, generateReceiptForPayment, 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-foreground">Quittances de loyer</h3>
+        <AppCardTitle lines={1}>Quittances de loyer</AppCardTitle>
       </div>
 
       <div className="rounded-2xl p-3 bg-primary/5 border border-primary/10">

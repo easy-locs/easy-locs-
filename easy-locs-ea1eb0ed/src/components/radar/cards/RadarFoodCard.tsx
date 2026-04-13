@@ -3,6 +3,7 @@ import { Star, MapPin, Navigation, MessageCircle, Clock, ShoppingBag } from "luc
 import { haptic } from "@/lib/haptics";
 import { useI18n } from "@/lib/i18n";
 import type { RadarResultItem } from "@/lib/radar/radar-result-item";
+import { AppCardTitle } from "@/components/ui/AppText";
 
 interface Props {
   item: RadarResultItem;
@@ -50,7 +51,7 @@ function RadarFoodCard({ item, rank, selected, onSelect, onNavigate, onMessage }
 
       <div className="flex-1 min-w-0 text-left">
         <div className="flex items-center gap-1.5">
-          <p className="text-sm font-bold line-clamp-1 leading-snug" style={{ color: "hsl(var(--foreground))" }}>{item.title}</p>
+          <AppCardTitle lines={1} className="font-bold" style={{ color: "hsl(var(--foreground))" }}>{item.title}</AppCardTitle>
           {item.isSponsored && (
             <span className="shrink-0 px-1.5 py-0.5 rounded-md text-[10px] font-bold" style={{ background: "hsl(38 65% 56% / 0.12)", color: "hsl(38 65% 56%)" }}>
               Ad

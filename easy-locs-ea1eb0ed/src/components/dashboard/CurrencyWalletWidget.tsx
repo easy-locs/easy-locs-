@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppText } from "@/components/ui/AppText";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -90,7 +91,7 @@ const CurrencyWalletWidget = ({ orders, preferredCurrency, onPreferredCurrencyCh
                     <span className="text-xs text-muted-foreground">{w.orderCount} order{w.orderCount > 1 ? "s" : ""}</span>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-foreground">{fmtPrice(w.amount, w.currency)}</p>
+                    <AppText as="p" size="sm" lines={1} className="font-semibold">{fmtPrice(w.amount, w.currency)}</AppText>
                     {w.currency !== preferredCurrency && (
                       <p className="text-[10px] text-muted-foreground">≈ {fmtPrice(convertedAmount, preferredCurrency)}</p>
                     )}

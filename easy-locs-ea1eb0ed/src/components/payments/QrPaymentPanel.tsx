@@ -11,7 +11,7 @@ export function QrPaymentPanel() {
 
       {qrString ? (
         <>
-          <pre className="whitespace-pre-wrap break-all text-xs text-muted-foreground bg-muted rounded-lg p-3">
+          <pre className="whitespace-pre-wrap break-words text-xs text-muted-foreground bg-muted rounded-lg p-3">
             {qrString}
           </pre>
           <p className="text-xs text-muted-foreground">Reference: {lastReference}</p>

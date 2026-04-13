@@ -1444,7 +1444,7 @@ function GovernancePanel() {
                 {expandedId === v.id && (
                   <div className="ml-4 mt-1 p-3 rounded border border-white/5 text-xs space-y-2" style={{ backgroundColor: "hsl(220 40% 10%)" }}>
                     <div className="grid grid-cols-2 gap-2">
-                      <div><span className="text-gray-500">ID:</span> <span className="text-gray-300 break-all">{v.id}</span></div>
+                      <div><span className="text-gray-500">ID:</span> <span className="text-gray-300 break-words">{v.id}</span></div>
                       <div><span className="text-gray-500">Type:</span> <span className="text-gray-300">{v.type}</span></div>
                       <div><span className="text-gray-500">Source:</span> <span className="text-gray-300">{v.source}</span></div>
                       <div><span className="text-gray-500">Target:</span> <span className="text-gray-300">{v.target}</span></div>
@@ -1453,7 +1453,7 @@ function GovernancePanel() {
                       {v.engine && <div><span className="text-gray-500">Engine:</span> <span className="text-purple-400">{v.engine}</span></div>}
                       {v.code && <div><span className="text-gray-500">Code:</span> <span className="text-cyan-400">{v.code}</span></div>}
                       {v.route && <div><span className="text-gray-500">Route:</span> <span className="text-gray-300">{v.route}</span></div>}
-                      {v.dedupKey && <div><span className="text-gray-500">Dedup:</span> <span className="text-gray-400 break-all">{v.dedupKey}</span></div>}
+                      {v.dedupKey && <div><span className="text-gray-500">Dedup:</span> <span className="text-gray-400 break-words">{v.dedupKey}</span></div>}
                       {v.correlationId && <div><span className="text-gray-500">Correlation:</span> <span className="text-gray-300">{v.correlationId}</span></div>}
                       {v.entityType && <div><span className="text-gray-500">Entity:</span> <span className="text-gray-300">{v.entityType}:{v.entityId}</span></div>}
                       <div><span className="text-gray-500">Status:</span> <span className={`font-medium ${(v.status ?? "new") === "resolved" ? "text-emerald-400" : (v.status ?? "new") === "acknowledged" ? "text-blue-400" : "text-amber-400"}`}>{v.status ?? "new"}</span></div>

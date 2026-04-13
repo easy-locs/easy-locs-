@@ -103,7 +103,7 @@ const MFASettings = () => {
           </div>
           <div className="bg-muted rounded-lg p-3">
             <p className="text-xs text-muted-foreground mb-1">{t("page.settings.mfa_secret") || "Secret key (manual entry):"}</p>
-            <code className="text-xs font-mono text-foreground break-all">{secret}</code>
+            <code className="text-xs font-mono text-foreground break-words">{secret}</code>
           </div>
           <div>
             <label className="form-label">{t("page.settings.mfa_code_label") || "Verification code (6 digits)"}</label>

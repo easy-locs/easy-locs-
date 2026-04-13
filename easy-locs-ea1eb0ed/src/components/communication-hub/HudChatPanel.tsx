@@ -549,7 +549,7 @@ class HudChatErrorBoundary extends React.Component<
             <p style={{ color: "hsl(var(--foreground))" }} className="text-sm font-medium">
               Something went wrong loading this conversation.
             </p>
-            <p style={{ color: "hsl(var(--foreground))", opacity: 0.6 }} className="text-xs font-mono break-all max-w-xs">
+            <p style={{ color: "hsl(var(--foreground))", opacity: 0.6 }} className="text-xs font-mono break-words max-w-xs">
               {this.state.errorMsg}
             </p>
             <div className="flex gap-2 justify-center">

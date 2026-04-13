@@ -108,7 +108,7 @@
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: normal;
-  hyphens: manual;
+  hyphens: auto;
 }
 
 /* 2. Flex children — prevent overflow by default */
@@ -161,6 +161,54 @@ a:not([class*="truncate"]):not([class*="line-clamp"]):not([class*="overflow-hidd
   overflow-wrap: break-word !important;
 }
 
+/* 4d-ext. Canonical text utility classes */
+.text-1-line {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+.text-2-lines {
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  word-break: normal;
+  line-height: 1.4;
+}
+.text-3-lines {
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  word-break: normal;
+  line-height: 1.4;
+}
+.text-label-safe {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 100%;
+}
+.text-title-safe {
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  word-break: normal;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
 /* 4e. Cards: text inside cards must wrap, not clip */
 [class*="rounded-2xl"] > * > p,
 [class*="rounded-2xl"] > * > h3,
@@ -178,9 +226,13 @@ a:not([class*="truncate"]):not([class*="line-clamp"]):not([class*="overflow-hidd
 button:not([class*="truncate"]), [role="button"]:not([class*="truncate"]) {
   text-overflow: unset;
   white-space: normal;
+  min-width: 0;
+  max-width: 100%;
 }
 button[class*="truncate"], [role="button"][class*="truncate"] {
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 button[class*="min-w-[44px]"]:not([class*="px-"]),
 button.icon-only {
@@ -197,7 +249,7 @@ button.icon-only {
 }
 [role="tablist"] [role="tab"] span {
   white-space: normal;
-  word-break: break-word;
+  word-break: normal;
   overflow-wrap: break-word;
 }
 
@@ -560,7 +612,8 @@ body[data-scroll-locked] {
 [data-card] code {
   overflow-x: auto;
   max-width: 100%;
-  word-break: break-all;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 /* DS-14. Button minimum touch target — 44px for mobile accessibility */
@@ -657,7 +710,7 @@ article + article,
 
 /* DS-14g. Permanent dotted label sanitization — replaces runtime dotted_labels patch */
 [data-i18n-key] {
-  word-break: break-word;
+  word-break: normal;
   overflow-wrap: break-word;
   hyphens: auto;
 }
@@ -675,13 +728,13 @@ article + article,
 [data-card] p,
 [data-card] span {
   overflow-wrap: break-word;
-  word-break: break-word;
+  word-break: normal;
 }
 
 /* DS-15. Safe heading truncation — prevent heading overflow on small screens */
 h1, h2, h3, h4 {
   overflow-wrap: break-word;
-  word-break: break-word;
+  word-break: normal;
 }
 
 /* DS-16. Table/data-grid horizontal scroll safety */
@@ -1122,6 +1175,7 @@ select {
     @apply bg-background text-foreground font-sans antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
     overflow-x: hidden;
+    text-rendering: optimizeLegibility;
   }
 }
 

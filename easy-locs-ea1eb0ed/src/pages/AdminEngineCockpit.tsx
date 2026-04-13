@@ -418,7 +418,7 @@ export default function AdminEngineCockpit() {
                           {e.last_error_message && (
                             <div className="bg-red-500/10 border border-red-500/20 rounded p-2">
                               <p className="text-[10px] text-red-500">Last Error</p>
-                              <p className="text-xs text-red-400 break-all">{e.last_error_message}</p>
+                              <p className="text-xs text-red-400 break-words">{e.last_error_message}</p>
                             </div>
                           )}
                           {engineBlockedLogs.length > 0 && (
