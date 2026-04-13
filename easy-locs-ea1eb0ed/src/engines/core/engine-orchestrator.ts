@@ -53,11 +53,25 @@ interface OrchestratorState {
   version: number;
 }
 
+export type StartupPhase = "immediate" | "deferred" | "late";
+
+const PHASE_CONFIG: Record<StartupPhase, { delayMs: number; idle: boolean }> = {
+  immediate: { delayMs: 0, idle: false },
+  deferred:  { delayMs: 500, idle: false },
+  late:      { delayMs: 5_000, idle: true },
+};
+
+interface StartupTaskOptions {
+  phase?: StartupPhase;
+}
+
 class EngineOrchestrator {
   private engines: Map<string, BaseEngine> = new Map();
   private blockedEngineIds: Set<string> = new Set();
   private _booted = false;
   private _bootedAt = 0;
+  private startupTasks: Map<string, { fn: () => (() => void) | void; options?: StartupTaskOptions }> = new Map();
+  private startupTeardowns: Array<() => void> = [];
 
   register(engine: BaseEngine): void {
     if (this.engines.has(engine.id)) {
@@ -85,11 +99,49 @@ class EngineOrchestrator {
     for (const e of engines) this.register(e);
   }
 
+  registerStartupTask(taskId: string, fn: () => (() => void) | void, options?: StartupTaskOptions): void {
+    this.startupTasks.set(taskId, { fn, options });
+  }
+
   startAll(): void {
     if (this._booted) return;
     if (import.meta.env.MODE === "test" && !import.meta.env.VITEST_ALLOW_ENGINES) return;
     this._booted = true;
     this._bootedAt = Date.now();
+
+    for (const [taskId, { fn, options }] of this.startupTasks) {
+      const runTask = () => {
+        if (!this._booted) return;
+        try {
+          const teardown = fn();
+          if (typeof teardown === "function") this.startupTeardowns.push(teardown);
+        } catch (err) {
+          engineObserver.log(taskId, "orchestrator", "error",
+            `Startup task failed: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      };
+
+      const phase = options?.phase ?? "immediate";
+      const { delayMs, idle } = PHASE_CONFIG[phase];
+
+      if (delayMs > 0) {
+        const timerId = setTimeout(() => {
+          if (!this._booted) return;
+          if (idle) {
+            const cbId = requestIdleCallback(runTask, { timeout: 30_000 });
+            this.startupTeardowns.push(() => cancelIdleCallback(cbId));
+          } else {
+            runTask();
+          }
+        }, delayMs);
+        this.startupTeardowns.push(() => clearTimeout(timerId));
+      } else if (idle) {
+        const cbId = requestIdleCallback(runTask, { timeout: 30_000 });
+        this.startupTeardowns.push(() => cancelIdleCallback(cbId));
+      } else {
+        runTask();
+      }
+    }
 
     engineSharedContext.initialize();
     engineStormGuard.start();
@@ -138,6 +190,11 @@ class EngineOrchestrator {
   }
 
   stopAll(): void {
+    for (const teardown of this.startupTeardowns) {
+      try { teardown(); } catch {}
+    }
+    this.startupTeardowns = [];
+
     for (const engine of this.engines.values()) {
       engine.stop();
       engineHealthMonitor.markEngineDisabled(engine.id);

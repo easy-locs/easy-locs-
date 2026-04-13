@@ -58,11 +58,6 @@ class GodCore {
 
     this.startHeartbeat();
     this.status = "running";
-
-    console.log(
-      `%c[GOD SYSTEM] ⚡ EASY-LOCS GOD CORE ONLINE — ${this.getEngineCount()} engines active`,
-      "color: #C8A94E; font-weight: bold; font-size: 14px;"
-    );
   }
 
   shutdown(): void {
@@ -80,7 +75,6 @@ class GodCore {
     }
 
     this.status = "stopped";
-    console.log("[GOD SYSTEM] Shutdown complete");
   }
 
   private startEngines(): void {
@@ -120,34 +114,13 @@ class GodCore {
   private registerCronJobs(): void {
     if (!this.config.enableCronOrchestrator) return;
 
-    const defaultJob = (
-      id: string,
-      owner: string,
-      purpose: string,
-      scheduleMs: number,
-      criticality: CronJobDeclaration["criticality"]
-    ): CronJobDeclaration => ({
-      job_id: id,
-      engine_owner: owner,
-      purpose,
-      schedule_ms: scheduleMs,
-      timeout_ms: Math.min(scheduleMs * 0.8, 60_000),
-      retry_policy: { max_retries: 3, backoff_ms: 5000 },
-      resource_locks: [id],
-      downstream_events: [`${id}:completed`],
-      criticality,
-      health_probe: () => true,
-      execute: async () => ({ success: true, duration_ms: 0, findings: 0, actions: [] }),
-    });
-
     const jobs: CronJobDeclaration[] = [
-      defaultJob("taxonomy_reindex", "taxonomy", "Re-index taxonomy tree", 15 * 60_000, "high"),
-      defaultJob("state_machine_check", "state-machines", "Validate state machines", 20 * 60_000, "critical"),
       {
-        id: "data_integrity_check",
-        domain: "audit",
-        description: "Data quality engine incremental sweep",
-        interval_ms: 10 * 60_000,
+        job_id: "data_integrity_check",
+        engine_owner: "god-core",
+        purpose: "Data quality engine incremental sweep",
+        schedule_ms: 10 * 60_000,
+        timeout_ms: 60_000,
         retry_policy: { max_retries: 2, backoff_ms: 5000 },
         resource_locks: ["data_integrity_check"],
         downstream_events: ["data_integrity_check:completed"],
@@ -167,27 +140,6 @@ class GodCore {
           }
         },
       },
-      defaultJob("media_validation", "media", "Validate media assets", 15 * 60_000, "medium"),
-      defaultJob("listing_quality", "quality", "Audit listing quality", 30 * 60_000, "medium"),
-      defaultJob("duplicate_detection", "anti-conflict", "Detect duplicates", 30 * 60_000, "medium"),
-      defaultJob("seo_public_pages", "seo", "Audit public pages SEO", 30 * 60_000, "high"),
-      defaultJob("performance_budget", "optimization", "Check performance budgets", 30 * 60_000, "high"),
-      defaultJob("security_headers", "security", "Verify security headers", 60 * 60_000, "critical"),
-      defaultJob("schema_drift", "past-control", "Detect schema drift", 60 * 60_000, "high"),
-      defaultJob("route_integrity", "routing", "Verify route integrity", 2 * 60 * 60_000, "medium"),
-      defaultJob("wallet_flow_integrity", "wallet", "Verify wallet flows", 30 * 60_000, "critical"),
-      defaultJob("orbit_flow_integrity", "orbit", "Verify orbit flows", 30 * 60_000, "high"),
-      defaultJob("dashboard_card_integrity", "dashboard", "Audit dashboard cards", 30 * 60_000, "medium"),
-      defaultJob("radar_sync", "radar", "Verify radar sync", 15 * 60_000, "high"),
-      defaultJob("hotel_catalog_audit", "hotel", "Audit hotel catalog", 6 * 60 * 60_000, "medium"),
-      defaultJob("food_catalog_audit", "food", "Audit food catalog", 6 * 60 * 60_000, "medium"),
-      defaultJob("service_catalog_audit", "service", "Audit service catalog", 6 * 60 * 60_000, "medium"),
-      defaultJob("property_catalog_audit", "property", "Audit property catalog", 6 * 60 * 60_000, "medium"),
-      defaultJob("flight_catalog_audit", "flight", "Audit flight catalog", 12 * 60 * 60_000, "low"),
-      defaultJob("delivery_runtime", "delivery", "Check delivery runtime", 15 * 60_000, "high"),
-      defaultJob("ad_banner_expiry", "media", "Expire old banners/ads", 60 * 60_000, "low"),
-      defaultJob("cache_warmup", "optimization", "Warm critical caches", 60 * 60_000, "medium"),
-      defaultJob("full_god_audit", "god", "Run full God audit", 24 * 60 * 60_000, "critical"),
     ];
 
     for (const job of jobs) {
@@ -206,16 +158,15 @@ class GodCore {
 
       if (import.meta.env.DEV) {
         console.log(printed);
+        console.log(
+          `%c[GOD AUDIT] Verdict: ${report.section_13_verdict.verdict} | Score: ${report.section_1_global_health.overall_god_score}/100`,
+          report.section_13_verdict.verdict === "PASS"
+            ? "color: #22C55E; font-weight: bold;"
+            : report.section_13_verdict.verdict === "PASS_WITH_WARNINGS"
+              ? "color: #EAB308; font-weight: bold;"
+              : "color: #EF4444; font-weight: bold;"
+        );
       }
-
-      console.log(
-        `%c[GOD AUDIT] Verdict: ${report.section_13_verdict.verdict} | Score: ${report.section_1_global_health.overall_god_score}/100`,
-        report.section_13_verdict.verdict === "PASS"
-          ? "color: #22C55E; font-weight: bold;"
-          : report.section_13_verdict.verdict === "PASS_WITH_WARNINGS"
-            ? "color: #EAB308; font-weight: bold;"
-            : "color: #EF4444; font-weight: bold;"
-      );
     }, 10_000);
   }
 

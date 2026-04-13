@@ -1,12 +1,15 @@
 import { platformBus } from "@/lib/shared/platform-bus";
 
 let initialized = false;
+let teardownFn: (() => void) | null = null;
 
-export function initRealEstateEngines(): void {
-  if (initialized) return;
+export function initRealEstateEngines(): () => void {
+  if (initialized) return teardownFn ?? (() => {});
   initialized = true;
 
-  platformBus.on("pm:payment_received", (event) => {
+  const unsubs: Array<() => void> = [];
+
+  unsubs.push(platformBus.on("pm:payment_received", (event) => {
     const data = event.payload as Record<string, unknown>;
     const paymentId = (data.paymentId as string) ?? "";
     const amount = (data.amount as number) ?? 0;
@@ -37,9 +40,9 @@ export function initRealEstateEngines(): void {
         data: { paymentId, amount, currency, leaseId, status },
       }, "pm");
     }
-  });
+  }));
 
-  platformBus.on("pm:lease_created", (event) => {
+  unsubs.push(platformBus.on("pm:lease_created", (event) => {
     const data = event.payload as Record<string, unknown>;
     platformBus.emit("notification:created", {
       userId: data.tenantId,
@@ -48,9 +51,9 @@ export function initRealEstateEngines(): void {
       body: `Lease created for property ${data.propertyId}`,
       data: { leaseId: data.leaseId, propertyId: data.propertyId },
     }, "pm");
-  });
+  }));
 
-  platformBus.on("wallet:receipt_generated", (event) => {
+  unsubs.push(platformBus.on("wallet:receipt_generated", (event) => {
     const data = event.payload as Record<string, unknown>;
     if (!data.tenantId || !data.receiptNumber) return;
     platformBus.emit("notification:created", {
@@ -60,7 +63,7 @@ export function initRealEstateEngines(): void {
       body: `Receipt ${data.receiptNumber} for ${data.period ?? "current period"}`,
       data: { receiptNumber: data.receiptNumber, period: data.period },
     }, "wallet");
-  });
+  }));
 
   platformBus.emit("system:module_status_changed", {
     module: "real-estate-engines",
@@ -74,4 +77,14 @@ export function initRealEstateEngines(): void {
     ],
     timestamp: Date.now(),
   }, "system");
+
+  teardownFn = () => {
+    for (const u of unsubs) {
+      try { u(); } catch {}
+    }
+    initialized = false;
+    teardownFn = null;
+  };
+
+  return teardownFn;
 }

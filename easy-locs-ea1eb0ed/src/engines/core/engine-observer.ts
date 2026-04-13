@@ -100,6 +100,10 @@ class EngineObserver {
     };
   }
 
+  getMetric(engineId: string): EngineMetric | undefined {
+    return this.metrics.get(engineId);
+  }
+
   getEngineLogs(engineId: string, limit = 50): EngineLogEntry[] {
     return this.logs.filter(l => l.engineId === engineId).slice(-limit);
   }

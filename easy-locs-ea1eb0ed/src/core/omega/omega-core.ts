@@ -113,7 +113,7 @@ class OmegaCore {
       isAllowed("omega-code-evolution") ? codeEvolutionEngine.boot() : Promise.resolve(),
     ]);
 
-    this.seedKnowledgeGraph();
+    if (import.meta.env.DEV) this.seedKnowledgeGraph();
 
     this.phase = "running";
     this.lastRunAt = Date.now();
@@ -155,10 +155,6 @@ class OmegaCore {
       "sentinel-quality-gate", "sentinel-workflow", "sentinel-cron",
       "sentinel-telemetry", "sentinel-incident", "sentinel-report",
       "sentinel-invariant",
-      "god-taxonomy", "god-anti-conflict", "god-validation",
-      "god-continuous-audit", "god-maintenance", "god-cron",
-      "god-quality-gate", "god-observability", "god-hyper-optimization",
-      "god-black-chamber", "god-past-control",
     ];
     for (const eng of engineNames) {
       const node = knowledgeGraphEngine.addNode("ENGINE", eng, "system", { status: "active" });

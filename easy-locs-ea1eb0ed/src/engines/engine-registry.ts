@@ -1,5 +1,5 @@
 import { engineOrchestrator } from "./core/engine-orchestrator";
-import { registerAllActivationSheets } from "./core/domain-activation-sheets";
+import { registerAllActivationSheets, getAllSheetEngineIds } from "./core/domain-activation-sheets";
 import { installRepairBridge, getRepairBridgeReport } from "./core/repair-bridge";
 import { installUiRepairBridge, getUiRepairBridgeReport } from "./core/ui-repair-bridge";
 import { getProofsByDomain, getProofStats } from "./core/proof-system";
@@ -68,21 +68,106 @@ export function bootEngineSystem(): () => void {
   const teardownBridge = installRepairBridge();
   const teardownUiBridge = installUiRepairBridge();
   registerAllEngines();
-  engineOrchestrator.startAll();
-  registerCanonicalResolutions().catch(() => {});
 
-  let disposed = false;
+  engineOrchestrator.registerStartupTask("flow-registry-init", () => {
+    let cancelled = false;
+    import("@/lib/runtime/flow-completeness-validator").then(({ initCoreFlowRegistry }) => {
+      if (!cancelled) initCoreFlowRegistry();
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  });
 
-  const catchupTimer = setTimeout(() => {
-    if (disposed) return;
+  engineOrchestrator.registerStartupTask("property-automation-init", () => {
+    let cancelled = false;
+    import("@/lib/engines/property-automation-engine").then(({ initPropertyAutomation }) => {
+      if (!cancelled) initPropertyAutomation();
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  });
+
+  engineOrchestrator.registerStartupTask("real-estate-engines-init", () => {
+    let cancelled = false;
+    let teardown: (() => void) | null = null;
+    import("@/lib/engines/real-estate-engine-registry").then(({ initRealEstateEngines }) => {
+      if (cancelled) return;
+      teardown = initRealEstateEngines();
+      if (cancelled && teardown) { teardown(); teardown = null; }
+    }).catch(() => {});
+    return () => {
+      cancelled = true;
+      if (teardown) { teardown(); teardown = null; }
+    };
+  });
+
+  engineOrchestrator.registerStartupTask("god-core-init", () => {
+    let cancelled = false;
+    import("@/lib/god/god-core").then(({ godCore }) => {
+      if (!cancelled) godCore.boot();
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, { phase: "late" });
+
+  engineOrchestrator.registerStartupTask("sentinel-core-init", () => {
+    let cancelled = false;
+    let shutdown: (() => void) | null = null;
+    import("@/core/sentinel").then(async ({ sentinelCore }) => {
+      if (cancelled) return;
+      await sentinelCore.boot();
+      if (cancelled) { sentinelCore.shutdown(); return; }
+      shutdown = () => sentinelCore.shutdown();
+    }).catch(() => {});
+    return () => { cancelled = true; if (shutdown) { shutdown(); shutdown = null; } };
+  }, { phase: "late" });
+
+  engineOrchestrator.registerStartupTask("omega-core-init", () => {
+    let cancelled = false;
+    let shutdown: (() => void) | null = null;
+    import("@/core/omega").then(async ({ omegaCore }) => {
+      if (cancelled) return;
+      await omegaCore.boot();
+      if (cancelled) { omegaCore.shutdown(); return; }
+      shutdown = () => omegaCore.shutdown();
+    }).catch(() => {});
+    return () => { cancelled = true; if (shutdown) { shutdown(); shutdown = null; } };
+  }, { phase: "late" });
+
+  engineOrchestrator.registerStartupTask("platform-recovery-init", () => {
+    let cancelled = false;
+    import("@/lib/platform/platform-recovery-engine").then(({ runPlatformRecovery }) => {
+      if (!cancelled) void runPlatformRecovery("boot");
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, { phase: "late" });
+
+  engineOrchestrator.registerStartupTask("taxonomy-catchup-scan", () => {
+    let cancelled = false;
     import("@/lib/data-quality/engines/taxonomy-integrity-engine").then(
       ({ TaxonomyIntegrityEngine }) => {
-        if (disposed) return;
+        if (cancelled) return;
         const engine = new TaxonomyIntegrityEngine();
         engine.scan("SAFE_AUTO");
       },
     ).catch(() => {});
-  }, 500);
+    return () => { cancelled = true; };
+  }, { phase: "deferred" });
+
+  if (import.meta.env.DEV) {
+    engineOrchestrator.registerStartupTask("activation-sheet-invariant", () => {
+      const phantoms = getAllSheetEngineIds().filter(id => !engineOrchestrator.getEngine(id));
+      if (phantoms.length > 0) {
+        console.warn(
+          "[engine-invariant] Activation sheets reference non-registered engine IDs — add them to registerAllEngines() or fix the sheet:",
+          phantoms,
+        );
+      }
+    });
+  }
+
+  engineOrchestrator.startAll();
+
+  let disposed = false;
+
+  registerCanonicalResolutions().catch(() => {});
 
 
   const diagnosticTimer = import.meta.env.DEV ? setTimeout(() => {
@@ -109,7 +194,6 @@ export function bootEngineSystem(): () => void {
 
   return () => {
     disposed = true;
-    clearTimeout(catchupTimer);
     if (diagnosticTimer) clearTimeout(diagnosticTimer);
     teardownUiBridge();
     teardownBridge();

@@ -4,12 +4,9 @@ const DASHBOARD_SHEET: DomainActivationSheet = {
   domain: "dashboard",
   version: 1,
   activeEngines: [
-    "runtime-health",
-    "layout-integrity",
-    "card-health",
-    "banner-strategy",
-    "flow-closure",
-    "design-regression",
+    "sh-auto-fix",
+    "flow-integrity",
+    "governance-audit",
   ],
   allowedL2Operations: ["invalidate", "refresh", "fallback"],
   requiredL3Operations: ["reset", "reconnect"],
@@ -25,10 +22,9 @@ const TAXONOMY_SHEET: DomainActivationSheet = {
   domain: "taxonomy",
   version: 1,
   activeEngines: [
-    "taxonomy-governance",
-    "vertical-isolation",
-    "taxonomy-enforcer",
-    "canonical-mapping",
+    "adaptive-taxonomy",
+    "category-mapping-sync",
+    "governance-audit",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -44,8 +40,7 @@ const MEDIA_SHEET: DomainActivationSheet = {
   domain: "media",
   version: 1,
   activeEngines: [
-    "media-relevance",
-    "media-flow",
+    "governance-audit",
   ],
   allowedL2Operations: ["invalidate", "refresh", "fallback"],
   requiredL3Operations: ["reset"],
@@ -61,8 +56,7 @@ const NOTIFICATION_SHEET: DomainActivationSheet = {
   domain: "notification",
   version: 1,
   activeEngines: [
-    "notification-handler",
-    "retry-replay",
+    "sh-auto-fix",
   ],
   allowedL2Operations: ["invalidate", "refresh", "suppress"],
   requiredL3Operations: ["reset", "reconnect"],
@@ -78,12 +72,11 @@ const MARKETPLACE_SHEET: DomainActivationSheet = {
   domain: "marketplace",
   version: 1,
   activeEngines: [
-    "text-integrity",
-    "taxonomy-governance",
-    "vertical-isolation",
-    "media-relevance",
-    "profile-quality",
-    "data-cleaning",
+    "data-quality",
+    "data-trust-scan",
+    "data-completeness",
+    "adaptive-taxonomy",
+    "governance-audit",
   ],
   allowedL2Operations: ["invalidate", "refresh", "fallback"],
   requiredL3Operations: ["reset", "reconnect"],
@@ -99,10 +92,8 @@ const UI_SHEET: DomainActivationSheet = {
   domain: "ui",
   version: 1,
   activeEngines: [
-    "layout-integrity",
-    "layout-consistency",
-    "design-regression",
-    "accessibility",
+    "sh-auto-fix",
+    "flow-integrity",
   ],
   allowedL2Operations: ["invalidate", "refresh", "fallback"],
   requiredL3Operations: ["reset"],
@@ -117,7 +108,7 @@ const UI_SHEET: DomainActivationSheet = {
 const TEXT_SHEET: DomainActivationSheet = {
   domain: "text",
   version: 1,
-  activeEngines: ["text-integrity"],
+  activeEngines: ["governance-audit"],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
   forbiddenOperations: ["suppress", "reconnect"],
@@ -131,7 +122,7 @@ const TEXT_SHEET: DomainActivationSheet = {
 const I18N_SHEET: DomainActivationSheet = {
   domain: "i18n",
   version: 1,
-  activeEngines: ["localization"],
+  activeEngines: ["governance-audit"],
   allowedL2Operations: ["refresh", "fallback"],
   requiredL3Operations: ["reset"],
   forbiddenOperations: ["suppress", "invalidate"],
@@ -145,7 +136,7 @@ const I18N_SHEET: DomainActivationSheet = {
 const LAYOUT_SHEET: DomainActivationSheet = {
   domain: "layout",
   version: 1,
-  activeEngines: ["layout-integrity", "layout-consistency"],
+  activeEngines: ["sh-auto-fix", "flow-integrity"],
   allowedL2Operations: ["invalidate", "refresh", "fallback"],
   requiredL3Operations: ["reset"],
   forbiddenOperations: ["suppress"],
@@ -160,9 +151,9 @@ const FOOD_SHEET: DomainActivationSheet = {
   domain: "food",
   version: 1,
   activeEngines: [
-    "taxonomy-governance",
-    "text-integrity",
-    "menu-integrity",
+    "food-menu-normalizer",
+    "publish-gate-food",
+    "adaptive-taxonomy",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -178,9 +169,9 @@ const GROCERY_SHEET: DomainActivationSheet = {
   domain: "grocery",
   version: 1,
   activeEngines: [
-    "taxonomy-governance",
-    "text-integrity",
-    "catalog-integrity",
+    "grocery-normalizer",
+    "publish-gate-grocery",
+    "adaptive-taxonomy",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -196,9 +187,9 @@ const SERVICES_SHEET: DomainActivationSheet = {
   domain: "services",
   version: 1,
   activeEngines: [
-    "taxonomy-governance",
-    "text-integrity",
-    "booking-integrity",
+    "service-catalog-normalizer",
+    "publish-gate-service",
+    "adaptive-taxonomy",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -214,9 +205,8 @@ const PROPERTY_SHEET: DomainActivationSheet = {
   domain: "property",
   version: 1,
   activeEngines: [
-    "taxonomy-governance",
-    "listing-integrity",
-    "text-integrity",
+    "adaptive-taxonomy",
+    "data-completeness",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -232,9 +222,8 @@ const SEO_SHEET: DomainActivationSheet = {
   domain: "seo",
   version: 1,
   activeEngines: [
-    "canonical-mapping",
-    "sitemap-validator",
-    "jsonld-integrity",
+    "full-stack-linkage",
+    "governance-audit",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -275,4 +264,12 @@ export function getRegisteredDomains(): string[] {
 
 export function getSheetCount(): number {
   return ALL_ACTIVATION_SHEETS.length;
+}
+
+export function getAllSheetEngineIds(): string[] {
+  const ids = new Set<string>();
+  for (const sheet of ALL_ACTIVATION_SHEETS) {
+    for (const id of sheet.activeEngines) ids.add(id);
+  }
+  return [...ids];
 }
