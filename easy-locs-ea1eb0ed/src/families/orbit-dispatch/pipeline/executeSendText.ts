@@ -96,7 +96,7 @@ export async function executeSendText(
           disappearAt = EphemeralPolicy.computeDisappearAt(new Date(), cmd.disappearTTL as any);
         }
 
-        const data = await insertMessage({
+        const insertPromise = insertMessage({
           conversationId: ctx.conversationId,
           senderUserId: ctx.senderUserId,
           senderOrbitId: ctx.senderOrbitId,
@@ -107,6 +107,12 @@ export async function executeSendText(
           metadata: wireMeta,
           ...(disappearAt ? { disappear_at: disappearAt } : {}),
         });
+        const data = await Promise.race([
+          insertPromise,
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("insertMessage timed out after 15s")), 15_000)
+          ),
+        ]);
 
         // Reconcile: tempId → serverId
         const serverId = data?.id;
