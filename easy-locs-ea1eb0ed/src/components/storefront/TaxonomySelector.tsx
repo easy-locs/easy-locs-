@@ -5,7 +5,7 @@
 import { useMemo } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { WORLD_TAXONOMY } from "@/lib/taxonomy/world-class-taxonomy";
+import { CANONICAL_VERTICALS } from "@/lib/taxonomy/world-class-taxonomy";
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 
 interface TaxonomySelectorProps {
@@ -24,7 +24,7 @@ export default function TaxonomySelector({
   compact = false,
 }: TaxonomySelectorProps) {
   const verticalDef = useMemo(
-    () => WORLD_TAXONOMY.find(v => v.value === vertical),
+    () => CANONICAL_VERTICALS.find(v => v.value === vertical),
     [vertical]
   );
 
@@ -53,7 +53,7 @@ export default function TaxonomySelector({
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
           <SelectContent>
-            {WORLD_TAXONOMY.map(v => (
+            {CANONICAL_VERTICALS.map(v => (
               <SelectItem key={v.value} value={v.value}>
                 {v.emoji} {v.label}
               </SelectItem>

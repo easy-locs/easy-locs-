@@ -1,7 +1,7 @@
 import { db } from "@/services/db";
-import { WORLD_TAXONOMY } from "@/lib/taxonomy/world-class-taxonomy";
+import { CANONICAL_VERTICALS } from "@/lib/taxonomy/world-class-taxonomy";
 
-const VALID_VERTICALS = WORLD_TAXONOMY.map(v => v.key);
+const VALID_VERTICALS = CANONICAL_VERTICALS.map(v => v.value);
 
 export async function runVerticalClassifier() {
   const { data: shops } = await db

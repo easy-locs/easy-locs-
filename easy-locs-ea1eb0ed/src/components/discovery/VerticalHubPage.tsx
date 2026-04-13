@@ -16,7 +16,7 @@ import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
 import UniverseSearch from "@/components/universe/UniverseSearch";
 import FilterChip from "@/components/universe/FilterChip";
 import { useVerticalListings, type ListingItem } from "@/hooks/useVerticalListings";
-import { type TaxonomyVertical } from "@/lib/taxonomy/world-class-taxonomy";
+import { type VerticalSummary } from "@/lib/taxonomy/world-class-taxonomy";
 import { getSubcategoryLabel } from "@/lib/discovery/verticals";
 import { resolveCanonicalUI, type CanonicalUISpec } from "@/lib/ui-engine";
 import StoryPreviewRail from "@/components/stories/StoryPreviewRail";
@@ -157,7 +157,7 @@ const FOOD_SECTION_ORDER = [
   { key: "_quick_bites", label: "Quick Bites", icon: <Star className="h-4 w-4 text-amber-500" />, subcategories: ["burger", "pizza", "seafood"] },
 ];
 
-function getQuickFilters(vertical: TaxonomyVertical): QuickFilter[] {
+function getQuickFilters(vertical: VerticalSummary): QuickFilter[] {
   const specific = VERTICAL_QUICK_FILTERS[vertical.value];
   if (specific) return specific;
   const allFilter: QuickFilter = { value: null, label: "All", icon: "✨" };
@@ -178,7 +178,7 @@ function getSectionOrder(verticalValue: string): string[] {
   return [];
 }
 
-export default function VerticalHubPage({ vertical, storyFeedKey, storyTitle }: { vertical: TaxonomyVertical; storyFeedKey?: string; storyTitle?: string }) {
+export default function VerticalHubPage({ vertical, storyFeedKey, storyTitle }: { vertical: VerticalSummary; storyFeedKey?: string; storyTitle?: string }) {
   const [search, setSearch] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSub = searchParams.get("sub");
@@ -408,7 +408,7 @@ function SmartDiscovery({
   sortMode: SortMode;
   setSortMode: (s: SortMode) => void;
   handleSubSelect: (sub: string | null) => void;
-  vertical: TaxonomyVertical;
+  vertical: VerticalSummary;
   motionPreset: object;
   search: string;
   setSearch: (s: string) => void;

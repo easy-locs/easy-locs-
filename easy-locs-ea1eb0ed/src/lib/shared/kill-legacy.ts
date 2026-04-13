@@ -15,6 +15,3 @@ export function killLegacyAccess(table: string) {
   }
 }
 
-export function isLegacyTable(table: string): boolean {
-  return FORBIDDEN_SET.has(table);
-}
