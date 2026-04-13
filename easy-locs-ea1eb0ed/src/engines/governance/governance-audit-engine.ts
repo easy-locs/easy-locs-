@@ -21,7 +21,6 @@ import { getActionViolations } from "./flow-integrity-engine";
 import { getBannerViolations } from "./banner-strategy-engine";
 import { getLocalizationViolations } from "./localization-engine";
 import { getPageOpenViolations } from "./page-open-engine";
-import { getRuntimeViolations } from "./runtime-health-engine";
 import { getFlowViolations } from "./flow-integrity-engine";
 import { platformBus } from "@/lib/shared/platform-bus";
 
@@ -86,7 +85,6 @@ export function getAllGovernanceViolations(): GovernanceViolation[] {
     ...getBannerViolations(),
     ...getLocalizationViolations(),
     ...getPageOpenViolations(),
-    ...getRuntimeViolations(),
     ...getFlowViolations(),
   ];
 }

@@ -1087,9 +1087,54 @@ Engine system trimmed from 135+ detect-only engines to **5 active engines** that
 - **Test expectations aligned**: resolveDisplayName email privacy, truncatePreview identity function, buildOrbitAlias format, 6-step pipeline (scrape_gate added), non-existent pages removed (NotFound, Messages, TenantSignup)
 - **84 test files, 0 failures**: All src/test/, src/e2e/, src/families/, src/lib/import-engine/__tests__/ pass deterministically
 
+### Engine Discipline Infrastructure — Command Center & Governance (Task #35)
+New module: `easy-locs-ea1eb0ed/src/core/command-center/`
+
+**Pillar 1 — Central Engine Command Center** (`central-engine-command-center.ts`):
+- 10 mandatory lifecycle states: DISCOVERED → REGISTERED → VERIFIED → APPROVED → READY → RUNNING → DEGRADED → QUARANTINED → BLOCKED → RETIRED
+- No engine can reach RUNNING without: contract registration, dependency verification, explicit approval, run budget check
+- Anti-loop protection (5 rapid invocations in 5s → QUARANTINE)
+- Anti-storm protection (50 invocations in 10s global threshold)
+- Anti-duplication protection (concurrent run detection)
+- Budget runtime management (1000 runs/min window)
+- Auto-quarantine based on error rate policy per engine contract
+- Auto-release for non-manual-release quarantines on expiry
+
+**Pillar 2 — Engine Contract Spec** (`engine-contract.ts`):
+- `EngineContract` interface with all mandatory fields: engineId, version, domainOwner, purpose, allowedInputs/Outputs/Events, forbiddenActions, priority, executionMode, retryPolicy, rollbackPolicy, quarantinePolicy, trustLevel, learningEligible, healthCheckMethod, dependencies, maxConcurrentRuns, timeoutMs
+- `validateEngineContract()` — blocks engines with invalid contracts (returns `ContractValidationResult`)
+- `createDefaultContract()` — template factory with sensible defaults and mandatory forbidden action list
+
+**Pillar 3 — Learning Governance Hard Lock** (`learning-governance.ts`):
+- Full chain validation: TASK → EXECUTION → EVIDENCE → VALIDATION → CANONICALIZATION → MEMORY WRITE
+- Rejects writes from: mocks, fallbacks, conflicts, errors, failed repairs, dirty taxonomy, non-canonical versions, quarantined/blocked engines
+- 10 organized memory layers: VALIDATED_FACTS, VALIDATED_PATTERNS, KNOWN_FAILURES, ANTI_PATTERNS, VALIDATED_REPAIRS, BLOCKED_CONDITIONS, CANONICAL_MAPPINGS, HIGH_CONFIDENCE_OPTIMIZATIONS, QUARANTINED_LEARNINGS, DEPRECATED_LEARNINGS
+- Layer assignment based on confidence score and outcome
+- `buildLearningChainContext()` helper enforces all explicit flags
+
+**Pillar 4 — Auto-Repair Reality Lock** (`auto-repair-reality-lock.ts`):
+- 10-step pipeline enforcement: DETECT → CLASSIFY → LOCALIZE → PROPOSE → SIMULATE → VALIDATE → APPLY → VERIFY → ROLLBACK → MEMORIZE
+- Every repair produces a `RepairProofRecord` with root cause, confidence, impact scope, before/after state, rollback record
+- Forbidden patches blocked: BLIND_PATCH, SILENT_PATCH, ROOT_CAUSE_MASKING, CONFLICT_CREATING, OFF_TAXONOMY, OFF_VERSION
+- Rollback capability mandatory for all repairs
+- Per-step timing and audit trail
+
+**Supporting files**:
+- `engine-contracts-registry.ts`: Contracts for all 40+ surviving engines (sentinel, omega, domain, orchestrator engines)
+- `command-center-bootstrap.ts`: Boot function wiring all systems; `requestEngineRunApproval()` gate
+- `index.ts`: Barrel export for entire command center module
+
+**Wiring**:
+- `sentinel-core.ts`: CC boots at sentinel boot, shuts down on sentinel shutdown; boot report logged
+- `engine-orchestrator.ts`: `registerNewEngine()` called on every engine registration; run success/error reporting wired
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`
 - `getAllGovernanceViolations()` aggregates violations from all 11 violation-producing engines
 - `CanonicalListing.vertical` uses `CanonicalVertical` type (unified with CATEGORY_TREE vocabulary)
 - All violations MUST include `engine`, `code`, `dedupKey`, `status` fields (Phase 3 standard)
+- ALL engines must have a declared `EngineContract` in the `engine-contracts-registry.ts`
+- NO engine can reach RUNNING state without passing through `centralEngineCommandCenter.registerAndApprove()`
+- ALL memory writes must pass through `learningGovernance.write()` — direct writes are forbidden
+- ALL repairs must use `autoRepairRealityLock` 10-step pipeline — no direct patching

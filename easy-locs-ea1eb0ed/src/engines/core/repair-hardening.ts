@@ -37,7 +37,8 @@ export type RejectionReason =
   | "sensitive_ancestry_detected"
   | "element_not_found"
   | "pipeline_disabled"
-  | "domain_blocked";
+  | "domain_blocked"
+  | "reality_lock_blocked";
 
 export interface ConfidenceSignals {
   detectorCertainty: number;

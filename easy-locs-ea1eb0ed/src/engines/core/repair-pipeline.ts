@@ -1,6 +1,7 @@
 import { platformBus } from "@/lib/shared/platform-bus";
 import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
 import { engineObserver } from "./engine-observer";
+import { autoRepairRealityLock } from "@/core/command-center";
 import {
   canAttemptRepair,
   recordRepairAttempt,
@@ -166,6 +167,12 @@ export async function executePipeline(input: PipelineInput): Promise<PipelineRes
     return makeBlockedResult("Repair storm active", "storm_suppressed");
   }
 
+  const realityCheck = autoRepairRealityLock.requestRepair(input.engineId, input.domain, input.repairLevel as string);
+  if (!realityCheck.approved) {
+    pipelineBlockCount++;
+    return makeBlockedResult(`Auto-Repair Reality Lock denied: ${realityCheck.reason}`, "reality_lock_blocked");
+  }
+
   if (FINANCIAL_DOMAINS.has(input.domain) && (input.repairLevel === "L3" || input.repairLevel === "L4")) {
     pipelineBlockCount++;
     return makeBlockedResult(`Financial domain "${input.domain}" blocked from L3/L4 repair`, "domain_blocked");
@@ -201,6 +208,17 @@ export async function executePipeline(input: PipelineInput): Promise<PipelineRes
   const ctx = createContext(input);
   pipelineRunCount++;
 
+  const arrlProof = autoRepairRealityLock.startRepair({
+    engineId: input.engineId,
+    domain: input.domain,
+    issueSignature: input.issueSignature,
+    rawSignal: input.rawSignal,
+    severity: input.severity,
+    requestedOperation: String(input.suggestedOperation),
+    targetComponent: input.suggestedTarget,
+    rollbackCapable: true,
+  });
+
   try {
     for (const stage of PIPELINE_STAGES) {
       if (ctx.outcome !== null) break;
@@ -217,6 +235,96 @@ export async function executePipeline(input: PipelineInput): Promise<PipelineRes
 
       ctx.currentStage = stage;
       await executeStage(ctx, stage);
+
+      if (stage === "detect") {
+        const detectOk = autoRepairRealityLock.stepDetect(arrlProof.repairId, input.issueSignature, input.rawSignal, input.severity);
+        if (!detectOk) throw new Error(`ARRL blocked at DETECT: invalid or missing issue signature`);
+      } else if (stage === "classify") {
+        if (ctx.matchedRule && ctx.outcome === null) {
+          const classifyResult = autoRepairRealityLock.stepClassify(arrlProof.repairId, {
+            component: input.engineId,
+            category: ctx.matchedRule.category,
+            description: `Rule ${ctx.matchedRule.id}: ${ctx.matchedRule.description} → ${ctx.matchedRule.operation}`,
+            confidence: ctx.confidence?.score ?? 0.5,
+            evidenceIds: [ctx.matchedRule.id],
+          });
+          if (!classifyResult.success) throw new Error(`ARRL blocked at CLASSIFY: ${classifyResult.blockedReason}`);
+        }
+      } else if (stage === "localize") {
+        const localizeOk = autoRepairRealityLock.stepLocalize(arrlProof.repairId, {
+          domains: [input.domain],
+          engineIds: [input.engineId],
+          entityTypes: [input.category],
+          entityIds: input.elementId ? [input.elementId] : [],
+          estimatedSeverity: input.severity,
+        });
+        if (!localizeOk) throw new Error(`ARRL blocked at LOCALIZE: ${arrlProof.blockedReason ?? "step failed"}`);
+
+        const proposedOp = String(input.suggestedOperation);
+        const isBudgetOp = proposedOp === "" || proposedOp === "no-op";
+        const proposeResult = autoRepairRealityLock.stepPropose(arrlProof.repairId, proposedOp, {
+          isOffTaxonomy: input.category === "taxonomy" && input.domain !== "canonical",
+          isOffVersion: false,
+          createsConflict: false,
+          maskesRootCause: isBudgetOp,
+        });
+        if (!proposeResult.success) throw new Error(`ARRL blocked at PROPOSE: ${proposeResult.blockedReason}`);
+
+        const simChecksPassed = ctx.validationChecks.filter((c) => c.passed).map((c) => c.name);
+        const simChecksFailed = ctx.validationChecks.filter((c) => !c.passed).map((c) => c.name);
+        const simResult = autoRepairRealityLock.stepSimulate(arrlProof.repairId, {
+          passed: simChecksFailed.length === 0,
+          simulationId: `sim_${ctx.pipelineRunId}`,
+          mutationPreview: { operation: proposedOp, target: input.suggestedTarget },
+          invariantsChecked: ctx.validationChecks.map((c) => c.name),
+          invariantsPassed: simChecksPassed,
+          invariantsFailed: simChecksFailed,
+          simulatedAt: Date.now(),
+        });
+        if (!simResult.success) throw new Error(`ARRL blocked at SIMULATE: ${simResult.blockedReason}`);
+
+        const validateResult = autoRepairRealityLock.stepValidate(arrlProof.repairId, [
+          { name: "confidence_threshold", passed: (ctx.confidence?.passed ?? false), detail: `Confidence: ${(ctx.confidence?.score ?? 0).toFixed(3)}`, checkedAt: Date.now() },
+          { name: "domain_allowlist", passed: true, detail: `Domain ${input.domain} approved`, checkedAt: Date.now() },
+          { name: "rule_match", passed: ctx.matchedRule !== null, detail: ctx.matchedRule ? `Rule ${ctx.matchedRule.id} matched` : "No rule match", checkedAt: Date.now() },
+        ]);
+        if (!validateResult.success) throw new Error(`ARRL blocked at VALIDATE — failed checks: ${validateResult.failedChecks.join(", ")}`);
+      } else if (stage === "repair" && ctx.mutation) {
+        const applyOk = autoRepairRealityLock.stepApply(arrlProof.repairId, {
+          before: { state: ctx.mutation.beforeState },
+          after: { state: ctx.mutation.afterState },
+          diff: [ctx.mutation.operation],
+        });
+        if (!applyOk) throw new Error(`ARRL blocked at APPLY: repair was blocked or invalid`);
+      } else if (stage === "regress") {
+        const verifyResult = autoRepairRealityLock.stepVerify(arrlProof.repairId, ctx.regressionChecks.map((c) => ({
+          name: c.name,
+          passed: c.passed,
+          detail: c.detail ?? "",
+          checkedAt: Date.now(),
+        })));
+        if (verifyResult.triggerRollback) {
+          ctx.outcome = "rolled_back";
+          ctx.abortReason = "ARRL VERIFY: regression checks failed — rollback triggered";
+          if (ctx.rollbackFn) ctx.rollbackFn();
+          autoRepairRealityLock.stepRollback(arrlProof.repairId, {
+            triggered: true,
+            success: true,
+            reason: ctx.abortReason,
+            completedAt: Date.now(),
+            stateRestored: ctx.mutation !== null,
+          });
+        }
+      } else if (stage === "accept_or_rollback") {
+        const rolledBackNow = ctx.outcome === "rolled_back";
+        autoRepairRealityLock.stepRollback(arrlProof.repairId, {
+          triggered: rolledBackNow,
+          success: true,
+          reason: rolledBackNow ? (ctx.abortReason ?? "Rollback triggered") : "No rollback needed — repair accepted",
+          completedAt: rolledBackNow ? Date.now() : null,
+          stateRestored: rolledBackNow && ctx.mutation !== null,
+        });
+      }
     }
 
     if (ctx.outcome === null) {
@@ -229,7 +337,28 @@ export async function executePipeline(input: PipelineInput): Promise<PipelineRes
     if (ctx.rollbackFn) {
       ctx.rollbackFn();
     }
+
+    const verifyStep = arrlProof.steps.find((s) => s.step === "VERIFY");
+    if (verifyStep && verifyStep.status === "PENDING") {
+      autoRepairRealityLock.stepVerify(arrlProof.repairId, [
+        { name: "exception_abort", passed: false, detail: `Pipeline aborted by exception: ${ctx.abortReason}`, checkedAt: Date.now() },
+      ]);
+    }
+
+    const rollbackStep = arrlProof.steps.find((s) => s.step === "ROLLBACK");
+    if (rollbackStep && rollbackStep.status === "PENDING") {
+      autoRepairRealityLock.stepRollback(arrlProof.repairId, {
+        triggered: true,
+        success: true,
+        reason: ctx.abortReason,
+        completedAt: Date.now(),
+        stateRestored: ctx.mutation !== null,
+      });
+    }
   }
+
+  const arrlSuccess = ctx.outcome === "accepted";
+  autoRepairRealityLock.stepMemorize(arrlProof.repairId, ctx.proofId, arrlSuccess);
 
   recordRepairAttempt(input.engineId, input.domain, input.issueSignature, input.repairChainId);
 

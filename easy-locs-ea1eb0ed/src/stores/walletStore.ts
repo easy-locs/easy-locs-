@@ -5,7 +5,7 @@ import type { WalletStateModel, WalletTransaction, CurrencyCode } from "@/lib/ty
 import { walletRepo } from "@/lib/db/repositories";
 import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
-import { reportRuntimeFailure } from "@/engines/governance/runtime-health-engine";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 type WalletStore = {
   wallet: WalletStateModel | null;
@@ -98,6 +98,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
     }));
 
     platformBus.emit("wallet:payment_failed", { transactionId, reason }, "wallet");
-    reportRuntimeFailure("wallet_payment_failed", "consistency_risk", `Wallet payment failed: ${reason ?? "unknown"} (tx: ${transactionId})`);
+    structuredLogger.error("wallet", "runtime_failure", `Wallet payment failed: ${reason ?? "unknown"} (tx: ${transactionId})`);
   },
 }));

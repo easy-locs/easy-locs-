@@ -1,11 +1,42 @@
 import type { MemoryEntry, MemoryDetails, OmegaEngineStatus } from "../omega-types";
 import { omegaPersistence } from "../omega-persistence";
 import { structuredLogger } from "@/lib/observability/structured-logger";
+import { learningGovernance, buildLearningChainContext, type LearningChainStage } from "@/core/command-center";
 
 const MAX_MEMORIES = 5_000;
 let memIdCounter = 0;
 
 type MemoryCategory = MemoryEntry["category"];
+
+export interface GovernedRecordParams {
+  category: MemoryCategory;
+  domain: string;
+  summary: string;
+  details?: MemoryDetails;
+  outcome?: MemoryEntry["outcome"];
+  beforeScore?: number;
+  afterScore?: number;
+  rootCause?: string;
+  relatedIds?: string[];
+  ttlDays?: number;
+  engineId: string;
+  taskId: string;
+  executionId: string;
+  evidenceId: string;
+  validationId: string;
+  canonicalizationId: string;
+  confidence: number;
+  completedStages: LearningChainStage[];
+  isFromMock?: boolean;
+  isFromFallback?: boolean;
+  isFromConflict?: boolean;
+  isFromError?: boolean;
+  isFromFailedRepair?: boolean;
+  isFromDirtyTaxonomy?: boolean;
+  isFromNonCanonicalVersion?: boolean;
+  isFromQuarantinedEngine?: boolean;
+  isFromBlockedEngine?: boolean;
+}
 
 class MemoryEngine {
   readonly name = "omega-memory";
@@ -20,7 +51,56 @@ class MemoryEngine {
   getStatus(): OmegaEngineStatus { return this.status; }
   getHeartbeat() { return { alive: this.status !== "stopped", lastBeat: this.lastRunAt }; }
 
-  record(category: MemoryCategory, domain: string, summary: string, details: MemoryDetails = {}, outcome: MemoryEntry["outcome"] = "pending", beforeScore = 0, afterScore = 0, rootCause?: string, relatedIds: string[] = [], ttlDays = 90): MemoryEntry {
+  /**
+   * GOVERNED write path — all new code must use this.
+   * Validates the full learning chain before accepting the write.
+   * Returns null if rejected by Learning Governance.
+   */
+  governedRecord(params: GovernedRecordParams): MemoryEntry | null {
+    const chainContext = buildLearningChainContext({
+      taskId: params.taskId,
+      executionId: params.executionId,
+      evidenceId: params.evidenceId,
+      validationId: params.validationId,
+      canonicalizationId: params.canonicalizationId,
+      engineId: params.engineId,
+      domain: params.domain,
+      source: params.engineId,
+      outcome: params.outcome === "success" ? "success" : params.outcome === "failure" ? "failure" : "partial",
+      confidence: params.confidence,
+      completedStages: params.completedStages,
+      isFromMock: params.isFromMock ?? false,
+      isFromFallback: params.isFromFallback ?? false,
+      isFromConflict: params.isFromConflict ?? false,
+      isFromError: params.isFromError ?? false,
+      isFromFailedRepair: params.isFromFailedRepair ?? false,
+      isFromDirtyTaxonomy: params.isFromDirtyTaxonomy ?? false,
+      isFromNonCanonicalVersion: params.isFromNonCanonicalVersion ?? false,
+      isFromQuarantinedEngine: params.isFromQuarantinedEngine ?? false,
+      isFromBlockedEngine: params.isFromBlockedEngine ?? false,
+    });
+
+    const govResult = learningGovernance.write(params.engineId, params.domain, params.summary, chainContext);
+    if (!govResult.success) {
+      structuredLogger.warn("system", "memory_governance_rejected", `Governed write rejected for ${params.engineId}/${params.domain}: ${govResult.rejectedReason}`);
+      return null;
+    }
+
+    return this.internalRecord(
+      params.category,
+      params.domain,
+      params.summary,
+      params.details,
+      params.outcome,
+      params.beforeScore,
+      params.afterScore,
+      params.rootCause,
+      params.relatedIds,
+      params.ttlDays,
+    );
+  }
+
+  private internalRecord(category: MemoryCategory, domain: string, summary: string, details: MemoryDetails = {}, outcome: MemoryEntry["outcome"] = "pending", beforeScore = 0, afterScore = 0, rootCause?: string, relatedIds: string[] = [], ttlDays = 90): MemoryEntry {
     if (this.memories.size >= MAX_MEMORIES) {
       this.evictOldest();
     }

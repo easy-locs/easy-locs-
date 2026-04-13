@@ -3,7 +3,6 @@
  */
 import { usePlatformFlags } from "@/hooks/usePlatformFlags";
 import { useState, useEffect } from "react";
-import { getGrowthReport } from "@/lib/growth/growth-domination-engine";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,8 +18,7 @@ export default function AdminGrowthEnginePage() {
   const loadReport = async () => {
     setReportLoading(true);
     try {
-      const r = await getGrowthReport();
-      setReport(r);
+      setReport({ invitationCandidates: 0, seoPages: 0, marketOpportunities: 0, topOpportunities: [], blocked: true, purgedReason: "ENG-163-SAFE-RM: growth-domination-engine removed; use governance-audit-engine" });
     } catch (e) {
       console.error("Growth report error:", e);
     }

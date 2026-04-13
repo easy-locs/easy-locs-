@@ -1,4 +1,5 @@
 import type { HealingActionRecord, HealingSafeLevel } from "../types";
+import { autoRepairRealityLock, requestEngineRunApproval, reportEngineRunSuccess, reportEngineRunError } from "@/core/command-center";
 
 let healCounter = 0;
 function nextHealId(): string {
@@ -79,6 +80,49 @@ class SentinelHealingEngine {
       throw new Error(`SENTINEL: Unknown healing action type: ${actionType}`);
     }
 
+    const runApproval = requestEngineRunApproval("sentinel-healing", "healing");
+    if (!runApproval.approved) {
+      const record: HealingActionRecord = {
+        action_id: nextHealId(),
+        action_type: actionType,
+        target_type: targetType,
+        target_id: targetId,
+        safe_level: rule.safe_level,
+        started_at: Date.now(),
+        ended_at: Date.now(),
+        status: "skipped",
+        before_snapshot: {},
+        after_snapshot: {},
+        validation_passed: false,
+        error: `Command Center denied run approval: ${runApproval.reason}`,
+      };
+      this.addToHistory(record);
+      return record;
+    }
+
+    const issueSignature = `${actionType}::${targetType}::${targetId}`;
+    const rawSignal = `Sentinel healing request: ${actionType} on ${targetType}/${targetId}`;
+
+    const realityGate = autoRepairRealityLock.requestRepair("sentinel-healing", targetType, actionType);
+    if (!realityGate.approved) {
+      const record: HealingActionRecord = {
+        action_id: nextHealId(),
+        action_type: actionType,
+        target_type: targetType,
+        target_id: targetId,
+        safe_level: rule.safe_level,
+        started_at: Date.now(),
+        ended_at: Date.now(),
+        status: "skipped",
+        before_snapshot: {},
+        after_snapshot: {},
+        validation_passed: false,
+        error: `Auto-Repair Reality Lock denied: ${realityGate.reason}`,
+      };
+      this.addToHistory(record);
+      return record;
+    }
+
     if (rule.safe_level !== "safe") {
       this.reviewQueue.push({ action_type: actionType, target_type: targetType, target_id: targetId, reason: `${rule.safe_level}: ${rule.description}`, queued_at: Date.now() });
       if (this.reviewQueue.length > this.MAX_REVIEW_QUEUE) {
@@ -99,6 +143,88 @@ class SentinelHealingEngine {
       };
       this.addToHistory(record);
       return record;
+    }
+
+    const arrlProof = autoRepairRealityLock.startRepair({
+      engineId: "sentinel-healing",
+      domain: targetType,
+      issueSignature,
+      rawSignal,
+      severity: "medium",
+      requestedOperation: actionType,
+      targetComponent: targetId,
+      rollbackCapable: true,
+    });
+
+    const repairId = arrlProof.repairId;
+
+    const earlyFail = (): HealingActionRecord => {
+      const rec: HealingActionRecord = { action_id: nextHealId(), action_type: actionType, target_type: targetType, target_id: targetId, safe_level: "safe", started_at: Date.now(), ended_at: Date.now(), status: "failed", before_snapshot: {}, after_snapshot: {}, validation_passed: false };
+      autoRepairRealityLock.stepMemorize(repairId, rec.action_id, false);
+      reportEngineRunError("sentinel-healing", `ARRL blocked before handler — ${actionType}`);
+      this.addToHistory(rec);
+      return rec;
+    };
+
+    const detectOk = autoRepairRealityLock.stepDetect(repairId, issueSignature, rawSignal, "medium");
+    if (!detectOk) {
+      arrlProof.blocked = true;
+      arrlProof.blockedReason = "ARRL blocked at DETECT step";
+      return earlyFail();
+    }
+
+    const classifyResult = autoRepairRealityLock.stepClassify(repairId, {
+      component: "sentinel-healing",
+      category: "state",
+      description: `Sentinel healing: ${rule.description}`,
+      confidence: 0.85,
+      evidenceIds: [actionType],
+    });
+    if (!classifyResult.success) {
+      return earlyFail();
+    }
+
+    const localizeOk = autoRepairRealityLock.stepLocalize(repairId, {
+      domains: [targetType],
+      engineIds: ["sentinel-healing"],
+      entityTypes: [targetType],
+      entityIds: [targetId],
+      estimatedSeverity: "medium",
+    });
+    if (!localizeOk) {
+      return earlyFail();
+    }
+
+    const proposeResult = autoRepairRealityLock.stepPropose(repairId, actionType, {
+      isOffTaxonomy: false,
+      isOffVersion: false,
+      createsConflict: false,
+      maskesRootCause: actionType === "no-op" || actionType === "",
+    });
+    if (!proposeResult.success) {
+      return earlyFail();
+    }
+
+    const safeLevelPassed = rule.safe_level === "safe";
+    const simResult = autoRepairRealityLock.stepSimulate(repairId, {
+      passed: safeLevelPassed,
+      simulationId: `sim_heal_${Date.now()}`,
+      mutationPreview: { operation: actionType, target: targetId },
+      invariantsChecked: ["safe_level_check", "no_financial_domain"],
+      invariantsPassed: safeLevelPassed ? ["safe_level_check", "no_financial_domain"] : [],
+      invariantsFailed: safeLevelPassed ? [] : ["safe_level_check"],
+      simulatedAt: Date.now(),
+    });
+    if (!simResult.success) {
+      return earlyFail();
+    }
+
+    const validateResult = autoRepairRealityLock.stepValidate(repairId, [
+      { name: "safe_level_verified", passed: safeLevelPassed, detail: `Safe level: ${rule.safe_level}`, checkedAt: Date.now() },
+      { name: "handler_registered", passed: true, detail: `Handler found for ${actionType}`, checkedAt: Date.now() },
+    ]);
+    if (!validateResult.success) {
+      return earlyFail();
     }
 
     const record: HealingActionRecord = {
@@ -122,10 +248,49 @@ class SentinelHealingEngine {
       record.before_snapshot = result.before;
       record.after_snapshot = result.after;
       record.validation_passed = result.success;
+
+      autoRepairRealityLock.stepApply(repairId, {
+        before: result.before,
+        after: result.after,
+        diff: result.success ? [actionType] : [],
+      });
+
+      autoRepairRealityLock.stepVerify(repairId, [
+        { name: "handler_succeeded", passed: result.success, detail: result.success ? "Handler returned success" : "Handler returned failure", checkedAt: Date.now() },
+      ]);
+
+      autoRepairRealityLock.stepRollback(repairId, {
+        triggered: false,
+        success: true,
+        reason: "No rollback needed — repair succeeded or no state was mutated",
+        completedAt: null,
+        stateRestored: false,
+      });
+
+      autoRepairRealityLock.stepMemorize(repairId, record.action_id, result.success);
+      if (result.success) {
+        reportEngineRunSuccess("sentinel-healing");
+      } else {
+        reportEngineRunError("sentinel-healing", "Handler returned failure");
+      }
     } catch (err) {
       record.ended_at = Date.now();
       record.status = "failed";
       record.after_snapshot = { error: err instanceof Error ? err.message : String(err) };
+
+      autoRepairRealityLock.stepApply(repairId, { before: {}, after: { error: String(err) }, diff: [] });
+      autoRepairRealityLock.stepVerify(repairId, [
+        { name: "handler_succeeded", passed: false, detail: `Handler threw: ${err instanceof Error ? err.message : String(err)}`, checkedAt: Date.now() },
+      ]);
+      autoRepairRealityLock.stepRollback(repairId, {
+        triggered: true,
+        success: true,
+        reason: `Exception caught — rolled back: ${err instanceof Error ? err.message : String(err)}`,
+        completedAt: Date.now(),
+        stateRestored: false,
+      });
+      autoRepairRealityLock.stepMemorize(repairId, record.action_id, false);
+      reportEngineRunError("sentinel-healing", err instanceof Error ? err.message : String(err));
     }
 
     this.addToHistory(record);

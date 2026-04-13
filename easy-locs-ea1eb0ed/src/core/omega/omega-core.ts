@@ -9,6 +9,7 @@ import { adaptiveUXEngine } from "./adaptive-ux/adaptive-ux-engine";
 import { selfImprovementEngine } from "./self-improvement/self-improvement-engine";
 import { incidentResponseEngine } from "./incident-response/incident-response-engine";
 import { codeEvolutionEngine } from "./code-evolution/code-evolution-engine";
+import { registerNewEngine, requestEngineRunApproval, reportEngineRunSuccess, reportEngineRunError } from "@/core/command-center";
 import type {
   OmegaEngineStatus,
   OmegaIntelligenceReport,
@@ -72,17 +73,44 @@ class OmegaCore {
     this.phase = "initializing";
     structuredLogger.info("system", "omega_boot", "Initializing Omega Intelligence Core...");
 
-    await knowledgeGraphEngine.boot();
-    await memoryEngine.boot();
-    await decisionEngine.boot();
-    await predictionEngine.boot();
+    const omegaEngineMap: Array<[string, string]> = [
+      ["omega-core", "Omega Core Intelligence"],
+      ["knowledge-graph", "Knowledge Graph Engine"],
+      ["omega-memory", "Omega Memory Engine"],
+      ["omega-decision", "Decision Engine"],
+      ["omega-priority", "Priority Engine"],
+      ["omega-prediction", "Prediction Engine"],
+      ["omega-business-opportunity", "Business Opportunity Engine"],
+      ["omega-adaptive-ux", "Adaptive UX Engine"],
+      ["omega-self-improvement", "Self Improvement Engine"],
+      ["omega-incident-response", "Incident Response Engine"],
+      ["omega-code-evolution", "Code Evolution Engine"],
+    ];
+    const blockedEngineIds = new Set<string>();
+    for (const [id, name] of omegaEngineMap) {
+      const ccResult = registerNewEngine(id, name, id);
+      if (!ccResult.success) {
+        blockedEngineIds.add(id);
+        structuredLogger.warn("system", "omega_engine_cc_blocked", `Engine ${id} blocked by Command Center: ${ccResult.blockedReason}`);
+      }
+    }
+    if (blockedEngineIds.size > 0) {
+      structuredLogger.warn("system", "omega_boot_partial", `${blockedEngineIds.size} engines blocked by CC — boot continues in degraded mode: ${[...blockedEngineIds].join(", ")}`);
+    }
+
+    const isAllowed = (id: string) => !blockedEngineIds.has(id);
+
+    if (isAllowed("knowledge-graph")) await knowledgeGraphEngine.boot();
+    if (isAllowed("omega-memory")) await memoryEngine.boot();
+    if (isAllowed("omega-decision")) await decisionEngine.boot();
+    if (isAllowed("omega-prediction")) await predictionEngine.boot();
     await Promise.all([
-      priorityEngine.boot(),
-      businessOpportunityEngine.boot(),
-      adaptiveUXEngine.boot(),
-      selfImprovementEngine.boot(),
-      incidentResponseEngine.boot(),
-      codeEvolutionEngine.boot(),
+      isAllowed("omega-priority") ? priorityEngine.boot() : Promise.resolve(),
+      isAllowed("omega-business-opportunity") ? businessOpportunityEngine.boot() : Promise.resolve(),
+      isAllowed("omega-adaptive-ux") ? adaptiveUXEngine.boot() : Promise.resolve(),
+      isAllowed("omega-self-improvement") ? selfImprovementEngine.boot() : Promise.resolve(),
+      isAllowed("omega-incident-response") ? incidentResponseEngine.boot() : Promise.resolve(),
+      isAllowed("omega-code-evolution") ? codeEvolutionEngine.boot() : Promise.resolve(),
     ]);
 
     this.seedKnowledgeGraph();
@@ -150,52 +178,65 @@ class OmegaCore {
 
   private runIntelligenceLoop(): void {
     if (this.phase !== "running") return;
+
+    const runApproval = requestEngineRunApproval("omega-core");
+    if (!runApproval.approved) {
+      structuredLogger.warn("system", "omega_run_denied", `Omega intelligence loop denied by Command Center: ${runApproval.reason}`);
+      return;
+    }
+
     this.loopCount++;
     this.lastRunAt = Date.now();
 
-    memoryEngine.cleanExpired();
+    try {
+      memoryEngine.cleanExpired();
 
-    const orphans = knowledgeGraphEngine.detectOrphanNodes();
-    if (orphans.length > 10) {
-      selfImprovementEngine.reportWeakness("knowledge_graph", `${orphans.length} orphan nodes detected`, orphans.length);
-    }
-
-    const brokenEdges = knowledgeGraphEngine.detectBrokenEdges();
-    if (brokenEdges.length > 0) {
-      selfImprovementEngine.reportWeakness("knowledge_graph", `${brokenEdges.length} broken edges`, brokenEdges.length * 5);
-    }
-
-    const unstable = memoryEngine.findUnstableDomains();
-    for (const domain of unstable.slice(0, 5)) {
-      const total = domain.incident_count + domain.regression_count + domain.conflict_count;
-      if (total > 5) {
-        priorityEngine.addItem("incident", domain.domain, Math.min(total, 10), Math.min(total * 0.5, 10), Math.min(total * 0.3, 10), total, 0.7, Math.min(total * 0.2, 10));
+      const orphans = knowledgeGraphEngine.detectOrphanNodes();
+      if (orphans.length > 10) {
+        selfImprovementEngine.reportWeakness("knowledge_graph", `${orphans.length} orphan nodes detected`, orphans.length);
       }
-    }
 
-    const activeIncidents = incidentResponseEngine.getActiveIncidents();
-    for (const incident of activeIncidents.slice(0, 3)) {
-      if (incident.status === "detected") {
-        incidentResponseEngine.classify(incident.action_id);
-      } else if (incident.status === "classified") {
-        const mitigated = incidentResponseEngine.mitigate(incident.action_id);
-        if (mitigated && mitigated.status === "escalated") {
-          memoryEngine.record("incident", incident.category, `Incident escalated: ${incident.incident_id}`, { severity: incident.severity, domains: incident.impacted_domains }, "failure");
+      const brokenEdges = knowledgeGraphEngine.detectBrokenEdges();
+      if (brokenEdges.length > 0) {
+        selfImprovementEngine.reportWeakness("knowledge_graph", `${brokenEdges.length} broken edges`, brokenEdges.length * 5);
+      }
+
+      const unstable = memoryEngine.findUnstableDomains();
+      for (const domain of unstable.slice(0, 5)) {
+        const total = domain.incident_count + domain.regression_count + domain.conflict_count;
+        if (total > 5) {
+          priorityEngine.addItem("incident", domain.domain, Math.min(total, 10), Math.min(total * 0.5, 10), Math.min(total * 0.3, 10), total, 0.7, Math.min(total * 0.2, 10));
         }
-      } else if (incident.status === "re_auditing") {
-        incidentResponseEngine.resolve(incident.action_id, `re_audit_${Date.now()}`);
-        memoryEngine.record("incident", incident.category, `Incident resolved: ${incident.incident_id}`, { severity: incident.severity }, "success");
       }
-    }
 
-    const safeSuggestions = codeEvolutionEngine.getSafeActions();
-    if (safeSuggestions.length > 0) {
-      const top = safeSuggestions[0];
-      codeEvolutionEngine.approve(top.suggestion_id);
-    }
+      const activeIncidents = incidentResponseEngine.getActiveIncidents();
+      for (const incident of activeIncidents.slice(0, 3)) {
+        if (incident.status === "detected") {
+          incidentResponseEngine.classify(incident.action_id);
+        } else if (incident.status === "classified") {
+          const mitigated = incidentResponseEngine.mitigate(incident.action_id);
+          if (mitigated && mitigated.status === "escalated") {
+            structuredLogger.warn("system", "incident_escalated", `Incident escalated: ${incident.incident_id} [${incident.category}] severity=${incident.severity}`);
+          }
+        } else if (incident.status === "re_auditing") {
+          incidentResponseEngine.resolve(incident.action_id, `re_audit_${Date.now()}`);
+          structuredLogger.info("system", "incident_resolved", `Incident resolved: ${incident.incident_id} [${incident.category}] severity=${incident.severity}`);
+        }
+      }
 
-    if (this.loopCount % 5 === 0) {
-      this.checkEngineHealth();
+      const safeSuggestions = codeEvolutionEngine.getSafeActions();
+      if (safeSuggestions.length > 0) {
+        const top = safeSuggestions[0];
+        codeEvolutionEngine.approve(top.suggestion_id);
+      }
+
+      if (this.loopCount % 5 === 0) {
+        this.checkEngineHealth();
+      }
+
+      reportEngineRunSuccess("omega-core");
+    } catch (err) {
+      reportEngineRunError("omega-core", err instanceof Error ? err.message : String(err));
     }
   }
 
@@ -208,7 +249,7 @@ class OmegaCore {
     }
     if (degradedCount >= 3) {
       this.phase = "degraded";
-      memoryEngine.record("incident", "omega", `Omega degraded: ${degradedCount} engines unhealthy`, { degraded_count: degradedCount }, "failure", 0, 0, "multiple_engine_failure");
+      structuredLogger.warn("system", "omega_degraded", `Omega degraded: ${degradedCount} engines unhealthy`);
     } else if (this.phase === "degraded" && degradedCount === 0) {
       this.phase = "running";
     }
@@ -216,7 +257,7 @@ class OmegaCore {
 
   decide(input: DecisionInput, targetType: string, targetId: string): DecisionOutput {
     const output = decisionEngine.decide(input, targetType, targetId);
-    memoryEngine.record("audit", targetType, `Decision: ${output.decision} for ${targetId}`, { decision: output.decision, reasoning: output.reasoning }, "success");
+    structuredLogger.info("system", "omega_decision", `Decision: ${output.decision} for ${targetType}/${targetId}`);
     return output;
   }
 
@@ -240,8 +281,26 @@ class OmegaCore {
     return knowledgeGraphEngine.addEdge(sourceId, targetId, edgeType, weight);
   }
 
-  recordMemory(category: Parameters<typeof memoryEngine.record>[0], domain: string, summary: string, details?: MemoryDetails) {
-    return memoryEngine.record(category, domain, summary, details);
+  recordMemory(category: Parameters<typeof memoryEngine.governedRecord>[0]["category"], domain: string, summary: string, details?: MemoryDetails) {
+    const taskId = `omega-task-${Date.now()}`;
+    const executionId = `omega-exec-${Date.now()}`;
+    const result = memoryEngine.governedRecord({
+      category,
+      domain,
+      summary,
+      details,
+      engineId: "omega-core",
+      taskId,
+      executionId,
+      evidenceId: `${executionId}-evidence`,
+      validationId: `${executionId}-validation`,
+      canonicalizationId: `${executionId}-canon`,
+      confidence: 0.9,
+      completedStages: ["TASK", "EXECUTION", "EVIDENCE", "VALIDATION", "CANONICALIZATION", "MEMORY_WRITE"],
+    });
+    if (!result) {
+      structuredLogger.warn("system", "omega_memory_rejected", `Memory write rejected by LearningGovernance — [${domain}] ${summary}`);
+    }
   }
 
   generateIntelligenceReport(): OmegaIntelligenceReport {

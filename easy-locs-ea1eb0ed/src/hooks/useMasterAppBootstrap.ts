@@ -190,6 +190,13 @@ export function useMasterAppBootstrap() {
       }
 
       try {
+        const { bootCommandCenter } = await import("@/core/command-center");
+        bootCommandCenter();
+      } catch (e) {
+        console.warn("[boot] command-center failed", e);
+      }
+
+      try {
         const { bootEngineSystem } = await import("@/engines/engine-registry");
         const cleanup = bootEngineSystem();
         if (cleanup) cleanups.push(cleanup);

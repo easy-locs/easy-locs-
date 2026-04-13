@@ -153,7 +153,8 @@ export interface HealingActionRecord {
   safe_level: HealingSafeLevel;
   started_at: number;
   ended_at: number | null;
-  status: "pending" | "running" | "completed" | "failed" | "rolled_back";
+  status: "pending" | "running" | "completed" | "failed" | "rolled_back" | "skipped";
+  error?: string;
   before_snapshot: Record<string, unknown>;
   after_snapshot: Record<string, unknown>;
   validation_passed: boolean;
