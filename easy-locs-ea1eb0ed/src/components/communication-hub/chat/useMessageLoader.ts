@@ -321,13 +321,13 @@ export function useMessageLoader({
           let matched = false;
           const incomingTempId = (broadcastMsg.metadata as any)?._tempId ?? null;
           const reconciled = prev.filter(m => {
-            if (!m.pending || m.sender_id !== userId || matched) return true;
+            if ((!m.pending && !m.failed) || m.sender_id !== userId || matched) return true;
             const myTempId = (m.metadata as any)?._tempId ?? null;
             if (incomingTempId && myTempId && incomingTempId === myTempId) {
               matched = true;
               return false;
             }
-            if (m.content === safeString(broadcastMsg.body)) {
+            if (m.pending && m.content === safeString(broadcastMsg.body)) {
               matched = true;
               return false;
             }
@@ -386,13 +386,13 @@ export function useMessageLoader({
               let matched = false;
               const incomingTempId = (msg.metadata as any)?._tempId ?? null;
               const reconciled = prev.filter(m => {
-                if (!m.pending || m.sender_id !== userId || matched) return true;
+                if ((!m.pending && !m.failed) || m.sender_id !== userId || matched) return true;
                 const myTempId = (m.metadata as any)?._tempId ?? null;
                 if (incomingTempId && myTempId && incomingTempId === myTempId) {
                   matched = true;
                   return false;
                 }
-                if (m.content === safeString(msg.body)) {
+                if (m.pending && m.content === safeString(msg.body)) {
                   matched = true;
                   return false;
                 }
