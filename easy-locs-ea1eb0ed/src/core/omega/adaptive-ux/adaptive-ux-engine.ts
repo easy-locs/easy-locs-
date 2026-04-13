@@ -1,5 +1,6 @@
 import type { AdaptiveUXRule, AdaptiveUXContext, AdaptiveUXAdaptation, OmegaEngineStatus } from "../omega-types";
 import { omegaPersistence } from "../omega-persistence";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 const MAX_RULES = 500;
 let ruleIdCounter = 0;
@@ -107,7 +108,7 @@ class AdaptiveUXEngine {
     this.status = "active";
     this.lastRunAt = Date.now();
     await this.restore().catch(() => {});
-    console.log(`[OMEGA] AdaptiveUXEngine booted | rules: ${this.rules.size}`);
+    structuredLogger.info("system", "omega_engine_boot", `AdaptiveUXEngine booted | rules: ${this.rules.size}`);
   }
 
   shutdown(): void { this.status = "stopped"; }

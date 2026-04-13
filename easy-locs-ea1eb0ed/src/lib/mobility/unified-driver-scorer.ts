@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { getMobilityProfile } from "./mobility-profiles";
 import type {
   UnifiedDriverScore,
@@ -88,7 +88,7 @@ export async function scoreUnifiedDrivers(params: {
 }): Promise<UnifiedDriverScore[]> {
   const profile = getMobilityProfile(params.job.context);
 
-  const { data: drivers } = await supabase
+  const { data: drivers } = await db
     .from("rider_presence")
     .select("user_id, lat, lng, is_online, is_available, vehicle_type, zone_key, speed, heading, service_modes")
     .eq("is_online", true)
@@ -99,11 +99,11 @@ export async function scoreUnifiedDrivers(params: {
   const driverIds = (drivers as any[]).map((d) => d.user_id);
 
   const [{ data: statsRows }, { data: activeJobs }] = await Promise.all([
-    supabase
+    db
       .from("mobility_driver_stats")
       .select("*")
       .in("rider_user_id", driverIds),
-    supabase
+    db
       .from("mobility_jobs")
       .select("rider_user_id, status, dropoff_lat, dropoff_lng")
       .in("rider_user_id", driverIds)
@@ -214,7 +214,7 @@ export async function scoreUnifiedDrivers(params: {
     .map((row, index) => ({ ...row, rank_index: index + 1 }));
 
   if (scored.length > 0) {
-    await supabase.from("mobility_driver_scores").insert(
+    await db("mobility_driver_scores").insert(
       scored.slice(0, 50).map((s) => ({
         job_id: params.jobId,
         rider_user_id: s.rider_user_id,

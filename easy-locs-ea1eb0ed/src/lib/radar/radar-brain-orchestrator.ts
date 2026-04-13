@@ -3,7 +3,6 @@
  * Connects Radar context to: Mobility, Wallet, Orbit, Notifications, Geo.
  * Every module reads from and reacts to the Radar state.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { eventBus } from "@/lib/core/event-bus";
 import {
   fetchGeoLiveContext,

@@ -1,7 +1,7 @@
 /**
  * Admin Domain — Concrete adapters wiring existing repositories to DDD ports.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { AuditRepository, AlertRepository, AuditEntry, AdminAlert, AuditFilters } from "../ports";
 import { adminEvents } from "../events";
 import { createDomainLogger } from "../../shared/observability";
@@ -12,8 +12,7 @@ const log = createDomainLogger("admin");
 // ── Audit Adapter ──
 export const auditAdapter: AuditRepository = {
   async findAll(filters: AuditFilters): Promise<AuditEntry[]> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    let q = supabase.from("audit_logs").select("*");
+    let q = db("audit_logs").select("*");
     if (filters.userId) q = q.eq("user_id", filters.userId);
     if (filters.action) q = q.eq("action", filters.action);
     if (filters.from) q = q.gte("created_at", filters.from);
@@ -23,12 +22,11 @@ export const auditAdapter: AuditRepository = {
   },
 
   async append(entry: Omit<AuditEntry, "id" | "createdAt">): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await supabase.from("audit_logs").insert({
+    await db("audit_logs").insert({
       user_id: entry.userId,
       action: entry.action,
       metadata_json: entry.metadata ?? {},
-    } as any);
+    });
     log.info("audit_appended", { action: entry.action });
   },
 };
@@ -36,44 +34,63 @@ export const auditAdapter: AuditRepository = {
 // ── Alert Adapter ──
 export const alertAdapter: AlertRepository = {
   async findByStatus(status?: string): Promise<AdminAlert[]> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    let q = supabase.from("admin_alerts").select("*");
+    let q = db("admin_alerts").select("*");
     if (status) q = q.eq("status", status);
     const { data } = await q.order("created_at", { ascending: false }).limit(100);
     return (data ?? []).map(mapAlert);
   },
 
   async updateStatus(id: string, status: AdminAlert["status"]): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const updates: Record<string, any> = { status };
+    const updates: Record<string, string> = { status };
     if (status === "acknowledged") updates.acknowledged_at = new Date().toISOString();
     if (status === "resolved") updates.resolved_at = new Date().toISOString();
-    await supabase.from("admin_alerts").update(updates).eq("id", id);
+    await db("admin_alerts").update(updates).eq("id", id);
     log.info("alert_status_updated", { alertId: id, status });
   },
 };
 
+// ── Row types ──
+interface AuditRow {
+  id: string;
+  user_id: string | null;
+  action: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  metadata_json: Record<string, unknown> | null;
+  created_at: string;
+}
+
+interface AlertRow {
+  id: string;
+  alert_type: string;
+  severity: string | null;
+  title: string;
+  body: string | null;
+  status: string | null;
+  created_at: string;
+}
+
 // ── Mappers ──
-function mapAuditEntry(row: any): AuditEntry {
+function mapAuditEntry(row: AuditRow): AuditEntry {
   return {
     id: row.id,
     userId: row.user_id ?? "",
     action: row.action,
     entityType: row.entity_type ?? "",
     entityId: row.entity_id ?? "",
-    metadata: row.metadata_json,
+    metadata: row.metadata_json ?? undefined,
     createdAt: row.created_at,
   };
 }
 
-function mapAlert(row: any): AdminAlert {
+function mapAlert(row: AlertRow): AdminAlert {
   return {
     id: row.id,
     alertType: row.alert_type,
-    severity: row.severity ?? "info",
+    severity: (row.severity as AdminAlert["severity"]) ?? "info",
     title: row.title,
-    body: row.body,
-    status: row.status ?? "open",
+    body: row.body ?? undefined,
+    status: (row.status as AdminAlert["status"]) ?? "open",
     createdAt: row.created_at,
   };
 }

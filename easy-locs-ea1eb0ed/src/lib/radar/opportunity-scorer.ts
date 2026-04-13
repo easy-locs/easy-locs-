@@ -14,7 +14,7 @@
  *
  * Does NOT duplicate scoring from existing brains.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
 
 // ── Opportunity types for Phase 1 ──
@@ -78,7 +78,7 @@ const RULES_CACHE_MS = 300_000; // 5 min
 
 async function getRules(): Promise<RadarRule[]> {
   if (cachedRules && Date.now() - rulesCacheTime < RULES_CACHE_MS) return cachedRules;
-  const { data } = await supabase
+  const { data } = await db
     .from("radar_rules")
     .select("*")
     .eq("enabled", true)
@@ -143,7 +143,7 @@ export async function computeOpportunities(
   const zoneRule = ruleFor("hot_demand_zone");
   if (zoneRule) {
     const minDemand = zoneRule.threshold_json.min_demand_level ?? 50;
-    const { data: overlays } = await supabase
+    const { data: overlays } = await db
       .from("geo_live_zone_overlays")
       .select("zone_key, demand_level, demand_multiplier, surge_multiplier, rider_supply, traffic_level, weather_type")
       .gte("demand_level", minDemand)
@@ -194,7 +194,7 @@ export async function computeOpportunities(
   // 2. Entity signals → merchant_nearby
   const merchantRule = ruleFor("merchant_nearby");
   if (merchantRule) {
-    const { data: recentSignals } = await supabase
+    const { data: recentSignals } = await db
       .from("radar_signals")
       .select("entity_id, signal_type, intensity, zone_key")
       .gte("created_at", fiveMinAgo)
@@ -251,7 +251,7 @@ export async function computeOpportunities(
   // 3. Communication → communication_ready
   const commRule = ruleFor("communication_ready");
   if (commRule) {
-    const { count } = await supabase
+    const { count } = await db
       .from("radar_signals")
       .select("id", { count: "exact", head: true })
       .eq("signal_type", "message_sent")
@@ -282,7 +282,7 @@ export async function computeOpportunities(
   // 4. Payment → payment_ready
   const payRule = ruleFor("payment_ready");
   if (payRule) {
-    const { count } = await supabase
+    const { count } = await db
       .from("radar_signals")
       .select("id", { count: "exact", head: true })
       .eq("signal_type", "payment_activity")
@@ -318,7 +318,7 @@ export async function persistOpportunities(opps: ScoredOpportunity[]): Promise<v
   const now = new Date().toISOString();
 
   // 1. Expire stale active opportunities
-  await supabase
+  await db
     .from("radar_opportunities")
     .update({ status: "expired", expired_at: now, updated_at: now })
     .eq("status", "active")
@@ -329,7 +329,7 @@ export async function persistOpportunities(opps: ScoredOpportunity[]): Promise<v
   // 2. For each opportunity, upsert by dedupe_key
   for (const o of opps) {
     // Check existing active with same dedupe_key
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from("radar_opportunities")
       .select("id")
       .eq("dedupe_key", o.dedupe_key)
@@ -339,7 +339,7 @@ export async function persistOpportunities(opps: ScoredOpportunity[]): Promise<v
 
     if (existing) {
       // Refresh existing — update score/metadata/expiry
-      await supabase
+      await db
         .from("radar_opportunities")
         .update({
           score: o.score,
@@ -349,8 +349,8 @@ export async function persistOpportunities(opps: ScoredOpportunity[]): Promise<v
           timing_score: o.timing_score,
           title: o.title,
           description: o.description,
-          metadata_json: o.metadata_json as unknown as import("@/integrations/supabase/types").Json,
-          target_payload_json: o.target_payload_json as unknown as import("@/integrations/supabase/types").Json,
+          metadata_json: o.metadata_json as unknown as import("@/integrations/db/types").Json,
+          target_payload_json: o.target_payload_json as unknown as import("@/integrations/db/types").Json,
           source_signal_count: o.source_signal_count,
           expires_at: o.expires_at,
           updated_at: now,
@@ -358,7 +358,7 @@ export async function persistOpportunities(opps: ScoredOpportunity[]): Promise<v
         .eq("id", existing.id);
     } else {
       // Insert new
-      await supabase.from("radar_opportunities").insert({
+      await db("radar_opportunities").insert({
         opportunity_type: o.opportunity_type,
         title: o.title,
         description: o.description,
@@ -370,7 +370,7 @@ export async function persistOpportunities(opps: ScoredOpportunity[]): Promise<v
         route_module: o.route_module,
         route_path: o.route_path,
         target_action: o.target_action,
-        target_payload_json: o.target_payload_json as unknown as import("@/integrations/supabase/types").Json,
+        target_payload_json: o.target_payload_json as unknown as import("@/integrations/db/types").Json,
         target_audience: o.target_audience,
         dedupe_key: o.dedupe_key,
         zone_key: o.zone_key ?? null,
@@ -381,7 +381,7 @@ export async function persistOpportunities(opps: ScoredOpportunity[]): Promise<v
         entity_id: o.entity_id ?? null,
         entity_type: o.entity_type ?? null,
         icon_key: o.icon_key,
-        metadata_json: o.metadata_json as unknown as import("@/integrations/supabase/types").Json,
+        metadata_json: o.metadata_json as unknown as import("@/integrations/db/types").Json,
         status: "active",
         expires_at: o.expires_at,
         source_signal_count: o.source_signal_count,
@@ -395,7 +395,7 @@ export async function persistOpportunities(opps: ScoredOpportunity[]): Promise<v
 
 // ── Lifecycle actions (called from UI) ──
 export async function dismissOpportunity(id: string): Promise<void> {
-  await supabase
+  await db
     .from("radar_opportunities")
     .update({ status: "dismissed", dismissed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("id", id);
@@ -404,14 +404,14 @@ export async function dismissOpportunity(id: string): Promise<void> {
 
 export async function trackOpportunityClick(id: string): Promise<void> {
   // Increment clicked_count via raw update
-  const { data } = await supabase
+  const { data } = await db
     .from("radar_opportunities")
     .select("clicked_count")
     .eq("id", id)
     .maybeSingle();
 
   if (data) {
-    await supabase
+    await db
       .from("radar_opportunities")
       .update({ clicked_count: (data.clicked_count ?? 0) + 1, updated_at: new Date().toISOString() })
       .eq("id", id);
@@ -420,13 +420,13 @@ export async function trackOpportunityClick(id: string): Promise<void> {
 }
 
 export async function convertOpportunity(id: string): Promise<void> {
-  const { data } = await supabase
+  const { data } = await db
     .from("radar_opportunities")
     .select("conversion_count")
     .eq("id", id)
     .maybeSingle();
 
-  await supabase
+  await db
     .from("radar_opportunities")
     .update({
       status: "converted",

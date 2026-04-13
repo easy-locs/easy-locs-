@@ -3,14 +3,14 @@
  * Single responsibility: refund/issue events → support ticket + notification + log.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { logOrchestrationEvent } from "../logger";
 import type { RefundRequestedPayload, IssueCreatedPayload } from "../eventTypes";
 import { createNotification, updateOrderStatus } from "../orchestration-utils";
 
 async function createSupportTicket(payload: RefundRequestedPayload | IssueCreatedPayload) {
   const orderId = payload.orderId;
-  const { error } = await supabase.from("support_tickets").insert({
+  const { error } = await db("support_tickets").insert({
     requester_user_id: payload.requesterUserId,
     ticket_type: "reason" in payload ? "refund_issue" : (payload as IssueCreatedPayload).type,
     subject: orderId ? `Issue linked to order ${orderId}` : "General support issue",
@@ -26,14 +26,14 @@ export function installSupportHandlers(): void {
     const p = event.payload as RefundRequestedPayload;
     await createSupportTicket(p);
     await updateOrderStatus(p.orderId, "disputed");
-    await createNotification({ actorType: "system", templateKey: "refund_requested_admin_review", payload: p as any });
-    await logOrchestrationEvent({ eventType: "orch_refund_requested", entityId: p.orderId, entityType: "order", metadata: p as any });
+    await createNotification({ actorType: "system", templateKey: "refund_requested_admin_review", payload: p as Record<string, unknown> });
+    await logOrchestrationEvent({ eventType: "orch_refund_requested", entityId: p.orderId, entityType: "order", metadata: p as Record<string, unknown> });
   });
 
   platformBus.on("ISSUE_CREATED", async (event) => {
     const p = event.payload as IssueCreatedPayload;
     await createSupportTicket(p);
-    await createNotification({ actorType: "system", templateKey: "issue_created", payload: p as any });
-    await logOrchestrationEvent({ eventType: "orch_issue_created", entityId: p.ticketId, entityType: "support_ticket", metadata: p as any });
+    await createNotification({ actorType: "system", templateKey: "issue_created", payload: p as Record<string, unknown> });
+    await logOrchestrationEvent({ eventType: "orch_issue_created", entityId: p.ticketId, entityType: "support_ticket", metadata: p as Record<string, unknown> });
   });
 }

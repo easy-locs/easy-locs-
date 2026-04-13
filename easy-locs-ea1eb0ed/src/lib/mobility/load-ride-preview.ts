@@ -6,7 +6,7 @@
  * Sources: Mapbox directions, rider_presence, geo_live_zone_overlays
  * No side effects — pure read + compute.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { getDirections } from "@/lib/location/geocode";
 
 export type TrafficLevel = "low" | "moderate" | "heavy" | "unknown";
@@ -122,7 +122,7 @@ export async function loadRidePreview(
   const latDelta = radiusKm * degPerKm;
   const lngDelta = radiusKm * degPerKm / Math.cos((pickup.lat * Math.PI) / 180);
 
-  const { data: drivers } = await supabase
+  const { data: drivers } = await db
     .from("rider_presence")
     .select("id")
     .eq("is_online", true)
@@ -138,7 +138,7 @@ export async function loadRidePreview(
   // 3) Surge / zone intelligence from overlays
   let surgeMultiplier = 1;
   try {
-    const { data: overlay } = await supabase
+    const { data: overlay } = await db
       .from("geo_live_zone_overlays")
       .select("zone_key, surge_multiplier, traffic_level")
       .limit(1)

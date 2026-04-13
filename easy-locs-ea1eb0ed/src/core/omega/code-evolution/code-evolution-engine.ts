@@ -1,5 +1,6 @@
 import type { CodeEvolutionSuggestion, OmegaEngineStatus } from "../omega-types";
 import { omegaPersistence } from "../omega-persistence";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 const MAX_SUGGESTIONS = 500;
 let suggIdCounter = 0;
@@ -123,7 +124,7 @@ class CodeEvolutionEngine {
     this.status = "active";
     this.lastRunAt = Date.now();
     await this.restore().catch(() => {});
-    console.log(`[OMEGA] CodeEvolutionEngine booted | suggestions: ${this.suggestions.size}`);
+    structuredLogger.info("system", "omega_engine_boot", `CodeEvolutionEngine booted | suggestions: ${this.suggestions.size}`);
   }
 
   shutdown(): void { this.status = "stopped"; }

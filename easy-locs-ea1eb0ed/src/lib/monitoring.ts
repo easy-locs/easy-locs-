@@ -7,6 +7,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { initUnifiedMonitoring } from "@/lib/monitoring/unified-monitor";
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -148,7 +149,7 @@ async function persistToAuditLog(evt: MonitoringEvent) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    await supabase.from("audit_logs").insert([{
+    await db("audit_logs").insert([{
       action: `monitoring:${evt.type}`,
       user_id: session.user.id,
       metadata_json: {
@@ -156,7 +157,7 @@ async function persistToAuditLog(evt: MonitoringEvent) {
         message: evt.message,
         severity: evt.severity,
         metadata: evt.metadata,
-      } as any,
+      },
     }]);
   } catch {
     // Silent fail
@@ -320,7 +321,7 @@ export function initMonitoring() {
     }
   };
 
-  console.log("[Monitoring] Production monitoring initialized");
+  logger.info("monitoring", "Production monitoring initialized");
 }
 
 // ── Sync Health Checks ─────────────────────────────────────────────
@@ -347,19 +348,19 @@ export async function runSyncHealthChecks(): Promise<SyncCheckResult[]> {
 
   const checks = await Promise.allSettled([
     timedCheck("Booking-Payment Sync", async () => {
-      const { data } = await supabase.from("booking_requests").select("id").eq("status", "confirmed").limit(50);
+      const { data } = await db("booking_requests").select("id").eq("status", "confirmed").limit(50);
       return { name: "Booking-Payment Sync", status: (data?.length || 0) > 20 ? "warning" as const : "ok" as const, message: `${data?.length || 0} confirmed bookings`, checkedAt: now };
     }),
     timedCheck("Concierge Payment Sync", async () => {
-      const { data } = await supabase.from("concierge_orders").select("id").eq("status", "confirmed").eq("payment_status", "pending").limit(50);
+      const { data } = await db("concierge_orders").select("id").eq("status", "confirmed").eq("payment_status", "pending").limit(50);
       return { name: "Concierge Payment Sync", status: (data?.length || 0) > 5 ? "warning" as const : "ok" as const, message: `${data?.length || 0} pending payments`, checkedAt: now };
     }),
     timedCheck("Notification Queue", async () => {
-      const { count } = await supabase.from("app_notifications").select("id", { count: "exact", head: true }).is("read_at", null);
+      const { count } = await db("app_notifications").select("id", { count: "exact", head: true }).is("read_at", null);
       return { name: "Notification Queue", status: (count || 0) > 100 ? "warning" as const : "ok" as const, message: `${count || 0} unread`, checkedAt: now };
     }),
     timedCheck("Marketplace Booking Sync", async () => {
-      const { data } = await supabase.from("marketplace_bookings").select("id").eq("status", "awaiting_payment").limit(50);
+      const { data } = await db("marketplace_bookings").select("id").eq("status", "awaiting_payment").limit(50);
       return { name: "Marketplace Booking Sync", status: (data?.length || 0) > 10 ? "warning" as const : "ok" as const, message: `${data?.length || 0} awaiting payment`, checkedAt: now };
     }),
     timedCheck("Edge Functions", async () => {

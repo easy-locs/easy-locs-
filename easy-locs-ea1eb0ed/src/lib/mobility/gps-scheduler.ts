@@ -11,7 +11,6 @@
  * Brain owner: Execution Brain
  * Writes: rider_presence, trip_live_state, trip_location_points
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
 import { useGeoStore } from "@/lib/geo/geo-store";
@@ -93,24 +92,24 @@ async function pushLocation() {
 
     // If active job, also update trip_live_state
     if (state.jobId && state.phase !== "idle") {
-      await supabase.from("trip_live_state").upsert({
+      await db("trip_live_state").upsert({
         job_id: state.jobId,
         rider_user_id: state.userId,
         rider_profile_id: state.riderProfileId,
         lat, lng,
         updated_at: now,
-      } as any);
+      });
 
       // Sampled breadcrumb insert
       const sample = BREADCRUMB_SAMPLE[state.phase];
       if (sample > 0 && state.pushCount % sample === 0) {
-        await supabase.from("trip_location_points").insert({
+        await db("trip_location_points").insert({
           job_id: state.jobId,
           rider_user_id: state.userId,
           rider_profile_id: state.riderProfileId,
           lat, lng,
           recorded_at: now,
-        } as any);
+        });
       }
     }
 

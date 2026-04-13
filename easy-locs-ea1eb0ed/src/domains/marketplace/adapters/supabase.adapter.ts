@@ -1,7 +1,7 @@
 /**
  * Marketplace Domain — Concrete adapters wiring existing repositories to DDD ports.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { v2db } from "@/lib/shared/db-v2";
 import type {
   ListingRepository, BookingRepository, MarketplaceEventPort,
   Listing, Booking, SearchQuery,
@@ -15,9 +15,7 @@ const log = createDomainLogger("marketplace");
 // ── Listing Adapter ──
 export const listingAdapter: ListingRepository = {
   async findById(id: string): Promise<Listing | null> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await db
-      .from("property_listings_v2")
+    const { data } = await v2db("property_listings_v2")
       .select("*")
       .eq("id", id)
       .maybeSingle();
@@ -25,9 +23,7 @@ export const listingAdapter: ListingRepository = {
   },
 
   async findByOwner(ownerId: string): Promise<Listing[]> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await db
-      .from("property_listings_v2")
+    const { data } = await v2db("property_listings_v2")
       .select("*")
       .eq("owner_user_id", ownerId)
       .order("created_at", { ascending: false });
@@ -35,8 +31,7 @@ export const listingAdapter: ListingRepository = {
   },
 
   async search(query: SearchQuery): Promise<Listing[]> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    let q = db("property_listings_v2").select("*").eq("status", "active");
+    let q = v2db("property_listings_v2").select("*").eq("status", "active");
     if (query.category) q = q.eq("category", query.category);
     if (query.city) q = q.ilike("city", `%${query.city}%`);
     if (query.country) q = q.eq("country", query.country);
@@ -47,8 +42,7 @@ export const listingAdapter: ListingRepository = {
   },
 
   async save(listing: Listing): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await supabase.from("property_listings_v2").upsert({
+    await v2db("property_listings_v2").upsert({
       id: listing.id,
       owner_user_id: listing.ownerId,
       title: listing.title,
@@ -59,13 +53,12 @@ export const listingAdapter: ListingRepository = {
       city: listing.city,
       country: listing.country,
       status: listing.status,
-    } as any);
+    });
     log.info("listing_saved", { listingId: listing.id });
   },
 
   async updateStatus(id: string, status: Listing["status"]): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await supabase.from("property_listings_v2").update({ status } as any).eq("id", id);
+    await v2db("property_listings_v2").update({ status }).eq("id", id);
     log.info("listing_status_updated", { listingId: id, status });
   },
 };
@@ -73,26 +66,22 @@ export const listingAdapter: ListingRepository = {
 // ── Booking Adapter ──
 export const bookingAdapter: BookingRepository = {
   async findById(id: string): Promise<Booking | null> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase.from("bookings_v2").select("*").eq("id", id).maybeSingle();
+    const { data } = await v2db("bookings_v2").select("*").eq("id", id).maybeSingle();
     return data ? mapBooking(data) : null;
   },
 
   async findByListing(listingId: string): Promise<Booking[]> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase.from("bookings_v2").select("*").eq("listing_id", listingId);
+    const { data } = await v2db("bookings_v2").select("*").eq("listing_id", listingId);
     return (data ?? []).map(mapBooking);
   },
 
   async findByBuyer(buyerId: string): Promise<Booking[]> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase.from("bookings_v2").select("*").eq("buyer_user_id", buyerId);
+    const { data } = await v2db("bookings_v2").select("*").eq("buyer_user_id", buyerId);
     return (data ?? []).map(mapBooking);
   },
 
   async save(booking: Booking): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await supabase.from("bookings_v2").upsert({
+    await v2db("bookings_v2").upsert({
       id: booking.id,
       listing_id: booking.listingId,
       buyer_user_id: booking.buyerId,
@@ -102,18 +91,51 @@ export const bookingAdapter: BookingRepository = {
       status: booking.status,
       check_in: booking.checkIn,
       check_out: booking.checkOut,
-    } as any);
+    });
   },
 
   async updateStatus(id: string, status: Booking["status"]): Promise<void> {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await supabase.from("bookings_v2").update({ status } as any).eq("id", id);
+    await v2db("bookings_v2").update({ status }).eq("id", id);
     log.info("booking_status_updated", { bookingId: id, status });
   },
 };
 
+// ── Row types ──
+interface ListingRow {
+  id: string;
+  owner_user_id: string | null;
+  title: string | null;
+  description: string | null;
+  price: number | null;
+  currency: string | null;
+  category: string | null;
+  subcategory: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  city: string | null;
+  country: string | null;
+  status: string | null;
+  media_urls: string[] | null;
+  photo_urls: string[] | null;
+  created_at: string;
+}
+
+interface BookingRow {
+  id: string;
+  listing_id: string;
+  buyer_user_id: string;
+  owner_user_id: string | null;
+  owner_orbit_id: string | null;
+  amount: number | null;
+  currency: string | null;
+  status: string | null;
+  check_in: string | null;
+  check_out: string | null;
+  created_at: string;
+}
+
 // ── Mappers ──
-function mapListing(row: any): Listing {
+function mapListing(row: ListingRow): Listing {
   return {
     id: row.id,
     ownerId: row.owner_user_id ?? "",
@@ -121,26 +143,26 @@ function mapListing(row: any): Listing {
     description: row.description ?? "",
     price: { amount: row.price ?? 0, currency: row.currency ?? "XOF" },
     category: row.category ?? "",
-    subcategory: row.subcategory,
+    subcategory: row.subcategory ?? undefined,
     location: { lat: row.latitude ?? 0, lng: row.longitude ?? 0 },
     city: row.city ?? "",
     country: row.country ?? "",
-    status: row.status ?? "draft",
+    status: (row.status as Listing["status"]) ?? "draft",
     mediaUrls: row.media_urls ?? row.photo_urls ?? [],
     createdAt: row.created_at,
   };
 }
 
-function mapBooking(row: any): Booking {
+function mapBooking(row: BookingRow): Booking {
   return {
     id: row.id,
     listingId: row.listing_id,
     buyerId: row.buyer_user_id,
     sellerId: row.owner_user_id ?? row.owner_orbit_id ?? "",
     amount: { amount: row.amount ?? 0, currency: row.currency ?? "XOF" },
-    status: row.status ?? "pending",
-    checkIn: row.check_in,
-    checkOut: row.check_out,
+    status: (row.status as Booking["status"]) ?? "pending",
+    checkIn: row.check_in ?? undefined,
+    checkOut: row.check_out ?? undefined,
     createdAt: row.created_at,
   };
 }

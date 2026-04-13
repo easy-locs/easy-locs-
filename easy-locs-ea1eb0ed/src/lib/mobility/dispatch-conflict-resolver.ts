@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
 
 const assignmentLocks = new Map<string, number>();
@@ -30,7 +30,7 @@ export async function resolveConflict(
   }
 
   try {
-    const { data: offer } = await supabase
+    const { data: offer } = await db
       .from("mobility_job_offers")
       .select("id, job_id, status, rider_user_id")
       .eq("id", offerId)
@@ -41,7 +41,7 @@ export async function resolveConflict(
     if ((offer as any).rider_user_id !== riderId) return false;
     if ((offer as any).job_id !== jobId) return false;
 
-    const { data: alreadyAccepted } = await supabase
+    const { data: alreadyAccepted } = await db
       .from("mobility_job_offers")
       .select("id")
       .eq("job_id", jobId)
@@ -53,7 +53,7 @@ export async function resolveConflict(
       return false;
     }
 
-    const { data: riderBusy } = await supabase
+    const { data: riderBusy } = await db
       .from("mobility_jobs")
       .select("id")
       .eq("rider_user_id", riderId)
@@ -62,14 +62,14 @@ export async function resolveConflict(
       .maybeSingle();
 
     if (riderBusy) {
-      await supabase
+      await db
         .from("mobility_job_offers")
         .update({ status: "expired", responded_at: new Date().toISOString() } as any)
         .eq("id", offerId);
       return false;
     }
 
-    const { data: acceptedRows, error: acceptError } = await supabase
+    const { data: acceptedRows, error: acceptError } = await db
       .from("mobility_job_offers")
       .update({
         status: "accepted",
@@ -82,7 +82,7 @@ export async function resolveConflict(
 
     if (acceptError || !acceptedRows?.length) return false;
 
-    const { data: jobRows, error: jobError } = await supabase
+    const { data: jobRows, error: jobError } = await db
       .from("mobility_jobs")
       .update({
         status: "accepted",
@@ -94,14 +94,14 @@ export async function resolveConflict(
       .select("id");
 
     if (jobError || !jobRows?.length) {
-      await supabase
+      await db
         .from("mobility_job_offers")
         .update({ status: "pending" } as any)
         .eq("id", offerId);
       return false;
     }
 
-    await supabase
+    await db
       .from("mobility_job_offers")
       .update({
         status: "expired",
@@ -110,12 +110,12 @@ export async function resolveConflict(
       .eq("job_id", jobId)
       .eq("status", "pending");
 
-    await supabase
+    await db
       .from("rider_presence")
       .update({ is_available: false } as any)
       .eq("user_id", riderId);
 
-    await supabase
+    await db
       .from("mobility_dispatch_runs")
       .update({
         status: "assigned",

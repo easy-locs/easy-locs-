@@ -2,7 +2,7 @@ import { smartDispatch, handleOfferResponse, handleRideComplete, startSmartDispa
 import { sendRiderStatusMessage } from "./dispatch-orbit-bridge";
 import { updateDriverStats } from "./dispatch-learning-engine";
 import { isValidTransition } from "./status-machine";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
 import type { UnifiedMobilityJobInput } from "./unified-mobility.types";
 
@@ -31,7 +31,7 @@ export async function advanceRideStatus(
   newStatus: string,
   riderId?: string,
 ) {
-  const { data: job } = await supabase
+  const { data: job } = await db
     .from("mobility_jobs")
     .select("status, rider_user_id")
     .eq("id", jobId)
@@ -57,7 +57,7 @@ export async function advanceRideStatus(
     update.completed_at = new Date().toISOString();
   }
 
-  await supabase
+  await db
     .from("mobility_jobs")
     .update(update as any)
     .eq("id", jobId);

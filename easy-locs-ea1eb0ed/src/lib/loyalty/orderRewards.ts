@@ -1,9 +1,8 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { awardLoyaltyPoints } from "@/lib/loyalty/loyaltyEngine";
 
 export async function rewardOrderCompletion(orderId: string) {
-  const { data: order, error } = await supabase
-    .from("orders")
+  const { data: order, error } = await db("orders")
     .select("id, customer_user_id, total_amount, status")
     .eq("id", orderId)
     .maybeSingle();
@@ -30,8 +29,7 @@ export async function rewardOrderCompletion(orderId: string) {
 }
 
 export async function rewardRecentCompletedOrders(limit = 50) {
-  const { data, error } = await supabase
-    .from("orders")
+  const { data, error } = await db("orders")
     .select("id")
     .in("status", ["completed", "delivered"])
     .order("updated_at", { ascending: false })

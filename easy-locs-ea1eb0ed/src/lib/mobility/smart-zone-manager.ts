@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
 import type { MobilityTrafficLevel, MobilityWeatherType } from "./unified-mobility.types";
 
@@ -77,7 +77,7 @@ export async function getSmartZoneData(lat: number, lng: number): Promise<SmartZ
     return cached.data;
   }
 
-  const { data: overlay } = await supabase
+  const { data: overlay } = await db
     .from("geo_live_zone_overlays")
     .select("*")
     .eq("zone_key", zoneKey)
@@ -106,7 +106,7 @@ export async function getSmartZoneData(lat: number, lng: number): Promise<SmartZ
 
   let suggestedReposition: string | null = null;
   if (heat === "cold" && baseSupply > 5) {
-    const { data: hotZones } = await supabase
+    const { data: hotZones } = await db
       .from("geo_live_zone_overlays")
       .select("zone_key, demand_level, supply_level")
       .gt("demand_level", 30)
@@ -143,7 +143,7 @@ export async function getSmartZoneData(lat: number, lng: number): Promise<SmartZ
 }
 
 export async function computeZoneHeatMap(): Promise<ZoneHeatMap> {
-  const { data: zones } = await supabase
+  const { data: zones } = await db
     .from("geo_live_zone_overlays")
     .select("zone_key, lat, lng, demand_level, supply_level")
     .limit(200);

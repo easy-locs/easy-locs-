@@ -6,6 +6,7 @@
 
 import { reportAnomaly } from "./anomaly-detector";
 import { reportHealth } from "./health-aggregator";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 import { isValidVertical } from "./taxonomy-guard";
 
 export interface ListingQualityScore {
@@ -222,6 +223,6 @@ export function runListingQualityEngine(): { status: string; totalAssessed: numb
     undefined,
     totalAssessed > 0 ? `${totalAssessed} assessed — ${totalBlocked} blocked` : undefined
   );
-  console.log(`[listing-quality] Listing quality engine active — ${totalAssessed} assessed, ${totalBlocked} blocked`);
+  structuredLogger.info("listing", "assessListingQuality", `Listing quality engine active — ${totalAssessed} assessed, ${totalBlocked} blocked`);
   return { status, totalAssessed, totalBlocked };
 }

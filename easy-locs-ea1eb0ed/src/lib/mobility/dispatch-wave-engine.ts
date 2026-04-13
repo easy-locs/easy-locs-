@@ -1,7 +1,7 @@
 /**
  * dispatch-wave-engine — Progressive wave-based driver offer dispatch.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { ScoredDriver } from "./driver-ai-scorer";
 
 const WAVES = {
@@ -11,7 +11,7 @@ const WAVES = {
 } as const;
 
 export async function createDispatchRun(jobId: string, zoneKey?: string | null) {
-  const { data } = await supabase
+  const { data } = await db
     .from("mobility_dispatch_runs")
     .insert({
       job_id: jobId,
@@ -39,7 +39,7 @@ export async function dispatchWave(
 
   const expiresAt = new Date(Date.now() + wave.expiresSec * 1000).toISOString();
 
-  await supabase.from("mobility_job_offers").insert(
+  await db("mobility_job_offers").insert(
     selected.map((d) => ({
       job_id: jobId,
       rider_user_id: d.rider_user_id,
@@ -50,7 +50,7 @@ export async function dispatchWave(
         wave: waveNumber,
         score_total: d.score_total,
       },
-    })) as any,
+    })),
   );
 
   return selected;

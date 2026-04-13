@@ -18,7 +18,7 @@
  * - listing.published      → supply signal
  */
 import { eventBus } from "@/lib/core/event-bus";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 interface RawSignal {
   signal_type: string;
@@ -46,7 +46,7 @@ async function flushBatch() {
   const toFlush = [...batch];
   batch = [];
 
-  const { error } = await supabase.from("radar_signals").insert(
+  const { error } = await db("radar_signals").insert(
     toFlush.map((s) => ({
       signal_type: s.signal_type,
       source_module: s.source_module,
@@ -59,7 +59,7 @@ async function flushBatch() {
       lat: s.lat ?? null,
       lng: s.lng ?? null,
       intensity: s.intensity ?? 1,
-      metadata_json: (s.metadata_json ?? {}) as unknown as import("@/integrations/supabase/types").Json,
+      metadata_json: s.metadata_json ?? {},
     })),
   );
 

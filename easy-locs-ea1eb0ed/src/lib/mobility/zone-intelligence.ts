@@ -1,7 +1,7 @@
 /**
  * zone-intelligence — Fetches real-time zone context from geo_live_zone_overlays.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export interface ZoneIntelligence {
   demand: number;
@@ -11,7 +11,7 @@ export interface ZoneIntelligence {
 }
 
 export async function getZoneIntelligence(lat: number, lng: number): Promise<ZoneIntelligence> {
-  const { data } = await supabase
+  const { data } = await db
     .from("geo_live_zone_overlays")
     .select("*")
     .limit(1)

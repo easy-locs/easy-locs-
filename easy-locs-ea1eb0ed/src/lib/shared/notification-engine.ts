@@ -5,8 +5,8 @@
  * Ensures consistent metadata format (DeepLinkMeta) for every notification.
  * Uses canonical `app_notifications` table.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 import type { DeepLinkMeta, NotificationPayload, TargetType, AppModule } from "./types";
 import { buildTargetUrl } from "./routes";
 
@@ -64,7 +64,7 @@ export async function createNotification(payload: NotificationPayload): Promise<
       metadata: payload.meta as any,
     });
   } catch (e) {
-    console.error("[notification-engine] insert failed:", e);
+    structuredLogger.error("notification", "insertNotification", `Insert failed: ${e}`);
   }
 }
 
@@ -117,8 +117,8 @@ export async function resolveNotificationsForTarget(
     }
 
     await query;
-    console.log(`[notification-engine] resolved notifications for ${targetType}:${targetId}`);
+    structuredLogger.info("notification", "resolveForTarget", `Resolved notifications for ${targetType}:${targetId}`);
   } catch (e) {
-    console.error("[notification-engine] resolveForTarget failed:", e);
+    structuredLogger.error("notification", "resolveForTarget", `Failed: ${e}`);
   }
 }

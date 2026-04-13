@@ -1,7 +1,7 @@
 /**
  * ride-idempotency — Server-side dedup check against recent mobility_jobs.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export function buildRideIdempotencyKey(payload: any) {
   return [
@@ -18,7 +18,7 @@ export function buildRideIdempotencyKey(payload: any) {
 export async function findRecentDuplicateRide(idempotencyKey: string, ttlMs = 15000) {
   const since = new Date(Date.now() - ttlMs).toISOString();
 
-  const { data } = await supabase
+  const { data } = await db
     .from("mobility_jobs")
     .select("id,status,created_at")
     .gte("created_at", since)

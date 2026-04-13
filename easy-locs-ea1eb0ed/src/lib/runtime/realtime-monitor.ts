@@ -2,6 +2,7 @@
  * realtime-monitor — Atomic runtime unit: monitors realtime subscription health.
  * Single responsibility: track active subscriptions, detect stale channels.
  */
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 export interface RealtimeChannelState {
   channelName: string;
@@ -25,7 +26,7 @@ export function registerChannel(channelName: string, module: string) {
     lastEventAt: null, eventCount: 0,
     status: "active",
   });
-  console.log(`[RT_MONITOR] registered: ${channelName} (${module})`);
+  structuredLogger.info("realtime", "registerChannel", `Registered: ${channelName} (${module})`);
   notify();
 }
 

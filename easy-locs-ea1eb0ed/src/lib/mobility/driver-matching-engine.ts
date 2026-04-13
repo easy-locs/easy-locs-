@@ -1,7 +1,7 @@
 /**
  * driver-matching-engine — Finds nearby available drivers from rider_presence.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 export interface NearbyDriver {
   id: string;
@@ -13,7 +13,7 @@ export interface NearbyDriver {
 }
 
 export async function findNearbyDrivers(lat: number, lng: number): Promise<NearbyDriver[]> {
-  const { data } = await supabase
+  const { data } = await db
     .from("rider_presence")
     .select("*")
     .eq("is_online", true)

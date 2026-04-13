@@ -2,7 +2,6 @@
  * onboarding-validator — Atomic unit: validate onboarding step completeness.
  * Single responsibility: check which onboarding steps are complete.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 
@@ -25,7 +24,7 @@ export async function checkOnboardingStatus(userId: string): Promise<OnboardingS
   const start = Date.now();
 
   const [profileRes, walletRes, orbitRes, orgRes] = await Promise.all([
-    supabase.from("profiles").select("id, first_name, last_name, email").eq("id", userId).maybeSingle(),
+    db("profiles").select("id, first_name, last_name, email").eq("id", userId).maybeSingle(),
     db("wallet_accounts").select("id").eq("owner_user_id", userId).maybeSingle(),
     db("orbit_profiles_v2").select("id").eq("id", userId).maybeSingle(),
     db("org_members").select("org_id").eq("user_id", userId).limit(1),

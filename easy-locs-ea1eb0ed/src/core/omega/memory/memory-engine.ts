@@ -1,5 +1,6 @@
 import type { MemoryEntry, MemoryDetails, OmegaEngineStatus } from "../omega-types";
 import { omegaPersistence } from "../omega-persistence";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 const MAX_MEMORIES = 5_000;
 let memIdCounter = 0;
@@ -176,7 +177,7 @@ class MemoryEngine {
     }
     this.status = "active";
     this.lastRunAt = Date.now();
-    console.log(`[OMEGA] MemoryEngine booted | memories: ${this.memories.size} (${persisted.length} restored)`);
+    structuredLogger.info("system", "omega_engine_boot", `MemoryEngine booted | memories: ${this.memories.size} (${persisted.length} restored)`);
   }
 
   shutdown(): void { this.status = "stopped"; }

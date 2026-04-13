@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
 import type { MobilityContext } from "./unified-mobility.types";
 
@@ -101,8 +101,7 @@ export async function batchDeliveryJobs(
 
   const since = new Date(Date.now() - BATCH_WINDOW_MS).toISOString();
 
-  const { data: nearbyJobs } = await supabase
-    .from("mobility_jobs")
+  const { data: nearbyJobs } = await db("mobility_jobs")
     .select("id, pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, created_at, status, rider_user_id")
     .eq("job_type", context)
     .in("status", ["searching", "offered"])
@@ -140,7 +139,7 @@ export async function batchDeliveryJobs(
   const batchId = `batch_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const batchedJobIds = optimized.map((p) => p.jobId);
 
-  await supabase.from("mobility_delivery_batches").insert({
+  await db("mobility_delivery_batches").insert({
     batch_id: batchId,
     job_ids: batchedJobIds,
     context,
@@ -149,18 +148,17 @@ export async function batchDeliveryJobs(
     route_order: optimized.map((p, i) => ({ order: i + 1, job_id: p.jobId })),
     status: "pending",
     created_at: new Date().toISOString(),
-  } as any);
+  });
 
   for (let i = 0; i < batchedJobIds.length; i++) {
-    await supabase
-      .from("mobility_jobs")
+    await db("mobility_jobs")
       .update({
         metadata: {
           batch_id: batchId,
           batch_order: i + 1,
           batch_total: batchedJobIds.length,
         },
-      } as any)
+      })
       .eq("id", batchedJobIds[i]);
   }
 
@@ -180,8 +178,7 @@ export async function batchDeliveryJobs(
 }
 
 export async function getBatchStatus(batchId: string) {
-  const { data } = await supabase
-    .from("mobility_delivery_batches")
+  const { data } = await db("mobility_delivery_batches")
     .select("*")
     .eq("batch_id", batchId)
     .maybeSingle();

@@ -4,19 +4,53 @@
  */
 import { platformBus } from "@/lib/shared/platform-bus";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { insertNotification } from "@/lib/notifications-v2/notification-service";
 
-// ── Message sent → notify receiver ──
+interface WalletTransactionPayload {
+  transaction: {
+    id: string;
+    amount: number;
+    currency?: string;
+  };
+  walletBalance?: number;
+}
+
+interface PaymentPayload {
+  amount?: number;
+  currency?: string;
+  walletBalance?: number;
+  transactionId?: string;
+  paymentIntentId?: string;
+  reason?: string;
+}
+
+interface BookingPayload {
+  booking?: { id: string };
+  bookingId?: string;
+}
+
+interface OrderPayload {
+  userId?: string;
+  buyerId?: string;
+  orderId?: string;
+  shopId?: string;
+}
+
+interface QrPaymentPayload {
+  amount?: number;
+  currency?: string;
+  targetId?: string;
+}
+
 platformBus.on("orbit:message_sent", (event) => {
-  const msg = event.payload as any;
-  const message = msg?.message;
+  const msg = event.payload as Record<string, unknown>;
+  const message = msg?.message as Record<string, unknown> | undefined;
   if (!message) return;
-  if (import.meta.env.DEV) console.log("[notification-handler] orbit:message_sent captured", message.conversationId);
 });
 
-// ── Wallet transaction created → notify user ──
 platformBus.on("wallet:transaction_created", (event) => {
-  const { transaction, walletBalance } = event.payload as any;
+  const { transaction, walletBalance } = event.payload as WalletTransactionPayload;
   if (!transaction) return;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
@@ -39,7 +73,7 @@ platformBus.on("wallet:transaction_created", (event) => {
 
 // ── Payment success → notify ──
 platformBus.on("wallet:payment_success", (event) => {
-  const p = event.payload as any;
+  const p = event.payload as PaymentPayload;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
@@ -60,7 +94,7 @@ platformBus.on("wallet:payment_success", (event) => {
 
 // ── Payment failed → notify ──
 platformBus.on("wallet:payment_failed", (event) => {
-  const p = event.payload as any;
+  const p = event.payload as PaymentPayload;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
@@ -79,7 +113,7 @@ platformBus.on("wallet:payment_failed", (event) => {
 
 // ── Booking events ──
 platformBus.on("booking:requested", (event) => {
-  const { booking } = event.payload as any;
+  const { booking } = event.payload as BookingPayload;
   if (!booking) return;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
@@ -97,7 +131,7 @@ platformBus.on("booking:requested", (event) => {
 });
 
 platformBus.on("booking:confirmed", (event) => {
-  const p = event.payload as any;
+  const p = event.payload as BookingPayload;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
@@ -114,7 +148,7 @@ platformBus.on("booking:confirmed", (event) => {
 });
 
 platformBus.on("booking:cancelled", (event) => {
-  const p = event.payload as any;
+  const p = event.payload as BookingPayload;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
@@ -132,7 +166,7 @@ platformBus.on("booking:cancelled", (event) => {
 
 // ── Storefront order events ──
 platformBus.on("ORDER_CREATED", (event) => {
-  const p = event.payload as any;
+  const p = event.payload as OrderPayload;
   const userId = p.userId || p.buyerId;
   if (!userId) return;
   void insertNotification({
@@ -148,7 +182,7 @@ platformBus.on("ORDER_CREATED", (event) => {
 });
 
 platformBus.on("ORDER_COMPLETED", (event) => {
-  const p = event.payload as any;
+  const p = event.payload as OrderPayload;
   const userId = p.userId || p.buyerId;
   if (!userId) return;
   void insertNotification({
@@ -165,7 +199,7 @@ platformBus.on("ORDER_COMPLETED", (event) => {
 
 // ── QR payment completed ──
 platformBus.on("qr:payment_completed", (event) => {
-  const p = event.payload as any;
+  const p = event.payload as QrPaymentPayload;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
@@ -181,4 +215,3 @@ platformBus.on("qr:payment_completed", (event) => {
   });
 });
 
-if (import.meta.env.DEV) console.log("[notification-handler] Registered on platformBus — colon notation");

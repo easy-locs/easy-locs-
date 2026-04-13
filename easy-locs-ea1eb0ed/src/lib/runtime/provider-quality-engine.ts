@@ -6,6 +6,7 @@
 
 import { reportAnomaly } from "./anomaly-detector";
 import { reportHealth } from "./health-aggregator";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 import { isValidVertical } from "./taxonomy-guard";
 
 export interface ProviderTrustScore {
@@ -222,6 +223,6 @@ export function runProviderQualityEngine(): { totalScored: number; blocked: numb
     allScores.length > 0 ? `${allScores.length} scored — ${blocked} blocked, ${limited} limited` : undefined
   );
 
-  console.log(`[provider-quality] Provider quality engine active — ${allScores.length} providers scored, ${blocked} blocked, ${limited} limited`);
+  structuredLogger.info("system", "scoreProviderQuality", `Provider quality engine active — ${allScores.length} providers scored, ${blocked} blocked, ${limited} limited`);
   return { totalScored: allScores.length, blocked, limited };
 }

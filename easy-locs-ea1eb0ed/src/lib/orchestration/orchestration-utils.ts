@@ -2,7 +2,6 @@
  * Shared orchestration utilities — notification creation + order status update.
  * Single responsibility: DB write helpers used by all domain handlers.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 
@@ -27,8 +26,7 @@ export async function createNotification(params: {
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {
-  const { error } = await supabase
-    .from("orders")
+  const { error } = await db("orders")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", orderId);
   if (error) console.error("[orchestration] updateOrderStatus error", error);

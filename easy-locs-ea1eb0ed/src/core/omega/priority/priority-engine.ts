@@ -1,5 +1,6 @@
 import type { PriorityItem, OmegaPriority, OmegaEngineStatus } from "../omega-types";
 import { omegaPersistence } from "../omega-persistence";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 const MAX_ITEMS = 2_000;
 let priorityIdCounter = 0;
@@ -129,7 +130,7 @@ class PriorityEngine {
     this.status = "active";
     this.lastRunAt = Date.now();
     await this.restore().catch(() => {});
-    console.log(`[OMEGA] PriorityEngine booted | items: ${this.items.size}`);
+    structuredLogger.info("system", "omega_engine_boot", `PriorityEngine booted | items: ${this.items.size}`);
   }
 
   shutdown(): void { this.status = "stopped"; }

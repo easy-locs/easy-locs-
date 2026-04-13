@@ -1,7 +1,14 @@
 /**
  * addLoyaltyPoints — Award loyalty points after ride completion.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
+
+interface LoyaltyRow {
+  user_id: string;
+  points: number;
+  tier: string;
+  updated_at: string;
+}
 
 export async function addLoyaltyPoints(params: {
   userId: string;
@@ -10,13 +17,13 @@ export async function addLoyaltyPoints(params: {
 }) {
   const { userId, points, referenceId } = params;
 
-  const { data } = await supabase
-    .from("user_loyalty" as any)
+  const { data } = await db("user_loyalty")
     .select("*")
     .eq("user_id", userId)
     .single();
 
-  const currentPoints = (data as any)?.points ?? 0;
+  const row = data as LoyaltyRow | null;
+  const currentPoints = row?.points ?? 0;
   const newPoints = currentPoints + points;
 
   const tier =
@@ -24,19 +31,19 @@ export async function addLoyaltyPoints(params: {
     newPoints > 300 ? "silver" :
     "bronze";
 
-  await supabase.from("user_loyalty" as any).upsert({
+  await db("user_loyalty").upsert({
     user_id: userId,
     points: newPoints,
     tier,
     updated_at: new Date().toISOString(),
-  } as any);
+  });
 
-  await supabase.from("loyalty_transactions" as any).insert({
+  await db("loyalty_transactions").insert({
     user_id: userId,
     points,
     type: "ride_reward",
     reference_id: referenceId ?? null,
-  } as any);
+  });
 
   return { ok: true, points: newPoints, tier };
 }

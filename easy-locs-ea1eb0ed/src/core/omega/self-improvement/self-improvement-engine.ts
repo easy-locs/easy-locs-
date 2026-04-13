@@ -1,5 +1,6 @@
 import type { SelfImprovementCycle, OmegaEngineStatus } from "../omega-types";
 import { omegaPersistence } from "../omega-persistence";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 const MAX_CYCLES = 500;
 let cycleIdCounter = 0;
@@ -148,7 +149,7 @@ class SelfImprovementEngine {
     this.status = "active";
     this.lastRunAt = Date.now();
     await this.restore().catch(() => {});
-    console.log(`[OMEGA] SelfImprovementEngine booted | cycles: ${this.cycles.size} | weaknesses: ${this.weaknessQueue.length}`);
+    structuredLogger.info("system", "omega_engine_boot", `SelfImprovementEngine booted | cycles: ${this.cycles.size} | weaknesses: ${this.weaknessQueue.length}`);
   }
 
   shutdown(): void { this.status = "stopped"; }

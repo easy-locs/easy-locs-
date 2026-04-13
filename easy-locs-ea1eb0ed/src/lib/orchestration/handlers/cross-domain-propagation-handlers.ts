@@ -17,29 +17,29 @@ export function installCrossDomainPropagationHandlers(): () => void {
 
   // ── ORDER → WALLET + DASHBOARD + DELIVERY ──
   unsubs.push(
-    platformBus.on(APP_EVENTS.ORDER_CREATED as any, () => {
+    platformBus.on(APP_EVENTS.ORDER_CREATED, () => {
       invalidateDashboardCaches();
       platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
-    platformBus.on(APP_EVENTS.PAYMENT_SUCCESS as any, () => {
+    platformBus.on(APP_EVENTS.PAYMENT_SUCCESS, () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
       platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
-    platformBus.on(APP_EVENTS.ORDER_COMPLETED as any, () => {
+    platformBus.on(APP_EVENTS.ORDER_COMPLETED, () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
       invalidateDeliveryCaches();
       platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
-    platformBus.on(APP_EVENTS.ORDER_CONFIRMED as any, () => {
+    platformBus.on(APP_EVENTS.ORDER_CONFIRMED, () => {
       invalidateDashboardCaches();
     }),
-    platformBus.on(APP_EVENTS.ORDER_READY as any, () => {
+    platformBus.on(APP_EVENTS.ORDER_READY, () => {
       invalidateDeliveryCaches();
       invalidateDashboardCaches();
     }),
-    platformBus.on(APP_EVENTS.ORDER_CANCELLED as any, () => {
+    platformBus.on(APP_EVENTS.ORDER_CANCELLED, () => {
       invalidateOrderCaches();
       invalidateDashboardCaches();
       platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
@@ -48,18 +48,18 @@ export function installCrossDomainPropagationHandlers(): () => void {
 
   // ── DELIVERY → ORDER + DASHBOARD ──
   unsubs.push(
-    platformBus.on(APP_EVENTS.MISSION_ACCEPTED as any, () => {
+    platformBus.on(APP_EVENTS.MISSION_ACCEPTED, () => {
       invalidateOrderCaches();
       invalidateDashboardCaches();
       invalidateDeliveryCaches();
       platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
-    platformBus.on(APP_EVENTS.MISSION_COMPLETED as any, () => {
+    platformBus.on(APP_EVENTS.MISSION_COMPLETED, () => {
       invalidateOrderCaches();
       invalidateDashboardCaches();
       invalidateDeliveryCaches();
     }),
-    platformBus.on(APP_EVENTS.DELIVERY_COMPLETED as any, () => {
+    platformBus.on(APP_EVENTS.DELIVERY_COMPLETED, () => {
       invalidateOrderCaches();
       invalidateWalletCaches();
       invalidateDashboardCaches();
@@ -68,7 +68,7 @@ export function installCrossDomainPropagationHandlers(): () => void {
 
   // ── REFUND → WALLET + DASHBOARD ──
   unsubs.push(
-    platformBus.on(APP_EVENTS.REFUND_REQUESTED as any, () => {
+    platformBus.on(APP_EVENTS.REFUND_REQUESTED, () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
       platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
@@ -77,29 +77,29 @@ export function installCrossDomainPropagationHandlers(): () => void {
 
   // ── WALLET EVENTS → DASHBOARD ──
   unsubs.push(
-    platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS as any, () => {
+    platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS, () => {
       invalidateDashboardCaches();
     }),
-    platformBus.on(APP_EVENTS.WALLET_BALANCE_UPDATED as any, () => {
+    platformBus.on(APP_EVENTS.WALLET_BALANCE_UPDATED, () => {
       invalidateDashboardCaches();
     }),
   );
 
   // ── ORBIT EVENTS → DASHBOARD COUNTERS ──
   unsubs.push(
-    platformBus.on(APP_EVENTS.ORBIT_MESSAGE_RECEIVED as any, () => {
+    platformBus.on(APP_EVENTS.ORBIT_MESSAGE_RECEIVED, () => {
       platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
   );
 
   // ── STOREFRONT → ORDER + WALLET + DASHBOARD ──
   unsubs.push(
-    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED as any, () => {
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_PLACED, () => {
       invalidateOrderCaches();
       invalidateDashboardCaches();
       platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, {}, "system");
     }),
-    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED as any, () => {
+    platformBus.on(APP_EVENTS.STOREFRONT_ORDER_COMPLETED, () => {
       invalidateOrderCaches();
       invalidateWalletCaches();
       invalidateDashboardCaches();
@@ -108,11 +108,11 @@ export function installCrossDomainPropagationHandlers(): () => void {
 
   // ── RENTAL → DASHBOARD ──
   unsubs.push(
-    platformBus.on(APP_EVENTS.RENTAL_RENT_CALL_PAID as any, () => {
+    platformBus.on(APP_EVENTS.RENTAL_RENT_CALL_PAID, () => {
       invalidateWalletCaches();
       invalidateDashboardCaches();
     }),
-    platformBus.on(APP_EVENTS.RENTAL_TENANT_CREATED as any, () => {
+    platformBus.on(APP_EVENTS.RENTAL_TENANT_CREATED, () => {
       invalidateDashboardCaches();
     }),
   );

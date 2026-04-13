@@ -1,23 +1,29 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { eventBus } from "@/lib/core/event-bus";
+
+interface MobilityJobRow {
+  customer_user_id: string | null;
+  job_type: string;
+  pickup_label: string | null;
+  dropoff_label: string | null;
+}
 
 export async function bridgeOrbitOnAssign(jobId: string, riderId: string) {
   try {
-    const { data: job } = await supabase
-      .from("mobility_jobs")
+    const { data: job } = await db("mobility_jobs")
       .select("customer_user_id, job_type, pickup_label, dropoff_label")
       .eq("id", jobId)
       .maybeSingle();
 
-    if (!job || !(job as any).customer_user_id) return;
+    const row = job as MobilityJobRow | null;
+    if (!row || !row.customer_user_id) return;
 
-    const customerId = (job as any).customer_user_id;
-    const jobType = (job as any).job_type ?? "ride";
+    const customerId = row.customer_user_id;
+    const jobType = row.job_type ?? "ride";
 
     const threadId = `ride_${jobId}`;
 
-    const { data: existing } = await supabase
-      .from("orbit_threads")
+    const { data: existing } = await db("orbit_threads")
       .select("id")
       .eq("thread_id", threadId)
       .maybeSingle();
@@ -35,10 +41,10 @@ export async function bridgeOrbitOnAssign(jobId: string, riderId: string) {
         ? "Parcel Delivery"
         : "Ride";
 
-    const pickup = (job as any).pickup_label ?? "Pickup";
-    const dropoff = (job as any).dropoff_label ?? "Destination";
+    const pickup = row.pickup_label ?? "Pickup";
+    const dropoff = row.dropoff_label ?? "Destination";
 
-    await supabase.from("orbit_threads").insert({
+    await db("orbit_threads").insert({
       thread_id: threadId,
       thread_type: "ride_chat",
       title: `${label}: ${pickup} → ${dropoff}`,
@@ -51,16 +57,16 @@ export async function bridgeOrbitOnAssign(jobId: string, riderId: string) {
         rider_id: riderId,
       },
       created_at: new Date().toISOString(),
-    } as any);
+    });
 
-    await supabase.from("orbit_messages").insert({
+    await db("orbit_messages").insert({
       thread_id: threadId,
       sender_id: "system",
       message_type: "system",
       content: `Your rider has been assigned. You can chat here for your ${label.toLowerCase()}.`,
       metadata: { auto_message: true, job_id: jobId },
       created_at: new Date().toISOString(),
-    } as any);
+    });
 
     void eventBus.emit("orbit.ride_chat_created", {
       jobId,
@@ -91,21 +97,20 @@ export async function sendRiderStatusMessage(
   const message = statusMessages[status];
   if (!message) return;
 
-  await supabase.from("orbit_messages").insert({
+  await db("orbit_messages").insert({
     thread_id: threadId,
     sender_id: "system",
     message_type: "system",
     content: message,
     metadata: { auto_message: true, job_id: jobId, status },
     created_at: new Date().toISOString(),
-  } as any);
+  });
 }
 
 export async function getRideChatThreadId(jobId: string): Promise<string | null> {
   const threadId = `ride_${jobId}`;
 
-  const { data } = await supabase
-    .from("orbit_threads")
+  const { data } = await db("orbit_threads")
     .select("id")
     .eq("thread_id", threadId)
     .maybeSingle();

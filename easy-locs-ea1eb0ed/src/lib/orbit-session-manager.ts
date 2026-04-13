@@ -9,6 +9,8 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 import { getDeviceFingerprint } from "./orbit-keystore";
 
 interface SessionInfo {
@@ -73,8 +75,7 @@ export async function registerDeviceSession(userId: string): Promise<{
   // First deduplicate: remove all but the most recent session for this fingerprint
   await deduplicateSessions(userId, fingerprint);
 
-  const { data: existing } = await supabase
-    .from("user_sessions")
+  const { data: existing } = await db("user_sessions")
     .select("id, last_active_at")
     .eq("user_id", userId)
     .eq("device_fingerprint", fingerprint)
@@ -85,12 +86,11 @@ export async function registerDeviceSession(userId: string): Promise<{
   const isNewDevice = !existing;
 
   if (existing) {
-    await supabase
-      .from("user_sessions")
+    await db("user_sessions")
       .update({ last_active_at: new Date().toISOString(), device_label: label })
       .eq("id", existing.id);
   } else {
-    await supabase.from("user_sessions").insert({
+    await db("user_sessions").insert({
       user_id: userId,
       device_fingerprint: fingerprint,
       device_label: label,
@@ -115,8 +115,7 @@ export async function registerDeviceSession(userId: string): Promise<{
  * This fixes the 189+ sessions problem caused by duplicate inserts.
  */
 async function deduplicateSessions(userId: string, fingerprint: string): Promise<void> {
-  const { data: dupes } = await supabase
-    .from("user_sessions")
+  const { data: dupes } = await db("user_sessions")
     .select("id, last_active_at")
     .eq("user_id", userId)
     .eq("device_fingerprint", fingerprint)
@@ -124,14 +123,12 @@ async function deduplicateSessions(userId: string, fingerprint: string): Promise
 
   if (!dupes || dupes.length <= 1) return;
 
-  // Keep the first (most recent), delete the rest
   const toDelete = dupes.slice(1).map(s => s.id);
   if (toDelete.length > 0) {
-    await supabase
-      .from("user_sessions")
+    await db("user_sessions")
       .delete()
       .in("id", toDelete);
-    console.log(`[SessionManager] Cleaned ${toDelete.length} duplicate sessions for fingerprint`);
+    structuredLogger.info("auth", "session_dedup", `Cleaned ${toDelete.length} duplicate sessions for fingerprint`);
   }
 }
 
@@ -141,7 +138,7 @@ async function logLoginEvent(
   deviceLabel: string,
   isNewDevice: boolean
 ) {
-  await supabase.from("login_events").insert({
+  await db("login_events").insert({
     user_id: userId,
     device_fingerprint: fingerprint,
     device_label: deviceLabel,
@@ -154,12 +151,11 @@ export async function getUserSessions(userId: string): Promise<DeviceSession[]> 
   // First deduplicate ALL sessions for this user
   await deduplicateAllSessions(userId);
 
-  const { data } = await supabase
-    .from("user_sessions")
+  const { data } = await db("user_sessions")
     .select("*")
     .eq("user_id", userId)
     .order("last_active_at", { ascending: false })
-    .limit(10); // Hard cap
+    .limit(10);
 
   return (data || []) as unknown as DeviceSession[];
 }
@@ -168,15 +164,13 @@ export async function getUserSessions(userId: string): Promise<DeviceSession[]> 
  * Deduplicate ALL sessions for a user — one session per unique device_fingerprint.
  */
 async function deduplicateAllSessions(userId: string): Promise<void> {
-  const { data: all } = await supabase
-    .from("user_sessions")
+  const { data: all } = await db("user_sessions")
     .select("id, device_fingerprint, last_active_at")
     .eq("user_id", userId)
     .order("last_active_at", { ascending: false });
 
   if (!all || all.length <= 5) return;
 
-  // Group by fingerprint, keep only the most recent per fingerprint
   const seen = new Set<string>();
   const toDelete: string[] = [];
 
@@ -189,12 +183,11 @@ async function deduplicateAllSessions(userId: string): Promise<void> {
   }
 
   if (toDelete.length > 0) {
-    // Delete in batches of 50
     for (let i = 0; i < toDelete.length; i += 50) {
       const batch = toDelete.slice(i, i + 50);
-      await supabase.from("user_sessions").delete().in("id", batch);
+      await db("user_sessions").delete().in("id", batch);
     }
-    console.log(`[SessionManager] Deduplicated ${toDelete.length} total sessions`);
+    structuredLogger.info("auth", "session_dedup_all", `Deduplicated ${toDelete.length} total sessions`);
   }
 }
 
@@ -202,20 +195,19 @@ async function deduplicateAllSessions(userId: string): Promise<void> {
  * Revoke a single session
  */
 export async function revokeSession(sessionId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from("user_sessions")
+  const { error } = await db("user_sessions")
     .delete()
     .eq("id", sessionId);
 
   if (error) {
-    console.error("[SessionManager] Failed to revoke session:", error);
+    structuredLogger.error("auth", "session_revoke_failed", `Failed to revoke session: ${error.message}`);
     return false;
   }
 
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     const fingerprint = await getDeviceFingerprint();
-    await supabase.from("login_events").insert({
+    await db("login_events").insert({
       user_id: user.id,
       device_fingerprint: fingerprint,
       device_label: "Session revoked",
@@ -236,19 +228,16 @@ export async function revokeAllOtherSessions(userId: string): Promise<boolean> {
   // CRITICAL: Actually revoke auth tokens server-side
   const { error: signOutError } = await supabase.auth.signOut({ scope: "others" });
   if (signOutError) {
-    console.error("[SessionManager] Failed to revoke other auth sessions:", signOutError);
+    structuredLogger.error("auth", "revoke_all_failed", `Failed to revoke other auth sessions: ${signOutError.message}`);
     return false;
   }
 
-  // Clean up tracking records
-  await supabase
-    .from("user_sessions")
+  await db("user_sessions")
     .delete()
     .eq("user_id", userId)
     .neq("device_fingerprint", fingerprint);
 
-  // Log the event
-  await supabase.from("login_events").insert({
+  await db("login_events").insert({
     user_id: userId,
     device_fingerprint: fingerprint,
     device_label: "All other sessions revoked",
@@ -260,8 +249,7 @@ export async function revokeAllOtherSessions(userId: string): Promise<boolean> {
 }
 
 export async function getSuspiciousLogins(userId: string, limit = 5): Promise<LoginEvent[]> {
-  const { data } = await supabase
-    .from("login_events")
+  const { data } = await db("login_events")
     .select("*")
     .eq("user_id", userId)
     .eq("is_new_device", true)
@@ -276,8 +264,7 @@ export async function getSuspiciousLogins(userId: string, limit = 5): Promise<Lo
  */
 export async function cleanupStaleSessions(userId: string, maxAgeDays = 7): Promise<number> {
   const cutoff = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000).toISOString();
-  const { data } = await supabase
-    .from("user_sessions")
+  const { data } = await db("user_sessions")
     .delete()
     .eq("user_id", userId)
     .lt("last_active_at", cutoff)
@@ -292,8 +279,7 @@ export async function cleanupStaleSessions(userId: string, maxAgeDays = 7): Prom
 export async function enforceMaxSessions(userId: string, maxSessions = 5): Promise<number> {
   const fingerprint = await getDeviceFingerprint();
 
-  const { data: sessions } = await supabase
-    .from("user_sessions")
+  const { data: sessions } = await db("user_sessions")
     .select("id, device_fingerprint, last_active_at")
     .eq("user_id", userId)
     .order("last_active_at", { ascending: false });
@@ -310,8 +296,7 @@ export async function enforceMaxSessions(userId: string, maxSessions = 5): Promi
   const toRevoke = sessions.filter(s => !toKeep.has(s.id));
   if (toRevoke.length === 0) return 0;
 
-  await supabase
-    .from("user_sessions")
+  await db("user_sessions")
     .delete()
     .in("id", toRevoke.map(s => s.id));
 
@@ -324,16 +309,14 @@ export async function checkSuspiciousLogin(userId: string): Promise<{
 }> {
   const fingerprint = await getDeviceFingerprint();
 
-  const { data: known } = await supabase
-    .from("user_sessions")
+  const { data: known } = await db("user_sessions")
     .select("id")
     .eq("user_id", userId)
     .eq("device_fingerprint", fingerprint)
     .maybeSingle();
 
   if (!known) {
-    const { count } = await supabase
-      .from("user_sessions")
+    const { count } = await db("user_sessions")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId);
 

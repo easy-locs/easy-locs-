@@ -1,12 +1,12 @@
 /**
  * dispatch-reassign-engine — Handles wave timeouts, escalation, and failure.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { dispatchWave } from "./dispatch-wave-engine";
 import type { ScoredDriver } from "./driver-ai-scorer";
 
 export async function processDispatchTimeouts(jobId: string, scoredDrivers: ScoredDriver[]) {
-  const { data: run } = await supabase
+  const { data: run } = await db
     .from("mobility_dispatch_runs")
     .select("*")
     .eq("job_id", jobId)
@@ -15,7 +15,7 @@ export async function processDispatchTimeouts(jobId: string, scoredDrivers: Scor
   if (!run || (run as any).status !== "running") return;
 
   // Check if already accepted
-  const { data: acceptedOffer } = await supabase
+  const { data: acceptedOffer } = await db
     .from("mobility_job_offers")
     .select("id")
     .eq("job_id", jobId)
@@ -24,7 +24,7 @@ export async function processDispatchTimeouts(jobId: string, scoredDrivers: Scor
     .maybeSingle();
 
   if (acceptedOffer) {
-    await supabase
+    await db
       .from("mobility_dispatch_runs")
       .update({ status: "assigned", updated_at: new Date().toISOString() } as any)
       .eq("id", (run as any).id);
@@ -36,12 +36,12 @@ export async function processDispatchTimeouts(jobId: string, scoredDrivers: Scor
 
   // All waves exhausted
   if (currentWave >= maxWaves) {
-    await supabase
+    await db
       .from("mobility_dispatch_runs")
       .update({ status: "failed", updated_at: new Date().toISOString() } as any)
       .eq("id", (run as any).id);
 
-    await supabase
+    await db
       .from("mobility_jobs")
       .update({ status: "failed_no_rider" } as any)
       .eq("id", jobId);
@@ -52,7 +52,7 @@ export async function processDispatchTimeouts(jobId: string, scoredDrivers: Scor
   // Escalate to next wave
   const nextWave = Math.min(currentWave + 1, maxWaves) as 1 | 2 | 3;
 
-  await supabase
+  await db
     .from("mobility_dispatch_runs")
     .update({ current_wave: nextWave, updated_at: new Date().toISOString() } as any)
     .eq("id", (run as any).id);

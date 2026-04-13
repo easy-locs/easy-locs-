@@ -20,6 +20,7 @@
 import { sendCommunicationEvent } from "./communication-pipeline";
 import { createDeepLinkMeta } from "./notification-engine";
 import { createPaymentRequest } from "./payment-request";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 import type { TargetType, AppModule } from "./types";
 
 // ═══════════════════════════════════════════════════════
@@ -315,27 +316,27 @@ function resolveEffectiveConfig(
 export async function dispatchSyncEvent(event: SyncEvent): Promise<boolean> {
   const config = EVENT_CONFIG[event.type];
   if (!config) {
-    console.warn(`[sync-engine] Unknown event type: ${event.type}`);
+    structuredLogger.warn("system", "dispatchSyncEvent", `Unknown event type: ${event.type}`);
     return false;
   }
 
   // 1. Validate orgId (always required)
   if (!event.context.orgId) {
-    console.error(`[sync-engine] REJECTED ${event.type}: missing context.orgId`);
+    structuredLogger.error("system", "dispatchSyncEvent", `REJECTED ${event.type}: missing context.orgId`);
     return false;
   }
 
   // 2. Strict context validation per event type
   const validationError = REQUIRED_CONTEXT[event.type]?.(event.context, event);
   if (validationError) {
-    console.error(`[sync-engine] REJECTED ${event.type}: ${validationError}`);
+    structuredLogger.error("system", "dispatchSyncEvent", `REJECTED ${event.type}: ${validationError}`);
     return false;
   }
 
   // 3. Deduplication check
   const dedupeKey = buildDedupeKey(event);
   if (isDuplicate(dedupeKey)) {
-    console.warn(`[sync-engine] DEDUPE blocked: ${event.type} (key: ${dedupeKey})`);
+    structuredLogger.warn("system", "dispatchSyncEvent", `DEDUPE blocked: ${event.type} (key: ${dedupeKey})`);
     return false;
   }
 
@@ -370,7 +371,7 @@ export async function dispatchSyncEvent(event: SyncEvent): Promise<boolean> {
     meta,
   });
 
-  console.log(`[sync-engine] ✓ dispatched: ${event.type} → ${effectiveConfig.targetType}:${targetId}`);
+  structuredLogger.info("system", "dispatchSyncEvent", `Dispatched: ${event.type} → ${effectiveConfig.targetType}:${targetId}`);
   return true;
 }
 

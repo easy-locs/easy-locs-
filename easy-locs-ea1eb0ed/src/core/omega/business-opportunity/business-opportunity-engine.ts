@@ -1,5 +1,6 @@
 import type { OpportunitySignal, OpportunityEvidence, OmegaEngineStatus } from "../omega-types";
 import { omegaPersistence } from "../omega-persistence";
+import { structuredLogger } from "@/lib/observability/structured-logger";
 
 const MAX_SIGNALS = 1_000;
 let signalIdCounter = 0;
@@ -137,7 +138,7 @@ class BusinessOpportunityEngine {
     this.status = "active";
     this.lastRunAt = Date.now();
     await this.restore().catch(() => {});
-    console.log(`[OMEGA] BusinessOpportunityEngine booted | signals: ${this.signals.size}`);
+    structuredLogger.info("system", "omega_engine_boot", `BusinessOpportunityEngine booted | signals: ${this.signals.size}`);
   }
 
   shutdown(): void { this.status = "stopped"; }
