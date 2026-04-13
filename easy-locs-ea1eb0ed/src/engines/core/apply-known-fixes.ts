@@ -5,6 +5,7 @@ import {
   executeRepairAction,
   type RepairOperationType,
 } from "./repair-actions";
+import { engineStormGuard } from "./engine-storm-guard";
 
 export interface ApplyContext {
   engineId: string;
@@ -35,10 +36,18 @@ export function applyKnownFixes(context: ApplyContext): ApplyResult {
       continue;
     }
 
+    if (!engineStormGuard.canApplyCorrection(context.engineId, sig)) {
+      skipped++;
+      engineObserver.log(context.engineId, "storm-guard", "warn",
+        `Storm guard blocked fix: ${sig}`);
+      continue;
+    }
+
     const execResult = executeFix(fix.fix_function, fix.fix_applied, fix.domain ?? context.domain);
     if (execResult) {
       applied++;
       appliedSignatures.push(sig);
+      engineStormGuard.recordCorrection(context.engineId, sig);
       void engineMemory.recordApply(sig);
       engineObserver.log("engine-memory", "engine-memory", "debug",
         `Pre-applied known fix: ${sig} (score=${fix.score}, confidence=${fix.confidence})`);

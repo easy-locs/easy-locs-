@@ -10,7 +10,7 @@ interface EngineLogEntry {
   message: string;
 }
 
-interface EngineMetric {
+export interface EngineMetric {
   engineId: string;
   category: string;
   tickCount: number;

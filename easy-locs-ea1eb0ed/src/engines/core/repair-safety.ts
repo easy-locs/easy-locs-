@@ -119,7 +119,7 @@ function checkGlobalStorm(): boolean {
       stormCooldownUntil = Date.now() + GLOBAL_STORM_COOLDOWN_MS;
       engineObserver.log("repair-safety", "repair-safety", "error",
         `Repair storm detected: ${globalRepairLog.length} repairs in ${GLOBAL_STORM_WINDOW_MS / 1000}s — all engines to L1 for ${GLOBAL_STORM_COOLDOWN_MS / 1000}s`);
-      platformBus.emit("repair:storm:detected" as any, {
+      platformBus.emit("repair:storm:detected", {
         count: globalRepairLog.length,
         cooldownUntil: stormCooldownUntil,
       });
@@ -129,10 +129,19 @@ function checkGlobalStorm(): boolean {
   return false;
 }
 
+type StormGuardCheck = (engineId: string) => boolean;
+let _stormGuardCheck: StormGuardCheck | null = null;
+
+export function registerStormGuardCheck(fn: StormGuardCheck): void {
+  _stormGuardCheck = fn;
+}
+
 export function canAttemptRepair(engineId: string, domain: string, issueSignature: string): boolean {
   if (isRepairStormActive()) return false;
   if (isQuarantined(engineId)) return false;
   if (isQuarantined(`domain:${domain}`)) return false;
+
+  if (_stormGuardCheck && _stormGuardCheck(engineId)) return false;
 
   const now = Date.now();
 
@@ -186,7 +195,7 @@ function trackRepairChain(chainId: string, issueSignature: string): void {
       if (existing.iterations >= CIRCULAR_LOOP_THRESHOLD) {
         engineObserver.log("repair-safety", "repair-safety", "error",
           `Circular repair loop detected: chain=${chainId} sig=${issueSignature} iterations=${existing.iterations}`);
-        platformBus.emit("repair:loop:detected" as any, {
+        platformBus.emit("repair:loop:detected", {
           chainId,
           issueSignature,
           iterations: existing.iterations,
@@ -234,7 +243,7 @@ export function quarantineEngine(engineId: string, reason: string, consecutiveRo
 
   engineObserver.log("repair-safety", "repair-safety", "warn",
     `Engine ${frozen ? "frozen" : "quarantined"}: ${engineId} — ${reason}`);
-  platformBus.emit("repair:quarantine:entered" as any, {
+  platformBus.emit("repair:quarantine:entered", {
     id: engineId,
     scope: "engine",
     reason,
@@ -256,7 +265,7 @@ export function quarantineDomain(domain: string, reason: string): void {
 
   engineObserver.log("repair-safety", "repair-safety", "warn",
     `Domain quarantined: ${domain} — ${reason}`);
-  platformBus.emit("repair:quarantine:entered" as any, {
+  platformBus.emit("repair:quarantine:entered", {
     id: key,
     scope: "domain",
     reason,
@@ -272,7 +281,7 @@ export function isQuarantined(id: string): boolean {
     quarantineMap.delete(id);
     engineObserver.log("repair-safety", "repair-safety", "info",
       `Auto-recovery: ${id} released from ${entry.frozen ? "freeze" : "quarantine"}`);
-    platformBus.emit("repair:quarantine:lifted" as any, { id, autoRecovered: true });
+    platformBus.emit("repair:quarantine:lifted", { id, autoRecovered: true });
     return false;
   }
 
@@ -284,7 +293,7 @@ export function liftQuarantine(id: string): void {
     quarantineMap.delete(id);
     engineObserver.log("repair-safety", "repair-safety", "info",
       `Manual quarantine lift: ${id}`);
-    platformBus.emit("repair:quarantine:lifted" as any, { id, autoRecovered: false });
+    platformBus.emit("repair:quarantine:lifted", { id, autoRecovered: false });
   }
 }
 
