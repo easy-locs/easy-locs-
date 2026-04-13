@@ -29,6 +29,7 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
   const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>("connecting");
   const loadingRef = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const threadMapRef = useRef(new Map<string, ConversationThread>());
 
   const userId = user?.id ?? null;
 
@@ -110,6 +111,9 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
       endFlow(flow, "success");
 
       setThreads(sorted);
+      const newMap = new Map<string, ConversationThread>();
+      for (const t of sorted) newMap.set(t.id, t);
+      threadMapRef.current = newMap;
       const newUnread = sorted.filter(t => !t.archived).reduce((acc, t) => acc + t.unreadCount, 0);
       setStats(s => s.unread === newUnread ? s : { ...s, unread: newUnread });
     } catch (err) {
@@ -168,7 +172,24 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
     }
 
     channel
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversations_v2" }, () => debouncedReload())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "conversations_v2" }, () => debouncedReload())
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "conversations_v2" }, () => debouncedReload())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations_v2" }, (payload: any) => {
+        const row = payload.new;
+        if (!row?.id) { debouncedReload(); return; }
+        const threadId = Array.from(threadMapRef.current.values()).find(
+          t => t.conversationId === row.id || t.v2ConversationId === row.id || t.threadId === row.id
+        )?.id;
+        if (threadId) {
+          const updates: Partial<ConversationThread> = {};
+          if (row.last_message_at) updates.lastMessageTime = row.last_message_at;
+          if (row.last_message_preview) updates.lastMessage = row.last_message_preview;
+          if (row.title) updates.name = row.title;
+          updateThreadLocally(threadId, updates);
+        } else {
+          debouncedReload();
+        }
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, () => debouncedReload())
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_preferences", filter: `user_id=eq.${userId}` }, () => debouncedReload())
       .subscribe((status) => {
@@ -218,6 +239,9 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
           return bt.localeCompare(at);
         });
       newUnread = next.filter(t => !t.archived).reduce((acc, t) => acc + t.unreadCount, 0);
+      const updatedMap = new Map<string, ConversationThread>();
+      for (const t of next) updatedMap.set(t.id, t);
+      threadMapRef.current = updatedMap;
       return next;
     });
     if (newUnread !== null) {

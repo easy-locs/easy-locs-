@@ -5,7 +5,7 @@
  * Fully i18n-aware.
  */
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { Search, MessageCircle, Archive } from "lucide-react";
+import { Search, MessageCircle, Archive, AlertTriangle, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,6 +20,8 @@ import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 interface Props {
   threads: ConversationThread[];
   loading: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   selectedThread: ConversationThread | null;
   onSelectThread: (thread: ConversationThread) => void;
   onDeleteThread?: (thread: ConversationThread) => void;
@@ -40,7 +42,7 @@ interface Props {
 }
 
 export default function HudConversationList({
-  threads, loading, selectedThread, onSelectThread,
+  threads, loading, error, onRetry, selectedThread, onSelectThread,
   onDeleteThread, onArchiveThread, onMuteThread, onBlockThread, onClearThread,
   onFavoriteThread, onMarkUnreadThread, onContactInfo, onStatusChange, onSecurity, onSafetyNumber,
   onDetails, onSelectMessages,
@@ -182,7 +184,26 @@ export default function HudConversationList({
 
       {/* Thread list */}
       <ScrollArea className="flex-1">
-        {loading ? (
+        {error && !loading && threads.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-16 px-6">
+            <AlertTriangle className="h-10 w-10" style={{ color: "hsl(var(--destructive) / 0.6)" }} />
+            <p className="text-sm font-medium text-center" style={{ color: "hsl(var(--foreground))" }}>
+              {t("orbit.load_error")}
+            </p>
+            <p className="text-xs text-center" style={{ color: "hsl(var(--muted-foreground))" }}>
+              {error}
+            </p>
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80"
+                style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
+              >
+                <RefreshCw className="h-4 w-4" /> {t("orbit.retry")}
+              </button>
+            )}
+          </div>
+        ) : loading ? (
           <div className="space-y-0.5 px-2 py-3">
             {Array.from({ length: 7 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 px-3 py-[10px]">

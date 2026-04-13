@@ -34,6 +34,7 @@ interface Props {
   onTranslate: (msg: ChatMessage) => void;
   onContextMenu: (e: any, msg: ChatMessage, isMe: boolean) => void;
   onToggleSelect: (id: string) => void;
+  onRetryMessage?: (msg: ChatMessage) => void;
   getCategoryIcon: (cat: string) => string;
   t: (key: string) => string;
   /** Conversation ID for gesture/selection wiring */
@@ -49,7 +50,7 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
   messages, rawCount, isDecrypting, typingIndicator, hiddenMsgIds,
   selectedMsgIds, selectMode, pendingOffline, userId, threadName, locale,
   showOriginal, translatingMsgId, onTranslate, onContextMenu, onToggleSelect,
-  getCategoryIcon, t, conversationId,
+  onRetryMessage, getCategoryIcon, t, conversationId,
 }, ref) => {
   const pendingSet = usePendingSet(pendingOffline);
 
@@ -175,6 +176,7 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
                     onTranslate={onTranslate}
                     onContextMenu={handleContextMenu}
                     onToggleSelect={onToggleSelect}
+                    onRetry={onRetryMessage}
                     getCategoryIcon={getCategoryIcon}
                   />
                 )}

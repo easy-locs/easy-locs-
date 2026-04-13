@@ -6,7 +6,7 @@
 import { memo, useEffect, useState, useMemo } from "react";
 import {
   CheckCheck, Globe, Loader2, Mail, WifiOff, Lock, CheckCircle2,
-  ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText,
+  ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText, RotateCcw,
 } from "lucide-react";
 import { format } from "date-fns";
 import { MessageBubbleRouter } from "./chat/bubbles/MessageBubbleRouter";
@@ -44,6 +44,7 @@ interface Props {
   onTranslate: (msg: ChatMessage) => void;
   onContextMenu: (e: React.MouseEvent, msg: ChatMessage, isMe: boolean) => void;
   onToggleSelect?: (id: string) => void;
+  onRetry?: (msg: ChatMessage) => void;
   getCategoryIcon: (cat: string) => string;
 }
 
@@ -59,7 +60,7 @@ function ChatMessageBubble({
   msg: rawMsg, isMe, threadName, locale, showOriginal,
   translatingMsgId, isPendingOffline, isConsecutive,
   selected, selectMode, currentUserId, conversationId,
-  onTranslate, onContextMenu, onToggleSelect, getCategoryIcon,
+  onTranslate, onContextMenu, onToggleSelect, onRetry, getCategoryIcon,
 }: Props) {
   // Guard: ensure content and contact_name are always strings
   const msg = {
@@ -421,6 +422,16 @@ function ChatMessageBubble({
           <button onClick={() => onTranslate(msg)} className="mt-1 inline-flex items-center gap-1.5 text-[10px] hover:opacity-80 transition-opacity min-h-[44px] sm:min-h-0 py-1" style={{ color: "hsl(var(--muted-foreground))" }}>
             {translatingMsgId === msg.id ? <Loader2 className="h-3 w-3 sm:h-2.5 sm:w-2.5 animate-spin" /> : <Globe className="h-3 w-3 sm:h-2.5 sm:w-2.5" />}
             {showOriginal ? "Translation" : msg.translated_content ? "Original" : "Translate"}
+          </button>
+        )}
+
+        {isMe && rawMsg.failed && onRetry && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onRetry(rawMsg); }}
+            className="flex items-center gap-1 mt-1 text-[11px] font-medium transition-opacity hover:opacity-80"
+            style={{ color: "hsl(var(--destructive))" }}
+          >
+            <RotateCcw className="h-3 w-3" /> Tap to retry
           </button>
         )}
 

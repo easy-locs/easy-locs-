@@ -75,21 +75,34 @@ export async function resolveConversationId(input: ResolveInput): Promise<Resolv
     }
   }
 
-  // Strategy 4: Auto-create from peer
+  // Strategy 4: Auto-create from peer (with single retry on failure)
   if (input.peerUserId) {
     trace("resolve.autoCreate", "input", {
       myUserId: input.myUserId,
       peerUserId: input.peerUserId,
       peerOrbitId: input.peerOrbitId ?? null,
     });
-    const conv = await createOrGetDirectConversation({
-      myUserId: input.myUserId,
-      myOrbitId: input.myOrbitId,
-      peerUserId: input.peerUserId,
-      peerOrbitId: input.peerOrbitId,
-    });
-    trace("resolve.autoCreate", "output", { conversationId: conv.id });
-    return { conversationId: conv.id, wasCreated: true };
+    try {
+      const conv = await createOrGetDirectConversation({
+        myUserId: input.myUserId,
+        myOrbitId: input.myOrbitId,
+        peerUserId: input.peerUserId,
+        peerOrbitId: input.peerOrbitId,
+      });
+      trace("resolve.autoCreate", "output", { conversationId: conv.id });
+      return { conversationId: conv.id, wasCreated: true };
+    } catch (firstErr) {
+      trace("resolve.autoCreate", "error", { attempt: 1, message: firstErr instanceof Error ? firstErr.message : String(firstErr) });
+      await new Promise(r => setTimeout(r, 2000));
+      const conv = await createOrGetDirectConversation({
+        myUserId: input.myUserId,
+        myOrbitId: input.myOrbitId,
+        peerUserId: input.peerUserId,
+        peerOrbitId: input.peerOrbitId,
+      });
+      trace("resolve.autoCreate", "output", { conversationId: conv.id, retried: true });
+      return { conversationId: conv.id, wasCreated: true };
+    }
   }
 
   trace("resolve", "error", { reason: "all_strategies_exhausted" });
