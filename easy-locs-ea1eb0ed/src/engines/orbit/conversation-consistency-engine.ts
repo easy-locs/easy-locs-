@@ -3,13 +3,14 @@ import { platformBus } from "@/lib/shared/platform-bus";
 
 export class ConversationConsistencyEngine extends BaseEngine {
   private lastConversationCount = 0;
+  private consecutiveDupCycles = 0;
 
   constructor() {
     super({
       id: "orbit-conversation-consistency",
       name: "Conversation Consistency Engine",
       category: "orbit",
-      intervalMs: 60_000,
+      intervalMs: 30_000,
     });
   }
 
@@ -28,27 +29,51 @@ export class ConversationConsistencyEngine extends BaseEngine {
       findings.push("Conversation list dropped to 0 — possible render failure");
     }
 
-    const duplicateCheck = new Map<string, number>();
+    const duplicateCheck = new Map<string, Element[]>();
     convItems.forEach(el => {
       const id = el.getAttribute("data-conversation-id") || "";
-      duplicateCheck.set(id, (duplicateCheck.get(id) || 0) + 1);
+      const arr = duplicateCheck.get(id) ?? [];
+      arr.push(el);
+      duplicateCheck.set(id, arr);
     });
+
     const duplicateIds: string[] = [];
-    for (const [id, count] of duplicateCheck) {
-      if (count > 1) {
-        findings.push(`Duplicate conversation rendered: ${id} (${count}x)`);
+    for (const [id, elements] of duplicateCheck) {
+      if (elements.length > 1) {
+        findings.push(`Duplicate conversation rendered: ${id} (${elements.length}x)`);
         duplicateIds.push(id);
+
+        for (let i = 1; i < elements.length; i++) {
+          const el = elements[i];
+          if (el instanceof HTMLElement) {
+            el.style.display = "none";
+            el.setAttribute("data-dedup-hidden", "true");
+          }
+        }
+        actions.push(`Hid ${elements.length - 1} duplicate DOM node(s) for ${id}`);
       }
     }
 
     if (duplicateIds.length > 0) {
+      this.consecutiveDupCycles++;
       platformBus.emit(
         "orbit:thread_updated" as any,
         { reason: "duplicate_detected", duplicateIds, timestamp: Date.now() },
         "orbit"
       );
       actions.push(`Emitted dedup signal for ${duplicateIds.length} duplicate conversation(s)`);
-      console.log(`[ConversationConsistencyEngine] Detected ${duplicateIds.length} rendered duplicate(s), triggering re-dedup`);
+
+      if (this.consecutiveDupCycles >= 3) {
+        platformBus.emit(
+          "orbit:force_reload" as any,
+          { reason: "persistent_duplicates", duplicateIds, cycles: this.consecutiveDupCycles, timestamp: Date.now() },
+          "orbit"
+        );
+        actions.push(`Forced full thread reload after ${this.consecutiveDupCycles} consecutive duplicate cycles`);
+        this.consecutiveDupCycles = 0;
+      }
+    } else {
+      this.consecutiveDupCycles = 0;
     }
 
     this.lastConversationCount = ids.size;
