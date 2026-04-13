@@ -1,8 +1,9 @@
 /**
  * orbit-thread-fetcher — Atomic unit: fetch conversation threads from DB.
  * Single responsibility: thread data loading.
+ * Uses v2db() enforcer to guard against legacy table access (V2_ONLY mode).
  */
-import { db } from "@/services/db";
+import { v2db } from "@/lib/shared/db-v2";
 import { withHealthTracking } from "@/lib/runtime/domain-health-bridge";
 
 export interface ThreadSummary {
@@ -17,8 +18,7 @@ export interface ThreadSummary {
 
 export async function fetchThreads(userId: string, limit = 50): Promise<ThreadSummary[]> {
   return withHealthTracking("orbit", "fetchThreads", async () => {
-    const { data } = await db
-      .from("conversations_v2")
+    const { data } = await v2db("conversations_v2")
       .select("id, title, thread_type, last_message, last_message_at, created_at")
       .or(`created_by_user_id.eq.${userId},id.in.(select conversation_id from conversation_participants_v2 where user_id = '${userId}')`)
       .order("last_message_at", { ascending: false, nullsFirst: false })
@@ -38,8 +38,7 @@ export async function fetchThreads(userId: string, limit = 50): Promise<ThreadSu
 
 export async function fetchThreadById(threadId: string): Promise<ThreadSummary | null> {
   return withHealthTracking("orbit", "fetchThread", async () => {
-    const { data } = await db
-      .from("conversations_v2")
+    const { data } = await v2db("conversations_v2")
       .select("id, title, thread_type, last_message, last_message_at")
       .eq("id", threadId)
       .maybeSingle();

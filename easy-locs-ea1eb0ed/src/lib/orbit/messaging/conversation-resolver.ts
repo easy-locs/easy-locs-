@@ -2,7 +2,7 @@
  * conversation-resolver — Atomic unit: resolve or auto-create a conversationId.
  * Single responsibility: given a thread, return a guaranteed conversationId or throw.
  */
-import { db } from "@/services/db";
+import { v2db } from "@/lib/shared/db-v2";
 import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
@@ -56,8 +56,7 @@ export async function resolveConversationId(input: ResolveInput): Promise<Resolv
   // Strategy 2: entityId matches a conversation
   if (entId) {
     trace("resolve.entityId", "input", { candidate: entId });
-    const { data } = await db
-      .from("conversations_v2").select("id").eq("id", entId).maybeSingle();
+    const { data } = await v2db("conversations_v2").select("id").eq("id", entId).maybeSingle();
     if (data?.id) {
       trace("resolve.entityId", "output", { conversationId: data.id });
       return { conversationId: data.id, wasCreated: false };
@@ -67,8 +66,7 @@ export async function resolveConversationId(input: ResolveInput): Promise<Resolv
   // Strategy 3: threadDbId matches a conversation
   if (input.threadDbId) {
     trace("resolve.threadDbId", "input", { candidate: input.threadDbId });
-    const { data } = await db
-      .from("conversations_v2").select("id").eq("id", input.threadDbId).maybeSingle();
+    const { data } = await v2db("conversations_v2").select("id").eq("id", input.threadDbId).maybeSingle();
     if (data?.id) {
       trace("resolve.threadDbId", "output", { conversationId: data.id });
       return { conversationId: data.id, wasCreated: false };

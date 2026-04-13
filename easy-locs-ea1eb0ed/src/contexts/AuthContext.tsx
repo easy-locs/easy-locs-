@@ -67,7 +67,7 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 const AUTH_CACHE_KEY = "easylocs_auth_cache_v1";
-const SESSION_RETRY_DELAYS = [2_000, 4_000, 8_000];
+const SESSION_RETRY_DELAYS = [500, 1_000];
 
 function getCachedAuth(): { userId: string; email: string; userType: UserType; country: string; currency: string; onboardingCompleted: boolean; role: ActiveRole } | null {
   try {
@@ -299,10 +299,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const safetyTimeout = window.setTimeout(() => {
       if (!mounted) return;
       console.warn("[AuthContext] safety timeout reached — unblocking loading state");
-      structuredLogger.warn("auth", "runtime_failure", "Auth hydration safety timeout reached (2500ms)");
+      structuredLogger.warn("auth", "runtime_failure", "Auth hydration safety timeout reached (1500ms)");
       setLoading(false);
       setProfileLoaded(true);
-    }, 2500);
+    }, 1500);
 
     const hydrateAuthState = async (nextSession: Session | null) => {
       const seq = ++latestSeq;

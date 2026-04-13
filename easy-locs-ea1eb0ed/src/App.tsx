@@ -319,19 +319,14 @@ requestIdleCallback(() => {
 }, { timeout: 10000 });
 
 const PageLoader = () => (
-  <div className="app-mobile-page bg-background min-h-[60dvh] px-4 pt-5">
-    <div className="h-5 w-28 rounded-lg skeleton-premium mb-4" />
-    <div className="h-32 w-full rounded-2xl skeleton-premium mb-4" />
-    <div className="flex gap-2 mb-4">
-      {[...Array(4)].map((_, i) => <div key={i} className="h-10 flex-1 rounded-xl skeleton-premium" />)}
+  <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center gap-3">
+    <span className="text-2xl font-bold tracking-tight text-primary">Easy-Locs</span>
+    <div className="flex items-center gap-1.5 mt-1">
+      <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+      <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+      <span className="w-2 h-2 rounded-full bg-primary animate-bounce" />
     </div>
-    <div className="grid grid-cols-5 gap-2 mb-4">
-      {[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-xl skeleton-premium" />)}
-    </div>
-    <div className="space-y-3">
-      <div className="h-4 w-2/3 rounded skeleton-premium" />
-      <div className="h-4 w-1/2 rounded skeleton-premium" />
-    </div>
+    <span className="text-sm text-muted-foreground">Chargement...</span>
   </div>
 );
 
