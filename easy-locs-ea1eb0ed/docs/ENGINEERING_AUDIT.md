@@ -76,7 +76,7 @@ food, grocery, shops, services, health, beauty, taxi, delivery, property, stay, 
 | C1 | **387 imports directs supabase** contournant db() | Kill-switch V2 non appliqué, pas de logging centralisé | 387 fichiers |
 | C2 | **3 762 usages de `any`** | Perte de type safety, bugs runtime silencieux | Codebase-wide |
 | C3 | **274 catch blocks vides** `catch {}` | Erreurs avalées silencieusement, debugging impossible | Codebase-wide |
-| C4 | **Secret fallback hardcodé** dans wallet-transfer | `WALLET_PIN_SECRET || "default-wallet-pin-secret"` | supabase/functions/wallet-transfer |
+| C4 | **Secret fallback hardcodé** dans wallet-transfer | `WALLET_PIN_SECRET || "default-wallet-pin-secret"` | **CORRIGÉ** — fallback supprimé, env var obligatoire |
 | C5 | **Build production échouait** | Import manquant `checkPublishBlockers` + clé dupliquée | **CORRIGÉ** |
 
 ### ÉLEVÉ (risque significatif)
@@ -84,9 +84,9 @@ food, grocery, shops, services, health, beauty, taxi, delivery, property, stay, 
 | # | Problème | Impact |
 |---|---|---|
 | H1 | **214 console.log** restants | Fuite d'info en prod, bruit en console |
-| H2 | **Fragmentation schema V1/V2** | Certains composants écrivent V1 pendant que d'autres lisent V2 |
-| H3 | **CORS wildcard** `Access-Control-Allow-Origin: *` sur Edge Functions | Accepte requêtes de n'importe quelle origine |
-| H4 | **localStorage pour rôle/org** | Manipulable côté client (backend doit re-vérifier) |
+| H2 | **Fragmentation schema V1/V2** | **CORRIGÉ** — dispatch-orbit-bridge migré vers V2, kill-legacy complété, V2_ONLY activé |
+| H3 | **CORS wildcard** `Access-Control-Allow-Origin: *` sur Edge Functions | **CORRIGÉ** — CORS centralisé avec origines explicites (_shared/cors.ts) |
+| H4 | **localStorage pour rôle/org** | **CORRIGÉ** — rôle revalidé via DB, localStorage sert uniquement de hint de préférence |
 | H5 | **Fichiers monolithiques** — 8 fichiers > 800 lignes | MeCommandCenter (718), SmartHome (769), App.tsx (858), MerchantOnboardingPage (1599) |
 | H6 | **Couverture de tests** : 66 unit + 8 E2E pour 3 279 fichiers | ~2% couverture estimée |
 
@@ -115,10 +115,10 @@ food, grocery, shops, services, health, beauty, taxi, delivery, property, stay, 
 ### Vulnérabilités identifiées
 | Sévérité | Vulnérabilité | Recommandation |
 |---|---|---|
-| **CRITIQUE** | Fallback secret hardcodé wallet PIN | Supprimer le fallback, rendre WALLET_PIN_SECRET obligatoire |
-| **ÉLEVÉ** | CORS `*` sur Edge Functions | Restreindre aux domaines Easy-Locs |
+| **CRITIQUE** | Fallback secret hardcodé wallet PIN | **CORRIGÉ** — env var obligatoire, échec propre si absent |
+| **ÉLEVÉ** | CORS `*` sur Edge Functions | **CORRIGÉ** — origines explicites via _shared/cors.ts |
 | **ÉLEVÉ** | 387 accès DB non centralisés | Migrer vers db() pour audit trail |
-| **MOYEN** | localStorage pour rôle actif | Vérifier côté serveur systématiquement |
+| **MOYEN** | localStorage pour rôle actif | **CORRIGÉ** — revalidation DB systématique |
 | **MOYEN** | Pas de CSP (Content Security Policy) | Ajouter headers CSP |
 | **BAS** | console.log en prod | Supprimer ou conditionner à dev only |
 

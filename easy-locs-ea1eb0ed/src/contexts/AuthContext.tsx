@@ -229,12 +229,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         markOnboardingCompleted(userId);
       }
 
+      const validRoles: ActiveRole[] = [];
+      if (hasOrg) validRoles.push("landlord");
+      if (hasTenant) validRoles.push("tenant");
+      if (validRoles.length === 0) validRoles.push("client");
+
       const savedRole = (() => {
         try { return localStorage.getItem(`easylocs_active_role_${userId}`); } catch { return null; }
       })();
-      if (dual && savedRole && (savedRole === "landlord" || savedRole === "tenant")) {
-        setActiveRole(savedRole);
-      } else if (dual || hasOrg) {
+
+      if (savedRole && validRoles.includes(savedRole as ActiveRole)) {
+        setActiveRole(savedRole as ActiveRole);
+      } else if (hasOrg) {
         setActiveRole("landlord");
       } else if (hasTenant) {
         setActiveRole("tenant");
@@ -243,7 +249,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (err) {
       console.warn("[AuthContext] DB slow → fetchDualRoleDeferred fallback safe:", err);
-      setActiveRole("landlord");
+      setActiveRole("client");
       setHasDualRole(false);
     }
   }, [onboardingCompleted, withTimeout]);

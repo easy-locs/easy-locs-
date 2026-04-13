@@ -4,6 +4,33 @@
  */
 import type { OnboardingVertical } from "./source-policy.engine";
 
+export interface MenuItem {
+  name: string;
+  price: number;
+  category?: string;
+  description?: string;
+}
+
+export interface HotelInventoryItem {
+  roomType: string;
+  capacity: number;
+  pricePerNight: number;
+  available: boolean;
+}
+
+export interface ServiceItem {
+  name: string;
+  price: number;
+  duration?: number;
+  category?: string;
+}
+
+export interface PhotoItem {
+  url: string;
+  alt?: string;
+  category?: string;
+}
+
 export interface CanonicalMerchantRecord {
   entity_id: string;
   vertical: OnboardingVertical;
@@ -18,15 +45,15 @@ export interface CanonicalMerchantRecord {
   website?: string | null;
   categories?: string[];
   subcategories?: string[];
-  menu_items_json?: any[];
-  hotel_inventory_json?: any[];
-  services_json?: any[];
-  opening_hours_json?: any;
-  photos_json?: any[];
+  menu_items_json?: MenuItem[];
+  hotel_inventory_json?: HotelInventoryItem[];
+  services_json?: ServiceItem[];
+  opening_hours_json?: Record<string, { open: string; close: string }>;
+  photos_json?: PhotoItem[];
   logo_url?: string | null;
   description?: string | null;
   amenities?: string[];
-  policies_json?: any;
+  policies_json?: Record<string, string>;
   rating?: number | null;
 }
 
@@ -48,7 +75,7 @@ const RECOMMENDED_FIELDS: Record<OnboardingVertical, string[]> = {
   property: ["description", "amenities", "phone"],
 };
 
-function isFieldPresent(record: Record<string, any>, field: string): boolean {
+function isFieldPresent(record: Record<string, unknown>, field: string): boolean {
   const val = record[field];
   if (val == null || val === "") return false;
   if (Array.isArray(val) && val.length === 0) return false;
@@ -58,7 +85,7 @@ function isFieldPresent(record: Record<string, any>, field: string): boolean {
 export interface MissingFieldsResult {
   missingRequired: string[];
   missingRecommended: string[];
-  completenessScore: number; // 0-100
+  completenessScore: number;
   isPublishReady: boolean;
 }
 
@@ -67,14 +94,13 @@ export function detectMissingFields(record: CanonicalMerchantRecord): MissingFie
   const required = REQUIRED_FIELDS[vertical] ?? [];
   const recommended = RECOMMENDED_FIELDS[vertical] ?? [];
 
-  const missingRequired = required.filter((f) => !isFieldPresent(record as any, f));
-  const missingRecommended = recommended.filter((f) => !isFieldPresent(record as any, f));
+  const missingRequired = required.filter((f) => !isFieldPresent(record as unknown as Record<string, unknown>, f));
+  const missingRecommended = recommended.filter((f) => !isFieldPresent(record as unknown as Record<string, unknown>, f));
 
   const totalFields = required.length + recommended.length;
   const presentRequired = required.length - missingRequired.length;
   const presentRecommended = recommended.length - missingRecommended.length;
 
-  // Required fields count double
   const completenessScore =
     totalFields === 0
       ? 100

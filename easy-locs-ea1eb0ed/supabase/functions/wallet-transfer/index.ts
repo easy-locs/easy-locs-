@@ -6,30 +6,41 @@
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+let _corsHeaders: Record<string, string> = {};
 
 function ok(data: unknown) {
-  return new Response(JSON.stringify(data), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(data), { headers: { ..._corsHeaders, "Content-Type": "application/json" } });
 }
 function err(msg: string, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  return new Response(JSON.stringify({ error: msg }), { status, headers: { ..._corsHeaders, "Content-Type": "application/json" } });
 }
 
-/** HMAC-SHA256 PIN hash (matches wallet-pin edge function) */
-async function hashPin(pin: string): Promise<string> {
-  const secret = Deno.env.get("WALLET_PIN_SECRET") || "default-wallet-pin-secret";
+/** HMAC-SHA256 PIN hash — must match wallet-pin edge function format (salt:hash) */
+async function hashPinWithSalt(pin: string, salt: string): Promise<string> {
   const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const key = await crypto.subtle.importKey("raw", enc.encode(salt), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, enc.encode(pin));
-  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
+  const hash = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return `${salt}:${hash}`;
+}
+
+async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
+  const [salt] = storedHash.split(":");
+  if (!salt) return false;
+  const computed = await hashPinWithSalt(pin, salt);
+  if (computed.length !== storedHash.length) return false;
+  let diff = 0;
+  for (let i = 0; i < computed.length; i++) {
+    diff |= computed.charCodeAt(i) ^ storedHash.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  _corsHeaders = getCorsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { headers: _corsHeaders });
 
   const sb = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -86,8 +97,8 @@ serve(async (req) => {
       }
       if (!pin) return err("Wallet PIN required for this transfer");
 
-      const pinHash = await hashPin(pin);
-      if (pinHash !== senderProfile.wallet_pin_hash) {
+      const pinMatches = await verifyPin(pin, senderProfile.wallet_pin_hash);
+      if (!pinMatches) {
         const attempts = (senderProfile.wallet_pin_failed_attempts || 0) + 1;
         const lockUntil = attempts >= 5 ? new Date(Date.now() + 5 * 60 * 1000).toISOString() : null;
         await sb.from("profiles").update({

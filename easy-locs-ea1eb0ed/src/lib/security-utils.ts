@@ -1,20 +1,30 @@
 /**
  * Input Sanitization & Validation Utilities
  * Centralizes security-critical input processing for the platform.
+ * Uses DOMPurify for robust XSS protection instead of regex.
  */
+import DOMPurify from "dompurify";
 
-/** Strip HTML tags to prevent XSS in user-generated text */
+/** Sanitize HTML content — removes all dangerous tags/attributes via DOMPurify */
 export function stripHtml(input: string): string {
-  return input.replace(/<[^>]*>/g, "").trim();
+  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim();
 }
 
-/** Sanitize a string for safe display — removes scripts and event handlers */
+/** Sanitize a string for safe display — strips all HTML via DOMPurify */
 export function sanitizeText(input: string, maxLength = 5000): string {
   if (!input) return "";
-  return stripHtml(input)
-    .replace(/on\w+\s*=/gi, "") // Remove event handlers
-    .replace(/javascript:/gi, "") // Remove JS protocol
-    .replace(/data:/gi, "") // Remove data protocol
+  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
+    .slice(0, maxLength)
+    .trim();
+}
+
+/** Sanitize HTML while allowing safe formatting tags */
+export function sanitizeRichText(input: string, maxLength = 10000): string {
+  if (!input) return "";
+  return DOMPurify.sanitize(input, {
+    ALLOWED_TAGS: ["b", "i", "em", "strong", "a", "p", "br", "ul", "ol", "li"],
+    ALLOWED_ATTR: ["href", "target", "rel"],
+  })
     .slice(0, maxLength)
     .trim();
 }
@@ -45,51 +55,30 @@ export function sanitizeUrl(url: string): string | null {
   }
 }
 
-/** Rate limiter — tracks action counts per key in memory */
-const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
-
+/**
+ * @deprecated Client-side in-memory rate limiting is ineffective in stateless environments.
+ * Use server-side rate limiting (e.g. Supabase RLS, edge function guards, or Redis) instead.
+ * This stub remains for backward compatibility but always returns allowed=true.
+ */
 export function checkRateLimit(
-  key: string,
-  maxAttempts: number,
-  windowMs: number
+  _key: string,
+  _maxAttempts: number,
+  _windowMs: number
 ): { allowed: boolean; remaining: number; retryAfterMs: number } {
-  const now = Date.now();
-  const entry = rateLimitStore.get(key);
-
-  if (!entry || now >= entry.resetAt) {
-    rateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
-    return { allowed: true, remaining: maxAttempts - 1, retryAfterMs: 0 };
-  }
-
-  if (entry.count >= maxAttempts) {
-    return {
-      allowed: false,
-      remaining: 0,
-      retryAfterMs: entry.resetAt - now,
-    };
-  }
-
-  entry.count++;
-  return {
-    allowed: true,
-    remaining: maxAttempts - entry.count,
-    retryAfterMs: 0,
-  };
+  console.warn("[security-utils] checkRateLimit is deprecated — client-side in-memory rate limiting is ineffective. Use server-side rate limiting.");
+  return { allowed: true, remaining: _maxAttempts, retryAfterMs: 0 };
 }
 
-/** Clean up expired rate limit entries (call periodically) */
-export function cleanupRateLimits(): void {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitStore) {
-    if (now >= entry.resetAt) rateLimitStore.delete(key);
-  }
-}
+/**
+ * @deprecated No-op. Client-side rate limit store has been removed.
+ */
+export function cleanupRateLimits(): void {}
 
 /** Validate monetary amount */
 export function validateAmount(amount: unknown): number | null {
   const num = Number(amount);
   if (!Number.isFinite(num) || num < 0 || num > 999_999_999) return null;
-  return Math.round(num * 100) / 100; // 2 decimal places
+  return Math.round(num * 100) / 100;
 }
 
 /** Generate a CSRF-like token for forms */
@@ -103,8 +92,6 @@ export function generateFormToken(): string {
 export function isValidUUID(id: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 }
-
-// ── CSP Meta Tag ──────────────────────────────────────────────────────
 
 /**
  * Inject a Content-Security-Policy meta tag into the document head.
@@ -133,8 +120,6 @@ export function injectCSPMeta() {
   document.head.prepend(meta);
 }
 
-// ── Request Fingerprinting ────────────────────────────────────────────
-
 /**
  * Generate a simple browser fingerprint for rate-limiting anonymous users.
  * NOT for tracking — only for abuse prevention.
@@ -161,8 +146,6 @@ function simpleHash(str: string): string {
   }
   return Math.abs(hash).toString(36);
 }
-
-// ── Input Validation Schemas ──────────────────────────────────────────
 
 /** Validate a password meets minimum security requirements */
 export function validatePassword(password: string): { valid: boolean; errors: string[] } {
@@ -196,18 +179,14 @@ export function hasInjectionPatterns(input: string): boolean {
   return patterns.some(p => p.test(input));
 }
 
-// ── Security Headers Check ────────────────────────────────────────────
-
 /** Verify essential security configurations at startup */
 export function auditSecurityConfig(): { passed: boolean; issues: string[] } {
   const issues: string[] = [];
 
-  // Check HTTPS
   if (typeof location !== "undefined" && location.protocol !== "https:" && location.hostname !== "localhost") {
     issues.push("App not served over HTTPS");
   }
 
-  // Check referrer policy
   if (typeof document !== "undefined") {
     const referrerMeta = document.querySelector('meta[name="referrer"]');
     if (!referrerMeta) {

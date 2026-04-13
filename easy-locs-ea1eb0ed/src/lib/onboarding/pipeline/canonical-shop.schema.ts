@@ -3,6 +3,19 @@
  * Single responsibility: type definition for normalized shop data.
  */
 
+export interface ProductOption {
+  name: string;
+  values: string[];
+  priceModifier?: number;
+}
+
+export interface CanonicalProduct {
+  name: string;
+  price: number;
+  options?: ProductOption[];
+  category?: string;
+}
+
 export interface CanonicalShop {
   id: string;
   name: string;
@@ -14,12 +27,7 @@ export interface CanonicalShop {
     lng: number;
   };
   categories: string[];
-  products: {
-    name: string;
-    price: number;
-    options?: any[];
-    category?: string;
-  }[];
+  products: CanonicalProduct[];
   media: {
     logo?: string;
     cover?: string;
