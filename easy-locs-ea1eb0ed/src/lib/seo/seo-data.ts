@@ -44,7 +44,7 @@ export interface SEOServiceCategory {
 
 // ─── SERVICE CATEGORIES ──────────────────────────────────
 export const SEO_SERVICE_CATEGORIES: SEOServiceCategory[] = [
-  { slug: "cleaning", label: "Cleaning", icon: "🧹", description: "Professional cleaning services for rental properties", keywords: ["cleaning", "maid service", "housekeeping"] },
+  { slug: "cleaning", label: "Cleaning", icon: "🧼", description: "Professional cleaning services for rental properties", keywords: ["cleaning", "maid service", "housekeeping"] },
   { slug: "maintenance", label: "Property Maintenance", icon: "🔧", description: "Property maintenance and repair services", keywords: ["maintenance", "repair", "handyman"] },
   { slug: "construction", label: "Construction / Renovation", icon: "🏗️", description: "Construction, renovation and remodeling services", keywords: ["construction", "renovation", "remodeling", "building"] },
   { slug: "transport", label: "Transport", icon: "🚐", description: "Private transport and shuttle services", keywords: ["transport", "shuttle", "driver"] },
