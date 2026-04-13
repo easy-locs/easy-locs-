@@ -656,7 +656,7 @@ const App = () => (
                   <Route path="/merchant/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/dashboard/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/finance" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantFinancePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/merchant/pos" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantPosPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/pos" element={<Navigate to="/pos" replace />} />
                   <Route path="/merchant/kitchen" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantKitchenPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/orders" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantOrdersPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/orders/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantOrderBoardPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -688,21 +688,21 @@ const App = () => (
                   <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantBusinessHoursPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* Driver tools */}
-                  <Route path="/driver/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverDashboardPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverDashboardPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/driver/payout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><DriverPayoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/driver/earnings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><DriverEarningsPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/driver/earnings-v2" element={<Navigate to="/driver/earnings" replace />} />
                   <Route path="/driver/earnings-summary" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><DriverEarningsSummaryPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/driver/missions-board" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/driver/missions-board/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverMissionDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/driver/proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/driver/active-missions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverActiveMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/driver/live-missions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverLiveMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/driver/completed-deliveries" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverCompletedDeliveriesPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/driver/shift" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverShiftPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/driver/availability-zones" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverAvailabilityZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/driver/fuel-costs-v2" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverFuelCostsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/driver/breaks" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DriverBreaksPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/missions-board" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/missions-board/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverMissionDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/active-missions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverActiveMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/live-missions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverLiveMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/completed-deliveries" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverCompletedDeliveriesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/shift" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverShiftPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/availability-zones" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverAvailabilityZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/fuel-costs-v2" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverFuelCostsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/breaks" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverBreaksPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* Seller & Business */}
                   <Route path="/seller" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><SellerDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />

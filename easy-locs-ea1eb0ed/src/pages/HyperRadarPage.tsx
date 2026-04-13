@@ -62,19 +62,39 @@ function radarEmoji(key: string): string {
 type ViewMode = "map" | "list" | "hybrid";
 type SortMode = "smart" | "nearest" | "best_rated" | "trending";
 
-const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; color: string; emoji: string; vertical: RadarVertical }[] = [
-  { id: "food", labelKey: "radar.layer_food", icon: <Utensils className="w-3 h-3" />, color: "hsl(15 80% 55%)", emoji: radarEmoji("food"), vertical: "food" },
+import { getRadarLayerDefs as getWiringRadarLayers, getRadarCategoryToLayerMap } from "@/lib/taxonomy/wiring-helpers";
+
+const LAYER_ICON_MAP: Record<string, React.ReactNode> = {
+  food: <Utensils className="w-3 h-3" />,
+  services: <Sparkles className="w-3 h-3" />,
+  property: <Building2 className="w-3 h-3" />,
+  utility: <ShoppingBag className="w-3 h-3" />,
+  shops: <Store className="w-3 h-3" />,
+  grocery: <ShoppingBag className="w-3 h-3" />,
+};
+
+const EXTRA_VISUAL_LAYERS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; color: string; emoji: string; vertical: RadarVertical }[] = [
   { id: "stay", labelKey: "radar.layer_stay", icon: <Hotel className="w-3 h-3" />, color: "hsl(200 70% 50%)", emoji: radarEmoji("stay"), vertical: "stay" },
-  { id: "services", labelKey: "radar.layer_services", icon: <Sparkles className="w-3 h-3" />, color: "hsl(270 60% 55%)", emoji: radarEmoji("services"), vertical: "services" },
-  { id: "utility", labelKey: "radar.layer_utility", icon: <ShoppingBag className="w-3 h-3" />, color: "hsl(140 50% 45%)", emoji: radarEmoji("utility"), vertical: "utility" },
   { id: "mobility", labelKey: "radar.layer_mobility", icon: <Car className="w-3 h-3" />, color: "hsl(30 80% 50%)", emoji: radarEmoji("mobility"), vertical: "mobility" },
   { id: "nightlife", labelKey: "radar.layer_night", icon: <Moon className="w-3 h-3" />, color: "hsl(280 70% 55%)", emoji: radarEmoji("nightlife"), vertical: "nightlife" },
   { id: "healthcare", labelKey: "radar.layer_healthcare", icon: <Heart className="w-3 h-3" />, color: "hsl(0 65% 50%)", emoji: radarEmoji("healthcare"), vertical: "healthcare" },
-  { id: "shops", labelKey: "radar.layer_shops", icon: <Store className="w-3 h-3" />, color: "hsl(38 65% 56%)", emoji: radarEmoji("shops"), vertical: "shops" },
-  { id: "grocery", labelKey: "radar.layer_grocery", icon: <ShoppingBag className="w-3 h-3" />, color: "hsl(90 50% 45%)", emoji: radarEmoji("grocery"), vertical: "grocery" },
   { id: "experiences", labelKey: "radar.layer_experiences", icon: <Sparkles className="w-3 h-3" />, color: "hsl(340 65% 55%)", emoji: radarEmoji("experiences"), vertical: "experiences" },
-  { id: "property", labelKey: "radar.layer_property", icon: <Building2 className="w-3 h-3" />, color: "hsl(220 40% 38%)", emoji: radarEmoji("property"), vertical: "property" },
 ];
+
+const LAYER_DEFS: { id: RadarLayer; labelKey: string; icon: React.ReactNode; color: string; emoji: string; vertical: RadarVertical }[] = (() => {
+  const wiringLayers = getWiringRadarLayers();
+  const fromWiring = wiringLayers.map(wl => ({
+    id: wl.id as RadarLayer,
+    labelKey: wl.labelKey,
+    icon: LAYER_ICON_MAP[wl.id] ?? <Sparkles className="w-3 h-3" />,
+    color: wl.color,
+    emoji: wl.emoji,
+    vertical: wl.id as RadarVertical,
+  }));
+  const wiringIds = new Set(fromWiring.map(l => l.id));
+  const extras = EXTRA_VISUAL_LAYERS.filter(l => !wiringIds.has(l.id));
+  return [...fromWiring, ...extras];
+})();
 
 const SORT_OPTIONS: { value: SortMode; icon: React.ReactNode; labelKey: string }[] = [
   { value: "smart", icon: <Zap className="w-3 h-3" />, labelKey: "radar.sort_smart" },
@@ -86,11 +106,14 @@ const SORT_OPTIONS: { value: SortMode; icon: React.ReactNode; labelKey: string }
 const RADIUS_PRESETS = [0.5, 1, 2, 5, 10, 25];
 const MAX_VISIBLE_PINS = 80;
 
+const WIRING_CATEGORY_MAP = getRadarCategoryToLayerMap();
 const CATEGORY_TO_LAYER: Record<string, RadarLayer> = {
-  food: "food", stay: "stay", services: "services",
-  utility: "utility", mobility: "mobility", nightlife: "nightlife",
-  healthcare: "healthcare", shops: "shops", property: "property",
-  grocery: "grocery", experiences: "experiences",
+  ...Object.fromEntries(Object.entries(WIRING_CATEGORY_MAP).map(([k, v]) => [k, v as RadarLayer])),
+  stay: "stay" as RadarLayer,
+  mobility: "mobility" as RadarLayer,
+  nightlife: "nightlife" as RadarLayer,
+  healthcare: "healthcare" as RadarLayer,
+  experiences: "experiences" as RadarLayer,
 };
 
 const PILLAR_LINKS = [

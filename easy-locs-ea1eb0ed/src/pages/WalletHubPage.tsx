@@ -23,6 +23,7 @@ import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
 import ReceiveQrPanel from "@/components/wallet/ReceiveQrPanel";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import WalletSkeleton from "@/components/wallet/WalletSkeleton";
+import { getWalletVerticalFeatures } from "@/lib/taxonomy/wiring-helpers";
 
 type WalletTab = "fiat" | "qr" | "security";
 
@@ -98,12 +99,14 @@ export default function WalletHubPage() {
     return isOut ? t("wallet.sent") : t("wallet.received");
   }, [user?.id, counterpartyNames, t]);
 
-  const quickActions = [
+  const walletVerticalFeatures = useMemo(() => getWalletVerticalFeatures(), []);
+
+  const quickActions = useMemo(() => [
     { label: t("wallet.topUpAction"), icon: Plus, gradient: "linear-gradient(135deg, hsl(152 60% 42%), hsl(160 55% 48%))" },
     { label: t("wallet.sendAction"), icon: ArrowUpRight, gradient: "linear-gradient(135deg, hsl(210 80% 52%), hsl(220 75% 58%))" },
     { label: t("wallet.requestAction"), icon: ArrowDownLeft, gradient: "linear-gradient(135deg, hsl(270 60% 55%), hsl(280 55% 60%))" },
     { label: t("wallet.scanAction"), icon: ScanLine, gradient: "linear-gradient(135deg, hsl(var(--gold)), hsl(var(--gold-light)))" },
-  ];
+  ], [t]);
   const quickRoutes = ["/wallet/top-up", "/wallet/transfer", "/wallet/request", "/pay/scan"];
 
   const filteredTx = useMemo(() => {

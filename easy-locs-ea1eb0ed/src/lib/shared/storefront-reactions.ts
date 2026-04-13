@@ -133,7 +133,6 @@ export function installStorefrontReactions(): () => void {
     })
   );
 
-  // ── Review posted → refresh analytics + trust score ──
   unsubs.push(
     platformBus.on("storefront:review_posted", (event: PlatformEvent) => {
       const { shopId } = event.payload as StorefrontReviewPayload;
@@ -144,6 +143,7 @@ export function installStorefrontReactions(): () => void {
         ["trust-score", shopId],
         ["discover-shops"],
       ]);
+      platformBus.emit("marketplace:review_submitted", { shopId, __bridged: true }, "marketplace");
     })
   );
 
