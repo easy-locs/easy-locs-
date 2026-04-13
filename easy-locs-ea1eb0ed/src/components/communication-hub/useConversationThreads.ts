@@ -167,7 +167,19 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
   useEffect(() => {
     if (!userId) return;
 
-    const unsubThreadUpdate = platformBus.on("orbit:thread_updated", () => debouncedReload());
+    const unsubThreadUpdate = platformBus.on("orbit:thread_updated", (payload: any) => {
+      const threadId = payload?.threadId;
+      if (threadId) {
+        const match = Array.from(threadMapRef.current.values()).find(
+          t => t.conversationId === threadId || t.v2ConversationId === threadId || t.threadId === threadId
+        );
+        if (match) {
+          updateThreadLocally(match.id, { lastMessageTime: new Date().toISOString() });
+          return;
+        }
+      }
+      debouncedReload();
+    });
     const unsubForceReload = platformBus.on("orbit:force_reload", () => {
       loadThreads();
     });

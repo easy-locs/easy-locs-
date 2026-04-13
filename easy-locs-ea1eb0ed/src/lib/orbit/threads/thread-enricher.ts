@@ -1,5 +1,6 @@
 import { batchLookupProfiles } from "@/lib/orbit/orbit-data-gateway";
 import { resolveDisplayName, resolveAvatar } from "@/domains/orbit/resolvers";
+import { resolveDirectPeer, createPeerCache, type PeerCacheInstance } from "@/lib/orbit/resolveDirectPeer";
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { db } from "@/services/db";
 
@@ -12,6 +13,8 @@ function getConversationId(thread: ConversationThread): string | undefined {
   return thread.conversationId;
 }
 
+let _enrichPeerCache: PeerCacheInstance | null = null;
+
 export async function enrichPeerProfiles(
   threadMap: Map<string, ConversationThread>,
   allPeerIds: Set<string>
@@ -19,20 +22,42 @@ export async function enrichPeerProfiles(
   if (allPeerIds.size === 0) return;
   trace("enrich.profiles", "input", { peerCount: allPeerIds.size });
 
+  if (!_enrichPeerCache) _enrichPeerCache = createPeerCache();
+
   const peerIdArr = Array.from(allPeerIds);
   const profileMap = await batchLookupProfiles(peerIdArr);
 
+  const missedPeerIds: string[] = [];
   for (const thread of threadMap.values()) {
     if (!thread.isV2 || !thread.peerUserId) continue;
     const profile = profileMap.get(thread.peerUserId);
-    if (!profile) continue;
-    thread.name = resolveDisplayName({ displayName: profile.display_name, name: null, firstName: null, lastName: null }) || thread.name || "Contact";
-    thread.email = profile.email || thread.email || null;
-    thread.avatarUrl = resolveAvatar({ avatarUrl: profile.avatar_url }) || thread.avatarUrl || null;
-    thread.peerOrbitId = profile.orbit_id || thread.peerOrbitId || null;
+    if (profile) {
+      thread.name = resolveDisplayName({ displayName: profile.display_name, name: null, firstName: null, lastName: null }) || thread.name || "Contact";
+      thread.email = profile.email || thread.email || null;
+      thread.avatarUrl = resolveAvatar({ avatarUrl: profile.avatar_url }) || thread.avatarUrl || null;
+      thread.peerOrbitId = profile.orbit_id || thread.peerOrbitId || null;
+    } else {
+      missedPeerIds.push(thread.peerUserId);
+    }
   }
 
-  trace("enrich.profiles", "output", { enriched: profileMap.size });
+  if (missedPeerIds.length > 0) {
+    const uniqueMissed = [...new Set(missedPeerIds)];
+    trace("enrich.profiles.fallback", "input", { missedCount: uniqueMissed.length });
+    for (const peerId of uniqueMissed) {
+      const resolved = await resolveDirectPeer({ userId: peerId }, _enrichPeerCache);
+      if (!resolved.resolvable) continue;
+      for (const thread of threadMap.values()) {
+        if (thread.peerUserId !== peerId) continue;
+        thread.name = resolved.displayName || thread.name || "Contact";
+        thread.email = resolved.email || thread.email || null;
+        thread.avatarUrl = resolved.avatarUrl || thread.avatarUrl || null;
+        thread.peerOrbitId = resolved.peerOrbitId || thread.peerOrbitId || null;
+      }
+    }
+  }
+
+  trace("enrich.profiles", "output", { enriched: profileMap.size, fallback: missedPeerIds.length });
 }
 
 export async function enrichUnreadCounts(

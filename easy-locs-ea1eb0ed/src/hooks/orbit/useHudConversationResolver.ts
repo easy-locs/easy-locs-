@@ -39,18 +39,26 @@ export function useHudConversationResolver({
       toast.error("No conversation found. Open a thread first.");
       return null;
     }
+    const createParams = {
+      myUserId: authUserId,
+      myOrbitId,
+      peerUserId: currentThread.peerUserId,
+      peerOrbitId: currentThread.peerOrbitId,
+    };
     try {
       const { createOrGetDirectConversation } = await import("@/lib/orbit/createOrGetDirectConversation");
-      const conv = await createOrGetDirectConversation({
-        myUserId: authUserId,
-        myOrbitId,
-        peerUserId: currentThread.peerUserId,
-        peerOrbitId: currentThread.peerOrbitId,
-      });
+      let conv: { id: string };
+      try {
+        conv = await createOrGetDirectConversation(createParams);
+      } catch (firstErr) {
+        console.warn("[HudConversationResolver] first attempt failed, retrying in 2s:", firstErr);
+        await new Promise(r => setTimeout(r, 2000));
+        conv = await createOrGetDirectConversation(createParams);
+      }
       onThreadUpdateRef.current(currentThread.id, { conversationId: conv.id });
       return conv.id;
     } catch (err: any) {
-      console.error("[HudConversationResolver] auto-create failed", err);
+      console.error("[HudConversationResolver] auto-create failed after retry", err);
       toast.error("Failed to create conversation.");
       return null;
     }
