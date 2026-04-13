@@ -9,8 +9,9 @@ import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 import { applyGeoDefaults } from "@/lib/geo/geo-defaults";
-import { normalizeVertical, normalizeSubcategory } from "@/lib/taxonomy/taxonomy-aliases";
 import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
+
+const _loadAliases = () => import("@/lib/taxonomy/taxonomy-aliases");
 import TaxonomySelector from "@/components/storefront/TaxonomySelector";
 import CapabilityToggles, { type CapabilityFlags } from "@/components/storefront/CapabilityToggles";
 import { Button } from "@/components/ui/button";
@@ -104,6 +105,7 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         // Normalize AI output to canonical taxonomy
+        const { normalizeVertical, normalizeSubcategory } = await _loadAliases();
         const normVertical = normalizeVertical(parsed.vertical) || "shops";
         const normSubcategory = parsed.subcategory ? (normalizeSubcategory(parsed.subcategory) || parsed.subcategory) : "";
         const normTags = (parsed.tags || []).map((t: string) => t.toLowerCase().trim()).filter(Boolean);
@@ -146,7 +148,7 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
         country: country.trim() || "",
         contact_email: user.email || "",
         shop_visibility: "public",
-        vertical: normalizeVertical(vertical) || "shops",
+        vertical: (await _loadAliases()).normalizeVertical(vertical) || "shops",
         tags: suggestion?.tags || [],
         seo_description: suggestion?.seo_description || "",
         currency: finalDefaults.currency,
@@ -154,7 +156,7 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
       };
 
       // Taxonomy depth — enforced canonical
-      const tax = canonicalTaxonomyPayload(vertical, cluster, subcategory);
+      const tax = await canonicalTaxonomyPayload(vertical, cluster, subcategory);
       insertPayload.vertical = tax.vertical;
       if (tax.cluster) insertPayload.cluster = tax.cluster;
       if (tax.subcategory) insertPayload.subcategory = tax.subcategory;

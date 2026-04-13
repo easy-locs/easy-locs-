@@ -43,7 +43,7 @@ export const DEFAULT_FILTERS: OpsFilters = {
 };
 
 // ── Helpers ──
-export function getBlockers(shop: any): string[] { return auditShop(shop).blockers; }
+export async function getBlockers(shop: any): Promise<string[]> { return (await auditShop(shop)).blockers; }
 
 export function hasCover(s: any): boolean {
   return !!(s.cover_owner_url || s.cover_auto_url || s.cover_url || s.banner_url);
@@ -58,7 +58,6 @@ export function hasTaxMismatch(s: any): boolean {
   return !s.vertical || (!s.subcategory && !s.cluster);
 }
 
-// ── KPI computation ──
 export function computeKpis(shops: ShopRow[]) {
   const total = shops.length;
   return {
@@ -71,8 +70,8 @@ export function computeKpis(shops: ShopRow[]) {
     searchOnly: shops.filter(s => s.visibility_mode === "search_only").length,
     mapOnly: shops.filter(s => s.visibility_mode === "map_only").length,
     hidden: shops.filter(s => s.visibility_mode === "hidden").length,
-    publishable: shops.filter(s => auditShop(s).isPublishable).length,
-    blocked: shops.filter(s => getBlockers(s).length > 0).length,
+    publishable: shops.filter(s => (s.audit_score ?? 0) >= 75 && s.readiness_status !== "draft").length,
+    blocked: shops.filter(s => s.readiness_status === "draft" || s.readiness_status === "needs_review").length,
     claimed: shops.filter(s => s.is_claimed).length,
     unclaimed: shops.filter(s => !s.is_claimed).length,
     avgScore: total > 0 ? Math.round(shops.reduce((a, s) => a + (s.audit_score ?? 0), 0) / total) : 0,
@@ -275,7 +274,7 @@ export function useOpsDashboard() {
     setBulkRunning("audit");
     let count = 0;
     for (const shop of filtered) {
-      const audit = auditShop(shop);
+      const audit = await auditShop(shop);
       await batchSafeAutoWrite(shop.id, {
         audit_score: audit.score,
         readiness_status: audit.status,

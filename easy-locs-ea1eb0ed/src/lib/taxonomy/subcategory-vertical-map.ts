@@ -4,7 +4,13 @@
  * Used at ingestion time AND for bulk correction of misclassified shops.
  */
 import type { Vertical } from "./world-class-taxonomy";
-import { getParentVertical, normalizeVertical } from "./taxonomy-aliases";
+
+let _aliasCache: Awaited<ReturnType<typeof _load>> | null = null;
+const _load = () => import("./taxonomy-aliases");
+async function aliases() {
+  if (!_aliasCache) _aliasCache = await _load();
+  return _aliasCache;
+}
 
 /**
  * Hard overrides for subcategories that don't exist in the canonical taxonomy
@@ -56,28 +62,23 @@ const OVERRIDE_MAP: Record<string, Vertical> = {
  * Resolve the correct vertical for a given subcategory.
  * Priority: canonical taxonomy lookup → override map → fallback to "services".
  */
-export function resolveVerticalFromSubcategory(subcategory: string | null | undefined): Vertical {
+export async function resolveVerticalFromSubcategory(subcategory: string | null | undefined): Promise<Vertical> {
   if (!subcategory) return "services";
 
   const normalized = subcategory.toLowerCase().trim().replace(/[\s-]+/g, "_");
 
-  // 1. Canonical taxonomy lookup (most reliable)
+  const { getParentVertical } = await aliases();
   const parent = getParentVertical(normalized);
   if (parent) return parent.value as Vertical;
 
-  // 2. Override map for non-canonical subcategories
   if (OVERRIDE_MAP[normalized]) return OVERRIDE_MAP[normalized];
 
-  // 3. Conservative fallback
   return "services";
 }
 
-/**
- * Batch resolve: given an array of {id, subcategory}, returns corrections needed.
- */
-export function batchResolveVerticals(
+export async function batchResolveVerticals(
   items: Array<{ id: string; name: string; subcategory: string | null; currentVertical: string; city: string }>
-): Array<{
+): Promise<Array<{
   id: string;
   name: string;
   city: string;
@@ -85,9 +86,9 @@ export function batchResolveVerticals(
   oldVertical: string;
   newVertical: string;
   changed: boolean;
-}> {
-  return items.map((item) => {
-    const newVertical = resolveVerticalFromSubcategory(item.subcategory);
+}>> {
+  return Promise.all(items.map(async (item) => {
+    const newVertical = await resolveVerticalFromSubcategory(item.subcategory);
     return {
       id: item.id,
       name: item.name,
@@ -97,5 +98,5 @@ export function batchResolveVerticals(
       newVertical,
       changed: newVertical !== item.currentVertical,
     };
-  });
+  }));
 }

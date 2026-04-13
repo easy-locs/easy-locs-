@@ -53,7 +53,7 @@ export function runImportEngine(
   let filteredRecords = records;
   if (!options?.skipScrapeGate) {
     const scrapeTimer = stepTimer("scrape_gate");
-    const batch = evaluateBatchScrapeDecisions(records);
+    const batch = await evaluateBatchScrapeDecisions(records);
     filteredRecords = batch.accepted;
     steps.push(scrapeTimer.finish(true, { input: records.length, output: batch.accepted.length },
       batch.rejected.length > 0 ? `Rejected ${batch.rejected.length} records` : undefined));

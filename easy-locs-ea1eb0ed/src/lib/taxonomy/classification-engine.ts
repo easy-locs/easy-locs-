@@ -6,7 +6,13 @@
  */
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 import { CANONICAL_VERTICALS } from "@/lib/taxonomy/world-class-taxonomy";
-import { normalizeSubcategory, getParentVertical } from "./taxonomy-aliases";
+
+let _aliasCache: Awaited<ReturnType<typeof _loadAliases>> | null = null;
+const _loadAliases = () => import("./taxonomy-aliases");
+async function aliases() {
+  if (!_aliasCache) _aliasCache = await _loadAliases();
+  return _aliasCache;
+}
 
 // ═══════════════════════════════════════════════════════════
 //  TYPES
@@ -312,7 +318,8 @@ function scoreText(acc: ScoringAccumulator, text: string, signalName: string, we
 
 const ENGINE_VERSION = "1.0.0";
 
-export function classifyBusiness(input: ClassificationInput): ClassificationResult {
+export async function classifyBusiness(input: ClassificationInput): Promise<ClassificationResult> {
+  const { normalizeSubcategory, getParentVertical } = await aliases();
   const acc = createAccumulator();
 
   // ── LAYER A: Brand dictionary (highest priority) ──
@@ -465,6 +472,6 @@ export function buildLearningPayload(correction: ClassificationCorrection) {
 //  BATCH CLASSIFIER
 // ═══════════════════════════════════════════════════════════
 
-export function classifyBatch(items: ClassificationInput[]): ClassificationResult[] {
-  return items.map(classifyBusiness);
+export async function classifyBatch(items: ClassificationInput[]): Promise<ClassificationResult[]> {
+  return Promise.all(items.map(classifyBusiness));
 }

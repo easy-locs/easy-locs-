@@ -12,7 +12,13 @@
 
 import { CATEGORY_TREE, type PrimaryCategory, resolveSubcategory } from "./category-tree";
 import type { Vertical } from "./world-class-taxonomy";
-import { normalizeVertical, normalizeSubcategory } from "./taxonomy-aliases";
+
+let _aliasCache: Awaited<ReturnType<typeof _load>> | null = null;
+const _load = () => import("./taxonomy-aliases");
+async function aliases() {
+  if (!_aliasCache) _aliasCache = await _load();
+  return _aliasCache;
+}
 
 // ═══════════════════════════════════════════════════════════
 //  UI CONFIG — per vertical/subcategory
@@ -232,7 +238,8 @@ const SUBCATEGORY_CARD_OVERRIDES: Record<string, Partial<TaxonomyCardConfig>> = 
 
 const _configCache = new Map<string, TaxonomyNodeConfig>();
 
-function buildNodeConfig(primary: PrimaryCategory, subValue?: string): TaxonomyNodeConfig {
+async function buildNodeConfig(primary: PrimaryCategory, subValue?: string): Promise<TaxonomyNodeConfig> {
+  const { normalizeVertical } = await aliases();
   const arch = primary.architecture;
   const vertical = normalizeVertical(primary.vertical);
 
@@ -267,10 +274,11 @@ function buildNodeConfig(primary: PrimaryCategory, subValue?: string): TaxonomyN
  * Resolve full taxonomy config for a vertical + optional subcategory.
  * Returns merged config with subcategory overrides applied.
  */
-export function resolveTaxonomyConfig(
+export async function resolveTaxonomyConfig(
   vertical?: string | null,
   subcategory?: string | null,
-): TaxonomyNodeConfig {
+): Promise<TaxonomyNodeConfig> {
+  const { normalizeVertical, normalizeSubcategory } = await aliases();
   const normVert = normalizeVertical(vertical);
   const normSub = subcategory ? normalizeSubcategory(subcategory) : null;
   const cacheKey = `${normVert}:${normSub || ""}`;
@@ -278,54 +286,39 @@ export function resolveTaxonomyConfig(
   const cached = _configCache.get(cacheKey);
   if (cached) return cached;
 
-  // Try to resolve from subcategory first
   if (normSub) {
     const resolved = resolveSubcategory(normSub);
     if (resolved) {
-      const config = buildNodeConfig(resolved.primary, normSub);
+      const config = await buildNodeConfig(resolved.primary, normSub);
       _configCache.set(cacheKey, config);
       return config;
     }
   }
 
-  // Fallback to vertical-level config
   const primary = CATEGORY_TREE.find((c) => c.vertical === normVert || c.key === normVert);
   if (primary) {
-    const config = buildNodeConfig(primary);
+    const config = await buildNodeConfig(primary);
     _configCache.set(cacheKey, config);
     return config;
   }
 
-  // Ultimate fallback
-  const fallback = buildNodeConfig(CATEGORY_TREE[0]);
+  const fallback = await buildNodeConfig(CATEGORY_TREE[0]);
   _configCache.set(cacheKey, fallback);
   return fallback;
 }
 
-/**
- * Get UI config for a vertical + subcategory.
- */
-export function getTaxonomyUIConfig(vertical?: string | null, subcategory?: string | null): TaxonomyUIConfig {
-  return resolveTaxonomyConfig(vertical, subcategory).ui;
+export async function getTaxonomyUIConfig(vertical?: string | null, subcategory?: string | null): Promise<TaxonomyUIConfig> {
+  return (await resolveTaxonomyConfig(vertical, subcategory)).ui;
 }
 
-/**
- * Get radar config for a vertical + subcategory.
- */
-export function getTaxonomyRadarConfig(vertical?: string | null, subcategory?: string | null): TaxonomyRadarConfig {
-  return resolveTaxonomyConfig(vertical, subcategory).radar;
+export async function getTaxonomyRadarConfig(vertical?: string | null, subcategory?: string | null): Promise<TaxonomyRadarConfig> {
+  return (await resolveTaxonomyConfig(vertical, subcategory)).radar;
 }
 
-/**
- * Get card config for a vertical + subcategory.
- */
-export function getTaxonomyCardConfig(vertical?: string | null, subcategory?: string | null): TaxonomyCardConfig {
-  return resolveTaxonomyConfig(vertical, subcategory).card;
+export async function getTaxonomyCardConfig(vertical?: string | null, subcategory?: string | null): Promise<TaxonomyCardConfig> {
+  return (await resolveTaxonomyConfig(vertical, subcategory)).card;
 }
 
-/**
- * Get import config for a vertical + subcategory.
- */
-export function getTaxonomyImportConfig(vertical?: string | null, subcategory?: string | null): TaxonomyImportConfig {
-  return resolveTaxonomyConfig(vertical, subcategory).import;
+export async function getTaxonomyImportConfig(vertical?: string | null, subcategory?: string | null): Promise<TaxonomyImportConfig> {
+  return (await resolveTaxonomyConfig(vertical, subcategory)).import;
 }

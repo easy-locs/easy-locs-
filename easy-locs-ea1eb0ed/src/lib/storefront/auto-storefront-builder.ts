@@ -80,7 +80,7 @@ export async function autoCreateStorefront(params: AutoStorefrontParams): Promis
     sourceSubcategory: params.subcategory,
     tags: params.tags,
   };
-  const classification = classifyBusiness(classificationInput);
+  const classification = await classifyBusiness(classificationInput);
 
   // Use explicit vertical if provided, otherwise use engine result
   const resolvedVertical = params.vertical ?? classification.canonical_vertical;
@@ -113,7 +113,7 @@ export async function autoCreateStorefront(params: AutoStorefrontParams): Promis
   };
 
   // Canonical taxonomy
-  const tax = canonicalTaxonomyPayload(params.vertical ?? params.category, params.cluster, params.subcategory);
+  const tax = await canonicalTaxonomyPayload(params.vertical ?? params.category, params.cluster, params.subcategory);
   if (tax.cluster) insertPayload.cluster = tax.cluster;
 
   // Taxonomy (nullable/safe)

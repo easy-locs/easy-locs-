@@ -5,12 +5,14 @@
  * Returns score, status, blockers, warnings, and gate flags.
  */
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
-import {
-  normalizeVertical,
-  getCanonicalVertical,
-  getClusterForSubcategory,
-} from "@/lib/taxonomy/taxonomy-aliases";
 import { applySourceVisibility } from "@/lib/source/source-hygiene";
+
+let _aliasCache: Awaited<ReturnType<typeof _loadAliases>> | null = null;
+const _loadAliases = () => import("@/lib/taxonomy/taxonomy-aliases");
+async function aliases() {
+  if (!_aliasCache) _aliasCache = await _loadAliases();
+  return _aliasCache;
+}
 
 export type ShopAuditResult = {
   score: number;
@@ -54,7 +56,8 @@ const VERTICAL_RULES: Record<string, VerticalRule> = {
   experiences: { requiresCatalog: false, requiresMenu: false, requiresBooking: true,  requiresPhoto: true,  minProducts: 0 },
 };
 
-function getVerticalRule(vertical?: string): VerticalRule {
+async function getVerticalRule(vertical?: string): Promise<VerticalRule> {
+  const { normalizeVertical } = await aliases();
   const norm = vertical ? normalizeVertical(vertical) : "services";
   return VERTICAL_RULES[norm] ?? VERTICAL_RULES.services;
 }
@@ -80,8 +83,8 @@ function hasMenu(shop: any): boolean {
   return !!(shop.has_menu || getProductCount(shop) > 0);
 }
 
-// ── Taxonomy validation ──
-function validateTaxonomy(shop: any): { valid: boolean; issues: string[] } {
+async function validateTaxonomy(shop: any): Promise<{ valid: boolean; issues: string[] }> {
+  const { normalizeVertical, getCanonicalVertical, getClusterForSubcategory } = await aliases();
   const issues: string[] = [];
   if (!shop.vertical) return { valid: false, issues: ["Missing vertical"] };
 
@@ -117,11 +120,12 @@ function validateTaxonomy(shop: any): { valid: boolean; issues: string[] } {
 //  MAIN AUDIT
 // ══════════════════════════════════════════════════════
 
-export function auditShop(shop: any): ShopAuditResult {
+export async function auditShop(shop: any): Promise<ShopAuditResult> {
+  const { normalizeVertical } = await aliases();
   const blockers: string[] = [];
   const warnings: string[] = [];
   const vertical = shop.vertical ? normalizeVertical(shop.vertical) : undefined;
-  const rule = getVerticalRule(vertical);
+  const rule = await getVerticalRule(vertical);
   let score = 0;
 
   // ── IDENTITY (20) ──
@@ -144,7 +148,7 @@ export function auditShop(shop: any): ShopAuditResult {
   if (shop.cluster) taxonomy += 5; else warnings.push("Missing cluster");
   if (shop.subcategory) taxonomy += 5; else warnings.push("Missing subcategory");
 
-  const taxVal = validateTaxonomy(shop);
+  const taxVal = await validateTaxonomy(shop);
   if (!taxVal.valid) {
     taxVal.issues.forEach(i => warnings.push(i));
   }
@@ -250,7 +254,7 @@ export interface BulkAuditSummary {
   results: Array<{ id: string; name: string; score: number; status: string; blockers: string[] }>;
 }
 
-export function bulkAuditShops(shops: any[]): BulkAuditSummary {
+export async function bulkAuditShops(shops: any[]): Promise<BulkAuditSummary> {
   const byStatus: Record<string, number> = { draft: 0, needs_review: 0, ready: 0, live: 0 };
   let totalScore = 0;
   let publishable = 0;
@@ -259,7 +263,7 @@ export function bulkAuditShops(shops: any[]): BulkAuditSummary {
   const results: BulkAuditSummary["results"] = [];
 
   for (const shop of shops) {
-    const audit = auditShop(shop);
+    const audit = await auditShop(shop);
     byStatus[audit.status] = (byStatus[audit.status] || 0) + 1;
     totalScore += audit.score;
     if (audit.isPublishable) publishable++;
