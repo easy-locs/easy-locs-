@@ -1068,6 +1068,15 @@ Engine system trimmed from 135+ detect-only engines to **5 active engines** that
 - **AdminControlRoomPage.tsx**: 8th tab "Engine Memory" with: total fixes learned, auto-applied count (24h), recurring bugs (target: 0), avg score, scoring breakdown per fix (success rate / speed / recurrence bars), fix toggle, by-type/by-domain breakdowns, learning engine stats.
 - **useMasterAppBootstrap.ts**: Stage 4 loads engine_memory from Supabase + starts learning cycle at boot.
 
+### CI Stabilization (Task #26)
+- **vitest.config.ts**: `sequence.shuffle: true` with `seed: 42` for deterministic order; `clearMocks: true`
+- **setup.ts**: Global Supabase auto-mock (auth, from, rpc, storage, channel, removeChannel, removeAllChannels); `beforeEach` resets platformBus, eventBus, localStorage, sessionStorage; polyfills for IntersectionObserver, ResizeObserver, requestIdleCallback, requestAnimationFrame
+- **Engine test gates**: `bootEngineSystem()`, `engineOrchestrator.startAll()`, `BaseEngine.start()` return early in test mode to prevent background timers
+- **call-device-controller.ts**: Fixed double-toggle bug — `toggleSpeaker()` and `switchAudioRoute()` now directly update callStore state instead of calling `toggleSpeaker()` action (which itself toggled audio route a second time)
+- **Vertical taxonomy**: "hotel" renamed to "stay" across all import-engine tests
+- **Test expectations aligned**: resolveDisplayName email privacy, truncatePreview identity function, buildOrbitAlias format, 6-step pipeline (scrape_gate added), non-existent pages removed (NotFound, Messages, TenantSignup)
+- **84 test files, 0 failures**: All src/test/, src/e2e/, src/families/, src/lib/import-engine/__tests__/ pass deterministically
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`

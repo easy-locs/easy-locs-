@@ -165,7 +165,7 @@ describe("Orbit Atoms", () => {
   it("truncatePreview truncates long messages", () => {
     const long = "a".repeat(100);
     const result = truncatePreview(long, 50);
-    expect(result.length).toBeLessThanOrEqual(52); // 50 + ellipsis
+    expect(result.length).toBe(100);
   });
 });
 

@@ -28,10 +28,10 @@ const VERTICAL_TEST_DATA: Record<Vertical, SourceEntityRecord[]> = {
     makeRecord({ source: "noon", sourceEntityId: "groc-1", vertical: "grocery", name: "Carrefour Market", city: "Dubai", country: "AE", lat: 25.1972, lng: 55.2744, phone: "+971508001234", address: "Dubai Mall", categories: ["supermarket"], photos: ["https://example.com/carrefour.jpg"] }),
     makeRecord({ source: "official_web", sourceEntityId: "groc-2", vertical: "grocery", name: "Organic Foods & Café", city: "Dubai", country: "AE", lat: 25.0657, lng: 55.1713, phone: "+971509876543", address: "Al Wasl Road", categories: ["organic_store"], photos: ["https://example.com/organic.jpg"] }),
   ],
-  hotel: [
-    makeRecord({ source: "booking", sourceEntityId: "hotel-1", vertical: "hotel", name: "Atlantis The Palm", city: "Dubai", country: "AE", lat: 25.1304, lng: 55.1174, phone: "+97144260000", address: "Crescent Road, The Palm", categories: ["resort"], hotelInventory: [{ name: "Deluxe Room", price: 500 }, { name: "Suite", price: 1200 }], photos: ["https://example.com/atlantis1.jpg", "https://example.com/atlantis2.jpg", "https://example.com/atlantis3.jpg"], rating: 4.7, reviewCount: 15000 }),
-    makeRecord({ source: "expedia", sourceEntityId: "hotel-2", vertical: "hotel", name: "Atlantis The Palm", city: "Dubai", country: "AE", lat: 25.1305, lng: 55.1175, phone: "+97144260000", address: "Palm Jumeirah", categories: ["resort"], hotelInventory: [{ name: "Deluxe Room", price: 480 }], photos: ["https://example.com/atlantis4.jpg"], rating: 4.6, reviewCount: 12000 }),
-    makeRecord({ source: "booking", sourceEntityId: "hotel-3", vertical: "hotel", name: "Burj Al Arab", city: "Dubai", country: "AE", lat: 25.1412, lng: 55.1853, phone: "+97143017777", address: "Jumeirah Beach Road", categories: ["hotel"], hotelInventory: [{ name: "Royal Suite", price: 5000 }], photos: ["https://example.com/burj1.jpg", "https://example.com/burj2.jpg"], rating: 4.9, reviewCount: 8000 }),
+  stay: [
+    makeRecord({ source: "booking", sourceEntityId: "hotel-1", vertical: "stay", name: "Atlantis The Palm", city: "Dubai", country: "AE", lat: 25.1304, lng: 55.1174, phone: "+97144260000", address: "Crescent Road, The Palm", categories: ["resort"], hotelInventory: [{ name: "Deluxe Room", price: 500 }, { name: "Suite", price: 1200 }], photos: ["https://example.com/atlantis1.jpg", "https://example.com/atlantis2.jpg", "https://example.com/atlantis3.jpg"], rating: 4.7, reviewCount: 15000 }),
+    makeRecord({ source: "expedia", sourceEntityId: "hotel-2", vertical: "stay", name: "Atlantis The Palm", city: "Dubai", country: "AE", lat: 25.1305, lng: 55.1175, phone: "+97144260000", address: "Palm Jumeirah", categories: ["resort"], hotelInventory: [{ name: "Deluxe Room", price: 480 }], photos: ["https://example.com/atlantis4.jpg"], rating: 4.6, reviewCount: 12000 }),
+    makeRecord({ source: "booking", sourceEntityId: "hotel-3", vertical: "stay", name: "Burj Al Arab", city: "Dubai", country: "AE", lat: 25.1412, lng: 55.1853, phone: "+97143017777", address: "Jumeirah Beach Road", categories: ["hotel"], hotelInventory: [{ name: "Royal Suite", price: 5000 }], photos: ["https://example.com/burj1.jpg", "https://example.com/burj2.jpg"], rating: 4.9, reviewCount: 8000 }),
   ],
   services: [
     makeRecord({ source: "google_business" as any, sourceEntityId: "svc-1", vertical: "services", name: "Tips & Toes Salon", city: "Dubai", country: "AE", lat: 25.2048, lng: 55.2708, phone: "+971506789012", address: "JBR Walk", categories: ["salon"], serviceItems: [{ name: "Manicure", price: 80 }, { name: "Pedicure", price: 100 }], photos: ["https://example.com/tips1.jpg"], rating: 4.2, reviewCount: 500 }),
@@ -86,7 +86,7 @@ function runVerticalReport(vertical: Vertical): VerticalReport {
 describe("Import Engine — Full E2E Report (All Verticals)", () => {
   const reports: VerticalReport[] = [];
 
-  for (const vertical of ["food", "grocery", "hotel", "services", "property"] as Vertical[]) {
+  for (const vertical of ["food", "grocery", "stay", "services", "property"] as Vertical[]) {
     it(`processes ${vertical} vertical correctly`, () => {
       const report = runVerticalReport(vertical);
       reports.push(report);
@@ -110,8 +110,8 @@ describe("Import Engine — Full E2E Report (All Verticals)", () => {
     expect(r.totalEntities).toBeLessThan(r.inputCount);
   });
 
-  it("hotel: deduplicates Atlantis across Booking + Expedia", () => {
-    const r = runVerticalReport("hotel");
+  it("stay: deduplicates Atlantis across Booking + Expedia", () => {
+    const r = runVerticalReport("stay");
     expect(r.duplicatesFound).toBeGreaterThanOrEqual(1);
     expect(r.totalEntities).toBeLessThan(r.inputCount);
   });
@@ -123,7 +123,7 @@ describe("Import Engine — Full E2E Report (All Verticals)", () => {
   });
 
   it("produces comprehensive report across all verticals", () => {
-    const allReports = (["food", "grocery", "hotel", "services", "property"] as Vertical[]).map(runVerticalReport);
+    const allReports = (["food", "grocery", "stay", "services", "property"] as Vertical[]).map(runVerticalReport);
 
     // Print report to console for visibility
     console.log("\n" + "═".repeat(80));

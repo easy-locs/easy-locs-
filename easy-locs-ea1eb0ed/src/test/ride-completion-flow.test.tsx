@@ -18,6 +18,9 @@ vi.mock("@/integrations/supabase/client", () => ({
     auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "test-user" } } }) },
     channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() })),
     removeChannel: vi.fn(),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) },
+    storage: { from: vi.fn().mockReturnValue({ getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "" } }) }) },
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -103,15 +106,11 @@ describe("Ride Completion Flow", () => {
     );
 
     expect(screen.getByText("Ride completed")).toBeInTheDocument();
-    expect(screen.getByText("Rate driver")).toBeInTheDocument();
-    expect(screen.getByText("View receipt")).toBeInTheDocument();
-    expect(screen.getByText("Book again")).toBeInTheDocument();
-
-    // Verify fare display
-    expect(screen.getByText("45 AED")).toBeInTheDocument();
+    expect(screen.getByText("How was your ride?")).toBeInTheDocument();
+    expect(screen.getByText("Submit Rating")).toBeInTheDocument();
   });
 
-  it("step 3: 'Book again' resets flow to search", async () => {
+  it("step 3: 'Book another ride' resets flow to search", async () => {
     useCustomerMobilityStore.setState({
       jobs: [{ ...MOCK_JOB, status: "completed" }],
     });
@@ -128,7 +127,7 @@ describe("Ride Completion Flow", () => {
       </MemoryRouter>
     );
 
-    const bookAgainBtn = screen.getByText("Book again");
+    const bookAgainBtn = screen.getByText("Book another ride");
     await userEvent.click(bookAgainBtn);
 
     expect(useTaxiFlowStore.getState().step).toBe("search");

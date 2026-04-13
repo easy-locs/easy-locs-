@@ -17,6 +17,7 @@ vi.mock("@/integrations/supabase/client", () => ({
       limit: vi.fn().mockReturnThis(),
       maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
     }),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     functions: {
       invoke: vi.fn().mockResolvedValue({ data: null, error: null }),
     },
@@ -213,7 +214,7 @@ describe("Flow Wiring — Seasonal Booking", () => {
       bookingId: "bk-seasonal-pay-1",
       countryCode: "ES",
     });
-    expect(meta.target_url).toContain("/dashboard/seasonal");
+    expect(meta.target_url).toContain("/seasonal-rentals");
     expect(meta.target_url).toContain("booking=bk-seasonal-pay-1");
     expect(meta.module).toBe("seasonal");
   });
@@ -248,7 +249,7 @@ describe("Flow Wiring — Marketplace Booking", () => {
   it("marketplace deep link targets /dashboard/activities", async () => {
     const { buildTargetUrl } = await import("@/lib/shared/routes");
     const url = buildTargetUrl("marketplace_booking", { bookingId: "mb-link-1" });
-    expect(url).toBe("/dashboard/activities?booking=mb-link-1");
+    expect(url).toBe("/activities?booking=mb-link-1");
   });
 });
 
@@ -424,7 +425,7 @@ describe("Communication Pipeline — Email CTA URLs", () => {
     
     const tests = [
       { type: "lease" as const, ids: { targetId: "l-1", countryCode: "FR" }, expected: "/dashboard/leases?country=FR&record=l-1" },
-      { type: "booking_request" as const, ids: { bookingId: "bk-1", countryCode: "ES" }, expected: "/dashboard/seasonal?country=ES&booking=bk-1" },
+      { type: "booking_request" as const, ids: { bookingId: "bk-1", countryCode: "ES" }, expected: "/dashboard/seasonal-rentals?country=ES&booking=bk-1" },
       { type: "marketplace_booking" as const, ids: { bookingId: "mb-1" }, expected: "/activities?booking=mb-1" },
       { type: "payment" as const, ids: { targetId: "p-1" }, expected: "/dashboard/rental-management?record=p-1" },
       { type: "intervention" as const, ids: { targetId: "i-1", countryCode: "DE" }, expected: "/dashboard/interventions?country=DE&record=i-1" },
@@ -489,7 +490,7 @@ describe("Flow Wiring — Document Shared", () => {
       module: "marketplace",
       bookingId: "mb-doc-1",
     });
-    expect(meta.target_url).toContain("/dashboard/activities");
+    expect(meta.target_url).toContain("/activities");
   });
 });
 

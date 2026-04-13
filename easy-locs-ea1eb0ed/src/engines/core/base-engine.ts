@@ -69,6 +69,7 @@ export abstract class BaseEngine {
 
   start(): void {
     if (this._running) return;
+    if (import.meta.env.MODE === "test" && !import.meta.env.VITEST_ALLOW_ENGINES) return;
     if (!isEngineEnabled(this.id)) {
       this.log("info", `Skipped (disabled by feature flag)`);
       return;

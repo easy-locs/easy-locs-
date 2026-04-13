@@ -112,6 +112,12 @@ class EngineObserver {
     this.logs = [];
     this.errors = [];
   }
+
+  reset(): void {
+    this.logs = [];
+    this.errors = [];
+    this.metrics.clear();
+  }
 }
 
 export const engineObserver = new EngineObserver();

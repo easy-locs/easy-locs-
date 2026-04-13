@@ -53,10 +53,10 @@ describe("E2E: Food vertical", () => {
       rec("t1", "talabat", { name: "Pizza Palace", categories: ["pizza"], menuItems: [{ name: "Margherita", price: 29 }, { name: "BBQ", price: 40 }] }),
       rec("d2", "deliveroo", { name: "Burger House", categories: ["burger"], menuItems: [{ name: "Classic Burger", price: 25 }], lat: 25.1, lng: 55.2 }),
     ];
-    const result = runImportEngine(input, records);
+    const result = runImportEngine(input, records, { skipScrapeGate: true });
     printReport("FOOD", result, records);
 
-    expect(result.entities.length).toBe(2); // Pizza Palace merged, Burger House separate
+    expect(result.entities.length).toBe(2);
     expect(result.duplicatesFound).toBe(1);
     
     const pizza = result.entities.find(e => e.canonicalName === "Pizza Palace");
@@ -81,7 +81,7 @@ describe("E2E: Grocery vertical", () => {
       rec("t2", "talabat", { vertical: "grocery", name: "Fresh Market", categories: ["grocery"], menuItems: [{ name: "Bread", price: 3 }] }),
       rec("w1", "official_web", { vertical: "grocery", name: "Organic Corner", categories: ["organic"], menuItems: [{ name: "Avocado", price: 8 }], photos: ["https://x.com/2.jpg"] }),
     ];
-    const result = runImportEngine(input, records);
+    const result = runImportEngine(input, records, { skipScrapeGate: true });
     printReport("GROCERY", result, records);
 
     // All 3 share same geo → may all merge. Check at least 1 entity produced
@@ -96,16 +96,16 @@ describe("E2E: Grocery vertical", () => {
 // ═══════════════════════════════════════════════════
 // HOTEL
 // ═══════════════════════════════════════════════════
-describe("E2E: Hotel vertical", () => {
-  it("processes hotel entities", () => {
-    const input: ImportInput = { vertical: "hotel", city: "Dubai", country: "AE" };
+describe("E2E: Stay vertical", () => {
+  it("processes stay entities", () => {
+    const input: ImportInput = { vertical: "stay", city: "Dubai", country: "AE" };
     const records: SourceEntityRecord[] = [
-      rec("b1", "booking", { vertical: "hotel", name: "JW Marriott", categories: ["hotel"], hotelInventory: [{ type: "Deluxe Room", price: 800 }], photos: ["https://h.com/1.jpg", "https://h.com/2.jpg"] }),
-      rec("e1", "expedia", { vertical: "hotel", name: "JW Marriott", categories: ["hotel"], hotelInventory: [{ type: "Suite", price: 1500 }], photos: ["https://h.com/1.jpg"] }),
-      rec("b2", "booking", { vertical: "hotel", name: "Burj Al Arab", categories: ["resort"], hotelInventory: [{ type: "Royal Suite", price: 5000 }], photos: ["https://h.com/3.jpg", "https://h.com/4.jpg", "https://h.com/5.jpg"] }),
+      rec("b1", "booking", { vertical: "stay", name: "JW Marriott", categories: ["hotel"], hotelInventory: [{ type: "Deluxe Room", price: 800 }], photos: ["https://h.com/1.jpg", "https://h.com/2.jpg"] }),
+      rec("e1", "expedia", { vertical: "stay", name: "JW Marriott", categories: ["hotel"], hotelInventory: [{ type: "Suite", price: 1500 }], photos: ["https://h.com/1.jpg"] }),
+      rec("b2", "booking", { vertical: "stay", name: "Burj Al Arab", categories: ["resort"], hotelInventory: [{ type: "Royal Suite", price: 5000 }], photos: ["https://h.com/3.jpg", "https://h.com/4.jpg", "https://h.com/5.jpg"] }),
     ];
-    const result = runImportEngine(input, records);
-    printReport("HOTEL", result, records);
+    const result = runImportEngine(input, records, { skipScrapeGate: true });
+    printReport("STAY", result, records);
 
     expect(result.entities.length).toBeGreaterThanOrEqual(1);
     expect(result.entities.length).toBeLessThanOrEqual(3);
@@ -129,7 +129,7 @@ describe("E2E: Services vertical", () => {
       rec("w2", "official_web", { vertical: "services", name: "Glamour Salon & Spa", categories: ["salon", "spa"], serviceItems: [{ name: "Manicure", price: 60 }], website: "https://glamour.ae" }),
       rec("g2", "google_business", { vertical: "services", name: "QuickFix Plumbing", categories: ["plumbing"], serviceItems: [{ name: "Pipe Repair", price: 200 }] }),
     ];
-    const result = runImportEngine(input, records);
+    const result = runImportEngine(input, records, { skipScrapeGate: true });
     printReport("SERVICES", result, records);
 
     // All share same geo → may merge. Check reasonable output
@@ -153,7 +153,7 @@ describe("E2E: Property vertical", () => {
       rec("c1", "crm_import", { vertical: "property", name: "Dubai Marina Tower", categories: ["apartment"], phone: "+971509999999" }),
       rec("p2", "property_portal", { vertical: "property", name: "Business Bay Office", categories: ["office"], photos: ["https://p.com/3.jpg"], lat: 25.18, lng: 55.26 }),
     ];
-    const result = runImportEngine(input, records);
+    const result = runImportEngine(input, records, { skipScrapeGate: true });
     printReport("PROPERTY", result, records);
 
     expect(result.entities.length).toBe(2);
@@ -174,8 +174,8 @@ describe("Pipeline trace", () => {
     const records = [rec("x1", "deliveroo", { name: "Trace Test", menuItems: [{ name: "A", price: 1 }] })];
     const result = runImportEngine(input, records);
 
-    expect(result.trace.steps.length).toBe(5); // dedup, merge, enrich, quality, publish_gate
-    expect(result.trace.steps.map(s => s.name)).toEqual(["dedup", "merge", "enrich", "quality", "publish_gate"]);
+    expect(result.trace.steps.length).toBe(6);
+    expect(result.trace.steps.map(s => s.name)).toEqual(["scrape_gate", "dedup", "merge", "enrich", "quality", "publish_gate"]);
     expect(result.trace.totalDurationMs).toBeGreaterThanOrEqual(0);
     expect(result.trace.pipelineId).toBeTruthy();
   });

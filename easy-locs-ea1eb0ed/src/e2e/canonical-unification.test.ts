@@ -137,8 +137,8 @@ describe("resolveDisplayName — single canonical identity resolver", () => {
     expect(resolveDisplayName({ first_name: "Jane", last_name: "Smith" })).toBe("Jane Smith");
   });
 
-  it("falls back to email prefix", () => {
-    expect(resolveDisplayName({ email: "user@example.com" })).toBe("user");
+  it("falls back to default when only email provided (email is private)", () => {
+    expect(resolveDisplayName({ email: "user@example.com" })).toBe("Contact");
   });
 
   it("falls back to phone", () => {

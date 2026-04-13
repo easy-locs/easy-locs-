@@ -24,6 +24,7 @@ class EngineOrchestrator {
 
   startAll(): void {
     if (this._booted) return;
+    if (import.meta.env.MODE === "test" && !import.meta.env.VITEST_ALLOW_ENGINES) return;
     this._booted = true;
 
     let started = 0;
@@ -86,6 +87,12 @@ class EngineOrchestrator {
 
   get size(): number {
     return this.engines.size;
+  }
+
+  reset(): void {
+    this.stopAll();
+    this.engines.clear();
+    this._booted = false;
   }
 }
 

@@ -21,6 +21,7 @@ vi.mock("@/integrations/supabase/client", () => ({
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({ data: [], error: null, count: 0 }),
     }),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     functions: {
       invoke: vi.fn().mockResolvedValue({ data: { subscribed: true, plan: "unlimited" }, error: null }),
     },
@@ -28,6 +29,15 @@ vi.mock("@/integrations/supabase/client", () => ({
       on: vi.fn().mockReturnThis(),
       subscribe: vi.fn(),
     }),
+    removeChannel: vi.fn(),
+    removeAllChannels: vi.fn(),
+    storage: {
+      from: vi.fn().mockReturnValue({
+        upload: vi.fn().mockResolvedValue({ data: { path: "mock" }, error: null }),
+        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "" } }),
+        list: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    },
   },
 }));
 
