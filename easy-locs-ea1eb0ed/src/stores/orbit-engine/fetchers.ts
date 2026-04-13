@@ -16,9 +16,14 @@ async function safeCount(table: string, build: (q: any) => any): Promise<number>
     const q = build(
       db(table).select("id", { count: "exact", head: true })
     );
-    const { count } = await q;
+    const { count, error } = await q;
+    if (error) {
+      console.warn(`[OrbitEngine] safeCount(${table}) query error:`, error.message);
+      return 0;
+    }
     return count ?? 0;
-  } catch {
+  } catch (err) {
+    console.warn(`[OrbitEngine] safeCount(${table}) exception:`, err instanceof Error ? err.message : err);
     return 0;
   }
 }
@@ -28,13 +33,16 @@ export async function fetchCommunicationCounters(userId: string, _orgId?: string
 
   let userOrbitId: string | null = null;
   try {
-    const { data: orbitProfile } = await db
+    const { data: orbitProfile, error: profileErr } = await db
       .from("orbit_profiles_v2")
       .select("orbit_id")
       .eq("id", userId)
       .maybeSingle();
+    if (profileErr) console.warn("[OrbitEngine] orbit_profiles_v2 lookup error:", profileErr.message);
     userOrbitId = orbitProfile?.orbit_id || null;
-  } catch { /* silent */ }
+  } catch (err) {
+    console.warn("[OrbitEngine] orbit_profiles_v2 lookup exception:", err instanceof Error ? err.message : err);
+  }
 
   const effectiveOrbitId = userOrbitId || `orbit_${userId.replace(/-/g, "").substring(0, 8)}`;
 

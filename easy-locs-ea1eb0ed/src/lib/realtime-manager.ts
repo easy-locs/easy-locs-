@@ -306,7 +306,11 @@ class RealtimeManager {
       });
     }
 
-    this.userChannel = ch.subscribe();
+    this.userChannel = ch.subscribe((status) => {
+      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        console.warn(`[RealtimeManager] user channel status: ${status} — realtime events may be delayed`);
+      }
+    });
   }
 
   // ── Internal: presence channel (optimized) ──
@@ -315,7 +319,11 @@ class RealtimeManager {
     if (!this.userId) return;
 
     this.presenceChannel = createRealtimeChannel(`rt:presence:${this.userId}`)
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn(`[RealtimeManager] presence channel status: ${status}`);
+        }
+      });
 
     const deviceType = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "web";
 

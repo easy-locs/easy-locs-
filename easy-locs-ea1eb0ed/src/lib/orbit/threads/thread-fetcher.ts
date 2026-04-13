@@ -87,15 +87,14 @@ export async function fetchOrgThreadSources(orgId: string): Promise<ThreadRawSou
 export async function fetchV2Conversations(userId: string, _hasOrg: boolean): Promise<any[]> {
   trace("fetch.v2conversations", "input", { userId });
 
-  // RLS on conversations_v2 already filters by participant orbitId.
-  // No extra client-side filter needed — just fetch and let RLS do its job.
   const { data, error } = await db("conversations_v2")
     .select("*")
     .order("last_message_at", { ascending: false, nullsFirst: false })
     .limit(300);
 
   if (error) {
-    trace("fetch.v2conversations", "error", { message: error.message });
+    trace("fetch.v2conversations", "error", { message: error.message, code: (error as any).code });
+    throw new Error(`conversations_v2 query failed: ${error.message}`);
   }
 
   const raw = data || [];
@@ -104,17 +103,19 @@ export async function fetchV2Conversations(userId: string, _hasOrg: boolean): Pr
 }
 
 export async function fetchDeals(orgId: string): Promise<any[]> {
-  const { data } = await db("deal_rooms")
+  const { data, error } = await db("deal_rooms")
     .select("*")
     .eq("org_id", orgId)
     .order("updated_at", { ascending: false })
     .limit(100);
+  if (error) console.warn("[THREADS][fetch.deals] error:", error.message);
   return data || [];
 }
 
 export async function fetchPreferences(userId: string): Promise<any[]> {
-  const { data } = await db("conversation_preferences")
+  const { data, error } = await db("conversation_preferences")
     .select("context_id, archived, muted, favorited, cleared_at")
     .eq("user_id", userId);
+  if (error) console.warn("[THREADS][fetch.preferences] error:", error.message);
   return data || [];
 }
