@@ -9,7 +9,6 @@
  * - Status lifecycle: pending → en_route → nearby → arrived → completed
  */
 import { db } from "@/services/db";
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,7 +49,7 @@ export function useTrackingObserver(sessionId: string | null) {
   useEffect(() => {
     if (!sessionId) { setSession(null); setLoading(false); return; }
     setLoading(true);
-    supabase
+    db
       .from("tracking_sessions")
       .select("*")
       .eq("id", sessionId)
@@ -64,7 +63,7 @@ export function useTrackingObserver(sessionId: string | null) {
   // Realtime subscription
   useEffect(() => {
     if (!sessionId) return;
-    const channel = supabase
+    const channel = db
       .channel(`tracking:${sessionId}`)
       .on(
         "postgres_changes",
@@ -116,7 +115,7 @@ export function useTrackingStreamer(sessionId: string | null) {
     }
 
     // Mark session as en_route
-    await supabase
+    await db
       .from("tracking_sessions")
       .update({ status: "en_route", started_at: new Date().toISOString() } as any)
       .eq("id", sessionId);
@@ -134,7 +133,7 @@ export function useTrackingStreamer(sessionId: string | null) {
         const heading: number | null = null;
 
         // Get destination for ETA
-        const { data: sess } = await supabase
+        const { data: sess } = await db
           .from("tracking_sessions")
           .select("destination_lat, destination_lng, status")
           .eq("id", sessionId)
@@ -163,13 +162,13 @@ export function useTrackingStreamer(sessionId: string | null) {
         };
         if (autoStatus) updatePayload.status = autoStatus;
 
-        await supabase
+        await db
           .from("tracking_sessions")
           .update(updatePayload as any)
           .eq("id", sessionId);
 
         // Record position history (non-blocking)
-        supabase
+        db
           .from("tracking_positions")
           .insert({
             session_id: sessionId,
@@ -195,7 +194,7 @@ export function useTrackingStreamer(sessionId: string | null) {
 
   const markArrived = useCallback(async () => {
     if (!sessionId) return;
-    await supabase
+    await db
       .from("tracking_sessions")
       .update({ status: "arrived", arrived_at: new Date().toISOString() } as any)
       .eq("id", sessionId);
@@ -204,7 +203,7 @@ export function useTrackingStreamer(sessionId: string | null) {
 
   const markCompleted = useCallback(async () => {
     if (!sessionId) return;
-    await supabase
+    await db
       .from("tracking_sessions")
       .update({ status: "completed", completed_at: new Date().toISOString() } as any)
       .eq("id", sessionId);
@@ -229,7 +228,7 @@ export function useOrgTrackingSessions() {
   useEffect(() => {
     if (!orgId) return;
     setLoading(true);
-    supabase
+    db
       .from("tracking_sessions")
       .select("*")
       .eq("org_id", orgId)
@@ -245,7 +244,7 @@ export function useOrgTrackingSessions() {
   // Realtime for all active sessions
   useEffect(() => {
     if (!orgId) return;
-    const channel = supabase
+    const channel = db
       .channel(`tracking_org:${orgId}`)
       .on(
         "postgres_changes",

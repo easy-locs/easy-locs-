@@ -1,7 +1,6 @@
 /**
  * interventions.repository — DB operations for Interventions page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
@@ -41,7 +40,7 @@ export async function deleteIntervention(id: string) {
 }
 
 export function subscribeInterventions(orgId: string, onUpdate: () => void) {
-  const channel = supabase
+  const channel = db
     .channel("interventions-rt")
     .on("postgres_changes", { event: "*", schema: "public", table: "interventions", filter: `org_id=eq.${orgId}` }, onUpdate)
     .subscribe();

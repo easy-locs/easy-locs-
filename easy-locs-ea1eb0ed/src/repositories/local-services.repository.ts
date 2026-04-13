@@ -1,7 +1,6 @@
 /**
  * local-services.repository — DB operations for LocalServices page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchLocalServicesData(orgId: string) {

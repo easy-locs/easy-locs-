@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { assignMatchedDriver } from "./driverMatchingEngine";
 import { releaseOrderEscrow } from "./orderEscrowEngine";
 import { setOrderStatusWithEvents } from "@/lib/orders/order-status-bridge";

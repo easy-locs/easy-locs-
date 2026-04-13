@@ -1,7 +1,6 @@
 /**
  * collaboration.repository — All DB operations for team collaboration page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchUserOrgDetails(userId: string) {

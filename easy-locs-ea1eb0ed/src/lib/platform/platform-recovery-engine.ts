@@ -4,7 +4,6 @@
  * NO dependency on dead V1 client engine layer.
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { runAutoFix, type AutoFixResult } from "./platform-auto-fix";
 import { runAllHealthChecks, type HealthCheckResult } from "./platform-health-checks";
@@ -91,7 +90,7 @@ async function checkRpc(name: string, rpcName: string): Promise<ModuleCheckResul
       dummyParams.target_user_id = "00000000-0000-0000-0000-000000000000";
       dummyParams.target_currency = "AED";
     }
-    const { error } = await supabase.rpc(rpcName as any, dummyParams as any);
+    const { error } = await db.rpc(rpcName as any, dummyParams as any);
     const reachable = !error || !error.message?.includes("Could not find the function");
     return { module: name, group: "backend", status: reachable ? "ok" : "error", detail: reachable ? "rpc reachable" : error?.message ?? "not found", durationMs: Date.now() - t };
   } catch (e: any) {

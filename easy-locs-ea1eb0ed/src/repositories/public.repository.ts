@@ -1,17 +1,16 @@
 /**
  * public.repository — All DB ops for public/SEO pages & landing.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 // ── SEO city/category ──
 export async function fetchPublicMarketplaceServices(params: Record<string, any>) {
-  const { data } = await supabase.rpc("get_public_marketplace_services" as any, params);
+  const { data } = await db.rpc("get_public_marketplace_services" as any, params);
   return data ?? [];
 }
 
 export async function fetchPublicRealEstateListings(params: Record<string, any>) {
-  const { data } = await supabase.rpc("get_public_real_estate_listings" as any, params);
+  const { data } = await db.rpc("get_public_real_estate_listings" as any, params);
   return data ?? [];
 }
 
@@ -23,7 +22,7 @@ export async function fetchPublicListings(filters?: Record<string, any>) {
 }
 
 export async function fetchPublicProviders(params: Record<string, any>) {
-  const { data } = await supabase.rpc("get_public_marketplace_providers" as any, params);
+  const { data } = await db.rpc("get_public_marketplace_providers" as any, params);
   return data ?? [];
 }
 
@@ -47,9 +46,9 @@ export async function fetchListingContact(listingId: string) {
 
 // ── Real estate photo ──
 export async function uploadRealEstatePhoto(path: string, file: File) {
-  const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
+  const { error } = await db.storage.from("property-photos").upload(path, file, { upsert: true });
   if (error) throw error;
-  const { data } = supabase.storage.from("property-photos").getPublicUrl(path);
+  const { data } = db.storage.from("property-photos").getPublicUrl(path);
   return data.publicUrl;
 }
 

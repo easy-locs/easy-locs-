@@ -1,9 +1,8 @@
 /**
  * communication.repository — Single source of truth for ALL communication DB operations.
  * Covers: messages, conversations, groups, calls, contacts, notifications, presence, activity logs.
- * No UI component should import supabase directly for these domains.
+ * No UI component should import db directly for these domains.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { assertNoLegacyIds, assertValidMessageType, assertCanonicalMetadata } from "@/lib/governance";
@@ -205,7 +204,7 @@ export async function fetchCallLogs(userId: string, limit = 100) {
   const orbitId = profile?.orbit_id || `orbit_${userId.replace(/-/g, "").substring(0, 8)}`;
 
   // Query by both auth UUID and orbit_id for backward compatibility
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("call_logs")
     .select("*")
     .or(`caller_orbit_id.eq.${userId},receiver_orbit_id.eq.${userId},caller_orbit_id.eq.${orbitId},receiver_orbit_id.eq.${orbitId}`)
@@ -352,7 +351,7 @@ export async function updatePresence(userId: string, fields: Record<string, any>
 }
 
 export async function fetchNearbyUsers(excludeUserId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("user_presence")
     .select("user_id, display_name, avatar_url, status, professional_category, verified, lat, lng, last_seen_at")
     .eq("visible_on_nearby", true)
@@ -366,7 +365,7 @@ export async function fetchNearbyUsers(excludeUserId: string) {
 // ═══ NEARBY ITEMS ═══
 
 export async function searchNearbyItems(lat: number, lng: number, radiusKm: number, itemType?: string | null) {
-  const { data, error } = await supabase.rpc("search_nearby_items", {
+  const { data, error } = await db.rpc("search_nearby_items", {
     _lat: lat, _lng: lng, _radius_km: radiusKm,
     _item_type: itemType || null,
   });
@@ -377,9 +376,9 @@ export async function searchNearbyItems(lat: number, lng: number, radiusKm: numb
 // ═══ STORAGE ═══
 
 export async function uploadToStorage(bucket: string, path: string, file: File | Blob) {
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
+  const { error } = await db.storage.from(bucket).upload(path, file, { upsert: false });
   if (error) throw error;
-  const { data: signedData } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
+  const { data: signedData } = await db.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
   return signedData?.signedUrl || null;
 }
 
@@ -480,7 +479,7 @@ export async function fetchEntityInterventions(entityType: string, entityId: str
 }
 
 export async function fetchEntityBookings(propertyId: string, orgId: string, maxItems: number) {
-  const { data } = await supabase
+  const { data } = await db
     .from("booking_requests")
     .select("id, guest_name, check_in, check_out, status, created_at")
     .eq("property_id", propertyId)
@@ -517,7 +516,7 @@ export async function fetchUnreadCount(userId: string) {
 // ═══ INVITE ═══
 
 export async function sendInviteEmail(recipientEmail: string, subject: string, message: string, ctaUrl: string, ctaLabel: string) {
-  await supabase.functions.invoke("send-notification-email", {
+  await db.functions.invoke("send-notification-email", {
     body: {
       event_type: "marketplace_notification",
       recipient_email: recipientEmail,
@@ -599,22 +598,22 @@ export async function insertVoiceMessage(params: {
 
 // ── Chat media/attachment upload ──
 export async function uploadChatMedia(path: string, file: File) {
-  const { error } = await supabase.storage.from("chat-media").upload(path, file);
+  const { error } = await db.storage.from("chat-media").upload(path, file);
   if (error) throw error;
-  const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
+  const { data: signed } = await db.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
   return signed?.signedUrl || path;
 }
 
 export async function uploadChatAttachment(path: string, blob: Blob) {
-  const { error } = await supabase.storage.from("chat-attachments").upload(path, blob);
+  const { error } = await db.storage.from("chat-attachments").upload(path, blob);
   if (error) throw error;
-  const { data: signed } = await supabase.storage.from("chat-attachments").createSignedUrl(path, 60 * 60 * 24 * 365);
+  const { data: signed } = await db.storage.from("chat-attachments").createSignedUrl(path, 60 * 60 * 24 * 365);
   return signed?.signedUrl || path;
 }
 
 // ── Auth user for comm hooks ──
 export async function getCommAuthUser() {
-  const { data } = await supabase.auth.getUser();
+  const { data } = await db.auth.getUser();
   return data?.user || null;
 }
 
@@ -691,7 +690,7 @@ export async function updateOrbitPermissions(userId: string, permissions: Record
 
 // ── Upload booking document ──
 export async function uploadBookingDocument(path: string, file: File) {
-  const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+  const { error } = await db.storage.from("booking-documents").upload(path, file, { upsert: true });
   if (error) throw error;
 }
 
@@ -700,12 +699,12 @@ export const insertChatPaymentMessage = insertChatMessageV2;
 
 // ── Sign URLs (separate from upload) ──
 export async function signChatMediaUrl(path: string, expiresIn = 60 * 60 * 24 * 365) {
-  const { data } = await supabase.storage.from("chat-media").createSignedUrl(path, expiresIn);
+  const { data } = await db.storage.from("chat-media").createSignedUrl(path, expiresIn);
   return data?.signedUrl || path;
 }
 
 export async function signChatAttachmentUrl(path: string, expiresIn = 60 * 60 * 24 * 365) {
-  const { data } = await supabase.storage.from("chat-attachments").createSignedUrl(path, expiresIn);
+  const { data } = await db.storage.from("chat-attachments").createSignedUrl(path, expiresIn);
   return data?.signedUrl || path;
 }
 
@@ -854,7 +853,7 @@ export async function broadcastCallSignal(callId: string, signalType: string, fr
 
 // ── Concierge payment ──
 export async function invokeCreateConciergePayment(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-concierge-payment", { body });
+  const { data, error } = await db.functions.invoke("create-concierge-payment", { body });
   if (error) throw error;
   return data;
 }
@@ -942,7 +941,7 @@ export async function fetchGroupConversations() {
 }
 
 export async function fetchGroupMemberIds(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("group_members")
     .select("group_id")
     .eq("user_id", userId);
@@ -965,7 +964,7 @@ export async function addMessageReaction(messageId: string, userId: string, emoj
 }
 
 export async function clearConversationMessages(conversationId: string, userId: string) {
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from("conversation_preferences")
     .select("muted, archived")
     .eq("user_id", userId)
@@ -992,7 +991,7 @@ export async function exportChatMessages(conversationId: string, limit = 500) {
 }
 
 export async function toggleContactFavorite(userId: string, conversationId: string, favorited: boolean) {
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from("conversation_preferences")
     .select("muted, archived")
     .eq("user_id", userId)

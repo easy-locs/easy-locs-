@@ -1,7 +1,7 @@
 /**
  * Billing Repository — All edge function calls for Billing page.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export async function createCheckoutSession(priceId: string): Promise<string> {
   const { data, error } = await supabase.functions.invoke("create-checkout", { body: { priceId } });

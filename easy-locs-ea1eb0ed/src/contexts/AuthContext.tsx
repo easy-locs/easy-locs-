@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { initSessionLifecycle, teardownSession } from "@/lib/lifecycle/session-lifecycle";
 import {
   probeDbHealth,

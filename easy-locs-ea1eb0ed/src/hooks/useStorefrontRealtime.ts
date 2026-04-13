@@ -3,7 +3,6 @@
  * Emits proper storefront:* bus events consumed by storefront-reactions.
  */
 import { db } from "@/services/db";
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
@@ -23,7 +22,7 @@ export function useStorefrontRealtime({ shopId, buyerId }: Props) {
   useEffect(() => {
     if (!shopId && !buyerId) return;
 
-    const channel = supabase
+    const channel = db
       .channel(`storefront-orders-${shopId || buyerId}`)
       .on(
         "postgres_changes",

@@ -1,7 +1,6 @@
 /**
  * payment-notices.repository — All DB operations for PaymentNotices page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchPaymentNoticesData(orgId: string) {
@@ -20,7 +19,7 @@ export async function insertPaymentNotices(notices: any[]) {
 }
 
 export async function sendNoticeEmail(email: string, subject: string, html: string) {
-  await supabase.functions.invoke("send-email", { body: { to: email, subject, html } }).catch(() => {});
+  await db.functions.invoke("send-email", { body: { to: email, subject, html } }).catch(() => {});
 }
 
 export async function fetchTenantEmail(tenantId: string) {

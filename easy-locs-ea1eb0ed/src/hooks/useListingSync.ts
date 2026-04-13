@@ -4,7 +4,6 @@
  * for the marketplace_services table (single source of truth).
  */
 import { db } from "@/services/db";
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useCallback } from "react";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
@@ -62,7 +61,7 @@ export function useListingRealtimeSync(orgId?: string) {
   useEffect(() => {
     if (!orgId) return;
 
-    const channel = supabase
+    const channel = db
       .channel(`listing-sync-${orgId}`)
       .on(
         "postgres_changes",
@@ -92,7 +91,7 @@ export function useExploreRealtimeSync() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const channel = supabase
+    const channel = db
       .channel("explore-listing-sync")
       .on(
         "postgres_changes",
@@ -120,7 +119,7 @@ export function useMyListings(providerId?: string) {
     queryKey: ["my_listings", providerId],
     queryFn: async () => {
       if (!providerId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("marketplace_services")
         .select("*")
         .eq("provider_id", providerId)
@@ -150,7 +149,7 @@ export function useListingStatusMutation() {
       // Keep active boolean in sync for backward compatibility
       updateData.active = status === "published";
 
-      const { error } = await supabase
+      const { error } = await db
         .from("marketplace_services")
         .update(updateData)
         .eq("id", listingId);
@@ -189,7 +188,7 @@ export function useUpdateListingMutation() {
       listingId: string;
       data: Record<string, any>;
     }) => {
-      const { error } = await supabase
+      const { error } = await db
         .from("marketplace_services")
         .update({ ...data, updated_at: new Date().toISOString() } as any)
         .eq("id", listingId);
@@ -213,7 +212,7 @@ export function useBookingConfirmationSync() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const channel = supabase
+    const channel = db
       .channel("booking-listing-sync")
       .on(
         "postgres_changes",

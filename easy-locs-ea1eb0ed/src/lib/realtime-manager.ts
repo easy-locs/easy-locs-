@@ -9,7 +9,6 @@
  * 5. Health monitoring for debugging channel leaks.
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -113,7 +112,7 @@ class RealtimeManager {
   stop() {
     // Set offline before teardown (only leader tab writes) — validate session first
     if (this.userId && this.isLeaderTab) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      db.auth.getSession().then(({ data: { session } }) => {
         if (!session?.access_token) return;
         db("user_presence").upsert({
           user_id: this.userId,
@@ -336,7 +335,7 @@ class RealtimeManager {
       if (currentStatus === this.lastPresenceStatus && Date.now() - this.lastHeartbeatAt < 25_000) return;
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await db.auth.getSession();
         if (!session?.access_token) return;
         await db("user_presence").upsert({
           user_id: this.userId,
@@ -362,7 +361,7 @@ class RealtimeManager {
         const status = document.hidden ? "away" : "online";
         if (status === this.lastPresenceStatus) return;
         // Validate session before writing to prevent RLS 401
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await db.auth.getSession();
         if (!session?.access_token) return;
         db("user_presence").upsert({
           user_id: this.userId,

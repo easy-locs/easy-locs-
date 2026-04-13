@@ -1,7 +1,6 @@
 /**
  * booking-actions.repository — DB operations for booking status transitions.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function updateMarketplaceBooking(bookingId: string, status: string) {

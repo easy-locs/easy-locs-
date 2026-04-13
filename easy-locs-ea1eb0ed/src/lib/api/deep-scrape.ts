@@ -1,7 +1,7 @@
 /**
  * Deep Scrape & Build API — Scrapes a URL, validates menu, computes readiness, and inserts into pipeline.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export interface DeepScrapeResult {
   url: string;

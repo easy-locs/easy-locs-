@@ -1,7 +1,6 @@
 /**
  * SEO Engine — Ensures all public entities have proper SEO metadata.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

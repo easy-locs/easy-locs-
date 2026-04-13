@@ -2,7 +2,6 @@
  * AuctionManager — Live auction system with countdown, bidding, auto-extend.
  * Seller: create/manage auctions. Buyer: place bids in real-time.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { db } from "@/services/db";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -71,7 +70,7 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
 
   // Realtime for auction updates
   useEffect(() => {
-    const channel = supabase
+    const channel = db
       .channel(`auctions-${shopId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "storefront_auctions", filter: `shop_id=eq.${shopId}` },
         () => qc.invalidateQueries({ queryKey: ["shop-auctions", shopId] })

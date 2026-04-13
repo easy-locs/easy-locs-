@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { ensureOrbitProfile, invalidateOrbitProfileCache } from "@/lib/orbit/ensureOrbitProfile";
 import { ensureUserProfile } from "@/lib/auth/profile";
@@ -97,7 +96,7 @@ export async function runIdentityActivation(input: ActivationInput): Promise<Act
         walletReady = true;
       } else {
         try {
-          await supabase.rpc("ensure_wallet_account", {
+          await db.rpc("ensure_wallet_account", {
             target_user_id: userId,
             target_currency: "EUR",
           });

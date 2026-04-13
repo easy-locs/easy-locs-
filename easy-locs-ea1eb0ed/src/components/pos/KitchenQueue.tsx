@@ -2,7 +2,6 @@
  * KitchenQueue — Realtime POS order queue for merchants.
  * 4-column KDS: New → Accepted → Preparing → Ready
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { db } from "@/services/db";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
@@ -53,7 +52,7 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
 
   // Realtime subscription
   useEffect(() => {
-    const channel = supabase
+    const channel = db
       .channel(`kitchen-${shopId}`)
       .on("postgres_changes", {
         event: "*",

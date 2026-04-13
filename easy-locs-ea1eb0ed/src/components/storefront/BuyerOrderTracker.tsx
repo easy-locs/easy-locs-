@@ -2,7 +2,6 @@
  * BuyerOrderTracker — Buyer-facing order status tracker with realtime updates.
  * Shows order timeline, items, and live status progression.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { db } from "@/services/db";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -74,7 +73,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
       ? `id=eq.${orderId}`
       : `buyer_id=eq.${user?.id}`;
 
-    const channel = supabase
+    const channel = db
       .channel(`buyer-order-track-${orderId || user?.id}`)
       .on("postgres_changes", {
         event: "UPDATE",

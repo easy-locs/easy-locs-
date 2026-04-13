@@ -1,5 +1,4 @@
 import { db } from "@/services/db";
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { removeRealtimeChannel } from "@/lib/realtime";
@@ -51,7 +50,7 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
   });
 
   useEffect(() => {
-    const channel = supabase
+    const channel = db
       .channel(`storefront-orders-${shopId}`)
       .on("postgres_changes", {
         event: "*",

@@ -1,7 +1,6 @@
 /**
  * Expenses Repository — All DB access for Expenses page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export interface ExpenseRecord {

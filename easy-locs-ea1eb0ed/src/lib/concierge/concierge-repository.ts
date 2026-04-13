@@ -1,11 +1,10 @@
 /**
  * concierge-repository — All concierge service DB reads/writes.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchConciergeServices(orgId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("concierge_services")
     .select("*")
     .eq("org_id", orgId)
@@ -15,7 +14,7 @@ export async function fetchConciergeServices(orgId: string) {
 }
 
 export async function createConciergeService(orgId: string, userId: string, form: Record<string, any>) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("concierge_services")
     .insert({ ...form, org_id: orgId, user_id: userId } as any)
     .select()

@@ -1,8 +1,7 @@
 /**
  * Gift Card Repository — Canonical data access for gift cards.
- * Extracts direct supabase calls from GiftCardManager into repository layer.
+ * Extracts direct db calls from GiftCardManager into repository layer.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

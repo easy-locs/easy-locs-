@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 // ─── Super Dashboard ───
@@ -139,7 +138,7 @@ export async function fetchRetentionOpsData() {
 
 // ─── Central Control Panel ───
 export async function triggerEngineCron() {
-  const { data, error } = await supabase.functions.invoke("engine-cron-server", { body: {} });
+  const { data, error } = await db.functions.invoke("engine-cron-server", { body: {} });
   if (error) throw error;
   return data;
 }
@@ -171,13 +170,13 @@ export async function fetchOwnerCockpitStats() {
 }
 
 export async function invokeOwnerAction(action: string) {
-  const { error } = await supabase.functions.invoke(action);
+  const { error } = await db.functions.invoke(action);
   if (error) throw error;
 }
 
 // ─── Pipeline ───
 export async function invokeUaeScrape(city: string, vertical: string) {
-  const { data, error } = await supabase.functions.invoke("uae-scrape-onboard", {
+  const { data, error } = await db.functions.invoke("uae-scrape-onboard", {
     body: { city, vertical, limit: 20 },
   });
   if (error) throw error;
@@ -195,5 +194,5 @@ export async function fetchPlatformRecoveryRuns() {
 }
 
 export async function invokeServerRecovery(job: string) {
-  await supabase.functions.invoke("platform-recovery", { body: { job } });
+  await db.functions.invoke("platform-recovery", { body: { job } });
 }

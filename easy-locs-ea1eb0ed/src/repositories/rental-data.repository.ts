@@ -1,10 +1,9 @@
 /**
  * rental-data.repository.ts — Single source of truth for all rental DB operations.
- * Replaces inline supabase calls in useRentalData, useRentalPropertyDetail,
+ * Replaces inline db calls in useRentalData, useRentalPropertyDetail,
  * useRentalRentCalls, useRentalReceipts, useRentalMessages, useRentalNotifications,
  * useLeaseAutoGenerator, useRentalLeaseGenerator, useRentalModeBadges, useRentalRealtimeBridge.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
@@ -107,7 +106,7 @@ export async function insertDocument(record: Record<string, any>) {
 
 // ─── Email ───
 export async function invokeSendEmail(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("send-email", { body });
+  const { data, error } = await db.functions.invoke("send-email", { body });
   if (error) throw error;
   return data;
 }
@@ -160,7 +159,7 @@ export async function insertChatMessage(orgId: string, tenantId: string, userId:
 }
 
 export function subscribeToRentalChat(tenantId: string, onInsert: (msg: any) => void, onUpdate: (msg: any) => void) {
-  const channel = supabase
+  const channel = db
     .channel(`rental-msg-${tenantId}`)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, (p) => {
       const msg = p.new as any;
@@ -173,7 +172,7 @@ export function subscribeToRentalChat(tenantId: string, onInsert: (msg: any) => 
 
 // ─── Stripe Rent Payment ───
 export async function invokeRentPayment(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-rent-payment", { body });
+  const { data, error } = await db.functions.invoke("create-rent-payment", { body });
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
   return data;

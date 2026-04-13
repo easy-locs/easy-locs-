@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
@@ -38,7 +37,7 @@ export function useWalletRealtime() {
     if (!user?.id) return;
 
     const unsubRegistry = registerSubscription(`wallet.transactions:${user.id}`, () => {
-      const walletChannel = supabase
+      const walletChannel = db
         .channel(`wallet:${user.id}`)
         .on(
           "postgres_changes",

@@ -2,7 +2,7 @@
  * Ingestion Runtime — Client-side orchestrator to trigger the server pipeline.
  * Connects the edge function to the UI and existing engines.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export interface PipelineRunResult {
   summary: {

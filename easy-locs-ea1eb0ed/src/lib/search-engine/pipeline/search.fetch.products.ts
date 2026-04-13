@@ -1,7 +1,6 @@
 /**
  * search.fetch.products — Fetches seed_products results.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { SearchResult } from "../search-types";
 

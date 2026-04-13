@@ -2,7 +2,6 @@
  * FleetManagementDashboard — Real-time fleet overview: driver map, statuses, global KPIs.
  * PASS85-EE: Fleet Management Dashboard
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
@@ -57,7 +56,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
     // Fetch profile names
     const userIds = driverList.map(d => d.user_id);
     if (userIds.length > 0) {
-      const { data: profiles } = await supabase
+      const { data: profiles } = await db
         .from("profiles")
         .select("id, name, first_name, last_name")
         .in("id", userIds);
@@ -95,7 +94,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
   // Realtime subscription
   useEffect(() => {
     if (!orgId) return;
-    const channel = supabase
+    const channel = db
       .channel("fleet-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "rider_presence" }, () => fetchFleet())
       .subscribe();

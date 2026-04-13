@@ -2,7 +2,6 @@
  * orbitDb — Canonical V2+ database access layer for Orbit.
  * All Orbit reads/writes MUST go through this module.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { assertNoLegacyOrbitWrite } from "@/lib/guards/assertNoLegacyOrbit";
 

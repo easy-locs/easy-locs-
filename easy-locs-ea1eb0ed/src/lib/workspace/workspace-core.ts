@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { getCurrentUser, updateMyProfile } from "@/lib/auth/profile";
 
 function slugify(value: string) {

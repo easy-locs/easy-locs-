@@ -15,7 +15,7 @@
  * - Native features (Face ID, app-level lock): require Capacitor/native wrapper
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { wipeAllKeys } from "./orbit-keystore";
 
 // ─── Types ────────────────────────────────────────────────

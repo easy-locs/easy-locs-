@@ -18,7 +18,7 @@
  */
 import type { OrbitCommand, OrbitCommandResult } from "./orbit-commands";
 import { getOrbitIdentity } from "@/hooks/useOrbitIdentity";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import type { ResolvedContext } from "./pipeline/pipeline-types";
 import { checkIdempotencyGuard, issueRequestId, registerInflightRequest, releaseInflightRequest } from "./send-locks";
 import {

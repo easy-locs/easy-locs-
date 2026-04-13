@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import * as repo from "@/repositories/mobility.repository";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface DeliveryJob {

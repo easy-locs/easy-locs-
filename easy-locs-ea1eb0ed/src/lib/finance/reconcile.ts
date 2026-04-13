@@ -1,7 +1,7 @@
 /**
  * Financial reconciliation engine — compare expected vs actual amounts.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export async function reconcileTransaction(params: {
   workspaceId?: string;

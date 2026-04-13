@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { typedQueries } from "@/lib/db/typed-queries";
 
@@ -86,7 +85,7 @@ export async function resolveUnifiedTarget(input: {
 
   if (input.walletId && !input.userId) {
     const walletStart = performance.now();
-    const { data: wallet } = await supabase
+    const { data: wallet } = await db
       .from("wallet_accounts")
       .select("id, owner_user_id, currency, status")
       .eq("id", input.walletId)
@@ -118,7 +117,7 @@ export async function resolveUnifiedTarget(input: {
 
     const [profile, wallet] = await Promise.all([
       findProfile({ userId: input.userId }),
-      supabase
+      db
         .from("wallet_accounts")
         .select("id, status")
         .eq("owner_user_id", input.userId)
@@ -138,7 +137,7 @@ export async function resolveUnifiedTarget(input: {
     if (!wallet && profile.id) {
       const provStart = performance.now();
       try {
-        const { data: rpcResult, error: rpcErr } = await supabase
+        const { data: rpcResult, error: rpcErr } = await db
           .rpc("ensure_wallet_account", { target_user_id: profile.id, target_currency: currency });
         if (rpcErr) {
           throw new Error(`Wallet provisioning failed: ${rpcErr.message}`);
@@ -173,7 +172,7 @@ export async function resolveUnifiedTarget(input: {
   if (!profile) return null;
 
   const walletStart = performance.now();
-  let walletData = await supabase
+  let walletData = await db
     .from("wallet_accounts")
     .select("id, status")
     .eq("owner_user_id", profile.id)
@@ -185,7 +184,7 @@ export async function resolveUnifiedTarget(input: {
 
   if (!walletData) {
     try {
-      const { data: rpcResult, error: rpcErr } = await supabase
+      const { data: rpcResult, error: rpcErr } = await db
         .rpc("ensure_wallet_account", { target_user_id: profile.id, target_currency: currency });
       if (rpcErr) {
         throw new Error(`Wallet provisioning failed: ${rpcErr.message}`);

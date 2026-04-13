@@ -18,7 +18,7 @@ export async function getHomeLiveSnapshot() {
       .eq("is_active", true)
       .limit(8),
 
-    supabase
+    db
       .from("orders")
       .select("*")
       .order("created_at", { ascending: false })

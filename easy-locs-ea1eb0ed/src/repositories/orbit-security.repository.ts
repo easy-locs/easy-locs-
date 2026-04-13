@@ -1,7 +1,6 @@
 /**
  * orbit-security.repository — DB operations for OrbitSecuritySettings.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchOrbitPrivacySettings(userId: string) {
@@ -17,5 +16,5 @@ export async function updateProfileField(userId: string, column: string, value: 
 }
 
 export async function enrollMfa2FA() {
-  return supabase.auth.mfa.enroll({ factorType: "totp" });
+  return db.auth.mfa.enroll({ factorType: "totp" });
 }

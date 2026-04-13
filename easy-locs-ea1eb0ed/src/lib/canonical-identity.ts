@@ -12,7 +12,7 @@
  * Orbit profile + wallet account are resolved FROM the canonical user/guest ID.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { getGuestId } from "@/lib/guest-session";
 import { getDeviceFingerprint } from "@/lib/orbit-keystore";
 

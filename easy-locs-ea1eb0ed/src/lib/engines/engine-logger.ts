@@ -2,7 +2,6 @@
  * Engine Logger — Persists every engine run to engine_run_logs table.
  * Replaces console-only logging with real DB persistence.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

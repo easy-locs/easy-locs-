@@ -2,7 +2,6 @@
  * deliveryRadar — Delivery mission management: create, broadcast, accept, track.
  * Uses delivery_missions table + driver_locations for proximity matching.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

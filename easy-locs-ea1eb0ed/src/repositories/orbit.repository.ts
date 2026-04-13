@@ -1,7 +1,6 @@
 /**
  * Orbit Repository — Orbit account actions, chat management, avatar.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchUserConversations(limit = 500) {
@@ -20,14 +19,14 @@ export async function fetchUserChatMessages(userId: string, limit = 1000) {
 export async function uploadAvatar(userId: string, file: File): Promise<string> {
   const ext = file.name.split(".").pop();
   const path = `${userId}/avatar.${ext}`;
-  const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+  const { error } = await db.storage.from("avatars").upload(path, file, { upsert: true });
   if (error) throw error;
-  const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+  const { data: { publicUrl } } = db.storage.from("avatars").getPublicUrl(path);
   return publicUrl;
 }
 
 export async function updateAuthUser(data: Record<string, any>) {
-  const { error } = await supabase.auth.updateUser({ data });
+  const { error } = await db.auth.updateUser({ data });
   if (error) throw error;
 }
 

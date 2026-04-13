@@ -6,11 +6,10 @@
  * All rows set user-scoped columns (user_id, customer_user_id, buyer_id)
  * to auth.uid() so RLS policies allow the current user to read them.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function seedAuditDemoData(workspaceId?: string) {
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await db.auth.getUser();
   const userId = authData.user?.id;
   if (!userId) throw new Error("Must be authenticated to seed demo data");
 

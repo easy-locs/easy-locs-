@@ -5,7 +5,6 @@
  * All entries go to the `audit_logs` table with structured metadata.
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export type AuditAction =
@@ -54,7 +53,7 @@ export async function logAudit({ userId, orgId, action, metadata }: AuditOptions
     // If no userId provided, try to get from session
     let uid = userId;
     if (!uid) {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await db.auth.getSession();
       uid = session?.user?.id;
     }
     if (!uid) return; // Can't log without a user

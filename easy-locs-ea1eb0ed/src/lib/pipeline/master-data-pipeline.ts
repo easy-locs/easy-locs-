@@ -16,7 +16,6 @@
  * NO NEW ENGINES. This orchestrator sequences existing ones.
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 const ENGINE_CRON_INTERVAL_MS = 5 * 60 * 1000;
 const ENGINE_RUN_INTERVAL_MS = 10 * 60 * 1000;

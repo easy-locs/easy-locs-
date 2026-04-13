@@ -2,7 +2,6 @@
  * useOrderFetcher — Fetches order + delivery job + driver presence.
  * Single responsibility: data loading + realtime subscriptions for order detail.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
@@ -25,7 +24,7 @@ export function useOrderFetcher(orderId: string | undefined) {
     if (data) {
       setOrder(data);
       if (data.delivery_job_id) {
-        const { data: job } = await supabase
+        const { data: job } = await db
           .from("mobility_jobs")
           .select("*")
           .eq("id", data.delivery_job_id)
@@ -38,7 +37,7 @@ export function useOrderFetcher(orderId: string | undefined) {
             delivered_at: job.completed_at,
           });
           if (job.rider_user_id) {
-            const { data: rp } = await supabase
+            const { data: rp } = await db
               .from("rider_presence")
               .select("*")
               .eq("user_id", job.rider_user_id)
@@ -57,7 +56,7 @@ export function useOrderFetcher(orderId: string | undefined) {
   // Realtime: order updates
   useEffect(() => {
     if (!orderId) return;
-    const ch = supabase
+    const ch = db
       .channel(`unified-order-${orderId}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "storefront_orders", filter: `id=eq.${orderId}` }, () => fetchOrder())
       .subscribe();
@@ -67,7 +66,7 @@ export function useOrderFetcher(orderId: string | undefined) {
   // Realtime: mobility job updates
   useEffect(() => {
     if (!order?.delivery_job_id) return;
-    const ch = supabase
+    const ch = db
       .channel(`unified-mobility-${order.delivery_job_id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs", filter: `id=eq.${order.delivery_job_id}` }, () => fetchOrder())
       .subscribe();

@@ -1,7 +1,6 @@
 /**
  * newsletter.repository — Newsletter subscription.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function subscribe(email: string) {

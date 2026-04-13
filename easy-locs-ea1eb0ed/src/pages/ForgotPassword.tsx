@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+import { resetPasswordForEmail } from "@/repositories/auth.repository";
 import { Loader2, Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
@@ -19,9 +19,7 @@ const ForgotPassword = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: buildAppUrl("/reset-password"),
-    });
+    const { error } = await resetPasswordForEmail(email, buildAppUrl("/reset-password"));
     setLoading(false);
     if (error) {
       toast({ title: t("common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });

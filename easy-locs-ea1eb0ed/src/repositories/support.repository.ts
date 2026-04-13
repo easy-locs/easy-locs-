@@ -2,7 +2,6 @@
  * Support Repository — Canonical DB access for support/SAV tables.
  * All support_tickets + support_ticket_messages writes route here.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

@@ -1,7 +1,6 @@
 /**
  * dunning.repository — All DB operations for DunningLetters page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchDunningData(orgId: string, countryFilter: string | null) {
@@ -51,6 +50,6 @@ export async function createDunningLetter(orgId: string, tenantId: string, prope
 export async function sendDunningEmail(tenantId: string, subject: string, html: string) {
   const { data } = await db("tenants").select("email").eq("id", tenantId).single();
   if (data?.email) {
-    await supabase.functions.invoke("send-email", { body: { to: data.email, subject, html } }).catch(() => {});
+    await db.functions.invoke("send-email", { body: { to: data.email, subject, html } }).catch(() => {});
   }
 }

@@ -12,7 +12,7 @@
  */
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { createAppNotification } from "@/lib/notifications/app-notification-service";
 
 async function getCurrentUser() {

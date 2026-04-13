@@ -2,7 +2,6 @@
  * MerchantPaymentHistory — Transaction history panel for merchant cockpit.
  * Shows all incoming QR payments with split details.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useCallback } from "react";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
@@ -61,7 +60,7 @@ export default function MerchantPaymentHistory({
 
   useEffect(() => {
     load();
-    const channel = supabase
+    const channel = db
       .channel(`merchant-tx-${ownerUserId}`)
       .on("postgres_changes", {
         event: "INSERT",

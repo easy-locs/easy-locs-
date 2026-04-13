@@ -1,5 +1,4 @@
 import { db } from "@/services/db";
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
@@ -58,7 +57,7 @@ export default function MerchantPosPage() {
 
   useEffect(() => {
     if (!merchantProfileId) return;
-    const channel = supabase
+    const channel = db
       .channel("pos-orders-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, async (payload: any) => {
         if (payload.new?.merchant_profile_id === merchantProfileId) {

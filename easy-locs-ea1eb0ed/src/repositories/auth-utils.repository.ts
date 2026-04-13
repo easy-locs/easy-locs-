@@ -1,45 +1,44 @@
 /**
  * auth-utils.repository — Auth session/user helpers for hooks/components.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function getAuthUser() {
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await db.auth.getUser();
   return { user: data?.user || null, error };
 }
 
 export async function getAuthSession() {
-  const { data, error } = await supabase.auth.getSession();
+  const { data, error } = await db.auth.getSession();
   return { session: data?.session || null, error };
 }
 
 export async function getAccessToken() {
-  const { data } = await supabase.auth.getSession();
+  const { data } = await db.auth.getSession();
   return data?.session?.access_token || null;
 }
 
 export async function signOut() {
-  await supabase.auth.signOut();
+  await db.auth.signOut();
 }
 
 export async function signInWithPassword(email: string, password: string) {
-  return supabase.auth.signInWithPassword({ email, password });
+  return db.auth.signInWithPassword({ email, password });
 }
 
 export async function hasRole(userId: string, role: "accountant" | "admin" | "agent" | "member" | "owner" | "staff") {
-  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: role });
+  const { data } = await db.rpc("has_role", { _user_id: userId, _role: role });
   return !!data;
 }
 
 export async function validateTenantInvitation(token: string) {
-  const { data, error } = await supabase.rpc("validate_tenant_invitation", { _token: token });
+  const { data, error } = await db.rpc("validate_tenant_invitation", { _token: token });
   if (error) throw error;
   return data;
 }
 
 export async function invokeTenantSignup(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("tenant-signup", { body });
+  const { data, error } = await db.functions.invoke("tenant-signup", { body });
   if (error) throw error;
   return data;
 }

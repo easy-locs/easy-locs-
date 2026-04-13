@@ -5,7 +5,7 @@
  * Owns: avatar resolution, name resolution, member since, identity propagation,
  * contact profile VM, conversation header VM, group profile VM.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 // ── Re-export canonical identity resolver ──
 export {

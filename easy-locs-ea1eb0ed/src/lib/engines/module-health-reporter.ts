@@ -2,7 +2,6 @@
  * Module Health Reporter — Reports engine health to module_health table.
  * Bridges client-side engine execution to persistent DB observability.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

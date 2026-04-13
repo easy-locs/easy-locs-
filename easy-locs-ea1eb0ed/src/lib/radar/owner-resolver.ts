@@ -8,7 +8,7 @@
  * 3. property_listings / hotel_listings (owner_id / user_id)
  * 4. profiles (self-referential for user entities)
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export type EntityOwnerResult =
   | { ownerUserId: string; ownerName: string | null; method: string }

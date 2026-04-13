@@ -1,11 +1,10 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function computePlatformRevenue(params: {
   start: string;
   end: string;
 }) {
-  const { data } = await supabase
+  const { data } = await db
     .from("wallet_ledger_entries")
     .select("*")
     .eq("entry_type", "fee")

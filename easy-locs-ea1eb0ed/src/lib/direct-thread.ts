@@ -2,7 +2,7 @@
  * Direct user-to-user thread utilities.
  * CANONICAL V2 PATH: Uses createOrGetDirectConversation as single source of truth.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { lookupOrbitProfile } from "@/lib/orbit/orbit-data-gateway";
 import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
 

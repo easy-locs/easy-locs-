@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 import { syncOrderPaymentToEscrow, syncCompletedOrderToSettlement } from "@/lib/system/engineConnectorHub";
 
 export async function runWalletPaymentSync(limit = 50) {

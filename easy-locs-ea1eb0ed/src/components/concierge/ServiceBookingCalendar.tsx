@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -121,7 +120,7 @@ function useServiceAvailability(serviceId: string) {
       setLoading(false);
     };
     load();
-    const channel = supabase
+    const channel = db
       .channel(`booking-calendar-${serviceId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "concierge_orders", filter: `service_id=eq.${serviceId}` }, () => load())
       .on("postgres_changes", { event: "*", schema: "public", table: "marketplace_bookings", filter: `service_id=eq.${serviceId}` }, () => load())

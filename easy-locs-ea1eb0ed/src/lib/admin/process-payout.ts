@@ -1,7 +1,7 @@
 /**
  * processPayout — Admin marks a driver payout as paid.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export async function processPayout(payoutId: string, reference?: string) {
   const { error } = await supabase

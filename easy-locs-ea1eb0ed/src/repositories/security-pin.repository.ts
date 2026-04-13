@@ -1,7 +1,7 @@
 /**
  * security-pin.repository — Edge function calls for PIN/wallet-pin.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export async function checkPinStatus() {
   const { data, error } = await supabase.functions.invoke("wallet-pin", {

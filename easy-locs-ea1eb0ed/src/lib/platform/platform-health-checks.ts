@@ -3,7 +3,6 @@
  * Periodic health verification for geo, wallet/QR, leads, and backend reconnect.
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { geoService } from "@/lib/geo/geo-service";
@@ -51,7 +50,7 @@ export function checkGeoHealth(): HealthCheckResult {
 
 export async function checkWalletHealth(): Promise<HealthCheckResult> {
   try {
-    const { error } = await supabase.rpc("ensure_wallet_account" as any, {
+    const { error } = await db.rpc("ensure_wallet_account" as any, {
       target_user_id: "00000000-0000-0000-0000-000000000000",
       target_currency: "AED",
     } as any);
@@ -109,7 +108,7 @@ export async function checkBackendReconnect(): Promise<HealthCheckResult[]> {
 
   // Check realtime connectivity
   try {
-    const channels = supabase.getChannels();
+    const channels = db.getChannels();
     results.push({
       module: "reconnect.realtime",
       healthy: true,

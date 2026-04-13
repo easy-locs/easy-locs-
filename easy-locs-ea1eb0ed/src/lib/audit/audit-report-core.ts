@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function createAuditReport(params: {
@@ -6,7 +5,7 @@ export async function createAuditReport(params: {
   reportType?: "system" | "business" | "security" | "launch_gate";
   summary?: string;
 }) {
-  const { data: userData } = await supabase.auth.getUser();
+  const { data: userData } = await db.auth.getUser();
 
   const { data, error } = await db
     .from("audit_reports")

@@ -1,11 +1,10 @@
 /**
  * driver-positioning — Suggest best zone for driver repositioning.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function suggestDriverPosition(driverId: string) {
-  const { data: zones } = await supabase
+  const { data: zones } = await db
     .from("demand_zones" as any)
     .select("*")
     .order("surge_multiplier", { ascending: false })

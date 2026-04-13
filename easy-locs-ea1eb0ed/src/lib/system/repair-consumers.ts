@@ -1,5 +1,5 @@
 import { platformBus } from "@/lib/shared/platform-bus";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 const COOLDOWN_MS = 10_000;
 const MAX_RETRIES = 3;

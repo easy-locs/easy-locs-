@@ -1,7 +1,7 @@
 /**
  * create-admin-alert — Persist platform alerts for ops dashboard.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export async function createAdminAlert(params: {
   alertType: string;

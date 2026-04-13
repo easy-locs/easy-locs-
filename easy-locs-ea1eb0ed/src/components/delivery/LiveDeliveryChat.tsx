@@ -10,7 +10,6 @@
  * Replaces mock data with actual DB-backed messaging via Supabase Realtime.
  * PASS100: MOCK → REAL
  */
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Send, MapPin, Phone, Navigation, CheckCheck } from "lucide-react";
@@ -87,7 +86,7 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
   // Realtime subscription for new messages
   useEffect(() => {
     if (!thread?.id) return;
-    const channel = supabase
+    const channel = db
       .channel(`delivery-chat-${thread.id}`)
       .on("postgres_changes", {
         event: "INSERT",

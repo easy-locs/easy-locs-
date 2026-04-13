@@ -1,7 +1,6 @@
 /**
  * settings.repository — All DB operations for Settings page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchProfile(userId: string) {
@@ -24,9 +23,9 @@ export async function updateOrg(orgId: string, updates: Record<string, any>) {
 
 export async function uploadLogo(orgId: string, file: File): Promise<string> {
   const path = `${orgId}/logo-${Date.now()}.${file.name.split(".").pop()}`;
-  const { error } = await supabase.storage.from("rental-docs").upload(path, file, { upsert: true });
+  const { error } = await db.storage.from("rental-docs").upload(path, file, { upsert: true });
   if (error) throw error;
-  const { data } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
+  const { data } = await db.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
   return data?.signedUrl || path;
 }
 
@@ -68,37 +67,37 @@ export async function fetchOrgPaymentConfig(orgId: string) {
 }
 
 export async function invokeStripeOnboarding(orgId: string) {
-  const { data, error } = await supabase.functions.invoke("create-connect-account", { body: { org_id: orgId } });
+  const { data, error } = await db.functions.invoke("create-connect-account", { body: { org_id: orgId } });
   if (error) throw error;
   return data;
 }
 
 export async function fetchStripeLoginLink(orgId: string) {
-  const { data, error } = await supabase.functions.invoke("stripe-login-link", { body: { org_id: orgId } });
+  const { data, error } = await db.functions.invoke("stripe-login-link", { body: { org_id: orgId } });
   if (error) throw error;
   return data;
 }
 
 // ── MFA ──
 export async function enrollMFA() {
-  const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+  const { data, error } = await db.auth.mfa.enroll({ factorType: "totp" });
   if (error) throw error;
   return data;
 }
 
 export async function challengeMFA(factorId: string) {
-  const { data, error } = await supabase.auth.mfa.challenge({ factorId });
+  const { data, error } = await db.auth.mfa.challenge({ factorId });
   if (error) throw error;
   return data;
 }
 
 export async function verifyMFA(factorId: string, challengeId: string, code: string) {
-  const { error } = await supabase.auth.mfa.verify({ factorId, challengeId, code });
+  const { error } = await db.auth.mfa.verify({ factorId, challengeId, code });
   if (error) throw error;
 }
 
 export async function unenrollMFA(factorId: string) {
-  const { error } = await supabase.auth.mfa.unenroll({ factorId });
+  const { error } = await db.auth.mfa.unenroll({ factorId });
   if (error) throw error;
 }
 
@@ -121,11 +120,11 @@ export async function updateSecuritySetting(userId: string, column: string, valu
 
 // ── Auth ──
 export async function signOut() {
-  await supabase.auth.signOut();
+  await db.auth.signOut();
 }
 
 export async function getAuthUser() {
-  const { data } = await supabase.auth.getUser();
+  const { data } = await db.auth.getUser();
   return data?.user ?? null;
 }
 
@@ -136,21 +135,21 @@ export async function exportTableData(userId: string, table: string) {
 }
 
 export async function deleteUserAccount(userId: string) {
-  const { error } = await supabase.rpc("delete_user_account" as any, { target_user_id: userId });
+  const { error } = await db.rpc("delete_user_account" as any, { target_user_id: userId });
   if (error) throw error;
 }
 
 // ── Roles check ──
 export async function hasRole(userId: string, role: string) {
-  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: role as any });
+  const { data } = await db.rpc("has_role", { _user_id: userId, _role: role as any });
   return !!data;
 }
 
 // ── Permission bootstrap ──
 export async function fetchPermissions(userId: string) {
   const [adminRes, ownerRes] = await Promise.all([
-    supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
-    supabase.rpc("has_role", { _user_id: userId, _role: "owner" }),
+    db.rpc("has_role", { _user_id: userId, _role: "admin" }),
+    db.rpc("has_role", { _user_id: userId, _role: "owner" }),
   ]);
   return { isAdmin: !!adminRes.data, isOwner: !!ownerRes.data };
 }

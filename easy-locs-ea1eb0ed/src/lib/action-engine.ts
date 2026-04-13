@@ -4,7 +4,6 @@
  */
 import type { NavigateFunction } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 
@@ -197,7 +196,7 @@ async function handleChat(
   let targetName = input.recipientName || input.title || "User";
 
   if (input.entityType === "shop" && !targetUserId && input.slug) {
-    const { data: shop } = await supabase
+    const { data: shop } = await db
       .from("storefront_pages")
       .select("user_id, name")
       .eq("slug", input.slug)
@@ -207,7 +206,7 @@ async function handleChat(
   }
 
   if ((input.entityType === "property_buy" || input.entityType === "property_rent") && !targetUserId && input.slug) {
-    const { data: listing } = await supabase
+    const { data: listing } = await db
       .from("property_listings_v2")
       .select("user_id, title")
       .eq("slug", input.slug)
@@ -219,13 +218,13 @@ async function handleChat(
   }
 
   if (input.entityType === "stay" && !targetUserId && input.slug) {
-    const { data: listing } = await supabase
+    const { data: listing } = await db
       .from("public_listings")
       .select("org_id, title")
       .eq("slug", input.slug)
       .maybeSingle();
     if (listing?.org_id) {
-      const { data: org } = await supabase
+      const { data: org } = await db
         .from("organizations")
         .select("owner_id, name")
         .eq("id", listing.org_id)
@@ -238,7 +237,7 @@ async function handleChat(
   }
 
   if (input.entityType === "property_project" && !targetUserId && input.slug) {
-    const { data: listing } = await supabase
+    const { data: listing } = await db
       .from("property_listings_v2")
       .select("user_id, title")
       .eq("slug", input.slug)
@@ -277,7 +276,7 @@ async function handlePay(
 
   // For shops, resolve owner if not already provided
   if (input.entityType === "shop" && !recipientId && input.slug) {
-    const { data: shop } = await supabase
+    const { data: shop } = await db
       .from("storefront_pages")
       .select("user_id")
       .eq("slug", input.slug)
@@ -371,7 +370,7 @@ async function handleAddContact(
   }
 
   // Get profile name
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from("profiles")
     .select("name, email")
     .eq("id", targetId)

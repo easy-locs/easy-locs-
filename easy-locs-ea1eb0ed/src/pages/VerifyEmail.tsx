@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+import { getUser, onAuthStateChange, resendEmailVerification } from "@/repositories/auth.repository";
 import { Mail, RefreshCw, Loader2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
@@ -17,7 +17,7 @@ const VerifyEmail = () => {
 
   useEffect(() => {
     const check = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await getUser();
       if (user?.email_confirmed_at) {
         navigate("/dashboard", { replace: true });
       }
@@ -25,9 +25,9 @@ const VerifyEmail = () => {
     };
     check();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
-        supabase.auth.getUser().then(({ data: { user } }) => {
+        getUser().then(({ data: { user } }) => {
           if (user?.email_confirmed_at) {
             navigate("/dashboard", { replace: true });
           }
@@ -39,7 +39,7 @@ const VerifyEmail = () => {
 
   const handleResend = async () => {
     setResending(true);
-    const { error } = await supabase.auth.resend({ type: "signup", email });
+    const { error } = await resendEmailVerification(email);
     setResending(false);
     if (error) {
       console.error("[Auth]", error.message);

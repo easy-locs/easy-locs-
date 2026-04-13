@@ -1,7 +1,6 @@
 /**
  * dashboard.repository — All DB operations for dashboard pages (Buildings, Tasks, Interventions, etc.)
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
@@ -113,7 +112,7 @@ export async function deleteIntervention(id: string) {
 }
 
 export function subscribeInterventions(orgId: string, onUpdate: () => void) {
-  const channel = supabase
+  const channel = db
     .channel("interventions-rt")
     .on("postgres_changes", { event: "*", schema: "public", table: "interventions", filter: `org_id=eq.${orgId}` }, onUpdate)
     .subscribe();
@@ -128,19 +127,19 @@ export async function fetchVaultFiles(orgId: string) {
 
 export async function uploadVaultFile(orgId: string, userId: string, file: File) {
   const path = `${orgId}/${Date.now()}_${file.name}`;
-  const { error } = await supabase.storage.from("vault").upload(path, file);
+  const { error } = await db.storage.from("vault").upload(path, file);
   if (error) throw error;
   await db("vault_files").insert({ org_id: orgId, user_id: userId, filename: file.name, file_url: path, size: file.size });
 }
 
 export async function downloadVaultFile(fileUrl: string) {
-  const { data, error } = await supabase.storage.from("vault").download(fileUrl);
+  const { data, error } = await db.storage.from("vault").download(fileUrl);
   if (error || !data) throw error || new Error("Download failed");
   return data;
 }
 
 export async function deleteVaultFile(id: string, fileUrl: string) {
-  await supabase.storage.from("vault").remove([fileUrl]);
+  await db.storage.from("vault").remove([fileUrl]);
   const { error } = await db("vault_files").delete().eq("id", id);
   if (error) throw error;
 }
@@ -313,7 +312,7 @@ export async function cancelMobilityJob(jobId: string) {
 }
 
 export function subscribeMobilityJob(jobId: string, onUpdate: (data: any) => void) {
-  const ch = supabase
+  const ch = db
     .channel(`track-job-${jobId}`)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${jobId}` }, (payload) => onUpdate(payload.new))
     .subscribe();
@@ -362,7 +361,7 @@ export async function upsertOtaConnection(record: Record<string, any>) {
 }
 
 export async function invokeSyncIcal(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("sync-ical", { body });
+  const { data, error } = await db.functions.invoke("sync-ical", { body });
   if (error) throw error;
   return data;
 }

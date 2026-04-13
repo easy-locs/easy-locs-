@@ -1,7 +1,6 @@
 /**
  * rental.repository — All DB ops for rental hooks and components.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 
@@ -108,7 +107,7 @@ export async function fetchPropertyForLeaseGen(propertyId: string) {
 }
 
 export async function invokeGenerateDocument(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("generate-document" as any, { body });
+  const { data, error } = await db.functions.invoke("generate-document" as any, { body });
   if (error) throw error;
   return data;
 }
@@ -147,15 +146,15 @@ export async function insertVaultFile(record: Record<string, any>) {
 }
 
 export async function deleteVaultFile(fileId: string, fileUrl: string) {
-  await supabase.storage.from("vault").remove([fileUrl]);
+  await db.storage.from("vault").remove([fileUrl]);
   const { error } = await db("vault_files").delete().eq("id", fileId);
   if (error) throw error;
 }
 
 export async function uploadVaultFile(path: string, file: File) {
-  const { error } = await supabase.storage.from("vault").upload(path, file);
+  const { error } = await db.storage.from("vault").upload(path, file);
   if (error) throw error;
-  const { data } = supabase.storage.from("vault").getPublicUrl(path);
+  const { data } = db.storage.from("vault").getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -315,26 +314,26 @@ export async function updateProfileField(userId: string, column: string, value: 
 
 // ── Tenant signup ──
 export async function validateTenantInvitation(token: string) {
-  const { data, error } = await supabase.rpc("validate_tenant_invitation", { _token: token });
+  const { data, error } = await db.rpc("validate_tenant_invitation", { _token: token });
   if (error) throw error;
   return data;
 }
 
 export async function invokeTenantSignup(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("tenant-signup", { body });
+  const { data, error } = await db.functions.invoke("tenant-signup", { body });
   if (error) throw error;
   return data;
 }
 
 // ── Send email (for lease workflow / seasonal) ──
 export async function invokeSendEmail(body: Record<string, any>) {
-  const { error } = await supabase.functions.invoke("send-email", { body });
+  const { error } = await db.functions.invoke("send-email", { body });
   if (error) throw error;
 }
 
 // ── Lease workflow edge function ──
 export async function invokeLeaseWorkflow(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("lease-workflow", { body });
+  const { data, error } = await db.functions.invoke("lease-workflow", { body });
   if (error) throw error;
   return data;
 }
@@ -378,7 +377,7 @@ export async function insertBookingRequest(payload: Record<string, any>) {
 }
 
 export async function invokeNotifyBooking(bookingRequestId: string) {
-  await supabase.functions.invoke("notify-booking", { body: { booking_request_id: bookingRequestId } });
+  await db.functions.invoke("notify-booking", { body: { booking_request_id: bookingRequestId } });
 }
 
 // ── Local services ──
@@ -415,7 +414,7 @@ export async function markOnboardingComplete(userId: string) {
 
 // ── Upload booking document ──
 export async function uploadBookingDocument(path: string, file: File) {
-  const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+  const { error } = await db.storage.from("booking-documents").upload(path, file, { upsert: true });
   if (error) throw error;
 }
 
@@ -532,7 +531,7 @@ export async function healthCheckDb() {
 
 // ── Dispatch ride ──
 export async function invokeDispatchRide(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("dispatch-ride", { body });
+  const { data, error } = await db.functions.invoke("dispatch-ride", { body });
   if (error) throw error;
   return data;
 }
@@ -574,7 +573,7 @@ export async function markOnboardingCompleteFireAndForget(userId: string) {
 
 // ── Booking payment ──
 export async function invokeCreateBookingPayment(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("create-booking-payment", { body });
+  const { data, error } = await db.functions.invoke("create-booking-payment", { body });
   if (error) throw error;
   return data;
 }
@@ -672,7 +671,7 @@ export async function fetchFiscalRentCallsRaw(orgId: string) {
 
 // ── Rent cockpit ──
 export async function fetchRentCockpit(orgId: string, countryFilter?: string | null) {
-  let query = supabase
+  let query = db
     .from("rent_calls")
     .select("id, tenant_id, property_id, lease_id, month, rent_amount, charges_amount, total_amount, paid, paid_amount, paid_date, payment_status, payment_method, receipt_pdf_url, receipt_validated, tenants(name, email), properties(label, city, country)")
     .eq("org_id", orgId)
@@ -691,7 +690,7 @@ export async function fetchRentCockpit(orgId: string, countryFilter?: string | n
 
 // ── Audit reports history ──
 export async function fetchAuditReportsHistory(limit = 30) {
-  const { data } = await supabase
+  const { data } = await db
     .from("audit_reports")
     .select("created_at, global_score, total_issues, scan_type")
     .order("created_at", { ascending: false })
@@ -724,16 +723,16 @@ export async function ensureMarketplaceProvider(orgId: string, userId: string, d
 
 // ── Booking document upload ──
 export async function uploadBookingDocumentFile(path: string, file: File, contentType?: string) {
-  const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true, ...(contentType ? { contentType } : {}) });
+  const { error } = await db.storage.from("booking-documents").upload(path, file, { upsert: true, ...(contentType ? { contentType } : {}) });
   if (error) throw error;
 }
 
 export function getBookingDocumentPublicUrl(path: string) {
-  return supabase.storage.from("booking-documents").getPublicUrl(path).data.publicUrl;
+  return db.storage.from("booking-documents").getPublicUrl(path).data.publicUrl;
 }
 
 export async function signBookingDocumentUrl(path: string, expiresIn = 3600) {
-  const { data } = await supabase.storage.from("booking-documents").createSignedUrl(path, expiresIn);
+  const { data } = await db.storage.from("booking-documents").createSignedUrl(path, expiresIn);
   return data?.signedUrl ?? null;
 }
 

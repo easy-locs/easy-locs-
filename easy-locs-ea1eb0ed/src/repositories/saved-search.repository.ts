@@ -2,7 +2,6 @@
  * saved-search.repository — Canonical DB access for saved_searches table.
  * Replaces direct db("saved_searches") calls in savedSearchStore.ts.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import type { ListingSearchFilters } from "@/lib/types/search";
 

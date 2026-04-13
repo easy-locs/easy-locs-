@@ -1,7 +1,6 @@
 /**
  * Call Repository — Canonical DB access for ghost_call_sessions.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

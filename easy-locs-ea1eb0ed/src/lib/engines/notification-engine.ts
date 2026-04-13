@@ -3,7 +3,6 @@
  * Single source of truth for all platform notifications.
  * Event → Template → Notification → Realtime delivery.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { structuredLogger } from "@/lib/observability/structured-logger";
 
@@ -358,7 +357,7 @@ export async function getUserPreferences(userId: string) {
 // ── Realtime Subscription ──
 
 export function subscribeToNotifications(userId: string, callback: (notification: any) => void) {
-  return supabase
+  return db
     .channel(`app_notifications:${userId}`)
     .on(
       "postgres_changes",
@@ -374,7 +373,7 @@ export function subscribeToNotifications(userId: string, callback: (notification
 }
 
 export function subscribeToLiveStatus(entityId: string, entityType: string, callback: (status: any) => void) {
-  return supabase
+  return db
     .channel(`live_status:${entityId}`)
     .on(
       "postgres_changes",

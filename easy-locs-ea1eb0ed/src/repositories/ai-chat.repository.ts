@@ -1,7 +1,6 @@
 /**
  * AI Chat Repository — Canonical DB access for ai_chat_* tables.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 
@@ -30,6 +29,6 @@ export const aiChatRepo = {
     },
   },
   invoke(fnName: string, body: Record<string, unknown>) {
-    return supabase.functions.invoke(fnName, { body });
+    return db.functions.invoke(fnName, { body });
   },
 };

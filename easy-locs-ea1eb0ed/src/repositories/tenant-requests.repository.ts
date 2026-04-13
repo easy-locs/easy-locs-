@@ -1,7 +1,6 @@
 /**
  * tenant-requests.repository — Tenant request resolution + notification.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function resolveDocumentRequest(requestId: string) {

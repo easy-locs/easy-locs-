@@ -1,7 +1,6 @@
 /**
  * real-estate.repository — DB ops for the real-estate module hooks.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchPropertiesByUser(userId: string, search?: string) {
@@ -110,12 +109,12 @@ export async function updateLeadStatus(id: string, status: string) {
 }
 
 export async function getPublicListing(slug: string) {
-  const { data } = await supabase.rpc("get_public_real_estate_listing", { p_slug: slug });
+  const { data } = await db.rpc("get_public_real_estate_listing", { p_slug: slug });
   return data;
 }
 
 export async function incrementListingViews(slug: string) {
-  supabase.rpc("increment_listing_views", { p_slug: slug });
+  db.rpc("increment_listing_views", { p_slug: slug });
 }
 
 export async function insertLead(lead: Record<string, any>) {

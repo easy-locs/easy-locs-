@@ -1,7 +1,6 @@
 /**
  * profile-settings.repository — Profile privacy/settings DB ops.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchProfileSettings(userId: string, columns: string) {

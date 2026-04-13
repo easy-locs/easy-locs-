@@ -1,7 +1,6 @@
 /**
  * delivery.repository — All DB ops for delivery components.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
@@ -27,7 +26,7 @@ export async function fetchProfilesByIds(ids: string[]) {
 
 // ── Escrow ──
 export async function invokeDispatchDelivery(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("dispatch-delivery", { body });
+  const { data, error } = await db.functions.invoke("dispatch-delivery", { body });
   if (error) throw error;
   return data;
 }
@@ -57,7 +56,7 @@ export async function fetchDriverRatings(userId: string, since?: string) {
 
 // ── Escrow status (buyer dashboard) ──
 export async function fetchEscrowStatus(jobId: string) {
-  const { data } = await supabase.functions.invoke("dispatch-delivery", {
+  const { data } = await db.functions.invoke("dispatch-delivery", {
     body: { action: "escrow_status", job_id: jobId },
   });
   return data;
@@ -76,9 +75,9 @@ export async function updateDriverProfile(userId: string, updates: Record<string
 }
 
 export async function uploadDriverDocument(path: string, file: File) {
-  const { error } = await supabase.storage.from("documents").upload(path, file);
+  const { error } = await db.storage.from("documents").upload(path, file);
   if (error) throw error;
-  const { data } = supabase.storage.from("documents").getPublicUrl(path);
+  const { data } = db.storage.from("documents").getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -95,7 +94,7 @@ export async function insertParcelDetails(record: Record<string, any>) {
 
 // ── Proof ──
 export async function invokeProofOfDelivery(body: Record<string, any>) {
-  const { data, error } = await supabase.functions.invoke("dispatch-delivery", { body });
+  const { data, error } = await db.functions.invoke("dispatch-delivery", { body });
   if (error) throw error;
   return data;
 }
@@ -117,7 +116,7 @@ export async function fetchLiveTracking(id: string) {
 }
 
 export function subscribeLiveTracking(trackingId: string, onUpdate: (data: any) => void) {
-  const channel = supabase
+  const channel = db
     .channel(`tracking-${trackingId}`)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "live_trackings", filter: `id=eq.${trackingId}` }, (payload) => onUpdate(payload.new))
     .subscribe();
@@ -125,7 +124,7 @@ export function subscribeLiveTracking(trackingId: string, onUpdate: (data: any) 
 }
 
 export async function findActiveTracking(contextType: string, contextId: string): Promise<string | null> {
-  const { data } = await supabase
+  const { data } = await db
     .from("live_trackings")
     .select("id")
     .eq("context_type", contextType)
@@ -194,8 +193,8 @@ export async function batchAssignJobs(jobIds: string[], userId: string) {
 
 // ── Proof photo upload ──
 export async function uploadProofPhoto(path: string, file: Blob) {
-  const { error } = await supabase.storage.from("delivery-proofs").upload(path, file);
+  const { error } = await db.storage.from("delivery-proofs").upload(path, file);
   if (error) throw error;
-  const { data } = supabase.storage.from("delivery-proofs").getPublicUrl(path);
+  const { data } = db.storage.from("delivery-proofs").getPublicUrl(path);
   return data.publicUrl;
 }

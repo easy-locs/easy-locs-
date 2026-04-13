@@ -10,7 +10,6 @@
  * NO NEW ENGINES — uses existing engine imports.
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 

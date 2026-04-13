@@ -1,7 +1,6 @@
 /**
  * dynamic-pricing.repository — All DB operations for DynamicPricing page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchOrgForUser(userId: string) {

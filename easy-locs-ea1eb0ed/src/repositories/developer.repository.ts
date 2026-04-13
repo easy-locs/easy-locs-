@@ -1,7 +1,6 @@
 /**
  * developer.repository — All DB operations for DeveloperPortal page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchOrgForUser(userId: string) {
@@ -36,7 +35,7 @@ export async function fetchWebhookDeliveries() {
 }
 
 export async function createApiKey(orgId: string, name: string) {
-  const { data, error } = await supabase.rpc("create_api_key", {
+  const { data, error } = await db.rpc("create_api_key", {
     _org_id: orgId, _name: name, _scopes: ["read", "write"],
   });
   if (error) throw error;

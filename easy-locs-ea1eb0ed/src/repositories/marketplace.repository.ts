@@ -1,7 +1,6 @@
 /**
  * marketplace.repository — Single source of truth for all marketplace DB operations.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 // ── Providers ──
@@ -23,7 +22,7 @@ export async function updateProvider(providerId: string, record: Record<string, 
 export async function fetchPublicProviders(slug?: string) {
   const params: any = { p_active_only: true };
   if (slug) params.p_slug = slug;
-  const { data } = await supabase.rpc("get_public_marketplace_providers", params);
+  const { data } = await db.rpc("get_public_marketplace_providers", params);
   return (data || []) as any[];
 }
 
@@ -67,7 +66,7 @@ export async function insertBooking(record: Record<string, any>) {
 }
 
 export async function fetchBookedDates(serviceId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("marketplace_bookings")
     .select("service_date, date_from, date_to, status")
     .eq("service_id", serviceId)
@@ -77,7 +76,7 @@ export async function fetchBookedDates(serviceId: string) {
 
 // ── Reviews ──
 export async function fetchProviderReviews(providerId: string, limit = 100) {
-  const { data } = await supabase.rpc("get_provider_reviews", { p_provider_id: providerId, p_limit: limit });
+  const { data } = await db.rpc("get_provider_reviews", { p_provider_id: providerId, p_limit: limit });
   return (data || []) as any[];
 }
 
@@ -113,13 +112,13 @@ export async function insertAuditLog(record: Record<string, any>) {
 
 // ── Storage ──
 export async function uploadMarketplaceFile(bucket: string, path: string, file: File | Blob) {
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+  const { error } = await db.storage.from(bucket).upload(path, file, { upsert: true });
   if (error) throw error;
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  const { data } = db.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
 
 export async function uploadBookingDocument(bucket: string, path: string, file: File | Blob) {
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+  const { error } = await db.storage.from(bucket).upload(path, file, { upsert: true });
   if (error) throw error;
 }

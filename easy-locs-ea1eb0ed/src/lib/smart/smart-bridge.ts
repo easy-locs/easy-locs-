@@ -1,7 +1,7 @@
 import { navigateToOrbitThread } from "@/lib/orbit/navigate-to-thread";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 export type EntityKind =
   | "merchant" | "contact" | "listing" | "service"

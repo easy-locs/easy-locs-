@@ -1,8 +1,7 @@
 /**
  * rental-repository — All rental domain DB reads/writes.
- * No component should call supabase directly for rental data.
+ * No component should call db directly for rental data.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
@@ -157,7 +156,7 @@ export async function sendRentalNotification(tenantUserId: string, title: string
 // ── Realtime subscription ──
 
 export function subscribeRentalMessages(tenantId: string, onInsert: (msg: any) => void, onUpdate: (msg: any) => void) {
-  const channel = supabase
+  const channel = db
     .channel(`rental-msg-${tenantId}`)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages_v2" }, (payload) => {
       const newMsg = payload.new as any;

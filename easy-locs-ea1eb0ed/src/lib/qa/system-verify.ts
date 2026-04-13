@@ -1,9 +1,8 @@
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function verifyAuthSession() {
   try {
-    const { data } = await supabase.auth.getSession();
+    const { data } = await db.auth.getSession();
     if (data.session) return { ok: true, reason: "Session active" };
     return { ok: false, reason: "No active session" };
   } catch (e: any) {
@@ -13,7 +12,7 @@ export async function verifyAuthSession() {
 
 export async function verifyCurrentUserProfile() {
   try {
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: userData } = await db.auth.getUser();
     if (!userData.user) return { ok: false, reason: "No authenticated user" };
 
     const { data: profile, error } = await db

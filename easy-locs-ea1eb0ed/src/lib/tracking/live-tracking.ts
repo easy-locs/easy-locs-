@@ -64,7 +64,7 @@ export async function pushTrackingPoint(params: {
 }
 
 export function subscribeTrackingPoints(sessionId: string, onPoint: (point: any) => void) {
-  return supabase
+  return db
     .channel(`tracking:${sessionId}`)
     .on(
       "postgres_changes",

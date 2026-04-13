@@ -1,7 +1,6 @@
 /**
  * Property Calendar Repository — All DB access for PropertyCalendar page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export interface CalendarPropertyOption {
@@ -18,7 +17,7 @@ export async function fetchCalendarProperties(orgId: string, country?: string | 
 }
 
 export async function fetchSeasonalEvents(orgId: string, propertyIds: string[]) {
-  const { data } = await supabase
+  const { data } = await db
     .from("booking_requests")
     .select("*, properties!booking_requests_property_id_fkey(label)")
     .eq("org_id", orgId)
@@ -27,7 +26,7 @@ export async function fetchSeasonalEvents(orgId: string, propertyIds: string[]) 
 }
 
 export async function fetchLeaseEvents(orgId: string, propertyIds: string[]) {
-  const { data } = await supabase
+  const { data } = await db
     .from("leases")
     .select("*, tenants!leases_tenant_id_fkey(name, email, phone), properties!leases_property_id_fkey(label)")
     .eq("org_id", orgId)
@@ -36,7 +35,7 @@ export async function fetchLeaseEvents(orgId: string, propertyIds: string[]) {
 }
 
 export async function fetchMarketplaceEvents(orgId: string) {
-  const { data } = await supabase
+  const { data } = await db
     .from("marketplace_bookings")
     .select("*")
     .eq("org_id", orgId)
@@ -45,7 +44,7 @@ export async function fetchMarketplaceEvents(orgId: string) {
 }
 
 export async function fetchConciergeEvents(orgId: string, propertyIds: string[]) {
-  const { data } = await supabase
+  const { data } = await db
     .from("concierge_orders")
     .select("*")
     .eq("org_id", orgId)
@@ -54,7 +53,7 @@ export async function fetchConciergeEvents(orgId: string, propertyIds: string[])
 }
 
 export async function fetchBlockedDates(orgId: string, propertyIds: string[]) {
-  const { data } = await supabase
+  const { data } = await db
     .from("property_blocked_dates")
     .select("*, properties!property_blocked_dates_property_id_fkey(label)")
     .eq("org_id", orgId)

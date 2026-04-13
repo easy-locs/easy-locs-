@@ -2,7 +2,6 @@
  * Merchant Payment Executor — scan → resolve → validate → confirm → execute → split.
  * Single entry point for all merchant QR payment flows.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 import { walletTransfer } from "@/payments/wallet-hooks";
 import { notifyPaymentSuccess, notifyWalletCredit } from "@/lib/engines/notification-event-dispatcher";
@@ -32,7 +31,7 @@ export interface ResolvedMerchant {
 
 async function resolveMerchant(merchantId: string): Promise<ResolvedMerchant | null> {
   // Try storefront_pages first (most merchants)
-  const { data: shop } = await supabase
+  const { data: shop } = await db
     .from("storefront_pages")
     .select("id, name, user_id, slug, logo_url, currency")
     .eq("id", merchantId)
@@ -41,7 +40,7 @@ async function resolveMerchant(merchantId: string): Promise<ResolvedMerchant | n
   if (!shop) return null;
 
   // Resolve wallet
-  const { data: wallet } = await supabase
+  const { data: wallet } = await db
     .from("wallet_accounts")
     .select("id, status")
     .eq("owner_user_id", shop.user_id)
@@ -247,7 +246,7 @@ async function triggerCommissionSplit(params: {
   driverRate: number;
 }) {
   try {
-    await supabase.functions.invoke("commission-split", {
+    await db.functions.invoke("commission-split", {
       body: {
         payment_intent_id: params.paymentIntentId,
         total_amount: params.totalAmount,

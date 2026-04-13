@@ -9,7 +9,8 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Landing Dark Theme**: `.landing-dark` CSS scope on Index page forces dark CSS variable overrides (background, foreground, card, muted, border) + `color-scheme: dark`. Loading skeleton also uses dark theme via `PageLoader dark` prop. All landing sections auto-inherit dark styling through CSS variable cascade.
 - **Typography**: Min `text-[10px]`, `font-size: 16px` on inputs
 - **Bottom nav**: 72px height, hidden on `/login`, `/signup`, `/orbit`, `/checkout`, `/pay/`, `/order/`
-- **DB Access**: ALL database calls MUST use `db(table)` from `src/services/db.ts`
+- **DB Access**: ALL database calls MUST use `db(table)` or `db.auth/storage/rpc/functions/channel` from `src/services/db.ts`. Direct imports of `@/integrations/supabase/client` are forbidden everywhere except `src/services/db.ts` (enforced via ESLint no-restricted-imports rule).
+- **localStorage**: ALL browser storage access MUST use `localStore`/`sessionStore` from `src/services/local-store.ts`, namespaced by pillar (dashboard/radar/orbit/wallet/me/auth/system) with `el:pillar:key` prefix.
 - **Supabase Project**: `ifvuvbolrmuuugtzxsfk` (Southeast Asia/Singapore). Config.toml project_id must match.
 - **Event Bus Bridge**: BRIDGE_MAP in `event-init.ts` maps platformBus colon-notation → eventBus dot-notation. All new UI events use platformBus directly. Radar, Explore, Dashboard, Map components fully migrated to platformBus. Legacy `eventBus` only in handler layer via bridge.
 - **Payment Flow**: walletStore emits `wallet:payment_success` → order-handlers + engineConnectorHub resolve orderId via `resolveOrderId()` (handles `orderId`, `referenceId+referenceType`, `reference` with `order:` prefix or UUID format) → order status "paid" + escrow creation.

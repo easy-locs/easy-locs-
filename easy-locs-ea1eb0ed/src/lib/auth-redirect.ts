@@ -1,5 +1,5 @@
 import type { User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { db as supabase } from "@/services/db";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

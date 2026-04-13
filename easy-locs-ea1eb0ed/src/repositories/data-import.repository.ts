@@ -1,7 +1,6 @@
 /**
  * data-import.repository — DB operations for DataImport page.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function insertProperty(record: Record<string, any>) {

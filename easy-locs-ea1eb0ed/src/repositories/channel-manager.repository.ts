@@ -2,7 +2,6 @@
  * channel-manager.repository — All DB operations for ChannelManager page.
  * Single source for OTA connections, reservations, and sync operations.
  */
-import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/services/db";
 
 export async function fetchOrgForUser(userId: string) {
@@ -18,7 +17,7 @@ export async function fetchProperties(orgId: string) {
 }
 
 export async function fetchOtaConnections(orgId: string) {
-  const { data } = await supabase.rpc("get_ota_connections", { _org_id: orgId });
+  const { data } = await db.rpc("get_ota_connections", { _org_id: orgId });
   return (data || []) as Array<{
     id: string; provider: string; status: string; last_sync_at: string | null;
     linked_properties: any; created_at: string;
@@ -62,7 +61,7 @@ export async function fetchChannelReservations(orgId: string) {
 }
 
 export async function syncIcal(conn: any, orgId: string) {
-  const res = await supabase.functions.invoke("sync-ical", {
+  const res = await db.functions.invoke("sync-ical", {
     body: {
       ical_url: conn.linked_properties?.[0]?.ical_url || "",
       property_id: conn.linked_properties?.[0]?.property_id || "",
@@ -99,7 +98,7 @@ export async function cancelReservation(res: { id: string; source_table: string;
   }
 
   if (res.guest_email) {
-    await supabase.functions.invoke("send-email", {
+    await db.functions.invoke("send-email", {
       body: {
         to: res.guest_email,
         subject: `🚫 Réservation annulée — ${res.check_in} → ${res.check_out}`,
@@ -134,7 +133,7 @@ export async function modifyReservationDates(
   }
 
   if (res.guest_email) {
-    await supabase.functions.invoke("send-email", {
+    await db.functions.invoke("send-email", {
       body: {
         to: res.guest_email,
         subject: `📅 Dates modifiées — ${newCheckIn} → ${newCheckOut}`,
