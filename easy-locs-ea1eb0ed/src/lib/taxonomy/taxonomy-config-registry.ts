@@ -203,26 +203,17 @@ const IMPORT_DEFAULTS: Record<string, TaxonomyImportConfig> = {
 //  SUBCATEGORY OVERRIDES (granular per-subcategory config)
 // ═══════════════════════════════════════════════════════════
 
-const SUBCATEGORY_RADAR_OVERRIDES: Record<string, Partial<TaxonomyRadarConfig>> = {
-  pizza:          { iconEmoji: "🍕", animationStyle: "bounce" },
-  burger:         { iconEmoji: "🍔" },
-  sushi:          { iconEmoji: "🍣" },
-  cafe:           { iconEmoji: "☕" },
-  coffee:         { iconEmoji: "☕" },
-  bakery:         { iconEmoji: "🥐" },
-  shawarma:       { iconEmoji: "🌯" },
-  pharmacy:       { iconEmoji: "💊" },
-  salon:          { iconEmoji: "💇‍♀️" },
-  hotel:          { iconEmoji: "🏨" },
-  resort:         { iconEmoji: "🏖️" },
-  taxi:           { iconEmoji: "🚕" },
-  supermarket:    { iconEmoji: "🏬" },
-  fashion:        { iconEmoji: "👗" },
-  electronics:    { iconEmoji: "📱" },
-  cleaning:       { iconEmoji: "🧼" },
-  rent_apartment: { iconEmoji: "🏢" },
-  sale_villa:     { iconEmoji: "🏡" },
-};
+function buildSubcategoryRadarOverrides(): Record<string, Partial<TaxonomyRadarConfig>> {
+  const overrides: Record<string, Partial<TaxonomyRadarConfig>> = {};
+  for (const cat of CATEGORY_TREE) {
+    for (const sub of cat.subcategories) {
+      if (sub.emoji) overrides[sub.value] = { iconEmoji: sub.emoji };
+    }
+  }
+  overrides.pizza = { ...overrides.pizza, animationStyle: "bounce" };
+  return overrides;
+}
+const SUBCATEGORY_RADAR_OVERRIDES = buildSubcategoryRadarOverrides();
 
 const SUBCATEGORY_CARD_OVERRIDES: Record<string, Partial<TaxonomyCardConfig>> = {
   pizza:     { signalBadges: ["rating", "delivery_time", "popular"] },

@@ -3,7 +3,7 @@
  * Light, performant, no heavy dependencies.
  */
 import type { RadarPoint } from "@/lib/radar/types";
-import { getCanonicalSubcategory } from "@/lib/taxonomy/taxonomy-aliases";
+import { strictGetCanonicalSubcategory as getCanonicalSubcategory } from "@/lib/taxonomy/world-class-taxonomy";
 
 export type BadgeType =
   | "sponsored"

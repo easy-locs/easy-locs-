@@ -18,12 +18,17 @@ import { db } from "@/services/db";
 import { haversineKm } from "@/lib/geo/distance";
 import { getTimeContext, timeRelevanceScore } from "@/lib/discovery/timeContext";
 import {
-  verticalToRadarCategory,
-  normalizeVertical,
-  normalizeSubcategory,
-  getClusterForSubcategory,
-  getParentVertical,
-} from "@/lib/taxonomy/taxonomy-aliases";
+  strictVerticalToRadarCategory as verticalToRadarCategory,
+  strictGetParentVertical as getParentVertical,
+  strictGetCanonicalSubcategory,
+} from "@/lib/taxonomy/world-class-taxonomy";
+
+let _aliasCache: Awaited<ReturnType<typeof _load>> | null = null;
+const _load = () => import("@/lib/taxonomy/taxonomy-aliases");
+async function aliases() {
+  if (!_aliasCache) _aliasCache = await _load();
+  return _aliasCache;
+}
 import { fetchOSMPlaces, osmCategoryToRadarCategory } from "@/lib/geo/osm-places-engine";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";
 import { FALLBACK_RESTAURANTS } from "@/data/fallback-restaurants";
@@ -174,6 +179,7 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     limit = 200,
   } = opts;
 
+  const { normalizeVertical, normalizeSubcategory, getClusterForSubcategory } = await aliases();
   const timeCtx = getTimeContext();
   const allowedModes = VISIBLE_MODES_BY_SURFACE[surface] || VISIBLE_MODES_BY_SURFACE.discover;
 
