@@ -448,6 +448,7 @@ export const AdminSystemLivePanelPage = safeLazy(() => import("@/pages/admin/Adm
 export const AdminRestaurantFillPage = safeLazy(() => import("@/pages/admin/AdminRestaurantFillPage"), "AdminRestaurantFillPage");
 export const AdminMasterControlPage = safeLazy(() => import("@/pages/admin/AdminMasterControlPage"), "AdminMasterControlPage");
 export const AdminControlRoomPage = safeLazy(() => import("@/pages/admin/AdminControlRoomPage"), "AdminControlRoomPage");
+export const EngineControlRoomPage = safeLazy(() => import("@/pages/admin/EngineControlRoomPage"), "EngineControlRoomPage");
 export const AdminQaCommandPage = safeLazy(() => import("@/pages/admin/AdminQaCommandPage"), "AdminQaCommandPage");
 export const AdminMenuQualityControlPage = safeLazy(() => import("@/pages/admin/AdminMenuQualityControlPage"), "AdminMenuQualityControlPage");
 export const AdminUxLiveTestPage = safeLazy(() => import("@/pages/admin/AdminUxLiveTestPage"), "AdminUxLiveTestPage");

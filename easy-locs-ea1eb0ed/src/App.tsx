@@ -254,6 +254,7 @@ const {
   AdminActiveSessionsPage, AdminFraudMonitorPage, AdminCoreEnginePage, AdminOrderAuditPage,
   AdminRefundQueuePage, AdminPlatformHealthPage, AdminRuntimeCockpitPage,
   AdminSystemLivePanelPage, AdminRestaurantFillPage, AdminMasterControlPage, AdminControlRoomPage,
+  EngineControlRoomPage,
   AdminQaCommandPage, AdminMenuQualityControlPage, AdminUxLiveTestPage, AdminEngineCockpit, ControlPlanePage,
   AdminAIControlCenter, AdminMonetizationDashboard,
   AdminBrowserRepairPage, AdminCentralControlPanelPage,
@@ -786,6 +787,7 @@ const App = () => (
                   <Route path="/admin/master-debug" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMasterDebugPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/master-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMasterControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/engine-control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><EngineControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/central-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCentralControlPanelPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/ui-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUiEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/marketplace-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMarketplaceOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
