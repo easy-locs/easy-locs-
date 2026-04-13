@@ -1,20 +1,16 @@
 /**
  * Platform Event Bus — Single nervous system for the entire application.
- * 
+ *
  * Every module fires events here. Every module listens here.
  * Wallet ↔ Orbit ↔ Marketplace ↔ Property Management
- */
-
-/**
- * PlatformEventType — derived from the canonical APP_EVENTS constant map.
  *
- * DEDUPLICATION FIX: Previously this file maintained a 450-line manual union type that
- * duplicated APP_EVENTS (src/lib/platform/events.ts) and contained internal duplicates
- * (e.g. 'wallet:transfer_completed' appeared twice). The canonical source of truth is
- * APP_EVENTS. PlatformEventType is now AppEventKey | (string & {}) to:
- *   1. Provide autocomplete/type-safety for all canonical events via AppEventKey
- *   2. Still accept dynamic event strings for backward compatibility
- *   3. Eliminate the maintenance burden of a parallel union list
+ * UNIFICATION (Task 4 + Task 7):
+ * - Removed dot↔colon bridge to canonical bus (@/lib/platform-bus). The app is
+ *   standardised on colon-notation (e.g. "wallet:payment_completed"). The secondary
+ *   dot-notation bus is used solely for structured logging and is not bridged back.
+ * - Added anti-storm dedup guard: cascade refresh events (dashboard:counters_refresh,
+ *   dashboard:refresh, notifications:refresh, me:refresh) are deduplicated within a
+ *   100ms window so a single user action triggers at most ONE invalidation chain.
  */
 import type { AppEventKey } from "@/lib/platform/events";
 
@@ -110,6 +106,18 @@ type EventListener = (event: PlatformEvent) => void;
 const MAX_LISTENERS_PER_EVENT = 100;
 const MAX_GLOBAL_LISTENERS = 80;
 
+/**
+ * Event types that are pure "refresh signals" — they carry no unique payload and
+ * firing them N times within 100ms has exactly the same effect as firing once.
+ * These are deduplicated to prevent cascade storms.
+ */
+const DEDUP_EVENT_PREFIXES = [
+  "dashboard:",
+  "notifications:",
+  "me:",
+];
+const DEDUP_WINDOW_MS = 100;
+
 let _correlationCounter = 0;
 export function generateCorrelationId(prefix = "evt"): string {
   return `${prefix}-${Date.now()}-${++_correlationCounter}`;
@@ -122,6 +130,9 @@ class PlatformBus {
   private readonly MAX_LOG = 150;
   private _devEmitCount = 0;
   private _devEmitTimer: ReturnType<typeof setInterval> | null = null;
+
+  /** Anti-storm guard: maps dedup-eligible event types → last dispatch timestamp */
+  private _dedupWindow = new Map<string, number>();
 
   on(type: PlatformEventType | string, listener: EventListener): () => void {
     if (!this.listeners.has(type)) {
@@ -169,13 +180,30 @@ class PlatformBus {
     source: PlatformEvent["source"] | string,
     meta?: { userId?: string; orgId?: string; correlationId?: string }
   ): void {
+    const now = Date.now();
+
+    // Anti-storm dedup: cascade refresh events are dropped if the same type
+    // was dispatched within DEDUP_WINDOW_MS. This prevents 5-10 identical
+    // invalidations from a single user action.
+    const isDedup = DEDUP_EVENT_PREFIXES.some((p) => (type as string).startsWith(p));
+    if (isDedup) {
+      const last = this._dedupWindow.get(type as string);
+      if (last !== undefined && now - last < DEDUP_WINDOW_MS) {
+        if (import.meta.env.DEV) {
+          console.debug(`[platform-bus] dedup dropped "${type}" (${now - last}ms since last)`);
+        }
+        return;
+      }
+      this._dedupWindow.set(type as string, now);
+    }
+
     const event: PlatformEvent<T> = {
       type: type as PlatformEventType,
       payload,
       source: source as PlatformEvent["source"],
       userId: meta?.userId,
       orgId: meta?.orgId,
-      timestamp: Date.now(),
+      timestamp: now,
       correlationId: meta?.correlationId,
     };
 
@@ -241,6 +269,7 @@ class PlatformBus {
   clear(): void {
     this.listeners.clear();
     this.globalListeners.clear();
+    this._dedupWindow.clear();
   }
 }
 
@@ -250,6 +279,11 @@ export const platformBus = new PlatformBus();
 /**
  * Install cross-module reactions.
  * Called once at app startup. Uses direct Zustand store updates instead of window events.
+ *
+ * TASK 4: The dot↔colon bridge to @/lib/platform-bus (canonical dot-notation bus) has been
+ * removed. The shared platform bus is the single event backbone — colon-notation only.
+ * The canonical bus at @/lib/platform-bus is kept for structured logging but no longer
+ * receives/re-emits events back onto this bus (which was causing circular amplification).
  */
 export function installPlatformReactions(): () => void {
   const unsubs: (() => void)[] = [];
@@ -265,7 +299,6 @@ export function installPlatformReactions(): () => void {
   };
 
   // ── Wallet events → refresh wallet module only ──
-  // NOTE: Only colon-notation prefix. Dot-notation events are bridged to colon by the notation bridge below.
   unsubs.push(
     platformBus.onPrefix("wallet:", () => refreshModule("wallet"))
   );
@@ -301,81 +334,6 @@ export function installPlatformReactions(): () => void {
       window.dispatchEvent(new CustomEvent("currency:changed", { detail: event.payload }));
     })
   );
-
-  try {
-    import("@/lib/platform-bus").then(({ platformBus: canonicalBus }) => {
-      type CanonicalDomain = import("@/lib/platform-bus").PlatformEventDomain;
-
-      // Colon-notation → dot-notation: "wallet:balance_updated" → "wallet.balance.updated"
-      // Handles multi-colon names: "engine:health:crash" → "engine.health.crash"
-      const colonToDotName = (name: string): string => {
-        const colonIdx = name.indexOf(":");
-        if (colonIdx === -1) return name;
-        const domain = name.slice(0, colonIdx);
-        const rest = name.slice(colonIdx + 1).replace(/_/g, ".").replace(/:/g, ".");
-        return `${domain}.${rest}`;
-      };
-
-      // Dot-notation → colon-notation: "orbit.message.sent" → "orbit:message_sent"
-      const dotToColonName = (name: string): string => {
-        const dotIdx = name.indexOf(".");
-        if (dotIdx === -1) return name;
-        const domain = name.slice(0, dotIdx);
-        const rest = name.slice(dotIdx + 1).replace(/\./g, "_");
-        return `${domain}:${rest}`;
-      };
-
-      // Map shared bus source → canonical domain
-      const sourceToDomain: Record<string, CanonicalDomain> = {
-        wallet: "wallet", orbit: "orbit", marketplace: "listing",
-        pm: "listing", system: "system", tracking: "system",
-      };
-
-      // Map canonical domain → shared bus source
-      const domainToSource: Record<CanonicalDomain, PlatformEvent["source"]> = {
-        identity: "system", orbit: "orbit", wallet: "wallet",
-        listing: "marketplace", dashboard: "system", radar: "system",
-        provider: "marketplace", booking: "system", scraping: "system",
-        notification: "system", system: "system", realtime: "system",
-        media: "system", taxonomy: "system",
-      };
-
-      // Safe payload merge: guard non-object payloads to avoid spread errors
-      const bridgePayload = (payload: unknown): Record<string, unknown> => {
-        if (payload !== null && typeof payload === "object" && !Array.isArray(payload)) {
-          return { ...(payload as Record<string, unknown>), __bridged: true };
-        }
-        return { __bridged: true, _rawPayload: payload };
-      };
-
-      // Forward shared bus (colon-notation) → canonical bus (dot-notation)
-      unsubs.push(
-        platformBus.onAll((event) => {
-          if ((event.payload as Record<string, unknown>)?.__bridged) return;
-          const domain = sourceToDomain[event.source] || "system";
-          const dotName = colonToDotName(event.type);
-          canonicalBus.emit(dotName, domain, bridgePayload(event.payload), {
-            user_id_safe: event.userId,
-          });
-        })
-      );
-
-      // Forward canonical bus (dot-notation) → shared bus (colon-notation)
-      unsubs.push(
-        canonicalBus.on("*", (canonicalEvent) => {
-          if ((canonicalEvent.payload as Record<string, unknown>)?.__bridged) return;
-          const colonName = dotToColonName(canonicalEvent.name);
-          const source = domainToSource[canonicalEvent.domain] ?? "system";
-          platformBus.emit(
-            colonName as PlatformEventType,
-            bridgePayload(canonicalEvent.payload),
-            source,
-            { userId: canonicalEvent.user_id_safe }
-          );
-        })
-      );
-    }).catch(() => {});
-  } catch {}
 
   return () => unsubs.forEach((fn) => fn());
 }

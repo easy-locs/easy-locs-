@@ -56,10 +56,6 @@ interface LocationState {
   pickupLocation: ResolvedPlace | null;
   dropoffLocation: ResolvedPlace | null;
 
-  /** @deprecated Use mapStore.viewport instead — will be removed in next cleanup pass */
-  mapCenter: { lat: number; lng: number } | null;
-  /** @deprecated Use mapStore.viewport.zoom instead */
-  mapZoom: number;
   searchRadiusKm: number;
 
   // Saved places
@@ -76,8 +72,6 @@ interface LocationState {
   setSelectedLocation: (place: ResolvedPlace | null) => void;
   setPickupLocation: (place: ResolvedPlace | null) => void;
   setDropoffLocation: (place: ResolvedPlace | null) => void;
-  /** @deprecated Use mapStore.setViewport instead */
-  setMapViewport: (center: { lat: number; lng: number }, zoom?: number) => void;
   setSearchRadiusKm: (km: number) => void;
   addRecentPlace: (place: Omit<SavedPlace, "id" | "type">) => void;
   savePlace: (place: SavedPlace) => void;
@@ -117,8 +111,6 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   selectedLocation: null,
   pickupLocation: null,
   dropoffLocation: null,
-  mapCenter: null,
-  mapZoom: 13,
   searchRadiusKm: 5,
   savedPlaces: loadSaved(),
   recentPlaces: loadRecent(),
@@ -138,7 +130,6 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   setSelectedLocation: (place) => set({ selectedLocation: place }),
   setPickupLocation: (place) => set({ pickupLocation: place }),
   setDropoffLocation: (place) => set({ dropoffLocation: place }),
-  setMapViewport: (center, zoom) => set({ mapCenter: center, ...(zoom != null ? { mapZoom: zoom } : {}) }),
   setSearchRadiusKm: (km) => set({ searchRadiusKm: km }),
 
   addRecentPlace: (place) => {

@@ -12,6 +12,7 @@
  */
 import { useGeoStore, type GeoPoint } from "@/lib/geo/geo-store";
 import { useLocationStore, type ResolvedPlace } from "@/stores/locationStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import { computeZoneKey, type CanonicalPlace } from "@/lib/address/canonical-place";
 import { eventBus } from "@/lib/core/event-bus";
@@ -114,7 +115,7 @@ export function setAddressFromPlace(place: CanonicalPlace): void {
     area: place.district ?? undefined,
     country: place.country_name ?? undefined,
   });
-  useLocationStore.getState().setMapViewport({ lat: place.lat, lng: place.lng }, 14);
+  useUnifiedMapStore.getState().setViewport({ centerLat: place.lat, centerLng: place.lng, zoom: 14 });
   useLocationStore.getState().addRecentPlace({
     lat: place.lat, lng: place.lng, label,
     city: place.city ?? undefined,

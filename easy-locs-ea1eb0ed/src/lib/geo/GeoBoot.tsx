@@ -7,6 +7,7 @@ import { useEffect, useRef } from "react";
 import { geoService } from "./geo-service";
 import { useGeoStore } from "./geo-store";
 import { useLocationStore } from "@/stores/locationStore";
+import { useUnifiedMapStore } from "@/stores/mapStore";
 import { reverseGeocode } from "@/lib/location/geocode";
 import { fromGPS } from "@/lib/address/canonical-place";
 import { setAddressFromPlace } from "@/lib/brain/geo-brain";
@@ -40,10 +41,10 @@ export function GeoBoot() {
       // Resolve canonical geo for quality tracking
       resolveCanonicalGeo({ lat, lng, source: "gps", precision: "gps" });
 
-      // Update map viewport to user location if no custom viewport set
-      const locStore = useLocationStore.getState();
-      if (!locStore.mapCenter) {
-        locStore.setMapViewport({ lat, lng }, 14);
+      // Update map viewport to user location if no custom viewport is set
+      const mapStore = useUnifiedMapStore.getState();
+      if (mapStore.viewport.mode === "follow_user") {
+        mapStore.setViewport({ centerLat: lat, centerLng: lng, zoom: 14 });
       }
 
       // Update city/country on geoStore from reverse geocode
