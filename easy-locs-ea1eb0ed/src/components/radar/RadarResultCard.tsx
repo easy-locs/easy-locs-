@@ -73,9 +73,9 @@ function RadarResultCard({ entity, variant = "row", rank, selected, onSelect, on
             </span>
           )}
         </div>
-        <div className="px-2.5 py-2 min-w-0">
-          <p className="text-xs font-bold text-foreground line-clamp-1">{name}</p>
-          <div className="flex items-center gap-1.5 mt-0.5">
+        <div className="px-2.5 py-2 min-w-0 overflow-hidden">
+          <p className="text-xs font-bold text-foreground line-clamp-1 break-words">{name}</p>
+          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
             {entity.rating != null && entity.rating > 0 && (
               <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(45 90% 50%)" }}>
                 <Star className="w-2.5 h-2.5 fill-current" />{entity.rating.toFixed(1)}
@@ -116,9 +116,9 @@ function RadarResultCard({ entity, variant = "row", rank, selected, onSelect, on
         </div>
       )}
 
-      <div className="flex-1 min-w-0 text-left">
+      <div className="flex-1 min-w-0 text-left overflow-hidden">
         <div className="flex items-center gap-1.5">
-          <p className="text-sm font-bold text-foreground line-clamp-1 leading-snug">{name}</p>
+          <p className="text-sm font-bold text-foreground line-clamp-1 leading-snug break-words min-w-0">{name}</p>
           {entity.isSponsored && (
             <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(38 65% 56% / 0.12)", color: "hsl(38 65% 56%)" }}>
               Ad
@@ -126,7 +126,7 @@ function RadarResultCard({ entity, variant = "row", rank, selected, onSelect, on
           )}
         </div>
         {cat && (
-          <p className="text-[11px] text-muted-foreground capitalize mt-0.5 line-clamp-1">{cat.replace(/_/g, " ")}</p>
+          <p className="text-[11px] text-muted-foreground capitalize mt-0.5 line-clamp-1 break-words">{cat.replace(/_/g, " ")}</p>
         )}
         <div className="flex items-center gap-2 mt-1">
           {entity.rating != null && entity.rating > 0 && (

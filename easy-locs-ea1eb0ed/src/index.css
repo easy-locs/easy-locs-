@@ -66,18 +66,29 @@
 }
 
 /* 4a. Text elements — allow natural overflow but respect explicit truncation.
-   Elements with .truncate or .line-clamp-* classes intentionally control overflow. */
+   Elements with .truncate or .line-clamp-* classes intentionally control overflow.
+   NOTE: Do NOT set overflow: visible on headings — it breaks overflow-hidden containers. */
 p:not([class*="truncate"]):not([class*="line-clamp"]),
 span:not([class*="truncate"]):not([class*="line-clamp"]),
 label:not([class*="truncate"]):not([class*="line-clamp"]),
-h1, h2, h3, h4, h5, h6, li, dt, dd, td, th {
+li, dt, dd, td, th {
   overflow: visible;
   text-overflow: unset;
 }
 
-/* 4b. Anchors — same principle */
-a:not([class*="truncate"]):not([class*="line-clamp"]) {
-  overflow: visible;
+/* Headings: only reset text-overflow, not overflow itself — cards need overflow:hidden */
+h1:not([class*="truncate"]):not([class*="line-clamp"]),
+h2:not([class*="truncate"]):not([class*="line-clamp"]),
+h3:not([class*="truncate"]):not([class*="line-clamp"]),
+h4:not([class*="truncate"]):not([class*="line-clamp"]),
+h5:not([class*="truncate"]):not([class*="line-clamp"]),
+h6:not([class*="truncate"]):not([class*="line-clamp"]) {
+  text-overflow: unset;
+}
+
+/* 4b. Anchors — reset text-overflow but not overflow itself.
+   Many card wrappers are anchors with overflow:hidden — don't override that. */
+a:not([class*="truncate"]):not([class*="line-clamp"]):not([class*="overflow-hidden"]) {
   text-overflow: unset;
 }
 
@@ -105,9 +116,10 @@ a:not([class*="truncate"]):not([class*="line-clamp"]) {
   word-break: normal;
 }
 
-/* 4f. Buttons: allow natural wrapping unless explicitly truncated */
+/* 4f. Buttons: allow natural wrapping unless explicitly truncated.
+   Do NOT force overflow:visible — buttons inside overflow:hidden containers
+   should respect the container boundary. */
 button:not([class*="truncate"]), [role="button"]:not([class*="truncate"]) {
-  overflow: visible;
   text-overflow: unset;
   white-space: normal;
 }
@@ -119,12 +131,18 @@ button.icon-only {
   white-space: nowrap;
 }
 
-/* 4g. Tab labels should wrap on small screens */
+/* 4g. Tab labels should wrap on small screens.
+   Tab buttons themselves should NOT get overflow:visible — they are flex containers
+   that need to clip/contain their children. */
 [role="tablist"] [role="tab"] {
   white-space: normal;
   text-align: center;
-  overflow: visible;
   min-height: 36px;
+}
+[role="tablist"] [role="tab"] span {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* 4h. Badge / chip safety — intentional nowrap but with safety */
@@ -3653,7 +3671,7 @@ button:focus-visible,
     105deg,
     hsl(var(--muted)) 0%,
     hsl(var(--muted)) 35%,
-    hsl(var(--muted-foreground) / 0.1) 50%,
+    hsl(var(--muted-foreground) / 0.25) 50%,
     hsl(var(--muted)) 65%,
     hsl(var(--muted)) 100%
   );
@@ -3661,6 +3679,8 @@ button:focus-visible,
   animation: premium-shimmer 1.4s ease-in-out infinite;
   border-radius: var(--radius);
   will-change: background-position;
+  /* Ensure skeleton is always visible regardless of background */
+  opacity: 1;
 }
 
 /* 5. Card hover elevation — desktop premium feel */

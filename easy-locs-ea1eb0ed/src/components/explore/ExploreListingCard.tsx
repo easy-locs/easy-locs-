@@ -114,8 +114,9 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             </span>
             {isVerified && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold backdrop-blur-md"
-                style={{ background: GOLD, color: NAVY }}>
-                <CheckCircle className="h-3 w-3" /> {t("mp.verified") || "Verified"}
+                style={{ background: GOLD, color: NAVY, maxWidth: "120px" }}>
+                <CheckCircle className="h-3 w-3 shrink-0" />
+                <span className="line-clamp-1">{t("mp.verified") || "Verified"}</span>
               </span>
             )}
           </div>
@@ -133,7 +134,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             <h3 className="font-bold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-[hsl(38_65%_56%)] transition-colors flex-1 min-w-0">
               {item.title}
             </h3>
-            <span className="text-sm font-extrabold text-foreground whitespace-nowrap shrink-0 tabular-nums">{priceLabel}</span>
+            <span className="text-sm font-extrabold text-foreground whitespace-nowrap shrink-0 tabular-nums max-w-[45%] text-right" style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{priceLabel}</span>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

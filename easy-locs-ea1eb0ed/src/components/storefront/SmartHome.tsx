@@ -251,7 +251,7 @@ function SmartQuickActions() {
           className={`flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br ${color} border border-border/10 backdrop-blur-xl px-2 active:scale-[0.95] transition-all min-w-0`}
         >
           <Icon className="h-4 w-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
-          <span className="text-[11px] font-bold text-foreground truncate min-w-0">{t(labelKey)}</span>
+          <span className="text-[10px] font-bold text-foreground leading-tight min-w-0 break-words" style={{ wordBreak: "break-word", maxWidth: "100%" }}>{t(labelKey)}</span>
         </Link>
       ))}
     </div>
@@ -358,7 +358,7 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCate
     >
       <Link
         to={cat.route}
-        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl p-2.5 w-[72px] min-h-[72px] transition-all duration-150 active:scale-[0.95]"
+        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl p-2 w-[76px] min-h-[76px] transition-all duration-150 active:scale-[0.95]"
         style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)", boxShadow: "0 1px 4px hsl(var(--foreground) / 0.03)" }}
       >
         <div className="flex items-center justify-center mb-1 shrink-0">
@@ -368,7 +368,7 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCate
             <span className="text-xl">{cat.icon}</span>
           )}
         </div>
-        <p className="w-full text-center text-[10px] font-bold leading-snug text-foreground line-clamp-2 break-words hyphens-auto">{cat.label}</p>
+        <p className="w-full text-center text-[10px] font-bold leading-snug text-foreground line-clamp-2 break-words hyphens-auto" style={{ fontSize: "clamp(9px, 2.5vw, 11px)" }}>{cat.label}</p>
       </Link>
     </motion.div>
   );

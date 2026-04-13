@@ -59,7 +59,7 @@ function MainBottomNav() {
         contain: "layout style",
       }}
     >
-      <div className="flex items-stretch justify-around h-[58px] max-w-md mx-auto overflow-x-hidden">
+      <div className="flex items-stretch justify-around h-[60px] max-w-md mx-auto overflow-x-hidden">
         {NAV_TABS_CONFIG.map((tab) => {
           const active = tab.match(pathname);
           const Icon = tab.icon;
@@ -82,7 +82,7 @@ function MainBottomNav() {
               whileTap={{ scale: 0.88 }}
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
               className="flex flex-col items-center justify-center flex-1 gap-0.5 relative
-                         min-w-0 min-h-[44px] max-w-[80px]
+                         min-w-0 min-h-[44px] max-w-[72px]
                          transition-colors duration-200 ease-out
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
             >
@@ -149,11 +149,17 @@ function MainBottomNav() {
                 </motion.div>
               )}
               <span
-                className="text-[10px] leading-tight transition-all duration-200 truncate w-full text-center px-0.5"
+                className="leading-tight transition-all duration-200 w-full text-center px-0.5 break-words"
                 style={{
+                  fontSize: "clamp(9px, 2.5vw, 10px)",
                   color: active ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground) / 0.45)",
                   fontWeight: active ? 700 : 500,
                   letterSpacing: active ? "0.01em" : "0",
+                  whiteSpace: "normal",
+                  overflowWrap: "break-word",
+                  wordBreak: "break-word",
+                  maxWidth: "100%",
+                  lineHeight: "1.2",
                 }}
               >
                 {tc(`nav.${tab.key}`)}
