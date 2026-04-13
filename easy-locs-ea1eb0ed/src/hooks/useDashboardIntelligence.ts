@@ -12,6 +12,7 @@ import {
   type SuggestedPayment,
   type PendingAction,
   type SectionPriority,
+  type ProfileFields,
 } from "@/lib/dashboard/dashboard-intelligence";
 
 export interface DashboardIntelligence {
@@ -28,21 +29,27 @@ export function useDashboardIntelligence(params: {
   userId: string | null;
   hasWallet: boolean;
   walletBalance: number;
+  /** Active currency — derived from wallet store when not provided. */
+  walletCurrency?: string;
   unreadMessages: number;
   activeOrders: number;
   hasProfile: boolean;
   profileComplete: boolean;
   hasOrbit: boolean;
+  /** Actual profile field completeness for real progress calculation. */
+  profileFields?: ProfileFields;
 }): DashboardIntelligence {
   const ctx = useMemo(() => buildDashboardContext(params), [
     params.userId,
     params.hasWallet,
     params.walletBalance,
+    params.walletCurrency,
     params.unreadMessages,
     params.activeOrders,
     params.hasProfile,
     params.profileComplete,
     params.hasOrbit,
+    params.profileFields,
   ]);
 
   const continueItems = useMemo(() => getContinueItems(ctx), [ctx]);

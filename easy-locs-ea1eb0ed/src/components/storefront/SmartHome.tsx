@@ -46,6 +46,7 @@ import SuggestedPaymentsSection from "@/components/dashboard/SuggestedPaymentsSe
 import PendingActionsSection from "@/components/dashboard/PendingActionsSection";
 import ContextualNudge from "@/components/dashboard/ContextualNudge";
 import { useDashboardIntelligence } from "@/hooks/useDashboardIntelligence";
+import { computeProfileCompletion } from "@/lib/dashboard/dashboard-intelligence";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useWalletBalance } from "@/payments/wallet-hooks";
@@ -592,15 +593,35 @@ export default function SmartHome() {
   const { suggestions, dismiss } = useSmartInsights(smartContext);
 
   const liveStats = useDashboardLiveStats();
+
+  // Compute actual profile field completeness from available user metadata + live stats
+  const profileFields = useMemo(() => ({
+    hasName: !!(user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name),
+    hasAvatar: !!(user?.user_metadata?.avatar_url || user?.user_metadata?.picture),
+    hasPhone: !!(user?.user_metadata?.phone || user?.phone),
+    hasDocuments: liveStats.hasDocuments,
+    hasPaymentMethod: smartContext.hasWallet,
+  }), [user, smartContext.hasWallet, liveStats.hasDocuments]);
+
+  // Profile is considered "complete" when the computed percentage reaches 80%+
+  // This replaces the legacy boolean that only checked display_name + avatar_url
+  const profileCompletePct = useMemo(
+    () => profileFields ? computeProfileCompletion(profileFields) : 0,
+    [profileFields],
+  );
+  const profileComplete = profileCompletePct >= 80;
+
   const intelligence = useDashboardIntelligence({
     userId: user?.id || null,
     hasWallet: smartContext.hasWallet,
     walletBalance: liveStats.walletBalance,
+    walletCurrency: liveStats.walletCurrency,
     unreadMessages: liveStats.unreadMessages,
     activeOrders: liveStats.activeOrders,
     hasProfile: smartContext.hasProfile,
-    profileComplete: smartContext.profileComplete,
+    profileComplete,
     hasOrbit: smartContext.hasOrbit,
+    profileFields,
   });
 
   useEffect(() => { prefetchForRoute("/"); }, []);
