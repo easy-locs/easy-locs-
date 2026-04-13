@@ -1,8 +1,10 @@
 /**
- * useOrbitIdentity — Canonical hook for accessing current user's orbit identity.
- * Replaces direct `useOrbitStore.getState().profile` calls in stores.
- * 
- * For Zustand stores (non-React context), use `getOrbitIdentity()` instead.
+ * useOrbitIdentity — Public API for orbit profile access.
+ * Replaces direct internal store imports in UI code.
+ *
+ * React: useOrbitIdentity(), useOrbitLoading()
+ * Imperative: getOrbitIdentity(), requireOrbitIdentity()
+ * Actions: loadOrbitProfile(), clearOrbitProfile()
  */
 import { useMemo } from "react";
 import { useOrbitProfileStore } from "@/stores/orbit-profile.internal";
@@ -17,35 +19,46 @@ export interface OrbitIdentity {
   role: string;
 }
 
-/**
- * Imperative getter for use inside Zustand stores (outside React tree).
- * Returns null if no profile is loaded.
- */
 export function getOrbitIdentity(): OrbitIdentity | null {
   const profile = useOrbitProfileStore.getState().profile;
   if (!profile) return null;
   return mapProfile(profile);
 }
 
-/**
- * Returns orbitId or throws — for use in store actions that require auth.
- */
 export function requireOrbitIdentity(): OrbitIdentity {
   const identity = getOrbitIdentity();
   if (!identity) throw new Error("No authenticated orbit profile");
   return identity;
 }
 
-/**
- * React hook — subscribes reactively to orbit profile changes.
- * Use in components/pages instead of direct orbitStore access.
- */
 export function useOrbitIdentity(): OrbitIdentity | null {
   const profile = useOrbitProfileStore((s) => s.profile);
   return useMemo(
     () => (profile ? mapProfile(profile) : null),
     [profile?.id, profile?.orbitId, profile?.email, profile?.displayName, profile?.avatarUrl, profile?.role],
   );
+}
+
+export function useOrbitLoading(): boolean {
+  return useOrbitProfileStore((s) => s.loading);
+}
+
+export async function loadOrbitProfile(userId: string): Promise<void> {
+  return useOrbitProfileStore.getState().loadProfile(userId);
+}
+
+export function clearOrbitProfile(): void {
+  useOrbitProfileStore.getState().clear();
+}
+
+export function getOrbitProfile(): CanonicalOrbitProfile | null {
+  return useOrbitProfileStore.getState().profile;
+}
+
+export function patchOrbitProfile(patch: Partial<CanonicalOrbitProfile>): void {
+  const current = useOrbitProfileStore.getState().profile;
+  if (!current) return;
+  useOrbitProfileStore.setState({ profile: { ...current, ...patch } });
 }
 
 function mapProfile(p: CanonicalOrbitProfile): OrbitIdentity {

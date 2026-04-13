@@ -483,6 +483,8 @@ export const RADAR_QUICK_CATEGORIES: { id: RadarMainCategory; emoji: string; lab
 
 export const ALL_SUBCATEGORY_VALUES = getAllSubcategoryValues();
 
+export const loadTaxonomyAliases = () => import("./taxonomy-aliases");
+
 export function getSubcategoriesForRadarCategory(
   cat: RadarMainCategory
 ): TaxonomySubcategory[] {

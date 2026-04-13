@@ -1,19 +1,17 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
-import { useOrbitProfileStore } from "@/stores/orbit-profile.internal";
+import { useOrbitIdentity, useOrbitLoading, loadOrbitProfile } from "@/hooks/useOrbitIdentity";
 
 export default function OrbitIdentityPage() {
   const { user } = useAuth();
   const identity = useOrbitIdentity();
-  const loading = useOrbitProfileStore((s) => s.loading);
-  const loadProfile = useOrbitProfileStore((s) => s.loadProfile);
+  const loading = useOrbitLoading();
 
   useEffect(() => {
     if (user?.id && !identity) {
-      void loadProfile(user.id);
+      void loadOrbitProfile(user.id);
     }
-  }, [user?.id, identity, loadProfile]);
+  }, [user?.id, identity]);
 
   return (
     <div className="app-mobile-page bg-background p-4 space-y-6">

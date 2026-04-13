@@ -10,11 +10,10 @@ import type { CanonicalDashboardSummary } from "../shared/canonical-types";
  * This is a pure read — no side effects, no writes.
  */
 export function selectDashboardSummary(): CanonicalDashboardSummary {
-  // Lazy imports to avoid circular dependencies
-  const { useOrbitProfileStore } = require("@/stores/orbit-profile.internal");
+  const { getOrbitIdentity } = require("@/hooks/useOrbitIdentity");
   const { useWalletStore } = require("@/stores/walletStore");
 
-  const orbit = useOrbitProfileStore.getState();
+  const _identity = getOrbitIdentity();
   const wallet = useWalletStore.getState();
 
   return {
