@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOrbitProfileStore } from "@/stores/orbit-profile.store";
+import { useOrbitProfileStore } from "@/stores/orbit-profile.internal";
 
 /**
  * OrbitIdentityPage — displays canonical orbit profile from orbit_profiles_v2.

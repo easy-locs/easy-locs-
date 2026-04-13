@@ -52,8 +52,8 @@ describe("Canonical stores exist", () => {
     expect(content).toContain("export const useNotificationStore");
   });
 
-  it("orbit-profile.store.ts exists and exports useOrbitProfileStore", () => {
-    const content = readFile("stores/orbit-profile.store.ts");
+  it("orbit-profile.internal.ts exists and exports useOrbitProfileStore", () => {
+    const content = readFile("stores/orbit-profile.internal.ts");
     expect(content.length).toBeGreaterThan(0);
     expect(content).toContain("export const useOrbitProfileStore");
   });
@@ -141,8 +141,8 @@ describe("OrbitProfileV2 has been purged", () => {
     expect(content).not.toContain("OrbitProfileV2");
   });
 
-  it("orbit-profile.store.ts does not use OrbitProfileV2", () => {
-    const content = readFile("stores/orbit-profile.store.ts");
+  it("orbit-profile.internal.ts does not use OrbitProfileV2", () => {
+    const content = readFile("stores/orbit-profile.internal.ts");
     expect(content).not.toContain("OrbitProfileV2");
   });
 });
@@ -164,9 +164,9 @@ describe("Canonical version registry integrity", () => {
     expect(content).toContain("useNotificationStore");
   });
 
-  it("declares orbit-profile domain with orbit-profile.store", () => {
+  it("declares orbit-profile domain with orbit-profile.internal", () => {
     const content = readFile("lib/canonical-version-registry.ts");
-    expect(content).toContain("orbit-profile.store");
+    expect(content).toContain("orbit-profile.internal");
     expect(content).toContain("useOrbitProfileStore");
   });
 

@@ -76,7 +76,7 @@ export const ID_POLICY = {
 
 export const STATE_OWNERSHIP = {
   auth: "auth.store",
-  orbitProfile: "orbit-profile.store",
+  orbitProfile: "orbit-profile.internal",
   threads: "orbit/thread.store",
   calls: "orbit/call.store",
   composer: "orbit/composer.store",

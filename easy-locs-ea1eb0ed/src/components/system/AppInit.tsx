@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/auth.store";
 import { invalidateIdentityCache } from "@/lib/canonical-identity";
-import { useOrbitProfileStore } from "@/stores/orbit-profile.store";
+import { useOrbitProfileStore } from "@/stores/orbit-profile.internal";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
 import { ensureWalletBinding } from "@/lib/wallet/wallet-identity-binding";

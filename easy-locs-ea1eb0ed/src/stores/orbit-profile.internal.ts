@@ -1,11 +1,14 @@
 /**
- * orbit-profile.store — Canonical Orbit profile store.
+ * @internal orbit-profile.internal — Canonical Orbit profile store.
  * Manages orbit_profiles_v2 state for the current user.
  *
+ * This module is INTERNAL. Only approved domain modules should import it.
+ * External consumers must go through the public hooks (useOrbitIdentity, etc.).
+ *
  * Domain hierarchy:
- *   orbit-profile.store.ts  → user identity / profile (this file)
- *   stores/orbit/           → messaging (threads, messages, composer, etc.)
- *   stores/orbit-engine/    → engine counters / alerts (unread, badges)
+ *   orbit-profile.internal.ts → user identity / profile (this file)
+ *   stores/orbit/             → messaging (threads, messages, composer, etc.)
+ *   stores/orbit-engine/      → engine counters / alerts (unread, badges)
  */
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";

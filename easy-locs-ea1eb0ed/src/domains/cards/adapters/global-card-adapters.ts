@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { buildCardContract, type CardContract } from "../card-contract";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletStore } from "@/stores/walletStore";
-import { useOrbitProfileStore } from "@/stores/orbit-profile.store";
+import { useOrbitProfileStore } from "@/stores/orbit-profile.internal";
 import { useNotificationStore } from "@/stores/notification.store";
 
 // ── Wallet Balance Card — REACTIVE via zustand hook selector ──

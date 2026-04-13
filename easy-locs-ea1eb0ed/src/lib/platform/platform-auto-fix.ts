@@ -78,7 +78,7 @@ function auditHardcodedCurrency(): AutoFixResult {
 /** Fix: stores not hydrated — trigger rehydration */
 async function fixStoreHydration(): Promise<AutoFixResult> {
   try {
-    const { useOrbitProfileStore: useOrbitStore } = await import("@/stores/orbit-profile.store");
+    const { useOrbitProfileStore: useOrbitStore } = await import("@/stores/orbit-profile.internal");
     const { useWalletStore } = await import("@/stores/walletStore");
     const orbit = useOrbitStore.getState();
     const wallet = useWalletStore.getState();

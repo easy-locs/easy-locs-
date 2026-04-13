@@ -36,13 +36,13 @@ export const CANONICAL_REGISTRY: DomainCanonical[] = [
   },
   {
     domain: "orbit-profile",
-    store: "@/stores/orbit-profile.store → useOrbitProfileStore",
+    store: "@/stores/orbit-profile.internal → useOrbitProfileStore",
     service: "@/repositories/orbit-profile.repository",
     types: ["CanonicalOrbitProfile (from @/domains/shared/canonical-types)"],
-    pipeline: "orbit-profile.repository → orbit-profile.store",
+    pipeline: "orbit-profile.repository → orbit-profile.internal",
     legacyShims: [],
     resolvedConflicts: [
-      "orbit_store_consolidated: orbit-profile.store.ts is canonical. Legacy profile shim file deleted. OrbitProfileV2 type alias removed. All consumers import from orbit-profile.store directly.",
+      "orbit_store_consolidated: orbit-profile.internal.ts is canonical. Legacy profile shim file deleted. OrbitProfileV2 type alias removed. All consumers import from orbit-profile.internal directly.",
     ],
   },
   {
