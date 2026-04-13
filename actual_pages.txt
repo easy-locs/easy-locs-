@@ -84,9 +84,11 @@ AdminDashboard
 AdminDisputesPage
 AdminEngineCockpit
 admin/EngineControlRoomPage
+admin/EngineMemoryPanel
 admin/EnginesDashboardPage
 admin/ExecutionProofPage
 AdminFraudPage
+admin/GovernancePanel
 AdminGrowthEnginePage
 AdminLiveOpsPage
 AdminMasterDebugPage
@@ -350,6 +352,7 @@ Reminders
 RentalCatalog
 RentalManagement
 ReorderPage
+RepairDiagPage
 ReportingDashboard
 ResetPassword
 RiderPrioritySubscriptionPage
