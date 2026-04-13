@@ -18,6 +18,7 @@ import {
 import { predictDemand } from "@/lib/radar/predictive-demand-engine";
 import { contactFromDiscovery } from "@/lib/radar/contactBridge";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { APP_EVENTS } from "@/lib/platform/events";
 import UnifiedMap from "@/components/map/UnifiedMap";
 import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRanking";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
@@ -214,7 +215,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   }, []);
 
   const handleOpen = useCallback((entity: GeoEntity) => {
-    platformBus.emit("ENTITY_OPENED", { id: entity.id, type: entity.type, source: "radar" }, "radar");
+    platformBus.emit(APP_EVENTS.RADAR_ENTITY_SELECTED, { id: entity.id, type: entity.type, source: "radar" }, "radar");
     navigate(entity.route_path || `/s/${entity.slug || entity.id}`);
   }, [navigate]);
 

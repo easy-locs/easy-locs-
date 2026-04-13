@@ -223,5 +223,55 @@ export function installCrossAppReactions(): () => void {
     })
   );
 
+  // ── wallet:payment_requested → open Wallet POS via bus ──
+  unsubs.push(
+    platformBus.on(APP_EVENTS.WALLET_PAYMENT_REQUESTED, (event) => {
+      const p = event.payload as any;
+      platformBus.emit(APP_EVENTS.WALLET_POS_UPDATED, {
+        action: "open",
+        transactionId: p?.transactionId,
+        amount: p?.amount,
+        currency: p?.currency,
+        conversationId: p?.conversationId,
+      }, "wallet");
+    })
+  );
+
+  // ── radar:scan_completed → notify Dashboard to update contextual suggestions ──
+  unsubs.push(
+    platformBus.on(APP_EVENTS.RADAR_SCAN_COMPLETED, (event) => {
+      platformBus.emit(APP_EVENTS.DASHBOARD_REFRESH, { source: "radar_scan", ...(event.payload as object) }, "system");
+    })
+  );
+
+  // ── wallet:integrity_alert → security notification ──
+  unsubs.push(
+    platformBus.on(APP_EVENTS.WALLET_INTEGRITY_ALERT, async (event) => {
+      const p = event.payload as any;
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      try {
+        await createAppNotification({
+          userId: user.id,
+          scope: "wallet",
+          title: "Security alert",
+          body: p?.message ?? "A wallet integrity issue was detected. Please review your account.",
+          route: "/wallet",
+          severity: "warning",
+        });
+      } catch (e) {
+        console.error("[cross-app] wallet integrity alert notification failed", e);
+      }
+    })
+  );
+
+  // ── wallet:balance_updated → refresh Dashboard KPI totalRevenue in real-time ──
+  unsubs.push(
+    platformBus.on(APP_EVENTS.WALLET_BALANCE_UPDATED, () => {
+      platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { source: "wallet_balance_updated" }, "wallet");
+    })
+  );
+
   return () => unsubs.forEach((fn) => fn());
 }

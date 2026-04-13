@@ -107,8 +107,8 @@ export interface PlatformEvent<T = unknown> {
 
 type EventListener = (event: PlatformEvent) => void;
 
-const MAX_LISTENERS_PER_EVENT = 50;
-const MAX_GLOBAL_LISTENERS = 30;
+const MAX_LISTENERS_PER_EVENT = 100;
+const MAX_GLOBAL_LISTENERS = 80;
 
 let _correlationCounter = 0;
 export function generateCorrelationId(prefix = "evt"): string {
@@ -304,17 +304,74 @@ export function installPlatformReactions(): () => void {
 
   try {
     import("@/lib/platform-bus").then(({ platformBus: canonicalBus }) => {
+      type CanonicalDomain = import("@/lib/platform-bus").PlatformEventDomain;
+
+      // Colon-notation → dot-notation: "wallet:balance_updated" → "wallet.balance.updated"
+      // Handles multi-colon names: "engine:health:crash" → "engine.health.crash"
+      const colonToDotName = (name: string): string => {
+        const colonIdx = name.indexOf(":");
+        if (colonIdx === -1) return name;
+        const domain = name.slice(0, colonIdx);
+        const rest = name.slice(colonIdx + 1).replace(/_/g, ".").replace(/:/g, ".");
+        return `${domain}.${rest}`;
+      };
+
+      // Dot-notation → colon-notation: "orbit.message.sent" → "orbit:message_sent"
+      const dotToColonName = (name: string): string => {
+        const dotIdx = name.indexOf(".");
+        if (dotIdx === -1) return name;
+        const domain = name.slice(0, dotIdx);
+        const rest = name.slice(dotIdx + 1).replace(/\./g, "_");
+        return `${domain}:${rest}`;
+      };
+
+      // Map shared bus source → canonical domain
+      const sourceToDomain: Record<string, CanonicalDomain> = {
+        wallet: "wallet", orbit: "orbit", marketplace: "listing",
+        pm: "listing", system: "system", tracking: "system",
+      };
+
+      // Map canonical domain → shared bus source
+      const domainToSource: Record<CanonicalDomain, PlatformEvent["source"]> = {
+        identity: "system", orbit: "orbit", wallet: "wallet",
+        listing: "marketplace", dashboard: "system", radar: "system",
+        provider: "marketplace", booking: "system", scraping: "system",
+        notification: "system", system: "system", realtime: "system",
+        media: "system", taxonomy: "system",
+      };
+
+      // Safe payload merge: guard non-object payloads to avoid spread errors
+      const bridgePayload = (payload: unknown): Record<string, unknown> => {
+        if (payload !== null && typeof payload === "object" && !Array.isArray(payload)) {
+          return { ...(payload as Record<string, unknown>), __bridged: true };
+        }
+        return { __bridged: true, _rawPayload: payload };
+      };
+
+      // Forward shared bus (colon-notation) → canonical bus (dot-notation)
       unsubs.push(
         platformBus.onAll((event) => {
           if ((event.payload as Record<string, unknown>)?.__bridged) return;
-          const domainMap: Record<string, import("@/lib/platform-bus").PlatformEventDomain> = {
-            wallet: "wallet", orbit: "orbit", marketplace: "listing",
-            pm: "listing", system: "system", tracking: "system",
-          };
-          const domain = domainMap[event.source] || "system";
-          canonicalBus.emit(event.type, domain, event.payload, {
+          const domain = sourceToDomain[event.source] || "system";
+          const dotName = colonToDotName(event.type);
+          canonicalBus.emit(dotName, domain, bridgePayload(event.payload), {
             user_id_safe: event.userId,
           });
+        })
+      );
+
+      // Forward canonical bus (dot-notation) → shared bus (colon-notation)
+      unsubs.push(
+        canonicalBus.on("*", (canonicalEvent) => {
+          if ((canonicalEvent.payload as Record<string, unknown>)?.__bridged) return;
+          const colonName = dotToColonName(canonicalEvent.name);
+          const source = domainToSource[canonicalEvent.domain] ?? "system";
+          platformBus.emit(
+            colonName as PlatformEventType,
+            bridgePayload(canonicalEvent.payload),
+            source,
+            { userId: canonicalEvent.user_id_safe }
+          );
         })
       );
     }).catch(() => {});
