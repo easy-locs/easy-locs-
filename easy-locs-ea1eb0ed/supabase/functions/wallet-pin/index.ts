@@ -5,16 +5,11 @@
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_SECONDS = 300;
 
-// ── Crypto helpers using Web Crypto API ──
 async function generateSalt(): Promise<string> {
   const buf = new Uint8Array(16);
   crypto.getRandomValues(buf);
@@ -35,7 +30,6 @@ async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
   const [salt] = storedHash.split(":");
   if (!salt) return false;
   const computed = await hashPin(pin, salt);
-  // Constant-time comparison
   if (computed.length !== storedHash.length) return false;
   let diff = 0;
   for (let i = 0; i < computed.length; i++) {
@@ -45,6 +39,8 @@ async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -65,7 +61,6 @@ serve(async (req) => {
 
     const { action, pin } = await req.json();
 
-    // ─── check_status ───
     if (action === "check_status") {
       const { data: profile } = await supabase
         .from("profiles")
@@ -85,7 +80,6 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // ─── set_pin ───
     if (action === "set_pin") {
       if (!pin || pin.length !== 6 || !/^\d{6}$/.test(pin)) {
         return new Response(JSON.stringify({ error: "PIN must be exactly 6 digits" }), {
@@ -110,7 +104,6 @@ serve(async (req) => {
       });
     }
 
-    // ─── verify_pin ───
     if (action === "verify_pin") {
       if (!pin || pin.length !== 6) {
         return new Response(JSON.stringify({ verified: false, error: "Enter your 6-digit PIN" }), {
@@ -130,7 +123,6 @@ serve(async (req) => {
         });
       }
 
-      // Check lockout
       if (profile.wallet_pin_locked_until && new Date(profile.wallet_pin_locked_until) > new Date()) {
         const remaining = Math.ceil((new Date(profile.wallet_pin_locked_until).getTime() - Date.now()) / 1000);
         await supabase.from("audit_logs").insert({
@@ -152,9 +144,8 @@ serve(async (req) => {
         });
       }
 
-      // Failed attempt
       const newAttempts = (profile.wallet_pin_failed_attempts || 0) + 1;
-      const updates: Record<string, any> = { wallet_pin_failed_attempts: newAttempts };
+      const updates: Record<string, unknown> = { wallet_pin_failed_attempts: newAttempts };
       if (newAttempts >= MAX_ATTEMPTS) {
         updates.wallet_pin_locked_until = new Date(Date.now() + LOCKOUT_SECONDS * 1000).toISOString();
       }

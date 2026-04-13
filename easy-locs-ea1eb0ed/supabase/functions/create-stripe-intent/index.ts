@@ -1,14 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -24,7 +21,6 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    // Optional auth — works for both guests and logged-in users
     let userEmail: string | undefined;
     const authHeader = req.headers.get("Authorization");
     if (authHeader) {
@@ -42,7 +38,6 @@ serve(async (req) => {
       });
     }
 
-    // Check for existing Stripe customer
     let customerId: string | undefined;
     if (userEmail) {
       const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
