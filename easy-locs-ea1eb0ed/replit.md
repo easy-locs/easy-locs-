@@ -11,7 +11,8 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Bottom nav**: 72px height, hidden on `/login`, `/signup`, `/orbit`, `/checkout`, `/pay/`, `/order/`
 - **DB Access**: ALL database calls MUST use `db(table)` from `src/services/db.ts`
 - **Supabase Project**: `ifvuvbolrmuuugtzxsfk` (Southeast Asia/Singapore). Config.toml project_id must match.
-- **Event Bus Bridge**: NOTATION_BRIDGE in `platform-bus.ts` maps dot↔colon events. Both formats must be in PlatformEventType union.
+- **Event Bus Bridge**: BRIDGE_MAP in `event-init.ts` maps platformBus colon-notation → eventBus dot-notation. All new UI events use platformBus directly. Radar, Explore, Dashboard, Map components fully migrated to platformBus. Legacy `eventBus` only in handler layer via bridge.
+- **Payment Flow**: walletStore emits `wallet:payment_success` → order-handlers + engineConnectorHub resolve orderId via `resolveOrderId()` (handles `orderId`, `referenceId+referenceType`, `reference` with `order:` prefix or UUID format) → order status "paid" + escrow creation.
 - **Conversation Uniqueness**: `conversations_v2` has unique index `uq_conversations_v2_direct_pair` on `metadata->>'direct_user_ids'` for `type='direct'`. Pair format: sorted UUID array. Group conversations unaffected (WHERE clause).
 - **Pair Key Separator**: All user-pair keys use `::` separator (e.g., `[userA, userB].sort().join("::") `).
 - **QR Identity**: All contact QR codes use `qr.addContact()` from `qr-engine.ts`. Legacy `el-contact` format still accepted for backward compatibility. Route: `/add-contact?userId=...&name=...`.

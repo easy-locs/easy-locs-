@@ -17,7 +17,7 @@ import {
 } from "@/components/radar/RadarLiveLayers";
 import { predictDemand } from "@/lib/radar/predictive-demand-engine";
 import { contactFromDiscovery } from "@/lib/radar/contactBridge";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import UnifiedMap from "@/components/map/UnifiedMap";
 import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRanking";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
@@ -201,11 +201,11 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   // Emit scan completed event when results change
   useEffect(() => {
     if (!loading && rawResults.length > 0) {
-      eventBus.emit("RADAR_SCAN_COMPLETED", {
+      platformBus.emit("radar:scan_completed", {
         count: results.length,
         lat: userLat,
         lng: userLng,
-      });
+      }, "radar");
     }
   }, [loading, results.length, userLat, userLng]);
 
@@ -214,7 +214,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   }, []);
 
   const handleOpen = useCallback((entity: GeoEntity) => {
-    eventBus.emit("ENTITY_OPENED", { id: entity.id, type: entity.type, source: "radar" });
+    platformBus.emit("ENTITY_OPENED", { id: entity.id, type: entity.type, source: "radar" }, "radar");
     navigate(entity.route_path || `/s/${entity.slug || entity.id}`);
   }, [navigate]);
 

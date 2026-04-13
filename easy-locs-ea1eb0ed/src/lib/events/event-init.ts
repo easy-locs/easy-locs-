@@ -106,6 +106,21 @@ const BRIDGE_MAP: Record<string, string[]> = {
   "ride:driver_assigned":         ["ride.driver.assigned"],
   "ride:completed":               ["ride.completed"],
   "ride:cancelled":               ["ride.cancelled"],
+  "radar:scan_completed":         ["radar.scan.completed"],
+  "radar:filter_changed":         ["radar.filter.changed"],
+  "map:route_focus":              ["map.route.focus"],
+  "map:center_request":           ["map.center.request"],
+  "map:order_requested":          ["place.order.requested"],
+  "explore:section_viewed":       ["explore.section.viewed"],
+  "explore:quick_action_clicked": ["explore.quick_action.clicked"],
+  "explore:ai_suggestion_clicked":["explore.ai_suggestion.clicked"],
+  "explore:continue_clicked":     ["explore.continue.clicked"],
+  "explore:entity_clicked":       ["entity.click"],
+  "explore:search_executed":      ["search.executed"],
+  "dashboard:sections_refreshed": ["dashboard.refresh"],
+  "mission:accepted":             ["mission.accepted"],
+  "mission:completed":            ["mission.completed"],
+  "storefront:order_paid":        ["order.status.updated"],
 };
 
 // Register bridge listeners

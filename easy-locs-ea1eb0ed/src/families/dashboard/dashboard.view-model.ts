@@ -9,7 +9,7 @@ import { projectHeroBanner, projectCategories, projectContextBanners } from "./d
 import { useHomeSections } from "@/hooks/useHomeSections";
 import { useGlobalContext } from "@/hooks/useGlobalContext";
 import { useLivingPage } from "@/hooks/useLivingPage";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { SmartCategory, SmartHero } from "@/lib/smart-home-engine";
 import type { ContextBanner } from "@/lib/context-banner/context-banner-engine";
 
@@ -86,7 +86,7 @@ export function useDashboardViewModel(): DashboardViewModel {
   useEffect(() => {
     if (rawSections) {
       const count = Object.values(rawSections).filter((arr) => Array.isArray(arr) && arr.length > 0).length;
-      eventBus.emit("HOME_SECTIONS_REFRESHED", { sectionCount: count });
+      platformBus.emit("dashboard:sections_refreshed", { sectionCount: count }, "dashboard");
     }
   }, [rawSections]);
 

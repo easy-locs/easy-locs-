@@ -2,7 +2,7 @@ import { memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 interface ExploreAISuggestionsProps {
   suggestions: { text: string; route: string; vertical: string }[];
@@ -22,18 +22,18 @@ export const ExploreAISuggestions = memo(function ExploreAISuggestions({ suggest
   const navigate = useNavigate();
 
   const handleTap = useCallback((suggestion: { text: string; route: string; vertical: string }) => {
-    eventBus.emit("explore.ai_suggestion.clicked", {
+    platformBus.emit("explore:ai_suggestion_clicked", {
       text: suggestion.text,
       vertical: suggestion.vertical,
       route: suggestion.route,
       surface: "explore",
-    });
+    }, "explore");
     if (suggestion.route.includes("?q=")) {
-      eventBus.emit("search.executed", {
+      platformBus.emit("explore:search_executed", {
         query: new URL(suggestion.route, "https://x").searchParams.get("q") ?? "",
         vertical: suggestion.vertical,
         source: "explore_ai_suggestion",
-      });
+      }, "explore");
     } else {
       navigate(suggestion.route);
     }

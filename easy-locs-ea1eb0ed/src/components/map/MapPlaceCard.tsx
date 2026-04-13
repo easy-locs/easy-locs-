@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { RoutePreview } from "@/lib/map/route-preview-engine";
 import type { NearbyResult, NearbyMerchant } from "@/lib/map/nearby-discovery-engine";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 interface Props {
   placeName: string;
@@ -67,22 +67,22 @@ export function MapPlaceCard({
   // ── Go There: emit route focus event + center map ──
   const handleGoThere = () => {
     if (route) {
-      eventBus.emit("map.route.focus" as any, {
+      platformBus.emit("map:route_focus", {
         placeId: placeId ?? route.placeId,
         origin: route.origin,
         destination: route.destination,
         geometry: route.routeGeometry,
         zoneKey: zoneKey ?? route.zoneKey,
-      });
+      }, "radar");
     } else if (lat != null && lng != null) {
-      eventBus.emit("map.center.request" as any, { lat, lng, zoom: 16 });
+      platformBus.emit("map:center_request", { lat, lng, zoom: 16 }, "radar");
     }
   };
 
   // ── Order Here: navigate to nearby deliverable merchants ──
   const handleOrderHere = () => {
     if (!nearby || nearby.merchants.length === 0) return;
-    eventBus.emit("place.order.requested" as any, {
+    platformBus.emit("map:order_requested", {
       placeId: nearby.placeId,
       zoneKey: nearby.zoneKey ?? zoneKey,
       merchants: nearby.merchants.slice(0, 10).map((m) => ({
@@ -255,7 +255,7 @@ export function MapPlaceCard({
                 <button
                   key={m.id}
                   onClick={() => {
-                    eventBus.emit("ENTITY_OPENED", { id: m.id, type: "merchant", source: "map_explore" });
+                    platformBus.emit("ENTITY_OPENED", { id: m.id, type: "merchant", source: "map_explore" }, "radar");
                     // Navigate to merchant storefront
                     window.location.href = `/s/${m.slug}`;
                   }}

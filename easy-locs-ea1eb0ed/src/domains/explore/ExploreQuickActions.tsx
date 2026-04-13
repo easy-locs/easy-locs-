@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { QuickAction } from "./explore.view-model";
 
 interface ExploreQuickActionsProps {
@@ -12,18 +12,18 @@ export const ExploreQuickActions = memo(function ExploreQuickActions({ actions }
   const navigate = useNavigate();
 
   const handleTap = useCallback((action: QuickAction) => {
-    eventBus.emit("explore.quick_action.clicked", {
+    platformBus.emit("explore:quick_action_clicked", {
       actionKey: action.key,
       intentHint: action.intentHint,
       route: action.route,
       surface: "explore",
-    });
+    }, "explore");
 
     if (action.intentHint.startsWith("wallet_")) {
-      eventBus.emit("wallet.action", {
+      platformBus.emit("wallet:payment_requested", {
         action: action.intentHint.replace("wallet_", ""),
         context: "explore_quick_action",
-      });
+      }, "wallet");
     } else {
       navigate(action.route);
     }
