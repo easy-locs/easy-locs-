@@ -160,7 +160,7 @@ export function TaxiTrackingScreen() {
         </div>
       </motion.div>
 
-      <div className="rounded-2xl overflow-hidden border border-border/20" style={{ height: 220 }}>
+      <div className="rounded-2xl overflow-hidden border border-border/20" style={{ aspectRatio: "16/9", minHeight: 160, maxHeight: 260 }}>
         <RideLiveMap
           driver={driverPos}
           pickup={pickupPos}

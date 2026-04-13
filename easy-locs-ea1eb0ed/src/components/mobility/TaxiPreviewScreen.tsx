@@ -86,7 +86,7 @@ export function TaxiPreviewScreen() {
         <ArrowLeft className="h-4 w-4 shrink-0" /> Edit trip
       </button>
 
-      <div className="rounded-2xl overflow-hidden border border-border/20" style={{ height: 180 }}>
+      <div className="rounded-2xl overflow-hidden border border-border/20" style={{ aspectRatio: "16/9", minHeight: 140, maxHeight: 220 }}>
         <MobilityLiveMap
           mode="taxi"
           pickupLat={pickup?.lat}

@@ -335,13 +335,44 @@ img {
   direction: inherit;
 }
 
-/* 11. i18n long-text safety — German/Finnish/etc. */
+/* RTL layout — flip margins/paddings for directional spacing */
+[dir="rtl"] .ml-auto { margin-left: unset; margin-right: auto; }
+[dir="rtl"] .mr-auto { margin-right: unset; margin-left: auto; }
+[dir="rtl"] .pl-4 { padding-left: unset; padding-right: 1rem; }
+[dir="rtl"] .pr-4 { padding-right: unset; padding-left: 1rem; }
+[dir="rtl"] .pl-3 { padding-left: unset; padding-right: 0.75rem; }
+[dir="rtl"] .pr-3 { padding-right: unset; padding-left: 0.75rem; }
+[dir="rtl"] .pl-2 { padding-left: unset; padding-right: 0.5rem; }
+[dir="rtl"] .pr-2 { padding-right: unset; padding-left: 0.5rem; }
+[dir="rtl"] .rounded-l-2xl { border-radius: 0 1rem 1rem 0; }
+[dir="rtl"] .rounded-r-2xl { border-radius: 1rem 0 0 1rem; }
+[dir="rtl"] .text-left { text-align: right; }
+[dir="rtl"] .text-right { text-align: left; }
+[dir="rtl"] .border-l { border-left: none; border-right: 1px solid currentColor; }
+[dir="rtl"] .border-r { border-right: none; border-left: 1px solid currentColor; }
+
+/* RTL — flip directional icons (arrows, chevrons) */
+[dir="rtl"] svg[class*="lucide-arrow"],
+[dir="rtl"] svg[class*="lucide-chevron"],
+[dir="rtl"] svg[class*="lucide-navigation"],
+[dir="rtl"] .icon-directional {
+  transform: scaleX(-1);
+}
+
+/* 11. i18n long-text safety — German/Dutch/Finnish hyphenation */
 :lang(de) h1, :lang(de) h2, :lang(de) h3,
+:lang(de) h4, :lang(de) p, :lang(de) span,
+:lang(de) button, :lang(de) label,
 :lang(fi) h1, :lang(fi) h2, :lang(fi) h3,
-:lang(nl) h1, :lang(nl) h2, :lang(nl) h3 {
+:lang(fi) h4, :lang(fi) p, :lang(fi) span,
+:lang(nl) h1, :lang(nl) h2, :lang(nl) h3,
+:lang(nl) h4, :lang(nl) p, :lang(nl) span,
+:lang(nl) button, :lang(nl) label {
   word-break: normal;
   overflow-wrap: break-word;
   hyphens: auto;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
 }
 
 /* PERMANENT FIX: Global horizontal overflow prevention (all viewports) */
@@ -3950,4 +3981,98 @@ button:focus-visible,
    ══════════════════════════════════════════════════ */
 .card-clip {
   overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════
+   29. SAFE-AREA INSET UTILITIES — iOS & Android safe zones
+   ══════════════════════════════════════════════════ */
+
+/* Bottom nav safe area — fallback for browsers without env() support */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-area-left {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.safe-area-right {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* App page bottom spacing — accounts for bottom nav + safe area */
+.app-mobile-page {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ══════════════════════════════════════════════════
+   30. Z-INDEX STACK — Canonical stacking order
+   Prevents modal/toast/bottomnav conflicts
+   ══════════════════════════════════════════════════ */
+:root {
+  --z-base: 1;
+  --z-sticky: 10;
+  --z-overlay: 40;
+  --z-bottomnav: 50;
+  --z-drawer: 60;
+  --z-modal: 70;
+  --z-toast: 80;
+  --z-alert: 90;
+  --z-top: 9999;
+}
+
+/* Bottom nav stays below modals but above content */
+nav[aria-label="Main navigation"] {
+  z-index: var(--z-bottomnav);
+}
+
+/* Toasts above everything except critical alerts */
+[data-sonner-toaster] {
+  z-index: var(--z-toast) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   31. TOUCH TARGET HARDENING — minimum 44×44px (opt-in)
+   Use .touch-safe class on interactive elements that need enforcement.
+   Does NOT apply globally to avoid layout regressions.
+   ══════════════════════════════════════════════════ */
+.touch-safe {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Bottom nav tabs always get minimum touch target */
+nav[aria-label="Main navigation"] button {
+  min-height: 44px;
+}
+
+/* ══════════════════════════════════════════════════
+   32. RESPONSIVE GRID BREAKPOINTS — 320px safety
+   ══════════════════════════════════════════════════ */
+
+/* Adaptive grid: fills columns, min 70px each, caps at 4 on wide, 3 on mobile */
+.responsive-grid-4-to-3 {
+  grid-template-columns: repeat(auto-fill, minmax(clamp(60px, 22%, 90px), 1fr));
+  max-width: 100%;
+}
+/* Explicit cap at 3 columns below 400px viewport */
+@media (max-width: 399px) {
+  .responsive-grid-4-to-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Fallback: generic grid-cols-4 also drops on very narrow screens */
+@media (max-width: 340px) {
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 3-column grids collapse to 2 on very small screens */
+@media (max-width: 320px) {
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

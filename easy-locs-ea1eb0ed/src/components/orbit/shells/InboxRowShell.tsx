@@ -38,16 +38,24 @@ function InboxRowShell({
       <IdentityAvatar avatarUrl={avatarUrl} name={name} size="lg" />
 
       <div className="flex-1 min-w-0 overflow-hidden">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-start justify-between gap-2">
           <span
-            className={`text-sm leading-tight min-w-0 block truncate ${hasUnread ? "font-bold" : "font-medium"}`}
-            style={{ color: "hsl(var(--foreground))" }}
+            className={`text-sm leading-snug min-w-0 block ${hasUnread ? "font-bold" : "font-medium"}`}
+            style={{
+              color: "hsl(var(--foreground))",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              overflowWrap: "break-word",
+              wordBreak: "break-word",
+            }}
           >
             {name}
           </span>
           {lastMessageTime && (
             <span
-              className="text-[11px] tabular-nums whitespace-nowrap shrink-0"
+              className="text-[11px] tabular-nums whitespace-nowrap shrink-0 mt-0.5"
               style={{ color: hasUnread ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.45)" }}
             >
               {formatOrbitTimestamp(lastMessageTime)}
@@ -56,8 +64,15 @@ function InboxRowShell({
         </div>
 
         {contextLabel && (
-          <p className="mt-0.5 text-xs font-medium truncate"
-            style={{ color: "hsl(var(--muted-foreground) / 0.55)", lineHeight: "1.3" }}
+          <p className="mt-0.5 text-xs font-medium"
+            style={{
+              color: "hsl(var(--muted-foreground) / 0.55)",
+              lineHeight: "1.3",
+              display: "-webkit-box",
+              WebkitLineClamp: 1,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
           >
             {contextEmoji && <span className="mr-1">{contextEmoji}</span>}
             {contextLabel}
@@ -66,11 +81,16 @@ function InboxRowShell({
 
         <div className="flex items-center gap-2 mt-0.5">
           <p
-            className={`text-[13px] flex-1 min-w-0 truncate ${!lastMessage ? "italic" : ""}`}
+            className={`text-[13px] flex-1 min-w-0 ${!lastMessage ? "italic" : ""}`}
             style={{
               color: hasUnread ? "hsl(var(--foreground) / 0.65)" : "hsl(var(--muted-foreground) / 0.45)",
               fontWeight: hasUnread ? 500 : 400,
               lineHeight: "1.3",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              overflowWrap: "break-word",
             }}
           >
             {lastMessage || t("orbit.thread.no_messages")}
