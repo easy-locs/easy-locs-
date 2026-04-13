@@ -1,124 +1,132 @@
-import { db } from "@/services/db";
-import { platformBus } from "@/lib/shared/platform-bus";
+/**
+ * Adaptive Taxonomy Engine
+ * Classifies raw entities into canonical paths using the classification engine.
+ * Routes through: classification-engine → canonical-registry → canonical path
+ */
+import { classifyBusiness, type ClassificationInput, type ClassificationResult } from "@/lib/taxonomy/classification-engine";
+import { mapRawToCanonical, type MappingResult } from "@/services/canonical/mapping-engine";
 
-interface TaxonomyResult {
-  shopId: string;
-  shopName: string;
-  currentCategory: string | null;
-  suggestedCategory: string | null;
-  confidence: number;
-  reason: string;
-  applied: boolean;
+export interface AdaptiveTaxonomyInput {
+  name: string;
+  category?: string | null;
+  subcategory?: string | null;
+  description?: string | null;
+  address?: string | null;
+  tags?: string[] | null;
 }
 
-const VERTICAL_CATEGORIES: Record<string, string[]> = {
-  food: ["restaurant", "cafe", "bakery", "fast_food", "fine_dining", "food_truck", "bar", "pizzeria"],
-  grocery: ["supermarket", "minimarket", "organic", "butcher", "fishmonger", "specialty"],
-  services: ["beauty", "repair", "cleaning", "health", "education", "consulting", "legal", "fitness"],
-  hotel: ["hotel", "hostel", "guesthouse", "resort", "apartment", "villa"],
-  property: ["residential", "commercial", "industrial", "land", "office"],
-};
-
-const KEYWORD_MAP: Record<string, string[]> = {
-  restaurant: ["restaurant", "grill", "bistro", "brasserie", "traiteur"],
-  cafe: ["cafe", "café", "coffee", "thé", "tea"],
-  bakery: ["boulangerie", "bakery", "pâtisserie", "pastry"],
-  fast_food: ["fast food", "burger", "pizza", "kebab", "snack", "tacos"],
-  supermarket: ["supermarché", "supermarket", "hypermarché", "carrefour"],
-  beauty: ["salon", "coiffure", "beauty", "spa", "nail", "barber"],
-  repair: ["repair", "réparation", "garage", "auto", "mécanique"],
-  cleaning: ["cleaning", "nettoyage", "pressing", "laundry", "laverie"],
-  hotel: ["hotel", "hôtel", "lodge", "inn"],
-};
-
-const AUTO_APPLY_CONFIDENCE_THRESHOLD = 50;
-
-export async function runAdaptiveTaxonomy(batchSize = 100) {
-  return runAdaptiveTaxonomyEngine(batchSize);
+export interface AdaptiveTaxonomyOutput {
+  canonicalPath: string;
+  vertical: string;
+  category: string;
+  subcategory: string | null;
+  confidenceScore: number;
+  reviewRequired: boolean;
+  source: "alias" | "inference" | "classification" | "fallback";
 }
 
-export async function runAdaptiveTaxonomyEngine(batchSize = 100) {
-  const { data: merchants } = await db
-    .from("seed_merchants")
-    .select("id, name, vertical, category, subcategory, description")
-    .limit(batchSize);
+export interface AdaptiveTaxonomyBatchResult {
+  status: "ok" | "partial" | "error";
+  results: Array<{ input: AdaptiveTaxonomyInput; output: AdaptiveTaxonomyOutput | null; error?: string }>;
+  classified: number;
+  skipped: number;
+  durationMs: number;
+}
 
-  if (!merchants || merchants.length === 0) {
-    return { status: "completed", results: [], mapped: 0 };
+function mappingToOutput(m: MappingResult): AdaptiveTaxonomyOutput {
+  return {
+    canonicalPath: m.canonicalPath,
+    vertical: m.vertical,
+    category: m.category,
+    subcategory: m.canonicalSubtype ?? m.canonicalType ?? null,
+    confidenceScore: m.confidenceScore,
+    reviewRequired: m.reviewRequired,
+    source: m.ambiguityFlags.length === 0 ? "alias" : "inference",
+  };
+}
+
+function classificationToOutput(c: ClassificationResult): AdaptiveTaxonomyOutput {
+  const path = [
+    c.canonical_vertical,
+    c.canonical_cluster ?? "general",
+    c.canonical_subcategory ?? "unknown",
+  ].filter(Boolean).join(".");
+
+  return {
+    canonicalPath: path,
+    vertical: c.canonical_vertical,
+    category: c.canonical_cluster ?? "general",
+    subcategory: c.canonical_subcategory,
+    confidenceScore: c.confidence_score / 100,
+    reviewRequired: c.requires_review,
+    source: "classification",
+  };
+}
+
+export async function classifySingleEntity(input: AdaptiveTaxonomyInput): Promise<AdaptiveTaxonomyOutput | null> {
+  try {
+    const mapping = mapRawToCanonical(
+      input.name,
+      input.category ?? null,
+      input.subcategory ?? null,
+      input.description ?? null,
+      input.address ?? null,
+    );
+
+    if (mapping && mapping.confidenceBand !== "rejected") {
+      return mappingToOutput(mapping);
+    }
+  } catch {}
+
+  try {
+    const classInput: ClassificationInput = {
+      businessName: input.name,
+      sourceCategory: input.category,
+      sourceSubcategory: input.subcategory,
+      description: input.description,
+      tags: input.tags,
+      address: input.address,
+    };
+    const classification = classifyBusiness(classInput);
+    if (classification && classification.confidence_score >= 30) {
+      return classificationToOutput(classification);
+    }
+  } catch {}
+
+  return null;
+}
+
+export async function runAdaptiveTaxonomy(
+  inputs: AdaptiveTaxonomyInput[],
+): Promise<AdaptiveTaxonomyBatchResult> {
+  const start = Date.now();
+  const results: AdaptiveTaxonomyBatchResult["results"] = [];
+  let classified = 0;
+  let skipped = 0;
+
+  for (const input of inputs) {
+    try {
+      const output = await classifySingleEntity(input);
+      results.push({ input, output });
+      if (output) classified++;
+      else skipped++;
+    } catch (err) {
+      results.push({ input, output: null, error: err instanceof Error ? err.message : String(err) });
+      skipped++;
+    }
   }
 
-  const results: TaxonomyResult[] = [];
-  let mapped = 0;
+  return {
+    status: skipped === 0 ? "ok" : classified > 0 ? "partial" : "error",
+    results,
+    classified,
+    skipped,
+    durationMs: Date.now() - start,
+  };
+}
 
-  for (const m of merchants) {
-    const v = m.vertical ?? "default";
-    const validCats = VERTICAL_CATEGORIES[v] ?? [];
-
-    if (m.category && validCats.includes(m.category)) {
-      continue;
-    }
-
-    const searchText = `${m.name ?? ""} ${m.description ?? ""}`.toLowerCase();
-    let bestMatch: string | null = null;
-    let bestScore = 0;
-
-    for (const [cat, keywords] of Object.entries(KEYWORD_MAP)) {
-      if (validCats.length > 0 && !validCats.includes(cat)) continue;
-
-      for (const kw of keywords) {
-        if (searchText.includes(kw)) {
-          const score = kw.length / searchText.length;
-          if (score > bestScore) {
-            bestScore = score;
-            bestMatch = cat;
-          }
-        }
-      }
-    }
-
-    const confidence = Math.min(100, Math.round(bestScore * 1000));
-
-    if (bestMatch) {
-      let applied = false;
-
-      if (confidence >= AUTO_APPLY_CONFIDENCE_THRESHOLD) {
-        try {
-          const { error } = await db
-            .from("seed_merchants")
-            .update({ category: bestMatch })
-            .eq("id", m.id);
-          applied = !error;
-        } catch {
-          applied = false;
-        }
-      }
-
-      results.push({
-        shopId: m.id,
-        shopName: m.name ?? "",
-        currentCategory: m.category ?? null,
-        suggestedCategory: bestMatch,
-        confidence,
-        reason: "keyword_match",
-        applied,
-      });
-      mapped++;
-    } else if (!m.category) {
-      results.push({
-        shopId: m.id,
-        shopName: m.name ?? "",
-        currentCategory: null,
-        suggestedCategory: null,
-        confidence: 0,
-        reason: "no_match_found",
-        applied: false,
-      });
-    }
-  }
-
-  if (mapped > 0) {
-    platformBus.emit("ENTITY_CLASSIFIED", { mapped, total: results.length }, "engine");
-  }
-
-  return { status: "completed", results, mapped };
+export async function runAdaptiveTaxonomyEngine(
+  inputs: AdaptiveTaxonomyInput[],
+): Promise<AdaptiveTaxonomyBatchResult> {
+  return runAdaptiveTaxonomy(inputs);
 }

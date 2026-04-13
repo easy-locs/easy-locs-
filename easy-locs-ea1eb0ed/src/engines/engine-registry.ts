@@ -3,7 +3,7 @@ import { registerAllActivationSheets } from "./core/domain-activation-sheets";
 import { installRepairBridge, getRepairBridgeReport } from "./core/repair-bridge";
 import { installUiRepairBridge, getUiRepairBridgeReport } from "./core/ui-repair-bridge";
 import { getProofsByDomain, getProofStats } from "./core/proof-system";
-import { getPipelineReport } from "./core/repair-pipeline";
+import { enablePipeline, getPipelineReport } from "./core/repair-pipeline";
 
 import { AutoFixEngine } from "./self-healing/auto-fix-engine";
 import { AutoPublishOrchEngine } from "./lifecycle/auto-publish-orch-engine";
@@ -59,6 +59,7 @@ export function bootEngineSystem(): () => void {
   }
 
   registerAllActivationSheets();
+  enablePipeline();
   const teardownBridge = installRepairBridge();
   const teardownUiBridge = installUiRepairBridge();
   registerAllEngines();

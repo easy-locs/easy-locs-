@@ -156,6 +156,96 @@ const LAYOUT_SHEET: DomainActivationSheet = {
   approvedBy: "architecture-phase-a",
 };
 
+const FOOD_SHEET: DomainActivationSheet = {
+  domain: "food",
+  version: 1,
+  activeEngines: [
+    "taxonomy-governance",
+    "text-integrity",
+    "menu-integrity",
+  ],
+  allowedL2Operations: ["invalidate", "refresh"],
+  requiredL3Operations: ["reset"],
+  forbiddenOperations: ["suppress", "reconnect"],
+  killSwitches: ["food:repair:kill"],
+  rollbackTriggers: ["food:menu:cascade_failure"],
+  freezeTriggers: ["food:consecutive_rollback:3"],
+  approvedAt: Date.now(),
+  approvedBy: "architecture-task29",
+};
+
+const GROCERY_SHEET: DomainActivationSheet = {
+  domain: "grocery",
+  version: 1,
+  activeEngines: [
+    "taxonomy-governance",
+    "text-integrity",
+    "catalog-integrity",
+  ],
+  allowedL2Operations: ["invalidate", "refresh"],
+  requiredL3Operations: ["reset"],
+  forbiddenOperations: ["suppress", "reconnect"],
+  killSwitches: ["grocery:repair:kill"],
+  rollbackTriggers: ["grocery:catalog:cascade_failure"],
+  freezeTriggers: ["grocery:consecutive_rollback:3"],
+  approvedAt: Date.now(),
+  approvedBy: "architecture-task29",
+};
+
+const SERVICES_SHEET: DomainActivationSheet = {
+  domain: "services",
+  version: 1,
+  activeEngines: [
+    "taxonomy-governance",
+    "text-integrity",
+    "booking-integrity",
+  ],
+  allowedL2Operations: ["invalidate", "refresh"],
+  requiredL3Operations: ["reset"],
+  forbiddenOperations: ["suppress"],
+  killSwitches: ["services:repair:kill"],
+  rollbackTriggers: ["services:booking:cascade_failure"],
+  freezeTriggers: ["services:consecutive_rollback:3"],
+  approvedAt: Date.now(),
+  approvedBy: "architecture-task29",
+};
+
+const PROPERTY_SHEET: DomainActivationSheet = {
+  domain: "property",
+  version: 1,
+  activeEngines: [
+    "taxonomy-governance",
+    "listing-integrity",
+    "text-integrity",
+  ],
+  allowedL2Operations: ["invalidate", "refresh"],
+  requiredL3Operations: ["reset"],
+  forbiddenOperations: ["suppress"],
+  killSwitches: ["property:repair:kill"],
+  rollbackTriggers: ["property:listing:cascade_failure"],
+  freezeTriggers: ["property:consecutive_rollback:3"],
+  approvedAt: Date.now(),
+  approvedBy: "architecture-task29",
+};
+
+const SEO_SHEET: DomainActivationSheet = {
+  domain: "seo",
+  version: 1,
+  activeEngines: [
+    "canonical-mapping",
+    "sitemap-validator",
+    "jsonld-integrity",
+  ],
+  allowedL2Operations: ["invalidate", "refresh"],
+  requiredL3Operations: ["reset"],
+  forbiddenOperations: ["suppress", "reconnect"],
+  killSwitches: ["seo:repair:kill"],
+  rollbackTriggers: ["seo:canonical:cascade_failure"],
+  freezeTriggers: ["seo:consecutive_rollback:3"],
+  approvedAt: Date.now(),
+  approvedBy: "architecture-task29",
+};
+
 const ALL_ACTIVATION_SHEETS: DomainActivationSheet[] = [
   DASHBOARD_SHEET,
   TAXONOMY_SHEET,
@@ -166,6 +256,11 @@ const ALL_ACTIVATION_SHEETS: DomainActivationSheet[] = [
   TEXT_SHEET,
   I18N_SHEET,
   LAYOUT_SHEET,
+  FOOD_SHEET,
+  GROCERY_SHEET,
+  SERVICES_SHEET,
+  PROPERTY_SHEET,
+  SEO_SHEET,
 ];
 
 export function registerAllActivationSheets(): void {
