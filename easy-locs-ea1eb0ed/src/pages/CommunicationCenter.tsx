@@ -51,12 +51,12 @@ export const CommunicationCenter = () => {
   const { t } = useI18n();
   const [profileReady, setProfileReady] = useState(false);
 
-  const [profileError, setProfileError] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user?.id) { setProfileReady(false); setProfileError(false); return; }
+    if (!user?.id) { setProfileReady(false); setProfileError(null); return; }
     let cancelled = false;
-    setProfileError(false);
+    setProfileError(null);
     ensureOrbitProfile({
       userId: user.id,
       email: user.email,
@@ -66,9 +66,9 @@ export const CommunicationCenter = () => {
       .then((result) => {
         if (cancelled) return;
         if (result) { setProfileReady(true); }
-        else { setProfileError(true); }
+        else { setProfileError("Profile setup returned no data"); }
       })
-      .catch(() => { if (!cancelled) setProfileError(true); });
+      .catch((err) => { if (!cancelled) setProfileError(err instanceof Error ? err.message : "Profile setup failed"); });
     return () => { cancelled = true; };
   }, [user?.id]);
   const isMobile = useIsMobile();
@@ -278,22 +278,22 @@ export const CommunicationCenter = () => {
         {profileError ? (
           <>
             <span className="text-sm font-medium" style={{ color: "hsl(var(--destructive))" }}>
-              {t("orbit.profile_setup_failed") || "Profile setup failed"}
+              {profileError}
             </span>
             <Button
               size="sm"
               className="mt-2 h-10 px-6 rounded-xl font-semibold"
               style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
               onClick={() => {
-                setProfileError(false);
+                setProfileError(null);
                 ensureOrbitProfile({
                   userId: user.id,
                   email: user.email,
                   displayName: (user.user_metadata as any)?.display_name ?? null,
                   avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
                 })
-                  .then((result) => { if (result) setProfileReady(true); else setProfileError(true); })
-                  .catch(() => setProfileError(true));
+                  .then((result) => { if (result) setProfileReady(true); else setProfileError("Profile setup returned no data"); })
+                  .catch((err) => setProfileError(err instanceof Error ? err.message : "Profile setup failed"));
               }}
             >
               {t("orbit.retry") || "Retry"}
