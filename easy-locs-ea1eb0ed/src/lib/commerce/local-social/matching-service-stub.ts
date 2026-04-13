@@ -1,7 +1,13 @@
 /**
- * matching-service-stub — Social commerce matching (buyer ↔ seller).
- * Gated behind feature flags. Returns typed empty results when disabled.
- * Backed by Supabase `local_matches` + `local_intents` tables when enabled.
+ * Matching Service — Empty adapter (commerce matching not yet implemented).
+ *
+ * This module provides the matching-service contract for local social commerce.
+ * All functions are guarded by platform feature flags. When the corresponding
+ * flags are enabled, the functions return safe empty results indicating the
+ * feature is awaiting a backend implementation (DB tables + Edge Functions).
+ *
+ * To implement: connect to a `local_intents` / `local_matches` table via Supabase
+ * and wire scoring logic into the matching pipeline.
  */
 import type { CanonicalLocalMatch, CanonicalLocalIntent } from "@/domains/shared/canonical-types";
 import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
@@ -20,7 +26,7 @@ function gated(...flags: PlatformFlag[]): string | null {
 }
 
 export function registerIntent(_intent: Omit<CanonicalLocalIntent, "id" | "createdAt">): { registered: false; reason: string } {
-  return { registered: false, reason: gated(MATCHING_FLAG) ?? "awaiting_backend_integration" };
+  return { registered: false, reason: gated(MATCHING_FLAG) ?? "awaiting_backend_implementation" };
 }
 
 export function findCandidateMatches(_intentId: string): CanonicalLocalMatch[] {
@@ -29,7 +35,7 @@ export function findCandidateMatches(_intentId: string): CanonicalLocalMatch[] {
 }
 
 export function scoreMatch(_listingId: string, _intentId: string): { score: 0; reason: string } {
-  return { score: 0, reason: gated(MATCHING_FLAG) ?? "awaiting_backend_integration" };
+  return { score: 0, reason: gated(MATCHING_FLAG) ?? "awaiting_backend_implementation" };
 }
 
 export function getSuggestionsForUser(_userId: string): CanonicalLocalMatch[] {
