@@ -109,9 +109,6 @@ export function useRealtimeHub() {
       }
 
       case "chat_messages_v2": {
-        queryClient.invalidateQueries({ queryKey: ["threads"] });
-        queryClient.invalidateQueries({ queryKey: ["conversations-v2"] });
-
         if (eventType === "INSERT" && row) {
           if (isOutgoingMessage(row, user?.id)) break;
           if (row.id === lastMsgToast.current) break;
@@ -170,8 +167,6 @@ export function useRealtimeHub() {
         break;
 
       case "conversations_v2":
-        queryClient.invalidateQueries({ queryKey: ["threads"] });
-        queryClient.invalidateQueries({ queryKey: ["conversations-v2"] });
         break;
     }
   }, [user?.id, user?.email, orgId, activeRole, queryClient]);

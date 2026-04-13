@@ -490,7 +490,7 @@ function buildSummary(flows: FlowProof[], guard: ArchGuardReport, status: string
     `Flows: ${proven}/${flows.length} proven`,
     `Steps: ${connectedSteps}/${totalSteps} connected`,
     `Event handlers: 109 registered`,
-    `Dead-event consumers: 6 active`,
+    `Dead-event consumers: removed (events handled by notation bridge)`,
     `Stories: 28/28 valid`,
     `Entities: 62 indexed`,
   ].join(" | ");
