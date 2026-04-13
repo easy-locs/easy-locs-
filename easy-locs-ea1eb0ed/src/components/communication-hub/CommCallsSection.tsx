@@ -8,6 +8,7 @@ import {
   resolveOrbitProfilesByOrbitIds,
 } from "@/repositories/communication.repository";
 import { db } from "@/services/db";
+import { orbitService } from "@/services/orbit.service";
 import { listOrbitContacts } from "@/lib/orbit/orbit-contacts-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
@@ -408,12 +409,12 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
             peerName: sc.contactName,
             isVideo: sc.type === "video",
           }).then((success) => {
-            db.from("scheduled_calls").update({ status: success ? "completed" : "missed" }).eq("id", sc.id).then(() => {});
+            void orbitService.updateScheduledCallStatus(sc.id, success ? "completed" : "missed");
           }).catch(() => {
-            db.from("scheduled_calls").update({ status: "missed" }).eq("id", sc.id).then(() => {});
+            void orbitService.updateScheduledCallStatus(sc.id, "missed");
           });
         } else {
-          db.from("scheduled_calls").update({ status: "missed" }).eq("id", sc.id).then(() => {});
+          void orbitService.updateScheduledCallStatus(sc.id, "missed");
         }
         setScheduledCalls(prev => prev.filter(s => s.id !== sc.id));
       }, ms));
@@ -618,7 +619,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
                 {sc.type === "video" ? <Video className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} /> : <Phone className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-success))" }} />}
                 <span className="flex-1 truncate font-medium" style={{ color: "hsl(var(--foreground))" }}>{sc.contactName}</span>
                 <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{format(sc.date, "MMM d")} · {sc.time}</span>
-                <button onClick={() => { db.from("scheduled_calls").update({ status: "cancelled" }).eq("id", sc.id).then(() => {}); setScheduledCalls(prev => prev.filter(s => s.id !== sc.id)); }} className="shrink-0 active:scale-90 transition-transform">
+                <button onClick={() => { void orbitService.updateScheduledCallStatus(sc.id, "cancelled"); setScheduledCalls(prev => prev.filter(s => s.id !== sc.id)); }} className="shrink-0 active:scale-90 transition-transform">
                   <X className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
                 </button>
               </div>
@@ -967,7 +968,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
                       {sc.type === "video" ? <Video className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} /> : <Phone className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-success))" }} />}
                       <span className="flex-1 truncate" style={{ color: "hsl(var(--foreground))" }}>{sc.contactName}</span>
                       <span style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{format(sc.date, "MMM d")} · {sc.time}</span>
-                      <button onClick={() => { db.from("scheduled_calls").update({ status: "cancelled" }).eq("id", sc.id).then(() => {}); setScheduledCalls(prev => prev.filter(s => s.id !== sc.id)); }} className="shrink-0">
+                      <button onClick={() => { void orbitService.updateScheduledCallStatus(sc.id, "cancelled"); setScheduledCalls(prev => prev.filter(s => s.id !== sc.id)); }} className="shrink-0">
                         <X className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
                       </button>
                     </div>

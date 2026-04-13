@@ -5,8 +5,8 @@ export async function serverCreateRentPayment(input: {
   dueDate: string;
   reference?: string;
 }) {
-  const { data, error } = await supabase.functions.invoke("rent-create-payment", {
-    body: input,
+  const { data, error } = await supabase.functions.invoke("rent-payment", {
+    body: { ...input, mode: "schedule" },
   });
   if (error) throw error;
   return data;

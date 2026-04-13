@@ -45,12 +45,55 @@ export const orbitService = {
     return data ?? [];
   },
 
+  async fetchAllActiveStatuses(limit = 100) {
+    const now = new Date().toISOString();
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await db("orbit_statuses")
+      .select("*")
+      .gte("expires_at", now)
+      .gte("created_at", cutoff)
+      .order("created_at", { ascending: false })
+      .limit(limit) as { data: unknown[] | null; error: { code?: string; message?: string } | null };
+    if (error) throw error;
+    return data ?? [];
+  },
+
+  async publishStatus(payload: {
+    user_id: string;
+    content: string;
+    media_url: string | null;
+    media_type: "text" | "image" | "video";
+    background_color: string;
+    expires_at: string;
+    view_count: number;
+    user_name: string;
+    user_avatar: string;
+  }) {
+    const { error } = await db("orbit_statuses").insert(payload as any);
+    if (error) throw error;
+  },
+
   async deleteStatus(statusId: string, userId: string) {
     const { error } = await db("orbit_statuses")
       .delete()
       .eq("id", statusId)
       .eq("user_id", userId);
     if (error) throw error;
+  },
+
+  async updateScheduledCallStatus(id: string, status: "completed" | "missed" | "cancelled") {
+    await db("scheduled_calls").update({ status }).eq("id", id);
+  },
+
+  async uploadStatusMedia(userId: string, file: File): Promise<string> {
+    const ext = file.name.split(".").pop() || "bin";
+    const path = `statuses/${userId}/${Date.now()}_${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}.${ext}`;
+    const { error: uploadErr } = await db.storage
+      .from("chat-media")
+      .upload(path, file, { contentType: file.type });
+    if (uploadErr) throw uploadErr;
+    const { data: urlData } = db.storage.from("chat-media").getPublicUrl(path);
+    return urlData?.publicUrl ?? "";
   },
 };
 

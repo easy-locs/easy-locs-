@@ -35,8 +35,8 @@ export async function fetchUnpaidRentCalls(tenantId: string) {
 }
 
 export async function invokeRentPayment(rentCallId: string, paymentMethod: string) {
-  const { data, error } = await db.functions.invoke("create-rent-payment", {
-    body: { rent_call_id: rentCallId, payment_method: paymentMethod },
+  const { data, error } = await db.functions.invoke("rent-payment", {
+    body: { rent_call_id: rentCallId, payment_method: paymentMethod, mode: "checkout" },
   });
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
