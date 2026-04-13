@@ -5,7 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pipeline";
-import { verticalToRadarCategory } from "@/lib/taxonomy/taxonomy-aliases";
+import { strictVerticalToRadarCategory as verticalToRadarCategory } from "@/lib/taxonomy/world-class-taxonomy";
 import { FALLBACK_HOTELS } from "@/data/fallback-hotels";
 import { FALLBACK_SERVICES } from "@/data/fallback-services";
 import { FALLBACK_RESTAURANTS } from "@/data/fallback-restaurants";

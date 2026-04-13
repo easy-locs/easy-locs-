@@ -485,6 +485,50 @@ export const ALL_SUBCATEGORY_VALUES = getAllSubcategoryValues();
 
 export const loadTaxonomyAliases = () => import("./taxonomy-aliases");
 
+export function strictVerticalToRadarCategory(vertical: string): RadarMainCategory {
+  const found = CANONICAL_VERTICALS.find((v) => v.value === vertical);
+  return found?.radarCategory ?? "shops";
+}
+
+export function strictGetCanonicalSubcategory(value: string): TaxonomySubcategory | undefined {
+  for (const vertical of CANONICAL_VERTICALS) {
+    const found = vertical.subcategories.find((s) => s.value === value);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+export function strictGetParentVertical(subValue: string): TaxonomyVertical | undefined {
+  return CANONICAL_VERTICALS.find((v) =>
+    v.subcategories.some((s) => s.value === subValue)
+  );
+}
+
+export function strictHierarchyMatchScore(
+  pointSub: string | null | undefined,
+  targetSub?: string | null,
+  targetVertical?: string | null
+): number {
+  if (!pointSub) return 0;
+
+  if (targetSub && pointSub === targetSub) return 3;
+
+  const pointVertical = CANONICAL_VERTICALS.find((v) =>
+    v.subcategories.some((s) => s.value === pointSub)
+  );
+  if (!pointVertical) return 0;
+
+  if (targetSub) {
+    const targetInfo = pointVertical.subcategories.find((s) => s.value === targetSub);
+    const pointInfo = pointVertical.subcategories.find((s) => s.value === pointSub);
+    if (targetInfo && pointInfo && targetInfo.cluster === pointInfo.cluster) return 2;
+  }
+
+  if (targetVertical && pointVertical.value === targetVertical) return 1;
+
+  return 0;
+}
+
 export function getSubcategoriesForRadarCategory(
   cat: RadarMainCategory
 ): TaxonomySubcategory[] {
