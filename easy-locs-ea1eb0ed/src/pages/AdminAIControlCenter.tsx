@@ -146,7 +146,7 @@ export default function AdminAIControlCenter() {
             AI Control Center
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Autonomous system intelligence — agents, pipelines, health monitoring
+            AI engines removed in engine reduction phase — dashboard retained for reference
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={loadData} disabled={loading}>
