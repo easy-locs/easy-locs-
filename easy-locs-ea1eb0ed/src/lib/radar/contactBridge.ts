@@ -5,9 +5,8 @@
  */
 import { db } from "@/services/db";
 import { toast } from "sonner";
-import { sendText } from "@/families/send/send-text";
+import { orbitDispatch } from "@/families/orbit-dispatch/orbit-dispatch";
 import { notifyNewMessage } from "@/lib/engines/notification-event-dispatcher";
-import type { SendContext } from "@/families/send/send-context";
 import { orbitDb } from "@/lib/db/orbitDb";
 
 
@@ -76,15 +75,9 @@ export async function openContactThread(params: {
       return null;
     }
 
-    // Send auto-message via canonical send family
+    // Send auto-message via canonical dispatch pipeline
     if (autoMessage) {
-      const ctx: SendContext = {
-        conversationId,
-        senderUserId: currentUserId,
-        senderOrbitId: `orbit_${currentUserId.slice(0, 8)}`,
-      };
-
-      await sendText(ctx, autoMessage);
+      await orbitDispatch({ type: "send_text", conversationId, body: autoMessage });
       notifyNewMessage(targetUserId, "Contact", autoMessage.slice(0, 80), conversationId).catch(console.error);
     }
 
