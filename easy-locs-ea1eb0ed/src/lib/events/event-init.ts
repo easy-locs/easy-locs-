@@ -14,6 +14,7 @@
  */
 import { platformBus } from "@/lib/shared/platform-bus";
 import { eventBus } from "@/lib/core/event-bus";
+import { installReverseNotationBridge } from "@/lib/shared/notation-bridge";
 import "./handlers/notification.handler";
 import "./handlers/tracking.handler";
 import "./handlers/ai-feedback.handler";
@@ -124,11 +125,14 @@ const BRIDGE_MAP: Record<string, string[]> = {
 };
 
 // Register bridge listeners
+// Guard: skip payloads that were already bridged (from notation-bridge reverse path) to prevent loops
 for (const [platformEvent, coreEvents] of Object.entries(BRIDGE_MAP)) {
   platformBus.on(platformEvent, (event) => {
+    if ((event.payload as Record<string, unknown>)?.__bridged) return;
     const payload = {
       ...(typeof event.payload === "object" && event.payload !== null ? event.payload : {}),
       userId: event.userId,
+      __bridged: true,
       _bridgedFrom: platformEvent,
     } as Record<string, any>;
     for (const coreEvent of coreEvents) {
@@ -185,4 +189,7 @@ import("@/lib/runtime/system-lock-guard").then(({ initSystemLock }) => {
   initSystemLock();
 });
 
-if (import.meta.env.DEV) console.log("[event-init] V3 — All handlers registered + wallet events SPLIT + platformBus bridge active + commandBus wired");
+// ── Reverse notation bridge: eventBus (dot) → platformBus (colon) ──
+installReverseNotationBridge();
+
+if (import.meta.env.DEV) console.log("[event-init] V4 — All handlers registered + wallet events SPLIT + bidirectional notation bridge active + commandBus wired");

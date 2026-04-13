@@ -186,15 +186,42 @@ export interface BridgeAttachLiveLocationPayload {
   durationMinutes?: number;
 }
 
-export function bridgeContactProvider(payload: BridgeContactProviderPayload): void {
+export async function bridgeContactProvider(payload: BridgeContactProviderPayload): Promise<void> {
+  let threadId: string | null = null;
+
+  try {
+    const { db } = await import("@/services/db");
+    const { data: thread, error } = await db
+      .from("conversations")
+      .insert({
+        participants: [payload.userId, payload.providerId],
+        context_type: payload.contextType,
+        context_id: payload.contextId,
+        created_by: payload.userId,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      if (import.meta.env.DEV) console.warn("[bridge] bridgeContactProvider: DB persist failed, aborting emit", error);
+      return;
+    }
+    threadId = thread.id;
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn("[bridge] bridgeContactProvider: DB unavailable, aborting emit", e);
+    return;
+  }
+
   platformBus.emit("orbit:thread_created", {
+    threadId,
     participantIds: [payload.userId, payload.providerId],
     providerName: payload.providerName,
     context: { type: payload.contextType, entityId: payload.contextId },
   }, "orbit");
+
   if (payload.initialMessage) {
     platformBus.emit("orbit:message_sent", {
-      threadId: `${payload.userId}_${payload.providerId}`,
+      threadId: threadId ?? `${payload.userId}_${payload.providerId}`,
       recipientId: payload.providerId,
       body: payload.initialMessage,
       type: "text",
@@ -203,8 +230,40 @@ export function bridgeContactProvider(payload: BridgeContactProviderPayload): vo
   platformBus.emit("dashboard:counters_refresh", {}, "orbit");
 }
 
-export function bridgePayNow(payload: BridgePayNowPayload): void {
+export async function bridgePayNow(payload: BridgePayNowPayload): Promise<void> {
+  let transactionId: string | null = null;
+
+  try {
+    const { db } = await import("@/services/db");
+    const refCode = `PAY-${Date.now().toString(36).toUpperCase()}`;
+    const { data: tx, error } = await db
+      .from("wallet_transactions")
+      .insert({
+        sender_id: payload.payerId,
+        recipient_id: payload.payeeId,
+        amount: payload.amount,
+        currency: payload.currency,
+        status: "pending",
+        context_type: payload.contextType,
+        context_id: payload.contextId,
+        title: `Payment via ${payload.method ?? "wallet"}`,
+        reference_code: refCode,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      if (import.meta.env.DEV) console.warn("[bridge] bridgePayNow: DB persist failed, aborting emit", error);
+      return;
+    }
+    transactionId = tx.id;
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn("[bridge] bridgePayNow: DB unavailable, aborting emit", e);
+    return;
+  }
+
   platformBus.emit("payment:intent_created", {
+    transactionId,
     payerId: payload.payerId,
     payeeId: payload.payeeId,
     amount: payload.amount,
@@ -213,11 +272,46 @@ export function bridgePayNow(payload: BridgePayNowPayload): void {
     contextId: payload.contextId,
     method: payload.method ?? "wallet",
   }, "wallet");
+  platformBus.emit("wallet:payment_requested", {
+    transactionId,
+    amount: payload.amount,
+    currency: payload.currency,
+    referenceType: payload.contextType,
+    referenceId: payload.contextId,
+  }, "wallet");
   platformBus.emit("dashboard:counters_refresh", {}, "wallet");
 }
 
-export function bridgeBookNow(payload: BridgeBookNowPayload): void {
-  const bookingId = `bk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+export async function bridgeBookNow(payload: BridgeBookNowPayload): Promise<void> {
+  let bookingId: string | null = null;
+
+  try {
+    const { db } = await import("@/services/db");
+    const { data: booking, error } = await db
+      .from("bookings")
+      .insert({
+        user_id: payload.userId,
+        provider_id: payload.providerId,
+        type: payload.type,
+        amount: payload.amount,
+        currency: payload.currency,
+        scheduled_at: payload.scheduledAt,
+        status: "pending",
+        metadata: payload.metadata ?? {},
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      if (import.meta.env.DEV) console.warn("[bridge] bridgeBookNow: DB persist failed, aborting emit", error);
+      return;
+    }
+    bookingId = booking.id;
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn("[bridge] bridgeBookNow: DB unavailable, aborting emit", e);
+    return;
+  }
+
   platformBus.emit("marketplace:booking_created", {
     bookingId,
     id: bookingId,
@@ -423,13 +517,18 @@ export function installSuperAppBridge() {
           return;
         }
 
-        const tx = await store.createTransaction({
-          type: "payment",
-          amount: -Math.abs(amount),
-          currency: currency as import("@/lib/types/domain").CurrencyCode,
-          reference: `${referenceType}:${referenceId}`,
-          status: "pending",
-        });
+        // If bridgePayNow already persisted a transaction, re-use that ID
+        // instead of creating a duplicate record in wallet_transactions.
+        const prePersistedId = p?.transactionId as string | undefined;
+        const tx = prePersistedId
+          ? { id: prePersistedId }
+          : await store.createTransaction({
+              type: "payment",
+              amount: -Math.abs(amount),
+              currency: currency as import("@/lib/types/domain").CurrencyCode,
+              reference: `${referenceType}:${referenceId}`,
+              status: "pending",
+            });
 
         try {
           const { createLedgerEntry } = await import("@/lib/wallet/ledger");
@@ -475,10 +574,6 @@ export function installSuperAppBridge() {
 
   platformBus.on("orbit:message_received", () => {
     invalidate("threads", "dashboard-live-stats", "unread-counts");
-  });
-
-  platformBus.on("orbit:thread_created", () => {
-    invalidate("threads", "contacts");
   });
 
   platformBus.on("orbit:call_started", () => {
@@ -539,7 +634,7 @@ export function installSuperAppBridge() {
   });
 
   platformBus.onPrefix("dispatch:", () => {
-    invalidate("active-delivery", "dashboard-live-stats");
+    invalidate("active-delivery", "my-orders", "dashboard-live-stats");
     moduleRegistry.activateModule("delivery-core");
   });
 
@@ -863,6 +958,29 @@ export function installSuperAppBridge() {
 
   platformBus.on("USER_SEARCH" as PlatformEventType, () => {
     /* legacy uppercase event — analytics tracking only */
+  });
+
+  // ── Radar → Orbit cross-pillar invalidations ──
+  platformBus.on("orbit:thread_created", () => {
+    invalidate("threads", "contacts", "radar-listings", "dashboard-live-stats");
+    moduleRegistry.activateModule("orbit-core");
+  });
+
+  // ── Wallet payment success → refresh bookings/orders across pillars ──
+  platformBus.on("wallet:payment_success", () => {
+    invalidate("wallet-balance", "wallet-transactions", "my-bookings", "my-orders", "marketplace-listings", "dashboard-live-stats");
+    moduleRegistry.activateModule("wallet-core");
+  });
+
+  // ── booking:created (canonical) → same as marketplace:booking_created ──
+  platformBus.on("booking:created", () => {
+    invalidate("my-bookings", "radar-listings", "dashboard-live-stats");
+    moduleRegistry.activateModule("radar-booking");
+  });
+
+  // ── booking:completed (canonical) → refresh wallet + bookings ──
+  platformBus.on("booking:completed", () => {
+    invalidate("my-bookings", "wallet-balance", "wallet-transactions", "dashboard-live-stats");
   });
 
   console.info("[super-app-bridge] Cross-section bridge + module lifecycle + runtime pipeline + health system installed");
