@@ -40,10 +40,7 @@ const TABLE_TO_PLATFORM_EVENT: Record<string, Record<string, string>> = {
     INSERT: "orbit:call_started",
     UPDATE: "orbit:call_ended",
   },
-  app_notifications: {
-    INSERT: "notifications:refresh",
-    UPDATE: "notifications:refresh",
-  },
+  app_notifications: {},
   booking_requests: {
     INSERT: "marketplace:booking_created",
     UPDATE: "marketplace:booking_confirmed",

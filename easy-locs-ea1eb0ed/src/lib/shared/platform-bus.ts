@@ -515,11 +515,6 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("pm:", () => refreshModule("business"))
   );
 
-  // ── Orbit communication events → refresh communication module ──
-  unsubs.push(
-    platformBus.onPrefix("orbit:", () => refreshModule("communication"))
-  );
-
   // ── Booking events → refresh business module ──
   unsubs.push(
     platformBus.onPrefix("booking:", () => refreshModule("business"))
@@ -541,7 +536,6 @@ export function installPlatformReactions(): () => void {
     "wallet.payment.success": "wallet:payment_success",
     "wallet.payment.failed": "wallet:payment_failed",
     "wallet.transaction.created": "wallet:transaction_created",
-    "wallet.loaded": "wallet:loaded",
     "wallet.top_up": "wallet:top_up",
     "orbit.message.sent": "orbit:message_sent",
     "orbit.message.received": "orbit:message_received",
