@@ -218,45 +218,52 @@
 
 ---
 
-## 16. ENGINES ORPHELINS (33 fichiers) — EXISTENT MAIS NON BOOTÉS
+## 16. ENGINES MAINTENANT ENREGISTRES DANS L'ORCHESTRATOR (16 engines)
 
-Ces engines sont codés et exportent des fonctions, mais ne sont importés nulle part dans le runtime :
+Ces engines ont ete implementes et enregistres dans `engine-registry.ts` → `EngineOrchestrator` :
+
+| # | Engine | Orchestrator ID | Category | Interval |
+|---|--------|-----------------|----------|----------|
+| 1 | Auto Publish | `auto-publish` | lifecycle | 5min |
+| 2 | Auto Unpublish | `auto-unpublish` | lifecycle | 5min |
+| 3 | Data Trust | `data-trust-scan` | quality | 10min |
+| 4 | Data Completeness | `data-completeness` | quality | 10min |
+| 5 | Data Quality | `data-quality` | quality | 10min |
+| 6 | Backend Connectivity | `backend-reconnect` | infrastructure | 2min |
+| 7 | Grocery Normalizer | `grocery-normalizer` | normalizer | 10min |
+| 8 | Food Menu Normalizer | `food-menu-normalizer` | normalizer | 10min |
+| 9 | Service Catalog Normalizer | `service-catalog-normalizer` | normalizer | 10min |
+| 10 | Menu Rebuild | `menu-rebuild` | normalizer | 10min |
+| 11 | Adaptive Taxonomy | `adaptive-taxonomy` | taxonomy | 10min |
+| 12 | Category Mapping | `category-mapping-sync` | taxonomy | 10min |
+| 13 | Full Stack Linkage | `full-stack-linkage` | infrastructure | 10min |
+| 14 | Publish Gate Food | `publish-gate-food` | gate | 5min |
+| 15 | Publish Gate Grocery | `publish-gate-grocery` | gate | 5min |
+| 16 | Publish Gate Service | `publish-gate-service` | gate | 5min |
+
+---
+
+## 17. ENGINES RESTANTS ORPHELINS (17 fichiers) — lib-only, non bootes
 
 | # | Engine | Fichier | Export |
 |---|--------|---------|-------|
-| 1 | Adaptive Taxonomy | `adaptive-taxonomy-engine.ts` | `runAdaptiveTaxonomy` |
-| 2 | Auto Publish | `auto-publish-engine.ts` | `runAutoPublish` |
-| 3 | Auto Unpublish | `auto-unpublish-engine.ts` | `runAutoUnpublish` |
-| 4 | Backend Connectivity | `backend-connectivity-engine.ts` | `runBackendConnectivityCheck` |
-| 5 | Behavior Pattern | `behavior-pattern-engine.ts` | `runBehaviorPatternEngine` |
-| 6 | Category Mapping | `category-mapping-engine.ts` | `runCategoryMapping` |
-| 7 | Data Completeness | `data-completeness-engine.ts` | `runDataCompleteness` |
-| 8 | Data Quality | `data-quality-engine.ts` | `runDataQualityEngine` |
-| 9 | Data Trust | `data-trust-engine.ts` | `runDataTrust` |
-| 10 | Digital Orchestration | `digital-orchestration-engine.ts` | `runDigitalOrchestration` |
-| 11 | Entity Integrity | `entity-integrity-engine.ts` | `runEntityIntegrityCheck` |
-| 12 | Food Menu Normalizer | `food-menu-normalizer-engine.ts` | `runFoodMenuNormalizer` |
-| 13 | Franchise Dedup | `franchise-dedup-engine.ts` | `runFranchiseDedup` |
-| 14 | Full Stack Linkage | `full-stack-linkage-engine.ts` | `runFullStackLinkageCheck` |
-| 15 | Grocery Normalizer | `grocery-normalizer-engine.ts` | `runGroceryNormalizer` |
-| 16 | Lease Generator | `lease-generator-engine.ts` | `runLeaseGenerator` |
-| 17 | Legal Engine | `legal-engine.ts` | `runPropertyComplianceCheck` |
-| 18 | Menu Intelligence | `menu-intelligence-engine.ts` | `runMenuIntelligence` |
-| 19 | Menu Rebuild | `menu-rebuild-engine.ts` | `runMenuRebuild` |
-| 20 | Module Link | `module-link-engine.ts` | `runModuleLinkEngine` |
-| 21 | Property Automation | `property-automation-engine.ts` | `initPropertyAutomation` |
-| 22 | Publish Gate Food | `publish-gate-food-engine.ts` | `runPublishGateFood` |
-| 23 | Publish Gate Grocery | `publish-gate-grocery-engine.ts` | `runPublishGateGrocery` |
-| 24 | Publish Gate Service | `publish-gate-service-engine.ts` | `runPublishGateService` |
-| 25 | Real Estate Registry | `real-estate-engine-registry.ts` | `initRealEstateEngines` |
-| 26 | SEO Engine | `seo-engine.ts` | `runSeoCheck` |
-| 27 | Service Catalog Normalizer | `service-catalog-normalizer-engine.ts` | `runServiceCatalogNormalizer` |
-| 28 | Shop Cleanup | `shop-cleanup-engine.ts` | `runShopCleanupEngine` |
-| 29 | Source Intake | `source-intake-engine.ts` | `runSourceIntakeScan` |
-| 30 | Strict Quality Gate | `strict-quality-gate-engine.ts` | `runStrictQualityGate` |
-| 31 | Taxonomy Health | `taxonomy-health-engine.ts` | `runTaxonomyHealthCheck` |
-| 32 | Vertical Classifier | `vertical-classifier-engine.ts` | `runVerticalClassifier` |
-| 33 | Visibility Optimizer | `visibility-optimizer-engine.ts` | `runVisibilityOptimizer` |
+| 1 | Digital Orchestration | `digital-orchestration-engine.ts` | `runDigitalOrchestration` |
+| 2 | Entity Integrity | `entity-integrity-engine.ts` | `runEntityIntegrityCheck` |
+| 3 | Franchise Dedup | `franchise-dedup-engine.ts` | `runFranchiseDedup` |
+| 4 | Legal Engine | `legal-engine.ts` | `runPropertyComplianceCheck` |
+| 5 | Menu Intelligence | `menu-intelligence-engine.ts` | `runMenuIntelligence` |
+| 6 | Module Link | `module-link-engine.ts` | `runModuleLinkEngine` |
+| 7 | Property Automation | `property-automation-engine.ts` | `initPropertyAutomation` |
+| 8 | Real Estate Registry | `real-estate-engine-registry.ts` | `initRealEstateEngines` |
+| 9 | SEO Engine | `seo-engine.ts` | `runSeoCheck` |
+| 10 | Shop Cleanup | `shop-cleanup-engine.ts` | `runShopCleanupEngine` |
+| 11 | Source Intake | `source-intake-engine.ts` | `runSourceIntakeScan` |
+| 12 | Strict Quality Gate | `strict-quality-gate-engine.ts` | `runStrictQualityGate` |
+| 13 | Vertical Classifier | `vertical-classifier-engine.ts` | `runVerticalClassifier` |
+| 14 | Visibility Optimizer | `visibility-optimizer-engine.ts` | `runVisibilityOptimizer` |
+| 15 | Hyper Radar | `hyper-radar-engine.ts` | engine methods |
+| 16 | Rent Call | `rent-call-engine.ts` | engine methods |
+| 17 | Vibe Density | `vibe-density-engine.ts` | engine methods |
 
 ---
 

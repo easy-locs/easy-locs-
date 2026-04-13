@@ -107,7 +107,7 @@ export function runFullCardAudit(): CardHealthReport {
     elapsed_ms: elapsed,
   });
 
-  platformBus.emit("dashboard:card_audit_completed" as any, {
+  platformBus.emit("dashboard:card_audit_completed", {
     total: entries.length,
     connected,
     orphan,
@@ -137,4 +137,59 @@ export function getDeadCards(): CardAuditResult[] {
 
 export function getCardHealthSummary(): Record<string, number> {
   return getCardAuditSummary();
+}
+
+export function repairOrphanCards(): { repaired: string[]; removed: string[]; unchanged: string[] } {
+  const repaired: string[] = [];
+  const removed: string[] = [];
+  const unchanged: string[] = [];
+
+  const entries = Object.entries(CARD_REGISTRY);
+  for (const [key, entry] of entries) {
+    const result = auditCard(entry);
+
+    if (result.connectionStatus === "connected") {
+      unchanged.push(key);
+      continue;
+    }
+
+    if (result.connectionStatus === "orphan" || result.connectionStatus === "partial") {
+      const adapterExists = hasKnownAdapter(key);
+      if (adapterExists) {
+        const recomputed = computeConnectionStatus(entry, {
+          hasAdapter: true,
+          hasCardShellUsage: true,
+          hasRealAction: !!entry.route && ROUTE_PATTERN.test(entry.route),
+          hasValidRoute: !!entry.route && entry.route.length > 0,
+          hasDirectFetch: false,
+          hasMock: false,
+        });
+        entry.connectionStatus = recomputed;
+        if (recomputed === "connected") {
+          repaired.push(key);
+        } else {
+          unchanged.push(key);
+        }
+      } else {
+        unchanged.push(key);
+      }
+      continue;
+    }
+
+    unchanged.push(key);
+  }
+
+  structuredLogger.info("dashboard", "card_repair", `Card repair: ${repaired.length} repaired, ${removed.length} removed`, {
+    repaired,
+    removed,
+    unchanged_count: unchanged.length,
+  });
+
+  platformBus.emit("dashboard:card_repair_completed", {
+    repaired: repaired.length,
+    removed: removed.length,
+    unchanged: unchanged.length,
+  }, "system");
+
+  return { repaired, removed, unchanged };
 }

@@ -14,12 +14,17 @@ import type { CardRegistryEntry, CardClassification } from "./card-contract";
 const KNOWN_ADAPTERS = new Set([
   // Home surface
   "useHeroBannerCard",
+  "useQuickActionsCard",
   "useCategoryGridCard",
+  "useContextBannersCard",
+  "useBoostSlotHeroCard",
+  "useLiveMapCard",
   "useTrendingSectionCard",
   "useBestRatedSectionCard",
-  "useContextBannersCard",
-  "useLiveMapCard",
+  "useNewestSectionCard",
+  "useNearYouSectionCard",
   "useSmartRecommendationsCard",
+  "useOnboardingChecklistCard",
   // Driver surface
   "useDriverStatusCard",
   "useDriverPositioningCard",

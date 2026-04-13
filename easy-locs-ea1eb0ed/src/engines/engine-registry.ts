@@ -6,6 +6,22 @@ import { getProofsByDomain, getProofStats } from "./core/proof-system";
 import { getPipelineReport } from "./core/repair-pipeline";
 
 import { AutoFixEngine } from "./self-healing/auto-fix-engine";
+import { AutoPublishOrchEngine } from "./lifecycle/auto-publish-orch-engine";
+import { AutoUnpublishOrchEngine } from "./lifecycle/auto-unpublish-orch-engine";
+import { DataTrustOrchEngine } from "./quality/data-trust-orch-engine";
+import { DataCompletenessOrchEngine } from "./quality/data-completeness-orch-engine";
+import { DataQualityOrchEngine } from "./quality/data-quality-orch-engine";
+import { BackendConnectivityOrchEngine } from "./infra/backend-connectivity-orch-engine";
+import { GroceryNormalizerOrchEngine } from "./normalizers/grocery-normalizer-orch-engine";
+import { FoodMenuNormalizerOrchEngine } from "./normalizers/food-menu-normalizer-orch-engine";
+import { ServiceCatalogNormalizerOrchEngine } from "./normalizers/service-catalog-normalizer-orch-engine";
+import { MenuRebuildOrchEngine } from "./normalizers/menu-rebuild-orch-engine";
+import { AdaptiveTaxonomyOrchEngine } from "./taxonomy/adaptive-taxonomy-orch-engine";
+import { CategoryMappingOrchEngine } from "./taxonomy/category-mapping-orch-engine";
+import { FullStackLinkageOrchEngine } from "./infra/full-stack-linkage-orch-engine";
+import { PublishGateFoodOrchEngine } from "./gates/publish-gate-food-orch-engine";
+import { PublishGateGroceryOrchEngine } from "./gates/publish-gate-grocery-orch-engine";
+import { PublishGateServiceOrchEngine } from "./gates/publish-gate-service-orch-engine";
 
 let registered = false;
 
@@ -15,6 +31,22 @@ export function registerAllEngines(): void {
 
   engineOrchestrator.registerAll([
     new AutoFixEngine(),
+    new AutoPublishOrchEngine(),
+    new AutoUnpublishOrchEngine(),
+    new DataTrustOrchEngine(),
+    new DataCompletenessOrchEngine(),
+    new DataQualityOrchEngine(),
+    new BackendConnectivityOrchEngine(),
+    new GroceryNormalizerOrchEngine(),
+    new FoodMenuNormalizerOrchEngine(),
+    new ServiceCatalogNormalizerOrchEngine(),
+    new MenuRebuildOrchEngine(),
+    new AdaptiveTaxonomyOrchEngine(),
+    new CategoryMappingOrchEngine(),
+    new FullStackLinkageOrchEngine(),
+    new PublishGateFoodOrchEngine(),
+    new PublishGateGroceryOrchEngine(),
+    new PublishGateServiceOrchEngine(),
   ]);
 }
 

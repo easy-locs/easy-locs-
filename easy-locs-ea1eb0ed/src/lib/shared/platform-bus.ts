@@ -254,7 +254,10 @@ type PlatformEventType =
   | "i18n.localization.violation"
   // Repair pipeline domain events
   | "repair:pipeline:completed"
-  | "engine:memory:regression";
+  | "engine:memory:regression"
+  // Dashboard card audit/repair events
+  | "dashboard:card_audit_completed"
+  | "dashboard:card_repair_completed";
 
 export type { PlatformEventType };
 

@@ -1,7 +1,13 @@
 /**
- * listing-service-stub — Local social commerce listing operations.
- * Gated behind feature flags. Returns typed empty results when disabled.
- * Backed by Supabase `local_listings` table when flags are enabled.
+ * Listing Service — Empty adapter (commerce listings not yet implemented).
+ *
+ * This module provides the listing-service contract for local social commerce.
+ * All functions are guarded by platform feature flags. When the corresponding
+ * flags are enabled, the functions return safe empty results indicating the
+ * feature is awaiting a backend implementation (DB tables + Edge Functions).
+ *
+ * To implement: connect to a `local_listings` table via Supabase and wire
+ * CRUD operations into the listing pipeline.
  */
 import type { CanonicalLocalListing, LocalListingStatus } from "@/domains/shared/canonical-types";
 import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
@@ -18,12 +24,12 @@ function gated(): string | null {
 
 export function createListing(_listing: Omit<CanonicalLocalListing, "id" | "createdAt" | "updatedAt" | "viewCount" | "inquiryCount">): { created: false; reason: string } {
   const gate = gated();
-  return { created: false, reason: gate ?? "awaiting_backend_integration" };
+  return { created: false, reason: gate ?? "awaiting_backend_implementation" };
 }
 
 export function updateListingStatus(_listingId: string, _status: LocalListingStatus): { updated: false; reason: string } {
   const gate = gated();
-  return { updated: false, reason: gate ?? "awaiting_backend_integration" };
+  return { updated: false, reason: gate ?? "awaiting_backend_implementation" };
 }
 
 export function getListingById(_listingId: string): CanonicalLocalListing | null {
