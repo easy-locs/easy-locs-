@@ -373,6 +373,7 @@ const App = () => (
                   {/*  PILLAR 1 · DASHBOARD                         */}
                   {/* ═══════════════════════════════════════════════ */}
                   <Route path="/" element={<FeatureErrorBoundary featureName="Dashboard"><HomeRouter /></FeatureErrorBoundary>} />
+                  <Route path="/landing" element={<FeatureErrorBoundary featureName="Dashboard"><Index /></FeatureErrorBoundary>} />
                   <Route path="/home" element={<MarketplaceHomeRouter />} />
                   <Route path="/pricing" element={<Navigate to="/#pricing" replace />} />
                   <Route path="/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Dashboard /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -615,6 +616,7 @@ const App = () => (
                   <Route path="/me/gestion-immo" element={<Navigate to="/me/properties" replace />} />
                   <Route path="/me/gestion-immo/:propertyId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyDetail /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/tenant-view" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeTenantView /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/property-hub" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/properties" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyCockpit /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/properties/list" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyListPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/properties/create" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyCreatePage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -656,7 +658,7 @@ const App = () => (
                   <Route path="/merchant/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/dashboard/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/finance" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantFinancePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/merchant/pos" element={<Navigate to="/pos" replace />} />
+                  <Route path="/merchant/pos" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantPosPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/kitchen" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantKitchenPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/orders" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantOrdersPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/orders/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantOrderBoardPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -789,9 +791,9 @@ const App = () => (
                   <Route path="/admin/pipeline" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPipelinePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/quality-engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><QualityEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/admin/engine-cockpit" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/control-plane" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/ai-control-center" element={<Navigate to="/admin/control-room" replace />} />
+                  <Route path="/admin/engine-cockpit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEngineCockpit /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/control-plane" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ControlPlanePage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/ai-control-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAIControlCenter /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/monetization" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMonetizationDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/core-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCoreEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/home-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminHomeEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
