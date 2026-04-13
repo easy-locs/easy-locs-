@@ -491,24 +491,9 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("wallet:", () => refreshModule("wallet"))
   );
 
-  // ── Marketplace events → refresh business module ──
-  unsubs.push(
-    platformBus.onPrefix("marketplace:", () => refreshModule("business"))
-  );
-
-  // ── PM events → refresh business module ──
-  unsubs.push(
-    platformBus.onPrefix("pm:", () => refreshModule("business"))
-  );
-
-  // ── Property events → refresh business module ──
+  // ── Property events (includes pm, deal, listing, rent) → refresh business module ──
   unsubs.push(
     platformBus.onPrefix("property:", () => refreshModule("business"))
-  );
-
-  // ── Deal events → refresh business module ──
-  unsubs.push(
-    platformBus.onPrefix("deal:", () => refreshModule("business"))
   );
 
   // ── Orbit communication events → refresh communication module ──
@@ -517,12 +502,11 @@ export function installPlatformReactions(): () => void {
   );
 
   // ── Booking events → refresh business module ──
-  // Bridge converts booking.* dot-notation to marketplace:booking_* colon, caught by marketplace: prefix above.
   unsubs.push(
     platformBus.onPrefix("booking:", () => refreshModule("business"))
   );
 
-  // ── Dashboard refresh events → business only (wallet/communication refreshed by their own prefix listeners) ──
+  // ── Dashboard refresh events → business only ──
   unsubs.push(
     platformBus.onPrefix("dashboard:", () => refreshModule("business"))
   );

@@ -193,6 +193,7 @@ export function useMasterAppBootstrap() {
 
     let idleCbId: number | undefined;
     const t5 = setTimeout(() => {
+      if (document.hidden) return;
       idleCbId = requestIdleCallback(async () => {
         try {
           const { runPlatformRecovery } = await import("@/lib/platform/platform-recovery-engine");
@@ -200,6 +201,8 @@ export function useMasterAppBootstrap() {
         } catch (e) {
           console.warn("[boot] recovery failed", e);
         }
+
+        if (document.hidden) return;
 
         try {
           const { godCore } = await import("@/lib/god/god-core");
