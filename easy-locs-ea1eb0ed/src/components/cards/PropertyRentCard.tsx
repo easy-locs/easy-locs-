@@ -136,12 +136,12 @@ const PropertyRentCard = memo(function PropertyRentCard({
       </div>
 
       <div className="p-3.5 space-y-2.5">
-        <h3 className="text-sm font-bold leading-snug line-clamp-2 text-foreground group-hover:text-[hsl(38_65%_56%)] transition-colors">
+        <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words min-w-0 text-foreground group-hover:text-[hsl(38_65%_56%)] transition-colors">
           {title}
         </h3>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
           <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: GOLD }} />
-          <span className="line-clamp-1">{area}</span>
+          <span className="line-clamp-1 min-w-0">{area}</span>
         </div>
 
         <div className="flex items-center gap-1 pt-0.5">

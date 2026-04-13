@@ -478,7 +478,7 @@ export function QrPayCard({
         <QRCode value={link} size={180} level="M" />
       </div>
 
-      <p className="text-[10px] text-muted-foreground break-all text-center">{link}</p>
+      <p className="text-[10px] text-muted-foreground break-words text-center">{link}</p>
 
       <button
         type="button"

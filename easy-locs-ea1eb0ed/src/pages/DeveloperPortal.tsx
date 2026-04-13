@@ -169,7 +169,7 @@ const DeveloperPortal = () => {
                     <div className="p-3 bg-accent/10 border border-accent/30 rounded-lg">
                       <p className="text-xs text-muted-foreground mb-1">⚠️ Copy this key now — it won't be shown again.</p>
                       <div className="flex items-center gap-2">
-                        <code className="flex-1 text-sm font-mono text-foreground bg-muted px-3 py-2 rounded break-all">{newKey}</code>
+                        <code className="flex-1 text-sm font-mono text-foreground bg-muted px-3 py-2 rounded break-words">{newKey}</code>
                         <Button size="sm" variant="outline" onClick={() => copyKey(newKey)}><Copy className="h-4 w-4" /></Button>
                       </div>
                     </div>

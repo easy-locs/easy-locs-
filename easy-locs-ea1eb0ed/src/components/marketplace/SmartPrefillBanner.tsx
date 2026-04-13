@@ -4,6 +4,7 @@
 import { Check, X, Sparkles } from "lucide-react";
 import type { DetectedContext } from "@/lib/smart-prefill";
 import { getCategoryConfig } from "@/lib/category-config";
+import { AppText } from "@/components/ui/AppText";
 
 interface Props {
   detection: DetectedContext | null;
@@ -28,12 +29,12 @@ export default function SmartPrefillBanner({ detection, onAccept, onDismiss, vis
     <div className="flex items-start gap-3 p-3 rounded-xl border border-accent/30 bg-accent/5 animate-in fade-in slide-in-from-top-2 duration-300">
       <Sparkles className="h-5 w-5 text-accent shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground">
+        <AppText as="p" size="sm" lines={1} className="font-semibold">
           Smart detection
-        </p>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        </AppText>
+        <AppText as="p" size="xs" lines={2} muted className="mt-0.5">
           {cat.icon} {cat.name} · {detection.listing_type} · {ENTITY_LABELS[detection.entity_type] || detection.entity_type}
-        </p>
+        </AppText>
       </div>
       <div className="flex gap-1.5 shrink-0">
         <button

@@ -231,7 +231,7 @@ export default function ProSettingsSection() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">UUID complet</p>
-              <p className="font-mono text-[10px] text-muted-foreground/70 break-all">{userId}</p>
+              <p className="font-mono text-[10px] text-muted-foreground/70 break-words">{userId}</p>
             </div>
           </div>
           <div className="flex items-center justify-between">

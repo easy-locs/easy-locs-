@@ -117,7 +117,7 @@ export default function QrGeneratePage() {
                 <p className="text-xs font-medium text-foreground">
                   Table {qr.tableNumber}
                 </p>
-                <p className="text-[10px] text-muted-foreground break-all text-center">
+                <p className="text-[10px] text-muted-foreground break-words text-center">
                   {qr.targetCode}
                 </p>
               </div>

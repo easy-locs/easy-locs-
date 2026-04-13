@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Star, MapPin, Navigation, MessageCircle, Store, ChevronRight } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import type { RadarResultItem } from "@/lib/radar/radar-result-item";
+import { AppCardTitle } from "@/components/ui/AppText";
 
 interface Props {
   item: RadarResultItem;
@@ -46,7 +47,7 @@ function RadarShopCard({ item, rank, selected, onSelect, onNavigate, onMessage }
 
       <div className="flex-1 min-w-0 text-left">
         <div className="flex items-center gap-1.5">
-          <p className="text-sm font-bold text-foreground line-clamp-1 leading-snug">{item.title}</p>
+          <AppCardTitle lines={1} className="font-bold">{item.title}</AppCardTitle>
           {item.isSponsored && (
             <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(38 65% 56% / 0.12)", color: "hsl(38 65% 56%)" }}>
               Ad

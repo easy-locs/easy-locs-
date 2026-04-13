@@ -4,6 +4,7 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import MerchantCard from "./MerchantCard";
+import { AppText } from "@/components/ui/AppText";
 
 interface MerchantItem {
   id: string;
@@ -35,7 +36,7 @@ export default function MarketplaceSection({
   return (
     <section className="space-y-2.5">
       <div className="flex items-center justify-between px-4">
-        <h2 className="text-sm font-bold text-foreground">{title}</h2>
+        <AppText as="h2" lines={1} size="sm" className="font-bold">{title}</AppText>
         {seeAllPath && (
           <button
             onClick={() => navigate(seeAllPath)}

@@ -68,7 +68,7 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
           ].map((kpi, i) => (
             <div key={i} className="rounded-xl p-2.5 text-center" style={{ background: "white", border: "1px solid #f0f0f0" }}>
               <div className="flex justify-center mb-1" style={{ color: kpi.color }}>{kpi.icon}</div>
-              <div className="text-sm font-bold" style={{ color: navy }}>{kpi.value}</div>
+              <div className="text-sm font-bold break-words" style={{ color: navy }}>{kpi.value}</div>
               <div className="text-[10px]" style={{ color: "#999" }}>{kpi.label}</div>
             </div>
           ))}

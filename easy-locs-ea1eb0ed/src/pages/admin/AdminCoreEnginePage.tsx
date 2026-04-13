@@ -84,7 +84,7 @@ export default function AdminCoreEnginePage() {
       {result && (
         <div className="rounded-2xl border border-border/20 bg-card p-4">
           <p className="text-sm font-bold text-foreground">Result</p>
-          <pre className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap break-all">
+          <pre className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap break-words">
             {JSON.stringify(result, null, 2)}
           </pre>
         </div>

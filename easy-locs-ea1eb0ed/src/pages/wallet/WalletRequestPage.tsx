@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
 import { AppCard } from "@/components/ui/AppCard";
+import { AppText } from "@/components/ui/AppText";
 import { ContactPickerSheet, InviteContactSheet, type PickableContact } from "@/components/wallet/ContactPickerSheet";
 
 const QUICK_AMOUNTS = [25, 50, 100, 250, 500];
@@ -210,13 +211,13 @@ export default function WalletRequestPage() {
                   <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
                     <Users className="w-5 h-5" style={{ color: "hsl(38 65% 56%)" }} />
                   </div>
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-semibold text-foreground">
+                  <div className="flex-1 min-w-0 text-left">
+                    <AppText as="p" size="sm" lines={1} className="font-semibold">
                       {t("wallet.chooseContact") || "Choose a contact"}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
+                    </AppText>
+                    <AppText as="p" size="xs" lines={1} muted className="mt-0.5">
                       {t("wallet.tapToSelect") || "Tap to select from your contacts"}
-                    </p>
+                    </AppText>
                   </div>
                 </button>
               </motion.div>

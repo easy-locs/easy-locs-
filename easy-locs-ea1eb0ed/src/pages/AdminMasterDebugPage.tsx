@@ -68,7 +68,7 @@ export default function AdminMasterDebugPage() {
               </span>
             </div>
             {e.detail && (
-              <p className="text-xs text-muted-foreground break-all">{e.detail}</p>
+              <p className="text-xs text-muted-foreground break-words">{e.detail}</p>
             )}
             {e.data !== undefined && (
               <pre className="text-[10px] bg-muted text-muted-foreground rounded p-2 overflow-auto max-h-32">

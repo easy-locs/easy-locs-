@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Star, MapPin, Navigation, MessageCircle, Hotel, Bed } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import type { RadarResultItem } from "@/lib/radar/radar-result-item";
+import { AppCardTitle } from "@/components/ui/AppText";
 
 interface Props {
   item: RadarResultItem;
@@ -52,7 +53,7 @@ function RadarHotelCard({ item, rank, selected, onSelect, onNavigate, onMessage 
       </div>
 
       <div className="flex-1 min-w-0 text-left">
-        <p className="text-sm font-bold text-foreground line-clamp-1 leading-snug">{item.title}</p>
+        <AppCardTitle lines={1} className="font-bold">{item.title}</AppCardTitle>
 
         <div className="flex items-center gap-1.5 mt-0.5">
           <span className="text-[11px] text-muted-foreground capitalize line-clamp-1">
