@@ -363,12 +363,15 @@ export default function HudContextPanel({ thread, orgId }: Props) {
             </div>
           )}
 
-          {/* ═══ AI SUMMARY (placeholder) ═══ */}
+          {/* ═══ AI SUMMARY (coming soon) ═══ */}
           <HudCard>
-            <SectionTitle icon={Sparkles} label={t("orbit.context.ai_summary")} color="hsl(var(--hud-purple))" />
-            <p className="text-[11px] italic" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
-              {t("orbit.context.ai_placeholder")}
-            </p>
+            <SectionTitle icon={Sparkles} label={t("orbit.context.ai_summary") || "AI Insights"} color="hsl(var(--hud-purple))" />
+            <div className="flex items-center gap-2 py-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 animate-pulse" />
+              <p className="text-[11px] italic" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+                {t("orbit.context.ai_placeholder") || "AI-powered conversation insights — coming soon"}
+              </p>
+            </div>
           </HudCard>
         </div>
       </ScrollArea>

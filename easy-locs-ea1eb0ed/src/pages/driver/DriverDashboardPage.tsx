@@ -31,6 +31,15 @@ export default function DriverDashboardPage() {
   const smartTip = useMemo(() => getDriverGreeting(), []);
   const SmartIcon = smartTip.icon;
 
+  const todayEarnings = profile?.today_earnings != null ? `${Number(profile.today_earnings).toFixed(0)} AED` : "— AED";
+  const todayTrips = profile?.today_trips != null ? String(profile.today_trips) : "—";
+  const completionRate = profile?.completion_rate != null ? `${Math.round(Number(profile.completion_rate) * 100)}%` : "—";
+  const driverRating = profile?.rating != null ? Number(profile.rating).toFixed(1) : "—";
+  const weekEarnings = profile?.week_earnings != null ? `${Number(profile.week_earnings).toFixed(0)} AED` : "— AED";
+  const weekTrips = profile?.week_trips != null ? String(profile.week_trips) : "—";
+  const monthEarnings = profile?.month_earnings != null ? `${Number(profile.month_earnings).toFixed(0)} AED` : "— AED";
+  const monthTrips = profile?.month_trips != null ? String(profile.month_trips) : "—";
+
   const handleToggleOnline = async () => {
     if (!user?.id) return;
     try {
@@ -60,14 +69,11 @@ export default function DriverDashboardPage() {
   ];
 
   const loadingPlaceholder = profileLoading ? "…" : "—";
-  const todayEarnings = profile?.today_earnings != null ? `${profile.today_earnings} AED` : loadingPlaceholder;
-  const todayTrips = profile?.today_trips != null ? String(profile.today_trips) : loadingPlaceholder;
   const rating = profile?.rating != null ? String(profile.rating) : loadingPlaceholder;
-  const completionRate = profile?.completion_rate != null ? `${profile.completion_rate}%` : "—";
 
   const STATS = [
     { label: "Completion", value: completionRate, icon: CheckCircle2, color: "text-emerald-500" },
-    { label: "Rating", value: rating, icon: Star, color: "text-amber-500" },
+    { label: "Rating", value: driverRating, icon: Star, color: "text-amber-500" },
     { label: "Today", value: todayEarnings, icon: DollarSign, color: "text-primary" },
     { label: "Trips", value: todayTrips, icon: BarChart3, color: "text-violet-500" },
   ];
@@ -193,18 +199,8 @@ export default function DriverDashboardPage() {
           </div>
           <div className="px-4 pb-4 space-y-3">
             {[
-              {
-                label: "This week",
-                amount: profile?.weekly_earnings != null ? `${profile.weekly_earnings} AED` : loadingPlaceholder,
-                sub: profile?.weekly_trips != null ? `${profile.weekly_trips} trips` : loadingPlaceholder,
-                trend: "neutral",
-              },
-              {
-                label: "This month",
-                amount: profile?.monthly_earnings != null ? `${profile.monthly_earnings} AED` : loadingPlaceholder,
-                sub: profile?.monthly_trips != null ? `${profile.monthly_trips} trips` : loadingPlaceholder,
-                trend: "neutral",
-              },
+              { label: "This week", amount: weekEarnings, sub: `${weekTrips} trips`, trend: "neutral" },
+              { label: "This month", amount: monthEarnings, sub: `${monthTrips} trips`, trend: "neutral" },
             ].map(row => (
               <div key={row.label} className="flex items-center justify-between py-2 border-t border-border/10 first:border-0">
                 <div>

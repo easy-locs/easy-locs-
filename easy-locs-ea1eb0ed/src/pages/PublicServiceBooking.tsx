@@ -188,21 +188,19 @@ const PublicServiceBooking = () => {
 
     setSubmitting(true);
     try {
-      let dateFrom: string;
-      let dateTo: string | null = null;
-      if (isRangeMode) {
-        const rangeFrom = selectedRange?.from;
-        const rangeTo = selectedRange?.to;
-        if (!rangeFrom || !rangeTo) {
-          toast.error(t("mp.select_dates_error") || "Please select valid start and end dates");
-          setSubmitting(false);
-          return;
-        }
-        dateFrom = format(rangeFrom, "yyyy-MM-dd");
-        dateTo = format(rangeTo, "yyyy-MM-dd");
-      } else {
-        dateFrom = format(selectedDate, "yyyy-MM-dd");
+      if (isRangeMode && (!selectedRange?.from || !selectedRange?.to)) {
+        toast.error(t("mp.select_dates_error") || "Please select valid start and end dates");
+        setSubmitting(false);
+        return;
       }
+      if (!isRangeMode && !selectedDate) {
+        toast.error(t("mp.select_date_error") || "Please select a date");
+        setSubmitting(false);
+        return;
+      }
+
+      const dateFrom = isRangeMode ? format(selectedRange!.from, "yyyy-MM-dd") : format(selectedDate!, "yyyy-MM-dd");
+      const dateTo = isRangeMode ? format(selectedRange!.to, "yyyy-MM-dd") : null;
 
       const available = await checkServiceAvailability(service.id, dateFrom, dateTo);
 

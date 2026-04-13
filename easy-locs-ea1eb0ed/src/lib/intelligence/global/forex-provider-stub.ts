@@ -24,7 +24,7 @@ function generateForexItems(country: string): CanonicalGlobalFeedItem[] {
     {
       id: `forex_${country}_${Date.now()}`,
       sourceId: "forex_stub_v1",
-      sourceName: "Forex Data (Stub)",
+      sourceName: "Forex Data",
       sourceTrust: 0.85,
       sourceTier: "tier_2",
       category: "forex",
@@ -55,7 +55,7 @@ function generateForexItems(country: string): CanonicalGlobalFeedItem[] {
 export const forexProviderStub: IntelligenceProvider = {
   meta: {
     id: "forex_stub_v1",
-    name: "Forex Data (Stub)",
+    name: "Forex Data",
     tier: "tier_2",
     categories: ["forex", "finance"],
     countries: ["*"],

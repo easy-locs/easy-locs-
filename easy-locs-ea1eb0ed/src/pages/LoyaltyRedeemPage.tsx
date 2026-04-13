@@ -10,12 +10,16 @@ import { toast } from "sonner";
 export default function LoyaltyRedeemPage() {
   const [account, setAccount] = useState<any>(null);
 
+  const [loadError, setLoadError] = useState(false);
+
   const load = async () => {
     try {
+      setLoadError(false);
       const data = await getOrCreateLoyaltyAccount({});
       setAccount(data);
-    } catch (e: any) {
-      console.error(e);
+    } catch {
+      setLoadError(true);
+      toast.error("Failed to load loyalty account");
     }
   };
 
@@ -39,6 +43,18 @@ export default function LoyaltyRedeemPage() {
         <h1 className="text-xl font-bold text-foreground">Loyalty Rewards</h1>
         <p className="text-sm text-muted-foreground">Use your points for rewards</p>
       </div>
+      {!account && !loadError && (
+        <div className="flex items-center justify-center py-8">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+        </div>
+      )}
+      {loadError && (
+        <div className="flex flex-col items-center py-8 text-center gap-2">
+          <Gift className="h-8 w-8 text-muted-foreground/30" />
+          <p className="text-sm text-muted-foreground">Could not load your loyalty account</p>
+          <Button variant="outline" size="sm" onClick={load}>Try again</Button>
+        </div>
+      )}
       {account && (
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <p className="text-sm text-muted-foreground flex items-center gap-1">

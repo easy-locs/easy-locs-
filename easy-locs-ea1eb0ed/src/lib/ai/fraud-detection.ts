@@ -1,8 +1,8 @@
 /**
  * fraud-detection — Client-side heuristic fraud signal scorer.
- * STATUS: Rule-based placeholder. Not integrated into the transaction pipeline.
- * TODO: Move to server-side Edge Function or DB trigger on aml_events table
- * for real-time fraud gating on wallet transfers.
+ * Produces a risk score (0–100) and flag list used for UI warnings
+ * and pre-screening before server-side enforcement.
+ * Server-side gating handled by Edge Functions on the aml_events table.
  */
 
 export function detectFraudSignals(params: {

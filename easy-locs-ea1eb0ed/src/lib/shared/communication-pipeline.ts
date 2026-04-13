@@ -53,8 +53,21 @@ export async function sendCommunicationEvent(event: CommunicationEvent): Promise
     console.error("[communication-pipeline] notification failed:", err);
   }
 
-  // 3. Email (placeholder for future integration)
+  // 3. Email dispatch via edge function (deferred to server-side pipeline)
   if (event.recipientEmail) {
-    results.email = false; // not yet implemented
+    try {
+      const { sendTransactionalEmail } = await import("@/lib/notifications/email-dispatcher");
+      const sent = await sendTransactionalEmail({
+        to: event.recipientEmail,
+        subject: event.subject,
+        body: event.message,
+        category: event.category || "general",
+        meta: event.meta,
+      });
+      results.email = sent;
+      if (!sent) console.warn("[communication-pipeline] email dispatch returned false for:", event.recipientEmail);
+    } catch {
+      results.email = false;
+    }
   }
 }

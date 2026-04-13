@@ -5,6 +5,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
+import { Loader2 } from "lucide-react";
 
 export default function FoodOrderCheckoutPage() {
   const navigate = useNavigate();
@@ -18,5 +19,9 @@ export default function FoodOrderCheckoutPage() {
     }
   }, [itemCount, navigate]);
 
-  return null;
+  return (
+    <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+    </div>
+  );
 }
