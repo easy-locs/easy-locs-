@@ -515,6 +515,16 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("pm:", () => refreshModule("business"))
   );
 
+  // ── Deal events → refresh business module ──
+  unsubs.push(
+    platformBus.onPrefix("deal:", () => refreshModule("business"))
+  );
+
+  // ── Orbit communication events → refresh communication module ──
+  unsubs.push(
+    platformBus.onPrefix("orbit:", () => refreshModule("communication"))
+  );
+
   // ── Booking events → refresh business module ──
   unsubs.push(
     platformBus.onPrefix("booking:", () => refreshModule("business"))
@@ -543,7 +553,19 @@ export function installPlatformReactions(): () => void {
     "orbit.call.ended": "orbit:call_ended",
     "booking.created": "marketplace:booking_created",
     "booking.confirmed": "marketplace:booking_confirmed",
+    "booking.completed": "marketplace:booking_completed",
     "marketplace.merchant.live": "marketplace:provider_went_live",
+    "marketplace.contact.opened": "marketplace:contact_opened",
+    "storefront.review_posted": "storefront:review_posted",
+    "property.unit.created": "property:unit_created",
+    "listing.created": "listing:created",
+    "listing.updated": "listing:updated",
+    "listing.published": "listing:published",
+    "rent.payment.created": "rent:payment_created",
+    "rent.payment.required": "rent:payment_required",
+    "rent.payment.paid": "rent:payment_paid",
+    "rent.paid": "rent:paid",
+    "rent.partial_payment": "rent:partial_payment",
   };
 
   for (const [dotEvent, colonEvent] of Object.entries(NOTATION_BRIDGE)) {

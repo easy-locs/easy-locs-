@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { getMeHistoryTypes, getMeFavoritesTypes } from "@/lib/taxonomy/wiring-helpers";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
@@ -253,6 +254,9 @@ export default function MeCommandCenter() {
     return roles[0];
   }, [isMerchant, isPropertyManager, hasProviderRole, hasDriverRole, t]);
 
+  const meHistoryTypes = useMemo(() => getMeHistoryTypes(), []);
+  const meFavoritesTypes = useMemo(() => getMeFavoritesTypes(), []);
+
   const sections = useMemo<MeSection[]>(() => {
     const merchantId = activeShop?.id ?? "";
 
@@ -347,13 +351,17 @@ export default function MeCommandCenter() {
         id: "essentials",
         title: t("me.essentials"),
         showIf: "always" as const,
-        items: [
-          { icon: ShoppingBag, label: t("me.orders"), subtitle: t("me.orders_sub"), path: "/my-orders", accent: A.blue, badge: (quickStats?.activeOrders ?? 0) > 0 ? quickStats!.activeOrders : undefined },
-          { icon: Heart, label: t("me.favorites"), subtitle: t("me.favorites_sub"), path: "/favorites", accent: A.rose },
-          { icon: MapPin, label: t("me.addresses"), subtitle: t("me.addresses_sub"), path: "/me/address-book", accent: A.emerald },
-          { icon: Star, label: t("me.loyalty"), subtitle: t("me.loyalty_sub"), path: "/me/loyalty-history", accent: A.amber },
-          { icon: PieChart, label: t("me.spending"), subtitle: t("me.spending_sub"), path: "/me/spending-insights", accent: A.cyan },
-        ],
+        items: (() => {
+          const historyTypes = meHistoryTypes;
+          const favoritesTypes = meFavoritesTypes;
+          return [
+            { icon: ShoppingBag, label: t("me.orders"), subtitle: t("me.orders_sub"), path: "/my-orders", accent: A.blue, badge: (quickStats?.activeOrders ?? 0) > 0 ? quickStats!.activeOrders : undefined },
+            { icon: Heart, label: t("me.favorites"), subtitle: `${favoritesTypes.length} ${t("me.favorites_sub")}`, path: "/favorites", accent: A.rose },
+            { icon: MapPin, label: t("me.addresses"), subtitle: t("me.addresses_sub"), path: "/me/address-book", accent: A.emerald },
+            { icon: Star, label: t("me.loyalty"), subtitle: `${historyTypes.length} ${t("me.loyalty_sub")}`, path: "/me/loyalty-history", accent: A.amber },
+            { icon: PieChart, label: t("me.spending"), subtitle: t("me.spending_sub"), path: "/me/spending-insights", accent: A.cyan },
+          ];
+        })(),
       },
       {
         id: "property",
@@ -426,7 +434,7 @@ export default function MeCommandCenter() {
         ],
       },
     ];
-  }, [t, propCount, quickStats, activeShop, isMerchant]);
+  }, [t, propCount, quickStats, activeShop, isMerchant, meHistoryTypes, meFavoritesTypes]);
 
   const visibleSections = useMemo(() => {
     return sections.filter((s) => {

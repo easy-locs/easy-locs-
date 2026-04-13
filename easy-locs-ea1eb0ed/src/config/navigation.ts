@@ -54,7 +54,7 @@ export const NAV_TABS_CONFIG: NavTab[] = [
     icon: Wallet,
     match: (p) =>
       p.startsWith("/wallet") || p.startsWith("/pay") ||
-      p === "/pos" || p === "/checkout" ||
+      p === "/pos" || p.startsWith("/pos/") || p === "/checkout" ||
       p.startsWith("/my-orders") || p.startsWith("/orders"),
   },
   {
@@ -63,7 +63,8 @@ export const NAV_TABS_CONFIG: NavTab[] = [
     path: "/me",
     icon: User,
     match: (p) =>
-      p === "/me" || p.startsWith("/settings") ||
+      p === "/me" || p.startsWith("/me/") ||
+      p.startsWith("/settings") ||
       p.startsWith("/merchant") || p.startsWith("/seller") ||
       p.startsWith("/business") || p.startsWith("/notifications") ||
       p.startsWith("/driver") || p.startsWith("/favorites"),

@@ -113,9 +113,32 @@ export function installCrossAppReactions(): () => void {
     })
   );
 
-  // ── Marketplace contact opened → notify + dashboard refresh ──
   unsubs.push(
     platformBus.on("marketplace:listing_published", async (event) => {
+      const p = event.payload as any;
+
+      const user = await getCurrentUser();
+      if (!user || !p?.merchantId) return;
+
+      try {
+        await createAppNotification({
+          userId: user.id,
+          scope: "dashboard",
+          category: "marketplace_listing",
+          title: "Listing published",
+          body: `Listing published for merchant ${p.merchantId}`,
+          severity: "info",
+          entityType: "merchant",
+          entityId: p.merchantId,
+        });
+      } catch (e) {
+        console.error("[cross-app] marketplace notification failed", e);
+      }
+    })
+  );
+
+  unsubs.push(
+    platformBus.on("marketplace:contact_opened", async (event) => {
       const p = event.payload as any;
 
       const user = await getCurrentUser();
@@ -133,7 +156,7 @@ export function installCrossAppReactions(): () => void {
           entityId: p.merchantId,
         });
       } catch (e) {
-        console.error("[cross-app] marketplace notification failed", e);
+        console.error("[cross-app] contact notification failed", e);
       }
     })
   );
@@ -160,6 +183,12 @@ export function installCrossAppReactions(): () => void {
     })
   );
 
+
+  unsubs.push(
+    platformBus.on("orbit:unread_corrected", (event) => {
+      if (import.meta.env.DEV) console.log("[cross-app] orbit:unread_corrected consumed", event.payload);
+    })
+  );
 
   return () => unsubs.forEach((fn) => fn());
 }

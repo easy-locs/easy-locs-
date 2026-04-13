@@ -69,23 +69,24 @@ import propertyImg from "@/assets/categories/property.png";
 import beautyImg from "@/assets/categories/beauty.png";
 import travelImg from "@/assets/categories/travel.png";
 import pharmacyImg from "@/assets/categories/pharmacy.png";
+import { getDashboardHeroCategories, getDashboardCategoryImageKeys } from "@/lib/taxonomy/wiring-helpers";
+import { MODULE_WIRING } from "@/lib/taxonomy/module-wiring";
 
-/** Only 10 primary category images — no subcategory images at dashboard level */
-const CATEGORY_IMAGES: Record<string, string> = {
+const CATEGORY_IMAGE_ASSETS: Record<string, string> = {
   food: foodImg, grocery: groceryImg, shops: shopsImg, services: servicesImg,
   taxi: taxiImg, delivery: deliveryImg, property: propertyImg,
-  beauty: beautyImg, travel: travelImg, pharmacy: pharmacyImg,
+  beauty: beautyImg, travel: travelImg, health: pharmacyImg,
 };
 
-/* ═══ Hero Category Quick-Access Buttons ═══ */
-const HERO_CATEGORIES = [
-  { labelKey: "home.cat_food", fallback: "Food", emoji: "🍽️", route: "/browse/food", color: "hsl(25 85% 55%)" },
-  { labelKey: "home.cat_services", fallback: "Services", emoji: "🔧", route: "/browse/services", color: "hsl(210 70% 55%)" },
-  { labelKey: "home.cat_hotel", fallback: "Hotel", emoji: "🏨", route: "/stay", color: "hsl(270 60% 55%)" },
-  { labelKey: "home.cat_taxi", fallback: "Taxi", emoji: "🚗", route: "/mobility/taxi", color: "hsl(200 80% 50%)" },
-  { labelKey: "home.cat_delivery", fallback: "Delivery", emoji: "📦", route: "/browse/food?mode=delivery", color: "hsl(160 60% 45%)" },
-  { labelKey: "home.cat_immo", fallback: "Immo", emoji: "🏠", route: "/property", color: "hsl(38 65% 56%)" },
-];
+const CATEGORY_IMAGES: Record<string, string> = (() => {
+  const images: Record<string, string> = {};
+  for (const key of getDashboardCategoryImageKeys()) {
+    if (CATEGORY_IMAGE_ASSETS[key]) images[key] = CATEGORY_IMAGE_ASSETS[key];
+  }
+  return images;
+})();
+
+const HERO_CATEGORIES = getDashboardHeroCategories();
 
 /* ═══ Top Hero Banner — Premium super-app hero ═══ */
 const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: SmartHero; locationLabel: string; onLocationTap: () => void; t: (k: string) => string }) => (
@@ -190,11 +191,25 @@ const ActiveCartBanner = memo(() => {
 /* ═══ Smart Quick Actions — Time & context-aware ═══ */
 type QuickDef = { icon: typeof QrCode; labelKey: string; to: string; color: string };
 
-const CORE_ACTIONS: QuickDef[] = [
-  { icon: QrCode, labelKey: "home.scan", to: "/pay/scan", color: "from-violet-500/15 to-purple-500/8" },
-  { icon: Send, labelKey: "home.pay", to: "/wallet/transfer", color: "from-blue-500/15 to-cyan-500/8" },
-  { icon: Wallet, labelKey: "home.wallet", to: "/wallet", color: "from-emerald-500/15 to-green-500/8" },
-];
+const CORE_ACTIONS: QuickDef[] = (() => {
+  const financeActions = MODULE_WIRING.finance.dashboard.quickActions;
+  const actionMap: Record<string, { icon: typeof QrCode; color: string }> = {
+    "/wallet": { icon: Wallet, color: "from-emerald-500/15 to-green-500/8" },
+    "/wallet/transfer": { icon: Send, color: "from-blue-500/15 to-cyan-500/8" },
+    "/pay/scan": { icon: QrCode, color: "from-violet-500/15 to-purple-500/8" },
+  };
+  return [
+    { icon: QrCode, labelKey: "home.scan", to: "/pay/scan", color: "from-violet-500/15 to-purple-500/8" },
+    ...financeActions
+      .filter(a => actionMap[a.route])
+      .map(a => ({
+        icon: actionMap[a.route].icon,
+        labelKey: `home.${a.label.toLowerCase().replace(/\s+/g, "_")}`,
+        to: a.route,
+        color: actionMap[a.route].color,
+      })),
+  ].slice(0, 3);
+})();
 
 const CONTEXT_ACTIONS: Record<string, QuickDef> = {
   coffee: { icon: Coffee, labelKey: "home.qa_coffee", to: "/browse/food?q=coffee", color: "from-amber-500/15 to-orange-500/8" },

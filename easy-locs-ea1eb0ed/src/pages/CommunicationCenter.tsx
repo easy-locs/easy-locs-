@@ -34,6 +34,11 @@ import { useThreadSelectionStore } from "@/stores/orbit/thread-selection.store";
 // useOrbitCallSync removed — centralized in RealtimeHubGuard
 import { useAuth } from "@/contexts/AuthContext";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
+import { getAllOrbitThreadTypes } from "@/lib/taxonomy/wiring-helpers";
+
+const CONTEXT_PANEL_THREAD_TYPES = new Set(
+  getAllOrbitThreadTypes().flatMap(o => o.threadTypes)
+);
 
 const VALID_SECTIONS: CommSection[] = ["chats", "calls", "groups", "you"];
 
@@ -176,7 +181,7 @@ export const CommunicationCenter = () => {
   const handleSelectThread = useCallback((thread: ConversationThread) => {
     if (!thread?.id) return;
     setSelectedThread(thread);
-    if (!isMobileRef.current && ["booking", "property", "property_lead", "property_viewing", "property_manager", "property_landlord", "property_maintenance", "listing", "deal"].includes(thread.conversationType)) {
+    if (!isMobileRef.current && CONTEXT_PANEL_THREAD_TYPES.has(thread.conversationType)) {
       setShowContext(true);
     }
   }, []);
