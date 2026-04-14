@@ -240,9 +240,12 @@ export default function NotificationCenter() {
                           transition={{ duration: 0.2, delay: i * 0.02 }}
                           className="relative group"
                         >
-                          <button
+                          <div
+                            role="button"
+                            tabIndex={0}
                             onClick={() => handleTap(notif)}
-                            className="w-full flex items-start gap-3 p-3.5 rounded-2xl text-left active:scale-[0.98] transition-all"
+                            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleTap(notif); }}
+                            className="w-full flex items-start gap-3 p-3.5 rounded-2xl text-left active:scale-[0.98] transition-all cursor-pointer"
                             style={{
                               background: isUnread ? "hsla(38, 65%, 56%, 0.06)" : "hsl(220 30% 12%)",
                               border: `1px solid ${isUnread ? "hsla(38, 65%, 56%, 0.15)" : "hsl(220 30% 16%)"}`,
@@ -294,7 +297,7 @@ export default function NotificationCenter() {
                                 <Trash2 className="h-3 w-3" style={{ color: "hsl(0 60% 50%)" }} />
                               </button>
                             </div>
-                          </button>
+                          </div>
                         </motion.div>
                       );
                     })}

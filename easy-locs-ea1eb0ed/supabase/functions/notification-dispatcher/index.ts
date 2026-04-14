@@ -54,6 +54,15 @@ const PRIORITY_CHANNELS: Record<string, string[]> = {
   low: ["in_app"],
 };
 
+/**
+ * Channel preference enforcement.
+ *
+ * Current schema has in_app_* and email_* columns per category.
+ * Until push_* and sms_* columns are added to notification_preferences:
+ * - push inherits from in_app_* (push extends in-app presence)
+ * - sms inherits from email_* (sms extends email as a direct-message channel)
+ * - critical priority always bypasses preference checks
+ */
 function isChannelAllowed(
   prefs: NotificationPrefs | null,
   channel: string,
@@ -61,6 +70,7 @@ function isChannelAllowed(
   priority: string,
 ): boolean {
   if (!prefs) return true;
+  if (priority === "critical") return true;
 
   switch (channel) {
     case "in_app": {
@@ -74,7 +84,7 @@ function isChannelAllowed(
     case "email": {
       const emailKey = `email_${category}` as keyof NotificationPrefs;
       if (prefs[emailKey] === false) return false;
-      if (prefs.email_urgent_only && priority !== "critical" && priority !== "high") return false;
+      if (prefs.email_urgent_only && priority !== "high") return false;
       return true;
     }
     case "sms": {
