@@ -28,6 +28,12 @@ A complete canonical schema registry covering all platform domains:
 ## Governance & Canonical Registries
 - **9 Canonical Registries**: `src/lib/governance/canonical-registries.ts` — Domain, Event, Asset, UI Contract, Data Contract, State Machine, Permissions, Route registries with validation
 - **Canonical Dedup Engine**: `src/lib/dedup/canonical-dedup-engine.ts` — 5 pluggable strategies (storefront, import, franchise, shadow, generic). Legacy engines delegate to it.
+- **Entity Dedup Runner**: `src/lib/dedup/entity-dedup-runner.ts` — Full-sweep dedup engine covering 10 entity types (conversations, contacts, listings, merchants, services, media, notifications, wallet records, sessions, imports) with merge-or-reject rules and proof logging
+- **Mapping Corrector**: `src/services/validation/mapping-corrector.ts` — Taxonomy/FK/metadata validation and correction with quarantine integration
+- **Orphan Asset Cleaner**: `src/lib/cleanup/orphan-asset-cleaner.ts` — 4-category orphan scanner (unreferenced, abandoned, disconnected, broken CDN) with quarantine
+- **E2E Flow Verifier**: `src/lib/flows/e2e-flow-verifier.ts` — 15 critical flows verified through state machines (dead button, silent drop, illegal transition detection)
+- **Resilience Test Suite**: `src/lib/stress/resilience-test-suite.ts` — 7 stress tests (multi-session, reconnect, event storm, publish gate, cascading failure, rollback, dedup under load)
+- **Production Lockdown Report**: `docs/PRODUCTION-LOCKDOWN-PROOF-REPORT.md` — Phase 3 final proof report with before/after comparisons
 - **Vertical Boundary Guard**: `src/lib/taxonomy/vertical-boundary-guard.ts` — 16 verticals with closed taxonomies, cross-contamination guards
 - **19 State Machines**: `src/lib/state-machines/canonical-machines.ts` + `src/domains/shared/state-machines.ts` — MESSAGE, CALL, UPLOAD, CONNECTION, NOTIFICATION, AUTH_SESSION, CHECKOUT, ONBOARDING, BOOKING, SUPPORT_TICKET, REPAIR, SUBSCRIPTION, PAYMENT, ORDER, DRIVER, LISTING, MATCH, MODERATION, FLIGHT
 - **Canonical IDs**: `src/types/canonical-ids.ts` — `conversationId`, `entityId`, `entityType` enforced; `mapLegacyIds()` at boundaries

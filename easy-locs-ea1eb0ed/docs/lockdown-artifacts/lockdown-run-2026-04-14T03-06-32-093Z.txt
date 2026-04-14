@@ -1,0 +1,418 @@
+=== PRODUCTION LOCKDOWN RUN: lockdown-mny1ieif-8azjjh ===
+Started: 2026-04-14T03:06:32.055Z
+Completed: 2026-04-14T03:06:32.092Z
+Duration: 37ms
+Overall: PASSED
+
+--- Dedup ---
+Scanned: 135
+Duplicates: 121
+Merged: 23 | Removed: 29 | Survivors: 106
+
+--- Mapping Correction ---
+Scanned: 14
+Corrected: 3 | Quarantined: 4 | Flagged: 2
+Corrected entity IDs: [map-3]
+Quarantined entity IDs: [map-2, map-4]
+
+--- Orphan Scan ---
+Total assets: 38
+Orphans found: 8
+Orphan asset IDs: [asset-orphan-30, asset-orphan-31, asset-orphan-32, asset-orphan-33, asset-orphan-34, asset-abandoned-1, asset-no-entity, asset-bad-cdn]
+Cleaned bytes: 535000
+
+--- E2E Flows ---
+Total: 15 | Passed: 15 | Failed: 0
+Dead buttons: 0 | Illegal transitions: 0 | Silent drops: 0
+
+--- Resilience Tests ---
+Total: 7 | Passed: 7 | Failed: 0
+
+
+========================================
+DETAILED DEDUP REPORT
+========================================
+=== ENTITY DEDUP SWEEP REPORT ===
+Started: 2026-04-14T03:06:32.055Z
+Completed: 2026-04-14T03:06:32.080Z
+Duration: 25ms
+
+Total scanned: 135
+Total duplicates found: 121
+Total merged: 23
+Total rejected: 9
+Total quarantined: 6
+Total survivors: 106
+Total removed: 29
+
+--- conversation ---
+  Scanned: 10 | Dupes: 29 | Merged: 8 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] conv-0 <- conv-1 (100%)
+    [merged] conv-2 <- conv-3 (93%)
+    [merged] conv-2 <- conv-4 (93%)
+    [merged] conv-2 <- conv-5 (93%)
+    [merged] conv-2 <- conv-6 (93%)
+    [merged] conv-2 <- conv-7 (93%)
+    [merged] conv-2 <- conv-8 (93%)
+    [merged] conv-2 <- conv-9 (93%)
+--- contact ---
+  Scanned: 20 | Dupes: 3 | Merged: 2 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] contact-0 <- contact-1 (100%)
+    [merged] contact-0 <- contact-2 (100%)
+--- listing ---
+  Scanned: 30 | Dupes: 10 | Merged: 4 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] listing-0 <- listing-1 (100%)
+    [merged] listing-0 <- listing-2 (100%)
+    [merged] listing-0 <- listing-3 (100%)
+    [merged] listing-0 <- listing-4 (100%)
+--- merchant ---
+  Scanned: 15 | Dupes: 6 | Merged: 3 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] merchant-0 <- merchant-1 (100%)
+    [merged] merchant-0 <- merchant-2 (100%)
+    [merged] merchant-0 <- merchant-3 (100%)
+--- service ---
+  Scanned: 10 | Dupes: 1 | Merged: 1 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] service-0 <- service-1 (100%)
+--- media ---
+  Scanned: 10 | Dupes: 1 | Merged: 1 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] media-0 <- media-1 (100%)
+--- notification ---
+  Scanned: 10 | Dupes: 1 | Merged: 1 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] notif-0 <- notif-1 (100%)
+--- wallet_record ---
+  Scanned: 10 | Dupes: 45 | Merged: 0 | Rejected: 9 | Quarantined: 0
+  Merge logs:
+    [rejected] wallet-0 <- wallet-1 (80%)
+    [rejected] wallet-0 <- wallet-2 (80%)
+    [rejected] wallet-0 <- wallet-3 (80%)
+    [rejected] wallet-0 <- wallet-4 (80%)
+    [rejected] wallet-0 <- wallet-5 (80%)
+    [rejected] wallet-0 <- wallet-6 (80%)
+    [rejected] wallet-0 <- wallet-7 (80%)
+    [rejected] wallet-0 <- wallet-8 (80%)
+    [rejected] wallet-0 <- wallet-9 (80%)
+--- session ---
+  Scanned: 10 | Dupes: 1 | Merged: 1 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] session-0 <- session-1 (100%)
+--- import ---
+  Scanned: 10 | Dupes: 24 | Merged: 2 | Rejected: 0 | Quarantined: 6
+  Merge logs:
+    [merged] import-0 <- import-1 (100%)
+    [merged] import-0 <- import-2 (100%)
+    [quarantined] import-3 <- import-4 (88%)
+    [quarantined] import-3 <- import-5 (88%)
+    [quarantined] import-3 <- import-6 (88%)
+    [quarantined] import-3 <- import-7 (88%)
+    [quarantined] import-3 <- import-8 (88%)
+    [quarantined] import-3 <- import-9 (88%)
+
+========================================
+DETAILED MAPPING CORRECTION REPORT
+========================================
+=== MAPPING CORRECTION REPORT ===
+Scanned: 14 entities
+Corrected: 3
+Quarantined: 4
+Flagged: 2
+Duration: 3ms
+
+--- Corrections by Issue ---
+  invalid_vertical: 2
+  taxonomy_mismatch: 4
+  broken_fk: 2
+  mixed_schema: 1
+
+--- Sample Corrections ---
+  [quarantined] map-2 / vertical: Invalid vertical "foood" with no close match
+  [quarantined] map-2 / category_chain: Invalid category chain: foood.restaurant.fast_food
+  [flagged] map-2 / canonical_node: Canonical node invalid: Invalid vertical "foood"
+  [corrected] map-3 / parentId: Parent entity "nonexistent-parent-999" does not exist — cleared orphan reference
+  [corrected] map-3 / merchantId: Foreign key "merchantId" references non-existent entity "nonexistent-merchant-888" — cleared
+  [corrected] map-3 / metadata.note: Empty or undefined metadata field "note" — cleaned
+  [quarantined] map-4 / vertical: Invalid vertical "zzzzz" with no close match
+  [quarantined] map-4 / category_chain: Invalid category chain: zzzzz.invalid.none
+  [flagged] map-4 / canonical_node: Canonical node invalid: Invalid vertical "zzzzz"
+
+========================================
+DETAILED ORPHAN SCAN REPORT
+========================================
+=== ORPHAN ASSET CLEANUP REPORT ===
+Timestamp: 2026-04-14T03:06:32.086Z
+Duration: 2ms
+
+Total assets scanned: 38
+Total orphans found: 8
+Total cleaned: 0.51 MB
+
+--- Breakdown ---
+Unreferenced images: 5
+Abandoned uploads: 1
+Disconnected media: 1
+Broken CDN refs: 1
+
+--- Sample Records ---
+  [quarantined] asset-orphan-30 (unreferenced): Referenced entity "deleted-entity-30" no longer exists
+  [quarantined] asset-orphan-31 (unreferenced): Referenced entity "deleted-entity-31" no longer exists
+  [quarantined] asset-orphan-32 (unreferenced): Referenced entity "deleted-entity-32" no longer exists
+  [quarantined] asset-orphan-33 (unreferenced): Referenced entity "deleted-entity-33" no longer exists
+  [quarantined] asset-orphan-34 (unreferenced): Referenced entity "deleted-entity-34" no longer exists
+  [quarantined] asset-abandoned-1 (abandoned_upload): Upload in "pending" state for >24h since 2026-04-11T03:06:32.054Z
+  [quarantined] asset-no-entity (disconnected): Media asset has no entityId reference
+  [flagged] asset-bad-cdn (broken_cdn): CDN URL "http://localhost:3000/bad-cdn.jpg" is invalid or unreachable
+
+========================================
+DETAILED E2E FLOW REPORT
+========================================
+=== E2E FLOW VERIFICATION REPORT ===
+Timestamp: 2026-04-14T03:06:32.087Z
+Duration: 1ms
+
+Total flows: 15
+Passed: 15
+Failed: 0
+Dead buttons: 0
+Illegal transitions: 0
+Silent drops: 0
+
+[PASS] Login → Session (login-session)
+  Happy path: PASS
+  Error path "login-fail": PASS
+  Error path "mfa-flow": PASS
+  Error path "session-expire": PASS
+
+[PASS] Session Refresh (session-refresh)
+  Happy path: PASS
+  Error path "refresh-fail": PASS
+
+[PASS] Message Send Flow (message-send)
+  Happy path: PASS
+  Error path "send-fail-retry": PASS
+
+[PASS] Voice Call Flow (voice-call)
+  Happy path: PASS
+  Error path "call-missed": PASS
+  Error path "call-declined": PASS
+  Error path "call-reconnect": PASS
+
+[PASS] File Upload Flow (file-upload)
+  Happy path: PASS
+  Error path "upload-fail-retry": PASS
+  Error path "upload-cancel": PASS
+
+[PASS] Connection Lifecycle (connection-lifecycle)
+  Happy path: PASS
+  Error path "connection-drop-reconnect": PASS
+  Error path "connection-fail-retry": PASS
+
+[PASS] Notification Delivery (notification-delivery)
+  Happy path: PASS
+  Error path "notification-dismiss": PASS
+  Error path "notification-fail-retry": PASS
+
+[PASS] Checkout Flow (checkout-complete)
+  Happy path: PASS
+  Error path "payment-fail-retry": PASS
+  Error path "checkout-cancel": PASS
+
+[PASS] Onboarding Flow (onboarding)
+  Happy path: PASS
+  Error path "onboarding-skip": PASS
+
+[PASS] Booking Flow (booking)
+  Happy path: PASS
+  Error path "booking-no-show": PASS
+  Error path "booking-cancel-refund": PASS
+
+[PASS] Support Ticket Flow (support-ticket)
+  Happy path: PASS
+  Error path "ticket-escalate": PASS
+
+[PASS] Repair Lifecycle (repair-lifecycle)
+  Happy path: PASS
+  Error path "repair-qc-fail": PASS
+
+[PASS] Subscription Lifecycle (subscription)
+  Happy path: PASS
+  Error path "subscription-payment-fail": PASS
+  Error path "subscription-pause-resume": PASS
+
+[PASS] Search → Detail → Contact (search-detail-contact)
+  Happy path: PASS
+  Error path "no-results": PASS
+
+[PASS] Wallet Payment Flow (wallet-payment)
+  Happy path: PASS
+  Error path "payment-fail-retry": PASS
+  Error path "payment-cancel": PASS
+
+
+========================================
+DETAILED RESILIENCE TEST REPORT
+========================================
+=== STRESS & RESILIENCE TEST REPORT ===
+Timestamp: 2026-04-14T03:06:32.092Z
+Duration: 5ms
+
+Total tests: 7
+Passed: 7
+Failed: 0
+
+[PASS] Multi-Session Concurrent Access
+  10 concurrent sessions: 10 authenticated, 10 after refresh cycle
+  Metrics: sessionCount=10, initialAuthenticated=10, finalAuthenticated=10
+  Duration: 0ms
+
+[PASS] Reconnect After Disconnect
+  20/20 reconnect cycles successful
+  Metrics: reconnectCycles=20, successfulReconnects=20
+  Duration: 0ms
+
+[PASS] Rapid Event Storm (100 events)
+  100 unique, 0 initial dupes, 0 false positives, array dedup OK
+  Metrics: eventCount=100, uniqueProcessed=100, duplicatesDetected=0, falsePositives=0
+  Duration: 1ms
+
+[PASS] Full Publish Gate Chain Under Load (Schema + Taxonomy + Confidence)
+  50 entities: schema pass=40 fail=10, taxonomy pass=40 fail=0, confidence pass=40 fail=0, full chain pass=40
+  Metrics: entityCount=50, schemaPassCount=40, schemaFailCount=10, taxonomyPassCount=40, taxonomyFailCount=0, confidencePassCount=40, confidenceFailCount=0, fullChainPassCount=40
+  Duration: 2ms
+
+[PASS] Cascading Failure Through Gate Pipeline + Quarantine
+  Valid entity: 3/3 gates passed. Broken entity: quarantined=true, failed gates=3
+  Metrics: validGatesPassed=3, brokenQuarantined=1, brokenFailedGates=3, quarantineReasons=3
+  Duration: 0ms
+
+[PASS] Rollback When Repair Fails (With Gate Validation)
+  10 entities: modified=true, rolled back=true, all pass schema gate after rollback
+  Metrics: entityCount=10, modified=10, rolledBack=10
+  Duration: 0ms
+
+[PASS] Dedup Engine Under Load (200 messages + 80 duplicates)
+  Input: 280, Output: 200, Expected: 200
+  Metrics: inputSize=280, outputSize=200, expectedSize=200
+  Duration: 0ms
+
+
+========================================
+MACHINE-READABLE ARTIFACT (JSON)
+========================================
+{
+  "runId": "lockdown-mny1ieif-8azjjh",
+  "startedAt": "2026-04-14T03:06:32.055Z",
+  "completedAt": "2026-04-14T03:06:32.092Z",
+  "durationMs": 37,
+  "overallPassed": true,
+  "failureReasons": [],
+  "mergedEntityIds": [
+    "conv-1",
+    "conv-3",
+    "conv-4",
+    "conv-5",
+    "conv-6",
+    "conv-7",
+    "conv-8",
+    "conv-9",
+    "contact-1",
+    "contact-2",
+    "listing-1",
+    "listing-2",
+    "listing-3",
+    "listing-4",
+    "merchant-1",
+    "merchant-2",
+    "merchant-3",
+    "service-1",
+    "media-1",
+    "notif-1",
+    "session-1",
+    "import-1",
+    "import-2"
+  ],
+  "removedEntityIds": [
+    "conv-1",
+    "conv-3",
+    "conv-4",
+    "conv-5",
+    "conv-6",
+    "conv-7",
+    "conv-8",
+    "conv-9",
+    "contact-1",
+    "contact-2",
+    "listing-1",
+    "listing-2",
+    "listing-3",
+    "listing-4",
+    "merchant-1",
+    "merchant-2",
+    "merchant-3",
+    "service-1",
+    "media-1",
+    "notif-1",
+    "session-1",
+    "import-1",
+    "import-2",
+    "import-4",
+    "import-5",
+    "import-6",
+    "import-7",
+    "import-8",
+    "import-9"
+  ],
+  "correctedEntityIds": [
+    "map-3"
+  ],
+  "quarantinedEntityIds": [
+    "map-2",
+    "map-4"
+  ],
+  "orphanAssetIds": [
+    "asset-orphan-30",
+    "asset-orphan-31",
+    "asset-orphan-32",
+    "asset-orphan-33",
+    "asset-orphan-34",
+    "asset-abandoned-1",
+    "asset-no-entity",
+    "asset-bad-cdn"
+  ],
+  "dedup": {
+    "totalScanned": 135,
+    "totalDuplicates": 121,
+    "totalMerged": 23,
+    "totalRemoved": 29,
+    "totalSurvivors": 106
+  },
+  "mapping": {
+    "scanned": 14,
+    "corrected": 3,
+    "quarantined": 4,
+    "flagged": 2
+  },
+  "orphans": {
+    "totalAssets": 38,
+    "totalOrphans": 8,
+    "totalCleanedBytes": 535000
+  },
+  "e2e": {
+    "totalFlows": 15,
+    "passed": 15,
+    "failed": 0,
+    "deadButtons": 0,
+    "illegalTransitions": 0,
+    "silentDrops": 0
+  },
+  "resilience": {
+    "totalTests": 7,
+    "passed": 7,
+    "failed": 0
+  }
+}

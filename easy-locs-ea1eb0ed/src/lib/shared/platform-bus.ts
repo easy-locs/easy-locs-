@@ -140,7 +140,7 @@ class PlatformBus {
     }
     const set = this.listeners.get(type)!;
     if (set.size >= MAX_LISTENERS_PER_EVENT) {
-      if (import.meta.env.DEV) {
+      if (import.meta.env?.DEV) {
         console.warn(`[platform-bus] Fan-out limit reached for "${type}" (${MAX_LISTENERS_PER_EVENT}), listener not added`);
       }
       return () => {};
@@ -151,7 +151,7 @@ class PlatformBus {
 
   onAll(listener: EventListener): () => void {
     if (this.globalListeners.size >= MAX_GLOBAL_LISTENERS) {
-      if (import.meta.env.DEV) {
+      if (import.meta.env?.DEV) {
         console.warn(`[platform-bus] Global listener limit reached (${MAX_GLOBAL_LISTENERS}), listener not added`);
       }
       return () => {};
@@ -162,7 +162,7 @@ class PlatformBus {
 
   onPrefix(prefix: string, listener: EventListener): () => void {
     if (this.globalListeners.size >= MAX_GLOBAL_LISTENERS) {
-      if (import.meta.env.DEV) {
+      if (import.meta.env?.DEV) {
         console.warn(`[platform-bus] Global listener limit reached (${MAX_GLOBAL_LISTENERS}), prefix listener for "${prefix}" not added`);
       }
       return () => {};
@@ -189,7 +189,7 @@ class PlatformBus {
     if (isDedup) {
       const last = this._dedupWindow.get(type as string);
       if (last !== undefined && now - last < DEDUP_WINDOW_MS) {
-        if (import.meta.env.DEV) {
+        if (import.meta.env?.DEV) {
           console.debug(`[platform-bus] dedup dropped "${type}" (${now - last}ms since last)`);
         }
         return;
@@ -212,7 +212,7 @@ class PlatformBus {
       this.eventLog.splice(0, this.eventLog.length - this.MAX_LOG);
     }
 
-    if (import.meta.env.DEV) {
+    if (import.meta.env?.DEV) {
       this._devEmitCount++;
       if (!this._devEmitTimer) {
         this._devEmitTimer = setInterval(() => {

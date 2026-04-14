@@ -1,0 +1,938 @@
+=== PRODUCTION LOCKDOWN RUN: lockdown-mny27xgh-lx52pe ===
+Started: 2026-04-14T03:26:23.009Z
+Completed: 2026-04-14T03:26:23.211Z
+Duration: 202ms
+Overall: FAILED
+
+--- Dedup ---
+Scanned: 135
+Duplicates: 121
+Merged: 23 | Removed: 29 | Survivors: 106
+
+--- Mapping Correction ---
+Scanned: 14
+Corrected: 3 | Quarantined: 4 | Flagged: 2
+Corrected entity IDs: [map-3]
+Quarantined entity IDs: [map-2, map-4]
+
+--- Orphan Scan ---
+Total assets: 38
+Orphans found: 8
+Orphan asset IDs: [asset-orphan-30, asset-orphan-31, asset-orphan-32, asset-orphan-33, asset-orphan-34, asset-abandoned-1, asset-no-entity, asset-bad-cdn]
+Cleaned bytes: 535000
+
+--- E2E Flows ---
+Total: 15 | Passed: 15 | Failed: 0
+Dead buttons: 0 | Illegal transitions: 0 | Silent drops: 0
+
+--- Resilience Tests ---
+Total: 12 | Passed: 10 | Failed: 2
+
+--- FAILURE REASONS ---
+  - 2/12 resilience tests failed
+
+========================================
+DETAILED DEDUP REPORT
+========================================
+=== ENTITY DEDUP SWEEP REPORT ===
+Started: 2026-04-14T03:26:23.009Z
+Completed: 2026-04-14T03:26:23.034Z
+Duration: 25ms
+
+Total scanned: 135
+Total duplicates found: 121
+Total merged: 23
+Total rejected: 9
+Total quarantined: 6
+Total survivors: 106
+Total removed: 29
+
+--- conversation ---
+  Scanned: 10 | Dupes: 29 | Merged: 8 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] conv-0 <- conv-1 (100%)
+    [merged] conv-2 <- conv-3 (93%)
+    [merged] conv-2 <- conv-4 (93%)
+    [merged] conv-2 <- conv-5 (93%)
+    [merged] conv-2 <- conv-6 (93%)
+    [merged] conv-2 <- conv-7 (93%)
+    [merged] conv-2 <- conv-8 (93%)
+    [merged] conv-2 <- conv-9 (93%)
+--- contact ---
+  Scanned: 20 | Dupes: 3 | Merged: 2 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] contact-0 <- contact-1 (100%)
+    [merged] contact-0 <- contact-2 (100%)
+--- listing ---
+  Scanned: 30 | Dupes: 10 | Merged: 4 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] listing-0 <- listing-1 (100%)
+    [merged] listing-0 <- listing-2 (100%)
+    [merged] listing-0 <- listing-3 (100%)
+    [merged] listing-0 <- listing-4 (100%)
+--- merchant ---
+  Scanned: 15 | Dupes: 6 | Merged: 3 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] merchant-0 <- merchant-1 (100%)
+    [merged] merchant-0 <- merchant-2 (100%)
+    [merged] merchant-0 <- merchant-3 (100%)
+--- service ---
+  Scanned: 10 | Dupes: 1 | Merged: 1 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] service-0 <- service-1 (100%)
+--- media ---
+  Scanned: 10 | Dupes: 1 | Merged: 1 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] media-0 <- media-1 (100%)
+--- notification ---
+  Scanned: 10 | Dupes: 1 | Merged: 1 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] notif-0 <- notif-1 (100%)
+--- wallet_record ---
+  Scanned: 10 | Dupes: 45 | Merged: 0 | Rejected: 9 | Quarantined: 0
+  Merge logs:
+    [rejected] wallet-0 <- wallet-1 (80%)
+    [rejected] wallet-0 <- wallet-2 (80%)
+    [rejected] wallet-0 <- wallet-3 (80%)
+    [rejected] wallet-0 <- wallet-4 (80%)
+    [rejected] wallet-0 <- wallet-5 (80%)
+    [rejected] wallet-0 <- wallet-6 (80%)
+    [rejected] wallet-0 <- wallet-7 (80%)
+    [rejected] wallet-0 <- wallet-8 (80%)
+    [rejected] wallet-0 <- wallet-9 (80%)
+--- session ---
+  Scanned: 10 | Dupes: 1 | Merged: 1 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] session-0 <- session-1 (100%)
+--- import ---
+  Scanned: 10 | Dupes: 24 | Merged: 2 | Rejected: 0 | Quarantined: 6
+  Merge logs:
+    [merged] import-0 <- import-1 (100%)
+    [merged] import-0 <- import-2 (100%)
+    [quarantined] import-3 <- import-4 (88%)
+    [quarantined] import-3 <- import-5 (88%)
+    [quarantined] import-3 <- import-6 (88%)
+    [quarantined] import-3 <- import-7 (88%)
+    [quarantined] import-3 <- import-8 (88%)
+    [quarantined] import-3 <- import-9 (88%)
+
+========================================
+DETAILED MAPPING CORRECTION REPORT
+========================================
+=== MAPPING CORRECTION REPORT ===
+Scanned: 14 entities
+Corrected: 3
+Quarantined: 4
+Flagged: 2
+Duration: 4ms
+
+--- Corrections by Issue ---
+  invalid_vertical: 2
+  taxonomy_mismatch: 4
+  broken_fk: 2
+  mixed_schema: 1
+
+--- Sample Corrections ---
+  [quarantined] map-2 / vertical: Invalid vertical "foood" with no close match
+  [quarantined] map-2 / category_chain: Invalid category chain: foood.restaurant.fast_food
+  [flagged] map-2 / canonical_node: Canonical node invalid: Invalid vertical "foood"
+  [corrected] map-3 / parentId: Parent entity "nonexistent-parent-999" does not exist — cleared orphan reference
+  [corrected] map-3 / merchantId: Foreign key "merchantId" references non-existent entity "nonexistent-merchant-888" — cleared
+  [corrected] map-3 / metadata.note: Empty or undefined metadata field "note" — cleaned
+  [quarantined] map-4 / vertical: Invalid vertical "zzzzz" with no close match
+  [quarantined] map-4 / category_chain: Invalid category chain: zzzzz.invalid.none
+  [flagged] map-4 / canonical_node: Canonical node invalid: Invalid vertical "zzzzz"
+
+========================================
+DETAILED ORPHAN SCAN REPORT
+========================================
+=== ORPHAN ASSET CLEANUP REPORT ===
+Timestamp: 2026-04-14T03:26:23.040Z
+Duration: 1ms
+
+Total assets scanned: 38
+Total orphans found: 8
+Total cleaned: 0.51 MB
+
+--- Breakdown ---
+Unreferenced images: 5
+Abandoned uploads: 1
+Disconnected media: 1
+Broken CDN refs: 1
+
+--- Sample Records ---
+  [quarantined] asset-orphan-30 (unreferenced): Referenced entity "deleted-entity-30" no longer exists
+  [quarantined] asset-orphan-31 (unreferenced): Referenced entity "deleted-entity-31" no longer exists
+  [quarantined] asset-orphan-32 (unreferenced): Referenced entity "deleted-entity-32" no longer exists
+  [quarantined] asset-orphan-33 (unreferenced): Referenced entity "deleted-entity-33" no longer exists
+  [quarantined] asset-orphan-34 (unreferenced): Referenced entity "deleted-entity-34" no longer exists
+  [quarantined] asset-abandoned-1 (abandoned_upload): Upload in "pending" state for >24h since 2026-04-11T03:26:23.009Z
+  [quarantined] asset-no-entity (disconnected): Media asset has no entityId reference
+  [flagged] asset-bad-cdn (broken_cdn): CDN URL "http://localhost:3000/bad-cdn.jpg" is invalid or unreachable
+
+========================================
+DETAILED E2E FLOW REPORT
+========================================
+=== E2E FLOW VERIFICATION REPORT ===
+Timestamp: 2026-04-14T03:26:23.041Z
+Duration: 1ms
+
+Total flows: 15
+Passed: 15
+Failed: 0
+Dead buttons: 0
+Illegal transitions: 0
+Silent drops: 0
+
+[PASS] Login → Session (login-session)
+  Happy path: PASS
+  Error path "login-fail": PASS
+  Error path "mfa-flow": PASS
+  Error path "session-expire": PASS
+
+[PASS] Session Refresh (session-refresh)
+  Happy path: PASS
+  Error path "refresh-fail": PASS
+
+[PASS] Message Send Flow (message-send)
+  Happy path: PASS
+  Error path "send-fail-retry": PASS
+
+[PASS] Voice Call Flow (voice-call)
+  Happy path: PASS
+  Error path "call-missed": PASS
+  Error path "call-declined": PASS
+  Error path "call-reconnect": PASS
+
+[PASS] File Upload Flow (file-upload)
+  Happy path: PASS
+  Error path "upload-fail-retry": PASS
+  Error path "upload-cancel": PASS
+
+[PASS] Connection Lifecycle (connection-lifecycle)
+  Happy path: PASS
+  Error path "connection-drop-reconnect": PASS
+  Error path "connection-fail-retry": PASS
+
+[PASS] Notification Delivery (notification-delivery)
+  Happy path: PASS
+  Error path "notification-dismiss": PASS
+  Error path "notification-fail-retry": PASS
+
+[PASS] Checkout Flow (checkout-complete)
+  Happy path: PASS
+  Error path "payment-fail-retry": PASS
+  Error path "checkout-cancel": PASS
+
+[PASS] Onboarding Flow (onboarding)
+  Happy path: PASS
+  Error path "onboarding-skip": PASS
+
+[PASS] Booking Flow (booking)
+  Happy path: PASS
+  Error path "booking-no-show": PASS
+  Error path "booking-cancel-refund": PASS
+
+[PASS] Support Ticket Flow (support-ticket)
+  Happy path: PASS
+  Error path "ticket-escalate": PASS
+
+[PASS] Repair Lifecycle (repair-lifecycle)
+  Happy path: PASS
+  Error path "repair-qc-fail": PASS
+
+[PASS] Subscription Lifecycle (subscription)
+  Happy path: PASS
+  Error path "subscription-payment-fail": PASS
+  Error path "subscription-pause-resume": PASS
+
+[PASS] Search → Detail → Contact (search-detail-contact)
+  Happy path: PASS
+  Error path "no-results": PASS
+
+[PASS] Wallet Payment Flow (wallet-payment)
+  Happy path: PASS
+  Error path "payment-fail-retry": PASS
+  Error path "payment-cancel": PASS
+
+
+========================================
+DETAILED RESILIENCE TEST REPORT
+========================================
+=== STRESS & RESILIENCE TEST REPORT ===
+Timestamp: 2026-04-14T03:26:23.211Z
+Duration: 169ms
+
+Total tests: 12
+Passed: 10
+Failed: 2
+
+[PASS] Multi-Session Concurrent Access (100 sessions, MFA + failure branches)
+  100 sessions: 100 initially authenticated, 90 after refresh/logout cycles, min required=90
+  Metrics: sessionCount=100, initialAuthenticated=100, finalAuthenticated=90, minExpected=90
+  Duration: 0ms
+
+[FAIL] Reconnect After Disconnect (100 cycles, intermittent failures)
+  9/100 reconnect cycles successful, 90 drop failures
+  ERROR: Cycle 9: CONNECTED failed from failed
+  ERROR: Cycle 10: DROP failed from failed
+  ERROR: Cycle 11: DROP failed from failed
+  ERROR: Cycle 12: DROP failed from failed
+  ERROR: Cycle 13: DROP failed from failed
+  ERROR: Cycle 14: DROP failed from failed
+  ERROR: Cycle 15: DROP failed from failed
+  ERROR: Cycle 16: DROP failed from failed
+  ERROR: Cycle 17: DROP failed from failed
+  ERROR: Cycle 18: DROP failed from failed
+  ERROR: Cycle 19: DROP failed from failed
+  ERROR: Cycle 20: DROP failed from failed
+  ERROR: Cycle 21: DROP failed from failed
+  ERROR: Cycle 22: DROP failed from failed
+  ERROR: Cycle 23: DROP failed from failed
+  ERROR: Cycle 24: DROP failed from failed
+  ERROR: Cycle 25: DROP failed from failed
+  ERROR: Cycle 26: DROP failed from failed
+  ERROR: Cycle 27: DROP failed from failed
+  ERROR: Cycle 28: DROP failed from failed
+  ERROR: Cycle 29: DROP failed from failed
+  ERROR: Cycle 30: DROP failed from failed
+  ERROR: Cycle 31: DROP failed from failed
+  ERROR: Cycle 32: DROP failed from failed
+  ERROR: Cycle 33: DROP failed from failed
+  ERROR: Cycle 34: DROP failed from failed
+  ERROR: Cycle 35: DROP failed from failed
+  ERROR: Cycle 36: DROP failed from failed
+  ERROR: Cycle 37: DROP failed from failed
+  ERROR: Cycle 38: DROP failed from failed
+  ERROR: Cycle 39: DROP failed from failed
+  ERROR: Cycle 40: DROP failed from failed
+  ERROR: Cycle 41: DROP failed from failed
+  ERROR: Cycle 42: DROP failed from failed
+  ERROR: Cycle 43: DROP failed from failed
+  ERROR: Cycle 44: DROP failed from failed
+  ERROR: Cycle 45: DROP failed from failed
+  ERROR: Cycle 46: DROP failed from failed
+  ERROR: Cycle 47: DROP failed from failed
+  ERROR: Cycle 48: DROP failed from failed
+  ERROR: Cycle 49: DROP failed from failed
+  ERROR: Cycle 50: DROP failed from failed
+  ERROR: Cycle 51: DROP failed from failed
+  ERROR: Cycle 52: DROP failed from failed
+  ERROR: Cycle 53: DROP failed from failed
+  ERROR: Cycle 54: DROP failed from failed
+  ERROR: Cycle 55: DROP failed from failed
+  ERROR: Cycle 56: DROP failed from failed
+  ERROR: Cycle 57: DROP failed from failed
+  ERROR: Cycle 58: DROP failed from failed
+  ERROR: Cycle 59: DROP failed from failed
+  ERROR: Cycle 60: DROP failed from failed
+  ERROR: Cycle 61: DROP failed from failed
+  ERROR: Cycle 62: DROP failed from failed
+  ERROR: Cycle 63: DROP failed from failed
+  ERROR: Cycle 64: DROP failed from failed
+  ERROR: Cycle 65: DROP failed from failed
+  ERROR: Cycle 66: DROP failed from failed
+  ERROR: Cycle 67: DROP failed from failed
+  ERROR: Cycle 68: DROP failed from failed
+  ERROR: Cycle 69: DROP failed from failed
+  ERROR: Cycle 70: DROP failed from failed
+  ERROR: Cycle 71: DROP failed from failed
+  ERROR: Cycle 72: DROP failed from failed
+  ERROR: Cycle 73: DROP failed from failed
+  ERROR: Cycle 74: DROP failed from failed
+  ERROR: Cycle 75: DROP failed from failed
+  ERROR: Cycle 76: DROP failed from failed
+  ERROR: Cycle 77: DROP failed from failed
+  ERROR: Cycle 78: DROP failed from failed
+  ERROR: Cycle 79: DROP failed from failed
+  ERROR: Cycle 80: DROP failed from failed
+  ERROR: Cycle 81: DROP failed from failed
+  ERROR: Cycle 82: DROP failed from failed
+  ERROR: Cycle 83: DROP failed from failed
+  ERROR: Cycle 84: DROP failed from failed
+  ERROR: Cycle 85: DROP failed from failed
+  ERROR: Cycle 86: DROP failed from failed
+  ERROR: Cycle 87: DROP failed from failed
+  ERROR: Cycle 88: DROP failed from failed
+  ERROR: Cycle 89: DROP failed from failed
+  ERROR: Cycle 90: DROP failed from failed
+  ERROR: Cycle 91: DROP failed from failed
+  ERROR: Cycle 92: DROP failed from failed
+  ERROR: Cycle 93: DROP failed from failed
+  ERROR: Cycle 94: DROP failed from failed
+  ERROR: Cycle 95: DROP failed from failed
+  ERROR: Cycle 96: DROP failed from failed
+  ERROR: Cycle 97: DROP failed from failed
+  ERROR: Cycle 98: DROP failed from failed
+  ERROR: Cycle 99: DROP failed from failed
+  Metrics: reconnectCycles=100, successfulReconnects=9, failedDrops=90
+  Duration: 0ms
+
+[PASS] Rapid Event Storm (1000 events + 200 near-duplicates + heavy array dedup)
+  1000 unique, 0 initial dupes, 0 false positives, 0 missed double-submits, array dedup OK
+  Metrics: eventCount=1000, uniqueProcessed=1000, duplicatesDetected=0, falsePositives=0, missedDoubleSubmits=0, nearDupUnique=200, heavyDupInputSize=1900
+  Duration: 5ms
+
+[FAIL] Full Publish Gate Chain Under Load (500 entities, 5 verticals, 3 invalid types)
+  500 entities: schema pass=466 fail=34, taxonomy pass=0 fail=400, confidence pass=226 fail=174, full chain pass=0
+  ERROR: Valid entity test-1776137183047-2k0f74 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183047-awfyh5 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183047-i9zd27 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183047-oulg4w failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183047-u8vizz failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183047-4x46wp failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183047-puyk3o failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183047-jnu8cv failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183047-ijjrue failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183047-6ldphw failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183047-uitl3c failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183047-bk3s5b failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183047-lbn1jm failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183047-km43lm failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183047-dk72d1 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183047-hj8sag failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-lc8cif failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-j33jk6 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-1pa79b failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-o58nal failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-7zr1rb failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-axf6ga failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-3d8cb5 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-5n32rw failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-7wx55b failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-k28cms failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-u3jk3e failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-1v2mm2 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-vd8don failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-klhyq5 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-9vfwyi failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-5ydlov failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-fp2l2x failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-o654uj failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-i26f0p failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-iynz0u failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-6jleul failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-d806l1 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-ztsijf failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-73v05q failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-3fv22s failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-7jwxpz failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-ir4zq4 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-39744b failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-k7ud0n failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-lb7zu9 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-61564x failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-fz1lax failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-r3wms5 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-qvoklh failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-7439o7 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-sb37k5 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-r9yve0 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-hdxndp failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-jxo0ku failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-d2aolp failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-tzqmn0 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-h6qk15 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-olmr0i failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-fb6pqr failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-csb4jo failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-67z4xn failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-49ope2 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-bx5bzt failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-6p4sle failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-aw2cjg failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-4dvr79 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-erxp9n failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-1c00yc failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-9cwx4l failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-6mtbdi failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-wovnug failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-qf8fym failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-y9uipa failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-y34zr6 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-omlksa failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-kkmk3h failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-ivs271 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-xlqype failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-en8c0n failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-laqgtq failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-ou5mmg failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-36l9of failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-osys82 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-cee65n failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-4rzpc1 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-swsmpu failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-5bto6v failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-oumamm failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-7ywzyu failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-h4mnwx failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-tjb577 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-qda6jy failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-ytzpcs failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-r1dt7b failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-v16wmi failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-aeapz3 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-ol3gkk failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-ziwh4g failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-nrzjdh failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-lcspta failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-qvjxxi failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-oeszi6 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-t2tn47 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-6151jm failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-6e8kcg failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183048-9m997z failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183048-nibt0k failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183048-3upiqd failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183048-uztbx8 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-4nuu9m failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-wi343h failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-d8qich failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-qwpz5e failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-p2v61n failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-9ynb01 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-kvbkwl failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-08vpa0 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-xn91kw failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-jl7y2g failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-70os0q failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-w0jbru failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-vgealp failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-aeolgx failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-05a4dr failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-m7rooc failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-rmiwc8 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-s3alrj failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-3773nm failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-pdbnlm failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-ncspk2 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-bkpa42 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-vr98e4 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-iri2um failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-w1hxyu failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-75fmo1 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-arrxmi failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-93m7uj failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-su3sd1 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-3045qr failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-tfmfda failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-kx9yay failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-iq92ci failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-4g72if failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-3z22x2 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-0gh3vb failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-7992bw failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-jqt5iv failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-mpm1lv failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-0oks2o failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-35ga5g failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-bmndhr failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-3yq91y failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-jpaxiw failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-rsc76b failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-g59o3x failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-5kknrv failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-upptri failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-u78ina failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-3umolw failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-1l6x41 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-v64on3 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-3d80fl failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-5gyx7r failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-lldv7s failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-hcd662 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-fx7taz failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-hx0cph failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-m8krxy failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-ktk2l6 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-t000wv failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-1p6drh failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-inumwr failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-y7zlwe failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-oj8uq2 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-mlw2l9 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-flde9f failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-w1rj86 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-c9cpsp failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-faonyj failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-3mzlag failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-7rh2tk failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-8wykrj failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-29a1kb failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-ijnodn failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-8yj3d9 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-lq5j7o failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-fdevui failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-rf0knn failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-hh8epu failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-uez8y9 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-kg3zya failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-nj7p7e failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-3ihu8j failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-5etzbm failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-r9olh5 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-6oe0mm failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-3ymm25 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-i6rwdf failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-gi4iub failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-4d3mcr failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-g5ysw0 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-75l9p0 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-7yerg5 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-pub7ps failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-zyhpok failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-3cm8dn failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-z5zjw0 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-vmyufz failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-ir5890 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-czmmdg failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-tsshj7 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-20o1kp failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-sro66z failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-m8pjnt failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-a2t2l7 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-x1mzai failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-c62ffm failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-lyvwq9 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-ewqxgi failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-u7orfq failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-x924ft failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-5und24 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-ymap9u failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-tctuep failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-erfqgz failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-sqhdpd failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-8kujog failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-l7ghzk failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-95i28x failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-i9a03s failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183049-h6xxy7 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183049-ilwqmm failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183049-hrl7sf failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183049-jh1he5 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-397ofn failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-da6h8y failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-5no2bn failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-lal8ge failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-lxgym4 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-bvngps failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-4lkkie failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-hxvnwx failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-t47xh8 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-bz4i8n failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-05aeht failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-3kkabq failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-dcmarg failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-inyndw failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-3pzz1q failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-l6vy3q failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-wy6yy6 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-i130cr failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-ju0qcg failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-eppl29 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-dcm6fm failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-ewy2ly failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-kdjb9t failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-6i5prh failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-ft8sua failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-ltrww8 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-67lbs9 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-ofoppv failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-ypmgps failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-09sxum failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-rz1zkg failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-zasa7h failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-jpej1m failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-hi61zw failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-ja3bc2 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-dx4v9o failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-5hucse failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-pi7zbm failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-t97brw failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-le05yv failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-y50e43 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-2tngrq failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-b9itev failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-vr5gso failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-wszp1q failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-5s7lcf failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-fz0ygr failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-glrf1j failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-a7aaoq failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-t44nyg failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-w5efpd failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-tpd2go failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-l37bpz failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-4w6cg3 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-5ysm93 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-dbd0lb failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-v12ngv failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-7i2tb3 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-2zmez8 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-dwex63 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-uvxpm2 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-9rkav0 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-lrsio2 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-4k7d8q failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-mtvye6 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-f4g2fg failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-tni1bb failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-mzyqrt failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-h5pa7d failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-lr02nl failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-rht9qo failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-olni8w failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-jl8zf0 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-wf0ts7 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-pdxqv1 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-84z2xa failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-uoyawx failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-dk7fkj failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-1vaqxb failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-jzbrd6 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-mvjsm2 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-mkzqz9 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-hlwqen failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-8vkz8q failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-19do8q failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-g52pkj failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-cfoagx failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-cfbpg9 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-3et2a4 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-y2b7gg failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-g4sful failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-pp4xtk failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-reuxdx failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-ozg4g3 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-elqr8c failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-2iujq8 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-f5vzig failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-p2w02d failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-c9rht4 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-7xorz5 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-g8pxti failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-xwyb91 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-q8iksu failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-sq0dxz failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-h10533 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-pgmyaq failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-qejv9o failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-7ohsgc failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-yhfj16 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-lld8tb failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-8dzrxa failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-mdyx3i failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-exr8bw failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-0rnf47 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-u8xska failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-g3s2ff failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183050-wl47xq failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183050-hd6usn failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183050-10fe8u failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183050-lj1s82 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-62r5qz failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-hhhfq8 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-b8uxql failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-95xn86 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-0x8dm3 failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-094t7s failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-x6vamw failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-slgnps failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-cvxyuq failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-69d7de failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-aaa82u failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-2oedgw failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-1tmjep failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-jgodr0 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-41h1wj failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-gl709q failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-5uxe7s failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-ule8tp failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-kfp5nw failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-s0o2cm failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-3rqobb failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-6at7zv failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-l467fp failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-2ki0tj failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-jh281p failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-kh1io4 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-wb2w4w failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-u6xtis failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-063fnc failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-rmvog8 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-uksble failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-fs5m8g failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-nodp1l failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-tj0n84 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-uypfnr failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-di1f6y failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-r2cz2f failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-ehgmm1 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-frq9u6 failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-ysq8kr failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-m4a7xc failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  ERROR: Valid entity test-1776137183051-6kt6n9 failed taxonomy gate: Taxonomy validation failed: Invalid category chain: grocery.store.supermarket, Category "store" not found in vertical "grocery"
+  ERROR: Valid entity test-1776137183051-byt7xz failed taxonomy gate: Taxonomy validation failed: Invalid vertical "hotel", Invalid category chain: hotel.accommodation.hotel, Invalid vertical "hotel"
+  ERROR: Valid entity test-1776137183051-297t8s failed taxonomy gate: Taxonomy validation failed: Invalid vertical "retail", Invalid category chain: retail.store.general, Invalid vertical "retail"
+  ERROR: Valid entity test-1776137183051-iegmpi failed taxonomy gate: Taxonomy validation failed: Canonical type "listing" not valid for subcategory "general"
+  Metrics: entityCount=500, schemaPassCount=466, schemaFailCount=34, taxonomyPassCount=0, taxonomyFailCount=400, confidencePassCount=226, confidenceFailCount=174, fullChainPassCount=0
+  Duration: 6ms
+
+[PASS] Cascading Failure Through Gate Pipeline + Quarantine (graduated degradation)
+  Valid entity: 3/3 gates passed. Broken entity: quarantined=true, failed gates=3. Degradation levels quarantined: 4/4
+  Metrics: validGatesPassed=3, brokenQuarantined=1, brokenFailedGates=3, quarantineReasons=3, degradationLevelsQuarantined=4
+  Duration: 0ms
+
+[PASS] Rollback When Repair Fails (100 entities, multi-field corruption + restore)
+  100 entities: modified=true, rolled back=true, post-rollback gate failures=0
+  Metrics: entityCount=100, modified=100, rolledBack=100, postRollbackGateFailures=0
+  Duration: 1ms
+
+[PASS] Dedup Engine Under Load (2000 messages + 2200 duplicates + edge cases)
+  Input: 3900, Output: 2000, Expected: 2000, Edge cases: single=1, empty=0, allSame=1
+  Metrics: inputSize=3900, outputSize=2000, expectedSize=2000, edgeCaseSingle=1, edgeCaseEmpty=0, edgeCaseAllSame=1
+  Duration: 4ms
+
+[PASS] Exhaustive State Machine Traversal (7 machines, reachability + bogus events)
+  7 machines, 55 states, 106 transitions (106 valid), 0 unreachable, 0 dead-end states
+  Metrics: machineCount=7, totalStates=55, totalTransitions=106, validTransitions=106, unreachableFromInitial=0, deadStates=0
+  Duration: 1ms
+
+[PASS] Boundary Confidence Score Edge Cases (34 boundary values)
+  34 boundary scores tested, 5 adversarial mismatches, 34 schema-consistent, consistency rate=100.0%
+  Metrics: testedCount=34, mismatchTestedCount=5, gateConsistentCount=34, consistencyRate=100
+  Duration: 0ms
+
+[PASS] Cross-Vertical Contamination Detection (20 verticals x 25 entities)
+  500 entities across 20 verticals: 0 contaminations, 0 gate isolation failures, 0 mixed batch issues
+  Metrics: totalEntities=500, verticalCount=20, crossContaminations=0, gateIsolationFailures=0, mixedBatchIssues=0
+  Duration: 4ms
+
+[PASS] Full 7-Gate Chain Stress (200 entities via runAllGates)
+  200 entities (150 valid, 50 invalid) through full 7-gate chain: 103 publish-eligible, 50 quarantined, 0 false quarantines, 0 missed invalid, 1400 total gate results
+  Metrics: entityCount=200, validEntityCount=150, invalidEntityCount=50, publishEligibleCount=103, quarantinedCount=50, reviewRequiredCount=47, totalGateResults=1400, falseQuarantines=0, missedInvalidDetections=0
+  Duration: 118ms
+
+[PASS] State Machine Fuzzer (7 machines x 500 random walks x 50 steps)
+  3500 walks, 175000 total steps, 19343 valid transitions, 155657 null transitions, 0 violations, rate=11.1%
+  Metrics: totalWalks=3500, totalSteps=175000, successfulTransitions=19343, nullTransitions=155657, stateViolations=0, transitionRatePct=11
+  Duration: 29ms
+
+
+========================================
+MACHINE-READABLE ARTIFACT (JSON)
+========================================
+{
+  "runId": "lockdown-mny27xgh-lx52pe",
+  "startedAt": "2026-04-14T03:26:23.009Z",
+  "completedAt": "2026-04-14T03:26:23.211Z",
+  "durationMs": 202,
+  "overallPassed": false,
+  "failureReasons": [
+    "2/12 resilience tests failed"
+  ],
+  "mergedEntityIds": [
+    "conv-1",
+    "conv-3",
+    "conv-4",
+    "conv-5",
+    "conv-6",
+    "conv-7",
+    "conv-8",
+    "conv-9",
+    "contact-1",
+    "contact-2",
+    "listing-1",
+    "listing-2",
+    "listing-3",
+    "listing-4",
+    "merchant-1",
+    "merchant-2",
+    "merchant-3",
+    "service-1",
+    "media-1",
+    "notif-1",
+    "session-1",
+    "import-1",
+    "import-2"
+  ],
+  "removedEntityIds": [
+    "conv-1",
+    "conv-3",
+    "conv-4",
+    "conv-5",
+    "conv-6",
+    "conv-7",
+    "conv-8",
+    "conv-9",
+    "contact-1",
+    "contact-2",
+    "listing-1",
+    "listing-2",
+    "listing-3",
+    "listing-4",
+    "merchant-1",
+    "merchant-2",
+    "merchant-3",
+    "service-1",
+    "media-1",
+    "notif-1",
+    "session-1",
+    "import-1",
+    "import-2",
+    "import-4",
+    "import-5",
+    "import-6",
+    "import-7",
+    "import-8",
+    "import-9"
+  ],
+  "correctedEntityIds": [
+    "map-3"
+  ],
+  "quarantinedEntityIds": [
+    "map-2",
+    "map-4"
+  ],
+  "orphanAssetIds": [
+    "asset-orphan-30",
+    "asset-orphan-31",
+    "asset-orphan-32",
+    "asset-orphan-33",
+    "asset-orphan-34",
+    "asset-abandoned-1",
+    "asset-no-entity",
+    "asset-bad-cdn"
+  ],
+  "dedup": {
+    "totalScanned": 135,
+    "totalDuplicates": 121,
+    "totalMerged": 23,
+    "totalRemoved": 29,
+    "totalSurvivors": 106
+  },
+  "mapping": {
+    "scanned": 14,
+    "corrected": 3,
+    "quarantined": 4,
+    "flagged": 2
+  },
+  "orphans": {
+    "totalAssets": 38,
+    "totalOrphans": 8,
+    "totalCleanedBytes": 535000
+  },
+  "e2e": {
+    "totalFlows": 15,
+    "passed": 15,
+    "failed": 0,
+    "deadButtons": 0,
+    "illegalTransitions": 0,
+    "silentDrops": 0
+  },
+  "resilience": {
+    "totalTests": 12,
+    "passed": 10,
+    "failed": 2
+  }
+}
