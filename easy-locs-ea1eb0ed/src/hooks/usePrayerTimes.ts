@@ -166,6 +166,32 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
     setState(prev => ({ ...prev, prayers, nextPrayer, countdown }));
   }, []);
 
+  const seedFromEngine = useCallback(() => {
+    import("@/engines/data/prayer-data-engine").then(({ getPrayerEngineCache }) => {
+      const cached = getPrayerEngineCache();
+      if (!cached || cached.date !== new Date().toDateString()) return;
+      if (dataRef.current) return;
+
+      const raw: Record<string, string> = {};
+      for (const p of cached.prayers) {
+        raw[p.name.toLowerCase()] = p.time;
+      }
+      dataRef.current = raw;
+      const { prayers, nextPrayer } = computePrayers(raw);
+      const countdown = nextPrayer?.minutesLeft != null ? formatCountdown(nextPrayer.minutesLeft) : "";
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        prayers,
+        nextPrayer,
+        countdown,
+        lat: cached.lat,
+        lng: cached.lng,
+        locationSource: "country",
+      }));
+    }).catch(() => {});
+  }, []);
+
   const load = useCallback(async () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
@@ -197,6 +223,7 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
     }
 
     if (lat === null || lng === null) {
+      seedFromEngine();
       setState(prev => ({
         ...prev,
         loading: false,

@@ -20,6 +20,30 @@ const REFRESH_MS = 300_000;
 // In-memory cache keyed by "EUR" (edge function always returns EUR-based rates)
 const RATE_CACHE: Record<string, { snapshot: ForexSnapshot; at: number }> = {};
 
+function seedFromEngineCache(): void {
+  if (RATE_CACHE["EUR"]) return;
+  try {
+    import("@/engines/data/forex-data-engine").then(({ getForexEngineCache }) => {
+      if (RATE_CACHE["EUR"]) return;
+      const cached = getForexEngineCache();
+      if (cached?.rates && Object.keys(cached.rates).length > 0) {
+        RATE_CACHE["EUR"] = {
+          snapshot: {
+            base: cached.base,
+            rates: cached.rates,
+            source: cached.source + "_engine",
+            fetchedAt: new Date(cached.fetchedAt).toISOString(),
+            spread: 0,
+          },
+          at: cached.fetchedAt,
+        };
+      }
+    }).catch(() => {});
+  } catch {}
+}
+
+seedFromEngineCache();
+
 /** Fetch from the fx-rates edge function (ECB / Fixer backed, DB-cached 1h). */
 async function fetchFromEdgeFunction(): Promise<ForexSnapshot | null> {
   try {
@@ -93,6 +117,23 @@ async function refreshSnapshot(force = false): Promise<ForexSnapshot | null> {
 
   let snap = await fetchFromEdgeFunction();
   if (!snap) snap = await fetchFromFrankfurter();
+
+  if (!snap) {
+    try {
+      const { getForexEngineCache } = await import("@/engines/data/forex-data-engine");
+      const engineCached = getForexEngineCache();
+      if (engineCached?.rates && Object.keys(engineCached.rates).length > 0) {
+        snap = {
+          base: engineCached.base,
+          rates: engineCached.rates,
+          source: engineCached.source + "_engine",
+          fetchedAt: new Date(engineCached.fetchedAt).toISOString(),
+          spread: 0,
+        };
+      }
+    } catch {}
+  }
+
   if (snap) {
     RATE_CACHE["EUR"] = { snapshot: snap, at: Date.now() };
   }
