@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import {
   Home, Users, ArrowRight, ArrowLeft, MapPin, Loader2,
-  User, Building, Link2, ClipboardList, FileText, CheckCircle2, Briefcase
+  User, Building, Link2, ClipboardList, FileText, CheckCircle2, Briefcase,
+  ShoppingBag, Truck, Globe, MessageSquare, Wallet, Compass
 } from "lucide-react";
 import AppLogo from "@/components/AppLogo";
 import CountrySelect from "@/components/ui/CountrySelect";
@@ -18,7 +19,7 @@ import AddressAutocomplete, { type AddressResult } from "@/components/ui/Address
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 
-type UserType = "landlord" | "tenant";
+type UserType = "landlord" | "tenant" | "merchant" | "driver";
 type RentalMode = "long_term" | "short_term" | "mixed";
 
 const STEPS = [
@@ -119,6 +120,20 @@ const Onboarding = () => {
       await obRepo.completeOnboarding(user.id);
       setSaving(false);
       navigate("/dashboard");
+      return;
+    }
+
+    if (selectedType === "merchant") {
+      await obRepo.completeOnboarding(user.id);
+      setSaving(false);
+      navigate("/merchant/onboarding");
+      return;
+    }
+
+    if (selectedType === "driver") {
+      await obRepo.completeOnboarding(user.id);
+      setSaving(false);
+      navigate("/driver/dashboard");
       return;
     }
 
@@ -307,6 +322,8 @@ const Onboarding = () => {
                 {([
                   { type: "landlord" as UserType, labelKey: "ob.landlord", descKey: "ob.landlord_desc", icon: Home },
                   { type: "tenant" as UserType, labelKey: "ob.tenant", descKey: "ob.tenant_desc", icon: Users },
+                  { type: "merchant" as UserType, labelKey: "ob.merchant", descKey: "ob.merchant_desc", icon: ShoppingBag },
+                  { type: "driver" as UserType, labelKey: "ob.driver", descKey: "ob.driver_desc", icon: Truck },
                 ]).map(p => (
                   <button key={p.type} onClick={() => setSelectedType(p.type)}
                     className={`flex items-start gap-3 p-4 rounded-xl border-2 transition-all text-left ${selectedType === p.type ? "border-gold bg-gold/5" : "border-border hover:border-gold/40"}`}>

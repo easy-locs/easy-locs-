@@ -8,6 +8,17 @@ const config: CapacitorConfig = {
     url: 'https://www.easy-locs.com?forceHideBadge=true',
     cleartext: true,
   },
+  plugins: {
+    App: {
+      url: 'https://www.easy-locs.com',
+    },
+  },
+  android: {
+    appendUserAgent: 'EasyLocs-Native',
+  },
+  ios: {
+    appendUserAgent: 'EasyLocs-Native',
+  },
 };
 
 export default config;

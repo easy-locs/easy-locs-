@@ -64,7 +64,19 @@ const Spinner = () => (
 );
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, loading, disabled, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, loading, disabled, children, onClick, ...props }, ref) => {
+    const handleClick = React.useCallback(
+      (e: React.MouseEvent<HTMLButtonElement>) => {
+        try {
+          if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+            navigator.vibrate(10);
+          }
+        } catch {}
+        onClick?.(e);
+      },
+      [onClick],
+    );
+
     if (asChild) {
       return (
         <Slot
@@ -81,6 +93,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || loading}
+        onClick={handleClick}
         {...props}
       >
         {loading && <Spinner />}

@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
-import { Skeleton, SkeletonCard, SkeletonList } from "@/components/ui/skeleton";
+import { Skeleton, SkeletonCard, SkeletonList, SkeletonProfile, SkeletonChat } from "@/components/ui/skeleton";
 
 interface LoadingStateProps {
   rows?: number;
   className?: string;
-  variant?: "cards" | "list" | "page" | "inline";
+  variant?: "cards" | "list" | "page" | "inline" | "profile" | "chat";
 }
 
 const LoadingState = ({ className, variant = "cards", rows = 3 }: LoadingStateProps) => {
@@ -24,6 +24,14 @@ const LoadingState = ({ className, variant = "cards", rows = 3 }: LoadingStatePr
         </div>
       </div>
     );
+  }
+
+  if (variant === "profile") {
+    return <SkeletonProfile className={className} />;
+  }
+
+  if (variant === "chat") {
+    return <SkeletonChat count={rows} className={className} />;
   }
 
   if (variant === "inline") {

@@ -56,4 +56,68 @@ function SkeletonAvatar({ size = "md", className }: { size?: "sm" | "md" | "lg";
   return <Skeleton className={cn("rounded-full", sizeMap[size], className)} />;
 }
 
-export { Skeleton, SkeletonText, SkeletonCard, SkeletonList, SkeletonAvatar };
+function SkeletonProfile({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex flex-col items-center space-y-4 p-6", className)}>
+      <Skeleton className="h-20 w-20 rounded-full" />
+      <div className="space-y-2 w-full max-w-xs">
+        <Skeleton className="h-4 w-2/3 mx-auto rounded" />
+        <Skeleton className="h-3 w-1/2 mx-auto rounded" />
+      </div>
+      <div className="w-full space-y-3 mt-2">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3 w-3/4 rounded" />
+            <Skeleton className="h-2.5 w-1/2 rounded" />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3 w-2/3 rounded" />
+            <Skeleton className="h-2.5 w-2/5 rounded" />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3 w-4/5 rounded" />
+            <Skeleton className="h-2.5 w-1/3 rounded" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkeletonChat({ count = 4, className }: { count?: number; className?: string }) {
+  return (
+    <div className={cn("space-y-4 p-4", className)}>
+      {Array.from({ length: count }).map((_, i) => {
+        const isRight = i % 2 === 1;
+        return (
+          <div key={i} className={cn("flex gap-2.5", isRight ? "flex-row-reverse" : "flex-row")}>
+            {!isRight && <Skeleton className="h-8 w-8 rounded-full shrink-0" />}
+            <div className={cn("space-y-1.5 max-w-[70%]", isRight ? "items-end" : "items-start")}>
+              <Skeleton className={cn("h-10 rounded-2xl", isRight ? "w-40" : "w-52")} />
+              <Skeleton className="h-2 w-12 rounded" />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SkeletonGrid({ cols = 2, count = 4, className }: { cols?: number; count?: number; className?: string }) {
+  return (
+    <div className={cn(`grid gap-3`, cols === 2 ? "grid-cols-2" : cols === 3 ? "grid-cols-3" : "grid-cols-1", className)}>
+      {Array.from({ length: count }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </div>
+  );
+}
+
+export { Skeleton, SkeletonText, SkeletonCard, SkeletonList, SkeletonAvatar, SkeletonProfile, SkeletonChat, SkeletonGrid };
