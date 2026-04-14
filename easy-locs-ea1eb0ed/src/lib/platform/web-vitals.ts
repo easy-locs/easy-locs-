@@ -31,6 +31,22 @@ function record(name: WebVitalMetric["name"], value: number): void {
     timestamp: Date.now(),
   };
   metrics.push(metric);
+  sendToPostHog(metric);
+}
+
+function sendToPostHog(metric: WebVitalMetric): void {
+  try {
+    import("@/lib/analytics/posthog").then(({ captureEvent }) => {
+      captureEvent("web_vital_native", {
+        metric_name: metric.name,
+        metric_value: metric.value,
+        metric_rating: metric.rating,
+        page_path: window.location.hash.slice(1) || window.location.pathname,
+        device_type: window.innerWidth < 768 ? "mobile" : window.innerWidth < 1024 ? "tablet" : "desktop",
+        timestamp: metric.timestamp,
+      });
+    }).catch(() => {});
+  } catch {}
 }
 
 export function initWebVitals(): void {
