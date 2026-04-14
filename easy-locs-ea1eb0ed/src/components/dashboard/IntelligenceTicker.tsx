@@ -1,20 +1,21 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { useIntelligenceTicker } from "@/hooks/useIntelligenceTicker";
-import { TrendingUp, Cloud, Newspaper, AlertTriangle, Radio } from "lucide-react";
+import { TrendingUp, Cloud, Newspaper, AlertTriangle, Radio, Moon, ChevronRight } from "lucide-react";
 
 const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
 
-const CATEGORY_CONFIG: Record<string, { icon: typeof TrendingUp; label: string }> = {
+const CATEGORY_CONFIG: Record<string, { icon: typeof TrendingUp; label: string; deepLink?: string }> = {
   finance: { icon: TrendingUp, label: "Finance" },
   forex: { icon: TrendingUp, label: "Forex" },
-  weather: { icon: Cloud, label: "Weather" },
-  news: { icon: Newspaper, label: "News" },
-  emergency: { icon: AlertTriangle, label: "Alert" },
-  traffic: { icon: Radio, label: "Traffic" },
-  events: { icon: Radio, label: "Events" },
-  religious: { icon: Radio, label: "Religious" },
+  weather: { icon: Cloud, label: "Météo" },
+  news: { icon: Newspaper, label: "Actualités" },
+  emergency: { icon: AlertTriangle, label: "Alerte" },
+  traffic: { icon: Radio, label: "Trafic" },
+  events: { icon: Radio, label: "Événements" },
+  religious: { icon: Moon, label: "Prière", deepLink: "/dashboard/prayer-times" },
 };
 
 interface Props {
@@ -23,15 +24,28 @@ interface Props {
 }
 
 function IntelligenceTickerInner({ country, city }: Props) {
+  const navigate = useNavigate();
   const { currentItem, visible } = useIntelligenceTicker(country, city);
+
+  const handleClick = useCallback(() => {
+    if (!currentItem) return;
+    const config = CATEGORY_CONFIG[currentItem.category];
+    const link = config?.deepLink;
+    if (link) navigate(link);
+  }, [currentItem, navigate]);
 
   if (!visible || !currentItem) return null;
 
   const config = CATEGORY_CONFIG[currentItem.category] ?? { icon: Radio, label: "Info" };
   const Icon = config.icon;
+  const isClickable = !!(config.deepLink ?? currentItem.deepLinkUrl);
 
   return (
     <div
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onClick={isClickable ? handleClick : undefined}
+      onKeyDown={isClickable ? (e) => { if (e.key === "Enter") handleClick(); } : undefined}
       style={{
         width: "100%",
         overflow: "hidden",
@@ -40,6 +54,7 @@ function IntelligenceTickerInner({ country, city }: Props) {
         border: `1px solid ${GOLD}33`,
         padding: "8px 12px",
         marginBottom: 8,
+        cursor: isClickable ? "pointer" : "default",
       }}
     >
       <AnimatePresence mode="wait">
@@ -106,6 +121,9 @@ function IntelligenceTickerInner({ country, city }: Props) {
               {currentItem.text}
             </p>
           </div>
+          {isClickable && (
+            <ChevronRight size={14} style={{ color: `${GOLD}88`, flexShrink: 0 }} />
+          )}
         </motion.div>
       </AnimatePresence>
     </div>
