@@ -1,18 +1,18 @@
 /**
- * cache-layer — In-memory LRU cache with TTL, domain scoping, and invalidation.
+ * cache-layer — Client-side in-memory LRU cache with TTL, domain scoping, and invalidation.
  *
- * Provides O(1) get/set with automatic eviction. Each domain (profiles, configs,
- * fx-rates, search, media, listings) has its own TTL. Cache entries are evicted
- * when capacity is reached (LRU) or TTL expires.
+ * L1-only: Provides O(1) get/set with automatic eviction for the current browser tab.
+ * Each domain (profiles, configs, fx-rates, search, media, listings) has its own TTL.
+ * Cache entries are evicted when capacity is reached (LRU) or TTL expires.
  *
- * Server-side caching is handled by the cache-manager edge function which manages
- * the server_cache table. This module focuses on client-side hot-path caching.
+ * Server-side caching is separate — handled by the cache-manager edge function
+ * which manages the server_cache table via service_role.
  *
- * Integration points:
- * - useCurrencyConversion: fx-rates domain
- * - profile.repository: profiles domain
- * - search hooks: search domain
- * - config/settings: configs domain
+ * Wired integration points:
+ * - profile.repository: profiles domain (cachedFetch + invalidateOnMutation)
+ * - useCurrencyConversion: fx-rates domain (appCache.get/set)
+ * - search-brain: search domain (appCache.get/set)
+ * - country-system: configs domain (cachedFetch for country/currency configs)
  */
 
 export type CacheDomain =

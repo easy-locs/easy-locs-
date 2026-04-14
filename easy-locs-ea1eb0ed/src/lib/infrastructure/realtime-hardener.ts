@@ -198,11 +198,29 @@ class RealtimeHardener {
     return () => this.listeners.delete(fn);
   }
 
+  private wrapSetupFnWithTracking(hc: HardenedChannel, raw: ReturnType<typeof db.channel>): ReturnType<typeof db.channel> {
+    const originalOn = raw.on.bind(raw);
+    const self = this;
+    raw.on = function (...args: any[]) {
+      const callbackIdx = args.length - 1;
+      if (typeof args[callbackIdx] === "function") {
+        const originalCb = args[callbackIdx];
+        args[callbackIdx] = function (...cbArgs: any[]) {
+          hc.lastEventAt = Date.now();
+          recordEvent(hc.name);
+          return originalCb.apply(this, cbArgs);
+        };
+      }
+      return originalOn(...args);
+    } as typeof raw.on;
+    return hc.setupFn(raw);
+  }
+
   private connect(hc: HardenedChannel): void {
     hc.state = "connecting";
 
     const raw = db.channel(hc.name);
-    const configured = hc.setupFn(raw);
+    const configured = this.wrapSetupFnWithTracking(hc, raw);
 
     configured.subscribe((status: string) => {
       if (status === "SUBSCRIBED") {
