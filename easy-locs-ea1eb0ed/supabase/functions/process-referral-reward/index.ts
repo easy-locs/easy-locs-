@@ -69,20 +69,25 @@ Deno.serve(async (req: Request) => {
     for (const ref of pendingReferrals) {
       const baseKey = `referral_${ref.id}`;
 
-      const { data: existingReferrer } = await db
-        .from("wallet_transactions")
-        .select("id")
-        .eq("idempotency_key", `${baseKey}_referrer`)
-        .maybeSingle();
+      const [{ data: existingReferrer }, { data: existingReferee }] = await Promise.all([
+        db.from("wallet_transactions").select("id").eq("idempotency_key", `${baseKey}_referrer`).maybeSingle(),
+        db.from("wallet_transactions").select("id").eq("idempotency_key", `${baseKey}_referee`).maybeSingle(),
+      ]);
 
-      if (existingReferrer) {
+      const referrerDone = !!existingReferrer;
+      const refereeDone = !!existingReferee;
+
+      if (referrerDone && refereeDone) {
+        await db.from("referral_redemptions").update({ status: "credited" }).eq("id", ref.id).eq("status", "pending");
         results.push({ id: ref.id, status: "already_processed" });
         continue;
       }
 
-      const creditReferrer = await db
-        .from("wallet_transactions")
-        .insert({
+      let referrerOk = referrerDone;
+      let refereeOk = refereeDone;
+
+      if (!referrerDone) {
+        const creditReferrer = await db.from("wallet_transactions").insert({
           user_id: ref.referrer_user_id,
           amount: ref.reward_amount,
           direction: "credit",
@@ -91,16 +96,14 @@ Deno.serve(async (req: Request) => {
           idempotency_key: `${baseKey}_referrer`,
           created_at: new Date().toISOString(),
         });
-
-      if (creditReferrer.error) {
-        console.warn("[process-referral-reward] Referrer credit failed:", creditReferrer.error.message);
-        results.push({ id: ref.id, status: "referrer_credit_failed" });
-        continue;
+        referrerOk = !creditReferrer.error;
+        if (creditReferrer.error) {
+          console.warn("[process-referral-reward] Referrer credit failed:", creditReferrer.error.message);
+        }
       }
 
-      const creditReferee = await db
-        .from("wallet_transactions")
-        .insert({
+      if (!refereeDone) {
+        const creditReferee = await db.from("wallet_transactions").insert({
           user_id: ref.referred_user_id,
           amount: ref.reward_amount,
           direction: "credit",
@@ -109,25 +112,52 @@ Deno.serve(async (req: Request) => {
           idempotency_key: `${baseKey}_referee`,
           created_at: new Date().toISOString(),
         });
-
-      if (creditReferee.error) {
-        console.warn("[process-referral-reward] Referee credit failed:", creditReferee.error.message);
-        results.push({ id: ref.id, status: "referee_credit_failed" });
-        continue;
+        refereeOk = !creditReferee.error;
+        if (creditReferee.error) {
+          console.warn("[process-referral-reward] Referee credit failed:", creditReferee.error.message);
+        }
       }
 
-      const { error: updateErr } = await db
-        .from("referral_redemptions")
-        .update({ status: "credited" })
-        .eq("id", ref.id)
-        .eq("status", "pending");
+      if (referrerOk && refereeOk) {
+        const { error: updateErr } = await db
+          .from("referral_redemptions")
+          .update({ status: "credited" })
+          .eq("id", ref.id)
+          .eq("status", "pending");
 
-      if (updateErr) {
-        console.warn("[process-referral-reward] Status update failed:", updateErr.message);
-        results.push({ id: ref.id, status: "credit_done_status_update_failed" });
+        if (updateErr) {
+          console.warn("[process-referral-reward] Status update failed:", updateErr.message);
+          results.push({ id: ref.id, status: "credit_done_status_update_failed" });
+        } else {
+          await db.from("notifications").insert([
+            {
+              id: crypto.randomUUID(),
+              user_id: ref.referrer_user_id,
+              type: "engagement",
+              title: "🎉 Referral Bonus!",
+              body: `You earned ${ref.reward_amount} ${ref.reward_currency} from a referral`,
+              read: false,
+              metadata_json: { route: "/me/referrals" },
+            },
+            {
+              id: crypto.randomUUID(),
+              user_id: ref.referred_user_id,
+              type: "engagement",
+              title: "🎉 Welcome Bonus!",
+              body: `You earned ${ref.reward_amount} ${ref.reward_currency} as a welcome bonus`,
+              read: false,
+              metadata_json: { route: "/me/referrals" },
+            },
+          ]).catch(() => {});
+
+          results.push({ id: ref.id, status: "credited" });
+          processed++;
+        }
       } else {
-        results.push({ id: ref.id, status: "credited" });
-        processed++;
+        results.push({
+          id: ref.id,
+          status: `partial_${referrerOk ? "referrer_ok" : "referrer_failed"}_${refereeOk ? "referee_ok" : "referee_failed"}`,
+        });
       }
     }
 
